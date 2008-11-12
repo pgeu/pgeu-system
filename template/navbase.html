@@ -1,0 +1,13 @@
+{%extends "base.html"%}
+{%block layoutblock%}
+<div id="pgSideWrap">
+ <div id="pgSideNav">
+  <ul>
+{%block navblock%}{%endblock%}
+  </ul>
+ </div>
+</div> <!-- pgSideWrap -->
+<div id="pgContentWrap">
+ {%block content%}{%endblock%}
+</div> <!-- pgContentWrap -->
+{%endblock%}
