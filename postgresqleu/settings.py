@@ -76,3 +76,10 @@ INSTALLED_APPS = (
     'django.contrib.sites',
 	'postgresqleu.static',
 )
+
+# If there is a local_settings.py, let it override our settings
+try:
+	from local_settings import *
+except:
+	pass
+
