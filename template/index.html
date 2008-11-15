@@ -1,6 +1,85 @@
 {%extends "base.html" %}
 {%block title%}Welcome{%endblock%}
 {%block layoutblock%}
-Hello index
+<div id="pgFrontRight">
+ <div class="pgFrontBox">
+  <h1>Help us out!</h1>
+  <p>Help PostgreSQL Europe by <a href="/donate">donating</a>,
+  <a href="/sponsors">sponsoring</a> or just helping out
+  in the <a href="/community">community</a>.
+ </div>
+
+ <div class="pgFrontBox">
+  <h1>Need help?</h1>
+  <p>Are you a local usergroup, and need help with something?
+  <a href="/about/contact">Contact us!</a></p>
+ </div>
+
+ <div class="pgFrontBox">
+  <h1>Upcoming events</h1>
+  <ul>
+   <li><a href="/events">FOSDEM 2009</a></li>
+   <li><a href="/events">PGDay.EU 2009</a></li>
+  </ul>
+ </div>
+
+ <div class="pgFrontBox">
+  <h1>Associated usergroups</h1>
+  <ul>
+   <li><a href="http://www.postgresqlfr.org">PostgreSQL FR</a></li>
+   <li><a href="http://www.pgug.de">PGUG.DE</a></li>
+   <li><a href="http://www.itpug.org">ITPUG</a></li>
+   <li><a href="http://www.postgresql.org.uk">PostgreSQL UK</a></li>
+  </ul>
+ </div>
+
+ <div class="pgFrontBox">
+  <h1>Related organisations</h1>
+  <ul>
+   <li><a href="http://www.postgresql.org">PostgreSQL.Org</a></li>
+   <li><a href="http://www.postgresql.us">PostgreSQL US</a></li>
+  </ul>
+ </div>
+</div>
+
+<div id="pgFrontLeft">
+ <div id="pgFrontWelcome" class="pgFrontBox">
+  <h1>Welcome to PostgreSQL Europe</h1>
+  <p>
+Welcome to PostgreSQL Europe, an "umbrella group" for PostgreSQL User Groups
+in Europe and for users in regions that don't have a local user group.
+Our goal is to promote the use of PostgreSQL in Europe. We do this
+primarily by assisting local user groups to promote the product locally
+through conferences and other advocacy, as well as running European-wide
+conferences and other activities.
+  </p>
+ </div>
+ <div id="pgFrontNews" class="pgFrontBox">
+  <h1>Latest news</h1>
+  <div class="pgFrontNewsItem">
+   <h2>New website</h2>
+   <h3>November 15, 2008</h3>
+   <p>
+    PostgreSQL Europe now has a new website at http://www.postgresql.eu.
+    Much work is still remaining to get this website finished, and volunteers
+    are very welcome! Just join the <a href="/community/lists">mailing list</a>
+    and let us know what you want to help with!
+   </p>
+   <p>
+    For those curious, you can find the source code to the website in the
+    git repository at <a href="http://git.postgresql.eu">git.postgresql.eu</a>
+   </p>
+  </div>
+  <div class="pgFrontNewsItem">
+   <h2>PostgreSQL Europe Open for Business</h2>
+   <h3>October 15, 2008</h3>
+   <p>
+    PostgreSQL Europe today finalised the paperwork around the creation of our
+    bank account, and are now open for receiving your
+    <a href="/donate">donations</a>!
+   </p>
+  </div>
+ </div>
+</div>
 {%endblock%}
 

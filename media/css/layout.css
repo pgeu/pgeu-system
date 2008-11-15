@@ -114,6 +114,46 @@
   display: block;
 }
 
+/* Front page specific */
+#pgFrontRight {
+  float: right;
+  width: 200px;
+  padding-left: 15px;
+  border-left: 1px solid #7A7A7A;
+  margin-top: 10px;
+}
+
+#pgFrontLeft {
+  margin-right: 230px;
+  margin-top: 10px;
+}
+
+#pgFrontLeft h1 {
+  font-size: 1.8em;
+}
+
+.pgFrontBox {
+  margin-bottom: 25px;
+}
+
+.pgFrontBox p {
+  margin-top: 0.2em;
+}
+
+#pgFrontNews h1 {
+  margin-bottom: 0px;
+}
+
+.pgFrontNewsItem h3 {
+  margin: 0px 0px;
+}
+
+.pgFrontNewsItem h2 {
+  margin-bottom: 0.2em;
+  margin-top: 0.2em;
+  font-size: 1.5em;
+}
+
 /* Uncomment when IE/Validator supports last-child
 
 .pgRSSBottomList li:last-child {
