@@ -8,6 +8,9 @@
 # Would be even better if we could touch it only after actual code files have changed,
 # but this will do fine for now.
 
+# This is where git lives on freebsd at least
+PATH=$PATH:/usr/local/bin
+
 # Get to our root directory
 UPDDIR=$(dirname $0)
 cd $UPDDIR/..
