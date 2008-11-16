@@ -16,7 +16,7 @@ UPDDIR=$(dirname $0)
 cd $UPDDIR/..
 
 # Pull changes from the it repo
-git pull -q
+git pull -q|grep -v "Already up-to-date"
 
 # Figure out if something changed
 git log -n1 --pretty=oneline > /tmp/pgeu.update
