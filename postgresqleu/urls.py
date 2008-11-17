@@ -21,6 +21,9 @@ urlpatterns = patterns('',
 	url(r'^media/(.*)$', 'django.views.static.serve', {
 		'document_root': '../media',
 	}),
+	url(r'^(favicon.ico)$', 'django.views.static.serve', {
+		'document_root': '../media',
+	}),
 
 	# Fallback - send everything nonspecific to the static handler
 	(r'^(.*)$', postgresqleu.static.views.static_fallback),
