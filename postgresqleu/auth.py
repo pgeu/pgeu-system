@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
+from django.contrib.auth.backends import ModelBackend
 import psycopg2
 
-class AuthBackend:
+class AuthBackend(ModelBackend):
 	def authenticate(self, username=None, password=None):
 		conn = psycopg2.connect('host=wwwmaster.postgresql.org dbname=186_www user=auth_svc password=g7y3m9u8 sslmode=require')
 		try:
