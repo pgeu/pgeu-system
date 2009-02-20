@@ -1,6 +1,8 @@
 from django.contrib.syndication.feeds import Feed
 from postgresqleu.newsevents.models import *
 
+import datetime
+
 class LatestNews(Feed):
 	title = "News - PostgreSQL Europe"
 	link = "/"
