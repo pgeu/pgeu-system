@@ -17,7 +17,3 @@ def static_fallback(request, url):
 	except TemplateDoesNotExist, e:
 		raise Http404('Page not found')
 
-# Handle the frontpage
-def index(request):
-	return render_to_response('index.html')
-
