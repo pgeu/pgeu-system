@@ -1,0 +1,13 @@
+{% extends "admin/change_form.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="/media/css/showdown_preview.css" />
+<script type="text/javascript" src="/media/showdown/showdown.js"></script>
+<script type="text/javascript" src="/media/js/showdown_preview.js"></script>
+<script language="javascript">
+   window.onload = function() {
+      attach_showdown_preview('id_summary');
+   }
+</script>
+{%endblock%}
