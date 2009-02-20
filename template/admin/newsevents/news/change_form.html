@@ -1,4 +1,10 @@
 {% extends "admin/change_form.html" %}
+{% block form_top %}
+<p>
+Note that the summary field can use
+<a href="http://en.wikipedia.org/wiki/Markdown">markdown</a> markup.
+</p>
+{%endblock%}
 
 {% block extrahead %}
 {{ block.super }}
