@@ -1,10 +1,11 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.backends import ModelBackend
+from django.conf import settings
 import psycopg2
 
 class AuthBackend(ModelBackend):
 	def authenticate(self, username=None, password=None):
-		conn = psycopg2.connect('host=wwwmaster.postgresql.org dbname=186_www user=auth_svc password=g7y3m9u8 sslmode=require')
+		conn = psycopg2.connect(settings.AUTH_CONNECTION_STRING)
 		try:
 			conn.set_client_encoding('UNICODE')
 			cur = conn.cursor()
