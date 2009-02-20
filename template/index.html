@@ -8,6 +8,7 @@
   <p>Help PostgreSQL Europe by <a href="/donate">donating</a>,
   <a href="/sponsors">sponsoring</a> or just helping out
   in the <a href="/community">community</a>.
+  </p>
  </div>
 
  <div class="pgFrontBox">
@@ -62,14 +63,12 @@ European-wide conferences and other activities.
   <div class="pgFrontNewsItem">
    <h2>{{newsitem.title}}</h2>
    <h3>{{newsitem.pretty_date}}</h3>
-   <p>
     {%autoescape off%}
     {{newsitem.summary|markdown:"safe"}}
     {%endautoescape%}
-   </p>
   </div>
   {%endfor%}
- </div>
-</div>
+ </div> <!-- pgFrontNews -->
+</div> <!-- pgFrontLeft -->
 {%endblock%}
 
