@@ -81,6 +81,8 @@ INSTALLED_APPS = (
 	'postgresqleu.newsevents',
 )
 
+AUTH_CONNECTION_STRING="override authentication connection string in the local settings file"
+
 # If there is a local_settings.py, let it override our settings
 try:
 	from local_settings import *
