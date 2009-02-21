@@ -25,7 +25,7 @@ class LatestEvents(Feed):
 		return Event.objects.filter(startdate__gte=datetime.datetime.today)[:10]
 		
 	def item_link(self, event):
-		return "http://www.postgresql.eu/events/#%s" % event.id
+		return "http://www.postgresql.eu/events/%s" % event.id
 
 	def item_pubdate(self, event):
 		# RSS feed needs a datetime object, not a date object
