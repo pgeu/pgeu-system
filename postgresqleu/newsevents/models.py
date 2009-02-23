@@ -14,7 +14,8 @@ class News(models.Model):
 		return self.datetime.strftime("%d %B %Y")
 
 	class Meta:
-		ordering = ['-datetime','title']	
+		ordering = ['-datetime','title']
+		verbose_name_plural = 'News'
 
 class Event(models.Model):
 	title = models.CharField(max_length=128, blank=False)
