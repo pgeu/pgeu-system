@@ -31,6 +31,7 @@ class RegistrationType(models.Model):
 	conference = models.ForeignKey(Conference, null=False)
 	regtype = models.CharField(max_length=64, null=False, blank=False)
 	cost = models.IntegerField(null=False)
+	active = models.BooleanField(null=False, blank=False, default=True)
 
 	def __unicode__(self):
 		if self.cost == 0:
