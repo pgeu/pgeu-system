@@ -1,0 +1,106 @@
+{%extends "nav_events.html"%}
+{%load markup%}
+{%load payment_options%}
+{%block title%}Conference Registration - {{conference}}{%endblock%}
+{%block content%}
+<h1>Conference Registration - {{conference}}</h1>
+
+<p>On this page you can register for {{conference}}. Please fill out all
+fields and click <i>Save</i>. You can return to this page at any time and
+view or edit your registration details.</p>
+
+<form action="." method="post">
+
+{% if form.errors %}
+<p><b>Note! This form contains errors and has not been saved!</b></p>
+{% endif %}
+
+ <fieldset id="personal_information">
+  <legend>Personal information</legend>
+      <div{% if form.regtype.errors %} class="errfld"{% endif %}>
+       {{ form.regtype.label_tag }} <br/>
+        {{ form.regtype }} {% if form.regtype.errors %}{{ form.regtype.errors}}{% endif %}
+      </div>
+
+      <div{% if form.firstname.errors %} class="errfld"{% endif %}>
+       {{ form.firstname.label_tag }} <br/>
+        {{ form.firstname }} {% if form.firstname.errors %}{{ form.firstname.errors}}{% endif %}
+      </div>
+
+      <div{% if form.lastname.errors %} class="errfld"{% endif %}>
+       {{ form.lastname.label_tag }} <br/>
+        {{ form.lastname }} {% if form.lastname.errors %}{{ form.lastname.errors}}{% endif %}
+      </div>
+
+      <div{% if form.company.errors %} class="errfld"{% endif %}>
+       {{ form.company.label_tag }} <br/>
+        {{ form.company }} {% if form.company.errors %}{{ form.company.errors}}{% endif %}
+      </div>
+
+      <div{% if form.address.errors %} class="errfld"{% endif %}>
+       {{ form.address.label_tag }} <br/>
+        {{ form.address }} {% if form.address.errors %}{{ form.address.errors}}{% endif %}
+      </div>
+
+      <div{% if form.country.errors %} class="errfld"{% endif %}>
+       {{ form.country.label_tag }} <br/>
+        {{ form.country }} {% if form.country.errors %}{{ form.country.errors}}{% endif %}
+      </div>
+
+      <div{% if form.email.errors %} class="errfld"{% endif %}>
+       {{ form.email.label_tag }} <br/>
+        {{ form.email }} {% if form.email.errors %}{{ form.email.errors}}{% endif %}
+      </div>
+
+      <div{% if form.phone.errors %} class="errfld"{% endif %}>
+       {{ form.phone.label_tag }} <br/>
+        {{ form.phone }} {% if form.phone.errors %}{{ form.phone.errors}}{% endif %}
+      </div>
+ </fieldset>
+
+ <fieldset id="conference_info">
+  <legend>Conference information</legend>
+      <div{% if form.shirtsize.errors %} class="errfld"{% endif %}>
+       {{ form.shirtsize.label_tag }} <br/>
+        {{ form.shirtsize }} {% if form.shirtsize.errors %}{{ form.shirtsize.errors}}{% endif %}
+      </div>
+
+      <div{% if form.dietary.errors %} class="errfld"{% endif %}>
+       {{ form.dietary.label_tag }} <br/>
+        {{ form.dietary }} {% if form.dietary.errors %}{{ form.dietary.errors}}{% endif %}
+      </div>
+ </fieldset>
+
+ {% if reg.isregistered %}
+ <fieldset id="payment_status">
+  <legend>Payment status</legend>
+  {% if reg.payconfirmedat %}
+   <p>Your payment has been confirmed by {{reg.payconfirmedby}} at {{reg.payconfirmedat}}.
+    Welcome to {{conference}}!
+   </p>
+  {% else %}
+   {% if reg.needspayment %}
+    <p>Your payment has <b>not</b> been confirmed yet. If you have paid and have not received
+     confirmation within approximately two weeks, please contact
+     <a href="mailto:{{conference.contactaddr}}">{{conference.contactaddr}}</a> to verify your status.
+    </p>
+    <h2>Payment options</h2>
+    {% for payoption in conference.paymentoptions.all %}
+     <h3>{{payoption.name}}</h3>
+     <p>{{payoption.infotext|markdown:"safe"}}</p>
+     {% if payoption.url %}
+      <p><a href="{% render_payment_url payoption.url conference.conferencename reg.email reg.regtype.regtype reg.regtype.stringcost %}">Click here</a> to pay using {{payoption.name}}.</p>
+     {%endif%}
+    {% endfor %}
+   {% else %}
+     <p>The type of registration you have requested does not require any payment.
+     Welcome to {{conference}}!
+   {% endif %}
+  {% endif %}
+ </fieldset>
+ {%endif%}
+<input type="submit" value="Save" />
+
+</form>
+{%endblock%}
+

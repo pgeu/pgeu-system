@@ -7,6 +7,7 @@ from django.contrib import admin
 import postgresqleu.static.views
 import postgresqleu.newsevents.views
 import postgresqleu.views
+import postgresqleu.confreg.views
 
 from postgresqleu.newsevents.feeds import LatestNews, LatestEvents
 
@@ -36,6 +37,9 @@ urlpatterns = patterns('',
 
 	# Feeds
 	(r'^feeds/(?P<url>.*)/$', 'django.contrib.syndication.views.feed', {'feed_dict': feeds}),
+
+	# Conference registration
+	(r'^events/register/([^/]+)/$', postgresqleu.confreg.views.home),
 
 	# This should not happen in production - serve by apache!
 	url(r'^media/(.*)$', 'django.views.static.serve', {

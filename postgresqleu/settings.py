@@ -79,6 +79,7 @@ INSTALLED_APPS = (
 	'postgresqleu.static',
 	'postgresqleu.countries',
 	'postgresqleu.newsevents',
+	'postgresqleu.confreg',
 )
 
 AUTH_CONNECTION_STRING="override authentication connection string in the local settings file"
