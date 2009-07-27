@@ -23,6 +23,7 @@ class Conference(models.Model):
 	location = models.CharField(max_length=128, blank=False, null=False)
 	contactaddr = models.EmailField(blank=False,null=False)
 	paymentoptions = models.ManyToManyField(PaymentOption)
+	active = models.BooleanField(blank=False,null=False,default=True)
 
 	def __unicode__(self):
 		return self.conferencename

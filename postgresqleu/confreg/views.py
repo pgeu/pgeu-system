@@ -12,7 +12,10 @@ def home(request, confname):
 	if settings.FORCE_SECURE_FORMS and not request.is_secure():
 		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
 	conference = get_object_or_404(Conference, urlname=confname)
-
+	if not conference.active:
+		return render_to_response('confreg/closed.html', {
+			'conference': conference,
+		})
 	try:
 		reg = ConferenceRegistration.objects.get(conference=conference,
 			attendee=request.user)
