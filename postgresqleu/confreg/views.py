@@ -34,8 +34,6 @@ def home(request, confname):
 			reg.conference = conference
 			reg.attendee = request.user
 			reg.save()
-		else:
-			print form.errors
 	else:
 		# This is just a get, so render the form
 		form = ConferenceRegistrationForm(instance=reg)

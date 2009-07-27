@@ -79,7 +79,6 @@ class ConferenceRegistration(models.Model):
 
 	@property
 	def needspayment(self):
-		print "Checking need for payment!"
 		if not self.regtype: return False
 		if self.regtype.cost == 0: return False
 		return True
