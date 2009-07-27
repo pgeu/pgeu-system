@@ -29,6 +29,8 @@ urlpatterns = patterns('',
 	# Log in/log out
 	(r'^login/?$', login, {'template_name':'login.html'}),
 	(r'^logout/?$', logout_then_login, {'login_url':'/'}),
+	(r'^accounts/login/$', login, {'template_name':'login.html'}),
+	(r'^accounts/logout/$', logout_then_login, {'login_url':'/'}),
 
 	# News & Events
 	(r'^events$', postgresqleu.newsevents.views.eventlist),
