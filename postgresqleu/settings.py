@@ -83,6 +83,7 @@ INSTALLED_APPS = (
 )
 
 AUTH_CONNECTION_STRING="override authentication connection string in the local settings file"
+FORCE_SECURE_FORMS=True
 
 # If there is a local_settings.py, let it override our settings
 try:

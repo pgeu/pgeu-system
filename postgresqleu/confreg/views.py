@@ -2,12 +2,15 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.conf import settings
 
 from models import *
 from forms import *
 
 @login_required
 def home(request, confname):
+	if settings.FORCE_SECURE_FORMS and not request.is_secure():
+		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
 	conference = get_object_or_404(Conference, urlname=confname)
 
 	try:
