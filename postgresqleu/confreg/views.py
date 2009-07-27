@@ -44,6 +44,6 @@ def home(request, confname):
 		'form': form,
 		'reg': reg,
 		'conference': conference,
-		'costamount': reg.regtype and reg.regtype.costamount or 0,
+		'costamount': reg.regtype and reg.regtype.cost or 0,
 	}, context_instance=RequestContext(request))
 
