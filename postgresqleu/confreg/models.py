@@ -55,7 +55,7 @@ class ShirtSize(models.Model):
 
 class ConferenceRegistration(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
-	regtype = models.ForeignKey(RegistrationType, null=False, blank=False, verbose_name="Registration type")
+	regtype = models.ForeignKey(RegistrationType, null=True, blank=True, verbose_name="Registration type")
 	attendee = models.ForeignKey(User, null=False, blank=False)
 	firstname = models.CharField(max_length=100, null=False, blank=False, verbose_name="First name")
 	lastname = models.CharField(max_length=100, null=False, blank=False, verbose_name="Last name")
