@@ -24,6 +24,7 @@ class Conference(models.Model):
 	contactaddr = models.EmailField(blank=False,null=False)
 	paymentoptions = models.ManyToManyField(PaymentOption)
 	active = models.BooleanField(blank=False,null=False,default=True)
+	confurl = models.CharField(max_length=128, blank=False, null=False)
 
 	def __unicode__(self):
 		return self.conferencename
