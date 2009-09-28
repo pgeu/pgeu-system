@@ -25,6 +25,8 @@ class Conference(models.Model):
 	paymentoptions = models.ManyToManyField(PaymentOption)
 	active = models.BooleanField(blank=False,null=False,default=True)
 	confurl = models.CharField(max_length=128, blank=False, null=False)
+	listadminurl = models.CharField(max_length=128, blank=True, null=False)
+	listadminpwd = models.CharField(max_length=128, blank=True, null=False)
 
 	def __unicode__(self):
 		return self.conferencename
@@ -34,6 +36,7 @@ class RegistrationType(models.Model):
 	regtype = models.CharField(max_length=64, null=False, blank=False)
 	cost = models.IntegerField(null=False)
 	active = models.BooleanField(null=False, blank=False, default=True)
+	inlist = models.BooleanField(null=False, blank=False, default=True)
 
 	def __unicode__(self):
 		if self.cost == 0:
