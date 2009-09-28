@@ -75,7 +75,7 @@ db = psycopg2.connect(c.get('settings','db'))
 curs = db.cursor()
 curs.execute("SELECT id, listadminurl, listadminpwd FROM confreg_conference WHERE active AND NOT (listadminurl='' OR listadminpwd='')")
 for confid, url, pwd in curs.fetchall():
-	print "Synchronizing list %s" % url
+	#print "Synchronizing list %s" % url
 	c2 = db.cursor()
 	c2.execute("""SELECT email FROM confreg_conferenceregistration cr 
 		INNER JOIN confreg_registrationtype rt ON cr.regtype_id=rt.id 
