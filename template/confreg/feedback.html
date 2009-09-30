@@ -1,0 +1,29 @@
+{%extends "nav_events.html"%}
+{%block title%}Conference Feedback - {{conference}}{%endblock%}
+{%block content%}
+<h1>Conference Feedback - {{conference}}</h1>
+
+<h2>Session: {{session.shorttitle}}</h2>
+<p><a href="..">Back</a> to the session list.</p>
+
+<p>Please rate the following aspects of the talk that you have been to, on a 
+scale from 1-5, with 5 being the highest or "best".</p>
+<p>If you wish to leave any comments for the speaker or the conference
+organizers, please do so in the text boxes below. Note that all your data
+will be anonymized before presented, so if you want the speaker/organizer
+to know who you are, you must put your name and contact information in the
+text field.</p>
+
+<form action="." method="post">
+
+{% if form.errors %}
+<p><b style="color:red;">Note! This form contains errors and has not been saved!</b></p>
+{% endif %}
+<form method="post" action=".">
+<table id="feedback_table">
+{{form.as_table}}
+</table>
+<input type="submit" value="Save">
+</form>
+
+{%endblock%}

@@ -92,3 +92,45 @@ class ConferenceRegistration(models.Model):
 	# For the admin interface (mainly)
 	def __unicode__(self):
 		return "%s: %s %s <%s>" % (self.conference, self.firstname, self.lastname, self.email)
+
+class ConferenceSession(models.Model):
+	conference = models.ForeignKey(Conference, null=False, blank=False)
+	speaker = models.ForeignKey(User, null=False, blank=False)
+	title = models.CharField(max_length=200, null=False, blank=False)
+	starttime = models.DateTimeField(null=False, blank=False)
+
+	# Not a db field, but set from the view to track if the current user
+	# has given any feedback on this session.
+	has_feedback = False
+
+	def __unicode__(self):
+		return "%s: %s (%s)" % (
+			self.speaker.first_name,
+			self.title,
+			self.starttime,
+		)
+
+	@property
+	def shorttitle(self):
+		return "%s (%s)" % (
+			self.title,
+			self.starttime,
+		)
+
+	class Meta:
+		ordering = [ 'starttime', ]
+
+class ConferenceSessionFeedback(models.Model):
+	conference = models.ForeignKey(Conference, null=False, blank=False)
+	session = models.ForeignKey(ConferenceSession, null=False, blank=False)
+	attendee = models.ForeignKey(User, null=False, blank=False)
+	topic_importance = models.IntegerField(null=False, blank=False)
+	content_quality = models.IntegerField(null=False, blank=False)
+	speaker_knowledge = models.IntegerField(null=False, blank=False)
+	speaker_quality = models.IntegerField(null=False, blank=False)
+	speaker_feedback = models.TextField(null=False, blank=True, verbose_name='Comments to the speaker')
+	conference_feedback = models.TextField(null=False, blank=True, verbose_name='Comments to the conference organizers')
+
+	def __unicode__(self):
+		return "%s - %s (%s)" % (self.conference, self.session, self.attendee)
+

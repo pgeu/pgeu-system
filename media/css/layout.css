@@ -220,3 +220,13 @@
 img {
   border: 0;
 }
+
+/* Registration pages */
+#feedback_table tr td ul li {
+   display: inline;
+}
+
+#feedback_table tr {
+   vertical-align: top;
+}
+

@@ -1,0 +1,17 @@
+{%extends "nav_events.html"%}
+{%block title%}Conference Feedback - {{conference}}{%endblock%}
+{%block content%}
+<h1>Conference Feedback - {{conference}}</h1>
+
+<p>On this page you can leave feedback for sessions at {{conference}}.
+You can return to this page at any time during the conference to
+view or edit your feedback.</p>
+
+<h2>Available sessions</h2>
+<ul>
+{% for s in sessions %}
+ <li><a href="{{s.id}}/">{{s}}</a>{%if s.has_feedback%} <img src="/media/img/green_tick.png" alt="green tickmark" />{%endif%}</li>
+{%endfor%}
+</ul>
+
+{%endblock%}
