@@ -2,7 +2,7 @@ from django.contrib import admin
 from postgresqleu.confreg.models import *
 
 class ConferenceRegistrationAdmin(admin.ModelAdmin):
-	list_display = ['email', 'conference', 'firstname', 'lastname', 'payconfirmedat', ]
+	list_display = ['email', 'conference', 'firstname', 'lastname', 'regtype', 'payconfirmedat', ]
 	ordering = ['-payconfirmedat', 'lastname', 'firstname', ]
 
 admin.site.register(Conference)
