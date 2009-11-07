@@ -132,5 +132,5 @@ class ConferenceSessionFeedback(models.Model):
 	conference_feedback = models.TextField(null=False, blank=True, verbose_name='Comments to the conference organizers')
 
 	def __unicode__(self):
-		return "%s - %s (%s)" % (self.conference, self.session, self.attendee)
+		return unicode("%s - %s (%s)") % (self.conference, self.session, self.attendee)
 
