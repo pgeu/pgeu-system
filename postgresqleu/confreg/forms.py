@@ -5,6 +5,10 @@ from django.forms.fields import *
 from postgresqleu.confreg.models import *
 
 class ConferenceRegistrationForm(forms.ModelForm):
+	def __init__(self, *args, **kwargs):
+		super(ConferenceRegistrationForm, self).__init__(*args, **kwargs)
+		self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference)
+
 	def clean_regtype(self):
 		newval = self.cleaned_data.get('regtype')
 		if self.instance and newval == self.instance.regtype:
