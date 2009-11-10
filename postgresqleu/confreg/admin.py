@@ -8,8 +8,12 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 class ConferenceSessionFeedbackAdmin(admin.ModelAdmin):
 	ordering = ['session']
 
+class RegistrationTypeAdmin(admin.ModelAdmin):
+	list_display = ['conference', 'regtype', 'cost', 'active']
+	ordering = ['conference','regtype']
+
 admin.site.register(Conference)
-admin.site.register(RegistrationType)
+admin.site.register(RegistrationType, RegistrationTypeAdmin)
 admin.site.register(ShirtSize)
 admin.site.register(ConferenceRegistration, ConferenceRegistrationAdmin)
 admin.site.register(PaymentOption)
