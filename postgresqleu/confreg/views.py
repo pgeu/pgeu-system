@@ -61,7 +61,7 @@ def feedback(request, confname):
 	# Figure out if the user is registered
 	try:
 		r = ConferenceRegistration.objects.get(conference=conference, attendee=request.user)
-	except ConferenceRegistration.NotFound, e:
+	except ConferenceRegistration.DoesNotExist, e:
 		return HttpResponse('You are not registered for this conference.')
 
 	if not r.payconfirmedat:
