@@ -108,6 +108,41 @@ if __name__ == "__main__":
 		print "Could not find conference in database!"
 		sys.exit(1)
 
+# Generate global feedback
+	# Global comments
+	curs.execute("""SELECT s.title, f.conference_feedback, a.first_name
+FROM confreg_conferencesessionfeedback f
+INNER JOIN confreg_conferencesession s ON f.session_id=s.id
+INNER JOIN auth_user a ON a.id=s.speaker_id
+WHERE s.conference_id=%(confid)s AND NOT f.conference_feedback=''
+ORDER BY s.title, f.conference_feedback""",
+		{'confid': confid})
+	session_comments = [{'session': s, 'comment': c, 'speaker': sp} for s,c,sp in curs.fetchall()]
+
+	# Speaker ratings
+	speaker_rating = []
+	for rating, ratingname in (('speaker_quality','Speaker Quality'),('speaker_knowledge','Speaker Knowledge'),):
+		curs.execute("SELECT a.first_name, avg("+rating+"), count(*), stddev("+rating+""")
+FROM confreg_conferencesessionfeedback f
+INNER JOIN confreg_conferencesession s ON f.session_id=s.id
+INNER JOIN auth_user a ON a.id=s.speaker_id
+WHERE s.conference_id=%(confid)s AND """+rating+" >= 1 AND "+rating+""" <= 5
+GROUP BY a.first_name
+ORDER BY 2 DESC
+""", {'confid': confid})
+		speaker_rating.append({'what': ratingname, 'rating': [{'speaker': s, 'quality': q, 'num': n, 'stddev': d} for s,q,n,d in curs.fetchall()]})
+
+
+	# Now generate the file
+	tmpl = get_template('conference_feedback.html')
+	f = open("%s_conference.html" % confname, "w")
+	f.write(tmpl.render(Context({
+		'session_comments': session_comments,
+		'speaker_rating': speaker_rating,
+	})).encode('utf-8'))
+	f.close()
+
+# Generate per-session feedback
 	curs.execute("""SELECT s.id, title, first_name FROM confreg_conferencesession s
 INNER JOIN auth_user ON auth_user.id=s.speaker_id
 WHERE conference_id=%(conf)s ORDER BY id

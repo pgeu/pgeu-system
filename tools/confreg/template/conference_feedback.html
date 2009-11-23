@@ -1,0 +1,37 @@
+<html>
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Conference feedback</title>
+ </head>
+ <body>
+  <h1>Conference feedback</h1>
+  <p>
+   This page contains global feedback for the conference. See each individual
+   HTML page for feedback on the sessions.
+  </p>
+
+  <h2>Session comments</h2>
+{%for comment in session_comments%}
+ {%ifchanged comment.session%}
+ <h3>{{comment.session}} ({{comment.speaker}})</h3>
+ {%endifchanged%}
+ <p>&bull; {{comment.comment}}</p>
+{%endfor%}
+
+{%for rating in speaker_rating%}
+  <h2>{{rating.what}}</h2>
+  <table border="1" cellspacing="0" cellpadding="2">
+   <tr><th>Name</th><th>{{rating.what}}</th><th>Votes</th><th>Deviation</th></tr>
+{%for speaker in rating.rating%}
+   <tr>
+    <td>{{speaker.name}}</td>
+    <td>{{speaker.quality|floatformat}}</td>
+    <td>{{speaker.num}}</td>
+    <td>{{speaker.stddev|floatformat}}</td>
+   </tr>
+{%endfor%}
+  </table>
+{%endfor%}
+ </body>
+</html>
+
