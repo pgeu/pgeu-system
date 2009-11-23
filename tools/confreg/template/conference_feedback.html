@@ -30,7 +30,7 @@
    <tr><th>Name</th><th>{{rating.what}}</th><th>Votes</th><th>Deviation</th></tr>
 {%for speaker in rating.rating%}
    <tr>
-    <td>{{speaker.name}}</td>
+    <td>{{speaker.speaker}}</td>
     <td>{{speaker.quality|floatformat}}</td>
     <td>{{speaker.num}}</td>
     <td>{{speaker.stddev|floatformat}}</td>
