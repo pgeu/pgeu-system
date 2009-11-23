@@ -26,29 +26,36 @@ class SessionStats:
 		self.confid = confid
 		self.confname = confname
 		self.row = row
+		self.ratings = None
 		self.curs = db.cursor()
 		if not os.path.exists(self.confname):
 			os.mkdir(self.confname)
 
-	def generate(self):
-		ratings = []
-		comments = []
+	def calculate(self):
+		self.ratings = []
 		for measurement, measurementname in measurement_types:
-			q = "SELECT " + measurement + " FROM confreg_conferencesessionfeedback WHERE conference_id=%(confid)s AND session_id=%(sessid)s"
+			q = "SELECT " + measurement + " FROM confreg_conferencesessionfeedback WHERE conference_id=%(confid)s"
+			if self.row:
+			   q = q + " AND session_id=%(sessid)s"
 			self.curs.execute(q,{
 				'confid': self.confid,
-				'sessid': self.row[0],
+				'sessid': self.row and self.row[0] or None,
 			})
 			n = [0,0,0,0,0]
 			count = 0
 			for r in self.curs.fetchall():
 				n[r[0]-1] = n[r[0]-1] + 1
 				count += 1
-			ratings.append({
+			self.ratings.append({
 				'title': measurementname,
 				'image': self.generate_graph(measurementname, n),
 				'values': zip(range(1,6), n),
 			})
+		return count # return the *last* value only. Normally, they're all the same...
+
+	def generate(self):
+		count = self.calculate()
+		comments = []
 		self.curs.execute("SELECT speaker_feedback FROM confreg_conferencesessionfeedback WHERE conference_id=%(confid)s AND session_id=%(sessid)s AND NOT speaker_feedback=''", {
 			'confid': self.confid,
 			'sessid': self.row[0],
@@ -59,7 +66,7 @@ class SessionStats:
 		tmpl = get_template('session_feedback.html')
 		f = open("%s/%s.html" % (self.confname, self.row[1].replace('/','-')), "w")
 		f.write(tmpl.render(Context({
-			'ratings': ratings,
+			'ratings': self.ratings,
 			'comments': comments,
 			'count': count,
 			'session': {
@@ -68,6 +75,9 @@ class SessionStats:
 			},
 		})).encode('utf-8'))
 		f.close()
+
+	def fetch_graphs(self):
+		return self.ratings
 
 	def generate_graph(self, measurement, n):
 		s = sum(n)
@@ -109,6 +119,11 @@ if __name__ == "__main__":
 		sys.exit(1)
 
 # Generate global feedback
+	# Global ratings
+	ss = SessionStats(db, confid, confname, None)
+	ss.calculate()
+	graphs = ss.fetch_graphs()
+
 	# Global comments
 	curs.execute("""SELECT s.title, f.conference_feedback, a.first_name
 FROM confreg_conferencesessionfeedback f
@@ -137,6 +152,7 @@ ORDER BY 2 DESC
 	tmpl = get_template('conference_feedback.html')
 	f = open("%s_conference.html" % confname, "w")
 	f.write(tmpl.render(Context({
+		'global_ratings': graphs,
 		'session_comments': session_comments,
 		'speaker_rating': speaker_rating,
 	})).encode('utf-8'))

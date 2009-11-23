@@ -10,6 +10,12 @@
    HTML page for feedback on the sessions.
   </p>
 
+  <h2>Global ratings</h2>
+{%for rating in global_ratings%}
+   <h3>{{rating.title}}</h3>
+   <img src="data:image/png;base64,{{rating.image}}" alt="{{rating.title}}"/>
+{%endfor%}
+
   <h2>Session comments</h2>
 {%for comment in session_comments%}
  {%ifchanged comment.session%}
