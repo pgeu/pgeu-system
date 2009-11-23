@@ -56,7 +56,7 @@ class SessionStats:
 			comments.append(comment[0])
 
 		tmpl = get_template('session_feedback.html')
-		f = open("%s/%s.html" % (self.confname, self.row[1]), "w")
+		f = open("%s/%s.html" % (self.confname, self.row[1].replace('/','-')), "w")
 		f.write(tmpl.render(Context({
 			'ratings': ratings,
 			'comments': comments,
