@@ -6,6 +6,7 @@
 import sys
 import os
 import psycopg2
+import psycopg2.extensions
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -66,6 +67,7 @@ if __name__ == "__main__":
 	confdir = sys.argv[2]
 	fromemail = sys.argv[3]
 
+	psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 	db = psycopg2.connect(connstr)
 	curs = db.cursor()
 	curs.execute("SELECT id,conferencename FROM confreg_conference WHERE urlname=%(url)s", {'url': confdir})

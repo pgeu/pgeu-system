@@ -5,6 +5,7 @@
 import sys
 import os
 import psycopg2
+import psycopg2.extensions
 import urllib2
 import base64
 from pygooglechart import PieChart3D
@@ -97,6 +98,7 @@ if __name__ == "__main__":
 	settings.configure(
 		TEMPLATE_DIRS=('template',),
 	)
+	psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 	db = psycopg2.connect(connstr)
 	curs = db.cursor()
 	curs.execute("SELECT id FROM confreg_conference WHERE urlname=%(url)s", {'url': confname})
