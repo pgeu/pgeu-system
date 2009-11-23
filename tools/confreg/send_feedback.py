@@ -12,9 +12,10 @@ from email.mime.text import MIMEText
 
 
 class Sender:
-	def __init__(self, confdir, confname, email, name):
+	def __init__(self, confdir, confname, sender, email, name):
 		self.confdir = confdir
 		self.confname = confname
+		self.sender = sender
 		self.email = email
 		self.name = name
 		self.sessions = []
@@ -31,7 +32,7 @@ class Sender:
 
 		msg = MIMEMultipart()
 		msg['Subject'] = 'Conference feedback for %s' % self.confname
-		msg['From'] = 'magnus@hagander.net'
+		msg['From'] = self.sender
 		msg['To'] = self.email
 		msg.attach(MIMEText("""
 Attached you will find the feedback submitted for your session(s) at
@@ -50,18 +51,19 @@ If you have any questions, feel free to contact us!
 		print "Sending %i files to %s" % (len(self.sessions), self.email)
 		s = smtplib.SMTP()
 		s.connect()
-		s.sendmail('magnus@hagander.net', [self.email], msg.as_string())
+		s.sendmail(self.sender, [self.email], msg.as_string())
 		s.quit()
 
 def Usage():
-	print "Usage: send_feedbackup.py <connectionstring> <conferenceshortname>"
+	print "Usage: send_feedbackup.py <connectionstring> <conferenceshortname> <fromemail>"
 	sys.exit(1)
 
 if __name__ == "__main__":
-	if len(sys.argv) != 3:
+	if len(sys.argv) != 4:
 		Usage()
 	connstr = sys.argv[1]
 	confdir = sys.argv[2]
+	fromemail = sys.argv[3]
 
 	db = psycopg2.connect(connstr)
 	curs = db.cursor()
@@ -89,7 +91,7 @@ WHERE conference_id=%(conf)s ORDER BY email
 
 		if email != lastemail:
 			if sender: sender.send()
-			sender = Sender(confdir, confname, email, name)
+			sender = Sender(confdir, confname, fromemail, email, name)
 			lastemail = email
 		sender.append(title)
 	if sender:
