@@ -58,6 +58,11 @@ def feedback(request, confname):
 		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
 	conference = get_object_or_404(Conference, urlname=confname)
 
+	if not conference.feedbackopen:
+		return render_to_response('confreg/feedbackclosed.html', {
+			'conference': conference,
+		})
+
 	# Figure out if the user is registered
 	try:
 		r = ConferenceRegistration.objects.get(conference=conference, attendee=request.user)
@@ -93,6 +98,11 @@ def feedback_session(request, confname, sessionid):
 	# Room for optimization: don't get these as separate steps
 	conference = get_object_or_404(Conference, urlname=confname)
 	session = get_object_or_404(ConferenceSession, pk=sessionid, conference=conference)
+
+	if not conference.feedbackopen:
+		return render_to_response('confreg/feedbackclosed.html', {
+			'conference': conference,
+		})
 
 	try:
 		feedback = ConferenceSessionFeedback.objects.get(conference=conference, session=session, attendee=request.user)
