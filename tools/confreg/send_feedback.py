@@ -57,15 +57,19 @@ If you have any questions, feel free to contact us!
 		s.quit()
 
 def Usage():
-	print "Usage: send_feedbackup.py <connectionstring> <conferenceshortname> <fromemail>"
+	print "Usage: send_feedbackup.py <connectionstring> <conferenceshortname> <fromemail> [only_send_to]"
 	sys.exit(1)
 
 if __name__ == "__main__":
-	if len(sys.argv) != 4:
+	if len(sys.argv) != 4 and len(sys.argv) != 5:
 		Usage()
 	connstr = sys.argv[1]
 	confdir = sys.argv[2]
 	fromemail = sys.argv[3]
+	if len(sys.argv) == 5:
+		onlysendto = sys.argv[4]
+	else:
+		onlysendto = None
 
 	psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 	db = psycopg2.connect(connstr)
@@ -91,6 +95,10 @@ WHERE conference_id=%(conf)s ORDER BY email
 		title = row[0]
 		name = row[1]
 		email = row[2]
+
+		if onlysendto:
+			if not email == onlysendto:
+				continue
 
 		if email != lastemail:
 			if sender: sender.send()
