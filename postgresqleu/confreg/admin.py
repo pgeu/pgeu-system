@@ -3,6 +3,8 @@ from postgresqleu.confreg.models import *
 
 class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	list_display = ['email', 'conference', 'firstname', 'lastname', 'regtype', 'payconfirmedat', ]
+	list_filter = ['conference', 'regtype', ]
+	search_fields = ['email', 'firstname', 'lastname', ]
 	ordering = ['-payconfirmedat', 'lastname', 'firstname', ]
 
 	def queryset(self, request):
@@ -32,12 +34,18 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 
 class ConferenceSessionFeedbackAdmin(admin.ModelAdmin):
 	ordering = ['session']
+	list_display = ['conference', 'session', 'attendee', ]
+	list_filter = ['conference', ]
+	search_fields = ['session__title', ]
 
 class ConferenceSessionAdmin(admin.ModelAdmin):
-	pass
+	list_display = ['conference', 'speaker', 'title', 'starttime', ]
+	list_filter = ['conference', ]
+	search_fields = ['title', ]
 
 class RegistrationTypeAdmin(admin.ModelAdmin):
 	list_display = ['conference', 'regtype', 'cost', 'active']
+	list_filter = ['conference',]
 	ordering = ['conference','regtype']
 
 admin.site.register(Conference)
