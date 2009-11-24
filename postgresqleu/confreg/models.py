@@ -28,6 +28,7 @@ class Conference(models.Model):
 	confurl = models.CharField(max_length=128, blank=False, null=False)
 	listadminurl = models.CharField(max_length=128, blank=True, null=False)
 	listadminpwd = models.CharField(max_length=128, blank=True, null=False)
+	administrators = models.ManyToManyField(User, null=False, blank=True)
 
 	def __unicode__(self):
 		return self.conferencename
