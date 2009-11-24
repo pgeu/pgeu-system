@@ -27,7 +27,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
 	class Meta:
 		model = ConferenceRegistration
-		exclude = ('conference','attendee','payconfirmedat','payconfirmedby',)
+		exclude = ('conference','attendee','payconfirmedat','payconfirmedby','created',)
 
 rating_choices = (
     (1, '1'),

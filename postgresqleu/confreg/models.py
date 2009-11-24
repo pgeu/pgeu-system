@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+import datetime
+
 from postgresqleu.countries.models import Country
 
 class PaymentOption(models.Model):
@@ -78,6 +80,7 @@ class ConferenceRegistration(models.Model):
 	# Admin fields!
 	payconfirmedat = models.DateField(null=True, blank=True, verbose_name="Payment confirmed at")
 	payconfirmedby = models.CharField(max_length=16, null=True, blank=True, verbose_name="Payment confirmed by")
+	created = models.DateTimeField(null=False, blank=False, default=datetime.datetime.now, verbose_name="Registration created")
 
 	# Access from templates requires properties
 	@property
