@@ -12,10 +12,12 @@
   <img src="data:image/png;base64,{{rating.image}}" alt="{{rating.title}}"/>
   <table border="1" cellspacing="0" cellpadding="3" style="font-size: small;">
    <tr><th colspan="2">{{rating.title}}</th></tr>
+   <tr><th>Rating</th><th>Count</th></tr>
   {% for k,v in rating.values %}
    <tr><td>{{k}}</td><td>{{v}}</td></tr>
   {%endfor%}
   </table>
+  <p>(5 is highest, 1 is lowest)</p>
   <br/>
 {%endfor%}
   <br/>
