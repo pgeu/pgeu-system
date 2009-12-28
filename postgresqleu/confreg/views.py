@@ -224,3 +224,11 @@ def schedule(request, confname):
 		'tracks': tracks,
 	}, context_instance=RequestContext(request))
 
+def schedule_ical(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+	sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).order_by('starttime')
+	return render_to_response('confreg/schedule.ical', {
+		'conference': conference,
+		'sessions': sessions,
+	}, mimetype='text/calendar', context_instance=RequestContext(request))
+

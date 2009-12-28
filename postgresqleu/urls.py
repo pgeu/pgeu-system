@@ -45,6 +45,7 @@ urlpatterns = patterns('',
 	(r'^events/feedback/([^/]+)/$', postgresqleu.confreg.views.feedback),
 	(r'^events/feedback/([^/]+)/(\d+)/$', postgresqleu.confreg.views.feedback_session),
 	(r'^events/schedule/([^/]+)/$', postgresqleu.confreg.views.schedule),
+	(r'^events/schedule/([^/]+)/ical/$', postgresqleu.confreg.views.schedule_ical),
 
 	# This should not happen in production - serve by apache!
 	url(r'^media/(.*)$', 'django.views.static.serve', {
