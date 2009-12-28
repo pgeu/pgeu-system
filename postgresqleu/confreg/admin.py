@@ -39,8 +39,8 @@ class ConferenceSessionFeedbackAdmin(admin.ModelAdmin):
 	search_fields = ['session__title', ]
 
 class ConferenceSessionAdmin(admin.ModelAdmin):
-	list_display = ['conference', 'speaker', 'title', 'starttime', ]
-	list_filter = ['conference', ]
+	list_display = ['conference', 'speaker', 'title', 'starttime', 'endtime', 'track', ]
+	list_filter = ['conference', 'track', ]
 	search_fields = ['title', ]
 
 class RegistrationTypeAdmin(admin.ModelAdmin):
@@ -55,3 +55,5 @@ admin.site.register(ConferenceRegistration, ConferenceRegistrationAdmin)
 admin.site.register(PaymentOption)
 admin.site.register(ConferenceSession, ConferenceSessionAdmin)
 admin.site.register(ConferenceSessionFeedback, ConferenceSessionFeedbackAdmin)
+admin.site.register(Track)
+admin.site.register(Room)

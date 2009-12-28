@@ -7,7 +7,7 @@ from django.conf import settings
 from models import *
 from forms import *
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 @login_required
 def home(request, confname):
@@ -74,7 +74,7 @@ def feedback(request, confname):
 
 	# Generate a list of all feedback:able sessions, meaning all sessions that have already started,
 	# since you can't give feedback on something that does not yet exist.
-	sessions = ConferenceSession.objects.select_related().filter(conference=conference).filter(starttime__lte=datetime.now())
+	sessions = ConferenceSession.objects.select_related().filter(conference=conference).filter(can_feedback=True).filter(starttime__lte=datetime.now())
 	# Then get a list of everything this user has feedbacked on
 	feedback = ConferenceSessionFeedback.objects.filter(conference=conference, attendee=request.user)
 
@@ -125,5 +125,102 @@ def feedback_session(request, confname, sessionid):
 		'session': session,
 		'form': form,
 		'conference': conference,
+	}, context_instance=RequestContext(request))
+
+class SessionSet(object):
+	def __init__(self):
+		self.headersize = 30
+		self.rooms = {}
+		self.tracks = {}
+		self.sessions = []
+		self.firsttime = datetime(2999,1,1)
+		self.lasttime = datetime(1970,1,1)
+
+	def add(self, session):
+		if not self.rooms.has_key(session.room):
+			if not session.cross_schedule:
+				self.rooms[session.room] = len(self.rooms)
+		if not self.tracks.has_key(session.track):
+			self.tracks[session.track] = session.track
+		if session.starttime < self.firsttime:
+			self.firsttime = session.starttime
+		if session.endtime > self.lasttime:
+			self.lasttime = session.endtime
+		self.sessions.append(session)
+
+	def all(self):
+		for s in self.sessions:
+			if not s.cross_schedule:
+				yield {
+					'id': s.id,
+					'title': s.title,
+					'speakername': s.speaker.first_name,
+					'speakerid': s.speaker.id,
+					'timeslot': "%s - %s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")),
+					'track': s.track,
+					'leftpos': self.roomwidth()*self.rooms[s.room],
+					'toppos': self.timediff_to_y_pixels(s.starttime, self.firsttime)+self.headersize,
+					'widthpos': self.roomwidth()-2,
+					'heightpos': self.timediff_to_y_pixels(s.endtime, s.starttime),
+				}
+			else:
+				yield {
+					'title': s.title,
+					'timeslot': "%s - %s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")),
+					'track': s.track,
+					'leftpos': 0,
+					'toppos': self.timediff_to_y_pixels(s.starttime, self.firsttime)+self.headersize,
+					'widthpos': self.roomwidth() * len(self.rooms) - 2,
+					'heightpos': self.timediff_to_y_pixels(s.endtime, s.starttime)-2,
+				}
+
+	def schedule_height(self):
+		return self.timediff_to_y_pixels(self.lasttime, self.firsttime)+2+self.headersize
+
+	def schedule_width(self):
+		if len(self.rooms):
+			return self.roomwidth()*len(self.rooms)
+		else:
+			return 0
+
+	def roomwidth(self):
+		return int(600/len(self.rooms))
+
+	def timediff_to_y_pixels(self, t, compareto):
+		return ((t - compareto).seconds/60)*1.5
+
+	def alltracks(self):
+		return self.tracks
+
+	def allrooms(self):
+		return [{
+			'name': r.roomname,
+			'leftpos': self.roomwidth()*self.rooms[r],
+			'widthpos': self.roomwidth()-2,
+			'heightpos': self.headersize-2,
+		} for r in self.rooms]
+
+def schedule(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+	daylist = ConferenceSession.objects.filter(conference=conference).dates('starttime', 'day')
+	days = []
+	tracks = {}
+	for d in daylist:
+		sessions = ConferenceSession.objects.filter(conference=conference,starttime__range=(d,d+timedelta(hours=23,minutes=59,seconds=59))).order_by('starttime')
+		sessionset = SessionSet()
+		for s in sessions: sessionset.add(s)
+		days.append({
+			'day': d,
+			'sessions': sessionset.all(),
+			'rooms': sessionset.allrooms(),
+			'schedule_height': sessionset.schedule_height(),
+			'schedule_width': sessionset.schedule_width(),
+		})
+		tracks.update(sessionset.alltracks())
+
+	return render_to_response('confreg/schedule.html', {
+		'conference': conference,
+		'days': days,
+		'tracks': tracks,
 	}, context_instance=RequestContext(request))
 

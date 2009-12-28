@@ -1,0 +1,59 @@
+{%extends "nav_events.html"%}
+{%block title%}Conference Schedule - {{conference}}{%endblock%}
+{%block extrahead%}
+<style media="print">
+#pgHeaderContainer, #pgSideWrap { display:none; }
+div.schedwrap {
+   font-size: 69%;
+}
+</style>
+<style>
+div.schedwrap {
+   border: 1px solid black;
+   position: relative;
+}
+div.sessblock {
+   border: 1px solid gray;
+   overflow:hidden;
+   position: absolute;
+}
+div.roomheader {
+   font-weight: bold;
+   font-size: 1.2em;
+   top: 0px;
+   text-align: center;
+}
+div.sessblock a {
+   text-decoration: none;
+   color: black;
+}
+{%for track in tracks%}
+div.track{{track.id}} {
+   background-color: {{track.color}};
+}
+{%endfor%}
+</style>
+{%endblock%}
+{%block content%}
+<h1>Conference Schedule - {{conference}}</h1>
+
+{%for day in days%}
+<h2>{{day.day|date:"l, F d"}}</h2>
+<div class="schedwrap" style="height: {{day.schedule_height}}px; width: {{day.schedule_width}}px;">
+{%for room in day.rooms%}
+ <div class="sessblock roomheader" style="left: {{room.leftpos}}px; width: {{room.widthpos}}px; height: {{room.heightpos}}px;">
+ {{room.name}}
+ </div>
+{%endfor%}
+{%for session in day.sessions%}
+ <div class="sessblock track{{session.track.id}}" style="top: {{session.toppos}}px; left: {{session.leftpos}}px; width: {{session.widthpos}}px; height: {{session.heightpos}}px;">
+  {{session.timeslot}}<br/>
+  {%if session.id%}<a href="sessions/{{session.id}}/">{{session.title}}</a>{%else%}{{session.title}}{%endif%}
+  {%if session.speakername%}<br/><i><a href="speaker/{{session.speakerid}}/">{{session.speakername}}</a></i>{%endif%}
+ </div>
+{%endfor%}
+</div>
+
+{%endfor%}
+
+{%endblock%}

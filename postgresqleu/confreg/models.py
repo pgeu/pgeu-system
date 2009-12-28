@@ -98,11 +98,31 @@ class ConferenceRegistration(models.Model):
 	def __unicode__(self):
 		return "%s: %s %s <%s>" % (self.conference, self.firstname, self.lastname, self.email)
 
+class Track(models.Model):
+	conference = models.ForeignKey(Conference, null=False, blank=False)
+	trackname = models.CharField(max_length=100, null=False, blank=False)
+	color = models.CharField(max_length=20, null=False, blank=True)
+
+	def __unicode__(self):
+		return self.trackname
+
+class Room(models.Model):
+	conference = models.ForeignKey(Conference, null=False, blank=False)
+	roomname = models.CharField(max_length=20, null=False, blank=False)
+
+	def __unicode__(self):
+		return self.roomname
+
 class ConferenceSession(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
 	speaker = models.ForeignKey(User, null=False, blank=False)
 	title = models.CharField(max_length=200, null=False, blank=False)
 	starttime = models.DateTimeField(null=False, blank=False)
+	endtime = models.DateTimeField(null=True)
+	track = models.ForeignKey(Track, null=True, blank=True) #only needed for schedules
+	room = models.ForeignKey(Room, null=True, blank=True)   #only needed for schedules
+	cross_schedule = models.BooleanField(null=False, default=False)
+	can_feedback = models.BooleanField(null=False, default=True)
 
 	# Not a db field, but set from the view to track if the current user
 	# has given any feedback on this session.
