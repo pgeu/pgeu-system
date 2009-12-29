@@ -64,7 +64,7 @@ class ConferenceSessionForm(forms.ModelForm):
 
 class ConferenceSessionAdmin(admin.ModelAdmin):
 	form = ConferenceSessionForm
-	list_display = ['conference', 'speaker', 'title', 'starttime', 'endtime', 'track', ]
+	list_display = ['title', 'speaker_list', 'conference', 'starttime', 'endtime', 'track', ]
 	list_filter = ['conference', 'track', ]
 	search_fields = ['title', ]
 

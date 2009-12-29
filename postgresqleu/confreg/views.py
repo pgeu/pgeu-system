@@ -155,8 +155,7 @@ class SessionSet(object):
 				yield {
 					'id': s.id,
 					'title': s.title,
-					'speakername': s.speaker.name,
-					'speakerid': s.speaker.id,
+					'speakers': s.speaker.all(),
 					'timeslot': "%s - %s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")),
 					'track': s.track,
 					'leftpos': self.roomwidth()*self.rooms[s.room],

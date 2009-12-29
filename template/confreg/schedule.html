@@ -42,14 +42,14 @@ div.track{{track.id}} {
 <div class="schedwrap" style="height: {{day.schedule_height}}px; width: {{day.schedule_width}}px;">
 {%for room in day.rooms%}
  <div class="sessblock roomheader" style="left: {{room.leftpos}}px; width: {{room.widthpos}}px; height: {{room.heightpos}}px;">
- {{room.name}}
+ {{room.roomname}}
  </div>
 {%endfor%}
 {%for session in day.sessions%}
  <div class="sessblock track{{session.track.id}}" style="top: {{session.toppos}}px; left: {{session.leftpos}}px; width: {{session.widthpos}}px; height: {{session.heightpos}}px;">
   {{session.timeslot}}<br/>
   {%if session.id%}<a href="session/{{session.id}}-{{session.title|slugify}}/">{{session.title}}</a>{%else%}{{session.title}}{%endif%}
-  {%if session.speakername%}<br/><i><a href="speaker/{{session.speakerid}}-{{session.speakername|slugify}}/">{{session.speakername}}</a></i>{%endif%}
+  {%for speaker in session.speakers %}{%if forloop.first%}<br/>{%else%}, {%endif%}<i><a href="speaker/{{speaker.id}}-{{speaker.name|slugify}}/">{{speaker.name}}</a></i>{%endfor%}
  </div>
 {%endfor%}
 </div>

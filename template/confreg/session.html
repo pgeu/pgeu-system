@@ -17,7 +17,10 @@
 </p>
 
 <h2>Speaker</h2>
-<b><a href="../../speaker/{{session.speaker.id}}-{{session.speaker.name|slugify}}/">{{session.speaker.name}}</a></b><br/>
+{%for speaker in session.speaker.all%}
+<b><a href="../../speaker/{{speaker.id}}-{{speaker.name|slugify}}/">{{speaker.name}}</a></b><br/>
+{%endfor%}
+
 <p>
 {{session.speaker.abstract|markdown:"safe"}}
 </p>

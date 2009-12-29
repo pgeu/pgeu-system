@@ -128,7 +128,7 @@ class Speaker(models.Model):
 
 class ConferenceSession(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
-	speaker = models.ForeignKey(Speaker, null=False, blank=False)
+	speaker = models.ManyToManyField(Speaker)
 	title = models.CharField(max_length=200, null=False, blank=False)
 	starttime = models.DateTimeField(null=False, blank=False)
 	endtime = models.DateTimeField(null=True)
@@ -142,9 +142,13 @@ class ConferenceSession(models.Model):
 	# has given any feedback on this session.
 	has_feedback = False
 
+	@property
+	def speaker_list(self):
+		return ", ".join([s.name for s in self.speaker.all()])
+
 	def __unicode__(self):
 		return "%s: %s (%s)" % (
-			self.speaker.name,
+			self.speaker_list,
 			self.title,
 			self.starttime,
 		)
