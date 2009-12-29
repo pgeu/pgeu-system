@@ -5,6 +5,9 @@
 <h1>Conference Schedule - {{conference}}</h1>
 <a href="../../">Back</a><br/>
 
+{%if speaker.photofile %}
+<img src="../../../../speaker/{{speaker.id}}/photo/" align="right" />
+{%endif%}
 <h2>{{speaker.name}}</h2>
 <p>
 {{speaker.abstract|markdown:"safe"}}

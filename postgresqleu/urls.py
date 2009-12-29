@@ -48,6 +48,7 @@ urlpatterns = patterns('',
 	(r'^events/schedule/([^/]+)/ical/$', postgresqleu.confreg.views.schedule_ical),
 	(r'^events/schedule/([^/]+)/session/(\d+)(-.*)?/$', postgresqleu.confreg.views.session),
 	(r'^events/schedule/([^/]+)/speaker/(\d+)(-.*)?/$', postgresqleu.confreg.views.speaker),
+	(r'^events/speaker/(\d+)/photo/$', postgresqleu.confreg.views.speakerphoto),
 
 	# This should not happen in production - serve by apache!
 	url(r'^media/(.*)$', 'django.views.static.serve', {

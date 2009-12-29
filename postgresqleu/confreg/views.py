@@ -8,6 +8,7 @@ from models import *
 from forms import *
 
 from datetime import datetime, timedelta
+import base64
 
 @login_required
 def home(request, confname):
@@ -251,4 +252,8 @@ def speaker(request, confname, speakerid, junk=None):
 		'speaker': speaker,
 		'sessions': sessions,
 	}, context_instance=RequestContext(request))
+
+def speakerphoto(request, speakerid):
+	speakerphoto = get_object_or_404(Speaker_Photo, pk=speakerid)
+	return HttpResponse(base64.b64decode(speakerphoto.photo), mimetype='image/jpg')
 

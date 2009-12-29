@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from postgresqleu.confreg.dbimage import SpeakerImageStorage
+
 import datetime
 
 from postgresqleu.countries.models import Country
@@ -115,10 +117,16 @@ class Room(models.Model):
 	def __unicode__(self):
 		return "%s (%s)" % (self.roomname, self.conference)
 
+
 class Speaker(models.Model):
+	def get_upload_path(instance, filename):
+		return "%s" % instance.id
+
 	user = models.ForeignKey(User, null=False, blank=False)
 	fullname = models.CharField(max_length=100, null=False, blank=False)
 	abstract = models.TextField(null=False, blank=True)
+	photofile = models.ImageField(upload_to=get_upload_path, storage=SpeakerImageStorage())
+
 
 	@property
 	def name(self):
@@ -130,6 +138,19 @@ class Speaker(models.Model):
 
 	def __unicode__(self):
 		return self.name
+
+class Speaker_Photo(models.Model):
+	speaker = models.ForeignKey(Speaker, db_column='id', primary_key=True)
+	photo = models.TextField(null=False, blank=False)
+
+	def __unicode__(self):
+		return self.speaker.name
+
+	def delete(self):
+		# Remove reference from speaker, so we don't think the pic is there
+		self.speaker.photofile = None
+		self.speaker.save()
+		super(Speaker_Photo, self).delete()
 
 class ConferenceSession(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)

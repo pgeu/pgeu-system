@@ -2,6 +2,7 @@ from django.contrib import admin
 from django import forms
 from django.forms import ValidationError
 from postgresqleu.confreg.models import *
+from postgresqleu.confreg.dbimage import InlinePhotoWidget
 
 class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	list_display = ['email', 'conference', 'firstname', 'lastname', 'created', 'regtype', 'payconfirmedat', ]
@@ -73,9 +74,37 @@ class RegistrationTypeAdmin(admin.ModelAdmin):
 	list_filter = ['conference',]
 	ordering = ['conference','regtype']
 
+class SpeakerAdminForm(forms.ModelForm):
+	class Meta:
+		model = Speaker
+
+	def clean_photofile(self):
+		img = None
+		try:
+			from PIL import ImageFile
+			p = ImageFile.Parser()
+			p.feed(self.cleaned_data['photofile'].read())
+			p.close()
+			img = p.image
+		except Exception, e:
+			raise ValidationError("Could not parse image: %s" % e)
+		if img.format != 'JPEG':
+			raise ValidationError("Only JPEG format images are accepted, not '%s'" % img.format)
+		if img.size[0] > 128 or img.size[1] > 128:
+			raise ValidationError("Maximum image size is 128x128")
+		return self.cleaned_data['photofile']
+
 class SpeakerAdmin(admin.ModelAdmin):
 	list_display = ['user', 'fullname', 'has_abstract']
 	ordering = ['user']
+	form = SpeakerAdminForm
+
+class SpeakerPhotoAdmin(admin.ModelAdmin):
+	def formfield_for_dbfield(self, db_field, **kwargs):
+		if db_field.name == 'photo':
+			kwargs['widget'] = InlinePhotoWidget
+			return db_field.formfield(**kwargs)
+		return super(SpeakerPhotoAdmin,self).formfield_for_dbfield(db_field,**kwargs)
 
 admin.site.register(Conference)
 admin.site.register(RegistrationType, RegistrationTypeAdmin)
@@ -87,3 +116,4 @@ admin.site.register(ConferenceSessionFeedback, ConferenceSessionFeedbackAdmin)
 admin.site.register(Track)
 admin.site.register(Room)
 admin.site.register(Speaker, SpeakerAdmin)
+admin.site.register(Speaker_Photo, SpeakerPhotoAdmin)
