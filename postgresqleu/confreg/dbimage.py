@@ -32,11 +32,9 @@ class SpeakerImageStorage(Storage):
 		return name
 
 	def exists(self, name):
-		print "Exists vcheck for '%s'" % name
 		return False
 
 	def get_available_name(self, name):
-		print "Get available name '%s' called" % name
 		return name
 
 	def delete(self, name):
