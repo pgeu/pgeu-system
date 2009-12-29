@@ -134,6 +134,7 @@ class ConferenceSession(models.Model):
 	room = models.ForeignKey(Room, null=True, blank=True)
 	cross_schedule = models.BooleanField(null=False, default=False)
 	can_feedback = models.BooleanField(null=False, default=True)
+	abstract = models.TextField(null=False, blank=True)
 
 	# Not a db field, but set from the view to track if the current user
 	# has given any feedback on this session.

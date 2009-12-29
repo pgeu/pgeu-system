@@ -1,0 +1,26 @@
+{%extends "nav_events.html"%}
+{%load markup%}
+{%block title%}Conference Schedule - {{conference}}{%endblock%}
+{%block content%}
+<h1>Conference Schedule - {{conference}}</h1>
+<a href="../../">Back</a><br/>
+
+<h2>{{session.title}}</h2>
+<p>
+<b>Date:</b> {{session.starttime|date}}<br/>
+<b>Time:</b> {{session.starttime|time:"H:i"}} - {{session.endtime|time:"H:i"}}<br/>
+<b>Room:</b> {{session.room.roomname}}<br/>
+</p>
+
+<p>
+{{session.abstract|markdown:"safe"}}
+</p>
+
+<h2>Speaker</h2>
+<b><a href="../../speaker/{{session.speaker.id}}-{{session.speaker.name|slugify}}/">{{session.speaker.name}}</a></b><br/>
+<p>
+{{session.speaker.abstract|markdown:"safe"}}
+</p>
+
+{%endblock%}
+

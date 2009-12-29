@@ -1,0 +1,22 @@
+{%extends "nav_events.html"%}
+{%load markup%}
+{%block title%}Conference Schedule - {{conference}}{%endblock%}
+{%block content%}
+<h1>Conference Schedule - {{conference}}</h1>
+<a href="../../">Back</a><br/>
+
+<h2>{{speaker.name}}</h2>
+<p>
+{{speaker.abstract|markdown:"safe"}}
+</p>
+
+<h2>Sessions</h2>
+<ul>
+{%for session in sessions%}
+ <li><a href="../../session/{{session.id}}-{{session.title|slugify}}/">{{session.title}}</a></li>
+{%endfor%}
+</ul>
+
+
+{%endblock%}
+

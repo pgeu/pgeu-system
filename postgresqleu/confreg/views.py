@@ -1,5 +1,5 @@
 from django.shortcuts import render_to_response, get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.conf import settings
@@ -231,4 +231,24 @@ def schedule_ical(request, confname):
 		'conference': conference,
 		'sessions': sessions,
 	}, mimetype='text/calendar', context_instance=RequestContext(request))
+
+def session(request, confname, sessionid, junk=None):
+	conference = get_object_or_404(Conference, urlname=confname)
+	session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False)
+	return render_to_response('confreg/session.html', {
+		'conference': conference,
+		'session': session,
+	}, context_instance=RequestContext(request))
+
+def speaker(request, confname, speakerid, junk=None):
+	conference = get_object_or_404(Conference, urlname=confname)
+	speaker = get_object_or_404(Speaker, pk=speakerid)
+	sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker, cross_schedule=False).order_by('starttime')
+	if len(sessions) < 1:
+		raise Http404("Speaker has no sessions at this conference")
+	return render_to_response('confreg/speaker.html', {
+		'conference': conference,
+		'speaker': speaker,
+		'sessions': sessions,
+	}, context_instance=RequestContext(request))
 
