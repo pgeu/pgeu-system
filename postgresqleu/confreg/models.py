@@ -117,11 +117,16 @@ class Room(models.Model):
 
 class Speaker(models.Model):
 	user = models.ForeignKey(User, null=False, blank=False)
+	fullname = models.CharField(max_length=100, null=False, blank=False)
 	abstract = models.TextField(null=False, blank=True)
 
 	@property
 	def name(self):
-		return self.user.first_name
+		return self.fullname
+
+	@property
+	def has_abstract(self):
+		return len(self.abstract)>0
 
 	def __unicode__(self):
 		return self.name

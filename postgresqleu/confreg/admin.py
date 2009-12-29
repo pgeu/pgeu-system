@@ -73,6 +73,10 @@ class RegistrationTypeAdmin(admin.ModelAdmin):
 	list_filter = ['conference',]
 	ordering = ['conference','regtype']
 
+class SpeakerAdmin(admin.ModelAdmin):
+	list_display = ['user', 'fullname', 'has_abstract']
+	ordering = ['user']
+
 admin.site.register(Conference)
 admin.site.register(RegistrationType, RegistrationTypeAdmin)
 admin.site.register(ShirtSize)
@@ -82,4 +86,4 @@ admin.site.register(ConferenceSession, ConferenceSessionAdmin)
 admin.site.register(ConferenceSessionFeedback, ConferenceSessionFeedbackAdmin)
 admin.site.register(Track)
 admin.site.register(Room)
-admin.site.register(Speaker)
+admin.site.register(Speaker, SpeakerAdmin)
