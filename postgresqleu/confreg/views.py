@@ -206,7 +206,7 @@ def schedule(request, confname):
 	days = []
 	tracks = {}
 	for d in daylist:
-		sessions = ConferenceSession.objects.filter(conference=conference,starttime__range=(d,d+timedelta(hours=23,minutes=59,seconds=59))).order_by('starttime')
+		sessions = ConferenceSession.objects.filter(conference=conference,starttime__range=(d,d+timedelta(hours=23,minutes=59,seconds=59))).order_by('starttime','room__roomname')
 		sessionset = SessionSet()
 		for s in sessions: sessionset.add(s)
 		days.append({
