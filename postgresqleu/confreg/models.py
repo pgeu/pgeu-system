@@ -113,14 +113,25 @@ class Room(models.Model):
 	def __unicode__(self):
 		return "%s (%s)" % (self.roomname, self.conference)
 
+class Speaker(models.Model):
+	user = models.ForeignKey(User, null=False, blank=False)
+	abstract = models.TextField(null=False, blank=True)
+
+	@property
+	def name(self):
+		return self.user.first_name
+
+	def __unicode__(self):
+		return self.name
+
 class ConferenceSession(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
-	speaker = models.ForeignKey(User, null=False, blank=False)
+	speaker = models.ForeignKey(Speaker, null=False, blank=False)
 	title = models.CharField(max_length=200, null=False, blank=False)
 	starttime = models.DateTimeField(null=False, blank=False)
 	endtime = models.DateTimeField(null=True)
-	track = models.ForeignKey(Track, null=True, blank=True) #only needed for schedules
-	room = models.ForeignKey(Room, null=True, blank=True)   #only needed for schedules
+	track = models.ForeignKey(Track, null=True, blank=True)
+	room = models.ForeignKey(Room, null=True, blank=True)
 	cross_schedule = models.BooleanField(null=False, default=False)
 	can_feedback = models.BooleanField(null=False, default=True)
 
@@ -130,7 +141,7 @@ class ConferenceSession(models.Model):
 
 	def __unicode__(self):
 		return "%s: %s (%s)" % (
-			self.speaker.first_name,
+			self.speaker.name,
 			self.title,
 			self.starttime,
 		)
