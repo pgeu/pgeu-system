@@ -73,7 +73,7 @@ class ConferenceRegistration(models.Model):
 	lastname = models.CharField(max_length=100, null=False, blank=False, verbose_name="Last name")
 	email = models.EmailField(null=False, blank=False, verbose_name="E-mail address")
 	company = models.CharField(max_length=100, null=False, blank=False, verbose_name="Company")
-	address = models.TextField(max_length=200, null=False, blank=False, verbose_name="Address")
+	address = models.TextField(max_length=200, null=False, blank=True, verbose_name="Address")
 	country = models.ForeignKey(Country, null=False, blank=False, verbose_name="Country")
 	phone = models.CharField(max_length=100, null=False, blank=True, verbose_name="Phone number")
 	shirtsize = models.ForeignKey(ShirtSize, null=True, blank=False, verbose_name="Preferred T-shirt size")
