@@ -8,6 +8,8 @@ class ConferenceRegistrationForm(forms.ModelForm):
 	def __init__(self, *args, **kwargs):
 		super(ConferenceRegistrationForm, self).__init__(*args, **kwargs)
 		self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference)
+		if not self.instance.conference.asktshirt:
+			del self.fields['shirtsize']
 
 	def clean_regtype(self):
 		newval = self.cleaned_data.get('regtype')

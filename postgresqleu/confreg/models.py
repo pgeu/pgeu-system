@@ -31,6 +31,8 @@ class Conference(models.Model):
 	listadminurl = models.CharField(max_length=128, blank=True, null=False)
 	listadminpwd = models.CharField(max_length=128, blank=True, null=False)
 	administrators = models.ManyToManyField(User, null=False, blank=True)
+	asktshirt = models.BooleanField(blank=False, null=False, default=True)
+	askfood = models.BooleanField(blank=False, null=False, default=True)
 
 	def __unicode__(self):
 		return self.conferencename
@@ -74,7 +76,7 @@ class ConferenceRegistration(models.Model):
 	address = models.TextField(max_length=200, null=False, blank=False, verbose_name="Address")
 	country = models.ForeignKey(Country, null=False, blank=False, verbose_name="Country")
 	phone = models.CharField(max_length=100, null=False, blank=True, verbose_name="Phone number")
-	shirtsize = models.ForeignKey(ShirtSize, null=False, blank=False, verbose_name="Preferred T-shirt size")
+	shirtsize = models.ForeignKey(ShirtSize, null=True, blank=False, verbose_name="Preferred T-shirt size")
 	dietary = models.CharField(max_length=100, null=False, blank=True, verbose_name="Special dietary needs")
 
 	# Admin fields!

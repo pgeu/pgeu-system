@@ -59,18 +59,23 @@ view or edit your registration details.</p>
       </div>
  </fieldset>
 
+ {%if conference.asktshirt or conference.askfood %}
  <fieldset id="conference_info">
   <legend>Conference information</legend>
+      {%if conference.asktshirt %}
       <div{% if form.shirtsize.errors %} class="errfld"{% endif %}>
        {{ form.shirtsize.label_tag }} <br/>
         {{ form.shirtsize }} {% if form.shirtsize.errors %}{{ form.shirtsize.errors}}{% endif %}
       </div>
-
+      {%endif%}
+      {%if conference.askfood %}
       <div{% if form.dietary.errors %} class="errfld"{% endif %}>
        {{ form.dietary.label_tag }} <br/>
         {{ form.dietary }} {% if form.dietary.errors %}{{ form.dietary.errors}}{% endif %}
       </div>
+      {%endif%}
  </fieldset>
+ {%endif%}
 
  {% if reg.isregistered %}
  <fieldset id="payment_status">
