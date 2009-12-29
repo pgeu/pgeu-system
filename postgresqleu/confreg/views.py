@@ -70,7 +70,8 @@ def feedback(request, confname):
 		return HttpResponse('You are not registered for this conference.')
 
 	if not r.payconfirmedat:
-		return HttpResponse('You are not a confirmed attendee of this conference.')
+		if r.regtype.cost != 0:
+			return HttpResponse('You are not a confirmed attendee of this conference.')
 
 	# Generate a list of all feedback:able sessions, meaning all sessions that have already started,
 	# since you can't give feedback on something that does not yet exist.
