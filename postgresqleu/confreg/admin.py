@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django import forms
+from django.forms import ValidationError
 from postgresqleu.confreg.models import *
 
 class ConferenceRegistrationAdmin(admin.ModelAdmin):
@@ -38,7 +40,30 @@ class ConferenceSessionFeedbackAdmin(admin.ModelAdmin):
 	list_filter = ['conference', ]
 	search_fields = ['session__title', ]
 
+class ConferenceSessionForm(forms.ModelForm):
+	class Meta:
+		model = ConferenceSession
+
+	def __init__(self, *args, **kwargs):
+		super(ConferenceSessionForm, self).__init__(*args, **kwargs)
+		if 'instance' in kwargs:
+			self.fields['track'].queryset = Track.objects.filter(conference=self.instance.conference)
+			self.fields['room'].queryset = Room.objects.filter(conference=self.instance.conference)
+
+	def clean_track(self):
+		if not self.cleaned_data['track']: return None
+		if self.cleaned_data['track'].conference != self.cleaned_data['conference']:
+			raise ValidationError("This track does not belong to this conference!")
+		return self.cleaned_data['track']
+
+	def clean_room(self):
+		if not self.cleaned_data['room']: return None
+		if self.cleaned_data['room'].conference != self.cleaned_data['conference']:
+			raise ValidationError("This room does not belong to this conference!")
+		return self.cleaned_data['room']
+
 class ConferenceSessionAdmin(admin.ModelAdmin):
+	form = ConferenceSessionForm
 	list_display = ['conference', 'speaker', 'title', 'starttime', 'endtime', 'track', ]
 	list_filter = ['conference', 'track', ]
 	search_fields = ['title', ]

@@ -104,14 +104,14 @@ class Track(models.Model):
 	color = models.CharField(max_length=20, null=False, blank=True)
 
 	def __unicode__(self):
-		return self.trackname
+		return "%s (%s)" % (self.trackname, self.conference)
 
 class Room(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
 	roomname = models.CharField(max_length=20, null=False, blank=False)
 
 	def __unicode__(self):
-		return self.roomname
+		return "%s (%s)" % (self.roomname, self.conference)
 
 class ConferenceSession(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
