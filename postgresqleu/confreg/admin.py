@@ -79,6 +79,8 @@ class SpeakerAdminForm(forms.ModelForm):
 		model = Speaker
 
 	def clean_photofile(self):
+		if not self.cleaned_data['photofile']:
+			return self.cleaned_data['photofile'] # If it's None...
 		img = None
 		try:
 			from PIL import ImageFile
