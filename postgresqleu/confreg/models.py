@@ -1,9 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
 
 from postgresqleu.confreg.dbimage import SpeakerImageStorage
 
 import datetime
+import pytz
 
 from postgresqleu.countries.models import Country
 
@@ -185,6 +187,19 @@ class ConferenceSession(models.Model):
 			self.title,
 			self.starttime,
 		)
+
+	@property
+	def utcstarttime(self):
+		return self._utc_time(self.starttime)
+
+	@property
+	def utcendtime(self):
+		return self._utc_time(self.endtime)
+
+	def _utc_time(self, time):
+		if not hasattr(self, '_localtz'):
+			self._localtz = pytz.timezone(settings.TIME_ZONE)
+		return self._localtz.localize(time).astimezone(pytz.utc)
 
 	class Meta:
 		ordering = [ 'starttime', ]
