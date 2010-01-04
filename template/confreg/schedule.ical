@@ -5,5 +5,6 @@ PRODID:-//postgresqleu/confreg//NONSGML v1.0//EN
 DTSTART:{{session.utcstarttime|date:"Ymd"}}T{{session.utcstarttime|time:"His"}}Z
 DTEND:{{session.utcendtime|date:"Ymd"}}T{{session.utcendtime|time:"His"}}Z
 SUMMARY:{{session.title}} ({{session.speaker_list}})
+LOCATION:{{session.room.roomname}}
 END:VEVENT
 {%endfor%}END:VCALENDAR
