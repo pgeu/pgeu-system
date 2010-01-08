@@ -112,6 +112,12 @@ def feedback_session(request, confname, sessionid):
 			'conference': conference,
 		})
 
+	if session.starttime > datetime.now():
+		return render_to_response('confreg/feedbacknotyet.html', {
+			'conference': conference,
+			'session': session,
+		})
+
 	try:
 		feedback = ConferenceSessionFeedback.objects.get(conference=conference, session=session, attendee=request.user)
 	except ConferenceSessionFeedback.DoesNotExist, e:
