@@ -243,6 +243,7 @@ def schedule_ical(request, confname):
 	return render_to_response('confreg/schedule.ical', {
 		'conference': conference,
 		'sessions': sessions,
+		'servername': request.META['SERVER_NAME'],
 	}, mimetype='text/calendar', context_instance=RequestContext(request))
 
 def session(request, confname, sessionid, junk=None):
