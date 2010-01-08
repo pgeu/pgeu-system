@@ -12,6 +12,8 @@ order to leave feedback for a conference, you must be registered for it.
 <ul>
 {% for c in conferences %}
  <li><a href="{{c.urlname}}/">{{c}}</a> {{c.conferencedatestr}} (<a href="../register/{{c.urlname}}/">register</a>)</li>
+{%empty%}
+ <li>There are currently no conferences open for feedback. Please check back later.</li>
 {%endfor%}
 </ul>
 
