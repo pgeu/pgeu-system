@@ -61,6 +61,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'postgresqleu.util.middleware.FilterPersistMiddleware',
 )
 
 ROOT_URLCONF = 'postgresqleu.urls'
