@@ -53,6 +53,12 @@ def home(request, confname):
 		'costamount': reg.regtype and reg.regtype.cost or 0,
 	}, context_instance=RequestContext(request))
 
+def feedback_available(request):
+	conferences = Conference.objects.filter(feedbackopen=True).order_by('startdate')
+	return render_to_response('confreg/feedback_available.html', {
+		'conferences': conferences,
+	}, context_instance=RequestContext(request))
+
 @login_required
 def feedback(request, confname):
 	if settings.FORCE_SECURE_FORMS and not request.is_secure():

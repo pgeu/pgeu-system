@@ -1,0 +1,18 @@
+{%extends "nav_events.html"%}
+{%block title%}Conference Feedbac{%endblock%}
+{%block content%}
+<h1>Conference Feedback</h1>
+
+<p>
+The following conferences are currently open for feedback. Note that in
+order to leave feedback for a conference, you must be registered for it.
+</p>
+
+<h2>Open conferences</h2>
+<ul>
+{% for c in conferences %}
+ <li><a href="{{c.urlname}}/">{{c}}</a> {{c.conferencedatestr}} (<a href="../register/{{c.urlname}}/">register</a>)</li>
+{%endfor%}
+</ul>
+
+{%endblock%}

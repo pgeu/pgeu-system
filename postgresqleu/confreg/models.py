@@ -41,6 +41,16 @@ class Conference(models.Model):
 	def __unicode__(self):
 		return self.conferencename
 
+	@property
+	def conferencedatestr(self):
+		if self.enddate and not self.startdate==self.enddate:
+			return "%s - %s" % (
+				self.startdate.strftime("%Y-%m-%d"),
+				self.enddate.strftime("%Y-%m-%d")
+			)
+		else:
+			return self.startdate.strftime("%Y-%m-%d")
+
 class RegistrationType(models.Model):
 	conference = models.ForeignKey(Conference, null=False)
 	regtype = models.CharField(max_length=64, null=False, blank=False)
