@@ -59,8 +59,8 @@ urlpatterns = patterns('',
 	}),
 
 	# Admin site
-	(r'^admin/(.*)', admin.site.root),
+	(r'^admin/(.*)$', admin.site.root),
 
 	# Fallback - send everything nonspecific to the static handler
-	(r'^(.*)$', postgresqleu.static.views.static_fallback),
+	(r'^(.*)/$', postgresqleu.static.views.static_fallback),
 )
