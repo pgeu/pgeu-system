@@ -3,12 +3,14 @@ from django import forms
 from django.forms import ValidationError
 from postgresqleu.confreg.models import *
 from postgresqleu.confreg.dbimage import InlinePhotoWidget
+from datetime import datetime
 
 class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	list_display = ['email', 'conference', 'firstname', 'lastname', 'created', 'regtype', 'payconfirmedat', ]
 	list_filter = ['conference', 'regtype', ]
 	search_fields = ['email', 'firstname', 'lastname', ]
 	ordering = ['-payconfirmedat', 'lastname', 'firstname', ]
+	actions= ['approve_conferenceregistration', ]
 
 	def queryset(self, request):
 		qs = super(ConferenceRegistrationAdmin, self).queryset(request)
@@ -16,6 +18,11 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 			return qs
 		else:
 			return qs.filter(conference__administrators=request.user)
+
+	def approve_conferenceregistration(self, request, queryset):
+		rows = queryset.filter(payconfirmedat__isnull=True).update(payconfirmedat=datetime.today(), payconfirmedby=request.user.username)
+		self.message_user(request, '%s registration(s) marked as confirmed.' % rows)
+	approve_conferenceregistration.short_description = "Confirm payments for selected users"
 
 	def has_change_permission(self, request, obj=None):
 		if not obj:
