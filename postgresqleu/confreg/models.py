@@ -37,6 +37,7 @@ class Conference(models.Model):
 	administrators = models.ManyToManyField(User, null=False, blank=True)
 	asktshirt = models.BooleanField(blank=False, null=False, default=True)
 	askfood = models.BooleanField(blank=False, null=False, default=True)
+	autoapprove = models.BooleanField(blank=False, null=False, default=False)
 
 	def __unicode__(self):
 		return self.conferencename

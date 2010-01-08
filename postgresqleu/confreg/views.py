@@ -34,6 +34,10 @@ def home(request, confname):
 			reg.lastname = namepieces[1]
 		else:
 			reg.firstname = request.user.first_name
+		# If conference is set to autoapprove, then autoapprove
+		if conference.autoapprove:
+			reg.payconfirmedat = datetime.today()
+			reg.payconfirmedby = 'auto'
 
 	if request.method == 'POST':
 		form = ConferenceRegistrationForm(data=request.POST, instance=reg)

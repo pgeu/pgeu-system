@@ -22,7 +22,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 		if newval and not newval.active:
 			raise forms.ValidationError('Registration type "%s" is currently not available.' % newval)
 
-		if self.instance and self.instance.payconfirmedat:
+		if self.instance and self.instance.payconfirmedat and not self.instance.conference.autoapprove:
 			raise forms.ValidationError('You cannot change type of registration once your payment has been confirmed!')
 
 		return newval
