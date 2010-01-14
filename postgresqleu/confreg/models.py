@@ -14,6 +14,7 @@ class PaymentOption(models.Model):
 	infotext = models.TextField(blank=False, null=False)
 	url = models.CharField(max_length=1024, null=True, blank=True)
 	sortkey = models.IntegerField(null=False, blank=False)
+	lastsynced = models.DateTimeField(null=False, blank=False)
 
 	def __unicode__(self):
 		return self.name
@@ -228,4 +229,14 @@ class ConferenceSessionFeedback(models.Model):
 
 	def __unicode__(self):
 		return unicode("%s - %s (%s)") % (self.conference, self.session, self.attendee)
+
+class PaypalTransactionInfo(models.Model):
+	paypaltransid = models.CharField(max_length=20, null=False, blank=False, unique=True)
+	timestamp = models.DateTimeField(null=False, blank=False)
+	sender = models.CharField(max_length=200, null=False, blank=False)
+	sendername = models.CharField(max_length=200, null=False, blank=False)
+	amount = models.DecimalField(decimal_places=2, max_digits=10, null=False, blank=False)
+	transtext = models.CharField(max_length=1000, null=False, blank=False)
+	matched = models.BooleanField(null=False, blank=False)
+	matchinfo = models.CharField(max_length=1000, null=False, blank=False)
 
