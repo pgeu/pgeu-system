@@ -8,6 +8,7 @@ import postgresqleu.static.views
 import postgresqleu.newsevents.views
 import postgresqleu.views
 import postgresqleu.confreg.views
+import postgresqleu.membership.views
 
 from postgresqleu.newsevents.feeds import LatestNews, LatestEvents
 
@@ -50,6 +51,9 @@ urlpatterns = patterns('',
 	(r'^events/schedule/([^/]+)/session/(\d+)(-.*)?/$', postgresqleu.confreg.views.session),
 	(r'^events/schedule/([^/]+)/speaker/(\d+)(-.*)?/$', postgresqleu.confreg.views.speaker),
 	(r'^events/speaker/(\d+)/photo/$', postgresqleu.confreg.views.speakerphoto),
+
+	# Membership management
+	(r'^membership/$', postgresqleu.membership.views.home),
 
 	# This should not happen in production - serve by apache!
 	url(r'^media/(.*)$', 'django.views.static.serve', {

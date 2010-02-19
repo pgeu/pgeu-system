@@ -1,0 +1,87 @@
+{%extends "nav_about.html"%}
+{%block title%}Elections{%endblock%}
+{%block content%}
+<h1>Elections</h1>
+
+<p>
+Elections will normally be held every year, around the beginning of February.
+The board will announce the exact dates for each year by email to the
+pgeu-general mailinglist.
+</p>
+
+<h2>Timeline</h2>
+<p>
+The general timeline for elections is as follows:
+</p>
+<p>
+<ul>
+ <li>T-3 weeks: Nominations open</li>
+ <li>T-1 week: Nominations close</li>
+ <li>T: Presentation of candidates published, voting opens</li>
+ <li>T+2 weeks: Voting closes, results announced</li>
+</ul>
+</p>
+
+<h2>Nominations</h2>
+<p>
+In order to be elected, a candidate must be nominated during the nomination
+period. Any member can nominate any number of other members, including him or
+herself. This nomination must be seconded by one other member. The nominee
+must also accept this nomination before the nomination period has expired.
+</p>
+<p>
+Each nominee must also provide a short presentation of him/herself, including
+any information he/she considers relevant for voters to know. This must be
+provided to the election officials before the end of the nomination peroid.
+</p>
+<p>
+These presentations will be collected by the election officials and published
+to the mailinglist when the voting begins. Specifically, the nominees are not
+allowed to publish it themselves to the mailinglist or on a personal website,
+blog or similar. Failure to comply with this will lead to disqualification from
+the elections.
+</p>
+
+
+<h2>Who can vote</h2>
+<p>
+All members of PostgreSQL Europe can vote, provided they have been a
+confirmed member for at least four weeks before the start of the elections.
+</p>
+
+<h2>Voting</h2>
+<ul>
+ <li>Voting will take place using a web application deployed on
+     <a href="http://www.postgresql.eu">www.postgresql.eu</a></li>
+ <li>Each voter will vote for <i>all</i> candidates, ranking them in order
+     of preference. The score of the votes is linear with 1 representing
+     the last choice, each step increasing the score by 1.</li>
+ <li>Each candidate gets a score based on the sum of all votes for the candiate.</li>
+ <li>The winner(s) of the election will be the top entry/entries, depending on
+     how many positions are up for election.</li>
+ <li>In the event of a tie, the tied candidates will be asked if one will accept
+     stepping down. If none agrees to this, a re-election will be held including
+     only these candidates. This re-election will commence as soon as possible
+     and run for a period of <b>one</b> week.</li>
+</ul>
+
+<h2>Vote secrecy</h2>
+<ul>
+ <li>A central record will be kept of all votes, including who voted for who.</li>
+ <li>The non-aggregate information will <i>only</i> be made available to the
+     election officers, and only in the event of suspicion of incorrect
+     voting or counting.</li>
+ <li>Specifically, this information will <i>never</i> be made public.</li>
+ <li>The non-aggregate information is not encrypted on the server, and may as such
+     be seen by a member of the postgresql.org sysadmin team during the course of
+     their normal duties.</li>
+</ul>
+
+<h2>Election results</h2>
+<ul>
+ <li>Election results will be published as soon as possible, at the latest
+     7 days after the close of the votings.</li>
+ <li>Aggregate vote counts will be published for all candidates.</li>
+</ul>
+
+{%endblock%}
