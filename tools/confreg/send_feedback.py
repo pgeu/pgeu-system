@@ -83,8 +83,10 @@ if __name__ == "__main__":
 		print "Could not find conference in database!"
 		sys.exit(1)
 
-	curs.execute("""SELECT title, first_name, email FROM confreg_conferencesession s
-INNER JOIN auth_user ON auth_user.id=s.speaker_id
+	curs.execute("""SELECT title, fullname, email FROM confreg_conferencesession s
+INNER JOIN confreg_conferencesession_speaker cs ON cs.conferencesession_id=s.id
+INNER JOIN confreg_speaker spk ON spk.id=cs.speaker_id
+INNER JOIN auth_user u ON u.id=spk.user_id
 WHERE conference_id=%(conf)s ORDER BY email
 """, {'conf': confid})
 	lastemail = ''
