@@ -125,10 +125,11 @@ if __name__ == "__main__":
 	graphs = ss.fetch_graphs()
 
 	# Global comments
-	curs.execute("""SELECT s.title, f.conference_feedback, a.first_name
+	curs.execute("""SELECT s.title, f.conference_feedback, spk.fullname
 FROM confreg_conferencesessionfeedback f
 INNER JOIN confreg_conferencesession s ON f.session_id=s.id
-INNER JOIN auth_user a ON a.id=s.speaker_id
+INNER JOIN confreg_conferencesession_speaker cs ON s.id=cs.conferencesession_id
+INNER JOIN confreg_speaker spk ON spk.id=cs.speaker_id
 WHERE s.conference_id=%(confid)s AND NOT f.conference_feedback=''
 ORDER BY s.title, f.conference_feedback""",
 		{'confid': confid})
@@ -137,12 +138,13 @@ ORDER BY s.title, f.conference_feedback""",
 	# Speaker ratings
 	speaker_rating = []
 	for rating, ratingname in (('speaker_quality','Speaker Quality'),('speaker_knowledge','Speaker Knowledge'),):
-		curs.execute("SELECT a.first_name, avg("+rating+"), count(*), stddev("+rating+""")
+		curs.execute("SELECT spk.fullname, avg("+rating+"), count(*), stddev("+rating+""")
 FROM confreg_conferencesessionfeedback f
 INNER JOIN confreg_conferencesession s ON f.session_id=s.id
-INNER JOIN auth_user a ON a.id=s.speaker_id
+INNER JOIN confreg_conferencesession_speaker cs ON s.id=cs.conferencesession_id
+INNER JOIN confreg_speaker spk ON spk.id=cs.speaker_id
 WHERE s.conference_id=%(confid)s AND """+rating+" >= 1 AND "+rating+""" <= 5
-GROUP BY a.first_name
+GROUP BY spk.fullname
 ORDER BY 2 DESC
 """, {'confid': confid})
 		speaker_rating.append({'what': ratingname, 'rating': [{'speaker': s, 'quality': q, 'num': n, 'stddev': d} for s,q,n,d in curs.fetchall()]})
@@ -159,8 +161,9 @@ ORDER BY 2 DESC
 	f.close()
 
 # Generate per-session feedback
-	curs.execute("""SELECT s.id, title, first_name FROM confreg_conferencesession s
-INNER JOIN auth_user ON auth_user.id=s.speaker_id
+	curs.execute("""SELECT s.id, title, fullname FROM confreg_conferencesession s
+INNER JOIN confreg_conferencesession_speaker cs ON s.id=cs.conferencesession_id
+INNER JOIN confreg_speaker spk ON spk.id=cs.speaker_id
 WHERE conference_id=%(conf)s ORDER BY id
 """, {'conf': confid})
 	while True:
