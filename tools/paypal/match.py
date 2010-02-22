@@ -216,6 +216,6 @@ if __name__ == "__main__":
 
 	# Send of the mail queue if there is one
 	for msg in mailqueue:
-		pipe = Popen("sendmail -t", shell=True, stdin=PIPE).stdin
+		pipe = Popen("/usr/sbin/sendmail -t", shell=True, stdin=PIPE).stdin
 		pipe.write(msg.as_string())
 		pipe.close()

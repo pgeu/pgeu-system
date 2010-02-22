@@ -16,7 +16,7 @@ from subprocess import Popen, PIPE
 from email.mime.text import MIMEText
 
 def sendmail(msg):
-	pipe = Popen("sendmail -t", shell=True, stdin=PIPE).stdin
+	pipe = Popen("/usr/sbin/sendmail -t", shell=True, stdin=PIPE).stdin
 	pipe.write(msg.as_string())
 	pipe.close()
 
