@@ -11,7 +11,7 @@
 from datetime import datetime, timedelta
 import urllib2
 from urllib import urlencode
-from urlparse import parse_qs
+from cgi import parse_qs
 from decimal import Decimal
 import sys
 import psycopg2
