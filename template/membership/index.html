@@ -1,9 +1,95 @@
 {%extends "nav_membership.html"%}
 {%block title%}Membership{%endblock%}
 {%block content%}
-<h1>Membership</h1>
-<p>
-The membership management system will soon be available here.
-</p>
-{%endblock%}
+<h1>Your Membership</h1>
 
+{%if not registration_complete%}
+<p>
+You are not currently registered as a member of PostgreSQL Europe. You can do
+this using the form on this page. Please read through the
+<a href="/about/membership/">membership rules</a> before you register, and if
+you are uncertain about anything feel free to <a href="/about/contact/">contact us</a>.
+</p>
+<p>
+Once you have registered, a link to complete the payment of the membership fee
+will appears. <i>Your membership is not active until you have paid the fee!</i>
+</p>
+<p>
+Note that all the information on the form must be filled accurately, or your membership
+will not be valid even if it is fully paid.
+</p>
+{%endif%}
+
+<form method="post" action=".">
+{% if form.errors %}
+<p><b>Note! This form contains errors and has not been saved!</b></p>
+{% endif %}
+
+ <fieldset id="personal_information">
+   <legend>Personal information</legend>
+      <div{% if form.fullname.errors %} class="errfld"{% endif %}>
+       {{ form.fullname.label_tag }} <br/>
+        {{ form.fullname }} {% if form.fullname.errors %}{{ form.fullname.errors}}{% endif %}
+      </div>
+
+      <div{% if form.country.errors %} class="errfld"{% endif %}>
+       {{ form.country.label_tag }} <br/>
+        {{ form.country }} {% if form.country.errors %}{{ form.country.errors}}{% endif %}
+      </div>
+
+      <div{% if form.listed.errors %} class="errfld"{% endif %}>
+       {{form.listed}} {{ form.listed.label_tag }} <br/>
+        {% if form.listed.errors %}{{ form.listed.errors}}{% endif %}
+      </div>
+  </fieldset>
+
+{%if registration_complete%}
+  <fieldset id="membership_status">
+   <legend>Membership Status</legend>
+<div id="membershipinfo">
+{%if member.paiduntil %}
+ {%if member.expiressoon %}
+Your membership is currently active but will expire in {{member.paiduntil|timeuntil}} on {{member.paiduntil}}.
+ {%else%}
+Your membership and payment has been registered, and will expire on {{member.paiduntil}}.
+ {%endif%}
+{%else%}
+Your membership will become active once you have paid the fee.
+{%endif%}
+</div>
+{%if member.expiressoon%}
+<div id="paymentdiv">
+<p>
+You can pay or renew your membership fee using any method supported by Paypal. This includes
+direct paypal payment, as well as credit card processing.
+</p>
+<p>
+<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=paypal%40postgresql%2eeu&lc=GB&item_name={{'PostgreSQL Europe - 2 years membership - '|urlencode}}{{member.user.email|urlencode}}&amount={{amount}}%2e00&currency_code=EUR&button_subtype=services&no_note=1&no_shipping=1&bn=PP%2dBuyNowBF%3abtn_buynowCC_LG%2egif%3aNonHosted">Proceed</a> to the payment page.
+</p>
+<p>
+Once you have completed your payment, it may take up to 24 hours before the payment shows
+up in this system.
+</p>
+</div>
+{%endif%}
+  </fieldset>
+{%endif%}
+
+ <input type="submit" value="Save" />
+{%if logdata%}
+<fieldset id="logdata">
+ <legend>Membership activity</legend>
+ <table border="0" cellspacing="0" cellpadding="1">
+  {%for l in logdata%}
+   <tr>
+    <td>{{l.timestamp|date:"Y-m-d H:i"}}&nbsp;&nbsp;</td>
+    <td>{{l.message}}</td>
+   </tr>
+  {%endfor%}
+ </table>
+</fieldset>
+{%endif%}
+</form>
+
+
+{%endblock%}
