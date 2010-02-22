@@ -63,3 +63,9 @@ def home(request):
 		'amount': 10, # price for two years
 	}, context_instance=RequestContext(request))
 
+
+def userlist(request):
+	members = Member.objects.filter(listed=True, paiduntil__gt=datetime.now()).order_by('fullname')
+	return render_to_response('community/userlist.html', {
+		'members': members,
+	}, context_instance=RequestContext(request))

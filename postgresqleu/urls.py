@@ -54,6 +54,7 @@ urlpatterns = patterns('',
 
 	# Membership management
 	(r'^membership/$', postgresqleu.membership.views.home),
+	(r'^community/members/$', postgresqleu.membership.views.userlist),
 
 	# This should not happen in production - serve by apache!
 	url(r'^media/(.*)$', 'django.views.static.serve', {
