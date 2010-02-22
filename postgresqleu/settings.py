@@ -79,8 +79,10 @@ INSTALLED_APPS = (
 	'django.contrib.markup',
 	'postgresqleu.static',
 	'postgresqleu.countries',
+	'postgresqleu.paypal',
 	'postgresqleu.newsevents',
 	'postgresqleu.confreg',
+	'postgresqleu.membership',
 )
 
 AUTH_CONNECTION_STRING="override authentication connection string in the local settings file"

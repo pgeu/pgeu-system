@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+#
+# This script downloads all paypal transaction data from one or more accounts,
+# and stores them in the database for further processing. No attempt is made
+# to match the payment to something elsewhere in the system - that is handled
+# by separate scripts.
+#
+# Copyright (C) 2010, PostgreSQL Europe
+#
 
 from datetime import datetime, timedelta
 import urllib2
@@ -7,16 +15,13 @@ from urlparse import parse_qs
 from decimal import Decimal
 import sys
 import psycopg2
-import re
 import ConfigParser
 
-matchre = re.compile('^([^-]+) - (.*) \(([^)]+)\)$')
-
 class PaypalTransaction(object):
-	def __init__(self, paypalapi, apistruct, i):
+	def __init__(self, paypalapi, apistruct, source, i):
 		self.message = None
-		self.ismatch = False
 		self.api = paypalapi
+		self.source = source
 
 		self.transactionid = apistruct['L_TRANSACTIONID%i' % i][0]
 		try:
@@ -40,7 +45,7 @@ class PaypalTransaction(object):
 
 	def already_processed(self, db):
 		cursor = db.cursor()
-		cursor.execute("SELECT count(*) FROM confreg_paypaltransactioninfo WHERE paypaltransid=%(id)s", {
+		cursor.execute("SELECT count(*) FROM paypal_transactioninfo WHERE paypaltransid=%(id)s", {
 			'id': self.transactionid,
 		})
 		return (cursor.fetchall()[0][0] == 1)
@@ -51,70 +56,21 @@ class PaypalTransaction(object):
 		if r['L_CURRENCYCODE0'][0] != 'EUR':
 			raise Exception("Invalid currency %s" % r['L_CURRENCYCODE0'][0])
 
-	def attempt_match(self, db):
-		# First grab the pieces. Format is found in confreg/templatetags/payment_options.py
-		# combined_title = "%s - %s (%s)" % (title, paytype, email)
-		match = matchre.match(self.text)
-		if not match:
-			self.message = "Unable to parse '%s': no regexp match"
-			return
-		confname = match.group(1)
-		paytype = match.group(2)
-		email = match.group(3)
-
-		# Ok, let's see if we can find a registration for this
-		cursor = db.cursor()
-		cursor.execute("""
-SELECT reg.id, payconfirmedat, payconfirmedby, cost
-FROM confreg_conferenceregistration reg
-INNER JOIN confreg_conference conf ON conf.id=reg.conference_id
-INNER JOIN confreg_registrationtype rt ON rt.id=reg.regtype_id
-WHERE conf.conferencename=%(confname)s
-AND rt.regtype=%(regtype)s
-AND lower(reg.email)=lower(%(email)s)""", {
-			'confname': confname,
-			'regtype': paytype,
-			'email': email,
-		})
-		res = cursor.fetchall()
-		if len(res) == 0:
-			# No match found
-			self.message = "NOTICE: Found no match for this payment"
-		elif len(res) == 1:
-			# Found a match!
-			# Now verify the amount
-			if self.amount != res[0][3]:
-				self.message = "WARNING: Payment is incorrect amount, should be %s" % res[0][3]
-			else:
-				# Amount is correct, check if the thing is already approved
-				if res[0][2]:
-					self.message = "NOTICE: Payment already approved by %s at %s" % (res[0][2], res[0][1])
-					self.ismatch = True
-				else:
-					self.message = "Matched payment for id %s" % res[0][0]
-					cursor.execute("UPDATE confreg_conferenceregistration SET payconfirmedat=CURRENT_TIMESTAMP,payconfirmedby='paypal' WHERE id=%(id)s", {
-						'id': res[0][0],
-					})
-					self.ismatch = True
-		else:
-			self.message = "WARNING: Matched more than one row (%s)!" % len(res)
-
-		print self.message
-
 	def store(self, db):
 		cursor = db.cursor()
 		cursor.execute("""
-INSERT INTO confreg_paypaltransactioninfo
-(paypaltransid, "timestamp", sender, sendername, amount, transtext, matched, matchinfo)
-VALUES (%(id)s, %(ts)s, %(sender)s, %(name)s, %(amount)s, %(text)s, %(matched)s, %(matchinfo)s)""", {
+INSERT INTO paypal_transactioninfo
+(paypaltransid, "timestamp", sourceaccount_id, sender, sendername, amount, transtext, matched, matchinfo)
+VALUES (%(id)s, %(ts)s, %(source)s, %(sender)s, %(name)s, %(amount)s, %(text)s, %(matched)s, %(matchinfo)s)""", {
 		'id': self.transactionid,
 		'ts': self.timestamp,
+		'source': self.source,
 		'sender': self.email,
 		'name': self.name,
 		'amount': self.amount,
 		'text': self.text,
-		'matched': self.ismatch,
-		'matchinfo': self.message or 'WARNING: Failure in parsing somewhere, message not set',
+		'matched': False,
+		'matchinfo': self.message,
 	})
 
 class PaypalAPI(object):
@@ -130,7 +86,7 @@ class PaypalAPI(object):
 			'VERSION': '56',
 		}
 
-	def get_transaction_list(self, firstdate = datetime.now()-timedelta(days=30)):
+	def get_transaction_list(self, firstdate, source):
 		ret = self._api_call('TransactionSearch', {
 			'STARTDATE': self._dateformat(firstdate),
 			'TRANSACTIONCLASS': 'Received',
@@ -141,7 +97,7 @@ class PaypalAPI(object):
 			i += 1
 			if not ret.has_key('L_TRANSACTIONID%i' % i): break
 			if not ret['L_TYPE%i' % i][0] == 'Payment': continue
-			yield PaypalTransaction(self, ret, i)
+			yield PaypalTransaction(self, ret, source, i)
 
 	def get_transaction_details(self, transactionid):
 		return self._api_call('GetTransactionDetails', {
@@ -174,22 +130,24 @@ if __name__ == "__main__":
 	synctime = datetime.now()
 
 	for sect in cfg.sections():
-		if not cfg.has_option(sect, 'optionid'): continue
+		if not cfg.has_option(sect, 'sourceid'): continue
 		if not cfg.has_option(sect, 'user'): continue
+		if not cfg.has_option(sect, 'apipass'): continue
+		if not cfg.has_option(sect, 'apisig'): continue
+
+		sourceid = cfg.get(sect, 'sourceid')
 
 		s = PaypalAPI(cfg.get(sect, 'user'), cfg.get(sect, 'apipass'), cfg.get(sect, 'apisig'))
-		cursor.execute("SELECT lastsynced FROM confreg_paymentoption WHERE id=%(id)s", {
-			'id': cfg.get(sect, 'optionid'),
+		cursor.execute("SELECT lastsync FROM paypal_sourceaccount WHERE id=%(id)s", {
+			'id': sourceid,
 		})
-		for r in s.get_transaction_list(cursor.fetchall()[0][0]-timedelta(days=3)): #always sync with a little overlap
+		for r in s.get_transaction_list(cursor.fetchall()[0][0]-timedelta(days=3), sourceid): #always sync with a little overlap
 			if r.already_processed(db): continue
 			r.fetch_details()
-			r.attempt_match(db)
 			r.store(db)
 		cursor = db.cursor()
-		cursor.execute("UPDATE confreg_paymentoption SET lastsynced=%(st)s WHERE id=%(id)s", {
+		cursor.execute("UPDATE paypal_sourceaccount SET lastsync=%(st)s WHERE id=%(id)s", {
 			'st': synctime,
-			'id': cfg.get(sect, 'optionid'),
+			'id': sourceid,
 		})
 		db.commit()
-
