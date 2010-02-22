@@ -92,7 +92,7 @@ class PaypalAPI(object):
 			'TRANSACTIONCLASS': 'Received',
 			'STATUS': 'Success',
 		})
-		i = 0
+		i = -1
 		while True:
 			i += 1
 			if not ret.has_key('L_TRANSACTIONID%i' % i): break
