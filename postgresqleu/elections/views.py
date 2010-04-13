@@ -74,7 +74,7 @@ def election(request, electionid):
 		# Since memberships are valid one year, the date of signup is considered to be
 		# member.paiduntil - '1 year'.
 
-		if member.paiduntil - timedelta(days=365) > election.startdate - timedelta(days=28):
+		if member.paiduntil - timedelta(days=365*2) > election.startdate - timedelta(days=28):
 			return render_to_response('elections/memberfourweeks.html', {
 					'registered_at': member.paiduntil - timedelta(days=365),
 					'mustregbefore': election.startdate - timedelta(days=28),
