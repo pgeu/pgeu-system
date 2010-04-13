@@ -1,0 +1,12 @@
+{%extends "nav_membership.html"%}
+{%block title%}Elections{%endblock%}
+{%block content%}
+<h1>Elections</h1>
+
+<p>
+You must have been a member for four weeks before the opening of this election
+in order to vote. You became a member {{registered_at}}, which is sooner than
+the required {{mustregbefore}}.
+</p>
+
+{%endblock%}

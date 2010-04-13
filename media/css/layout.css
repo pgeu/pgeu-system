@@ -230,3 +230,35 @@ img {
    vertical-align: top;
 }
 
+/* Elections */
+div.electionResultRow {
+    padding: 2px 2px 2px 2px;
+}
+div.electionHeaderRow {
+    font-weight: bold;
+    text-decoration: underline;
+    padding: 2px 2px 2px 2px;
+}
+div.electionResultCol1 {
+    display: inline-block;
+    width: 150px;
+}
+div.electionResultCol2 {
+    display: inline-block;
+    width: 50px;
+    text-align: right;
+}
+div.electionResultCol3 {
+    display: inline-block;
+    background-color: blue;
+}
+div.electionResultCol3Hdr {
+    display: inline-block;
+    width: 300px;
+}
+div.electionSeparator {
+    display: inline-block;
+    background-color: red;
+    height: 2px;
+    width: 510px;
+}

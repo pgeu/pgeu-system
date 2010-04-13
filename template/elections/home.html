@@ -1,0 +1,33 @@
+{%extends "nav_membership.html"%}
+{%block title%}Elections{%endblock%}
+{%block content%}
+<h1>Elections</h1>
+
+<h2>Open elections</h2>
+<ul>
+{%for e in open %}
+ <li><a href="{{e.id}}/">{{e.name}}</a> ({{e.startdate}} - {{e.enddate}})</li>
+{%empty%}
+ <li>There are currently no open elections.</li>
+{%endfor%}
+</ul>
+
+<h2>Upcoming elections</h2>
+<ul>
+{%for e in upcoming %}
+ <li>{{e.name}} (opens {{e.startdate}})</li>
+{%empty%}
+ <li>There are currently no upcoming elections.</li>
+{%endfor%}
+</ul>
+
+<h2>Past elections</h2>
+<ul>
+{%for e in past %}
+ <li>{%if e.resultspublic%}<a href="{{e.id}}/">{{e.name}}</a>{%else%}{{e.name}} (results are not published yet){%endif%}</li>
+{%empty%}
+ <li>There are currently no past elections.</li>
+{%endfor%}
+</ul>
+
+{%endblock%}

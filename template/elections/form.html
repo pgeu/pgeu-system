@@ -1,0 +1,39 @@
+{%extends "nav_membership.html"%}
+{%block title%}Elections{%endblock%}
+{%block content%}
+<h1>Elections</h1>
+
+<p>
+To vote in {{election.name}}, rate all the candidates below. All
+candidates must be rated for a vote to be valid. Give the highest score to the
+candidate you prefer <i>the most</i>, and the lowest score to the candidate you
+prefer <i>the least</i>.
+</p>
+<p>
+You can click a candidates name for more information about tihs candidate.
+</p>
+
+{%if form.errors%}
+<p>
+<b>NOTE!</b> Your submitted form contained errors and has <i>not</b> been saved!
+</p>
+{%endif%}
+
+<h2>Your votes</h2>
+
+<form method="post" action=".">
+<table>
+{%for field in form%}
+ <tr {%if field.errors%}bgcolor="red"{%endif%}>
+  <td><a href="candidate/{{field.help_text}}/">{{field.label_tag}}</a></td>
+  <td>{{field}}</td>
+  <td>{%if field.errors%}{{field.errors}}{%endif%}</td>
+ </tr>
+{%endfor%}
+</table>
+
+<input type="submit">
+</form>
+
+<p><a href="../">Back</a></p>
+{%endblock%}

@@ -1,0 +1,40 @@
+{%extends "nav_membership.html"%}
+{%block title%}Elections{%endblock%}
+{%block content%}
+<h1>Elections</h1>
+
+<h2>Results - {{election.name}}</h2>
+<p>
+This election is closed, and these are the results. The red line indicates which candidates
+were voted in. If you voted in this election, you can review <a href="ownvotes/">your votes</a>.
+</p>
+{%if not election.resultspublic%}
+<p>
+<b>
+WARNING! The results for this election has <i>not</i> been published yet! These are preliminary
+results, and should be verified and then published!
+</b>
+</p>
+{%endif%}
+
+<div id="electionResultsWrap">
+ <div class="electionHeaderRow">
+  <div class="electionResultCol1">Name</div>
+  <div class="electionResultCol2">Score</div>
+  <div class="electionResultCol3Hdr">Relative score</div>
+ </div>
+
+{%for score in scores%}
+ <div class="electionResultRow">
+  <div class="electionResultCol1">{{score.name}}</div>
+  <div class="electionResultCol2">{{score.score}}</div>
+  <div class="electionResultCol3" style="width: {{score.width}}px;">&nbsp;</div>
+ </div>
+ {%ifequal forloop.counter election.slots %}
+ <div><div class="electionSeparator">&nbsp;</div></div>
+ {%endifequal%}
+{%endfor%}
+</div>
+
+<p><a href="../">Back</a></p>
+{%endblock%}

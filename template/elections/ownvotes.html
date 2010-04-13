@@ -1,0 +1,27 @@
+{%extends "nav_membership.html"%}
+{%block title%}Elections{%endblock%}
+{%block content%}
+<h1>Elections</h1>
+
+<h2>Your votes - {{election.name}}</h2>
+<p>
+This is a list of the candidates you voted for in {{elections.name}}, and what score
+you gave them.
+</p>
+
+<table border="0">
+<tr>
+ <th>Candidate</th>
+ <th>Score</th>
+</tr>
+{%for vote in votes %}
+<tr>
+ <td>{{vote.candidate.name}}</td>
+ <td>{{vote.score}}</td>
+</tr>
+{%endfor%}
+</table>
+
+<p><a href="../">Back</a></p>
+
+{%endblock%}

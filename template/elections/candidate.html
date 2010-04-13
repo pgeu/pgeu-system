@@ -1,0 +1,12 @@
+{%extends "nav_membership.html"%}
+{%load markup%}
+{%block title%}Elections{%endblock%}
+{%block content%}
+<h1>Elections</h1>
+
+<h2>{{candidate.name}}</h2>
+
+{{candidate.presentation|markdown:"safe"}}
+
+<p><a href="../../">Back</a></p>
+{%endblock%}
