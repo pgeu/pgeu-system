@@ -9,17 +9,17 @@ class AuthBackend(ModelBackend):
 		try:
 			conn.set_client_encoding('UNICODE')
 			cur = conn.cursor()
-			cur.execute('SELECT * FROM community_login(%s,%s)', (username, password))
+			cur.execute('SELECT * FROM community_login(%s,%s)', (username.lower(), password))
 			row  = cur.fetchall()[0]
 		finally:
 			conn.close()
 
 		if row[1] == 1:
 			try:
-				user = User.objects.get(username=username)
+				user = User.objects.get(username=username.lower())
 			except User.DoesNotExist:
 				# User doesn't exist yet
-				user = User(username=username, password='setmanually', email=row[3], first_name=row[2])
+				user = User(username=username.lower(), password='setmanually', email=row[3], first_name=row[2])
 				user.save()
 			return user
 		return None
