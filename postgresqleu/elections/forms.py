@@ -11,6 +11,8 @@ class VoteForm(forms.Form):
 	def __init__(self, election, member, *args, **kwargs):
 		super(VoteForm, self).__init__(*args, **kwargs)
 
+		self.saved_and_modified = False
+
 		self.election = election
 		self.member = member
 
@@ -77,6 +79,7 @@ class VoteForm(forms.Form):
 				Vote(election=self.election, voter=self.member, candidate_id=id, score=v).save()
 			MemberLog(member=self.member, timestamp=datetime.now(),
 					  message="Voted in election '%s'" % self.election.name).save()
+			self.saved_and_modified = True
 		elif len(self.votes) == len(self.candidates):
 			# Ok, we have one vote for each candidate already, so modify them as necessary
 			changedany = False
@@ -90,5 +93,6 @@ class VoteForm(forms.Form):
 			if changedany:
 				MemberLog(member=self.member, timestamp=datetime.now(),
 						  message="Changed votes in election '%s'" % self.election.name).save()
+				self.saved_and_modified = True
 		else:
 			raise Exception("Invalid number of records found in database, unable to update vote.")
