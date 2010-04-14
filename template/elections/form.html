@@ -25,7 +25,7 @@ You can click a candidates name for more information about tihs candidate.
 <table>
 {%for field in form%}
  <tr {%if field.errors%}bgcolor="red"{%endif%}>
-  <td><a href="candidate/{{field.help_text}}/">{{field.label_tag}}</a></td>
+  <td><a href="candidate/{{field.help_text}}/">{{field.label}}</a></td>
   <td>{{field}}</td>
   <td>{%if field.errors%}{{field.errors}}{%endif%}</td>
  </tr>
