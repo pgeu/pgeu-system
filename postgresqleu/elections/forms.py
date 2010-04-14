@@ -62,7 +62,9 @@ class VoteForm(forms.Form):
 				del options[options.index(int(v))]
 			else:
 				# Not in the list means it was already used! Bad user!
-				self._errors[k] = ErrorList(["This score has already been given to another candidate"])
+				if not self._errors.has_key(k):
+					# Only add this error in case the other error hasn't already fired
+					self._errors[k] = ErrorList(["This score has already been given to another candidate"])
 
 		if len(options) != 0:
 			raise forms.ValidationError("One or more scores was not properly assigned!")
