@@ -262,3 +262,6 @@ div.electionSeparator {
     height: 2px;
     width: 510px;
 }
+tr.electionError {
+    background-color: #ffb6b6;
+}

@@ -29,7 +29,7 @@ You can click a candidates name for more information about this candidate.
 <form method="post" action=".">
 <table>
 {%for field in form%}
- <tr {%if field.errors%}bgcolor="red"{%endif%}>
+ <tr {%if field.errors%}class="electionError"{%endif%}>
   <td><a href="candidate/{{field.help_text}}/">{{field.label}}</a></td>
   <td>{{field}}</td>
   <td>{%if field.errors%}{{field.errors}}{%endif%}</td>
