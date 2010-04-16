@@ -70,11 +70,8 @@ def election(request, electionid):
 			return render_to_response('elections/mustbemember.html', {},
 									  context_instance=RequestContext(request))
 
-		# Verify that the membership is new enough
-		# Since memberships are valid one year, the date of signup is considered to be
-		# member.paiduntil - '1 year'.
-
-		if member.paiduntil - timedelta(days=365*2) > election.startdate - timedelta(days=28):
+		# Verify that the user has been a member for at least 28 days.
+		if member.membersince > election.startdate - timedelta(days=28):
 			return render_to_response('elections/memberfourweeks.html', {
 					'registered_at': member.paiduntil - timedelta(days=365),
 					'mustregbefore': election.startdate - timedelta(days=28),

@@ -98,7 +98,8 @@ WHERE email=%(email)s""", {
 			# Yes, we can renew it. So let's do that.
 			cursor.execute("""
 UPDATE membership_member
-SET paiduntil=COALESCE(paiduntil,CURRENT_DATE)+'2 years'::interval
+SET paiduntil=COALESCE(paiduntil,CURRENT_DATE)+'2 years'::interval,
+    membersince=COALESCE(membersince,CURRENT_DATE)
 WHERE user_id=%(id)s
 RETURNING paiduntil""", {
 					'id': res[0]['user_id'],

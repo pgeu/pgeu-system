@@ -47,6 +47,9 @@ will not be valid even if it is fully paid.
   <fieldset id="membership_status">
    <legend>Membership Status</legend>
 <div id="membershipinfo">
+{%if member.membersince %}
+You have been a member since {{member.membersince}}.<br/>
+{%endif%}
 {%if member.paiduntil %}
  {%if member.expiressoon %}
 Your membership is currently active but will expire in {{member.paiduntil|timeuntil}} on {{member.paiduntil}}.

@@ -7,7 +7,7 @@ from datetime import datetime
 from models import *
 
 class MemberAdmin(admin.ModelAdmin):
-	list_display = ('user', 'fullname', 'country', 'paiduntil', )
+	list_display = ('user', 'fullname', 'country', 'membersince', 'paiduntil', )
 	ordering = ('user',)
 
 class MemberLogAdmin(admin.ModelAdmin):

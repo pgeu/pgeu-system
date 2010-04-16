@@ -13,6 +13,7 @@ class Member(models.Model):
 	listed = models.BooleanField(null=False, blank=False, default=True,
 								 verbose_name='Listed in the public membership list')
 	paiduntil = models.DateField(null=True, blank=True)
+	membersince = models.DateField(null=True, blank=True)
 
 	@property
 	def expiressoon(self):

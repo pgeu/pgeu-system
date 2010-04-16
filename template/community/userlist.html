@@ -9,7 +9,7 @@ have opted out of public listing, of course). To become a member, go to
 </p>
 <ul>
 {%for member in members%}
- <li>{{member.fullname}}, {{member.country}}</li>
+ <li>{{member.fullname}}, {{member.country}} (member since {{member.membersince}})</li>
 {%endfor%}
 </ul>
 {%endblock%}

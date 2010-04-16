@@ -24,6 +24,7 @@ def home(request):
 			MemberLog(member=member,
 					  timestamp=datetime.now(),
 					  message="Membership expired").save()
+			member.membersince = None
 			member.paiduntil = None
 			member.save()
 
