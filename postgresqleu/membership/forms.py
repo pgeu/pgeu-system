@@ -6,4 +6,4 @@ from models import *
 class MemberForm(forms.ModelForm):
 	class Meta:
 		model = Member
-		exclude = ('user', 'paiduntil', )
+		exclude = ('user', 'paiduntil', 'membersince', )
