@@ -1,0 +1,11 @@
+{% extends "admin/change_form.html" %}
+{% block after_field_sets %}
+<p>
+Latest log entries:
+<ul>
+{%for l in logentries %}
+<li>{{l.timestamp}}: {{l}}</li>
+{%endfor%}
+</ul>
+</p>
+{% endblock %}
