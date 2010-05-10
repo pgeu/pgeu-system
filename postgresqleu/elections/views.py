@@ -65,6 +65,11 @@ def election(request, electionid):
 	try:
 		member = Member.objects.get(user=request.user)
 
+		# Make sure member has paid
+		if not member.paiduntil:
+			return render_to_response('elections/mustbemember.html', {},
+									  context_instance=RequestContext(request))
+
 		# Make sure that the membership hasn't expired
 		if member.paiduntil < date.today():
 			return render_to_response('elections/mustbemember.html', {},
