@@ -23,7 +23,7 @@ class VoteForm(forms.Form):
 		for vote in self.votes:
 			votemap[vote.candidate_id] = vote.score
 
-		dropdown = [(x,x) for x in range(1,len(self.candidates)+1)]
+		dropdown = [(x,self._votestring(x)) for x in range(1,len(self.candidates)+1)]
 		dropdown.insert(0, (-1, '** Please rate this candidate'))
 
 		# Dynamically add a dropdown field for each candidate
@@ -33,6 +33,13 @@ class VoteForm(forms.Form):
 																	 required=True,
 																	 help_text=candidate.id,
 																	 initial=votemap.has_key(candidate.id) and votemap[candidate.id] or -1)
+
+	def _votestring(self, x):
+		if x == 1:
+			return "1 - Least favourite"
+		if x == len(self.candidates):
+			return "%s - Favourite" % len(self.candidates)
+		return "%s" % x
 
 	def clean(self):
 		# First, make sure all existing fields are actually filled out
