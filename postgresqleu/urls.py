@@ -2,7 +2,7 @@ from django.conf.urls.defaults import *
 from django.conf import settings
 from django.contrib.auth.views import login, logout_then_login
 from django.contrib import admin
-
+from django.views.generic.simple import redirect_to
 
 import postgresqleu.static.views
 import postgresqleu.newsevents.views
@@ -56,6 +56,9 @@ urlpatterns = patterns('',
 	# Membership management
 	(r'^membership/$', postgresqleu.membership.views.home),
 	(r'^community/members/$', postgresqleu.membership.views.userlist),
+
+	# Merchandise redirect
+	(r'^merchandise/', redirect_to, {'url': 'http://postgresqleu.spreadshirt.net/'}),
 
 	# Elections
 	(r'^elections/$', postgresqleu.elections.views.home),
