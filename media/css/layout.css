@@ -230,6 +230,18 @@ img {
    vertical-align: top;
 }
 
+ul.errorlist {
+        display: inline;
+        list-style-type: none;
+}
+
+ul.errorlist li {
+        display: inline;
+        font-weight: bolder !important;
+	color: red;
+}
+
+
 /* Elections */
 div.electionResultRow {
     padding: 2px 2px 2px 2px;
