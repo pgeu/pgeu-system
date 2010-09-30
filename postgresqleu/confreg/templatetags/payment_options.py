@@ -3,7 +3,7 @@ from django import template
 register = template.Library()
 
 PAYPAL_BASEURL="https://www.paypal.com/cgi-bin/webscr?cmd"
-PAYPAL_COMMON="&business=paypal%40postgresql%2eeu&lc=GB&currency_code=EUR&button_subtype=services&no_note=1&no_shipping=1&bn=PP%2dBuyNowBF%3abtn_buynowCC_LG%2egif%3aNonHosted"
+PAYPAL_COMMON="&business=paypal%40postgresql%2eeu&lc=GB&currency_code=EUR&button_subtype=services&no_note=1&no_shipping=1&bn=PP%2dBuyNowBF%3abtn_buynowCC_LG%2egif%3aNonHosted&charset=utf-8"
 
 @register.simple_tag
 def render_payment_url(paypalrecip, title, email, paytype, cost, additionaloptions):
