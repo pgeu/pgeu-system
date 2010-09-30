@@ -171,7 +171,7 @@ class Speaker(models.Model):
 	has_abstract.boolean = True
 
 	def has_photo(self):
-		return (self.photofile != None)
+		return (self.photofile != None and self.photofile != "")
 	has_photo.boolean= True
 
 	def __unicode__(self):
