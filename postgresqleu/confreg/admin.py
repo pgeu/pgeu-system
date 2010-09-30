@@ -120,6 +120,19 @@ class SpeakerPhotoAdmin(admin.ModelAdmin):
 			return db_field.formfield(**kwargs)
 		return super(SpeakerPhotoAdmin,self).formfield_for_dbfield(db_field,**kwargs)
 
+class TrackAdmin(admin.ModelAdmin):
+	list_filter = ['conference', ]
+
+	class Meta:
+		model = Track
+
+class RoomAdmin(admin.ModelAdmin):
+	list_filter = ['conference', ]
+
+	class Meta:
+		model = Room
+
+
 admin.site.register(Conference)
 admin.site.register(RegistrationType, RegistrationTypeAdmin)
 admin.site.register(ShirtSize)
@@ -127,8 +140,8 @@ admin.site.register(ConferenceRegistration, ConferenceRegistrationAdmin)
 admin.site.register(PaymentOption)
 admin.site.register(ConferenceSession, ConferenceSessionAdmin)
 admin.site.register(ConferenceSessionFeedback, ConferenceSessionFeedbackAdmin)
-admin.site.register(Track)
-admin.site.register(Room)
+admin.site.register(Track, TrackAdmin)
+admin.site.register(Room, RoomAdmin)
 admin.site.register(Speaker, SpeakerAdmin)
 admin.site.register(Speaker_Photo, SpeakerPhotoAdmin)
 admin.site.register(ConferenceAdditionalOption, ConferenceAdditionalOptionAdmin)
