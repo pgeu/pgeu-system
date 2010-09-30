@@ -52,7 +52,14 @@ class PaypalTransaction(object):
 
 	def fetch_details(self):
 		r = self.api.get_transaction_details(self.transactionid)
-		self.text = r['SUBJECT'][0]
+		if r['TRANSACTIONTYPE'][0] == 'cart':
+			# Always retrieve the first item in the cart
+			# XXX: does this always come back in the same order as sent?
+			# So far, all testing indicates it does
+			self.text = r['L_NAME0'][0]
+		else:
+			self.text = r['SUBJECT'][0]
+
 		if r['L_CURRENCYCODE0'][0] != 'EUR':
 			raise Exception("Invalid currency %s" % r['L_CURRENCYCODE0'][0])
 
