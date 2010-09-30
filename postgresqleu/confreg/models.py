@@ -166,9 +166,9 @@ class Speaker(models.Model):
 	def name(self):
 		return self.fullname
 
-	@property
 	def has_abstract(self):
 		return len(self.abstract)>0
+	has_abstract.boolean = True
 
 	def __unicode__(self):
 		return self.name
