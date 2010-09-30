@@ -110,7 +110,7 @@ class SpeakerAdminForm(forms.ModelForm):
 
 class SpeakerAdmin(admin.ModelAdmin):
 	list_display = ['user', 'fullname', 'has_abstract']
-	ordering = ['user']
+	ordering = ['fullname']
 	form = SpeakerAdminForm
 
 class SpeakerPhotoAdmin(admin.ModelAdmin):
