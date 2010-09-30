@@ -74,8 +74,11 @@ VALUES (%(id)s, %(ts)s, %(source)s, %(sender)s, %(name)s, %(amount)s, %(text)s, 
 	})
 
 class PaypalAPI(object):
-	def __init__(self, apiuser, apipass, apisignature):
-		self.API_ENDPOINT = 'https://api-3t.paypal.com/nvp'
+	def __init__(self, apiuser, apipass, apisignature, sandbox):
+		if sandbox:
+			self.API_ENDPOINT = 'https://api-3t.sandbox.paypal.com/nvp'
+		else:
+			self.API_ENDPOINT = 'https://api-3t.paypal.com/nvp'
 		self.apiuser = apiuser
 		self.apipass = apipass
 		self.apisignature = apisignature
@@ -136,8 +139,12 @@ if __name__ == "__main__":
 		if not cfg.has_option(sect, 'apisig'): continue
 
 		sourceid = cfg.get(sect, 'sourceid')
+		sandbox = 0
+		if cfg.has_option(sect, 'sandbox'):
+			if cfg.get(sect, 'sandbox') == "1":
+				sandbox = 1
 
-		s = PaypalAPI(cfg.get(sect, 'user'), cfg.get(sect, 'apipass'), cfg.get(sect, 'apisig'))
+		s = PaypalAPI(cfg.get(sect, 'user'), cfg.get(sect, 'apipass'), cfg.get(sect, 'apisig'), sandbox)
 		cursor.execute("SELECT lastsync FROM paypal_sourceaccount WHERE id=%(id)s", {
 			'id': sourceid,
 		})
