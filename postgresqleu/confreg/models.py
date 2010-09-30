@@ -80,6 +80,26 @@ class ShirtSize(models.Model):
         def __unicode__(self):
                 return self.shirtsize
 
+class ConferenceAdditionalOption(models.Model):
+	conference = models.ForeignKey(Conference, null=False, blank=False)
+	name = models.CharField(max_length=100, null=False, blank=False)
+	cost = models.IntegerField(null=False)
+	maxcount = models.IntegerField(null=False)
+
+	def __unicode__(self):
+		# This is what renders in the multichoice checkboxes, so make
+		# it nice for the end user.
+		if self.cost > 0:
+			coststr = " (EUR %s)" % self.cost
+		else:
+			coststr = ""
+		if self.maxcount > 0:
+			usedcount = self.conferenceregistration_set.count()
+			return "%s%s (%s of %s available)" % (self.name, coststr,
+												  self.maxcount - usedcount,
+												  self.maxcount)
+		return "%s%s" % (self.name, coststr)
+
 class ConferenceRegistration(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
 	regtype = models.ForeignKey(RegistrationType, null=True, blank=True, verbose_name="Registration type")
@@ -93,6 +113,7 @@ class ConferenceRegistration(models.Model):
 	phone = models.CharField(max_length=100, null=False, blank=True, verbose_name="Phone number")
 	shirtsize = models.ForeignKey(ShirtSize, null=True, blank=True, verbose_name="Preferred T-shirt size")
 	dietary = models.CharField(max_length=100, null=False, blank=True, verbose_name="Special dietary needs")
+	additionaloptions = models.ManyToManyField(ConferenceAdditionalOption, null=False, blank=True, verbose_name="Additional options")
 
 	# Admin fields!
 	payconfirmedat = models.DateField(null=True, blank=True, verbose_name="Payment confirmed at")
@@ -228,4 +249,3 @@ class ConferenceSessionFeedback(models.Model):
 
 	def __unicode__(self):
 		return unicode("%s - %s (%s)") % (self.conference, self.session, self.attendee)
-

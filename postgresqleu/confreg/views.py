@@ -46,6 +46,7 @@ def home(request, confname):
 			reg.conference = conference
 			reg.attendee = request.user
 			reg.save()
+			form.save_m2m()
 	else:
 		# This is just a get, so render the form
 		form = ConferenceRegistrationForm(instance=reg)
@@ -54,6 +55,7 @@ def home(request, confname):
 		'form': form,
 		'reg': reg,
 		'conference': conference,
+		'additionaloptions': conference.conferenceadditionaloption_set.all(),
 		'costamount': reg.regtype and reg.regtype.cost or 0,
 	}, context_instance=RequestContext(request))
 

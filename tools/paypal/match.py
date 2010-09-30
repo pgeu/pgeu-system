@@ -145,7 +145,7 @@ def match_confreg(db, row):
 		# Not a conference registration payment
 		return False
 	confname = match.group(1)
-	paytype = match.group(2)
+	paytype = match.group(2) # both payment type and all options
 	email = match.group(3)
 
 	logger = MatchLogger(db, row, "Conference Registration")
@@ -153,15 +153,19 @@ def match_confreg(db, row):
 	# Lookup a registration in the confreg database for this
 	cursor = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
 	cursor.execute("""
-SELECT reg.id, payconfirmedat, payconfirmedby, cost
+SELECT reg.id, payconfirmedat, payconfirmedby, cost + COALESCE(
+(
+  SELECT sum(cost) AS optioncost
+  FROM confreg_conferenceregistration_additionaloptions rao
+   INNER JOIN confreg_conferenceadditionaloption ao ON ao.id=rao.conferenceadditionaloption_id
+   WHERE rao.conferenceregistration_id=reg.id
+), 0) AS totalcost
 FROM confreg_conferenceregistration reg
 INNER JOIN confreg_conference conf ON conf.id=reg.conference_id
 INNER JOIN confreg_registrationtype rt ON rt.id=reg.regtype_id
 WHERE conf.conferencename=%(confname)s
-AND rt.regtype=%(regtype)s
 AND lower(reg.email)=lower(%(email)s)""", {
 			'confname': confname,
-			'regtype': paytype,
 			'email': email,
 			})
 	res = cursor.fetchall()
@@ -174,9 +178,9 @@ AND lower(reg.email)=lower(%(email)s)""", {
 		return False
 	elif len(res) == 1:
 		# Single match, this really is all that should ever happen
-		if row['amount'] != res[0]['cost']:
+		if row['amount'] != res[0]['totalcost']:
 			# amount does not match! Set it as matched, but don't flag as go
-			message = 'WARNING: Payment is incorrect amount, should be %s, NOT approving' % res[0]['cost']
+			message = 'WARNING: Payment is incorrect amount, should be %s, NOT approving' % res[0]['totalcost']
 		else:
 			# Amount is correct, approve if not already done so
 			if res[0]['payconfirmedat']:

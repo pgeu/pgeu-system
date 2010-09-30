@@ -81,6 +81,11 @@ class RegistrationTypeAdmin(admin.ModelAdmin):
 	list_filter = ['conference',]
 	ordering = ['conference','regtype']
 
+class ConferenceAdditionalOptionAdmin(admin.ModelAdmin):
+	list_display = ['conference', 'name', 'maxcount', 'cost']
+	list_filter = ['conference', ]
+	ordering = ['conference', 'name', ]
+
 class SpeakerAdminForm(forms.ModelForm):
 	class Meta:
 		model = Speaker
@@ -126,3 +131,4 @@ admin.site.register(Track)
 admin.site.register(Room)
 admin.site.register(Speaker, SpeakerAdmin)
 admin.site.register(Speaker_Photo, SpeakerPhotoAdmin)
+admin.site.register(ConferenceAdditionalOption, ConferenceAdditionalOptionAdmin)
