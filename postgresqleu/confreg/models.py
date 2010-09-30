@@ -170,6 +170,10 @@ class Speaker(models.Model):
 		return len(self.abstract)>0
 	has_abstract.boolean = True
 
+	def has_photo(self):
+		return (self.photofile != None)
+	has_photo.boolean= True
+
 	def __unicode__(self):
 		return self.name
 
