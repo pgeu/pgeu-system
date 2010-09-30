@@ -12,7 +12,7 @@ from postgresqleu.countries.models import Country
 class PaymentOption(models.Model):
 	name = models.CharField(max_length=64, blank=False, null=False)
 	infotext = models.TextField(blank=False, null=False)
-	url = models.CharField(max_length=1024, null=True, blank=True)
+	paypalrecip = models.EmailField(max_length=1024, null=True, blank=True)
 	sortkey = models.IntegerField(null=False, blank=False)
 
 	def __unicode__(self):

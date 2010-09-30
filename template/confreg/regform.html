@@ -103,8 +103,8 @@ view or edit your registration details.</p>
     {% for payoption in conference.paymentoptions.all %}
      <h3>{{payoption.name}}</h3>
      <p>{{payoption.infotext|markdown:"safe"}}</p>
-     {% if payoption.url %}
-      <p><a href="{% render_payment_url payoption.url conference.conferencename reg.email reg.regtype.regtype reg.regtype.stringcost reg.additionaloptions %}">Click here</a> to pay using {{payoption.name}}.</p>
+     {% if payoption.paypalrecip %}
+      <p><a href="{% render_payment_url payoption.paypalrecip conference.conferencename reg.email reg.regtype.regtype reg.regtype.stringcost reg.additionaloptions %}">Click here</a> to pay using {{payoption.name}}.</p>
      {%endif%}
     {% endfor %}
    {% else %}
