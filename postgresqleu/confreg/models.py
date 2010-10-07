@@ -58,6 +58,10 @@ class RegistrationType(models.Model):
 	cost = models.IntegerField(null=False)
 	active = models.BooleanField(null=False, blank=False, default=True)
 	inlist = models.BooleanField(null=False, blank=False, default=True)
+	sortkey = models.IntegerField(null=False, blank=False, default=10)
+
+	class Meta:
+		ordering = ['conference', 'sortkey', ]
 
 	def __unicode__(self):
 		if self.cost == 0:

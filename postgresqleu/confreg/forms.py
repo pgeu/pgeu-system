@@ -11,7 +11,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
 	def __init__(self, *args, **kwargs):
 		super(ConferenceRegistrationForm, self).__init__(*args, **kwargs)
-		self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference)
+		self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference).order_by('sortkey')
 		if not self.instance.conference.asktshirt:
 			del self.fields['shirtsize']
 		self.fields['additionaloptions'].queryset =	ConferenceAdditionalOption.objects.filter(
