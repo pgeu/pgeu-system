@@ -103,6 +103,10 @@ view or edit your registration details.</p>
      <a href="mailto:{{conference.contactaddr}}">{{conference.contactaddr}}</a> to verify your status.
     </p>
     <h2>Payment options</h2>
+    <div>
+      <b>Note!</b> Make sure you save the form above before you click
+      any payment link, or the sum on your bill may be incorrect!
+    </div>
     {% for payoption in conference.paymentoptions.all %}
      <h3>{{payoption.name}}</h3>
      <p>{{payoption.infotext|markdown:"safe"}}</p>
