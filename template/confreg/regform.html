@@ -80,6 +80,9 @@ view or edit your registration details.</p>
  {% if additionaloptions %}
  <fieldset id="additional_options">
   <legend>Additional options</legend>
+  {%if conference.additionalintro %}
+  <div>{{conference.additionalintro|markdown:"safe"}}</div>
+  {%endif%}
   <div{%if form.additionaloptions.errors%} class="errfld"{%endif%}>
    {{ form.additionaloptions }} {% if form.additionaloptions.errors %}{{ form.additionaloptions.errors}}{%endif%}
   </div>

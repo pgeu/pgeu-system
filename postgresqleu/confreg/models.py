@@ -38,6 +38,7 @@ class Conference(models.Model):
 	asktshirt = models.BooleanField(blank=False, null=False, default=True)
 	askfood = models.BooleanField(blank=False, null=False, default=True)
 	autoapprove = models.BooleanField(blank=False, null=False, default=False)
+	additionalintro = models.TextField(blank=True, null=False)
 
 	def __unicode__(self):
 		return self.conferencename
