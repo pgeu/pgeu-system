@@ -91,6 +91,9 @@ class ConferenceAdditionalOption(models.Model):
 	cost = models.IntegerField(null=False)
 	maxcount = models.IntegerField(null=False)
 
+	class Meta:
+		ordering = ['name', ]
+
 	def __unicode__(self):
 		# This is what renders in the multichoice checkboxes, so make
 		# it nice for the end user.
