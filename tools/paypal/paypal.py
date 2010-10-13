@@ -61,7 +61,8 @@ class PaypalTransaction(object):
 			self.text = r['SUBJECT'][0]
 
 		if r['L_CURRENCYCODE0'][0] != 'EUR':
-			raise Exception("Invalid currency %s" % r['L_CURRENCYCODE0'][0])
+			self.message = "Invalid currency %s" % r['L_CURRENCYCODE0'][0]
+			self.amount = -1 # just to be on the safe side
 
 	def store(self, db):
 		cursor = db.cursor()
