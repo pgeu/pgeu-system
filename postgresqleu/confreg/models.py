@@ -185,6 +185,9 @@ class Speaker(models.Model):
 	def __unicode__(self):
 		return self.name
 
+	class Meta:
+		ordering = ['fullname', ]
+
 class Speaker_Photo(models.Model):
 	speaker = models.ForeignKey(Speaker, db_column='id', primary_key=True)
 	photo = models.TextField(null=False, blank=False)
