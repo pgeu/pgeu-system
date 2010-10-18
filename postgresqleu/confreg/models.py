@@ -168,7 +168,7 @@ class Speaker(models.Model):
 	fullname = models.CharField(max_length=100, null=False, blank=False)
 	company = models.CharField(max_length=100, null=False, blank=True)
 	abstract = models.TextField(null=False, blank=True)
-	photofile = models.ImageField(upload_to=get_upload_path, storage=SpeakerImageStorage(), blank=True, null=True)
+	photofile = models.ImageField(upload_to=get_upload_path, storage=SpeakerImageStorage(), blank=True, null=True, verbose_name="Photo")
 
 
 	@property

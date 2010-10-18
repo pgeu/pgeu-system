@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import RadioSelect
 from django.forms.fields import *
+from django.forms import ValidationError
 
 from postgresqleu.confreg.models import *
 
@@ -107,3 +108,26 @@ class ConferenceSessionFeedbackForm(forms.ModelForm):
 		model = ConferenceSessionFeedback
 		exclude = ('conference','attendee','session')
 
+
+class SpeakerProfileForm(forms.ModelForm):
+	class Meta:
+		model = Speaker
+		exclude = ('user', 'fullname', )
+
+	def clean_photofile(self):
+		if not self.cleaned_data['photofile']:
+			return self.cleaned_data['photofile'] # If it's None...
+		img = None
+		try:
+			from PIL import ImageFile
+			p = ImageFile.Parser()
+			p.feed(self.cleaned_data['photofile'].read())
+			p.close()
+			img = p.image
+		except Exception, e:
+			raise ValidationError("Could not parse image: %s" % e)
+		if img.format != 'JPEG':
+			raise ValidationError("Only JPEG format images are accepted, not '%s'" % img.format)
+		if img.size[0] > 128 or img.size[1] > 128:
+			raise ValidationError("Maximum image size is 128x128")
+		return self.cleaned_data['photofile']

@@ -276,3 +276,23 @@ def speakerphoto(request, speakerid):
 	speakerphoto = get_object_or_404(Speaker_Photo, pk=speakerid)
 	return HttpResponse(base64.b64decode(speakerphoto.photo), mimetype='image/jpg')
 
+def speakerprofile(request):
+	speaker = get_object_or_404(Speaker, user=request.user)
+	conferences = Conference.objects.filter(conferencesession__speaker=speaker).distinct()
+
+	if request.method=='POST':
+		# Attempt to save
+		form = SpeakerProfileForm(data=request.POST, files=request.FILES, instance=speaker)
+		if form.is_valid():
+			if request.FILES.has_key('photo'):
+				raise Exception("Deal with the file!")
+			form.save()
+			return HttpResponseRedirect('.')
+	else:
+		form = SpeakerProfileForm(instance=speaker)
+
+	return render_to_response('confreg/speakerprofile.html', {
+			'speaker': speaker,
+			'conferences': conferences,
+			'form': form,
+	}, context_instance=RequestContext(request))

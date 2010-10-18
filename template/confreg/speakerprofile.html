@@ -1,0 +1,50 @@
+{%extends "nav_events.html"%}
+{%load markup%}
+{%block title%}Speaker Profile{%endblock%}
+{%block content%}
+<h1>Speaker Profile</h1>
+
+<h2>Conferences</h2>
+<p>
+You are currently registered as a speaker at the following conferences:
+<ul>
+{%for c in conferences %}
+  <li><a href="/events/schedule/{{c.urlname}}/speaker/{{speaker.id}}-{{speaker.name|slugify}}/">{{c}}</a></li>
+{%endfor%}
+</ul>
+</p>
+
+<h2>Speaker profile</h2>
+<p>
+You can edit the contents of your speaker profile here. Please note that
+any changes made here will affect your pages on <i>all</i> conferences
+you are a speaker.
+</p>
+
+{% if form.errors %}
+<p><b style="color:red;">Note! This form contains errors and has not been saved!</b></p>
+{% endif %}
+
+<form method="post" action="." enctype="multipart/form-data">
+<table id="speakerprofile_table">
+<tr>
+ <th>Name</th>
+ <td>{{speaker.fullname}}</td>
+</tr>
+<tr>
+ <th>{{form.company.label_tag}}</th>
+ <td>{{form.company}}{% if form.company.errors %}{{ form.company.errors}}{% endif %}</td>
+</tr>
+<tr>
+ <th>{{form.abstract.label_tag}}</th>
+ <td>{{form.abstract}}{% if form.abstract.errors %}{{ form.abstract.errors}}{% endif %}</td>
+</tr>
+<tr>
+ <th>{{form.photofile.label_tag}}</th>
+ <td>{%if speaker.photofile%}<img src="{{speaker.photofile.url}}"/><br/>{%endif%}{{form.photofile}}{% if form.photofile.errors %}{{ form.photofile.errors}}{% endif %}</td>
+</tr>
+</table>
+<input type="submit" value="Save">
+</form>
+
+{%endblock%}
