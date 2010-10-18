@@ -9,6 +9,7 @@
 <img src="../../../../speaker/{{speaker.id}}/photo/" align="right" />
 {%endif%}
 <h2>{{speaker.name}}</h2>
+{%if speaker.company%}<div>Company: {{speaker.company}}</div>{%endif%}
 <p>
 {{speaker.abstract|markdown:"safe"}}
 </p>
