@@ -117,7 +117,6 @@ class SpeakerPhotoAdmin(admin.ModelAdmin):
 	def formfield_for_dbfield(self, db_field, **kwargs):
 		if db_field.name == 'photo':
 			kwargs['widget'] = InlinePhotoWidget
-			return db_field.formfield(**kwargs)
 		return super(SpeakerPhotoAdmin,self).formfield_for_dbfield(db_field,**kwargs)
 
 class TrackAdmin(admin.ModelAdmin):
