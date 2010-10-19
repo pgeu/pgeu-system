@@ -73,6 +73,8 @@ c.read("mailman_sync.ini")
 
 db = psycopg2.connect(c.get('settings','db'))
 curs = db.cursor()
+
+# Synchronize attendee-lists
 curs.execute("SELECT id, listadminurl, listadminpwd FROM confreg_conference WHERE active AND NOT (listadminurl='' OR listadminpwd='')")
 for confid, url, pwd in curs.fetchall():
 	#print "Synchronizing list %s" % url
@@ -82,6 +84,22 @@ for confid, url, pwd in curs.fetchall():
 		WHERE cr.conference_id=%(id)s AND cr.payconfirmedat IS NOT NULL AND rt.inlist""",
 		{'id': confid, }
 	)
+	ms = MailmanSynchronizer(url,pwd)
+	ms.set_list(set([r[0] for r in c2.fetchall()]))
+	ms.sync()
+
+# Now do any potential speaker lists
+curs.execute("SELECT id, speakerlistadminurl, speakerlistadminpwd FROM confreg_conference WHERE active AND NOT (speakerlistadminurl='' OR speakerlistadminpwd='')")
+for confid, url, pwd in curs.fetchall():
+	#print "Synchronizing list %s" % url
+	c2 = db.cursor()
+	c2.execute("""SELECT DISTINCT email FROM auth_user au
+        INNER JOIN confreg_speaker s ON au.id=s.user_id
+        INNER JOIN confreg_conferencesession_speaker csp ON csp.speaker_id=s.id
+        INNER JOIN confreg_conferencesession cs ON cs.id=csp.conferencesession_id
+        WHERE cs.conference_id=%(id)s""",
+			   { 'id': confid, }
+    )
 	ms = MailmanSynchronizer(url,pwd)
 	ms.set_list(set([r[0] for r in c2.fetchall()]))
 	ms.sync()
