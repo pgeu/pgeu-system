@@ -276,6 +276,7 @@ def speakerphoto(request, speakerid):
 	speakerphoto = get_object_or_404(Speaker_Photo, pk=speakerid)
 	return HttpResponse(base64.b64decode(speakerphoto.photo), mimetype='image/jpg')
 
+@login_required
 def speakerprofile(request):
 	speaker = get_object_or_404(Speaker, user=request.user)
 	conferences = Conference.objects.filter(conferencesession__speaker=speaker).distinct()
