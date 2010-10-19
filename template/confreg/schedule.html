@@ -36,6 +36,10 @@ div.track{{track.id}} {
 {%endblock%}
 {%block content%}
 <h1>Conference Schedule - {{conference}}</h1>
+<p>
+You can find the full conference information at the
+<a href="{{conference.confurl}}">conference website</a>.
+</p>
 
 {%for day in days%}
 <h2>{{day.day|date:"l, F d"}}</h2>
