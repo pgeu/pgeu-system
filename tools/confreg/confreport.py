@@ -9,14 +9,17 @@ import psycopg2
 import psycopg2.extensions
 import datetime
 from StringIO import StringIO
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 
 def Usage():
-	print "Usage: confreport.py <connectionstring> <conferenceshortname>"
+	print "Usage: confreport.py <connectionstring> <conferenceshortname> [mailaddr]"
 	sys.exit(1)
 
 if __name__ == "__main__":
-	if len(sys.argv) != 3:
+	if len(sys.argv) != 3 and len(sys.argv) != 4:
 		Usage()
 	connstr = sys.argv[1]
 	confname = sys.argv[2]
@@ -68,4 +71,18 @@ ORDER BY 1
 	s.writelines("%-50s %13s %13s\n" % ('Type', 'Confirmed', 'Unconfirmed'))
 	s.writelines(["%-50s %13s %13s\n" % (r[0][:50],r[1],r[2]) for r in curs.fetchall()])
 
-	print s.getvalue()
+	if len(sys.argv) == 4:
+		# send email
+		msg = MIMEMultipart()
+		msg['Subject'] = "%s registration report" % confname
+		msg['From'] = 'webmaster@postgresql.eu'
+		msg['To'] = sys.argv[3]
+		msg.attach(MIMEText(s.getvalue().encode('utf-8'), 'plain', 'UTF-8'))
+
+		s = smtplib.SMTP()
+		s.connect()
+		s.sendmail("webmaster@postgresql.eu", [sys.argv[3]], msg.as_string())
+		s.quit()
+	else:
+		# Don't send email, so just print it
+		print s.getvalue()
