@@ -85,7 +85,7 @@ for confid, url, pwd in curs.fetchall():
 		{'id': confid, }
 	)
 	ms = MailmanSynchronizer(url,pwd)
-	ms.set_list(set([r[0] for r in c2.fetchall()]))
+	ms.set_list(set([r[0].lower() for r in c2.fetchall()]))
 	ms.sync()
 
 # Now do any potential speaker lists
@@ -101,6 +101,6 @@ for confid, url, pwd in curs.fetchall():
 			   { 'id': confid, }
     )
 	ms = MailmanSynchronizer(url,pwd)
-	ms.set_list(set([r[0] for r in c2.fetchall()]))
+	ms.set_list(set([r[0].lower() for r in c2.fetchall()]))
 	ms.sync()
 
