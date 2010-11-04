@@ -12,6 +12,10 @@ view or edit your registration details.</p>
 
 <form action="." method="post">
 
+{% if form_is_saved %}
+<p><b>Thank you!</b> Your registration information has been saved. Please see
+the bottom of this page for information about your payment status.</p>
+{% endif %}
 {% if form.errors %}
 <p><b>Note! This form contains errors and has not been saved!</b></p>
 {% endif %}

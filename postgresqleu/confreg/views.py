@@ -39,6 +39,7 @@ def home(request, confname):
 			reg.payconfirmedat = datetime.today()
 			reg.payconfirmedby = 'auto'
 
+	form_is_saved = False
 	if request.method == 'POST':
 		form = ConferenceRegistrationForm(data=request.POST, instance=reg)
 		if form.is_valid():
@@ -47,12 +48,14 @@ def home(request, confname):
 			reg.attendee = request.user
 			reg.save()
 			form.save_m2m()
+			form_is_saved = True
 	else:
 		# This is just a get, so render the form
 		form = ConferenceRegistrationForm(instance=reg)
 
 	return render_to_response('confreg/regform.html', {
 		'form': form,
+		'form_is_saved': form_is_saved,
 		'reg': reg,
 		'conference': conference,
 		'additionaloptions': conference.conferenceadditionaloption_set.all(),
