@@ -66,7 +66,7 @@ class MailmanSynchronizer(object):
 			raise Exception("Could not access membership list")
 		# Parse the HTML for the list of members
 		alist = re.findall('<INPUT name="([^"]+%40[^"]+)_unsub" type', s)
-		self.current_recipients = set([s.replace('%40','@') for s in alist])
+		self.current_recipients = set([s.replace('%40','@').replace('%2B','+') for s in alist])
 
 c = ConfigParser.ConfigParser()
 c.read("mailman_sync.ini")
