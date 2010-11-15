@@ -1,0 +1,17 @@
+{%extends "navbase.html"%}
+{%block title%}Invoices{%endblock%}
+{%block content%}
+<h1>Create invoice</h1>
+<ul>
+  <li><a href="new/">Create normal invoice</a></li>
+  <li><a href="new/conf/">Create conference invoice</a></li>
+</ul>
+<br/>
+
+<h1>Existing invoices</h1>
+<ul>
+  {%for i in invoices%}
+  <li><a href="{{i.id}}/">{{i}}</a></li>
+  {%endfor%}
+</ul>
+{%endblock%}

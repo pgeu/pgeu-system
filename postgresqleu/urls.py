@@ -10,6 +10,7 @@ import postgresqleu.views
 import postgresqleu.confreg.views
 import postgresqleu.membership.views
 import postgresqleu.elections.views
+import postgresqleu.invoicemgr.views
 
 from postgresqleu.newsevents.feeds import LatestNews, LatestEvents
 
@@ -66,6 +67,12 @@ urlpatterns = patterns('',
 	(r'^elections/(\d+)/$', postgresqleu.elections.views.election),
 	(r'^elections/(\d+)/candidate/(\d+)/$', postgresqleu.elections.views.candidate),
 	(r'^elections/(\d+)/ownvotes/$', postgresqleu.elections.views.ownvotes),
+
+	# Invoice manager (admins only!)
+	(r'invoicemgr/$', postgresqleu.invoicemgr.views.home),
+	(r'invoicemgr/(\d+)/$', postgresqleu.invoicemgr.views.invoice),
+	(r'invoicemgr/(\d+)/pdf/$', postgresqleu.invoicemgr.views.invoicepdf),
+	(r'invoicemgr/new/conf/(\d+/)?$', postgresqleu.invoicemgr.views.conf),
 
 	# This should not happen in production - serve by apache!
 	url(r'^media/(.*)$', 'django.views.static.serve', {
