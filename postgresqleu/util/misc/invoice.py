@@ -26,6 +26,12 @@ class PDFInvoice(object):
 		self.rows.append((title, cost, count,))
 
 
+	def trimstring(self, s, maxlen, fontname, fontsize):
+		while len(s) > 5:
+			if self.canvas.stringWidth(s, fontname, fontsize) <= maxlen:
+				return s
+			s = s[:len(s)-2]
+
 	def save(self):
 		im = Image("%s/PostgreSQL_logo.1color_blue.300x300.png" % self.imagedir, width=3*cm, height=3*cm)
 		im.drawOn(self.canvas, 2*cm, 25*cm)
@@ -73,7 +79,11 @@ E-mail: treasurer@postgresql.eu
 		self.canvas.drawCentredString(10.5*cm,18.5*cm, "This invoice is due: %s" % self.duedate.strftime("%B %d, %Y"))
 
 		tbldata = [["Item", "Price", "Count", "Amount"], ]
-		tbldata.extend([(title, "%.2f €" % cost, count, "%.2f €" % (cost * count)) for title, cost, count in self.rows])
+		tbldata.extend([(self.trimstring(title, 10.5*cm, "Times-Roman", 10),
+						 "%.2f €" % cost,
+						 count,
+						 "%.2f €" % (cost * count))
+						for title,cost, count in self.rows])
 		tbldata.append(['','','Total',"%.2f €" % sum([cost*count for title,cost,count in self.rows])])
 
 		t = Table(tbldata, [10.5*cm, 2.5*cm, 1.5*cm, 2.5*cm])
