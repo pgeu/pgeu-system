@@ -103,7 +103,6 @@ E-mail: treasurer@postgresql.eu
 		t.setFont("Times-Italic", 10)
 		t.textLine("PostgreSQL Europe is a French non-profit under the French 1901 Law.")
 		t.textLine("")
-		t.textLine("")
 
 		t.setFont("Times-Bold", 10)
 		t.textLine("Bank references / Références bancaires / Bankverbindungen / Referencias bancarias")
