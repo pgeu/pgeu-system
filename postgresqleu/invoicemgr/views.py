@@ -1,5 +1,6 @@
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseServerError
 from django.template import RequestContext
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -63,9 +64,9 @@ def conf(request, confid=None):
 	if request.method == 'POST':
 		# Handle the form, generate the invoice
 		if len(request.POST['recipient']) < 3:
-			raise Exception("You must specify an invoice recipient!")
+			return HttpResponseServerError("You must specify an invoice recipient!")
 		if len(request.POST['duedate']) != 10:
-			raise Exception("You must specify a due date in the format yyyy-mm-dd")
+			return HttpResponseServerError("You must specify a due date in the format yyyy-mm-dd")
 		duedate = datetime.strptime(request.POST['duedate'], "%Y-%m-%d")
 
 		# Add all attendees
