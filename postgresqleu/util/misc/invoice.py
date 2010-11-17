@@ -76,8 +76,6 @@ E-mail: treasurer@postgresql.eu
 		p.lineTo(19*cm, 18.9*cm)
 		self.canvas.drawPath(p)
 
-		self.canvas.drawCentredString(10.5*cm,18.5*cm, "This invoice is due: %s" % self.duedate.strftime("%B %d, %Y"))
-
 		tbldata = [["Item", "Price", "Count", "Amount"], ]
 		tbldata.extend([(self.trimstring(title, 10.5*cm, "Times-Roman", 10),
 						 "%.2f €" % cost,
@@ -96,6 +94,9 @@ E-mail: treasurer@postgresql.eu
 				   ]))
 		w,h = t.wrapOn(self.canvas,10*cm,10*cm)
 		t.drawOn(self.canvas, 2*cm, 18*cm-h)
+
+		self.canvas.drawCentredString(10.5*cm,17.3*cm-h, "This invoice is due: %s" % self.duedate.strftime("%B %d, %Y"))
+
 
 		t = self.canvas.beginText()
 		t.setTextOrigin(2*cm, 5*cm)
