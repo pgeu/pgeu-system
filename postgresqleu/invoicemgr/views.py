@@ -90,7 +90,9 @@ def conf(request, confid=None):
 			# Add the base registration fee (if applicable)
 			attendeecost = 0
 
-			if a.regtype.cost > 0:
+			if a.regtype.cost > 0 or len(a.additionaloptions.all()) > 0:
+				# If there are additional options, add a 0 cost row for the
+				# registration itself, so it groups properly.
 				invoice.addrow("%s - %s (%s)" % (a.conference, a.regtype.regtype, a.email), a.regtype.cost)
 				attendeecost += a.regtype.cost
 
