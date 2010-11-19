@@ -52,7 +52,12 @@ ORDER BY 1,2
 	s.writelines("Registrations per type\n")
 	s.writelines("----------------------\n")
 	s.writelines("%-50s %13s %13s\n" % ('Type', 'Confirmed', 'Unconfirmed'))
-	s.writelines(["%-50s %13s %13s\n" % r for r in curs.fetchall()])
+	rows = curs.fetchall()
+	s.writelines(["%-50s %13s %13s\n" % r for r in rows])
+	s.writelines("%-50s %13s %13s\n" % ("", "------", "------"))
+	s.writelines("%-50s %13s %13s\n" % ("Total",
+										sum([r[1] for r in rows]),
+										sum([r[2] for r in rows])))
 
 	curs.execute("""
 SELECT name,
@@ -69,7 +74,12 @@ ORDER BY 1
 	s.writelines("Additional options\n")
 	s.writelines("------------------\n")
 	s.writelines("%-50s %13s %13s\n" % ('Type', 'Confirmed', 'Unconfirmed'))
-	s.writelines(["%-50s %13s %13s\n" % (r[0][:50],r[1],r[2]) for r in curs.fetchall()])
+	rows = curs.fetchall()
+	s.writelines(["%-50s %13s %13s\n" % (r[0][:50],r[1],r[2]) for r in rows])
+	s.writelines("%-50s %13s %13s\n" % ("", "------", "------"))
+	s.writelines("%-50s %13s %13s\n" % (" Total",
+										sum([r[1] for r in rows]),
+										sum([r[2] for r in rows])))
 
 	if len(sys.argv) == 4:
 		# send email
