@@ -22,6 +22,11 @@ class PDFInvoice(object):
 		self.imagedir = imagedir or '.'
 		self.rows = []
 
+		self.canvas.setTitle("PostgreSQL Europe Invoice #%s" % self.invoicenum)
+		self.canvas.setSubject("PostgreSQL Europe Invoice #%s" % self.invoicenum)
+		self.canvas.setAuthor("PostgreSQL Europe")
+		self.canvas._doc.info.producer = "PostgreSQL Europe Invoicing System"
+
 	def addrow(self, title, cost, count=1):
 		self.rows.append((title, cost, count,))
 
