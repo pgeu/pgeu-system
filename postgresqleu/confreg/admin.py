@@ -134,6 +134,10 @@ class RoomAdmin(admin.ModelAdmin):
 	class Meta:
 		model = Room
 
+class ConferenceFeedbackQuestionAdmin(admin.ModelAdmin):
+	list_display = ['conference', 'sortkey', 'question',]
+	list_filter = ['conference', ]
+
 
 admin.site.register(Conference, ConferenceAdmin)
 admin.site.register(RegistrationType, RegistrationTypeAdmin)
@@ -147,5 +151,5 @@ admin.site.register(Room, RoomAdmin)
 admin.site.register(Speaker, SpeakerAdmin)
 admin.site.register(Speaker_Photo, SpeakerPhotoAdmin)
 admin.site.register(ConferenceAdditionalOption, ConferenceAdditionalOptionAdmin)
-admin.site.register(ConferenceFeedbackQuestion)
+admin.site.register(ConferenceFeedbackQuestion, ConferenceFeedbackQuestionAdmin)
 admin.site.register(ConferenceFeedbackAnswer)
