@@ -27,9 +27,6 @@
 	 <div id="pgTopNav">
 	  <div id="pgTopNavLeft"><img width="7" height="23" alt="" src="/media/img/layout/nav_lft.png" /></div>
 	  <div id="pgTopNavRight"><img width="7" height="23" alt="" src="/media/img/layout/nav_rgt.png" /></div>
-<!--
-	  <div id="pgLoginlink">{%if user.is_authenticated%}<a href="/logout" title="Log out">Log out</a>{%else%}<a href="/login" title="Log in">Log in</a>{%endif%}</div>
--->
 	  <ul id="pgTopNavList">
 	   <li><a href="/" title="Home">Home</a></li>
 	   <li><a href="/about" title="About">About</a></li>
@@ -39,6 +36,7 @@
 	   <li><a href="/donate" title="Donate">Donate</a></li>
 	   <li><a href="/merchandise" title="Merchandise">Merchandise</a></li>
 	   <li><a href="/membership" title="Your membership">Your membership</a></li>
+	  {%if user.is_authenticated %}<li><a href="/logout" title="Log out">Log out</a></li>{%endif%}
 	  </ul>
 	 </div> <!-- pgTopNav -->
 	</div> <!-- pgHeaderContainer -->
