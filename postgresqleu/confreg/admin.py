@@ -135,7 +135,7 @@ class RoomAdmin(admin.ModelAdmin):
 		model = Room
 
 class ConferenceFeedbackQuestionAdmin(admin.ModelAdmin):
-	list_display = ['conference', 'sortkey', 'question',]
+	list_display = ['conference', 'sortkey', 'newfieldset', 'question',]
 	list_filter = ['conference', ]
 
 
