@@ -170,7 +170,7 @@ def feedback_session(request, confname, sessionid):
 
 
 @login_required
-@transaction.commit_on_success()
+@transaction.commit_on_success
 def feedback_conference(request, confname):
 	if settings.FORCE_SECURE_FORMS and not request.is_secure():
 		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
