@@ -130,6 +130,10 @@ class ConferenceFeedbackForm(forms.Form):
 																	  label=q.question,
 																	  initial=self.get_answer_num(responses, q.id))
 
+			# Overload fieldset on help_text. Really really really ugly, but a way to get the fieldset
+			# out into the form without having to subclass things.
+			self.fields['question_%s' % q.id].help_text = q.newfieldset
+
 	def get_answer_text(self, responses, id):
 		for r in responses:
 			if r.question_id == id:

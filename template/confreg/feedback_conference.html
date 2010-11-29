@@ -22,9 +22,20 @@ text field.
 <p><b style="color:red;">Note! This form contains errors and has not been saved!</b></p>
 {% endif %}
 <form method="post" action=".">
-<table id="feedback_table">
-{{form.as_table}}
-</table>
+{%for field in form %}
+{%if field.help_text%}
+{%if not forloop.first %}
+</fieldset>
+{%endif%}
+<fieldset>
+ <legend>{{field.help_text}}</legend>
+{%endif%}
+ <div class="feedbackRow">
+  <div class="feedbackRowHead">{{field.label_tag}}</div>
+  <div class="feedbackRowField">{{field.errors}}{{field}}</div>
+ </div>
+{%endfor%}
+</fieldset>
 <input type="submit" value="Save">
 </form>
 

@@ -230,6 +230,22 @@ img {
    vertical-align: top;
 }
 
+div.feedbackRow {
+   vertical-align: top;
+   clear: both;
+}
+div.feedbackRow div {
+   float: left;
+   vertical-align: top;
+}
+div.feedbackRow div.feedbackRowHead {
+   width: 250px;
+   font-weight: bold;
+}
+div.feedbackRow div.feedbackRowField ul li {
+   display: inline;
+}
+
 ul.errorlist {
         display: inline;
         list-style-type: none;
