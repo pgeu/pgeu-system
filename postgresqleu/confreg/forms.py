@@ -109,6 +109,41 @@ class ConferenceSessionFeedbackForm(forms.ModelForm):
 		exclude = ('conference','attendee','session')
 
 
+class ConferenceFeedbackForm(forms.Form):
+	# Very special dynamic form. It's ugly, but hey, it works
+	def __init__(self, *args, **kwargs):
+		questions = kwargs.pop('questions')
+		responses = kwargs.pop('responses')
+
+		super(ConferenceFeedbackForm, self).__init__(*args, **kwargs)
+
+		# Now add our custom fields
+		for q in questions:
+			if q.isfreetext:
+				self.fields['question_%s' % q.id] = forms.CharField(widget=forms.widgets.Textarea,
+																	label=q.question,
+																	required=False,
+																	initial=self.get_answer_text(responses, q.id))
+			else:
+				self.fields['question_%s' % q.id] = forms.ChoiceField(widget=RadioSelect,
+																	  choices=rating_choices,
+																	  label=q.question,
+																	  initial=self.get_answer_num(responses, q.id))
+
+	def get_answer_text(self, responses, id):
+		for r in responses:
+			if r.question_id == id:
+				return r.textanswer
+		return ""
+
+	def get_answer_num(self, responses, id):
+		for r in responses:
+			if r.question_id == id:
+				print "Match"
+				print "Returning %s" % r.rateanswer
+				return r.rateanswer
+		return -1
+
 class SpeakerProfileForm(forms.ModelForm):
 	class Meta:
 		model = Speaker

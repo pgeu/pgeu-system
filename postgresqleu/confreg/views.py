@@ -3,6 +3,7 @@ from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.conf import settings
+from django.db import transaction
 
 from models import *
 from forms import *
@@ -149,6 +150,47 @@ def feedback_session(request, confname, sessionid):
 		'form': form,
 		'conference': conference,
 	}, context_instance=RequestContext(request))
+
+@login_required
+@transaction.commit_on_success()
+def feedback_conference(request, confname):
+	if settings.FORCE_SECURE_FORMS and not request.is_secure():
+		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
+
+	conference = get_object_or_404(Conference, urlname=confname)
+
+	if not (conference.feedbackopen and conference.conferencefeedbackopen):
+		return render_to_response('confreg/feedbackclosed.html', {
+			'conference': conference,
+		})
+
+	# Get all questions
+	questions = ConferenceFeedbackQuestion.objects.filter(conference=conference)
+
+	# Get all current responses
+	responses = ConferenceFeedbackAnswer.objects.filter(conference=conference, attendee=request.user)
+
+	if request.method=='POST':
+		form = ConferenceFeedbackForm(data=request.POST, questions=questions, responses=responses)
+		if form.is_valid():
+			# We've got the data, now write it to the database.
+			for q in questions:
+				a,created = ConferenceFeedbackAnswer.objects.get_or_create(conference=conference, question=q, attendee=request.user)
+				if q.isfreetext:
+					a.textanswer = form.cleaned_data['question_%s' % q.id]
+				else:
+					a.rateanswer = form.cleaned_data['question_%s' % q.id]
+				a.save()
+			return HttpResponseRedirect('..')
+	else:
+		form = ConferenceFeedbackForm(questions=questions, responses=responses)
+
+	return render_to_response('confreg/feedback_conference.html', {
+		'session': session,
+		'form': form,
+		'conference': conference,
+	}, context_instance=RequestContext(request))
+
 
 class SessionSet(object):
 	def __init__(self):

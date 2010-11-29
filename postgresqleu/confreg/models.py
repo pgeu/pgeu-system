@@ -31,6 +31,7 @@ class Conference(models.Model):
 	paymentoptions = models.ManyToManyField(PaymentOption)
 	active = models.BooleanField(blank=False,null=False,default=True)
 	feedbackopen = models.BooleanField(blank=False,null=False,default=True)
+	conferencefeedbackopen = models.BooleanField(blank=False,null=False,default=False)
 	confurl = models.CharField(max_length=128, blank=False, null=False)
 	listadminurl = models.CharField(max_length=128, blank=True, null=False)
 	listadminpwd = models.CharField(max_length=128, blank=True, null=False)
@@ -267,3 +268,28 @@ class ConferenceSessionFeedback(models.Model):
 
 	def __unicode__(self):
 		return unicode("%s - %s (%s)") % (self.conference, self.session, self.attendee)
+
+class ConferenceFeedbackQuestion(models.Model):
+	conference = models.ForeignKey(Conference, null=False, blank=False)
+	question = models.CharField(max_length=100, null=False, blank=False)
+	isfreetext = models.BooleanField(blank=False, null=False, default=False)
+	sortkey = models.IntegerField(null=False, default=100)
+
+	def __unicode__(self):
+		return "%s: %s" % (self.conference, self.question)
+
+	class Meta:
+		ordering = ['conference', 'sortkey', ]
+
+class ConferenceFeedbackAnswer(models.Model):
+	conference = models.ForeignKey(Conference, null=False, blank=False)
+	question = models.ForeignKey(ConferenceFeedbackQuestion, null=False, blank=False)
+	attendee = models.ForeignKey(User, null=False, blank=False)
+	rateanswer = models.IntegerField(null=True)
+	textanswer = models.TextField(null=False, blank=True)
+
+	def __unicode__(self):
+		return "%s - %s: %s" % (self.conference, self.attendee, self.question.question)
+
+	class Meta:
+		ordering = ['conference', 'attendee', 'question', ]
