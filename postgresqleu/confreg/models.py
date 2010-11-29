@@ -38,6 +38,7 @@ class Conference(models.Model):
 	speakerlistadminurl = models.CharField(max_length=128, blank=True, null=False)
 	speakerlistadminpwd = models.CharField(max_length=128, blank=True, null=False)
 	administrators = models.ManyToManyField(User, null=False, blank=True)
+	testers = models.ManyToManyField(User, null=False, blank=True, related_name="testers_set")
 	asktshirt = models.BooleanField(blank=False, null=False, default=True)
 	askfood = models.BooleanField(blank=False, null=False, default=True)
 	autoapprove = models.BooleanField(blank=False, null=False, default=False)

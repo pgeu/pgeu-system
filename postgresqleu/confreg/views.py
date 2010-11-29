@@ -76,9 +76,15 @@ def feedback(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 
 	if not conference.feedbackopen:
-		return render_to_response('confreg/feedbackclosed.html', {
-			'conference': conference,
-		})
+		# Allow conference testers to override
+		if not conference.testers.filter(pk=request.user.id):
+			return render_to_response('confreg/feedbackclosed.html', {
+					'conference': conference,
+			})
+		else:
+			is_conf_tester = True
+	else:
+		is_conf_tester = False
 
 	# Figure out if the user is registered
 	try:
@@ -92,7 +98,11 @@ def feedback(request, confname):
 
 	# Generate a list of all feedback:able sessions, meaning all sessions that have already started,
 	# since you can't give feedback on something that does not yet exist.
-	sessions = ConferenceSession.objects.select_related().filter(conference=conference).filter(can_feedback=True).filter(starttime__lte=datetime.now())
+	if is_conf_tester:
+		sessions = ConferenceSession.objects.select_related().filter(conference=conference).filter(can_feedback=True)
+	else:
+		sessions = ConferenceSession.objects.select_related().filter(conference=conference).filter(can_feedback=True).filter(starttime__lte=datetime.now())
+
 	# Then get a list of everything this user has feedbacked on
 	feedback = ConferenceSessionFeedback.objects.filter(conference=conference, attendee=request.user)
 
@@ -107,6 +117,7 @@ def feedback(request, confname):
 	return render_to_response('confreg/feedback_index.html', {
 		'sessions': sessions,
 		'conference': conference,
+		'is_tester': is_conf_tester,
 	}, context_instance=RequestContext(request))
 
 @login_required
@@ -118,11 +129,17 @@ def feedback_session(request, confname, sessionid):
 	session = get_object_or_404(ConferenceSession, pk=sessionid, conference=conference)
 
 	if not conference.feedbackopen:
-		return render_to_response('confreg/feedbackclosed.html', {
-			'conference': conference,
-		})
+		# Allow conference testers to override
+		if not conference.testers.filter(pk=request.user.id):
+			return render_to_response('confreg/feedbackclosed.html', {
+					'conference': conference,
+			})
+		else:
+			is_conf_tester = True
+	else:
+		is_conf_tester = False
 
-	if session.starttime > datetime.now():
+	if session.starttime > datetime.now() and not is_conf_tester:
 		return render_to_response('confreg/feedbacknotyet.html', {
 			'conference': conference,
 			'session': session,
@@ -151,6 +168,7 @@ def feedback_session(request, confname, sessionid):
 		'conference': conference,
 	}, context_instance=RequestContext(request))
 
+
 @login_required
 @transaction.commit_on_success()
 def feedback_conference(request, confname):
@@ -159,10 +177,16 @@ def feedback_conference(request, confname):
 
 	conference = get_object_or_404(Conference, urlname=confname)
 
-	if not (conference.feedbackopen and conference.conferencefeedbackopen):
-		return render_to_response('confreg/feedbackclosed.html', {
-			'conference': conference,
-		})
+	if not conference.feedbackopen:
+		# Allow conference testers to override
+		if not conference.testers.filter(pk=request.user.id):
+			return render_to_response('confreg/feedbackclosed.html', {
+					'conference': conference,
+			})
+		else:
+			is_conf_tester = True
+	else:
+		is_conf_tester = False
 
 	# Get all questions
 	questions = ConferenceFeedbackQuestion.objects.filter(conference=conference)

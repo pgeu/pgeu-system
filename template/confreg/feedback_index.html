@@ -7,7 +7,7 @@
 You can return to this page at any time during the conference to
 view or edit your feedback.</p>
 
-{%if conference.conferencefeedbackopen%}
+{%if conference.conferencefeedbackopen or is_tester %}
 <h2>Conference feedback</h2>
 <p>
 Feedback on the <a href="conference/">full conference</a> is currently open.
