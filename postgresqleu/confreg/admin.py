@@ -5,6 +5,9 @@ from postgresqleu.confreg.models import *
 from postgresqleu.confreg.dbimage import InlinePhotoWidget
 from datetime import datetime
 
+class ConferenceAdmin(admin.ModelAdmin):
+	filter_horizontal = ('administrators','testers',)
+
 class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	list_display = ['email', 'conference', 'firstname', 'lastname', 'created', 'regtype', 'payconfirmedat', ]
 	list_filter = ['conference', 'regtype', ]
@@ -132,7 +135,7 @@ class RoomAdmin(admin.ModelAdmin):
 		model = Room
 
 
-admin.site.register(Conference)
+admin.site.register(Conference, ConferenceAdmin)
 admin.site.register(RegistrationType, RegistrationTypeAdmin)
 admin.site.register(ShirtSize)
 admin.site.register(ConferenceRegistration, ConferenceRegistrationAdmin)
