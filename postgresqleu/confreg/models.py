@@ -274,6 +274,7 @@ class ConferenceFeedbackQuestion(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
 	question = models.CharField(max_length=100, null=False, blank=False)
 	isfreetext = models.BooleanField(blank=False, null=False, default=False)
+	textchoices = models.CharField(max_length=500, null=False, blank=True)
 	sortkey = models.IntegerField(null=False, default=100)
 	newfieldset = models.CharField(max_length=100, null=False, blank=True)
 

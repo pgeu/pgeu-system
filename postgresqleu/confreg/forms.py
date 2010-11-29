@@ -120,10 +120,16 @@ class ConferenceFeedbackForm(forms.Form):
 		# Now add our custom fields
 		for q in questions:
 			if q.isfreetext:
-				self.fields['question_%s' % q.id] = forms.CharField(widget=forms.widgets.Textarea,
-																	label=q.question,
-																	required=False,
-																	initial=self.get_answer_text(responses, q.id))
+				if q.textchoices:
+					self.fields['question_%s' % q.id] = forms.ChoiceField(widget=RadioSelect,
+																		  choices=[(x,x) for x in q.textchoices.split(";")],
+																		  label=q.question,
+																		  initial=self.get_answer_text(responses, q.id))
+				else:
+					self.fields['question_%s' % q.id] = forms.CharField(widget=forms.widgets.Textarea,
+																		label=q.question,
+																		required=False,
+																		initial=self.get_answer_text(responses, q.id))
 			else:
 				self.fields['question_%s' % q.id] = forms.ChoiceField(widget=RadioSelect,
 																	  choices=rating_choices,
