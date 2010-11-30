@@ -20,6 +20,29 @@ measurement_types = (
   ('speaker_quality', 'Speaker quality'),
 )
 
+def generate_pie_graph(measurement, n, labels=None):
+	s = sum(n)
+	if s == 0:
+		return 0
+	chart = PieChart3D(400,200)
+	chart.set_title(measurement)
+	chart.add_data(n)
+	if not labels:
+		# 1,2,3,4,5 and with the percentage
+		labels = ["%s (%s%%)" % (v, n[v-1]*100/s) for v in range (1,6)]
+	else:
+		# We have text labels, assume same order as values
+		labels = ["%s (%s%%)" % (labels[v-1], n[v-1]*100/s) for v in range(1,len(labels)+1)]
+	print "Labels: %s" % labels
+	chart.set_pie_labels(labels)
+
+	opener = urllib2.urlopen(chart.get_url())
+	if opener.headers['content-type'] != 'image/png':
+		raise BadContentTypeException('Server responded with a ' \
+			  'content-type of %s' % opener.headers['content-type'])
+
+	return base64.b64encode(opener.read())
+
 class SessionStats:
 	def __init__(self, db, confid, confname, row):
 		self.db = db
@@ -48,7 +71,7 @@ class SessionStats:
 				count += 1
 			self.ratings.append({
 				'title': measurementname,
-				'image': self.generate_graph(measurementname, n),
+				'image': generate_pie_graph(measurementname, n),
 				'values': zip(range(1,6), n),
 			})
 		return count # return the *last* value only. Normally, they're all the same...
@@ -78,22 +101,6 @@ class SessionStats:
 
 	def fetch_graphs(self):
 		return self.ratings
-
-	def generate_graph(self, measurement, n):
-		s = sum(n)
-		if s == 0:
-			return 0
-		chart = PieChart3D(400,200)
-		chart.set_title(measurement)
-		chart.add_data(n)
-		chart.set_pie_labels(["%s (%s%%)" % (v, n[v-1]*100/s) for v in range (1,6)]) #("1","2","3","4","5"))
-
-		opener = urllib2.urlopen(chart.get_url())
-		if opener.headers['content-type'] != 'image/png':
-			raise BadContentTypeException('Server responded with a ' \
-				'content-type of %s' % opener.headers['content-type'])
-
-		return base64.b64encode(opener.read())
 
 def Usage():
 	print "Usage: generate_feedback.py <connectionstring> <conferenceshortname>"
