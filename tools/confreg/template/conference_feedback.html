@@ -10,13 +10,30 @@
    HTML page for feedback on the sessions.
   </p>
 
-  <h2>Global ratings</h2>
+{%if conference_responses %}
+  <h2>Conference feedback</h2>
+{%for section, responses in conference_responses.items %}
+   <h3>{{section}}</h3>
+   {%for response in responses %}
+    <h4>{{response.question}}</h4>
+    {%if response.graph %}
+     <img src="data:image/png;base64,{{response.graph}}" alt="{{response.question}}" />
+    {%else%}
+     {%for textanswer in response.textanswers%}
+      <p>&bull; {{textanswer}}</p>
+     {%endfor%}
+    {%endif%}
+   {%endfor%}
+{%endfor%}
+{%endif%}
+
+  <h2>Speaker ratings</h2>
 {%for rating in global_ratings%}
    <h3>{{rating.title}}</h3>
    <img src="data:image/png;base64,{{rating.image}}" alt="{{rating.title}}"/>
 {%endfor%}
 
-  <h2>Session comments</h2>
+  <h2>Speaker comments</h2>
 {%for comment in session_comments%}
  {%ifchanged comment.session%}
  <h3>{{comment.session}} ({{comment.speaker}})</h3>

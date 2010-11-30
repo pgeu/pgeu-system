@@ -157,16 +157,6 @@ ORDER BY 2 DESC
 		speaker_rating.append({'what': ratingname, 'rating': [{'speaker': s, 'quality': q, 'num': n, 'stddev': d} for s,q,n,d in curs.fetchall()]})
 
 
-	# Now generate the file
-	tmpl = get_template('conference_feedback.html')
-	f = open("%s_conference.html" % confname, "w")
-	f.write(tmpl.render(Context({
-		'global_ratings': graphs,
-		'session_comments': session_comments,
-		'speaker_rating': speaker_rating,
-	})).encode('utf-8'))
-	f.close()
-
 # Generate per-session feedback
 	curs.execute("""SELECT s.id, title, fullname FROM confreg_conferencesession s
 INNER JOIN confreg_conferencesession_speaker cs ON s.id=cs.conferencesession_id
@@ -179,3 +169,57 @@ WHERE conference_id=%(conf)s ORDER BY id
 		ss = SessionStats(db, confid, confname, row)
 		ss.generate()
 
+# Generate full-conference feedback, if there is any
+	curs.execute("""SELECT id, question, isfreetext, newfieldset, textchoices FROM confreg_conferencefeedbackquestion WHERE conference_id=%(conf)s ORDER BY sortkey""", {'conf': confid})
+	questions = curs.fetchall()
+
+	if len(questions):
+		# This is basically an EAV schema, so do it the hard way,
+		# with one query for each question.
+		responses = {}
+		currentfieldset = ''
+		for id, question, isfreetext, newfieldset, textchoices in questions:
+			if newfieldset:
+				# This is only set for the first row in each group, so it's
+				# always correct.
+				currentfieldset = newfieldset
+				responses[currentfieldset] = []
+			if isfreetext and not textchoices:
+				curs.execute("""SELECT textanswer FROM confreg_conferencefeedbackanswer WHERE question_id=%(qid)s AND textanswer IS NOT NULL AND NOT trim(textanswer)=''""", {'qid': id})
+				responses[currentfieldset].append({
+						'question': question,
+						'textanswers': [x[0] for x in curs.fetchall()],
+					})
+			elif isfreetext:
+				# Freetext but with fixed choices, generate graph
+				curs.execute("""SELECT textanswer,count(*) FROM confreg_conferencefeedbackanswer WHERE question_id=%(qid)s AND textanswer IS NOT NULL GROUP BY textanswer ORDER BY textanswer""", {'qid': id})
+				rows = curs.fetchall()
+				responses[currentfieldset].append({
+						'question': question,
+						'graph': generate_pie_graph(question,
+													[float(x[1]) for x in rows],
+													[x[0] for x in rows]),
+				})
+			else:
+				# Rateanswer
+				curs.execute("""SELECT rateanswer,sum(count) FROM (SELECT rateanswer,count(*) FROM confreg_conferencefeedbackanswer WHERE question_id=%(qid)s GROUP BY rateanswer UNION ALL SELECT g,0 FROM generate_series(1,5) g) foo GROUP BY rateanswer ORDER BY rateanswer""", {'qid': id})
+				responses[currentfieldset].append({
+						'question': question,
+						'graph': generate_pie_graph(question,
+													[float(x[1]) for x in curs.fetchall()])
+				})
+
+	else:
+		responses = None
+
+
+	# Now generate the global conference feedback file
+	tmpl = get_template('conference_feedback.html')
+	f = open("%s_conference.html" % confname, "w")
+	f.write(tmpl.render(Context({
+		'global_ratings': graphs,
+		'session_comments': session_comments,
+		'speaker_rating': speaker_rating,
+		'conference_responses': responses,
+	})).encode('utf-8'))
+	f.close()
