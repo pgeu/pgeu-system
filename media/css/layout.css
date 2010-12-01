@@ -237,6 +237,7 @@ div.feedbackRow {
 div.feedbackRow div {
    float: left;
    vertical-align: top;
+   margin-bottom: 10px;
 }
 div.feedbackRow div.feedbackRowHead {
    width: 250px;
