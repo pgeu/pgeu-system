@@ -12,7 +12,7 @@ from reportlab.platypus.flowables import Image
 import cStringIO as StringIO
 
 class PDFInvoice(object):
-	def __init__(self, recipient, invoicedate, duedate, invoicenum=None, imagedir=None):
+	def __init__(self, recipient, invoicedate, duedate, invoicenum=None, imagedir=None, currency='€'):
 		self.pdfdata = StringIO.StringIO()
 		self.canvas = Canvas(self.pdfdata)
 		self.recipient = recipient
@@ -20,6 +20,7 @@ class PDFInvoice(object):
 		self.invoicedate = invoicedate
 		self.duedate = duedate
 		self.imagedir = imagedir or '.'
+		self.currency = currency or '€'
 		self.rows = []
 
 		self.canvas.setTitle("PostgreSQL Europe Invoice #%s" % self.invoicenum)
@@ -83,11 +84,11 @@ E-mail: treasurer@postgresql.eu
 
 		tbldata = [["Item", "Price", "Count", "Amount"], ]
 		tbldata.extend([(self.trimstring(title, 10.5*cm, "Times-Roman", 10),
-						 "%.2f €" % cost,
+						 "%.2f %s" % (cost, self.currency),
 						 count,
-						 "%.2f €" % (cost * count))
+						 "%.2f %s" % ((cost * count), self.currency))
 						for title,cost, count in self.rows])
-		tbldata.append(['','','Total',"%.2f €" % sum([cost*count for title,cost,count in self.rows])])
+		tbldata.append(['','','Total',"%.2f %s" % (sum([cost*count for title,cost,count in self.rows]),self.currency)])
 
 		t = Table(tbldata, [10.5*cm, 2.5*cm, 1.5*cm, 2.5*cm])
 		t.setStyle(TableStyle([

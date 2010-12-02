@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from django.db import models
 
 import cStringIO as StringIO
@@ -9,12 +11,14 @@ class Invoice(models.Model):
 	recipient = models.TextField(blank=False, null=False)
 	pdf = models.TextField(blank=False, null=False) # BASE64-encoded :S
 	totalamount = models.IntegerField(null=False, default=0)
+	currency = models.CharField(max_length=3, blank=False, null=False, default='€')
 
 	def __unicode__(self):
-		return "Invoice %s (%s, due %s): EUR %s" % (
+		return "Invoice %s (%s, due %s): %s %s" % (
 			self.id,
 			self.invoicedate.strftime("%Y-%m-%d"),
 			self.duedate.strftime("%Y-%m-%d"),
+			self.currency,
 			self.totalamount,
 			)
 

@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.http import HttpResponseServerError
@@ -61,6 +64,10 @@ def create(request):
 		if len(request.POST['duedate']) != 10:
 			return HttpResponseServerError("You must specify a due date in the format yyyy-mm-dd")
 		duedate = datetime.strptime(request.POST['duedate'], "%Y-%m-%d")
+		currency = request.POST['currency']
+		if len(currency) < 1:
+			return HttpResponseServerError("You must specify a currency, either single character (€, $) or abbreviation (SEK, DKK)")
+
 
 		rows = []
 		for i in range(0,10):
@@ -87,13 +94,15 @@ def create(request):
 		# Turn our data into an invoice
 		dbinvoice = Invoice(invoicedate = datetime.today(),
 							recipient = request.POST['recipient'],
-							duedate = duedate)
+							duedate = duedate,
+							currency = currency)
 		dbinvoice.save() # generate primary key
 		invoice = PDFInvoice(dbinvoice.recipient,
 							 datetime.today(),
 							 duedate,
 							 dbinvoice.id,
-							 os.path.realpath('%s/../../media/img/' % os.path.dirname(__file__)))
+							 os.path.realpath('%s/../../media/img/' % os.path.dirname(__file__)),
+							 currency)
 
 		for r in rows:
 			invoice.addrow(r[0],r[2],r[1])
