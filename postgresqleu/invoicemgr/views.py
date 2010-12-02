@@ -47,6 +47,72 @@ def invoicepdf(request, id):
 	invoice.writepdf(r)
 	return r
 
+
+@login_required
+@user_passes_test(lambda u: u.has_module_perms('invoicemgr'))
+def create(request):
+	if settings.FORCE_SECURE_FORMS and not request.is_secure():
+		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
+	if request.method == 'POST':
+		# Handle the form, generate the invoice
+
+		if len(request.POST['recipient']) < 3:
+			return HttpResponseServerError("You must specify an invoice recipient!")
+		if len(request.POST['duedate']) != 10:
+			return HttpResponseServerError("You must specify a due date in the format yyyy-mm-dd")
+		duedate = datetime.strptime(request.POST['duedate'], "%Y-%m-%d")
+
+		rows = []
+		for i in range(0,10):
+			if request.POST['text_%s' % i]:
+				# This row exists, validate contents
+				if not request.POST['count_%s' % i]:
+					return HttpResponseServerError("Invoice item '%s' is missing a count" % request.POST['text_%s' % i])
+				if not request.POST['price_%s' % i]:
+					return HttpResponseServerError("Invoice item '%s' is missing a price" % request.POST['text_%s' % i])
+				if not request.POST['count_%s' % i].isdigit():
+					return HttpResponseServerError("Invoice item '%s' as a non-numeric count" % request.POST['text_%s' % i])
+				if not request.POST['price_%s' % i].isdigit():
+					return HttpResponseServerError("Invoice item '%s' as a non-numeric price" % request.POST['text_%s' % i])
+				rows.append((request.POST['text_%s' % i],
+							 int(request.POST['count_%s' % i]),
+							 float(request.POST['price_%s' % i])))
+			else:
+				# First blank row, stop processing here
+				break
+
+		if not len(rows) > 0:
+			return HttpResponseServerError("No invoice rows found")
+
+		# Turn our data into an invoice
+		dbinvoice = Invoice(invoicedate = datetime.today(),
+							recipient = request.POST['recipient'],
+							duedate = duedate)
+		dbinvoice.save() # generate primary key
+		invoice = PDFInvoice(dbinvoice.recipient,
+							 datetime.today(),
+							 duedate,
+							 dbinvoice.id,
+							 os.path.realpath('%s/../../media/img/' % os.path.dirname(__file__)))
+
+		for r in rows:
+			invoice.addrow(r[0],r[2],r[1])
+		dbinvoice.totalamount = sum([r[1]*r[2] for r in rows])
+
+		# Store PDF in the db
+		dbinvoice.setpdf(invoice.save())
+
+		# Let's hope we can save...
+		dbinvoice.save()
+		return HttpResponseRedirect("/invoicemgr/%s/" % dbinvoice.id)
+
+	# Create the form
+	return render_to_response('invoicemgr/create.html', {
+			'n': range(0,10),
+	}, context_instance=RequestContext(request))
+
+
+
 @login_required
 @user_passes_test(lambda u: u.has_module_perms('invoicemgr'))
 def conf(request, confid=None):

@@ -73,6 +73,7 @@ urlpatterns = patterns('',
 	(r'invoicemgr/$', postgresqleu.invoicemgr.views.home),
 	(r'invoicemgr/(\d+)/$', postgresqleu.invoicemgr.views.invoice),
 	(r'invoicemgr/(\d+)/pdf/$', postgresqleu.invoicemgr.views.invoicepdf),
+	(r'invoicemgr/new/$', postgresqleu.invoicemgr.views.create),
 	(r'invoicemgr/new/conf/(\d+/)?$', postgresqleu.invoicemgr.views.conf),
 
 	# This should not happen in production - serve by apache!
