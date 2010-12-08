@@ -149,8 +149,6 @@ class ConferenceFeedbackForm(forms.Form):
 	def get_answer_num(self, responses, id):
 		for r in responses:
 			if r.question_id == id:
-				print "Match"
-				print "Returning %s" % r.rateanswer
 				return r.rateanswer
 		return -1
 
