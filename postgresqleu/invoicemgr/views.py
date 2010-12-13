@@ -138,11 +138,6 @@ def conf(request, confid=None):
 
 	if request.method == 'POST':
 		# Handle the form, generate the invoice
-		if len(request.POST['recipient']) < 3:
-			return HttpResponseServerError("You must specify an invoice recipient!")
-		if len(request.POST['duedate']) != 10:
-			return HttpResponseServerError("You must specify a due date in the format yyyy-mm-dd")
-		duedate = datetime.strptime(request.POST['duedate'], "%Y-%m-%d")
 
 		# Add all attendees
 		attendeeids = []
@@ -150,9 +145,34 @@ def conf(request, confid=None):
 			if k.startswith("att") and v=='1' :
 				attendeeids.append(int(k[3:]))
 		attendees = ConferenceRegistration.objects.filter(id__in=attendeeids)
+		if len(attendees) < 1:
+			return HttpResponseServerError("You must select at least one attendee!")
 
+		# Check or generate the recipient address
+		if request.POST.has_key('copyaddr') and request.POST['copyaddr'] == '1':
+			# Copy the address from the first entry. This requires that there is only one entry
+			if len(attendees) != 1:
+				return HttpResponseServerError("When copying address, only one attendee can be selected!")
+			recipient = "%s %s\n%s\n%s\n%s" % (
+				attendees[0].firstname,
+				attendees[0].lastname,
+				attendees[0].company,
+				attendees[0].address,
+				attendees[0].country,
+				)
+		else:
+			if len(request.POST['recipient']) < 3:
+				return HttpResponseServerError("You must specify an invoice recipient!")
+			recipient = request.POST['recipient']
+
+		# Verify the due date
+		if len(request.POST['duedate']) != 10:
+			return HttpResponseServerError("You must specify a due date in the format yyyy-mm-dd")
+		duedate = datetime.strptime(request.POST['duedate'], "%Y-%m-%d")
+
+		# Now build the actual invoice
 		dbinvoice = Invoice(invoicedate = datetime.today(),
-							recipient = request.POST['recipient'],
+							recipient = recipient,
 							duedate = duedate)
 		dbinvoice.save() # generate primary key
 		invoice = PDFInvoice(dbinvoice.recipient,
