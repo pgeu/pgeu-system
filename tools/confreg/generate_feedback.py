@@ -33,7 +33,7 @@ def generate_pie_graph(measurement, n, labels=None):
 	else:
 		# We have text labels, assume same order as values
 		labels = ["%s (%s%%)" % (labels[v-1], n[v-1]*100/s) for v in range(1,len(labels)+1)]
-	print "Labels: %s" % labels
+
 	chart.set_pie_labels(labels)
 
 	opener = urllib2.urlopen(chart.get_url())
