@@ -29,10 +29,10 @@ def generate_pie_graph(measurement, n, labels=None):
 	chart.add_data(n)
 	if not labels:
 		# 1,2,3,4,5 and with the percentage
-		labels = ["%s (%s%%)" % (v, n[v-1]*100/s) for v in range (1,6)]
+		labels = ["%s (%s%%)" % (v, round(n[v-1]*100/s,1)) for v in range (1,6)]
 	else:
 		# We have text labels, assume same order as values
-		labels = ["%s (%s%%)" % (labels[v-1], n[v-1]*100/s) for v in range(1,len(labels)+1)]
+		labels = ["%s (%s%%)" % (labels[v-1], round(n[v-1]*100/s)) for v in range(1,len(labels)+1)]
 
 	chart.set_pie_labels(labels)
 
