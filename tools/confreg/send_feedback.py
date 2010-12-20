@@ -83,11 +83,13 @@ if __name__ == "__main__":
 		print "Could not find conference in database!"
 		sys.exit(1)
 
+# Sync with generate_feedback.py!
 	curs.execute("""SELECT title, fullname, email FROM confreg_conferencesession s
 INNER JOIN confreg_conferencesession_speaker cs ON cs.conferencesession_id=s.id
 INNER JOIN confreg_speaker spk ON spk.id=cs.speaker_id
 INNER JOIN auth_user u ON u.id=spk.user_id
-WHERE conference_id=%(conf)s ORDER BY email
+WHERE conference_id=%(conf)s AND can_feedback
+ORDER BY email
 """, {'conf': confid})
 	lastemail = ''
 	sender = None
