@@ -204,11 +204,12 @@ ORDER BY id
 				})
 			else:
 				# Rateanswer
-				curs.execute("""SELECT rateanswer,sum(count) FROM (SELECT rateanswer,count(*) FROM confreg_conferencefeedbackanswer WHERE question_id=%(qid)s GROUP BY rateanswer UNION ALL SELECT g,0 FROM generate_series(1,5) g) foo GROUP BY rateanswer ORDER BY rateanswer""", {'qid': id})
+				curs.execute("""SELECT rateanswer,sum(count) FROM (SELECT rateanswer,count(*) FROM confreg_conferencefeedbackanswer WHERE question_id=%(qid)s GROUP BY rateanswer UNION ALL SELECT g,0 FROM generate_series(0,5) g) foo GROUP BY rateanswer ORDER BY rateanswer""", {'qid': id})
 				responses[currentfieldset].append({
 						'question': question,
 						'graph': generate_pie_graph(question,
-													[float(x[1]) for x in curs.fetchall()])
+													[float(x[1]) for x in curs.fetchall()],
+													[str(x) for x in range(0,6)])
 				})
 
 	else:
