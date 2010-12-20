@@ -22,8 +22,8 @@ class Sender:
 		self.sessions = []
 
 	def append(self, session):
-		session = session.replace('/','-')
-		fn = "%s/%s.html" % (self.confdir, session.encode('ascii', 'replace').replace('?',''))
+		session = session.replace('/','-').encode('ascii', 'replace').replace('?','')
+		fn = "%s/%s.html" % (self.confdir, session)
 		if not os.path.isfile(fn):
 			raise "File %s not found" % fn
 		self.sessions.append(session)
