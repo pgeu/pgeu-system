@@ -43,6 +43,7 @@ class Conference(models.Model):
 	askfood = models.BooleanField(blank=False, null=False, default=True)
 	autoapprove = models.BooleanField(blank=False, null=False, default=False)
 	additionalintro = models.TextField(blank=True, null=False)
+	basetemplate = models.CharField(max_length=128, blank=True, null=True, default=None)
 
 	def __unicode__(self):
 		return self.conferencename
@@ -56,6 +57,12 @@ class Conference(models.Model):
 			)
 		else:
 			return self.startdate.strftime("%Y-%m-%d")
+
+	@property
+	def template_override(self):
+		if self.basetemplate and len(self.basetemplate) > 0:
+			return self.basetemplate
+		return None
 
 class RegistrationType(models.Model):
 	conference = models.ForeignKey(Conference, null=False)

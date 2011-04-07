@@ -11,6 +11,20 @@ from forms import *
 from datetime import datetime, timedelta
 import base64
 
+#
+# The ConferenceContext allows overriding of the 'conftemplbase' variable,
+# which is used to control the base template of all the confreg web pages.
+# This allows a single conference to override the "framework" template
+# around itself, while retaining all teh contents.
+#
+def ConferenceContext(request, conference):
+	d = RequestContext(request)
+	conftemplbase = conference.template_override and conference.template_override or "nav_events.html"
+	d.update({
+			'conftemplbase': conftemplbase,
+			})
+	return d
+
 @login_required
 def home(request, confname):
 	if settings.FORCE_SECURE_FORMS and not request.is_secure():
@@ -61,7 +75,7 @@ def home(request, confname):
 		'conference': conference,
 		'additionaloptions': conference.conferenceadditionaloption_set.all(),
 		'costamount': reg.regtype and reg.regtype.cost or 0,
-	}, context_instance=RequestContext(request))
+	}, context_instance=ConferenceContext(request, conference))
 
 def feedback_available(request):
 	conferences = Conference.objects.filter(feedbackopen=True).order_by('startdate')
@@ -118,7 +132,7 @@ def feedback(request, confname):
 		'sessions': sessions,
 		'conference': conference,
 		'is_tester': is_conf_tester,
-	}, context_instance=RequestContext(request))
+	}, context_instance=ConferenceContext(request, conference))
 
 @login_required
 def feedback_session(request, confname, sessionid):
@@ -166,7 +180,7 @@ def feedback_session(request, confname, sessionid):
 		'session': session,
 		'form': form,
 		'conference': conference,
-	}, context_instance=RequestContext(request))
+	}, context_instance=ConferenceContext(request, conference))
 
 
 @login_required
@@ -213,7 +227,7 @@ def feedback_conference(request, confname):
 		'session': session,
 		'form': form,
 		'conference': conference,
-	}, context_instance=RequestContext(request))
+	}, context_instance=ConferenceContext(request, conference))
 
 
 class SessionSet(object):
@@ -310,7 +324,7 @@ def schedule(request, confname):
 		'conference': conference,
 		'days': days,
 		'tracks': tracks,
-	}, context_instance=RequestContext(request))
+	}, context_instance=ConferenceContext(request, conference))
 
 def schedule_ical(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -327,7 +341,7 @@ def session(request, confname, sessionid, junk=None):
 	return render_to_response('confreg/session.html', {
 		'conference': conference,
 		'session': session,
-	}, context_instance=RequestContext(request))
+	}, context_instance=ConferenceContext(request, conference))
 
 def speaker(request, confname, speakerid, junk=None):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -339,7 +353,7 @@ def speaker(request, confname, speakerid, junk=None):
 		'conference': conference,
 		'speaker': speaker,
 		'sessions': sessions,
-	}, context_instance=RequestContext(request))
+	}, context_instance=ConferenceContext(request, conference))
 
 def speakerphoto(request, speakerid):
 	speakerphoto = get_object_or_404(Speaker_Photo, pk=speakerid)
@@ -365,4 +379,4 @@ def speakerprofile(request):
 			'speaker': speaker,
 			'conferences': conferences,
 			'form': form,
-	}, context_instance=RequestContext(request))
+	}, context_instance=ConferenceContext(request, conference))
