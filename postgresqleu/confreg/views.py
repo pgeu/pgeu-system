@@ -379,4 +379,4 @@ def speakerprofile(request):
 			'speaker': speaker,
 			'conferences': conferences,
 			'form': form,
-	}, context_instance=ConferenceContext(request, conference))
+	}, context_instance=RequestContext(request))
