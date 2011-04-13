@@ -10,6 +10,9 @@
 <b>Date:</b> {{session.starttime|date}}<br/>
 <b>Time:</b> {{session.starttime|time:"H:i"}} - {{session.endtime|time:"H:i"}}<br/>
 <b>Room:</b> {{session.room.roomname}}<br/>
+{%if conference.skill_levels %}
+<b>Level:</b> {{session.skill_level_string}}<br/>
+{%endif%}
 {%if conference.feedbackopen and session.can_feedback%}
 <b>Feedback:</b> <a href="/events/feedback/{{conference.urlname}}/{{session.id}}/">Leave feedback</a><br/>
 {%endif%}

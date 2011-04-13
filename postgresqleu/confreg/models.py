@@ -9,6 +9,12 @@ import pytz
 
 from postgresqleu.countries.models import Country
 
+SKILL_CHOICES = (
+	(0, "Beginner"),
+	(1, "Intermediate"),
+	(2, "Advanced"),
+)
+
 class PaymentOption(models.Model):
 	name = models.CharField(max_length=64, blank=False, null=False)
 	infotext = models.TextField(blank=False, null=False)
@@ -41,6 +47,7 @@ class Conference(models.Model):
 	testers = models.ManyToManyField(User, null=False, blank=True, related_name="testers_set")
 	asktshirt = models.BooleanField(blank=False, null=False, default=True)
 	askfood = models.BooleanField(blank=False, null=False, default=True)
+	skill_levels = models.BooleanField(blank=False, null=False, default=True)
 	autoapprove = models.BooleanField(blank=False, null=False, default=False)
 	additionalintro = models.TextField(blank=True, null=False)
 	basetemplate = models.CharField(max_length=128, blank=True, null=True, default=None)
@@ -224,6 +231,7 @@ class ConferenceSession(models.Model):
 	cross_schedule = models.BooleanField(null=False, default=False)
 	can_feedback = models.BooleanField(null=False, default=True)
 	abstract = models.TextField(null=False, blank=True)
+	skill_level = models.IntegerField(null=False, default=1, choices=SKILL_CHOICES)
 
 	# Not a db field, but set from the view to track if the current user
 	# has given any feedback on this session.
@@ -232,6 +240,10 @@ class ConferenceSession(models.Model):
 	@property
 	def speaker_list(self):
 		return ", ".join([s.name for s in self.speaker.all()])
+
+	@property
+	def skill_level_string(self):
+		return (t for v,t in SKILL_CHOICES if v==self.skill_level).next()
 
 	def __unicode__(self):
 		return "%s: %s (%s)" % (
