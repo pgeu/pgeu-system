@@ -113,9 +113,9 @@ def feedback(request, confname):
 	# Generate a list of all feedback:able sessions, meaning all sessions that have already started,
 	# since you can't give feedback on something that does not yet exist.
 	if is_conf_tester:
-		sessions = ConferenceSession.objects.select_related().filter(conference=conference).filter(can_feedback=True)
+		sessions = ConferenceSession.objects.select_related().filter(conference=conference).filter(can_feedback=True).filter(status=1)
 	else:
-		sessions = ConferenceSession.objects.select_related().filter(conference=conference).filter(can_feedback=True).filter(starttime__lte=datetime.now())
+		sessions = ConferenceSession.objects.select_related().filter(conference=conference).filter(can_feedback=True).filter(starttime__lte=datetime.now()).filter(status=1)
 
 	# Then get a list of everything this user has feedbacked on
 	feedback = ConferenceSessionFeedback.objects.filter(conference=conference, attendee=request.user)
@@ -140,7 +140,7 @@ def feedback_session(request, confname, sessionid):
 		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
 	# Room for optimization: don't get these as separate steps
 	conference = get_object_or_404(Conference, urlname=confname)
-	session = get_object_or_404(ConferenceSession, pk=sessionid, conference=conference)
+	session = get_object_or_404(ConferenceSession, pk=sessionid, conference=conference, status=1)
 
 	if not conference.feedbackopen:
 		# Allow conference testers to override
@@ -304,11 +304,11 @@ class SessionSet(object):
 
 def schedule(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
-	daylist = ConferenceSession.objects.filter(conference=conference).dates('starttime', 'day')
+	daylist = ConferenceSession.objects.filter(conference=conference, status=1).dates('starttime', 'day')
 	days = []
 	tracks = {}
 	for d in daylist:
-		sessions = ConferenceSession.objects.select_related('track','room','speaker').filter(conference=conference,starttime__range=(d,d+timedelta(hours=23,minutes=59,seconds=59))).order_by('starttime','room__roomname')
+		sessions = ConferenceSession.objects.select_related('track','room','speaker').filter(conference=conference,status=1,starttime__range=(d,d+timedelta(hours=23,minutes=59,seconds=59))).order_by('starttime','room__roomname')
 		sessionset = SessionSet()
 		for s in sessions: sessionset.add(s)
 		days.append({
@@ -328,7 +328,7 @@ def schedule(request, confname):
 
 def schedule_ical(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
-	sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).order_by('starttime')
+	sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).order_by('starttime')
 	return render_to_response('confreg/schedule.ical', {
 		'conference': conference,
 		'sessions': sessions,
@@ -337,7 +337,7 @@ def schedule_ical(request, confname):
 
 def session(request, confname, sessionid, junk=None):
 	conference = get_object_or_404(Conference, urlname=confname)
-	session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False)
+	session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False, status=1)
 	return render_to_response('confreg/session.html', {
 		'conference': conference,
 		'session': session,
@@ -346,7 +346,7 @@ def session(request, confname, sessionid, junk=None):
 def speaker(request, confname, speakerid, junk=None):
 	conference = get_object_or_404(Conference, urlname=confname)
 	speaker = get_object_or_404(Speaker, pk=speakerid)
-	sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker, cross_schedule=False).order_by('starttime')
+	sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker, cross_schedule=False, status=1).order_by('starttime')
 	if len(sessions) < 1:
 		raise Http404("Speaker has no sessions at this conference")
 	return render_to_response('confreg/speaker.html', {
@@ -366,6 +366,7 @@ def speakerprofile(request):
 
 	speaker = get_object_or_404(Speaker, user=request.user)
 	conferences = Conference.objects.filter(conferencesession__speaker=speaker).distinct()
+	callforpapers = Conference.objects.filter(callforpapersopen=True)
 
 	if request.method=='POST':
 		# Attempt to save
@@ -381,5 +382,89 @@ def speakerprofile(request):
 	return render_to_response('confreg/speakerprofile.html', {
 			'speaker': speaker,
 			'conferences': conferences,
+			'callforpapers': callforpapers,
 			'form': form,
 	}, context_instance=RequestContext(request))
+
+@login_required
+def callforpapers(request, confname):
+	if settings.FORCE_SECURE_FORMS and not request.is_secure():
+		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
+
+	conference = get_object_or_404(Conference, urlname=confname)
+	if not conference.callforpapersopen:
+		raise Http404('This conference has no open call for papers')
+
+	try:
+		speaker = Speaker.objects.get(user=request.user)
+		sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker)
+	except Speaker.NotFound:
+		sessions = []
+
+	return render_to_response('confreg/callforpapers.html', {
+			'conference': conference,
+			'sessions': sessions,
+	}, context_instance=ConferenceContext(request, conference))
+
+@login_required
+@transaction.commit_on_success
+def callforpapers_new(request, confname):
+	if settings.FORCE_SECURE_FORMS and not request.is_secure():
+		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
+
+	conference = get_object_or_404(Conference, urlname=confname)
+	if not conference.callforpapersopen:
+		raise Http404('This conference has no open call for papers')
+
+	if not request.POST.has_key('title'):
+		raise Http404('Title not specified')
+	if len(request.POST['title']) < 1:
+		raise Http404('Title not specified')
+
+	# Find the speaker, or create
+	speaker, created = Speaker.objects.get_or_create(user=request.user)
+
+	s = ConferenceSession(conference=conference,
+						  title=request.POST['title'],
+						  status=0)
+	s.save()
+
+	# Add speaker (must be saved before we can do that)
+	s.speaker.add(speaker)
+	s.save()
+
+	# Redirect back
+	return HttpResponseRedirect("../%s/" % s.id)
+
+@login_required
+def callforpapers_edit(request, confname, sessionid):
+	if settings.FORCE_SECURE_FORMS and not request.is_secure():
+		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
+
+
+	conference = get_object_or_404(Conference, urlname=confname)
+	if not conference.callforpapersopen:
+		raise Http404('This conference has no open call for papers')
+
+	# Find users speaker record (should always exist when we get this far)
+	speaker = get_object_or_404(Speaker, user=request.user)
+
+	# Find the session record (should always exist when we get this far)
+	session = get_object_or_404(ConferenceSession, conference=conference,
+								speaker=speaker, pk=sessionid)
+
+	if request.method == 'POST':
+		# Save it!
+		form = CallForPapersForm(data=request.POST, instance=session)
+		if form.is_valid():
+			form.save()
+			return HttpResponseRedirect("..")
+	else:
+		# GET --> render empty form
+		form = CallForPapersForm(instance=session)
+
+	return render_to_response('confreg/callforpapersform.html', {
+			'form': form,
+			'session': session,
+			'conference': conference,
+	}, context_instance=ConferenceContext(request, conference))

@@ -4,6 +4,18 @@
 {%block content%}
 <h1>Speaker Profile</h1>
 
+{%if callforpapers%}
+<h2>Call for papers</h2>
+<p>
+The following conferences currently have open call for papers:
+<ul>
+  {%for c in callforpapers%}
+  <li><a href="/events/callforpapers/{{c.urlname}}/">{{c}}</a></li>
+  {%endfor%}
+</ul>
+</p>
+{%endif%}
+
 <h2>Conferences</h2>
 <p>
 You are currently registered as a speaker at the following conferences:

@@ -174,3 +174,29 @@ class SpeakerProfileForm(forms.ModelForm):
 		if img.size[0] > 128 or img.size[1] > 128:
 			raise ValidationError("Maximum image size is 128x128")
 		return self.cleaned_data['photofile']
+
+class CallForPapersForm(forms.ModelForm):
+	class Meta:
+		model = ConferenceSession
+		exclude = ('conference', 'speaker', 'starttime', 'endtime',
+				   'room', 'cross_schedule', 'can_feedback', 'status')
+
+	def __init__(self, *args, **kwargs):
+		super(CallForPapersForm, self).__init__(*args, **kwargs)
+		if not self.instance.conference.skill_levels:
+			del self.fields['skill_level']
+		if not self.instance.conference.track_set.exists():
+			del self.fields['track']
+		else:
+			self.fields['track'].queryset = Track.objects.filter(conference=self.instance.conference).order_by('trackname')
+
+	def clean_abstract(self):
+		abstract = self.cleaned_data.get('abstract')
+		if len(abstract) < 30:
+			raise ValidationError("Submitted abstract is too short")
+		return abstract
+
+	def clean_track(self):
+		if not self.cleaned_data.get('track'):
+			raise ValidationError("Please choose the track that is the closest match to your talk")
+		return self.cleaned_data.get('track')

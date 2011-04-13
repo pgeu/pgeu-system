@@ -1,0 +1,47 @@
+{%extends conftemplbase %}
+{%load markup%}
+{%block title%}Call for Papers - {{conference}}{%endblock%}
+{%block content%}
+<h1>Call for Papers - {{conference}}</h1>
+
+<p>
+{{conference.callforpapersintro|safe}}
+</p>
+
+<h2>Your submissions</h2>
+<p>
+You have made the following submissions to this conference:
+<ul>
+{%for s in sessions%}
+  <li>
+  {%if s.status = 0%}
+  <a href="{{s.id}}/">{{s.title}}</a> ({{s.status_string}})
+  {%else%}{%if s.status = 1%}
+  <a href="/events/schedule/{{conference.urlname}}/session/{{s.id}}/">{{s.title}}</a> ({{s.status_string}})
+  {%else%}
+  {{s.title}} ({{s.status_string}})
+  {%endif%}{%endif%}
+  </lI>
+{%empty%}
+  <li>No submission made</li>
+{%endfor%}
+</ul>
+</p>
+
+<h2>New submission</h2>
+<p>
+To create a new submission, enter the title here:
+<form method="post" action="new/">
+ <input type="text" name="title" /><br/>
+ <input type="submit" value="New submission"/>
+</form>
+</p>
+
+<h2>Speaker profile</h2>
+<p>
+Your <a href="/events/speakerprofile/">shared postgresql.eu speaker profile</a>
+will be used for all submissions.
+</p>
+
+{%endblock%}
+

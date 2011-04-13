@@ -15,6 +15,12 @@ SKILL_CHOICES = (
 	(2, "Advanced"),
 )
 
+STATUS_CHOICES = (
+	(0, "Submitted"),
+	(1, "Approved"),
+	(2, "Rejected"),
+)
+
 class PaymentOption(models.Model):
 	name = models.CharField(max_length=64, blank=False, null=False)
 	infotext = models.TextField(blank=False, null=False)
@@ -36,6 +42,7 @@ class Conference(models.Model):
 	contactaddr = models.EmailField(blank=False,null=False)
 	paymentoptions = models.ManyToManyField(PaymentOption)
 	active = models.BooleanField(blank=False,null=False,default=True)
+	callforpapersopen = models.BooleanField(blank=False,null=False,default=False)
 	feedbackopen = models.BooleanField(blank=False,null=False,default=True)
 	conferencefeedbackopen = models.BooleanField(blank=False,null=False,default=False)
 	confurl = models.CharField(max_length=128, blank=False, null=False)
@@ -51,6 +58,7 @@ class Conference(models.Model):
 	autoapprove = models.BooleanField(blank=False, null=False, default=False)
 	additionalintro = models.TextField(blank=True, null=False)
 	basetemplate = models.CharField(max_length=128, blank=True, null=True, default=None)
+	callforpapersintro = models.TextField(blank=True, null=False)
 
 	def __unicode__(self):
 		return self.conferencename
@@ -224,14 +232,18 @@ class ConferenceSession(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
 	speaker = models.ManyToManyField(Speaker)
 	title = models.CharField(max_length=200, null=False, blank=False)
-	starttime = models.DateTimeField(null=False, blank=False)
-	endtime = models.DateTimeField(null=True)
+	starttime = models.DateTimeField(null=True, blank=True)
+	endtime = models.DateTimeField(null=True, blank=True)
 	track = models.ForeignKey(Track, null=True, blank=True)
 	room = models.ForeignKey(Room, null=True, blank=True)
 	cross_schedule = models.BooleanField(null=False, default=False)
 	can_feedback = models.BooleanField(null=False, default=True)
 	abstract = models.TextField(null=False, blank=True)
 	skill_level = models.IntegerField(null=False, default=1, choices=SKILL_CHOICES)
+	status = models.IntegerField(null=False, default=0, choices=STATUS_CHOICES)
+	submissionnote = models.TextField(null=False, blank=True, verbose_name="Submission notes")
+	# NOTE! Any added fields need to be considered for inclusion in
+	# forms.CallForPapersForm!
 
 	# Not a db field, but set from the view to track if the current user
 	# has given any feedback on this session.
@@ -244,6 +256,10 @@ class ConferenceSession(models.Model):
 	@property
 	def skill_level_string(self):
 		return (t for v,t in SKILL_CHOICES if v==self.skill_level).next()
+
+	@property
+	def status_string(self):
+		return (t for v,t in STATUS_CHOICES if v==self.status).next()
 
 	def __unicode__(self):
 		return "%s: %s (%s)" % (
