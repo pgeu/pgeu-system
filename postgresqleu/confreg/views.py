@@ -361,6 +361,9 @@ def speakerphoto(request, speakerid):
 
 @login_required
 def speakerprofile(request):
+	if settings.FORCE_SECURE_FORMS and not request.is_secure():
+		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
+
 	speaker = get_object_or_404(Speaker, user=request.user)
 	conferences = Conference.objects.filter(conferencesession__speaker=speaker).distinct()
 
