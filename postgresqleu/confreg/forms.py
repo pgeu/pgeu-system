@@ -3,6 +3,8 @@ from django.forms import RadioSelect
 from django.forms.fields import *
 from django.forms import ValidationError
 
+from django.db.models.fields.files import ImageFieldFile
+
 from postgresqleu.confreg.models import *
 
 class ConferenceRegistrationForm(forms.ModelForm):
@@ -160,6 +162,9 @@ class SpeakerProfileForm(forms.ModelForm):
 	def clean_photofile(self):
 		if not self.cleaned_data['photofile']:
 			return self.cleaned_data['photofile'] # If it's None...
+		if isinstance(self.cleaned_data['photofile'], ImageFieldFile):
+			return self.cleaned_data['photofile'] # If it's unchanged...
+
 		img = None
 		try:
 			from PIL import ImageFile
