@@ -34,7 +34,7 @@ def home(request, confname):
 	if not conference.active:
 		return render_to_response('confreg/closed.html', {
 			'conference': conference,
-		})
+		}, context_instance=ConferenceContext(request, conference))
 
 	try:
 		reg = ConferenceRegistration.objects.get(conference=conference,
@@ -94,7 +94,7 @@ def feedback(request, confname):
 		if not conference.testers.filter(pk=request.user.id):
 			return render_to_response('confreg/feedbackclosed.html', {
 					'conference': conference,
-			})
+			}, context_instance=ConferenceContext(request, conference))
 		else:
 			is_conf_tester = True
 	else:
@@ -147,7 +147,7 @@ def feedback_session(request, confname, sessionid):
 		if not conference.testers.filter(pk=request.user.id):
 			return render_to_response('confreg/feedbackclosed.html', {
 					'conference': conference,
-			})
+			}, context_instance=ConferenceContext(request, conference))
 		else:
 			is_conf_tester = True
 	else:
@@ -157,7 +157,7 @@ def feedback_session(request, confname, sessionid):
 		return render_to_response('confreg/feedbacknotyet.html', {
 			'conference': conference,
 			'session': session,
-		})
+		}, context_instance=ConferenceContext(request, conference))
 
 	try:
 		feedback = ConferenceSessionFeedback.objects.get(conference=conference, session=session, attendee=request.user)
@@ -196,7 +196,7 @@ def feedback_conference(request, confname):
 		if not conference.testers.filter(pk=request.user.id):
 			return render_to_response('confreg/feedbackclosed.html', {
 					'conference': conference,
-			})
+			}, context_instance=ConferenceContext(request, conference))
 		else:
 			is_conf_tester = True
 	else:
