@@ -199,7 +199,7 @@ class CallForPapersForm(forms.ModelForm):
 	def clean_abstract(self):
 		abstract = self.cleaned_data.get('abstract')
 		if len(abstract) < 30:
-			raise ValidationError("Submitted abstract is too short")
+			raise ValidationError("Submitted abstract is too short (must be at least 30 characters)")
 		return abstract
 
 	def clean_track(self):
