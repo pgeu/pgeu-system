@@ -14,13 +14,13 @@ You have made the following submissions to this conference:
 <ul>
 {%for s in sessions%}
   <li>
-  {%if s.status = 0%}
+  {%ifequal s.status 0 %}
   <a href="{{s.id}}/">{{s.title}}</a> ({{s.status_string}})
-  {%else%}{%if s.status = 1%}
+  {%else%}{%ifequal s.status  1 %}
   <a href="/events/schedule/{{conference.urlname}}/session/{{s.id}}/">{{s.title}}</a> ({{s.status_string}})
   {%else%}
   {{s.title}} ({{s.status_string}})
-  {%endif%}{%endif%}
+  {%endifequal%}{%endifequal%}
   </lI>
 {%empty%}
   <li>No submission made</li>
