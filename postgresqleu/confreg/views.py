@@ -19,7 +19,10 @@ import base64
 #
 def ConferenceContext(request, conference):
 	d = RequestContext(request)
-	conftemplbase = conference.template_override and conference.template_override or "nav_events.html"
+	if conference and conference.template_override:
+		conftemplbase = conference.template_override
+	else:
+		conftemplbase = "nav_events.html"
 	d.update({
 			'conftemplbase': conftemplbase,
 			})
@@ -360,7 +363,7 @@ def speakerphoto(request, speakerid):
 	return HttpResponse(base64.b64decode(speakerphoto.photo), mimetype='image/jpg')
 
 @login_required
-def speakerprofile(request):
+def speakerprofile(request, confurlname=None):
 	if settings.FORCE_SECURE_FORMS and not request.is_secure():
 		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
 
@@ -373,9 +376,8 @@ def speakerprofile(request):
 		speaker = None
 		conferences = []
 		callforpapers = None
-		print "eek"
 	except Exception, e:
-		print e
+		pass
 
 	if request.method=='POST':
 		# Attempt to save
@@ -392,12 +394,17 @@ def speakerprofile(request):
 	else:
 		form = SpeakerProfileForm(instance=speaker)
 
+	if confurlname:
+		context = ConferenceContext(request,
+									get_object_or_404(Conference, urlname=confurlname))
+	else:
+		context = ConferenceContext(request, None)
 	return render_to_response('confreg/speakerprofile.html', {
 			'speaker': speaker,
 			'conferences': conferences,
 			'callforpapers': callforpapers,
 			'form': form,
-	}, context_instance=RequestContext(request))
+	}, context_instance=context)
 
 @login_required
 def callforpapers(request, confname):
