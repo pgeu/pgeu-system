@@ -364,12 +364,25 @@ def speakerprofile(request):
 	if settings.FORCE_SECURE_FORMS and not request.is_secure():
 		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
 
-	speaker = get_object_or_404(Speaker, user=request.user)
-	conferences = Conference.objects.filter(conferencesession__speaker=speaker).distinct()
-	callforpapers = Conference.objects.filter(callforpapersopen=True)
+	speaker = conferences = callforpapers = None
+	try:
+		speaker = get_object_or_404(Speaker, user=request.user)
+		conferences = Conference.objects.filter(conferencesession__speaker=speaker).distinct()
+		callforpapers = Conference.objects.filter(callforpapersopen=True)
+	except Speaker.DoesNotExist:
+		speaker = None
+		conferences = []
+		callforpapers = None
+		print "eek"
+	except Exception, e:
+		print e
 
 	if request.method=='POST':
 		# Attempt to save
+		# If this is a new speaker, create an instance for it
+		if not speaker:
+			speaker = Speaker(user=request.user, fullname=request.user.first_name)
+
 		form = SpeakerProfileForm(data=request.POST, files=request.FILES, instance=speaker)
 		if form.is_valid():
 			if request.FILES.has_key('photo'):

@@ -4,6 +4,14 @@
 {%block content%}
 <h1>Speaker Profile</h1>
 
+{%if not speaker %}
+<h2>New speaker</h2>
+<p>
+Please fill out the form below to register your speaker profile. Once
+this is done, you will be presented with a list of open call for papers.
+</p>
+{%endif%}
+
 {%if callforpapers%}
 <h2>Call for papers</h2>
 <p>
@@ -16,6 +24,7 @@ The following conferences currently have open call for papers:
 </p>
 {%endif%}
 
+{%if conferences%}
 <h2>Conferences</h2>
 <p>
 You are currently registered as a speaker at the following conferences:
@@ -25,6 +34,7 @@ You are currently registered as a speaker at the following conferences:
 {%endfor%}
 </ul>
 </p>
+{%endif%}
 
 <h2>Speaker profile</h2>
 <p>
@@ -39,10 +49,12 @@ you are a speaker.
 
 <form method="post" action="." enctype="multipart/form-data">
 <table id="speakerprofile_table">
+{%if speaker%}
 <tr>
  <th>Name</th>
  <td>{{speaker.fullname}}</td>
 </tr>
+{%endif%}
 <tr>
  <th>{{form.company.label_tag}}</th>
  <td>{{form.company}}{% if form.company.errors %}{{ form.company.errors}}{% endif %}</td>
