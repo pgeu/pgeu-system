@@ -68,9 +68,9 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'postgresqleu.urls'
 
-TEMPLATE_DIRS = (
+TEMPLATE_DIRS = [
 	'../template',
-)
+]
 
 INSTALLED_APPS = (
     'django.contrib.auth',
