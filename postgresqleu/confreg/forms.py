@@ -184,7 +184,8 @@ class CallForPapersForm(forms.ModelForm):
 	class Meta:
 		model = ConferenceSession
 		exclude = ('conference', 'speaker', 'starttime', 'endtime',
-				   'room', 'cross_schedule', 'can_feedback', 'status')
+				   'room', 'cross_schedule', 'can_feedback', 'status',
+				   'initialsubmit')
 
 	def __init__(self, *args, **kwargs):
 		super(CallForPapersForm, self).__init__(*args, **kwargs)

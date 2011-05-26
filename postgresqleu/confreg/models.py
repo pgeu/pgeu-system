@@ -242,6 +242,7 @@ class ConferenceSession(models.Model):
 	skill_level = models.IntegerField(null=False, default=1, choices=SKILL_CHOICES)
 	status = models.IntegerField(null=False, default=0, choices=STATUS_CHOICES)
 	submissionnote = models.TextField(null=False, blank=True, verbose_name="Submission notes")
+	initialsubmit = models.DateTimeField(null=True, blank=True)
 	# NOTE! Any added fields need to be considered for inclusion in
 	# forms.CallForPapersForm!
 

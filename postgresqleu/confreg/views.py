@@ -439,7 +439,8 @@ def callforpapers_new(request, confname):
 
 	s = ConferenceSession(conference=conference,
 						  title=request.POST['title'],
-						  status=0)
+						  status=0,
+						  initialsubmit=datetime.now())
 	s.save()
 
 	# Add speaker (must be saved before we can do that)
