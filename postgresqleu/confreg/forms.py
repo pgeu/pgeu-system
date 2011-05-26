@@ -190,7 +190,7 @@ class CallForPapersForm(forms.ModelForm):
 		super(CallForPapersForm, self).__init__(*args, **kwargs)
 		if not self.instance.conference.skill_levels:
 			del self.fields['skill_level']
-		if not self.instance.conference.track_set.exists():
+		if not self.instance.conference.track_set.count() > 0:
 			del self.fields['track']
 		else:
 			self.fields['track'].queryset = Track.objects.filter(conference=self.instance.conference).order_by('trackname')
