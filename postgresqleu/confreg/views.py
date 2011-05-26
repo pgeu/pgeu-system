@@ -398,7 +398,7 @@ def callforpapers(request, confname):
 	try:
 		speaker = Speaker.objects.get(user=request.user)
 		sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker)
-	except Speaker.NotFound:
+	except Speaker.DoesNotExist:
 		sessions = []
 
 	return render_to_response('confreg/callforpapers.html', {
