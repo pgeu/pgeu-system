@@ -384,6 +384,7 @@ def speakerprofile(request, confurlname=None):
 		# If this is a new speaker, create an instance for it
 		if not speaker:
 			speaker = Speaker(user=request.user, fullname=request.user.first_name)
+			speaker.save()
 
 		form = SpeakerProfileForm(data=request.POST, files=request.FILES, instance=speaker)
 		if form.is_valid():
