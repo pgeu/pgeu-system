@@ -190,7 +190,7 @@ class Speaker(models.Model):
 	def get_upload_path(instance, filename):
 		return "%s" % instance.id
 
-	user = models.ForeignKey(User, null=True, blank=True)
+	user = models.ForeignKey(User, null=True, blank=True, unique=True)
 	fullname = models.CharField(max_length=100, null=False, blank=False)
 	company = models.CharField(max_length=100, null=False, blank=True)
 	abstract = models.TextField(null=False, blank=True)
