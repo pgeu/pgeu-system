@@ -58,6 +58,7 @@ class Conference(models.Model):
 	autoapprove = models.BooleanField(blank=False, null=False, default=False)
 	additionalintro = models.TextField(blank=True, null=False)
 	basetemplate = models.CharField(max_length=128, blank=True, null=True, default=None)
+	templatemodule = models.CharField(max_length=128, blank=True, null=True, default=None)
 	callforpapersintro = models.TextField(blank=True, null=False)
 
 	def __unicode__(self):

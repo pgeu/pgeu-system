@@ -10,6 +10,7 @@ from forms import *
 
 from datetime import datetime, timedelta
 import base64
+import sys
 
 #
 # The ConferenceContext allows overriding of the 'conftemplbase' variable,
@@ -26,6 +27,20 @@ def ConferenceContext(request, conference):
 	d.update({
 			'conftemplbase': conftemplbase,
 			})
+
+	# Check if there is any additional data to put into the context
+	if conference and conference.templatemodule:
+		pathsave = sys.path
+		sys.path.insert(0, conference.templatemodule)
+		try:
+			m = __import__('templateextra', globals(), locals(), ['context_template_additions'])
+			d.update(m.context_template_additions())
+		except Exception, ex:
+			# Ignore problems, because we're lazy. Better render without the
+			# data than not render at all.
+			pass
+		sys.path = pathsave
+
 	return d
 
 @login_required
