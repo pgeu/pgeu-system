@@ -458,7 +458,10 @@ def callforpapers_new(request, confname):
 		raise Http404('Title not specified')
 
 	# Find the speaker, or create
-	speaker, created = Speaker.objects.get_or_create(user=request.user, fullname=request.user.first_name)
+	speaker, created = Speaker.objects.get_or_create(user=request.user)
+	if created:
+		speaker.fullname = request.user.first_name
+		speaker.save()
 
 	s = ConferenceSession(conference=conference,
 						  title=request.POST['title'],
