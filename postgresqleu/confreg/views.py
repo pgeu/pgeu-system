@@ -50,9 +50,10 @@ def home(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 
 	if not conference.active:
-		return render_to_response('confreg/closed.html', {
-			'conference': conference,
-		}, context_instance=ConferenceContext(request, conference))
+		if not conference.testers.filter(pk=request.user.id):
+			return render_to_response('confreg/closed.html', {
+					'conference': conference,
+			}, context_instance=ConferenceContext(request, conference))
 
 	try:
 		reg = ConferenceRegistration.objects.get(conference=conference,
