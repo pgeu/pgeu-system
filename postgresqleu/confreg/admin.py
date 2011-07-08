@@ -80,7 +80,7 @@ class ConferenceSessionAdmin(admin.ModelAdmin):
 	search_fields = ['title', ]
 
 class RegistrationTypeAdmin(admin.ModelAdmin):
-	list_display = ['conference', 'regtype', 'cost', 'active']
+	list_display = ['conference', 'regtype', 'cost', 'sortkey', 'active']
 	list_filter = ['conference',]
 	ordering = ['conference','regtype']
 
