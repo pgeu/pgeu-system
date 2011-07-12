@@ -61,6 +61,16 @@ the bottom of this page for information about your payment status.</p>
        {{ form.phone.label_tag }} <br/>
         {{ form.phone }} {% if form.phone.errors %}{{ form.phone.errors}}{% endif %}
       </div>
+
+      <div{% if form.twittername.errors %} class="errfld"{% endif %}>
+       {{ form.twittername.label_tag }} <br/>
+        {{ form.twittername }} {% if form.twittername.errors %}{{ form.twittername.errors}}{% endif %}
+      </div>
+
+      <div{% if form.nick.errors %} class="errfld"{% endif %}>
+       {{ form.nick.label_tag }} <br/>
+        {{ form.nick }} {% if form.nick.errors %}{{ form.nick.errors}}{% endif %}
+      </div>
  </fieldset>
 
  {%if conference.asktshirt or conference.askfood %}

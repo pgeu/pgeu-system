@@ -149,6 +149,8 @@ class ConferenceRegistration(models.Model):
 	shirtsize = models.ForeignKey(ShirtSize, null=True, blank=True, verbose_name="Preferred T-shirt size")
 	dietary = models.CharField(max_length=100, null=False, blank=True, verbose_name="Special dietary needs")
 	additionaloptions = models.ManyToManyField(ConferenceAdditionalOption, null=False, blank=True, verbose_name="Additional options")
+	twittername = models.CharField(max_length=100, null=False, blank=True, verbose_name="Twitter account")
+	nick = models.CharField(max_length=100, null=False, blank=True, verbose_name="Nickname")
 
 	# Admin fields!
 	payconfirmedat = models.DateField(null=True, blank=True, verbose_name="Payment confirmed at")
