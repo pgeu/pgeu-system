@@ -50,6 +50,12 @@ class Conference(models.Model):
 	listadminpwd = models.CharField(max_length=128, blank=True, null=False)
 	speakerlistadminurl = models.CharField(max_length=128, blank=True, null=False)
 	speakerlistadminpwd = models.CharField(max_length=128, blank=True, null=False)
+	twitter_user = models.CharField(max_length=32, blank=True, null=False)
+	twitter_attendeelist = models.CharField(max_length=32, blank=True, null=False)
+	twitter_speakerlist = models.CharField(max_length=32, blank=True, null=False)
+	twitter_token = models.CharField(max_length=128, blank=True, null=False)
+	twitter_secret = models.CharField(max_length=128, blank=True, null=False)
+
 	administrators = models.ManyToManyField(User, null=False, blank=True)
 	testers = models.ManyToManyField(User, null=False, blank=True, related_name="testers_set")
 	asktshirt = models.BooleanField(blank=False, null=False, default=True)
