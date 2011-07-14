@@ -56,6 +56,10 @@ you are a speaker.
 </tr>
 {%endif%}
 <tr>
+ <th>{{form.twittername.label_tag}}:</th>
+ <td>{{form.twittername}}{% if form.twittername.errors %}{{ form.twittername.errors}}{% endif %}</td>
+</tr>
+<tr>
  <th>{{form.company.label_tag}}:</th>
  <td>{{form.company}}{% if form.company.errors %}{{ form.company.errors}}{% endif %}</td>
 </tr>

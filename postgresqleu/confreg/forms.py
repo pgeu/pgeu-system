@@ -180,6 +180,13 @@ class SpeakerProfileForm(forms.ModelForm):
 			raise ValidationError("Maximum image size is 128x128")
 		return self.cleaned_data['photofile']
 
+	def clean_twittername(self):
+		if not self.cleaned_data['twittername']:
+			return self.cleaned_data['twittername']
+		if not self.cleaned_data['twittername'][0] == '@':
+			return "@%s" % self.cleaned_data['twittername']
+		return self.cleaned_data['twittername']
+
 class CallForPapersForm(forms.ModelForm):
 	class Meta:
 		model = ConferenceSession

@@ -195,6 +195,7 @@ class Speaker(models.Model):
 
 	user = models.ForeignKey(User, null=True, blank=True, unique=True)
 	fullname = models.CharField(max_length=100, null=False, blank=False)
+	twittername = models.CharField(max_length=32, null=False, blank=True)
 	company = models.CharField(max_length=100, null=False, blank=True)
 	abstract = models.TextField(null=False, blank=True)
 	photofile = models.ImageField(upload_to=get_upload_path, storage=SpeakerImageStorage(), blank=True, null=True, verbose_name="Photo")

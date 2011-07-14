@@ -10,6 +10,7 @@
 {%endif%}
 <h2>{{speaker.name}}</h2>
 {%if speaker.company%}<div>Company: {{speaker.company}}</div>{%endif%}
+{%if speaker.twittername%}<div>Twitter: <a href="http://twitter.com/{{speaker.twittername}}">{{speaker.twittername}}</a></div>{%endif%}
 <p>
 {{speaker.abstract|markdown:"safe"}}
 </p>
