@@ -14,12 +14,12 @@ import cgi
 import ConfigParser
 
 cfg = ConfigParser.ConfigParser()
-cfg.read('planet.ini')
+cfg.read('twitter_sync.ini')
 
 if not cfg.has_option('twitter', 'consumer') or not cfg.has_option('twitter', 'consumersecret'):
 	print "Before you can run this, you need to register an application at"
 	print "developer.twitter.com and put the consumer and consumersecret values"
-	print "in the [twitter] section of planet.ini."
+	print "in the [twitter] section of twitter_sync.ini."
 	sys.exit(1)
 
 consumer = oauth.Consumer(cfg.get('twitter', 'consumer'), cfg.get('twitter', 'consumersecret'))
@@ -54,7 +54,4 @@ r = dict(cgi.parse_qsl(content))
 print "Access token received."
 print "Token: %s" % r['oauth_token']
 print "Secret: %s" % r['oauth_token_secret']
-print "Record these two values in planet.ini, and you're good to go!"
-
-
-
+print "Record these two values in the database, and you're good to go!"
