@@ -97,7 +97,7 @@ for confid, url, pwd in curs.fetchall():
         INNER JOIN confreg_speaker s ON au.id=s.user_id
         INNER JOIN confreg_conferencesession_speaker csp ON csp.speaker_id=s.id
         INNER JOIN confreg_conferencesession cs ON cs.id=csp.conferencesession_id
-        WHERE cs.conference_id=%(id)s""",
+        WHERE cs.conference_id=%(id)s AND cs.status=1""",
 			   { 'id': confid, }
     )
 	ms = MailmanSynchronizer(url,pwd)
