@@ -20,6 +20,23 @@ the bottom of this page for information about your payment status.</p>
 <p><b>Note! This form contains errors and has not been saved!</b></p>
 {% endif %}
 
+ {% if reg.isregistered %}
+ <fieldset id="payment_status_top">
+  <legend>Payment status</legend>
+  {% if reg.payconfirmedat %}
+   <p>Your registration and payment have been confirmed by {{reg.payconfirmedby}} at {{reg.payconfirmedat}}.
+    Welcome to {{conference}}!
+   </p>
+  {% else %}
+    <p>Your registration and payment have <b>not</b> been confirmed yet. If you have paid and have not received
+     confirmation within approximately two weeks, please contact
+     <a href="mailto:{{conference.contactaddr}}">{{conference.contactaddr}}</a> to verify your status.
+    </p>
+    <p>See <a href="#payoptions">below</a> for further payment details.</p>
+  {% endif %}
+ </fieldset>
+ {%endif%}
+
  <fieldset id="personal_information">
   <legend>Personal information</legend>
       <div{% if form.regtype.errors %} class="errfld"{% endif %}>
@@ -112,6 +129,7 @@ the bottom of this page for information about your payment status.</p>
    </p>
   {% else %}
    {% if reg.needspayment %}
+    <a name="payoptions"></a>
     <p>Your payment has <b>not</b> been confirmed yet. If you have paid and have not received
      confirmation within approximately two weeks, please contact
      <a href="mailto:{{conference.contactaddr}}">{{conference.contactaddr}}</a> to verify your status.
