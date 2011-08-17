@@ -175,6 +175,10 @@ class ConferenceRegistration(models.Model):
 		if self.regtype.cost == 0: return False
 		return True
 
+	@property
+	def fullname(self):
+		return "%s %s" % (self.firstname, self.lastname)
+
 	# For the admin interface (mainly)
 	def __unicode__(self):
 		return "%s: %s %s <%s>" % (self.conference, self.firstname, self.lastname, self.email)
