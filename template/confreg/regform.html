@@ -139,7 +139,7 @@ the bottom of this page for information about your payment status.</p>
       <b>Note!</b> Make sure you save the form above before you click
       any payment link, or the sum on your bill may be incorrect!
     </div>
-    {% for payoption in conference.paymentoptions.all %}
+    {% for payoption in payoptions %}
      <h3>{{payoption.name}}</h3>
      <p>{{payoption.infotext|markdown:"safe"}}</p>
      {% if payoption.paypalrecip %}

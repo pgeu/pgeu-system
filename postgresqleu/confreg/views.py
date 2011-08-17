@@ -94,6 +94,7 @@ def home(request, confname):
 		'conference': conference,
 		'additionaloptions': conference.conferenceadditionaloption_set.all(),
 		'costamount': reg.regtype and reg.regtype.cost or 0,
+		'payoptions': [{'name': p.name, 'infotext': p.infotext.replace('{{regid}}', str(reg.id)), 'paypalrecip': p.paypalrecip} for p in conference.paymentoptions.all()],
 	}, context_instance=ConferenceContext(request, conference))
 
 def feedback_available(request):
