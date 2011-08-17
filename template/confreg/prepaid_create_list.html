@@ -1,0 +1,45 @@
+{%extends "navbase.html" %}
+{%load markup%}
+{%block title%}Prepaid vouchers{%endblock%}
+{%block content%}
+<h1>Prepaid vouchers</h1>
+<h2>Batch</h2>
+<table>
+ <tr>
+  <th>Batch id:</th>
+  <td>{{batch.id}}</td>
+ </tr>
+ <tr>
+  <th>Registration type:</th>
+  <td>{{batch.regtype}}</td>
+ </tr>
+ <tr>
+  <th>Buyer:</th>
+  <td>{{batch.buyer}}</td>
+ </tr>
+</table>
+
+<h2>Vouchers</h2>
+<table>
+<tr>
+ <th>Voucher code</th>
+ <th>User by</th>
+ <th>Used at</th>
+</tr>
+{% for v in vouchers %}
+<tr>
+ <td><code>{{v.vouchervalue}}</code></td>
+ <td>{{v.user.fullname|default:""}}</td>
+ <td>{{v.usedate|default:""}}</td>
+</tr>
+{%endfor%}
+</table>
+
+<h2>Voucher codes again</h2>
+<p>In a format suitable for clipboard copying...</p>
+
+<textarea cols="60" rows="{{vouchers|length}}">
+{%for v in vouchers%}{{v.vouchervalue}}
+{%endfor%}</textarea>
+
+{%endblock%}

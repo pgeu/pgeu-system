@@ -346,3 +346,28 @@ class ConferenceFeedbackAnswer(models.Model):
 
 	class Meta:
 		ordering = ['conference', 'attendee', 'question', ]
+
+class PrepaidBatch(models.Model):
+	conference = models.ForeignKey(Conference, null=False, blank=False)
+	regtype = models.ForeignKey(RegistrationType, null=False, blank=False)
+	buyer = models.ForeignKey(User, null=False, blank=False)
+
+	def __unicode__(self):
+		return "%s: %s for %s" % (self.conference, self.regtype, self.buyer)
+
+	class Meta:
+		verbose_name_plural = "Prepaid batches"
+		ordering = ['conference', 'id', ]
+
+class PrepaidVoucher(models.Model):
+	conference = models.ForeignKey(Conference, null=False, blank=False)
+	vouchervalue = models.CharField(max_length=100, null=False, blank=False, unique=True)
+	batch = models.ForeignKey(PrepaidBatch, null=False, blank=False)
+	user = models.ForeignKey(ConferenceRegistration, null=True, blank=True)
+	usedate = models.DateTimeField(null=True, blank=True)
+
+	def __unicode__(self):
+		return self.vouchervalue
+
+	class Meta:
+		ordering = ['batch', 'vouchervalue', ]

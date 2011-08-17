@@ -1,0 +1,23 @@
+{%extends "navbase.html" %}
+{%load markup%}
+{%block title%}Create prepaid vouchers{%endblock%}
+{%block content%}
+<h1>Create prepaid vouchers</h1>
+<p>
+<b>NOTE!</b> Before doing this, you should <b>already</b> have invoiced
+the customer, <i>and</i> verified that payment is completed!
+</p>
+
+
+{% if form.errors %}
+<p><b style="color:red;">Note! This form contains errors and has not been saved!</b></p>
+{% endif %}
+
+<form method="post" action="." enctype="multipart/form-data">
+<table>
+{{form.as_table}}
+</table>
+<input type="submit" value="Save">
+</form>
+
+{%endblock%}

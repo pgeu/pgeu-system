@@ -213,3 +213,55 @@ class CallForPapersForm(forms.ModelForm):
 		if not self.cleaned_data.get('track'):
 			raise ValidationError("Please choose the track that is the closest match to your talk")
 		return self.cleaned_data.get('track')
+
+class PrepaidForm(forms.Form):
+	voucher = forms.CharField(max_length=100, label="Voucher code")
+
+	def __init__(self, registration=None, *args, **kwargs):
+		self.reg = registration
+		super(PrepaidForm, self).__init__(*args, **kwargs)
+
+	def clean_voucher(self):
+		# Check if the voucher code is available
+		try:
+			self.voucher = PrepaidVoucher.objects.get(vouchervalue=self.cleaned_data.get('voucher'))
+		except PrepaidVoucher.DoesNotExist:
+			raise ValidationError("Specified voucher code does not exist.")
+
+		# Make sure this voucher is not already used
+		if self.voucher.user or self.voucher.usedate:
+			raise ValidationError("This voucher has already been used for another registration.")
+
+		if self.voucher.conference != self.reg.conference:
+			raise ValidationError("Specified voucher is for a different conference!")
+
+		if self.voucher.batch.regtype != self.reg.regtype:
+			raise ValidationError("Specified voucher is for a different type of registration.")
+
+		if len(self.reg.additionaloptions.filter(cost__gt=0)):
+			raise ValidationError("Your registration contains paid additional options. This is currently not supported for prepaid vouchers. Please contact %s for manual processing." % self.reg.conference.contactaddr)
+
+		# All things validate!
+
+class PrepaidCreateForm(forms.Form):
+	conference = forms.ModelChoiceField(queryset=Conference.objects.filter(active=True))
+	regtype = forms.ModelChoiceField(queryset=RegistrationType.objects.all())
+	count = forms.IntegerField(min_value=2, max_value=100)
+	buyer = forms.ModelChoiceField(queryset=User.objects.all().order_by('username'), help_text="Pick the user who bought the batch. If he/she is not registered, pick your own userid")
+	confirm = forms.BooleanField(help_text="Confirm that the chosen registration type and count are correct (there is no undo past this point, the vouchers will be created!")
+
+	def __init__(self, *args, **kwargs):
+		super(PrepaidCreateForm, self).__init__(*args, **kwargs)
+		if self.data and self.data.has_key('conference'):
+			self.fields['regtype'].queryset=RegistrationType.objects.filter(conference=self.data.get('conference'))
+			if not (self.data.has_key('regtype')
+					and self.data.has_key('count')
+					and self.data.get('regtype')
+					and self.data.get('count')):
+				del self.fields['confirm']
+		else:
+			# No conference selected, so remove other fields
+			del self.fields['regtype']
+			del self.fields['count']
+			del self.fields['buyer']
+			del self.fields['confirm']

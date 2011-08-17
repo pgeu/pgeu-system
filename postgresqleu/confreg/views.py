@@ -10,6 +10,7 @@ from forms import *
 
 from datetime import datetime, timedelta
 import base64
+import os
 import sys
 
 #
@@ -510,3 +511,110 @@ def callforpapers_edit(request, confname, sessionid):
 			'session': session,
 			'conference': conference,
 	}, context_instance=ConferenceContext(request, conference))
+
+
+@login_required
+@transaction.commit_on_success
+def prepaid(request, confname, regid):
+	# Pay with prepaid voucher
+	if settings.FORCE_SECURE_FORMS and not request.is_secure():
+		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
+
+	conference = get_object_or_404(Conference, urlname=confname)
+	reg = get_object_or_404(ConferenceRegistration, id=regid, attendee=request.user, conference=conference)
+
+	if request.method == 'POST':
+		# Trying to make a payment - verify that the data is correct before
+		# accepting the voucher.
+		form = PrepaidForm(registration=reg, data=request.POST)
+		if form.is_valid():
+			# The form is valid, so let's confirm the registration
+			form.voucher.user = reg
+			form.voucher.usedate = datetime.now()
+			form.voucher.save()
+			reg.payconfirmedat = datetime.now()
+			reg.payconfirmedby = "voucher"
+			reg.save()
+			return HttpResponseRedirect('../..')
+		# Else fall-through and re-render the form
+	else:
+		# GET -> render form if not already paid
+		if reg.payconfirmedat:
+			return render_to_response('confreg/prepaid_already.html', {
+					'conference': conference,
+			}, context_instance=ConferenceContext(request, conference))
+		# Not paid yet, so render a form for it
+		form = PrepaidForm()
+
+	return render_to_response('confreg/prepaid_form.html', {
+			'form': form,
+			'reg': reg,
+			'conference': conference,
+			}, context_instance=ConferenceContext(request, conference))
+
+@login_required
+@transaction.commit_on_success
+@user_passes_test(lambda u: u.has_module_perms('invoicemgr'))
+def createvouchers(request):
+	# Creation of pre-paid vouchers for conference registrations
+	if settings.FORCE_SECURE_FORMS and not request.is_secure():
+		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
+
+	if request.method == 'POST':
+		form = PrepaidCreateForm(data=request.POST)
+		if form.is_valid():
+			# All data is correct, create the vouchers
+			# (by first creating a batch)
+
+			conference = Conference.objects.get(pk=form.data['conference'])
+			regtype = RegistrationType.objects.get(pk=form.data['regtype'], conference=conference)
+			buyer = User.objects.get(pk=form.data['buyer'])
+
+			batch = PrepaidBatch(conference=conference,
+								 regtype=regtype,
+								 buyer=buyer)
+			batch.save()
+
+			vouchers=[]
+			for n in range(0, int(form.data['count'])):
+				v = PrepaidVoucher(conference=conference,
+								   vouchervalue=base64.b64encode(os.urandom(37)).rstrip('='),
+								   batch=batch)
+				v.save()
+			return HttpResponseRedirect('%s/' % batch.id)
+		# Else fall through to re-render
+	else:
+		# Get request means we render an empty form
+		form = PrepaidCreateForm()
+
+	return render_to_response('confreg/prepaid_create_form.html', {
+			'form': form,
+			}, context_instance=RequestContext(request))
+
+@login_required
+@transaction.commit_on_success
+def viewvouchers(request, batchid):
+	# View existing prepaid vouchers
+	if settings.FORCE_SECURE_FORMS and not request.is_secure():
+		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
+
+	# WARNING! THIS VIEW IS NOT RESTRICTED TO ADMINS!
+	# The same view is also used by the person who bought the voucher!
+	# therefor, we need to make very sure he has permission!
+	if not request.user.has_module_perms('invoicemgr'):
+		# Superusers and invoice managers gain access through the generic
+		# permission. Anybody else can only view his/her own batches
+		batch = PrepaidBatch.objects.get(pk=batchid)
+		if batch.buyer != request.user:
+			raise Http404()
+	else:
+		# User has direct permissions, just retrieve the batch
+		batch = PrepaidBatch.objects.get(pk=batchid)
+	# Done with permissions checks
+
+	vouchers = batch.prepaidvoucher_set.all()
+
+	return render_to_response('confreg/prepaid_create_list.html', {
+			'batch': batch,
+			'vouchers': vouchers,
+			})

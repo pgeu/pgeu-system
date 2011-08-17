@@ -59,6 +59,9 @@ urlpatterns = patterns('',
 	(r'^events/callforpapers/(\w+)/$', postgresqleu.confreg.views.callforpapers),
 	(r'^events/callforpapers/(\w+)/new/$', postgresqleu.confreg.views.callforpapers_new),
 	(r'^events/callforpapers/(\w+)/(\d+)/$', postgresqleu.confreg.views.callforpapers_edit),
+	(r'^events/register/(\w+)/prepaid/(\d+)/$', postgresqleu.confreg.views.prepaid),
+	(r'^events/prepaid/$', postgresqleu.confreg.views.createvouchers),
+	(r'^events/prepaid/(\d+)/$', postgresqleu.confreg.views.viewvouchers),
 
 	# Membership management
 	(r'^membership/$', postgresqleu.membership.views.home),
