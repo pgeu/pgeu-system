@@ -357,7 +357,7 @@ def sessionlist(request, confname):
 
 def schedule_ical(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
-	sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).order_by('starttime')
+	sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).filter(starttime__isnull=False).order_by('starttime')
 	return render_to_response('confreg/schedule.ical', {
 		'conference': conference,
 		'sessions': sessions,
