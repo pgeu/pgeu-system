@@ -79,6 +79,28 @@ class ConferenceSessionAdmin(admin.ModelAdmin):
 	list_filter = ['conference', 'track', 'status', ]
 	search_fields = ['title', ]
 
+	def queryset(self, request):
+		qs = super(ConferenceSessionAdmin, self).queryset(request)
+		if request.user.is_superuser:
+			return qs
+		else:
+			return qs.filter(conference__administrators=request.user)
+
+	def has_change_permission(self, request, obj=None):
+		if not obj:
+			return True # So they can see the change list page
+		if request.user.is_superuser:
+			return True
+		else:
+			if obj.conference.administrators.filter(pk=request.user.id):
+				return True
+			else:
+				return False
+	has_delete_permission = has_change_permission
+
+	def has_add_permission(self, request):
+		return request.user.is_superuser
+
 class RegistrationTypeAdmin(admin.ModelAdmin):
 	list_display = ['conference', 'regtype', 'cost', 'sortkey', 'active']
 	list_filter = ['conference',]
