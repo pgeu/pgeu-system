@@ -347,6 +347,14 @@ def schedule(request, confname):
 		'tracks': tracks,
 	}, context_instance=ConferenceContext(request, conference))
 
+def sessionlist(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+	sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).order_by('track', 'title')
+	return render_to_response('confreg/sessionlist.html', {
+		'conference': conference,
+		'sessions': sessions,
+	}, context_instance=ConferenceContext(request, conference))
+
 def schedule_ical(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).order_by('starttime')

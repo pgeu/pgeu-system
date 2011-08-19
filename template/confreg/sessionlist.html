@@ -1,0 +1,27 @@
+{%extends conftemplbase %}
+{%block title%}Conference Sessions - {{conference}}{%endblock%}
+{%block content%}
+<h1>Conference Sessions - {{conference}}</h1>
+<p>
+The following list contains all the approved talks for {{conference}}.
+Note that they may not yet have been scheduled!
+You can find the full conference information at the
+<a href="{{conference.confurl}}">conference website</a>.
+</p>
+
+{%for session in sessions%}
+{%ifchanged session.track%}
+{%if not forloop.first%}
+</ul>
+{%endif%}
+<h2>{{session.track.trackname}}</h2>
+<ul>
+{%endifchanged%}
+ <li>{{session.title}} ({{session.speaker_list}})</li>
+{%if forloop.last%}
+</ul>
+{%endif%}
+{%endfor%}
+
+
+{%endblock%}
