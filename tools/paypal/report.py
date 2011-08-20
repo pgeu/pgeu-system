@@ -41,7 +41,7 @@ Events reported by the paypal integration:
 
 %s
 """ % "\n".join(["%s: %s" % (r['timestamp'], r['message']) for r in res]), _charset = 'utf-8')
-		msg['subject'] = 'PostgreSQL Europe Paypal Integration Error Report'
+		msg['subject'] = 'PostgreSQL Europe Paypal Integration Report'
 		msg['from'] = cfg.get('_mail', 'sender')
 		msg['to'] = cfg.get('_mail', 'reports')
 		sendmail(msg)
