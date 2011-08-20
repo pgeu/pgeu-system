@@ -157,7 +157,7 @@ class ConferenceFeedbackForm(forms.Form):
 class SpeakerProfileForm(forms.ModelForm):
 	class Meta:
 		model = Speaker
-		exclude = ('user', 'fullname', )
+		exclude = ('user', )
 
 	def clean_photofile(self):
 		if not self.cleaned_data['photofile']:
@@ -186,6 +186,11 @@ class SpeakerProfileForm(forms.ModelForm):
 		if not self.cleaned_data['twittername'][0] == '@':
 			return "@%s" % self.cleaned_data['twittername']
 		return self.cleaned_data['twittername']
+
+	def clean_fullname(self):
+		if not self.cleaned_data['fullname'].strip():
+			raise ValidationError("Your full name must be given. This will be used both in the speaker profile and in communications with the conference organizers.")
+		return self.cleaned_data['fullname']
 
 class CallForPapersForm(forms.ModelForm):
 	class Meta:

@@ -49,12 +49,10 @@ you are a speaker.
 
 <form method="post" action="." enctype="multipart/form-data">
 <table id="speakerprofile_table">
-{%if speaker%}
 <tr>
- <th>Name:</th>
- <td>{{speaker.fullname}}</td>
+ <th>Full name:</th>
+ <td>{{form.fullname}}{% if form.fullname.errors %}{{ form.fullname.errors}}{% endif %}</td>
 </tr>
-{%endif%}
 <tr>
  <th>{{form.twittername.label_tag}}:</th>
  <td>{{form.twittername}}{% if form.twittername.errors %}{{ form.twittername.errors}}{% endif %}</td>
