@@ -15,7 +15,7 @@ you can use the
 <a href="http://www.postgresql.org/community/lostpwd">password recovery</a>
 form to reset it.
   </p>
-  <form action='/login' method='post'>
+  <form action='/login' method='post'>{% csrf_token %}
     <label for="username">User name:</label>
     <input type="text" name="username" value="" id="username">
     <label for="password">Password:</label>
