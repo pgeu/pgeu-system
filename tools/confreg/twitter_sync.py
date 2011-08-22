@@ -44,7 +44,7 @@ class TwitterListSync(TwitterClient):
 		return h
 
 	def run(self):
-		current = set(self.list_subscribers())
+		current = set([t.lower() for t in self.list_subscribers()])
 
 		map(self.remove_subscriber, current.difference(self.members))
 		map(self.add_subscriber, self.members.difference(current))
