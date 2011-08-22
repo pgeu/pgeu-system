@@ -64,7 +64,8 @@ if __name__=="__main__":
 			# Synchronize the attendee list
 			curs.execute("""SELECT DISTINCT twittername FROM confreg_conferenceregistration cr
 		                   INNER JOIN confreg_registrationtype rt ON cr.regtype_id=rt.id
-		                   WHERE cr.conference_id=%(id)s AND cr.payconfirmedat IS NOT NULL AND rt.inlist""",
+		                   WHERE cr.conference_id=%(id)s AND cr.payconfirmedat IS NOT NULL AND rt.inlist
+						   AND NOT (twittername='' OR twittername IS NULL)""",
 						{'id': confid, }
 						)
 			TwitterListSync(c, user, attlist, token, secret,
@@ -75,7 +76,8 @@ if __name__=="__main__":
                INNER JOIN confreg_speaker s ON au.id=s.user_id
                INNER JOIN confreg_conferencesession_speaker csp ON csp.speaker_id=s.id
                INNER JOIN confreg_conferencesession cs ON cs.id=csp.conferencesession_id
-               WHERE cs.conference_id=%(id)s AND cs.status=1""",
+               WHERE cs.conference_id=%(id)s AND cs.status=1
+				AND NOT (twittername='' OR twittername IS NULL)""",
 						 { 'id': confid, }
 						 )
 			TwitterListSync(c, user, spklist, token, secret,
