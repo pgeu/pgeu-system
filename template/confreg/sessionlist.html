@@ -17,7 +17,7 @@ You can find the full conference information at the
 <h2>{{session.track.trackname}}</h2>
 <ul>
 {%endifchanged%}
- <li>{{session.title}} ({{session.speaker_list}})</li>
+ <li><a href="session/{{session.id}}-{{session.title|slugify}}/">{{session.title}}</a> ({{session.speaker_list}})</li>
 {%if forloop.last%}
 </ul>
 {%endif%}
