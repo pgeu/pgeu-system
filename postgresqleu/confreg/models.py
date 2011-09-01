@@ -166,6 +166,7 @@ class ConferenceRegistration(models.Model):
 	# Access from templates requires properties
 	@property
 	def isregistered(self):
+		if not self.id: return False
 		if not self.regtype: return False
 		return self.regtype.is_registered_type()
 
