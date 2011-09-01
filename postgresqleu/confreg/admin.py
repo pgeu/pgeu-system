@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django import forms
 from django.forms import ValidationError
+from django.db.models.fields.files import ImageFieldFile
 from postgresqleu.confreg.models import *
 from postgresqleu.confreg.dbimage import InlinePhotoWidget
 from datetime import datetime
@@ -118,6 +119,9 @@ class SpeakerAdminForm(forms.ModelForm):
 	def clean_photofile(self):
 		if not self.cleaned_data['photofile']:
 			return self.cleaned_data['photofile'] # If it's None...
+		if isinstance(self.cleaned_data['photofile'], ImageFieldFile):
+			# Non-modified one
+			return self.cleaned_data['photofile']
 		img = None
 		try:
 			from PIL import ImageFile
