@@ -714,7 +714,7 @@ def createschedule(request, confname):
 	days = []
 
 	for d in daylist:
-		slots = ConferenceSessionScheduleSlot.objects.filter(conference=conference)
+		slots = ConferenceSessionScheduleSlot.objects.filter(conference=conference, starttime__range=(d,d+timedelta(hours=23,minutes=59,seconds=59)))
 
 		# Generate a sessionset with the slots only, but with one slot for
 		# each room when we have multiple rooms. Create a fake session that
