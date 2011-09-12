@@ -102,6 +102,11 @@ class ConferenceSessionAdmin(admin.ModelAdmin):
 	def has_add_permission(self, request):
 		return request.user.is_superuser
 
+class ConferenceSessionScheduleSlotAdmin(admin.ModelAdmin):
+	list_display = ['conference', 'starttime', 'endtime', ]
+	list_filter = ['conference']
+	ordering = ['starttime', ]
+
 class RegistrationTypeAdmin(admin.ModelAdmin):
 	list_display = ['conference', 'regtype', 'cost', 'sortkey', 'active']
 	list_filter = ['conference',]
@@ -188,6 +193,7 @@ admin.site.register(ConferenceRegistration, ConferenceRegistrationAdmin)
 admin.site.register(PaymentOption)
 admin.site.register(ConferenceSession, ConferenceSessionAdmin)
 admin.site.register(ConferenceSessionFeedback, ConferenceSessionFeedbackAdmin)
+admin.site.register(ConferenceSessionScheduleSlot, ConferenceSessionScheduleSlotAdmin)
 admin.site.register(Track, TrackAdmin)
 admin.site.register(Room, RoomAdmin)
 admin.site.register(Speaker, SpeakerAdmin)

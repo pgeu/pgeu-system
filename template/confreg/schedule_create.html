@@ -1,0 +1,176 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" dir="ltr">
+<head>
+ <title>Create Conference Schedule - {{conference}}</title>
+ <meta http-equiv="Content-Type" content="text/xhtml; charset=utf-8" />
+ <style type="text/css" media="screen" title="Normal Text">@import url("/media/css/base.css");</style>
+ <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js"></script>
+ <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script><style media="print">
+#pgHeaderContainer, #pgSideWrap { display:none; }
+div.schedwrap {
+   font-size: 69%;
+}
+</style>
+<style>
+div.schedwrap {
+   border: 1px solid black;
+   position: relative;
+}
+div.sessblock {
+   border: 1px solid gray;
+   overflow:hidden;
+   position: absolute;
+}
+div.roomheader {
+   font-weight: bold;
+   font-size: 1.2em;
+   top: 0px;
+   text-align: center;
+}
+div.sessblock a {
+   text-decoration: none;
+   color: black;
+}
+div.actualsession {
+   z-index: 10;
+}
+{%for track in tracks%}
+div.track{{track.id}} {
+   background-color: {{track.color}};
+}
+{%endfor%}
+</style>
+
+<script type="text/javascript">
+$( init );
+/* Yes, this is very full of ugly hacks */
+
+function init() {
+  $('.actualsession').draggable({
+    cursor: 'move',
+    snap: '.sessionslot',
+    revert: 'invalid',
+  });
+
+  $('.sessionslot').droppable({
+    drop: function(event, ui) {
+     session = ui.draggable;
+
+     // Are we moving away from existing slot? If so, mark it as open!
+     if (session.attr('slot')) {
+        oldslot = $('#' + session.attr('slot'));
+        oldslot.attr('sessionid', null);
+        oldslot.droppable('option', 'accept', '.actualsession');
+     }
+
+     $(this).attr('sessionid', session.attr('id'));
+     session.attr('slot', $(this).attr('id'));
+
+     // Since something is now in this slot, turn off the acceptableness
+     $(this).droppable('option', 'accept', 'busy');
+
+     // Align the position of our object
+     session.css($(this).offset());
+     session.height($(this).height());
+     session.width($(this).width());
+   }
+  });
+
+  $('#availablewrapper').droppable({
+    drop: function(event, ui) {
+      session = ui.draggable;
+      // Are we moving away from existing slot? If so, mark it as open!
+      if (session.attr('slot')) {
+        oldslot = $('#' + session.attr('slot'));
+        oldslot.attr('sessionid', null);
+        oldslot.droppable('option', 'accept', '.actualsession');
+        session.attr('slot', null);
+      }
+    }
+  });
+
+  $('#loaderDiv')
+     .hide()
+     .ajaxStart(function() { $(this).show(); })
+     .ajaxStop(function() { $(this).hide(); })
+  ;
+
+  // Load the current state
+  $.post('.', {'get': 1}, function(data) {
+     $.each(data, function(k, v) {
+        slot = $('#' + k);
+        session = $('#' + v);
+        slot.attr('sessionid', session.attr('id'));
+        session.attr('slot', slot.attr('id'));
+
+        // Since something is now in this slot, turn off the acceptableness
+        slot.droppable('option', 'accept', 'busy');
+
+        // Align the position of our object
+        session.css(slot.offset());
+        session.height(slot.height());
+        session.width(slot.width());
+     });
+  });
+}
+
+function saveDraft() {
+   if (!confirm("Are you sure you want to save the draft? (This overwrites all changes, but doesn't publish anything")) {
+      return;
+   }
+   // Build a representation of all scheduled slots
+   sched = {}
+   $('.sessionslot').each(function(i, el) {
+      sessionid = $(el).attr('sessionid');
+      if (sessionid) {
+         sched[$(el).attr('id')] = sessionid;
+      }
+   });
+   $.post('.', sched, function(data) {
+      alert('Saved.');
+   }).error(function(data) {
+      alert('Failed!\n' + data);
+   });
+}
+</script>
+
+</head>
+<body>
+<h1>Create Conference Schedule - {{conference}}</h1>
+<p>
+<b>NOTE! THIS IS FOR CREATING A TENTATIVE SCHEDULE ONLY!</b>
+You also have to manually verify that the length of the talk matches
+the talk slot, if your schedule supports multiple different lengths.
+</p>
+
+<div id="loaderDiv" style="background-color: gray; position:absolute; z-index:9999; top:0; left:0; width:100%; height:100%; opacity: .5;text-align:center;">
+  <font size="30">Please wait, talking to Mr Server...</font>
+</div>
+
+<div id="availablewrapper" style="float:right; border:1px solid blue;width:{{sesswidth}}px;height:500px;">
+  <h3>Available sessions</h3>
+  {%for s in sessions %}
+   <div id="sess{{s.id}}" class="sessblock actualsession track{{s.track.id}}" style="top: {{s.top}}px; width: {{sesswidth}}px; height: {{s.height}}px;">{{s.title}}</div>
+  {%endfor%}
+</div>
+
+{%for day in days%}
+<h2>{{day.day|date:"l, F d"}}</h2>
+<div class="schedwrap" style="height: {{day.schedule_height}}px; width: {{day.schedule_width}}px;">
+{%for room in day.rooms%}
+ <div class="sessblock roomheader" style="left: {{room.leftpos}}px; width: {{room.widthpos}}px; height: {{room.heightpos}}px;">
+ {{room.name}}
+ </div>
+{%endfor%}
+{%for session in day.sessions%}
+  <div id="slot{{session.id}}" class="sessblock sessionslot" style="top: {{session.toppos}}px; left: {{session.leftpos}}px; width: {{session.widthpos}}px; height: {{session.heightpos}}px;">
+  {{session.timeslot}}
+</div>
+{%endfor%}
+</div>
+
+{%endfor%}
+<button onClick="saveDraft()">Save draft</button>
+</body>
+</html>

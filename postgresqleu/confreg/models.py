@@ -243,6 +243,14 @@ class Speaker_Photo(models.Model):
 		self.speaker.save()
 		super(Speaker_Photo, self).delete()
 
+class ConferenceSessionScheduleSlot(models.Model):
+	conference = models.ForeignKey(Conference, null=False, blank=False)
+	starttime = models.DateTimeField(null=False, blank=False)
+	endtime = models.DateTimeField(null=False, blank=False)
+
+	def __unicode__(self):
+		return "%s - %s" % (self.starttime, self.endtime)
+
 class ConferenceSession(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
 	speaker = models.ManyToManyField(Speaker)
@@ -258,6 +266,8 @@ class ConferenceSession(models.Model):
 	status = models.IntegerField(null=False, default=0, choices=STATUS_CHOICES)
 	submissionnote = models.TextField(null=False, blank=True, verbose_name="Submission notes")
 	initialsubmit = models.DateTimeField(null=True, blank=True, verbose_name="Submitted")
+	tentativescheduleslot = models.ForeignKey(ConferenceSessionScheduleSlot, null=True, blank=True)
+	tentativeroom = models.ForeignKey(Room, null=True, blank=True, related_name='tentativeroom')
 	# NOTE! Any added fields need to be considered for inclusion in
 	# forms.CallForPapersForm!
 

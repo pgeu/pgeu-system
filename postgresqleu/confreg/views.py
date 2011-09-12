@@ -10,8 +10,11 @@ from forms import *
 
 from datetime import datetime, timedelta
 import base64
+import re
 import os
 import sys
+
+import simplejson as json
 
 #
 # The ConferenceContext allows overriding of the 'conftemplbase' variable,
@@ -626,3 +629,112 @@ def viewvouchers(request, batchid):
 			'batch': batch,
 			'vouchers': vouchers,
 			})
+
+
+#
+# Handle unscheduled sessions, with a little app to make them scheduled
+#
+class EmptySpeaker(object):
+	def all(self):
+		return ['']
+class SessionSlot(object):
+	def __init__(self, room, slot):
+		self.room = room
+		self.starttime = slot.starttime
+		self.endtime = slot.endtime
+		# completely faked data
+		self.track = 'unscheduled'
+		self.cross_schedule = False
+		self.id = room.id * 1000000 + slot.id
+		self.title = ''
+		self.speaker = EmptySpeaker()
+class UnscheduledSession(object):
+	def __init__(self, session, n):
+		self.id = session.id
+		self.title = session.title
+		self.track = session.track
+		self.top = (n+1) * 75
+		self.height = 50 * 1.5 # 50 minute slots hardcoded. nice...
+
+
+@login_required
+@transaction.commit_on_success
+@user_passes_test(lambda u: u.is_superuser)
+def createschedule(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+
+	if request.method=="POST":
+		if request.POST.has_key('get'):
+			# Get the current list of tentatively scheduled talks
+			s = {}
+			for sess in conference.conferencesession_set.all():
+				if sess.tentativeroom != None and sess.tentativescheduleslot != None:
+					s['slot%s' % ((sess.tentativeroom.id * 1000000) + sess.tentativescheduleslot.id)] = 'sess%s' % sess.id
+			return HttpResponse(json.dumps(s), content_type="application/json")
+		# Else we are saving
+
+		# Remove all the existing mappings, and add new ones
+		# Yes, we do this horribly inefficiently, but it doesn't run very
+		# often at all...
+		re_slot = re.compile('^slot(\d+)$')
+		for sess in conference.conferencesession_set.all():
+			found = False
+			for k,v in request.POST.items():
+				if v == "sess%s" % sess.id:
+					sm = re_slot.match(k)
+					if not sm:
+						raise Exception("Could not find slot, invalid data in POST")
+					roomid = int(int(sm.group(1)) / 1000000)
+					slotid = int(sm.group(1)) % 1000000
+					if sess.tentativeroom == None or sess.tentativeroom.id != roomid or sess.tentativescheduleslot == None or sess.tentativescheduleslot.id != slotid:
+						sess.tentativeroom = Room.objects.get(pk=roomid)
+						sess.tentativescheduleslot = ConferenceSessionScheduleSlot.objects.get(pk=slotid)
+						sess.save()
+					found=True
+					break
+			if not found:
+				if sess.tentativescheduleslot:
+					sess.tentativescheduleslot = None
+					sess.save()
+		return HttpResponse("OK")
+
+	# Not post - so generate the page
+
+	# We include *all* (non cross-schedule) sessions here, whether they
+	# are approved or not.
+	sessions = []
+	for s in ConferenceSession.objects.filter(conference=conference, cross_schedule=False):
+		sessions.append(UnscheduledSession(s, len(sessions)+1))
+
+
+	daylist = ConferenceSessionScheduleSlot.objects.filter(conference=conference).dates('starttime', 'day')
+	rooms = Room.objects.filter(conference=conference)
+	tracks = Track.objects.filter(conference=conference)
+
+	days = []
+
+	for d in daylist:
+		slots = ConferenceSessionScheduleSlot.objects.filter(conference=conference)
+
+		# Generate a sessionset with the slots only, but with one slot for
+		# each room when we have multiple rooms. Create a fake session that
+		# just has enough for the wrapper to work.
+		sessionset = SessionSet()
+		n = 0
+		for s in slots:
+			for r in rooms:
+				sessionset.add(SessionSlot(r, s))
+		days.append({
+				'day': d,
+				'sessions': sessionset.all(),
+				'rooms': sessionset.allrooms(),
+				'schedule_height': sessionset.schedule_height(),
+				'schedule_width': sessionset.schedule_width(),
+				})
+	return render_to_response('confreg/schedule_create.html', {
+			'conference': conference,
+			'days': days,
+			'sessions': sessions,
+			'tracks': tracks,
+			'sesswidth': 600 / len(rooms),
+			}, context_instance=RequestContext(request))
