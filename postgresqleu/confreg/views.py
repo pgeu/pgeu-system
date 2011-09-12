@@ -703,7 +703,7 @@ def createschedule(request, confname):
 	# We include *all* (non cross-schedule) sessions here, whether they
 	# are approved or not.
 	sessions = []
-	for s in ConferenceSession.objects.filter(conference=conference, cross_schedule=False):
+	for s in ConferenceSession.objects.filter(conference=conference, cross_schedule=False, status=1):
 		sessions.append(UnscheduledSession(s, len(sessions)+1))
 
 
