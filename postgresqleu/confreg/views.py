@@ -738,3 +738,51 @@ def createschedule(request, confname):
 			'tracks': tracks,
 			'sesswidth': 600 / len(rooms),
 			}, context_instance=RequestContext(request))
+
+@login_required
+@transaction.commit_manually
+@user_passes_test(lambda u: u.is_superuser)
+def publishschedule(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+
+	changes = []
+	# Render a list of changes and a confirm button
+	for s in conference.conferencesession_set.all():
+		dirty = False
+		if s.tentativescheduleslot:
+			# It has one, see if it has changed
+			if s.starttime:
+				# Has an existing time, did it change?
+				if s.starttime != s.tentativescheduleslot.starttime or s.endtime != s.tentativescheduleslot.endtime:
+					changes.append("Session '%s': moved from '%s' to '%s'" % (s.title, s.starttime, s.tentativescheduleslot.starttime))
+					s.starttime = s.tentativescheduleslot.starttime
+					s.endtime = s.tentativescheduleslot.endtime
+					dirty = True
+			else:
+				# Previously had no time
+				if s.tentativescheduleslot:
+					changes.append("Session '%s': now scheduled at '%s'" % (s.title, s.tentativescheduleslot))
+					s.starttime = s.tentativescheduleslot.starttime
+					s.endtime = s.tentativescheduleslot.endtime
+					dirty = True
+			if s.room != s.tentativeroom:
+				changes.append("Session '%s': changed room from '%s' to '%s'" % (s.title, s.room, s.tentativeroom))
+				s.room = s.tentativeroom
+				dirty = True
+		else:
+			if s.starttime:
+				changes.append("Session '%s': NOT removed from schedule, do that manually!" % s.title)
+
+		if dirty:
+			s.save()
+
+	if request.GET.has_key('doit') and request.GET['doit'] == '1':
+		transaction.commit()
+		return render_to_response('confreg/schedule_publish.html', {
+				'done': 1,
+			}, context_instance=RequestContext(request))
+	else:
+		transaction.rollback()
+		return render_to_response('confreg/schedule_publish.html', {
+				'changes': changes,
+			}, context_instance=RequestContext(request))
