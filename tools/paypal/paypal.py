@@ -58,7 +58,10 @@ class PaypalTransaction(object):
 			# So far, all testing indicates it does
 			self.text = r['L_NAME0'][0]
 		else:
-			self.text = r['SUBJECT'][0]
+			if r.has_key('SUBJECT'):
+				self.text = r['SUBJECT'][0]
+			else:
+				self.text = ""
 
 		if r['L_CURRENCYCODE0'][0] != 'EUR':
 			self.message = "Invalid currency %s" % r['L_CURRENCYCODE0'][0]
