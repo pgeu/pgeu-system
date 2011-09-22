@@ -173,7 +173,14 @@ class ConferenceRegistration(models.Model):
 	@property
 	def needspayment(self):
 		if not self.regtype: return False
-		if self.regtype.cost == 0: return False
+		if self.regtype.cost == 0:
+			# If we have additional options that cost, we might still need
+			# to check this.
+			for ao in self.additionaloptions.all():
+				if ao.cost > 0:
+					# If any option has a cost, we need to request payment
+					return True
+			return False
 		return True
 
 	@property
