@@ -7,6 +7,8 @@ from postgresqleu.confreg.dbimage import InlinePhotoWidget
 from datetime import datetime
 
 class ConferenceAdmin(admin.ModelAdmin):
+	list_display = ('conferencename', 'startdate', 'enddate')
+	ordering = ('-startdate', )
 	filter_horizontal = ('administrators','testers',)
 
 class ConferenceRegistrationForm(forms.ModelForm):
