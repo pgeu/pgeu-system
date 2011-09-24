@@ -72,6 +72,8 @@ class ConferenceSessionForm(forms.ModelForm):
 		if 'instance' in kwargs:
 			self.fields['track'].queryset = Track.objects.filter(conference=self.instance.conference)
 			self.fields['room'].queryset = Room.objects.filter(conference=self.instance.conference)
+			self.fields['tentativeroom'].queryset = Room.objects.filter(conference=self.instance.conference)
+			self.fields['tentativescheduleslot'].queryset = ConferenceSessionScheduleSlot.objects.filter(conference=self.instance.conference)
 
 	def clean_track(self):
 		if not self.cleaned_data['track']: return None
