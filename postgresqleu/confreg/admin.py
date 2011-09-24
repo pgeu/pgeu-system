@@ -94,6 +94,7 @@ class ConferenceSessionAdmin(admin.ModelAdmin):
 	list_display = ['title', 'conference', 'speaker_list', 'status', 'starttime', 'track', 'initialsubmit', ]
 	list_filter = ['conference', 'track', 'status', ]
 	search_fields = ['title', ]
+	filter_horizontal = ('speaker',)
 
 	def queryset(self, request):
 		qs = super(ConferenceSessionAdmin, self).queryset(request)
