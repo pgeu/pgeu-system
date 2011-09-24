@@ -156,7 +156,7 @@ class SpeakerAdminForm(forms.ModelForm):
 		return self.cleaned_data['photofile']
 
 class SpeakerAdmin(admin.ModelAdmin):
-	list_display = ['user', 'fullname', 'has_abstract', 'has_photo']
+	list_display = ['user', 'email', 'fullname', 'has_abstract', 'has_photo']
 	ordering = ['fullname']
 	form = SpeakerAdminForm
 

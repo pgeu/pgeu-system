@@ -223,6 +223,10 @@ class Speaker(models.Model):
 	def name(self):
 		return self.fullname
 
+	@property
+	def email(self):
+		return self.user.email
+
 	def has_abstract(self):
 		return len(self.abstract)>0
 	has_abstract.boolean = True
