@@ -9,7 +9,18 @@ from datetime import datetime
 class ConferenceAdmin(admin.ModelAdmin):
 	filter_horizontal = ('administrators','testers',)
 
+class ConferenceRegistrationForm(forms.ModelForm):
+	class Meta:
+		model = ConferenceRegistration
+
+	def __init__(self, *args, **kwargs):
+		super(ConferenceRegistrationForm, self).__init__(*args, **kwargs)
+		if 'instance' in kwargs:
+			self.fields['additionaloptions'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.instance.conference)
+
+
 class ConferenceRegistrationAdmin(admin.ModelAdmin):
+	form = ConferenceRegistrationForm
 	list_display = ['email', 'conference', 'firstname', 'lastname', 'created', 'regtype', 'payconfirmedat', ]
 	list_filter = ['conference', 'regtype', ]
 	search_fields = ['email', 'firstname', 'lastname', ]
