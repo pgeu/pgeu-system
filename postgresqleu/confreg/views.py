@@ -275,6 +275,10 @@ class SessionSet(object):
 			self.lasttime = session.endtime
 		self.sessions.append(session)
 
+	def finalize(self):
+		# Re-sort the rooms based on name
+		self.rooms = dict(zip([roomname for roomname in self.rooms.keys()], range(0,len(self.rooms))))
+
 	def all(self):
 		for s in self.sessions:
 			if not s.cross_schedule:
@@ -335,6 +339,7 @@ def schedule(request, confname):
 		sessions = ConferenceSession.objects.select_related('track','room','speaker').filter(conference=conference,status=1,starttime__range=(d,d+timedelta(hours=23,minutes=59,seconds=59))).order_by('starttime','room__roomname')
 		sessionset = SessionSet()
 		for s in sessions: sessionset.add(s)
+		sessionset.finalize()
 		days.append({
 			'day': d,
 			'sessions': sessionset.all(),
@@ -724,6 +729,7 @@ def createschedule(request, confname):
 		for s in slots:
 			for r in rooms:
 				sessionset.add(SessionSlot(r, s))
+		sessionset.finalize()
 		days.append({
 				'day': d,
 				'sessions': sessionset.all(),
