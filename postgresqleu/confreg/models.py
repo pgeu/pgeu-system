@@ -134,6 +134,8 @@ class ConferenceAdditionalOption(models.Model):
 			coststr = " (EUR %s)" % self.cost
 		else:
 			coststr = ""
+		if self.maxcount == -1:
+			return "%s%s (currently not available)" % (self.name, coststr)
 		if self.maxcount > 0:
 			usedcount = self.conferenceregistration_set.count()
 			return "%s%s (%s of %s available)" % (self.name, coststr,

@@ -70,6 +70,8 @@ class ConferenceRegistrationForm(forms.ModelForm):
 		# Check that the new selection is available by doing a count
 		# We only look at the things that have been *added*
 		for option in set(newval).difference(oldval):
+			if option.maxcount == -1:
+				raise forms.ValidationError("The option \"%s\" is currently not available." % option.name)
 			if option.maxcount > 0:
 				# This option has a limit on the number of people
 				# Count how many others have it. The difference we took on
