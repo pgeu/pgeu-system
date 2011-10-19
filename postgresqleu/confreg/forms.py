@@ -94,11 +94,11 @@ class ConferenceRegistrationForm(forms.ModelForm):
 		exclude = ('conference','attendee','payconfirmedat','payconfirmedby','created',)
 
 rating_choices = (
-    (1, '1'),
+    (1, '1 (Worst)'),
     (2, '2'),
     (3, '3'),
     (4, '4'),
-    (5, '5'),
+    (5, '5 (Best)'),
     (0, 'N/A'),
 )
 
