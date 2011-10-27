@@ -78,9 +78,9 @@ def create(request):
 				if not request.POST['price_%s' % i]:
 					return HttpResponseServerError("Invoice item '%s' is missing a price" % request.POST['text_%s' % i])
 				if not request.POST['count_%s' % i].isdigit():
-					return HttpResponseServerError("Invoice item '%s' as a non-numeric count" % request.POST['text_%s' % i])
+					return HttpResponseServerError("Invoice item '%s' has a non-numeric count" % request.POST['text_%s' % i])
 				if not request.POST['price_%s' % i].isdigit():
-					return HttpResponseServerError("Invoice item '%s' as a non-numeric price" % request.POST['text_%s' % i])
+					return HttpResponseServerError("Invoice item '%s' has a non-numeric price" % request.POST['text_%s' % i])
 				rows.append((request.POST['text_%s' % i],
 							 int(request.POST['count_%s' % i]),
 							 float(request.POST['price_%s' % i])))
