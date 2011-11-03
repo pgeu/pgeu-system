@@ -809,16 +809,16 @@ def reports(request, confname):
 
 		if report == "attendees":
 			reporttitle = "Attendees"
-			curs.execute("SELECT lastname, firstname, company, nick, twittername, regtype FROM confreg_conferenceregistration cr INNER JOIN confreg_registrationtype rt ON rt.id=regtype_id WHERE cr.conference_id=%(id)s AND payconfirmedat IS NOT NULL ORDER BY regtype, lastname, firstname", {'id': conference.id})
+			curs.execute('SELECT lastname AS "Lastname", firstname AS "Firstname", company AS "Company", nick AS "Nick", twittername AS "Twitter", regtype AS "Registration type" FROM confreg_conferenceregistration cr INNER JOIN confreg_registrationtype rt ON rt.id=regtype_id WHERE cr.conference_id=%(id)s AND payconfirmedat IS NOT NULL ORDER BY regtype, lastname, firstname', {'id': conference.id})
 		elif report == "attendees_unpaid":
 			reporttitle = "Attendees (unpaid)"
-			curs.execute("SELECT lastname, firstname, company, nick, twittername, regtype FROM confreg_conferenceregistration cr INNER JOIN confreg_registrationtype rt ON rt.id=regtype_id WHERE cr.conference_id=%(id)s AND payconfirmedat IS NULL ORDER BY regtype, lastname, firstname", {'id': conference.id})
+			curs.execute('SELECT lastname AS "Lastname", firstname AS "Firstname", company AS "Company", nick AS "Nick", twittername AS "Twitter", regtype AS "Registration type" FROM confreg_conferenceregistration cr INNER JOIN confreg_registrationtype rt ON rt.id=regtype_id WHERE cr.conference_id=%(id)s AND payconfirmedat IS NULL ORDER BY regtype, lastname, firstname', {'id': conference.id})
 		elif report.startswith("ao"):
 			m = re.match('^ao(\d+)$', report)
 			if not m: raise Http404("Report does not exist")
 			ao = ConferenceAdditionalOption.objects.get(conference=conference, id=m.group(1))
 			reporttitle = "Attendees for %s" % ao.name
-			curs.execute("SELECT lastname, firstname, email, address, company, phone FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND EXISTS (SELECT * FROM confreg_conferenceregistration_additionaloptions a WHERE conferenceadditionaloption_id=%(aoid)s AND conferenceregistration_id=r.id) ORDER BY lastname, firstname", {'aoid': ao.id})
+			curs.execute('SELECT lastname AS "Lastname", firstname AS "Firstname", email AS "E-mail", address AS "Address", country.name AS "Country", company AS "Company", phone AS "Phone" FROM confreg_conferenceregistration r LEFT JOIN country ON country.iso=country_id WHERE payconfirmedat IS NOT NULL AND EXISTS (SELECT * FROM confreg_conferenceregistration_additionaloptions a WHERE conferenceadditionaloption_id=%(aoid)s AND conferenceregistration_id=r.id) ORDER BY lastname, firstname', {'aoid': ao.id})
 		else:
 			raise Http404("Report does not exist")
 
@@ -829,11 +829,13 @@ def reports(request, confname):
 		if fmt == "html":
 			return render_to_response('confreg/reports.html', {
 					'data': data,
+					'header': [c[0] for c in curs.description],
 					'reporttitle': reporttitle,
 					}, context_instance=RequestContext(request))
 		elif fmt == "csv":
 			response = HttpResponse(mimetype='text/plain')
 			writer = csv.writer(response, delimiter=';')
+			writer.writerow([c[0] for c in curs.description])
 			for row in data:
 				writer.writerow([c.encode("utf-8") for c in row])
 			return response

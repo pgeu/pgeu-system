@@ -30,6 +30,11 @@ The following reports are available:
 {% else %}
 <table border="1" cellspacing="0" cellpadding="1">
 {%if reporttitle%}<h2>{{reporttitle}}</h2>{%endif%}
+ <tr>
+  {%for col in header%}
+   <th>{{col}}</th>
+  {%endfor%}
+</tr>
 {%for row in data%}
  <tr>
   {%for col in row%}
