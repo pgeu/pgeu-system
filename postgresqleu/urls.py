@@ -67,6 +67,7 @@ urlpatterns = patterns('',
 	(r'^events/register/(\w+)/prepaid/(\d+)/$', postgresqleu.confreg.views.prepaid),
 	(r'^events/prepaid/$', postgresqleu.confreg.views.createvouchers),
 	(r'^events/prepaid/(\d+)/$', postgresqleu.confreg.views.viewvouchers),
+    (r'^events/reports/(\w+)/$', postgresqleu.confreg.views.reports),
 
 	# Membership management
 	(r'^membership/$', postgresqleu.membership.views.home),

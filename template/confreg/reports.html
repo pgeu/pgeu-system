@@ -1,0 +1,42 @@
+{%extends "navbase.html" %}
+{%load markup%}
+{%block title%}Reports{%endblock%}
+{%block content%}
+{%if list%}
+<h1>Reports</h1>
+<p>
+The following reports are available:
+</p>
+
+<form method="post" action=".">
+ <table border="0" cellspacing="0" cellpadding="1">
+   <tr>
+     <td>Report:</td>
+     <td><select name="report">
+	 <option value="attendees">Attendeelist</option>
+	 <option value="attendees_unpaid">Attendeelist (unpaid)</option>
+{%for ao in additionaloptions%}
+	 <option value="ao{{ao.id}}">Additional option "{{ao}}"</option>
+{%endfor%}
+     </select></td>
+   </tr>
+   <tr>
+     <td>Format:</td>
+     <td><select name="format"><option value="html">HTML</option><option value="csv">CSV</option></td>
+   </tr>
+ </table>
+ <input type="submit" value="Generate report">
+</form>
+{% else %}
+<table border="1" cellspacing="0" cellpadding="1">
+{%if reporttitle%}<h2>{{reporttitle}}</h2>{%endif%}
+{%for row in data%}
+ <tr>
+  {%for col in row%}
+   <td>{{col}}</td>
+  {%endfor%}
+ </tr>
+{%endfor%}
+</table>
+{%endif%}
+{%endblock%}
