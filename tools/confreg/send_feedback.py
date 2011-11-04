@@ -88,7 +88,7 @@ if __name__ == "__main__":
 INNER JOIN confreg_conferencesession_speaker cs ON cs.conferencesession_id=s.id
 INNER JOIN confreg_speaker spk ON spk.id=cs.speaker_id
 INNER JOIN auth_user u ON u.id=spk.user_id
-WHERE conference_id=%(conf)s AND can_feedback
+WHERE conference_id=%(conf)s AND can_feedback AND status=1
 ORDER BY email
 """, {'conf': confid})
 	lastemail = ''
