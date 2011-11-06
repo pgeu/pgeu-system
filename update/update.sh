@@ -3,7 +3,7 @@
 #
 # The idea:
 #  * git-pull the repository
-#  * if the repository has changed, touch django.wsgi, causing apache to reload
+#  * if the repository has changed, kill the django processes causing a restart
 #
 # Would be even better if we could touch it only after actual code files have changed,
 # but this will do fine for now.
