@@ -809,10 +809,10 @@ def reports(request, confname):
 
 		if report == "attendees":
 			reporttitle = "Attendees"
-			curs.execute('SELECT lastname AS "Lastname", firstname AS "Firstname", company AS "Company", nick AS "Nick", twittername AS "Twitter", regtype AS "Registration type" FROM confreg_conferenceregistration cr INNER JOIN confreg_registrationtype rt ON rt.id=regtype_id WHERE cr.conference_id=%(id)s AND payconfirmedat IS NOT NULL ORDER BY regtype, lastname, firstname', {'id': conference.id})
+			curs.execute('SELECT lastname AS "Lastname", firstname AS "Firstname", email AS "E-mail", company AS "Company", nick AS "Nick", twittername AS "Twitter", regtype AS "Registration type" FROM confreg_conferenceregistration cr INNER JOIN confreg_registrationtype rt ON rt.id=regtype_id WHERE cr.conference_id=%(id)s AND payconfirmedat IS NOT NULL ORDER BY regtype, lastname, firstname', {'id': conference.id})
 		elif report == "attendees_unpaid":
 			reporttitle = "Attendees (unpaid)"
-			curs.execute('SELECT lastname AS "Lastname", firstname AS "Firstname", company AS "Company", nick AS "Nick", twittername AS "Twitter", regtype AS "Registration type" FROM confreg_conferenceregistration cr INNER JOIN confreg_registrationtype rt ON rt.id=regtype_id WHERE cr.conference_id=%(id)s AND payconfirmedat IS NULL ORDER BY regtype, lastname, firstname', {'id': conference.id})
+			curs.execute('SELECT lastname AS "Lastname", firstname AS "Firstname", email AS "E-mail", company AS "Company", nick AS "Nick", twittername AS "Twitter", regtype AS "Registration type" FROM confreg_conferenceregistration cr INNER JOIN confreg_registrationtype rt ON rt.id=regtype_id WHERE cr.conference_id=%(id)s AND payconfirmedat IS NULL ORDER BY regtype, lastname, firstname', {'id': conference.id})
 		elif report.startswith("ao"):
 			m = re.match('^ao(\d+)$', report)
 			if not m: raise Http404("Report does not exist")
