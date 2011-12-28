@@ -1,6 +1,5 @@
 from django.conf.urls.defaults import *
 from django.conf import settings
-from django.contrib.auth.views import login, logout_then_login
 from django.contrib import admin
 from django.views.generic.simple import redirect_to
 
@@ -30,10 +29,11 @@ urlpatterns = patterns('',
 	(r'^$', postgresqleu.views.index),
 
 	# Log in/log out
-	(r'^login/?$', login, {'template_name':'login.html'}),
-	(r'^logout/?$', logout_then_login, {'login_url':'/'}),
-	(r'^accounts/login/$', login, {'template_name':'login.html'}),
-	(r'^accounts/logout/$', logout_then_login, {'login_url':'/'}),
+	(r'^login/?$', 'postgresqleu.auth.login'),
+	(r'^logout/?$', 'postgresqleu.auth.logout'),
+	(r'^accounts/login/$', 'postgresqleu.auth.login'),
+	(r'^accounts/logout/$', 'postgresqleu.auth.logout'),
+    (r'^auth_receive/$', 'postgresqleu.auth.auth_receive'),
 
 	# News & Events
 	(r'^events$', postgresqleu.newsevents.views.eventlist),
