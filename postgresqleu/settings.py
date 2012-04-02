@@ -89,7 +89,6 @@ INSTALLED_APPS = (
 	'postgresqleu.invoicemgr',
 )
 
-AUTH_CONNECTION_STRING="override authentication connection string in the local settings file"
 FORCE_SECURE_FORMS=True
 DATETIME_FORMAT="Y-m-d H:i:s"
 # If there is a local_settings.py, let it override our settings
