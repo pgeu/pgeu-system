@@ -95,7 +95,7 @@ the bottom of this page for information about your payment status.</p>
       </div>
  </fieldset>
 
- {%if conference.asktshirt or conference.askfood %}
+ {%if conference.asktshirt or conference.askfood or conference.askshareemail %}
  <fieldset id="conference_info">
   <legend>Conference information</legend>
       {%if conference.asktshirt %}
@@ -108,6 +108,12 @@ the bottom of this page for information about your payment status.</p>
       <div{% if form.dietary.errors %} class="errfld"{% endif %}>
        {{ form.dietary.label_tag }} <br/>
         {{ form.dietary }} {% if form.dietary.errors %}{{ form.dietary.errors}}{% endif %}
+      </div>
+      {%endif%}
+      {%if conference.askshareemail %}
+      <div{% if form.shareemail.errors %} class="errfld"{% endif %}>
+        {{ form.shareemail }} {{ form.shareemail.label_tag }}
+	{% if form.shareemail.errors %}{{ form.shareemail.errors}}{% endif %}
       </div>
       {%endif%}
  </fieldset>

@@ -60,6 +60,7 @@ class Conference(models.Model):
 	testers = models.ManyToManyField(User, null=False, blank=True, related_name="testers_set")
 	asktshirt = models.BooleanField(blank=False, null=False, default=True)
 	askfood = models.BooleanField(blank=False, null=False, default=True)
+	askshareemail = models.BooleanField(null=False, blank=False, default=False)
 	skill_levels = models.BooleanField(blank=False, null=False, default=True)
 	autoapprove = models.BooleanField(blank=False, null=False, default=False)
 	additionalintro = models.TextField(blank=True, null=False)
@@ -159,6 +160,7 @@ class ConferenceRegistration(models.Model):
 	additionaloptions = models.ManyToManyField(ConferenceAdditionalOption, null=False, blank=True, verbose_name="Additional options")
 	twittername = models.CharField(max_length=100, null=False, blank=True, verbose_name="Twitter account")
 	nick = models.CharField(max_length=100, null=False, blank=True, verbose_name="Nickname")
+	shareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Share e-mail address with sponsors")
 
 	# Admin fields!
 	payconfirmedat = models.DateField(null=True, blank=True, verbose_name="Payment confirmed at")
