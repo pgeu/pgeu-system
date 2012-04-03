@@ -7,6 +7,7 @@ import postgresqleu.static.views
 import postgresqleu.newsevents.views
 import postgresqleu.views
 import postgresqleu.confreg.views
+import postgresqleu.confreg.mobileviews
 import postgresqleu.membership.views
 import postgresqleu.elections.views
 import postgresqleu.invoicemgr.views
@@ -69,6 +70,11 @@ urlpatterns = patterns('',
 	(r'^events/prepaid/$', postgresqleu.confreg.views.createvouchers),
 	(r'^events/prepaid/(\d+)/$', postgresqleu.confreg.views.viewvouchers),
     (r'^events/reports/(\w+)/$', postgresqleu.confreg.views.reports),
+
+    # Mobile conference stuff
+    (r'^m/(\w+)/$', postgresqleu.confreg.mobileviews.index),
+    (r'^m/(\w+)/cache.manifest/$', postgresqleu.confreg.mobileviews.cachemanifest),
+    (r'^m/(\w+)/cdj/(\d+)?$', postgresqleu.confreg.mobileviews.conferencedata),
 
 	# Membership management
 	(r'^membership/$', postgresqleu.membership.views.home),
