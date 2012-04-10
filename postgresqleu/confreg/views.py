@@ -13,6 +13,7 @@ import base64
 import re
 import os
 import sys
+import imp
 import csv
 
 import simplejson as json
@@ -35,16 +36,18 @@ def ConferenceContext(request, conference):
 
 	# Check if there is any additional data to put into the context
 	if conference and conference.templatemodule:
-		pathsave = sys.path
-		sys.path.insert(0, conference.templatemodule)
 		try:
-			m = __import__('templateextra', globals(), locals(), ['context_template_additions'])
+			modname = 'conference_templateextra_%s' % conference.id
+			if modname in sys.modules:
+				m = sys.modules[modname]
+			else:
+				# Not loaded, so try to load it!
+				m = imp.load_source(modname, '%s/templateextra.py' % conference.templatemodule)
 			d.update(m.context_template_additions())
 		except Exception, ex:
 			# Ignore problems, because we're lazy. Better render without the
 			# data than not render at all.
 			pass
-		sys.path = pathsave
 
 	return d
 
