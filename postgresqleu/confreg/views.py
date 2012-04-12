@@ -668,6 +668,91 @@ class UnscheduledSession(object):
 
 @login_required
 @transaction.commit_on_success
+def talkvote(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+	if not conference.talkvoters.filter(pk=request.user.id):
+		raise Http404('You are not a talk voter for this conference!')
+
+	curs = connection.cursor()
+
+	if request.method=='POST':
+		# Record votes
+		# We could probably do this with some fancy writable CTEs, but
+		# this code won't run often, so we don't really care about being
+		# fast, and this is easier...
+		# Thus, remove existing entries and replace them with current ones.
+		curs.execute("DELETE FROM confreg_conferencesessionvote WHERE voter_id=%(userid)s AND session_id IN (SELECT id FROM confreg_conferencesession WHERE conference_id=%(confid)s)", {
+				'confid': conference.id,
+				'userid': request.user.id,
+				})
+		curs.executemany("INSERT INTO confreg_conferencesessionvote (session_id, voter_id, vote, comment) VALUES (%(sid)s, %(vid)s, %(vote)s, %(comment)s)", [
+				{
+					'sid': k[3:],
+					'vid': request.user.id,
+					'vote': int(v) > 0 and int(v) or None,
+					'comment': request.POST['tc_%s' % k[3:]],
+					}
+				for k,v in request.POST.items() if k.startswith("sv_") and (int(v)>0 or request.POST['tc_%s' % k[3:]])
+				])
+		return HttpResponseRedirect(".")
+
+	order = ""
+	if request.GET.has_key("sort"):
+		if request.GET["sort"] == "avg":
+			order = "avg DESC NULLS LAST,"
+
+	# Render the form. Need to do this with a manual query, can't figure
+	# out the right way to do it with the django ORM.
+	curs.execute("SELECT s.id, s.title, s.status, s.abstract, s.submissionnote, u.username, v.vote, v.comment, avg(v.vote) OVER (PARTITION BY s.id)::numeric(3,2) AS avg FROM (confreg_conferencesession s CROSS JOIN auth_user u) LEFT JOIN confreg_conferencesessionvote v ON v.session_id=s.id AND v.voter_id=u.id WHERE s.conference_id=%(confid)s AND u.id IN (SELECT user_id FROM confreg_conference_talkvoters tv WHERE tv.conference_id=%(confid)s) ORDER BY " + order + "s.title, u.id=%(userid)s DESC, u.username", {
+			'confid': conference.id,
+			'userid': request.user.id,
+			})
+	col_names = [desc[0] for desc in curs.description]
+
+	def getusernames(all):
+		firstid = all[0][0]
+		for id, title, status, abstract, submissionnote, username, vote, comment, avgvote in all:
+			if id != firstid:
+				return
+			yield username
+
+	def transform(all):
+		lastid = -1
+		rd = {}
+		for id, title, status, abstract, submissionnote, username, vote, comment, avgvote in all:
+			if id != lastid:
+				if lastid != -1:
+					yield rd
+				rd = {
+					'id': id,
+					'title': title,
+					'status': get_status_string(status),
+					'abstract': abstract,
+					'submissionnote': submissionnote,
+					'avg': avgvote,
+					'users': [],
+					'comments': '',
+					'owncomment': '',
+					}
+				lastid = id
+			rd['users'].append(vote)
+			if comment:
+				if username == request.user.username:
+					rd['owncomment'] = comment
+				else:
+					rd['comments'] += "%s: %s<br/>" % (username, comment)
+
+		yield rd
+
+	all = curs.fetchall()
+	return render_to_response('confreg/sessionvotes.html', {
+			'users': getusernames(all),
+			'sessionvotes': transform(all),
+			'conference': conference,
+			}, context_instance=RequestContext(request))
+
+@login_required
+@transaction.commit_on_success
 @user_passes_test(lambda u: u.is_superuser)
 def createschedule(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)

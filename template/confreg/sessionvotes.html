@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" dir="ltr">
+<head>
+ <title>Vote for sessions - {{conference}}</title>
+ <meta http-equiv="Content-Type" content="text/xhtml; charset=utf-8" />
+ <style type="text/css" media="screen" title="Normal Text">@import url("/media/css/base.css");</style>
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.8.18/themes/base/jquery-ui.css" type="text/css" media="all" />
+ <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+ <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
+
+<script language="javascript">
+$(function() {
+  $('.dlg').each(function(idx, el) {
+    $(el).dialog({
+      autoOpen: false,
+      minWidth: 400,
+      minHeight: 250,
+    });
+  });
+});
+
+function showDialog(id, title) {
+   $('#popup_' + id).dialog('option', {
+      'title': title,
+   }).dialog('open');
+}
+</script>
+<style>
+td.dlgClickable {
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+<h1>Vote for sessions - {{conference}}</h1>
+
+<form method="post" action=".">
+<table border="1" cellspacing="0" cellpadding="1">
+ <tr>
+  <th><a href="?sort=session">Session</a></th>
+  <th>Status</th>
+  {%for u in users%}
+  <th>{{u}}</th>
+  {%endfor%}
+  <th><a href="?sort=avg">Average</a></th>
+  <th>Your comments</th>
+  <th>Other comments</th>
+ </tr>
+{%for s in sessionvotes%}
+ <tr>
+   <td onClick="showDialog({{s.id}}, '{{s.title|escape|escapejs|escape}}')" class="dlgClickable">{{s.title}}
+    <div id="popup_{{s.id}}" class="dlg">
+    <p>
+{{s.abstract}}
+    </p>
+{%if s.submissionnote%}
+    <hr/>
+    <h3>Submission notes</h3>
+    <p>
+{{s.submissionnote}}
+    </p>
+{%endif%}
+    </div>
+   </td>
+   <td>{{s.status}}</td>
+   {%for u in s.users%}
+   <td{%if u|default_if_none:0 == 0%} style="background-color:red"{%endif%}>{%if forloop.first %}
+     <select name="sv_{{s.id}}">
+       {%for opt in "0123456789"|make_list%}
+       <option value="{{opt}}"{%if opt|add:0 == u|add:0%} SELECTED{%endif%}>{{opt}}</option>
+       {%endfor%}
+     </select>
+     {%else%}
+     {{u|default_if_none:''}}
+     {%endif%}
+   </td>
+   {%endfor%}
+   <td>{{s.avg|default_if_none:''}}</td>
+   <td><input type="text" name="tc_{{s.id}}" value="{{s.owncomment}}"/></td>
+   <td>{{s.comments|safe}}</td>
+ </tr>
+{%endfor%}
+</table>
+<input type="submit" value="Save">
+</form>
+
+</body>
+</html>

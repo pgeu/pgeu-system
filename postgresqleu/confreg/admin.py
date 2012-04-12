@@ -9,7 +9,7 @@ from datetime import datetime
 class ConferenceAdmin(admin.ModelAdmin):
 	list_display = ('conferencename', 'startdate', 'enddate')
 	ordering = ('-startdate', )
-	filter_horizontal = ('administrators','testers',)
+	filter_horizontal = ('administrators','testers','talkvoters',)
 
 class ConferenceRegistrationForm(forms.ModelForm):
 	class Meta:

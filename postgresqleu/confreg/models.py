@@ -60,6 +60,7 @@ class Conference(models.Model):
 
 	administrators = models.ManyToManyField(User, null=False, blank=True)
 	testers = models.ManyToManyField(User, null=False, blank=True, related_name="testers_set")
+	talkvoters = models.ManyToManyField(User, null=False, blank=True, related_name="talkvoters_set")
 	asktshirt = models.BooleanField(blank=False, null=False, default=True)
 	askfood = models.BooleanField(blank=False, null=False, default=True)
 	askshareemail = models.BooleanField(null=False, blank=False, default=False)
@@ -333,6 +334,15 @@ class ConferenceSession(models.Model):
 
 	class Meta:
 		ordering = [ 'starttime', ]
+
+class ConferenceSessionVote(models.Model):
+	session = models.ForeignKey(ConferenceSession, null=False, blank=False)
+	voter = models.ForeignKey(User, null=False, blank=False)
+	vote = models.IntegerField(null=True, blank=False)
+	comment = models.CharField(max_length=200, null=True, blank=True)
+
+	class Meta:
+		unique_together = ( ('session', 'voter',), )
 
 class ConferenceSessionFeedback(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
