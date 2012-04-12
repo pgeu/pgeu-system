@@ -20,6 +20,8 @@ STATUS_CHOICES = (
 	(1, "Approved"),
 	(2, "Rejected"),
 )
+def get_status_string(val):
+	return (t for v,t in STATUS_CHOICES if v==val).next()
 
 class PaymentOption(models.Model):
 	name = models.CharField(max_length=64, blank=False, null=False)
@@ -300,7 +302,7 @@ class ConferenceSession(models.Model):
 
 	@property
 	def status_string(self):
-		return (t for v,t in STATUS_CHOICES if v==self.status).next()
+		return get_status_string(self.status)
 
 	def __unicode__(self):
 		return "%s: %s (%s)" % (
