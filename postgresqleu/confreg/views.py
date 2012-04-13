@@ -669,6 +669,8 @@ class UnscheduledSession(object):
 @login_required
 @transaction.commit_on_success
 def talkvote(request, confname):
+	if settings.FORCE_SECURE_FORMS and not request.is_secure():
+		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.talkvoters.filter(pk=request.user.id):
 		raise Http404('You are not a talk voter for this conference!')
@@ -755,6 +757,8 @@ def talkvote(request, confname):
 @transaction.commit_on_success
 @user_passes_test(lambda u: u.is_superuser)
 def createschedule(request, confname):
+	if settings.FORCE_SECURE_FORMS and not request.is_secure():
+		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
 	conference = get_object_or_404(Conference, urlname=confname)
 
 	if request.method=="POST":
@@ -838,6 +842,8 @@ def createschedule(request, confname):
 @transaction.commit_manually
 @user_passes_test(lambda u: u.is_superuser)
 def publishschedule(request, confname):
+	if settings.FORCE_SECURE_FORMS and not request.is_secure():
+		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
 	conference = get_object_or_404(Conference, urlname=confname)
 
 	changes = []
