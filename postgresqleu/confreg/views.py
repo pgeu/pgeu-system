@@ -667,7 +667,6 @@ class UnscheduledSession(object):
 
 
 @login_required
-@transaction.commit_on_success
 def talkvote(request, confname):
 	if settings.FORCE_SECURE_FORMS and not request.is_secure():
 		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
@@ -683,19 +682,21 @@ def talkvote(request, confname):
 		# this code won't run often, so we don't really care about being
 		# fast, and this is easier...
 		# Thus, remove existing entries and replace them with current ones.
-		curs.execute("DELETE FROM confreg_conferencesessionvote WHERE voter_id=%(userid)s AND session_id IN (SELECT id FROM confreg_conferencesession WHERE conference_id=%(confid)s)", {
-				'confid': conference.id,
-				'userid': request.user.id,
-				})
-		curs.executemany("INSERT INTO confreg_conferencesessionvote (session_id, voter_id, vote, comment) VALUES (%(sid)s, %(vid)s, %(vote)s, %(comment)s)", [
-				{
-					'sid': k[3:],
-					'vid': request.user.id,
-					'vote': int(v) > 0 and int(v) or None,
-					'comment': request.POST['tc_%s' % k[3:]],
-					}
-				for k,v in request.POST.items() if k.startswith("sv_") and (int(v)>0 or request.POST['tc_%s' % k[3:]])
-				])
+		with transaction.commit_manually():
+			curs.execute("DELETE FROM confreg_conferencesessionvote WHERE voter_id=%(userid)s AND session_id IN (SELECT id FROM confreg_conferencesession WHERE conference_id=%(confid)s)", {
+					'confid': conference.id,
+					'userid': request.user.id,
+					})
+			curs.executemany("INSERT INTO confreg_conferencesessionvote (session_id, voter_id, vote, comment) VALUES (%(sid)s, %(vid)s, %(vote)s, %(comment)s)", [
+					{
+						'sid': k[3:],
+						'vid': request.user.id,
+						'vote': int(v) > 0 and int(v) or None,
+						'comment': request.POST['tc_%s' % k[3:]],
+						}
+					for k,v in request.POST.items() if k.startswith("sv_") and (int(v)>0 or request.POST['tc_%s' % k[3:]])
+					])
+			transaction.commit()
 		return HttpResponseRedirect(".")
 
 	order = ""
