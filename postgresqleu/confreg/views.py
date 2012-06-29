@@ -336,6 +336,13 @@ class SessionSet(object):
 
 def schedule(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
+
+	if not conference.scheduleactive:
+		if not conference.testers.filter(pk=request.user.id):
+			return render_to_response('confreg/scheduleclosed.html', {
+					'conference': conference,
+			}, context_instance=ConferenceContext(request, conference))
+
 	daylist = ConferenceSession.objects.filter(conference=conference, status=1).dates('starttime', 'day')
 	days = []
 	tracks = {}
@@ -361,6 +368,13 @@ def schedule(request, confname):
 
 def sessionlist(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
+
+	if not conference.sessionsactive:
+		if not conference.testers.filter(pk=request.user.id):
+			return render_to_response('confreg/sessionsclosed.html', {
+					'conference': conference,
+			}, context_instance=ConferenceContext(request, conference))
+
 	sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).order_by('track', 'title')
 	return render_to_response('confreg/sessionlist.html', {
 		'conference': conference,
@@ -369,7 +383,13 @@ def sessionlist(request, confname):
 
 def schedule_ical(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
-	sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).filter(starttime__isnull=False).order_by('starttime')
+
+	if not conference.scheduleactive:
+		# Not open. But we can't really render an error, so render a
+		# completely empty sesison list instead
+		sessions = None
+	else:
+		sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).filter(starttime__isnull=False).order_by('starttime')
 	return render_to_response('confreg/schedule.ical', {
 		'conference': conference,
 		'sessions': sessions,
@@ -378,6 +398,13 @@ def schedule_ical(request, confname):
 
 def session(request, confname, sessionid, junk=None):
 	conference = get_object_or_404(Conference, urlname=confname)
+
+	if not conference.sessionsactive:
+		if not conference.testers.filter(pk=request.user.id):
+			return render_to_response('confreg/sessionsclosed.html', {
+					'conference': conference,
+			}, context_instance=ConferenceContext(request, conference))
+
 	session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False, status=1)
 	return render_to_response('confreg/session.html', {
 		'conference': conference,
@@ -386,6 +413,12 @@ def session(request, confname, sessionid, junk=None):
 
 def speaker(request, confname, speakerid, junk=None):
 	conference = get_object_or_404(Conference, urlname=confname)
+	if not conference.sessionsactive:
+		if not conference.testers.filter(pk=request.user.id):
+			return render_to_response('confreg/sessionsclosed.html', {
+					'conference': conference,
+			}, context_instance=ConferenceContext(request, conference))
+
 	speaker = get_object_or_404(Speaker, pk=speakerid)
 	sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker, cross_schedule=False, status=1).order_by('starttime')
 	if len(sessions) < 1:

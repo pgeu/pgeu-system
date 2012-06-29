@@ -47,6 +47,8 @@ class Conference(models.Model):
 	callforpapersopen = models.BooleanField(blank=False,null=False,default=False)
 	feedbackopen = models.BooleanField(blank=False,null=False,default=True)
 	conferencefeedbackopen = models.BooleanField(blank=False,null=False,default=False)
+	scheduleactive = models.BooleanField(blank=False,null=False,default=False,verbose_name="Schedule publishing active")
+	sessionsactive = models.BooleanField(blank=False,null=False,default=False,verbose_name="Session list publishing active")
 	confurl = models.CharField(max_length=128, blank=False, null=False)
 	listadminurl = models.CharField(max_length=128, blank=True, null=False)
 	listadminpwd = models.CharField(max_length=128, blank=True, null=False)
