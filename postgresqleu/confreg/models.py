@@ -74,6 +74,9 @@ class Conference(models.Model):
 	def __unicode__(self):
 		return self.conferencename
 
+	class Meta:
+		ordering = [ '-startdate', ]
+
 	@property
 	def conferencedatestr(self):
 		if self.enddate and not self.startdate==self.enddate:
