@@ -33,6 +33,8 @@ def ConferenceContext(request, conference):
 	d.update({
 			'conftemplbase': conftemplbase,
 			})
+	if conference and conference.mediabase_override:
+		d['mediabase'] = conference.mediabase_override
 
 	# Check if there is any additional data to put into the context
 	if conference and conference.templatemodule:

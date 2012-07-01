@@ -71,6 +71,7 @@ class Conference(models.Model):
 	additionalintro = models.TextField(blank=True, null=False)
 	basetemplate = models.CharField(max_length=128, blank=True, null=True, default=None)
 	templatemodule = models.CharField(max_length=128, blank=True, null=True, default=None)
+	templatemediabase = models.CharField(max_length=128, blank=True, null=True, default=None)
 	callforpapersintro = models.TextField(blank=True, null=False)
 
 	def __unicode__(self):
@@ -93,6 +94,12 @@ class Conference(models.Model):
 	def template_override(self):
 		if self.basetemplate and len(self.basetemplate) > 0:
 			return self.basetemplate
+		return None
+
+	@property
+	def mediabase_override(self):
+		if self.templatemediabase and len(self.templatemediabase) > 0:
+			return self.templatemediabase
 		return None
 
 class RegistrationType(models.Model):
