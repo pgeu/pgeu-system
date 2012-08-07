@@ -54,7 +54,7 @@ div.dlg {
  <tr>
    <td onClick="showDialog({{s.id}}, '{{s.title|escape|escapejs|escape}}')" class="dlgClickable">{{s.title}} ({{s.speakers}})
     <div id="popup_{{s.id}}" class="dlg">
-    <div><strong>Speakers:</strong> {{s.speakers}}</div>
+    <div><strong>Speakers:</strong> {{s.speakers_full}}</div>
     <p>
 {{s.abstract}}
     </p>
