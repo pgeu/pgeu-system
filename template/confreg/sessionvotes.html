@@ -52,7 +52,7 @@ div.dlg {
  </tr>
 {%for s in sessionvotes%}
  <tr>
-   <td onClick="showDialog({{s.id}}, '{{s.title|escape|escapejs|escape}}')" class="dlgClickable">{{s.title}}
+   <td onClick="showDialog({{s.id}}, '{{s.title|escape|escapejs|escape}}')" class="dlgClickable">{{s.title}} ({{s.speakers}})
     <div id="popup_{{s.id}}" class="dlg">
     <div><strong>Speakers:</strong> {{s.speakers}}</div>
     <p>
