@@ -19,6 +19,7 @@ STATUS_CHOICES = (
 	(0, "Submitted"),
 	(1, "Approved"),
 	(2, "Rejected"),
+	(3, "Pending"), # Approved, but not confirmed
 )
 def get_status_string(val):
 	return (t for v,t in STATUS_CHOICES if v==val).next()
