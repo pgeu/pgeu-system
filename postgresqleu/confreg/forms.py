@@ -6,6 +6,7 @@ from django.forms import ValidationError
 from django.db.models.fields.files import ImageFieldFile
 
 from postgresqleu.confreg.models import *
+from postgresqleu.countries.models import Country
 
 class ConferenceRegistrationForm(forms.ModelForm):
 	additionaloptions = forms.ModelMultipleChoiceField(widget=forms.CheckboxSelectMultiple,
@@ -19,6 +20,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 			del self.fields['shirtsize']
 		self.fields['additionaloptions'].queryset =	ConferenceAdditionalOption.objects.filter(
 			conference=self.instance.conference)
+		self.fields['country'].queryset = Country.objects.order_by('printable_name')
 
 	def clean_regtype(self):
 		newval = self.cleaned_data.get('regtype')
