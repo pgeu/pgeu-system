@@ -377,7 +377,7 @@ def sessionlist(request, confname):
 					'conference': conference,
 			}, context_instance=ConferenceContext(request, conference))
 
-	sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).order_by('track', 'title')
+	sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).order_by('track__sortkey', 'track', 'title')
 	return render_to_response('confreg/sessionlist.html', {
 		'conference': conference,
 		'sessions': sessions,
@@ -846,7 +846,7 @@ def createschedule(request, confname):
 
 	daylist = ConferenceSessionScheduleSlot.objects.filter(conference=conference).dates('starttime', 'day')
 	rooms = Room.objects.filter(conference=conference)
-	tracks = Track.objects.filter(conference=conference)
+	tracks = Track.objects.filter(conference=conference).order_by('sortkey')
 
 	days = []
 
