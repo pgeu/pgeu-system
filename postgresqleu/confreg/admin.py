@@ -171,6 +171,7 @@ class SpeakerPhotoAdmin(admin.ModelAdmin):
 
 class TrackAdmin(admin.ModelAdmin):
 	list_filter = ['conference', ]
+	list_display = ['conference', 'trackname', 'sortkey', 'color', ]
 
 	class Meta:
 		model = Track
