@@ -50,6 +50,7 @@ class Conference(models.Model):
 	conferencefeedbackopen = models.BooleanField(blank=False,null=False,default=False)
 	scheduleactive = models.BooleanField(blank=False,null=False,default=False,verbose_name="Schedule publishing active")
 	sessionsactive = models.BooleanField(blank=False,null=False,default=False,verbose_name="Session list publishing active")
+	schedulewidth = models.IntegerField(blank=False, default=600, null=False, verbose_name="Width of HTML schedule")
 	confurl = models.CharField(max_length=128, blank=False, null=False)
 	listadminurl = models.CharField(max_length=128, blank=True, null=False)
 	listadminpwd = models.CharField(max_length=128, blank=True, null=False)

@@ -261,13 +261,14 @@ def feedback_conference(request, confname):
 
 
 class SessionSet(object):
-	def __init__(self):
+	def __init__(self, totalwidth):
 		self.headersize = 30
 		self.rooms = {}
 		self.tracks = {}
 		self.sessions = []
 		self.firsttime = datetime(2999,1,1)
 		self.lasttime = datetime(1970,1,1)
+		self.totalwidth = totalwidth
 
 	def add(self, session):
 		if not self.rooms.has_key(session.room):
@@ -321,7 +322,7 @@ class SessionSet(object):
 
 	def roomwidth(self):
 		if len(self.rooms):
-			return int(600/len(self.rooms))
+			return int(self.totalwidth/len(self.rooms))
 		else:
 			return 0
 
@@ -353,7 +354,7 @@ def schedule(request, confname):
 	tracks = {}
 	for d in daylist:
 		sessions = ConferenceSession.objects.select_related('track','room','speaker').filter(conference=conference,status=1,starttime__range=(d,d+timedelta(hours=23,minutes=59,seconds=59))).order_by('starttime','room__roomname')
-		sessionset = SessionSet()
+		sessionset = SessionSet(conference.schedulewidth)
 		for s in sessions: sessionset.add(s)
 		sessionset.finalize()
 		days.append({
@@ -859,7 +860,7 @@ def createschedule(request, confname):
 		# Generate a sessionset with the slots only, but with one slot for
 		# each room when we have multiple rooms. Create a fake session that
 		# just has enough for the wrapper to work.
-		sessionset = SessionSet()
+		sessionset = SessionSet(conference.schedulewidth)
 		n = 0
 		for s in slots:
 			for r in rooms:
