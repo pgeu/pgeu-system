@@ -320,7 +320,10 @@ class SessionSet(object):
 			return 0
 
 	def roomwidth(self):
-		return int(600/len(self.rooms))
+		if len(self.rooms):
+			return int(600/len(self.rooms))
+		else:
+			return 0
 
 	def timediff_to_y_pixels(self, t, compareto):
 		return ((t - compareto).seconds/60)*1.5
