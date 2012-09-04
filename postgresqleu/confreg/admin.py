@@ -28,6 +28,7 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	search_fields = ['email', 'firstname', 'lastname', ]
 	ordering = ['-payconfirmedat', 'lastname', 'firstname', ]
 	actions= ['approve_conferenceregistration', ]
+	filter_horizontal = ('additionaloptions',)
 
 	def queryset(self, request):
 		qs = super(ConferenceRegistrationAdmin, self).queryset(request)
