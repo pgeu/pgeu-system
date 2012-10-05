@@ -19,6 +19,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 		super(ConferenceRegistrationForm, self).__init__(*args, **kwargs)
 		if 'instance' in kwargs:
 			self.fields['additionaloptions'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.instance.conference)
+			self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference)
 
 
 class ConferenceRegistrationAdmin(admin.ModelAdmin):
