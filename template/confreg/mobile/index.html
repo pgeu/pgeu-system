@@ -104,6 +104,14 @@ function resync() {
    load_server_data();
 }
 
+function reset_data() {
+   if (confirm('Are you sure you want to do this? All data will be removed and you will need to resync to see anything.')) {
+      localStorage.removeItem('{{conf.urlname}}_data');
+      localStorage.removeItem('{{conf.urlname}}_last');
+      $('#schedule-lv').html('');
+   }
+}
+
 function leadingZero(n, len) {
    s = n.toString();
    while (s.length < len) {
@@ -335,6 +343,7 @@ Say something funny!
               <option value="on">On</option>
            </select> 
         </div>
+	<a href="javascript:reset_data()" data-role="button">Reset all data</a>
       </div>
   </div>
   <div data-role="footer" data-id="global-footer" data-position="fixed">
