@@ -222,6 +222,14 @@ $('#index').live('pageinit', function(event) {
       alert('Sorry, this app only works if your browser supports local storage!');
       return;
    }
+   try {
+      localStorage['test_write'] = '1';
+      localStorage.removeItem('test_write');
+   }
+   catch(e) {
+      alert('Local storage does not appear to be working in your browser. This may be because  you are using Private Browsing or Incognito Browsing. Unfortunately, this app requires local storage to work!');
+      return;
+   }
    if (!localStorage['{{conf.urlname}}_data']) {
       // Need to "decouple", so the page initializes before we run
       setTimeout(resync, 1);
