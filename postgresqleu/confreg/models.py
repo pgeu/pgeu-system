@@ -266,6 +266,11 @@ class Speaker(models.Model):
 	class Meta:
 		ordering = ['fullname', ]
 
+class DeletedItems(models.Model):
+	itemid = models.IntegerField(null=False, blank=False)
+	type = models.CharField(max_length=16, blank=False, null=False)
+	deltime = models.DateTimeField(blank=False, null=False)
+
 class Speaker_Photo(models.Model):
 	speaker = models.ForeignKey(Speaker, db_column='id', primary_key=True)
 	photo = models.TextField(null=False, blank=False)
