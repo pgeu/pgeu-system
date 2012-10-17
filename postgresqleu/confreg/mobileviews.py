@@ -72,7 +72,7 @@ def conferencedata(request, confname, since):
 			'lastmod': datefilter,
 			})
 
-	speakerdata = [{'i': r[0], 'n': r[1], 'a': r[2]} for r in curs.fetchall()]
+	speakerdata = [{'i': r[0], 'n': r[1], 'a': markdown.markdown(r[2], safe_mode=True)} for r in curs.fetchall()]
 
 	# Get all deleted items
 	if since:
