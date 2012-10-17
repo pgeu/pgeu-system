@@ -76,6 +76,7 @@ class Conference(models.Model):
 	templatemodule = models.CharField(max_length=128, blank=True, null=True, default=None)
 	templatemediabase = models.CharField(max_length=128, blank=True, null=True, default=None)
 	callforpapersintro = models.TextField(blank=True, null=False)
+	lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
 
 	def __unicode__(self):
 		return self.conferencename
@@ -240,6 +241,7 @@ class Speaker(models.Model):
 	company = models.CharField(max_length=100, null=False, blank=True)
 	abstract = models.TextField(null=False, blank=True)
 	photofile = models.ImageField(upload_to=get_upload_path, storage=SpeakerImageStorage(), blank=True, null=True, verbose_name="Photo")
+	lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
 
 
 	@property
@@ -302,6 +304,8 @@ class ConferenceSession(models.Model):
 	initialsubmit = models.DateTimeField(null=True, blank=True, verbose_name="Submitted")
 	tentativescheduleslot = models.ForeignKey(ConferenceSessionScheduleSlot, null=True, blank=True)
 	tentativeroom = models.ForeignKey(Room, null=True, blank=True, related_name='tentativeroom')
+	lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
+
 	# NOTE! Any added fields need to be considered for inclusion in
 	# forms.CallForPapersForm!
 
