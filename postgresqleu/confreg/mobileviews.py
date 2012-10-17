@@ -62,7 +62,7 @@ def conferencedata(request, confname, since):
 			'lastmod': datefilter,
 			})
 
-	sessiondata = [{'i': r[0], 't': r[1], 'a': markdown.markdown(r[2], safe_mode=True), 'st': r[3].isoformat(), 'et': r[4].isoformat(), 'r': r[5] and r[5] or '', 's': r[6]} for r in curs.fetchall()]
+	sessiondata = [{'i': r[0], 't': r[1], 'a': markdown.markdown(r[2], safe_mode=True), 'st': r[3].isoformat() + 'Z', 'et': r[4].isoformat() + 'Z', 'r': r[5] and r[5] or '', 's': r[6]} for r in curs.fetchall()]
 #	sessions = ConferenceSession.objects.select_related('speaker').filter(conference=conference, starttime__isnull=False).order_by('starttime')
 
 
