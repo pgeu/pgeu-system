@@ -37,6 +37,19 @@ function merge_json_structures(currdata, newdata) {
    });
 }
 
+function remove_json_ids(currdata, idlist) {
+   return $.grep(currdata, function(e, i) {
+      retval = true;
+      $.each(idlist, function (i, id) {
+         if (e.i == id) {
+            retval = false;
+            return false;
+         }
+      });
+      return retval;
+   });
+}
+
 /*
  * Our stuff here 
  */
@@ -62,6 +75,12 @@ function load_server_data() {
             currdata.s = merge_json_structures(currdata.s, newdata.s);
             currdata.sp = merge_json_structures(currdata.sp, newdata.sp);
 
+            if (newdata.d.sess) {
+               currdata.s = remove_json_ids(currdata.s, newdata.d.sess);
+            }
+            if (newdata.d.spk) {
+               currdata.sp = remove_json_ids(currdata.sp, newdata.d.spk);
+            }
             // XXX: Sort the data, since we might've changed times
             // Store the new data
             localStorage['{{conf.urlname}}_data'] = JSON.stringify(currdata);
@@ -73,7 +92,7 @@ function load_server_data() {
          now = loadtime.toISOString().replace('T', ' ').replace('Z', '')
          localStorage['{{conf.urlname}}_last'] = now;
          status('Loaded server data at ' + now);
-         update_schedule();
+         if (incremental) update_schedule();
       },
       complete: function(data) {
          $.mobile.loading('hide');

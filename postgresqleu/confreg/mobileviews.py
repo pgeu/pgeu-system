@@ -15,6 +15,7 @@ import os
 import sys
 import csv
 
+import itertools
 import simplejson as json
 import time
 
@@ -68,10 +69,20 @@ def conferencedata(request, confname, since):
 
 	speakerdata = [{'i': r[0], 'n': r[1], 'a': r[2]} for r in curs.fetchall()]
 
+	# Get all deleted items
+	if since:
+		curs.execute("SELECT itemid, type FROM confreg_deleteditems WHERE deltime>%(lastmod)s ORDER BY type", {
+				'lastmod': datefilter,
+				})
+		deldata = dict([(k, [i for i,t in v]) for k,v in itertools.groupby(curs.fetchall(), lambda t: t[1])])
+	else:
+		deldata = {}
+
 	resp = HttpResponse(mimetype='application/json')
 	json.dump({
 		's': sessiondata,
 		'sp': speakerdata,
+		'd': deldata,
 		'status': 'OK',
 		}, resp)
 	return resp
