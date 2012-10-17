@@ -30,15 +30,20 @@ def cachemanifest(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 
 	return HttpResponse("""CACHE MANIFEST
-# hack:13
-/media/jq/jquery.mobile-1.0.1.min.css
-/media/jq/jquery-1.6.4.min.js
-/media/jq/jquery.mobile-1.0.1.min.js
+# revision:%s
+/media/jq/jquery.mobile-1.2.0.min.css
+/media/jq/jquery-1.8.2.min.js
+/media/jq/jquery.mobile-1.2.0.min.js
 /media/jq/images/ajax-loader.png
+/media/jq/images/ajax-loader.gif
 /media/jq/images/icons-18-white.png
+/media/jq/images/icons-18-black.png
+/media/jq/images/icons-36-white.png
+/media/jq/images/icons-36-black.png
 NETWORK:
 *
-""", content_type='text/cache-manifest')
+""" % (conference.html5manifestversion,),
+						content_type='text/cache-manifest')
 
 
 def conferencedata(request, confname, since):

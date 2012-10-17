@@ -77,6 +77,7 @@ class Conference(models.Model):
 	templatemediabase = models.CharField(max_length=128, blank=True, null=True, default=None)
 	callforpapersintro = models.TextField(blank=True, null=False)
 	lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
+	html5manifestversion = models.IntegerField(null=False, blank=False, default=0, help_text="Version for HTML5 manifest, to reload mobile app. Set to 0 to completely disable manifest.")
 
 	def __unicode__(self):
 		return self.conferencename
