@@ -1012,6 +1012,8 @@ def admin_email(request):
 			_sendmail(form.data['sender'], emails, msg)
 			messages.info(request, 'Sent email to %s recipients' % len(emails))
 			return HttpResponseRedirect('/admin/confreg/conferenceregistration/?' + form.data['returnurl'])
+		else:
+			ids = form.data['ids'].split(',')
 	else:
 		ids = request.GET['ids']
 		form = EmailSendForm(initial={'ids': ids, 'returnurl': request.GET['orig']})
