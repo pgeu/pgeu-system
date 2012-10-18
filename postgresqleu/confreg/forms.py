@@ -274,3 +274,21 @@ class PrepaidCreateForm(forms.Form):
 			del self.fields['count']
 			del self.fields['buyer']
 			del self.fields['confirm']
+
+class EmailSendForm(forms.Form):
+	ids = forms.CharField(label="List of id's", widget=forms.widgets.HiddenInput())
+	returnurl = forms.CharField(label="Return url", widget=forms.widgets.HiddenInput())
+	sender = forms.EmailField(label="Sending email")
+	subject = forms.CharField(label="Subject", min_length=10)
+	text = forms.CharField(label="Email text", min_length=50, widget=forms.Textarea)
+	confirm = forms.BooleanField(help_text="Confirm that you really want to send this email! Double and triple check the text and sender!")
+
+	def __init__(self, *args, **kwargs):
+		super(EmailSendForm, self).__init__(*args, **kwargs)
+		self.fields['ids'].widget.attrs['readonly'] = True
+		readytogo = False
+		if self.data and self.data.has_key('ids') and self.data.has_key('sender') and self.data.has_key('subject') and self.data.has_key('text'):
+			if len(self.data['ids']) > 1 and len(self.data['sender']) > 5 and len(self.data['subject']) > 10 and len(self.data['text']) > 50:
+				readytogo = True
+		if not readytogo:
+			del self.fields['confirm']

@@ -2,6 +2,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
 from django.conf import settings
 from django.db import transaction, connection
 
@@ -15,6 +16,8 @@ import os
 import sys
 import imp
 import csv
+import smtplib
+from email.mime.text import MIMEText
 
 import simplejson as json
 
@@ -983,3 +986,39 @@ def reports(request, confname):
 			'list': True,
 			'additionaloptions': conference.conferenceadditionaloption_set.all(),
 		    }, context_instance=RequestContext(request))
+
+
+def _sendmail(sender, recipientlist, msg):
+	s = smtplib.SMTP()
+	s.connect()
+	s.sendmail(sender, recipientlist, msg.as_string())
+	s.quit()
+
+# Admin view that's used to send email to multiple users
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def admin_email(request):
+	if request.method == 'POST':
+		form = EmailSendForm(data=request.POST)
+		if form.is_valid():
+			# Ok, actually send the email. This is the scary part!
+			ids = form.data['ids'].split(',')
+			regs = ConferenceRegistration.objects.filter(pk__in=ids)
+			emails = [r.email for r in regs]
+			msg = MIMEText(form.data['text'])
+			msg['Subject'] = form.data['subject']
+			msg['From'] = form.data['sender']
+			msg['To'] = form.data['sender']
+			_sendmail(form.data['sender'], emails, msg)
+			messages.info(request, 'Sent email to %s recipients' % len(emails))
+			return HttpResponseRedirect('/admin/confreg/conferenceregistration/?' + form.data['returnurl'])
+	else:
+		ids = request.GET['ids']
+		form = EmailSendForm(initial={'ids': ids, 'returnurl': request.GET['orig']})
+		ids = ids.split(',')
+
+	recipients = [r.email for r in ConferenceRegistration.objects.filter(pk__in=ids)]
+	return render_to_response('confreg/admin_email.html', {
+		'form': form,
+		'recipientlist': ', '.join(recipients),
+		})

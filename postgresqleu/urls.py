@@ -76,6 +76,10 @@ urlpatterns = patterns('',
     (r'^m/(\w+)/cache.manifest/$', postgresqleu.confreg.mobileviews.cachemanifest),
     (r'^m/(\w+)/cdj/(\d+)?$', postgresqleu.confreg.mobileviews.conferencedata),
 
+
+    # Conference admin
+    (r'^admin/confreg/_email/$', 'postgresqleu.confreg.views.admin_email'),
+
 	# Membership management
 	(r'^membership/$', postgresqleu.membership.views.home),
 	(r'^community/members/$', postgresqleu.membership.views.userlist),

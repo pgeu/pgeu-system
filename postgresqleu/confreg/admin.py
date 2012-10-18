@@ -1,10 +1,12 @@
 from django.contrib import admin
 from django import forms
+from django.http import HttpResponseRedirect
 from django.forms import ValidationError
 from django.db.models.fields.files import ImageFieldFile
 from postgresqleu.confreg.models import *
 from postgresqleu.confreg.dbimage import InlinePhotoWidget
 from datetime import datetime
+import urllib
 
 class ConferenceAdmin(admin.ModelAdmin):
 	list_display = ('conferencename', 'startdate', 'enddate')
@@ -28,7 +30,7 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	list_filter = ['conference', 'regtype', 'additionaloptions', ]
 	search_fields = ['email', 'firstname', 'lastname', ]
 	ordering = ['-payconfirmedat', 'lastname', 'firstname', ]
-	actions= ['approve_conferenceregistration', ]
+	actions= ['approve_conferenceregistration', 'email_recipients']
 	filter_horizontal = ('additionaloptions',)
 
 	def queryset(self, request):
@@ -42,6 +44,11 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 		rows = queryset.filter(payconfirmedat__isnull=True).update(payconfirmedat=datetime.today(), payconfirmedby=request.user.username)
 		self.message_user(request, '%s registration(s) marked as confirmed.' % rows)
 	approve_conferenceregistration.short_description = "Confirm payments for selected users"
+
+	def email_recipients(self, request, queryset):
+		selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+		return HttpResponseRedirect('/admin/confreg/_email/?ids=%s&orig=%s' % (','.join(selected), urllib.quote(urllib.urlencode(request.GET))))
+	email_recipients.short_description = "Send email to selected users"
 
 	def has_change_permission(self, request, obj=None):
 		if not obj:
