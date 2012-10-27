@@ -195,6 +195,9 @@ class ConferenceFeedbackQuestionAdmin(admin.ModelAdmin):
 	list_display = ['conference', 'sortkey', 'newfieldset', 'question',]
 	list_filter = ['conference', ]
 
+class ConferenceFeedbackAnswerAdmin(admin.ModelAdmin):
+	list_filter = ['conference', ]
+
 class PrepaidVoucherInline(admin.TabularInline):
 	model = PrepaidVoucher
 	readonly_fields = ['user', 'usedate' ]
@@ -226,6 +229,6 @@ admin.site.register(Speaker, SpeakerAdmin)
 admin.site.register(Speaker_Photo, SpeakerPhotoAdmin)
 admin.site.register(ConferenceAdditionalOption, ConferenceAdditionalOptionAdmin)
 admin.site.register(ConferenceFeedbackQuestion, ConferenceFeedbackQuestionAdmin)
-admin.site.register(ConferenceFeedbackAnswer)
+admin.site.register(ConferenceFeedbackAnswer, ConferenceFeedbackAnswerAdmin)
 admin.site.register(PrepaidBatch, PrepaidBatchAdmin)
 admin.site.register(PrepaidVoucher, PrepaidVoucherAdmin)
