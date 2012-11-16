@@ -151,7 +151,7 @@ INNER JOIN confreg_conferencesession s ON f.session_id=s.id
 INNER JOIN confreg_conferencesession_speaker cs ON s.id=cs.conferencesession_id
 INNER JOIN confreg_speaker spk ON spk.id=cs.speaker_id
 WHERE s.conference_id=%(confid)s AND """+rating+" >= 1 AND "+rating+""" <= 5
-AND s.status=1
+AND s.status=1 AND can_feedback
 GROUP BY spk.fullname
 ORDER BY 2 DESC
 """, {'confid': confid})
