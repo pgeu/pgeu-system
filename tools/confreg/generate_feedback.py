@@ -151,6 +151,7 @@ INNER JOIN confreg_conferencesession s ON f.session_id=s.id
 INNER JOIN confreg_conferencesession_speaker cs ON s.id=cs.conferencesession_id
 INNER JOIN confreg_speaker spk ON spk.id=cs.speaker_id
 WHERE s.conference_id=%(confid)s AND """+rating+" >= 1 AND "+rating+""" <= 5
+AND s.status=1
 GROUP BY spk.fullname
 ORDER BY 2 DESC
 """, {'confid': confid})
@@ -162,7 +163,7 @@ ORDER BY 2 DESC
 	curs.execute("""SELECT s.id, title, fullname FROM confreg_conferencesession s
 INNER JOIN confreg_conferencesession_speaker cs ON s.id=cs.conferencesession_id
 INNER JOIN confreg_speaker spk ON spk.id=cs.speaker_id
-WHERE conference_id=%(conf)s AND s.can_feedback
+WHERE conference_id=%(conf)s AND s.can_feedback AND s.status=1
 ORDER BY id
 """, {'conf': confid})
 	while True:
