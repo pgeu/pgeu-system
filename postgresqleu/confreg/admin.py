@@ -9,7 +9,7 @@ from datetime import datetime
 import urllib
 
 class ConferenceAdmin(admin.ModelAdmin):
-	list_display = ('conferencename', 'startdate', 'enddate')
+	list_display = ('conferencename', 'active', 'startdate', 'enddate')
 	ordering = ('-startdate', )
 	filter_horizontal = ('administrators','testers','talkvoters',)
 
