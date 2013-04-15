@@ -12,7 +12,7 @@ from reportlab.platypus.flowables import Image
 import cStringIO as StringIO
 
 class PDFInvoice(object):
-	def __init__(self, recipient, invoicedate, duedate, invoicenum=None, imagedir=None, currency='€'):
+	def __init__(self, recipient, invoicedate, duedate, invoicenum=None, imagedir=None, currency='€', preview=False):
 		self.pdfdata = StringIO.StringIO()
 		self.canvas = Canvas(self.pdfdata)
 		self.recipient = recipient
@@ -21,6 +21,7 @@ class PDFInvoice(object):
 		self.duedate = duedate
 		self.imagedir = imagedir or '.'
 		self.currency = currency or '€'
+		self.preview = preview
 		self.rows = []
 
 		self.canvas.setTitle("PostgreSQL Europe Invoice #%s" % self.invoicenum)
@@ -39,9 +40,21 @@ class PDFInvoice(object):
 			s = s[:len(s)-2]
 
 	def save(self):
+		if self.preview:
+			t = self.canvas.beginText()
+			t.setTextOrigin(6*cm, 4*cm)
+			t.setFont("Times-Italic", 70)
+			t.setFillColorRGB(0.9,0.9,0.9)
+			t.textLines("PREVIEW PREVIEW")
+			self.canvas.rotate(45)
+			self.canvas.drawText(t)
+			self.canvas.rotate(-45)
+
 		im = Image("%s/PostgreSQL_logo.1color_blue.300x300.png" % self.imagedir, width=3*cm, height=3*cm)
 		im.drawOn(self.canvas, 2*cm, 25*cm)
 		t = self.canvas.beginText()
+		t.setFillColorRGB(0,0,0,0)
+		t.setFont("Times-Roman", 10)
 		t.setTextOrigin(6*cm, 27.5*cm)
 		t.textLines("""PostgreSQL Europe
 Carpeaux Diem
