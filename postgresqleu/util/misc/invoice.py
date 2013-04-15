@@ -56,7 +56,7 @@ France
 		t.setFont("Times-Roman", 10)
 		t.textLine("")
 		t.textLines("""
-Your contact: Jean-Paul Argudo
+Your contact: Guillaume Lelarge
 Function: PostgreSQL Europe Treasurer
 E-mail: treasurer@postgresql.eu
 """)
