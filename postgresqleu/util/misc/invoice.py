@@ -12,7 +12,7 @@ from reportlab.platypus.flowables import Image
 import cStringIO as StringIO
 
 class PDFInvoice(object):
-	def __init__(self, recipient, invoicedate, duedate, invoicenum=None, imagedir=None, currency='€', preview=False):
+	def __init__(self, recipient, invoicedate, duedate, invoicenum=None, imagedir=None, currency='€', preview=False, receipt=False):
 		self.pdfdata = StringIO.StringIO()
 		self.canvas = Canvas(self.pdfdata)
 		self.recipient = recipient
@@ -22,6 +22,7 @@ class PDFInvoice(object):
 		self.imagedir = imagedir or '.'
 		self.currency = currency or '€'
 		self.preview = preview
+		self.receipt = receipt
 		self.rows = []
 
 		self.canvas.setTitle("PostgreSQL Europe Invoice #%s" % self.invoicenum)
@@ -85,7 +86,10 @@ E-mail: treasurer@postgresql.eu
 
 		# Center between 2 and 19 is 10.5
 		if self.invoicenum:
-			self.canvas.drawCentredString(10.5*cm,19*cm, "INVOICE NUMBER %s - %s" % (self.invoicenum, self.invoicedate.strftime("%B %d, %Y")))
+			if self.receipt:
+				self.canvas.drawCentredString(10.5*cm,19*cm, "RECEIPT FOR INVOICE NUMBER %s" % self.invoicenum)
+			else:
+				self.canvas.drawCentredString(10.5*cm,19*cm, "INVOICE NUMBER %s - %s" % (self.invoicenum, self.invoicedate.strftime("%B %d, %Y")))
 			#2010-41 - October, 25th 2010")
 		else:
 			self.canvas.drawCentredString(10.5*cm,19*cm, "RECEIPT - %s" % self.invoicedate.strftime("%B %d, %Y"))
@@ -114,7 +118,10 @@ E-mail: treasurer@postgresql.eu
 		w,h = t.wrapOn(self.canvas,10*cm,10*cm)
 		t.drawOn(self.canvas, 2*cm, 18*cm-h)
 
-		self.canvas.drawCentredString(10.5*cm,17.3*cm-h, "This invoice is due: %s" % self.duedate.strftime("%B %d, %Y"))
+		if self.receipt:
+			self.canvas.drawCentredString(10.5*cm,17.3*cm-h, "This invoice was paid %s" % self.duedate.strftime("%B %d, %Y"))
+		else:
+			self.canvas.drawCentredString(10.5*cm,17.3*cm-h, "This invoice is due: %s" % self.duedate.strftime("%B %d, %Y"))
 
 
 		t = self.canvas.beginText()
@@ -123,18 +130,19 @@ E-mail: treasurer@postgresql.eu
 		t.textLine("PostgreSQL Europe is a French non-profit under the French 1901 Law.")
 		t.textLine("")
 
-		t.setFont("Times-Bold", 10)
-		t.textLine("Bank references / Références bancaires / Bankverbindungen / Referencias bancarias")
+		if not self.receipt:
+			t.setFont("Times-Bold", 10)
+			t.textLine("Bank references / Références bancaires / Bankverbindungen / Referencias bancarias")
 
-		t.setFont("Times-Roman", 8)
-		t.textLines("""BNP PARISBAS - MONTROUGE REPUBLIQUE
+			t.setFont("Times-Roman", 8)
+			t.textLines("""BNP PARISBAS - MONTROUGE REPUBLIQUE
 110, Avenue de la République
 92120 MONTROUGE
 FRANCE
 IBAN: FR76 3000 4001 6200 0100 7536 333
 BIC: BNPAFRPPBBT
 """)
-		self.canvas.drawText(t)
+			self.canvas.drawText(t)
 
 
 		self.canvas.showPage()
