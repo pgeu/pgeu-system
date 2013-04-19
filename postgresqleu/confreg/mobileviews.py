@@ -55,7 +55,7 @@ def conferencedata(request, confname, since):
 		# Yes this is ugly, but i'm too lazy to rewrite the query
 		datefilter = datetime.fromtimestamp(0)
 
-	# XXX: Yeah, the django ORM is uncapable of doing this in a smart way...
+	# Yeah, the django ORM is uncapable of doing this in a smart way...
 	curs = connection.cursor()
 	curs.execute("SELECT s.id, s.title, s.abstract, s.starttime, s.endtime, r.roomname, array_agg(csp.speaker_id) AS speakers FROM confreg_conferencesession s INNER JOIN confreg_conferencesession_speaker csp ON csp.conferencesession_id=s.id LEFT JOIN confreg_room r ON r.id=s.room_id WHERE s.conference_id=%(confid)s AND status=1 AND NOT starttime IS NULL AND lastmodified > %(lastmod)s GROUP BY s.id, s.title, s.abstract, s.starttime, s.endtime, r.roomname ORDER BY s.starttime", {
 			'confid': conference.id,
