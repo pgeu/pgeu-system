@@ -142,7 +142,8 @@ FRANCE
 IBAN: FR76 3000 4001 6200 0100 7536 333
 BIC: BNPAFRPPBBT
 """)
-			self.canvas.drawText(t)
+
+		self.canvas.drawText(t)
 
 
 		self.canvas.showPage()
