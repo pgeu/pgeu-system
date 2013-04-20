@@ -1,13 +1,15 @@
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.template import RequestContext
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
 from django.db import transaction, connection
 
 from models import *
 from forms import *
+
+from postgresqleu.util.decorators import user_passes_test_or_error
 
 from datetime import datetime, timedelta
 import base64
@@ -617,7 +619,7 @@ def prepaid(request, confname, regid):
 
 @login_required
 @transaction.commit_on_success
-@user_passes_test(lambda u: u.has_module_perms('invoicemgr'))
+@user_passes_test_or_error(lambda u: u.has_module_perms('invoicemgr'))
 def createvouchers(request):
 	# Creation of pre-paid vouchers for conference registrations
 	if settings.FORCE_SECURE_FORMS and not request.is_secure():
@@ -802,7 +804,7 @@ def talkvote(request, confname):
 
 @login_required
 @transaction.commit_on_success
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test_or_error(lambda u: u.is_superuser)
 def createschedule(request, confname):
 	if settings.FORCE_SECURE_FORMS and not request.is_secure():
 		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
@@ -887,7 +889,7 @@ def createschedule(request, confname):
 
 @login_required
 @transaction.commit_manually
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test_or_error(lambda u: u.is_superuser)
 def publishschedule(request, confname):
 	if settings.FORCE_SECURE_FORMS and not request.is_secure():
 		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
@@ -996,7 +998,7 @@ def _sendmail(sender, recipientlist, msg):
 
 # Admin view that's used to send email to multiple users
 @login_required
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test_or_error(lambda u: u.is_superuser)
 def admin_email(request):
 	if request.method == 'POST':
 		form = EmailSendForm(data=request.POST)
