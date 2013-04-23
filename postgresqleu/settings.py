@@ -93,6 +93,8 @@ INSTALLED_APPS = (
 
 INVOICE_SENDER_EMAIL="webmaster@postgresql.eu"
 
+PAYPAL_SANDBOX=False
+
 FORCE_SECURE_FORMS=True
 DATETIME_FORMAT="Y-m-d H:i:s"
 # If there is a local_settings.py, let it override our settings
