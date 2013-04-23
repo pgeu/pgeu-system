@@ -11,6 +11,7 @@ import postgresqleu.confreg.mobileviews
 import postgresqleu.membership.views
 import postgresqleu.elections.views
 import postgresqleu.invoicemgr.views
+import postgresqleu.invoices.views
 
 from postgresqleu.newsevents.feeds import LatestNews, LatestEvents
 
@@ -99,6 +100,19 @@ urlpatterns = patterns('',
 	(r'invoicemgr/(\d+)/pdf/$', postgresqleu.invoicemgr.views.invoicepdf),
 	(r'invoicemgr/new/$', postgresqleu.invoicemgr.views.create),
 	(r'invoicemgr/new/conf/(\d+/)?$', postgresqleu.invoicemgr.views.conf),
+
+    # Second generation invoice management system
+    (r'^invoiceadmin/$', postgresqleu.invoices.views.home),
+    (r'^invoiceadmin/unpaid/$', postgresqleu.invoices.views.unpaid),
+    (r'^invoiceadmin/pending/$', postgresqleu.invoices.views.pending),
+    (r'^invoiceadmin/(\d+)/$', postgresqleu.invoices.views.oneinvoice),
+    (r'^invoiceadmin/(new)/$', postgresqleu.invoices.views.oneinvoice),
+    (r'^invoiceadmin/(\d+)/flag/$', postgresqleu.invoices.views.flaginvoice),
+    (r'^invoiceadmin/(\d+)/preview/$', postgresqleu.invoices.views.previewinvoice),
+    (r'^invoices/(\d+)/$', postgresqleu.invoices.views.viewinvoice),
+    (r'^invoices/(\d+)/pdf/$', postgresqleu.invoices.views.viewinvoicepdf),
+    (r'^invoices/(\d+)/receipt/$', postgresqleu.invoices.views.viewreceipt),
+    (r'^invoices/$', postgresqleu.invoices.views.userhome),
 
 	# This should not happen in production - serve by apache!
 	url(r'^media/(.*)$', 'django.views.static.serve', {

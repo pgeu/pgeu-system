@@ -1,0 +1,108 @@
+{%extends "base.html"%}
+{%block title%}Invoice{%endblock%}
+{%block layoutblock%}
+{%if invoice.id%}
+<h1>Invoice #{{invoice.id}}</h1>
+{%else%}
+<h1>New invoice</h1>
+{%endif%}
+
+<a href="/invoiceadmin/">Back</a>
+
+{%if invoice.finalized%}
+<p>
+This invoice has been finalized and can no longer be edited.
+</p>
+<p>
+<a href="/invoices/{{invoice.id}}/">View</a> what it looks like to the
+recipient.
+</p>
+{%endif%}
+
+{%if invoice.deleted%}
+<p>
+<br/>
+<h2>This invoice has been <i>deleted</i>!</h2>
+<br/><br/><br/><br/>
+</p>
+{%else%}
+
+{%if invoice.ispaid%}
+<p>
+This invoice has been <b>paid</b>.
+</p>
+{%else%}
+{%if invoice.finalized%}
+<p>
+This invoice has not been paid. You can flag it as paid manually if a
+payment has been received that could not be automatically processed. To
+do this, you must give a "reason" for it, that will be entered into the
+system for permanent record. This reason should include details like a
+transaction id from the payment system or bank. It will, of course,
+also be tagged with your userid <i>{{user.username}}</i>.
+</p>
+<form method="post" action="flag/">
+ Reason: <input type="text" name="reason" />
+ <input type="submit" name="submit" value="Flag invoice as paid"/>
+</form>
+{%endif%}
+{%endif%}
+
+{%endif%}{%comment%}deleted{%endcomment%}
+
+<hr/>
+
+<form method="post" action=".">
+<table>
+{%if form.errors%}
+ <tr class="errorheader">
+  <td colspan="2">Please correct the errors below, and re-submit the form.</td>
+ </tr>
+{%endif%}
+{%for field in form%}
+ {%if field.errors %}
+ <tr class="error">
+  <td colspan="2">{{field.errors.as_ul}}</td>
+ </tr>
+ {%endif%}
+ <tr {%if field.errors%}class="errorinfo"{%endif%}>
+  <th>{{field.label_tag}}</th>
+  <td>{{field}}</td>
+ </tr>
+{%endfor%}
+</table>
+<h2>Invoice rows</h2>
+<table>
+
+{{ formset.management_form }}
+{%for form in formset.forms%}
+{%if forloop.first%}
+<tr>
+  {%for field in form.visible_fields%}
+  <th>{{field.label|capfirst}}</th>
+  {%endfor%}
+</tr>
+{%endif%}
+<tr>
+  {%for field in form.visible_fields%}
+  <td>
+    {%if forloop.first%}{{form.id}}{%endif%}
+    {{field.errors}}
+    {{field}}
+  </td>
+  {%endfor%}
+</tr>
+{%endfor%}
+</table>
+{%if not invoice.finalized and not invoice.deleted%}
+<input type="submit" name="submit" value="{{savebutton|default:"Save"}}" />
+<br/>
+<input type="submit" name="submit" value="Finalize" /> (Note! Finalizing will lock this invoice from further editing!)
+<br/>
+<input type="submit" name="submit" value="Preview" /> (Note! Saves before preview!)
+{%endif%}
+</form>
+
+<a href="/invoiceadmin/">Back</a>
+
+{%endblock%}

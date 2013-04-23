@@ -1,0 +1,50 @@
+<table style="border: 1px solid black;">
+ <tr>
+  <td style="white-space: nowrap">Invoice number:</td>
+  <td>{{invoice.pk}}</td>
+ </tr>
+ <tr>
+   <td style="white-space: nowrap">Invoice status:</td>
+   <td><b>{{invoice.ispaid|yesno:"Paid,Awaiting payment"}}</b></td>
+ </tr>
+ <tr>
+   <td style="white-space: nowrap">Invoice title:</td>
+   <td>{{invoice.title}}</td>
+ </tr>
+ <tr>
+   <td style="white-space: nowrap">Total amount:</td>
+   <td>€{{invoice.total_amount}}</td>
+ </tr>
+ <tr>
+   <td style="white-space: nowrap">Invoice:</td>
+   <td><a href="/invoices/{{invoice.pk}}/pdf/">View PDF</a></td>
+ </tr>
+{%if invoice.ispaid%}
+ <tr>
+   <td style="white-space: nowrap">Receipt:</td>
+   <td><a href="/invoices/{{invoice.pk}}/receipt/">View receipt</a></td>
+ </tr>
+{%else%}
+ <tr>
+   <td style="white-space: nowrap">Pay invoice</td>
+   <td>
+     <ul>
+     {%for method in invoice.allowedmethodwrappers%}
+     <li><h3>{{method.name}}</h3>
+       {%if method.ok%}
+       <p>{{method.description}}</p>
+       <p><a href="{{method.paymenturl}}">Proceed</a> to pay with {{method.name}}</p>
+       {%else%}
+       <p>An error occurred when initializing this payment method. Unfortunately, it is not currently available. Please contact the PostgreSQL Europe treasurer to report this.</p>
+       {%endif%}
+     </li>
+     {%empty%}
+     There are no payment methods allowed for this invoice. Please contact
+     PostgreSQL Europe &lt;treasurer at postgresql dot eu&gt; reporting
+     your invoice number to get one or more methods assigned to it.
+     {%endfor%}
+     </ul>
+   </td>
+ </tr>
+{%endif%}
+</table>

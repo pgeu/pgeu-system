@@ -1,0 +1,29 @@
+{%extends "navbase.html"%}
+{%block title%}Your invoices{%endblock%}
+{%block content%}
+<h1>Your invoices</h1>
+
+<p>
+We have the following invoices registered to your account:
+</p>
+
+<table border="1" cellspacing="0" cellpadding="3">
+<tr>
+ <th>Number</th>
+ <th>Title</th>
+ <th>Status</th>
+ <th>Due</th>
+ <th>Receipt</th>
+</tr>
+{%for invoice in invoices %}
+<tr>
+ <td>#{{invoice.id}}</td>
+ <td><a href="{{invoice.id}}/">{{invoice.title}}</td>
+ <td>{{invoice.ispaid|yesno:"Paid,Pending"}}</td>
+ <td>{{invoice.duedate|date:"Y-m-d"}}</td>
+ <td>{%if invoice.ispaid%}<a href="{{invoice.id}}/receipt/">Download</a>{%endif%}</td>
+</tr>
+{%endfor%}
+</table>
+
+{%endblock%}

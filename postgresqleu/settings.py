@@ -88,7 +88,10 @@ INSTALLED_APPS = (
 	'postgresqleu.elections',
 	'postgresqleu.mailqueue',
 	'postgresqleu.invoicemgr',
+	'postgresqleu.invoices',
 )
+
+INVOICE_SENDER_EMAIL="webmaster@postgresql.eu"
 
 FORCE_SECURE_FORMS=True
 DATETIME_FORMAT="Y-m-d H:i:s"

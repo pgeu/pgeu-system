@@ -1,0 +1,58 @@
+{%extends "base.html"%}
+{%block title%}Invoices{%endblock%}
+{%block layoutblock%}
+<h1>Invoices</h1>
+
+<p>
+{%if not unpaid and not pending%}All{%else%}<a href="/invoiceadmin/">All</a>{%endif%}
+|
+{%if unpaid %}Unpaid{%else%}<a href="/invoiceadmin/unpaid/">Unpaid</a>{%endif%}
+|
+{%if pending %}Pending{%else%}<a href="/invoiceadmin/pending/">Pending</a>{%endif%}
+</p>
+
+<table border="1" cellspacing="0" cellpadding="3">
+<tr>
+ <th>Num</th>
+ <th>Title</th>
+ <th>Recipient</th>
+ <th>Sent</th>
+ <th>Due</th>
+ <th>Paid</th>
+ <th>Finalized</th>
+</tr>
+{%for invoice in invoices.object_list %}
+<tr{%if invoice.deleted%} style="text-decoration:line-through;"{%endif%}>
+ <td><a href="/invoiceadmin/{{invoice.id}}/">{{invoice.id}}</a></td>
+ <td><a href="/invoiceadmin/{{invoice.id}}/">{{invoice.title}}</a></td>
+ <td style="white-space: nowrap">{{invoice.recipient_name}}</td>
+ <td style="white-space: nowrap">{{invoice.invoicedate|date:"Y-m-d"}}</td>
+ <td style="white-space: nowrap">{{invoice.duedate|date:"Y-m-d"}}</td>
+ <td style="white-space: nowrap">{%if invoice.ispaid%}{{invoice.paidat|date:"Y-m-d"}}{%else%}No{%endif%}</td>
+ <td>{{invoice.finalized|yesno}}</td>
+</tr>
+{%endfor%}
+</table>
+
+<div class="pagination">
+  <span class="step-links">
+    {% if invoices.has_previous %}
+    <a href="?page={{ invoices.previous_page_number }}">previous</a>
+    {% endif %}
+
+    <span class="current">
+      Page {{ invoices.number }} of {{ invoices.paginator.num_pages }}.
+    </span>
+
+    {% if invoices.has_next %}
+    <a href="?page={{ invoices.next_page_number }}">next</a>
+    {% endif %}
+  </span>
+</div>
+
+<hr />
+<p>
+<a href="/invoiceadmin/new/">Create</a> new invoice.
+</p>
+
+{%endblock%}

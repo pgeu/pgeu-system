@@ -1,0 +1,9 @@
+{%extends "navbase.html"%}
+{%block title%}Invoice #{{invoice.pk}}{%endblock%}
+{%block content%}
+<h1>Invoice #{{invoice.pk}}</h1>
+
+{%include "invoices/userinvoice_spec.html"%}
+
+<p><a href="../">Return</a> to the list of all your invoices.</a></p>
+{%endblock%}
