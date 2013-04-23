@@ -12,7 +12,7 @@ You do not need a Paypal account if you choose to pay with creditcard.
 	PAYPAL_BASEURL="https://www.paypal.com/cgi-bin/webscr?cmd"
 	PAYPAL_SANBOXURL="https://www.sandbox.paypal.com/cgi-bin/webscr?cmd"
 	PAYPAL_COMMON={
-		'business':'paypal@postgresql.eu',
+		'business':settings.PAYPAL_SANDBOX and 'paypal-facilitator@postgresql.eu or 'paypal@postgresql.eu',
 		'lc':'GB',
 		'currency_code':'EUR',
 		'button_subtype':'services',
