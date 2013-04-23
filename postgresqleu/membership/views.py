@@ -1,15 +1,20 @@
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect
 from django.template import RequestContext
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.db import transaction
 
 from models import *
 from forms import *
 
+from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
+from postgresqleu.invoices.models import InvoiceProcessor
+
 from datetime import date, datetime
 
 @login_required
+@transaction.commit_on_success
 def home(request):
 	if settings.FORCE_SECURE_FORMS and not request.is_secure():
 		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
@@ -51,6 +56,28 @@ def home(request):
 						  timestamp=datetime.now(),
 						  message="Modified registration data for field(s): %s" % (", ".join(form._changed_data)),
 						  ).save()
+			if request.POST["submit"] == "Generate invoice":
+				# Generate an invoice for the user
+				if member.activeinvoice:
+					raise Exception("This should not happen - generating invoice when one already exists!")
+				manager = InvoiceManager()
+				processor = InvoiceProcessor.objects.get(processorname="membership processor")
+				invoicerows = [('PostgreSQL Europe - 2 years membership - %s' % request.user.email, 1, 10),]
+				member.activeinvoice = manager.create_invoice(
+					request.user,
+					request.user.email,
+					request.user.first_name + ' ' + request.user.last_name,
+					'', # We don't have an address
+					'PostgreSQL Europe membership for %s'% request.user.email,
+					datetime.now(),
+					datetime.now(),
+					invoicerows,
+					processor = processor,
+					processorid = member.pk,
+					)
+				member.activeinvoice.save()
+				member.save()
+				# Invoice info will automatically render on the main form page
 	else:
 		form = MemberForm(instance=member)
 
@@ -59,6 +86,7 @@ def home(request):
 	return render_to_response('membership/index.html', {
 		'form': form,
 		'member': member,
+		'invoice': InvoicePresentationWrapper(member.activeinvoice, "https://www.postgresql.eu/membership/"),
 		'registration_complete': registration_complete,
 		'logdata': logdata,
 		'amount': 10, # price for two years

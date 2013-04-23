@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from postgresqleu.countries.models import Country
+from postgresqleu.invoices.models import Invoice
 
 from datetime import date, timedelta
 
@@ -14,6 +15,10 @@ class Member(models.Model):
 								 verbose_name='Listed in the public membership list')
 	paiduntil = models.DateField(null=True, blank=True)
 	membersince = models.DateField(null=True, blank=True)
+
+	# If there is a currently active invoice, link to it here so we can
+	# easily render the information on the page.
+	activeinvoice = models.ForeignKey(Invoice, null=True, blank=True)
 
 	@property
 	def expiressoon(self):
