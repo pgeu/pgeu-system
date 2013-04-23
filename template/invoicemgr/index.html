@@ -1,14 +1,22 @@
 {%extends "navbase.html"%}
 {%block title%}Invoices{%endblock%}
 {%block content%}
+<h1>THIS IS THE OLD INVOICE SYSTEM AND IT'S DEPRECATED</h1>
+<p>
+You should be using the new one at <a href="/invoiceadmin/">/invoiceadmin/</a>.
+This one only still exists so you can view the old invoices...
+</p>
+
+<!--
 <h1>Create invoice</h1>
 <ul>
   <li><a href="new/">Create normal invoice</a></li>
   <li><a href="new/conf/">Create conference invoice</a></li>
 </ul>
 <br/>
+-->
 
-<h1>Existing invoices</h1>
+<h2>Existing invoices</h2>
 <ul>
   {%for i in invoices%}
   <li><a href="{{i.id}}/">{{i}}</a></li>
