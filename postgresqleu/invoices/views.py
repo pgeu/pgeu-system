@@ -12,7 +12,7 @@ import StringIO
 from postgresqleu.util.decorators import user_passes_test_or_error
 from models import *
 from forms import InvoiceForm, InvoiceRowForm
-from util import InvoiceWrapper, InvoiceManager
+from util import InvoiceWrapper, InvoiceManager, InvoicePresentationWrapper
 
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
@@ -160,7 +160,7 @@ def viewinvoice(request, invoiceid):
 		return HttpResponseForbidden("Access denied")
 
 	return render_to_response('invoices/userinvoice.html', {
-			'invoice': invoice,
+			'invoice': InvoicePresentationWrapper(invoice, "https://www.postgresql.eu/invoices/%s/" % invoice.pk),
 			})
 
 @login_required
