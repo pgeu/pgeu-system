@@ -17,4 +17,8 @@ def register_invoice_payment_methods(app, created_models, verbosity=2, **kwargs)
 			p.save()
 			print "Added payment processor for paypal"
 
+		(p, created) = InvoicePaymentMethod.objects.get_or_create(name='Bank transfer', sortkey=200, classname='util.payment.banktransfer.Banktransfer', auto=False)
+		if created:
+			p.save()
+			print "Added payment processor for bank transfer"
 signals.post_syncdb.connect(register_invoice_payment_methods)

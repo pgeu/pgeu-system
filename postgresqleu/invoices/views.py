@@ -189,3 +189,11 @@ def userhome(request):
 	return render_to_response('invoices/userhome.html', {
 			'invoices': invoices,
 			})
+
+@login_required
+def banktransfer(request):
+	return render_to_response('invoices/banktransfer.html', {
+			'title': request.GET['title'],
+			'amount': request.GET['amount'],
+			'returnurl': request.GET['ret'],
+			})

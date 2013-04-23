@@ -113,6 +113,7 @@ urlpatterns = patterns('',
     (r'^invoices/(\d+)/pdf/$', postgresqleu.invoices.views.viewinvoicepdf),
     (r'^invoices/(\d+)/receipt/$', postgresqleu.invoices.views.viewreceipt),
     (r'^invoices/$', postgresqleu.invoices.views.userhome),
+    (r'^invoices/banktransfer/$', postgresqleu.invoices.views.banktransfer),
 
 	# This should not happen in production - serve by apache!
 	url(r'^media/(.*)$', 'django.views.static.serve', {

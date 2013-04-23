@@ -1,0 +1,52 @@
+{%extends "navbase.html"%}
+{%block title%}Pay with bank transfer{%endblock%}
+{%block content%}
+<h1>Pay with bank transfer</h1>
+<p>
+To pay your invoice using bank transfer, please make a payment
+according to the following:
+</p>
+
+<table border="1" cellspacing="0" cellpadding="3">
+<tr>
+ <th>Account holder</th>
+ <td>Association PostgreSQL Europe</td>
+</tr>
+<tr>
+ <th>Bank name</th>
+ <td>BNP PARIBAS MONTROUGE-REPUBL</td>
+</tr>
+<tr>
+ <th>BIC</th>
+ <td>BNPAFRPPBBT</td>
+</tr>
+<tr>
+ <th>IBAN</th>
+ <td>FR76 3000 4001 6200 0100 7536 333</td>
+</tr>
+<tr>
+ <th>Payment text</th>
+ <td>{{title}}</td>
+</tr>
+<tr>
+ <th>Amount</th>
+ <td>EUR{{amount}}</td>
+</tr>
+</table>
+
+<p>
+<b>Note</b> that it is <b><i>very</i></b> important that you provide the
+correct text on the transfer, or we may not be able to match your payment
+to the correct invoice. In particular, the beginning of the title including
+the invoice number <i>must</i> be present.
+</p>
+
+<p>
+<b>Note</b> that bank transfers take a few days to process, so if your
+payment is nedeed repidly in order to confirm something, this is not a good
+choice of payment method.
+</p>
+
+<a href="{{returnurl}}">Return</a> to payment options.
+
+{%endblock%}
