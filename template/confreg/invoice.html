@@ -1,0 +1,12 @@
+{%extends conftemplbase %}
+{%load markup%}
+{%block title%}Conference registration invoice{%endblock%}
+{%block content%}
+<h1>Conference registration invoice</h1>
+<p>
+An invoice has been prepared for your conference registration. This
+invoice is due for immediate payment.
+</p>
+{%include "invoices/userinvoice_spec.html"%}
+<p><a href="../../">Return</a> to your registration</p>
+{%endblock%}

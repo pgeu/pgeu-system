@@ -2,48 +2,94 @@
 {%load markup%}
 {%load payment_options%}
 {%block title%}Conference Registration - {{conference}}{%endblock%}
+{%block extrahead%}
+<script language="javascript">
+function confirmInvoice() {
+   return confirm('Once you proceed to payment, an invoice will be generated for your registration, and you will no longer be able to change it.\n\nThis invoice will be addressed to the person, company and address specified in the registration - please take a moment to review those fields if you need to.\n\nThe invoice will be delivered as a PDF in your browser, no paper invoice will be sent.\n\nAre you sure you want to proceed to payment?');
+}
+</script>
+{%endblock%}
 {%block content%}
 <h1>Conference Registration - {{conference}}</h1>
 
 <p>On this page you can register for <a href="{{conference.confurl}}">{{conference}}</a>.
-Please fill out all
-fields and click <i>Save</i>. You can return to this page at any time and
-view or edit your registration details.</p>
+</p>
 <p>
 <b>NOTE!</b> if you wish to register multiple people,
 you must <a href="/logout">log out</a> and back in (with a different account)
 between each registration to avoid conflicts.
 </p>
 
+{%if reg.payconfirmedat or reg.invoice%}
+ {%if reg.payconfirmedat %}
+<p>
+Your registration and payment have been confirmed by {{reg.payconfirmedby}} at
+{{reg.payconfirmedat}}. Welcome to {{conference}}!
+</p>
+ {%else%}
+<h2>Invoice</h2>
+<p>
+An invoice has been created for your registration, but we have not yet
+received a payment for it.
+</p>
+ {%endif%}
+ {%if reg.invoice%} {%comment%}we can have both invoice and payconfirmed! {%endcomment%}
+{%include "invoices/userinvoice_spec.html"%}
+
+ {%endif%}
+<h2>Your registration details</h2>
+<p>
+Since your registration has been finalized, you can no longer make modifications
+to it. If you need to adjust anything, please contact the conference organizers
+at {{conference.contactaddr}}.
+</p>
+<table>
+ <tr><td>Username</td><td>{{user.username}}</td></tr>
+ <tr><td style="white-space: nowrap">Registration type</td><td>{{reg.regtype}}</td></tr>
+ <tr><td>First name</td><td>{{reg.firstname}}</td></tr>
+ <tr><td>Last name</td><td>{{reg.lastname}}</td></tr>
+ <tr><td>Company</td><td>{{reg.company}}</td></tr>
+ <tr><td>Address</td><td>{{reg.address|linebreaks}}</td></tr>
+ <tr><td>Country</td><td>{{reg.country}}</td></tr>
+ <tr><td>Email</td><td>{{reg.email}}</td></tr>
+ <tr><td>Phone</td><td>{{reg.phone}}</td></tr>
+ <tr><td style="white-space: nowrap">Twitter name</td><td>{{reg.twittername}}</td></tr>
+ <tr><td>Nickname</td><td>{{reg.nick}}</td></tr>
+ {%if conference.asktshirt%}
+ <tr><td style="white-space: nowrap">T-shirt size</td><td>{{reg.shirtsize}}</td></tr>
+ {%endif%}
+ {%if conference.askfood%}
+ <tr><td style="white-space: nowrap">Dietary needs</td><td>{{reg.dietary}}</td></tr>
+ {%endif%}
+ {%if conference.askshareemail%}
+ <tr><td style="white-space: nowrap">Share email</td><td>{{reg.shareemail|yesno}}</td></tr>
+ {%endif%}
+ {%if additionaloptions%}
+ <tr><td style="white-space: nowrap">Additional options</td><td><ul>{%for ao in reg.additionaloptions.all%}<li>{{ao.name}}</li>{%empty%}<li>None</li>{%endfor%}</td></tr>
+ {%endif%}
+</table>
+{%else%}
+   {%comment%}Not confirmed, and not invoiced, that must mean that the
+              registration hasn't been completed yet. Thus, render the
+              registration form.{%endcomment%}
 <form action="." method="post">
 
-{% if form_is_saved %}
-<p><b>Thank you!</b> Your registration information has been saved. Please see
-the bottom of this page for information about your payment status.</p>
+{% if form_is_saved and reg.needspayment%}
+<p><b>Note!</b> Your registration is not confirmed until the payment
+has been confirmed.</p>
 {% endif %}
+
 {% if form.errors %}
 <p><b>Note! This form contains errors and has not been saved!</b></p>
 {% endif %}
 
- {% if reg.isregistered %}
- <fieldset id="payment_status_top">
-  <legend>Payment status</legend>
-  {% if reg.payconfirmedat %}
-   <p>Your registration and payment have been confirmed by {{reg.payconfirmedby}} at {{reg.payconfirmedat}}.
-    Welcome to {{conference}}!
-   </p>
-  {% else %}
-    <p>Your registration and payment have <b>not</b> been confirmed yet. If you have paid and have not received
-     confirmation within approximately two weeks, please contact
-     <a href="mailto:{{conference.contactaddr}}">{{conference.contactaddr}}</a> to verify your status.
-    </p>
-    <p>See <a href="#payoptions">below</a> for further payment details.</p>
-  {% endif %}
- </fieldset>
- {%endif%}
-
  <fieldset id="personal_information">
   <legend>Personal information</legend>
+      <div>
+	You are currently making a registration for community account:<br/>
+	<i>{{user.username}} ({{user.first_name}} {{user.last_name}} &lt;{{user.email}}&gt;).</i><br/>
+	<br/>
+      </div>
       <div{% if form.regtype.errors %} class="errfld"{% endif %}>
        {{ form.regtype.label_tag }} <br/>
         {{ form.regtype }} {% if form.regtype.errors %}{{ form.regtype.errors}}{% endif %}
@@ -65,7 +111,7 @@ the bottom of this page for information about your payment status.</p>
       </div>
 
       <div{% if form.address.errors %} class="errfld"{% endif %}>
-       {{ form.address.label_tag }} <br/>
+       {{ form.address.label_tag }} (also used for invoices)<br/>
         {{ form.address }} {% if form.address.errors %}{{ form.address.errors}}{% endif %}
       </div>
 
@@ -117,7 +163,7 @@ the bottom of this page for information about your payment status.</p>
       </div>
       {%endif%}
  </fieldset>
- {%endif%}
+ {%endif%}{%comment%}askshirt, askfood,etc{%endcomment%}
 
  {% if additionaloptions %}
  <fieldset id="additional_options">
@@ -129,44 +175,21 @@ the bottom of this page for information about your payment status.</p>
    {{ form.additionaloptions }} {% if form.additionaloptions.errors %}{{ form.additionaloptions.errors}}{%endif%}
   </div>
  </fieldset>
- {%endif%}
+ {%endif%}{%comment%}additionaloptions{%endcomment%}
 
- {% if reg.isregistered %}
- <fieldset id="payment_status">
-  <legend>Payment status</legend>
-  {% if reg.payconfirmedat %}
-   <p>Your payment has been confirmed by {{reg.payconfirmedby}} at {{reg.payconfirmedat}}.
-    Welcome to {{conference}}!
-   </p>
-  {% else %}
-   {% if reg.needspayment %}
-    <a name="payoptions"></a>
-    <p>Your payment has <b>not</b> been confirmed yet. If you have paid and have not received
-     confirmation within approximately two weeks, please contact
-     <a href="mailto:{{conference.contactaddr}}">{{conference.contactaddr}}</a> to verify your status.
-    </p>
-    <h2>Payment options</h2>
-    <div>
-      <b>Note!</b> Make sure you save the form above before you click
-      any payment link, or the sum on your bill may be incorrect!
-    </div>
-    {% for payoption in payoptions %}
-     <h3>{{payoption.name}}</h3>
-     <p>{{payoption.infotext|markdown:"safe"}}</p>
-     {% if payoption.paypalrecip %}
-      <p><a href="{% render_paypal_url payoption.paypalrecip conference.conferencename reg.email reg.regtype.regtype reg.regtype.stringcost reg.additionaloptions %}">Click here</a> to pay using {{payoption.name}}.</p>
-     {%endif%}
-    {% endfor %}
-   {% else %}
-     <p>The type of registration you have requested does not require any payment.
-     Your registration will be confirmed once a member of the organization
-     committee has confirmed your details.
-   {% endif %}
-  {% endif %}
- </fieldset>
- {%endif%}
-<input type="submit" value="Save" />
+ <input type="submit" name="submit" value="Save"><br/>
+{%if reg.needspayment or not form_is_saved %}
+ <input type="submit" name="submit" value="Save and use a voucher"> (use this option if you have received a prepaid voucher)<br/>
+ <input type="submit" name="submit" onclick="return confirmInvoice()" value="Save and proceed to payment"> (you will no longer be able to modify your registration!)<br/>
+{%endif%}
+{%if form_is_saved and not reg.needspayment%}
+<p>
+Your registration does not require payment. Please just wait until somebody
+from the conference staff approves it.
+</p>
+{%endif%}
 
 </form>
+{%endif%}
 {%endblock%}
 

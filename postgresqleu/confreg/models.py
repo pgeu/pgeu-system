@@ -8,6 +8,7 @@ import datetime
 import pytz
 
 from postgresqleu.countries.models import Country
+from postgresqleu.invoices.models import Invoice
 
 SKILL_CHOICES = (
 	(0, "Beginner"),
@@ -186,6 +187,10 @@ class ConferenceRegistration(models.Model):
 	payconfirmedat = models.DateField(null=True, blank=True, verbose_name="Payment confirmed at")
 	payconfirmedby = models.CharField(max_length=16, null=True, blank=True, verbose_name="Payment confirmed by")
 	created = models.DateTimeField(null=False, blank=False, default=datetime.datetime.now, verbose_name="Registration created")
+
+	# If an invoice is generated, link to it here so we can find our
+	# way back easily.
+	invoice = models.ForeignKey(Invoice, null=True, blank=True)
 
 	# Access from templates requires properties
 	@property

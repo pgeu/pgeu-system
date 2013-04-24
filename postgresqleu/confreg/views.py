@@ -10,6 +10,8 @@ from models import *
 from forms import *
 
 from postgresqleu.util.decorators import user_passes_test_or_error
+from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
+from postgresqleu.invoices.models import InvoiceProcessor
 
 from datetime import datetime, timedelta
 import base64
@@ -59,6 +61,7 @@ def ConferenceContext(request, conference):
 	return d
 
 @login_required
+@transaction.commit_on_success
 def home(request, confname):
 	if settings.FORCE_SECURE_FORMS and not request.is_secure():
 		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
@@ -98,6 +101,13 @@ def home(request, confname):
 			reg.save()
 			form.save_m2m()
 			form_is_saved = True
+
+			# Figure out if the user clicked a "magic save button"
+			if request.POST['submit'].find("voucher") > 0:
+				# pay with voucher!
+				return HttpResponseRedirect("prepaid/%s/" % reg.pk)
+			if request.POST['submit'].find("payment") > 0:
+				return HttpResponseRedirect("invoice/%s/" % reg.pk)
 	else:
 		# This is just a get, so render the form
 		form = ConferenceRegistrationForm(instance=reg)
@@ -106,6 +116,7 @@ def home(request, confname):
 		'form': form,
 		'form_is_saved': form_is_saved,
 		'reg': reg,
+		'invoice': InvoicePresentationWrapper(reg.invoice, "https://www.postgresql.eu/events/register/%s/" % conference.urlname),
 		'conference': conference,
 		'additionaloptions': conference.conferenceadditionaloption_set.all(),
 		'costamount': reg.regtype and reg.regtype.cost or 0,
@@ -580,6 +591,52 @@ def callforpapers_edit(request, confname, sessionid):
 
 @login_required
 @transaction.commit_on_success
+def invoice(request, confname, regid):
+	# Pay with invoice. If an invoice exists, use that. If an invoice
+	# does not exist, create one and then use that.
+	if settings.FORCE_SECURE_FORMS and not request.is_secure():
+		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
+
+	conference = get_object_or_404(Conference, urlname=confname)
+	reg = get_object_or_404(ConferenceRegistration, id=regid, attendee=request.user, conference=conference)
+
+	if not reg.needspayment:
+		return render_to_response('confreg/nopay.html', {
+				'conference': conference,
+				}, context_instance=ConferenceContext(request, conference))
+
+	if not reg.invoice:
+		invoicerows = [('%s - %s (%s)' % (conference, reg.regtype.regtype, reg.email), 1, reg.regtype.cost)]
+		for a in reg.additionaloptions.all():
+			if a.cost > 0:
+				invoicerows.append(('   %s' % a.name, 1, a.cost))
+
+		manager = InvoiceManager()
+		processor = InvoiceProcessor.objects.get(processorname="confreg processor")
+		reg.invoice = manager.create_invoice(
+			request.user,
+			request.user.email,
+			reg.firstname + ' ' + reg.lastname,
+			reg.company + "\n" + reg.address + "\n" + reg.country.name,
+			"%s invoice for %s" % (conference.conferencename, reg.email),
+			datetime.now(),
+			datetime.now(),
+			invoicerows,
+			processor = processor,
+			processorid = reg.pk
+			)
+
+		reg.invoice.save()
+		reg.save()
+
+	return render_to_response('confreg/invoice.html', {
+			'reg': reg,
+			'invoice': reg.invoice,
+			'conference': conference,
+			}, context_instance=ConferenceContext(request, conference))
+
+@login_required
+@transaction.commit_on_success
 def prepaid(request, confname, regid):
 	# Pay with prepaid voucher
 	if settings.FORCE_SECURE_FORMS and not request.is_secure():
@@ -587,6 +644,11 @@ def prepaid(request, confname, regid):
 
 	conference = get_object_or_404(Conference, urlname=confname)
 	reg = get_object_or_404(ConferenceRegistration, id=regid, attendee=request.user, conference=conference)
+
+	if not reg.needspayment:
+		return render_to_response('confreg/nopay.html', {
+				'conference': conference,
+				}, context_instance=ConferenceContext(request, conference))
 
 	if request.method == 'POST':
 		# Trying to make a payment - verify that the data is correct before
