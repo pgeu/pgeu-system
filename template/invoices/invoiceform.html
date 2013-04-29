@@ -1,5 +1,12 @@
 {%extends "base.html"%}
 {%block title%}Invoice{%endblock%}
+{%block extrahead%}
+<style>
+input[readonly="readonly"], textarea[readonly="readonly"] {
+   background-color: lightgray;
+}
+</style>
+{%endblock%}
 {%block layoutblock%}
 {%if invoice.id%}
 <h1>Invoice #{{invoice.id}}</h1>
@@ -94,12 +101,14 @@ also be tagged with your userid <i>{{user.username}}</i>.
 </tr>
 {%endfor%}
 </table>
-{%if not invoice.finalized and not invoice.deleted%}
-<input type="submit" name="submit" value="{{savebutton|default:"Save"}}" />
+{%if not invoice.deleted%}
+<input type="submit" name="submit" value="Save" />
 <br/>
+{%if not invoice.finalized%}
 <input type="submit" name="submit" value="Finalize" /> (Note! Finalizing will lock this invoice from further editing!)
 <br/>
 <input type="submit" name="submit" value="Preview" /> (Note! Saves before preview!)
+{%endif%}
 {%endif%}
 </form>
 

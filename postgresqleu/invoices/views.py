@@ -70,10 +70,14 @@ def oneinvoice(request, invoicenum):
 	def rowfield_callback(field, **kwargs):
 		f = field.formfield()
 		if invoice.finalized and f:
-			f.widget.attrs['disabled'] = True
+			if type(f.widget).__name__ == 'TextInput':
+				f.widget.attrs['readonly'] = "readonly"
+			else:
+				f.widget.attrs['disabled'] = True
 		return f
 
-	InvoiceRowInlineFormset = inlineformset_factory(Invoice, InvoiceRow, InvoiceRowForm, can_delete=True, formfield_callback=rowfield_callback)
+	can_delete = not invoice.finalized
+	InvoiceRowInlineFormset = inlineformset_factory(Invoice, InvoiceRow, InvoiceRowForm, can_delete=can_delete, formfield_callback=rowfield_callback)
 
 	if request.method == 'POST':
 		form = InvoiceForm(data=request.POST, instance=invoice)
@@ -83,7 +87,8 @@ def oneinvoice(request, invoicenum):
 			if formset.is_valid():
 				# Need to set totalamount to something here, so it doesn't
 				# cause an exception. It'll get fixed when we finalize!
-				form.instance.total_amount = -1
+				if not form.instance.finalized:
+					form.instance.total_amount = -1
 				form.save()
 				formset.save()
 
