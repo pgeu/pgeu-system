@@ -1,0 +1,31 @@
+{%extends "navbase.html"%}
+{%block title%}Paypal payment pending{%endblock%}
+
+{%block extrahead%}
+<meta http-equiv="refresh" content="60"></meta>
+{%endblock%}
+
+{%block content%}
+<h1>Paypal payment pending</h1>
+<p>
+We have received details about your paypal payment, but paypal is reporting
+that it has not yet completed. This may be because the payment method you
+used to provide the money has a delay in the process, or it may be because
+paypals process is experiencing a delay. The reason given by paypal was:
+</p>
+<p><i>{{reason}}</i></p>
+
+<p>
+This page will automatically refresh every minute to track your payment
+status, and as soon as it completes, we will update the status.
+</p>
+
+<p>
+If you leave this page, we will still process your payment in the background,
+within a few hours of it completing. Once the payment has been processed,
+you will receive an email with a receipt. You can also always track the
+status of your payment by logging in to your paypal account and view it
+there.
+</p>
+
+{%endblock%}

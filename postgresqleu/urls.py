@@ -12,6 +12,7 @@ import postgresqleu.membership.views
 import postgresqleu.elections.views
 import postgresqleu.invoicemgr.views
 import postgresqleu.invoices.views
+import postgresqleu.paypal.views
 
 from postgresqleu.newsevents.feeds import LatestNews, LatestEvents
 
@@ -115,6 +116,9 @@ urlpatterns = patterns('',
     (r'^invoices/(\d+)/receipt/$', postgresqleu.invoices.views.viewreceipt),
     (r'^invoices/$', postgresqleu.invoices.views.userhome),
     (r'^invoices/banktransfer/$', postgresqleu.invoices.views.banktransfer),
+
+    # Handle paypal data returns
+    (r'^p/paypal_return/$', postgresqleu.paypal.views.paypal_return_handler),
 
 	# This should not happen in production - serve by apache!
 	url(r'^media/(.*)$', 'django.views.static.serve', {

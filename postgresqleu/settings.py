@@ -93,7 +93,11 @@ INSTALLED_APPS = (
 
 INVOICE_SENDER_EMAIL="webmaster@postgresql.eu"
 
-PAYPAL_SANDBOX=False
+# Change these when using sandbox!
+PAYPAL_BASEURL='https://www.paypal.com/cgi-bin/webscr'
+PAYPAL_EMAIL='paypal@postgresql.eu'
+PAYPAL_PDT_TOKEN='abc123'
+PAYPAL_DEFAULT_SOURCEACCOUNT=1
 
 FORCE_SECURE_FORMS=True
 DATETIME_FORMAT="Y-m-d H:i:s"

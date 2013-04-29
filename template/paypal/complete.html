@@ -1,0 +1,25 @@
+{%extends "navbase.html"%}
+{%block title%}Paypal payment completed{%endblock%}
+
+{%block extrahead%}
+<meta http-equiv="refresh" content="3;URL='{{url}}'"></meta>
+{%endblock%}
+
+{%block content%}
+<h1>Paypal payment completed</h1>
+<p>
+We have received your payment for the invoice with title:
+</p>
+<p><i>{{invoice.title}}</i></p>
+</p>
+
+<p>
+The payment has completed successfully. A receipt has been generated
+and will be emailed to {{invoice.recipient_email}} within a few minutes.
+</p>
+
+<p>
+If you are not automatically redirected back to the page for your
+invoice in a few seconds, please click <a href="{{url}}">here</a>.
+</p>
+{%endblock%}

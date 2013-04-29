@@ -9,10 +9,8 @@ use it to pay with any creditcard supported by Paypal (Visa, Mastercard, Amex).
 You do not need a Paypal account if you choose to pay with creditcard.
 """
 
-	PAYPAL_BASEURL="https://www.paypal.com/cgi-bin/webscr?cmd"
-	PAYPAL_SANBOXURL="https://www.sandbox.paypal.com/cgi-bin/webscr?cmd"
 	PAYPAL_COMMON={
-		'business':settings.PAYPAL_SANDBOX and 'paypal-facilitator@postgresql.eu or 'paypal@postgresql.eu',
+		'business':settings.PAYPAL_EMAIL,
 		'lc':'GB',
 		'currency_code':'EUR',
 		'button_subtype':'services',
@@ -31,9 +29,15 @@ You do not need a Paypal account if you choose to pay with creditcard.
 			'invoice': invoiceid,
 			})
 		if returnurl:
-			param['return'] = returnurl
+			# We hardcode the return URL instead of sending it to the invoice,
+			# so that we have one endpoint to deal with all the payment
+			# data service packages.
+			# If there is no return URL at all, we assume this payment doesn't
+			# need any kind of quick feedback.
+			param['return'] = 'https://www.postgresql.eu/p/paypal_return/'
+			# However, if the user cancels, we send them back to the specified
+			# return URL.
 			param['cancel_return'] = returnurl
-			param['rm'] = '1' # return method = GET without parameters
-		return "%s%s" % (
-			settings.PAYPAL_SANDBOX and self.PAYPAL_SANBOXURL or self.PAYPAL_BASEURL,
+		return "%s?%s" % (
+			settings.PAYPAL_BASEURL,
 			urlencode(param))

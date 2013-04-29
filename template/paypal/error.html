@@ -1,0 +1,23 @@
+{%extends "navbase.html"%}
+{%block title%}Paypal error{%endblock%}
+{%block content%}
+<h1>Paypal error</h1>
+<p>
+An error occured when processing your payment details from paypal:
+</p>
+
+<p><i>{{reason}}</i></p>
+
+<p>
+This may represent a transient issue, in which case there is
+no need for you to do anything. Your payment will be processed
+in the background within a few hours.
+</p>
+
+<p>
+If this has not happened, or the error above indicates this is a
+permanent problem, please email &lt;treasurer at postgresql dot eu&gt;
+with the error message above and the full URL of this page (including
+all parameters), and we'll review the transaction as soon as possible.
+</p>
+{%endblock%}

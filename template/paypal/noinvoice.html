@@ -1,0 +1,22 @@
+{%extends "navbase.html"%}
+{%block title%}Paypal payment completed{%endblock%}
+
+{%block content%}
+<h1>Paypal payment completed</h1>
+<p>
+We have received your payment, but were unable to match it to an invoice.
+If this was donation, or another payment not related to an invoice,
+<b>you don't need to do anything</b>.
+</p>
+
+<p>
+However, if this <b>was the payment for an invoice</b>, something has gone
+wrong in the processing, and our systems were unable to find the details.
+Normally your invoice payment will now be processed by our background systems
+within a few hours, and you will receive a receipt by email. If you
+<i>do not</i> receive such an email within 24 hours, please contact
+&lt;treasurer at postgresql dot eu&gt;, citing your paypal transaction id
+and the invoice number of the invoice you were trying to pay, and we'll
+process the payment manually as quickly as we can.
+</p>
+{%endblock%}

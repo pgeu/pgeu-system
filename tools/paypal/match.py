@@ -53,9 +53,9 @@ def run():
 					msg
 					)).save()
 
-		r = invoicemanager.process_incoming_payment(trans.transtext,
-													trans.amount,
-													"Paypal id %s, from %s <%s>" % (trans.paypaltransid, trans.sendername, trans.sender), payment_logger)
+		(r,i,p) = invoicemanager.process_incoming_payment(trans.transtext,
+														  trans.amount,
+														  "Paypal id %s, from %s <%s>" % (trans.paypaltransid, trans.sendername, trans.sender), payment_logger)
 
 		if r == invoicemanager.RESULT_OK:
 			trans.matched = True

@@ -123,38 +123,40 @@ class InvoiceManager(object):
 		# details for permanent reference. This can be for example the
 		# payment systems transaction id.
 		#
+		# Returns a tuple of (status,invoice,processor)
+		#
 		m = re.match('^PostgreSQL Europe Invoice #(\d+) .*', transtext)
 		if not m:
 			logger("Could not match transaction text '%s'" % transtext)
-			return self.RESULT_NOTFOUND
+			return (self.RESULT_NOTFOUND, None, None)
 
 		try:
 			invoiceid = int(m.groups(1)[0])
 		except:
 			logger("Could not match transaction id from '%s'" % transtext)
-			return self.RESULT_NOTFOUND
+			return (self.RESULT_NOTFOUND, None, None)
 
 		try:
 			invoice = Invoice.objects.get(pk=invoiceid)
 		except Invoice.DoesNotExist:
 			logger("Could not find invoice with id '%s'" % invoiceid)
-			return self.RESULT_NOTFOUND
+			return (self.RESULT_NOTFOUND, None, None)
 
 		if not invoice.finalized:
 			logger("Invoice %s was never sent!" % invoiceid)
-			return self.RESULT_NOTSENT
+			return (self.RESULT_NOTSENT, None, None)
 
 		if invoice.ispaid:
 			logger("Invoice %s already paid!" % invoiceid)
-			return self.RESULT_ALREADYPAID
+			return (self.RESULT_ALREADYPAID, None, None)
 
 		if invoice.deleted:
 			logger("Invoice %s has been deleted!" % invoiceid)
-			return self.RESULT_DELETED
+			return (self.RESULT_DELETED, None, None)
 
 		if invoice.total_amount != transamount:
 			logger("Invoice %s, received payment of %s, expected %s!" % (invoiceid, transamount, invoice.total_amount))
-			return self.RESULT_INVALIDAMOUNT
+			return (self.RESULT_INVALIDAMOUNT, None, None)
 
 		# Things look good, flag this invoice as paid
 		invoice.paidat = datetime.now()
@@ -163,8 +165,8 @@ class InvoiceManager(object):
 		# If there is a processor module registered for this invoice,
 		# we need to instantiate it and call it. So, well, let's do
 		# that.
+		processor = None
 		if invoice.processor:
-			processor = None
 			try:
 				pieces = invoice.processor.classname.split('.')
 				modname = '.'.join(pieces[:-1])
@@ -178,7 +180,7 @@ class InvoiceManager(object):
 				processor.process_invoice_payment(invoice)
 			except Exception, ex:
 				logger("Failed to run invoice processor '%s': %s" % (invoice.processor, ex))
-				return self.RESULT_PROCESSORFAIL
+				return (self.RESULT_PROCESSORFAIL, None, None)
 
 		# Generate a PDF receipt for this, since it's now paid
 		wrapper = InvoiceWrapper(invoice)
@@ -197,7 +199,7 @@ class InvoiceManager(object):
 				invoice.pk,
 				invoice.title)).save()
 
-		return self.RESULT_OK
+		return (self.RESULT_OK, invoice, processor)
 
 	# This creates a complete invoice, and finalizes it
 	def create_invoice(self,
