@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from models import Member, MemberLog
 
 from datetime import datetime, timedelta, date
@@ -40,4 +42,4 @@ class InvoiceProcessor(object):
 	# of their payment. In our case, we just return the user directly
 	# to the membership page.
 	def get_return_url(self, invoice):
-		return "https://www.postgresql.eu/membership/"
+		return "%s/membership/" % settings.SITEBASE_SSL

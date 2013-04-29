@@ -8,17 +8,16 @@ from django.db import transaction
 from models import *
 from forms import *
 
+from postgresqleu.util.decorators import ssl_required
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
 
 from datetime import date, datetime
 
+@ssl_required
 @login_required
 @transaction.commit_on_success
 def home(request):
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
-
 	try:
 		member = Member.objects.get(user=request.user)
 		registration_complete = True
@@ -86,7 +85,7 @@ def home(request):
 	return render_to_response('membership/index.html', {
 		'form': form,
 		'member': member,
-		'invoice': InvoicePresentationWrapper(member.activeinvoice, "https://www.postgresql.eu/membership/"),
+		'invoice': InvoicePresentationWrapper(member.activeinvoice, "%s/membership/" % settings.SITEBASE_SSL),
 		'registration_complete': registration_complete,
 		'logdata': logdata,
 		'amount': 10, # price for two years

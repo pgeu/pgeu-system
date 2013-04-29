@@ -9,7 +9,7 @@ from django.db import transaction, connection
 from models import *
 from forms import *
 
-from postgresqleu.util.decorators import user_passes_test_or_error
+from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
 
@@ -61,10 +61,9 @@ def ConferenceContext(request, conference):
 	return d
 
 @login_required
+@ssl_required
 @transaction.commit_on_success
 def home(request, confname):
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
 	conference = get_object_or_404(Conference, urlname=confname)
 
 	if not conference.active:
@@ -116,7 +115,7 @@ def home(request, confname):
 		'form': form,
 		'form_is_saved': form_is_saved,
 		'reg': reg,
-		'invoice': InvoicePresentationWrapper(reg.invoice, "https://www.postgresql.eu/events/register/%s/" % conference.urlname),
+		'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/register/%s/" % (settings.SITEBASE_SSL, conference.urlname)),
 		'conference': conference,
 		'additionaloptions': conference.conferenceadditionaloption_set.all(),
 		'costamount': reg.regtype and reg.regtype.cost or 0,
@@ -129,9 +128,8 @@ def feedback_available(request):
 	}, context_instance=RequestContext(request))
 
 @login_required
+@ssl_required
 def feedback(request, confname):
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
 	conference = get_object_or_404(Conference, urlname=confname)
 
 	if not conference.feedbackopen:
@@ -180,9 +178,8 @@ def feedback(request, confname):
 	}, context_instance=ConferenceContext(request, conference))
 
 @login_required
+@ssl_required
 def feedback_session(request, confname, sessionid):
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
 	# Room for optimization: don't get these as separate steps
 	conference = get_object_or_404(Conference, urlname=confname)
 	session = get_object_or_404(ConferenceSession, pk=sessionid, conference=conference, status=1)
@@ -229,11 +226,9 @@ def feedback_session(request, confname, sessionid):
 
 
 @login_required
+@ssl_required
 @transaction.commit_on_success
 def feedback_conference(request, confname):
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
-
 	conference = get_object_or_404(Conference, urlname=confname)
 
 	if not conference.feedbackopen:
@@ -456,10 +451,8 @@ def speakerphoto(request, speakerid):
 	return HttpResponse(base64.b64decode(speakerphoto.photo), mimetype='image/jpg')
 
 @login_required
+@ssl_required
 def speakerprofile(request, confurlname=None):
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
-
 	speaker = conferences = callforpapers = None
 	try:
 		speaker = get_object_or_404(Speaker, user=request.user)
@@ -501,10 +494,8 @@ def speakerprofile(request, confurlname=None):
 	}, context_instance=context)
 
 @login_required
+@ssl_required
 def callforpapers(request, confname):
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
-
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.callforpapersopen:
 		raise Http404('This conference has no open call for papers')
@@ -521,11 +512,9 @@ def callforpapers(request, confname):
 	}, context_instance=ConferenceContext(request, conference))
 
 @login_required
+@ssl_required
 @transaction.commit_on_success
 def callforpapers_new(request, confname):
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
-
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.callforpapersopen:
 		raise Http404('This conference has no open call for papers')
@@ -555,11 +544,8 @@ def callforpapers_new(request, confname):
 	return HttpResponseRedirect("../%s/" % s.id)
 
 @login_required
+@ssl_required
 def callforpapers_edit(request, confname, sessionid):
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
-
-
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.callforpapersopen:
 		raise Http404('This conference has no open call for papers')
@@ -589,13 +575,11 @@ def callforpapers_edit(request, confname, sessionid):
 
 
 @login_required
+@ssl_required
 @transaction.commit_on_success
 def invoice(request, confname, regid):
 	# Pay with invoice. If an invoice exists, use that. If an invoice
 	# does not exist, create one and then use that.
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
-
 	conference = get_object_or_404(Conference, urlname=confname)
 	reg = get_object_or_404(ConferenceRegistration, id=regid, attendee=request.user, conference=conference)
 
@@ -635,12 +619,10 @@ def invoice(request, confname, regid):
 			}, context_instance=ConferenceContext(request, conference))
 
 @login_required
+@ssl_required
 @transaction.commit_on_success
 def prepaid(request, confname, regid):
 	# Pay with prepaid voucher
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
-
 	conference = get_object_or_404(Conference, urlname=confname)
 	reg = get_object_or_404(ConferenceRegistration, id=regid, attendee=request.user, conference=conference)
 
@@ -679,13 +661,11 @@ def prepaid(request, confname, regid):
 			}, context_instance=ConferenceContext(request, conference))
 
 @login_required
+@ssl_required
 @transaction.commit_on_success
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoicemgr'))
 def createvouchers(request):
 	# Creation of pre-paid vouchers for conference registrations
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
-
 	if request.method == 'POST':
 		form = PrepaidCreateForm(data=request.POST)
 		if form.is_valid():
@@ -718,11 +698,10 @@ def createvouchers(request):
 			}, context_instance=RequestContext(request))
 
 @login_required
+@ssl_required
 @transaction.commit_on_success
 def viewvouchers(request, batchid):
 	# View existing prepaid vouchers
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
 
 	# WARNING! THIS VIEW IS NOT RESTRICTED TO ADMINS!
 	# The same view is also used by the person who bought the voucher!
@@ -773,10 +752,9 @@ class UnscheduledSession(object):
 
 
 @login_required
+@ssl_required
 @transaction.commit_on_success
 def talkvote(request, confname):
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.talkvoters.filter(pk=request.user.id):
 		raise Http404('You are not a talk voter for this conference!')
@@ -864,11 +842,10 @@ def talkvote(request, confname):
 			}, context_instance=RequestContext(request))
 
 @login_required
+@ssl_required
 @transaction.commit_on_success
 @user_passes_test_or_error(lambda u: u.is_superuser)
 def createschedule(request, confname):
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
 	conference = get_object_or_404(Conference, urlname=confname)
 
 	if request.method=="POST":
@@ -949,11 +926,10 @@ def createschedule(request, confname):
 			}, context_instance=RequestContext(request))
 
 @login_required
+@ssl_required
 @transaction.commit_manually
 @user_passes_test_or_error(lambda u: u.is_superuser)
 def publishschedule(request, confname):
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
 	conference = get_object_or_404(Conference, urlname=confname)
 
 	changes = []

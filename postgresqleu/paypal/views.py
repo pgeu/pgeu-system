@@ -10,9 +10,11 @@ import urllib2
 from urllib import urlencode, unquote_plus
 
 from postgresqleu.invoices.util import InvoiceManager
+from postgresqleu.util.decorators import ssl_required
 
 from models import *
 
+@ssl_required
 @transaction.commit_on_success
 def paypal_return_handler(request):
 	tx = 'UNKNOWN'
@@ -130,7 +132,7 @@ def paypal_return_handler(request):
 			else:
 				# No processor, so redirect the user back to the basic
 				# invoice page.
-				url = "https://www.postgresql.eu/invoices/%s/" % i.pk
+				url = "%s/invoices/%s/" % (settings.SITEBASE_SSL, i.pk)
 			return render_to_response('paypal/complete.html', {
 					'invoice': i,
 					'url': url,

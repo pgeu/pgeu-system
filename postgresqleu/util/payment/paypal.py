@@ -27,16 +27,11 @@ You do not need a Paypal account if you choose to pay with creditcard.
 			'item_name': invoicestr.encode('utf-8'),
 			'amount': '%s.00' % invoiceamount,
 			'invoice': invoiceid,
+			'return': '%s/p/paypal_return/' % settings.SITEBASE_SSL,
 			})
 		if returnurl:
-			# We hardcode the return URL instead of sending it to the invoice,
-			# so that we have one endpoint to deal with all the payment
-			# data service packages.
-			# If there is no return URL at all, we assume this payment doesn't
-			# need any kind of quick feedback.
-			param['return'] = 'https://www.postgresql.eu/p/paypal_return/'
-			# However, if the user cancels, we send them back to the specified
-			# return URL.
+			# If the user cancels, send back to specific URL, instead of
+			# the invoice url.
 			param['cancel_return'] = returnurl
 		return "%s?%s" % (
 			settings.PAYPAL_BASEURL,

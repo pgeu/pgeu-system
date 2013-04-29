@@ -5,26 +5,30 @@ from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidde
 from django.contrib.auth.decorators import login_required
 from django.db.transaction import commit_on_success
 from django.template import RequestContext
+from django.conf import settings
 
 import base64
 import StringIO
 
-from postgresqleu.util.decorators import user_passes_test_or_error
+from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
 from models import *
 from forms import InvoiceForm, InvoiceRowForm
 from util import InvoiceWrapper, InvoiceManager, InvoicePresentationWrapper
 
 @login_required
+@ssl_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def home(request):
 	return _homeview(request, Invoice.objects.all())
 
 @login_required
+@ssl_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def unpaid(request):
 	return _homeview(request, Invoice.objects.filter(paidat=None, deleted=False, finalized=True), unpaid=True)
 
 @login_required
+@ssl_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def pending(request):
 	return _homeview(request, Invoice.objects.filter(finalized=False, deleted=False), pending=True)
@@ -52,6 +56,7 @@ def _homeview(request, invoice_objects, unpaid=False, pending=False):
 
 
 @login_required
+@ssl_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @commit_on_success
 def oneinvoice(request, invoicenum):
@@ -102,6 +107,7 @@ def oneinvoice(request, invoicenum):
 			}, context_instance=RequestContext(request))
 
 @login_required
+@ssl_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @commit_on_success
 def flaginvoice(request, invoicenum):
@@ -133,6 +139,7 @@ def flaginvoice(request, invoicenum):
 
 
 @login_required
+@ssl_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def previewinvoice(request, invoicenum):
 	invoice = get_object_or_404(Invoice, pk=invoicenum)
@@ -154,16 +161,18 @@ def previewinvoice(request, invoicenum):
 
 
 @login_required
+@ssl_required
 def viewinvoice(request, invoiceid):
 	invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True)
 	if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
 		return HttpResponseForbidden("Access denied")
 
 	return render_to_response('invoices/userinvoice.html', {
-			'invoice': InvoicePresentationWrapper(invoice, "https://www.postgresql.eu/invoices/%s/" % invoice.pk),
+			'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/" % (settings.SITEBASE_SSL, invoice.pk)),
 			})
 
 @login_required
+@ssl_required
 def viewinvoicepdf(request, invoiceid):
 	invoice = get_object_or_404(Invoice, pk=invoiceid)
 	if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
@@ -174,6 +183,7 @@ def viewinvoicepdf(request, invoiceid):
 	return r
 
 @login_required
+@ssl_required
 def viewreceipt(request, invoiceid):
 	invoice = get_object_or_404(Invoice, pk=invoiceid)
 	if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
@@ -184,6 +194,7 @@ def viewreceipt(request, invoiceid):
 	return r
 
 @login_required
+@ssl_required
 def userhome(request):
 	invoices = Invoice.objects.filter(recipient_user=request.user, deleted=False, finalized=True)
 	return render_to_response('invoices/userhome.html', {
@@ -191,6 +202,7 @@ def userhome(request):
 			})
 
 @login_required
+@ssl_required
 def banktransfer(request):
 	return render_to_response('invoices/banktransfer.html', {
 			'title': request.GET['title'],

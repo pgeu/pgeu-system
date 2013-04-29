@@ -99,7 +99,10 @@ PAYPAL_EMAIL='paypal@postgresql.eu'
 PAYPAL_PDT_TOKEN='abc123'
 PAYPAL_DEFAULT_SOURCEACCOUNT=1
 
-FORCE_SECURE_FORMS=True
+SITEBASE="http://www.postgresql.eu"
+SITEBASE_SSL="https://www.postgresql.eu"
+
+DISABLE_HTTPS_REDIRECTS=False
 DATETIME_FORMAT="Y-m-d H:i:s"
 # If there is a local_settings.py, let it override our settings
 try:

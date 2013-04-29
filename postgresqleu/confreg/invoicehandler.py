@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from models import ConferenceRegistration
 
 from datetime import datetime
@@ -36,4 +38,4 @@ class InvoiceProcessor(object):
 			reg = ConferenceRegistration.objects.get(pk=invoice.processorid)
 		except ConferenceRegistration.DoesNotExist:
 			raise Exception("Could not find conference registration %s" % invoice.processorid)
-		return "https://www.postgresql.org/events/register/%s/" % reg.conference.urlname
+		return "%s/events/register/%s/" % (settings.SITEBASE_SSL, reg.conference.urlname)
