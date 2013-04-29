@@ -155,7 +155,24 @@ def previewinvoice(request, invoicenum):
 	r.write(wrapper.render_pdf_invoice(True))
 	return r
 
+@login_required
+@ssl_required
+@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
+@commit_on_success
+def emailinvoice(request, invoicenum):
+	if not (request.GET.has_key('really') and request.GET['really'] == 'yes'):
+		return HttpResponse('Secret key is missing!', status=401)
 
+	invoice = get_object_or_404(Invoice, pk=invoicenum)
+
+	if not invoice.finalized:
+		return HttpResponse("Not finalized!", status=401)
+
+	# Ok, it seems we're good to go...
+	wrapper = InvoiceWrapper(invoice)
+	wrapper.email_invoice()
+
+	return HttpResponse("OK")
 
 #--------------------------------------------------------------------------
 #

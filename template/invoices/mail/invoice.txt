@@ -1,0 +1,21 @@
+Hello!
+
+You have been sent an invoice from PostgreSQL Europe:
+
+Invoice #{{invoice.id}}: {{invoice.title}}
+
+Please view the attached invoice for details.
+
+{%if invoice.recipient_user%}
+You can view your invoice online, and also access information about
+payment options at:
+{{invoiceurl}}
+{%endif%}
+
+If you have any questions, feel free to respond to this email and
+we'll try to respond as quickly as possible.
+
+
+Thank you!
+
+PostgreSQL Europe

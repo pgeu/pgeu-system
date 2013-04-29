@@ -6,6 +6,23 @@ input[readonly="readonly"], textarea[readonly="readonly"] {
    background-color: lightgray;
 }
 </style>
+<script src="/media/jq/jquery-1.8.2.min.js"></script>
+
+<script language="javascript">
+function sendEmail() {
+   if (confirm('This will send an email with the invoice attached to {{invoice.email}}, with the invoice attached. Are you sure you want to do this?')) {
+      $.ajax({
+         'url': 'send_email/?really=yes',
+         'success': function() {
+            alert('Email sent!');
+         },
+         'error': function(xhr, status, error) {
+            alert('Failed to send email: ' + error + '!\n' + xhr.responseText);
+         },
+      });
+   }
+}
+</script>
 {%endblock%}
 {%block layoutblock%}
 {%if invoice.id%}
@@ -111,6 +128,9 @@ also be tagged with your userid <i>{{user.username}}</i>.
 {%endif%}
 {%endif%}
 </form>
+{%if invoice.finalized and not invoice.deleted and not invoice.ispaid%}
+<button onclick="sendEmail()">Send email</button><br/>
+{%endif%}
 
 <a href="/invoiceadmin/">Back</a>
 

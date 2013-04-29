@@ -72,27 +72,43 @@ class InvoiceWrapper(object):
 		return pdfinvoice.save().getvalue()
 
 	def email_receipt(self):
-		# Send off the receipt by email if possile
-		if not self.invoice.recipient_email:
-			return
-
 		# If no receipt exists yet, we have to bail too
 		if not self.invoice.pdf_receipt:
 			return
 
+		self._email_something('paid_receipt.txt',
+							  'Receipt for PGEU invoice #%s' % self.invoice.id,
+							  'pgeu_receipt_%s.pdf' % self.invoice.id,
+							  self.invoice.pdf_receipt)
+
+	def email_invoice(self):
+		if not self.invoice.pdf_invoice:
+			return
+
+		self._email_something('invoice.txt',
+							  'PGEU invoice #%s' % self.invoice.id,
+							  'pgeu_invoice_%s.pdf' % self.invoice.id,
+							  self.invoice.pdf_invoice)
+
+	def _email_something(self, template_name, mail_subject, pdfname, pdfcontents):
+		# Send off the receipt/invoice by email if possible
+		if not self.invoice.recipient_email:
+			return
+
 		# Build a text email, and attach the PDF
-		txt = get_template('invoices/mail/paid_receipt.txt').render(Context({
+		txt = get_template('invoices/mail/%s' % template_name).render(Context({
 				'invoice': self.invoice,
+				'invoiceurl': '%s/invoices/%s/' % (settings.SITEBASE_SSL, self.invoice.pk),
 				}))
 
 		# Queue up in the database for email sending soon
 		send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 						 self.invoice.recipient_email,
-						 "Receipt for PGEU invoice #%s" % self.invoice.id,
+						 mail_subject,
 						 txt,
-						 [('pgeu_receipt_%s.pdf' % self.invoice.id,
+						 [(pdfname,
 						   'application/pdf',
-						   self.invoice.pdf_receipt),
+						   pdfcontents),
 						  ],
 						 )
 
