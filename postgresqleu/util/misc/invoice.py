@@ -12,7 +12,7 @@ from reportlab.platypus.flowables import Image
 import cStringIO as StringIO
 
 class PDFInvoice(object):
-	def __init__(self, recipient, invoicedate, duedate, invoicenum=None, imagedir=None, currency='€', preview=False, receipt=False):
+	def __init__(self, recipient, invoicedate, duedate, invoicenum=None, imagedir=None, currency='€', preview=False, receipt=False, bankinfo=True):
 		self.pdfdata = StringIO.StringIO()
 		self.canvas = Canvas(self.pdfdata)
 		self.recipient = recipient
@@ -23,7 +23,12 @@ class PDFInvoice(object):
 		self.currency = currency or '€'
 		self.preview = preview
 		self.receipt = receipt
+		self.bankinfo = bankinfo
 		self.rows = []
+
+		if self.receipt:
+			# Never include bank info on receipts
+			self.bankinfo = False
 
 		self.canvas.setTitle("PostgreSQL Europe Invoice #%s" % self.invoicenum)
 		self.canvas.setSubject("PostgreSQL Europe Invoice #%s" % self.invoicenum)
@@ -130,7 +135,7 @@ E-mail: treasurer@postgresql.eu
 		t.textLine("PostgreSQL Europe is a French non-profit under the French 1901 Law.")
 		t.textLine("")
 
-		if not self.receipt:
+		if self.bankinfo:
 			t.setFont("Times-Bold", 10)
 			t.textLine("Bank references / Références bancaires / Bankverbindungen / Referencias bancarias")
 

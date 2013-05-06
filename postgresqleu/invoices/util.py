@@ -64,7 +64,8 @@ class InvoiceWrapper(object):
 								self.invoice.pk,
 								os.path.realpath('%s/../../media/img/' % os.path.dirname(__file__)),
 								preview=preview,
-								receipt=receipt)
+								receipt=receipt,
+								bankinfo=self.invoice.bankinfo)
 
 		for r in self.invoice.invoicerow_set.all():
 			pdfinvoice.addrow(r.rowtext, r.rowamount, r.rowcount)
@@ -229,7 +230,8 @@ class InvoiceManager(object):
 					   invoicerows,
 					   processor = None,
 					   processorid = None,
-					   autopaymentoptions = True):
+					   autopaymentoptions = True,
+					   bankinfo = True):
 		invoice = Invoice(
 			recipient_email=recipient_email,
 			recipient_name=recipient_name,
@@ -237,7 +239,8 @@ class InvoiceManager(object):
 			title=title,
 			invoicedate=invoicedate,
 			duedate=duedate,
-			total_amount=-1)
+			total_amount=-1,
+			bankinfo=bankinfo)
 		if recipient_user:
 			invoice.recipient_user = recipient_user
 		if processor:

@@ -73,6 +73,7 @@ def home(request):
 					invoicerows,
 					processor = processor,
 					processorid = member.pk,
+					bankinfo = False
 					)
 				member.activeinvoice.save()
 				member.save()

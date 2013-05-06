@@ -606,7 +606,8 @@ def invoice(request, confname, regid):
 			datetime.now(),
 			invoicerows,
 			processor = processor,
-			processorid = reg.pk
+			processorid = reg.pk,
+			bankinfo = False
 			)
 
 		reg.invoice.save()
