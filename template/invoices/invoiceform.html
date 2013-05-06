@@ -118,7 +118,7 @@ also be tagged with your userid <i>{{user.username}}</i>.
 </tr>
 {%endfor%}
 </table>
-{%if not invoice.deleted%}
+{%if not invoice.deleted and not invoice.ispaid%}
 <input type="submit" name="submit" value="Save" />
 <br/>
 {%if not invoice.finalized%}
