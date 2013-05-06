@@ -68,7 +68,7 @@ class Invoice(models.Model):
 
 	# Payment status of this invoice. Once it's paid, the payment system
 	# writes the details of the transaction to the paymentdetails field.
-	paidat = models.DateTimeField(null=False, blank=True)
+	paidat = models.DateTimeField(null=True, blank=True)
 	paymentdetails = models.CharField(max_length=100, null=False, blank=True)
 
 	# Once an invoice is paid, a recipient is generated. PDF base64
