@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.http import HttpResponseServerError
 from django.template import RequestContext
 from django.conf import settings
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test, ssl_required
 
 from datetime import datetime
 import os
@@ -16,34 +16,28 @@ from postgresqleu.confreg.models import Conference, ConferenceRegistration
 
 from postgresqleu.util.misc.invoice import PDFInvoice
 
+@ssl_required
 @login_required
 @user_passes_test(lambda u: u.has_module_perms('invoicemgr'))
 def home(request):
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
-
 	invoices = Invoice.objects.all().order_by('id')
 	return render_to_response('invoicemgr/index.html', {
 		'invoices': invoices,
 	}, context_instance=RequestContext(request))
 
+@ssl_required
 @login_required
 @user_passes_test(lambda u: u.has_module_perms('invoicemgr'))
 def invoice(request, id):
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
-
 	invoice = get_object_or_404(Invoice, pk=id)
 	return render_to_response('invoicemgr/viewinvoice.html', {
 			'invoice': invoice,
 	})
 
+@ssl_required
 @login_required
 @user_passes_test(lambda u: u.has_module_perms('invoicemgr'))
 def invoicepdf(request, id):
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
-
 	invoice = get_object_or_404(Invoice, pk=id)
 	r = HttpResponse(mimetype='application/pdf')
 	r['Content-Disposition'] = 'attachment; filename=%s.pdf' % id
@@ -51,11 +45,10 @@ def invoicepdf(request, id):
 	return r
 
 
+@ssl_required
 @login_required
 @user_passes_test(lambda u: u.has_module_perms('invoicemgr'))
 def create(request):
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
 	if request.method == 'POST':
 		# Handle the form, generate the invoice
 
@@ -124,12 +117,10 @@ def create(request):
 
 
 
+@ssl_required
 @login_required
 @user_passes_test(lambda u: u.has_module_perms('invoicemgr'))
 def conf(request, confid=None):
-	if settings.FORCE_SECURE_FORMS and not request.is_secure():
-		return HttpResponseRedirect(request.build_absolute_uri().replace('http://','https://',1))
-
 	if confid:
 		confid = int(confid.replace('/',''))
 		conference = get_object_or_404(Conference, pk=confid)
