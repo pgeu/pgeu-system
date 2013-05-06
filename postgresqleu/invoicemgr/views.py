@@ -6,12 +6,13 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.http import HttpResponseServerError
 from django.template import RequestContext
 from django.conf import settings
-from django.contrib.auth.decorators import login_required, user_passes_test, ssl_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 from datetime import datetime
 import os
 
 from models import Invoice
+from postgresqleu.util.decorators import ssl_required
 from postgresqleu.confreg.models import Conference, ConferenceRegistration
 
 from postgresqleu.util.misc.invoice import PDFInvoice
