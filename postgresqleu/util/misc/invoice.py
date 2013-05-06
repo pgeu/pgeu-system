@@ -140,12 +140,12 @@ E-mail: treasurer@postgresql.eu
 			t.textLine("Bank references / Références bancaires / Bankverbindungen / Referencias bancarias")
 
 			t.setFont("Times-Roman", 8)
-			t.textLines("""BNP PARISBAS - MONTROUGE REPUBLIQUE
-110, Avenue de la République
-92120 MONTROUGE
+			t.textLines("""CCM PARIS 1-2 LOUVRE MONTORGUEIL
+28 RUE ETIENNE MARCEL
+75002 PARIS
 FRANCE
-IBAN: FR76 3000 4001 6200 0100 7536 333
-BIC: BNPAFRPPBBT
+IBAN: FR76 1027 8060 3100 0205 2290 114
+BIC: CMCIFR2A
 """)
 
 		self.canvas.drawText(t)
