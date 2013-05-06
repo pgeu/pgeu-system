@@ -70,6 +70,7 @@ ROOT_URLCONF = 'postgresqleu.urls'
 
 TEMPLATE_DIRS = [
 	'../template',
+	'../../template',
 ]
 
 INSTALLED_APPS = (
