@@ -81,7 +81,7 @@ def home(request):
 	else:
 		form = MemberForm(instance=member)
 
-	logdata = MemberLog.objects.filter(member=member).order_by('timestamp')[:30]
+	logdata = MemberLog.objects.filter(member=member).order_by('-timestamp')[:30]
 
 	return render_to_response('membership/index.html', {
 		'form': form,
