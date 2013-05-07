@@ -5,17 +5,6 @@ at any time by going to http://www.postgesql.eu/ and clicking
 "Your membership" in the menu. As soon as you have paid the
 registration fee your membership will be reactivated immediately.
 
-We apologize for not sending you this notice earlier! Our systems
-were not set up to email reminders about expiring memberships,
-so the only way to find out about it was to log into the membership
-page on the website, something which we realize most people had no
-reason to do on a regular basis. As of now, both warnings and a
-final expiry notice will be sent to all members - so if you sign
-up again, you will at least be reminded next time.
-
-Again, our apologies for this.
-
-
 If you no longer wish to be a member of PostgreSQL Europe, this
 will be the last notification mail you will receive. Your email
 address has been removed from all automatic email systems at
