@@ -27,6 +27,7 @@ class InvoiceProcessor(object):
 			member.paiduntil = member.paiduntil + timedelta(days=2*365)
 		else:
 			member.paiduntil = date.today()+timedelta(days=2*365)
+		member.expiry_warning_sent = None
 
 		# If the member isn't already a member, set todays date as the
 		# starting date.

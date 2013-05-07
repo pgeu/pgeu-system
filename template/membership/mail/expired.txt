@@ -1,0 +1,15 @@
+Your PostgreSQL Europe membership has expired!
+
+Should you wish to rejoin PostgreSQL Europe, you can do this
+at any time by going to http://www.postgesql.eu/ and clicking
+"Your membership" in the menu. As soon as you have paid the
+registration fee your membership will be reactivated immediately.
+
+If you no longer wish to be a member of PostgreSQL Europe, this
+will be the last notification mail you will receive. Your email
+address has been removed from all automatic email systems at
+this point.
+
+Thank you for your support!
+
+PostgreSQL Europe

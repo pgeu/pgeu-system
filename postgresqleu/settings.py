@@ -93,6 +93,7 @@ INSTALLED_APPS = (
 )
 
 INVOICE_SENDER_EMAIL="webmaster@postgresql.eu"
+MEMBERSHIP_SENDER_EMAIL="webmaster@postgresql.eu"
 
 # Change these when using sandbox!
 PAYPAL_BASEURL='https://www.paypal.com/cgi-bin/webscr'

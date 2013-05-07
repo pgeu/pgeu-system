@@ -1,0 +1,19 @@
+Your PostgreSQL Europe membership will expire in
+{{member.paiduntil|timeuntil}}, on {{member.paiduntil}}.
+
+If you wish to renew your membership, please go to
+
+https://www.postgresql.eu/membership/
+
+and follow the instructions there to renew your membership
+by paying the membership fee.
+
+You will receive a few reminders up until your membership expires,
+and then a final notice when your membership expires. Once this
+has happened, your email will automatically be removed from our
+automated email systems and you will receive no further emails
+from us.
+
+Thank you for you continued support!
+
+PostgreSQL Europe

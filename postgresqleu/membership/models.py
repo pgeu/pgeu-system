@@ -20,6 +20,10 @@ class Member(models.Model):
 	# easily render the information on the page.
 	activeinvoice = models.ForeignKey(Invoice, null=True, blank=True)
 
+	# When a membeship expiry warning was last sent, so we don't keep
+	# sending them over and over again
+	expiry_warning_sent = models.DateTimeField(null=True, blank=True)
+
 	@property
 	def expiressoon(self):
 		if self.paiduntil:
