@@ -82,7 +82,7 @@ def paypal_return_handler(request):
 	lines = lines[1:]
 
 	# The rest of the response is urlencoded key/value pairs
-	d = dict([unquote_plus(l).split('=') for l in lines if l != ''])
+	d = dict([unquote_plus(l).decode('latin1').split('=') for l in lines if l != ''])
 
 	# Validate things that should never be wrong
 	try:
