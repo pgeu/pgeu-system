@@ -110,4 +110,4 @@ class InvoiceLog(models.Model):
 		return self.message[:150]
 
 	class Meta:
-		ordering = ['timestamp', ]
+		ordering = ['-timestamp', ]
