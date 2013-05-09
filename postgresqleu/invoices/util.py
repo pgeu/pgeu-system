@@ -214,7 +214,8 @@ class InvoiceManager(object):
 		InvoiceLog(message="Processed payment of %s EUR for invoice %s (%s)" % (
 				invoice.total_amount,
 				invoice.pk,
-				invoice.title)).save()
+				invoice.title),
+				   timestamp=datetime.now()).save()
 
 		return (self.RESULT_OK, invoice, processor)
 
