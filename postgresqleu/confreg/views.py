@@ -457,7 +457,7 @@ def speakerprofile(request, confurlname=None):
 	try:
 		speaker = get_object_or_404(Speaker, user=request.user)
 		conferences = Conference.objects.filter(conferencesession__speaker=speaker).distinct()
-		callforpapers = Conference.objects.filter(callforpapersopen=True)
+		callforpapers = Conference.objects.filter(callforpapersopen=True).order_by('startdate')
 	except Speaker.DoesNotExist:
 		speaker = None
 		conferences = []
