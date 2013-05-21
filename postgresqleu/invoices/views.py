@@ -142,6 +142,24 @@ def flaginvoice(request, invoicenum):
 	# so we can just return the user right back
 	return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
+@login_required
+@ssl_required
+@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
+@commit_on_success
+def cancelinvoice(request, invoicenum):
+	invoice = get_object_or_404(Invoice, pk=invoicenum)
+
+	reason = request.POST['reason']
+	if not reason:
+		return HttpResponseForbidden("Can't cancel an invoice without a reason!")
+	invoice.deleted = True
+	invoice.deletion_reason = request.POST['reason']
+	invoice.save()
+
+	InvoiceLog(timestamp=datetime.now(), message="Deleted invoice %s: %s" % (invoice.id, invoice.deletion_reason)).save()
+
+	return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
+
 
 @login_required
 @ssl_required

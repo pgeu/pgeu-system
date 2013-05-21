@@ -132,6 +132,14 @@ also be tagged with your userid <i>{{user.username}}</i>.
 <button onclick="sendEmail()">Send email</button><br/>
 {%endif%}
 
+{%if invoice.finalized and not invoice.ispaid %}
+<br/>
+<form method="post" action="cancel/">
+ Reason: <input type="text" name="reason" />
+ <input type="submit" name="submit" value="Mark invoice as deleted"/>
+</form>
+{%endif%}
+
 <a href="/invoiceadmin/">Back</a>
 
 {%endblock%}
