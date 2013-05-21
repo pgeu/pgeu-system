@@ -33,8 +33,14 @@ def unpaid(request):
 def pending(request):
 	return _homeview(request, Invoice.objects.filter(finalized=False, deleted=False), pending=True)
 
+@login_required
+@ssl_required
+@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
+def deleted(request):
+	return _homeview(request, Invoice.objects.filter(deleted=True), deleted=True)
+
 # Not a view, just a utility function, thus no separate permissions check
-def _homeview(request, invoice_objects, unpaid=False, pending=False):
+def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=False):
 	# Render a list of all invoices
 	paginator = Paginator(invoice_objects, 50)
 
@@ -52,6 +58,7 @@ def _homeview(request, invoice_objects, unpaid=False, pending=False):
 			'invoices': invoices,
 			'unpaid': unpaid,
 			'pending': pending,
+			'deleted': deleted,
 			})
 
 

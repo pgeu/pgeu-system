@@ -4,11 +4,13 @@
 <h1>Invoices</h1>
 
 <p>
-{%if not unpaid and not pending%}All{%else%}<a href="/invoiceadmin/">All</a>{%endif%}
+{%if not unpaid and not pending and not deleted%}All{%else%}<a href="/invoiceadmin/">All</a>{%endif%}
 |
 {%if unpaid %}Unpaid{%else%}<a href="/invoiceadmin/unpaid/">Unpaid</a>{%endif%}
 |
 {%if pending %}Pending{%else%}<a href="/invoiceadmin/pending/">Pending</a>{%endif%}
+|
+{%if deleted %}Deleted{%else%}<a href="/invoiceadmin/deleted/">Deleted</a>{%endif%}
 </p>
 
 <table border="1" cellspacing="0" cellpadding="3">
