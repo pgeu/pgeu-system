@@ -67,7 +67,7 @@ European-wide conferences and other activities.
    <h2>{{newsitem.title}}</h2>
    <h3>{{newsitem.pretty_date}}</h3>
     {%autoescape off%}
-    {{newsitem.summary|markdown:"safe"}}
+    {{newsitem.summary|markdown}}
     {%endautoescape%}
   </div>
   {%endfor%}
