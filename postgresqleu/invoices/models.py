@@ -80,6 +80,10 @@ class Invoice(models.Model):
 		return self.paidat is not None
 
 	@property
+	def isexpired(self):
+		return (self.paidat is None) and (self.duedate < datetime.now())
+
+	@property
 	def allowedmethodwrappers(self):
 		return [PaymentMethodWrapper(m, self.invoicestr, self.total_amount, self.pk) for m in self.allowedmethods.all()]
 

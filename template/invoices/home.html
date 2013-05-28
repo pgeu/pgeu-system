@@ -24,7 +24,7 @@
  <th>Finalized</th>
 </tr>
 {%for invoice in invoices.object_list %}
-<tr{%if invoice.deleted%} style="text-decoration:line-through;"{%endif%}>
+<tr{%if invoice.deleted%} style="text-decoration:line-through;"{%endif%} {%if invoice.isexpired%}bgcolor="red"{%endif%}>
  <td><a href="/invoiceadmin/{{invoice.id}}/">{{invoice.id}}</a></td>
  <td><a href="/invoiceadmin/{{invoice.id}}/">{{invoice.title}}</a></td>
  <td style="white-space: nowrap">{{invoice.recipient_name}}</td>
