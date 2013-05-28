@@ -21,12 +21,6 @@ from postgresqleu.newsevents.feeds import LatestNews, LatestEvents
 admin.autodiscover()
 
 
-# Feeds
-feeds = {
-	'news': LatestNews,
-	'events': LatestEvents,
-}
-
 urlpatterns = patterns('',
 	# Frontpage
 	(r'^$', postgresqleu.views.index),
@@ -44,7 +38,8 @@ urlpatterns = patterns('',
 	(r'^events/archive$', postgresqleu.newsevents.views.eventarchive),
 
 	# Feeds
-	(r'^feeds/(?P<url>.*)/$', 'django.contrib.syndication.views.feed', {'feed_dict': feeds}),
+    (r'^feeds/news/$', LatestNews()),
+    (r'^feeds/events/$', LatestEvents()),
 
 	# Conference registration
 	(r'^events/register/([^/]+)/$', postgresqleu.confreg.views.home),
@@ -124,9 +119,6 @@ urlpatterns = patterns('',
     (r'^p/paypal_return/$', postgresqleu.paypal.views.paypal_return_handler),
 
 	# This should not happen in production - serve by apache!
-	url(r'^media/(.*)$', 'django.views.static.serve', {
-		'document_root': '../media',
-	}),
 	url(r'^(favicon.ico)$', 'django.views.static.serve', {
 		'document_root': '../media',
 	}),

@@ -1,7 +1,7 @@
-from django.contrib.syndication.feeds import Feed
+from django.contrib.syndication.views import Feed
 from django.conf import settings
 
-from postgresqleu.newsevents.models import *
+from models import *
 
 import datetime
 
