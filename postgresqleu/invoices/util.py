@@ -91,6 +91,15 @@ class InvoiceWrapper(object):
 							  'pgeu_invoice_%s.pdf' % self.invoice.id,
 							  self.invoice.pdf_invoice)
 
+	def email_reminder(self):
+		if not self.invoice.pdf_invoice:
+			return
+
+		self._email_something('invoice_reminder.txt',
+							  'PGEU invoice #%s - reminder' % self.invoice.id,
+							  'pgeu_invoice_%s.pdf' % self.invoice.id,
+							  self.invoice.pdf_invoice)
+
 	def _email_something(self, template_name, mail_subject, pdfname, pdfcontents):
 		# Send off the receipt/invoice by email if possible
 		if not self.invoice.recipient_email:

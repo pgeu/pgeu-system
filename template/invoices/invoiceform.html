@@ -10,9 +10,22 @@ input[readonly="readonly"], textarea[readonly="readonly"] {
 
 <script language="javascript">
 function sendEmail() {
-   if (confirm('This will send an email with the invoice attached to {{invoice.email}}, with the invoice attached. Are you sure you want to do this?')) {
+   var reason = $('#emailreason').val();
+   var q = '';
+   if (reason == 'initial') {
+      q = 'This will send an email to {{invoice.recipient_email}}, with the invoice attached. Are you sure you want to do this?';
+   }
+   else if (reason == 'reminder') {
+      q = 'This will send remidner email to {{invoice.recipient_email}}, with the invoice attached, specifying that it was supposed to have been paid {{invoice.duedate}}. Are you sure you want to do this?';
+   }
+   else {
+      alert('You must select which type of email to send!');
+      return;
+   }
+
+   if (confirm(q)) {
       $.ajax({
-         'url': 'send_email/?really=yes',
+         'url': 'send_email/?really=yes&reason=' + reason,
          'success': function() {
             alert('Email sent!');
          },
@@ -131,7 +144,13 @@ also be tagged with your userid <i>{{user.username}}</i>.
 {%endif%}
 </form>
 {%if invoice.finalized and not invoice.deleted and not invoice.ispaid%}
-<button onclick="sendEmail()">Send email</button><br/>
+<select name="emailreason" id="emailreason">
+ <option value="*">** Select email type</option>
+ <option value="initial">Initial email</option>
+{%if invoice.isexpired%}
+ <option value="reminder">Reminder</optino>
+{%endif%}
+</select> <button onclick="sendEmail()">Send email</button><br/>
 {%endif%}
 
 {%if invoice.finalized and not invoice.ispaid %}

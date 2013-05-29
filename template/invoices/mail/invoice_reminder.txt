@@ -1,0 +1,25 @@
+Hello!
+
+You were recently sent an invoice from PostgreSQL Europe:
+
+Invoice #{{invoice.id}}: {{invoice.title}}
+
+This invoice was due for payment on {{invoice.duedate|date:"Y-m-d"}}, and
+we have not yet registered a payment from you.
+
+If you feel this invoice was sent in error, or if there there is
+any other reason you have not been able to pay this invoice, please
+let us know at treasurer@postgresql.eu as soon as possible.
+
+Please view the attached invoice for details.
+
+{%if invoice.recipient_user%}
+You can view your invoice online, and also access information about
+payment options at:
+{{invoiceurl}}
+{%endif%}
+
+
+Thank you!
+
+PostgreSQL Europe

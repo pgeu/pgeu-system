@@ -188,6 +188,11 @@ def emailinvoice(request, invoicenum):
 	if not (request.GET.has_key('really') and request.GET['really'] == 'yes'):
 		return HttpResponse('Secret key is missing!', status=401)
 
+	if not request.GET.has_key('reason'):
+		return HttpResponse('Reason is missing!', status=401)
+	if not request.GET['reason'] in ('initial', 'reminder'):
+		return HttpResponse('Invalid reason given!', status=401)
+
 	invoice = get_object_or_404(Invoice, pk=invoicenum)
 
 	if not invoice.finalized:
@@ -195,7 +200,12 @@ def emailinvoice(request, invoicenum):
 
 	# Ok, it seems we're good to go...
 	wrapper = InvoiceWrapper(invoice)
-	wrapper.email_invoice()
+	if request.GET['reason'] == 'initial':
+		wrapper.email_invoice()
+	elif request.GET['reason'] == 'reminder':
+		wrapper.email_reminder()
+	else:
+		raise Exception("Cannot happen")
 
 	return HttpResponse("OK")
 
