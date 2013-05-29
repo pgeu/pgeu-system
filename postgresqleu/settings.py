@@ -94,7 +94,7 @@ INSTALLED_APPS = (
 	'postgresqleu.invoices',
 )
 
-INVOICE_SENDER_EMAIL="webmaster@postgresql.eu"
+INVOICE_SENDER_EMAIL="treasurer@postgresql.eu"
 MEMBERSHIP_SENDER_EMAIL="webmaster@postgresql.eu"
 
 # Change these when using sandbox!
