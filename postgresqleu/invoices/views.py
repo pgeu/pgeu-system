@@ -159,6 +159,10 @@ def cancelinvoice(request, invoicenum):
 	reason = request.POST['reason']
 	if not reason:
 		return HttpResponseForbidden("Can't cancel an invoice without a reason!")
+
+	if invoice.processor:
+		return HttpResponseForbidden("Can't cancel an invoice connected to a system!")
+
 	invoice.deleted = True
 	invoice.deletion_reason = request.POST['reason']
 	invoice.save()
