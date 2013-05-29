@@ -121,10 +121,12 @@ also be tagged with your userid <i>{{user.username}}</i>.
 {%if not invoice.deleted and not invoice.ispaid%}
 <input type="submit" name="submit" value="Save" />
 <br/>
+{%if invoice.pk%}
 {%if not invoice.finalized%}
 <input type="submit" name="submit" value="Finalize" /> (Note! Finalizing will lock this invoice from further editing!)
 <br/>
 <input type="submit" name="submit" value="Preview" /> (Note! Saves before preview!)
+{%endif%}
 {%endif%}
 {%endif%}
 </form>
