@@ -82,6 +82,7 @@ INSTALLED_APPS = (
 	'django.contrib.admin',
 	'django.contrib.markup',
 	'django.contrib.staticfiles',
+	'django.contrib.humanize',
 	'postgresqleu.static',
 	'postgresqleu.countries',
 	'postgresqleu.paypal',

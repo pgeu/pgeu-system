@@ -1,4 +1,5 @@
 {%extends "base.html"%}
+{%load humanize%}
 {%block title%}Invoices{%endblock%}
 {%block layoutblock%}
 <h1>Invoices</h1>
@@ -18,6 +19,7 @@
  <th>Num</th>
  <th>Title</th>
  <th>Recipient</th>
+ <th>Amount</th>
  <th>Sent</th>
  <th>Due</th>
  <th>Paid</th>
@@ -28,6 +30,7 @@
  <td><a href="/invoiceadmin/{{invoice.id}}/">{{invoice.id}}</a></td>
  <td><a href="/invoiceadmin/{{invoice.id}}/">{{invoice.title}}</a></td>
  <td style="white-space: nowrap">{{invoice.recipient_name}}</td>
+ <td style="white-space: nowrap; text-align: right;">{%if invoice.total_amount > 0%}{{invoice.total_amount|intcomma}}{%endif%}</td>
  <td style="white-space: nowrap">{{invoice.invoicedate|date:"Y-m-d"}}</td>
  <td style="white-space: nowrap">{{invoice.duedate|date:"Y-m-d"}}</td>
  <td style="white-space: nowrap">{%if invoice.ispaid%}{{invoice.paidat|date:"Y-m-d"}}{%else%}No{%endif%}</td>
