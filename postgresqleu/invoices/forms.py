@@ -21,6 +21,7 @@ class InvoiceForm(forms.ModelForm):
 		self.fields['allowedmethods'].widget = forms.CheckboxSelectMultiple()
 		self.fields['allowedmethods'].queryset = InvoicePaymentMethod.objects.all()
 		self.fields['recipient_user'].queryset = User.objects.order_by('username')
+		self.fields['recipient_user'].label_from_instance = lambda u: "%s (%s)" % (u.username, u.get_full_name())
 
 		if self.instance.finalized:
 			# All fields should be read-only for finalized invoices
