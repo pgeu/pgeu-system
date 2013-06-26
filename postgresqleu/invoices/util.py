@@ -100,26 +100,31 @@ class InvoiceWrapper(object):
 							  'pgeu_invoice_%s.pdf' % self.invoice.id,
 							  self.invoice.pdf_invoice)
 
-	def _email_something(self, template_name, mail_subject, pdfname, pdfcontents):
+	def email_cancellation(self):
+		self._email_something('invoice_cancel.txt',
+							  'PGEU invoice #%s - reminder' % self.invoice.id)
+
+	def _email_something(self, template_name, mail_subject, pdfname=None, pdfcontents=None):
 		# Send off the receipt/invoice by email if possible
 		if not self.invoice.recipient_email:
 			return
 
-		# Build a text email, and attach the PDF
+		# Build a text email, and attach the PDF if there is one
 		txt = get_template('invoices/mail/%s' % template_name).render(Context({
 				'invoice': self.invoice,
 				'invoiceurl': '%s/invoices/%s/' % (settings.SITEBASE_SSL, self.invoice.pk),
 				}))
+
+		pdfdata = []
+		if pdfname:
+			pdfdata = [(pdfname, 'application/pdf',	pdfcontents), ]
 
 		# Queue up in the database for email sending soon
 		send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 						 self.invoice.recipient_email,
 						 mail_subject,
 						 txt,
-						 [(pdfname,
-						   'application/pdf',
-						   pdfcontents),
-						  ],
+						 pdfdata,
 						 )
 
 
@@ -193,15 +198,10 @@ class InvoiceManager(object):
 		# that.
 		processor = None
 		if invoice.processor:
-			try:
-				pieces = invoice.processor.classname.split('.')
-				modname = '.'.join(pieces[:-1])
-				classname = pieces[-1]
-				mod = __import__(modname, fromlist=[classname, ])
-				processor = getattr(mod, classname) ()
-			except Exception, ex:
-				logger("Failed to instantiate invoice processor '%s': %s" % (invoice.processor, ex))
-
+			processor = self._get_invoice_processor(invoice, logger=logger)
+			if not processor:
+				# _get_invoice_processor() has already logged
+				return (self.RESULT_PROCESSORFAIL, None, None)
 			try:
 				processor.process_invoice_payment(invoice)
 			except Exception, ex:
@@ -227,6 +227,44 @@ class InvoiceManager(object):
 				   timestamp=datetime.now()).save()
 
 		return (self.RESULT_OK, invoice, processor)
+
+	def _get_invoice_processor(self, invoice, logger=None):
+		if invoice.processor:
+			try:
+				pieces = invoice.processor.classname.split('.')
+				modname = '.'.join(pieces[:-1])
+				classname = pieces[-1]
+				mod = __import__(modname, fromlist=[classname, ])
+				return getattr(mod, classname) ()
+			except Exception, ex:
+				if logger:
+					logger("Failed to instantiate invoice processor '%s': %s" % (invoice.processor, ex))
+					return None
+				else:
+					raise Exception("Failed to instantiate invoice processor '%s': %s" % (invoice.processor, ex))
+		else:
+			return None
+
+	# Cancel the specified invoice, calling any processor set on it if necessary
+	def cancel_invoice(self, invoice, reason):
+		# If this invoice has a processor, we need to start by calling it
+		processor = self._get_invoice_processor(invoice)
+		if processor:
+			try:
+				processor.process_invoice_cancellation(invoice)
+			except Exception, ex:
+				raise Exception("Failed to run invoice processor '%s': %s" % (invoice.processor, ex))
+
+		invoice.deleted = True
+		invoice.deletion_reason = reason
+		invoice.save()
+
+		# Send the receipt to the user if possible - that should make
+		# them happy :)
+		wrapper = InvoiceWrapper(invoice)
+		wrapper.email_cancellation()
+
+		InvoiceLog(timestamp=datetime.now(), message="Deleted invoice %s: %s" % (invoice.id, invoice.deletion_reason)).save()
 
 	# This creates a complete invoice, and finalizes it
 	def create_invoice(self,
@@ -281,6 +319,8 @@ class InvoiceManager(object):
 class TestProcessor(object):
 	def process_invoice_payment(self, invoice):
 		print "Callback processing invoice with title '%s', for my own id %s" % (invoice.title, invoice.processorid)
+	def process_invoice_cancellation(self, invoice):
+		raise Exception("This processor can't cancel invoices.")
 
 	def get_return_url(self, invoice):
 		print "Trying to get the return url, but I can't!"

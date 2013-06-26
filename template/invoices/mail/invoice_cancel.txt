@@ -1,0 +1,17 @@
+Hello!
+
+The invoice:
+
+Invoice #{{invoice.id}}: {{invoice.title}}
+
+sent to you recently, has been canceled. You no longer need to pay
+this invoice.
+
+If you do not already know why this invoice has been canceled, or
+have any other questions, please let us know at
+treasurer@postgresql.eu as soon as possible.
+
+
+Thank you!
+
+PostgreSQL Europe

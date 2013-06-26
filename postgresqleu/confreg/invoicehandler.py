@@ -28,6 +28,23 @@ class InvoiceProcessor(object):
 		reg.payconfirmedby = "Invoice paid"
 		reg.save()
 
+	# Process an invoice being canceled. This means we need to unlink
+	# it from the registration. We don't actually remove the registration,
+	# but it will automatically become "unlocked" for further edits.
+	def process_invoice_cancellation(self, invoice):
+		try:
+			reg = ConferenceRegistration.objects.get(pk=invoice.processorid)
+		except ConferenceRegistration.DoesNotExist:
+			raise Exception("Could not find conference registration %s" % invoice.processorid)
+
+		if reg.payconfirmedat:
+			raise Exception("Registration already paid")
+
+		# Unlink this invoice from the registration. This will automatically
+		# "unlock" the registration
+		reg.invoice = None
+		reg.save()
+
 
 	# Return the user to a page showing what happened as a result
 	# of their payment. In our case, we just return the user directly

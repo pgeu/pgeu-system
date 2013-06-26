@@ -39,6 +39,20 @@ class InvoiceProcessor(object):
 		# Create a log record too, and save it
 		MemberLog(member=member, timestamp=datetime.now(), message="Payment for 2 years received, membership extended to %s" % member.paiduntil).save()
 
+	# Process an invoice being canceled. This means we need to unlink
+	# it from the membership.
+	def process_invoice_cancellation(self, invoice):
+		# We'll get the member from the processorid
+		try:
+			member = Member.objects.get(pk=invoice.processorid)
+		except member.DoesNotExist:
+			raise Exception ("Could not find member id %s for invoice!" % invoice.processorid)
+
+		# Just remove the active invoice
+		member.activeinvoice = None
+		member.save()
+
+
 	# Return the user to a page showing what happened as a result
 	# of their payment. In our case, we just return the user directly
 	# to the membership page.

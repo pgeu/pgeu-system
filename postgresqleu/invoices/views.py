@@ -160,14 +160,8 @@ def cancelinvoice(request, invoicenum):
 	if not reason:
 		return HttpResponseForbidden("Can't cancel an invoice without a reason!")
 
-	if invoice.processor:
-		return HttpResponseForbidden("Can't cancel an invoice connected to a system!")
-
-	invoice.deleted = True
-	invoice.deletion_reason = request.POST['reason']
-	invoice.save()
-
-	InvoiceLog(timestamp=datetime.now(), message="Deleted invoice %s: %s" % (invoice.id, invoice.deletion_reason)).save()
+	manager = InvoiceManager()
+	manager.cancel_invoice(invoice, reason)
 
 	return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
