@@ -17,12 +17,12 @@
  </tr>
  <tr>
    <td style="white-space: nowrap">Invoice:</td>
-   <td><a href="/invoices/{{invoice.pk}}/pdf/">View PDF</a></td>
+   <td><a href="/invoices/{{invoice.pk}}/{%if not invoice.recipient_user%}{{invoice.recipient_secret}}/{%endif%}pdf/">View PDF</a></td>
  </tr>
 {%if invoice.ispaid%}
  <tr>
    <td style="white-space: nowrap">Receipt:</td>
-   <td><a href="/invoices/{{invoice.pk}}/receipt/">View receipt</a></td>
+   <td><a href="/invoices/{{invoice.pk}}/{%if not invoice.recipient_user%}{{invoice.recipient_secret}}/{%endif%}receipt/">View receipt</a></td>
  </tr>
 {%else%}
  <tr>

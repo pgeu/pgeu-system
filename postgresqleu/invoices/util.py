@@ -8,6 +8,8 @@ from datetime import datetime
 import os
 import base64
 import re
+from Crypto.Hash import SHA256
+from Crypto import Random
 
 from postgresqleu.util.misc.invoice import PDFInvoice
 from postgresqleu.mailqueue.util import send_simple_mail
@@ -47,6 +49,14 @@ class InvoiceWrapper(object):
 
 		# Indicate that we're finalized
 		self.invoice.finalized = True
+
+		# Generate a secret key that can be used to view the invoice if
+		# there is no associated account
+		s = SHA256.new()
+		r = Random.new()
+		s.update(self.invoice.pdf_invoice)
+		s.update(r.read(250))
+		self.invoice.recipient_secret = s.hexdigest()
 
 		# And we're done!
 		self.invoice.save()
@@ -110,9 +120,19 @@ class InvoiceWrapper(object):
 			return
 
 		# Build a text email, and attach the PDF if there is one
+		if self.invoice.recipient_user:
+			# General URL that shows a normal invoice
+			invoiceurl = '%s/invoices/%s/' % (settings.SITEBASE_SSL, self.invoice.pk)
+		elif self.invoice.recipient_secret:
+			# No user, but a secret, so generate a URL that can be used without
+			# being logged in.
+			invoiceurl = '%s/invoices/%s/%s/' % (settings.SITEBASE_SSL, self.invoice.pk, self.invoice.recipient_secret)
+		else:
+			invoiceurl = None
+
 		txt = get_template('invoices/mail/%s' % template_name).render(Context({
 				'invoice': self.invoice,
-				'invoiceurl': '%s/invoices/%s/' % (settings.SITEBASE_SSL, self.invoice.pk),
+				'invoiceurl': invoiceurl,
 				}))
 
 		pdfdata = []

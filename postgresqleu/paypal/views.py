@@ -132,7 +132,15 @@ def paypal_return_handler(request):
 			else:
 				# No processor, so redirect the user back to the basic
 				# invoice page.
-				url = "%s/invoices/%s/" % (settings.SITEBASE_SSL, i.pk)
+				if i.recipient_user:
+					# Registered to a specific user, so request that users
+					# login on redirect
+					url = "%s/invoices/%s/" % (settings.SITEBASE_SSL, i.pk)
+				else:
+					# No user account registered, so send back to the secret
+					# url version
+					url = "%s/invoices/%s/%s/" % (settings.SITEBASE_SSL, i.pk, i.recipient_secret)
+
 			return render_to_response('paypal/complete.html', {
 					'invoice': i,
 					'url': url,

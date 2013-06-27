@@ -41,6 +41,7 @@ class Invoice(models.Model):
 	recipient_email = models.EmailField(blank=True, null=False)
 	recipient_name = models.CharField(max_length=100, blank=False, null=False)
 	recipient_address = models.TextField(blank=False, null=False)
+	recipient_secret = models.CharField(max_length=64, blank=True, null=True)
 
 	# Global invoice info
 	title = models.CharField(max_length=100, blank=False, null=False, verbose_name="Invoice title")

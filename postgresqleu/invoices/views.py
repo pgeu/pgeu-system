@@ -226,6 +226,13 @@ def viewinvoice(request, invoiceid):
 			'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/" % (settings.SITEBASE_SSL, invoice.pk)),
 			})
 
+@ssl_required
+def viewinvoice_secret(request, invoiceid, invoicesecret):
+	invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True, recipient_secret=invoicesecret)
+	return render_to_response('invoices/userinvoice.html', {
+			'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/%s/" % (settings.SITEBASE_SSL, invoice.pk, invoice.recipient_secret)),
+			})
+
 @login_required
 @ssl_required
 def viewinvoicepdf(request, invoiceid):
@@ -237,6 +244,13 @@ def viewinvoicepdf(request, invoiceid):
 	r.write(base64.b64decode(invoice.pdf_invoice))
 	return r
 
+@ssl_required
+def viewinvoicepdf_secret(request, invoiceid, invoicesecret):
+	invoice = get_object_or_404(Invoice, pk=invoiceid, recipient_secret=invoicesecret)
+	r = HttpResponse(mimetype='application/pdf')
+	r.write(base64.b64decode(invoice.pdf_invoice))
+	return r
+
 @login_required
 @ssl_required
 def viewreceipt(request, invoiceid):
@@ -244,6 +258,13 @@ def viewreceipt(request, invoiceid):
 	if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
 		return HttpResponseForbidden("Access denied")
 
+	r = HttpResponse(mimetype='application/pdf')
+	r.write(base64.b64decode(invoice.pdf_receipt))
+	return r
+
+@ssl_required
+def viewreceipt_secret(request, invoiceid, invoicesecret):
+	invoice = get_object_or_404(Invoice, pk=invoiceid, recipient_secret=invoicesecret)
 	r = HttpResponse(mimetype='application/pdf')
 	r.write(base64.b64decode(invoice.pdf_receipt))
 	return r

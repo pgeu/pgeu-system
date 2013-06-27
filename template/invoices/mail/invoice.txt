@@ -6,7 +6,7 @@ Invoice #{{invoice.id}}: {{invoice.title}}
 
 Please view the attached invoice for details.
 
-{%if invoice.recipient_user%}
+{%if invoiceurl %}
 You can view your invoice online, and also access information about
 payment options at:
 {{invoiceurl}}
