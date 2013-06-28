@@ -132,7 +132,7 @@ E-mail: treasurer@postgresql.eu
 		t = self.canvas.beginText()
 		t.setTextOrigin(2*cm, 5*cm)
 		t.setFont("Times-Italic", 10)
-		t.textLine("PostgreSQL Europe is a French non-profit under the French 1901 Law.")
+		t.textLine("PostgreSQL Europe is a French non-profit under the French 1901 Law. The association is not VAT registered.")
 		t.textLine("")
 
 		if self.bankinfo:
