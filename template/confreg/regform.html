@@ -8,6 +8,20 @@ function confirmInvoice() {
    return confirm('Once you proceed to payment, an invoice will be generated for your registration, and you will no longer be able to change it.\n\nThis invoice will be addressed to the person, company and address specified in the registration - please take a moment to review those fields if you need to.\n\nThe invoice will be delivered as a PDF in your browser, no paper invoice will be sent.\n\nAre you sure you want to proceed to payment?');
 }
 </script>
+<style>
+table.reginfotbl {
+   width:100%;
+}
+table.reginfotbl td {
+   vertical-align: top;
+   padding-top: 3px;
+   padding-bottom: 3px;
+}
+table.reginfotbl td.firstcol {
+   width: 150px;
+   white-space: nowrap;
+}
+</style>
 {%endblock%}
 {%block content%}
 <h1>Conference Registration - {{conference}}</h1>
@@ -50,31 +64,43 @@ Since your registration has been finalized, you can no longer make modifications
 to it. If you need to adjust anything, please contact the conference organizers
 at {{conference.contactaddr}}.
 </p>
-<table>
- <tr><td>Username</td><td>{{user.username}}</td></tr>
- <tr><td style="white-space: nowrap">Registration type</td><td>{{reg.regtype}}</td></tr>
- <tr><td>First name</td><td>{{reg.firstname}}</td></tr>
- <tr><td>Last name</td><td>{{reg.lastname}}</td></tr>
- <tr><td>Company</td><td>{{reg.company}}</td></tr>
- <tr><td>Address</td><td>{{reg.address|linebreaks}}</td></tr>
- <tr><td>Country</td><td>{{reg.country}}</td></tr>
- <tr><td>Email</td><td>{{reg.email}}</td></tr>
- <tr><td>Phone</td><td>{{reg.phone}}</td></tr>
- <tr><td style="white-space: nowrap">Twitter name</td><td>{{reg.twittername}}</td></tr>
- <tr><td>Nickname</td><td>{{reg.nick}}</td></tr>
+<fieldset id="personal_information">
+ <legend>Personal information</legend>
+ <table class="reginfotbl">
+  <tr><td class="firstcol">Username</td><td>{{user.username}}</td></tr>
+  <tr><td class="firstcol">Registration type</td><td>{{reg.regtype}}</td></tr>
+  <tr><td class="firstcol">First name</td><td>{{reg.firstname}}</td></tr>
+  <tr><td class="firstcol">Last name</td><td>{{reg.lastname}}</td></tr>
+  <tr><td class="firstcol">Company</td><td>{{reg.company}}</td></tr>
+  <tr><td class="firstcol">Address</td><td>{{reg.address|linebreaks}}</td></tr>
+  <tr><td class="firstcol">Country</td><td>{{reg.country}}</td></tr>
+  <tr><td class="firstcol">Email</td><td>{{reg.email}}</td></tr>
+  <tr><td class="firstcol">Phone</td><td>{{reg.phone}}</td></tr>
+  <tr><td class="firstcol">Twitter name</td><td>{{reg.twittername}}</td></tr>
+  <tr><td class="firstcol">Nickname</td><td>{{reg.nick}}</td></tr>
+ </table>
+</fieldset>
+<fieldset>
+ <legend>Conference information</legend>
+ <table class="reginfotbl">
  {%if conference.asktshirt%}
- <tr><td style="white-space: nowrap">T-shirt size</td><td>{{reg.shirtsize}}</td></tr>
+  <tr><td class="firstcol">T-shirt size</td><td>{{reg.shirtsize|default:''}}</td></tr>
  {%endif%}
  {%if conference.askfood%}
- <tr><td style="white-space: nowrap">Dietary needs</td><td>{{reg.dietary}}</td></tr>
+  <tr><td class="firstcol">Dietary needs</td><td>{{reg.dietary}}</td></tr>
  {%endif%}
  {%if conference.askshareemail%}
- <tr><td style="white-space: nowrap">Share email</td><td>{{reg.shareemail|yesno}}</td></tr>
+  <tr><td class="firstcol">Share email</td><td>{{reg.shareemail|yesno:"Yes,No"}}</td></tr>
  {%endif%}
- {%if additionaloptions%}
- <tr><td style="white-space: nowrap">Additional options</td><td><ul>{%for ao in reg.additionaloptions.all%}<li>{{ao.name}}</li>{%empty%}<li>None</li>{%endfor%}</td></tr>
- {%endif%}
-</table>
+ </table>
+</fieldset>
+{%if reg.additionaloptions.all %}
+<fieldset>
+ <legend>Additional options</legend>
+ <ul>{%for ao in reg.additionaloptions.all%}<li>{{ao.name}}</li>{%endfor%}</ul>
+</fieldset>
+{%endif%}
+
 {%else%}
    {%comment%}Not confirmed, and not invoiced, and not bulk, that must mean that the
               registration hasn't been completed yet. Thus, render the
