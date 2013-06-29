@@ -14,6 +14,7 @@ from forms import *
 from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
+from postgresqleu.mailqueue.util import send_mail
 
 from datetime import datetime, timedelta
 import base64
@@ -22,7 +23,6 @@ import os
 import sys
 import imp
 import csv
-import smtplib
 from email.mime.text import MIMEText
 
 import simplejson as json
@@ -1150,15 +1150,10 @@ def reports(request, confname):
 		    }, context_instance=RequestContext(request))
 
 
-def _sendmail(sender, recipientlist, msg):
-	s = smtplib.SMTP()
-	s.connect()
-	s.sendmail(sender, recipientlist, msg.as_string())
-	s.quit()
-
 # Admin view that's used to send email to multiple users
 @login_required
 @user_passes_test_or_error(lambda u: u.is_superuser)
+@transaction.commit_on_success
 def admin_email(request):
 	if request.method == 'POST':
 		form = EmailSendForm(data=request.POST)
@@ -1171,7 +1166,9 @@ def admin_email(request):
 			msg['Subject'] = form.data['subject']
 			msg['From'] = form.data['sender']
 			msg['To'] = form.data['sender']
-			_sendmail(form.data['sender'], emails, msg)
+			for e in emails:
+				send_mail(form.data['sender'], e, msg.as_string())
+
 			messages.info(request, 'Sent email to %s recipients' % len(emails))
 			return HttpResponseRedirect('/admin/confreg/conferenceregistration/?' + form.data['returnurl'])
 		else:

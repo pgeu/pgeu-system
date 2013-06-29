@@ -28,3 +28,7 @@ def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None):
 
 	# Just write it to the queue, so it will be transactionally rolled back
 	QueuedMail(sender=sender, receiver=receiver, fullmsg=msg.as_string()).save()
+
+def send_mail(sender, receiver, fullmsg):
+	# Send an email, prepared as the full MIME encoded mail already
+	QueuedMail(sender=sender, receiver=receiver, fullmsg=fullmsg).save()
