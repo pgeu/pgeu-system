@@ -80,6 +80,7 @@ at {{conference.contactaddr}}.
   <tr><td class="firstcol">Nickname</td><td>{{reg.nick}}</td></tr>
  </table>
 </fieldset>
+{%if conference.asktshirt or conference.askfood or conference.askshareemail%}
 <fieldset>
  <legend>Conference information</legend>
  <table class="reginfotbl">
@@ -94,6 +95,7 @@ at {{conference.contactaddr}}.
  {%endif%}
  </table>
 </fieldset>
+{%endif%}
 {%if reg.additionaloptions.all %}
 <fieldset>
  <legend>Additional options</legend>
