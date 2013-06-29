@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -165,6 +167,30 @@ class ConferenceAdditionalOption(models.Model):
 												  self.maxcount)
 		return "%s%s" % (self.name, coststr)
 
+class BulkPayment(models.Model):
+	# User that owns this bulk payment
+	user = models.ForeignKey(User, null=False, blank=False)
+
+	# We attach it to a specific conference
+	conference = models.ForeignKey(Conference, null=False, blank=False)
+
+	# Invoice, once one has been created
+	invoice = models.ForeignKey(Invoice, null=True, blank=True)
+	numregs = models.IntegerField(null=False, blank=False)
+
+	createdat = models.DateField(null=False, blank=False, auto_now_add=True)
+	paidat = models.DateField(null=True, blank=True)
+
+	def ispaid(self):
+		return self.paidat and True or False
+	ispaid.boolean = True
+
+	def adminstring(self):
+		return "%s at %s" % (self.user, self.createdat)
+
+	def __unicode__(self):
+		return u"Bulk payment for %s created %s (%s registrations, €%s): %s" % (self.conference, self.createdat, self.numregs, self.invoice.total_amount, self.paidat and 'Paid' or 'Not paid yet')
+
 class ConferenceRegistration(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
 	regtype = models.ForeignKey(RegistrationType, null=True, blank=True, verbose_name="Registration type")
@@ -191,6 +217,7 @@ class ConferenceRegistration(models.Model):
 	# If an invoice is generated, link to it here so we can find our
 	# way back easily.
 	invoice = models.ForeignKey(Invoice, null=True, blank=True)
+	bulkpayment = models.ForeignKey(BulkPayment, null=True, blank=True)
 
 	# Access from templates requires properties
 	@property
@@ -215,6 +242,17 @@ class ConferenceRegistration(models.Model):
 	@property
 	def fullname(self):
 		return "%s %s" % (self.firstname, self.lastname)
+
+	@property
+	def invoicerows(self):
+		# Return the rows that would be used to build an invoice for this
+		# registration. Format is tuple of (description, num, cost)
+		r = [('%s - %s (%s)' % (self.conference, self.regtype.regtype, self.email), 1, self.regtype.cost)]
+		for a in self.additionaloptions.all():
+			if a.cost > 0:
+				r.append(('   %s' % a.name, 1, a.cost))
+		return r
+
 
 	# For the admin interface (mainly)
 	def __unicode__(self):

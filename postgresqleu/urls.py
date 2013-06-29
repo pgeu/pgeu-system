@@ -44,6 +44,9 @@ urlpatterns = patterns('',
 
 	# Conference registration
 	(r'^events/register/([^/]+)/$', postgresqleu.confreg.views.home),
+	(r'^events/bulkpay/([^/]+)/$', postgresqleu.confreg.views.bulkpay),
+	(r'^events/bulkpay/([^/]+)/(\d+)/$', postgresqleu.confreg.views.bulkpay_view),
+
 	(r'^events/feedback/([^/]+)/$', postgresqleu.confreg.views.feedback),
 	(r'^events/feedback/([^/]+)/(\d+)/$', postgresqleu.confreg.views.feedback_session),
 	(r'^events/feedback/([^/]+)/conference/$', postgresqleu.confreg.views.feedback_conference),

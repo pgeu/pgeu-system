@@ -292,3 +292,9 @@ class EmailSendForm(forms.Form):
 				readytogo = True
 		if not readytogo:
 			del self.fields['confirm']
+
+
+class BulkRegistrationForm(forms.Form):
+	recipient_name = forms.CharField(required=True, max_length=100,label='Invoice recipient name')
+	recipient_address = forms.CharField(required=True, max_length=100, label='Invoice recipient address', widget=forms.Textarea)
+	email_list = forms.CharField(required=True, label='Emails to pay for', widget=forms.Textarea)

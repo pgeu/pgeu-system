@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.template import RequestContext
@@ -92,6 +94,15 @@ def home(request, confname):
 
 	form_is_saved = False
 	if request.method == 'POST':
+		if reg.bulkpayment:
+			return render_to_response('confreg/bulkpayexists.html', {
+				'conference': conference,
+			}, context_instance=ConferenceContext(request, conference))
+		if reg.invoice:
+			return render_to_response('confreg/invoiceexists.html', {
+				'conference': conference,
+			}, context_instance=ConferenceContext(request, conference))
+
 		form = ConferenceRegistrationForm(data=request.POST, instance=reg)
 		if form.is_valid():
 			reg = form.save(commit=False)
@@ -588,12 +599,12 @@ def invoice(request, confname, regid):
 				'conference': conference,
 				}, context_instance=ConferenceContext(request, conference))
 
-	if not reg.invoice:
-		invoicerows = [('%s - %s (%s)' % (conference, reg.regtype.regtype, reg.email), 1, reg.regtype.cost)]
-		for a in reg.additionaloptions.all():
-			if a.cost > 0:
-				invoicerows.append(('   %s' % a.name, 1, a.cost))
+	if reg.bulkpayment:
+		return render_to_response('confreg/bulkpayexists.html', {
+				'conference': conference,
+				}, context_instance=ConferenceContext(request, conference))
 
+	if not reg.invoice:
 		manager = InvoiceManager()
 		processor = InvoiceProcessor.objects.get(processorname="confreg processor")
 		reg.invoice = manager.create_invoice(
@@ -604,7 +615,7 @@ def invoice(request, confname, regid):
 			"%s invoice for %s" % (conference.conferencename, reg.email),
 			datetime.now(),
 			datetime.now(),
-			invoicerows,
+			reg.invoicerows,
 			processor = processor,
 			processorid = reg.pk,
 			bankinfo = False
@@ -725,6 +736,117 @@ def viewvouchers(request, batchid):
 			'vouchers': vouchers,
 			})
 
+
+@login_required
+@ssl_required
+@transaction.commit_on_success
+def bulkpay(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+
+	bulkpayments = BulkPayment.objects.filter(conference=conference, user=request.user)
+
+	if request.method == 'POST':
+		form = BulkRegistrationForm(data=request.POST)
+		email_list = request.POST['email_list']
+		emails = [e for e in email_list.splitlines(False) if e]
+		# Try to find registrations for all emails. We do this in an ugly loop
+		# since I can't convince the django ORM to be smart enough. But this
+		# is a very uncommon operation...
+		state = []
+		errors = not form.is_valid()
+		totalcost = 0
+		invoicerows = []
+		allregs = []
+		for e in sorted(emails):
+			regs = ConferenceRegistration.objects.filter(conference=conference, invoice=None, bulkpayment=None, payconfirmedat=None, email=e)
+			if len(regs) == 1:
+				allregs.append(regs[0])
+				if regs[0].needspayment:
+					s = sum([r[2] for r in regs[0].invoicerows])
+					state.append({'email': e, 'found': 1, 'pay': 1, 'total': s, 'rows':[u'%s (€%s)' % (r[0], r[2]) for r in regs[0].invoicerows]})
+					totalcost += s
+					invoicerows.extend(regs[0].invoicerows)
+				else:
+					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration type does not need payment'})
+					errors=1
+			else:
+				state.append({'email': e, 'found': 0, 'text': 'Email not found'})
+				errors=1
+
+		if request.POST['submit'] == 'Confirm above registrations and generate invoice':
+			# Trying to finish things off, are we? :)
+			if not errors:
+				# Verify the total cost
+				if int(request.POST['confirmed_total_cost']) != totalcost:
+					messages.warning(request, 'Total cost changed, probably because somebody modified their registration during processing. Please verify the costs below, and retry.')
+				else:
+					# Ok, actually generate an invoice for this one.
+					# Create a bulk payment record
+					bp = BulkPayment()
+					bp.user = request.user
+					bp.conference = conference
+					bp.numregs = len(allregs)
+					bp.save() # Save so we get a primary key
+
+					# Now assign this bulk record to all our registrations
+					for r in allregs:
+						r.bulkpayment = bp
+						r.save()
+
+					# Finally, create an invoice for it
+					manager = InvoiceManager()
+					processor = InvoiceProcessor.objects.get(processorname="confreg bulk processor")
+
+					bp.invoice = manager.create_invoice(
+						request.user,
+						request.user.email,
+						form.data['recipient_name'],
+						form.data['recipient_address'],
+						"%s bulk payment" % conference.conferencename,
+						datetime.now(),
+						datetime.now(),
+						invoicerows,
+						processor=processor,
+						processorid = bp.pk,
+						bankinfo = False
+					)
+					bp.invoice.save()
+					bp.save()
+
+					return HttpResponseRedirect('%s/' % bp.pk)
+			else:
+				messages.warning(request, 'An error occurred processing the registrations, please review the email addresses on the list')
+
+		return render_to_response('confreg/bulkpay_list.html', {
+			'form': form,
+			'email_list': email_list,
+			'errors': errors,
+			'totalcost': errors and -1 or totalcost,
+			'state': state,
+			'bulkpayments': bulkpayments,
+			'conference': conference,
+		}, context_instance=ConferenceContext(request, conference))
+	else:
+		form = BulkRegistrationForm()
+		return render_to_response('confreg/bulkpay_list.html', {
+			'form': form,
+			'bulkpayments': bulkpayments,
+			'conference': conference,
+		}, context_instance=ConferenceContext(request, conference))
+
+
+@login_required
+@ssl_required
+def bulkpay_view(request, confname, bulkpayid):
+	conference = get_object_or_404(Conference, urlname=confname)
+
+	bulkpayment = get_object_or_404(BulkPayment, conference=conference, user=request.user, pk=bulkpayid)
+
+	return render_to_response('confreg/bulkpay_view.html', {
+		'bulkpayment': bulkpayment,
+		'invoice': bulkpayment.invoice,
+		'conference': conference,
+	}, context_instance=ConferenceContext(request, conference))
 
 #
 # Handle unscheduled sessions, with a little app to make them scheduled

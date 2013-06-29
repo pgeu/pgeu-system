@@ -214,6 +214,9 @@ class PrepaidVoucherAdmin(admin.ModelAdmin):
 	list_display = ['vouchervalue', 'conference', 'batch', 'user', 'usedate', ]
 	list_filter = ['conference', ]
 
+class BulkPaymentAdmin(admin.ModelAdmin):
+	list_display = ['adminstring', 'conference', 'user', 'numregs', 'paidat', 'ispaid',]
+	list_filter = ['conference', ]
 
 admin.site.register(Conference, ConferenceAdmin)
 admin.site.register(RegistrationType, RegistrationTypeAdmin)
@@ -232,3 +235,4 @@ admin.site.register(ConferenceFeedbackQuestion, ConferenceFeedbackQuestionAdmin)
 admin.site.register(ConferenceFeedbackAnswer, ConferenceFeedbackAnswerAdmin)
 admin.site.register(PrepaidBatch, PrepaidBatchAdmin)
 admin.site.register(PrepaidVoucher, PrepaidVoucherAdmin)
+admin.site.register(BulkPayment, BulkPaymentAdmin)

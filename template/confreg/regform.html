@@ -20,23 +20,30 @@ you must <a href="/logout">log out</a> and back in (with a different account)
 between each registration to avoid conflicts.
 </p>
 
-{%if reg.payconfirmedat or reg.invoice%}
+{%if reg.payconfirmedat or reg.invoice or reg.bulkpayment %}
  {%if reg.payconfirmedat %}
 <p>
 Your registration and payment have been confirmed by {{reg.payconfirmedby}} at
 {{reg.payconfirmedat}}. Welcome to {{conference}}!
 </p>
- {%else%}
+ {%elif reg.invoice%}
 <h2>Invoice</h2>
 <p>
 An invoice has been created for your registration, but we have not yet
 received a payment for it.
 </p>
+ {%else%}{%comment%}must mean reg.bulkpayment{%endcomment%}
+<p>
+Your registration has been made part of a bulk payment invoice owned by
+{{reg.bulkpayment.user.email}}. Once this invoice has been paid by the
+owner, your registration will automatically be approved.
+</p>
  {%endif%}
  {%if reg.invoice%} {%comment%}we can have both invoice and payconfirmed! {%endcomment%}
 {%include "invoices/userinvoice_spec.html"%}
 
- {%endif%}
+ {%endif%}{%comment%}Show invoice{%endcomment%}
+
 <h2>Your registration details</h2>
 <p>
 Since your registration has been finalized, you can no longer make modifications
@@ -69,7 +76,7 @@ at {{conference.contactaddr}}.
  {%endif%}
 </table>
 {%else%}
-   {%comment%}Not confirmed, and not invoiced, that must mean that the
+   {%comment%}Not confirmed, and not invoiced, and not bulk, that must mean that the
               registration hasn't been completed yet. Thus, render the
               registration form.{%endcomment%}
 <form action="." method="post">
