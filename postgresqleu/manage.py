@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 from django.core.management import execute_manager
+from django import VERSION
+if not VERSION[0:2] == (1,4):
+	import sys
+	sys.stderr.write("Error: You must use django version 1.4\n")
+	sys.exit(1)
 try:
     import settings # Assumed to be in the same directory.
 except ImportError:
