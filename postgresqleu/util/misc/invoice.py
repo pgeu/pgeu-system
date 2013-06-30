@@ -44,6 +44,7 @@ class PDFInvoice(object):
 			if self.canvas.stringWidth(s, fontname, fontsize) <= maxlen:
 				return s
 			s = s[:len(s)-2]
+		return s
 
 	def save(self):
 		if self.preview:
