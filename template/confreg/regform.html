@@ -107,7 +107,7 @@ at {{conference.contactaddr}}.
    {%comment%}Not confirmed, and not invoiced, and not bulk, that must mean that the
               registration hasn't been completed yet. Thus, render the
               registration form.{%endcomment%}
-<form action="." method="post">
+<form action="." method="post" class="pgeuregform">
 
 {% if form_is_saved and reg.needspayment%}
 <p><b>Note!</b> Your registration is not confirmed until the payment
