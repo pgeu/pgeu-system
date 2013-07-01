@@ -38,3 +38,4 @@ if __name__ == "__main__":
 		smtp.close()
 		m.delete()
 		transaction.commit()
+	connection.close()
