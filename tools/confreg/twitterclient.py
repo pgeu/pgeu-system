@@ -41,7 +41,7 @@ class TwitterClient(object):
 		if ext_params:
 			params.update(ext_params)
 
-		url = "https://api.twitter.com/1/%s" % apicall
+		url = "https://api.twitter.com/1.1/%s" % apicall
 
 		req = oauth.Request(method=method,
 							url=url,
@@ -63,9 +63,11 @@ class TwitterClient(object):
 		cursor=-1
 		handles = []
 		while cursor != 0:
-			response = self.twitter_request('%s/%s/members.json' % (self.twittername, self.twitterlist), 'GET', {
-					'cursor': cursor,
-					})
+			response = self.twitter_request('lists/members.json', 'GET', {
+				'owner_screen_name': self.twittername,
+				'slug': self.twitterlist,
+				'cursor': cursor,
+			})
 			handles.extend([x['screen_name'] for x in response['users']])
 			cursor = response['next_cursor']
 
@@ -73,13 +75,16 @@ class TwitterClient(object):
 
 	def remove_subscriber(self, name):
 		print "Removing twitter user %s from list." % name
-		self.twitter_request('%s/%s/members.json' % (self.twittername, self.twitterlist), 'POST', {
-				'id': name,
-				'_method': 'DELETE',
-				})
+		self.twitter_request('lists/members/destroy.json', 'POST', {
+			'owner_screen_name': self.twittername,
+			'slug': self.twitterlist,
+			'screen_name': name,
+		})
 
 	def add_subscriber(self, name):
 		print "Adding twitter user %s to list." % name
-		self.twitter_request('%s/%s/members.json' % (self.twittername, self.twitterlist), 'POST', {
-				'id': name,
-				})
+		self.twitter_request('lists/members/create.json', 'POST', {
+			'owner_screen_name': self.twittername,
+			'slug': self.twitterlist,
+			'screen_name': name,
+		})
