@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Time reports</title>
+
+{%if graphdata%}
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script language="javascript">
+  google.load("visualization", "1", {packages:["corechart"]});
+  google.setOnLoadCallback(drawChart);
+  function drawChart() {
+    var data = google.visualization.arrayToDataTable([
+['{{headers|join:"','"}}'],
+{%for r in graphdata%}[{{r|join:","}}],{%endfor%}
+  ]);
+
+    var options = {
+      'title': '{{title}}',
+      'hAxis': {
+        'direction': -1,
+        'title': 'Days before conference',
+      },
+      'vAxis': {
+        'title': '{{ylabel}}',
+      },
+    };
+    var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+    chart.draw(data, options);
+  }
+</script>
+    {%endif%}
+    <style>
+ul.errorlist {
+  color:red;
+  float: right;
+}
+ul.messages {
+  background-color: yellow;
+  list-style-type: none;
+}
+ul.messages li.error {
+  background-color: yellow;
+}
+    </style>
+  </head>
+  <body>
+    <p>
+      This is a very trivial interface to some time based reports for
+      the conferences. For some reports, multiple conferences can be
+      selected, to get a comparison over time.
+      Right now, reporting is only available to superusers.
+    </p>
+{% if messages %}
+    <ul class="messages">
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+    <form method="POST" action=".">
+      <table>
+      {{form.as_table}}
+      </table>
+      <input type="submit" value="Generate report">
+    </form>
+    <div id="chart_div" style="width: 100%; height: 500px;"></div>
+  </body>
+</html>

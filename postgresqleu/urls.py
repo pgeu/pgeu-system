@@ -7,6 +7,7 @@ import postgresqleu.static.views
 import postgresqleu.newsevents.views
 import postgresqleu.views
 import postgresqleu.confreg.views
+import postgresqleu.confreg.reporting
 import postgresqleu.confreg.mobileviews
 import postgresqleu.membership.views
 import postgresqleu.elections.views
@@ -60,6 +61,7 @@ urlpatterns = patterns('',
 	(r'^events/schedule/([^/]+)/create/$', postgresqleu.confreg.views.createschedule),
 	(r'^events/schedule/([^/]+)/create/publish/$', postgresqleu.confreg.views.publishschedule),
 	(r'^events/talkvote/([^/]+)/$', postgresqleu.confreg.views.talkvote),
+    (r'^events/reports/time/$', postgresqleu.confreg.reporting.timereport),
 	(r'^events/sessions/([^/]+)/$', postgresqleu.confreg.views.sessionlist),
 	(r'^events/speaker/(\d+)/photo/$', postgresqleu.confreg.views.speakerphoto),
 	(r'^events/speakerprofile/$', postgresqleu.confreg.views.speakerprofile),
