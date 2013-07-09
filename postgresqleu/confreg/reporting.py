@@ -10,8 +10,8 @@ from reportingforms import TimeReportForm
 class ReportException(Exception):
 	pass
 
-@login_required
 @ssl_required
+@login_required
 @user_passes_test_or_error(lambda u: u.is_superuser)
 def timereport(request):
 	title = None

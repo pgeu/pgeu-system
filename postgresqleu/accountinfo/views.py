@@ -8,8 +8,8 @@ import simplejson as json
 
 from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
 
-@login_required
 @ssl_required
+@login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def search(request):
 	term = request.GET['term']

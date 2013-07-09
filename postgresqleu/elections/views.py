@@ -109,8 +109,8 @@ def candidate(request, election, candidate):
 			'candidate': candidate,
 	}, context_instance=RequestContext(request))
 
-@login_required
 @ssl_required
+@login_required
 def ownvotes(request, electionid):
 	election = get_object_or_404(Election, pk=electionid)
 	if not election.isopen:

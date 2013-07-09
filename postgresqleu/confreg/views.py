@@ -62,8 +62,8 @@ def ConferenceContext(request, conference):
 
 	return d
 
-@login_required
 @ssl_required
+@login_required
 @transaction.commit_on_success
 def home(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -138,8 +138,8 @@ def feedback_available(request):
 		'conferences': conferences,
 	}, context_instance=RequestContext(request))
 
-@login_required
 @ssl_required
+@login_required
 def feedback(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 
@@ -188,8 +188,8 @@ def feedback(request, confname):
 		'is_tester': is_conf_tester,
 	}, context_instance=ConferenceContext(request, conference))
 
-@login_required
 @ssl_required
+@login_required
 def feedback_session(request, confname, sessionid):
 	# Room for optimization: don't get these as separate steps
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -236,8 +236,8 @@ def feedback_session(request, confname, sessionid):
 	}, context_instance=ConferenceContext(request, conference))
 
 
-@login_required
 @ssl_required
+@login_required
 @transaction.commit_on_success
 def feedback_conference(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -461,8 +461,8 @@ def speakerphoto(request, speakerid):
 	speakerphoto = get_object_or_404(Speaker_Photo, pk=speakerid)
 	return HttpResponse(base64.b64decode(speakerphoto.photo), mimetype='image/jpg')
 
-@login_required
 @ssl_required
+@login_required
 def speakerprofile(request, confurlname=None):
 	speaker = conferences = callforpapers = None
 	try:
@@ -504,8 +504,8 @@ def speakerprofile(request, confurlname=None):
 			'form': form,
 	}, context_instance=context)
 
-@login_required
 @ssl_required
+@login_required
 def callforpapers(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.callforpapersopen:
@@ -522,8 +522,8 @@ def callforpapers(request, confname):
 			'sessions': sessions,
 	}, context_instance=ConferenceContext(request, conference))
 
-@login_required
 @ssl_required
+@login_required
 @transaction.commit_on_success
 def callforpapers_new(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -554,8 +554,8 @@ def callforpapers_new(request, confname):
 	# Redirect back
 	return HttpResponseRedirect("../%s/" % s.id)
 
-@login_required
 @ssl_required
+@login_required
 def callforpapers_edit(request, confname, sessionid):
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.callforpapersopen:
@@ -585,8 +585,8 @@ def callforpapers_edit(request, confname, sessionid):
 	}, context_instance=ConferenceContext(request, conference))
 
 
-@login_required
 @ssl_required
+@login_required
 @transaction.commit_on_success
 def invoice(request, confname, regid):
 	# Pay with invoice. If an invoice exists, use that. If an invoice
@@ -630,8 +630,8 @@ def invoice(request, confname, regid):
 			'conference': conference,
 			}, context_instance=ConferenceContext(request, conference))
 
-@login_required
 @ssl_required
+@login_required
 @transaction.commit_on_success
 def prepaid(request, confname, regid):
 	# Pay with prepaid voucher
@@ -672,8 +672,8 @@ def prepaid(request, confname, regid):
 			'conference': conference,
 			}, context_instance=ConferenceContext(request, conference))
 
-@login_required
 @ssl_required
+@login_required
 @transaction.commit_on_success
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoicemgr'))
 def createvouchers(request):
@@ -709,8 +709,8 @@ def createvouchers(request):
 			'form': form,
 			}, context_instance=RequestContext(request))
 
-@login_required
 @ssl_required
+@login_required
 @transaction.commit_on_success
 def viewvouchers(request, batchid):
 	# View existing prepaid vouchers
@@ -737,8 +737,8 @@ def viewvouchers(request, batchid):
 			})
 
 
-@login_required
 @ssl_required
+@login_required
 @transaction.commit_on_success
 def bulkpay(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -835,8 +835,8 @@ def bulkpay(request, confname):
 		}, context_instance=ConferenceContext(request, conference))
 
 
-@login_required
 @ssl_required
+@login_required
 def bulkpay_view(request, confname, bulkpayid):
 	conference = get_object_or_404(Conference, urlname=confname)
 
@@ -874,8 +874,8 @@ class UnscheduledSession(object):
 		self.height = 50 * 1.5 # 50 minute slots hardcoded. nice...
 
 
-@login_required
 @ssl_required
+@login_required
 @transaction.commit_on_success
 def talkvote(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -964,8 +964,8 @@ def talkvote(request, confname):
 			'conference': conference,
 			}, context_instance=RequestContext(request))
 
-@login_required
 @ssl_required
+@login_required
 @transaction.commit_on_success
 @user_passes_test_or_error(lambda u: u.is_superuser)
 def createschedule(request, confname):
@@ -1048,8 +1048,8 @@ def createschedule(request, confname):
 			'sesswidth': 600 / len(rooms),
 			}, context_instance=RequestContext(request))
 
-@login_required
 @ssl_required
+@login_required
 @transaction.commit_manually
 @user_passes_test_or_error(lambda u: u.is_superuser)
 def publishschedule(request, confname):
@@ -1097,6 +1097,7 @@ def publishschedule(request, confname):
 				'changes': changes,
 			}, context_instance=RequestContext(request))
 
+@ssl_required
 @login_required
 def reports(request, confname):
 	if request.user.is_superuser:
@@ -1151,6 +1152,7 @@ def reports(request, confname):
 
 
 # Admin view that's used to send email to multiple users
+@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.is_superuser)
 @transaction.commit_on_success

@@ -15,26 +15,26 @@ from models import *
 from forms import InvoiceForm, InvoiceRowForm
 from util import InvoiceWrapper, InvoiceManager, InvoicePresentationWrapper
 
-@login_required
 @ssl_required
+@login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def home(request):
 	return _homeview(request, Invoice.objects.all())
 
-@login_required
 @ssl_required
+@login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def unpaid(request):
 	return _homeview(request, Invoice.objects.filter(paidat=None, deleted=False, finalized=True), unpaid=True)
 
-@login_required
 @ssl_required
+@login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def pending(request):
 	return _homeview(request, Invoice.objects.filter(finalized=False, deleted=False), pending=True)
 
-@login_required
 @ssl_required
+@login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def deleted(request):
 	return _homeview(request, Invoice.objects.filter(deleted=True), deleted=True)
@@ -62,8 +62,8 @@ def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=Fal
 			})
 
 
-@login_required
 @ssl_required
+@login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @commit_on_success
 def oneinvoice(request, invoicenum):
@@ -118,8 +118,8 @@ def oneinvoice(request, invoicenum):
 			'invoice': invoice,
 			}, context_instance=RequestContext(request))
 
-@login_required
 @ssl_required
+@login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @commit_on_success
 def flaginvoice(request, invoicenum):
@@ -149,8 +149,8 @@ def flaginvoice(request, invoicenum):
 	# so we can just return the user right back
 	return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
-@login_required
 @ssl_required
+@login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @commit_on_success
 def cancelinvoice(request, invoicenum):
@@ -166,8 +166,8 @@ def cancelinvoice(request, invoicenum):
 	return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
 
-@login_required
 @ssl_required
+@login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def previewinvoice(request, invoicenum):
 	invoice = get_object_or_404(Invoice, pk=invoicenum)
@@ -178,8 +178,8 @@ def previewinvoice(request, invoicenum):
 	r.write(wrapper.render_pdf_invoice(True))
 	return r
 
-@login_required
 @ssl_required
+@login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @commit_on_success
 def emailinvoice(request, invoicenum):
@@ -215,8 +215,8 @@ def emailinvoice(request, invoicenum):
 #--------------------------------------------------------------------------
 
 
-@login_required
 @ssl_required
+@login_required
 def viewinvoice(request, invoiceid):
 	invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True)
 	if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
@@ -233,8 +233,8 @@ def viewinvoice_secret(request, invoiceid, invoicesecret):
 			'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/%s/" % (settings.SITEBASE_SSL, invoice.pk, invoice.recipient_secret)),
 			})
 
-@login_required
 @ssl_required
+@login_required
 def viewinvoicepdf(request, invoiceid):
 	invoice = get_object_or_404(Invoice, pk=invoiceid)
 	if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
@@ -251,8 +251,8 @@ def viewinvoicepdf_secret(request, invoiceid, invoicesecret):
 	r.write(base64.b64decode(invoice.pdf_invoice))
 	return r
 
-@login_required
 @ssl_required
+@login_required
 def viewreceipt(request, invoiceid):
 	invoice = get_object_or_404(Invoice, pk=invoiceid)
 	if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
@@ -269,16 +269,16 @@ def viewreceipt_secret(request, invoiceid, invoicesecret):
 	r.write(base64.b64decode(invoice.pdf_receipt))
 	return r
 
-@login_required
 @ssl_required
+@login_required
 def userhome(request):
 	invoices = Invoice.objects.filter(recipient_user=request.user, deleted=False, finalized=True)
 	return render_to_response('invoices/userhome.html', {
 			'invoices': invoices,
 			})
 
-@login_required
 @ssl_required
+@login_required
 def banktransfer(request):
 	return render_to_response('invoices/banktransfer.html', {
 			'title': request.GET['title'],
