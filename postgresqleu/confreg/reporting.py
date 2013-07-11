@@ -139,6 +139,36 @@ def timereport(request):
 					graphdata = zip(*allvals)
 					title = 'Confirmed registrations'
 					ylabel = 'Number of registrations'
+				elif reporttype==5:
+					# Additional options
+					if len(conferences) != 1:
+						raise ReportException('For this report type you must pick a single conference')
+					cid = conferences[0].id
+					curs.execute("SELECT max(startdate-payconfirmedat), min(startdate-payconfirmedat),max(startdate) FROM confreg_conferenceregistration r INNER JOIN confreg_conference c ON r.conference_id=c.id WHERE r.conference_id=%(id)s AND r.payconfirmedat IS NOT NULL", {
+						'id': cid,
+						})
+					(max,min,startdate) = curs.fetchone()
+					if not max:
+						raise ReportException('There are no submitted sessions for this conference.')
+					if min > 0: min = 0
+					allvals = [range(max,min-1,-1), ]
+					headers = ['Days']
+					# Could do crosstab, but I'm lazy
+					curs.execute("SELECT DISTINCT id, name FROM confreg_conferenceadditionaloption ao WHERE conference_id=%(id)s", {
+						'id': cid,
+					})
+					for optionid, optionname in curs.fetchall():
+						curs.execute("WITH t AS (SELECT startdate-payconfirmedat AS d, count(*) AS num FROM confreg_conferenceregistration r INNER JOIN confreg_conference c ON c.id=r.conference_id INNER JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceregistration_id=r.id WHERE c.id=%(id)s AND r.payconfirmedat IS NOT NULL AND rao.conferenceadditionaloption_id=%(aoid)s GROUP BY d), tt AS (SELECT g.g, num FROM t RIGHT JOIN generate_series (%(min)s, %(max)s) g(g) ON g.g=t.d) SELECT COALESCE(sum(num) OVER (ORDER BY g DESC),0)::integer FROM tt ORDER BY g DESC", {
+							'id': cid,
+							'min': min,
+							'max': max,
+							'aoid': optionid,
+							})
+						allvals.append([r[0] for r in curs.fetchall()])
+						headers.append(optionname)
+					graphdata = zip(*allvals)
+					title = 'Additional options'
+					ylabel = 'Number of registrations'
 				else:
 					raise Exception("Cannot happen!")
 			except ReportException, e:
