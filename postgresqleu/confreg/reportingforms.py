@@ -7,5 +7,6 @@ class TimeReportForm(forms.Form):
 		(1, 'Confirmed registrations'),
 		(2, 'Submissions'),
 		(3, 'Registration types'),
+		(4, 'Countries'),
 	))
 	conferences = forms.ModelMultipleChoiceField(required=True, queryset=Conference.objects.all())
