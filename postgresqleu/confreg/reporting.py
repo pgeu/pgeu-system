@@ -55,7 +55,7 @@ def timereport(request):
 					ylabel = 'Number of registrations'
 				elif reporttype== 2:
 					# Submissions
-					curs.execute("SELECT max(extract(days from startdate-initialsubmit)::integer), min(extract(days from startdate-initialsubmit)::integer) FROM confreg_conference c INNER JOIN confreg_conferencesession s ON c.id=s.conference_id WHERE c.id=ANY(%(idlist)s) AND s.initialsubmit IS NOT NULL", {
+					curs.execute("SELECT max(extract(days from startdate-initialsubmit)::integer), min(extract(days from startdate-initialsubmit)::integer) FROM confreg_conference c INNER JOIN confreg_conferencesession s ON c.id=s.conference_id WHERE c.id=ANY(%(idlist)s) AND s.initialsubmit IS NOT NULL AND NOT s.cross_schedule", {
 						'idlist': [c.id for c in conferences],
 						})
 					(max,min) = curs.fetchone()
@@ -67,7 +67,7 @@ def timereport(request):
 					# Now fetch the values for each conference. We could perhaps
 					# do it in one query, but are too lazy.
 					for c in conferences:
-						curs.execute("WITH t AS (SELECT extract(days from startdate-initialsubmit) AS d, count(*) AS num FROM confreg_conferencesession s INNER JOIN confreg_conference c ON c.id=s.conference_id WHERE c.id=%(id)s AND s.initialsubmit IS NOT NULL GROUP BY d), tt AS (SELECT g.g, num FROM t RIGHT JOIN generate_series (%(min)s, %(max)s) g(g) ON g.g=t.d) SELECT COALESCE(sum(num) OVER (ORDER BY g DESC),0)::integer FROM tt ORDER BY g DESC", {
+						curs.execute("WITH t AS (SELECT extract(days from startdate-initialsubmit) AS d, count(*) AS num FROM confreg_conferencesession s INNER JOIN confreg_conference c ON c.id=s.conference_id WHERE c.id=%(id)s AND s.initialsubmit IS NOT NULL AND NOT s.cross_schedule GROUP BY d), tt AS (SELECT g.g, num FROM t RIGHT JOIN generate_series (%(min)s, %(max)s) g(g) ON g.g=t.d) SELECT COALESCE(sum(num) OVER (ORDER BY g DESC),0)::integer FROM tt ORDER BY g DESC", {
 							'id': c.id,
 							'min': min,
 							'max': max,
