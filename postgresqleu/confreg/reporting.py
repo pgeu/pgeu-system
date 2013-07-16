@@ -149,7 +149,7 @@ def timereport(request):
 						})
 					(max,min,startdate) = curs.fetchone()
 					if not max:
-						raise ReportException('There are no submitted sessions for this conference.')
+						raise ReportException('There are no confirmed registrations at this conference.')
 					if min > 0: min = 0
 					allvals = [range(max,min-1,-1), ]
 					headers = ['Days']
