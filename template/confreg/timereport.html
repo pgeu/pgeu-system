@@ -9,9 +9,17 @@
   google.load("visualization", "1", {packages:["corechart"]});
   google.setOnLoadCallback(drawChart);
   function drawChart() {
-    var data = google.visualization.arrayToDataTable([
-['{{headers|join:"','"}}'],
+    var dataTable = new google.visualization.DataTable();
+{%for h in headers%}
+    dataTable.addColumn('{%if forloop.isfirst%}string{%else%}number{%endif%}', '{{h}}');
+ {%if h.hastoday%}
+    dataTable.addColumn({type:'boolean', role:'certainty'});
+ {%endif%}
+{%endfor%}
+    dataTable.addRows([
+{%autoescape off%}
 {%for r in graphdata%}[{{r|join:","}}],{%endfor%}
+{%endautoescape%}
   ]);
 
     var options = {
@@ -25,7 +33,7 @@
       },
     };
     var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
-    chart.draw(data, options);
+    chart.draw(dataTable, options);
   }
 </script>
     {%endif%}

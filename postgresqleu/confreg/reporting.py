@@ -7,8 +7,18 @@ from django.db import connection
 from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
 from reportingforms import TimeReportForm
 
+from datetime import datetime
+
 class ReportException(Exception):
 	pass
+
+class Header(object):
+	def __init__(self, hdr, hastoday):
+		self.hdr = hdr
+		self.hastoday = hastoday
+
+	def __unicode__(self):
+		return self.hdr
 
 @ssl_required
 @login_required
@@ -49,7 +59,12 @@ def timereport(request):
 							'max': max,
 							})
 						allvals.append([r[0] for r in curs.fetchall()])
-						headers.append(c.conferencename)
+						curs.execute("SELECT startdate-CURRENT_DATE from confreg_conference WHERE id=%(id)s", {'id': c.id})
+						todaydaysago = int(curs.fetchone()[0])
+						headers.append(Header(c.conferencename, todaydaysago in allvals[0]))
+						if todaydaysago in allvals[0]:
+							allvals.append([(r >= todaydaysago) and 'true' or 'false' for r in allvals[0]])
+
 					graphdata = zip(*allvals)
 					title = 'Confirmed registrations'
 					ylabel = 'Number of registrations'
@@ -73,7 +88,12 @@ def timereport(request):
 							'max': max,
 							})
 						allvals.append([r[0] for r in curs.fetchall()])
-						headers.append(c.conferencename)
+						curs.execute("SELECT startdate-CURRENT_DATE FROM confreg_conference WHERE id=%(id)s", {'id': c.id})
+						todaydaysago = int(curs.fetchone()[0])
+						headers.append(Header(c.conferencename, todaydaysago in allvals[0]))
+						if todaydaysago in allvals[0]:
+							allvals.append([(r >= todaydaysago) and 'true' or 'false' for r in allvals[0]])
+
 					graphdata = zip(*allvals)
 					title = 'Conference submissions'
 					ylabel = 'Number of submissions'
@@ -88,8 +108,10 @@ def timereport(request):
 					(max,min,startdate) = curs.fetchone()
 					if not max:
 						raise ReportException('There are no confirmed registrations at this conference.')
+					todaydaysago = (startdate-datetime.today().date()).days
 					if min > 0: min = 0
 					allvals = [range(max,min-1,-1), ]
+					hasfuture = todaydaysago in allvals[0]
 					headers = ['Days']
 					# Could do crosstab, but I'm lazy
 					curs.execute("SELECT id, regtype FROM confreg_registrationtype rt WHERE EXISTS (SELECT * FROM confreg_conferenceregistration r WHERE r.regtype_id=rt.id AND r.payconfirmedat IS NOT NULL AND r.conference_id=%(id)s)", {
@@ -104,7 +126,9 @@ def timereport(request):
 							'startdate': startdate,
 						})
 						allvals.append([r[0] for r in curs.fetchall()])
-						headers.append(regtype)
+						headers.append(Header(regtype, hasfuture))
+						if hasfuture:
+							allvals.append([(r >= todaydaysago) and 'true' or 'false' for r in allvals[0]])
 					graphdata = zip(*allvals)
 					title = 'Confirmed registrations'
 					ylabel = 'Number of registrations'
@@ -119,8 +143,10 @@ def timereport(request):
 					(max,min,startdate) = curs.fetchone()
 					if not max:
 						raise ReportException('There are no confirmed registrations at this conference.')
+					todaydaysago = (startdate-datetime.today().date()).days
 					if min > 0: min = 0
 					allvals = [range(max,min-1,-1), ]
+					hasfuture = todaydaysago in allvals[0]
 					headers = ['Days']
 					# Could do crosstab, but I'm lazy
 					curs.execute("SELECT DISTINCT country_id FROM confreg_conferenceregistration r WHERE r.payconfirmedat IS NOT NULL AND r.conference_id=%(id)s", {
@@ -135,7 +161,9 @@ def timereport(request):
 							'startdate': startdate,
 						})
 						allvals.append([r[0] for r in curs.fetchall()])
-						headers.append(countryid)
+						headers.append(Header(countryid, hasfuture))
+						if hasfuture:
+							allvals.append([(r >= todaydaysago) and 'true' or 'false' for r in allvals[0]])
 					graphdata = zip(*allvals)
 					title = 'Confirmed registrations'
 					ylabel = 'Number of registrations'
@@ -150,8 +178,10 @@ def timereport(request):
 					(max,min,startdate) = curs.fetchone()
 					if not max:
 						raise ReportException('There are no confirmed registrations at this conference.')
+					todaydaysago = (startdate-datetime.today().date()).days
 					if min > 0: min = 0
 					allvals = [range(max,min-1,-1), ]
+					hasfuture = todaydaysago in allvals[0]
 					headers = ['Days']
 					# Could do crosstab, but I'm lazy
 					curs.execute("SELECT DISTINCT id, name FROM confreg_conferenceadditionaloption ao WHERE conference_id=%(id)s", {
@@ -165,7 +195,9 @@ def timereport(request):
 							'aoid': optionid,
 							})
 						allvals.append([r[0] for r in curs.fetchall()])
-						headers.append(optionname)
+						headers.append(Header(optionname, hasfuture))
+						if hasfuture:
+							allvals.append([(r >= todaydaysago) and 'true' or 'false' for r in allvals[0]])
 					graphdata = zip(*allvals)
 					title = 'Additional options'
 					ylabel = 'Number of registrations'
