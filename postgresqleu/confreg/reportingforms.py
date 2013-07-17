@@ -1,13 +1,8 @@
 from django import forms
 
 from models import Conference
+from reporting import reporttypes
 
 class TimeReportForm(forms.Form):
-	reporttype = forms.ChoiceField(required=True, choices=(
-		(1, 'Confirmed registrations'),
-		(2, 'Submissions'),
-		(3, 'Registration types'),
-		(4, 'Countries'),
-		(5, 'Additional options'),
-	))
+	reporttype = forms.ChoiceField(required=True, choices=enumerate([r[0] for r in reporttypes],1))
 	conferences = forms.ModelMultipleChoiceField(required=True, queryset=Conference.objects.all())
