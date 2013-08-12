@@ -104,13 +104,20 @@ def paypal_return_handler(request):
 	if d['payment_status'] == 'Completed':
 		# Payment is completed. Create a paypal transaction info
 		# object for it, and then try to match it to an invoice.
+
+		# Paypal seems to randomly change which field actually contains
+		# the transaction title.
+		if d.has_key('transaction_subject') and d['transaction_subject'] != '':
+			transtext = d['transaction_subject']
+		else:
+			transtext = d['name']
 		ti = TransactionInfo(paypaltransid = tx,
 							 timestamp = datetime.now(),
 							 sourceaccount = SourceAccount.objects.get(pk=settings.PAYPAL_DEFAULT_SOURCEACCOUNT),
 							 sender = d['payer_email'],
 							 sendername = d['first_name'] + ' ' + d['last_name'],
 							 amount = Decimal(d['mc_gross']),
-							 transtext = d['transaction_subject'],
+							 transtext = transtext,
 							 matched = False)
 		ti.save()
 

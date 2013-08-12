@@ -60,6 +60,8 @@ class PaypalTransaction(object):
 		else:
 			if r.has_key('SUBJECT'):
 				self.text = r['SUBJECT'][0]
+			elif r.has_key('L_NAME0'):
+				self.text = r['L_NAME0'][0]
 			else:
 				self.text = ""
 
