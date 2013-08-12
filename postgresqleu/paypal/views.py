@@ -110,7 +110,7 @@ def paypal_return_handler(request):
 		if d.has_key('transaction_subject') and d['transaction_subject'] != '':
 			transtext = d['transaction_subject']
 		else:
-			transtext = d['name']
+			transtext = d['item_name']
 		ti = TransactionInfo(paypaltransid = tx,
 							 timestamp = datetime.now(),
 							 sourceaccount = SourceAccount.objects.get(pk=settings.PAYPAL_DEFAULT_SOURCEACCOUNT),
