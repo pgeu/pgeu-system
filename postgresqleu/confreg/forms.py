@@ -255,7 +255,7 @@ class PrepaidForm(forms.Form):
 class PrepaidCreateForm(forms.Form):
 	conference = forms.ModelChoiceField(queryset=Conference.objects.filter(active=True))
 	regtype = forms.ModelChoiceField(queryset=RegistrationType.objects.all())
-	count = forms.IntegerField(min_value=2, max_value=100)
+	count = forms.IntegerField(min_value=1, max_value=100)
 	buyer = forms.ModelChoiceField(queryset=User.objects.all().order_by('username'), help_text="Pick the user who bought the batch. If he/she is not registered, pick your own userid")
 	confirm = forms.BooleanField(help_text="Confirm that the chosen registration type and count are correct (there is no undo past this point, the vouchers will be created!")
 
