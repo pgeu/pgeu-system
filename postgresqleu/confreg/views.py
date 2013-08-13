@@ -508,8 +508,9 @@ def speakerprofile(request, confurlname=None):
 @login_required
 def callforpapers(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
-	if not conference.callforpapersopen:
-		raise Http404('This conference has no open call for papers')
+
+	# This is called both for open and non-open call for papers, to let submitters view
+	# when the schedule is not published. Thus, no check for callforpapersopen here.
 
 	try:
 		speaker = Speaker.objects.get(user=request.user)
