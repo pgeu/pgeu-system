@@ -1217,4 +1217,5 @@ def admin_email_session(request, sessionid):
 		'form': form,
 		'recipientlist': session.speaker_list,
 		'session': session,
+		'whatfor': 'Session "%s"' % session.title,
 		})
