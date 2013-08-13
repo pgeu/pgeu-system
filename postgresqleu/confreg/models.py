@@ -24,8 +24,16 @@ STATUS_CHOICES = (
 	(2, "Rejected"),
 	(3, "Pending"), # Approved, but not confirmed
 )
+STATUS_CHOICES_LONG = (
+	(0, "Submitted, not processed yet"),
+	(1, "Fully approved"),
+	(2, "Rejected"),
+	(3, "Pending speaker confirmation"), # Approved, but not confirmed
+)
 def get_status_string(val):
 	return (t for v,t in STATUS_CHOICES if v==val).next()
+def get_status_string_long(val):
+	return (t for v,t in STATUS_CHOICES_LONG if v==val).next()
 
 class PaymentOption(models.Model):
 	name = models.CharField(max_length=64, blank=False, null=False)
@@ -373,6 +381,10 @@ class ConferenceSession(models.Model):
 	@property
 	def status_string(self):
 		return get_status_string(self.status)
+
+	@property
+	def status_string_long(self):
+		return get_status_string_long(self.status)
 
 	def __unicode__(self):
 		return "%s: %s (%s)" % (
