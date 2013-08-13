@@ -2,6 +2,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.nonmultipart import MIMENonMultipart
 from email.Utils import formatdate
+from email import encoders
 
 from models import QueuedMail
 
@@ -23,6 +24,7 @@ def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None):
 			part.set_payload(content)
 			part.add_header('Content-Transfer-Encoding', 'base64')
 			part.add_header('Content-Disposition', 'attachment; filename="%s"' % filename)
+			encoders.encode_base64(part)
 			msg.attach(part)
 
 
