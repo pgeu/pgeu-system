@@ -1186,3 +1186,35 @@ def admin_email(request):
 		'form': form,
 		'recipientlist': ', '.join(recipients),
 		})
+
+
+@ssl_required
+@login_required
+@user_passes_test_or_error(lambda u: u.is_superuser)
+@transaction.commit_on_success
+def admin_email_session(request, sessionid):
+	session = ConferenceSession.objects.get(pk=sessionid)
+
+	if request.method == 'POST':
+		form = EmailSessionForm(data=request.POST)
+		if form.is_valid():
+			# Ok, actually send the email. This is the scary part!
+			emails = [s.user.email for s in session.speaker.all()]
+			for e in emails:
+				msg = MIMEText(form.data['text'])
+				msg['Subject'] = form.data['subject']
+				msg['From'] = form.data['sender']
+				msg['To'] = e
+				send_mail(form.data['sender'], e, msg.as_string())
+
+			messages.info(request, 'Sent email to %s recipients (%s)' % (len(emails), ", ".join(emails)))
+			return HttpResponseRedirect('/admin/confreg/conferencesession/%s/' % sessionid)
+	else:
+		form = EmailSessionForm(initial={'sender': session.conference.contactaddr})
+
+
+	return render_to_response('confreg/admin_email.html', {
+		'form': form,
+		'recipientlist': session.speaker_list,
+		'session': session,
+		})
