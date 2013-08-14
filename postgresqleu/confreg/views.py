@@ -1165,7 +1165,7 @@ def admin_email(request):
 			ids = form.data['ids'].split(',')
 			regs = ConferenceRegistration.objects.filter(pk__in=ids)
 			emails = [r.email for r in regs]
-			msg = MIMEText(form.data['text'])
+			msg = MIMEText(form.data['text'], _charset='utf-8')
 			msg['Subject'] = form.data['subject']
 			msg['From'] = form.data['sender']
 			msg['To'] = form.data['sender']
@@ -1201,7 +1201,7 @@ def admin_email_session(request, sessionid):
 			# Ok, actually send the email. This is the scary part!
 			emails = [s.user.email for s in session.speaker.all()]
 			for e in emails:
-				msg = MIMEText(form.data['text'])
+				msg = MIMEText(form.data['text'], _charset='utf-8')
 				msg['Subject'] = form.data['subject']
 				msg['From'] = form.data['sender']
 				msg['To'] = e
