@@ -137,7 +137,7 @@ class InvoiceWrapper(object):
 
 		pdfdata = []
 		if pdfname:
-			pdfdata = [(pdfname, 'application/pdf',	pdfcontents), ]
+			pdfdata = [(pdfname, 'application/pdf',	base64.b64decode(pdfcontents)), ]
 
 		# Queue up in the database for email sending soon
 		send_simple_mail(settings.INVOICE_SENDER_EMAIL,

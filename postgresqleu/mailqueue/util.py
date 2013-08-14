@@ -8,7 +8,9 @@ from models import QueuedMail
 
 def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None):
 	# attachment format, each is a tuple of (name, mimetype,contents)
-	# content should already be base64 encoded
+	# content should be *binary* and not base64 encoded, since we need to
+	# use the base64 routines from the email library to get a properly
+	# formatted output message
 	msg = MIMEMultipart()
 	msg['Subject'] = subject
 	msg['To'] = receiver
