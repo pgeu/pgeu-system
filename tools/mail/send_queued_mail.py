@@ -34,7 +34,7 @@ if __name__ == "__main__":
 		# If it fails we'll throw an exception and just come back on the
 		# next cron job. And local delivery should never fail...
 		smtp = smtplib.SMTP("localhost")
-		smtp.sendmail(m.sender, m.receiver, m.fullmsg)
+		smtp.sendmail(m.sender, m.receiver, m.fullmsg.encode('utf-8'))
 		smtp.close()
 		m.delete()
 		transaction.commit()
