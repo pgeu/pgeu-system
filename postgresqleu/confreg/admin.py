@@ -26,7 +26,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
 class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	form = ConferenceRegistrationForm
-	list_display = ['email', 'conference', 'firstname', 'lastname', 'created', 'regtype', 'payconfirmedat', ]
+	list_display = ['email', 'conference', 'firstname', 'lastname', 'created', 'short_regtype', 'payconfirmedat', 'has_invoice', ]
 	list_filter = ['conference', 'regtype', 'additionaloptions', ]
 	search_fields = ['email', 'firstname', 'lastname', ]
 	ordering = ['-payconfirmedat', 'lastname', 'firstname', ]

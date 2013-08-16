@@ -218,7 +218,7 @@ class ConferenceRegistration(models.Model):
 	shareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Share e-mail address with sponsors")
 
 	# Admin fields!
-	payconfirmedat = models.DateField(null=True, blank=True, verbose_name="Payment confirmed at")
+	payconfirmedat = models.DateField(null=True, blank=True, verbose_name="Payment confirmed")
 	payconfirmedby = models.CharField(max_length=16, null=True, blank=True, verbose_name="Payment confirmed by")
 	created = models.DateTimeField(null=False, blank=False, default=datetime.datetime.now, verbose_name="Registration created")
 
@@ -261,6 +261,13 @@ class ConferenceRegistration(models.Model):
 				r.append(('   %s' % a.name, 1, a.cost))
 		return r
 
+	def has_invoice(self):
+		return not self.invoice is None
+	has_invoice.boolean = True
+
+	def short_regtype(self):
+		return self.regtype.regtype[:30]
+	short_regtype.short_description = 'Registration type'
 
 	# For the admin interface (mainly)
 	def __unicode__(self):
