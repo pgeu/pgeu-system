@@ -1192,14 +1192,14 @@ def admin_email(request):
 @login_required
 @user_passes_test_or_error(lambda u: u.is_superuser)
 @transaction.commit_on_success
-def admin_email_session(request, sessionid):
-	session = ConferenceSession.objects.get(pk=sessionid)
+def admin_email_session(request, sessionids):
+	sessions = ConferenceSession.objects.filter(pk__in=sessionids.split(','))
 
 	if request.method == 'POST':
 		form = EmailSessionForm(data=request.POST)
 		if form.is_valid():
 			# Ok, actually send the email. This is the scary part!
-			emails = [s.user.email for s in session.speaker.all()]
+			emails = [speaker.user.email for session in sessions for speaker in session.speaker.all()]
 			for e in emails:
 				msg = MIMEText(form.data['text'], _charset='utf-8')
 				msg['Subject'] = form.data['subject']
@@ -1208,14 +1208,18 @@ def admin_email_session(request, sessionid):
 				send_mail(form.data['sender'], e, msg.as_string())
 
 			messages.info(request, 'Sent email to %s recipients (%s)' % (len(emails), ", ".join(emails)))
-			return HttpResponseRedirect('/admin/confreg/conferencesession/%s/' % sessionid)
+			if ',' in sessionids:
+				# We always get the original URL as a query parameter in this
+				# case.
+				return HttpResponseRedirect('/admin/confreg/conferencesession/?' + form.data['returnurl'])
+			else:
+				return HttpResponseRedirect('/admin/confreg/conferencesession/%s/' % sessionids)
 	else:
-		form = EmailSessionForm(initial={'sender': session.conference.contactaddr})
+		form = EmailSessionForm(initial={'sender': sessions[0].conference.contactaddr, 'returnurl': request.GET.has_key('orig') and request.GET['orig'] or ''})
 
 
 	return render_to_response('confreg/admin_email.html', {
 		'form': form,
-		'recipientlist': session.speaker_list,
-		'session': session,
-		'whatfor': 'Session "%s"' % session.title,
+		'recipientlist': ", ".join([s.speaker_list for s in sessions]),
+		'whatfor': ", ".join(['Session "%s"' % s.title for s in sessions]),
 		})

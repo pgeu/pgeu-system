@@ -83,7 +83,7 @@ urlpatterns = patterns('',
 
     # Conference admin
     (r'^admin/confreg/_email/$', 'postgresqleu.confreg.views.admin_email'),
-    (r'^admin/confreg/_email_session_speaker/(\d+)/$', 'postgresqleu.confreg.views.admin_email_session'),
+    (r'^admin/confreg/_email_session_speaker/([,\d]+)/$', 'postgresqleu.confreg.views.admin_email_session'),
 
 	# Membership management
 	(r'^membership/$', postgresqleu.membership.views.home),

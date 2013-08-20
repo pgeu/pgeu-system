@@ -104,6 +104,7 @@ class ConferenceSessionAdmin(admin.ModelAdmin):
 	list_filter = ['conference', 'track', 'status', ]
 	search_fields = ['title', ]
 	filter_horizontal = ('speaker',)
+	actions= ['email_recipients', ]
 
 	def queryset(self, request):
 		qs = super(ConferenceSessionAdmin, self).queryset(request)
@@ -126,6 +127,11 @@ class ConferenceSessionAdmin(admin.ModelAdmin):
 
 	def has_add_permission(self, request):
 		return request.user.is_superuser
+
+	def email_recipients(self, request, queryset):
+		selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+		return HttpResponseRedirect('/admin/confreg/_email_session_speaker/%s/?orig=%s' % (','.join(selected), urllib.quote(urllib.urlencode(request.GET))))
+	email_recipients.short_description = "Send email to speakers of selected sessions"
 
 class ConferenceSessionScheduleSlotAdmin(admin.ModelAdmin):
 	list_display = ['conference', 'starttime', 'endtime', ]

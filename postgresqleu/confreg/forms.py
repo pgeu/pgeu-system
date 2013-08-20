@@ -296,6 +296,7 @@ class EmailSendForm(forms.Form):
 class EmailSessionForm(forms.Form):
 	sender = forms.EmailField(label="Sending email")
 	subject = forms.CharField(label="Subject", min_length=10)
+	returnurl = forms.CharField(label="Return url", widget=forms.widgets.HiddenInput(), required=False)
 	text = forms.CharField(label="Email text", min_length=50, widget=forms.Textarea)
 	confirm = forms.BooleanField(help_text="Confirm that you really want to send this email! Double and triple check the text and sender!")
 
