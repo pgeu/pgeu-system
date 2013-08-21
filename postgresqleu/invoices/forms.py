@@ -50,7 +50,7 @@ class InvoiceRowForm(forms.ModelForm):
 		model = InvoiceRow
 
 	def clean_rowamount(self):
-		if self.cleaned_data['rowamount'] <= 0:
+		if self.cleaned_data['rowamount'] == 0:
 			raise ValidationError("Must specify an amount!")
 		return self.cleaned_data['rowamount']
 	def clean_rowcount(self):
