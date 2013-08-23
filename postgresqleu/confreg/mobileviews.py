@@ -1,23 +1,14 @@
 from django.shortcuts import render_to_response, get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponse, Http404
-from django.template import RequestContext
-from django.conf import settings
-from django.db import transaction, connection
+from django.http import HttpResponse
+from django.db import connection
 import markdown
 
-from models import *
-from forms import *
+from models import Conference
 
-from datetime import datetime, timedelta
-import base64
-import re
-import os
-import sys
-import csv
+from datetime import datetime
 
 import itertools
 import simplejson as json
-import time
 
 def index(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
