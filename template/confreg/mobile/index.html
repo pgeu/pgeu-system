@@ -173,7 +173,10 @@ function update_schedule() {
    });
       
    $('#schedule-lv').html(output);
-   $('#schedule-lv').listview('refresh');
+   try {
+      $('#schedule-lv').listview('refresh');
+   }
+   catch (e) {} /* Error occurs if refreshing prior to viewing it */
 }
 
 
