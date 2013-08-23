@@ -51,6 +51,49 @@ function remove_json_ids(currdata, idlist) {
 /*
  * Our stuff here 
  */
+function load_news() {
+   if (localStorage['{{conf.urlname}}_news_url']) {
+      // XXX: really should not block when doing this
+      $.mobile.loading('show', {'text': 'Refreshing news...', 'textVisible': true});
+      loadTime = new Date();
+      if (localStorage['{{conf.urlname}}_news_last']) {
+         last = new Date(localStorage['{{conf.urlname}}_news_last']);
+      } else {
+         last = new Date('2000-01-01');
+      }
+      $.ajax({
+         url: localStorage['{{conf.urlname}}_news_url'] + '?since=' + last.getTime(),
+         dataType: 'jsonp',
+         jsonpCallback: 'news_jsonp',
+         success: function(data) {
+            /* Data is an array of new news items */
+            if (localStorage['{{conf.urlname}}_news']) {
+               currnews = JSON.parse(localStorage['{{conf.urlname}}_news']);
+            }
+            else {
+               currnews = [];
+            }
+            if (data.length > 0) {
+               currnews.unshift.apply(currnews, data);
+               localStorage['{{conf.urlname}}_news'] = JSON.stringify(currnews);
+               unread = 0;
+               if (localStorage['{{conf.urlname}}_news_unread']) {
+                  unread = parseInt(localStorage['{{conf.urlname}}_news_unread']);
+               }
+               unread += data.length;
+               $('#newsunreadcount').text(unread);
+               localStorage['{{conf.urlname}}_news_unread'] = unread;
+            }
+            localStorage['{{conf.urlname}}_news_last'] = loadTime.toISOString();
+            update_news();
+         },
+         complete: function(data) {
+            $.mobile.loading('hide');
+         }
+      });
+   }
+}
+
 function load_server_data() {
    incremental = false;
    if (localStorage['{{conf.urlname}}_last']) {
@@ -72,6 +115,17 @@ function load_server_data() {
             currdata = JSON.parse(localStorage['{{conf.urlname}}_data']);
             currdata.s = merge_json_structures(currdata.s, newdata.s);
             currdata.sp = merge_json_structures(currdata.sp, newdata.sp);
+            /* No need to merge, we always get the full struct */
+            currdata.c = newdata.c;
+            localStorage['{{conf.urlname}}_news_url'] = newdata.c.news;
+            if (!newdata.c.news) {
+               /* No news on this conf, so potentially remove the element */
+               try {
+                  $('#frontmenu_news').remove();
+                  $('#frontmenu').listview('refresh');
+               }
+               catch(e) {}
+            }
 
             if (newdata.d.sess) {
                currdata.s = remove_json_ids(currdata.s, newdata.d.sess);
@@ -91,6 +145,7 @@ function load_server_data() {
          localStorage['{{conf.urlname}}_last'] = now;
          status('Loaded server data at ' + now);
          if (incremental) update_schedule();
+         load_news();
       },
       complete: function(data) {
          $.mobile.loading('hide');
@@ -106,6 +161,10 @@ function reset_data() {
    if (confirm('Are you sure you want to do this? All data will be removed and you will need to resync to see anything.')) {
       localStorage.removeItem('{{conf.urlname}}_data');
       localStorage.removeItem('{{conf.urlname}}_last');
+      localStorage.removeItem('{{conf.urlname}}_news_url');
+      localStorage.removeItem('{{conf.urlname}}_news_last');
+      localStorage.removeItem('{{conf.urlname}}_news_unread');
+      localStorage.removeItem('{{conf.urlname}}_news');
       $('#schedule-lv').html('');
    }
 }
@@ -179,6 +238,21 @@ function update_schedule() {
    catch (e) {} /* Error occurs if refreshing prior to viewing it */
 }
 
+function update_news() {
+   if (!localStorage['{{conf.urlname}}_news']) {
+      return status('No news loaded.', $('#news'), true);
+   }
+   news = JSON.parse(localStorage['{{conf.urlname}}_news']);
+   var output = '';
+   $.each(news, function(index, news) {
+      output += '<div data-role="collapsible" data-collapsed="false">';
+      output += '<h3>' + news.t + '</h3>';
+      output += '<p>' + news.c + '</p>';
+      output += '</div>';
+   });
+   $('#newscontents').html(output);
+   $('#newscontents').collapsibleset();
+}
 
 /*
  * Generate a page for a specific session
@@ -233,6 +307,10 @@ $('#index').live('pageinit', function(event) {
       alert('Local storage does not appear to be working in your browser. This may be because  you are using Private Browsing or Incognito Browsing. Unfortunately, this app requires local storage to work!');
       return;
    }
+   if (localStorage['{{conf.urlname}}_news_unread']) {
+      $('#newsunreadcount').text(localStorage['{{conf.urlname}}_news_unread']);
+   }
+
    if (!localStorage['{{conf.urlname}}_data']) {
       // Need to "decouple", so the page initializes before we run
       setTimeout(resync, 1);
@@ -251,6 +329,15 @@ $('#set_autosync').live('change', function(e) {
 
 $('#schedule').live('pageinit',function(event){
    update_schedule();
+});
+
+$('#news').live('pageinit', function(event) {
+   if (localStorage['{{conf.urlname}}_news_unread']) {
+      localStorage['{{conf.urlname}}_news_unread'] = 0;
+      $('#newsunreadcount').text('0');
+   }
+
+   update_news();
 });
 
 
@@ -282,8 +369,8 @@ $(document).bind( "pagebeforechange", function( e, data ) {
   </div>
   
   <div data-role="content">	
-    <ul data-role="listview" data-inset="true">
-<!--      <li><a href="#news" data-transition="slide">News</a></li> -->
+    <ul data-role="listview" data-inset="true" id="frontmenu">
+      <li id="frontmenu_news"><a href="#news" data-transition="slide">News</a><span id="newsunreadcount" class="ui-li-count">0</span></li>
       <li><a href="#schedule" data-transition="slide">Schedule</a></li>
       <li><a href="#settings" data-transition="slide">Settings</a></li>
       <li><a href="#about" data-transition="slide">About</a></li>
@@ -300,7 +387,8 @@ $(document).bind( "pagebeforechange", function( e, data ) {
     <h1>News - {{conf.conferencename}}</h1>
   </div>
   <div data-role="content">
-    News feed from the site goes here, a bit later.
+   <div data-role="collapsibleset" id="newscontents">
+   </div>
   </div>
   <div data-role="footer" data-id="global-footer" data-position="fixed">
   </div>

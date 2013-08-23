@@ -20,7 +20,7 @@ import simplejson as json
 if settings.DEBUG:
 	MANIFESTVERSION=None
 else:
-	MANIFESTVERSION=102
+	MANIFESTVERSION=103
 
 def index(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -89,6 +89,9 @@ def conferencedata(request, confname, since):
 
 	resp = HttpResponse(mimetype='application/json')
 	json.dump({
+		'c': {
+			'news': conference.newsjson,
+		},
 		's': sessiondata,
 		'sp': speakerdata,
 		'd': deldata,
