@@ -1,6 +1,8 @@
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse
 from django.db import connection
+from django.conf import settings
+
 import markdown
 
 from models import Conference
@@ -10,16 +12,27 @@ from datetime import datetime
 import itertools
 import simplejson as json
 
+# Version of the HTML manifest. This needs to be bumped whenever the
+# mobile HTML or Javascript code is changed, to make sure that clients
+# properly refresh.
+# When running in debug mode, turn off the appcache because it can be
+# a real PITA to debug.
+if settings.DEBUG:
+	MANIFESTVERSION=None
+else:
+	MANIFESTVERSION=102
+
 def index(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 
 	return render_to_response('confreg/mobile/index.html', {
 			'conf': conference,
+			'html5manifestversion': MANIFESTVERSION,
 			})
 
 def cachemanifest(request, confname):
-	conference = get_object_or_404(Conference, urlname=confname)
-
+	# We'll just serve this up whenever, no need to check that the
+	# conference exists. We'll break later :)
 	return HttpResponse("""CACHE MANIFEST
 # revision:%s
 /media/jq/jquery.mobile-1.2.0.min.css
@@ -33,7 +46,7 @@ def cachemanifest(request, confname):
 /media/jq/images/icons-36-black.png
 NETWORK:
 *
-""" % (conference.html5manifestversion,),
+""" % (MANIFESTVERSION,),
 						content_type='text/cache-manifest')
 
 
