@@ -28,6 +28,10 @@
  <tr>
    <td style="white-space: nowrap">Pay invoice</td>
    <td>
+     <p>
+       This invoice can be paid using one of the methods listed below. Note
+       that <b>only</b> payments made using these methods are accepted.
+     </p>
      <ul>
      {%for method in invoice.allowedmethodwrappers%}
      <li><h3>{{method.name}}</h3>
