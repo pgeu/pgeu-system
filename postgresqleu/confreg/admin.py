@@ -29,7 +29,7 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	list_display = ['email', 'conference', 'firstname', 'lastname', 'created', 'short_regtype', 'payconfirmedat', 'has_invoice', ]
 	list_filter = ['conference', 'regtype', 'additionaloptions', ]
 	search_fields = ['email', 'firstname', 'lastname', ]
-	ordering = ['-payconfirmedat', 'lastname', 'firstname', ]
+	ordering = ['-payconfirmedat', '-created', 'lastname', 'firstname', ]
 	actions= ['approve_conferenceregistration', 'email_recipients']
 	filter_horizontal = ('additionaloptions',)
 
