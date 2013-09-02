@@ -975,9 +975,6 @@ def createschedule(request, confname):
 
 
 	if request.method=="POST":
-		if not request.user.is_superuser:
-			raise Http404('Only superusers can save!')
-
 		if request.POST.has_key('get'):
 			# Get the current list of tentatively scheduled talks
 			s = {}
@@ -985,7 +982,10 @@ def createschedule(request, confname):
 				if sess.tentativeroom != None and sess.tentativescheduleslot != None:
 					s['slot%s' % ((sess.tentativeroom.id * 1000000) + sess.tentativescheduleslot.id)] = 'sess%s' % sess.id
 			return HttpResponse(json.dumps(s), content_type="application/json")
+
 		# Else we are saving
+		if not request.user.is_superuser:
+			raise Http404('Only superusers can save!')
 
 		# Remove all the existing mappings, and add new ones
 		# Yes, we do this horribly inefficiently, but it doesn't run very
