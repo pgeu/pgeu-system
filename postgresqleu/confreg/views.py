@@ -968,11 +968,16 @@ def talkvote(request, confname):
 @ssl_required
 @login_required
 @transaction.commit_on_success
-@user_passes_test_or_error(lambda u: u.is_superuser)
 def createschedule(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
+	if not conference.talkvoters.filter(pk=request.user.id):
+		raise Http404('You are not a talk voter for this conference!')
+
 
 	if request.method=="POST":
+		if not request.user.is_superuser:
+			raise Http404('Only superusers can save!')
+
 		if request.POST.has_key('get'):
 			# Get the current list of tentatively scheduled talks
 			s = {}
