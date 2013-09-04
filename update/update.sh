@@ -31,7 +31,7 @@ fi
 
 # Cause reload
 echo Reloading website due to updates
-sudo pkill -f postgresqleu/manage.py
+sudo pkill -f ^python.*postgresqleu/manage.py
 
 # Update the file listing the latest update
 mv -f /tmp/pgeu.update update/lastupdate
