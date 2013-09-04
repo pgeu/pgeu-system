@@ -3,6 +3,7 @@ from django import forms
 from django.http import HttpResponseRedirect
 from django.forms import ValidationError
 from django.db.models.fields.files import ImageFieldFile
+from django.db.models import Count
 from postgresqleu.confreg.models import *
 from postgresqleu.confreg.dbimage import InlinePhotoWidget
 from datetime import datetime
@@ -26,7 +27,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
 class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	form = ConferenceRegistrationForm
-	list_display = ['email', 'conference', 'firstname', 'lastname', 'created', 'short_regtype', 'payconfirmedat', 'has_invoice', ]
+	list_display = ['email', 'conference', 'firstname', 'lastname', 'created', 'short_regtype', 'payconfirmedat', 'has_invoice', 'addoptions']
 	list_filter = ['conference', 'regtype', 'additionaloptions', ]
 	search_fields = ['email', 'firstname', 'lastname', ]
 	ordering = ['-payconfirmedat', '-created', 'lastname', 'firstname', ]
@@ -34,11 +35,15 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	filter_horizontal = ('additionaloptions',)
 
 	def queryset(self, request):
-		qs = super(ConferenceRegistrationAdmin, self).queryset(request)
+		qs = super(ConferenceRegistrationAdmin, self).queryset(request).annotate(addoptcount=Count('additionaloptions'))
 		if request.user.is_superuser:
 			return qs
 		else:
 			return qs.filter(conference__administrators=request.user)
+
+	def addoptions(self, inst):
+		return inst.addoptcount
+	addoptions.short_description="Options"
 
 	def approve_conferenceregistration(self, request, queryset):
 		rows = queryset.filter(payconfirmedat__isnull=True).update(payconfirmedat=datetime.today(), payconfirmedby=request.user.username)
