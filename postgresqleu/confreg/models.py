@@ -267,7 +267,7 @@ class ConferenceRegistration(models.Model):
 
 	def short_regtype(self):
 		return self.regtype.regtype[:30]
-	short_regtype.short_description = 'Registration type'
+	short_regtype.short_description = 'Reg type'
 
 	# For the admin interface (mainly)
 	def __unicode__(self):

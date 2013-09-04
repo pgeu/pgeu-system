@@ -27,7 +27,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
 class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	form = ConferenceRegistrationForm
-	list_display = ['email', 'conference', 'firstname', 'lastname', 'created', 'short_regtype', 'payconfirmedat', 'has_invoice', 'addoptions']
+	list_display = ['email', 'conference', 'firstname', 'lastname', 'created_short', 'short_regtype', 'payconfirmedat_short', 'has_invoice', 'addoptions']
 	list_filter = ['conference', 'regtype', 'additionaloptions', ]
 	search_fields = ['email', 'firstname', 'lastname', ]
 	ordering = ['-payconfirmedat', '-created', 'lastname', 'firstname', ]
@@ -44,6 +44,15 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	def addoptions(self, inst):
 		return inst.addoptcount
 	addoptions.short_description="Options"
+
+	def payconfirmedat_short(self, inst):
+		return inst.payconfirmedat
+	payconfirmedat_short.short_description="Pay conf"
+
+	def created_short(self, inst):
+		return "<nobr>%s</nobr>" % inst.created.strftime("%Y-%m-%d %H:%M")
+	created_short.allow_tags=True
+	created_short.short_description="Created"
 
 	def approve_conferenceregistration(self, request, queryset):
 		rows = queryset.filter(payconfirmedat__isnull=True).update(payconfirmedat=datetime.today(), payconfirmedby=request.user.username)
