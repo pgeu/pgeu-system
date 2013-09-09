@@ -7,7 +7,7 @@ class RawNotificationAdmin(admin.ModelAdmin):
 	list_display = ('dat', 'confirmed',)
 
 class NotificationAdmin(admin.ModelAdmin):
-	list_display = ('receivedat', 'eventDate', 'eventCode', 'success', 'pspReference', )
+	list_display = ('receivedat', 'eventDate', 'eventCode', 'live', 'success', 'pspReference', )
 
 class ReportAdmin(admin.ModelAdmin):
 	list_display = ('receivedat', 'processedat', 'url',)
