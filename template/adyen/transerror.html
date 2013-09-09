@@ -1,0 +1,23 @@
+{%extends "navbase.html"%}
+{%block extrahead%}
+<meta http-equiv="refresh" content="2">
+{%endblock%}
+{%block title%}Payment error{%endblock%}
+{%block content%}
+<h1>Payment error</h1>
+<p>
+A transaction error occured at our payment processor when processing
+your payment.
+</p>
+
+<p>
+This means your payment has <i>not</i> been processed. If you believe this
+to be in error, please contact treasurer@postgresql.eu citing the
+full details of your payment for manual processing.
+</p>
+
+<p>
+You can also <a href="{{url}}">return</a> to the original URL and try again.
+</p>
+
+{%endblock%}

@@ -14,6 +14,7 @@ import postgresqleu.elections.views
 import postgresqleu.invoicemgr.views
 import postgresqleu.invoices.views
 import postgresqleu.paypal.views
+import postgresqleu.adyen.views
 import postgresqleu.accountinfo.views
 
 from postgresqleu.newsevents.feeds import LatestNews, LatestEvents
@@ -127,6 +128,10 @@ urlpatterns = patterns('',
 
     # Handle paypal data returns
     (r'^p/paypal_return/$', postgresqleu.paypal.views.paypal_return_handler),
+
+    # Handle adyen data returns
+    (r'^p/adyen_return/$', postgresqleu.adyen.views.adyen_return_handler),
+    (r'^p/adyen_notify/$', postgresqleu.adyen.views.adyen_notify_handler),
 
     # Account info callbacks
     (r'^accountinfo/search/$', postgresqleu.accountinfo.views.search),

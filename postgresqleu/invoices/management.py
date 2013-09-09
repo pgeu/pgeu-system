@@ -21,4 +21,10 @@ def register_invoice_payment_methods(app, created_models, verbosity=2, **kwargs)
 		if created:
 			p.save()
 			print "Added payment processor for bank transfer"
+
+		(p, created) = InvoicePaymentMethod.objects.get_or_create(name='Credit card', sortkey=50, classname='util.payment.adyen.AdyenCreditcard', auto=True)
+		if created:
+			p.save()
+			print "Added payment processor for adyen creditcard"
+
 signals.post_syncdb.connect(register_invoice_payment_methods)

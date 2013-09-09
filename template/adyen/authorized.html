@@ -1,0 +1,29 @@
+{%extends "navbase.html"%}
+{%block extrahead%}
+<meta http-equiv="refresh" content="{{refresh}}">
+{%endblock%}
+{%block title%}Payment authorized{%endblock%}
+{%block content%}
+<h1>Payment authorized</h1>
+<p>
+Your payment has been initially authorized.
+</p>
+
+<p>
+This means that your payment is likely to complete. However, the processing
+of your payment happens asynchronously, and it might depend on your card
+issuer. Our systems will automatically process the payment as it completes
+from your provider, and update the status of your invoice. Once your
+payment is fully authorized, a receipt will be generated for you
+automatically.
+</p>
+
+<p>
+This authorization will typically only take a few seconds, but in case of
+technical issues or high load with our payment provider it may take a little
+bit longer. This page will automatically refresh and direct you to your
+receipt once the payment is completed. You can also always manually
+<a href="{{url}}">Return</a> to the status of your order.
+</p>
+
+{%endblock%}

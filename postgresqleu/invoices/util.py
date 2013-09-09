@@ -193,6 +193,14 @@ class InvoiceManager(object):
 			logger("Could not find invoice with id '%s'" % invoiceid)
 			return (self.RESULT_NOTFOUND, None, None)
 
+		return self.process_incoming_payment_for_invoice(invoice, transamount, transdetails, logger)
+
+
+	def process_incoming_payment_for_invoice(self, invoice, transamount, transdetails, logger):
+		# Do the same as process_incoming_payment, but assume that the
+		# invoice has already been matched by other means.
+		invoiceid = invoice.pk
+
 		if not invoice.finalized:
 			logger("Invoice %s was never sent!" % invoiceid)
 			return (self.RESULT_NOTSENT, None, None)
@@ -218,9 +226,9 @@ class InvoiceManager(object):
 		# that.
 		processor = None
 		if invoice.processor:
-			processor = self._get_invoice_processor(invoice, logger=logger)
+			processor = self.get_invoice_processor(invoice, logger=logger)
 			if not processor:
-				# _get_invoice_processor() has already logged
+				# get_invoice_processor() has already logged
 				return (self.RESULT_PROCESSORFAIL, None, None)
 			try:
 				processor.process_invoice_payment(invoice)
@@ -248,7 +256,7 @@ class InvoiceManager(object):
 
 		return (self.RESULT_OK, invoice, processor)
 
-	def _get_invoice_processor(self, invoice, logger=None):
+	def get_invoice_processor(self, invoice, logger=None):
 		if invoice.processor:
 			try:
 				pieces = invoice.processor.classname.split('.')
@@ -268,7 +276,7 @@ class InvoiceManager(object):
 	# Cancel the specified invoice, calling any processor set on it if necessary
 	def cancel_invoice(self, invoice, reason):
 		# If this invoice has a processor, we need to start by calling it
-		processor = self._get_invoice_processor(invoice)
+		processor = self.get_invoice_processor(invoice)
 		if processor:
 			try:
 				processor.process_invoice_cancellation(invoice)

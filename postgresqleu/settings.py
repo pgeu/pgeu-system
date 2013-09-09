@@ -86,6 +86,7 @@ INSTALLED_APPS = (
 	'postgresqleu.static',
 	'postgresqleu.countries',
 	'postgresqleu.paypal',
+	'postgresqleu.adyen',
 	'postgresqleu.newsevents',
 	'postgresqleu.confreg',
 	'postgresqleu.membership',
@@ -104,6 +105,15 @@ PAYPAL_EMAIL='paypal@postgresql.eu'
 PAYPAL_PDT_TOKEN='abc123'
 PAYPAL_DEFAULT_SOURCEACCOUNT=1
 
+# Change whether using sandbox or not
+ADYEN_BASEURL='https://test.adyen.com/'
+ADYEN_CABASEURL='https://test-ca.adyen.com/'
+ADYEN_MERCHANTACCOUNT='whatever'
+ADYEN_SIGNKEY='foobar'
+ADYEN_SKINCODE='abc123'
+ADYEN_NOTIFICATION_RECEIVER='somebody@somewhere.com'
+
+# Base URLs for generating absolute URLs
 SITEBASE="http://www.postgresql.eu"
 SITEBASE_SSL="https://www.postgresql.eu"
 

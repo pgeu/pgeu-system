@@ -1,0 +1,26 @@
+{%extends "navbase.html"%}
+{%block extrahead%}
+<meta http-equiv="refresh" content="2">
+{%endblock%}
+{%block title%}Payment pending{%endblock%}
+{%block content%}
+<h1>Payment pending</h1>
+<p>
+Your payment is currently pending.
+</p>
+
+<p>
+Your payment is currently held in pending state at our payment processor.
+It will likely complete at a later time, and you will then automatically
+be sent a receipt for the payment. You can also always
+<a href="{{url}}">return</a> to the original page to view the status of
+your invoice.
+</p>
+
+<p>
+If your invoice does not complete in a few days, please contact
+treasurer@postgresql.eu citing the full details of your payment for manual
+verification and processing.
+</p>
+
+{%endblock%}

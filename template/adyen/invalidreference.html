@@ -1,0 +1,16 @@
+{%extends "navbase.html"%}
+{%block title%}Payment error{%endblock%}
+{%block content%}
+<h1>Payment error</h1>
+<p>
+An invalid invoice reference ({{reference}}) was returned from our
+payment processor.
+</p>
+
+<p>
+This means your payment has <i>not</i> been processed. Please contact
+treasurer@postgresql.eu citing the above reference, and the full details of
+your payment for manual processing.
+</p>
+
+{%endblock%}
