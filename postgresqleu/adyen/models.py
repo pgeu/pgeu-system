@@ -32,7 +32,7 @@ class Notification(models.Model):
 		unique_together = ('pspReference', 'eventCode')
 
 	def __unicode__(self):
-		return self.receivedat
+		return "%s" % self.receivedat
 
 class Report(models.Model):
 	receivedat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
