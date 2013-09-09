@@ -160,7 +160,11 @@ def adyen_notify_handler(request):
 			notification.merchantAccountCode = request.POST['merchantAccountCode']
 			notification.paymentMethod = request.POST['paymentMethod']
 			notification.reason = request.POST['reason']
-			notification.amount = int(request.POST['amount'] / 100) # We only deal in whole euros
+			try:
+				notification.amount = int(request.POST['amount'] / 100) # We only deal in whole euros
+			except:
+				# Some notifications don't have amounts
+				notification.amount = -1
 			# Save this unconfirmed for now
 			notification.save()
 
