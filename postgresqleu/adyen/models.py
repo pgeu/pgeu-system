@@ -9,7 +9,7 @@ class RawNotification(models.Model):
 	confirmed = models.BooleanField(null=False, default=False)
 
 	def __unicode__(self):
-		return self.dat
+		return "%s" % self.dat
 
 class Notification(models.Model):
 	receivedat = models.DateTimeField(null=False, blank=False, auto_now_add=True, unique=True)
