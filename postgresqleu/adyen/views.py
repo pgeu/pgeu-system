@@ -184,6 +184,8 @@ def adyen_notify_handler(request):
 							 "An Adyen notification with live set to false has been received.\nYou probably want to check that out manually - it's in the database, but has received no further processing.\n",
 				AdyenLog(pspReference=notification.pspReference, message='Received notification of type %s from the test system!' % notification.eventCode, error=True).save()
 			)
+			notification.confirmed = True
+			notification.save()
 		elif notification.eventCode == 'AUTHORIZATION':
 			process_authorization(notification)
 		elif notification.eventCode == 'REPORT_AVAILABLE':
