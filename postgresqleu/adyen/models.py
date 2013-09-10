@@ -48,6 +48,9 @@ class TransactionStatus(models.Model):
 	settledat = models.DateTimeField(null=True, blank=True)
 	notes = models.CharField(max_length=1000, null=True, blank=True)
 
+	class Meta:
+		verbose_name_plural='Transaction statuses'
+
 class ReturnAuthorizationStatus(models.Model):
 	pspReference = models.CharField(max_length=100, null=False, blank=False, primary_key=True)
 	seencount = models.IntegerField(null=False, default=0)
