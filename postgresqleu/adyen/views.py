@@ -161,10 +161,15 @@ def adyen_notify_handler(request):
 			notification.paymentMethod = request.POST['paymentMethod']
 			notification.reason = request.POST['reason']
 			try:
-				notification.amount = int(request.POST['amount'] / 100) # We only deal in whole euros
+				notification.amount = int(request.POST['value'] / 100) # We only deal in whole euros
 			except:
-				# Some notifications don't have amounts
+				# Invalid amount, set to -1
+				AdyenLog(pspReference=notification.pspReference, message='Received invalid amount %s' % request.POST['value'], error=True).save()
 				notification.amount = -1
+			if request.POST['currency'] != 'EUR':
+				AdyenLog(pspReference=notification.pspReference, message='Received invalid currency %s' % request.POST['currency'], error=True).save()
+				notification.amount = -2
+
 			# Save this unconfirmed for now
 			notification.save()
 
