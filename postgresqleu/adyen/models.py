@@ -44,7 +44,8 @@ class TransactionStatus(models.Model):
 	pspReference = models.CharField(max_length=100, null=False, blank=False)
 	notification = models.ForeignKey(Notification, null=False, blank=False)
 	authorizedat = models.DateTimeField(null=False, blank=False)
-	capturedat = models.DateTimeField(null=False, blank=False)
+	capturedat = models.DateTimeField(null=True, blank=True)
+	settledat = models.DateTimeField(null=True, blank=True)
 	notes = models.CharField(max_length=1000, null=True, blank=True)
 
 class ReturnAuthorizationStatus(models.Model):

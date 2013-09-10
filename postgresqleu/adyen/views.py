@@ -14,7 +14,7 @@ from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.mailqueue.util import send_simple_mail
 
 from models import Notification, RawNotification, AdyenLog, ReturnAuthorizationStatus
-from util import process_authorization, process_new_report
+from util import process_authorization, process_new_report, process_capture
 
 @ssl_required
 @transaction.commit_on_success
@@ -188,7 +188,9 @@ def adyen_notify_handler(request):
 			process_authorization(notification)
 		elif notification.eventCode == 'REPORT_AVAILABLE':
 			process_new_report(notification)
-		elif notification.eventCode in ('CAPTURE', ):
+		elif notification.eventCode == 'CAPTURE':
+			process_capture(notification)
+		elif notification.eventCode in ('UNSPECIFIED', ):
 			# Any events that we just ignore still need to be flagged as
 			# confirmed
 			notification.confirmed = True

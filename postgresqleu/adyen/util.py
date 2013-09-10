@@ -72,6 +72,22 @@ def process_authorization(notification):
 	notification.confirmed = True
 	notification.save()
 
+def process_capture(notification):
+	if notification.success:
+		# Successful capture, so we just set when the capture happened
+		ts = TransactionStatus.objects.get(notification=notification)
+		ts.capturedat = datetime.now()
+		ts.save()
+	else:
+		send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+						 settings.ADYEN_NOTIFICATION_RECEIVER,
+						 'Unsuccessful adyen capture received',
+						 "A creditcard capture for %s has failed.\nThe reason given was:\n%s\n\nYou want to investigate this since the payment was probably flagged as completed on authorization!\n" % (
+							 notification.merchantReference,
+							 notification.reason))
+	# We confirm the notification even if we sent it, since there is not much more we can do
+	notification.confirmed = True
+	notification.save()
 
 def process_new_report(notification):
 	# Just store the fact that this report is available. We'll have an
