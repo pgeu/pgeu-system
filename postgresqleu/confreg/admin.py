@@ -35,7 +35,14 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	filter_horizontal = ('additionaloptions',)
 
 	def queryset(self, request):
-		qs = super(ConferenceRegistrationAdmin, self).queryset(request).annotate(addoptcount=Count('additionaloptions'))
+		qs = super(ConferenceRegistrationAdmin, self).queryset(request)
+		# If this is a POST, it's something that can modify data, and we
+		# must not include the annotation there, since it causes the
+		# django ORM to break. We only want it on the GET, which returns
+		# the list that we render.
+		if request.method != 'POST':
+			qs = qs.annotate(addoptcount=Count('additionaloptions'))
+
 		if request.user.is_superuser:
 			return qs
 		else:
