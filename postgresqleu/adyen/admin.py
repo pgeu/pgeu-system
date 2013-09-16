@@ -13,7 +13,10 @@ class ReportAdmin(admin.ModelAdmin):
 	list_display = ('receivedat', 'processedat', 'url',)
 
 class TransactionStatusAdmin(admin.ModelAdmin):
-	list_display = ('pspReference', 'authorizedat', 'capturedat', )
+	list_display = ('pspReference', 'amount', 'authorizedat', 'capturedat', )
+
+	def amount(self, obj):
+		return obj.notification.amount
 
 class AdyenLogAdmin(admin.ModelAdmin):
 	list_display = ('timestamp', 'error', 'sent', 'message', )
