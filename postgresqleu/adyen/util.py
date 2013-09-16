@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core import urlresolvers
 
 from datetime import datetime
 
@@ -6,7 +7,7 @@ from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.models import Invoice
 
-from models import TransactionStatus, Report
+from models import TransactionStatus, Report, AdyenLog
 
 # Internal exception class
 class AdyenProcessingException(Exception):
@@ -95,3 +96,47 @@ def process_new_report(notification):
 	Report(notification=notification, url=notification.reason, processedat=None).save()
 	notification.confirmed=True
 	notification.save()
+
+
+def process_one_notification(notification):
+	# Now do notification specific processing
+	if not notification.live:
+		# This one is in the test system only! So we just send
+		# an email, because we're lazy
+		send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+						 settings.ADYEN_NOTIFICATION_RECEIVER,
+						 'Received adyen notification type %s from the test system!' % notification.eventCode,
+						 "An Adyen notification with live set to false has been received.\nYou probably want to check that out manually - it's in the database, but has received no further processing.\n",
+			AdyenLog(pspReference=notification.pspReference, message='Received notification of type %s from the test system!' % notification.eventCode, error=True).save()
+		)
+		notification.confirmed = True
+		notification.save()
+	elif notification.eventCode == 'AUTHORISATION':
+		process_authorization(notification)
+	elif notification.eventCode == 'REPORT_AVAILABLE':
+		process_new_report(notification)
+	elif notification.eventCode == 'CAPTURE':
+		process_capture(notification)
+	elif notification.eventCode in ('UNSPECIFIED', ):
+		# Any events that we just ignore still need to be flagged as
+		# confirmed
+		notification.confirmed = True
+		notification.save()
+		AdyenLog(pspReference=notification.pspReference, message='Received notification of type %s, ignored' % notification.eventCode).save()
+	else:
+		# Received an event that needs manual processing because we
+		# don't know what to do with it. To make sure we can react
+		# quickly to this, generate an immediate email for this.
+		send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+						 settings.ADYEN_NOTIFICATION_RECEIVER,
+						 'Received unknown Adyen notification of type %s' % notification.eventCode,
+						 "An unknown Adyen notification of type %s has been received.\n\nYou'll need to go process this one manually:\n%s" % (
+							 notification.eventCode,
+							 urlresolvers.reverse('admin:adyen_notification_change', args=(notification.id,)),
+						 )
+		)
+		AdyenLog(pspReference=notification.pspReference, message='Received notification of unknown type %s' % notification.eventCode, error=True).save()
+
+		# We specifically do *not* set the confirmed flag on this,
+		# so that the cronjob will constantly bug the user about
+		# unverified notifications.
