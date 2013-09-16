@@ -25,8 +25,8 @@ def _gzip_string(str):
 
 class AdyenCreditcard(object):
 	description="""
-Using this payment method, you can pay using your creditcard, either
-Mastercard or VISA.
+Using this payment method, you can pay using your creditcard, including
+Mastercard, VISA and American Express.
 """
 
 	ADYEN_COMMON={
