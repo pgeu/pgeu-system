@@ -172,7 +172,9 @@ def adyen_notify_handler(request):
 			# Save this unconfirmed for now
 			notification.save()
 
-		process_one_notification(notification)
+			# Process this notification, which includes flagging invoices
+			# as paid.
+			process_one_notification(notification)
 
 	# Return that we've consumed the report outside the transaction, in
 	# the unlikely event that the COMMIT is what failed
