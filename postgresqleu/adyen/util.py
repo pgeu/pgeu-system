@@ -54,7 +54,7 @@ def process_authorization(notification):
 
 		except AdyenProcessingException, ex:
 			# Generate an email telling us about this exception!
-			send_simple_mail(settings.INOVICE_SENDER_EMAIL,
+			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 							 settings.ADYEN_NOTIFICATION_RECEIVER,
 							 'Exception occured processing Adyen notification',
 							 "An exception occured processing the notification for %s:\n\n%s\n" % (
