@@ -186,7 +186,7 @@ def adyen_notify_handler(request):
 			)
 			notification.confirmed = True
 			notification.save()
-		elif notification.eventCode == 'AUTHORIZATION':
+		elif notification.eventCode == 'AUTHORISATION':
 			process_authorization(notification)
 		elif notification.eventCode == 'REPORT_AVAILABLE':
 			process_new_report(notification)
