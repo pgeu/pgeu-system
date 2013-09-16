@@ -47,6 +47,11 @@ def process_authorization(notification):
 
 			# If nothing went wrong, then this invoice is now fully
 			# flagged as paid in the system.
+			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+							 settings.ADYEN_NOTIFICATION_RECEIVER,
+							 'Adyen payment authorized',
+							 "An Adyen payment of €%s with reference %s was authorized on the Adyen platform.\nInvoice: %s\nRecipient name: %s\nRecipient user: %s\n" % (notification.amount, notification.pspReference, invoice.title, invoice.recipient_name, invoice.recipient_email))
+
 		except AdyenProcessingException, ex:
 			# Generate an email telling us about this exception!
 			send_simple_mail(settings.INOVICE_SENDER_EMAIL,
