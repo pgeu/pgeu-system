@@ -231,6 +231,7 @@ def viewinvoice_secret(request, invoiceid, invoicesecret):
 	invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True, recipient_secret=invoicesecret)
 	return render_to_response('invoices/userinvoice.html', {
 			'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/%s/" % (settings.SITEBASE_SSL, invoice.pk, invoice.recipient_secret)),
+			'fromsecret': True,
 			})
 
 @ssl_required

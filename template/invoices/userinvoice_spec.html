@@ -17,12 +17,12 @@
  </tr>
  <tr>
    <td style="white-space: nowrap">Invoice:</td>
-   <td><a href="/invoices/{{invoice.pk}}/{%if not invoice.recipient_user%}{{invoice.recipient_secret}}/{%endif%}pdf/">View PDF</a></td>
+   <td><a href="/invoices/{{invoice.pk}}/{%if fromsecret or not invoice.recipient_user%}{{invoice.recipient_secret}}/{%endif%}pdf/">View PDF</a></td>
  </tr>
 {%if invoice.ispaid%}
  <tr>
    <td style="white-space: nowrap">Receipt:</td>
-   <td><a href="/invoices/{{invoice.pk}}/{%if not invoice.recipient_user%}{{invoice.recipient_secret}}/{%endif%}receipt/">View receipt</a></td>
+   <td><a href="/invoices/{{invoice.pk}}/{%if fromsecret or not invoice.recipient_user%}{{invoice.recipient_secret}}/{%endif%}receipt/">View receipt</a></td>
  </tr>
 {%else%}
  <tr>
@@ -50,5 +50,12 @@
      </ul>
    </td>
  </tr>
+{%endif%}
+{%if not fromsecret%}
+<tr>
+   <td style="white-space: nowrap">External link:</td>
+   <td>Using <a href="/invoices/{{invoice.pk}}/{{invoice.recipient_secret}}/">this link</a> you can give somebody else access to
+view or pay this invoice, without being logged in to your account.</td>
+</tr>
 {%endif%}
 </table>
