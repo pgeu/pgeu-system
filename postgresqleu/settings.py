@@ -114,6 +114,8 @@ ADYEN_SKINCODE='abc123'
 ADYEN_NOTIFICATION_RECEIVER='somebody@somewhere.com'
 ADYEN_NOTIFY_USER='adyennot'
 ADYEN_NOTIFY_PASSWORD='topsecret'
+ADYEN_REPORT_USER='someone'
+ADYEN_REPORT_PASSWORD='topsecret'
 
 # Base URLs for generating absolute URLs
 SITEBASE="http://www.postgresql.eu"
