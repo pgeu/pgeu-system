@@ -16,7 +16,15 @@ class TransactionStatusAdmin(admin.ModelAdmin):
 	list_display = ('pspReference', 'amount', 'settledamount', 'authorizedat', 'capturedat', 'settledat', 'method' )
 
 class AdyenLogAdmin(admin.ModelAdmin):
-	list_display = ('timestamp', 'error', 'sent', 'pspReference', 'message', )
+	list_display = ('timestamp', 'success', 'sentstr', 'pspReference', 'message', )
+
+	def success(self, obj):
+		return not obj.error
+	success.boolean=True
+
+	def sentstr(self, obj):
+		return obj.sent and 'Yes' or 'No'
+	sentstr.short_description='Log sent'
 
 admin.site.register(RawNotification, RawNotificationAdmin)
 admin.site.register(Notification, NotificationAdmin)
