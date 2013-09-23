@@ -10,7 +10,7 @@ class NotificationAdmin(admin.ModelAdmin):
 	list_display = ('receivedat', 'eventDate', 'eventCode', 'live', 'success', 'confirmed', 'pspReference', )
 
 class ReportAdmin(admin.ModelAdmin):
-	list_display = ('receivedat', 'processedat', 'url',)
+	list_display = ('receivedat', 'downloadedat', 'processedat', 'url',)
 
 class TransactionStatusAdmin(admin.ModelAdmin):
 	list_display = ('pspReference', 'amount', 'authorizedat', 'capturedat', )

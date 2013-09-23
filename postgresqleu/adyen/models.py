@@ -38,6 +38,8 @@ class Report(models.Model):
 	receivedat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
 	notification = models.ForeignKey(Notification, null=False, blank=False)
 	url = models.CharField(max_length=1000, null=False, blank=False)
+	downloadedat = models.DateTimeField(null=True, blank=True)
+	contents = models.TextField(null=True, blank=True)
 	processedat = models.DateTimeField(null=True, blank=True)
 
 class TransactionStatus(models.Model):
