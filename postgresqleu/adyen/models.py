@@ -50,6 +50,7 @@ class TransactionStatus(models.Model):
 	settledat = models.DateTimeField(null=True, blank=True)
 	amount = models.IntegerField(null=False)
 	settledamount = models.DecimalField(null=True, decimal_places=2, max_digits=20)
+	method = models.CharField(max_length=100, null=True, blank=True)
 	notes = models.CharField(max_length=1000, null=True, blank=True)
 
 	class Meta:
