@@ -26,6 +26,7 @@ def process_authorization(notification):
 		TransactionStatus(pspReference=notification.pspReference,
 						  notification=notification,
 						  authorizedat=datetime.now(),
+						  amount=notification.amount,
 						  capturedat=None).save()
 		manager = InvoiceManager()
 		try:

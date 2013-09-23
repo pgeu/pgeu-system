@@ -15,9 +15,6 @@ class ReportAdmin(admin.ModelAdmin):
 class TransactionStatusAdmin(admin.ModelAdmin):
 	list_display = ('pspReference', 'amount', 'authorizedat', 'capturedat', )
 
-	def amount(self, obj):
-		return obj.notification.amount
-
 class AdyenLogAdmin(admin.ModelAdmin):
 	list_display = ('timestamp', 'error', 'sent', 'message', )
 
