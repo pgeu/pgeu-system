@@ -13,7 +13,7 @@ class ReportAdmin(admin.ModelAdmin):
 	list_display = ('receivedat', 'downloadedat', 'processedat', 'url',)
 
 class TransactionStatusAdmin(admin.ModelAdmin):
-	list_display = ('pspReference', 'amount', 'authorizedat', 'capturedat', )
+	list_display = ('pspReference', 'amount', 'settledamount', 'authorizedat', 'capturedat', 'settledat', )
 
 class AdyenLogAdmin(admin.ModelAdmin):
 	list_display = ('timestamp', 'error', 'sent', 'message', )
