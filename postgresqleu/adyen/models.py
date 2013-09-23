@@ -43,7 +43,7 @@ class Report(models.Model):
 	processedat = models.DateTimeField(null=True, blank=True)
 
 class TransactionStatus(models.Model):
-	pspReference = models.CharField(max_length=100, null=False, blank=False)
+	pspReference = models.CharField(max_length=100, null=False, blank=False, unique=True)
 	notification = models.ForeignKey(Notification, null=False, blank=False)
 	authorizedat = models.DateTimeField(null=False, blank=False)
 	capturedat = models.DateTimeField(null=True, blank=True)
