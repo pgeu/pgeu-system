@@ -1,4 +1,3 @@
-from django.db import connection
 from models import *
 from django.conf import settings
 from django.template import Context
