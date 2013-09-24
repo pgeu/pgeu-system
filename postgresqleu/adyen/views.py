@@ -176,6 +176,9 @@ def adyen_notify_handler(request):
 			# as paid.
 			process_one_notification(notification)
 
+			# Log the fact that we received it
+			AdyenLog(pspReference=notification.pspReference, message='Processed %s notification for %s' % (notification.eventCode, notification.merchantReference)).save()
+
 	# Return that we've consumed the report outside the transaction, in
 	# the unlikely event that the COMMIT is what failed
 	return HttpResponse('[accepted]', content_type='text/plain')
