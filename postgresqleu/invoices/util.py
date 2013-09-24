@@ -59,6 +59,7 @@ class InvoiceWrapper(object):
 
 		# And we're done!
 		self.invoice.save()
+		InvoiceHistory(invoice=self.invoice, txt='Finalized').save()
 
 	def render_pdf_invoice(self, preview=False):
 		return self._render_pdf(preview=preview, receipt=False)
@@ -90,6 +91,7 @@ class InvoiceWrapper(object):
 							  'Receipt for PGEU invoice #%s' % self.invoice.id,
 							  'pgeu_receipt_%s.pdf' % self.invoice.id,
 							  self.invoice.pdf_receipt)
+		InvoiceHistory(invoice=self.invoice, txt='Sent receipt').save()
 
 	def email_invoice(self):
 		if not self.invoice.pdf_invoice:
@@ -99,6 +101,7 @@ class InvoiceWrapper(object):
 							  'PGEU invoice #%s' % self.invoice.id,
 							  'pgeu_invoice_%s.pdf' % self.invoice.id,
 							  self.invoice.pdf_invoice)
+		InvoiceHistory(invoice=self.invoice, txt='Sent invoice').save()
 
 	def email_reminder(self):
 		if not self.invoice.pdf_invoice:
@@ -108,10 +111,12 @@ class InvoiceWrapper(object):
 							  'PGEU invoice #%s - reminder' % self.invoice.id,
 							  'pgeu_invoice_%s.pdf' % self.invoice.id,
 							  self.invoice.pdf_invoice)
+		InvoiceHistory(invoice=self.invoice, txt='Sent reminder').save()
 
 	def email_cancellation(self):
 		self._email_something('invoice_cancel.txt',
 							  'PGEU invoice #%s - reminder' % self.invoice.id)
+		InvoiceHistory(invoice=self.invoice, txt='Sent cancellation').save()
 
 	def _email_something(self, template_name, mail_subject, pdfname=None, pdfcontents=None):
 		# Send off the receipt/invoice by email if possible
@@ -247,6 +252,7 @@ class InvoiceManager(object):
 		wrapper.email_receipt()
 
 		# Write a log, because it's always nice..
+		InvoiceHistory(invoice=invoice, txt='Processed payment').save()
 		InvoiceLog(message="Processed payment of %s EUR for invoice %s (%s)" % (
 				invoice.total_amount,
 				invoice.pk,
@@ -285,6 +291,8 @@ class InvoiceManager(object):
 		invoice.deleted = True
 		invoice.deletion_reason = reason
 		invoice.save()
+
+		InvoiceHistory(invoice=invoice, txt='Canceled').save()
 
 		# Send the receipt to the user if possible - that should make
 		# them happy :)

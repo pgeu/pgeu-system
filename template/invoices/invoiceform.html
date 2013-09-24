@@ -220,6 +220,24 @@ also be tagged with your userid <i>{{user.username}}</i>.
 </form>
 {%endif%}
 
+<h2>Invoice history</h2>
+<p>
+The following events have occured throughout the life of this invoice:
+</p>
+<table>
+ <tr>
+   <th>Time</th>
+   <th>Event</th>
+   </tr>
+ {%for h in invoice.invoicehistory_set.all %}
+ <tr>
+   <td style="padding-right: 10px;">{{h.time}}</td>
+   <td>{{h.txt}}</td>
+ </tr>
+ {%endfor%}
+</table>
+
+<br/>
 <a href="/invoiceadmin/">Back</a>
 
 <div id="user-lookup">

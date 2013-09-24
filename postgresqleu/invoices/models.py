@@ -106,6 +106,14 @@ class InvoiceRow(models.Model):
 	rowcount = models.IntegerField(null=False, default=1, verbose_name="Count")
 	rowamount = models.IntegerField(null=False, default=0, verbose_name="Amount per item")
 
+class InvoiceHistory(models.Model):
+	invoice = models.ForeignKey(Invoice, null=False)
+	time = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+	txt = models.CharField(max_length=100, null=False, blank=False)
+
+	class Meta:
+		ordering = ['time',]
+
 class InvoiceLog(models.Model):
 	timestamp = models.DateTimeField(null=False, blank=False, default=datetime.now())
 	message = models.TextField(null=False, blank=False)
