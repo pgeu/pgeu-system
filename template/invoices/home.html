@@ -1,6 +1,17 @@
 {%extends "base.html"%}
 {%load humanize%}
 {%block title%}Invoices{%endblock%}
+{%block extrahead%}
+<style>
+tr.invoice-deleted {
+   text-decoration: line-through;
+}
+tr.invoice-expired td.duedate {
+   color: red;
+   font-weight: bold;
+}
+</style>
+{%endblock%}
 {%block layoutblock%}
 <h1>Invoices</h1>
 
@@ -28,13 +39,13 @@
  <th>Finalized</th>
 </tr>
 {%for invoice in invoices.object_list %}
-<tr{%if invoice.deleted%} style="text-decoration:line-through;"{%endif%} {%if invoice.isexpired and not invoice.deleted%}bgcolor="red"{%endif%}>
+<tr class="{%if invoice.deleted%}invoice-deleted {%endif%}{%if invoice.isexpired and not invoice.deleted%}invoice-expired {%endif%}">
  <td><a href="/invoiceadmin/{{invoice.id}}/">{{invoice.id}}</a></td>
  <td><a href="/invoiceadmin/{{invoice.id}}/">{{invoice.title}}</a></td>
  <td style="white-space: nowrap">{{invoice.recipient_name}}</td>
  <td style="white-space: nowrap; text-align: right;">{%if invoice.total_amount > 0%}{{invoice.total_amount|intcomma}}{%endif%}</td>
  <td style="white-space: nowrap">{{invoice.invoicedate|date:"Y-m-d"}}</td>
- <td style="white-space: nowrap">{{invoice.duedate|date:"Y-m-d"}}</td>
+ <td style="white-space: nowrap" class="duedate" >{{invoice.duedate|date:"Y-m-d"}}</td>
  <td style="white-space: nowrap">{%if invoice.refunded%}Refunded{%elif invoice.ispaid%}{{invoice.paidat|date:"Y-m-d"}}{%else%}No{%endif%}</td>
  <td>{{invoice.finalized|yesno}}</td>
 </tr>
