@@ -38,6 +38,10 @@ function sendEmail() {
    }
 }
 
+function confirm_delete() {
+    return confirm('Are you sure you want to mark this invoice as deleted?');
+}
+
 function confirm_refund() {
     return confirm('Are you sure you want to mark this invoice as refunded?\n\nNote that you have to manually perform the actual refund using whatever the appropriate payment method is. This just flags it in the system!');
 }
@@ -229,7 +233,7 @@ also be tagged with your userid <i>{{user.username}}</i>.
 <br/>
 <form method="post" action="cancel/">
  Reason: <input type="text" name="reason" />
- <input type="submit" name="submit" value="Mark invoice as deleted"/>
+ <input type="submit" name="submit" value="Mark invoice as deleted" onclick="return confirm_delete()" />
 </form>
 {%endif%}
 
