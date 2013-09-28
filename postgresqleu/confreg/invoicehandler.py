@@ -46,6 +46,24 @@ class InvoiceProcessor(object):
 		reg.save()
 
 
+	# Process an invoice being refunded. This means we need to unlink
+	# it from the registration, and also unconfirm the registration.
+	def process_invoice_refund(self, invoice):
+		try:
+			reg = ConferenceRegistration.objects.get(pk=invoice.processorid)
+		except ConferenceRegistration.DoesNotExist:
+			raise Exception("Could not find conference registration %s" % invoice.processorid)
+
+		if not reg.payconfirmedat:
+			raise Exception("Registration not paid, data is out of sync!")
+
+		# Unlink this invoice from the registration, and remove the payment
+		# confirmation. This will automatically "unlock" the registration.
+		reg.invoice = None
+		reg.payconfirmedat = None
+		reg.payconfirmedby = None
+		reg.save()
+
 	# Return the user to a page showing what happened as a result
 	# of their payment. In our case, we just return the user directly
 	# to the registration page.
@@ -112,6 +130,29 @@ class BulkInvoiceProcessor(object):
 		# since it no longer contains anything interesting.
 		bp.delete()
 
+	# Process an invoice being refunded. This means we need to unlink
+	# it from the registration, as well as remove the payment confirmation
+	# from the registrations.
+	def process_invoice_refund(self, invoice):
+		try:
+			bp = BulkPayment.objects.get(pk=invoice.processorid)
+		except ConferenceRegistration.DoesNotExist:
+			raise Exception("Could not find bulk payment %s" % invoice.processor)
+		if not bp.paidat:
+			raise Exception("Bulk registration not paid - things are out of sync")
+
+		# Unlink this bulk payment from all registrations. This will
+		# automatically unlock the registrations.
+
+		for r in bp.conferenceregistration_set.all():
+			r.bulkpayment = None
+			r.payconfirmedat = None
+			r.payconfirmedby = None
+			r.save()
+
+		# Now actually *remove* the bulk payment record completely,
+		# since it no longer contains anything interesting.
+		bp.delete()
 
 	# Return the user to a page showing what happened as a result
 	# of their payment. In our case, we just return the user directly

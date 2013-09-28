@@ -118,6 +118,11 @@ class InvoiceWrapper(object):
 							  'PGEU invoice #%s - reminder' % self.invoice.id)
 		InvoiceHistory(invoice=self.invoice, txt='Sent cancellation').save()
 
+	def email_refund(self):
+		self._email_something('invoice_refund.txt',
+							  'PGEU invoice #%s - refund notice' % self.invoice.id)
+		InvoiceHistory(invoice=self.invoice, txt='Sent refund notice').save()
+
 	def _email_something(self, template_name, mail_subject, pdfname=None, pdfcontents=None):
 		# Send off the receipt/invoice by email if possible
 		if not self.invoice.recipient_email:
@@ -301,6 +306,28 @@ class InvoiceManager(object):
 
 		InvoiceLog(timestamp=datetime.now(), message="Deleted invoice %s: %s" % (invoice.id, invoice.deletion_reason)).save()
 
+	def refund_invoice(self, invoice, reason):
+		# If this invoice has a processor, we need to start by calling it
+		processor = self.get_invoice_processor(invoice)
+		if processor:
+			try:
+				processor.process_invoice_refund(invoice)
+			except Exception, ex:
+				raise Exception("Failed to run invoice processor '%s': %s" % (invoice.processor, ex))
+
+		invoice.refunded = True
+		invoice.refund_reason = reason
+		invoice.save()
+
+		InvoiceHistory(invoice=invoice, txt='Refunded').save()
+
+		# Send the receipt to the user if possible - that should make
+		# them happy :)
+		wrapper = InvoiceWrapper(invoice)
+		wrapper.email_refund()
+
+		InvoiceLog(timestamp=datetime.now(), message="Refunded invoice %s: %s" % (invoice.id, invoice.deletion_reason)).save()
+
 	# This creates a complete invoice, and finalizes it
 	def create_invoice(self,
 					   recipient_user,
@@ -356,6 +383,8 @@ class TestProcessor(object):
 		print "Callback processing invoice with title '%s', for my own id %s" % (invoice.title, invoice.processorid)
 	def process_invoice_cancellation(self, invoice):
 		raise Exception("This processor can't cancel invoices.")
+	def process_invoice_refund(self, invoice):
+		raise Exception("This processor can't refund invoices.")
 
 	def get_return_url(self, invoice):
 		print "Trying to get the return url, but I can't!"

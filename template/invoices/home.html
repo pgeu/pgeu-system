@@ -5,13 +5,15 @@
 <h1>Invoices</h1>
 
 <p>
-{%if not unpaid and not pending and not deleted%}All{%else%}<a href="/invoiceadmin/">All</a>{%endif%}
+{%if not unpaid and not pending and not deleted and not refunded%}All{%else%}<a href="/invoiceadmin/">All</a>{%endif%}
 |
 {%if unpaid %}Unpaid{%else%}<a href="/invoiceadmin/unpaid/">Unpaid</a>{%endif%}
 |
 {%if pending %}Pending{%else%}<a href="/invoiceadmin/pending/">Pending</a>{%endif%}
 |
 {%if deleted %}Deleted{%else%}<a href="/invoiceadmin/deleted/">Deleted</a>{%endif%}
+|
+{%if refunded %}Refunded{%else%}<a href="/invoiceadmin/refunded/">Refunded</a>{%endif%}
 </p>
 
 <table border="1" cellspacing="0" cellpadding="3">
@@ -33,7 +35,7 @@
  <td style="white-space: nowrap; text-align: right;">{%if invoice.total_amount > 0%}{{invoice.total_amount|intcomma}}{%endif%}</td>
  <td style="white-space: nowrap">{{invoice.invoicedate|date:"Y-m-d"}}</td>
  <td style="white-space: nowrap">{{invoice.duedate|date:"Y-m-d"}}</td>
- <td style="white-space: nowrap">{%if invoice.ispaid%}{{invoice.paidat|date:"Y-m-d"}}{%else%}No{%endif%}</td>
+ <td style="white-space: nowrap">{%if invoice.refunded%}Refunded{%elif invoice.ispaid%}{{invoice.paidat|date:"Y-m-d"}}{%else%}No{%endif%}</td>
  <td>{{invoice.finalized|yesno}}</td>
 </tr>
 {%endfor%}

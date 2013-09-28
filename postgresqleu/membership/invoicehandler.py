@@ -52,6 +52,9 @@ class InvoiceProcessor(object):
 		member.activeinvoice = None
 		member.save()
 
+	# We don't implement this yet
+	def process_invoice_refund(self, invoice):
+		raise Exception("Unable to refund membership invoices at this time")
 
 	# Return the user to a page showing what happened as a result
 	# of their payment. In our case, we just return the user directly

@@ -39,8 +39,14 @@ def pending(request):
 def deleted(request):
 	return _homeview(request, Invoice.objects.filter(deleted=True), deleted=True)
 
+@ssl_required
+@login_required
+@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
+def refunded(request):
+	return _homeview(request, Invoice.objects.filter(refunded=True), refunded=True)
+
 # Not a view, just a utility function, thus no separate permissions check
-def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=False):
+def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=False, refunded=False):
 	# Render a list of all invoices
 	paginator = Paginator(invoice_objects, 50)
 
@@ -59,6 +65,7 @@ def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=Fal
 			'unpaid': unpaid,
 			'pending': pending,
 			'deleted': deleted,
+			'refunded': refunded,
 			})
 
 
@@ -165,6 +172,22 @@ def cancelinvoice(request, invoicenum):
 
 	return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
+
+@ssl_required
+@login_required
+@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
+@commit_on_success
+def refundinvoice(request, invoicenum):
+	invoice = get_object_or_404(Invoice, pk=invoicenum)
+
+	reason = request.POST['reason']
+	if not reason:
+		return HttpResponseForbidden("Can't refund an invoice without a reason!")
+
+	manager = InvoiceManager()
+	manager.refund_invoice(invoice, reason)
+
+	return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
 @ssl_required
 @login_required

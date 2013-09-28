@@ -1,0 +1,17 @@
+Hello!
+
+The invoice:
+
+Invoice #{{invoice.id}}: {{invoice.title}}
+
+has been refunded. The payment of EUR {{invoice.total_amount}} will
+be returned to your account shortly.
+
+If you do not already know why this invoice has been refunded, or
+have any other questions, please let us know at
+treasurer@postgresql.eu as soon as possible.
+
+
+Thank you!
+
+PostgreSQL Europe

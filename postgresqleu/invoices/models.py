@@ -53,6 +53,8 @@ class Invoice(models.Model):
 	finalized = models.BooleanField(null=False, blank=True, help_text="Invoice is finalized, should not ever be changed again")
 	deleted = models.BooleanField(null=False, blank=False, default=False, help_text="This invoice has been deleted")
 	deletion_reason = models.CharField(max_length=500, null=False, blank=True, default='', help_text="Reason for deletion of invoice")
+	refunded = models.BooleanField(null=False, blank=False, default=False, help_text="This invoice has been refunded")
+	refund_reason = models.CharField(max_length=500, null=False, blank=True, default='', help_text="Reason for refunding of invoice")
 
 	# base64 encoded version of the PDF invoice
 	pdf_invoice = models.TextField(blank=True, null=False)

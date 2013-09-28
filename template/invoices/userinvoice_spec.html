@@ -19,7 +19,12 @@
    <td style="white-space: nowrap">Invoice:</td>
    <td><a href="/invoices/{{invoice.pk}}/{%if fromsecret or not invoice.recipient_user%}{{invoice.recipient_secret}}/{%endif%}pdf/">View PDF</a></td>
  </tr>
-{%if invoice.ispaid%}
+{%if invoice.refunded%}
+<tr>
+   <td style="white-space: nowrap">Refund:</td>
+   <td>This invoice has been <i>refunded</i>.</td>
+ </tr>
+{%elif invoice.ispaid%}
  <tr>
    <td style="white-space: nowrap">Receipt:</td>
    <td><a href="/invoices/{{invoice.pk}}/{%if fromsecret or not invoice.recipient_user%}{{invoice.recipient_secret}}/{%endif%}receipt/">View receipt</a></td>
