@@ -10,10 +10,24 @@ tr.invoice-expired td.duedate {
    color: red;
    font-weight: bold;
 }
+ul.messages {
+  background-color: yellow;
+  list-style-type: none;
+  padding: 2px;
+  padding-left: 20px;
+}
 </style>
 {%endblock%}
 {%block layoutblock%}
 <h1>Invoices</h1>
+
+{% if messages %}
+    <ul class="messages">
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
 
 <p>
 {%if not unpaid and not pending and not deleted and not refunded%}All{%else%}<a href="/invoiceadmin/">All</a>{%endif%}
@@ -26,6 +40,10 @@ tr.invoice-expired td.duedate {
 |
 {%if refunded %}Refunded{%else%}<a href="/invoiceadmin/refunded/">Refunded</a>{%endif%}
 </p>
+
+<form method="post" action="/invoiceadmin/search/" style="margin-bottom: 8px">
+<input type="text" name="term"><input type="submit" value="Search"/>
+</form>
 
 <table border="1" cellspacing="0" cellpadding="3">
 <tr>

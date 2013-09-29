@@ -4,7 +4,9 @@ from django.forms.models import inlineformset_factory
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 from django.db.transaction import commit_on_success
+from django.db.models import Q
 from django.template import RequestContext
+from django.contrib import messages
 from django.conf import settings
 
 import base64
@@ -66,8 +68,36 @@ def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=Fal
 			'pending': pending,
 			'deleted': deleted,
 			'refunded': refunded,
-			})
+			}, context_instance=RequestContext(request))
 
+
+@ssl_required
+@login_required
+@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
+def search(request):
+	term = request.POST['term']
+
+	try:
+		invoiceid = int(term)
+		try:
+			invoice = Invoice.objects.get(pk=invoiceid)
+			return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
+		except Invoice.DoesNotExist:
+			messages.warning(request, "No invoice with id %s found." % invoiceid)
+			return HttpResponseRedirect("/invoiceadmin/")
+	except ValueError:
+		# Not an integer, so perform an actual search...
+		pass
+
+	invoices = list(Invoice.objects.filter(Q(recipient_name__icontains=term) | Q(recipient_address__icontains=term) | Q(title__icontains=term)))
+	if len(invoices) == 0:
+		messages.warning(request, "No invoice matching '%s' found." % term)
+		return HttpResponseRedirect("/invoiceadmin/")
+	if len(invoices) == 1:
+		return HttpResponseRedirect("/invoiceadmin/%s/" % invoices[0].id)
+
+	messages.info(request, "Showing %s search hits for %s" % (len(invoices), term))
+	return _homeview(request, invoices)
 
 @ssl_required
 @login_required
