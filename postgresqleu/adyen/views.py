@@ -98,7 +98,12 @@ def adyen_notify_handler(request):
 
 	# Authenticate with HTTP BASIC
 	if not 'HTTP_AUTHORIZATION' in request.META:
-		raise Exception('Adyen notification received without authentication')
+		# Sometimes Adyen sends notifications without authorization headers.
+		# In this case, we request authrorization and they will try again
+		r = HttpResponse('Unauthorized', status=401)
+		r['WWW-Authenticate'] = 'Basic realm="postgresqleu adyen"'
+		return r
+
 	auth = request.META['HTTP_AUTHORIZATION'].split()
 	if len(auth) != 2:
 		raise Exception('Adyen notification received with invalid length authentication')
