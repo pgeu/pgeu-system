@@ -46,7 +46,7 @@ def download_reports():
 				report.save()
 				AdyenLog(message='Downloaded report %s' % report.url, error=False).save()
 		except Exception, ex:
-			print "Failed to download report %s: %s" % (report.url, ex)
+			print >> sys.stderr, "Failed to download report %s: %s" % (report.url, ex)
 			AdyenLog(message='Failed to download report %s: %s' % (report.url, ex), error=True).save()
 
 
@@ -142,7 +142,7 @@ def process_reports():
 				report.save()
 				AdyenLog(message='Processed report %s' % report.url, error=False).save()
 		except Exception, ex:
-			print "Failed to process report %s: %s" % (report.url, ex)
+			print >> sys.stderr, "Failed to process report %s: %s" % (report.url, ex)
 			AdyenLog(message='Failed to process report %s: %s' % (report.url, ex), error=True).save()
 
 if __name__ == "__main__":
@@ -155,10 +155,10 @@ if __name__ == "__main__":
 		elif sys.argv[1] == '-processonly':
 			download = False
 		else:
-			print usage
+			print >> sys.stderr, usage
 			exit(1)
 	elif len(sys.argv) != 1:
-		print usage
+		print >> sys.stderr, usage
 		exit(1)
 
 	if download:
