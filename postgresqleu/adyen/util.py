@@ -71,8 +71,9 @@ def process_authorization(notification):
 		send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 						 settings.ADYEN_NOTIFICATION_RECEIVER,
 						 'Unsuccessful Adyen authorization received',
-						 "A creditcard authorization for %s has failed.\nThe reason given was:\n%s\n\nYou don't need to take any further action, nothing has been confirmed in the systems." % (
+						 "A creditcard authorization for %s on account %s has failed.\nThe reason given was:\n%s\n\nYou don't need to take any further action, nothing has been confirmed in the systems." % (
 							 notification.merchantReference,
+							 notification.merchantAccountCode,
 							 notification.reason,
 							 )
 						 )
