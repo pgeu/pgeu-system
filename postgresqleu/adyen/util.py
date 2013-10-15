@@ -99,9 +99,15 @@ def process_authorization(notification):
 def process_capture(notification):
 	if notification.success:
 		# Successful capture, so we just set when the capture happened
-		ts = TransactionStatus.objects.get(notification=notification)
-		ts.capturedat = datetime.now()
-		ts.save()
+		try:
+			ts = TransactionStatus.objects.get(notification=notification)
+			ts.capturedat = datetime.now()
+			ts.save()
+		except TransactionStatus.DoesNotExist:
+			# We just ignore captures for non-existant transactions. This
+			# seems to happen for example when a transaction is cancelled
+			# on a POS terminal.
+			pass
 	else:
 		send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 						 settings.ADYEN_NOTIFICATION_RECEIVER,
