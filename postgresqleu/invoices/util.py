@@ -115,7 +115,7 @@ class InvoiceWrapper(object):
 
 	def email_cancellation(self):
 		self._email_something('invoice_cancel.txt',
-							  'PGEU invoice #%s - reminder' % self.invoice.id)
+							  'PGEU invoice #%s - canceled' % self.invoice.id)
 		InvoiceHistory(invoice=self.invoice, txt='Sent cancellation').save()
 
 	def email_refund(self):
