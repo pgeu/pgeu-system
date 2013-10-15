@@ -112,10 +112,11 @@ def process_settlement_detail_report_batch(report):
 		return a[0]
 
 	msg = "\n".join(["%-20s: %s" % (k,v) for k,v in sorted(types.iteritems(), key=sort_types)])
+	acct = report.notification.merchantAccountCode
 	send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 					 settings.ADYEN_NOTIFICATION_RECEIVER,
 					 'Adyen settlement batch completed',
-					 "An settlement batch with Adyen has completed. A summary of the entries are:\n\n%s\n" % msg)
+					 "An settlement batch with Adyen has completed for merchant account %s. A summary of the entries are:\n\n%s\n" % (acct, msg))
 
 
 def process_reports():
