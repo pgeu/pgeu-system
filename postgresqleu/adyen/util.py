@@ -28,6 +28,22 @@ def process_authorization(notification):
 						  authorizedat=datetime.now(),
 						  amount=notification.amount,
 						  capturedat=None).save()
+
+		# We can receive authorizations on non-primary Adyen merchant
+		# accounts. This happens for example with payments from POS
+		# terminals. In those cases, just send an email, and don't
+		# try to match it to any invoices.
+		# We still store and track the transaction.
+		if notification.merchantAccountCode != settings.ADYEN_MERCHANTACCOUNT:
+			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+							 settings.ADYEN_NOTIFICATION_RECEIVER,
+							 'Manual Adyen payment authorized',
+							 "An Adyen payment of EUR%s was authorized on the Adyen platform.\nThis payment was not from the automated system, it was manually authorized, probably from a POS terminal.\nReference: %s\nAdyen reference: %s\nMerchant account: %s\n" % (notification.amount, notification.merchantReference, notification.pspReference, notification.merchantAccountCode))
+			notification.confirmed = True
+			notification.save()
+			return
+
+		# Process a payment on the primary account
 		manager = InvoiceManager()
 		try:
 			# Figure out the invoiceid
