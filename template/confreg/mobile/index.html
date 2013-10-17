@@ -95,8 +95,7 @@ function load_news() {
 function load_server_data() {
    incremental = false;
    if (localStorage['{{conf.urlname}}_last']) {
-      // incremental load (add Z to the date string to turn it back to UTC)
-      url = '/m/{{conf.urlname}}/cdj/' + (new Date(localStorage['{{conf.urlname}}_last'] + 'Z')).getTime();
+      url = '/m/{{conf.urlname}}/cdj/' + (new Date(localStorage['{{conf.urlname}}_last'])).getTime();
       incremental = true;
    } else {
       url = '/m/{{conf.urlname}}/cdj/';
@@ -138,9 +137,8 @@ function load_server_data() {
             /* Full load - just overwrite what we have */
             localStorage['{{conf.urlname}}_data'] = data;
          }
-         now = loadtime.toISOString().replace('T', ' ').replace('Z', '')
-         localStorage['{{conf.urlname}}_last'] = now;
-         status('Loaded server data at ' + now);
+         localStorage['{{conf.urlname}}_last'] = loadtime.toISOString();;
+         status('Loaded server data at ' + loadtime.toISOString().replace('T', ' ').replace('Z', ''));
          if (incremental) update_schedule();
          load_news();
       },

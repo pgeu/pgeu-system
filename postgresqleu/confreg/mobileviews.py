@@ -22,7 +22,7 @@ import simplejson as json
 if settings.DEBUG:
 	MANIFESTVERSION=None
 else:
-	MANIFESTVERSION=104
+	MANIFESTVERSION=105
 
 def index(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
