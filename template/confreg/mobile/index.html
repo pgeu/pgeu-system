@@ -52,7 +52,6 @@ function remove_json_ids(currdata, idlist) {
  * Our stuff here 
  */
 function load_news() {
-   if (localStorage['{{conf.urlname}}_news_url']) {
       // XXX: really should not block when doing this
       $.mobile.loading('show', {'text': 'Refreshing news...', 'textVisible': true});
       loadTime = new Date();
@@ -62,7 +61,7 @@ function load_news() {
          last = new Date('2000-01-01');
       }
       $.ajax({
-         url: localStorage['{{conf.urlname}}_news_url'] + '?since=' + last.getTime(),
+         url: '/m/{{conf.urlname}}/newsj/' + '?since=' + last.getTime(),
          dataType: 'jsonp',
          jsonpCallback: 'news_jsonp',
          success: function(data) {
@@ -91,7 +90,6 @@ function load_news() {
             $.mobile.loading('hide');
          }
       });
-   }
 }
 
 function load_server_data() {
@@ -117,7 +115,6 @@ function load_server_data() {
             currdata.sp = merge_json_structures(currdata.sp, newdata.sp);
             /* No need to merge, we always get the full struct */
             currdata.c = newdata.c;
-            localStorage['{{conf.urlname}}_news_url'] = newdata.c.news;
             if (!newdata.c.news) {
                /* No news on this conf, so potentially remove the element */
                try {
@@ -161,7 +158,6 @@ function reset_data() {
    if (confirm('Are you sure you want to do this? All data will be removed and you will need to resync to see anything.')) {
       localStorage.removeItem('{{conf.urlname}}_data');
       localStorage.removeItem('{{conf.urlname}}_last');
-      localStorage.removeItem('{{conf.urlname}}_news_url');
       localStorage.removeItem('{{conf.urlname}}_news_last');
       localStorage.removeItem('{{conf.urlname}}_news_unread');
       localStorage.removeItem('{{conf.urlname}}_news');

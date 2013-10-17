@@ -4,6 +4,8 @@ from django.db import connection
 from django.conf import settings
 
 import markdown
+import urllib2
+from urllib import urlencode
 
 from models import Conference
 
@@ -20,7 +22,7 @@ import simplejson as json
 if settings.DEBUG:
 	MANIFESTVERSION=None
 else:
-	MANIFESTVERSION=103
+	MANIFESTVERSION=104
 
 def index(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -98,3 +100,19 @@ def conferencedata(request, confname, since):
 		'status': 'OK',
 		}, resp)
 	return resp
+
+def newsproxy(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+	if not conference.newsjson:
+		raise Exception("Invalid conference")
+
+	for k in request.GET.keys():
+		if k not in ('since', 'callback', '_'):
+			raise Exception("Invalid parameter")
+
+	# Proxy request
+	u = urllib2.urlopen("%s?%s" % (conference.newsjson, urlencode(request.GET)))
+	r = u.read()
+	u.close()
+
+	return HttpResponse(r, mimetype='application/json')

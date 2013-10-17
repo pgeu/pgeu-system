@@ -80,6 +80,7 @@ urlpatterns = patterns('',
     (r'^m/(\w+)/$', postgresqleu.confreg.mobileviews.index),
     (r'^m/(\w+)/cache.manifest/$', postgresqleu.confreg.mobileviews.cachemanifest),
     (r'^m/(\w+)/cdj/(\d+)?$', postgresqleu.confreg.mobileviews.conferencedata),
+    (r'^m/(\w+)/newsj/$', postgresqleu.confreg.mobileviews.newsproxy),
 
 
     # Conference admin
