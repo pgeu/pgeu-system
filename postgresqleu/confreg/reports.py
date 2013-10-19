@@ -44,7 +44,7 @@ class ReportFilter(object):
 			# Our input is a list of IDs. Return registrations that has
 			# *any* of the given id's. But we need to make sure that
 			# django doesn't evaluate it as a subselect.
-			return Q(**{"%s__id__in" % self.id: val})
+			return Q(**{"%s__pk__in" % self.id: val})
 		else:
 			# Just make sure it exists
 			if self.emptyasnull:
