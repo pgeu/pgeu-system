@@ -269,6 +269,10 @@ class ConferenceRegistration(models.Model):
 		return self.regtype.regtype[:30]
 	short_regtype.short_description = 'Reg type'
 
+	@property
+	def additionaloptionlist(self):
+		return ",\n".join([a.name for a in self.additionaloptions.all()])
+
 	# For the admin interface (mainly)
 	def __unicode__(self):
 		return "%s: %s %s <%s>" % (self.conference, self.firstname, self.lastname, self.email)
