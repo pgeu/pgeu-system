@@ -1,6 +1,20 @@
 {%extends "navbase.html" %}
 {%load markup%}
 {%block title%}Reports{%endblock%}
+{%block extrahead%}
+<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
+<script src="/media/jq/jquery-1.8.2.min.js"></script>
+<script src="/media/jq/jquery-ui.min.js"></script>
+<style>
+#fieldlist { list-style-type: none; margin: 0; padding: 0; }
+#fieldlist li { cursor: move;}
+#outertbl { width: 600px; }
+#outertbl tr td { vertical-align: top; width: 450px;}
+#outertbl tr td h3 { margin-top: 0px; }
+#outertbl tr td.hdr { width: 150px; }
+#outertbl tr td blockquote { margin-left: 20px; margin-right: 0px; width: 450px;}
+</style>
+{%endblock%}
 {%block content%}
 {%if list%}
 <h1>Reports</h1>
@@ -27,6 +41,73 @@ The following reports are available:
  </table>
  <input type="submit" value="Generate report">
 </form>
+
+<h2>Custom report</h2>
+<form method="post" action="advanced/">
+<table border="1" cellspacing="0" cellpadding="2" id="outertbl">
+  <tr>
+    <td class="hdr"><h3>Fields</h3>Select fields to include.<br/>Drag to change order.</td>
+    <td>
+      <ul id="fieldlist">
+      {%for f,fn,d in adv_fields %}
+      <li><input type="checkbox" name="fields" value="{{f}}"{%if d%} CHECKED{%endif%}/>{{fn}}</li>
+      {%endfor%}
+      </ul>
+    </td>
+  </tr>
+ <tr>
+    <td class="hdr"><h3>Filters</h3>Select filters to apply</td>
+    <td>
+      {%for filter in adv_filters%}
+      {{filter.html|safe}}
+      {%endfor%}
+    </td>
+  </tr>
+  <tr>
+    <td class="hdr"><h3>Title</h3></td>
+    <td><input type="text" name="title"></td>
+  </tr>
+  <tr>
+    <td class="hdr"><h3>Additional columns</h3>(These columns will be added empty, for manual entry. Separate with comma.)</td>
+    <td><input type="text" name="additionalcols"></td>
+  </tr>
+  <tr>
+    <td class="hdr"><h3>Order by</h3></td>
+    <td>
+      <select name="orderby1">{%for f,fn in adv_fields %}<option value="{{f}}">{{fn}}</option>{%endfor%}</select>
+      <select name="orderby2">{%for f,fn in adv_fields %}<option value="{{f}}">{{fn}}</option>{%endfor%}</select>
+    </td>
+  </tr>
+  <tr>
+    <td class="hdr"><h3>Format</h3></td>
+    <td>
+      <table border="0" cellspacing="1" cellpadding="0">
+	<tr>
+	  <td>Format:</td>
+	  <td><select name="format"><option value="html">HTML</option><option value="pdf">PDF</option></select></td>
+	</tr>
+	<tr>
+	  <td>PDF orientation:</td>
+	  <td><select name="orientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></td>
+	</tr>
+	<tr>
+	  <td>Borders</td>
+	  <td><input type="checkbox" name="border" CHECKED> include table borders</td>
+	</tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<input type="submit" value="Generate report" />
+</form>
+
+<script>
+$(function() {
+    $( "#fieldlist" ).sortable();
+    $( "#fieldlist" ).disableSelection();
+  });
+</script>
+
 {% else %}
 <table border="1" cellspacing="0" cellpadding="1">
 {%if reporttitle%}<h2>{{reporttitle}}</h2>{%endif%}

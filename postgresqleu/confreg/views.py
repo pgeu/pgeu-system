@@ -1151,10 +1151,31 @@ def reports(request, confname):
 			return response
 		else:
 			raise Http404("Format does not exist")
+
+	# Include information for the advanced reports
+	from reports import attendee_report_fields, attendee_report_filters
 	return render_to_response('confreg/reports.html', {
 			'list': True,
 			'additionaloptions': conference.conferenceadditionaloption_set.all(),
+			'adv_fields': attendee_report_fields,
+			'adv_filters': attendee_report_filters(conference),
 		    }, context_instance=RequestContext(request))
+
+
+@ssl_required
+@login_required
+def advanced_report(request, confname):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=confname)
+	else:
+		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+
+	if request.method != "POST":
+		raise Http404()
+
+	from reports import build_attendee_report
+
+	return build_attendee_report(conference, request.POST )
 
 
 # Admin view that's used to send email to multiple users

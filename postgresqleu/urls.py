@@ -75,6 +75,7 @@ urlpatterns = patterns('',
 	(r'^events/prepaid/$', postgresqleu.confreg.views.createvouchers),
 	(r'^events/prepaid/(\d+)/$', postgresqleu.confreg.views.viewvouchers),
     (r'^events/reports/(\w+)/$', postgresqleu.confreg.views.reports),
+    (r'^events/reports/(\w+)/advanced/$', postgresqleu.confreg.views.advanced_report),
 
     # Mobile conference stuff
     (r'^m/(\w+)/$', postgresqleu.confreg.mobileviews.index),
