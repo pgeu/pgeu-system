@@ -7,6 +7,14 @@ from models import Report, TransactionStatus, AdyenLog
 
 class RawNotificationAdmin(admin.ModelAdmin):
 	list_display = ('dat', 'confirmed',)
+	readonly_fields = ('notification_link', )
+
+	def notification_link(self, obj):
+		if obj.notification_set.exists():
+			n = obj.notification_set.all()[0]
+			url = urlresolvers.reverse("admin:adyen_notification_change", args=(n.id,))
+			return mark_safe('<a href="%s">%s</a>' % (url, n))
+	notification_link.short_description = 'Notification'
 
 class NotificationAdmin(admin.ModelAdmin):
 	list_display = ('receivedat', 'eventDate', 'merchantAccountCode', 'eventCode', 'live', 'success', 'confirmed', 'pspReference', )
