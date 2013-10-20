@@ -101,7 +101,7 @@ def process_capture(notification):
 	if notification.success:
 		# Successful capture, so we just set when the capture happened
 		try:
-			ts = TransactionStatus.objects.get(pspReference=notification.pspReference)
+			ts = TransactionStatus.objects.get(pspReference=notification.originalReference)
 			ts.capturedat = datetime.now()
 			ts.save()
 		except TransactionStatus.DoesNotExist:
