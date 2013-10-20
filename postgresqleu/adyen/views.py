@@ -10,10 +10,9 @@ from postgresqleu.util.decorators import ssl_required
 from postgresqleu.util.payment.adyen import calculate_signature
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.util import InvoiceManager
-from postgresqleu.mailqueue.util import send_simple_mail
 
-from models import Notification, RawNotification, AdyenLog, ReturnAuthorizationStatus
-from util import process_one_notification
+from models import RawNotification, AdyenLog, ReturnAuthorizationStatus
+from util import process_raw_adyen_notification
 
 @ssl_required
 @transaction.commit_on_success
@@ -126,74 +125,3 @@ def adyen_notify_handler(request):
 	else:
 		return HttpResponse('[internal error]', content_type='text/plain')
 
-
-def process_raw_adyen_notification(raw, POST):
-	# Process a single raw Adyen notification. Must *not* be called in
-	# a transactional context, as it manages it's own.
-
-	# Now open a transaction for actually processing what we get
-	with transaction.commit_on_success():
-		# Set it to confirmed - if we were unable to process the RAW one,
-		# this will be rolled back by the transaction, and that's the only
-		# thing that htis flag means. Anything else is handled by the
-		# regular notification.
-		raw.confirmed = True
-		raw.save()
-
-		# Have we already seen this notification before?
-		notlist = list(Notification.objects.filter(pspReference=POST['pspReference'], eventCode=POST['eventCode'], merchantAccountCode=POST['merchantAccountCode']))
-		if len(notlist) == 1:
-			# Found it before!
-			notification = notlist[0]
-
-			# According to Adyen integration manual, the only case when
-			# we need to process this is when it goes from
-			# success=False -> success=True.
-			if not notification.success and POST['success'] == 'true':
-				# We'll implement this one later, but for now trigger a
-				# manual email so we don't loose things.
-				send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-								 settings.ADYEN_NOTIFICATION_RECEIVER,
-								 'Received adyen notification type %s that went from failure to success!' % notification.eventCode,
-							 "An Adyen notification that went from failure to success has been received.\nThe system doesn't know how to handle this yet, so you'll need to go take a manual look!\n",
-							 )
-				AdyenLog(pspReference=notification.pspReference, message='Received success->fail notification of type %s, unhandled' % notification.eventCode, error=True).save()
-			else:
-				AdyenLog(pspReference=notification.pspReference, message='Received duplicate %s notification' % notification.eventCode).save()
-				# Don't actually do any processing here either
-		else:
-			# Not found, so create
-			notification = Notification()
-			notification.eventDate = POST['eventDate']
-			notification.eventCode = POST['eventCode']
-			notification.live = (POST['live'] == 'true')
-			notification.success = (POST['success'] == 'true')
-			notification.pspReference = POST['pspReference']
-			notification.originalReference = POST['originalReference']
-			notification.merchantReference = POST['merchantReference']
-			notification.merchantAccountCode = POST['merchantAccountCode']
-			notification.paymentMethod = POST['paymentMethod']
-			notification.reason = POST['reason']
-			try:
-				notification.amount = int(POST['value'])/100 # We only deal in whole euros
-			except:
-				# Invalid amount, set to -1
-				AdyenLog(pspReference=notification.pspReference, message='Received invalid amount %s' % POST['value'], error=True).save()
-				notification.amount = -1
-			if POST['currency'] != 'EUR':
-				AdyenLog(pspReference=notification.pspReference, message='Received invalid currency %s' % POST['currency'], error=True).save()
-				notification.amount = -2
-
-			# Save this unconfirmed for now
-			notification.save()
-
-			# Process this notification, which includes flagging invoices
-			# as paid.
-			process_one_notification(notification)
-
-			# Log the fact that we received it
-			AdyenLog(pspReference=notification.pspReference, message='Processed %s notification for %s' % (notification.eventCode, notification.merchantReference)).save()
-
-	# Return that we've consumed the report outside the transaction, in
-	# the unlikely event that the COMMIT is what failed
-	return True
