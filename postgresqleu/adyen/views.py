@@ -131,7 +131,7 @@ def adyen_notify_handler(request):
 		raw.save()
 
 		# Have we already seen this notification before?
-		notlist = list(Notification.objects.filter(pspReference=request.POST['pspReference'], eventCode=request.POST['eventCode']))
+		notlist = list(Notification.objects.filter(pspReference=request.POST['pspReference'], eventCode=request.POST['eventCode'], merchantAccountCode=request.POST['merchantAccountCode']))
 		if len(notlist) == 1:
 			# Found it before!
 			notification = notlist[0]
