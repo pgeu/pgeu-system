@@ -31,6 +31,14 @@ class ReportAdmin(admin.ModelAdmin):
 
 class TransactionStatusAdmin(admin.ModelAdmin):
 	list_display = ('pspReference', 'amount', 'settledamount', 'authorizedat', 'capturedat', 'settledat', 'method' )
+	readonly_fields = ('notification_link', )
+	exclude = ('notification', )
+
+	def notification_link(self, obj):
+		if obj.notification:
+			url = urlresolvers.reverse("admin:adyen_notification_change", args=(obj.notification.id,))
+			return mark_safe('<a href="%s">%s</a>' % (url, obj.notification))
+	notification_link.short_description = 'Notification'
 
 class AdyenLogAdmin(admin.ModelAdmin):
 	list_display = ('timestamp', 'success', 'sentstr', 'pspReference', 'message', )
