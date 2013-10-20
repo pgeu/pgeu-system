@@ -212,6 +212,7 @@ def process_raw_adyen_notification(raw, POST):
 		else:
 			# Not found, so create
 			notification = Notification()
+			notification.rawnotification = raw
 			notification.eventDate = POST['eventDate']
 			notification.eventCode = POST['eventCode']
 			notification.live = (POST['live'] == 'true')

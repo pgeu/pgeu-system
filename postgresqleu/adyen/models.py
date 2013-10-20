@@ -13,6 +13,7 @@ class RawNotification(models.Model):
 
 class Notification(models.Model):
 	receivedat = models.DateTimeField(null=False, blank=False, auto_now_add=True, unique=True)
+	rawnotification = models.ForeignKey(RawNotification, null=True, blank=True)
 	eventDate = models.DateTimeField(null=False, blank=False)
 	eventCode = models.CharField(max_length=100, null=False, blank=False)
 	live = models.BooleanField(null=False)

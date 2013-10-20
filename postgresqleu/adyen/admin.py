@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.utils.safestring import mark_safe
+from django.core import urlresolvers
 
 from models import RawNotification, Notification
 from models import Report, TransactionStatus, AdyenLog
@@ -8,6 +10,13 @@ class RawNotificationAdmin(admin.ModelAdmin):
 
 class NotificationAdmin(admin.ModelAdmin):
 	list_display = ('receivedat', 'eventDate', 'merchantAccountCode', 'eventCode', 'live', 'success', 'confirmed', 'pspReference', )
+	readonly_fields = ('rawnotification_link',)
+	exclude = ('rawnotification', )
+
+	def rawnotification_link(self, obj):
+		url = urlresolvers.reverse('admin:adyen_rawnotification_change', args=(obj.rawnotification.id,))
+		return mark_safe('<a href="%s">%s</a>' % (url, obj))
+	rawnotification_link.short_description = 'Rawnotification'
 
 class ReportAdmin(admin.ModelAdmin):
 	list_display = ('receivedat', 'downloadedat', 'processedat', 'url',)
