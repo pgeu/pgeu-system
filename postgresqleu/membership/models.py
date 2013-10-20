@@ -24,6 +24,9 @@ class Member(models.Model):
 	# sending them over and over again
 	expiry_warning_sent = models.DateTimeField(null=True, blank=True)
 
+	# WARNING! New fields should most likely be added to the exclude list
+	# in MemberForm!!!
+
 	@property
 	def expiressoon(self):
 		if self.paiduntil:
