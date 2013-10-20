@@ -28,6 +28,8 @@ def process_authorization(notification):
 						  notification=notification,
 						  authorizedat=datetime.now(),
 						  amount=notification.amount,
+						  method=notification.paymentMethod,
+						  notes=notification.merchantReference,
 						  capturedat=None).save()
 
 		# We can receive authorizations on non-primary Adyen merchant
