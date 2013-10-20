@@ -121,6 +121,16 @@ def adyen_notify_handler(request):
 	raw = RawNotification(contents=request.body)
 	raw.save()
 
+	if process_raw_adyen_notification(raw, request.POST):
+		return HttpResponse('[accepted]', content_type='text/plain')
+	else:
+		return HttpResponse('[internal error]', content_type='text/plain')
+
+
+def process_raw_adyen_notification(raw, POST):
+	# Process a single raw Adyen notification. Must *not* be called in
+	# a transactional context, as it manages it's own.
+
 	# Now open a transaction for actually processing what we get
 	with transaction.commit_on_success():
 		# Set it to confirmed - if we were unable to process the RAW one,
@@ -131,7 +141,7 @@ def adyen_notify_handler(request):
 		raw.save()
 
 		# Have we already seen this notification before?
-		notlist = list(Notification.objects.filter(pspReference=request.POST['pspReference'], eventCode=request.POST['eventCode'], merchantAccountCode=request.POST['merchantAccountCode']))
+		notlist = list(Notification.objects.filter(pspReference=POST['pspReference'], eventCode=POST['eventCode'], merchantAccountCode=POST['merchantAccountCode']))
 		if len(notlist) == 1:
 			# Found it before!
 			notification = notlist[0]
@@ -139,7 +149,7 @@ def adyen_notify_handler(request):
 			# According to Adyen integration manual, the only case when
 			# we need to process this is when it goes from
 			# success=False -> success=True.
-			if not notification.success and request.POST['success'] == 'true':
+			if not notification.success and POST['success'] == 'true':
 				# We'll implement this one later, but for now trigger a
 				# manual email so we don't loose things.
 				send_simple_mail(settings.INVOICE_SENDER_EMAIL,
@@ -154,24 +164,24 @@ def adyen_notify_handler(request):
 		else:
 			# Not found, so create
 			notification = Notification()
-			notification.eventDate = request.POST['eventDate']
-			notification.eventCode = request.POST['eventCode']
-			notification.live = (request.POST['live'] == 'true')
-			notification.success = (request.POST['success'] == 'true')
-			notification.pspReference = request.POST['pspReference']
-			notification.originalReference = request.POST['originalReference']
-			notification.merchantReference = request.POST['merchantReference']
-			notification.merchantAccountCode = request.POST['merchantAccountCode']
-			notification.paymentMethod = request.POST['paymentMethod']
-			notification.reason = request.POST['reason']
+			notification.eventDate = POST['eventDate']
+			notification.eventCode = POST['eventCode']
+			notification.live = (POST['live'] == 'true')
+			notification.success = (POST['success'] == 'true')
+			notification.pspReference = POST['pspReference']
+			notification.originalReference = POST['originalReference']
+			notification.merchantReference = POST['merchantReference']
+			notification.merchantAccountCode = POST['merchantAccountCode']
+			notification.paymentMethod = POST['paymentMethod']
+			notification.reason = POST['reason']
 			try:
-				notification.amount = int(request.POST['value'])/100 # We only deal in whole euros
+				notification.amount = int(POST['value'])/100 # We only deal in whole euros
 			except:
 				# Invalid amount, set to -1
-				AdyenLog(pspReference=notification.pspReference, message='Received invalid amount %s' % request.POST['value'], error=True).save()
+				AdyenLog(pspReference=notification.pspReference, message='Received invalid amount %s' % POST['value'], error=True).save()
 				notification.amount = -1
-			if request.POST['currency'] != 'EUR':
-				AdyenLog(pspReference=notification.pspReference, message='Received invalid currency %s' % request.POST['currency'], error=True).save()
+			if POST['currency'] != 'EUR':
+				AdyenLog(pspReference=notification.pspReference, message='Received invalid currency %s' % POST['currency'], error=True).save()
 				notification.amount = -2
 
 			# Save this unconfirmed for now
@@ -186,4 +196,4 @@ def adyen_notify_handler(request):
 
 	# Return that we've consumed the report outside the transaction, in
 	# the unlikely event that the COMMIT is what failed
-	return HttpResponse('[accepted]', content_type='text/plain')
+	return True
