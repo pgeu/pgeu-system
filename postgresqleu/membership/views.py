@@ -77,7 +77,11 @@ def home(request):
 					)
 				member.activeinvoice.save()
 				member.save()
-				# Invoice info will automatically render on the main form page
+
+				# We'll redirect back to the same page, so make sure
+				# someone doing say a hard refresh on the page doesn't
+				# cause weird things to happen.
+				return HttpResponseRedirect('/membership/')
 	else:
 		form = MemberForm(instance=member)
 
