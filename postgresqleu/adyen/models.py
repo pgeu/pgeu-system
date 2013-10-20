@@ -30,7 +30,7 @@ class Notification(models.Model):
 	confirmed = models.BooleanField(null=False, default=False)
 
 	class Meta:
-		unique_together = ('pspReference', 'eventCode')
+		unique_together = ('pspReference', 'eventCode', 'merchantAccountCode')
 
 	def __unicode__(self):
 		return "%s" % self.receivedat
