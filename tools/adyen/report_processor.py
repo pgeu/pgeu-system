@@ -69,13 +69,16 @@ def process_payment_accounting_report(report):
 				# Yes, for now we rollback the whole processing of this one
 				raise Exception('Transaction %s not found!' % pspref)
 			if l['Record Type'] == 'SentForSettle':
-				if trans.capturedat != None:
-					raise Exception('Transaction %s captured more than once?!' % pspref)
-				trans.capturedat = bookdate
-				trans.method = l['Payment Method']
-				trans.save()
-				AdyenLog(message='Transaction %s captured at %s' % (pspref, bookdate), error=False).save()
-				print "Sent for settle on %s" % pspref
+				# If this is a POS transaction, it typically received a
+				# separate CAPTURE notification, in which case the capture
+				# date is already set. But if not, we'll set it to the
+				# sent for settle date.
+				if not trans.capturedat:
+					trans.capturedat = bookdate
+					trans.method = l['Payment Method']
+					trans.save()
+					AdyenLog(message='Transaction %s captured at %s' % (pspref, bookdate), error=False).save()
+					print "Sent for settle on %s" % pspref
 			elif l['Record Type'] == 'Settled':
 				if trans.settledat != None:
 					raise Exception('Transaction %s settled more than once?!' % pspref)
