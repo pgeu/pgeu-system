@@ -54,6 +54,9 @@ class TransactionStatus(models.Model):
 	method = models.CharField(max_length=100, null=True, blank=True)
 	notes = models.CharField(max_length=1000, null=True, blank=True)
 
+	def __unicode__(self):
+		return self.pspReference
+
 	class Meta:
 		verbose_name_plural='Transaction statuses'
 
