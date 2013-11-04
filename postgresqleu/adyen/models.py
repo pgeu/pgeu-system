@@ -57,6 +57,15 @@ class TransactionStatus(models.Model):
 	class Meta:
 		verbose_name_plural='Transaction statuses'
 
+class Refund(models.Model):
+	receivedat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+	notification = models.ForeignKey(Notification, null=False, blank=False)
+	transaction = models.OneToOneField(TransactionStatus)
+	refund_amount = models.IntegerField(null=False)
+
+	def __unicode__(self):
+		return unicode(self.refund_amount)
+
 class ReturnAuthorizationStatus(models.Model):
 	pspReference = models.CharField(max_length=100, null=False, blank=False, primary_key=True)
 	seencount = models.IntegerField(null=False, default=0)

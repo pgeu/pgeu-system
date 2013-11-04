@@ -8,7 +8,7 @@ from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.models import Invoice
 
-from models import TransactionStatus, Report, AdyenLog, Notification
+from models import TransactionStatus, Report, AdyenLog, Notification, Refund
 
 # Internal exception class
 class AdyenProcessingException(Exception):
@@ -122,6 +122,28 @@ def process_capture(notification):
 	notification.confirmed = True
 	notification.save()
 
+def process_refund(notification):
+	# Store the refund, and send an email!
+	if notification.success:
+		try:
+			ts = TransactionStatus.objects.get(pspReference=notification.originalReference)
+			refund = Refund(notification=notification, transaction=ts, refund_amount=notification.amount)
+			refund.save()
+		except TransactionStatus.DoesNotExist:
+			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+							 settings.ADYEN_NOTIFICATION_RECEIVER,
+							 'Adyen refund received for nonexisting transaction',
+							 "A refund for %s was received, but the transaction does not exist!\n\nYou probably want to investigate this!\n" % notification.originalReference)
+	else:
+		send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+						 settings.ADYEN_NOTIFICATION_RECEIVER,
+						 'Unsuccessful adyen refund received',
+						 "A refund for %s has failed.\nThe reason given was:\n%s\n\nYou probably want to investigate this!\n" % (
+							 notification.merchantReference,
+							 notification.reason))
+	notification.confirmed = True
+	notification.save()
+
 def process_new_report(notification):
 	# Just store the fact that this report is available. We'll have an
 	# asynchronous cronjob that downloads and processes the reports.
@@ -149,6 +171,8 @@ def process_one_notification(notification):
 		process_new_report(notification)
 	elif notification.eventCode == 'CAPTURE':
 		process_capture(notification)
+	elif notification.eventCode == 'REFUND':
+		process_refund(notification)
 	elif notification.eventCode in ('UNSPECIFIED', ):
 		# Any events that we just ignore still need to be flagged as
 		# confirmed
