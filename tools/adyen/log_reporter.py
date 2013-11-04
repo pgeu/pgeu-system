@@ -22,7 +22,7 @@ from StringIO import StringIO
 from django.db import transaction, connection
 from django.core import urlresolvers
 
-from postgresqleu.adyen.models import AdyenLog, Notification
+from postgresqleu.adyen.models import AdyenLog, Notification, TransactionStatus
 from postgresqleu.mailqueue.util import send_simple_mail
 
 
@@ -56,7 +56,26 @@ def report_unconfirmed_notifications():
 						 'Adyen integration unconfirmed notifications',
 						 sio.getvalue())
 
+def report_unsettled_transactions():
+	# Number of days until we start reporting unsettled transactions
+
+	UNSETTLED_THRESHOLD=15
+	lines = list(TransactionStatus.objects.filter(settledat__isnull=True, authorizedat__lt=datetime.now()-timedelta(days=UNSETTLED_THRESHOLD)).order_by('authorizedat'))
+	if len(lines):
+		sio = StringIO()
+		sio.write("The following payments have been authorized, but not captured for more than %s days.\nThese probably need to be verified manually.\n\n\n" % UNSETTLED_THRESHOLD)
+
+		for l in lines:
+			sio.write("%s at %s: %s (%s%s)" % (l.pspReference, l.authorizedat, l.amount, settings.SITEBASE_SSL, urlresolvers.reverse('admin:adyen_transactionstatus_change', args=(l.id,))))
+
+		send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+						 settings.ADYEN_NOTIFICATION_RECEIVER,
+						 'Adyen integration unconfirmed notifications',
+						 sio.getvalue())
+
+
 if __name__=="__main__":
 	report_loglines()
 	report_unconfirmed_notifications()
+	report_unsettled_transactions()
 	connection.close()
