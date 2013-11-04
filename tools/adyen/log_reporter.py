@@ -16,16 +16,18 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), '../
 import settings
 setup_environ(settings)
 
+from datetime import datetime, timedelta
 from StringIO import StringIO
 
 from django.db import transaction, connection
+from django.core import urlresolvers
 
-from postgresqleu.adyen.models import AdyenLog
+from postgresqleu.adyen.models import AdyenLog, Notification
 from postgresqleu.mailqueue.util import send_simple_mail
 
 
 @transaction.commit_on_success
-def run():
+def report_loglines():
 	lines = list(AdyenLog.objects.filter(error=True,sent=False).order_by('timestamp'))
 	if len(lines):
 		sio = StringIO()
@@ -41,6 +43,20 @@ def run():
 						 'Adyen integration error report',
 						 sio.getvalue())
 
+def report_unconfirmed_notifications():
+	lines = list(Notification.objects.filter(confirmed=False, receivedat__lt=datetime.now()-timedelta(days=1)).order_by('eventDate'))
+	if len(lines):
+		sio = StringIO()
+		sio.write("The following notifications have not been confirmed in the Adyen integration.\nThese need to be manually processed and then flagged as confirmed!\n\nThis list only contains unconfirmed events older than 24 hours.\n\n\n")
+		for l in lines:
+			sio.write("%s: %s (%s%s)" % (l.eventDate, l.eventCode, settings.SITEBASE_SSL, urlresolvers.reverse('admin:adyen_notification_change', args=(l.id,))))
+
+		send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+						 settings.ADYEN_NOTIFICATION_RECEIVER,
+						 'Adyen integration unconfirmed notifications',
+						 sio.getvalue())
+
 if __name__=="__main__":
-	run()
+	report_loglines()
+	report_unconfirmed_notifications()
 	connection.close()
