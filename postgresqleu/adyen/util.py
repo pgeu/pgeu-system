@@ -129,6 +129,10 @@ def process_refund(notification):
 			ts = TransactionStatus.objects.get(pspReference=notification.originalReference)
 			refund = Refund(notification=notification, transaction=ts, refund_amount=notification.amount)
 			refund.save()
+			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+							 settings.ADYEN_NOTIFICATION_RECEIVER,
+							 'Adyen refund received',
+							 "A refund of EUR%s for transaction %s was processed\n" % (notification.amount, notification.originalReference))
 		except TransactionStatus.DoesNotExist:
 			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 							 settings.ADYEN_NOTIFICATION_RECEIVER,
