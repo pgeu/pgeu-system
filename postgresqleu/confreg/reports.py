@@ -85,6 +85,7 @@ def attendee_report_filters(conference):
 	yield ReportFilter('twittername', 'Twitter')
 	yield ReportFilter('nick', 'Nickname')
 	yield ReportFilter('dietary', 'Dietary needs')
+	yield ReportFilter('shareemail', 'Share email with sponsors')
 	yield ReportFilter('payconfirmedat', 'Payment confirmed', emptyasnull=False)
 	yield ReportFilter('additionaloptions', 'Additional options', ConferenceAdditionalOption.objects.filter(conference=conference), 'name')
 	yield ReportFilter('shirtsize', 'T-Shirt size', ShirtSize.objects.all())
