@@ -9,6 +9,8 @@ from reportlab.pdfbase.pdfmetrics import registerFont
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.styles import getSampleStyleSheet
 
+import csv
+
 from postgresqleu.countries.models import Country
 from models import ConferenceRegistration, RegistrationType, ConferenceAdditionalOption, ShirtSize
 
@@ -115,6 +117,15 @@ class ReportWriterHtml(ReportWriterBase):
 
 		return resp
 
+class ReportWriterCsv(ReportWriterBase):
+	def render(self):
+		resp = HttpResponse(content_type='text/plain')
+		c = csv.writer(resp, delimiter=';')
+		for r in self.rows:
+			c.writerow([x.encode('utf-8') for x in r])
+
+		return resp
+
 class ReportWriterPdf(ReportWriterBase):
 	def set_orientation(self, orientation):
 		self.orientation = orientation
@@ -174,6 +185,8 @@ def build_attendee_report(conference, POST):
 	elif format=='pdf':
 		writer = ReportWriterPdf(title, borders)
 		writer.set_orientation(orientation)
+	elif format=='csv':
+		writer = ReportWriterCsv(title, borders)
 	else:
 		raise Exception("Unknown format")
 
