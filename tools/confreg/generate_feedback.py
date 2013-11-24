@@ -144,7 +144,7 @@ ORDER BY s.title, f.conference_feedback""",
 
 	# Speaker ratings
 	speaker_rating = []
-	for rating, ratingname in (('speaker_quality','Speaker Quality'),('speaker_knowledge','Speaker Knowledge'),):
+	for rating, ratingname in (('speaker_quality','Speaker Quality'),('speaker_knowledge','Speaker Knowledge'),('topic_importance','Topic Importance'),('content_quality','Content Quality'),):
 		curs.execute("SELECT spk.fullname, avg("+rating+"), count(*), stddev("+rating+""")
 FROM confreg_conferencesessionfeedback f
 INNER JOIN confreg_conferencesession s ON f.session_id=s.id
