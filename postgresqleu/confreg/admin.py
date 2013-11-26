@@ -4,6 +4,9 @@ from django.http import HttpResponseRedirect
 from django.forms import ValidationError
 from django.db.models.fields.files import ImageFieldFile
 from django.db.models import Count
+from django.core import urlresolvers
+from django.utils.safestring import mark_safe
+
 from postgresqleu.confreg.models import *
 from postgresqleu.confreg.dbimage import InlinePhotoWidget
 from datetime import datetime
@@ -33,6 +36,8 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	ordering = ['-payconfirmedat', '-created', 'lastname', 'firstname', ]
 	actions= ['approve_conferenceregistration', 'email_recipients']
 	filter_horizontal = ('additionaloptions',)
+	exclude = ('invoice','bulkpayment',)
+	readonly_fields = ('invoice_link','bulkpayment_link',)
 
 	def queryset(self, request):
 		qs = super(ConferenceRegistrationAdmin, self).queryset(request)
@@ -60,6 +65,22 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 		return "<nobr>%s</nobr>" % inst.created.strftime("%Y-%m-%d %H:%M")
 	created_short.allow_tags=True
 	created_short.short_description="Created"
+
+	def invoice_link(self, inst):
+		if inst.invoice:
+			url = urlresolvers.reverse('admin:invoices_invoice_change', args=(inst.invoice.id,))
+			return mark_safe('<a href="%s">%s</a>' % (url, inst.invoice))
+		else:
+			return ""
+	invoice_link.short_description = 'Invoice'
+
+	def bulkpayment_link(self, inst):
+		if inst.bulkpayment:
+			url = urlresolvers.reverse('admin:confreg_bulkpayment_change', args=(inst.bulkpayment.id,))
+			return mark_safe('<a href="%s">%s</a>' % (url, inst.bulkpayment))
+		else:
+			return ""
+	bulkpayment_link.short_description = 'Bulk payment'
 
 	def approve_conferenceregistration(self, request, queryset):
 		rows = queryset.filter(payconfirmedat__isnull=True).update(payconfirmedat=datetime.today(), payconfirmedby=request.user.username)
