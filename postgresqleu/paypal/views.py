@@ -122,6 +122,14 @@ def paypal_return_handler(request):
 							 matched = False)
 		ti.save()
 
+		# Separate out donations made through our website
+		if ti.transtext == "PostgreSQL Europe donation":
+			ti.matched = True
+			ti.matchinfo = 'Donation, automatically matched'
+			ti.save()
+			return render_to_response('paypal/noinvoice.html', {
+					}, context_instance=RequestContext(request))
+
 		invoicemanager = InvoiceManager()
 		(r,i,p) = invoicemanager.process_incoming_payment(ti.transtext,
 														  ti.amount,

@@ -40,6 +40,13 @@ def run():
 	translist = TransactionInfo.objects.filter(matched=False).order_by('id')
 
 	for trans in translist:
+		# If this is a donation, match it manually
+		if trans.transtext == "PostgreSQL Europe donation":
+			trans.matched = True
+			trans.matchinfo = 'Donation, automatically matched by script'
+			trans.save()
+			continue
+
 		# Log things to the db
 		def payment_logger(msg):
 			# Write the log output to somewhere interesting!
