@@ -16,6 +16,7 @@ class TransactionInfo(models.Model):
 	sender = models.CharField(max_length=200, null=False, blank=False)
 	sendername = models.CharField(max_length=200, null=False, blank=False)
 	amount = models.DecimalField(decimal_places=2, max_digits=10, null=False, blank=False)
+	fee = models.DecimalField(decimal_places=2, max_digits=10, null=True, blank=True)
 	transtext = models.CharField(max_length=1000, null=False, blank=False)
 	matched = models.BooleanField(null=False, blank=False)
 	matchinfo = models.CharField(max_length=1000, null=True, blank=True)

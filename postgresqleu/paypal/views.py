@@ -117,6 +117,7 @@ def paypal_return_handler(request):
 							 sender = d['payer_email'],
 							 sendername = d['first_name'] + ' ' + d['last_name'],
 							 amount = Decimal(d['mc_gross']),
+							 fee = Decimal(d['mc_fee']),
 							 transtext = transtext,
 							 matched = False)
 		ti.save()
