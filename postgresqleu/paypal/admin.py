@@ -2,7 +2,7 @@ from django.contrib import admin
 from models import *
 
 class TransactionInfoAdmin(admin.ModelAdmin):
-	list_display = ('timestamp', 'sourceaccount', 'sender', 'amount', 'transtext', 'matched', )
+	list_display = ('timestamp', 'sourceaccount', 'sender', 'amount', 'fee', 'transtext', 'matched', )
 	list_filter = ('sourceaccount', 'matched', )
 	ordering = ('-timestamp', )
 
