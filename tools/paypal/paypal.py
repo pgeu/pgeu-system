@@ -28,6 +28,7 @@ class PaypalTransaction(object):
 			self.timestamp = datetime.strptime(apistruct['L_TIMESTAMP%i' % i][0], '%Y-%m-%dT%H:%M:%SZ')
 			self.email = apistruct['L_EMAIL%i' % i][0]
 			self.amount = Decimal(apistruct['L_AMT%i' % i][0])
+			self.fee = Decimal(apistruct['L_FEEAMT%i' % i][0])
 			self.name = apistruct['L_NAME%i' % i][0]
 		except Exception, e:
 			self.message = "Unable to parse: %s" % e
@@ -74,13 +75,14 @@ class PaypalTransaction(object):
 		cursor.execute("""
 INSERT INTO paypal_transactioninfo
 (paypaltransid, "timestamp", sourceaccount_id, sender, sendername, amount, transtext, matched, matchinfo)
-VALUES (%(id)s, %(ts)s, %(source)s, %(sender)s, %(name)s, %(amount)s, %(text)s, %(matched)s, %(matchinfo)s)""", {
+VALUES (%(id)s, %(ts)s, %(source)s, %(sender)s, %(name)s, %(amount)s, %(fee)s, %(text)s, %(matched)s, %(matchinfo)s)""", {
 		'id': self.transactionid,
 		'ts': self.timestamp,
 		'source': self.source,
 		'sender': self.email,
 		'name': self.name,
 		'amount': self.amount,
+		'fee': self.fee,
 		'text': self.text,
 		'matched': False,
 		'matchinfo': self.message,

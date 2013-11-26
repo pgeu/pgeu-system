@@ -37,7 +37,8 @@ if __name__ == "__main__":
 			# For donations, there is no fee and a different xtype
 			if info['TRANSACTIONTYPE'][0] == 'sendmoney' and not info.has_key('FEEAMT'):
 				print "%s: Amount %s, donation, no fee" % (ti.paypaltransid, ti.amount)
+				ti.fee = 0
 			else:
 				ti.fee = Decimal(info['FEEAMT'][0])
 				print "%s: Amount %s, fee %s (%.2f%%)" % (ti.paypaltransid, ti.amount, ti.fee, 100*ti.fee/ti.amount)
-				ti.save()
+			ti.save()
