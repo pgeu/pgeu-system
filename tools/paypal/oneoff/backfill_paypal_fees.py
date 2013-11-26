@@ -29,12 +29,11 @@ if __name__ == "__main__":
 
 	for ti in TransactionInfo.objects.filter(fee__isnull=True).order_by('timestamp'):
 		with transaction.commit_on_success():
-			print ti.paypaltransid
 			info = api.get_transaction_details(ti.paypaltransid)
 			if Decimal(info['AMT'][0]) != ti.amount:
 				print "%s: Unmatched amounts. Db has %s, paypal has %s." % (ti.paypaltransid, ti.amount, info['AMT'][0])
 				sys.exit(1)
 			# Amounts match, get the fee
 			ti.fee = Decimal(info['FEEAMT'][0])
-			print "%s: Amount %s, fee %s (%s%%)" % (ti.paypaltransid, ti.amount, ti.fee, 100*ti.fee/ti.amount)
+			print "%s: Amount %s, fee %s (%.2f%%)" % (ti.paypaltransid, ti.amount, ti.fee, 100*ti.fee/ti.amount)
 			ti.save()
