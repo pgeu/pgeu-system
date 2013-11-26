@@ -34,6 +34,10 @@ if __name__ == "__main__":
 				print "%s: Unmatched amounts. Db has %s, paypal has %s." % (ti.paypaltransid, ti.amount, info['AMT'][0])
 				sys.exit(1)
 			# Amounts match, get the fee
-			ti.fee = Decimal(info['FEEAMT'][0])
-			print "%s: Amount %s, fee %s (%.2f%%)" % (ti.paypaltransid, ti.amount, ti.fee, 100*ti.fee/ti.amount)
-			ti.save()
+			# For donations, there is no fee and a different xtype
+			if info['TRANSACTIONTYPE'][0] == 'sendmoney' and not info.has_key('FEEAMT'):
+				print "%s: Amount %s, donation, no fee" % (ti.paypaltransid, ti.amount)
+			else:
+				ti.fee = Decimal(info['FEEAMT'][0])
+				print "%s: Amount %s, fee %s (%.2f%%)" % (ti.paypaltransid, ti.amount, ti.fee, 100*ti.fee/ti.amount)
+				ti.save()
