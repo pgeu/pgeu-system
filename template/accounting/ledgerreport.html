@@ -1,0 +1,100 @@
+{%extends "base.html"%}
+{%load humanize%}
+{%block title%}Accounting - General Ledger{%endblock%}
+{%block extrahead%}
+<style>
+ul.messages {
+  list-style-type: none;
+  padding: 2px;
+  padding-left: 20px;
+}
+ul.messages li {
+   background-color: yellow;
+   padding: 3px;
+}
+ul.messages li.warning {
+   background-color: red;
+}
+ul.messages li.info {
+   background-color: lightgray;
+}
+
+table.ledgertable {
+   width: 750px;
+}
+table.ledgertable tr.accountname td {
+   background-color: lightgray;
+   font-weight: bold;
+   text-align: center;
+}
+table.ledgertable tr.header td {
+   font-weight: bold;
+}
+table.ledgertable tr td {
+   overflow: hidden;
+}
+table.ledgertable tr td.amount {
+   text-align: right;
+   width: 75px;
+}
+table.ledgertable tr td.entryfield {
+   width: 150px;
+}
+table.ledgertable tr td.objectfield {
+   width: 150px;
+}
+</style>
+
+<script src="/media/jq/jquery-1.8.2.min.js"></script>
+<script language="javascript">
+$(function() {
+   $('#objsel, #yearsel').change(function() {
+      o = $('#objsel').val();
+      y = $('#yearsel').val();
+      document.location.href = '/accounting/' + y + '/report/{{reporttype}}/?obj=' + o;
+   });
+});
+$('#objsel')
+</script>
+{%endblock%}
+{%block layoutblock%}
+<h1>{{title}}</h1>
+{% if messages %}
+    <ul class="messages">
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+<h2>Year: <select id="yearsel">{%for y in years%}<option value="{{y.year}}"{%if y == year%} SELECTED{%endif%}>{{y}}</option>{%endfor%}</select>
+Object: <select id="objsel"><option value="">All</option>{%for o in objects%}<option value="{{o.id}}"{%if o == currentobj%} SELECTED{%endif%}>{{o}}</option>{%endfor%}</select></h2>
+
+{%for i in items%}
+{%ifchanged i.account.num%}
+{%if not forloop.first%}
+</table><br/><br/>
+{%endif%}
+<table class="ledgertable">
+ <tr class="accountname">
+   <td colspan="5">{{i.account}}</td>
+ </tr>
+ <tr class="header">
+   <td>Entry</td>
+   <td>Object</td>
+   <td>Description</td>
+   <td class="amount">Debit</td>
+   <td class="amount">Credit</td>
+ </tr>
+{%endifchanged%}
+ <tr>
+  <td class="entryfield">{{i.journal}}</td>
+  <td class="objectfield">{{i.object|default:""}}</td>
+  <td class="descriptionfield">{{i.description}}</td>
+  <td class="amount">{{i.debit}}</td>
+  <td class="amount">{{i.credit}}</td>
+ </tr>
+{%if forloop.last%}
+</table>
+{%endif%}
+{%endfor%}
+{%endblock%}

@@ -1,0 +1,93 @@
+{%extends "base.html"%}
+{%load humanize%}
+{%block title%}Accounting - close year{%endblock%}
+{%block extrahead%}
+<script src="/media/jq/jquery-1.8.2.min.js"></script>
+<style>
+ul.messages {
+  list-style-type: none;
+  padding: 2px;
+  padding-left: 20px;
+}
+ul.messages li {
+   background-color: yellow;
+   padding: 3px;
+}
+ul.messages li.warning {
+   background-color: red;
+}
+ul.messages li.info {
+   background-color: lightgray;
+}
+div#pgContainer {
+   width: 1200px;
+}
+</style>
+<script language="javascript">
+function confirmCloseYear() {
+   return confirm('Are you absolutely sure you want to close tihs year?\n\nThere really is no going back! And you can no longer make changes to the year!\n');
+}
+</script>
+{%endblock%}
+{%block layoutblock%}
+<h1>Accounting - Close year</h1>
+
+{% if messages %}
+    <ul class="messages">
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+{%if hasopen%}
+<h2>Open entries</h2>
+<p>
+This year still has open journal entries. It cannot be closed until those
+are all closed.
+</p>
+{%elif hasnext%}
+<h2>Incoming balance already exists</h2>
+<p>
+The next year has already been assigned an incoming balance. This should
+normally never happen, so you will have to go investigate it!
+</p>
+{%else%}
+<form method="post" action=".">
+<p>
+You are now ready to close this year.
+</p>
+<h2>Outgoing balance</h2>
+<p>
+The following outgoing balances will be transferred to the next year:
+</p>
+<table border="0" cellspacing="0" cellpadding="2">
+ <tr>
+  <td><b>Account</b></td>
+  <td><b>Balance</b></td>
+ </tr>
+{%for a in outgoingbalance %}
+ <tr>
+  <td>{{a.anum}}: {{a.name}}</td>
+  <td align="right">{{a.outgoingamount}}</td>
+ </tr>
+{%endfor%}
+</table>
+
+<h2>Outgoing results</h2>
+<p>
+The results for this year is <i><b>{{yearresult}}</b></i>. This needs to be
+posted to a balance account. Choose which account to post to:
+</p>
+<select name="resultaccount">
+ <option value="">Select account</option>
+{%for a in accounts%}
+ <option value="{{a.num}}">{{a}}</option>
+{%endfor%}
+</select>
+<p><input type="checkbox" name="confirm">Check this box to confirm your are ready!</p>
+<input type="submit" value="Close year" onclick="return confirmCloseYear()">
+</form>
+<button onclick="document.location.href='../'">Cancel</button>
+{%endif%}
+{%endblock%}

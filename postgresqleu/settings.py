@@ -94,6 +94,7 @@ INSTALLED_APPS = (
 	'postgresqleu.mailqueue',
 	'postgresqleu.invoicemgr',
 	'postgresqleu.invoices',
+	'postgresqleu.accounting',
 )
 
 INVOICE_SENDER_EMAIL="treasurer@postgresql.eu"

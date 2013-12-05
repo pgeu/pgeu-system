@@ -13,6 +13,7 @@ import postgresqleu.membership.views
 import postgresqleu.elections.views
 import postgresqleu.invoicemgr.views
 import postgresqleu.invoices.views
+import postgresqleu.accounting.views
 import postgresqleu.paypal.views
 import postgresqleu.adyen.views
 import postgresqleu.accountinfo.views
@@ -130,6 +131,14 @@ urlpatterns = patterns('',
     (r'^invoices/(\d+)/([a-z0-9]{64})/receipt/$', postgresqleu.invoices.views.viewreceipt_secret),
     (r'^invoices/$', postgresqleu.invoices.views.userhome),
     (r'^invoices/banktransfer/$', postgresqleu.invoices.views.banktransfer),
+
+    # Basic accounting system
+    (r'^accounting/$', postgresqleu.accounting.views.index),
+    (r'^accounting/(\d+)/$', postgresqleu.accounting.views.year),
+    (r'^accounting/e/(\d+)/$', postgresqleu.accounting.views.entry),
+    (r'^accounting/(\d+)/new/$', postgresqleu.accounting.views.new),
+    (r'^accounting/(\d+)/close/$', postgresqleu.accounting.views.closeyear),
+    (r'^accounting/(\d+)/report/(\w+)/$', postgresqleu.accounting.views.report),
 
     # Handle paypal data returns
     (r'^p/paypal_return/$', postgresqleu.paypal.views.paypal_return_handler),
