@@ -13,6 +13,7 @@ div#pgContainer {
 }
 div#accountingmenu {
    border-bottom: 1px solid black;
+   padding-bottom: 5px;
 }
 div#accountingwrap {
    width: 1200px;
@@ -32,11 +33,16 @@ button#newentrybutton {
    float: right;
 }
 input#searchentry {
-   width: 70px;
+   width: 75px;
+   font-size: small;
 }
 
 input.datepicker {
    width: 100px;
+}
+
+table#entryheader {
+   margin-bottom: 10px;
 }
 
 /* Account form */
@@ -65,7 +71,7 @@ input.descriptionbox {
 
 /* Viewing a journal entry */
 table.journalentry {
-   width: 600px;
+   width: 900px;
    border: 1px solid gray;
    border-spacing: 0;
 }
@@ -86,6 +92,15 @@ table.journalentry tr.footer td {
 table.journalentry tr td.amount {
    width: 75px;
    text-align: right;
+}
+table.journalentry tr td.accountname {
+   width: 230px;
+}
+table.journalentry tr td.objectname {
+   width: 100px;
+}
+button {
+   font-size: small;
 }
 </style>
 <script language="javascript">
@@ -244,16 +259,16 @@ Year: <select id="yearpick" onchange="changeYear()">
   <h2>Entry {{entry}}</h2>
   <table class="journalentry">
     <tr class="header">
-      <td>Account</td>
-      <td>Object</td>
+      <td class="accountname">Account</td>
+      <td class="objectname">Object</td>
       <td>Description</td>
       <td class="amount">Debit</td>
       <td class="amount">Credit</td>
     </tr>
     {%for i in items%}
     <tr>
-      <td>{{i.account}}</td>
-      <td>{{i.object|default:""}}</td>
+      <td class="accountname">{{i.account}}</td>
+      <td class="objectname">{{i.object|default:""}}</td>
       <td>{{i.description}}</td>
       <td class="amount">{{i.debit}}</td>
       <td class="amount">{{i.credit}}</td>
@@ -272,7 +287,7 @@ Year: <select id="yearpick" onchange="changeYear()">
   {%if form.errors%}
    <p><b>Please correct the errors below, and re-submit the form.</b></p>
   {%endif%}
-  <table border="0" cellspacing="1" cellpadding="0">
+  <table border="0" cellspacing="1" cellpadding="0" id="entryheader">
    <tr>
      <td>Date: {{form.date}}</td>
    </tr>
