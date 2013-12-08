@@ -55,7 +55,7 @@ class Conference(models.Model):
 	location = models.CharField(max_length=128, blank=False, null=False)
 	contactaddr = models.EmailField(blank=False,null=False)
 	paymentoptions = models.ManyToManyField(PaymentOption)
-	active = models.BooleanField(blank=False,null=False,default=True)
+	active = models.BooleanField(blank=False,null=False,default=True, verbose_name="Registration open")
 	callforpapersopen = models.BooleanField(blank=False,null=False,default=False)
 	feedbackopen = models.BooleanField(blank=False,null=False,default=True)
 	conferencefeedbackopen = models.BooleanField(blank=False,null=False,default=False)
