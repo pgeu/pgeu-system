@@ -9,10 +9,22 @@ from django.utils.safestring import mark_safe
 
 from postgresqleu.confreg.models import *
 from postgresqleu.confreg.dbimage import InlinePhotoWidget
+from postgresqleu.accounting.models import Object
+
 from datetime import datetime
 import urllib
 
+class ConferenceAdminForm(forms.ModelForm):
+	class Meta:
+		model = Conference
+	accounting_object = forms.ChoiceField(choices=[], required=False)
+
+	def __init__(self, *args, **kwargs):
+		super(ConferenceAdminForm, self).__init__(*args, **kwargs)
+		self.fields['accounting_object'].choices = [('', '----'),] + [(o.name, o.name) for o in Object.objects.filter(active=True)]
+
 class ConferenceAdmin(admin.ModelAdmin):
+	form = ConferenceAdminForm
 	list_display = ('conferencename', 'active', 'startdate', 'enddate')
 	ordering = ('-startdate', )
 	filter_horizontal = ('administrators','testers','talkvoters',)

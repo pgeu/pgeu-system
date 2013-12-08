@@ -3,7 +3,7 @@ from django.conf import settings
 from django.template import Context
 from django.template.loader import get_template
 
-from datetime import datetime
+from datetime import datetime, date
 import os
 import base64
 import re
@@ -12,6 +12,7 @@ from Crypto import Random
 
 from postgresqleu.util.misc.invoice import PDFInvoice
 from postgresqleu.mailqueue.util import send_simple_mail
+from postgresqleu.accounting.util import create_accounting_entry
 
 # Proxy around an invoice that adds presentation information,
 # such as the ability to render a return URL for the invoice.
@@ -171,7 +172,7 @@ class InvoiceManager(object):
 	RESULT_DELETED = 4
 	RESULT_INVALIDAMOUNT = 5
 	RESULT_PROCESSORFAIL = 6
-	def process_incoming_payment(self, transtext, transamount, transdetails, logger=None):
+	def process_incoming_payment(self, transtext, transamount, transdetails, transcost, incomeaccount, costaccount, logger=None):
 		# If there is no logger specified, just log with print statement
 		if not logger:
 			logger = _standard_logger
@@ -182,6 +183,14 @@ class InvoiceManager(object):
 		# Transdetails are the ones written to the record as payment
 		# details for permanent reference. This can be for example the
 		# payment systems transaction id.
+		#
+		# Transcost is the cost of this transaction. If set to 0, no
+		#           accounting row will be written for the cost.
+		# Incomeaccount is the account number to debit the income to
+		# Costaccount is the account number to credit the cost to
+		#
+		# The credit of the actual income is already noted on the,
+		# invoice since it's not dependent on the payment method.
 		#
 		# Returns a tuple of (status,invoice,processor)
 		#
@@ -202,10 +211,10 @@ class InvoiceManager(object):
 			logger("Could not find invoice with id '%s'" % invoiceid)
 			return (self.RESULT_NOTFOUND, None, None)
 
-		return self.process_incoming_payment_for_invoice(invoice, transamount, transdetails, logger)
+		return self.process_incoming_payment_for_invoice(invoice, transamount, transdetails, transcost, incomeaccount, costaccount, logger)
 
 
-	def process_incoming_payment_for_invoice(self, invoice, transamount, transdetails, logger):
+	def process_incoming_payment_for_invoice(self, invoice, transamount, transdetails, transcost, incomeaccount, costaccount, logger):
 		# Do the same as process_incoming_payment, but assume that the
 		# invoice has already been matched by other means.
 		invoiceid = invoice.pk
@@ -251,6 +260,28 @@ class InvoiceManager(object):
 
 		# Save and we're done!
 		invoice.save()
+
+		# Create an accounting entry for this invoice. If we have the required
+		# information on the invoice, we can finalize it. If not, we will
+		# need to create an open ended one.
+		accountingtxt = 'Invoice #%s: %s' % (invoice.id, invoice.title)
+		accrows = [
+			(incomeaccount, accountingtxt, invoice.total_amount-transcost, None),
+			]
+		if transcost > 0:
+			# If there was a transaction cost known at this point (which
+			# it typically is with Paypal), make sure we book a row for it.
+			accrows.append(
+			(costaccount, accountingtxt, transcost, invoice.accounting_object),
+		)
+		if invoice.accounting_account:
+			accrows.append(
+				(invoice.accounting_account, accountingtxt, -invoice.total_amount, invoice.accounting_object),
+			)
+			leaveopen = False
+		else:
+			leaveopen = True
+		create_accounting_entry(date.today(), accrows, leaveopen)
 
 		# Send the receipt to the user if possible - that should make
 		# them happy :)
@@ -341,7 +372,9 @@ class InvoiceManager(object):
 					   processor = None,
 					   processorid = None,
 					   autopaymentoptions = True,
-					   bankinfo = True):
+					   bankinfo = True,
+					   accounting_account = None,
+					   accounting_object = None):
 		invoice = Invoice(
 			recipient_email=recipient_email,
 			recipient_name=recipient_name,
@@ -350,7 +383,9 @@ class InvoiceManager(object):
 			invoicedate=invoicedate,
 			duedate=duedate,
 			total_amount=-1,
-			bankinfo=bankinfo)
+			bankinfo=bankinfo,
+			accounting_account=accounting_account,
+			accounting_object=accounting_object)
 		if recipient_user:
 			invoice.recipient_user = recipient_user
 		if processor:

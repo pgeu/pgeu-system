@@ -134,6 +134,9 @@ def paypal_return_handler(request):
 		(r,i,p) = invoicemanager.process_incoming_payment(ti.transtext,
 														  ti.amount,
 														  "Paypal id %s, from %s <%s>, auto" % (ti.paypaltransid, ti.sendername, ti.sender),
+														  ti.fee,
+														  settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT,
+														  settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT,
 														  payment_logger)
 		if r == invoicemanager.RESULT_OK:
 			# Matched it!

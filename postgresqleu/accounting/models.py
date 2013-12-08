@@ -31,6 +31,7 @@ class Account(models.Model):
 	num = models.IntegerField(verbose_name="Account number", unique=True)
 	group = models.ForeignKey(AccountGroup, null=False, blank=False)
 	name = models.CharField(max_length=100)
+	availableforinvoicing = models.BooleanField(null=False, blank=False, default=False)
 
 	def __unicode__(self):
 		return "%s - %s" % (self.num, self.name)

@@ -176,6 +176,9 @@ def flaginvoice(request, invoicenum):
 	(r,i,p) = mgr.process_incoming_payment(invoice.invoicestr,
 										   invoice.total_amount,
 										   request.POST['reason'],
+										   0, # We assume this was a bank payment without cost
+										   settings.ACCOUNTING_MANUAL_INCOME_ACCOUNT,
+										   0, # costaccount
 										   payment_logger)
 
 	if r != InvoiceManager.RESULT_OK:

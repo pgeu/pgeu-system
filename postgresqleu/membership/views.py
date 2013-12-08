@@ -73,7 +73,8 @@ def home(request):
 					invoicerows,
 					processor = processor,
 					processorid = member.pk,
-					bankinfo = False
+					bankinfo = False,
+					accounting_account = settings.ACCOUNTING_MEMBERSHIP_ACCOUNT
 					)
 				member.activeinvoice.save()
 				member.save()

@@ -53,6 +53,7 @@ class TransactionStatus(models.Model):
 	settledamount = models.DecimalField(null=True, decimal_places=2, max_digits=20)
 	method = models.CharField(max_length=100, null=True, blank=True)
 	notes = models.CharField(max_length=1000, null=True, blank=True)
+	accounting_object = models.CharField(max_length=30, null=True, blank=True)
 
 	def __unicode__(self):
 		return self.pspReference

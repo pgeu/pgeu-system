@@ -21,11 +21,12 @@ import csv
 import urllib2
 import StringIO
 from base64 import standard_b64encode
-from datetime import datetime
+from datetime import datetime, date
 from decimal import Decimal
 
 from postgresqleu.adyen.models import AdyenLog, Report, TransactionStatus
 from postgresqleu.mailqueue.util import send_simple_mail
+from postgresqleu.accounting.util import create_accounting_entry
 
 
 def download_reports():
@@ -83,10 +84,19 @@ def process_payment_accounting_report(report):
 				if trans.settledat != None:
 					raise Exception('Transaction %s settled more than once?!' % pspref)
 				trans.settledat = bookdate
-				trans.settledamount = l['Main Amount']
+				trans.settledamount = Decimal(l['Main Amount'], 2)
 				trans.save()
 				print "Setteld %s, total amount %s" % (pspref, trans.settledamount)
 				AdyenLog(message='Transaction %s settled at %s' % (pspref, bookdate), error=False).save()
+
+				# Settled transactions create a booking entry
+				accstr = "Adyen settlement %s" % pspref
+				accrows = [
+					(settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, accstr, -trans.amount, None),
+					(settings.ACCOUNTING_ADYEN_PAYABLE_ACCOUNT, accstr, trans.settledamount, None),
+					(settings.ACCOUNTING_ADYEN_FEE_ACCOUNT, accstr, trans.amount-trans.settledamount, trans.accounting_object),
+					]
+				create_accounting_entry(date.today(), accrows, False)
 
 def process_received_payments_report(report):
 	# We don't currently do anything with this report, but we store the contents

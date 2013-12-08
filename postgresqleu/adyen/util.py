@@ -2,11 +2,12 @@ from django.conf import settings
 from django.core import urlresolvers
 from django.db import transaction
 
-from datetime import datetime
+from datetime import datetime, date
 
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.models import Invoice
+from postgresqleu.accounting.util import create_accounting_entry
 
 from models import TransactionStatus, Report, AdyenLog, Notification, Refund
 
@@ -24,13 +25,14 @@ def process_authorization(notification):
 		# This is a successful notification, so flag this invoice
 		# as paid. We also create a TransactionStatus for it, so that
 		# can validate that it goes from authorized->captured.
-		TransactionStatus(pspReference=notification.pspReference,
-						  notification=notification,
-						  authorizedat=datetime.now(),
-						  amount=notification.amount,
-						  method=notification.paymentMethod,
-						  notes=notification.merchantReference,
-						  capturedat=None).save()
+		trans = TransactionStatus(pspReference=notification.pspReference,
+								  notification=notification,
+								  authorizedat=datetime.now(),
+								  amount=notification.amount,
+								  method=notification.paymentMethod,
+								  notes=notification.merchantReference,
+								  capturedat=None)
+		trans.save()
 
 		# We can receive authorizations on non-primary Adyen merchant
 		# accounts. This happens for example with payments from POS
@@ -44,6 +46,14 @@ def process_authorization(notification):
 							 "An Adyen payment of EUR%s was authorized on the Adyen platform.\nThis payment was not from the automated system, it was manually authorized, probably from a POS terminal.\nReference: %s\nAdyen reference: %s\nMerchant account: %s\n" % (notification.amount, notification.merchantReference, notification.pspReference, notification.merchantAccountCode))
 			notification.confirmed = True
 			notification.save()
+
+			# For manual payments, we can only create an open-ended entry
+			# in the accounting
+			accstr = "Manual Adyen payment %s" % notification.pspReference
+			accrows = [
+				(settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, accstr, -trans.amount, None),
+				]
+			create_accounting_entry(date.today(), accrows, True)
 			return
 
 		# Process a payment on the primary account
@@ -63,7 +73,14 @@ def process_authorization(notification):
 			def invoice_logger(msg):
 				raise AdyenProcessingException('Invoice processing failed: %s', msg)
 
-			manager.process_incoming_payment_for_invoice(invoice, notification.amount, 'Adyen id %s' % notification.pspReference, invoice_logger)
+			manager.process_incoming_payment_for_invoice(invoice, notification.amount, 'Adyen id %s' % notification.pspReference, 0, settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, 0, invoice_logger)
+
+			if invoice.accounting_object:
+				# Store the accounting object so we can properly tag the
+				# fee for it when we process the settlement (since we don't
+				# actually know the fee yet)
+				trans.accounting_object = invoice.accounting_object
+				trans.save()
 
 			# If nothing went wrong, then this invoice is now fully
 			# flagged as paid in the system.
@@ -132,7 +149,7 @@ def process_refund(notification):
 			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 							 settings.ADYEN_NOTIFICATION_RECEIVER,
 							 'Adyen refund received',
-							 "A refund of EUR%s for transaction %s was processed\n" % (notification.amount, notification.originalReference))
+							 "A refund of EUR%s for transaction %s was processed\n\nNOTE! You must create a manual entry in the accounting system for refunds!" % (notification.amount, notification.originalReference))
 		except TransactionStatus.DoesNotExist:
 			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 							 settings.ADYEN_NOTIFICATION_RECEIVER,

@@ -619,7 +619,9 @@ def invoice(request, confname, regid):
 			reg.invoicerows,
 			processor = processor,
 			processorid = reg.pk,
-			bankinfo = False
+			bankinfo = False,
+			accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT,
+			accounting_object = conference.accounting_object
 			)
 
 		reg.invoice.save()
@@ -809,7 +811,9 @@ def bulkpay(request, confname):
 						invoicerows,
 						processor=processor,
 						processorid = bp.pk,
-						bankinfo = False
+						bankinfo = False,
+						accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT,
+						accounting_object = conference.accounting_object,
 					)
 					bp.invoice.save()
 					bp.save()

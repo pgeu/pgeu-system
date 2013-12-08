@@ -89,6 +89,7 @@ class Conference(models.Model):
 	callforpapersintro = models.TextField(blank=True, null=False)
 	lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
 	newsjson = models.CharField(max_length=128, blank=True, null=True, default=None)
+	accounting_object = models.CharField(max_length=30, blank=True, null=True, verbose_name="Accounting object name")
 
 	def __unicode__(self):
 		return self.conferencename

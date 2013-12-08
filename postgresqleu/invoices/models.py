@@ -78,6 +78,12 @@ class Invoice(models.Model):
 	# Once an invoice is paid, a recipient is generated. PDF base64
 	pdf_receipt = models.TextField(blank=True, null=False)
 
+	# Information for accounting of this invoice. This is intentionally not
+	# foreign keys - we'll just drop some such information into the system
+	# manually in the forms.
+	accounting_account = models.IntegerField(null=True, blank=True, verbose_name="Accounting account")
+	accounting_object = models.CharField(null=True, blank=True, max_length=30, verbose_name="Accounting object")
+
 	@property
 	def ispaid(self):
 		return self.paidat is not None
