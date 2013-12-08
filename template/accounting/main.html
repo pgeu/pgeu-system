@@ -31,6 +31,9 @@ div#accountingright {
 button#newentrybutton {
    float: right;
 }
+input#searchentry {
+   width: 70px;
+}
 
 input.datepicker {
    width: 100px;
@@ -125,7 +128,17 @@ function recalculate_sums() {
       $('#difftotal').text((debit-credit).toFixed(2));
 }
 
+function search() {
+   searchstr = $('#searchentry').val();
+   document.location.href=document.location.href + '?search=' + searchstr;
+}
+
 $(function() {
+   $('#searchentry').keypress(function(e) {
+      if (e.which == 13) {
+         search();
+      }
+   });
    $('input.datepicker').datepicker({
       'dateFormat': 'yy-mm-dd',
    });
@@ -174,9 +187,13 @@ Year: <select id="yearpick" onchange="changeYear()">
 <div id="accountingwrap">
  <div id="accountingleft">
   <h2>Journal entries</h2>
+<span>
+<input type="text" id="searchentry" value="{{searchterm}}"><button id="searchbutton" onclick="search()">Search</button>
 {%if year.isopen%}
 <button id="newentrybutton" onclick="if (confirmNew()) document.location.href='/accounting/{{year.year}}/new/'">New</button><br/>
 {%endif%}
+</span>
+{%if searchterm%}<p>Search results for <i>{{searchterm}}</i></p>{%endif%}
 {%for e in entries %}
  {%ifchanged e.closed%}
   {%if not forloop.first%}</ul>{%endif%}

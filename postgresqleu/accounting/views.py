@@ -22,18 +22,43 @@ def index(request):
 	# Always redirect to the current year
 	return HttpResponseRedirect("%s/" % datetime.today().year)
 
+
+def _setup_search(request, term):
+	if term:
+		request.session['searchterm'] = term
+	else:
+		if request.session.has_key('searchterm'):
+			del request.session['searchterm']
+
+def _perform_search(request, year):
+	if request.session.has_key('searchterm'):
+		searchterm = request.session['searchterm']
+		return (searchterm,
+				list(
+					JournalEntry.objects.filter(year=year, journalitem__description__icontains=searchterm)
+					.distinct().order_by('closed', '-date', '-id')))
+
+	return ('', list(JournalEntry.objects.filter(year=year).order_by('closed', '-date', '-id')))
+
 @ssl_required
 @login_required
 @transaction.commit_on_success
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
 def year(request, year):
 	year = get_object_or_404(Year, year=int(year))
-	entries = list(JournalEntry.objects.filter(year=year).order_by('closed', '-date', '-id'))
+	if request.GET.has_key('search'):
+		_setup_search(request, request.GET['search'])
+		return HttpResponseRedirect('/accounting/%s/' % year.year)
+
+
+	(searchterm, entries) = _perform_search(request, year)
+
 	return render_to_response('accounting/main.html', {
 		'entries': entries,
 		'hasopen': any([not e.closed for e in entries]),
 		'year': year,
 		'years': Year.objects.all(),
+		'searchterm': searchterm,
 		})
 
 @ssl_required
@@ -57,6 +82,11 @@ def new(request, year):
 		highseq = 0
 	entry = JournalEntry(year=year, seq=highseq+1, date=d, closed=False)
 	entry.save()
+
+	# Disable any search query to make sure we can actually see
+	# the record we've just created.
+	_setup_search(request, '')
+
 	return HttpResponseRedirect('/accounting/e/%s/' % entry.pk)
 
 @ssl_required
@@ -65,6 +95,12 @@ def new(request, year):
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
 def entry(request, entryid):
 	entry = get_object_or_404(JournalEntry, pk=entryid)
+
+	if request.GET.has_key('search'):
+		_setup_search(request, request.GET['search'])
+		return HttpResponseRedirect('/accounting/e/%s/' % entryid)
+
+	(searchterm, entries) = _perform_search(request, entry.year)
 
 	extra = max(2, 6-entry.journalitem_set.count())
 	inlineformset = inlineformset_factory(JournalEntry, JournalItem, JournalItemForm, JournalItemFormset, can_delete=True, extra=extra)
@@ -92,7 +128,6 @@ def entry(request, entryid):
 		form = JournalEntryForm(instance=entry)
 		formset = inlineformset(instance=entry)
 
-	entries = list(JournalEntry.objects.filter(year=entry.year).order_by('closed', '-date', '-id'))
 	items = list(entry.journalitem_set.all())
 	totals = (sum([i.amount for i in items if i.amount>0]),
 			  -sum([i.amount for i in items if i.amount<0]))
@@ -106,6 +141,7 @@ def entry(request, entryid):
 		'form': form,
 		'formset': formset,
 		'years': Year.objects.all(),
+		'searchterm': searchterm,
 		})
 
 def _get_balance_query(objstr=''):
