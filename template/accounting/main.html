@@ -147,8 +147,39 @@ $(function() {
       'inherit_select_classes': true,
    });
    $('.debitbox, .creditbox').change(function() {
-      $(this).val(Number($(this).val()).toFixed(2));
+      if ($(this).val() != '') {
+         $(this).val(Number($(this).val()).toFixed(2));
+      }
       recalculate_sums();
+   });
+   $('.debitbox, .creditbox').keypress(function(e) {
+      if (e.which == 37) { // %-sign
+         if ($(this).hasClass('debitbox')) {
+            debitbox = $(this);
+            creditbox = $(this).parent().next().find('.creditbox');
+         } else {
+            creditbox = $(this);
+            debitbox = $(this).parent().prev().find('.debitbox');
+         }
+
+         /* Let's see if we can figure out how to balance this */
+         var debit=0, credit=0;
+         $(this).val('0');
+         $('.debitbox').each(function(){ debit += Number($(this).val()); });
+         $('.creditbox').each(function(){ credit += Number($(this).val()); });
+         sum = debit-credit;
+         if (sum > 0) {
+            debitbox.val('');
+            creditbox.val(sum);
+            creditbox.focus();
+         } else {
+            debitbox.val(-sum);
+            creditbox.val('');
+            debitbox.focus();
+         }
+         recalculate_sums();
+         return(false);
+      }
    });
    recalculate_sums();
    $('.descriptionbox').focus(function() {
@@ -275,6 +306,9 @@ Year: <select id="yearpick" onchange="changeYear()">
     <td align="right" id="debittotal">{{totals.0}}</td>
     <td align="right" id="credittotal">{{totals.1}}</td>
     <td align="right" id="difftotal"></td>
+  </tr>
+  <tr>
+    <td colspan="6" align="right">Press <i>%</i> in an amount input box to automaticalliy balance!</td>
   </tr>
   </table>
   <input type="submit" name="submit" value="Save">
