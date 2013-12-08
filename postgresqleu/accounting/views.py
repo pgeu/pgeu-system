@@ -296,7 +296,7 @@ def report(request, year, reporttype):
 		# This is a special report, so we do our own return
 		# XXX: This needs to be made smarter - summarize per account, and
 		# consider perhaps including the in and out balance as well.
-		itemfilter = Q(journal__year=year)
+		itemfilter = Q(journal__year=year, journal__closed=True)
 		if request.GET.has_key('obj') and request.GET['obj']:
 			itemfilter = itemfilter & Q(object=object)
 		items = JournalItem.objects.select_related().filter(itemfilter).order_by('account__num', 'journal__date', 'journal__seq')
