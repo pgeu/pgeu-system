@@ -67,15 +67,15 @@ def year(request, year):
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
 def new(request, year):
 	year = int(year)
-	if year == datetime.today().year:
-		# This year, so use today
-		d = datetime.today()
-	elif year > datetime.today().year:
-		# Viewing a year in the future, so set it to the beginning
-		d = date(year, 1, 1)
-	else:
-		# Viewing a year in the past, so set it to the end
-		d = date(year, 12, 31)
+
+	# Default the date to the same date as the last entry for this year,
+	# provided one exists. Otherwise, just the start of the year.
+	try:
+		lastentry = JournalEntry.objects.filter(year=year).order_by('-date')[0]
+		d = lastentry.date
+	except IndexError:
+		d = date(year,1,1)
+
 	year = get_object_or_404(Year, year=year)
 	highseq = JournalEntry.objects.filter(year=year).aggregate(Max('seq'))['seq__max']
 	if highseq is None:
