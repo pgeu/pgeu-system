@@ -25,7 +25,7 @@ from postgresqleu.confreg.models import ConferenceRegistration, BulkPayment
 if __name__ == "__main__":
 	logging.disable(logging.WARNING)
 	with transaction.commit_on_success():
-		invoices = Invoice.objects.filter(paidat__isnull=False, accounting_account__isnull=True).order_by('paidat')
+		invoices = Invoice.objects.filter(paidat__isnull=False, accounting_account__isnull=True).order_by('id')
 
 		processor_confreg = InvoiceProcessor.objects.get(processorname='confreg processor')
 		processor_bulkreg = InvoiceProcessor.objects.get(processorname='confreg bulk processor')
@@ -36,7 +36,11 @@ if __name__ == "__main__":
 			if invoice.processor == processor_confreg:
 				# This is a conference registration
 				invoice.accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT
-				invoice.accounting_object = ConferenceRegistration.objects.get(pk=invoice.processorid).conference.accounting_object
+				try:
+					invoice.accounting_object = ConferenceRegistration.objects.get(pk=invoice.processorid).conference.accounting_object
+				except ConferenceRegistration.DoesNotExist:
+					print "ERROR: for invoice %s, attached conference registration does not exist!" % invoice.id
+					continue
 			elif invoice.processor == processor_bulkreg:
 				# This is a bulk registration
 				invoice.accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT
