@@ -96,7 +96,7 @@ def process_payment_accounting_report(report):
 					(settings.ACCOUNTING_ADYEN_PAYABLE_ACCOUNT, accstr, trans.settledamount, None),
 					(settings.ACCOUNTING_ADYEN_FEE_ACCOUNT, accstr, trans.amount-trans.settledamount, trans.accounting_object),
 					]
-				create_accounting_entry(date.today(), accrows, False)
+				#create_accounting_entry(date.today(), accrows, False)
 
 def process_received_payments_report(report):
 	# We don't currently do anything with this report, but we store the contents

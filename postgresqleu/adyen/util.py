@@ -53,7 +53,7 @@ def process_authorization(notification):
 			accrows = [
 				(settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, accstr, -trans.amount, None),
 				]
-			create_accounting_entry(date.today(), accrows, True)
+			#create_accounting_entry(date.today(), accrows, True)
 			return
 
 		# Process a payment on the primary account
