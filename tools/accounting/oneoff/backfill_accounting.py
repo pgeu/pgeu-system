@@ -15,6 +15,7 @@ import sys
 import re
 import logging
 from datetime import datetime
+from pprint import pprint
 
 # Set up to run in django environment
 from django.core.management import setup_environ
@@ -129,6 +130,9 @@ if __name__ == "__main__":
 
 		# Find all other adyen transactoins
 		for atrans in AdyenTrans.objects.filter(authorizedat__gt=datetime(2013,01,01,0,0,0), settledat__isnull=False).exclude(id__in=adyen_handled):
+			if atrans.amount == 0:
+				print "Adyen transaction %s rounded off to 0, deal with manually!" % atrans.pspReference
+				continue
 			allentries.append({
 				'date': atrans.authorizedat.date(),
 				'text': 'Adyen %s - update manually' % atrans.pspReference,
@@ -152,10 +156,15 @@ if __name__ == "__main__":
 
 		# Now is when we create the actual records...
 		for entry in allentries:
-			create_accounting_entry(
-				entry['date'],
-				[(r[0], entry['text'], r[1], r[2]) for r in entry['rows']],
-				entry['leaveopen'])
+			try:
+				create_accounting_entry(
+					entry['date'],
+					[(r[0], entry['text'], r[1], r[2]) for r in entry['rows']],
+					entry['leaveopen'])
+			except:
+				print "Failed on this entry:"
+				pprint(entry)
+				raise
 		print "Created %s entries" % len(allentries)
 
 		while True:
