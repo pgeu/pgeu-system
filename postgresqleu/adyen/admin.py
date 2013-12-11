@@ -20,6 +20,7 @@ class NotificationAdmin(admin.ModelAdmin):
 	list_display = ('receivedat', 'eventDate', 'merchantAccountCode', 'eventCode', 'live', 'success', 'confirmed', 'pspReference', )
 	readonly_fields = ('rawnotification_link',)
 	exclude = ('rawnotification', )
+	search_fields = ('pspReference', 'merchantReference', 'reason', )
 
 	def rawnotification_link(self, obj):
 		url = urlresolvers.reverse('admin:adyen_rawnotification_change', args=(obj.rawnotification.id,))
@@ -33,6 +34,7 @@ class TransactionStatusAdmin(admin.ModelAdmin):
 	list_display = ('pspReference', 'amount', 'settledamount', 'authorizedat', 'capturedat', 'settledat', 'method', 'refund')
 	readonly_fields = ('notification_link', 'refund_link', )
 	exclude = ('notification', )
+	search_fields = ('pspReference', 'notes', )
 
 	def notification_link(self, obj):
 		if obj.notification:

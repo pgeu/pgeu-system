@@ -5,6 +5,7 @@ class TransactionInfoAdmin(admin.ModelAdmin):
 	list_display = ('timestamp', 'sourceaccount', 'sender', 'amount', 'fee', 'transtext', 'matched', )
 	list_filter = ('sourceaccount', 'matched', )
 	ordering = ('-timestamp', )
+	search_fields = ('paypaltransid', 'sender', 'sendername', 'transtext',)
 
 class ErrorLogAdmin(admin.ModelAdmin):
 	list_display = ('timestamp', 'sent', 'message', )
