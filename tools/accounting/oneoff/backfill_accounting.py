@@ -120,7 +120,7 @@ if __name__ == "__main__":
 				continue
 			allentries.append({
 				'date': ptrans.timestamp.date(),
-				'text': 'Paypal %s - %s - update manually' % (ptrans.paypaltransid,ptrans.paymentdetails),
+				'text': 'Paypal %s - %s - update manually' % (ptrans.paypaltransid,ptrans.transtext),
 				'rows': [
 					(settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, ptrans.fee, None),
 					(settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, ptrans.amount-ptrans.fee, None),
@@ -135,7 +135,7 @@ if __name__ == "__main__":
 				continue
 			allentries.append({
 				'date': atrans.authorizedat.date(),
-				'text': 'Adyen %s - %s - update manually' % (atrans.pspReference, atrans.paymentdetails),
+				'text': 'Adyen %s - %s - update manually' % (atrans.pspReference, atrans.notification.merchantReference),
 				'rows': [
 					(settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, atrans.amount, None),
 					],
