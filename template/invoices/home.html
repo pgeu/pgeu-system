@@ -30,7 +30,7 @@ ul.messages {
 {% endif %}
 
 <p>
-{%if not unpaid and not pending and not deleted and not refunded%}All{%else%}<a href="/invoiceadmin/">All</a>{%endif%}
+{%if not unpaid and not pending and not deleted and not refunded and not searchterm%}All{%else%}<a href="/invoiceadmin/">All</a>{%endif%}
 |
 {%if unpaid %}Unpaid{%else%}<a href="/invoiceadmin/unpaid/">Unpaid</a>{%endif%}
 |
@@ -42,7 +42,7 @@ ul.messages {
 </p>
 
 <form method="post" action="/invoiceadmin/search/" style="margin-bottom: 8px">
-<input type="text" name="term"><input type="submit" value="Search"/>
+<input type="text" name="term" value="{{searchterm|default:""}}"><input type="submit" value="Search"/>
 </form>
 
 <table border="1" cellspacing="0" cellpadding="3">
@@ -73,7 +73,7 @@ ul.messages {
 <div class="pagination">
   <span class="step-links">
     {% if invoices.has_previous %}
-    <a href="?page={{ invoices.previous_page_number }}">previous</a>
+    <a href="?page={{ invoices.previous_page_number }}{%if searchterm%}&term={{searchterm}}{%endif%}">previous</a>
     {% endif %}
 
     <span class="current">
@@ -81,7 +81,7 @@ ul.messages {
     </span>
 
     {% if invoices.has_next %}
-    <a href="?page={{ invoices.next_page_number }}">next</a>
+    <a href="?page={{ invoices.next_page_number }}{%if searchterm%}&term={{searchterm}}{%endif%}">next</a>
     {% endif %}
   </span>
 </div>

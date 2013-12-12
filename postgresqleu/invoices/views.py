@@ -48,9 +48,9 @@ def refunded(request):
 	return _homeview(request, Invoice.objects.filter(refunded=True), refunded=True)
 
 # Not a view, just a utility function, thus no separate permissions check
-def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=False, refunded=False):
+def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=False, refunded=False, searchterm=None):
 	# Render a list of all invoices
-	paginator = Paginator(invoice_objects, 50)
+	paginator = Paginator(invoice_objects, 5)
 
 	try:
 		page = int(request.GET.get("page", "1"))
@@ -68,6 +68,7 @@ def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=Fal
 			'pending': pending,
 			'deleted': deleted,
 			'refunded': refunded,
+			'searchterm': searchterm,
 			}, context_instance=RequestContext(request))
 
 
@@ -75,7 +76,12 @@ def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=Fal
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def search(request):
-	term = request.POST['term']
+	if request.POST.has_key('term'):
+		term = request.POST['term']
+	elif request.GET.has_key('term'):
+		term = request.GET['term']
+	else:
+		raise Exception("Sorry, need a search term!")
 
 	try:
 		invoiceid = int(term)
@@ -97,7 +103,7 @@ def search(request):
 		return HttpResponseRedirect("/invoiceadmin/%s/" % invoices[0].id)
 
 	messages.info(request, "Showing %s search hits for %s" % (len(invoices), term))
-	return _homeview(request, invoices)
+	return _homeview(request, invoices, searchterm=term)
 
 @ssl_required
 @login_required
