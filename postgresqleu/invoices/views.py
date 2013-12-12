@@ -50,7 +50,7 @@ def refunded(request):
 # Not a view, just a utility function, thus no separate permissions check
 def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=False, refunded=False, searchterm=None):
 	# Render a list of all invoices
-	paginator = Paginator(invoice_objects, 5)
+	paginator = Paginator(invoice_objects, 50)
 
 	try:
 		page = int(request.GET.get("page", "1"))
