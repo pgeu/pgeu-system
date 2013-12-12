@@ -18,6 +18,9 @@ ul.messages li.warning {
 ul.messages li.info {
    background-color: lightgray;
 }
+input.datepicker {
+   width: 100px;
+}
 table.reporttable {
    width: 750px;
 }
@@ -52,17 +55,29 @@ table.reporttable tr.finalrow td.amount {
    border-top: 3px double black;
 }
 </style>
+<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
 
 <script src="/media/jq/jquery-1.8.2.min.js"></script>
+<script src="/media/jq/jquery-ui.min.js"></script>
 <script language="javascript">
-$(function() {
-   $('#objsel, #yearsel').change(function() {
+function refreshlocation() {
       o = $('#objsel').val();
       y = $('#yearsel').val();
-      document.location.href = '/accounting/' + y + '/report/{{reporttype}}/?obj=' + o;
+      ed = $('#enddate').val();
+      document.location.href = '/accounting/' + y + '/report/{{reporttype}}/?obj=' + o + '&ed=' + ed;;
+}
+
+$(function() {
+   $('input.datepicker').datepicker({
+      'dateFormat': 'yy-mm-dd',
+   });
+   $('input.datepicker').change(function() {
+      refreshlocation();
+   });
+   $('#objsel, #yearsel').change(function() {
+      refreshlocation();
    });
 });
-$('#objsel')
 </script>
 {%endblock%}
 {%block layoutblock%}
@@ -75,7 +90,7 @@ $('#objsel')
     </ul>
 {% endif %}
 <h2>Year: <select id="yearsel">{%for y in years%}<option value="{{y.year}}"{%if y == year%} SELECTED{%endif%}>{{y}}</option>{%endfor%}</select>
-Object: <select id="objsel"><option value="">All</option>{%for o in objects%}<option value="{{o.id}}"{%if o == currentobj%} SELECTED{%endif%}>{{o}}</option>{%endfor%}</select></h2>
+Object: <select id="objsel"><option value="">All</option>{%for o in objects%}<option value="{{o.id}}"{%if o == currentobj%} SELECTED{%endif%}>{{o}}</option>{%endfor%}</select> Enddate: <input type="text" class="datepicker" id="enddate" value="{{enddate|date:"Y-m-d"}}"></h2>
 
 <table cellspacing="0" cellpadding="1" class="reporttable">
 <tr><td colspan="3"></td>{%for h in valheaders%}<td class="header amount">{{h}}</td>{%endfor%}</tr>

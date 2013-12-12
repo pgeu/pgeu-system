@@ -146,7 +146,7 @@ def entry(request, entryid):
 
 def _get_balance_query(objstr=''):
 	return """WITH currentyear AS (
- SELECT account_id AS accountnum, sum(amount) as amount FROM accounting_journalitem ji INNER JOIN accounting_journalentry je ON ji.journal_id=je.id WHERE je.year_id=%(year)s AND je.closed """ + objstr + """ GROUP BY account_id
+ SELECT account_id AS accountnum, sum(amount) as amount FROM accounting_journalitem ji INNER JOIN accounting_journalentry je ON ji.journal_id=je.id WHERE je.year_id=%(year)s AND je.date <= %(enddate)s AND je.closed """ + objstr + """ GROUP BY account_id
 ), incoming AS (
  SELECT account_id AS accountnum, amount FROM accounting_incomingbalance WHERE year_id=%(year)s
 ), fullbalance AS (
@@ -225,6 +225,7 @@ def closeyear(request, year):
 	curs = connection.cursor()
 	curs.execute(_get_balance_query(), {
 		'year': year.year,
+		'enddate': date(year.year, 12, 21),
 		})
 	balance = [dict(zip([col[0] for col in curs.description], row)) for row in curs.fetchall()]
 	curs.execute("SELECT sum(-amount) FROM accounting_journalitem ji INNER JOIN accounting_journalentry je ON ji.journal_id=je.id INNER JOIN accounting_account a ON ji.account_id=a.num INNER JOIN accounting_accountgroup ag ON ag.id=a.group_id INNER JOIN accounting_accountclass ac ON ac.id=ag.accountclass_id WHERE je.year_id=%(year)s AND NOT inbalance", {
@@ -292,11 +293,18 @@ def report(request, year, reporttype):
 		object = None
 		objstr = ''
 
+	if request.GET.has_key('ed') and request.GET['ed']:
+		enddate = datetime.strptime(request.GET['ed'], '%Y-%m-%d').date()
+		if enddate.year != year.year:
+			enddate = date(year.year, 12, 31)
+	else:
+		enddate = date(year.year, 12, 31)
+
 	if reporttype == 'ledger':
 		# This is a special report, so we do our own return
 		# XXX: This needs to be made smarter - summarize per account, and
 		# consider perhaps including the in and out balance as well.
-		itemfilter = Q(journal__year=year, journal__closed=True)
+		itemfilter = Q(journal__year=year, journal__closed=True, journal__date__lte=enddate)
 		if request.GET.has_key('obj') and request.GET['obj']:
 			itemfilter = itemfilter & Q(object=object)
 		items = JournalItem.objects.select_related().filter(itemfilter).order_by('account__num', 'journal__date', 'journal__seq')
@@ -308,14 +316,16 @@ def report(request, year, reporttype):
 			'currentobj': object,
 			'reporttype': 'ledger',
 			'items': items,
+			'enddate': enddate,
 		}, context_instance=RequestContext(request))
 	elif reporttype == 'results':
 		# The results report is the easiest one, since we can assume that
 		# all accounts enter the year with a value 0. Therefor, we only
 		# care about summing the data for this year.
 		# We only show accounts that have had some transactions on them.
-		(results, totalresult) = _collate_results("WITH t AS (SELECT ac.name as acname, ag.name as agname, a.num as anum, a.name, sum(-ji.amount) as amount FROM accounting_accountclass ac INNER JOIN accounting_accountgroup ag ON ac.id=ag.accountclass_id INNER JOIN accounting_account a ON ag.id=a.group_id INNER JOIN accounting_journalitem ji ON ji.account_id=a.num INNER JOIN accounting_journalentry je ON je.id=ji.journal_id WHERE je.year_id=%(year)s AND je.closed AND NOT ac.inbalance " + objstr + " GROUP BY ac.name, ag.name, a.id, a.name) SELECT acname, agname, anum, name, sum(amount) over (partition by acname) as acamount, sum(amount) over (partition by agname) as agamount, amount, sum(amount) over () FROM t ORDER BY anum", {
+		(results, totalresult) = _collate_results("WITH t AS (SELECT ac.name as acname, ag.name as agname, a.num as anum, a.name, sum(-ji.amount) as amount FROM accounting_accountclass ac INNER JOIN accounting_accountgroup ag ON ac.id=ag.accountclass_id INNER JOIN accounting_account a ON ag.id=a.group_id INNER JOIN accounting_journalitem ji ON ji.account_id=a.num INNER JOIN accounting_journalentry je ON je.id=ji.journal_id WHERE je.year_id=%(year)s AND je.date <= %(enddate)s AND je.closed AND NOT ac.inbalance " + objstr + " GROUP BY ac.name, ag.name, a.id, a.name) SELECT acname, agname, anum, name, sum(amount) over (partition by acname) as acamount, sum(amount) over (partition by agname) as agamount, amount, sum(amount) over () FROM t ORDER BY anum", {
 			'year': year.year,
+			'enddate': enddate,
 			},
 												  1)
 		title = 'Results report'
@@ -335,6 +345,7 @@ def report(request, year, reporttype):
 
 		(results, totalresult) = _collate_results(_get_balance_query(objstr), {
 			'year': year.year,
+			'enddate': enddate,
 		},
 												   3)
 		title = 'Balance report'
@@ -356,4 +367,5 @@ def report(request, year, reporttype):
 		'totalname': totalname,
 		'objects': Object.objects.all(),
 		'currentobj': object,
+		'enddate': enddate,
 	}, context_instance=RequestContext(request))
