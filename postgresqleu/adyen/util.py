@@ -34,6 +34,10 @@ def process_authorization(notification):
 								  capturedat=None)
 		trans.save()
 
+		# Generate urls pointing back to this entry in the Adyen online
+		# system, for inclusion in accounting records.
+		urls = ["https://ca-live.adyen.com/ca/ca/accounts/showTx.shtml?pspReference=%s&txType=Payment&accountKey=MerchantAccount.%s" % (notification.pspReference, notification.merchantAccountCode),]
+
 		# We can receive authorizations on non-primary Adyen merchant
 		# accounts. This happens for example with payments from POS
 		# terminals. In those cases, just send an email, and don't
@@ -53,7 +57,6 @@ def process_authorization(notification):
 			accrows = [
 				(settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, accstr, trans.amount, None),
 				]
-			urls = ["https://ca-live.adyen.com/ca/ca/accounts/showTx.shtml?pspReference=%s&txType=Payment&accountKey=MerchantAccount.%s" % (notification.pspReference, notification.merchantAccountCode),]
 			create_accounting_entry(date.today(), accrows, True, urls)
 			return
 
@@ -74,7 +77,7 @@ def process_authorization(notification):
 			def invoice_logger(msg):
 				raise AdyenProcessingException('Invoice processing failed: %s', msg)
 
-			manager.process_incoming_payment_for_invoice(invoice, notification.amount, 'Adyen id %s' % notification.pspReference, 0, settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, 0, invoice_logger)
+			manager.process_incoming_payment_for_invoice(invoice, notification.amount, 'Adyen id %s' % notification.pspReference, 0, settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, 0, urls, invoice_logger)
 
 			if invoice.accounting_object:
 				# Store the accounting object so we can properly tag the

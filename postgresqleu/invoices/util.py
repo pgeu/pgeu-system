@@ -172,7 +172,7 @@ class InvoiceManager(object):
 	RESULT_DELETED = 4
 	RESULT_INVALIDAMOUNT = 5
 	RESULT_PROCESSORFAIL = 6
-	def process_incoming_payment(self, transtext, transamount, transdetails, transcost, incomeaccount, costaccount, logger=None):
+	def process_incoming_payment(self, transtext, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls=None, logger=None):
 		# If there is no logger specified, just log with print statement
 		if not logger:
 			logger = _standard_logger
@@ -211,10 +211,10 @@ class InvoiceManager(object):
 			logger("Could not find invoice with id '%s'" % invoiceid)
 			return (self.RESULT_NOTFOUND, None, None)
 
-		return self.process_incoming_payment_for_invoice(invoice, transamount, transdetails, transcost, incomeaccount, costaccount, logger)
+		return self.process_incoming_payment_for_invoice(invoice, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls, logger)
 
 
-	def process_incoming_payment_for_invoice(self, invoice, transamount, transdetails, transcost, incomeaccount, costaccount, logger):
+	def process_incoming_payment_for_invoice(self, invoice, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls, logger):
 		# Do the same as process_incoming_payment, but assume that the
 		# invoice has already been matched by other means.
 		invoiceid = invoice.pk
@@ -282,6 +282,8 @@ class InvoiceManager(object):
 		else:
 			leaveopen = True
 		urls = ['%s/invoices/%s/' % (settings.SITEBASE_SSL, invoice.pk),]
+		if extraurls:
+			urls.extend(extraurls)
 
 		create_accounting_entry(date.today(), accrows, leaveopen, urls)
 

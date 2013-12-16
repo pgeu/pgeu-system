@@ -123,6 +123,12 @@ def paypal_return_handler(request):
 							 matched = False)
 		ti.save()
 
+		# Generate URLs that link back to paypal in a way that we can use
+		# from the accounting system. Note that this is an undocumented
+		# URL format for paypal, so it may stop working at some point in
+		# the future.
+		urls = ["https://www.paypal.com/cgi-bin/webscr?cmd=_view-a-trans&id=%s" % ti.paypaltransid,]
+
 		# Separate out donations made through our website
 		if ti.transtext == "PostgreSQL Europe donation":
 			ti.matched = True
@@ -137,7 +143,6 @@ def paypal_return_handler(request):
 				(settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, accstr, ti.fee),
 				(settings.ACCOUNTING_DONATIONS_ACCOUNT, accstr, -ti.amount),
 				]
-			urls = ["https://www.paypal.com/cgi-bin/webscr?cmd=_view-a-trans&id=%s" % ti.paypaltransid,]
 			create_accounting_entry(date.today(), accrows, True, urls)
 
 			return render_to_response('paypal/noinvoice.html', {
@@ -150,6 +155,7 @@ def paypal_return_handler(request):
 														  ti.fee,
 														  settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT,
 														  settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT,
+														  urls,
 														  payment_logger)
 		if r == invoicemanager.RESULT_OK:
 			# Matched it!

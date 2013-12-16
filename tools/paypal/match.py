@@ -41,6 +41,8 @@ def run():
 	translist = TransactionInfo.objects.filter(matched=False).order_by('id')
 
 	for trans in translist:
+		# URLs for linkback to paypal
+		urls = ["https://www.paypal.com/cgi-bin/webscr?cmd=_view-a-trans&id=%s" % ti.paypaltransid,]
 		# If this is a donation, match it manually
 		if trans.transtext == "PostgreSQL Europe donation":
 			trans.matched = True
@@ -55,7 +57,6 @@ def run():
 				(settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, accstr, ti.fee),
 				(settings.ACCOUNTING_DONATIONS_ACCOUNT, accstr, -ti.amount),
 				]
-			urls = ["https://www.paypal.com/cgi-bin/webscr?cmd=_view-a-trans&id=%s" % ti.paypaltransid,]
 			create_accounting_entry(date.today(), accrows, True, urls)
 			continue
 
@@ -78,6 +79,7 @@ def run():
 														  trans.fee,
 														  settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT,
 														  settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT,
+														  urls,
 														  payment_logger)
 
 		if r == invoicemanager.RESULT_OK:
