@@ -51,7 +51,7 @@ def process_authorization(notification):
 			# in the accounting
 			accstr = "Manual Adyen payment %s" % notification.pspReference
 			accrows = [
-				(settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, accstr, -trans.amount, None),
+				(settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, accstr, trans.amount, None),
 				]
 			urls = ["https://ca-live.adyen.com/ca/ca/accounts/showTx.shtml?pspReference=%s&txType=Payment&accountKey=MerchantAccount.%s" % (notification.pspReference, notification.merchantAccountCode),]
 			create_accounting_entry(date.today(), accrows, True, urls)
