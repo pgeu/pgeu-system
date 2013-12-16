@@ -595,6 +595,10 @@ def invoice(request, confname, regid):
 	conference = get_object_or_404(Conference, urlname=confname)
 	reg = get_object_or_404(ConferenceRegistration, id=regid, attendee=request.user, conference=conference)
 
+	if not reg.regtype:
+		return render_to_response('confreg/noregtype.html', {
+				'conference': conference,
+				}, context_instance=ConferenceContext(request, conference))
 	if not reg.needspayment:
 		return render_to_response('confreg/nopay.html', {
 				'conference': conference,
@@ -641,6 +645,10 @@ def prepaid(request, confname, regid):
 	conference = get_object_or_404(Conference, urlname=confname)
 	reg = get_object_or_404(ConferenceRegistration, id=regid, attendee=request.user, conference=conference)
 
+	if not reg.regtype:
+		return render_to_response('confreg/noregtype.html', {
+				'conference': conference,
+				}, context_instance=ConferenceContext(request, conference))
 	if not reg.needspayment:
 		return render_to_response('confreg/nopay.html', {
 				'conference': conference,

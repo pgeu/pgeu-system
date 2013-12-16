@@ -217,7 +217,12 @@ has been confirmed.</p>
  <input type="submit" name="submit" value="Save and use a voucher"> (use this option if you have received a prepaid voucher)<br/>
  <input type="submit" name="submit" onclick="return confirmInvoice()" value="Save and proceed to payment"> (you will no longer be able to modify your registration!)<br/>
 {%endif%}
-{%if form_is_saved and not reg.needspayment%}
+{%if form_is_saved and not reg.regtype%}
+<p>
+You must pick a registration type at the top of the form in order to
+proceed with your registration.
+</p>
+{%elif form_is_saved and not reg.needspayment%}
 <p>
 Your registration does not require payment. Please just wait until somebody
 from the conference staff approves it.
