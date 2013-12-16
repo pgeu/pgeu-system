@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.forms.models import BaseInlineFormSet
 
 from models import AccountClass, AccountGroup, Account, IncomingBalance
-from models import JournalEntry, JournalItem, Object, Year
+from models import JournalEntry, JournalItem, JournalUrl, Object, Year
 
 class AccountClassAdmin(admin.ModelAdmin):
 	list_display = ('name', 'inbalance', 'balancenegative')
@@ -24,8 +24,11 @@ class JournalItemInline(admin.TabularInline):
 	model = JournalItem
 	formset = JournalItemFormset
 
+class JournalUrlInline(admin.TabularInline):
+	model = JournalUrl
+
 class JournalEntryAdmin(admin.ModelAdmin):
-	inlines = [JournalItemInline,]
+	inlines = [JournalItemInline, JournalUrlInline]
 	list_display = ('__unicode__', 'year', 'seq', 'date', 'closed')
 
 class IncomingBalanceAdmin(admin.ModelAdmin):

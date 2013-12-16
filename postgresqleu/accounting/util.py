@@ -7,7 +7,8 @@ from django.db.models import Max
 
 from decimal import Decimal
 
-from models import JournalEntry, JournalItem, Object, Account, Year
+from models import JournalEntry, JournalItem, JournalUrl
+from models import Object, Account, Year
 
 class AccountingException(Exception):
 	pass
@@ -15,12 +16,15 @@ class AccountingException(Exception):
 
 def create_accounting_entry(date,
 							items,
-							leaveopen=False):
+							leaveopen=False,
+							urllist=None):
 	# items must be an array of tuples in the format:
 	# (accountnumber, descriptiontext, amount, objectname)
 	# Positive amounts indicate debit, negative amounts indicate credit.
 	# objects are referenced by *named* and looked up internally here.
 	# Entries must be balanced unless leaveopen is set to True
+	# Any urls listed in urllist must exist and be correct, no verification
+	# is done.
 	sid = transaction.savepoint()
 	try:
 		# Start by some simple validation
@@ -66,6 +70,12 @@ def create_accounting_entry(date,
 				raise AccountingException("Account %s does not exist!" % accountnum)
 			except Object.DoesNotExist:
 				raise AccountingException("Object %s does not exist!" % objectname)
+
+		# If there are any URLs to attach, do so now
+		if urllist:
+			for url in urllist:
+				JournalUrl(journal=entry, url=url).save()
+
 		# All items saved correct. Close the entry if we have to. We verified
 		# above that it's valid...
 		if not leaveopen:

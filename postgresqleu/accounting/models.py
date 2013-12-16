@@ -105,3 +105,10 @@ class JournalItem(models.Model):
 		if self.amount < 0:
 			return -self.amount
 		return ""
+
+class JournalUrl(models.Model):
+	journal = models.ForeignKey(JournalEntry, null=False, blank=False)
+	url = models.URLField(null=False, blank=False)
+
+	def __unicode__(self):
+		return self.url

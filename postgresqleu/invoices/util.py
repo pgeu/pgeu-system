@@ -281,7 +281,9 @@ class InvoiceManager(object):
 			leaveopen = False
 		else:
 			leaveopen = True
-		create_accounting_entry(date.today(), accrows, leaveopen)
+		urls = ['%s/invoices/%s/' % (settings.SITEBASE_SSL, invoice.pk),]
+
+		create_accounting_entry(date.today(), accrows, leaveopen, urls)
 
 		# Send the receipt to the user if possible - that should make
 		# them happy :)

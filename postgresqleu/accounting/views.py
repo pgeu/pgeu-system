@@ -11,7 +11,7 @@ from datetime import datetime, date
 
 from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
 
-from models import JournalEntry, JournalItem, Year, Object
+from models import JournalEntry, JournalItem, JournalUrl, Year, Object
 from models import IncomingBalance, Account
 from forms import JournalEntryForm, JournalItemForm, JournalItemFormset
 
@@ -104,6 +104,7 @@ def entry(request, entryid):
 
 	extra = max(2, 6-entry.journalitem_set.count())
 	inlineformset = inlineformset_factory(JournalEntry, JournalItem, JournalItemForm, JournalItemFormset, can_delete=True, extra=extra)
+	inlineurlformset = inlineformset_factory(JournalEntry, JournalUrl, can_delete=True, extra=2)
 
 	if request.method == 'POST':
 		if request.POST['submit'] == 'Delete':
@@ -113,10 +114,13 @@ def entry(request, entryid):
 
 		form = JournalEntryForm(data=request.POST, instance=entry)
 		formset = inlineformset(data=request.POST, instance=entry)
+		urlformset = inlineurlformset(data=request.POST, instance=entry)
+
 		if form.is_valid():
-			if formset.is_valid():
+			if formset.is_valid() and urlformset.is_valid():
 				instance = form.save()
 				formset.save()
+				urlformset.save()
 
 				if request.POST['submit'] == 'Close':
 					instance.closed = True
@@ -126,19 +130,23 @@ def entry(request, entryid):
 	else:
 		form = JournalEntryForm(instance=entry)
 		formset = inlineformset(instance=entry)
+		urlformset = inlineurlformset(instance=entry)
 
 	items = list(entry.journalitem_set.all())
 	totals = (sum([i.amount for i in items if i.amount>0]),
 			  -sum([i.amount for i in items if i.amount<0]))
+	urls = list(entry.journalurl_set.all())
 	return render_to_response('accounting/main.html', {
 		'entries': entries,
 		'hasopen': any([not e.closed for e in entries]),
 		'year': entry.year,
 		'entry': entry,
 		'items': items,
+		'urls': urls,
 		'totals': totals,
 		'form': form,
 		'formset': formset,
+		'urlformset': urlformset,
 		'years': Year.objects.all(),
 		'searchterm': searchterm,
 		})

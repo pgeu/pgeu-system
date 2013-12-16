@@ -68,6 +68,9 @@ input.debitbox, input.creditbox {
 input.descriptionbox {
    width: 300px;
 }
+div.urldiv input[type=text] {
+   width: 500px;
+}
 
 /* Viewing a journal entry */
 table.journalentry {
@@ -281,6 +284,12 @@ Year: <select id="yearpick" onchange="changeYear()">
 {%for t in totals%}<td class="amount">{{t}}</td>{%endfor%}
     </tr>
   </table>
+  {%if urls %}
+  <h3>Associated URLs</h3>
+  <ul>
+    {%for u in urls%}<li>{{u|urlize}}</li>{%endfor%}
+  </ul>
+  {%endif%}
  {%else%}
   <h2>Edit entry {{entry.year.year}}-{{entry.seq}}</h2>
   <form method="post" action=".">
@@ -326,6 +335,23 @@ Year: <select id="yearpick" onchange="changeYear()">
     <td colspan="6" align="right">Press <i>%</i> in an amount input box to automaticalliy balance!</td>
   </tr>
   </table>
+
+  <h3>Linked URLs</h3>
+  {{urlformset.management_form }}
+  {%if urlformset.non_form_errors%}{{urlformset.non_form_errors}}{%endif%}
+  {%for form in urlformset.forms%}
+  {{form.id}}
+  <div class="urldiv">
+    {%for field in form.visible_fields%}
+    {{field.errors}}{{field}}
+    {%endfor%}
+    <i>Delete</i>
+    <br/>
+    {%if form.visible_fields.0.value%}<span style="font-size: smaller;">Preview: {{form.visible_fields.0.value|urlize}}</span><br/><br/>{%endif%}
+  </div>
+  {%endfor%}
+  <br/><br/>
+
   <input type="submit" name="submit" value="Save">
   <input type="submit" name="submit" value="Close" onclick="return confirmClose()">
   <input type="submit" name="submit" value="Delete" onclick="return confirmDelete()">
