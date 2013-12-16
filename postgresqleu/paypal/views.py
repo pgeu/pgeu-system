@@ -11,6 +11,7 @@ from urllib import urlencode, unquote_plus
 
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.util.decorators import ssl_required
+from postgresqleu.accounting.util import create_accounting_entry
 
 from models import *
 
@@ -127,6 +128,18 @@ def paypal_return_handler(request):
 			ti.matched = True
 			ti.matchinfo = 'Donation, automatically matched'
 			ti.save()
+
+			# Generate a simple accounting record, that will have to be
+			# manually completed.
+			accstr = "Paypal donation %s" % ti.paypaltransid
+			accrows = [
+				(settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, accstr, ti.amount-ti.fee),
+				(settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, accstr, ti.fee),
+				(settings.ACCOUNTING_DONATIONS_ACCOUNT, accstr, -ti.amount),
+				]
+			urls = ["https://www.paypal.com/cgi-bin/webscr?cmd=_view-a-trans&id=%s" % ti.paypaltransid,]
+			create_accounting_entry(date.today(), accrows, True, urls)
+
 			return render_to_response('paypal/noinvoice.html', {
 					}, context_instance=RequestContext(request))
 

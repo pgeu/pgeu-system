@@ -27,6 +27,7 @@ setup_environ(settings)
 from django.db import connection, transaction
 
 from postgresqleu.invoices.util import InvoiceManager
+from postgresqleu.accounting.util import create_accounting_entry
 from postgresqleu.paypal.models import *
 
 # Read our local settings too
@@ -45,6 +46,17 @@ def run():
 			trans.matched = True
 			trans.matchinfo = 'Donation, automatically matched by script'
 			trans.save()
+
+			# Generate a simple accounting record, that will have to be
+			# manually completed.
+			accstr = "Paypal donation %s" % ti.paypaltransid
+			accrows = [
+				(settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, accstr, ti.amount-ti.fee),
+				(settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, accstr, ti.fee),
+				(settings.ACCOUNTING_DONATIONS_ACCOUNT, accstr, -ti.amount),
+				]
+			urls = ["https://www.paypal.com/cgi-bin/webscr?cmd=_view-a-trans&id=%s" % ti.paypaltransid,]
+			create_accounting_entry(date.today(), accrows, True, urls)
 			continue
 
 		# Log things to the db
