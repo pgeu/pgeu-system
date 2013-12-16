@@ -123,7 +123,6 @@ def entry(request, entryid):
 					instance.save()
 				return HttpResponseRedirect(".")
 		# Else fall through
-		print form.errors
 	else:
 		form = JournalEntryForm(instance=entry)
 		formset = inlineformset(instance=entry)
