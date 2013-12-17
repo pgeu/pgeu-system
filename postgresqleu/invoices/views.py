@@ -130,6 +130,16 @@ def oneinvoice(request, invoicenum):
 	InvoiceRowInlineFormset = inlineformset_factory(Invoice, InvoiceRow, InvoiceRowForm, can_delete=can_delete, formfield_callback=rowfield_callback)
 
 	if request.method == 'POST':
+		if request.POST['submit'] == 'Delete':
+			# No need to validate before deleting. But we do a double check
+			# that the invoice is really not finalized.
+			if invoice.finalized:
+				raise Exception("Cannot delete a finalized invoice!")
+			invoiceid = invoice.id # Need to save this away since we delete it
+			invoice.delete()
+			messages.info(request, "Invoice %s deleted." % invoiceid)
+			return HttpResponseRedirect('/invoiceadmin/')
+
 		form = InvoiceForm(data=request.POST, instance=invoice)
 		formset = InvoiceRowInlineFormset(data=request.POST, instance=invoice)
 		formset.forms[0].empty_permitted = False

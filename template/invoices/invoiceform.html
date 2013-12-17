@@ -46,6 +46,10 @@ function confirm_refund() {
     return confirm('Are you sure you want to mark this invoice as refunded?\n\nNote that you have to manually perform the actual refund using whatever the appropriate payment method is. This just flags it in the system!');
 }
 
+function confirm_reallydelete() {
+   return confirm('Are you sure you want to delete this invoice?');
+}
+
 function lookup_user() {
    $('#user-lookup').dialog('open');
 }
@@ -215,6 +219,8 @@ also be tagged with your userid <i>{{user.username}}</i>.
 <input type="submit" name="submit" value="Finalize" /> (Note! Finalizing will lock this invoice from further editing!)
 <br/>
 <input type="submit" name="submit" value="Preview" /> (Note! Saves before preview!)
+<br/>
+<input type="submit" name="submit" value="Delete" onclick="return confirm_reallydelete()"/> (Note! Actually deletets. To flag-as-deleted, first finalize the invoice)
 {%endif%}
 {%endif%}
 {%endif%}
