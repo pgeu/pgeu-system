@@ -8,6 +8,7 @@
 
 import os
 import sys
+import re
 
 # Set up to run in django environment
 from django.core.management import setup_environ
@@ -106,6 +107,11 @@ def process_received_payments_report(report):
 def process_settlement_detail_report_batch(report):
 	# Summarize the settlement detail report in an email to to treasurer@, so they
 	# can keep track of what's going on.
+
+	# Get the batch number from the url
+	batchnum = re.search('settlement_detail_report_batch_(\d+).csv$', report.url).groups(1)[0]
+
+	# Now summarize the contents
 	sio = StringIO.StringIO(report.contents)
 	reader = csv.DictReader(sio, delimiter=',')
 	types = {}
@@ -128,8 +134,8 @@ def process_settlement_detail_report_batch(report):
 	acct = report.notification.merchantAccountCode
 	send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 					 settings.ADYEN_NOTIFICATION_RECEIVER,
-					 'Adyen settlement batch completed',
-					 "An settlement batch with Adyen has completed for merchant account %s. A summary of the entries are:\n\n%s\n" % (acct, msg))
+					 'Adyen settlement batch %s completed',
+					 "An settlement batch with Adyen has completed for merchant account %s. A summary of the entries are:\n\n%s\n" % (batchnum, acct, msg))
 
 
 def process_reports():
