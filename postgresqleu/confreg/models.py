@@ -358,7 +358,7 @@ class ConferenceSessionScheduleSlot(models.Model):
 
 class ConferenceSession(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
-	speaker = models.ManyToManyField(Speaker)
+	speaker = models.ManyToManyField(Speaker, blank=True)
 	title = models.CharField(max_length=200, null=False, blank=False)
 	starttime = models.DateTimeField(null=True, blank=True)
 	endtime = models.DateTimeField(null=True, blank=True)
