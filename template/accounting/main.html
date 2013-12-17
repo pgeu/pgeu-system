@@ -185,7 +185,7 @@ $(function() {
          $(this).val('0');
          $('.debitbox').each(function(){ debit += Number($(this).val()); });
          $('.creditbox').each(function(){ credit += Number($(this).val()); });
-         sum = debit-credit;
+         sum = (debit-credit).toFixed(2);
          if (sum > 0) {
             debitbox.val('');
             creditbox.val(sum);
