@@ -132,10 +132,43 @@ def process_settlement_detail_report_batch(report):
 
 	msg = "\n".join(["%-20s: %s" % (k,v) for k,v in sorted(types.iteritems(), key=sort_types)])
 	acct = report.notification.merchantAccountCode
+
+	# Generate an accounting record, iff we know what every row on the
+	# statement actually is.
+	acctrows = []
+	accstr = "Adyen settlement batch %s for %s" % (batchnum, acct)
+	for t, amount in types.items():
+		if t == 'Settled':
+			# Settled means we took it out of the payable balance
+			acctrows.append((settings.ACCOUNTING_ADYEN_PAYABLE_ACCOUNT, accstr, -amount, None))
+		elif t == 'MerchantPayout':
+			# Amount directly into our checking account
+			acctrows.append((settings.ACCOUNTING_ADYEN_PAYOUT_ACCOUNT, accstr, -amount, None))
+		elif t == 'DepositCorrection':
+			# Modification of our deposit account - in either direction!
+			acctrows.append((settings.ACCOUNTING_ADYEN_MERCHANT_ACCOUNT, accstr, -amount, None))
+		else:
+			# There is at least InvoiceDeduction, but we'll process those
+			# completely manually for now
+			pass
+	if len(acctrows) == len(types):
+		# If all entries were processed, the accounting entry should
+		# automatically be balanced by now, so we can safely just complete it.
+		create_accounting_entry(date.today(), acctrows, False)
+
+		msg = "An settlement batch with Adyen has completed for merchant account %s. A summary of the entries are:\n\n%s\n\n" % (acct, msg)
+	else:
+		# All entries were not processed, so we write what we know to the
+		# db, and then just leave the entry open.
+		create_accounting_entry(date.today(), acctrows, True)
+
+		msg = "An settlement batch with Adyen has completed for merchant account %s. At least one entry in this was UNKNOWN, and therefor the accounting record has been left open, and needs to be adjusted manually!\nA summary of the entries are:\n\n%s\n\n" % (acct, msg)
+
 	send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 					 settings.ADYEN_NOTIFICATION_RECEIVER,
 					 'Adyen settlement batch %s completed' % batchnum,
-					 "An settlement batch with Adyen has completed for merchant account %s. A summary of the entries are:\n\n%s\n" % (acct, msg))
+					 msg
+					 )
 
 
 def process_reports():
