@@ -195,7 +195,7 @@ def flaginvoice(request, invoicenum):
 										   0, # We assume this was a bank payment without cost
 										   settings.ACCOUNTING_MANUAL_INCOME_ACCOUNT,
 										   0, # costaccount
-										   payment_logger)
+										   logger=payment_logger)
 
 	if r != InvoiceManager.RESULT_OK:
 		return HttpResponse("Failed to process payment flagging:\n%s" % str.getvalue()
