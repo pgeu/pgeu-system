@@ -96,16 +96,16 @@ Object: <select id="objsel"><option value="">All</option>{%for o in objects%}<op
 <tr><td colspan="3"></td>{%for h in valheaders%}<td class="header amount">{{h}}</td>{%endfor%}</tr>
 {%for acname, accontents, acvals in results%}
  <tr><td class="classname" colspan="4">{{acname}}</th></tr>
- {%for agname, agcontents, agvals in accontents%}
-  <tr class="groupsum"><td class="spacer"></td><td colspan="3">{{agname}}</td></tr>
+ {%for agname, agcontents, agfold, agvals in accontents%}
+  {%if not agfold%}<tr class="groupsum"><td class="spacer"></td><td colspan="3">{{agname}}</td></tr>{%endif%}
   {%for anum, aname, vals in agcontents %}
    <tr><td class="spacer"></td><td class="spacer"></td><td class="accountname" width="400">{{anum}} - {{aname}}</td>
      {%for v in vals%}<td class="amount">{{v}}</td>{%endfor%}
    </tr>
   {%endfor%}
- <tr class="groupsum"><td class="spacer"></td><td colspan="2">Total - {{agname}}</td>
+ {%if not agfold %}<tr class="groupsum"><td class="spacer"></td><td colspan="2">Total - {{agname}}</td>
    {%for v in agvals%}<td class="amount">{{v}}</td>{%endfor%}
- </tr>
+ </tr>{%endif%}
  {%endfor%}
  <tr class="classsum"><td class="classname" colspan="3">Total - {{acname}}</td>
    {%for v in acvals%}<td class="amount" align="right">{{v}}</td>{%endfor%}

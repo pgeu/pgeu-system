@@ -159,12 +159,13 @@ def _get_balance_query(objstr=''):
 ), fullbalance AS (
 SELECT coalesce(currentyear.accountnum, incoming.accountnum) as anum, coalesce(currentyear.amount,0) AS currentamount, coalesce(incoming.amount,0) AS incomingamount FROM currentyear FULL OUTER JOIN incoming ON currentyear.accountnum=incoming.accountnum
 )
-SELECT ac.name AS acname, ag.name AS agname, anum, a.name, sum(incomingamount) over (partition by ac.name) as acincoming, sum(currentamount) over (partition by ac.name) as accurrent, sum(incomingamount+currentamount) over (partition by ac.name) as acoutgoing, sum(incomingamount) over (partition by ag.name) as agincoming, sum(currentamount) over (partition by ag.name) as agcurrent, sum(incomingamount+currentamount) over (partition by ag.name) as agoutgoing, incomingamount, currentamount,incomingamount+currentamount as outgoingamount, sum(incomingamount*case when balancenegative then -1 else 1 end) over() as incomingtotal, sum(currentamount*case when balancenegative then -1 else 1 end) over () as currenttotal, sum((incomingamount+currentamount)*case when balancenegative then -1 else 1 end) over () as outgoingtotal FROM accounting_accountclass ac INNER JOIN accounting_accountgroup ag ON ac.id=ag.accountclass_id INNER JOIN accounting_account a ON ag.id=a.group_id INNER JOIN fullbalance ON fullbalance.anum=a.num WHERE ac.inbalance AND (incomingamount != 0 OR currentamount != 0) ORDER BY anum
+SELECT ac.name AS acname, ag.name AS agname, anum, a.name, count(*) over (partition by ag.name) = 1 and foldable as agfold, sum(incomingamount) over (partition by ac.name) as acincoming, sum(currentamount) over (partition by ac.name) as accurrent, sum(incomingamount+currentamount) over (partition by ac.name) as acoutgoing, sum(incomingamount) over (partition by ag.name) as agincoming, sum(currentamount) over (partition by ag.name) as agcurrent, sum(incomingamount+currentamount) over (partition by ag.name) as agoutgoing, incomingamount, currentamount,incomingamount+currentamount as outgoingamount, sum(incomingamount*case when balancenegative then -1 else 1 end) over() as incomingtotal, sum(currentamount*case when balancenegative then -1 else 1 end) over () as currenttotal, sum((incomingamount+currentamount)*case when balancenegative then -1 else 1 end) over () as outgoingtotal FROM accounting_accountclass ac INNER JOIN accounting_accountgroup ag ON ac.id=ag.accountclass_id INNER JOIN accounting_account a ON ag.id=a.group_id INNER JOIN fullbalance ON fullbalance.anum=a.num WHERE ac.inbalance AND (incomingamount != 0 OR currentamount != 0) ORDER BY anum
 		"""
 
 def _collate_results(query, queryparam, numvalues):
 	results = []
 	lastag = ''
+	lastagfold = False
 	lastagvals = None
 	lastac = ''
 	lastacvals = None
@@ -181,6 +182,7 @@ def _collate_results(query, queryparam, numvalues):
 		agname = row.pop(0)
 		anum = row.pop(0)
 		aname = row.pop(0)
+		agfold = row.pop(0)
 
 		acvals = row[:numvalues]
 		row[:numvalues] = []
@@ -196,9 +198,10 @@ def _collate_results(query, queryparam, numvalues):
 
 		if agname != lastag:
 			if currentag:
-				currentac.append([lastag, currentag, lastagvals])
+				currentac.append([lastag, currentag, lastagfold, lastagvals])
 				currentag = []
 			lastag = agname
+			lastagfold = agfold
 			lastagvals = agvals
 		currentag.append([anum, aname, avals])
 
@@ -210,7 +213,7 @@ def _collate_results(query, queryparam, numvalues):
 			lastacvals = acvals
 
 	if currentag:
-		currentac.append([lastag, currentag, lastagvals])
+		currentac.append([lastag, currentag, lastagfold, lastagvals])
 	if currentac:
 		results.append([lastac, currentac, lastacvals])
 
@@ -330,7 +333,7 @@ def report(request, year, reporttype):
 		# all accounts enter the year with a value 0. Therefor, we only
 		# care about summing the data for this year.
 		# We only show accounts that have had some transactions on them.
-		(results, totalresult) = _collate_results("WITH t AS (SELECT ac.name as acname, ag.name as agname, a.num as anum, a.name, sum(-ji.amount) as amount FROM accounting_accountclass ac INNER JOIN accounting_accountgroup ag ON ac.id=ag.accountclass_id INNER JOIN accounting_account a ON ag.id=a.group_id INNER JOIN accounting_journalitem ji ON ji.account_id=a.num INNER JOIN accounting_journalentry je ON je.id=ji.journal_id WHERE je.year_id=%(year)s AND je.date <= %(enddate)s AND je.closed AND NOT ac.inbalance " + objstr + " GROUP BY ac.name, ag.name, a.id, a.name) SELECT acname, agname, anum, name, sum(amount) over (partition by acname) as acamount, sum(amount) over (partition by agname) as agamount, amount, sum(amount) over () FROM t ORDER BY anum", {
+		(results, totalresult) = _collate_results("WITH t AS (SELECT ac.name as acname, ag.name as agname, ag.foldable, a.num as anum, a.name, sum(-ji.amount) as amount FROM accounting_accountclass ac INNER JOIN accounting_accountgroup ag ON ac.id=ag.accountclass_id INNER JOIN accounting_account a ON ag.id=a.group_id INNER JOIN accounting_journalitem ji ON ji.account_id=a.num INNER JOIN accounting_journalentry je ON je.id=ji.journal_id WHERE je.year_id=%(year)s AND je.date <= %(enddate)s AND je.closed AND NOT ac.inbalance " + objstr + " GROUP BY ac.name, ag.name, ag.foldable, a.id, a.name) SELECT acname, agname, anum, name, count(*) over (partition by agname) = 1 and foldable as agfold, sum(amount) over (partition by acname) as acamount, sum(amount) over (partition by agname) as agamount, amount, sum(amount) over () FROM t ORDER BY anum", {
 			'year': year.year,
 			'enddate': enddate,
 			},

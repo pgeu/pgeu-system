@@ -20,6 +20,7 @@ class AccountClass(models.Model):
 class AccountGroup(models.Model):
 	name = models.CharField(max_length=100)
 	accountclass = models.ForeignKey(AccountClass, blank=False, default=False)
+	foldable = models.BooleanField(null=False, blank=False, default=False)
 
 	def __unicode__(self):
 		return self.name
