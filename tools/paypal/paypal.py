@@ -74,7 +74,7 @@ class PaypalTransaction(object):
 		cursor = db.cursor()
 		cursor.execute("""
 INSERT INTO paypal_transactioninfo
-(paypaltransid, "timestamp", sourceaccount_id, sender, sendername, amount, transtext, matched, matchinfo)
+(paypaltransid, "timestamp", sourceaccount_id, sender, sendername, amount, fee, transtext, matched, matchinfo)
 VALUES (%(id)s, %(ts)s, %(source)s, %(sender)s, %(name)s, %(amount)s, %(fee)s, %(text)s, %(matched)s, %(matchinfo)s)""", {
 		'id': self.transactionid,
 		'ts': self.timestamp,
