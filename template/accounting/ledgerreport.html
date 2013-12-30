@@ -24,11 +24,19 @@ input.datepicker {
 
 table.ledgertable {
    width: 750px;
+   border-spacing: 0;
+   border-collapse: collapse;
 }
 table.ledgertable tr.accountname td {
    background-color: lightgray;
    font-weight: bold;
    text-align: center;
+}
+table.ledgertable tr.accountsummary td {
+   background-color: lightgray;
+}
+table.ledgertable tr.accountsummary td.amount {
+   border-top: 1px solid black;
 }
 table.ledgertable tr.header td {
    font-weight: bold;
@@ -84,14 +92,10 @@ $('#objsel')
 <h2>Year: <select id="yearsel">{%for y in years%}<option value="{{y.year}}"{%if y == year%} SELECTED{%endif%}>{{y}}</option>{%endfor%}</select>
 Object: <select id="objsel"><option value="">All</option>{%for o in objects%}<option value="{{o.id}}"{%if o == currentobj%} SELECTED{%endif%}>{{o}}</option>{%endfor%}</select> Enddate: <input type="text" class="datepicker" id="enddate" value="{{enddate|date:"Y-m-d"}}"></h2>
 
-{%for i in items%}
-{%ifchanged i.account.num%}
-{%if not forloop.first%}
-</table><br/><br/>
-{%endif%}
+{%for account in items%}
 <table class="ledgertable">
  <tr class="accountname">
-   <td colspan="5">{{i.account}}</td>
+   <td colspan="5">{{account.accountnum}} - {{account.accountname}}</td>
  </tr>
  <tr class="header">
    <td>Entry</td>
@@ -100,16 +104,21 @@ Object: <select id="objsel"><option value="">All</option>{%for o in objects%}<op
    <td class="amount">Debit</td>
    <td class="amount">Credit</td>
  </tr>
-{%endifchanged%}
+{%for i in account.entries%}
  <tr>
-  <td class="entryfield">{{i.journal}}</td>
+  <td class="entryfield">{{year.year}}-{{i.entryseq|stringformat:"03d"}} ({{i.date|date:"Y-m-d"}})</td>
   <td class="objectfield">{{i.object|default:""}}</td>
   <td class="descriptionfield">{{i.description}}</td>
   <td class="amount">{{i.debit}}</td>
   <td class="amount">{{i.credit}}</td>
  </tr>
-{%if forloop.last%}
-</table>
-{%endif%}
+{%endfor%}
+ <tr class="accountsummary">
+   <td colspan="2"></td>
+   <td class="descriptionfield">Total</td>
+   <td class="amount">{{account.totaldebit}}</td>
+   <td class="amount">{{account.totalcredit}}</td>
+ </tr>
+</table><br/><br/>
 {%endfor%}
 {%endblock%}

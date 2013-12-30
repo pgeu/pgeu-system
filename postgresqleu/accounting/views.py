@@ -311,13 +311,37 @@ def report(request, year, reporttype):
 		enddate = date(year.year, 12, 31)
 
 	if reporttype == 'ledger':
-		# This is a special report, so we do our own return
-		# XXX: This needs to be made smarter - summarize per account, and
-		# consider perhaps including the in and out balance as well.
-		itemfilter = Q(journal__year=year, journal__closed=True, journal__date__lte=enddate)
+		# This is a special report, so we don't use the collate functionality
+		# XXX: consider perhaps including the in and out balance as well.
+
+		# Yup, the django ORM fails again - no window aggregates
+		sql = "SELECT a.num as accountnum, a.name as accountname, sum(case when i.amount>0 then i.amount else 0 end) over w1 as totaldebit, sum(case when i.amount < 0 then -i.amount else 0 end) over w1 as totalcredit, e.seq as entryseq, e.date, i.description, case when i.amount > 0 then i.amount else 0 end as debit, case when i.amount < 0 then -i.amount else 0 end as credit, o.name as object FROM accounting_journalitem i INNER JOIN accounting_account a ON i.account_id=a.num INNER JOIN accounting_journalentry e ON i.journal_id=e.id LEFT JOIN accounting_object o ON i.object_id=o.id WHERE e.year_id=%(year)s AND e.closed AND e.date<%(enddate)s"
+		params = {
+			'year': year.year,
+			'enddate': enddate,
+			}
 		if request.GET.has_key('obj') and request.GET['obj']:
-			itemfilter = itemfilter & Q(object=object)
-		items = JournalItem.objects.select_related().filter(itemfilter).order_by('account__num', 'journal__date', 'journal__seq')
+			sql += " AND o.id=%(objectid)s"
+			params['objectid'] = int(request.GET['obj'])
+		sql += " WINDOW w1 AS (PARTITION BY a.num) ORDER BY a.num, e.date, e.seq"
+		curs = connection.cursor()
+		curs.execute(sql, params)
+
+		# Django templates are also too stupid to be able to produce
+		# a section-summary value, so we need to build them up as
+		# a two stage array.
+		items = []
+		lastaccount = 0
+		for row in curs.fetchall():
+			if row[0] != lastaccount:
+				items.append({'accountnum': row[0],
+							  'accountname': row[1],
+							  'totaldebit': row[2],
+							  'totalcredit': row[3],
+							  'entries': []
+							  })
+				lastaccount = row[0]
+			items[-1]['entries'].append(dict(zip([col[0] for col in curs.description[4:]], row[4:])))
 
 		return render_to_response('accounting/ledgerreport.html', {
 			'year': year,
