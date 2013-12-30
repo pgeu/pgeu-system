@@ -28,7 +28,7 @@ class PaypalTransaction(object):
 			self.timestamp = datetime.strptime(apistruct['L_TIMESTAMP%i' % i][0], '%Y-%m-%dT%H:%M:%SZ')
 			self.email = apistruct['L_EMAIL%i' % i][0]
 			self.amount = Decimal(apistruct['L_AMT%i' % i][0])
-			self.fee = Decimal(apistruct['L_FEEAMT%i' % i][0])
+			self.fee = -Decimal(apistruct['L_FEEAMT%i' % i][0])
 			self.name = apistruct['L_NAME%i' % i][0]
 		except Exception, e:
 			self.message = "Unable to parse: %s" % e
