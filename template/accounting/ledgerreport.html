@@ -109,15 +109,15 @@ Object: <select id="objsel"><option value="">All</option>{%for o in objects%}<op
   <td class="entryfield">{{year.year}}-{{i.entryseq|stringformat:"03d"}} ({{i.date|date:"Y-m-d"}})</td>
   <td class="objectfield">{{i.object|default:""}}</td>
   <td class="descriptionfield">{{i.description}}</td>
-  <td class="amount">{{i.debit}}</td>
-  <td class="amount">{{i.credit}}</td>
+  <td class="amount">{{i.debit|default:""}}</td>
+  <td class="amount">{{i.credit|default:""}}</td>
  </tr>
 {%endfor%}
  <tr class="accountsummary">
    <td colspan="2"></td>
    <td class="descriptionfield">Total</td>
-   <td class="amount">{{account.totaldebit}}</td>
-   <td class="amount">{{account.totalcredit}}</td>
+   <td class="amount">{{account.totaldebit|default:""}}</td>
+   <td class="amount">{{account.totalcredit|default:""}}</td>
  </tr>
 </table><br/><br/>
 {%endfor%}
