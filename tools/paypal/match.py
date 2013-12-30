@@ -42,7 +42,7 @@ def run():
 
 	for trans in translist:
 		# URLs for linkback to paypal
-		urls = ["https://www.paypal.com/cgi-bin/webscr?cmd=_view-a-trans&id=%s" % ti.paypaltransid,]
+		urls = ["https://www.paypal.com/cgi-bin/webscr?cmd=_view-a-trans&id=%s" % trans.paypaltransid,]
 		# If this is a donation, match it manually
 		if trans.transtext == "PostgreSQL Europe donation":
 			trans.matched = True
@@ -51,11 +51,11 @@ def run():
 
 			# Generate a simple accounting record, that will have to be
 			# manually completed.
-			accstr = "Paypal donation %s" % ti.paypaltransid
+			accstr = "Paypal donation %s" % trans.paypaltransid
 			accrows = [
-				(settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, accstr, ti.amount-ti.fee),
-				(settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, accstr, ti.fee),
-				(settings.ACCOUNTING_DONATIONS_ACCOUNT, accstr, -ti.amount),
+				(settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, accstr, trans.amount-trans.fee),
+				(settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, accstr, trans.fee),
+				(settings.ACCOUNTING_DONATIONS_ACCOUNT, accstr, -trans.amount),
 				]
 			create_accounting_entry(date.today(), accrows, True, urls)
 			continue
