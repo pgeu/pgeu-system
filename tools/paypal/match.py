@@ -27,7 +27,7 @@ from django.db import connection, transaction
 
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.accounting.util import create_accounting_entry
-from postgresqleu.paypal.models import *
+from postgresqleu.paypal.models import TransactionInfo, ErrorLog
 
 # Read our local settings too
 cfg = ConfigParser.ConfigParser()

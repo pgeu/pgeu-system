@@ -27,7 +27,7 @@ from django.template import Context
 from django.template.loader import get_template
 
 from postgresqleu.mailqueue.util import send_simple_mail
-from postgresqleu.membership.models import *
+from postgresqleu.membership.models import Member, MemberLog
 
 @transaction.commit_on_success
 def run():

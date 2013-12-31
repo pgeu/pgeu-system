@@ -7,7 +7,8 @@ from django.db.models import Count
 from django.core import urlresolvers
 from django.utils.safestring import mark_safe
 
-from postgresqleu.confreg.models import *
+from postgresqleu.confreg.models import Conference, ConferenceRegistration
+from postgresqleu.confreg.models import ConferenceAdditionalOption
 from postgresqleu.confreg.dbimage import InlinePhotoWidget
 from postgresqleu.accounting.models import Object
 
