@@ -21,6 +21,11 @@ class TransactionInfo(models.Model):
 	matched = models.BooleanField(null=False, blank=False)
 	matchinfo = models.CharField(max_length=1000, null=True, blank=True)
 
+	def setmatched(self, msg):
+		self.matched = True
+		self.matchinfo = msg
+		self.save()
+
 class ErrorLog(models.Model):
 	timestamp = models.DateTimeField(null=False, blank=False)
 	message = models.TextField(null=False, blank=False)

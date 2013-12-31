@@ -17,7 +17,7 @@ import sys
 import psycopg2
 import ConfigParser
 
-class PaypalTransaction(object):
+class PaypalBaseTransaction(object):
 	def __init__(self, paypalapi, apistruct, source, i):
 		self.message = None
 		self.api = paypalapi
@@ -26,7 +26,6 @@ class PaypalTransaction(object):
 		self.transactionid = apistruct['L_TRANSACTIONID%i' % i][0]
 		try:
 			self.timestamp = datetime.strptime(apistruct['L_TIMESTAMP%i' % i][0], '%Y-%m-%dT%H:%M:%SZ')
-			self.email = apistruct['L_EMAIL%i' % i][0]
 			self.amount = Decimal(apistruct['L_AMT%i' % i][0])
 			self.fee = -Decimal(apistruct['L_FEEAMT%i' % i][0])
 			self.name = apistruct['L_NAME%i' % i][0]
@@ -58,6 +57,13 @@ class PaypalTransaction(object):
 			# XXX: does this always come back in the same order as sent?
 			# So far, all testing indicates it does
 			self.text = r['L_NAME0'][0]
+		elif r['TRANSACTIONTYPE'][0] == 'sendmoney':
+			# This is sending of money, and not receiving. The transaction
+			# text (naturally) goes in a completely different field.
+			if r.has_key('NOTE'):
+				self.text = 'Paypal payment: %s' % r['NOTE'][0]
+			else:
+				self.text = 'Paypal payment with empty note'
 		else:
 			if r.has_key('SUBJECT'):
 				self.text = r['SUBJECT'][0]
@@ -88,6 +94,36 @@ VALUES (%(id)s, %(ts)s, %(source)s, %(sender)s, %(name)s, %(amount)s, %(fee)s, %
 		'matchinfo': self.message,
 	})
 
+class PaypalTransaction(PaypalBaseTransaction):
+	def __init__(self, paypalapi, apistruct, source, i):
+		super(PaypalTransaction, self).__init__(paypalapi, apistruct, source, i)
+		try:
+			self.email = apistruct['L_EMAIL%i' % i][0]
+		except Exception, e:
+			self.message = "Unable to parse: %s" % e
+
+class PaypalRefund(PaypalTransaction):
+	def fetch_details(self):
+		super(PaypalRefund, self).fetch_details()
+		if self.text:
+			self.text = "Refund of %s" % self.text
+		else:
+			self.text = "Refund of unknown transaction"
+
+class PaypalTransfer(PaypalBaseTransaction):
+	def __init__(self, paypalapi, apistruct, source, i):
+		super(PaypalTransfer, self).__init__(paypalapi, apistruct, source, i)
+		self.text = "Transfer from Paypal to bank"
+		self.fee = 0
+		self.email = 'treasurer@postgresql.eu'
+		if apistruct['L_CURRENCYCODE%i' % i][0] != 'EUR':
+			self.message = "Invalid currency %s" % apistruct['L_CURRENCYCODE%i' % i][0]
+			self.amount = -1 # To be on the safe side
+
+	def fetch_details(self):
+		# We cannot fetch more details, but we also don't need more details..
+		pass
+
 class PaypalAPI(object):
 	def __init__(self, apiuser, apipass, apisignature, sandbox):
 		if sandbox:
@@ -107,15 +143,25 @@ class PaypalAPI(object):
 	def get_transaction_list(self, firstdate, source):
 		ret = self._api_call('TransactionSearch', {
 			'STARTDATE': self._dateformat(firstdate),
-			'TRANSACTIONCLASS': 'Received',
 			'STATUS': 'Success',
 		})
 		i = -1
 		while True:
 			i += 1
 			if not ret.has_key('L_TRANSACTIONID%i' % i): break
-			if not ret['L_TYPE%i' % i][0] == 'Payment': continue
-			yield PaypalTransaction(self, ret, source, i)
+
+			if ret['L_TYPE%i' % i][0] in ('Payment', 'Donation'):
+				yield PaypalTransaction(self, ret, source, i)
+			elif ret['L_TYPE%i' %i][0] in ('Transfer'):
+				yield PaypalTransfer(self, ret, source, i)
+			elif ret['L_TYPE%i' %i][0] in ('Refund'):
+				yield PaypalRefund(self, ret, source, i)
+			elif ret['L_TYPE%i' % i][0] in ('Fee Reversal'):
+				# It seems these can be ignored since the actual fee info
+				# is also present on the refund notice.
+				pass
+			else:
+				print "Don't know what to do with paypal transaction of type %s" % ret['L_TYPE%i' % i][0]
 
 	def get_transaction_details(self, transactionid):
 		return self._api_call('GetTransactionDetails', {
