@@ -37,7 +37,7 @@ cfg.read('paypal.ini')
 def run():
 	invoicemanager = InvoiceManager()
 
-	translist = TransactionInfo.objects.filter(matched=False).order_by('id')
+	translist = TransactionInfo.objects.filter(matched=False).order_by('timestamp')
 
 	for trans in translist:
 		# URLs for linkback to paypal
