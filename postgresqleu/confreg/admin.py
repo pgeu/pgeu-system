@@ -7,7 +7,13 @@ from django.db.models import Count
 from django.core import urlresolvers
 from django.utils.safestring import mark_safe
 
-from postgresqleu.confreg.models import *
+from models import Conference, ConferenceRegistration, RegistrationType, Speaker
+from models import ConferenceSession, Track, Room, ConferenceSessionScheduleSlot
+from models import ShirtSize, PaymentOption, ConferenceAdditionalOption
+from models import ConferenceSessionFeedback, ConferenceFeedbackQuestion
+from models import ConferenceFeedbackAnswer, Speaker_Photo
+from models import PrepaidVoucher, PrepaidBatch, BulkPayment
+
 from postgresqleu.confreg.dbimage import InlinePhotoWidget
 from postgresqleu.accounting.models import Object
 

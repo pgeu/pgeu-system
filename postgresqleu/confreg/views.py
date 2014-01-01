@@ -4,12 +4,23 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.contrib import messages
 from django.conf import settings
 from django.db import transaction, connection
 
-from models import *
-from forms import *
+from models import Conference, ConferenceRegistration, ConferenceSession
+from models import ConferenceSessionFeedback, Speaker, Speaker_Photo
+from models import ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
+from models import RegistrationType, PrepaidVoucher, PrepaidBatch
+from models import BulkPayment, Room, Track, ConferenceSessionScheduleSlot
+from forms import ConferenceRegistrationForm, ConferenceSessionFeedbackForm
+from forms import ConferenceFeedbackForm, SpeakerProfileForm
+from forms import CallForPapersForm, BulkRegistrationForm
+from forms import PrepaidForm, PrepaidCreateForm
+from forms import EmailSendForm, EmailSessionForm
+
+from models import get_status_string
 
 from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper

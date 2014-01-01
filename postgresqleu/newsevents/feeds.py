@@ -1,7 +1,7 @@
 from django.contrib.syndication.views import Feed
 from django.conf import settings
 
-from models import *
+from models import News, Event
 
 import datetime
 

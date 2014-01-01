@@ -1,10 +1,15 @@
 from django import forms
 from django.forms import RadioSelect
 from django.forms import ValidationError
+from django.contrib.auth.models import User
 
 from django.db.models.fields.files import ImageFieldFile
 
-from postgresqleu.confreg.models import *
+from models import Conference, ConferenceRegistration, RegistrationType, Speaker
+from models import ConferenceAdditionalOption, Track
+from models import ConferenceSession, ConferenceSessionFeedback
+from models import PrepaidVoucher
+
 from postgresqleu.countries.models import Country
 
 class ConferenceRegistrationForm(forms.ModelForm):

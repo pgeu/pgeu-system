@@ -5,8 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.db import transaction
 
-from models import *
-from forms import *
+from models import Member, MemberLog
+from forms import MemberForm
 
 from postgresqleu.util.decorators import ssl_required
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper

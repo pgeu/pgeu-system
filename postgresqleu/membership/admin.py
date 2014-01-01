@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from models import *
+from models import Member, MemberLog
 
 class MemberAdmin(admin.ModelAdmin):
 	list_display = ('user', 'fullname', 'country', 'membersince', 'paiduntil', )

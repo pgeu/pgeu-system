@@ -3,7 +3,7 @@ from django.forms import ValidationError
 from django.forms import widgets
 from django.contrib.auth.models import User
 
-from models import *
+from models import Invoice, InvoiceRow, InvoicePaymentMethod
 from accounting.models import Account, Object
 
 class InvoiceForm(forms.ModelForm):

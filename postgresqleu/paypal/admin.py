@@ -1,5 +1,5 @@
 from django.contrib import admin
-from models import *
+from models import SourceAccount, TransactionInfo, ErrorLog
 
 class TransactionInfoAdmin(admin.ModelAdmin):
 	list_display = ('timestamp', 'sourceaccount', 'sender', 'amount', 'fee', 'transtext', 'matched', )

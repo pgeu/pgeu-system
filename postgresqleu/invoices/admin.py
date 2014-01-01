@@ -2,7 +2,7 @@ from django.contrib import admin
 from django import forms
 from django.forms import ValidationError
 
-from models import *
+from models import Invoice, InvoiceLog, InvoiceProcessor, InvoicePaymentMethod
 
 class InvoiceAdminForm(forms.ModelForm):
 	class Meta:

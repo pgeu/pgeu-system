@@ -1,4 +1,4 @@
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.shortcuts import render_to_response, get_object_or_404
 from django.forms.models import inlineformset_factory
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
@@ -13,7 +13,7 @@ import base64
 import StringIO
 
 from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
-from models import *
+from models import Invoice, InvoiceRow
 from forms import InvoiceForm, InvoiceRowForm
 from util import InvoiceWrapper, InvoiceManager, InvoicePresentationWrapper
 

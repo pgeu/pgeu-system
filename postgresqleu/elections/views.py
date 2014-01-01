@@ -4,7 +4,7 @@ from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.db import connection
 
-from models import *
+from models import Election, Member, Candidate, Vote
 from forms import VoteForm
 from datetime import date, timedelta
 

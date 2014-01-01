@@ -1,4 +1,5 @@
-from models import *
+from models import Invoice, InvoiceRow, InvoiceHistory, InvoiceLog
+from models import InvoicePaymentMethod, PaymentMethodWrapper
 from django.conf import settings
 from django.template import Context
 from django.template.loader import get_template
