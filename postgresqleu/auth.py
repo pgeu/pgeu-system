@@ -159,7 +159,7 @@ We apologize for the inconvenience.
 		s = decryptor.decrypt(base64.b64decode(datas, "-_")).rstrip(' ')
 		try:
 			rdata = urlparse.parse_qs(s, strict_parsing=True)
-		except ValueError, e:
+		except ValueError:
 			raise Exception("Invalid encrypted data received.")
 		if rdata.has_key('r'):
 			# Redirect address

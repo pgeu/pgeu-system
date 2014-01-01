@@ -13,6 +13,6 @@ def static_fallback(request, url):
 		t = loader.get_template('pages/%s.html' % url)
 		return HttpResponse(t.render(Context()))
 
-	except TemplateDoesNotExist, e:
+	except TemplateDoesNotExist:
 		raise Http404('Page not found')
 

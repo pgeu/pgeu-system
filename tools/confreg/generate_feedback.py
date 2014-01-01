@@ -9,6 +9,7 @@ import psycopg2.extensions
 import urllib2
 import base64
 from pygooglechart import PieChart3D
+from pygooglechart import BadContentTypeException
 from django.template import Context
 from django.template.loader import get_template
 from django.conf import settings

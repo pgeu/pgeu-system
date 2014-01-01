@@ -49,7 +49,7 @@ class MailmanSynchronizer(object):
 		if self.dryrun:
 			return
 		r = self._make_request(suburl, parameters)
-		s = r.read()
+		r.read()
 		# Ignore the result, just assume it worked :-)
 
 	def _make_request(self, suburl, parameters=None):

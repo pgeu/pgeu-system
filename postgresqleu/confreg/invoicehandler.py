@@ -162,4 +162,4 @@ class BulkInvoiceProcessor(object):
 			bp = BulkPayment.objects.get(pk=invoice.processorid)
 		except ConferenceRegistration.DoesNotExist:
 			raise Exception("Could not find bulk payment %s" % invoice.processor)
-		return "%s/events/bulkpay/%s/%s/" % (settings.SITEBASE_SSL, reg.conference.urlname, invoice.processorid)
+		return "%s/events/bulkpay/%s/%s/" % (settings.SITEBASE_SSL, bp.conference.urlname, invoice.processorid)

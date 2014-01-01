@@ -65,7 +65,7 @@ def ConferenceContext(request, conference):
 				# Not loaded, so try to load it!
 				m = imp.load_source(modname, '%s/templateextra.py' % conference.templatemodule)
 			d.update(m.context_template_additions())
-		except Exception, ex:
+		except Exception:
 			# Ignore problems, because we're lazy. Better render without the
 			# data than not render at all.
 			pass
@@ -167,7 +167,7 @@ def feedback(request, confname):
 	# Figure out if the user is registered
 	try:
 		r = ConferenceRegistration.objects.get(conference=conference, attendee=request.user)
-	except ConferenceRegistration.DoesNotExist, e:
+	except ConferenceRegistration.DoesNotExist:
 		return HttpResponse('You are not registered for this conference.')
 
 	if not r.payconfirmedat:
@@ -224,7 +224,7 @@ def feedback_session(request, confname, sessionid):
 
 	try:
 		feedback = ConferenceSessionFeedback.objects.get(conference=conference, session=session, attendee=request.user)
-	except ConferenceSessionFeedback.DoesNotExist, e:
+	except ConferenceSessionFeedback.DoesNotExist:
 		feedback = ConferenceSessionFeedback()
 
 	if request.method=='POST':
@@ -258,10 +258,6 @@ def feedback_conference(request, confname):
 			return render_to_response('confreg/feedbackclosed.html', {
 					'conference': conference,
 			}, context_instance=ConferenceContext(request, conference))
-		else:
-			is_conf_tester = True
-	else:
-		is_conf_tester = False
 
 	# Get all questions
 	questions = ConferenceFeedbackQuestion.objects.filter(conference=conference)
@@ -483,7 +479,7 @@ def speakerprofile(request, confurlname=None):
 		speaker = None
 		conferences = []
 		callforpapers = None
-	except Exception, e:
+	except Exception:
 		pass
 
 	if request.method=='POST':
@@ -714,7 +710,6 @@ def createvouchers(request):
 								 buyer=buyer)
 			batch.save()
 
-			vouchers=[]
 			for n in range(0, int(form.data['count'])):
 				v = PrepaidVoucher(conference=conference,
 								   vouchervalue=base64.b64encode(os.urandom(37)).rstrip('='),
@@ -940,7 +935,6 @@ def talkvote(request, confname):
 			'confid': conference.id,
 			'userid': request.user.id,
 			})
-	col_names = [desc[0] for desc in curs.description]
 
 	def getusernames(all):
 		firstid = all[0][0]
@@ -1056,7 +1050,6 @@ def createschedule(request, confname):
 		# each room when we have multiple rooms. Create a fake session that
 		# just has enough for the wrapper to work.
 		sessionset = SessionSet(conference.schedulewidth, conference.pixelsperminute)
-		n = 0
 		for s in slots:
 			for r in rooms:
 				sessionset.add(SessionSlot(r, s))

@@ -206,7 +206,6 @@ def conf(request, confid=None):
 
 	# Create the form
 	conferences = Conference.objects.all()
-	invoices = Invoice.objects.all().order_by('id')
 	return render_to_response('invoicemgr/conference.html', {
 		'conference': conference,
 		'conferences': conferences,
