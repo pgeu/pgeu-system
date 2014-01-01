@@ -4,7 +4,6 @@
 # additional options.
 #
 import sys
-import os
 import psycopg2
 import psycopg2.extensions
 import datetime

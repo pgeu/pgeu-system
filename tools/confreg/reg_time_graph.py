@@ -3,11 +3,8 @@
 # Tool to generate a graph of when people did register
 #
 import sys
-import os
 import psycopg2
 import psycopg2.extensions
-import urllib2
-import base64
 from pygooglechart import GroupedVerticalBarChart, Axis
 
 

@@ -7,7 +7,6 @@
 #
 
 import sys
-import os
 import psycopg2
 import psycopg2.extensions
 
@@ -15,7 +14,7 @@ from reportlab.lib.units import cm
 from reportlab.lib import colors
 from reportlab.platypus.tables import Table, TableStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import A4, landscape
 
 def Usage():

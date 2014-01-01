@@ -1,9 +1,7 @@
 # Index has a very special view that lives out here
 from django.shortcuts import render_to_response
-from django.http import HttpResponse, Http404
-from django.template import TemplateDoesNotExist, loader, Context
 
-from postgresqleu.newsevents.models import *
+from postgresqleu.newsevents.models import News, Event
 
 import datetime
 

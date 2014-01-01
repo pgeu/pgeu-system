@@ -5,7 +5,6 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.http import HttpResponseServerError
 from django.template import RequestContext
-from django.conf import settings
 from django.contrib.auth.decorators import login_required, user_passes_test
 
 from datetime import datetime

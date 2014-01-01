@@ -1,6 +1,6 @@
 from django import forms
 from django.forms.util import ErrorList
-from django.db import transaction, connection
+from django.db import transaction
 
 from models import Vote
 from postgresqleu.membership.models import MemberLog

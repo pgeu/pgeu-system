@@ -1,6 +1,5 @@
 from django import forms
 from django.forms import RadioSelect
-from django.forms.fields import *
 from django.forms import ValidationError
 
 from django.db.models.fields.files import ImageFieldFile

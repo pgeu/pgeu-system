@@ -1,7 +1,6 @@
 from django import forms
-from django.forms.fields import *
 
-from models import *
+from models import Member
 
 class MemberForm(forms.ModelForm):
 	class Meta:

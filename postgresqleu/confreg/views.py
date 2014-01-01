@@ -22,7 +22,6 @@ import re
 import os
 import sys
 import imp
-import csv
 from email.mime.text import MIMEText
 
 import simplejson as json

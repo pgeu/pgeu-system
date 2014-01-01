@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.forms.models import inlineformset_factory
-from django.db.models import Max, Q
+from django.db.models import Max
 from django.db import connection, transaction
 
 from datetime import datetime, date

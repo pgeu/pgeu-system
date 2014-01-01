@@ -1,8 +1,5 @@
 from django.contrib import admin
-from django import forms
 from django.forms import ValidationError, ModelForm
-
-from datetime import datetime
 
 from models import *
 

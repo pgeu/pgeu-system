@@ -6,7 +6,6 @@
 
 # Copyright (C) 2010, PostgreSQL Europe
 
-from datetime import datetime, timedelta, date
 import psycopg2
 import psycopg2.extras
 import sys

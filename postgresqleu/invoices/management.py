@@ -1,5 +1,4 @@
 from django.db.models import signals
-from django.db import connection
 from invoices.models import InvoiceProcessor, InvoicePaymentMethod
 
 def add_invoice_handler(app, model, name, classname=None):
