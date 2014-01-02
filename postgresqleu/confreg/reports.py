@@ -41,22 +41,27 @@ class ReportFilter(object):
 		self.querysetcol = querysetcol
 		self.emptyasnull = emptyasnull
 
-	def build_Q(self, val):
+	def build_Q(self, POST):
 		if self.queryset:
 			# Our input is a list of IDs. Return registrations that has
 			# *any* of the given id's. But we need to make sure that
 			# django doesn't evaluate it as a subselect.
+			val = POST.getlist("adv_%s" % self.id, None)
 			return Q(**{"%s__pk__in" % self.id: val})
 		else:
-			# Just make sure it exists
-			if self.emptyasnull:
-				return Q(**{"%s__isnull" % self.id:False, "%s__gt" % self.id: ''})
+			if POST.has_key('adv_%s_filter' % self.id) and POST['adv_%s_filter' % self.id]:
+				# Limit by value
+				return Q(**{"%s__icontains" % self.id: POST['adv_%s_filter' % self.id]})
 			else:
-				return Q(**{"%s__isnull" % self.id:False})
+				# Just make sure it exists
+				if self.emptyasnull:
+					return Q(**{"%s__isnull" % self.id:False, "%s__gt" % self.id: ''})
+				else:
+					return Q(**{"%s__isnull" % self.id:False})
 
 	@property
 	def html(self):
-		return """<input type="checkbox" name="adv_%s_on">%s%s""" % (
+		return """<input type="checkbox" class="adv_filter_check" name="adv_%s_on">%s%s""" % (
 			self.id,
 			self.name,
 			self._widgetstring(),
@@ -77,10 +82,12 @@ class ReportFilter(object):
 			field = MultipleChoiceWrapper(queryset=self.queryset)
 			return "<blockquote>%s</blockquote>" % (field.widget.render("adv_%s" % self.id, None), )
 		else:
-			return "<br/>"
+			return '<input type="text" class="adv_filter_box" name="adv_%s_filter"><br/>' % self.id
 
 def attendee_report_filters(conference):
 	yield ReportFilter('regtype', 'Registration type', RegistrationType.objects.filter(conference=conference), 'regtype')
+	yield ReportFilter('lastname', 'Last name')
+	yield ReportFilter('firstname', 'First name')
 	yield ReportFilter('country', 'Country', Country.objects.all())
 	yield ReportFilter('company', 'Company')
 	yield ReportFilter('phone', 'Phone')
@@ -172,7 +179,7 @@ def build_attendee_report(conference, POST):
 	for f in attendee_report_filters(conference):
 		if POST.has_key("adv_%s_on" % f.id):
 			# This filter is checked
-			q = q & f.build_Q(POST.getlist("adv_%s" % f.id, None))
+			q = q & f.build_Q(POST)
 
 	# Figure out our order by
 	orderby = map(lambda x: _attendee_report_field_map[x][2] and _attendee_report_field_map[x][2] or x, [POST['orderby1'],POST['orderby2']])

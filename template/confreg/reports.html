@@ -80,6 +80,23 @@
 $(function() {
     $( "#fieldlist" ).sortable();
     $( "#fieldlist" ).disableSelection();
+
+    $('input.adv_filter_box').each(function(i, e) {
+       if ($(e).prev().is(':checked')) {
+          $(e).show();
+       } else {
+          $(e).hide();
+       }
+    });
+    $('input.adv_filter_check').each(function(i, e) {
+       $(e).change(function() {
+          if ($(e).is(':checked')) {
+             $(e).next().show();
+          } else {
+             $(e).next().hide();
+          }
+       });
+    });
   });
 </script>
 
