@@ -1,4 +1,4 @@
-{%extends "navbase.html" %}
+{%extends "base.html" %}
 {%load markup%}
 {%block title%}Reports{%endblock%}
 {%block extrahead%}
@@ -8,14 +8,14 @@
 <style>
 #fieldlist { list-style-type: none; margin: 0; padding: 0; }
 #fieldlist li { cursor: move;}
-#outertbl { width: 600px; }
+#outertbl { width: 750px; }
 #outertbl tr td { vertical-align: top; width: 450px;}
 #outertbl tr td h3 { margin-top: 0px; }
 #outertbl tr td.hdr { width: 150px; }
 #outertbl tr td blockquote { margin-left: 20px; margin-right: 0px; width: 450px;}
 </style>
 {%endblock%}
-{%block content%}
+{%block layoutblock%}
 {%if list%}
 <h1>Reports</h1>
 <form method="post" action="advanced/">
