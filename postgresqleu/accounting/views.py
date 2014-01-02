@@ -303,6 +303,11 @@ def report(request, year, reporttype):
 		object = None
 		objstr = ''
 
+	if request.GET.has_key('acc') and request.GET['acc']:
+		account = get_object_or_404(Account, num=request.GET['acc'])
+	else:
+		account = None
+
 	if request.GET.has_key('ed') and request.GET['ed']:
 		enddate = datetime.strptime(request.GET['ed'], '%Y-%m-%d').date()
 		if enddate.year != year.year:
@@ -323,6 +328,9 @@ def report(request, year, reporttype):
 		if request.GET.has_key('obj') and request.GET['obj']:
 			sql += " AND o.id=%(objectid)s"
 			params['objectid'] = int(request.GET['obj'])
+		if request.GET.has_key('acc') and request.GET['acc']:
+			sql += " AND a.num=%(account)s"
+			params['account'] = int(request.GET['acc'])
 		sql += " WINDOW w1 AS (PARTITION BY a.num) ORDER BY a.num, e.date, e.seq"
 		curs = connection.cursor()
 		curs.execute(sql, params)
@@ -348,6 +356,8 @@ def report(request, year, reporttype):
 			'years': years,
 			'objects': Object.objects.all(),
 			'currentobj': object,
+			'accounts': Account.objects.all(),
+			'currentaccount': account,
 			'reporttype': 'ledger',
 			'items': items,
 			'enddate': enddate,
