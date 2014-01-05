@@ -95,6 +95,7 @@ INSTALLED_APPS = (
 	'postgresqleu.invoicemgr',
 	'postgresqleu.invoices',
 	'postgresqleu.accounting',
+	'postgresqleu.simplemigrate', # MUST be the last line!
 )
 
 INVOICE_SENDER_EMAIL="treasurer@postgresql.eu"
