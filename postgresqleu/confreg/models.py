@@ -316,7 +316,7 @@ class ConferenceRegistration(models.Model):
 class Track(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
 	trackname = models.CharField(max_length=100, null=False, blank=False)
-	color = models.CharField(max_length=20, null=False, blank=True)
+	color = models.CharField(max_length=20, null=False, blank=True, validators=[color_validator, ])
 	sortkey = models.IntegerField(null=False, default=100, blank=False)
 
 	def __unicode__(self):
