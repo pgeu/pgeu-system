@@ -9,6 +9,7 @@ from django.utils.safestring import mark_safe
 
 from models import Conference, ConferenceRegistration, RegistrationType, Speaker
 from models import ConferenceSession, Track, Room, ConferenceSessionScheduleSlot
+from models import RegistrationClass, RegistrationDay
 from models import ShirtSize, PaymentOption, ConferenceAdditionalOption
 from models import ConferenceSessionFeedback, ConferenceFeedbackQuestion
 from models import ConferenceFeedbackAnswer, Speaker_Photo
@@ -198,10 +199,30 @@ class ConferenceSessionScheduleSlotAdmin(admin.ModelAdmin):
 	list_filter = ['conference']
 	ordering = ['starttime', ]
 
+class RegistrationClassAdmin(admin.ModelAdmin):
+	list_display = ['regclass', 'conference', ]
+	list_filter = ['conference',]
+	ordering = ['conference','regclass']
+
+class RegistrationDayAdmin(admin.ModelAdmin):
+	list_display = ['day', 'conference', ]
+	list_filter = ['conference', ]
+	ordering = ['conference', 'day', ]
+
+class RegistrationTypeAdminForm(forms.ModelForm):
+	class Meta:
+		model = RegistrationType
+
+	def __init__(self, *args, **kwargs):
+		super(RegistrationTypeAdminForm, self).__init__(*args, **kwargs)
+		self.fields['regclass'].queryset = RegistrationClass.objects.filter(conference=self.instance.conference)
+		self.fields['days'].queryset = RegistrationDay.objects.filter(conference=self.instance.conference)
+
 class RegistrationTypeAdmin(admin.ModelAdmin):
 	list_display = ['conference', 'regtype', 'cost', 'sortkey', 'active']
 	list_filter = ['conference',]
 	ordering = ['conference','regtype']
+	form = RegistrationTypeAdminForm
 
 class ConferenceAdditionalOptionAdmin(admin.ModelAdmin):
 	list_display = ['conference', 'name', 'maxcount', 'cost']
@@ -285,6 +306,8 @@ class BulkPaymentAdmin(admin.ModelAdmin):
 	list_filter = ['conference', ]
 
 admin.site.register(Conference, ConferenceAdmin)
+admin.site.register(RegistrationClass, RegistrationClassAdmin)
+admin.site.register(RegistrationDay, RegistrationDayAdmin)
 admin.site.register(RegistrationType, RegistrationTypeAdmin)
 admin.site.register(ShirtSize)
 admin.site.register(ConferenceRegistration, ConferenceRegistrationAdmin)

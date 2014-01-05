@@ -3,6 +3,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 from postgresqleu.confreg.dbimage import SpeakerImageStorage
 
@@ -34,6 +35,17 @@ def get_status_string(val):
 	return (t for v,t in STATUS_CHOICES if v==val).next()
 def get_status_string_long(val):
 	return (t for v,t in STATUS_CHOICES_LONG if v==val).next()
+
+def color_validator(value):
+	if not value.startswith('#'):
+		raise ValidationError('Color values must start with #')
+	if len(value) != 7:
+		raise ValidationError('Color values must be # + 7 characters')
+	for n in range(0,3):
+		try:
+			int(value[n*2+1:n*2+2+1], 16)
+		except ValueError:
+			raise ValidationError('Invalid value in color specification')
 
 class PaymentOption(models.Model):
 	name = models.CharField(max_length=64, blank=False, null=False)
@@ -119,13 +131,36 @@ class Conference(models.Model):
 			return self.templatemediabase
 		return None
 
+class RegistrationClass(models.Model):
+	conference = models.ForeignKey(Conference, null=False)
+	regclass = models.CharField(max_length=64, null=False, blank=False)
+	badgecolor = models.CharField(max_length=20, null=False, blank=True, help_text='Badge color in hex format', validators=[color_validator, ])
+
+	def __unicode__(self):
+		return self.regclass
+
+	def colortuple(self):
+		return tuple([int(self.badgecolor[n*2+1:n*2+2+1], 16) for n in range(0,3)])
+
+	class Meta:
+		verbose_name_plural = 'Registration classes'
+
+class RegistrationDay(models.Model):
+	conference = models.ForeignKey(Conference, null=False)
+	day = models.DateField(null=False, blank=False)
+
+	def __unicode__(self):
+		return self.day.strftime('%a, %d %b')
+
 class RegistrationType(models.Model):
 	conference = models.ForeignKey(Conference, null=False)
 	regtype = models.CharField(max_length=64, null=False, blank=False)
+	regclass = models.ForeignKey(RegistrationClass, null=True, blank=True)
 	cost = models.IntegerField(null=False)
 	active = models.BooleanField(null=False, blank=False, default=True)
 	inlist = models.BooleanField(null=False, blank=False, default=True)
 	sortkey = models.IntegerField(null=False, blank=False, default=10)
+	days = models.ManyToManyField(RegistrationDay, blank=True)
 
 	class Meta:
 		ordering = ['conference', 'sortkey', ]
