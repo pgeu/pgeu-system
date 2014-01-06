@@ -111,7 +111,7 @@ def home(request, confname):
 				'conference': conference,
 			}, context_instance=ConferenceContext(request, conference))
 
-		form = ConferenceRegistrationForm(data=request.POST, instance=reg)
+		form = ConferenceRegistrationForm(request.user, data=request.POST, instance=reg)
 		if form.is_valid():
 			reg = form.save(commit=False)
 			reg.conference = conference
@@ -139,7 +139,7 @@ def home(request, confname):
 			}, context_instance=ConferenceContext(request, conference))
 
 		# Else fall through and render the form
-		form = ConferenceRegistrationForm(instance=reg)
+		form = ConferenceRegistrationForm(request.user, instance=reg)
 
 	return render_to_response('confreg/regform.html', {
 		'form': form,

@@ -2,6 +2,8 @@ from django import forms
 from django.forms import RadioSelect
 from django.forms import ValidationError
 from django.contrib.auth.models import User
+from django.utils.safestring import mark_safe
+from django.utils.html import escape
 
 from django.db.models.fields.files import ImageFieldFile
 
@@ -19,8 +21,9 @@ class ConferenceRegistrationForm(forms.ModelForm):
 		required=False,
 		queryset=ConferenceAdditionalOption.objects.all())
 
-	def __init__(self, *args, **kwargs):
+	def __init__(self, user, *args, **kwargs):
 		super(ConferenceRegistrationForm, self).__init__(*args, **kwargs)
+		self.user = user
 		self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference).order_by('sortkey')
 		if not self.instance.conference.asktshirt:
 			del self.fields['shirtsize']
@@ -134,6 +137,39 @@ class ConferenceRegistrationForm(forms.ModelForm):
 	class Meta:
 		model = ConferenceRegistration
 		exclude = ('conference','attendee','payconfirmedat','payconfirmedby','created',)
+
+	@property
+	def fieldsets(self):
+		# Return a set of fields used for our rendering
+		conf = self.instance.conference
+
+		yield {'id': 'personal_information',
+			   'legend': 'Personal information',
+			   'introhtml': mark_safe(u'<p>You are currently making a registration for community account<br/><i>{0} ({1} {2} &lt;{3}&gt;).</p>'.format(escape(self.user.username), escape(self.user.first_name), escape(self.user.last_name), escape(self.user.email))),
+			   'fields': [self[x] for x in ('regtype', 'firstname', 'lastname', 'company', 'address', 'country', 'email', 'phone', 'twittername', 'nick')],
+			   }
+
+		if conf.asktshirt or conf.askfood or conf.askshareemail:
+			fields = []
+			if conf.asktshirt: fields.append(self['shirtsize'])
+			if conf.askfood: fields.append(self['dietary'])
+			if conf.askshareemail: fields.append(self['shareemail'])
+			yield {'id': 'conference_info',
+				   'legend': 'Conference information',
+				   'fields': fields}
+
+		if conf.conferenceadditionaloption_set.all().exists():
+			yield {'id': 'additional_options',
+				   'legend': 'Additional options',
+				   'intro': conf.additionalintro,
+				   'fields': [self['additionaloptions'],],
+				   }
+
+		yield { 'id': 'voucher_codes',
+				'legend': 'Voucher codes',
+				'intro': 'If you have a voucher code, enter it in this field. If you do not have one, just leave the field empty.',
+				'fields': [self['vouchercode'],],
+				}
 
 rating_choices = (
     (1, '1 (Worst)'),

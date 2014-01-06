@@ -7,6 +7,33 @@ function confirmInvoice() {
    return confirm('Once you proceed to payment, an invoice will be generated for your registration, and you will no longer be able to change it.\n\nThis invoice will be addressed to the person, company and address specified in the registration - please take a moment to review those fields if you need to.\n\nThe invoice will be delivered as a PDF in your browser, no paper invoice will be sent.\n\nAre you sure you want to proceed to payment?');
 }
 </script>
+<style>
+div.regwrap {
+   width: 100%;
+   overflow: hidden;
+}
+div.regleft {
+   width: 350px;
+   float: left;
+}
+div.regright {
+   width: 200px;
+   float: right;
+}
+div.regright ul {
+   padding: 0px;
+}
+div.regright ul li {
+   margin-top: 0px;
+}
+div.regwrap.errfld {
+   background-color: rgb(255,255,204);
+   border: 1px solid red;
+}
+div.regwrap.errfld ul.errorlist li {
+   font-weight: normal !important;
+}
+</style>
 {%endblock%}
 {%block content%}
 <h1>Conference Registration - {{conference}}</h1>
@@ -31,109 +58,25 @@ has been confirmed.</p>
 
 {%if form.non_field_errors%}{{form.non_field_errors}}{%endif%}
 
- <fieldset id="personal_information">
-  <legend>Personal information</legend>
-      <div>
-	You are currently making a registration for community account:<br/>
-	<i>{{user.username}} ({{user.first_name}} {{user.last_name}} &lt;{{user.email}}&gt;).</i><br/>
-	<br/>
-      </div>
-      <div{% if form.regtype.errors %} class="errfld"{% endif %}>
-       {{ form.regtype.label_tag }} <br/>
-        {{ form.regtype }} {% if form.regtype.errors %}{{ form.regtype.errors}}{% endif %}
-      </div>
-
-      <div{% if form.firstname.errors %} class="errfld"{% endif %}>
-       {{ form.firstname.label_tag }} <br/>
-        {{ form.firstname }} {% if form.firstname.errors %}{{ form.firstname.errors}}{% endif %}
-      </div>
-
-      <div{% if form.lastname.errors %} class="errfld"{% endif %}>
-       {{ form.lastname.label_tag }} <br/>
-        {{ form.lastname }} {% if form.lastname.errors %}{{ form.lastname.errors}}{% endif %}
-      </div>
-
-      <div{% if form.company.errors %} class="errfld"{% endif %}>
-       {{ form.company.label_tag }} <br/>
-        {{ form.company }} {% if form.company.errors %}{{ form.company.errors}}{% endif %}
-      </div>
-
-      <div{% if form.address.errors %} class="errfld"{% endif %}>
-       {{ form.address.label_tag }} (also used for invoices)<br/>
-        {{ form.address }} {% if form.address.errors %}{{ form.address.errors}}{% endif %}
-      </div>
-
-      <div{% if form.country.errors %} class="errfld"{% endif %}>
-       {{ form.country.label_tag }} <br/>
-        {{ form.country }} {% if form.country.errors %}{{ form.country.errors}}{% endif %}
-      </div>
-
-      <div{% if form.email.errors %} class="errfld"{% endif %}>
-       {{ form.email.label_tag }} <br/>
-        {{ form.email }} {% if form.email.errors %}{{ form.email.errors}}{% endif %}
-      </div>
-
-      <div{% if form.phone.errors %} class="errfld"{% endif %}>
-       {{ form.phone.label_tag }} <br/>
-        {{ form.phone }} {% if form.phone.errors %}{{ form.phone.errors}}{% endif %}
-      </div>
-
-      <div{% if form.twittername.errors %} class="errfld"{% endif %}>
-       {{ form.twittername.label_tag }} <br/>
-        {{ form.twittername }} {% if form.twittername.errors %}{{ form.twittername.errors}}{% endif %}
-      </div>
-
-      <div{% if form.nick.errors %} class="errfld"{% endif %}>
-       {{ form.nick.label_tag }} <br/>
-        {{ form.nick }} {% if form.nick.errors %}{{ form.nick.errors}}{% endif %}
-      </div>
- </fieldset>
-
- {%if conference.asktshirt or conference.askfood or conference.askshareemail %}
- <fieldset id="conference_info">
-  <legend>Conference information</legend>
-      {%if conference.asktshirt %}
-      <div{% if form.shirtsize.errors %} class="errfld"{% endif %}>
-       {{ form.shirtsize.label_tag }} <br/>
-        {{ form.shirtsize }} {% if form.shirtsize.errors %}{{ form.shirtsize.errors}}{% endif %}
-      </div>
-      {%endif%}
-      {%if conference.askfood %}
-      <div{% if form.dietary.errors %} class="errfld"{% endif %}>
-       {{ form.dietary.label_tag }} <br/>
-        {{ form.dietary }} {% if form.dietary.errors %}{{ form.dietary.errors}}{% endif %}
-      </div>
-      {%endif%}
-      {%if conference.askshareemail %}
-      <div{% if form.shareemail.errors %} class="errfld"{% endif %}>
-        {{ form.shareemail }} {{ form.shareemail.label_tag }}
-	{% if form.shareemail.errors %}{{ form.shareemail.errors}}{% endif %}
-      </div>
-      {%endif%}
- </fieldset>
- {%endif%}{%comment%}askshirt, askfood,etc{%endcomment%}
-
- {% if additionaloptions %}
- <fieldset id="additional_options">
-  <legend>Additional options</legend>
-  {%if conference.additionalintro %}
-  <div>{{conference.additionalintro|markdown}}</div>
+{%for fieldset in form.fieldsets%}
+ <fieldset id="{{fieldset.id}}">
+  <legend>{{fieldset.legend}}</legend>
+  {%if fieldset.intro or fieldset.introhtml%}
+  <div>{{fieldset.intro|markdown}}{{fieldset.introhtml}}</div>
   {%endif%}
-  <div{%if form.additionaloptions.errors%} class="errfld"{%endif%}>
-   {{ form.additionaloptions }} {% if form.additionaloptions.errors %}{{ form.additionaloptions.errors}}{%endif%}
+  {%for f in fieldset.fields%}
+  <div class="regwrap{%if f.errors%} errfld{%endif%}">
+    <div class="regleft">
+      {{f.label_tag}} <br/>
+      {{f}}
+    </div>
+    <div class="regright">
+      {% if f.errors %}{{ f.errors}}{% endif %}
+    </div>
   </div>
+  {%endfor%}
  </fieldset>
- {%endif%}{%comment%}additionaloptions{%endcomment%}
-
- <fieldset id="voucher_codes">
-   <legend>Voucher codes</legend>
-   <div>If you have a voucher code, enter it in this field. If you do not
-     have one, just leave the field empty.</div>
-   <div{% if form.vouchercode.errors %} class="errfld"{% endif %}>
-     {{ form.vouchercode.label_tag }} <br/>
-     {{ form.vouchercode }} {% if form.vouchercode.errors %}{{ form.vouchercode.errors}}{% endif %}
-   </div>
- </fieldset>
+{%endfor%}
 
  <p>
    You can edit your registration details and save as many times as you want
