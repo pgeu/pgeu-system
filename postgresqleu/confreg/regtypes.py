@@ -8,7 +8,7 @@ def validate_speaker_registration(reg):
 	# at this conference.
 	from models import ConferenceSession
 	if not ConferenceSession.objects.filter(conference=reg.conference,
-											speaker=reg.attendee,
+											speaker__user=reg.attendee,
 											status=1, # approved
 										).exists():
 		raise ValidationError('This registration type is only available if you are a confirmed speaker at this conference')
