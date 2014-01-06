@@ -215,8 +215,13 @@ class RegistrationTypeAdminForm(forms.ModelForm):
 
 	def __init__(self, *args, **kwargs):
 		super(RegistrationTypeAdminForm, self).__init__(*args, **kwargs)
-		self.fields['regclass'].queryset = RegistrationClass.objects.filter(conference=self.instance.conference)
-		self.fields['days'].queryset = RegistrationDay.objects.filter(conference=self.instance.conference)
+		try:
+			self.fields['regclass'].queryset = RegistrationClass.objects.filter(conference=self.instance.conference)
+			self.fields['days'].queryset = RegistrationDay.objects.filter(conference=self.instance.conference)
+		except Conference.DoesNotExist:
+			# If we don't have a conference yet, we can just ignore the fact
+			# that we couldn't list it.
+			pass
 
 class RegistrationTypeAdmin(admin.ModelAdmin):
 	list_display = ['conference', 'regtype', 'cost', 'sortkey', 'active']
