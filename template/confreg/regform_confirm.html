@@ -1,0 +1,60 @@
+{%extends conftemplbase %}
+{%load humanize%}
+{%load leadingnbsp%}
+{%block title%}Conference Registration - {{conference}}{%endblock%}
+{%block extrahead%}
+<style>
+table.invoiceconfirmtbl {
+   width: 550px;
+}
+table.invoiceconfirmtbl td.desc {
+}
+table.invoiceconfirmtbl tr td.cost {
+   text-align: right;
+}
+table.invoiceconfirmtbl tr.totalrow td.cost {
+   border-top: 1px solid black;
+}
+</style>
+{%endblock%}
+{%block content%}
+<h1>Conference Registration - {{conference}}</h1>
+
+<h2>Confirm registration</h2>
+<p>
+You are almost done with your registration!
+</p>
+
+<p>
+The details below will be included on your invoice. If this is in any
+way incorrect, go <a href="../">back</a> to your registration and adjust
+it.
+</p>
+
+<form method="post" action=".">
+<table border="0" cellspacing="0" cellpadding="1" class="invoiceconfirmtbl">
+{%for r in invoicerows%}
+<tr valign="top">
+  <td class="desc">{{r.0|leadingnbsp}}</td>
+  <td class="cost">{{r.2|intcomma}}</td>
+</tr>
+{%endfor%}
+<tr valign="top" class="totalrow">
+  <td class="desc"></td>
+  <td class="cost">{{totalcost|intcomma}}</td>
+</tr>
+</table>
+
+<p>
+Once you have confirmed your registration, your registration details will
+be locked and can no longer be edited.
+{%if totalcost%}An invoice will be generated, and this invoice will be
+<i>due for immediate payment</i>.{%endif%}
+</p>
+
+<input type="submit" name="submit" value="Confirm and finish registration"><br/>
+<input type="submit" name="submit" value="Back">
+</form>
+
+{%endblock%}
+

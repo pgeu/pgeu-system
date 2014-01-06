@@ -10,6 +10,8 @@ from models import ConferenceAdditionalOption, Track
 from models import ConferenceSession, ConferenceSessionFeedback
 from models import PrepaidVoucher
 
+from regtypes import validate_special_reg_type
+
 from postgresqleu.countries.models import Country
 
 class ConferenceRegistrationForm(forms.ModelForm):
@@ -37,10 +39,27 @@ class ConferenceRegistrationForm(forms.ModelForm):
 		if newval and not newval.active:
 			raise forms.ValidationError('Registration type "%s" is currently not available.' % newval)
 
-		if self.instance and self.instance.payconfirmedat and not self.instance.conference.autoapprove:
+		if self.instance and self.instance.payconfirmedat:
 			raise forms.ValidationError('You cannot change type of registration once your payment has been confirmed!')
 
+		if newval and newval.specialtype:
+			validate_special_reg_type(newval.specialtype, self.instance)
+
 		return newval
+
+	def clean_vouchercode(self):
+		newval = self.cleaned_data.get('vouchercode')
+		if newval=='': return newval
+
+		try:
+			v = PrepaidVoucher.objects.get(vouchervalue=newval, conference=self.instance.conference)
+			if v.usedate:
+				raise forms.ValidationError('This voucher has already been used')
+		except PrepaidVoucher.DoesNotExist:
+			raise forms.ValidationError('This voucher was not found')
+
+		return newval
+
 
 	def compare_options(self, a, b):
 		# First check if the sizes are the same
@@ -89,11 +108,28 @@ class ConferenceRegistrationForm(forms.ModelForm):
 					raise forms.ValidationError("The option \"%s\" is no longer available due to too many signups." % option.name)
 
 		# Check if the registration has been confirmed
-		if self.instance and self.instance.payconfirmedat and not self.instance.conference.autoapprove:
+		if self.instance and self.instance.payconfirmedat:
 			raise forms.ValidationError('You cannot change your additional options once your payment has been confirmed! If you need to make changes, please contact the conference organizers via email')
 
 		# Yeah, it's ok
 		return newval
+
+	def clean(self):
+		# At the form level, validate anything that has references between
+		# different fields, since they are not saved until we get here.
+		# Note that if one of those fields have failed validation on their
+		# own, they will not be present in cleaned_data.
+		cleaned_data = super(ConferenceRegistrationForm, self).clean()
+
+		if cleaned_data.has_key('vouchercode') and cleaned_data['vouchercode']:
+			# We know it's there, and that it exists - but is it for the
+			# correct type of registration?
+			v = PrepaidVoucher.objects.get(vouchervalue=cleaned_data['vouchercode'],
+										   conference=self.instance.conference)
+			if v.batch.regtype != cleaned_data['regtype']:
+				self._errors['vouchercode'] = self.error_class('The specified voucher is only usable for registrations of type "%s"' % v.batch.regtype)
+
+		return cleaned_data
 
 	class Meta:
 		model = ConferenceRegistration
@@ -227,34 +263,6 @@ class CallForPapersForm(forms.ModelForm):
 			raise ValidationError("Please choose the track that is the closest match to your talk")
 		return self.cleaned_data.get('track')
 
-class PrepaidForm(forms.Form):
-	voucher = forms.CharField(max_length=100, label="Voucher code")
-
-	def __init__(self, registration=None, *args, **kwargs):
-		self.reg = registration
-		super(PrepaidForm, self).__init__(*args, **kwargs)
-
-	def clean_voucher(self):
-		# Check if the voucher code is available
-		try:
-			self.voucher = PrepaidVoucher.objects.get(vouchervalue=self.cleaned_data.get('voucher'))
-		except PrepaidVoucher.DoesNotExist:
-			raise ValidationError("Specified voucher code does not exist.")
-
-		# Make sure this voucher is not already used
-		if self.voucher.user or self.voucher.usedate:
-			raise ValidationError("This voucher has already been used for another registration.")
-
-		if self.voucher.conference != self.reg.conference:
-			raise ValidationError("Specified voucher is for a different conference!")
-
-		if self.voucher.batch.regtype != self.reg.regtype:
-			raise ValidationError("Specified voucher is for a different type of registration.")
-
-		if len(self.reg.additionaloptions.filter(cost__gt=0)):
-			raise ValidationError("Your registration contains paid additional options. This is currently not supported for prepaid vouchers. Please contact %s for manual processing." % self.reg.conference.contactaddr)
-
-		# All things validate!
 
 class PrepaidCreateForm(forms.Form):
 	conference = forms.ModelChoiceField(queryset=Conference.objects.filter(active=True))

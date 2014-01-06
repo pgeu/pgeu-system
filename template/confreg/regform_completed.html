@@ -1,0 +1,104 @@
+{%extends conftemplbase %}
+{%load markup%}
+{%block title%}Conference Registration - {{conference}}{%endblock%}
+{%block extrahead%}
+<style>
+table.reginfotbl {
+   width:100%;
+}
+table.reginfotbl td {
+   vertical-align: top;
+   padding-top: 3px;
+   padding-bottom: 3px;
+}
+table.reginfotbl td.firstcol {
+   width: 150px;
+   white-space: nowrap;
+}
+</style>
+{%endblock%}
+{%block content%}
+<h1>Conference Registration - {{conference}}</h1>
+
+<p>
+<b>NOTE!</b> if you wish to register multiple people,
+you must <a href="/logout">log out</a> and back in (with a different account)
+between each registration to avoid conflicts.
+</p>
+
+{%if reg.payconfirmedat %}
+ <p>
+  Your registration and payment have been confirmed at
+  {{reg.payconfirmedat}}. Welcome to {{conference}}!
+ </p>
+{%else%}
+ {%comment%}Payment not confirmed, so either invoice pending or bulk{%endcomment%}
+ {%if reg.invoice%}
+  <h2>Invoice</h2>
+  <p>
+  An invoice has been created for your registration, but we have not yet
+  received a payment for it.
+  </p>
+  {%include "invoices/userinvoice_spec.html"%}
+  <p>
+    <b>Note!</b> Your registration is <b>not</b> confirmed until the invoice
+    has been paid and confirmed!
+  </p>
+ {%else%}{%comment%}must mean reg.bulkpayment{%endcomment%}
+  <p>
+  Your registration has been made part of a bulk payment invoice owned by
+  {{reg.bulkpayment.user.email}}. Once this invoice has been paid by the
+  owner, your registration will automatically be approved.
+  </p>
+ {%endif%}
+{%endif%}
+
+<h2>Your registration details</h2>
+<p>
+Since your registration has been finalized, you can no longer make modifications
+to it. If you need to adjust anything, please contact the conference organizers
+at {{conference.contactaddr}}.
+</p>
+<fieldset id="personal_information">
+ <legend>Personal information</legend>
+ <table class="reginfotbl">
+  <tr><td class="firstcol">Username</td><td>{{user.username}}</td></tr>
+  <tr><td class="firstcol">Registration type</td><td>{{reg.regtype}}</td></tr>
+  <tr><td class="firstcol">First name</td><td>{{reg.firstname}}</td></tr>
+  <tr><td class="firstcol">Last name</td><td>{{reg.lastname}}</td></tr>
+  <tr><td class="firstcol">Company</td><td>{{reg.company}}</td></tr>
+  <tr><td class="firstcol">Address</td><td>{{reg.address|linebreaks}}</td></tr>
+  <tr><td class="firstcol">Country</td><td>{{reg.country}}</td></tr>
+  <tr><td class="firstcol">Email</td><td>{{reg.email}}</td></tr>
+  <tr><td class="firstcol">Phone</td><td>{{reg.phone}}</td></tr>
+  <tr><td class="firstcol">Twitter name</td><td>{{reg.twittername}}</td></tr>
+  <tr><td class="firstcol">Nickname</td><td>{{reg.nick}}</td></tr>
+ </table>
+</fieldset>
+{%if conference.asktshirt or conference.askfood or conference.askshareemail%}
+<fieldset>
+ <legend>Conference information</legend>
+ <table class="reginfotbl">
+ {%if conference.asktshirt%}
+  <tr><td class="firstcol">T-shirt size</td><td>{{reg.shirtsize|default:''}}</td></tr>
+ {%endif%}
+ {%if conference.askfood%}
+  <tr><td class="firstcol">Dietary needs</td><td>{{reg.dietary}}</td></tr>
+ {%endif%}
+ {%if conference.askshareemail%}
+  <tr><td class="firstcol">Share email</td><td>{{reg.shareemail|yesno:"Yes,No"}}</td></tr>
+ {%endif%}
+ </table>
+</fieldset>
+{%endif%}
+{%if reg.additionaloptions.all %}
+<fieldset>
+ <legend>Additional options</legend>
+ <ul>{%for ao in reg.additionaloptions.all%}<li>{{ao.name}}</li>{%endfor%}</ul>
+</fieldset>
+{%endif%}
+
+
+
+{%endblock%}
+

@@ -17,8 +17,9 @@ from models import BulkPayment, Room, Track, ConferenceSessionScheduleSlot
 from forms import ConferenceRegistrationForm, ConferenceSessionFeedbackForm
 from forms import ConferenceFeedbackForm, SpeakerProfileForm
 from forms import CallForPapersForm, BulkRegistrationForm
-from forms import PrepaidForm, PrepaidCreateForm
+from forms import PrepaidCreateForm
 from forms import EmailSendForm, EmailSessionForm
+from util import invoicerows_for_registration
 
 from models import get_status_string
 
@@ -97,13 +98,10 @@ def home(request, confname):
 			reg.lastname = namepieces[1]
 		else:
 			reg.firstname = request.user.first_name
-		# If conference is set to autoapprove, then autoapprove
-		if conference.autoapprove:
-			reg.payconfirmedat = datetime.today()
-			reg.payconfirmedby = 'auto'
 
 	form_is_saved = False
 	if request.method == 'POST':
+		# Attempting to modify the registration
 		if reg.bulkpayment:
 			return render_to_response('confreg/bulkpayexists.html', {
 				'conference': conference,
@@ -123,13 +121,24 @@ def home(request, confname):
 			form_is_saved = True
 
 			# Figure out if the user clicked a "magic save button"
-			if request.POST['submit'].find("voucher") > 0:
-				# pay with voucher!
-				return HttpResponseRedirect("prepaid/%s/" % reg.pk)
-			if request.POST['submit'].find("payment") > 0:
-				return HttpResponseRedirect("invoice/%s/" % reg.pk)
+			if request.POST['submit'].find('finish registration') > 0:
+				# Complete registration!
+				return HttpResponseRedirect("confirm/")
+
+			# Else it was a general save, and we'll fall through and
+			# show the form again so details can be edited.
 	else:
-		# This is just a get, so render the form
+		# This is just a get. Depending on the state of the registration,
+		# we may want to show the form or not.
+		if reg.payconfirmedat or reg.invoice or reg.bulkpayment:
+			# This registration can't be changed at this point
+			return render_to_response('confreg/regform_completed.html', {
+				'reg': reg,
+				'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/register/%s/" % (settings.SITEBASE_SSL, conference.urlname)),
+				'conference': conference,
+			}, context_instance=ConferenceContext(request, conference))
+
+		# Else fall through and render the form
 		form = ConferenceRegistrationForm(instance=reg)
 
 	return render_to_response('confreg/regform.html', {
@@ -595,20 +604,105 @@ def callforpapers_edit(request, confname, sessionid):
 @ssl_required
 @login_required
 @transaction.commit_on_success
-def invoice(request, confname, regid):
-	# Pay with invoice. If an invoice exists, use that. If an invoice
-	# does not exist, create one and then use that.
+def confirmreg(request, confname):
+	# Confirm a registration step. This will show the user the final
+	# cost of the registration, minus any discounts found (including
+	# complete-registration vouchers).
 	conference = get_object_or_404(Conference, urlname=confname)
-	reg = get_object_or_404(ConferenceRegistration, id=regid, attendee=request.user, conference=conference)
-
+	reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
+	# This should never happen since we should error out in the form,
+	# but make sure we don't accidentally proceed.
 	if not reg.regtype:
 		return render_to_response('confreg/noregtype.html', {
 				'conference': conference,
 				}, context_instance=ConferenceContext(request, conference))
-	if not reg.needspayment:
-		return render_to_response('confreg/nopay.html', {
+	if reg.bulkpayment:
+		return render_to_response('confreg/bulkpayexists.html', {
 				'conference': conference,
 				}, context_instance=ConferenceContext(request, conference))
+
+	# If there is already an invoice, then this registration has
+	# been processed already.
+	if reg.invoice:
+		return HttpResponseRedirect("/events/register/%s/" % conference.urlname)
+
+
+	if request.method == 'POST':
+		if request.POST['submit'].find('Back') >= 0:
+			return HttpResponseRedirect("../")
+		if request.POST['submit'].find('finish registration') >= 0:
+			# Get the invoice rows and flag any vouchers as used
+			# (committed at the end of the view so if something
+			# goes wrong they automatically go back to unused)
+			invoicerows = invoicerows_for_registration(reg, True)
+			totalcost = sum([r[2] for r in invoicerows])
+
+			if len(invoicerows) <= 0:
+				return HttpResponseRedirect("../")
+
+			if totalcost == 0:
+				# Paid in total with vouchers, or completely free
+				# registration type. So just flag the registration
+				# as confirmed.
+				reg.payconfirmedat = datetime.today()
+				reg.payconfirmedby = "no payment reqd"
+				reg.save()
+				return HttpResponseRedirect("../")
+
+			# Else there is a cost, so we create an invoice for that
+			# cost. Registration will be confirmed when the invoice is paid.
+			manager = InvoiceManager()
+			processor = InvoiceProcessor.objects.get(processorname="confreg processor")
+			reg.invoice = manager.create_invoice(
+				request.user,
+				request.user.email,
+				reg.firstname + ' ' + reg.lastname,
+				reg.company + "\n" + reg.address + "\n" + reg.country.name,
+				"%s invoice for %s" % (conference.conferencename, reg.email),
+				datetime.now(),
+				datetime.now(),
+				invoicerows,
+				processor = processor,
+				processorid = reg.pk,
+				bankinfo = False,
+				accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT,
+				accounting_object = conference.accounting_object
+			)
+
+			reg.invoice.save()
+			reg.save()
+			return HttpResponseRedirect("../invoice/%s/" % reg.pk)
+
+		# Else this is some random button we haven't heard of, so just
+		# fall through and show the form again.
+
+	# Figure out what should go on the invoice. Don't flag possible
+	# vouchers as used, since confirmation isn't done yet.
+	invoicerows = invoicerows_for_registration(reg, False)
+	totalcost = sum([r[2] for r in invoicerows])
+
+	# It should be impossible to end up with zero invoice rows, so just
+	# redirect back if that happens
+	if len(invoicerows) <= 0:
+		return HttpResponseRedirect("../")
+
+	return render_to_response('confreg/regform_confirm.html', {
+		'conference': conference,
+		'invoicerows': invoicerows,
+		'totalcost': totalcost,
+		}, context_instance=ConferenceContext(request, conference))
+
+
+@ssl_required
+@login_required
+@transaction.commit_on_success
+def invoice(request, confname, regid):
+	# Show the invoice. We do this in a separate view from the main view,
+	# even though the invoice is present on the main view as well, in order
+	# to make things even more obvious.
+	# Assumes that the actual invoice has already been created!
+	conference = get_object_or_404(Conference, urlname=confname)
+	reg = get_object_or_404(ConferenceRegistration, id=regid, attendee=request.user, conference=conference)
 
 	if reg.bulkpayment:
 		return render_to_response('confreg/bulkpayexists.html', {
@@ -616,76 +710,13 @@ def invoice(request, confname, regid):
 				}, context_instance=ConferenceContext(request, conference))
 
 	if not reg.invoice:
-		manager = InvoiceManager()
-		processor = InvoiceProcessor.objects.get(processorname="confreg processor")
-		reg.invoice = manager.create_invoice(
-			request.user,
-			request.user.email,
-			reg.firstname + ' ' + reg.lastname,
-			reg.company + "\n" + reg.address + "\n" + reg.country.name,
-			"%s invoice for %s" % (conference.conferencename, reg.email),
-			datetime.now(),
-			datetime.now(),
-			reg.invoicerows,
-			processor = processor,
-			processorid = reg.pk,
-			bankinfo = False,
-			accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT,
-			accounting_object = conference.accounting_object
-			)
-
-		reg.invoice.save()
-		reg.save()
+		# We should never get here if we don't have an invoice. If it does
+		# happen, just redirect back.
+		return HttpResponseRedirect('../../')
 
 	return render_to_response('confreg/invoice.html', {
 			'reg': reg,
 			'invoice': reg.invoice,
-			'conference': conference,
-			}, context_instance=ConferenceContext(request, conference))
-
-@ssl_required
-@login_required
-@transaction.commit_on_success
-def prepaid(request, confname, regid):
-	# Pay with prepaid voucher
-	conference = get_object_or_404(Conference, urlname=confname)
-	reg = get_object_or_404(ConferenceRegistration, id=regid, attendee=request.user, conference=conference)
-
-	if not reg.regtype:
-		return render_to_response('confreg/noregtype.html', {
-				'conference': conference,
-				}, context_instance=ConferenceContext(request, conference))
-	if not reg.needspayment:
-		return render_to_response('confreg/nopay.html', {
-				'conference': conference,
-				}, context_instance=ConferenceContext(request, conference))
-
-	if request.method == 'POST':
-		# Trying to make a payment - verify that the data is correct before
-		# accepting the voucher.
-		form = PrepaidForm(registration=reg, data=request.POST)
-		if form.is_valid():
-			# The form is valid, so let's confirm the registration
-			form.voucher.user = reg
-			form.voucher.usedate = datetime.now()
-			form.voucher.save()
-			reg.payconfirmedat = datetime.now()
-			reg.payconfirmedby = "voucher"
-			reg.save()
-			return HttpResponseRedirect('../..')
-		# Else fall-through and re-render the form
-	else:
-		# GET -> render form if not already paid
-		if reg.payconfirmedat:
-			return render_to_response('confreg/prepaid_already.html', {
-					'conference': conference,
-			}, context_instance=ConferenceContext(request, conference))
-		# Not paid yet, so render a form for it
-		form = PrepaidForm()
-
-	return render_to_response('confreg/prepaid_form.html', {
-			'form': form,
-			'reg': reg,
 			'conference': conference,
 			}, context_instance=ConferenceContext(request, conference))
 
@@ -777,14 +808,24 @@ def bulkpay(request, confname):
 			regs = ConferenceRegistration.objects.filter(conference=conference, invoice=None, bulkpayment=None, payconfirmedat=None, email=e)
 			if len(regs) == 1:
 				allregs.append(regs[0])
-				if regs[0].needspayment:
-					s = sum([r[2] for r in regs[0].invoicerows])
-					state.append({'email': e, 'found': 1, 'pay': 1, 'total': s, 'rows':[u'%s (€%s)' % (r[0], r[2]) for r in regs[0].invoicerows]})
-					totalcost += s
-					invoicerows.extend(regs[0].invoicerows)
-				else:
-					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration type does not need payment'})
+				if not (regs[0].regtype and regs[0].regtype.active):
+					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration type for this registration is not active!'})
 					errors=1
+				elif regs[0].vouchercode:
+					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration has a voucher code entered, and cannot be used for bulk payments.'})
+					errors=1
+				else:
+					regrows = invoicerows_for_registration(regs[0], False)
+					s = sum([r[2] for r in regrows])
+					if s == 0:
+						# No payment needed
+						state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration type does not need payment'})
+						errors=1
+					else:
+						# Normal registration, so add it
+						state.append({'email': e, 'found': 1, 'pay': 1, 'total': s, 'rows':[u'%s (€%s)' % (r[0], r[2]) for r in regrows]})
+						totalcost += s
+						invoicerows.extend(regrows)
 			else:
 				state.append({'email': e, 'found': 0, 'text': 'Email not found'})
 				errors=1

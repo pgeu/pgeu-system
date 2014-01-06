@@ -34,7 +34,7 @@ class ConferenceAdmin(admin.ModelAdmin):
 	form = ConferenceAdminForm
 	list_display = ('conferencename', 'active', 'startdate', 'enddate')
 	ordering = ('-startdate', )
-	filter_horizontal = ('administrators','testers','talkvoters',)
+	filter_horizontal = ('administrators','testers','talkvoters', 'staff', )
 
 class ConferenceRegistrationForm(forms.ModelForm):
 	class Meta:

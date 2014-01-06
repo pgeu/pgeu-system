@@ -12,6 +12,7 @@ import pytz
 
 from postgresqleu.countries.models import Country
 from postgresqleu.invoices.models import Invoice
+from regtypes import special_reg_types
 
 SKILL_CHOICES = (
 	(0, "Beginner"),
@@ -89,11 +90,11 @@ class Conference(models.Model):
 	administrators = models.ManyToManyField(User, null=False, blank=True)
 	testers = models.ManyToManyField(User, null=False, blank=True, related_name="testers_set")
 	talkvoters = models.ManyToManyField(User, null=False, blank=True, related_name="talkvoters_set")
+	staff = models.ManyToManyField(User, null=False, blank=True, related_name="staff_set", help_text="Users who can register as staff")
 	asktshirt = models.BooleanField(blank=False, null=False, default=True)
 	askfood = models.BooleanField(blank=False, null=False, default=True)
 	askshareemail = models.BooleanField(null=False, blank=False, default=False)
 	skill_levels = models.BooleanField(blank=False, null=False, default=True)
-	autoapprove = models.BooleanField(blank=False, null=False, default=False)
 	additionalintro = models.TextField(blank=True, null=False)
 	basetemplate = models.CharField(max_length=128, blank=True, null=True, default=None)
 	templatemodule = models.CharField(max_length=128, blank=True, null=True, default=None)
@@ -160,6 +161,7 @@ class RegistrationType(models.Model):
 	active = models.BooleanField(null=False, blank=False, default=True)
 	inlist = models.BooleanField(null=False, blank=False, default=True)
 	sortkey = models.IntegerField(null=False, blank=False, default=10)
+	specialtype = models.CharField(max_length=5, blank=True, null=True, choices=special_reg_types)
 	days = models.ManyToManyField(RegistrationDay, blank=True)
 
 	class Meta:
@@ -263,39 +265,14 @@ class ConferenceRegistration(models.Model):
 	invoice = models.ForeignKey(Invoice, null=True, blank=True)
 	bulkpayment = models.ForeignKey(BulkPayment, null=True, blank=True)
 
-	# Access from templates requires properties
-	@property
-	def isregistered(self):
-		if not self.id: return False
-		if not self.regtype: return False
-		return self.regtype.is_registered_type()
-
-	@property
-	def needspayment(self):
-		if not self.regtype: return False
-		if self.regtype.cost == 0:
-			# If we have additional options that cost, we might still need
-			# to check this.
-			for ao in self.additionaloptions.all():
-				if ao.cost > 0:
-					# If any option has a cost, we need to request payment
-					return True
-			return False
-		return True
+	# Any voucher codes. This is just used as temporary storage, and as
+	# such we don't try to make it a foreign key. Must be re-validated
+	# everytime it's used.
+	vouchercode = models.CharField(max_length=100, null=False, blank=True, verbose_name='Voucher code')
 
 	@property
 	def fullname(self):
 		return "%s %s" % (self.firstname, self.lastname)
-
-	@property
-	def invoicerows(self):
-		# Return the rows that would be used to build an invoice for this
-		# registration. Format is tuple of (description, num, cost)
-		r = [('%s - %s (%s)' % (self.conference, self.regtype.regtype, self.email), 1, self.regtype.cost)]
-		for a in self.additionaloptions.all():
-			if a.cost > 0:
-				r.append(('   %s' % a.name, 1, a.cost))
-		return r
 
 	def has_invoice(self):
 		return not self.invoice is None
