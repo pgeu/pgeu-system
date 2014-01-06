@@ -125,6 +125,11 @@ def home(request, confname):
 				# Complete registration!
 				return HttpResponseRedirect("confirm/")
 
+			# Or did they click cancel?
+			if request.POST['submit'].find('Cancel') >= 0:
+				reg.delete()
+				return HttpResponseRedirect("canceled/")
+
 			# Else it was a general save, and we'll fall through and
 			# show the form again so details can be edited.
 	else:
@@ -692,6 +697,14 @@ def confirmreg(request, confname):
 		'totalcost': totalcost,
 		}, context_instance=ConferenceContext(request, conference))
 
+
+@ssl_required
+@login_required
+def cancelreg(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+	return render_to_response('confreg/canceled.html', {
+		'conference': conference,
+		}, context_instance=ConferenceContext(request, conference))
 
 @ssl_required
 @login_required
