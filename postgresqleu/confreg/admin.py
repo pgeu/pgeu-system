@@ -10,7 +10,7 @@ from django.utils.safestring import mark_safe
 from models import Conference, ConferenceRegistration, RegistrationType, Speaker
 from models import ConferenceSession, Track, Room, ConferenceSessionScheduleSlot
 from models import RegistrationClass, RegistrationDay
-from models import ShirtSize, PaymentOption, ConferenceAdditionalOption
+from models import ShirtSize, ConferenceAdditionalOption
 from models import ConferenceSessionFeedback, ConferenceFeedbackQuestion
 from models import ConferenceFeedbackAnswer, Speaker_Photo
 from models import PrepaidVoucher, PrepaidBatch, BulkPayment
@@ -316,7 +316,6 @@ admin.site.register(RegistrationDay, RegistrationDayAdmin)
 admin.site.register(RegistrationType, RegistrationTypeAdmin)
 admin.site.register(ShirtSize)
 admin.site.register(ConferenceRegistration, ConferenceRegistrationAdmin)
-admin.site.register(PaymentOption)
 admin.site.register(ConferenceSession, ConferenceSessionAdmin)
 admin.site.register(ConferenceSessionFeedback, ConferenceSessionFeedbackAdmin)
 admin.site.register(ConferenceSessionScheduleSlot, ConferenceSessionScheduleSlotAdmin)

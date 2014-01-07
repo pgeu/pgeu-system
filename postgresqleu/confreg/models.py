@@ -48,18 +48,6 @@ def color_validator(value):
 		except ValueError:
 			raise ValidationError('Invalid value in color specification')
 
-class PaymentOption(models.Model):
-	name = models.CharField(max_length=64, blank=False, null=False)
-	infotext = models.TextField(blank=False, null=False)
-	paypalrecip = models.EmailField(max_length=1024, null=True, blank=True)
-	sortkey = models.IntegerField(null=False, blank=False)
-
-	def __unicode__(self):
-		return self.name
-
-	class Meta:
-		ordering = ['sortkey', ]
-
 class Conference(models.Model):
 	urlname = models.CharField(max_length=32, blank=False, null=False, unique=True)
 	conferencename = models.CharField(max_length=64, blank=False, null=False)
@@ -67,7 +55,6 @@ class Conference(models.Model):
 	enddate = models.DateField(blank=False, null=False)
 	location = models.CharField(max_length=128, blank=False, null=False)
 	contactaddr = models.EmailField(blank=False,null=False)
-	paymentoptions = models.ManyToManyField(PaymentOption)
 	active = models.BooleanField(blank=False,null=False,default=True, verbose_name="Registration open")
 	callforpapersopen = models.BooleanField(blank=False,null=False,default=False)
 	feedbackopen = models.BooleanField(blank=False,null=False,default=True)
