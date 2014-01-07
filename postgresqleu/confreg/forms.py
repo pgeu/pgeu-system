@@ -145,7 +145,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
 		yield {'id': 'personal_information',
 			   'legend': 'Personal information',
-			   'introhtml': mark_safe(u'<p>You are currently making a registration for community account<br/><i>{0} ({1} {2} &lt;{3}&gt;).</p>'.format(escape(self.user.username), escape(self.user.first_name), escape(self.user.last_name), escape(self.user.email))),
+			   'introhtml': mark_safe(u'<p>You are currently making a registration for community account<br/><i>{0} ({1} {2} &lt;{3}&gt;).</i></p>'.format(escape(self.user.username), escape(self.user.first_name), escape(self.user.last_name), escape(self.user.email))),
 			   'fields': [self[x] for x in ('regtype', 'firstname', 'lastname', 'company', 'address', 'country', 'email', 'phone', 'twittername', 'nick')],
 			   }
 
