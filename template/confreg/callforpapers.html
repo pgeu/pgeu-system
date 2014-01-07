@@ -15,7 +15,7 @@ You have made the following submissions to this conference:
 <ul>
 {%for s in sessions%}
   <li>
-{%if conference.callforpapersopen%}
+{%if conference.callforpapersopen or is_tester %}
   {%ifequal s.status 0 %}{%comment%}Submitted, can still be edited{%endcomment%}
   <a href="{{s.id}}/">{{s.title}}</a> ({{s.status_string_long}})
   {%else%}
@@ -36,7 +36,7 @@ You have made the following submissions to this conference:
 </ul>
 </p>
 
-{%if conference.callforpapersopen%}
+{%if conference.callforpapersopen or is_tester%}
 <h2>New submission</h2>
 <p>
 To create a new submission, enter the title here:

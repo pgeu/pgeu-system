@@ -541,6 +541,7 @@ def callforpapers(request, confname):
 	return render_to_response('confreg/callforpapers.html', {
 			'conference': conference,
 			'sessions': sessions,
+			'is_tester': conference.testers.filter(pk=request.user.id).exists(),
 	}, context_instance=ConferenceContext(request, conference))
 
 @ssl_required
@@ -548,7 +549,8 @@ def callforpapers(request, confname):
 @transaction.commit_on_success
 def callforpapers_new(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
-	if not conference.callforpapersopen:
+	is_tester = conference.testers.filter(pk=request.user.id).exists()
+	if not conference.callforpapersopen and not is_tester:
 		raise Http404('This conference has no open call for papers')
 
 	if not request.POST.has_key('title'):
@@ -579,7 +581,8 @@ def callforpapers_new(request, confname):
 @login_required
 def callforpapers_edit(request, confname, sessionid):
 	conference = get_object_or_404(Conference, urlname=confname)
-	if not conference.callforpapersopen:
+	is_tester = conference.testers.filter(pk=request.user.id).exists()
+	if not conference.callforpapersopen and not is_tester:
 		raise Http404('This conference has no open call for papers')
 
 	# Find users speaker record (should always exist when we get this far)
