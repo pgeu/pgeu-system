@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django.db.models import Q
+from django.http import HttpResponseRedirect
 
 from datetime import datetime
+import urllib
 
 from models import Member, MemberLog
 
@@ -26,12 +28,18 @@ class MemberAdmin(admin.ModelAdmin):
 	list_display = ('user', 'fullname', 'country', 'membersince', 'paiduntil', )
 	ordering = ('user',)
 	list_filter = (ActiveMemberFilter, )
+	actions = ['email_members', ]
 
 	def change_view(self, request, object_id, extra_context=None):
 		member = Member(pk=object_id)
 		return super(MemberAdmin, self).change_view(request, object_id, extra_context={
 				'logentries': member.memberlog_set.all().order_by('-timestamp')[:10],
 				})
+
+	def email_members(self, request, queryset):
+		selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+		return HttpResponseRedirect('/admin/membership/_email/?ids=%s&orig=%s' % (','.join(selected), urllib.quote(urllib.urlencode(request.GET))))
+	email_members.short_description = 'Send email to selected members'
 
 class MemberLogAdmin(admin.ModelAdmin):
 	list_display = ('member', 'timestamp', 'message', )

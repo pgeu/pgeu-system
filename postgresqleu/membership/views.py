@@ -2,15 +2,18 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.conf import settings
 from django.db import transaction
 
 from models import Member, MemberLog
 from forms import MemberForm
 
-from postgresqleu.util.decorators import ssl_required
+from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
+from postgresqleu.confreg.forms import EmailSendForm
+from postgresqleu.mailqueue.util import send_simple_mail
 
 from datetime import date, datetime
 
@@ -103,3 +106,35 @@ def userlist(request):
 	return render_to_response('community/userlist.html', {
 		'members': members,
 	}, context_instance=RequestContext(request))
+
+
+# Admin view that's used to send email to multiple users
+@ssl_required
+@login_required
+@user_passes_test_or_error(lambda u: u.is_superuser)
+@transaction.commit_on_success
+def admin_email(request):
+	if request.method == 'POST':
+		form = EmailSendForm(data=request.POST)
+		if form.is_valid():
+			# Ok, actually send the email. This is the scary part!
+			ids = form.data['ids'].split(',')
+			members = Member.objects.filter(pk__in=ids)
+			emails = [r.user.email for r in members]
+			for e in emails:
+				send_simple_mail(form.data['sender'], e, form.data['subject'], form.data['text'])
+
+			messages.info(request, 'Sent email to %s recipients' % len(emails))
+			return HttpResponseRedirect('/admin/membership/member/?' + form.data['returnurl'])
+		else:
+			ids = form.data['ids'].split(',')
+	else:
+		ids = request.GET['ids']
+		form = EmailSendForm(initial={'ids': ids, 'returnurl': request.GET['orig']})
+		ids = ids.split(',')
+
+	recipients = [m.user.email for m in Member.objects.filter(pk__in=ids)]
+	return render_to_response('membership/admin_email.html', {
+		'form': form,
+		'recipientlist': ', '.join(recipients),
+		})

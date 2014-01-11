@@ -92,6 +92,7 @@ urlpatterns = patterns('',
 	# Membership management
 	(r'^membership/$', postgresqleu.membership.views.home),
 	(r'^community/members/$', postgresqleu.membership.views.userlist),
+	(r'^admin/membership/_email/$', 'postgresqleu.membership.views.admin_email'),
 
 	# Merchandise redirect
 	(r'^merchandise/', redirect_to, {'url': 'http://postgresqleu.spreadshirt.net/'}),
