@@ -22,12 +22,6 @@ from django.db import connection, transaction
 
 from postgresqleu.mailqueue.models import QueuedMail
 
-def _sendmail(msg):
-	smtp = smtplib.SMTP("localhost")
-	smtp.sendmail(msg['From'], msg['To'], msg.as_string())
-	smtp.close()
-
-
 if __name__ == "__main__":
 	# Grab advisory lock, if available. Lock id is just a random number
 	# since we only need to interlock against ourselves. The lock is
