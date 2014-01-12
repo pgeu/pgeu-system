@@ -161,18 +161,18 @@ SELECT coalesce(currentyear.accountnum, incoming.accountnum) as anum, coalesce(c
 )
 SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
  count(*) over (partition by ag.name) = 1 and foldable as agfold,
- sum(incomingamount) over (partition by ac.name) as acincoming,
- sum(currentamount) over (partition by ac.name) as accurrent,
- sum(incomingamount+currentamount) over (partition by ac.name) as acoutgoing,
- sum(incomingamount) over (partition by ag.name) as agincoming,
- sum(currentamount) over (partition by ag.name) as agcurrent,
- sum(incomingamount+currentamount) over (partition by ag.name) as agoutgoing,
- incomingamount,
- currentamount,
- incomingamount+currentamount as outgoingamount,
- sum(incomingamount*case when balancenegative then -1 else 1 end) over() as incomingtotal,
- sum(currentamount*case when balancenegative then -1 else 1 end) over () as currenttotal,
- sum((incomingamount+currentamount)*case when balancenegative then -1 else 1 end) over () as outgoingtotal
+ sum(incomingamount*case when balancenegative then -1 else 1 end) over (partition by ac.name) as acincoming,
+ sum(currentamount*case when balancenegative then -1 else 1 end) over (partition by ac.name) as accurrent,
+ sum((incomingamount+currentamount)*case when balancenegative then -1 else 1 end) over (partition by ac.name) as acoutgoing,
+ sum(incomingamount*case when balancenegative then -1 else 1 end) over (partition by ag.name) as agincoming,
+ sum(currentamount*case when balancenegative then -1 else 1 end) over (partition by ag.name) as agcurrent,
+ sum((incomingamount+currentamount)*case when balancenegative then -1 else 1 end) over (partition by ag.name) as agoutgoing,
+ incomingamount*case when balancenegative then -1 else 1 end,
+ currentamount*case when balancenegative then -1 else 1 end,
+ (incomingamount+currentamount)*case when balancenegative then -1 else 1 end as outgoingamount,
+ sum(incomingamount) over() as incomingtotal,
+ sum(currentamount) over () as currenttotal,
+ sum((incomingamount+currentamount)) over () as outgoingtotal
  FROM accounting_accountclass ac INNER JOIN accounting_accountgroup ag ON ac.id=ag.accountclass_id INNER JOIN accounting_account a ON ag.id=a.group_id INNER JOIN fullbalance ON fullbalance.anum=a.num WHERE ac.inbalance AND (incomingamount != 0 OR currentamount != 0) ORDER BY anum
 		"""
 
@@ -247,7 +247,26 @@ def closeyear(request, year):
 		hasnext = False
 
 	curs = connection.cursor()
-	curs.execute(_get_balance_query(), {
+	# This is mostly the same as the _getbalancequery(), but we don't include
+	# the recalculations required specifically to the balancenegative
+	# field.
+	curs.execute("""WITH currentyear AS (
+ SELECT account_id AS accountnum, sum(amount) as amount FROM accounting_journalitem ji INNER JOIN accounting_journalentry je ON ji.journal_id=je.id WHERE je.year_id=%(year)s AND je.date <= %(enddate)s AND je.closed GROUP BY account_id
+), incoming AS (
+ SELECT account_id AS accountnum, amount FROM accounting_incomingbalance WHERE year_id=%(year)s
+), fullbalance AS (
+SELECT coalesce(currentyear.accountnum, incoming.accountnum) as anum, coalesce(currentyear.amount,0) AS currentamount, coalesce(incoming.amount,0) AS incomingamount FROM currentyear FULL OUTER JOIN incoming ON currentyear.accountnum=incoming.accountnum
+)
+SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
+ count(*) over (partition by ag.name) = 1 and foldable as agfold,
+ incomingamount,
+ currentamount,
+ (incomingamount+currentamount) as outgoingamount,
+ sum(incomingamount) over() as incomingtotal,
+ sum(currentamount) over () as currenttotal,
+ sum((incomingamount+currentamount)) over () as outgoingtotal
+ FROM accounting_accountclass ac INNER JOIN accounting_accountgroup ag ON ac.id=ag.accountclass_id INNER JOIN accounting_account a ON ag.id=a.group_id INNER JOIN fullbalance ON fullbalance.anum=a.num WHERE ac.inbalance AND (incomingamount != 0 OR currentamount != 0) ORDER BY anum
+		""", {
 		'year': year.year,
 		'enddate': date(year.year, 12, 21),
 		})
