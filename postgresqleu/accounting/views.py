@@ -268,7 +268,7 @@ SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
  FROM accounting_accountclass ac INNER JOIN accounting_accountgroup ag ON ac.id=ag.accountclass_id INNER JOIN accounting_account a ON ag.id=a.group_id INNER JOIN fullbalance ON fullbalance.anum=a.num WHERE ac.inbalance AND (incomingamount != 0 OR currentamount != 0) ORDER BY anum
 		""", {
 		'year': year.year,
-		'enddate': date(year.year, 12, 21),
+		'enddate': date(year.year, 12, 31),
 		})
 	balance = [dict(zip([col[0] for col in curs.description], row)) for row in curs.fetchall()]
 	curs.execute("SELECT sum(-amount) FROM accounting_journalitem ji INNER JOIN accounting_journalentry je ON ji.journal_id=je.id INNER JOIN accounting_account a ON ji.account_id=a.num INNER JOIN accounting_accountgroup ag ON ag.id=a.group_id INNER JOIN accounting_accountclass ac ON ac.id=ag.accountclass_id WHERE je.year_id=%(year)s AND NOT inbalance", {
