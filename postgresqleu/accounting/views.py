@@ -159,7 +159,21 @@ def _get_balance_query(objstr=''):
 ), fullbalance AS (
 SELECT coalesce(currentyear.accountnum, incoming.accountnum) as anum, coalesce(currentyear.amount,0) AS currentamount, coalesce(incoming.amount,0) AS incomingamount FROM currentyear FULL OUTER JOIN incoming ON currentyear.accountnum=incoming.accountnum
 )
-SELECT ac.name AS acname, ag.name AS agname, anum, a.name, count(*) over (partition by ag.name) = 1 and foldable as agfold, sum(incomingamount) over (partition by ac.name) as acincoming, sum(currentamount) over (partition by ac.name) as accurrent, sum(incomingamount+currentamount) over (partition by ac.name) as acoutgoing, sum(incomingamount) over (partition by ag.name) as agincoming, sum(currentamount) over (partition by ag.name) as agcurrent, sum(incomingamount+currentamount) over (partition by ag.name) as agoutgoing, incomingamount, currentamount,incomingamount+currentamount as outgoingamount, sum(incomingamount*case when balancenegative then -1 else 1 end) over() as incomingtotal, sum(currentamount*case when balancenegative then -1 else 1 end) over () as currenttotal, sum((incomingamount+currentamount)*case when balancenegative then -1 else 1 end) over () as outgoingtotal FROM accounting_accountclass ac INNER JOIN accounting_accountgroup ag ON ac.id=ag.accountclass_id INNER JOIN accounting_account a ON ag.id=a.group_id INNER JOIN fullbalance ON fullbalance.anum=a.num WHERE ac.inbalance AND (incomingamount != 0 OR currentamount != 0) ORDER BY anum
+SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
+ count(*) over (partition by ag.name) = 1 and foldable as agfold,
+ sum(incomingamount) over (partition by ac.name) as acincoming,
+ sum(currentamount) over (partition by ac.name) as accurrent,
+ sum(incomingamount+currentamount) over (partition by ac.name) as acoutgoing,
+ sum(incomingamount) over (partition by ag.name) as agincoming,
+ sum(currentamount) over (partition by ag.name) as agcurrent,
+ sum(incomingamount+currentamount) over (partition by ag.name) as agoutgoing,
+ incomingamount,
+ currentamount,
+ incomingamount+currentamount as outgoingamount,
+ sum(incomingamount*case when balancenegative then -1 else 1 end) over() as incomingtotal,
+ sum(currentamount*case when balancenegative then -1 else 1 end) over () as currenttotal,
+ sum((incomingamount+currentamount)*case when balancenegative then -1 else 1 end) over () as outgoingtotal
+ FROM accounting_accountclass ac INNER JOIN accounting_accountgroup ag ON ac.id=ag.accountclass_id INNER JOIN accounting_account a ON ag.id=a.group_id INNER JOIN fullbalance ON fullbalance.anum=a.num WHERE ac.inbalance AND (incomingamount != 0 OR currentamount != 0) ORDER BY anum
 		"""
 
 def _collate_results(query, queryparam, numvalues):
