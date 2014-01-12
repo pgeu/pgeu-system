@@ -289,7 +289,7 @@ SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
 			# Start by transferring this years result
 			IncomingBalance(year=nextyear,
 							account=Account.objects.get(num=request.POST['resultaccount']),
-							amount=yearresult
+							amount=-yearresult
 							).save()
 
 			# Now add all other outgoing balances
