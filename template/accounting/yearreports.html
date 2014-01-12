@@ -33,6 +33,9 @@ table.reporttable tr td.amount {
    text-align: right;
    width: 120px;
 }
+table.reporttable tr td.amount.unfolded {
+   padding-right: 10px;
+}
 table.reporttable tr td.spacer {
    width: 15px;
 }
@@ -118,7 +121,7 @@ Object: <select id="objsel"><option value="">All</option>{%for o in objects%}<op
   {%if not agfold%}<tr class="groupsum"><td class="spacer"></td><td colspan="3">{{agname}}</td></tr>{%endif%}
   {%for anum, aname, vals in agcontents %}
    <tr><td class="spacer"></td><td class="spacer"></td><td class="accountname" width="400">{{anum}} - {{aname}}</td>
-     {%for v in vals%}<td class="amount">{{v}}</td>{%endfor%}
+     {%for v in vals%}<td class="amount{%if not agfold%} unfolded{%endif%}">{{v}}</td>{%endfor%}
    </tr>
   {%endfor%}
  {%if not agfold %}<tr class="groupsum"><td class="spacer"></td><td colspan="2">Total - {{agname}}</td>
