@@ -2,6 +2,7 @@
 {%load humanize%}
 {%block title%}Accounting - {{title}}{%endblock%}
 {%block extrahead%}
+<style type="text/css" media="print" title="Print base">@import url("/media/css/base.css");</style>
 <style>
 ul.messages {
   list-style-type: none;
@@ -54,6 +55,21 @@ table.reporttable tr.finalrow td {
 table.reporttable tr.finalrow td.amount {
    border-top: 3px double black;
 }
+
+/* Printing shouldn't include all the nav stuff */
+@media print {
+   div#pgHeaderContainer { display: none; }
+   div#pgFooter { display: none; }
+   ul.messages { display: none; }
+   h2.reportfilter { display: none; }
+   div.dateinfo { margin-bottom: 40px; }
+
+   /* Override styles in the base */
+   h1 {
+      font-size: 2.5em;
+      color: black;
+   }
+}
 </style>
 <link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
 
@@ -82,6 +98,8 @@ $(function() {
 {%endblock%}
 {%block layoutblock%}
 <h1>{{title}}</h1>
+<div class="dateinfo">{{year.year}}-01-01 - {{enddate|date:"Y-m-d"}}</div>
+
 {% if messages %}
     <ul class="messages">
     {% for message in messages %}
@@ -89,7 +107,7 @@ $(function() {
     {% endfor %}
     </ul>
 {% endif %}
-<h2>Year: <select id="yearsel">{%for y in years%}<option value="{{y.year}}"{%if y == year%} SELECTED{%endif%}>{{y}}</option>{%endfor%}</select>
+<h2 class="reportfilter">Year: <select id="yearsel">{%for y in years%}<option value="{{y.year}}"{%if y == year%} SELECTED{%endif%}>{{y}}</option>{%endfor%}</select>
 Object: <select id="objsel"><option value="">All</option>{%for o in objects%}<option value="{{o.id}}"{%if o == currentobj%} SELECTED{%endif%}>{{o}}</option>{%endfor%}</select> Enddate: <input type="text" class="datepicker" id="enddate" value="{{enddate|date:"Y-m-d"}}"></h2>
 
 <table cellspacing="0" cellpadding="1" class="reporttable">
