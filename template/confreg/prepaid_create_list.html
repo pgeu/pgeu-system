@@ -41,4 +41,51 @@
 {%for v in vouchers%}{{v.vouchervalue}}
 {%endfor%}</textarea>
 
+<h2>And once more</h2>
+<p>
+In a format suitable to paste into an email which includes
+the details for how to actually use them.
+</p>
+<input type="text" size="60" value="Attendee vouchers for {{batch.conference}}" />
+<textarea cols="80" rows="50">
+Hello!
+
+This email contains your voucher code(s) for registration to
+{{batch.conference}}.
+
+To use these vouchers, a registration has to be made the
+same way as with a paid registration. This means that each
+attendee must make his/her own registration, and fill in all
+the details. This *must* be done individually for each attendee,
+as this registration is also used to get access to information
+during the event, as well as pre-conference emails.
+
+At the bottom of the registration form, there is a field named
+"Voucher code". Enter the code from below into that field,
+and then click "Save and finish registration" (when all other
+details are completed). If no additional items at cost have
+been added, that will result in a total cost of zero, and once
+that is confirmed, the registration will complete automatically.
+
+The vouchers are valid for registration of type:
+{{batch.regtype.regtype}}
+
+It will not be possible to use them for a different kind of
+registration. However, paid additional options (if any are
+available for this conference) can still be added, but will
+have to be paid for separately.
+
+Each voucher code can only be used *once*.
+
+Your voucher code(s) are (one on each line, and no spaces in
+the codes - in case your mail program has reformatted the lines):
+
+{%for v in vouchers%}{{v.vouchervalue}}
+{%endfor%}
+
+The registration form is available at:
+https://www.postgresql.eu/events/register/{{batch.conference.urlname}}/
+
+</textarea>
+
 {%endblock%}
