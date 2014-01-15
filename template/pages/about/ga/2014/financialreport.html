@@ -1,0 +1,116 @@
+{%extends "nav_about.html"%}
+{%block title%}2014 General Assembly - Financial report{%endblock%}
+{%block content%}
+<h1>2014 General Assembly - Financial report</h1>
+
+<h2 >Assets</h2>
+
+<table>
+	<tr>
+		<td><strong>Accounts</strong></td>
+		<td><strong>2013-01-01</strong></td>
+		<td><strong>2013-12-31</strong></td>
+		<td><strong>Difference</strong></td>
+	</tr>
+	<tr>
+		<td>BNP checking account</td>
+		<td>59,092.83</td>
+		<td>57.14</td>
+		<td>−59,035.69</td>
+	</tr>
+	<tr>
+		<td>Crédit Mutuel checking account</td>
+		<td></td>
+		<td>17,279.18</td>
+		<td>+17,279.18</td>
+	</tr>
+	<tr>
+		<td>Crédit Mutuel saving account</td>
+		<td></td>
+		<td>60,020.00</td>
+		<td>+60,020.00</td>
+	</tr>
+	<tr>
+		<td>Paypal account</td>
+		<td>1,246.72</td>
+		<td>4,700.25</td>
+		<td>+3,453.53</td>
+	</tr>
+	<tr>
+		<td>Adyen account</td>
+		<td></td>
+		<td>500.00</td>
+		<td>+500.00</td>
+	</tr>
+	<tr>
+		<td>Total</td>
+		<td>60,339.55</td>
+		<td>82,556.57</td>
+		<td>+22,217.02</td>
+	</tr>
+</table>
+
+<h2>Major items</h2>
+
+<h3>Activities</h3>
+
+<p>PostgreSQL Europe bank was the BNP since the beginning of the organization. Unfortunately, they were hard to work with: no English website, a quite-hard-to-reach manager, quite expensive, and more. So we worked on finding another bank. We finally chose Crédit Mutuel: multilanguage website, lots of interesting features on their webapp to deal with the account, a manager quick at answering emails and phone calls, and a smaller fee. We opened an account there in April, and transferred our existing funds. In November, we asked BNP to close the account, which is still ongoing, but should be done early in February.</p>
+
+<p>The Crédit Mutual bank manager offered us to open a saving account, which we did. This accounts give us a better interest rate, while still giving us easy access to the funds when needed. We keep enough money on the checking account to cover all except the largest transactions, which are the payments to the PGConf.eu venues and typically happen during the summer.</p>
+
+<p>We have now a new policy to deal with the Paypal account. We usually have between 5,000 and 10,000 Euro in it. When it gets to 10k, 5k is transfered to the Crédit Mutuel checking account. We don't need more than 5k in the Paypal account. We pay some things with it, but not much, and no big payments.</p>
+
+<p>We have also started working with Adyen as a creditcard payment processor. This gives us significantly lower fees than Paypal, and also takes care of the complaints we've had from many members and conference attendees that don't want to work with Paypal. We keep Paypal as an option, of course, for those that prefer it.</p>
+
+<p>Finally, we coded an accounting webapp. It's completely integrated with PostgreSQL Europe website. Paypal and Adyen payments are automatically taken into account. This makes it possible for us to do more detailed analysis and reporting of our finances.</p>
+
+<h3>Income/Expenses</h3>
+
+<p>Important items are summarized here, but the <a href="/media/pdf/pgeu_results_2014.pdf">full report</a> is also available.</p>
+
+	<table>
+		<tr>
+			<td><strong>Items</strong></td>
+			<td><strong>Income</strong></td>
+			<td><strong>Expenses</strong></td>
+			<td><strong>Final results</strong></td>
+		</tr>
+		<tr>
+			<td>Membership</td>
+			<td>390</td>
+			<td>0</td>
+			<td>390</td>
+		</tr>
+		<tr>
+			<td>Donations</td>
+			<td>4255</td>
+			<td>0</td>
+			<td>4255</td>
+		</tr>
+		<tr>
+			<td>FOSDEM 2013</td>
+			<td>2967</td>
+			<td>830</td>
+			<td>2137</td>
+		</tr>
+		<tr>
+			<td>pgconf.eu 2013</td>
+			<td>86238</td>
+			<td>66336</td>
+			<td>19902</td>
+		</tr>
+		<tr>
+			<td>pgconf.de 2013</td>
+			<td>12220</td>
+			<td>7112</td>
+			<td>5108</td>
+		</tr>
+	</table>
+
+<p>Memberships are a really small part of our incomes. Even donations are doing better. On events, sponsorships and attendance fees are mostly equal (47k and 51k), and we are clearly dependent on both to cover our expenses. Likewise, our largest expenses are the conference venues, by far.</p>
+
+<h2>Conclusion</h2>
+
+<p>2013 has seen a lot of work on the financial part of the organization. We moved to another bank, opened a saving account, got some real capacities regarding payments with debit/credit card, and coded an accounting webapp. That being said, there are still a lot of work ahead of us.</p>
+
+{%endblock%}
