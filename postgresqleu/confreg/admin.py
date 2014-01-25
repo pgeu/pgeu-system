@@ -298,7 +298,7 @@ class PrepaidVoucherInline(admin.TabularInline):
 	can_delete = False
 
 class PrepaidBatchAdmin(admin.ModelAdmin):
-	list_display = ['id', 'conference', 'buyer' ]
+	list_display = ['id', 'conference', 'buyer', 'buyername', ]
 	list_filter = ['conference', ]
 	inlines = [PrepaidVoucherInline, ]
 

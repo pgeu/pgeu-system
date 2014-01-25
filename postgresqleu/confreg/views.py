@@ -751,10 +751,12 @@ def createvouchers(request):
 			conference = Conference.objects.get(pk=form.data['conference'])
 			regtype = RegistrationType.objects.get(pk=form.data['regtype'], conference=conference)
 			buyer = User.objects.get(pk=form.data['buyer'])
+			buyername = form.data['buyername']
 
 			batch = PrepaidBatch(conference=conference,
 								 regtype=regtype,
-								 buyer=buyer)
+								 buyer=buyer,
+								 buyername=buyername)
 			batch.save()
 
 			for n in range(0, int(form.data['count'])):

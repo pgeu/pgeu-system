@@ -481,6 +481,7 @@ class PrepaidBatch(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
 	regtype = models.ForeignKey(RegistrationType, null=False, blank=False)
 	buyer = models.ForeignKey(User, null=False, blank=False)
+	buyername = models.CharField(max_length=100, null=True, blank=True)
 
 	def __unicode__(self):
 		return "%s: %s for %s" % (self.conference, self.regtype, self.buyer)

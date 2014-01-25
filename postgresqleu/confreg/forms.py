@@ -305,6 +305,7 @@ class PrepaidCreateForm(forms.Form):
 	regtype = forms.ModelChoiceField(queryset=RegistrationType.objects.all())
 	count = forms.IntegerField(min_value=1, max_value=100)
 	buyer = forms.ModelChoiceField(queryset=User.objects.all().order_by('username'), help_text="Pick the user who bought the batch. If he/she is not registered, pick your own userid")
+	buyername = forms.CharField(max_length=100,help_text="Display name of the user who bought the batch. Internal use only.")
 	confirm = forms.BooleanField(help_text="Confirm that the chosen registration type and count are correct (there is no undo past this point, the vouchers will be created!")
 
 	def __init__(self, *args, **kwargs):
@@ -314,6 +315,7 @@ class PrepaidCreateForm(forms.Form):
 			if not (self.data.has_key('regtype')
 					and self.data.has_key('count')
 					and self.data.get('regtype')
+					and self.data.get('buyername')
 					and self.data.get('count')):
 				del self.fields['confirm']
 		else:
@@ -321,6 +323,7 @@ class PrepaidCreateForm(forms.Form):
 			del self.fields['regtype']
 			del self.fields['count']
 			del self.fields['buyer']
+			del self.fields['buyername']
 			del self.fields['confirm']
 
 class EmailSendForm(forms.Form):
