@@ -11,6 +11,8 @@ from reportlab.lib.styles import getSampleStyleSheet
 
 import csv
 
+from postgresqleu.confreg.badges import BadgeBuilder
+
 from postgresqleu.countries.models import Country
 from models import ConferenceRegistration, RegistrationType, ConferenceAdditionalOption, ShirtSize
 
@@ -194,6 +196,16 @@ def build_attendee_report(conference, POST):
 		writer.set_orientation(orientation)
 	elif format=='csv':
 		writer = ReportWriterCsv(title, borders)
+	elif format=='badge':
+		# Can't use a normal renderer here, since we need to actually
+		# pass the full objects into the badge builder.
+		try:
+			resp = HttpResponse(content_type='application/pdf')
+			builder = BadgeBuilder(conference, result)
+			builder.render(resp)
+			return resp
+		except Exception, e:
+			return HttpResponse("Exception occured: %s" % e, content_type='text/plain')
 	else:
 		raise Exception("Unknown format")
 

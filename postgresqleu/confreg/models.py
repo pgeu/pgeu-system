@@ -85,6 +85,7 @@ class Conference(models.Model):
 	additionalintro = models.TextField(blank=True, null=False)
 	basetemplate = models.CharField(max_length=128, blank=True, null=True, default=None)
 	templatemodule = models.CharField(max_length=128, blank=True, null=True, default=None)
+	badgemodule = models.CharField(max_length=128, blank=True, null=True, default=None)
 	templatemediabase = models.CharField(max_length=128, blank=True, null=True, default=None)
 	callforpapersintro = models.TextField(blank=True, null=False)
 	lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
