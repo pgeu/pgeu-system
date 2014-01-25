@@ -303,8 +303,16 @@ class PrepaidBatchAdmin(admin.ModelAdmin):
 	inlines = [PrepaidVoucherInline, ]
 
 class PrepaidVoucherAdmin(admin.ModelAdmin):
-	list_display = ['vouchervalue', 'conference', 'batch', 'user', 'usedate', ]
+	list_display = ['vouchervalue', 'conference', 'buyername', 'usedby', 'usedate', ]
 	list_filter = ['conference', ]
+
+	def buyername(self, obj):
+		url = urlresolvers.reverse('admin:confreg_prepaidbatch_change', args=(obj.batch.pk,))
+		return mark_safe('<a href="%s">%s</a>' % (url, obj.batch.buyername))
+	buyername.allow_tags = True
+
+	def usedby(self, obj):
+		return "%s %s" % (obj.user.firstname, obj.user.lastname)
 
 class BulkPaymentAdmin(admin.ModelAdmin):
 	list_display = ['adminstring', 'conference', 'user', 'numregs', 'paidat', 'ispaid',]
