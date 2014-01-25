@@ -45,6 +45,9 @@ class BaseBadge(Flowable):
 		return self.height - ymm * mm - heightmm*mm
 
 	def drawDynamicParagraph(self, txt, x, y, width, height, color, bold=False, maxsize=None, alignment=TA_LEFT, verticalcenter=False):
+		if not txt:
+			return
+
 		# Try to figure out the proper size
 		if bold:
 			fontname = 'DejaVu Serif Bold'
