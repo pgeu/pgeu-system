@@ -150,7 +150,7 @@ class PaypalAPI(object):
 			i += 1
 			if not ret.has_key('L_TRANSACTIONID%i' % i): break
 
-			if ret['L_TYPE%i' % i][0] in ('Payment', 'Donation'):
+			if ret['L_TYPE%i' % i][0] in ('Payment', 'Donation', 'Authorization'):
 				yield PaypalTransaction(self, ret, source, i)
 			elif ret['L_TYPE%i' %i][0] in ('Transfer'):
 				yield PaypalTransfer(self, ret, source, i)
@@ -159,6 +159,9 @@ class PaypalAPI(object):
 			elif ret['L_TYPE%i' % i][0] in ('Fee Reversal'):
 				# It seems these can be ignored since the actual fee info
 				# is also present on the refund notice.
+				pass
+			elif ret['L_TYPE%i' % i][0] in ('Temporary Hold'):
+				# This can safely be ignored, as it's temporary
 				pass
 			else:
 				print "Don't know what to do with paypal transaction of type %s" % ret['L_TYPE%i' % i][0]
