@@ -150,7 +150,7 @@ class PaypalAPI(object):
 			i += 1
 			if not ret.has_key('L_TRANSACTIONID%i' % i): break
 
-			if ret['L_TYPE%i' % i][0] in ('Payment', 'Donation', 'Authorization'):
+			if ret['L_TYPE%i' % i][0] in ('Payment', 'Donation'):
 				yield PaypalTransaction(self, ret, source, i)
 			elif ret['L_TYPE%i' %i][0] in ('Transfer'):
 				yield PaypalTransfer(self, ret, source, i)
@@ -160,8 +160,10 @@ class PaypalAPI(object):
 				# It seems these can be ignored since the actual fee info
 				# is also present on the refund notice.
 				pass
-			elif ret['L_TYPE%i' % i][0] in ('Temporary Hold'):
-				# This can safely be ignored, as it's temporary
+			elif ret['L_TYPE%i' % i][0] in ('Temporary Hold', 'Authorization'):
+				# We can safely ignore temporary holds, as they are temporary.
+				# We also ignore Authorization, because they will be reported
+				# both as an authorization event and a payment event.
 				pass
 			else:
 				print "Don't know what to do with paypal transaction of type %s" % ret['L_TYPE%i' % i][0]
