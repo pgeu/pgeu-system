@@ -376,10 +376,11 @@ def report(request, year, reporttype):
 		# XXX: consider perhaps including the in and out balance as well.
 
 		# Yup, the django ORM fails again - no window aggregates
-		sql = "SELECT a.num as accountnum, a.name as accountname, sum(case when i.amount>0 then i.amount else 0 end) over w1 as totaldebit, sum(case when i.amount < 0 then -i.amount else 0 end) over w1 as totalcredit, e.seq as entryseq, e.date, i.description, case when i.amount > 0 then i.amount else 0 end as debit, case when i.amount < 0 then -i.amount else 0 end as credit, o.name as object FROM accounting_journalitem i INNER JOIN accounting_account a ON i.account_id=a.num INNER JOIN accounting_journalentry e ON i.journal_id=e.id LEFT JOIN accounting_object o ON i.object_id=o.id WHERE e.year_id=%(year)s AND e.closed AND e.date<=%(enddate)s"
+		sql = "SELECT a.num as accountnum, a.name as accountname, sum(case when i.amount>0 then i.amount else 0 end) over w1 as totaldebit, sum(case when i.amount < 0 then -i.amount else 0 end) over w1 as totalcredit, e.seq as entryseq, e.date, i.description, case when i.amount > 0 then i.amount else 0 end as debit, case when i.amount < 0 then -i.amount else 0 end as credit, o.name as object, e.closed FROM accounting_journalitem i INNER JOIN accounting_account a ON i.account_id=a.num INNER JOIN accounting_journalentry e ON i.journal_id=e.id LEFT JOIN accounting_object o ON i.object_id=o.id WHERE e.year_id=%(year)s AND (e.closed OR %(includeopen)s) AND e.date<=%(enddate)s"
 		params = {
 			'year': year.year,
 			'enddate': enddate,
+			'includeopen': includeopen,
 			}
 		if request.GET.has_key('obj') and request.GET['obj']:
 			sql += " AND o.id=%(objectid)s"
@@ -417,6 +418,7 @@ def report(request, year, reporttype):
 			'reporttype': 'ledger',
 			'items': items,
 			'enddate': enddate,
+			'includeopen': includeopen,
 		}, context_instance=RequestContext(request))
 	elif reporttype == 'results':
 		# The results report is the easiest one, since we can assume that
