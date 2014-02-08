@@ -150,10 +150,27 @@ def process_refund(notification):
 			ts = TransactionStatus.objects.get(pspReference=notification.originalReference)
 			refund = Refund(notification=notification, transaction=ts, refund_amount=notification.amount)
 			refund.save()
+
+			# Generate an open accounting record for this refund.
+			# We expect this happens so seldom that we can just deal with
+			# manually finishing off the accounting records.
+			urls = [
+				"https://ca-live.adyen.com/ca/ca/accounts/showTx.shtml?pspReference=%s&txType=Payment&accountKey=MerchantAccount.%s" % (notification.pspReference, notification.merchantAccountCode),
+			]
+			accrows = [
+				(settings.ACCOUNTING_ADYEN_REFUNDS_ACCOUNT,
+				 "Refund of %s (transaction %s) "  % (ts.notes, ts.pspReference),
+				 -refund.refund_amount,
+				 None),
+			]
+
 			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 							 settings.ADYEN_NOTIFICATION_RECEIVER,
 							 'Adyen refund received',
-							 "A refund of EUR%s for transaction %s was processed\n\nNOTE! You must create a manual entry in the accounting system for refunds!" % (notification.amount, notification.originalReference))
+							 "A refund of EUR%s for transaction %s was processed\n\nNOTE! You must complete the accounting system entry manually for refunds!" % (notification.amount, notification.originalReference))
+
+			create_accounting_entry(date.today(), accrows, True, urls)
+
 		except TransactionStatus.DoesNotExist:
 			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 							 settings.ADYEN_NOTIFICATION_RECEIVER,
