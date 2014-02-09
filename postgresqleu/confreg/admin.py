@@ -21,6 +21,48 @@ from postgresqleu.accounting.models import Object
 from datetime import datetime
 import urllib
 
+#
+# List filters
+#
+class TrackListFilter(admin.SimpleListFilter):
+	title = 'Track'
+	parameter_name = 'track'
+	def lookups(self, request, model_admin):
+		cid = request.GET.get('conference__id__exact', -1)
+		if cid >= 0:
+			return ((t.id, t.trackname) for t in Track.objects.filter(conference__id=cid))
+
+	def queryset(self, request, queryset):
+		if self.value():
+			return queryset.filter(track_id=self.value())
+
+class RegtypeListFilter(admin.SimpleListFilter):
+	title = 'Registration type'
+	parameter_name = 'regtype'
+	def lookups(self, request, model_admin):
+		cid = request.GET.get('conference__id__exact', -1)
+		if cid >= 0:
+			return ((r.id, r.regtype) for r in RegistrationType.objects.filter(conference__id=cid))
+
+	def queryset(self, request, queryset):
+		if self.value():
+			return queryset.filter(regtype_id=self.value())
+
+class AdditionalOptionListFilter(admin.SimpleListFilter):
+	title = 'Additional option'
+	parameter_name = 'addoption'
+	def lookups(self, request, model_admin):
+		cid = request.GET.get('conference__id__exact', -1)
+		if cid >= 0:
+			return ((ao.id, ao.name) for ao in ConferenceAdditionalOption.objects.filter(conference__id=cid))
+
+	def queryset(self, request, queryset):
+		if self.value():
+			return queryset.filter(additionaloptions__id=self.value())
+
+#
+# General admin classes
+#
 class ConferenceAdminForm(forms.ModelForm):
 	class Meta:
 		model = Conference
@@ -50,7 +92,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	form = ConferenceRegistrationForm
 	list_display = ['email', 'conference', 'firstname', 'lastname', 'created_short', 'short_regtype', 'payconfirmedat_short', 'has_invoice', 'addoptions']
-	list_filter = ['conference', 'regtype', 'additionaloptions', ]
+	list_filter = ['conference', RegtypeListFilter, AdditionalOptionListFilter, ]
 	search_fields = ['email', 'firstname', 'lastname', ]
 	ordering = ['-payconfirmedat', '-created', 'lastname', 'firstname', ]
 	actions= ['approve_conferenceregistration', 'email_recipients']
@@ -159,10 +201,11 @@ class ConferenceSessionForm(forms.ModelForm):
 			raise ValidationError("This room does not belong to this conference!")
 		return self.cleaned_data['room']
 
+
 class ConferenceSessionAdmin(admin.ModelAdmin):
 	form = ConferenceSessionForm
 	list_display = ['title', 'conference', 'speaker_list', 'status', 'starttime', 'track', 'initialsubmit', ]
-	list_filter = ['conference', 'track', 'status', ]
+	list_filter = ['conference', TrackListFilter, 'status', ]
 	search_fields = ['title', ]
 	filter_horizontal = ('speaker',)
 	actions= ['email_recipients', ]
