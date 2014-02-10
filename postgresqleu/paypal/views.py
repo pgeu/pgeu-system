@@ -139,9 +139,9 @@ def paypal_return_handler(request):
 			# manually completed.
 			accstr = "Paypal donation %s" % ti.paypaltransid
 			accrows = [
-				(settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, accstr, ti.amount-ti.fee),
-				(settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, accstr, ti.fee),
-				(settings.ACCOUNTING_DONATIONS_ACCOUNT, accstr, -ti.amount),
+				(settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, accstr, ti.amount-ti.fee, None),
+				(settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, accstr, ti.fee, None),
+				(settings.ACCOUNTING_DONATIONS_ACCOUNT, accstr, -ti.amount, None),
 				]
 			create_accounting_entry(date.today(), accrows, True, urls)
 
