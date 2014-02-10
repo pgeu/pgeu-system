@@ -29,7 +29,7 @@ STATUS_CHOICES = (
 )
 STATUS_CHOICES_LONG = (
 	(0, "Submitted, not processed yet"),
-	(1, "Fully approved"),
+	(1, "Approved and confirmed"),
 	(2, "Rejected"),
 	(3, "Pending speaker confirmation"), # Approved, but not confirmed
 	(4, "Reserve listed in case of cancels/changes"), # Reserve list
