@@ -149,6 +149,7 @@ class RegistrationType(models.Model):
 	regclass = models.ForeignKey(RegistrationClass, null=True, blank=True)
 	cost = models.IntegerField(null=False)
 	active = models.BooleanField(null=False, blank=False, default=True)
+	activeuntil = models.DateField(null=True, blank=True)
 	inlist = models.BooleanField(null=False, blank=False, default=True)
 	sortkey = models.IntegerField(null=False, blank=False, default=10)
 	specialtype = models.CharField(max_length=5, blank=True, null=True, choices=special_reg_types)
