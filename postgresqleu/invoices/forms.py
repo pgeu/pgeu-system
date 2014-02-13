@@ -42,7 +42,7 @@ class InvoiceForm(forms.ModelForm):
 		exclude = ['finalized', 'pdf_invoice', 'pdf_receipt', 'paidat', 'paymentdetails', 'processor', 'processorid', 'deleted', 'deletion_reason', 'refunded', 'refund_reason', 'recipient_secret']
 
 	def clean(self):
-		if not self.cleaned_data['recipient_user'] and self.cleaned_data['recipient_email']:
+		if not self.cleaned_data['recipient_user'] and self.cleaned_data.has_key('recipient_email') and self.cleaned_data['recipient_email']:
 			# User not specified. If we can find one by email, auto-populate
 			# the field.
 			matches = User.objects.filter(email=self.cleaned_data['recipient_email'])
