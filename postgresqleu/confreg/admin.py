@@ -267,7 +267,7 @@ class RegistrationTypeAdminForm(forms.ModelForm):
 			pass
 
 class RegistrationTypeAdmin(admin.ModelAdmin):
-	list_display = ['conference', 'regtype', 'cost', 'sortkey', 'active']
+	list_display = ['conference', 'regtype', 'cost', 'sortkey', 'active', 'activeuntil', ]
 	list_filter = ['conference',]
 	ordering = ['conference','regtype']
 	form = RegistrationTypeAdminForm
