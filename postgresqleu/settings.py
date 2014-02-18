@@ -95,6 +95,7 @@ INSTALLED_APPS = (
 	'postgresqleu.invoicemgr',
 	'postgresqleu.invoices',
 	'postgresqleu.accounting',
+	'postgresqleu.cmutuel',
 	'postgresqleu.simplemigrate', # MUST be the last line!
 )
 
@@ -133,6 +134,10 @@ ACCOUNTING_MANUAL_INCOME_ACCOUNT=1930
 ACCOUNTING_CONFREG_ACCOUNT=3003
 ACCOUNTING_MEMBERSHIP_ACCOUNT=3001
 ACCOUNTING_DONATIONS_ACCOUNT=3601
+
+# CM balance fetching account
+CM_USER_ACCOUNT=None
+CM_USER_PASSWORD=None
 
 # Base URLs for generating absolute URLs
 SITEBASE="http://www.postgresql.eu"
