@@ -52,7 +52,7 @@ class CurlWrapper(object):
 		self.curl.setopt(pycurl.COOKIEFILE, '')
 
 	def request(self, url, post, postdict=None):
-		self.curl.setopt(pycurl.URL, url)
+		self.curl.setopt(pycurl.URL, str(url))
 		readstr = cStringIO.StringIO()
 		self.curl.setopt(pycurl.WRITEFUNCTION, readstr.write)
 		self.curl.setopt(pycurl.FOLLOWLOCATION, 0)
