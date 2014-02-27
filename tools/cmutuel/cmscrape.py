@@ -185,7 +185,7 @@ if __name__ == "__main__":
 
 	# Now send things off if there is anything to send
 	with transaction.commit_on_success():
-		if CMutuelTransaction.objects.filter(sent=False).exists():
+		if CMutuelTransaction.objects.filter(sent=False).exclude(description__startswith='VIR STG ADYEN ').exists():
 			sio = cStringIO.StringIO()
 			sio.write("One or more new transactions have been recorded in the Credit Mutuel account:\n\n")
 			sio.write("%-10s  %15s  %s\n" % ('Date', 'Amount', 'Description'))
