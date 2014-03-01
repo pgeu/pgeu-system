@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import RadioSelect
 from django.forms import ValidationError
+from django.forms.util import ErrorList
 from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
@@ -135,7 +136,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 			v = PrepaidVoucher.objects.get(vouchervalue=cleaned_data['vouchercode'],
 										   conference=self.instance.conference)
 			if v.batch.regtype != cleaned_data['regtype']:
-				self._errors['vouchercode'] = self.error_class('The specified voucher is only usable for registrations of type "%s"' % v.batch.regtype)
+				self._errors['vouchercode'] = ErrorList(['The specified voucher is only usable for registrations of type "%s"' % v.batch.regtype])
 
 		return cleaned_data
 
