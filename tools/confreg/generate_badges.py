@@ -26,7 +26,7 @@ if __name__ == "__main__":
 		sys.exit(1)
 
 	conf = Conference.objects.get(urlname=sys.argv[1])
-	regs = ConferenceRegistration.objects.filter(conference=conf)
+	regs = ConferenceRegistration.objects.filter(conference=conf, payconfirmedat__isnull=False)
 
 	bb = BadgeBuilder(conf,regs)
 	bb.render(sys.argv[2])
