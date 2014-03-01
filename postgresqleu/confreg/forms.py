@@ -135,6 +135,9 @@ class ConferenceRegistrationForm(forms.ModelForm):
 			# correct type of registration?
 			v = PrepaidVoucher.objects.get(vouchervalue=cleaned_data['vouchercode'],
 										   conference=self.instance.conference)
+			if not cleaned_data.has_key('regtype'):
+				self._errors['vouchercode'] = ErrorList(['Invalid registration type specified'])
+				raise ValidationError('An invalid registration type has been selected')
 			if v.batch.regtype != cleaned_data['regtype']:
 				self._errors['vouchercode'] = ErrorList(['The specified voucher is only usable for registrations of type "%s"' % v.batch.regtype])
 
