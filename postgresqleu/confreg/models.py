@@ -125,13 +125,20 @@ class Conference(models.Model):
 class RegistrationClass(models.Model):
 	conference = models.ForeignKey(Conference, null=False)
 	regclass = models.CharField(max_length=64, null=False, blank=False)
-	badgecolor = models.CharField(max_length=20, null=False, blank=True, help_text='Badge color in hex format', validators=[color_validator, ])
+	badgecolor = models.CharField(max_length=20, null=False, blank=True, help_text='Badge background color in hex format', validators=[color_validator, ])
+	badgeforegroundcolor = models.CharField(max_length=20, null=False, blank=True, help_text='Badge foreground color in hex format', validators=[color_validator, ])
 
 	def __unicode__(self):
 		return self.regclass
 
 	def colortuple(self):
 		return tuple([int(self.badgecolor[n*2+1:n*2+2+1], 16) for n in range(0,3)])
+
+	def foregroundcolortuple(self):
+		if len(self.badgeforegroundcolor):
+			return tuple([int(self.badgeforegroundcolor[n*2+1:n*2+2+1], 16) for n in range(0,3)])
+		else:
+			return None
 
 	class Meta:
 		verbose_name_plural = 'Registration classes'
