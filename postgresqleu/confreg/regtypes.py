@@ -27,6 +27,19 @@ _specialregtypes['staff'] = {
 	'func': validate_staff_registration,
 	}
 
+def validate_manual_registration(reg):
+	# Always validates so we can save the record, and then we just block
+	# it at confirmation.
+	pass
+
+def confirm_manual_registration(reg):
+	return "This registration type needs to be manually confirmed. Please await notification from the conference organizers."
+
+_specialregtypes['man'] = {
+	'name': 'Manually confirmed',
+	'func': validate_manual_registration,
+	'confirmfunc': confirm_manual_registration,
+	}
 
 special_reg_types = [(k,v['name']) for k,v in _specialregtypes.items()]
 
@@ -36,3 +49,10 @@ def validate_special_reg_type(regtypename, reg):
 
 	_specialregtypes[regtypename]['func'](reg)
 
+def confirm_special_reg_type(regtypename, reg):
+	if not _specialregtypes.has_key(regtypename):
+		return
+	if _specialregtypes[regtypename].has_key('confirmfunc'):
+		return _specialregtypes[regtypename]['confirmfunc'](reg)
+	else:
+		return None

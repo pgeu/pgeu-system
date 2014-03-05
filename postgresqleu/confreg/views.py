@@ -22,6 +22,7 @@ from forms import EmailSendForm, EmailSessionForm
 from util import invoicerows_for_registration
 
 from models import get_status_string
+from regtypes import confirm_special_reg_type
 
 from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
@@ -634,6 +635,13 @@ def confirmreg(request, confname):
 	if reg.invoice:
 		return HttpResponseRedirect("/events/register/%s/" % conference.urlname)
 
+	# See if the registration type blocks it
+	s = confirm_special_reg_type(reg.regtype.specialtype, reg)
+	if s:
+		return render_to_response('confreg/specialregtypeconfirm.html', {
+			'conference': conference,
+			'reason': s,
+			}, context_instance=ConferenceContext(request, conference))
 
 	if request.method == 'POST':
 		if request.POST['submit'].find('Back') >= 0:
