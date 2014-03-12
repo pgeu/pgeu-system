@@ -345,9 +345,22 @@ class PrepaidBatchAdmin(admin.ModelAdmin):
 	list_filter = ['conference', ]
 	inlines = [PrepaidVoucherInline, ]
 
+class PrepaidVoucherAdminForm(forms.ModelForm):
+	class Meta:
+		model = PrepaidVoucher
+
+	def __init__(self, *args, **kwargs):
+		super(PrepaidVoucherAdminForm, self).__init__(*args, **kwargs)
+		try:
+			self.fields['batch'].queryset = PrepaidBatch.objects.filter(conference=self.instance.conference)
+			self.fields['user'].queryset = ConferenceRegistration.objects.filter(conference=self.instance.conference)
+		except Conference.DoesNotExist:
+			pass
+
 class PrepaidVoucherAdmin(admin.ModelAdmin):
 	list_display = ['vouchervalue', 'conference', 'buyername', 'usedby', 'usedate', ]
 	list_filter = ['conference', ]
+	form = PrepaidVoucherAdminForm
 
 	def buyername(self, obj):
 		url = urlresolvers.reverse('admin:confreg_prepaidbatch_change', args=(obj.batch.pk,))
