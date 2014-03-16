@@ -32,6 +32,7 @@ attendee_report_fields = [
 		('shirtsize.shirtsize', 'T-Shirt size', False, 'shirtsize__shirtsize'),
 		('regtype.regtype', 'Registration type', False, 'regtype__sortkey'),
 		('additionaloptionlist', 'Additional options', False, 'id'),
+		('created', 'Registration created', False, None),
 ]
 
 _attendee_report_field_map = dict([(a,(b,c,d)) for a,b,c,d in attendee_report_fields])
