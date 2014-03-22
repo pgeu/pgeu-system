@@ -53,7 +53,7 @@ def process_authorization(notification):
 
 			# For manual payments, we can only create an open-ended entry
 			# in the accounting
-			accstr = "Manual Adyen payment %s" % notification.pspReference
+			accstr = "Manual Adyen payment: %s (%s)" % (notification.merchantReference, notification.pspReference)
 			accrows = [
 				(settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, accstr, trans.amount, None),
 				]
