@@ -1,5 +1,5 @@
 from django.shortcuts import render_to_response, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.db import connection
 from django.conf import settings
 
@@ -104,7 +104,7 @@ def conferencedata(request, confname, since):
 def newsproxy(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.newsjson:
-		raise Exception("Invalid conference")
+		raise Http404("Invalid conference")
 
 	for k in request.GET.keys():
 		if k not in ('since', 'callback', '_'):
