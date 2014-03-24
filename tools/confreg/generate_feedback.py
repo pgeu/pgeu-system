@@ -159,20 +159,6 @@ ORDER BY 2 DESC
 		speaker_rating.append({'what': ratingname, 'rating': [{'speaker': s, 'quality': q, 'num': n, 'stddev': d} for s,q,n,d in curs.fetchall()]})
 
 
-# Generate per-session feedback
-# sync with send_feedback.py
-	curs.execute("""SELECT s.id, title, fullname FROM confreg_conferencesession s
-INNER JOIN confreg_conferencesession_speaker cs ON s.id=cs.conferencesession_id
-INNER JOIN confreg_speaker spk ON spk.id=cs.speaker_id
-WHERE conference_id=%(conf)s AND s.can_feedback AND s.status=1
-ORDER BY id
-""", {'conf': confid})
-	while True:
-		row = curs.fetchone()
-		if not row: break
-		ss = SessionStats(db, confid, confname, row)
-		ss.generate()
-
 # Generate full-conference feedback, if there is any
 	curs.execute("""SELECT id, question, isfreetext, newfieldset, textchoices FROM confreg_conferencefeedbackquestion WHERE conference_id=%(conf)s ORDER BY sortkey""", {'conf': confid})
 	questions = curs.fetchall()
