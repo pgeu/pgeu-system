@@ -17,7 +17,7 @@ You have made the following submissions to this conference:
   <li>
   <a href="{{s.id}}/">{{s.title}}</a> ({{s.status_string_long}})
   {%ifequal s.status 1 %}{%comment%}Approved - so link to the public description{%endcomment%}
-  (<a href="/events/schedule/{{conference.urlname}}/session/{{s.id}}/">public view)</a> ({{s.status_string_long}})
+  (<a href="/events/schedule/{{conference.urlname}}/session/{{s.id}}/">public view)</a>
   {%endifequal%}
   </li>
 {%empty%}
