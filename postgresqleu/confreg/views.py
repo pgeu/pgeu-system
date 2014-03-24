@@ -583,8 +583,6 @@ def callforpapers_new(request, confname):
 def callforpapers_edit(request, confname, sessionid):
 	conference = get_object_or_404(Conference, urlname=confname)
 	is_tester = conference.testers.filter(pk=request.user.id).exists()
-	if not conference.callforpapersopen and not is_tester:
-		raise Http404('This conference has no open call for papers')
 
 	# Find users speaker record (should always exist when we get this far)
 	speaker = get_object_or_404(Speaker, user=request.user)
@@ -592,6 +590,45 @@ def callforpapers_edit(request, confname, sessionid):
 	# Find the session record (should always exist when we get this far)
 	session = get_object_or_404(ConferenceSession, conference=conference,
 								speaker=speaker, pk=sessionid)
+
+	# If the user is a tester, it overrides the callforpapersopen check
+	isopen = conference.callforpapersopen or is_tester
+	if (isopen and session.status != 0) or not isopen:
+		# Anything that's not "open and in status submitted" renders
+		# a view of the session instead of the actual session.
+		# If there is feedback for this session available, render that
+		# on the same page. If feedback is  still open, we show nothing
+		feedback_fields = ('topic_importance', 'content_quality', 'speaker_knowledge', 'speaker_quality')
+		if is_tester or not conference.feedbackopen:
+			feedbackdata = [{'key': k, 'title': k.replace('_',' ').title(), 'num': [0]*5} for k in feedback_fields]
+			feedbacktext = []
+			fb = list(ConferenceSessionFeedback.objects.filter(conference=conference, session=session))
+			feedbackcount = len(fb)
+			for f in fb:
+				# Summarize the values
+				for d in feedbackdata:
+					if getattr(f, d['key']) > 0:
+						d['num'][getattr(f, d['key'])-1] += 1
+				# Add the text if necessary
+				if f.speaker_feedback:
+					feedbacktext.append({
+						'feedback': f.speaker_feedback,
+						'scores': [getattr(f, fn) for fn in feedback_fields],
+						})
+		else:
+			feedbackcount = 0
+			feedbackdata = None
+			feedbacktext = None
+
+		return render_to_response('confreg/session_feedback.html', {
+			'session': session,
+			'conference': conference,
+			'feedbackcount': feedbackcount,
+			'feedbackdata': feedbackdata,
+			'feedbacktext': feedbacktext,
+			'feedbackfields': [f.replace('_',' ').title() for f in feedback_fields],
+			}, context_instance=ConferenceContext(request, conference))
+
 
 	if request.method == 'POST':
 		# Save it!
