@@ -130,7 +130,7 @@ class ReportWriterHtml(ReportWriterBase):
 
 class ReportWriterCsv(ReportWriterBase):
 	def render(self):
-		resp = HttpResponse(content_type='text/plain')
+		resp = HttpResponse(content_type='text/plain; charset=utf-8')
 		c = csv.writer(resp, delimiter=';')
 		for r in self.rows:
 			c.writerow([x.encode('utf-8') for x in r])
