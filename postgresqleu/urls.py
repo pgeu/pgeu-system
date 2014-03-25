@@ -8,6 +8,7 @@ import postgresqleu.views
 import postgresqleu.confreg.views
 import postgresqleu.confreg.reporting
 import postgresqleu.confreg.mobileviews
+import postgresqleu.confreg.feedback
 import postgresqleu.membership.views
 import postgresqleu.elections.views
 import postgresqleu.invoicemgr.views
@@ -77,6 +78,8 @@ urlpatterns = patterns('',
 	(r'^events/prepaid/(\d+)/$', postgresqleu.confreg.views.viewvouchers),
     (r'^events/reports/(\w+)/$', postgresqleu.confreg.views.reports),
     (r'^events/reports/(\w+)/advanced/$', postgresqleu.confreg.views.advanced_report),
+    (r'^events/reports/(\w+)/feedback/$', postgresqleu.confreg.feedback.feedback_report),
+    (r'^events/reports/(\w+)/feedback/session/$', postgresqleu.confreg.feedback.feedback_sessions),
 
     # Mobile conference stuff
     (r'^m/(\w+)/$', postgresqleu.confreg.mobileviews.index),
