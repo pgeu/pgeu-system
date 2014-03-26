@@ -24,6 +24,11 @@ class FilterPersistMiddleware(object):
 						del session[key]
 					return None
 				request.session[key] = query_string
+			elif '_directlink=1' in query_string: # Direct link to a filter, by ourselves, so remove it
+				redirect_to = path+'?'+query_string.replace('&_directlink=1','')
+				if session.has_key(key):
+					del session[key]
+				return http.HttpResponseRedirect(redirect_to)
 			else: #We are are coming from another page, restore filter if available
 				if session.get(key, False):
 					query_string=request.session.get(key)

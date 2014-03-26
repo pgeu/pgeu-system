@@ -1256,6 +1256,18 @@ def advanced_report(request, confname):
 	return build_attendee_report(conference, request.POST )
 
 
+@ssl_required
+@login_required
+def admin_dashboard(request):
+	if request.user.is_superuser:
+		conferences = Conference.objects.all().order_by('-startdate')
+	else:
+		conferences = Conference.objects.filter(administrators=request.user).order_by('-startdate')
+
+	return render_to_response('confreg/admin_dashboard.html', {
+		'conferences': conferences,
+	})
+
 # Admin view that's used to send email to multiple users
 @ssl_required
 @login_required

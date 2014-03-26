@@ -80,6 +80,7 @@ urlpatterns = patterns('',
     (r'^events/reports/(\w+)/advanced/$', postgresqleu.confreg.views.advanced_report),
     (r'^events/reports/(\w+)/feedback/$', postgresqleu.confreg.feedback.feedback_report),
     (r'^events/reports/(\w+)/feedback/session/$', postgresqleu.confreg.feedback.feedback_sessions),
+    (r'^events/admin/$', 'postgresqleu.confreg.views.admin_dashboard'),
 
     # Mobile conference stuff
     (r'^m/(\w+)/$', postgresqleu.confreg.mobileviews.index),
