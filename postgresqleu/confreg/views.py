@@ -43,7 +43,7 @@ import simplejson as json
 # The ConferenceContext allows overriding of the 'conftemplbase' variable,
 # which is used to control the base template of all the confreg web pages.
 # This allows a single conference to override the "framework" template
-# around itself, while retaining all teh contents.
+# around itself, while retaining all the contents.
 #
 def ConferenceContext(request, conference):
 	d = RequestContext(request)
