@@ -11,13 +11,13 @@ from django.db.models.fields.files import ImageFieldFile
 from models import Conference, ConferenceRegistration, RegistrationType, Speaker
 from models import ConferenceAdditionalOption, Track
 from models import ConferenceSession, ConferenceSessionFeedback
-from models import PrepaidVoucher
+from models import PrepaidVoucher, DiscountCode
 
 from regtypes import validate_special_reg_type
 
 from postgresqleu.countries.models import Country
 
-from datetime import datetime
+from datetime import datetime, date
 
 class ConferenceRegistrationForm(forms.ModelForm):
 	additionaloptions = forms.ModelMultipleChoiceField(widget=forms.CheckboxSelectMultiple,
@@ -65,7 +65,16 @@ class ConferenceRegistrationForm(forms.ModelForm):
 			if v.usedate:
 				raise forms.ValidationError('This voucher has already been used')
 		except PrepaidVoucher.DoesNotExist:
-			raise forms.ValidationError('This voucher was not found')
+			# It could be that it's a discount code
+			try:
+				c = DiscountCode.objects.get(code=newval, conference=self.instance.conference)
+				if c.validuntil and c.validuntil < date.today():
+					raise forms.ValidationError('This discount code has expired.')
+				if c.maxuses > 0:
+					if c.registrations.count() >= c.maxuses:
+						raise forms.ValidationError('All allowed instances of this discount code have been used.')
+			except DiscountCode.DoesNotExist:
+				raise forms.ValidationError('This voucher or discount code was not found')
 
 		return newval
 
@@ -139,13 +148,27 @@ class ConferenceRegistrationForm(forms.ModelForm):
 		if cleaned_data.has_key('vouchercode') and cleaned_data['vouchercode']:
 			# We know it's there, and that it exists - but is it for the
 			# correct type of registration?
-			v = PrepaidVoucher.objects.get(vouchervalue=cleaned_data['vouchercode'],
-										   conference=self.instance.conference)
-			if not cleaned_data.has_key('regtype'):
-				self._errors['vouchercode'] = ErrorList(['Invalid registration type specified'])
-				raise ValidationError('An invalid registration type has been selected')
-			if v.batch.regtype != cleaned_data['regtype']:
-				self._errors['vouchercode'] = ErrorList(['The specified voucher is only usable for registrations of type "%s"' % v.batch.regtype])
+			errs = []
+			try:
+				v = PrepaidVoucher.objects.get(vouchervalue=cleaned_data['vouchercode'],
+											   conference=self.instance.conference)
+				if not cleaned_data.has_key('regtype'):
+					errs.append('Invalid registration type specified')
+					raise ValidationError('An invalid registration type has been selected')
+				if v.batch.regtype != cleaned_data['regtype']:
+					errs.append('The specified voucher is only usable for registrations of type "%s"' % v.batch.regtype)
+			except PrepaidVoucher.DoesNotExist:
+				# This must have been a discount code :)
+				try:
+					DiscountCode.objects.get(code=cleaned_data['vouchercode'],
+											 conference=self.instance.conference)
+					# Validity of the code has already been validated, and it's not tied
+					# to a specific one, so as long as it exists, we're good to go.
+				except DiscountCode.DoesNotExist:
+					errs.append('Specified voucher or discount code does not exist')
+
+			if errs:
+				self._errors['vouchercode'] = ErrorList(errs)
 
 		if cleaned_data.has_key('regtype') and cleaned_data['regtype']:
 			if cleaned_data['regtype'].requires_option.exists():
@@ -204,7 +227,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
 		yield { 'id': 'voucher_codes',
 				'legend': 'Voucher codes',
-				'intro': 'If you have a voucher code, enter it in this field. If you do not have one, just leave the field empty.',
+				'intro': 'If you have a voucher or discount code, enter it in this field. If you do not have one, just leave the field empty.',
 				'fields': [self['vouchercode'],],
 				}
 

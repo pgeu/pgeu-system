@@ -13,7 +13,7 @@ from models import RegistrationClass, RegistrationDay
 from models import ShirtSize, ConferenceAdditionalOption
 from models import ConferenceSessionFeedback, ConferenceFeedbackQuestion
 from models import ConferenceFeedbackAnswer, Speaker_Photo
-from models import PrepaidVoucher, PrepaidBatch, BulkPayment
+from models import PrepaidVoucher, PrepaidBatch, BulkPayment, DiscountCode
 
 from postgresqleu.confreg.dbimage import InlinePhotoWidget
 from postgresqleu.accounting.models import Object
@@ -388,6 +388,48 @@ class PrepaidVoucherAdmin(admin.ModelAdmin):
 	def usedby(self, obj):
 		return "%s %s" % (obj.user.firstname, obj.user.lastname)
 
+class DiscountCodeAdminForm(forms.ModelForm):
+	class Meta:
+		model = DiscountCode
+
+	def __init__(self, *args, **kwargs):
+		super(DiscountCodeAdminForm, self).__init__(*args, **kwargs)
+		try:
+			self.fields['registrations'].queryset = ConferenceRegistration.objects.filter(conference=self.instance.conference)
+		except Conference.DoesNotExist:
+			pass
+
+	def clean_discountpercentage(self):
+		if int(self.cleaned_data['discountpercentage']) < 0:
+			raise ValidationError('Discount percentage must be a positive number or zero!')
+		if int(self.cleaned_data['discountpercentage']) > 100:
+			raise ValidationError('Discount percentage cannot be higher than 100!')
+		return self.cleaned_data['discountpercentage']
+
+	def clean_maxuses(self):
+		if int(self.cleaned_data['maxuses']) < 0:
+			raise ValidationError('Max uses must be a positive number or zero!')
+		return self.cleaned_data['maxuses']
+
+	def clean(self):
+		cleaned_data = super(DiscountCodeAdminForm, self).clean()
+
+		if cleaned_data.has_key('discountamount') and cleaned_data.has_key('discountpercentage'):
+			if cleaned_data['discountamount'] > 0 and cleaned_data['discountpercentage'] > 0:
+				raise ValidationError('Cannot specify both discount amount and discount percentage at the same time!')
+
+		if cleaned_data.has_key('discountamount') and cleaned_data.has_key('regonly'):
+			if cleaned_data['discountamount'] > 0 and cleaned_data['regonly']:
+				raise ValidationError('Regonly field can only be set for percentage discounts!')
+
+		return cleaned_data
+
+class DiscountCodeAdmin(admin.ModelAdmin):
+	list_display = ['code', 'conference', 'maxuses', 'count', ]
+	list_filter = ['conference', ]
+	form = DiscountCodeAdminForm
+	filter_horizontal = ('registrations',)
+
 class BulkPaymentAdmin(admin.ModelAdmin):
 	list_display = ['adminstring', 'conference', 'user', 'numregs', 'paidat', 'ispaid',]
 	list_filter = ['conference', ]
@@ -410,4 +452,5 @@ admin.site.register(ConferenceFeedbackQuestion, ConferenceFeedbackQuestionAdmin)
 admin.site.register(ConferenceFeedbackAnswer, ConferenceFeedbackAnswerAdmin)
 admin.site.register(PrepaidBatch, PrepaidBatchAdmin)
 admin.site.register(PrepaidVoucher, PrepaidVoucherAdmin)
+admin.site.register(DiscountCode, DiscountCodeAdmin)
 admin.site.register(BulkPayment, BulkPaymentAdmin)
