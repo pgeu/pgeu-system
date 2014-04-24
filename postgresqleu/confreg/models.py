@@ -305,9 +305,13 @@ class Track(models.Model):
 class Room(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
 	roomname = models.CharField(max_length=20, null=False, blank=False)
+	sortkey = models.IntegerField(null=False, blank=False, default=100)
 
 	def __unicode__(self):
 		return "%s (%s)" % (self.roomname, self.conference)
+
+	class Meta:
+		ordering = [ 'sortkey', 'roomname', ]
 
 
 class Speaker(models.Model):

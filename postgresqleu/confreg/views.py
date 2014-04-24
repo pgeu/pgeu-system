@@ -326,8 +326,8 @@ class SessionSet(object):
 		self.sessions.append(session)
 
 	def finalize(self):
-		# Re-sort the rooms based on name
-		self.rooms = dict(zip([roomname for roomname in sorted(self.rooms.keys(), key=lambda r:r.roomname)], range(0,len(self.rooms))))
+		# Re-sort the rooms based on sortkey and name
+		self.rooms = dict(zip([roomname for roomname in sorted(self.rooms.keys(), key=lambda r:(r.sortkey, r.roomname))], range(0,len(self.rooms))))
 
 	def all(self):
 		for s in self.sessions:
