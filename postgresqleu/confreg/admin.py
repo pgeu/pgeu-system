@@ -261,6 +261,7 @@ class RegistrationTypeAdminForm(forms.ModelForm):
 		try:
 			self.fields['regclass'].queryset = RegistrationClass.objects.filter(conference=self.instance.conference)
 			self.fields['days'].queryset = RegistrationDay.objects.filter(conference=self.instance.conference)
+			self.fields['requires_option'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.instance.conference)
 		except Conference.DoesNotExist:
 			# If we don't have a conference yet, we can just ignore the fact
 			# that we couldn't list it.
@@ -270,12 +271,29 @@ class RegistrationTypeAdmin(admin.ModelAdmin):
 	list_display = ['conference', 'regtype', 'cost', 'sortkey', 'active', 'activeuntil', ]
 	list_filter = ['conference',]
 	ordering = ['conference','regtype']
+	filter_horizontal = ('requires_option',)
 	form = RegistrationTypeAdminForm
+
+class ConferenceAdditionalOptionAdminForm(forms.ModelForm):
+	class Meta:
+		model = ConferenceAdditionalOption
+
+	def __init__(self, *args, **kwargs):
+		super(ConferenceAdditionalOptionAdminForm, self).__init__(*args, **kwargs)
+		try:
+			self.fields['requires_regtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference)
+			self.fields['mutually_exclusive'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.instance.conference)
+		except Conference.DoesNotExist:
+			# If we don't have a conference yet, we can just ignore the fact
+			# that we couldn't list it.
+			pass
 
 class ConferenceAdditionalOptionAdmin(admin.ModelAdmin):
 	list_display = ['conference', 'name', 'maxcount', 'cost']
 	list_filter = ['conference', ]
 	ordering = ['conference', 'name', ]
+	filter_horizontal = ('requires_regtype', 'mutually_exclusive', )
+	form = ConferenceAdditionalOptionAdminForm
 
 class SpeakerAdminForm(forms.ModelForm):
 	class Meta:

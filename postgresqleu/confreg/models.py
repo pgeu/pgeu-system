@@ -161,6 +161,7 @@ class RegistrationType(models.Model):
 	sortkey = models.IntegerField(null=False, blank=False, default=10)
 	specialtype = models.CharField(max_length=5, blank=True, null=True, choices=special_reg_types)
 	days = models.ManyToManyField(RegistrationDay, blank=True)
+	requires_option = models.ManyToManyField('ConferenceAdditionalOption', blank=True, help_text='Requires at least one of the selected additional options to be picked')
 
 	class Meta:
 		ordering = ['conference', 'sortkey', ]
@@ -191,6 +192,8 @@ class ConferenceAdditionalOption(models.Model):
 	name = models.CharField(max_length=100, null=False, blank=False)
 	cost = models.IntegerField(null=False)
 	maxcount = models.IntegerField(null=False)
+	requires_regtype = models.ManyToManyField(RegistrationType, blank=True, help_text='Can only be picked with selected registration types')
+	mutually_exclusive = models.ManyToManyField('self', blank=True, help_text='Mutually exlusive with these additional options', symmetrical=True)
 
 	class Meta:
 		ordering = ['name', ]

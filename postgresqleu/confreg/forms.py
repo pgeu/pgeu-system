@@ -116,6 +116,12 @@ class ConferenceRegistrationForm(forms.ModelForm):
 				if current_count + 1 > option.maxcount:
 					raise forms.ValidationError("The option \"%s\" is no longer available due to too many signups." % option.name)
 
+		for option in newval:
+			# Check if something mutually exclusive is included
+			for x in option.mutually_exclusive.all():
+				if x in newval:
+					raise forms.ValidationError('The option "%s" cannot be ordered at the same time as "%s".' % (option.name, x.name))
+
 		# Check if the registration has been confirmed
 		if self.instance and self.instance.payconfirmedat:
 			raise forms.ValidationError('You cannot change your additional options once your payment has been confirmed! If you need to make changes, please contact the conference organizers via email')
@@ -140,6 +146,28 @@ class ConferenceRegistrationForm(forms.ModelForm):
 				raise ValidationError('An invalid registration type has been selected')
 			if v.batch.regtype != cleaned_data['regtype']:
 				self._errors['vouchercode'] = ErrorList(['The specified voucher is only usable for registrations of type "%s"' % v.batch.regtype])
+
+		if cleaned_data.has_key('regtype') and cleaned_data['regtype']:
+			if cleaned_data['regtype'].requires_option.exists():
+				regtype = cleaned_data['regtype']
+				found = False
+				if cleaned_data.has_key('additionaloptions') and cleaned_data['additionaloptions']:
+					for x in regtype.requires_option.all():
+						if x in cleaned_data['additionaloptions']:
+							found = True
+							break
+				if not found:
+					self._errors['regtype'] = 'Registration type "%s" requires at least one of the following additional options to be picked: %s' % (regtype, ", ".join([x.name for x in regtype.requires_option.all()]))
+
+		if cleaned_data.has_key('additionaloptions') and cleaned_data['additionaloptions'] and cleaned_data.has_key('regtype'):
+			regtype = cleaned_data['regtype']
+			errs = []
+			for ao in cleaned_data['additionaloptions']:
+				if ao.requires_regtype.exists():
+					if not regtype in ao.requires_regtype.all():
+						errs.append('Additional option "%s" requires one of the following registration types: %s.' % (ao.name, ", ".join(x.regtype for x in ao.requires_regtype.all())))
+			if len(errs):
+				self._errors['additionaloptions'] = self.error_class(errs)
 
 		return cleaned_data
 
