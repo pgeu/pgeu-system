@@ -1,4 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from exceptions import ImportError
+from django.conf import global_settings
 
 # Django settings for postgresqleu project.
 
@@ -67,6 +71,11 @@ MIDDLEWARE_CLASSES = (
     'postgresqleu.util.middleware.FilterPersistMiddleware',
 )
 
+
+TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + (
+	'postgresqleu.util.context_processors.settings_context',
+)
+
 ROOT_URLCONF = 'postgresqleu.urls'
 
 TEMPLATE_DIRS = [
@@ -101,6 +110,10 @@ INSTALLED_APPS = (
 
 INVOICE_SENDER_EMAIL="treasurer@postgresql.eu"
 MEMBERSHIP_SENDER_EMAIL="webmaster@postgresql.eu"
+
+# Currency parameter
+CURRENCY_ABBREV='EUR'
+CURRENCY_SYMBOL='€'
 
 # Change these when using sandbox!
 PAYPAL_BASEURL='https://www.paypal.com/cgi-bin/webscr'

@@ -296,7 +296,7 @@ def viewinvoice(request, invoiceid):
 
 	return render_to_response('invoices/userinvoice.html', {
 			'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/" % (settings.SITEBASE_SSL, invoice.pk)),
-			})
+			}, context_instance=RequestContext(request))
 
 @ssl_required
 def viewinvoice_secret(request, invoiceid, invoicesecret):
@@ -304,7 +304,7 @@ def viewinvoice_secret(request, invoiceid, invoicesecret):
 	return render_to_response('invoices/userinvoice.html', {
 			'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/%s/" % (settings.SITEBASE_SSL, invoice.pk, invoice.recipient_secret)),
 			'fromsecret': True,
-			})
+			}, context_instance=RequestContext(request))
 
 @ssl_required
 @login_required
@@ -348,7 +348,7 @@ def userhome(request):
 	invoices = Invoice.objects.filter(recipient_user=request.user, deleted=False, finalized=True)
 	return render_to_response('invoices/userhome.html', {
 			'invoices': invoices,
-			})
+			}, context_instance=RequestContext(request))
 
 @ssl_required
 @login_required
@@ -357,4 +357,4 @@ def banktransfer(request):
 			'title': request.GET['title'],
 			'amount': request.GET['amount'],
 			'returnurl': request.GET['ret'],
-			})
+			}, context_instance=RequestContext(request))

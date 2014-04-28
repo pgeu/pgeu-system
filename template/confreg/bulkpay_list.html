@@ -75,7 +75,7 @@ has been paid.
 <p>
 <ul>
 {%for s in state%}
-<li {%if not s.pay or not s.found %}style="color:red;"{%endif%}>{{s.email}}{%if s.total%} (€{{s.total}}){%endif%}<ul>
+<li {%if not s.pay or not s.found %}style="color:red;"{%endif%}>{{s.email}}{%if s.total%} ({{currency_symbol}}{{s.total}}){%endif%}<ul>
 {%if s.pay and s.found%}
  {%for r in s.rows%}
   <li>{{r}}</li>

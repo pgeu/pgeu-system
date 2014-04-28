@@ -93,8 +93,8 @@ def paypal_return_handler(request):
 			return paypal_error('Received transaction type %s which is unknown by this system!' % d['txn_type'])
 		if d['business'] != settings.PAYPAL_EMAIL:
 			return paypal_error('Received payment for %s which is not the correct recipient!' % d['business'])
-		if d['mc_currency'] != 'EUR':
-			return paypal_error('Received payment in %s, not Euro. We cannot currently process this automatically.' % d['mc_currency'])
+		if d['mc_currency'] != settings.CURRENCY_ABBREV:
+			return paypal_error('Received payment in %s, not %s. We cannot currently process this automatically.' % (d['mc_currency'], settings.CURRENCY_ABBREV))
 	except KeyError, k:
 		return paypal_error('Mandatory field %s is missing from paypal data!', k)
 

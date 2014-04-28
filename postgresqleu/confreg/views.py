@@ -886,7 +886,7 @@ def bulkpay(request, confname):
 						errors=1
 					else:
 						# Normal registration, so add it
-						state.append({'email': e, 'found': 1, 'pay': 1, 'total': s, 'rows':[u'%s (€%s)' % (r[0], r[2]) for r in regrows]})
+						state.append({'email': e, 'found': 1, 'pay': 1, 'total': s, 'rows':[u'%s (%s%s)' % (r[0], settings.CURRENCY_SYMBOL, r[2]) for r in regrows]})
 						totalcost += s
 						invoicerows.extend(regrows)
 			else:
@@ -947,6 +947,7 @@ def bulkpay(request, confname):
 			'state': state,
 			'bulkpayments': bulkpayments,
 			'conference': conference,
+			'currency_symbol': settings.CURRENCY_SYMBOL,
 		}, context_instance=ConferenceContext(request, conference))
 	else:
 		form = BulkRegistrationForm()
@@ -954,6 +955,7 @@ def bulkpay(request, confname):
 			'form': form,
 			'bulkpayments': bulkpayments,
 			'conference': conference,
+			'currency_symbol': settings.CURRENCY_SYMBOL,
 		}, context_instance=ConferenceContext(request, conference))
 
 

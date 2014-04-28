@@ -47,7 +47,7 @@ def process_authorization(notification):
 			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 							 settings.ADYEN_NOTIFICATION_RECEIVER,
 							 'Manual Adyen payment authorized',
-							 "An Adyen payment of EUR%s was authorized on the Adyen platform.\nThis payment was not from the automated system, it was manually authorized, probably from a POS terminal.\nReference: %s\nAdyen reference: %s\nMerchant account: %s\n" % (notification.amount, notification.merchantReference, notification.pspReference, notification.merchantAccountCode))
+							 "An Adyen payment of %s%s was authorized on the Adyen platform.\nThis payment was not from the automated system, it was manually authorized, probably from a POS terminal.\nReference: %s\nAdyen reference: %s\nMerchant account: %s\n" % (settings.CURRENCY_ABBREV, notification.amount, notification.merchantReference, notification.pspReference, notification.merchantAccountCode))
 			notification.confirmed = True
 			notification.save()
 
@@ -91,7 +91,7 @@ def process_authorization(notification):
 			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 							 settings.ADYEN_NOTIFICATION_RECEIVER,
 							 'Adyen payment authorized',
-							 "An Adyen payment of EUR%s with reference %s was authorized on the Adyen platform.\nInvoice: %s\nRecipient name: %s\nRecipient user: %s\nAdyen reference: %s\n" % (notification.amount, notification.merchantReference, invoice.title, invoice.recipient_name, invoice.recipient_email, notification.pspReference))
+							 "An Adyen payment of %s%s with reference %s was authorized on the Adyen platform.\nInvoice: %s\nRecipient name: %s\nRecipient user: %s\nAdyen reference: %s\n" % (settings.CURRENCY_ABBREV, notification.amount, notification.merchantReference, invoice.title, invoice.recipient_name, invoice.recipient_email, notification.pspReference))
 
 		except AdyenProcessingException, ex:
 			# Generate an email telling us about this exception!
@@ -167,7 +167,7 @@ def process_refund(notification):
 			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 							 settings.ADYEN_NOTIFICATION_RECEIVER,
 							 'Adyen refund received',
-							 "A refund of EUR%s for transaction %s was processed\n\nNOTE! You must complete the accounting system entry manually for refunds!" % (notification.amount, notification.originalReference))
+							 "A refund of %s%s for transaction %s was processed\n\nNOTE! You must complete the accounting system entry manually for refunds!" % (settings.CURRENCY_ABBREV, notification.amount, notification.originalReference))
 
 			create_accounting_entry(date.today(), accrows, True, urls)
 
@@ -297,7 +297,7 @@ def process_raw_adyen_notification(raw, POST):
 				# Invalid amount, set to -1
 				AdyenLog(pspReference=notification.pspReference, message='Received invalid amount %s' % POST['value'], error=True).save()
 				notification.amount = -1
-			if POST['currency'] != 'EUR':
+			if POST['currency'] != settings.CURRENCY_ABBREV:
 				AdyenLog(pspReference=notification.pspReference, message='Received invalid currency %s' % POST['currency'], error=True).save()
 				notification.amount = -2
 

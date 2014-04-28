@@ -72,7 +72,7 @@ class PaypalBaseTransaction(object):
 			else:
 				self.text = ""
 
-		if r['L_CURRENCYCODE0'][0] != 'EUR':
+		if r['L_CURRENCYCODE0'][0] != self.api.currency:
 			self.message = "Invalid currency %s" % r['L_CURRENCYCODE0'][0]
 			self.amount = -1 # just to be on the safe side
 
@@ -116,7 +116,7 @@ class PaypalTransfer(PaypalBaseTransaction):
 		self.text = "Transfer from Paypal to bank"
 		self.fee = 0
 		self.email = 'treasurer@postgresql.eu'
-		if apistruct['L_CURRENCYCODE%i' % i][0] != 'EUR':
+		if apistruct['L_CURRENCYCODE%i' % i][0] != self.api.currency:
 			self.message = "Invalid currency %s" % apistruct['L_CURRENCYCODE%i' % i][0]
 			self.amount = -1 # To be on the safe side
 
@@ -125,11 +125,12 @@ class PaypalTransfer(PaypalBaseTransaction):
 		pass
 
 class PaypalAPI(object):
-	def __init__(self, apiuser, apipass, apisignature, sandbox):
+	def __init__(self, apiuser, apipass, apisignature, sandbox, currency):
 		if sandbox:
 			self.API_ENDPOINT = 'https://api-3t.sandbox.paypal.com/nvp'
 		else:
 			self.API_ENDPOINT = 'https://api-3t.paypal.com/nvp'
+		self.currency = currency
 		self.apiuser = apiuser
 		self.apipass = apipass
 		self.apisignature = apisignature
@@ -210,7 +211,11 @@ if __name__ == "__main__":
 			if cfg.get(sect, 'sandbox') == "1":
 				sandbox = 1
 
-		s = PaypalAPI(cfg.get(sect, 'user'), cfg.get(sect, 'apipass'), cfg.get(sect, 'apisig'), sandbox)
+		s = PaypalAPI(cfg.get(sect, 'user'),
+					  cfg.get(sect, 'apipass'),
+					  cfg.get(sect, 'apisig'),
+					  sandbox,
+					  cfg.get(sect, 'currency'))
 		cursor.execute("SELECT lastsync FROM paypal_sourceaccount WHERE id=%(id)s", {
 			'id': sourceid,
 		})

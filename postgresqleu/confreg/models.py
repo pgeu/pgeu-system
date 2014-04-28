@@ -170,7 +170,9 @@ class RegistrationType(models.Model):
 		if self.cost == 0:
 			return self.regtype
 		else:
-			return "%s (EUR %s)" % (self.regtype, self.cost)
+			return "%s (%s %s)" % (self.regtype,
+								   settings.CURRENCY_ABBREV,
+								   self.cost)
 
 	def is_registered_type(self):
 		# Starts with * means "not attending"
@@ -202,7 +204,7 @@ class ConferenceAdditionalOption(models.Model):
 		# This is what renders in the multichoice checkboxes, so make
 		# it nice for the end user.
 		if self.cost > 0:
-			coststr = " (EUR %s)" % self.cost
+			coststr = " (%s %s)" % (settings.CURRENCY_ABBREV, self.cost)
 		else:
 			coststr = ""
 		if self.maxcount == -1:
@@ -236,7 +238,13 @@ class BulkPayment(models.Model):
 		return "%s at %s" % (self.user, self.createdat)
 
 	def __unicode__(self):
-		return u"Bulk payment for %s created %s (%s registrations, €%s): %s" % (self.conference, self.createdat, self.numregs, self.invoice.total_amount, self.paidat and 'Paid' or 'Not paid yet')
+		return u"Bulk payment for %s created %s (%s registrations, %s%s): %s" % (
+			self.conference,
+			self.createdat,
+			self.numregs,
+			settings.CURRENCY_SYMBOL,
+			self.invoice.total_amount,
+			self.paidat and 'Paid' or 'Not paid yet')
 
 class ConferenceRegistration(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)

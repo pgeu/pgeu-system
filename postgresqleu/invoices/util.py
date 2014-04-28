@@ -144,6 +144,8 @@ class InvoiceWrapper(object):
 		txt = get_template('invoices/mail/%s' % template_name).render(Context({
 				'invoice': self.invoice,
 				'invoiceurl': invoiceurl,
+				'currency_abbrev': settings.CURRENCY_ABBREV,
+				'currency_symbol': settings.CURRENCY_SYMBOL,
 				}))
 
 		pdfdata = []
@@ -294,8 +296,9 @@ class InvoiceManager(object):
 
 		# Write a log, because it's always nice..
 		InvoiceHistory(invoice=invoice, txt='Processed payment').save()
-		InvoiceLog(message="Processed payment of %s EUR for invoice %s (%s)" % (
+		InvoiceLog(message="Processed payment of %s %s for invoice %s (%s)" % (
 				invoice.total_amount,
+				settings.CURRENCY_ABBREV,
 				invoice.pk,
 				invoice.title),
 				   timestamp=datetime.now()).save()

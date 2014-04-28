@@ -30,7 +30,7 @@ Mastercard, VISA and American Express.
 """
 
 	ADYEN_COMMON={
-		'currencyCode': 'EUR',
+		'currencyCode': settings.CURRENCY_ABBREV,
 		'skinCode': settings.ADYEN_SKINCODE,
 		'merchantAccount': settings.ADYEN_MERCHANTACCOUNT,
 		'shopperLocale': 'en_GB',
