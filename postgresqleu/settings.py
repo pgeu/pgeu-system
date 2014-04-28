@@ -115,6 +115,9 @@ MEMBERSHIP_SENDER_EMAIL="webmaster@postgresql.eu"
 CURRENCY_ABBREV='EUR'
 CURRENCY_SYMBOL='€'
 
+# Module to build PDF invoices
+INVOICE_PDF_BUILDER='postgresqleu.util.misc.pgeuinvoice'
+
 # Change these when using sandbox!
 PAYPAL_BASEURL='https://www.paypal.com/cgi-bin/webscr'
 PAYPAL_EMAIL='paypal@postgresql.eu'

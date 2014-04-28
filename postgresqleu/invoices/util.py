@@ -5,13 +5,13 @@ from django.template import Context
 from django.template.loader import get_template
 
 from datetime import datetime, date
+import importlib
 import os
 import base64
 import re
 from Crypto.Hash import SHA256
 from Crypto import Random
 
-from postgresqleu.util.misc.invoice import PDFInvoice
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.accounting.util import create_accounting_entry
 
@@ -70,6 +70,7 @@ class InvoiceWrapper(object):
 		return self._render_pdf(receipt=True)
 
 	def _render_pdf(self, preview=False, receipt=False):
+		PDFInvoice = getattr(importlib.import_module(settings.INVOICE_PDF_BUILDER), 'PDFInvoice')
 		pdfinvoice = PDFInvoice("%s\n%s" % (self.invoice.recipient_name, self.invoice.recipient_address),
 								self.invoice.invoicedate,
 								receipt and self.invoice.paidat or self.invoice.duedate,
