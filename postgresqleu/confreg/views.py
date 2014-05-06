@@ -93,12 +93,8 @@ def home(request, confname):
 		# No previous regisration, grab some data from the user profile
 		reg = ConferenceRegistration(conference=conference, attendee=request.user)
 		reg.email = request.user.email
-		namepieces = request.user.first_name.rsplit(None,2)
-		if len(namepieces) == 2:
-			reg.firstname = namepieces[0]
-			reg.lastname = namepieces[1]
-		else:
-			reg.firstname = request.user.first_name
+		reg.firstname = request.user.first_name
+		reg.lastname = request.user.last_name
 
 	form_is_saved = False
 	if request.method == 'POST':
