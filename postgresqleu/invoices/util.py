@@ -91,7 +91,7 @@ class InvoiceWrapper(object):
 			return
 
 		self._email_something('paid_receipt.txt',
-							  'Receipt for PGEU invoice #%s' % self.invoice.id,
+							  'Receipt for %s #%s' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
 							  'pgeu_receipt_%s.pdf' % self.invoice.id,
 							  self.invoice.pdf_receipt)
 		InvoiceHistory(invoice=self.invoice, txt='Sent receipt').save()
@@ -101,7 +101,7 @@ class InvoiceWrapper(object):
 			return
 
 		self._email_something('invoice.txt',
-							  'PGEU invoice #%s' % self.invoice.id,
+							  '%s #%s' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
 							  'pgeu_invoice_%s.pdf' % self.invoice.id,
 							  self.invoice.pdf_invoice)
 		InvoiceHistory(invoice=self.invoice, txt='Sent invoice').save()
@@ -111,19 +111,19 @@ class InvoiceWrapper(object):
 			return
 
 		self._email_something('invoice_reminder.txt',
-							  'PGEU invoice #%s - reminder' % self.invoice.id,
+							  '%s #%s - reminder' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
 							  'pgeu_invoice_%s.pdf' % self.invoice.id,
 							  self.invoice.pdf_invoice)
 		InvoiceHistory(invoice=self.invoice, txt='Sent reminder').save()
 
 	def email_cancellation(self):
 		self._email_something('invoice_cancel.txt',
-							  'PGEU invoice #%s - canceled' % self.invoice.id)
+							  '%s #%s - canceled' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id))
 		InvoiceHistory(invoice=self.invoice, txt='Sent cancellation').save()
 
 	def email_refund(self):
 		self._email_something('invoice_refund.txt',
-							  'PGEU invoice #%s - refund notice' % self.invoice.id)
+							  '%s #%s - refund notice' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id))
 		InvoiceHistory(invoice=self.invoice, txt='Sent refund notice').save()
 
 	def _email_something(self, template_name, mail_subject, pdfname=None, pdfcontents=None):
