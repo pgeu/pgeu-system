@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
 
 from datetime import datetime, timedelta
 from payment import PaymentMethodWrapper
@@ -98,7 +99,7 @@ class Invoice(models.Model):
 
 	@property
 	def invoicestr(self):
-		return "PostgreSQL Europe Invoice #%s - %s" % (self.pk, self.title)
+		return "%s #%s - %s" % (settings.INVOICE_TITLE_PREFIX, self.pk, self.title)
 
 	def __unicode__(self):
 		return "Invoice #%s" % self.pk

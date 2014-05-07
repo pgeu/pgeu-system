@@ -198,7 +198,7 @@ class InvoiceManager(object):
 		#
 		# Returns a tuple of (status,invoice,processor)
 		#
-		m = re.match('^PostgreSQL Europe Invoice #(\d+) .*', transtext)
+		m = re.match('^%s #(\d+) .*' % settings.INVOICE_TITLE_PREFIX, transtext)
 		if not m:
 			logger("Could not match transaction text '%s'" % transtext)
 			return (self.RESULT_NOTFOUND, None, None)
