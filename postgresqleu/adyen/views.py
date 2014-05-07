@@ -25,7 +25,7 @@ def adyen_return_handler(request):
 
 	# We're going to need the invoice for pretty much everything,
 	# so attempt to find it.
-	if request.GET['merchantReturnData'] != request.GET['merchantReference'] or not request.GET['merchantReturnData'].startswith('PGEU'):
+	if request.GET['merchantReturnData'] != request.GET['merchantReference'] or not request.GET['merchantReturnData'].startswith(settings.ADYEN_MERCHANTREF_PREFIX):
 		AdyenLog(pspReference='', message='Return handler received invalid reference %s/%s' % (request.GET['merchantReturnData'], request.GET['merchantReference']), error=True).save()
 		return render_to_response('adyen/invalidreference.html', {
 			'reference': "%s//%s" % (request.GET['merchantReturnData'], request.GET['merchantReference']),

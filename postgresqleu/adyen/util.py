@@ -64,9 +64,9 @@ def process_authorization(notification):
 		manager = InvoiceManager()
 		try:
 			# Figure out the invoiceid
-			if not notification.merchantReference.startswith('PGEU'):
-				raise AdyenProcessingException('Merchant reference does not start with PGEU')
-			invoiceid = int(notification.merchantReference[4:])
+			if not notification.merchantReference.startswith(settings.ADYEN_MERCHANTREF_PREFIX):
+				raise AdyenProcessingException('Merchant reference does not start with %s' % settings.ADYEN_MERCHANTREF_PREFIX)
+			invoiceid = int(notification.merchantReference[len(settings.ADYEN_MERCHANTREF_PREFIX):])
 
 			# Get the actual invoice
 			try:

@@ -40,10 +40,10 @@ Mastercard, VISA and American Express.
 		param = self.ADYEN_COMMON
 		orderdata = "<p>%s</p>" % invoicestr
 		param.update({
-			'merchantReference': 'PGEU%s' % invoiceid,
+			'merchantReference': '%s%s' % (settings.ADYEN_MERCHANTREF_PREFIX, invoiceid),
 			'paymentAmount': '%s' % (invoiceamount*100,),
 			'orderData': base64.encodestring(_gzip_string(orderdata.encode('utf-8'))).strip().replace("\n",''),
-			'merchantReturnData': 'PGEU%s' % invoiceid,
+			'merchantReturnData': '%s%s' % (settings.ADYEN_MERCHANTREF_PREFIX, invoiceid),
 			'sessionValidity': (datetime.utcnow() + timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%M:%SZ'),
 			#shopperEmail - needs to be in the api
 			#shopperId - needs to be in the api
