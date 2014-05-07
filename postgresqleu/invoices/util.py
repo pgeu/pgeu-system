@@ -92,7 +92,7 @@ class InvoiceWrapper(object):
 
 		self._email_something('paid_receipt.txt',
 							  'Receipt for %s #%s' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
-							  'pgeu_receipt_%s.pdf' % self.invoice.id,
+							  '%s_receipt_%s.pdf' % (settings.INVOICE_FILENAME_PREFIX, self.invoice.id),
 							  self.invoice.pdf_receipt)
 		InvoiceHistory(invoice=self.invoice, txt='Sent receipt').save()
 
@@ -102,7 +102,7 @@ class InvoiceWrapper(object):
 
 		self._email_something('invoice.txt',
 							  '%s #%s' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
-							  'pgeu_invoice_%s.pdf' % self.invoice.id,
+							  '%s_invoice_%s.pdf' % (settings.INVOICE_FILENAME_PREFIX, self.invoice.id),
 							  self.invoice.pdf_invoice)
 		InvoiceHistory(invoice=self.invoice, txt='Sent invoice').save()
 
@@ -112,7 +112,7 @@ class InvoiceWrapper(object):
 
 		self._email_something('invoice_reminder.txt',
 							  '%s #%s - reminder' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
-							  'pgeu_invoice_%s.pdf' % self.invoice.id,
+							  '%s_invoice_%s.pdf' % (settings.INVOICE_FILENAME_PREFIX, self.invoice.id),
 							  self.invoice.pdf_invoice)
 		InvoiceHistory(invoice=self.invoice, txt='Sent reminder').save()
 

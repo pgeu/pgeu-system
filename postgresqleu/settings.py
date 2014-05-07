@@ -120,6 +120,7 @@ INVOICE_PDF_BUILDER='postgresqleu.util.misc.pgeuinvoice'
 
 # Will be suffixed by " #nnn - <title>"
 INVOICE_TITLE_PREFIX='PostgreSQL Europe Invoice'
+INVOICE_FILENAME_PREFIX='pgeu'
 
 # Change these when using sandbox!
 PAYPAL_BASEURL='https://www.paypal.com/cgi-bin/webscr'
