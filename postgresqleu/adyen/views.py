@@ -31,7 +31,7 @@ def adyen_return_handler(request):
 			'reference': "%s//%s" % (request.GET['merchantReturnData'], request.GET['merchantReference']),
 		}, context_instance=RequestContext(request))
 
-	invoiceid = int(request.GET['merchantReturnData'][4:])
+	invoiceid = int(request.GET['merchantReturnData'][len(settings.ADYEN_MERCHANTREF_PREFIX):])
 	try:
 		invoice = Invoice.objects.get(pk=invoiceid)
 	except Invoice.DoesNotExist:
