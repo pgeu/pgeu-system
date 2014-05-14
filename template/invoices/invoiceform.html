@@ -55,6 +55,7 @@ function lookup_user() {
 }
 
 $(function() {
+   var usermatches = new Array;
    $('#user-lookup-search-button').button().click(function() {
       var term = $('#user-lookup-search-term').val();
       if (!term) return;
@@ -69,6 +70,8 @@ $(function() {
          }
          if (data.length == 1) {
             $('#id_recipient_user').val(data[0].ui);
+            $('#id_recipient_email').val(data[0].e);
+            $('#id_recipient_name').val(data[0].n);
             $('#user-lookup').dialog('close');
             return;
          }
@@ -78,10 +81,18 @@ $(function() {
          });
          $('#user-lookup-search-wrap').hide();
          $('#user-lookup-select-wrap').show();
+         usermatches = data;
       });
    });
    $('#user-lookup-select-button').button().click(function() {
-      $('#id_recipient_user').val($('#user-lookup-select').val());
+      var v = $('#user-lookup-select').val();
+      $('#id_recipient_user').val(v);
+      $.each(usermatches, function(i,u) {
+         if (v == u.ui) {
+            $('#id_recipient_email').val(u.e);
+            $('#id_recipient_name').val(u.n);
+         }
+      });
       $('#user-lookup').dialog('close');
    });
    $('#user-lookup').dialog({
