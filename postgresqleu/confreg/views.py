@@ -53,6 +53,7 @@ def ConferenceContext(request, conference):
 		conftemplbase = "nav_events.html"
 	d.update({
 			'conftemplbase': conftemplbase,
+			'conference': conference,
 			})
 	if conference and conference.mediabase_override:
 		d['mediabase'] = conference.mediabase_override
@@ -74,6 +75,12 @@ def ConferenceContext(request, conference):
 
 	return d
 
+#
+# Render a conference page. This automatically attaches the ConferenceContext.
+#
+def render_conference_response(request, conference, templatename, context=None):
+	return render_to_response(templatename, context, context_instance=ConferenceContext(request, conference))
+
 @ssl_required
 @login_required
 @transaction.commit_on_success
@@ -82,9 +89,7 @@ def home(request, confname):
 
 	if not conference.active:
 		if not conference.testers.filter(pk=request.user.id):
-			return render_to_response('confreg/closed.html', {
-					'conference': conference,
-			}, context_instance=ConferenceContext(request, conference))
+			return render_conference_response(request, conference, 'confreg/closed.html')
 
 	try:
 		reg = ConferenceRegistration.objects.get(conference=conference,
@@ -100,13 +105,9 @@ def home(request, confname):
 	if request.method == 'POST':
 		# Attempting to modify the registration
 		if reg.bulkpayment:
-			return render_to_response('confreg/bulkpayexists.html', {
-				'conference': conference,
-			}, context_instance=ConferenceContext(request, conference))
+			return render_conference_response(request, conference, 'confreg/bulkpayexists.html')
 		if reg.invoice:
-			return render_to_response('confreg/invoiceexists.html', {
-				'conference': conference,
-			}, context_instance=ConferenceContext(request, conference))
+			return render_conference_response(request, conference, 'confreg/invoiceexists.html')
 
 		form = ConferenceRegistrationForm(request.user, data=request.POST, instance=reg)
 		if form.is_valid():
@@ -134,24 +135,22 @@ def home(request, confname):
 		# we may want to show the form or not.
 		if reg.payconfirmedat or reg.invoice or reg.bulkpayment:
 			# This registration can't be changed at this point
-			return render_to_response('confreg/regform_completed.html', {
+			return render_conference_response(request, conference, 'confreg/regform_completed.html', {
 				'reg': reg,
 				'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/register/%s/" % (settings.SITEBASE_SSL, conference.urlname)),
-				'conference': conference,
-			}, context_instance=ConferenceContext(request, conference))
+			})
 
 		# Else fall through and render the form
 		form = ConferenceRegistrationForm(request.user, instance=reg)
 
-	return render_to_response('confreg/regform.html', {
+	return render_conference_response(request, conference, 'confreg/regform.html', {
 		'form': form,
 		'form_is_saved': form_is_saved,
 		'reg': reg,
 		'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/register/%s/" % (settings.SITEBASE_SSL, conference.urlname)),
-		'conference': conference,
 		'additionaloptions': conference.conferenceadditionaloption_set.all(),
 		'costamount': reg.regtype and reg.regtype.cost or 0,
-	}, context_instance=ConferenceContext(request, conference))
+	})
 
 def feedback_available(request):
 	conferences = Conference.objects.filter(feedbackopen=True).order_by('startdate')
@@ -167,9 +166,7 @@ def feedback(request, confname):
 	if not conference.feedbackopen:
 		# Allow conference testers to override
 		if not conference.testers.filter(pk=request.user.id):
-			return render_to_response('confreg/feedbackclosed.html', {
-					'conference': conference,
-			}, context_instance=ConferenceContext(request, conference))
+			return render_conference_response(request, conference, 'confreg/feedbackclosed.html')
 		else:
 			is_conf_tester = True
 	else:
@@ -203,11 +200,10 @@ def feedback(request, confname):
 		if len(fb):
 			s.has_feedback = True
 
-	return render_to_response('confreg/feedback_index.html', {
+	return render_conference_response(request, conference, 'confreg/feedback_index.html', {
 		'sessions': sessions,
-		'conference': conference,
 		'is_tester': is_conf_tester,
-	}, context_instance=ConferenceContext(request, conference))
+	})
 
 @ssl_required
 @login_required
@@ -219,19 +215,16 @@ def feedback_session(request, confname, sessionid):
 	if not conference.feedbackopen:
 		# Allow conference testers to override
 		if not conference.testers.filter(pk=request.user.id):
-			return render_to_response('confreg/feedbackclosed.html', {
-					'conference': conference,
-			}, context_instance=ConferenceContext(request, conference))
+			return render_conference_response(request, conference, 'confreg/feedbackclosed.html')
 		else:
 			is_conf_tester = True
 	else:
 		is_conf_tester = False
 
 	if session.starttime > datetime.now() and not is_conf_tester:
-		return render_to_response('confreg/feedbacknotyet.html', {
-			'conference': conference,
+		return render_conference_response(request, conference, 'confreg/feedbacknotyet.html', {
 			'session': session,
-		}, context_instance=ConferenceContext(request, conference))
+		})
 
 	try:
 		feedback = ConferenceSessionFeedback.objects.get(conference=conference, session=session, attendee=request.user)
@@ -250,11 +243,10 @@ def feedback_session(request, confname, sessionid):
 	else:
 		form = ConferenceSessionFeedbackForm(instance=feedback)
 
-	return render_to_response('confreg/feedback.html', {
+	return render_conference_response(request, conference, 'confreg/feedback.html', {
 		'session': session,
 		'form': form,
-		'conference': conference,
-	}, context_instance=ConferenceContext(request, conference))
+	})
 
 
 @ssl_required
@@ -266,9 +258,7 @@ def feedback_conference(request, confname):
 	if not conference.feedbackopen:
 		# Allow conference testers to override
 		if not conference.testers.filter(pk=request.user.id):
-			return render_to_response('confreg/feedbackclosed.html', {
-					'conference': conference,
-			}, context_instance=ConferenceContext(request, conference))
+			return render_conference_response(request, conference, 'confreg/feedbackclosed.html')
 
 	# Get all questions
 	questions = ConferenceFeedbackQuestion.objects.filter(conference=conference)
@@ -291,11 +281,10 @@ def feedback_conference(request, confname):
 	else:
 		form = ConferenceFeedbackForm(questions=questions, responses=responses)
 
-	return render_to_response('confreg/feedback_conference.html', {
+	return render_conference_response(request, conference, 'confreg/feedback_conference.html', {
 		'session': session,
 		'form': form,
-		'conference': conference,
-	}, context_instance=ConferenceContext(request, conference))
+	})
 
 
 class SessionSet(object):
@@ -384,9 +373,7 @@ def schedule(request, confname):
 
 	if not conference.scheduleactive:
 		if not conference.testers.filter(pk=request.user.id):
-			return render_to_response('confreg/scheduleclosed.html', {
-					'conference': conference,
-			}, context_instance=ConferenceContext(request, conference))
+			return render_conference_response(request, conference, 'confreg/scheduleclosed.html')
 
 	daylist = ConferenceSession.objects.filter(conference=conference, status=1).dates('starttime', 'day')
 	days = []
@@ -405,26 +392,22 @@ def schedule(request, confname):
 		})
 		tracks.update(sessionset.alltracks())
 
-	return render_to_response('confreg/schedule.html', {
-		'conference': conference,
+	return render_conference_response(request, conference, 'confreg/schedule.html', {
 		'days': days,
 		'tracks': tracks,
-	}, context_instance=ConferenceContext(request, conference))
+	})
 
 def sessionlist(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 
 	if not conference.sessionsactive:
 		if not conference.testers.filter(pk=request.user.id):
-			return render_to_response('confreg/sessionsclosed.html', {
-					'conference': conference,
-			}, context_instance=ConferenceContext(request, conference))
+			return render_conference_response(request, conference, 'confreg/sessionsclosed.html')
 
 	sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).order_by('track__sortkey', 'track', 'title')
-	return render_to_response('confreg/sessionlist.html', {
-		'conference': conference,
+	return render_conference_response(request, conference, 'confreg/sessionlist.html', {
 		'sessions': sessions,
-	}, context_instance=ConferenceContext(request, conference))
+	})
 
 def schedule_ical(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -446,33 +429,27 @@ def session(request, confname, sessionid, junk=None):
 
 	if not conference.sessionsactive:
 		if not conference.testers.filter(pk=request.user.id):
-			return render_to_response('confreg/sessionsclosed.html', {
-					'conference': conference,
-			}, context_instance=ConferenceContext(request, conference))
+			return render_conference_response(request, conference, 'confreg/sessionsclosed.html')
 
 	session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False, status=1)
-	return render_to_response('confreg/session.html', {
-		'conference': conference,
+	return render_conference_response(request, conference, 'confreg/session.html', {
 		'session': session,
-	}, context_instance=ConferenceContext(request, conference))
+	})
 
 def speaker(request, confname, speakerid, junk=None):
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.sessionsactive:
 		if not conference.testers.filter(pk=request.user.id):
-			return render_to_response('confreg/sessionsclosed.html', {
-					'conference': conference,
-			}, context_instance=ConferenceContext(request, conference))
+			return render_conference_response(request, conference, 'confreg/sessionsclosed.html')
 
 	speaker = get_object_or_404(Speaker, pk=speakerid)
 	sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker, cross_schedule=False, status=1).order_by('starttime')
 	if len(sessions) < 1:
 		raise Http404("Speaker has no sessions at this conference")
-	return render_to_response('confreg/speaker.html', {
-		'conference': conference,
+	return render_conference_response(request, conference, 'confreg/speaker.html', {
 		'speaker': speaker,
 		'sessions': sessions,
-	}, context_instance=ConferenceContext(request, conference))
+	})
 
 def speakerphoto(request, speakerid):
 	speakerphoto = get_object_or_404(Speaker_Photo, pk=speakerid)
@@ -510,16 +487,15 @@ def speakerprofile(request, confurlname=None):
 		form = SpeakerProfileForm(instance=speaker)
 
 	if confurlname:
-		context = ConferenceContext(request,
-									get_object_or_404(Conference, urlname=confurlname))
+		conf = get_object_or_404(Conference, urlname=confurlname)
 	else:
-		context = ConferenceContext(request, None)
-	return render_to_response('confreg/speakerprofile.html', {
+		conf = None
+	return render_conference_response(request, conf, 'confreg/speakerprofile.html', {
 			'speaker': speaker,
 			'conferences': conferences,
 			'callforpapers': callforpapers,
 			'form': form,
-	}, context_instance=context)
+	})
 
 @ssl_required
 @login_required
@@ -535,11 +511,10 @@ def callforpapers(request, confname):
 	except Speaker.DoesNotExist:
 		sessions = []
 
-	return render_to_response('confreg/callforpapers.html', {
-			'conference': conference,
+	return render_conference_response(request, conference, 'confreg/callforpapers.html', {
 			'sessions': sessions,
 			'is_tester': conference.testers.filter(pk=request.user.id).exists(),
-	}, context_instance=ConferenceContext(request, conference))
+	})
 
 @ssl_required
 @login_required
@@ -616,14 +591,13 @@ def callforpapers_edit(request, confname, sessionid):
 			feedbackdata = None
 			feedbacktext = None
 
-		return render_to_response('confreg/session_feedback.html', {
+		return render_conference_response(request, conference, 'confreg/session_feedback.html', {
 			'session': session,
-			'conference': conference,
 			'feedbackcount': feedbackcount,
 			'feedbackdata': feedbackdata,
 			'feedbacktext': feedbacktext,
 			'feedbackfields': [f.replace('_',' ').title() for f in feedback_fields],
-			}, context_instance=ConferenceContext(request, conference))
+			})
 
 
 	if request.method == 'POST':
@@ -636,11 +610,10 @@ def callforpapers_edit(request, confname, sessionid):
 		# GET --> render empty form
 		form = CallForPapersForm(instance=session)
 
-	return render_to_response('confreg/callforpapersform.html', {
+	return render_conference_response(request, conference, 'confreg/callforpapersform.html', {
 			'form': form,
 			'session': session,
-			'conference': conference,
-	}, context_instance=ConferenceContext(request, conference))
+	})
 
 
 @ssl_required
@@ -655,13 +628,9 @@ def confirmreg(request, confname):
 	# This should never happen since we should error out in the form,
 	# but make sure we don't accidentally proceed.
 	if not reg.regtype:
-		return render_to_response('confreg/noregtype.html', {
-				'conference': conference,
-				}, context_instance=ConferenceContext(request, conference))
+		return render_conference_response(request, conference, 'confreg/noregtype.html')
 	if reg.bulkpayment:
-		return render_to_response('confreg/bulkpayexists.html', {
-				'conference': conference,
-				}, context_instance=ConferenceContext(request, conference))
+		return render_conference_response(request, conference, 'confreg/bulkpayexists.html')
 
 	# If there is already an invoice, then this registration has
 	# been processed already.
@@ -671,10 +640,9 @@ def confirmreg(request, confname):
 	# See if the registration type blocks it
 	s = confirm_special_reg_type(reg.regtype.specialtype, reg)
 	if s:
-		return render_to_response('confreg/specialregtypeconfirm.html', {
-			'conference': conference,
+		return render_conference_response(request, conference, 'confreg/specialregtypeconfirm.html', {
 			'reason': s,
-			}, context_instance=ConferenceContext(request, conference))
+			})
 
 	if request.method == 'POST':
 		if request.POST['submit'].find('Back') >= 0:
@@ -735,20 +703,17 @@ def confirmreg(request, confname):
 	if len(invoicerows) <= 0:
 		return HttpResponseRedirect("../")
 
-	return render_to_response('confreg/regform_confirm.html', {
-		'conference': conference,
+	return render_conference_response(request, conference, 'confreg/regform_confirm.html', {
 		'invoicerows': invoicerows,
 		'totalcost': totalcost,
-		}, context_instance=ConferenceContext(request, conference))
+		})
 
 
 @ssl_required
 @login_required
 def cancelreg(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
-	return render_to_response('confreg/canceled.html', {
-		'conference': conference,
-		}, context_instance=ConferenceContext(request, conference))
+	return render_conference_response(request, conference, 'confreg/canceled.html')
 
 @ssl_required
 @login_required
@@ -762,20 +727,17 @@ def invoice(request, confname, regid):
 	reg = get_object_or_404(ConferenceRegistration, id=regid, attendee=request.user, conference=conference)
 
 	if reg.bulkpayment:
-		return render_to_response('confreg/bulkpayexists.html', {
-				'conference': conference,
-				}, context_instance=ConferenceContext(request, conference))
+		return render_conference_response(request, conference, 'confreg/bulkpayexists.html')
 
 	if not reg.invoice:
 		# We should never get here if we don't have an invoice. If it does
 		# happen, just redirect back.
 		return HttpResponseRedirect('../../')
 
-	return render_to_response('confreg/invoice.html', {
+	return render_conference_response(request, conference, 'confreg/invoice.html', {
 			'reg': reg,
 			'invoice': reg.invoice,
-			'conference': conference,
-			}, context_instance=ConferenceContext(request, conference))
+			})
 
 @ssl_required
 @login_required
@@ -935,24 +897,22 @@ def bulkpay(request, confname):
 			else:
 				messages.warning(request, 'An error occurred processing the registrations, please review the email addresses on the list')
 
-		return render_to_response('confreg/bulkpay_list.html', {
+		return render_conference_response(request, conference, 'confreg/bulkpay_list.html', {
 			'form': form,
 			'email_list': email_list,
 			'errors': errors,
 			'totalcost': errors and -1 or totalcost,
 			'state': state,
 			'bulkpayments': bulkpayments,
-			'conference': conference,
 			'currency_symbol': settings.CURRENCY_SYMBOL,
-		}, context_instance=ConferenceContext(request, conference))
+		})
 	else:
 		form = BulkRegistrationForm()
-		return render_to_response('confreg/bulkpay_list.html', {
+		return render_conference_response(request, conference, 'confreg/bulkpay_list.html', {
 			'form': form,
 			'bulkpayments': bulkpayments,
-			'conference': conference,
 			'currency_symbol': settings.CURRENCY_SYMBOL,
-		}, context_instance=ConferenceContext(request, conference))
+		})
 
 
 @ssl_required
@@ -962,11 +922,10 @@ def bulkpay_view(request, confname, bulkpayid):
 
 	bulkpayment = get_object_or_404(BulkPayment, conference=conference, user=request.user, pk=bulkpayid)
 
-	return render_to_response('confreg/bulkpay_view.html', {
+	return render_conference_response(request, conference, 'confreg/bulkpay_view.html', {
 		'bulkpayment': bulkpayment,
 		'invoice': bulkpayment.invoice,
-		'conference': conference,
-	}, context_instance=ConferenceContext(request, conference))
+	})
 
 #
 # Handle unscheduled sessions, with a little app to make them scheduled
