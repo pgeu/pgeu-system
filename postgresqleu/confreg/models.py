@@ -87,6 +87,7 @@ class Conference(models.Model):
 	additionalintro = models.TextField(blank=True, null=False)
 	basetemplate = models.CharField(max_length=128, blank=True, null=True, default=None, help_text="Relative name to template used as base to extend any default templates from")
 	templatemodule = models.CharField(max_length=128, blank=True, null=True, default=None, help_text="Full path to python module containing a 'templateextra.py' submodule")
+	templateoverridedir = models.CharField(max_length=128, blank=True, null=True, default=None, help_text="Full path to a directory with override templates in")
 	badgemodule = models.CharField(max_length=128, blank=True, null=True, default=None, help_text="Full path to python module *and class* used to render badges")
 	templatemediabase = models.CharField(max_length=128, blank=True, null=True, default=None, help_text="Relative location to template media (must be local to avoid https/http errors)")
 	callforpapersintro = models.TextField(blank=True, null=False)

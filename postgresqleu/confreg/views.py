@@ -3,6 +3,8 @@
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.template import RequestContext
+from django.template.loaders.filesystem import _loader as filesystem_template_loader
+from django.template.base import TemplateDoesNotExist
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -77,9 +79,24 @@ def ConferenceContext(request, conference):
 
 #
 # Render a conference page. This automatically attaches the ConferenceContext.
+# It will also load the template from the override directory if one is configured
+# on the conference.
 #
-def render_conference_response(request, conference, templatename, context=None):
-	return render_to_response(templatename, context, context_instance=ConferenceContext(request, conference))
+def render_conference_response(request, conference, templatename, dictionary=None):
+	context = ConferenceContext(request, conference)
+	if conference.templateoverridedir:
+		try:
+			tmpl, display = filesystem_template_loader.load_template(templatename, (conference.templateoverridedir,))
+			if dictionary:
+				context.update(dictionary)
+			return HttpResponse(tmpl.render(context))
+		except TemplateDoesNotExist:
+			# Template not found, so fall through to the default and load the template
+			# from our main directory.
+			pass
+
+	# Either no override configured, or override not found
+	return render_to_response(templatename, dictionary, context_instance=context)
 
 @ssl_required
 @login_required

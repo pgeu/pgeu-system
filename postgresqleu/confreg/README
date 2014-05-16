@@ -1,0 +1,36 @@
+Some minor notes about the confreg system.
+
+Conference skinning
+===================
+By default all conference pages are rendered in the standard template. There is, however,
+the ability to override certain things, which is configured by fields in the conference
+model.
+
+basetemplate
+------------
+All conference templates inherit from this template. This template must contain a block named
+"content", within which all the data goes. It must also contain a block called "extrahead" where
+things like javascript and CSS can be appended.
+
+templatemodule
+--------------
+This is a Python module that lets the conference override what goes in the context that is handed
+to the template. Typically used to randomize sponsor order and such things. Set to a full path
+to a directory containing a file called "templateextra", which must contain a function named
+"context_template_additions". This function will be called, with no arguments, for each page
+being rendered, and must return a dictionary that is merged with the current context.
+
+tempalteoverridedir
+-------------------
+Setting this will make the system search for templates in this directory first, before falling
+back to the regular template loader. For more advanced layouts, this allows the complete overriding
+of individual templates. Typically useful for things like the forms. Start from a copy of the
+existing template, and know that this might break if major changes are made to the structure...
+All templates names are of the format confreg/<nnn>, so there should always be a subdirectory
+named "confreg" in the directory configured here.
+
+templatemediabase
+-----------------
+This is a directory where media files for this template will be loaded. Typically this will be
+/ext/<something>/. We always want to load this from the same hostname as the forms etc, in order
+to avoid SSL errors when the main website is on http and the forms are on https.
