@@ -4,6 +4,7 @@
 
 from django.db import transaction
 from django.db.models import Max
+from django.conf import settings
 
 from decimal import Decimal
 
@@ -25,6 +26,10 @@ def create_accounting_entry(date,
 	# Entries must be balanced unless leaveopen is set to True
 	# Any urls listed in urllist must exist and be correct, no verification
 	# is done.
+
+	if not settings.ENABLE_AUTO_ACCOUNTING:
+		return
+
 	sid = transaction.savepoint()
 	try:
 		# Start by some simple validation
