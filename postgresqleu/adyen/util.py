@@ -298,8 +298,11 @@ def process_raw_adyen_notification(raw, POST):
 				AdyenLog(pspReference=notification.pspReference, message='Received invalid amount %s' % POST['value'], error=True).save()
 				notification.amount = -1
 			if POST['currency'] != settings.CURRENCY_ABBREV:
-				AdyenLog(pspReference=notification.pspReference, message='Received invalid currency %s' % POST['currency'], error=True).save()
-				notification.amount = -2
+				# For some reason, *report* notifications specifically get delivered with
+				# a hard-coded value of EUR, even though they have no currency inside them.
+				if notification.eventCode != 'REPORT_AVAILABLE':
+					AdyenLog(pspReference=notification.pspReference, message='Received invalid currency %s' % POST['currency'], error=True).save()
+					notification.amount = -2
 
 			# Save this unconfirmed for now
 			notification.save()
