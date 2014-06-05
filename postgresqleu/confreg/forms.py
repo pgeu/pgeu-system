@@ -22,7 +22,8 @@ from datetime import datetime, date
 class ConferenceRegistrationForm(forms.ModelForm):
 	additionaloptions = forms.ModelMultipleChoiceField(widget=forms.CheckboxSelectMultiple,
 		required=False,
-		queryset=ConferenceAdditionalOption.objects.all())
+		queryset=ConferenceAdditionalOption.objects.all(),
+		label='Additional options')
 
 	def __init__(self, user, *args, **kwargs):
 		super(ConferenceRegistrationForm, self).__init__(*args, **kwargs)
