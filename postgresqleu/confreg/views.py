@@ -84,7 +84,7 @@ def ConferenceContext(request, conference):
 #
 def render_conference_response(request, conference, templatename, dictionary=None):
 	context = ConferenceContext(request, conference)
-	if conference.templateoverridedir:
+	if conference and conference.templateoverridedir:
 		try:
 			tmpl, display = filesystem_template_loader.load_template(templatename, (conference.templateoverridedir,))
 			if dictionary:
