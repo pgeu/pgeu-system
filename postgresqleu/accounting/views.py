@@ -368,6 +368,10 @@ def report(request, year, reporttype):
 	else:
 		includeopen = False
 
+	# Get a filtered list of objects that have any records on this year (we always have the year!)
+	# Not the most efficient way, but we'll never have "many" of them
+	filtered_objects = Object.objects.filter(journalitem__journal__year__exact=year).distinct()
+
 	if hasopenentries and not includeopen:
 		messages.warning(request, "This year has open entries! These are not included in the report!")
 
@@ -411,7 +415,7 @@ def report(request, year, reporttype):
 		return render_to_response('accounting/ledgerreport.html', {
 			'year': year,
 			'years': years,
-			'objects': Object.objects.all(),
+			'objects': filtered_objects,
 			'currentobj': object,
 			'accounts': Account.objects.all(),
 			'currentaccount': account,
@@ -471,7 +475,7 @@ def report(request, year, reporttype):
 		'totalresult': totalresult,
 		'valheaders': valheaders,
 		'totalname': totalname,
-		'objects': Object.objects.all(),
+		'objects': filtered_objects,
 		'currentobj': object,
 		'enddate': enddate,
 		'includeopen': includeopen,
