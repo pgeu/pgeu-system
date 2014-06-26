@@ -723,6 +723,7 @@ def confirmreg(request, confname):
 	return render_conference_response(request, conference, 'confreg/regform_confirm.html', {
 		'invoicerows': invoicerows,
 		'totalcost': totalcost,
+		'regalert': reg.regtype.alertmessage,
 		})
 
 

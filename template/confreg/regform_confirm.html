@@ -19,6 +19,13 @@ form input[type=submit] {
    width: 200px !important;
 }
 </style>
+{%if regalert%}
+<script language="javascript" defer>
+   window.onload = function() {
+   alert('{{regalert|escapejs}}');
+   }
+</script>
+{%endif%}
 {%endblock%}
 {%block content%}
 <h1>Conference Registration - {{conference}}</h1>
