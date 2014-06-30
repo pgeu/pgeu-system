@@ -1285,12 +1285,13 @@ def admin_email(request):
 @transaction.commit_on_success
 def admin_email_session(request, sessionids):
 	sessions = ConferenceSession.objects.filter(pk__in=sessionids.split(','))
+	speakers = Speaker.objects.filter(conferencesession__in=sessions).distinct()
 
 	if request.method == 'POST':
 		form = EmailSessionForm(data=request.POST)
 		if form.is_valid():
 			# Ok, actually send the email. This is the scary part!
-			emails = [speaker.user.email for session in sessions for speaker in session.speaker.all()]
+			emails = [speaker.user.email for speaker in speakers]
 			for e in emails:
 				msg = MIMEText(form.data['text'], _charset='utf-8')
 				msg['Subject'] = form.data['subject']
@@ -1311,6 +1312,6 @@ def admin_email_session(request, sessionids):
 
 	return render_to_response('confreg/admin_email.html', {
 		'form': form,
-		'recipientlist': ", ".join([s.speaker_list for s in sessions]),
+		'recipientlist': ", ".join([s.name for s in speakers]),
 		'whatfor': ", ".join(['Session "%s"' % s.title for s in sessions]),
 		})
