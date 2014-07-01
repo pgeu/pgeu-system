@@ -46,12 +46,12 @@ it.
 {%for r in invoicerows%}
 <tr valign="top">
   <td class="desc">{{r.0|leadingnbsp}}</td>
-  <td class="cost">{{r.2|intcomma}}</td>
+  <td class="cost">{{currency_symbol}} {{r.2|intcomma}}</td>
 </tr>
 {%endfor%}
 <tr valign="top" class="totalrow">
   <td class="desc"></td>
-  <td class="cost">{{totalcost|intcomma}}</td>
+  <td class="cost">{{currency_symbol}} {{totalcost|intcomma}}</td>
 </tr>
 </table>
 
