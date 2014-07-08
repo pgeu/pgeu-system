@@ -1,5 +1,73 @@
 {%extends "navbase.html" %}
 {%block title%}Create prepaid vouchers{%endblock%}
+{%block extrahead%}
+<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
+<script src="/media/jq/jquery-1.8.2.min.js"></script>
+<script src="/media/jq/jquery-ui.min.js"></script>
+
+<script language="javascript">
+function lookup_user() {
+   $('#user-lookup').dialog('open');
+}
+$(function() {
+   var usermatches = new Array;
+   $('#user-lookup-search-button').button().click(function() {
+      var term = $('#user-lookup-search-term').val();
+      if (!term) return;
+      $.get('/accountinfo/search/', { 'term': term}).done(function(data) {
+         if (!(data instanceof Array)) {
+            alert('Returned object is not an array!');
+            return;
+         }
+         if (data.length == 0) {
+            alert('Nothing found');
+            return;
+         }
+         if (data.length == 1) {
+            $('#id_buyer').val(data[0].ui);
+            $('#id_buyername').val(data[0].n);
+            $('#user-lookup').dialog('close');
+            return;
+         }
+         /* many found */
+         $.each(data, function(i, u) {
+            $('#user-lookup-select').append('<option value="' + u.ui +'">' + u.u + ' (' + u.n + '&lt;' + u.e + '&gt;)</option>');
+         });
+         $('#user-lookup-search-wrap').hide();
+         $('#user-lookup-select-wrap').show();
+         usermatches = data;
+      });
+   });
+   $('#user-lookup-select-button').button().click(function() {
+      var v = $('#user-lookup-select').val();
+      $('#id_buyer').val(v);
+      $.each(usermatches, function(i,u) {
+         if (v == u.ui) {
+            $('#id_buyername').val(u.n);
+         }
+      });
+      $('#user-lookup').dialog('close');
+   });
+   $('#user-lookup').dialog({
+      autoOpen: false,
+      height: 300,
+      width: 500,
+      modal: true,
+      title: 'Lookup user',
+      open: function() {
+         $('#user-lookup-search-term').val('');
+         $('#user-lookup-select').find('option').remove();
+         $('#user-lookup-search-wrap').show();
+         $('#user-lookup-select-wrap').hide();
+      },
+      buttons: {
+         'Close': function() { $(this).dialog('close');}
+      }
+   });
+   return false;
+});
+</script>
+{%endblock%}
 {%block content%}
 <h1>Create prepaid vouchers</h1>
 <p>
@@ -14,9 +82,33 @@ the customer, <i>and</i> verified that payment is completed!
 
 <form method="post" action="." enctype="multipart/form-data">
 <table>
-{{form.as_table}}
+{%for field in form%}
+{%if field.errors%}
+ <tr class="error"><td colspan="3">{{field.errors.as_ul}}</td></tr>
+{%endif%}
+ <tr {%if field.errors%}class="errorinfo"{%endif%}>
+   <th>{{field.label_tag}}</th>
+   <td>{{field}}</td>
+   <td>{% if field.name == "buyer"%}<a href="#" onclick="javascript:lookup_user()">Lookup</a>{%endif%}</td>
+ </tr>
+{%if field.help_text%}
+ <tr>
+  <td colspan="3" style="padding-left: 30px;">{{field.help_text}}</td>
+ </tr>
+{%endif%}
+{%endfor%}
 </table>
 <input type="submit" value="Save">
 </form>
+
+<div id="user-lookup">
+ <div id="user-lookup-search-wrap">
+  Search: <input id="user-lookup-search-term" type="text" style="width:100%"> <div id="user-lookup-search-button">Search</div>
+ </div>
+ <div id="user-lookup-select-wrap" style="display:none">
+  <select id="user-lookup-select" size="5" style="width:100%"></select><br/>
+  <div id="user-lookup-select-button">Select</div>
+ </div>
+</div>
 
 {%endblock%}
