@@ -41,7 +41,9 @@
 {%for v in vouchers%}{{v.vouchervalue}}
 {%endfor%}</textarea>
 
+{%if not userbatch%}
 <h2>And once more</h2>
+<p><i>Only shown to administrators!</i></p>
 <p>
 In a format suitable to paste into an email which includes
 the details for how to actually use them.
@@ -87,5 +89,6 @@ The registration form is available at:
 https://www.postgresql.eu/events/register/{{batch.conference.urlname}}/
 
 </textarea>
+{%endif%}
 
 {%endblock%}

@@ -827,12 +827,14 @@ def viewvouchers(request, batchid):
 	# WARNING! THIS VIEW IS NOT RESTRICTED TO ADMINS!
 	# The same view is also used by the person who bought the voucher!
 	# therefor, we need to make very sure he has permission!
+	userbatch = False
 	if not request.user.has_module_perms('invoicemgr'):
 		# Superusers and invoice managers gain access through the generic
 		# permission. Anybody else can only view his/her own batches
 		batch = PrepaidBatch.objects.get(pk=batchid)
 		if batch.buyer != request.user:
 			raise Http404()
+		userbatch = True
 	else:
 		# User has direct permissions, just retrieve the batch
 		batch = PrepaidBatch.objects.get(pk=batchid)
@@ -843,6 +845,7 @@ def viewvouchers(request, batchid):
 	return render_to_response('confreg/prepaid_create_list.html', {
 			'batch': batch,
 			'vouchers': vouchers,
+			'userbatch': userbatch,
 			})
 
 
