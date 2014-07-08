@@ -27,6 +27,7 @@ from models import get_status_string
 from regtypes import confirm_special_reg_type
 
 from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
+from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod, InvoiceRow
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
 from postgresqleu.mailqueue.util import send_mail
@@ -771,6 +772,7 @@ def createvouchers(request):
 
 			conference = Conference.objects.get(pk=form.data['conference'])
 			regtype = RegistrationType.objects.get(pk=form.data['regtype'], conference=conference)
+			regcount = int(form.data['count'])
 			buyer = User.objects.get(pk=form.data['buyer'])
 			buyername = form.data['buyername']
 
@@ -780,11 +782,32 @@ def createvouchers(request):
 								 buyername=buyername)
 			batch.save()
 
-			for n in range(0, int(form.data['count'])):
+			for n in range(0, regcount):
 				v = PrepaidVoucher(conference=conference,
 								   vouchervalue=base64.b64encode(os.urandom(37)).rstrip('='),
 								   batch=batch)
 				v.save()
+
+			if form.data.has_key('invoice') and form.data['invoice']:
+				invoice = Invoice(recipient_user=buyer,
+								  recipient_email=buyer.email,
+								  recipient_name=buyername,
+								  title='Prepaid vouchers for %s' % conference.conferencename,
+								  invoicedate=datetime.now(),
+								  duedate=datetime.now(),
+								  finalized=False,
+								  total_amount=-1,
+								  bankinfo=False,
+								  accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
+								  accounting_object = conference.accounting_object,
+							  )
+				invoice.save()
+				invoice.invoicerow_set.add(InvoiceRow(invoice=invoice,
+													  rowtext='Voucher for "%s"' % regtype.regtype,
+													  rowcount=regcount,
+													  rowamount=regtype.cost))
+				invoice.allowedmethods = InvoicePaymentMethod.objects.filter(auto=True)
+				invoice.save()
 			return HttpResponseRedirect('%s/' % batch.id)
 		# Else fall through to re-render
 	else:

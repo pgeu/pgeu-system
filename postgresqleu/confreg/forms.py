@@ -366,7 +366,8 @@ class PrepaidCreateForm(forms.Form):
 	regtype = forms.ModelChoiceField(queryset=RegistrationType.objects.all())
 	count = forms.IntegerField(min_value=1, max_value=100)
 	buyer = forms.ModelChoiceField(queryset=User.objects.all().order_by('username'), help_text="Pick the user who bought the batch. If he/she is not registered, pick your own userid")
-	buyername = forms.CharField(max_length=100,help_text="Display name of the user who bought the batch. Internal use only.")
+	buyername = forms.CharField(max_length=100,help_text="Display name of the user who bought the batch. Internal use and copied to invoice")
+	invoice = forms.BooleanField(help_text="Automatically create invoice template for these vouchers. Note that the vouchers are created immediately, not at payment time!", required=False)
 	confirm = forms.BooleanField(help_text="Confirm that the chosen registration type and count are correct (there is no undo past this point, the vouchers will be created!")
 
 	def __init__(self, *args, **kwargs):
@@ -386,6 +387,7 @@ class PrepaidCreateForm(forms.Form):
 			del self.fields['buyer']
 			del self.fields['buyername']
 			del self.fields['confirm']
+			del self.fields['invoice']
 
 class EmailSendForm(forms.Form):
 	ids = forms.CharField(label="List of id's", widget=forms.widgets.HiddenInput())
