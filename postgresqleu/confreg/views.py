@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, Http404
-from django.template import RequestContext
+from django.template import RequestContext, Context
 from django.template.loaders.filesystem import _loader as filesystem_template_loader
+from django.template.loader import get_template
 from django.template.base import TemplateDoesNotExist
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -30,7 +31,7 @@ from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod, InvoiceRow
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
-from postgresqleu.mailqueue.util import send_mail
+from postgresqleu.mailqueue.util import send_mail, send_simple_mail
 
 from datetime import datetime, timedelta
 import base64
@@ -842,12 +843,36 @@ def viewvouchers(request, batchid):
 
 	vouchers = batch.prepaidvoucher_set.all()
 
+	vouchermailtext = get_template('confreg/mail/prepaid_vouchers.txt').render(Context({
+		'batch': batch,
+		'vouchers': vouchers,
+		}))
+
 	return render_to_response('confreg/prepaid_create_list.html', {
 			'batch': batch,
 			'vouchers': vouchers,
 			'userbatch': userbatch,
+			'vouchermailtext': vouchermailtext,
 			})
 
+@ssl_required
+@login_required
+@transaction.commit_on_success
+@user_passes_test_or_error(lambda u: u.has_module_perms('invoicemgr'))
+def emailvouchers(request, batchid):
+	batch = PrepaidBatch.objects.get(pk=batchid)
+	vouchers = batch.prepaidvoucher_set.all()
+
+	vouchermailtext = get_template('confreg/mail/prepaid_vouchers.txt').render(Context({
+		'batch': batch,
+		'vouchers': vouchers,
+	}))
+	send_simple_mail(batch.conference.contactaddr,
+					  batch.buyer.email,
+					  "Attendee vouchers for %s" % batch.conference,
+					  vouchermailtext,
+					  )
+	return HttpResponse('OK')
 
 @ssl_required
 @login_required
