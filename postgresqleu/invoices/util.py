@@ -93,7 +93,8 @@ class InvoiceWrapper(object):
 		self._email_something('paid_receipt.txt',
 							  'Receipt for %s #%s' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
 							  '%s_receipt_%s.pdf' % (settings.INVOICE_FILENAME_PREFIX, self.invoice.id),
-							  self.invoice.pdf_receipt)
+							  self.invoice.pdf_receipt,
+							  bcc=(self.invoice.processor is None))
 		InvoiceHistory(invoice=self.invoice, txt='Sent receipt').save()
 
 	def email_invoice(self):
@@ -103,7 +104,8 @@ class InvoiceWrapper(object):
 		self._email_something('invoice.txt',
 							  '%s #%s' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
 							  '%s_invoice_%s.pdf' % (settings.INVOICE_FILENAME_PREFIX, self.invoice.id),
-							  self.invoice.pdf_invoice)
+							  self.invoice.pdf_invoice,
+							  bcc=True)
 		InvoiceHistory(invoice=self.invoice, txt='Sent invoice').save()
 
 	def email_reminder(self):
@@ -113,20 +115,23 @@ class InvoiceWrapper(object):
 		self._email_something('invoice_reminder.txt',
 							  '%s #%s - reminder' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
 							  '%s_invoice_%s.pdf' % (settings.INVOICE_FILENAME_PREFIX, self.invoice.id),
-							  self.invoice.pdf_invoice)
+							  self.invoice.pdf_invoice,
+							  bcc=True)
 		InvoiceHistory(invoice=self.invoice, txt='Sent reminder').save()
 
 	def email_cancellation(self):
 		self._email_something('invoice_cancel.txt',
-							  '%s #%s - canceled' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id))
+							  '%s #%s - canceled' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
+							  bcc=True)
 		InvoiceHistory(invoice=self.invoice, txt='Sent cancellation').save()
 
 	def email_refund(self):
 		self._email_something('invoice_refund.txt',
-							  '%s #%s - refund notice' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id))
+							  '%s #%s - refund notice' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
+							  bcc=True)
 		InvoiceHistory(invoice=self.invoice, txt='Sent refund notice').save()
 
-	def _email_something(self, template_name, mail_subject, pdfname=None, pdfcontents=None):
+	def _email_something(self, template_name, mail_subject, pdfname=None, pdfcontents=None, bcc=False):
 		# Send off the receipt/invoice by email if possible
 		if not self.invoice.recipient_email:
 			return
@@ -159,6 +164,7 @@ class InvoiceWrapper(object):
 						 mail_subject,
 						 txt,
 						 pdfdata,
+						 bcc=bcc and settings.INVOICE_SENDER_EMAIL or None,
 						 )
 
 
