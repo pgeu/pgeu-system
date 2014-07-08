@@ -378,9 +378,23 @@ class PrepaidVoucherInline(admin.TabularInline):
 	can_delete = False
 
 class PrepaidBatchAdmin(admin.ModelAdmin):
-	list_display = ['id', 'conference', 'buyer', 'buyername', ]
+	list_display = ['id', 'conference', 'buyer', 'buyername', 'total_num', 'used_num' ]
 	list_filter = ['conference', ]
 	inlines = [PrepaidVoucherInline, ]
+
+	def queryset(self, request):
+		return PrepaidBatch.objects.extra(select={
+			'num': 'SELECT count(*) FROM confreg_prepaidvoucher WHERE batch_id=confreg_prepaidbatch.id',
+			'used': 'SELECT count(*) FROM confreg_prepaidvoucher WHERE batch_id=confreg_prepaidbatch.id AND usedate IS NOT NULL',
+			})
+
+	def total_num(self, inst):
+		return inst.num
+	total_num.short_description = 'Total vouchers'
+
+	def used_num(self, inst):
+		return inst.used
+	used_num.short_description = 'Used vouchers'
 
 class PrepaidVoucherAdminForm(forms.ModelForm):
 	class Meta:
