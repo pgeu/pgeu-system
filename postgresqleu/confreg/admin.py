@@ -289,11 +289,30 @@ class ConferenceAdditionalOptionAdminForm(forms.ModelForm):
 			pass
 
 class ConferenceAdditionalOptionAdmin(admin.ModelAdmin):
-	list_display = ['conference', 'name', 'maxcount', 'cost']
+	list_display = ['conference', 'name', 'maxcount', 'cost', 'used_count', 'confirmed_count', 'unconfirmed_count']
 	list_filter = ['conference', ]
 	ordering = ['conference', 'name', ]
 	filter_horizontal = ('requires_regtype', 'mutually_exclusive', )
 	form = ConferenceAdditionalOptionAdminForm
+
+	def queryset(self, request):
+		return ConferenceAdditionalOption.objects.extra(select={
+			'confirmed_count': 'SELECT count(*) FROM confreg_conferenceregistration r INNER JOIN confreg_conferenceregistration_additionaloptions cao ON cao.conferenceregistration_id=r.id WHERE cao.conferenceadditionaloption_id=confreg_conferenceadditionaloption.id AND r.payconfirmedat IS NOT NULL',
+			'unconfirmed_count': 'SELECT count(*) FROM confreg_conferenceregistration r INNER JOIN confreg_conferenceregistration_additionaloptions cao ON cao.conferenceregistration_id=r.id WHERE cao.conferenceadditionaloption_id=confreg_conferenceadditionaloption.id AND r.payconfirmedat IS NULL',
+			})
+		return ConferenceAdditionalOption.objects.annotate(reg_count=Count('conferenceregistration'))
+
+	def confirmed_count(self, inst):
+		return inst.confirmed_count
+	confirmed_count.short_description = 'Confirmed'
+
+	def unconfirmed_count(self, inst):
+		return inst.unconfirmed_count
+	unconfirmed_count.short_description = 'Unconfirmed'
+
+	def used_count(self, inst):
+		return inst.confirmed_count + inst.unconfirmed_count
+	used_count.short_description = 'Total used'
 
 class SpeakerAdminForm(forms.ModelForm):
 	class Meta:
