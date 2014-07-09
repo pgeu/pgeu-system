@@ -152,6 +152,23 @@ class SubmittedSessionsReport(MultiConferenceReport):
 		return self.curs.fetchall()
 reporttypes.append(('Submitted sessions', SubmittedSessionsReport))
 
+class SubmittingSpeakersReport(MultiConferenceReport):
+	def __init__(self, title, conferences):
+		super(SubmittingSpeakersReport, self).__init__(title,'Number of speakers',conferences)
+
+	def maxmin(self):
+		self.curs.execute("SELECT max(extract(days from startdate-initialsubmit)::integer), min(extract(days from startdate-initialsubmit)::integer) FROM confreg_conference c INNER JOIN confreg_conferencesession s ON c.id=s.conference_id WHERE c.id=ANY(%(idlist)s) AND s.initialsubmit IS NOT NULL AND NOT s.cross_schedule", {'idlist': [c.id for c in self.conferences]})
+		return self.curs.fetchone()
+
+	def fetch_all_data(self, conference, min, max):
+		self.curs.execute("WITH t AS (SELECT extract(days from startdate-initialsubmit) AS d, count(distinct speaker_id) AS num FROM confreg_conferencesession s INNER JOIN confreg_conference c ON c.id=s.conference_id INNER JOIN confreg_conferencesession_speaker spk ON s.id=spk.conferencesession_id WHERE c.id=%(id)s AND s.initialsubmit IS NOT NULL AND NOT s.cross_schedule GROUP BY d), tt AS (SELECT g.g, num FROM t RIGHT JOIN generate_series (%(min)s, %(max)s) g(g) ON g.g=t.d) SELECT COALESCE(sum(num) OVER (ORDER BY g DESC),0)::integer FROM tt ORDER BY g DESC", {
+			'id': conference.id,
+			'min': min,
+			'max': max,
+		})
+		return self.curs.fetchall()
+reporttypes.append(('Submitting speakers', SubmittingSpeakersReport))
+
 class RegistrationTypesReport(SingleConferenceReport):
 	def fetch_all_data(self, min, max, startdate):
 		self.curs.execute("SELECT id, regtype FROM confreg_registrationtype rt WHERE EXISTS (SELECT * FROM confreg_conferenceregistration r WHERE r.regtype_id=rt.id AND r.payconfirmedat IS NOT NULL AND r.conference_id=%(id)s)", {
