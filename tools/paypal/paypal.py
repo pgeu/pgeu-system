@@ -74,6 +74,7 @@ class PaypalBaseTransaction(object):
 
 		if r['L_CURRENCYCODE0'][0] != self.api.currency:
 			self.message = "Invalid currency %s" % r['L_CURRENCYCODE0'][0]
+			self.text += ' (currency %s, manually adjust amount!)' % r['L_CURRENCYCODE0'][0]
 			self.amount = -1 # just to be on the safe side
 
 	def store(self, db):
@@ -118,6 +119,7 @@ class PaypalTransfer(PaypalBaseTransaction):
 		self.email = 'treasurer@postgresql.eu'
 		if apistruct['L_CURRENCYCODE%i' % i][0] != self.api.currency:
 			self.message = "Invalid currency %s" % apistruct['L_CURRENCYCODE%i' % i][0]
+			self.text += ' (currency %s, manually adjust amount!)' % r['L_CURRENCYCODE0'][0]
 			self.amount = -1 # To be on the safe side
 
 	def fetch_details(self):
