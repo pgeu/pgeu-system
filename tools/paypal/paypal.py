@@ -163,6 +163,13 @@ class PaypalAPI(object):
 				# It seems these can be ignored since the actual fee info
 				# is also present on the refund notice.
 				pass
+			elif ret['L_TYPE%i' % i][0] in ('Currency Conversion (credit)', 'Currency Conversion (debit)'):
+				# A transfer in a different currency will generate the main transaction
+				# as well as *two* extra, one debit and one credit, for the conversion itself.
+				# We just care about the main transfer anyway, so we're just going to ignore
+				# the currency exchange ones (details can always be checked on the paypal website
+				# for things like exchange rates).
+				pass
 			elif ret['L_TYPE%i' % i][0] in ('Temporary Hold', 'Authorization'):
 				# We can safely ignore temporary holds, as they are temporary.
 				# We also ignore Authorization, because they will be reported
