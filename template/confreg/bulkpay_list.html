@@ -73,7 +73,7 @@ has been paid.
 {%if state%}
 <h3>Registrations to pay for</h3>
 <p>
-<ul>
+<ul class="pgeubulkpaylist">
 {%for s in state%}
 <li {%if not s.pay or not s.found %}style="color:red;"{%endif%}>{{s.email}}{%if s.total%} ({{currency_symbol}}{{s.total}}){%endif%}<ul>
 {%if s.pay and s.found%}
