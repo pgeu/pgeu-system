@@ -913,7 +913,7 @@ def bulkpay(request, confname):
 						errors=1
 					else:
 						# Normal registration, so add it
-						state.append({'email': e, 'found': 1, 'pay': 1, 'total': s, 'rows':[u'%s (%s%s)' % (r[0], settings.CURRENCY_SYMBOL, r[2]) for r in regrows]})
+						state.append({'email': e, 'found': 1, 'pay': 1, 'total': s, 'rows':[u'%s (%s%s)' % (r[0], settings.CURRENCY_SYMBOL.decode('utf8'), r[2]) for r in regrows]})
 						totalcost += s
 						invoicerows.extend(regrows)
 			else:
