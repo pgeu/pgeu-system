@@ -1285,6 +1285,30 @@ def advanced_report(request, confname):
 
 @ssl_required
 @login_required
+def simple_report(request, confname):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=confname)
+	else:
+		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+
+	from reports import simple_reports
+
+	if not simple_reports.has_key(request.GET['report']):
+		raise Http404("Report not found")
+
+	curs = connection.cursor()
+	curs.execute(simple_reports[request.GET['report']], {
+		'confid': conference.id,
+		})
+
+	return render_to_response('confreg/simple_report.html', {
+		'conference': conference,
+		'columns': [d[0] for d in curs.description],
+		'data': curs.fetchall(),
+	})
+
+@ssl_required
+@login_required
 def admin_dashboard(request):
 	if request.user.is_superuser:
 		conferences = Conference.objects.all().order_by('-startdate')

@@ -20,8 +20,13 @@ Entering metadata is still typically done through the
       <li><a href="/admin/confreg/prepaidvoucher/?conference__id__exact={{c.id}}&_directlink=1">View prepaid voucher usage</a></li>
       <li><a href="/admin/confreg/conferencesession/?conference__id__exact={{c.id}}&_directlink=1">View submitted sessions</a></li>
       <li><a href="/events/schedule/{{c.urlname}}/create/">Create schedule</a></li>
-      <li><a href="/events/reports/{{c.urlname}}/">Reports</a><ul>
+      <li>Reports<ul>
+	  <li><a href="/events/reports/{{c.urlname}}/">Attendee Reports</a></li>
 	  <li><a href="/events/reports/time/">Time reports</a></li>
+	  <li>Admin reports<ul>
+	      <li><a href="/events/reports/{{c.urlname}}/simple/?report=unregspeaker">Speakers that have not registered</a></li>
+	      <li><a href="/events/reports/{{c.urlname}}/simple/?report=sessionstatus">Session status statistics</a></li>
+	  </ul></li>
       </ul></li>
       <li><a href="/events/reports/{{c.urlname}}/feedback/">Feedback</a></li>
       <li><a href="/events/talkvote/{{c.urlname}}/">Talk voting</a></li>

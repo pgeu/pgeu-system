@@ -1,0 +1,19 @@
+{%extends "base.html" %}
+{%block title%}Report{%endblock%}
+{%block layoutblock%}
+<h1>Report</h1>
+<table border="1" cellspacing="0" cellpadding="1">
+  <tr>
+{%for c in columns %}
+    <th>{{c}}</th>
+{%endfor%}
+  </tr>
+{%for r in data%}
+<tr>
+  {%for c in r %}
+  <td>{{c}}</td>
+  {%endfor%}
+</tr>
+{%endfor%}
+</table>
+{%endblock%}

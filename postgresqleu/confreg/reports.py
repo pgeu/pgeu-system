@@ -233,3 +233,12 @@ def build_attendee_report(conference, POST):
 		writer.add_row(row)
 
 	return writer.render()
+
+
+#
+# Simple conference reports - basically, just queries
+#
+simple_reports = {
+	'unregspeaker': 'SELECT fullname AS "Name", u.email AS "E-mail" FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id INNER JOIN auth_user u ON u.id=spk.user_id WHERE s.conference_id=%(confid)s AND s.status=1 AND NOT EXISTS (SELECT * FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.attendee_id=spk.user_id)',
+	'sessionstatus': 'SELECT statustext AS "Status",count(*) AS "Count" FROM confreg_conferencesession s INNER JOIN confreg_status_strings ss ON ss.id=s.status WHERE conference_id=%(confid)s GROUP BY statustext',
+}
