@@ -1,4 +1,4 @@
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponse
 from django.db import transaction
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -105,6 +105,13 @@ def paypal_return_handler(request):
 	if d['payment_status'] == 'Completed':
 		# Payment is completed. Create a paypal transaction info
 		# object for it, and then try to match it to an invoice.
+
+		# Double-check if it is already added. We did check this furter
+		# up, but it seems it can sometimes be called more than once
+		# asynchronously, due to the check with paypal taking too
+		# long.
+		if TransactionInfo.objects.filter(paypaltransid=tx).exists():
+			return HttpResponse("Transaction already processed", content_type='text/plain')
 
 		# Paypal seems to randomly change which field actually contains
 		# the transaction title.
