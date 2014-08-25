@@ -140,8 +140,14 @@ def oneinvoice(request, invoicenum):
 			messages.info(request, "Invoice %s deleted." % invoiceid)
 			return HttpResponseRedirect('/invoiceadmin/')
 
-		form = InvoiceForm(data=request.POST, instance=invoice)
-		formset = InvoiceRowInlineFormset(data=request.POST, instance=invoice)
+		# Disabled SELECTs are not included in the POST. Therefor, we must copy the
+		# data over for those fields.
+		postcopy = request.POST.copy()
+		for fld in ('accounting_account', 'accounting_object', ):
+			postcopy[fld] = getattr(invoice, fld)
+
+		form = InvoiceForm(data=postcopy, instance=invoice)
+		formset = InvoiceRowInlineFormset(data=postcopy, instance=invoice)
 		formset.forms[0].empty_permitted = False
 		if form.is_valid():
 			if formset.is_valid():
