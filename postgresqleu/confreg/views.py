@@ -1169,7 +1169,11 @@ def createschedule(request, confname):
 
 
 	daylist = ConferenceSessionScheduleSlot.objects.filter(conference=conference).dates('starttime', 'day')
+	if len(daylist) == 0:
+		return HttpResponse('No schedule slots defined for this conference, cannot create schedule yet.')
 	rooms = Room.objects.filter(conference=conference)
+	if len(rooms) == 0:
+		return HttpResponse('No rooms defined for this conference, cannot create schedule yet.')
 	tracks = Track.objects.filter(conference=conference).order_by('sortkey')
 
 	days = []
