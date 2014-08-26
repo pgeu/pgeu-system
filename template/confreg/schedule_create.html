@@ -22,6 +22,9 @@ div.sessblock {
    overflow:hidden;
    position: absolute;
 }
+div.sesspending {
+   opacity: 0.3;
+}
 div.roomheader {
    font-weight: bold;
    font-size: 1.2em;
@@ -151,7 +154,7 @@ the talk slot, if your schedule supports multiple different lengths.
 <div id="availablewrapper" style="float:right; border:1px solid blue;width:{{sesswidth}}px;height:500px;">
   <h3>Available sessions</h3>
   {%for s in sessions %}
-   <div id="sess{{s.id}}" class="sessblock actualsession track{{s.track.id}}" style="top: {{s.top}}px; width: {{sesswidth}}px; height: {{s.height}}px;">{{s.title}}<br/><i>{{s.speaker_list}}</i></div>
+   <div id="sess{{s.id}}" class="sessblock actualsession track{{s.track.id}}{%if s.ispending%} sesspending{%endif%}" style="top: {{s.top}}px; width: {{sesswidth}}px; height: {{s.height}}px;">{{s.title}}<br/><i>{{s.speaker_list}}</i></div>
   {%endfor%}
 </div>
 

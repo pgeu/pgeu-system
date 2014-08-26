@@ -1021,6 +1021,7 @@ class UnscheduledSession(object):
 		self.track = session.track
 		self.top = (n+1) * 75
 		self.height = 50 * 1.5 # 50 minute slots hardcoded. nice...
+		self.ispending = (session.status == 3)
 
 
 @ssl_required
@@ -1165,7 +1166,7 @@ def createschedule(request, confname):
 	# We include *all* (non cross-schedule) sessions here, whether they
 	# are approved or not.
 	sessions = []
-	for s in ConferenceSession.objects.filter(conference=conference, cross_schedule=False, status=1):
+	for s in ConferenceSession.objects.filter(conference=conference, cross_schedule=False, status__in=(1,3)):
 		sessions.append(UnscheduledSession(s, len(sessions)+1))
 
 
