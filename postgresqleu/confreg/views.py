@@ -1017,6 +1017,7 @@ class UnscheduledSession(object):
 	def __init__(self, session, n):
 		self.id = session.id
 		self.title = session.title
+		self.speaker_list = session.speaker_list
 		self.track = session.track
 		self.top = (n+1) * 75
 		self.height = 50 * 1.5 # 50 minute slots hardcoded. nice...
