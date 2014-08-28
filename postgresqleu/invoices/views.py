@@ -145,7 +145,8 @@ def oneinvoice(request, invoicenum):
 		postcopy = request.POST.copy()
 		if not invoicenum == 'new':
 			for fld in ('accounting_account', 'accounting_object', ):
-				postcopy[fld] = getattr(invoice, fld)
+				if not postcopy.has_key(fld):
+					postcopy[fld] = getattr(invoice, fld)
 
 		form = InvoiceForm(data=postcopy, instance=invoice)
 		formset = InvoiceRowInlineFormset(data=postcopy, instance=invoice)
