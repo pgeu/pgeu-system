@@ -143,8 +143,9 @@ def oneinvoice(request, invoicenum):
 		# Disabled SELECTs are not included in the POST. Therefor, we must copy the
 		# data over for those fields.
 		postcopy = request.POST.copy()
-		for fld in ('accounting_account', 'accounting_object', ):
-			postcopy[fld] = getattr(invoice, fld)
+		if not invoicenum == 'new':
+			for fld in ('accounting_account', 'accounting_object', ):
+				postcopy[fld] = getattr(invoice, fld)
 
 		form = InvoiceForm(data=postcopy, instance=invoice)
 		formset = InvoiceRowInlineFormset(data=postcopy, instance=invoice)
