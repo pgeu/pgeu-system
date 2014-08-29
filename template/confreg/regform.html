@@ -59,7 +59,9 @@ has been confirmed.</p>
 {% endif %}
 
 {% if form.errors %}
-<p style="color:red; font-weight: bold">Note! This form contains errors and has not been saved!</p>
+<p style="color:red; font-weight: bold">Note! This form contains errors and has not been saved!
+The fields with invalid input have been highlighted below with a message describing the required
+correction.</p>
 {% endif %}
 
 {%if form.non_field_errors%}{{form.non_field_errors}}{%endif%}
