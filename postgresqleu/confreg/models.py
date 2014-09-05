@@ -288,7 +288,13 @@ class ConferenceRegistration(models.Model):
 		return "%s %s" % (self.firstname, self.lastname)
 
 	def has_invoice(self):
-		return not self.invoice is None
+		# Return if this registration has an invoice, whether through
+		# a direct invoice or a bulk payment.
+		if not self.invoice is None:
+			return True
+		if not self.bulkpayment is None:
+			return True
+		return False
 	has_invoice.boolean = True
 
 	def short_regtype(self):
