@@ -38,4 +38,4 @@ https://www.postgresql.eu/events/register/{{batch.conference.urlname}}/
 
 If you have a PostgreSQL community account, you can view the
 current usage of your vouchers at:
-https://www.postgresq.eu/events/prepaid/{{batch.id}}/
+https://www.postgresql.eu/events/prepaid/{{batch.id}}/
