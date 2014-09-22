@@ -244,7 +244,7 @@ class BulkPayment(models.Model):
 			self.conference,
 			self.createdat,
 			self.numregs,
-			settings.CURRENCY_SYMBOL,
+			settings.CURRENCY_SYMBOL.decode('utf8'),
 			self.invoice.total_amount,
 			self.paidat and 'Paid' or 'Not paid yet')
 
