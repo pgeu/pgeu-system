@@ -247,7 +247,7 @@ class InvoiceManager(object):
 
 		# Things look good, flag this invoice as paid
 		invoice.paidat = datetime.now()
-		invoice.paymentdetails = transdetails
+		invoice.paymentdetails = transdetails[:100]
 
 		# If there is a processor module registered for this invoice,
 		# we need to instantiate it and call it. So, well, let's do
