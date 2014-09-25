@@ -74,6 +74,12 @@ class ConferenceRegistrationForm(forms.ModelForm):
 				if c.maxuses > 0:
 					if c.registrations.count() >= c.maxuses:
 						raise forms.ValidationError('All allowed instances of this discount code have been used.')
+
+				selected = self.cleaned_data.get('additionaloptions') or ()
+				for o in c.requiresoption.all():
+					if not o in selected:
+						raise forms.ValidationError("This discount code requires the option '%s' to be picked." % o)
+
 			except DiscountCode.DoesNotExist:
 				raise forms.ValidationError('This voucher or discount code was not found')
 

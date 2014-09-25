@@ -548,6 +548,7 @@ class DiscountCode(models.Model):
 	regonly = models.BooleanField(null=False, blank=False, default=False, help_text="Apply percentage discount only to the registration cost, not additional options. By default, it's applied to both.")
 	validuntil = models.DateField(blank=True, null=True)
 	maxuses = models.IntegerField(null=False, blank=False, default=0)
+	requiresoption = models.ManyToManyField(ConferenceAdditionalOption, blank=True, help_text='Requires this option to be set in order to be valid')
 
 	registrations = models.ManyToManyField(ConferenceRegistration, blank=True)
 

@@ -44,6 +44,15 @@ def invoicerows_for_registration(reg, update_used_vouchers):
 					pass
 				else:
 					# Valid discount code found!
+					selected_options = reg.additionaloptions.all()
+					for o in d.requiresoption.all():
+						if not o in selected_options:
+							# Find a way to raise an exception here if
+							# the voucher requires an option that is
+							# not selected. But it has already been
+							# checked in the form submission
+							# step... But make sure not to apply it
+							return r
 
 					if update_used_vouchers:
 						d.registrations.add(reg)
