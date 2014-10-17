@@ -22,8 +22,10 @@
 {{session.abstract|markdown}}
 </p>
 
-<h2>Speaker</h2>
 {%for speaker in session.speaker.all%}
+{%if forloop.first%}
+<h2>Speaker</h2>
+{%endif%}
 <b><a href="../../speaker/{{speaker.id}}-{{speaker.name|slugify}}/">{{speaker.name}}</a></b><br/>
 {%endfor%}
 
