@@ -106,7 +106,7 @@ class InvoiceWrapper(object):
 							  '%s_invoice_%s.pdf' % (settings.INVOICE_FILENAME_PREFIX, self.invoice.id),
 							  self.invoice.pdf_invoice,
 							  bcc=True)
-		InvoiceHistory(invoice=self.invoice, txt='Sent invoice').save()
+		InvoiceHistory(invoice=self.invoice, txt='Sent invoice to %s' % self.invoice.recipient_email).save()
 
 	def email_reminder(self):
 		if not self.invoice.pdf_invoice:
@@ -117,7 +117,7 @@ class InvoiceWrapper(object):
 							  '%s_invoice_%s.pdf' % (settings.INVOICE_FILENAME_PREFIX, self.invoice.id),
 							  self.invoice.pdf_invoice,
 							  bcc=True)
-		InvoiceHistory(invoice=self.invoice, txt='Sent reminder').save()
+		InvoiceHistory(invoice=self.invoice, txt='Sent reminder to %s' % self.invoice.recipient_email).save()
 
 	def email_cancellation(self):
 		self._email_something('invoice_cancel.txt',
