@@ -102,7 +102,7 @@ if __name__ == "__main__":
 	(c,s) = curl.get('https://www.creditmutuel.fr/cmidf/en/banque/situation_financiere.cgi')
 	if c.getinfo(pycurl.RESPONSE_CODE) != 302:
 		raise Exception("Supposed to receive 302, got %s" % c.getinfo(c.RESPONSE_CODE))
-	if c.getinfo(pycurl.REDIRECT_URL) != 'https://www.creditmutuel.fr/cmidf/en/banque/situation_financiere.cgi':
+	if c.getinfo(pycurl.REDIRECT_URL) != 'https://www.creditmutuel.fr/cmidf/en/banque/situation_financiere.cgi' and c.getinfo(pycurl.REDIRECT_URL) != 'https://www.creditmutuel.fr/cmidf/en/banque/homepage_dispatcher.cgi':
 		raise Exception("Received unexpected redirect to '%s'" % c.getinfo(pycurl.REDIRECT_URL))
 
 	# Download the form
