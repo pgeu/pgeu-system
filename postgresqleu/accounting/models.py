@@ -5,6 +5,12 @@ def nonzero_validator(value):
 	if value == 0:
 		raise ValidationError("Must be non-zero value!")
 
+ACCOUNT_OBJECT_CHOICES= (
+	(0, "Optional"),
+	(1, "Required"),
+	(2, "Forbidden"),
+)
+
 class AccountClass(models.Model):
 	name = models.CharField(max_length=100)
 	inbalance = models.BooleanField(null=False, blank=False, default=False)
@@ -33,6 +39,7 @@ class Account(models.Model):
 	group = models.ForeignKey(AccountGroup, null=False, blank=False)
 	name = models.CharField(max_length=100)
 	availableforinvoicing = models.BooleanField(null=False, blank=False, default=False)
+	objectrequirement = models.IntegerField(null=False, default=0, choices=ACCOUNT_OBJECT_CHOICES, verbose_name="Object requirements")
 
 	def __unicode__(self):
 		return "%s - %s" % (self.num, self.name)

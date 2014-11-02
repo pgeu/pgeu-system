@@ -53,6 +53,17 @@ class JournalItemForm(forms.ModelForm):
 			raise ValidationError("Must specify either debit or credit!")
 		return self.cleaned_data
 
+	def clean_object(self):
+		if self.cleaned_data['account'].objectrequirement == 1:
+			# object is required
+			if not self.cleaned_data['object']:
+				raise ValidationError("Account %s requires an object to be specified" % self.cleaned_data['account'].num)
+		elif self.cleaned_data['account'].objectrequirement == 2:
+			# object is forbidden
+			if self.cleaned_data['object']:
+				raise ValidationError("Account %s does not allow an object to be specified" % self.cleaned_data['account'].num)
+		return self.cleaned_data['object']
+
 	def save(self, commit=True):
 		instance = super(JournalItemForm, self).save(commit=False)
 		if self.cleaned_data['debit']:
