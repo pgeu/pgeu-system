@@ -113,7 +113,7 @@ Enddate: <input type="text" class="datepicker" id="enddate" value="{{enddate|dat
  </tr>
 {%for i in account.entries%}
  <tr>
-  <td class="entryfield">{{year.year}}-{{i.entryseq|stringformat:"03d"}} ({{i.date|date:"Y-m-d"}})</td>
+  <td class="entryfield">{{year.year}}-{{i.entryseq|stringformat:"04d"}} ({{i.date|date:"Y-m-d"}})</td>
   <td class="objectfield">{{i.object|default:""}}</td>
   <td class="descriptionfield">{{i.description}}</td>
   <td class="amount">{{i.debit|default:""}}{%if i.debit and not i.closed%} *{%endif%}</td>

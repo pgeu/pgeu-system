@@ -89,7 +89,7 @@ class JournalEntry(models.Model):
 	closed = models.BooleanField(blank=False, null=False, default=False)
 
 	def __unicode__(self):
-		return "%s-%03d (%s)" % (self.year.year, self.seq, self.date)
+		return "%s-%04d (%s)" % (self.year.year, self.seq, self.date)
 
 	class Meta:
 		unique_together = (('year', 'seq'), )
