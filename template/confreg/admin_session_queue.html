@@ -1,0 +1,37 @@
+{%extends "base.html" %}
+{%block title%}Session notification queue - {{conference}}{%endblock%}
+{%block layoutblock%}
+<h1>Session notification queue - {{conference}}</h1>
+{% if messages %}
+<ul style="background-color: yellow;">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+<p>
+The following sessions have pending notifications. If you need to turn
+one of them off, click the session and chance the field for
+<em>last notified status</em> to be the same as the current status.
+</p>
+<table border="1" cellspacing="0" cellpadding="2">
+  <tr>
+    <th>Session</th>
+    <th>Status change</th>
+  </tr>
+{%for s in notifysessions%}
+  <tr>
+    <td><a href="/admin/confreg/conferencesession/{{s.id}}/">{{s}}</a></td>
+    <td>{{s.lastnotified_status_string}} -&gt; {{s.status_string}}</td>
+  </tr>
+{%endfor%}
+</table>
+<h2>Send notifications</h2>
+<form method="post" action=".">
+<input type="checkbox" name="confirm_sending" value="1"> Check this box to confirm you want to send email to all attendees<br/>
+<input type="submit" name="Send notifications">
+</form>
+<p>
+<a href="/events/admin/">Return</a> to the dashboard.
+</p>
+{%endblock%}

@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.conf import settings
 from django.db import transaction, connection
+from django.db.models.expressions import F
 
 from models import Conference, ConferenceRegistration, ConferenceSession
 from models import ConferenceSessionFeedback, Speaker, Speaker_Photo
@@ -1356,6 +1357,41 @@ def admin_dashboard(request):
 	return render_to_response('confreg/admin_dashboard.html', {
 		'conferences': conferences,
 	})
+
+@ssl_required
+@login_required
+@transaction.commit_on_success
+def session_notify_queue(request, urlname):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=urlname)
+	else:
+		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+
+	notifysessions = ConferenceSession.objects.filter(conference=conference).exclude(status=F('lastnotifiedstatus'))
+
+	if request.method == 'POST' and request.POST.has_key('confirm_sending') and request.POST['confirm_sending'] == '1':
+		# Ok, it would appear we should actually send them...
+		num = 0
+		template = get_template('confreg/mail/session_notify.txt')
+		for s in notifysessions:
+			for spk in s.speaker.all():
+				send_simple_mail(conference.contactaddr,
+								 spk.user.email,
+								 "Your session '%s' submitted to %s" % (s.title, conference),
+								 template.render(Context({
+									 'conference': conference,
+									 'session': s,
+									 })))
+				num += 1
+			s.lastnotifiedstatus = s.status
+			s.save()
+		messages.info(request, 'Sent email to %s recipients, for %s sessions' % (num, len(notifysessions)))
+		return HttpResponseRedirect('.')
+
+	return render_to_response('confreg/admin_session_queue.html', {
+		'conference': conference,
+		'notifysessions': notifysessions,
+		}, RequestContext(request))
 
 # Admin view that's used to send email to multiple users
 @ssl_required

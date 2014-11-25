@@ -19,6 +19,9 @@ Entering metadata is still typically done through the
       <li><a href="/admin/confreg/conferenceregistration/?conference__id__exact={{c.id}}&_directlink=1">View/edit registrations</a></li>
       <li><a href="/admin/confreg/prepaidvoucher/?conference__id__exact={{c.id}}&_directlink=1">View prepaid voucher usage</a></li>
       <li><a href="/admin/confreg/conferencesession/?conference__id__exact={{c.id}}&_directlink=1">View submitted sessions</a></li>
+{%if c.pending_session_notifications%}
+      <li><a href="/events/sessionnotifyqueue/{{c.urlname}}/" style="color: red;">Pending session notifications</li>
+{%endif%}
       <li><a href="/events/schedule/{{c.urlname}}/create/">Create schedule</a></li>
       <li>Reports<ul>
 	  <li><a href="/events/reports/{{c.urlname}}/">Attendee Reports</a></li>

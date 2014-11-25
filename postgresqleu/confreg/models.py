@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from django.db import models
+from django.db.models.expressions import F
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -122,6 +123,19 @@ class Conference(models.Model):
 		if self.templatemediabase and len(self.templatemediabase) > 0:
 			return self.templatemediabase
 		return None
+
+	@property
+	def pending_session_notifications(self):
+		# How many speaker notifications are currently pending for this
+		# conference. Note that this will always be zero if the conference
+		# is in the past (so we don't end up with unnecessary db queries)
+		if self.enddate:
+			if self.enddate < datetime.datetime.today().date():
+				return 0
+		else:
+			if self.startdate < datetime.datetime.today().date():
+				return 0
+		return self.conferencesession_set.exclude(status=F('lastnotifiedstatus')).count()
 
 class RegistrationClass(models.Model):
 	conference = models.ForeignKey(Conference, null=False)
@@ -409,6 +423,7 @@ class ConferenceSession(models.Model):
 	abstract = models.TextField(null=False, blank=True)
 	skill_level = models.IntegerField(null=False, default=1, choices=SKILL_CHOICES)
 	status = models.IntegerField(null=False, default=0, choices=STATUS_CHOICES)
+	lastnotifiedstatus = models.IntegerField(null=False, default=0, choices=STATUS_CHOICES)
 	submissionnote = models.TextField(null=False, blank=True, verbose_name="Submission notes")
 	initialsubmit = models.DateTimeField(null=True, blank=True, verbose_name="Submitted")
 	tentativescheduleslot = models.ForeignKey(ConferenceSessionScheduleSlot, null=True, blank=True)
@@ -437,6 +452,10 @@ class ConferenceSession(models.Model):
 	@property
 	def status_string_long(self):
 		return get_status_string_long(self.status)
+
+	@property
+	def lastnotified_status_string(self):
+		return get_status_string(self.lastnotifiedstatus)
 
 	def __unicode__(self):
 		return "%s: %s (%s)" % (
