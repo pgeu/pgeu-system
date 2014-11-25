@@ -634,6 +634,38 @@ def callforpapers_edit(request, confname, sessionid):
 			'session': session,
 	})
 
+@ssl_required
+@login_required
+def callforpapers_confirm(request, confname, sessionid):
+	conference = get_object_or_404(Conference, urlname=confname)
+
+	# Find users speaker record (should always exist when we get this far)
+	speaker = get_object_or_404(Speaker, user=request.user)
+
+	# Find the session record (should always exist when we get this far)
+	session = get_object_or_404(ConferenceSession, conference=conference,
+								speaker=speaker, pk=sessionid)
+
+	if session.status != 3 and session.status != 1:
+		# Session needs to be either pending approval (render the form) or
+		# already approved (indicate that it is). For any other status,
+		# just send back to the index page.
+		return HttpResponseRedirect("../..")
+
+	if session.status == 1:
+		# Confirmed
+		return render_conference_response(request, conference, 'confreg/callforpapersconfirmed.html', {
+		'session': session,
+	})
+
+	if request.method == 'POST':
+		if request.POST.has_key('is_confirmed') and request.POST['is_confirmed'] == '1':
+			session.status = 1 # Now approved!
+			session.save()
+
+	return render_conference_response(request, conference, 'confreg/callforpapersconfirm.html', {
+		'session': session,
+	})
 
 @ssl_required
 @login_required

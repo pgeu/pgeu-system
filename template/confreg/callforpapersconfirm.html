@@ -1,0 +1,35 @@
+{%extends conftemplbase %}
+{%block title%}Confirm session - {{conference}}{%endblock%}
+{%block content%}
+<h1>Confirm session - {{conference}}</h1>
+
+<p>
+Your session <strong>{{session.title}}</strong> is currently
+in state <em>pending</em>. This means that the session has been
+selected by the organizers, and all that is required is that you
+confirm your attendnace.
+</p>
+
+<p>
+Please do <em>not</em> do this until you are fully certain that
+you can attend and deliver your session. For example, if you
+need to clear travel budget or similar things, please do so before
+you confirm the session.
+</p>
+
+<p>
+As always, if you have any questions at all about your session,
+don't hesitate to <a href="mailto:{{conference.contactaddr}}">contact</a>
+the organizers!
+</p>
+
+<h3>Confirmation</h3>
+<form method="post" action=".">
+<input type="checkbox" name="is_confirmed" value="1"> By checking this box,
+you confirm that you wil be able to attend and deliver this session.
+<br/>
+<input type="submit" value="Confirm">
+</form>
+
+{%endblock%}
+
