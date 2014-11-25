@@ -80,7 +80,11 @@ class InvoiceWrapper(object):
 								receipt=receipt,
 								bankinfo=self.invoice.bankinfo)
 
-		for r in self.invoice.invoicerow_set.all():
+		# Order of rows is important - so preserve whatever order they were created
+		# in. This is also the order that they get rendered by automatically by
+		# djangos inline forms, so it should be consistent with whatever is shown
+		# on the website.
+		for r in self.invoice.invoicerow_set.all().order_by('id'):
 			pdfinvoice.addrow(r.rowtext, r.rowamount, r.rowcount)
 
 		return pdfinvoice.save().getvalue()
