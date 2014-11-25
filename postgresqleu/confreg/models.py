@@ -186,10 +186,10 @@ class RegistrationType(models.Model):
 		return str(self.cost)
 
 class ShirtSize(models.Model):
-        shirtsize = models.CharField(max_length=32)
+	shirtsize = models.CharField(max_length=32)
 
-        def __unicode__(self):
-                return self.shirtsize
+	def __unicode__(self):
+		return self.shirtsize
 
 class ConferenceAdditionalOption(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
