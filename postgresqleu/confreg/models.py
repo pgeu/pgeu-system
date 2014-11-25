@@ -187,9 +187,13 @@ class RegistrationType(models.Model):
 
 class ShirtSize(models.Model):
 	shirtsize = models.CharField(max_length=32)
+	sortkey = models.IntegerField(default=100, null=False, blank=False)
 
 	def __unicode__(self):
 		return self.shirtsize
+
+	class Meta:
+		ordering = ('sortkey', 'shirtsize',)
 
 class ConferenceAdditionalOption(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)

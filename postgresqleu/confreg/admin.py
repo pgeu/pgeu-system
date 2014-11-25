@@ -274,6 +274,9 @@ class RegistrationTypeAdmin(admin.ModelAdmin):
 	filter_horizontal = ('requires_option',)
 	form = RegistrationTypeAdminForm
 
+class ShirtsizeAdmin(admin.ModelAdmin):
+	list_display = ['shirtsize', 'sortkey', ]
+
 class ConferenceAdditionalOptionAdminForm(forms.ModelForm):
 	class Meta:
 		model = ConferenceAdditionalOption
@@ -472,7 +475,7 @@ admin.site.register(Conference, ConferenceAdmin)
 admin.site.register(RegistrationClass, RegistrationClassAdmin)
 admin.site.register(RegistrationDay, RegistrationDayAdmin)
 admin.site.register(RegistrationType, RegistrationTypeAdmin)
-admin.site.register(ShirtSize)
+admin.site.register(ShirtSize, ShirtsizeAdmin)
 admin.site.register(ConferenceRegistration, ConferenceRegistrationAdmin)
 admin.site.register(ConferenceSession, ConferenceSessionAdmin)
 admin.site.register(ConferenceSessionFeedback, ConferenceSessionFeedbackAdmin)
