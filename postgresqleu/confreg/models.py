@@ -6,6 +6,8 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
+from postgresqleu.util.validators import validate_lowercase
+
 from postgresqleu.confreg.dbimage import SpeakerImageStorage
 
 import datetime
@@ -52,7 +54,7 @@ def color_validator(value):
 			raise ValidationError('Invalid value in color specification')
 
 class Conference(models.Model):
-	urlname = models.CharField(max_length=32, blank=False, null=False, unique=True)
+	urlname = models.CharField(max_length=32, blank=False, null=False, unique=True, validators=[validate_lowercase,])
 	conferencename = models.CharField(max_length=64, blank=False, null=False)
 	startdate = models.DateField(blank=False, null=False)
 	enddate = models.DateField(blank=False, null=False)
@@ -66,7 +68,7 @@ class Conference(models.Model):
 	sessionsactive = models.BooleanField(blank=False,null=False,default=False,verbose_name="Session list publishing active")
 	schedulewidth = models.IntegerField(blank=False, default=600, null=False, verbose_name="Width of HTML schedule")
 	pixelsperminute = models.FloatField(blank=False, default=1.5, null=False, verbose_name="Vertical pixels per minute")
-	confurl = models.CharField(max_length=128, blank=False, null=False)
+	confurl = models.CharField(max_length=128, blank=False, null=False, validators=[validate_lowercase,])
 	listadminurl = models.CharField(max_length=128, blank=True, null=False)
 	listadminpwd = models.CharField(max_length=128, blank=True, null=False)
 	speakerlistadminurl = models.CharField(max_length=128, blank=True, null=False)
