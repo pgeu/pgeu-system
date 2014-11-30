@@ -663,6 +663,7 @@ def callforpapers_confirm(request, confname, sessionid):
 		if request.POST.has_key('is_confirmed') and request.POST['is_confirmed'] == '1':
 			session.status = 1 # Now approved!
 			session.save()
+			return HttpResponseRedirect(".")
 
 	return render_conference_response(request, conference, 'confreg/callforpapersconfirm.html', {
 		'session': session,
