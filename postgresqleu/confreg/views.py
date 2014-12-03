@@ -1355,7 +1355,20 @@ def admin_dashboard(request):
 	else:
 		conferences = Conference.objects.filter(administrators=request.user).order_by('-startdate')
 
+	# Figure out the very first conference, to render it at the top.
+	# Basically, we look for the first conference (so last in the list)
+	# that still has a date in the future - that'll be the next upcoming
+	# one. We only look at startdate, because really, we won't have to care
+	# about overlapping conferences.
+	firstconf = None
+	for c in conferences:
+		if c.startdate > datetime.today().date():
+			firstconf = c
+		else:
+			break
+
 	return render_to_response('confreg/admin_dashboard.html', {
+		'firstconf': firstconf,
 		'conferences': conferences,
 	})
 

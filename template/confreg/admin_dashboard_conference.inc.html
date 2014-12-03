@@ -1,0 +1,40 @@
+ <tr>
+  <td valign="top"><strong>{{c}}</strong><br/>{{c.startdate|date:"Y-m-d"}} - {{c.enddate|date:"Y-m-d"}}<br/>{{c.location}}</td>
+  <td>
+    <b>Admin actions</b>
+    <ul>
+      <li><a href="/admin/confreg/conference/{{c.id}}/">Edit conference</li>
+      <li><a href="/admin/confreg/conferenceregistration/?conference__id__exact={{c.id}}&_directlink=1">View/edit registrations</a></li>
+      <li><a href="/admin/confreg/prepaidvoucher/?conference__id__exact={{c.id}}&_directlink=1">View prepaid voucher usage</a></li>
+      <li><a href="/admin/confreg/conferencesession/?conference__id__exact={{c.id}}&_directlink=1">View submitted sessions</a></li>
+{%if c.pending_session_notifications%}
+      <li><a href="/events/sessionnotifyqueue/{{c.urlname}}/" style="color: red;">Pending session notifications</li>
+{%endif%}
+      <li><a href="/events/sponsor/admin/{{c.urlname}}/">Manage sponsors</a></li>
+      <li><a href="/events/schedule/{{c.urlname}}/create/">Create schedule</a></li>
+      <li>Reports<ul>
+	  <li><a href="/events/reports/{{c.urlname}}/">Attendee Reports</a></li>
+	  <li><a href="/events/reports/time/">Time reports</a></li>
+	  <li>Admin reports<ul>
+	      <li><a href="/events/reports/{{c.urlname}}/simple/?report=unregspeaker">Speakers that have not registered</a></li>
+	      <li><a href="/events/reports/{{c.urlname}}/simple/?report=sessionstatus">Session status statistics</a></li>
+	      <li><a href="/events/reports/{{c.urlname}}/simple/?report=tshirtsizes">T-Shirt size distribution</a></li>
+	      <li><a href="/events/reports/{{c.urlname}}/simple/?report=countries">Attendee countries</a></li>
+	      <li><a href="/events/reports/{{c.urlname}}/simple/?report=regdays">Confirmed registrations per day</a></li>
+	  </ul></li>
+      </ul></li>
+      <li><a href="/events/reports/{{c.urlname}}/feedback/">Feedback</a></li>
+      <li><a href="/events/talkvote/{{c.urlname}}/">Talk voting</a></li>
+      <li><a href="/events/prepaid/">Create prepaid voucher</a></li>
+    </ul>
+    <b>User actions</b>
+    <ul>
+      <li><a href="/events/register/{{c.urlname}}/">Registration</a></li>
+      <li><a href="/events/bulkpay/{{c.urlname}}/">Bulk payment</a></li>
+      <li><a href="/events/callforpapers/{{c.urlname}}/">Call for papers</a></li>
+      <li><a href="/events/speakerprofile/{{c.urlname}}/">Speaker profile</a></li>
+      <li><a href="/events/schedule/{{c.urlname}}/">Schedule</a></li>
+      <li><a href="/events/sessions/{{c.urlname}}/">Session list</a></li>
+    </ul>
+  </td>
+ </tr>
