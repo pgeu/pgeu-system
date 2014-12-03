@@ -18,11 +18,12 @@ https://www.postgresql.eu/events/register/{{conference.urlname}}/
 Unfortunately, we have not been able to accept this session. We
 do hope to see you at {{conference}} regardless!{%elif session.status == 3%}
 We are happy to let you know that we have decided to accept this
-session for the conference. Before your session is fully approved,
-we need you to confirm that you can still attend the event. Please
-go to the website (as linked below) and confirm your attendance at
-the conference as soon as you can. Thank you, and we look forward to
-seeing you at {{conference}}.{%elif session.staus == 4%}
+session for the conference.
+
+Before your session is fully approved, we need you to confirm that you
+can still attend the event. Please go to the website (as linked below)
+and confirm your attendance at the conference as soon as you can.
+Thank you, and we look forward to seeing you at {{conference}}.{%elif session.staus == 4%}
 The session is currently on the reserve list. If you have any questions
 about what this means, pleaes contact the conference organizers.{%endif%}
 
