@@ -1,0 +1,62 @@
+{%extends "base.html" %}
+{%block title%}Conference Sponsorship Signup - {{conference}}{%endblock%}
+{%block extrahead%}
+<style>
+tr.error {
+   background-color: #ffb6b6;
+}
+</style>
+{%endblock%}
+{%block layoutblock%}
+<h1>Conference Sponsorship Signup - {{conference}}</h1>
+<p>
+Thank you for your interest in sponsoring {{conference}}! Please fill out the
+form below to initiate your sponsorship!
+</p>
+
+{%if level.contract%}
+<p>
+Before you complete the signup form, please <em>make sure</em> you have read the
+<a href="/events/sponsor/viewcontract/{{level.contract.id}}/">contract</a>, and
+agree with the contents in it.
+</p>
+{%endif%}
+
+{%if form.errors%}
+<p>
+<b>NOTE!</b> Your submitted form contained errors and has <b>not</b> been saved!
+</p>
+{%endif%}
+
+<form method="post" action=".">
+<table>
+ <tr><th>Level</th><td>{{level}}</td><td></td></tr>
+ <tr><th>Contact name *</th><td>{{user_name}}</td></tr>
+{%for field in form%}
+ <tr {%if field.errors%}class="error"{%endif%}>
+  <th>{{field.label}}</th>
+  <td>{{field}}{%if field.help_text%}<br/>{{field.help_text}}{%endif%}</td>
+  <td>{%if field.errors%}{{field.errors}}{%endif%}</td>
+ </tr>
+{%endfor%}
+</table>
+<p>
+Please double check all the fields with an asterisk in the form above, as they
+are what will be included on the invoice when it's generated. Once generated,
+the invoice cannot be changed.
+</p>
+
+{%if not level.instantbuy%}
+<p>
+Please note that due to the level of this sponsorship contract, we will require a
+signed and scanned copy of
+<a href="/events/sponsor/viewcontract/{{level.contract.id}}/">contract</a>, apart
+from the confirmation above. Please complete this form, and you will receive further
+instructions.
+</p>
+{%endif%}
+
+<input type="submit" value="Sign up!">
+</form>
+
+{%endblock%}

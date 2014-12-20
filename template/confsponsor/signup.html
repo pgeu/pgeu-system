@@ -1,0 +1,79 @@
+{%extends "base.html" %}
+{%load markup%}
+{%block title%}Conference Sponsorship Signup - {{conference}}{%endblock%}
+{%block extrahead%}
+<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
+<script src="/media/jq/jquery-1.8.2.min.js"></script>
+<script src="/media/jq/jquery-ui.min.js"></script>
+<script language="javascript">
+  $(function() {
+    $(".benefit_list").accordion({
+      collapsible: true,
+      active: false,
+      animate: false,
+    });
+    $(".btn").button();
+  });
+</script>
+<style>
+div.benefit_list div {
+   height: auto !important;
+}
+</style>
+{%endblock%}
+{%block layoutblock%}
+<h1>Conference Sponsorship Signup - {{conference}}</h1>
+<p>
+On this page you can sign up as a sonsor of {{conference}}. If you have any questions
+or comments at all, please <a href="mailto:{{conference.sponsoraddr}}">contact</a> the
+organizers <strong>before</strong> you begin!
+</p>
+
+{%if current%}
+<h1>Existing signups</h1>
+<p>
+We have noticed that you are <strong>already</strong> signed up as managing a sponsorship for
+this conference. You can of course manage more than one sponsorship (for example for two different
+companies), but please doublecheck on this list. If you already have a signed up sponsorship,
+please continue to work on that one rather than creating a new one! And as always, if you have
+any questions, please don't hesitate to contact
+<a href="mailto:{{conference.sponsoraddr}}">the organizers</a>.
+</p>
+<p>
+Your existing sponsorships are:
+</p>
+<ul>
+{%for s in current%}
+<li><a href="/events/sponsor/{{s.id}}/">{{s}} ({{s.level}})</a></li>
+{%endfor%}
+</ul>
+{%endif%}
+<p></p>
+
+<h1>Available sponsorships</h1>
+<p>
+The following sponsorship levels are available for this conference:
+</p>
+{%for level in levels%}
+<h2>{{level}}</h2>
+<p>
+The following benefits are available at this level (click for details):
+</p>
+<div class="benefit_list">
+{%for b in level.sponsorshipbenefit_set.all %}
+ <h2>{{b}}</h2>
+ <div>{{b.benefitdescription|markdown}}</div>
+{%endfor%}
+</div>
+{%if level.contract%}
+<p>
+A full specification of all the levels can be found in the
+<a href="/events/sponsor/viewcontract/{{level.contract.id}}/">contract</a>.
+If there is a difference, the version listed in the contract takes precedence.
+</p>
+{%endif%}
+<p><a class="btn" href="{{level.urlname}}/">Sign Up</a></p>
+<hr/>
+{%endfor%}
+
+{%endblock%}

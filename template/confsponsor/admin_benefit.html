@@ -1,0 +1,64 @@
+{%extends "base.html" %}
+{%load markup%}
+{%block title%}Conference Sponsorship - {{sponsor}}{%endblock%}
+{%block extrahead%}
+<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
+<script src="/media/jq/jquery-1.8.2.min.js"></script>
+<script src="/media/jq/jquery-ui.min.js"></script>
+<script language="javascript">
+  $(function() {
+    $(".benefit_list").accordion({
+      collapsible: true,
+      active: false,
+      animate: false,
+    });
+    $(".btn").button();
+  });
+</script>
+<style>
+div.benefit_list div {
+   height: auto !important;
+}
+</style>
+{%endblock%}
+{%block layoutblock%}
+<h1>Conference Sponsorship - {{sponsor}}</h1>
+
+<h2>{{benefit.benefit}}</h2>
+{%if benefit.confirmed%}
+<p>This benefit has been fully confirmed.</p>
+{%else%}
+<p>
+This benefit has not been confirmed. When you've validated the incoming data,
+please do so!
+</p>
+<form method="post" action=".">
+<input type="hidden" name="confirm" value="1">
+<input type="submit" class="btn" value="Confirm this benefit">
+</form>
+{%endif%}
+<h3>Benefit details</h3>
+{%if claimdata%}
+<p>
+The following data was submitted for this benefit:
+</p>
+<div style="border: 1px solid black;">
+{{claimdata|safe}}
+</div>
+{%else%}
+<p>No data was submitted with this benefit.</p>
+{%endif%}
+
+<h3>Benefit description</h3>
+<div>
+{{benefit.benefit.benefitdescription|markdown}}
+</div>
+
+<p>
+<a href="../../{{sponsor.id}}/"">Return</a> to this sponsor.
+</p>
+<p>
+<a href="../../">Return</a> to sponsor list.<br/>
+</p>
+
+{%endblock%}

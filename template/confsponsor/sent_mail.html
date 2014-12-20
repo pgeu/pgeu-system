@@ -1,0 +1,41 @@
+{%extends "base.html" %}
+{%block title%}Conference Sponsor Email - {{conference}}{%endblock%}
+{%block extrahead%}
+<style>
+tr.error {
+   background-color: #ffb6b6;
+}
+</style>
+{%endblock%}
+{%block layoutblock%}
+<h1>Conference Sponsor Email - {{conference}}</h1>
+<table>
+ <tr>
+  <th>From:</th>
+  <td>{{conference.sponsoraddr}}</td>
+ </tr>
+ <tr>
+   <th>Date:</th>
+   <td>{{mail.sentat|date:"Y-m-d H:i:s"}}</td>
+ </tr>
+ <tr>
+   <th>Subject:</th>
+   <td>{{mail.subject}}</td>
+ </tr>
+{%if admin%}
+ <tr>
+   <th>To:</th>
+   <td>{{mail.levels.all|join:", "}}</td>
+ </tr>
+{%endif%}
+</table>
+
+<pre>
+{{mail.message}}
+</pre>
+
+<p>
+<a href="../../">Return</a> to sponsorship overview.
+</p>
+
+{%endblock%}

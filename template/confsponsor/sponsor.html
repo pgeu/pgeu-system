@@ -1,0 +1,145 @@
+{%extends "base.html" %}
+{%load markup%}
+{%block title%}Conference Sponsorship - {{sponsor.conference}}{%endblock%}
+{%block extrahead%}
+<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
+<script src="/media/jq/jquery-1.8.2.min.js"></script>
+<script src="/media/jq/jquery-ui.min.js"></script>
+<script language="javascript">
+  $(function() {
+    $(".benefit_list").accordion({
+      collapsible: true,
+      active: false,
+      animate: false,
+    });
+    $(".btn").button();
+  });
+</script>
+<style>
+div.benefit_list div {
+   height: auto !important;
+}
+</style>
+{%endblock%}
+{%block layoutblock%}
+<h1>Conference Sponsorship - {{sponsor.conference}}</h1>
+<p></p>
+{% if messages %}
+<ul style="background-color: yellow;">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+<table border="0" cellspacing="4" cellpadding="0">
+  <tr>
+    <th>Sponsor:</th>
+    <td>{{sponsor.name}}</td>
+  </tr>
+  <tr>
+    <th>Level:</th>
+    <td>{{sponsor.level}}</td>
+  </tr>
+  <tr>
+    <th>Status:</th>
+    <td>{%if sponsor.confirmed%}Confirmed ({{sponsor.confirmedat}}){%else%}<i>Awaiting confirmation</i>{%endif%}</td>
+  </tr>
+</table>
+{%if not sponsor.confirmed%}
+{%if sponsor.invoice %}
+<p>
+  Your sponsorship has been generated an invoice. Once this invoice is paid, your sponsorship
+  will be confirmed, and you will be able to proceed to claim benefits.
+</p>
+{%with invoice=sponsor.invoice%}
+{%include "invoices/userinvoice_spec.html"%}
+{%endwith%}
+{%else%}
+{%comment%}No invoice generated{%endcomment%}
+<p>
+  No invoice has been generated for your sponsorship. That means we are awaiting a signed
+  contract.
+</p>
+{%endif%}
+{%else%}
+<p>
+  Your sponsorship has been confirmed. Thank you!
+</p>
+
+{%if unclaimedbenefits%}
+<h2>Claim your benefits</h2>
+<p>
+Some of your sponsorship benefits requires a specific claiming to be used - either because
+we need to know if you want to use it, or because it requires further information from you.
+Click on the benefit in the list below to claim it:
+</p>
+<div class="benefit_list">
+{%for b in unclaimedbenefits%}
+<h2>{{b}}</h2>
+<div>
+  <p>{{b.benefitdescription|markdown}}</p>
+  <a class="btn" href="claim/{{b.id}}/">Claim benefit</a>
+</div>
+{%endfor%}
+</div>
+{%endif%}
+
+{%if claimedbenefits%}
+<h2>Already claimed benefits</h2>
+<p>
+The following benefits have already been claimed:
+</p>
+<div class="benefit_list">
+{%for b in claimedbenefits%}
+<h2>{{b.benefit}}{%if not b.confirmed%} <i>(Not yet confirmed by the organizers)</i>{%endif%}{%if b.declined%} <b>(This benefit has been declined)</b>{%endif%}</h2>
+<div>
+  {{b.declined|yesno:"Declined,Claimed"}} by <i>{{b.claimedby}}</i> on <i>{{b.claimedat}}</i><br/>
+  <p>{{b.benefit.benefitdescription|markdown}}</p>
+{%if b.claimhtml%}
+  <div style="border: 1px solid black">{{b.claimhtml|safe}}</div>
+{%endif%}
+</div>
+{%endfor%}
+</div>
+{%endif%}
+
+{%if mails%}
+<h2>Emails</h2>
+<p>
+The following emails have been sent to the sponsors for this conference.
+</p>
+<ul>
+{%for m in mails%}
+ <li>{{m.sentat|date:"Y-m-d H:i"}} <a href="viewmail/{{m.id}}/">{{m.subject}}</a></li>
+{%endfor%}
+</ul>
+{%endif%}
+
+<h2>Edit managers</h2>
+<p>
+If you want your sponsorship to be managed by more than one person, you can manage it here.
+Everybody listed as a manager will receive all emails for sponsors, and will also be able
+to add/remove other managers.
+</p>
+<p>
+Note that in order to be able to add somebody as a manager of an organization, that person
+must already have a PostgreSQL community account and have logged in once.
+</p>
+<p>Current managers:</p>
+<ul>
+{%for m in sponsor.managers.all%}
+<li>{{m.first_name}} {{m.last_name}} ({{m.email}}) (<a href="managers/del/?id={{m.id}}">delete</a>)</li>
+{%endfor%}
+</ul>
+<p>Add manager:</p>
+<form method="post" action="managers/add/">
+Email: <input type="text" name="email">
+<input type="submit" value="Add manager">
+</form>
+
+{%endif%}
+
+<p>
+<a href="../">Return</a> to your sponsorship overview.
+</p>
+{%endblock%}

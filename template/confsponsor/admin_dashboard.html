@@ -1,0 +1,78 @@
+{%extends "base.html" %}
+{%block title%}Conference Sponsorship{%endblock%}
+{%block layoutblock%}
+<h1>Conference Sponsorship - {{conference}}</h1>
+
+{% if messages %}
+<ul style="background-color: yellow;">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{%if unconfirmed_benefits%}
+<h2>Unconfirmed benefits</h2>
+<p>
+The following benefits have been claimed by sponsors, that have not yet been
+confirmed. You should try to do this ASAP - this may include things like copying
+an image to the website, or making sure there is space for a desk..
+</p>
+<ul>
+{%for b in unconfirmed_benefits%}
+ <li>{{b.sponsor}}:<a href="benefit/{{b.id}}/">{{b.benefit}}</a></li>
+{%endfor%}
+</ul>
+{%endif%}
+
+{%if confirmed_sponsors%}
+<h2>Confirmed sponsors</h2>
+<p>
+The following sponsors are confirmed:
+</p>
+
+{%regroup confirmed_sponsors by level as regrouped_sponsors%}
+{%for level in regrouped_sponsors%}
+<h3>{{level.grouper}}</h3>
+<ul>
+{%for s in level.list%}
+ <li><a href="{{s.id}}/">{{s}}</a></li>
+{%endfor%}
+</ul>
+{%endfor%}
+{%endif%}
+
+{%if unconfirmed_sponsors%}
+<h2>Unconfirmed sponsors</h2>
+<p>
+The following sponsors have signed up, but are not yet confirmed. If you have handled the
+sponsor manually, you may want to confirm them manually as well...
+</p>
+<ul>
+{%for s in unconfirmed_sponsors%}
+ <li><a href="{{s.id}}/">{{s}}</a> ({{s.level}})</li>
+{%endfor%}
+</ul>
+{%endif%}
+
+<h2>Sponsor communications</h2>
+{%if mails%}
+<p>
+The following emails have been sent to sponsors so far:
+</p>
+<ul>
+{%for m in mails%}
+ <li>{{m.sentat|date:"Y-m-d H:i"}} <a href="viewmail/{{m.id}}/">{{m.subject}}</a> ({{m.levels.all|join:", "}})</li>
+{%endfor%}
+</ul>
+{%else%}
+<p>
+No sponsor emails have been sent yet.
+</p>
+{%endif%}
+
+<p>
+Send a new <a href="sendmail/">sponsor email</a>.
+</p>
+
+{%endblock%}

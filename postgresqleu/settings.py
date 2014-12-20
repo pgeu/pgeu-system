@@ -98,6 +98,7 @@ INSTALLED_APPS = (
 	'postgresqleu.adyen',
 	'postgresqleu.newsevents',
 	'postgresqleu.confreg',
+	'postgresqleu.confsponsor',
 	'postgresqleu.membership',
 	'postgresqleu.elections',
 	'postgresqleu.mailqueue',
@@ -105,6 +106,7 @@ INSTALLED_APPS = (
 	'postgresqleu.invoices',
 	'postgresqleu.accounting',
 	'postgresqleu.cmutuel',
+	'postgresqleu.util',
 	'postgresqleu.simplemigrate', # MUST be the last line!
 )
 
@@ -154,6 +156,7 @@ ACCOUNTING_ADYEN_MERCHANT_ACCOUNT=1971
 ACCOUNTING_ADYEN_REFUNDS_ACCOUNT=2498
 ACCOUNTING_MANUAL_INCOME_ACCOUNT=1930
 ACCOUNTING_CONFREG_ACCOUNT=3003
+ACCOUNTING_CONFSPONSOR_ACCOUNT=3004
 ACCOUNTING_MEMBERSHIP_ACCOUNT=3001
 ACCOUNTING_DONATIONS_ACCOUNT=3601
 

@@ -1,0 +1,52 @@
+{%extends "base.html" %}
+{%load markup%}
+{%block title%}Conference Benefit Claim - {{conference}}{%endblock%}
+{%block extrahead%}
+<style>
+tr.error {
+   background-color: #ffb6b6;
+}
+</style>
+{%endblock%}
+{%block layoutblock%}
+<h1>Conference Benefit Claim - {{conference}}</h1>
+
+<h2>{{benefit}}</h2>
+<div>
+{{benefit.benefitdescription|markdown}}
+</div>
+
+<h2>Claim benefit</h2>
+<p>
+Please fill out this form to claim the benefit.
+</p>
+
+{%if benefit.claimprompt%}
+<div>
+{{benefit.claimprompt|markdown}}
+</div>
+{%endif%}
+
+{%if form.errors%}
+<p>
+<b>NOTE!</b> Your submitted form contained errors and has <b>not</b> been saved!
+</p>
+{%endif%}
+<form method="post" action="." enctype="multipart/form-data">
+<table>
+{%for field in form%}
+ <tr {%if field.errors%}class="error"{%endif%}>
+  <th>{{field.label}}</th>
+  <td>{{field}}{%if field.help_text%}<br/>{{field.help_text}}{%endif%}</td>
+  <td>{%if field.errors%}{{field.errors}}{%endif%}</td>
+ </tr>
+{%endfor%}
+</table>
+<input type="submit" value="Claim!">
+</form>
+
+<p>
+<a href="../../">Back</a> to your list of sponsorship benefits.
+</p>
+
+{%endblock%}

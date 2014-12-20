@@ -1,0 +1,34 @@
+{%extends "base.html" %}
+{%block title%}Conference Sponsor Email - {{conference}}{%endblock%}
+{%block extrahead%}
+<style>
+tr.error {
+   background-color: #ffb6b6;
+}
+</style>
+{%endblock%}
+{%block layoutblock%}
+<h1>Conference Sponsor Email - {{conference}}</h1>
+<p>
+Using this form you can send an email to sponsors. It will immediately be
+delivered to all current sponsors at the specified levels, but will also
+be made available historically to both those and to anybody else who signs
+up as a sponsor at that level later.
+</p>
+
+<form method="post" action=".">
+<table>
+ <tr><th>From</th><td>{{conference.sponsoraddr}}</td></tr>
+{%for field in form%}
+ <tr {%if field.errors%}class="error"{%endif%}>
+  <th>{{field.label}}</th>
+  <td>{{field}}</td>
+  <td>{%if field.errors%}{{field.errors}}{%endif%}</td>
+ </tr>
+{%endfor%}
+</table>
+
+<input type="submit" value="Send email!">
+</form>
+
+{%endblock%}

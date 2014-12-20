@@ -1,0 +1,44 @@
+{%extends "base.html" %}
+{%block title%}Conference Sponsorship{%endblock%}
+{%block layoutblock%}
+<h1>Conference Sponsorship</h1>
+<h2>Current sponsorships</h2>
+{%if currentsponsors %}
+<p>
+You are currently registered as a manager for one or more sponsors at the following conferences:
+</p>
+
+<ul>
+{%for s in currentsponsors %}
+ <li><a href="{{s.id}}/">{{s}}</a> for {{s.conference}} ({{s.level}})</li>
+{%endfor%}
+</ul>
+{%else%}
+<p>You are not currently registered as the manager of any active sponsorships.</p>
+{%endif%}
+
+<h2>Available sponsorships</h2>
+{%if conferences%}
+<ul>
+{%for c in conferences %}
+<li><a href="signup/{{c.urlname}}/">{{c}}</a></li>
+{%endfor%}
+</ul>
+{%else%}
+<p>There are currently no conferences open for sponsorship. Please check back later!</p>
+{%endif%}
+
+<h2>Past sponsorships</h2>
+{%if pastsponsors%}
+<p>
+You are currently registered as a manager for the following past time sponsorships:
+</p>
+<ul>
+{%for s in pastsponsors%}
+ <li>{{s}} for {{s.conference}} ({{s.level}})</li>
+{%endfor%}
+</ul>
+{%else%}
+<p>You are not currently registered as the manager of any past sponsorships.</p>
+{%endif%}
+{%endblock%}

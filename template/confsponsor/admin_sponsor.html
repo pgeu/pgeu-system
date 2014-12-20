@@ -1,0 +1,93 @@
+{%extends "base.html" %}
+{%load markup%}
+{%block title%}Conference Sponsorship - {{sponsor}}{%endblock%}
+{%block extrahead%}
+<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
+<script src="/media/jq/jquery-1.8.2.min.js"></script>
+<script src="/media/jq/jquery-ui.min.js"></script>
+<script language="javascript">
+  $(function() {
+    $(".benefit_list").accordion({
+      collapsible: true,
+      active: false,
+      animate: false,
+    });
+    $(".btn").button();
+  });
+</script>
+<style>
+div.benefit_list div {
+   height: auto !important;
+}
+</style>
+{%endblock%}
+{%block layoutblock%}
+<h1>Conference Sponsorship - {{sponsor}}</h1>
+
+<table border="0" cellspacing="4" cellpadding="0">
+  <tr>
+    <th>Conference:</th>
+    <td>{{conference}}</td>
+  </tr>
+  <tr>
+    <th>Sponsor:</th>
+    <td>{{sponsor.name}}</td>
+  </tr>
+  <tr>
+    <th>Level:</th>
+    <td>{{sponsor.level}}</td>
+  </tr>
+  <tr>
+    <th>Status:</th>
+    <td>{%if sponsor.confirmed%}Confirmed ({{sponsor.confirmedat}}){%else%}<i>Awaiting confirmation</i>{%endif%}</td>
+  </tr>
+  <tr>
+    <th>Edit:</th>
+    <td>in <a href="/admin/confsponsor/sponsor/{{sponsor.id}}/">admin</a> interface</td>
+  </tr>
+</table>
+
+<h2>Claimed benefits</h2>
+{%if claimedbenefits%}
+<div class="benefit_list">
+{%for b in claimedbenefits%}
+<h2>{{b.benefit}}{%if not b.confirmed%} <i>NOT CONFIRMED</i>{%endif%}{%if b.declined%} <b>DECLINED!</b>{%endif%}</h2>
+<div>
+  {{b.declined|yesno:"Declined,Claimed"}} by <i>{{b.claimedby}}</i> on <i>{{b.claimedat}}</i><br/>
+  <p>{{b.benefit.benefitdescription|markdown}}</p>
+{%if b.claimhtml%}
+  <div style="border: 1px solid black">{{b.claimhtml|safe}}</div>
+{%endif%}
+{%if not b.confirmed%}
+<form method="post" action=".">
+<input type="hidden" name="confirm" value="1">
+<input type="hidden" name="claimid" value="{{b.id}}">
+<input type="submit" class="btn" value="Confirm this benefit">
+{%endif%}
+</form>
+</div>
+{%endfor%}
+</div>
+{%else%}
+<p>There are no claimed benefits for this sponsor.</p>
+{%endif%}
+
+<h2>Pending benefits</h2>
+{%if unclaimedbenefits%}
+<div class="benefit_list">
+{%for b in unclaimedbenefits%}
+<h2>{{b}}</h2>
+<div>
+  <p>{{b.benefitdescription|markdown}}</p>
+</div>
+{%endfor%}
+</div>
+{%else%}
+<p>There are no unclaimed benefits for this sponsor.</p>
+{%endif%}
+
+<p>
+<a href="../">Return</a> to sponsor list.
+</p>
+
+{%endblock%}
