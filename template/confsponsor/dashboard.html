@@ -10,7 +10,7 @@ You are currently registered as a manager for one or more sponsors at the follow
 
 <ul>
 {%for s in currentsponsors %}
- <li><a href="{{s.id}}/">{{s}}</a> for {{s.conference}} ({{s.level}})</li>
+ <li><a href="{{s.id}}/">{{s}}</a> for {{s.conference}} ({{s.level}}){%if not s.confirmed%} - <i>not confirmed yet</i>{%endif%}</li>
 {%endfor%}
 </ul>
 {%else%}

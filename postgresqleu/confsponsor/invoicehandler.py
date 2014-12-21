@@ -1,10 +1,12 @@
 from django.conf import settings
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from postgresqleu.mailqueue.util import send_simple_mail
+from postgresqleu.invoices.util import InvoiceManager
 
 from models import Sponsor
+import postgresqleu.invoices.models as invoicemodels
 
 class InvoiceProcessor(object):
 	# Process invoices for sponsorship (this should include both automatic
@@ -56,3 +58,27 @@ class InvoiceProcessor(object):
 		except Sponsor.DoesNotExist:
 			raise Exception("Could not find conference sponsorship %s" % invoice.processorid)
 		return "%s/events/sponsor/%s/" % (settings.SITEBASE_SSL, sponsor.id)
+
+
+# Generate an invoice for sponsorship
+def create_sponsor_invoice(request, user_name, name, address, conference, level, sponsorid):
+	invoicerows = [
+		['%s %s sponsorship' % (conference, level), 1, level.levelcost],
+	]
+	manager = InvoiceManager()
+	processor = invoicemodels.InvoiceProcessor.objects.get(processorname="confsponsor processor")
+	return manager.create_invoice(
+		request.user,
+		request.user.email,
+		user_name,
+		'%s\n%s' % (name, address),
+		'%s sponsorship' % conference.conferencename,
+		datetime.now(),
+		datetime.now() + timedelta(days=30),
+		invoicerows,
+		processor = processor,
+		processorid = sponsorid,
+		bankinfo = True,
+		accounting_account = settings.ACCOUNTING_CONFSPONSOR_ACCOUNT,
+		accounting_object = conference.accounting_object,
+	)

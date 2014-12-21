@@ -58,7 +58,10 @@ div.benefit_list div {
 {%comment%}No invoice generated{%endcomment%}
 <p>
   No invoice has been generated for your sponsorship. That means we are awaiting a signed
-  contract.
+  contract. If you have not yet signed and sent in the contract, please
+  <a href="/events/sponsor/viewcontract/{{sponsor.level.contract.id}}/">download</a>
+  it, sign it, scan it and return to
+  <a href="mailto:{{conference.sponsoraddr}}">{{conference.sponsoraddr}}</a>.
 </p>
 {%endif%}
 {%else%}

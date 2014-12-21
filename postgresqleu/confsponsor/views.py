@@ -7,20 +7,20 @@ from django.template import RequestContext
 from django.contrib import messages
 from django.contrib.auth.models import User
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from postgresqleu.util.decorators import ssl_required
 
-from postgresqleu.invoices.util import InvoiceManager
-from postgresqleu.invoices.models import InvoiceProcessor
 from postgresqleu.confreg.models import Conference
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.storage import InlineEncodedStorage
+from postgresqleu.invoices.util import InvoiceWrapper
 
 from models import Sponsor, SponsorshipLevel, SponsorshipBenefit
 from models import SponsorClaimedBenefit, SponsorMail
 from forms import SponsorSignupForm, SponsorSendEmailForm
 from benefits import get_benefit_class
+from invoicehandler import create_sponsor_invoice
 
 @ssl_required
 @login_required
@@ -49,6 +49,7 @@ def sponsor_conference(request, sponsorid):
 			b.claimhtml = get_benefit_class(b.benefit.benefit_class)(sponsor.level, b.benefit.class_parameters).render_claimdata(b)
 
 	return render_to_response('confsponsor/sponsor.html', {
+		'conference': sponsor.conference,
 		'sponsor': sponsor,
 		'unclaimedbenefits': unclaimedbenefits,
 		'claimedbenefits': claimedbenefits,
@@ -129,33 +130,21 @@ def sponsor_signup(request, confurlname, levelurlname):
 			# Create a new sponsorship record always
 			sponsor = Sponsor(conference=conference,
 							  name=form.cleaned_data['name'],
-							  level=level)
+							  level=level,
+							  invoiceaddr = form.cleaned_data['address'])
 			sponsor.save()
 			sponsor.managers.add(request.user)
 			sponsor.save()
 
 			if level.instantbuy:
 				# Create the invoice, so it can be paid right away!
-				invoicerows = [
-					['%s %s sponsorship' % (conference, level), 1, level.levelcost],
-				]
-				manager = InvoiceManager()
-				processor = InvoiceProcessor.objects.get(processorname="confsponsor processor")
-				sponsor.invoice = manager.create_invoice(
-					request.user,
-					request.user.email,
-					user_name,
-					'%s\n%s' % (form.cleaned_data['name'], form.cleaned_data['address']),
-					'%s sponsorship' % conference.conferencename,
-					datetime.now(),
-					datetime.now() + timedelta(days=30),
-					invoicerows,
-					processor = processor,
-					processorid = sponsor.pk,
-					bankinfo = True,
-					accounting_account = settings.ACCOUNTING_CONFSPONSOR_ACCOUNT,
-					accounting_object = conference.accounting_object,
-				)
+				sponsor.invoice = create_sponsor_invoice(request,
+														 user_name,
+														 form.cleaned_data['name'],
+														 form.cleaned_data['address'],
+														 conference,
+														 level,
+														 sponsor.pk)
 				sponsor.invoice.save()
 				sponsor.save()
 
@@ -298,6 +287,37 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 		'unclaimedbenefits': unclaimedbenefits,
 		'noclaimbenefits': noclaimbenefits,
 		}, RequestContext(request))
+
+@ssl_required
+@login_required
+@transaction.commit_on_success
+def sponsor_admin_generateinvoice(request, confurlname, sponsorid):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=confurlname)
+	else:
+		conference = get_object_or_404(Conference, urlname=confurlname, admin=request.user)
+
+	sponsor = get_object_or_404(Sponsor, id=sponsorid, conference=conference)
+
+	if sponsor.invoice:
+	    # Existing invoice
+		messages.warning(request, "This sponsor already has an invoice!")
+		return HttpResponseRedirect("../")
+
+	# Actually generate the invoice!
+	user_name = sponsor.managers.all()[0].first_name + ' ' + sponsor.managers.all()[0].last_name
+	sponsor.invoice = create_sponsor_invoice(request,
+											 user_name,
+											 sponsor.name,
+											 sponsor.invoiceaddr,
+											 sponsor.conference,
+											 sponsor.level,
+											 sponsor.pk)
+	sponsor.invoice.save()
+	sponsor.save()
+	wrapper = InvoiceWrapper(sponsor.invoice)
+	wrapper.email_invoice()
+	return HttpResponseRedirect("../")
 
 @ssl_required
 @login_required
