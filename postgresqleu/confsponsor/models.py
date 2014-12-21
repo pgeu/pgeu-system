@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 
 from postgresqleu.confreg.models import Conference
-from postgresqleu.invoices.models import Invoice
+from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.util.storage import InlineFileField, delete_inline_storage
 from postgresqleu.util.validators import validate_lowercase
 
@@ -35,6 +35,7 @@ class SponsorshipLevel(models.Model):
 	urlname = models.CharField(max_length=100, null=False, blank=False, validators=[validate_lowercase,])
 	levelcost = models.IntegerField(null=False, blank=False)
 	instantbuy = models.BooleanField(null=False, blank=False, default=False)
+	paymentmethods = models.ManyToManyField(InvoicePaymentMethod, null=False, blank=False, verbose_name="Payment methods for generated invoices")
 	contract = models.ForeignKey(SponsorshipContract, blank=True, null=True)
 
 	def __unicode__(self):

@@ -67,7 +67,7 @@ def create_sponsor_invoice(request, user_name, name, address, conference, level,
 	]
 	manager = InvoiceManager()
 	processor = invoicemodels.InvoiceProcessor.objects.get(processorname="confsponsor processor")
-	return manager.create_invoice(
+	i = manager.create_invoice(
 		request.user,
 		request.user.email,
 		user_name,
@@ -81,4 +81,7 @@ def create_sponsor_invoice(request, user_name, name, address, conference, level,
 		bankinfo = True,
 		accounting_account = settings.ACCOUNTING_CONFSPONSOR_ACCOUNT,
 		accounting_object = conference.accounting_object,
+		autopaymentoptions = False
 	)
+	i.allowedmethods = level.paymentmethods.all()
+	return i
