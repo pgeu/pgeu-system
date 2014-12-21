@@ -41,6 +41,7 @@ def sponsor_conference(request, sponsorid):
 	sponsor = get_object_or_404(Sponsor, id=sponsorid, managers=request.user)
 	unclaimedbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=False).exclude(sponsorclaimedbenefit__sponsor=sponsor)
 	claimedbenefits = SponsorClaimedBenefit.objects.filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey')
+	noclaimbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=True)
 	mails = SponsorMail.objects.filter(conference=sponsor.conference, levels=sponsor.level)
 
 	for b in claimedbenefits:
@@ -51,6 +52,7 @@ def sponsor_conference(request, sponsorid):
 		'sponsor': sponsor,
 		'unclaimedbenefits': unclaimedbenefits,
 		'claimedbenefits': claimedbenefits,
+		'noclaimbenefits': noclaimbenefits,
 		'mails': mails,
 		}, RequestContext(request))
 
@@ -282,6 +284,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 
 	unclaimedbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=False).exclude(sponsorclaimedbenefit__sponsor=sponsor)
 	claimedbenefits = SponsorClaimedBenefit.objects.filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey')
+	noclaimbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=True)
 
 	for b in claimedbenefits:
 		if b.benefit.benefit_class:
@@ -293,6 +296,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 		'sponsor': sponsor,
 		'claimedbenefits': claimedbenefits,
 		'unclaimedbenefits': unclaimedbenefits,
+		'noclaimbenefits': noclaimbenefits,
 		}, RequestContext(request))
 
 @ssl_required

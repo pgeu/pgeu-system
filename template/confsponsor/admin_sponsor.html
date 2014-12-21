@@ -86,6 +86,19 @@ div.benefit_list div {
 <p>There are no unclaimed benefits for this sponsor.</p>
 {%endif%}
 
+{%if noclaimbenefits%}
+<h2>Automatic benefits</h2>
+<p>The following benefits have been auto-claimed for this sponsor:</p>
+<div class="benefit_list">
+{%for b in  noclaimbenefits%}
+<h2>{{b}}</h2>
+<div>
+  <p>{{b.benefitdescription|markdown}}</p>
+</div>
+{%endfor%}
+</div>
+{%endif%}
+
 <p>
 <a href="../">Return</a> to sponsor list.
 </p>
