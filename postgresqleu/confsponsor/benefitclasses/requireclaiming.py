@@ -27,7 +27,7 @@ class RequireClaiming(BaseBenefit):
 	def validate_params(self):
 		# Just see that it's valid json, and then pass it upwards
 		try:
-			return simplejson.loads(self.params)
+			simplejson.loads(self.params)
 		except Exception, e:
 			return e
 
