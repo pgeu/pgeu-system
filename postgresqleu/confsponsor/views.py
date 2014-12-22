@@ -17,7 +17,7 @@ from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.invoices.util import InvoiceWrapper
 
 from models import Sponsor, SponsorshipLevel, SponsorshipBenefit
-from models import SponsorClaimedBenefit, SponsorMail
+from models import SponsorClaimedBenefit, SponsorMail, SponsorshipContract
 from forms import SponsorSignupForm, SponsorSendEmailForm
 from benefits import get_benefit_class
 from invoicehandler import create_sponsor_invoice
@@ -230,6 +230,19 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
 		'form': form,
 		}, RequestContext(request))
 
+
+@ssl_required
+@login_required
+def sponsor_contract(request, contractid):
+	# Our contracts are not secret, are they? Anybody can view them, we just require a login
+	# to keep the load down and to make sure they are not spidered.
+
+	contract = get_object_or_404(SponsorshipContract, pk=contractid)
+
+	resp = HttpResponse(content_type='application/pdf')
+	resp['Content-disposition'] = 'attachment; filename="%s.pdf"' % contract.contractname
+	resp.write(contract.contractpdf.read())
+	return resp
 
 @ssl_required
 @login_required
