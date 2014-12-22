@@ -42,7 +42,7 @@ class SponsorshipLevel(models.Model):
 		return self.levelname
 
 	class Meta:
-		ordering = ('-levelcost', 'levelname',)
+		ordering = ('levelcost', 'levelname',)
 		unique_together = (('conference', 'urlname'), )
 
 class SponsorshipBenefit(models.Model):
