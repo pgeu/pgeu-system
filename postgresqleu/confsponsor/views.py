@@ -278,32 +278,51 @@ def sponsor_admin_dashboard(request, confurlname):
 	# Maybe we could do this with the ORM based on data we already have, but SQL is easier
 	curs = connection.cursor()
 	curs.execute("""
-SELECT s.name, b.benefitname,
+SELECT l.levelname, s.name, b.benefitname,
        CASE WHEN scb.declined='t' THEN 1 WHEN scb.confirmed='f' THEN 2 WHEN scb.confirmed='t' THEN 3 ELSE 0 END AS status
 FROM confsponsor_sponsor s
 INNER JOIN confsponsor_sponsorshiplevel l ON s.level_id=l.id
 INNER JOIN confsponsor_sponsorshipbenefit b ON b.level_id=l.id
 LEFT JOIN confsponsor_sponsorclaimedbenefit scb ON scb.sponsor_id=s.id AND scb.benefit_id=b.id
 WHERE b.benefit_class IS NOT NULL AND s.confirmed AND s.conference_id=%(confid)s
-ORDER BY s.name, b.sortkey, b.benefitname""", {'confid': conference.id})
-	benefitmatrix = []
+ORDER BY l.levelcost, l.levelname, s.name, b.sortkey, b.benefitname""", {'confid': conference.id})
+	benefitmatrix = {}
+	currentlevel = None
+
+	benefitcols = []
+	currentmatrix = []
 	lastsponsor = None
 	currentsponsor = []
 	firstsponsor = True
-	benefitcols = []
-	for sponsor, benefitname, status in curs.fetchall():
+	for levelname, sponsor, benefitname, status in curs.fetchall():
 		if lastsponsor != sponsor:
 			# New sponsor...
 			if currentsponsor:
 				# We collected some data, so store it
-				benefitmatrix.append(currentsponsor)
+				currentmatrix.append(currentsponsor)
 				firstsponsor = False
 			currentsponsor = [sponsor, ]
 			lastsponsor = sponsor
+		if levelname != currentlevel:
+			if currentlevel:
+				benefitmatrix[currentlevel] = {
+					'matrix': currentmatrix,
+					'cols': benefitcols,
+				}
+				benefitcols = []
+				currentmatrix = []
+				lastsponsor = sponsor
+				currentsponsor = [sponsor, ]
+				firstsponsor = True
+			currentlevel = levelname
 		if firstsponsor:
 			benefitcols.append(benefitname)
 		currentsponsor.append(status)
-	benefitmatrix.append(currentsponsor)
+	currentmatrix.append(currentsponsor)
+	benefitmatrix[currentlevel] = {
+		'matrix': currentmatrix,
+		'cols': benefitcols,
+	}
 
 	return render_to_response('confsponsor/admin_dashboard.html', {
 		'conference': conference,

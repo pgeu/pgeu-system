@@ -82,14 +82,16 @@ This matrix gives a quick overview of the status of the different benefits for e
  <li>Declined - sponsor chose to decline this benefit.</li>
 </ul>
 <p></p>
-<table border="1" cellspacing="0" cellpadding="1">
+{%for levelname, level in benefitmatrix.items %}
+<table border="1" cellspacing="0" cellpadding="1" width="100%">
+ <tr><td colspan="{{level.matrix|first|length}}" align="center" bgcolor="gray">{{levelname}}</td></tr>
  <tr>
   <td></td>
-{%for c in benefitcols%}
+{%for c in level.cols%}
   <td>{{c}}</td>
 {%endfor%}
  </tr>
-{%for r in benefitmatrix%}
+{%for r in level.matrix%}
  <tr>
  {%for b in r%}<td>
 {%if b == 0%}
@@ -101,6 +103,8 @@ This matrix gives a quick overview of the status of the different benefits for e
  </tr>
 {%endfor%}
 </table>
+<p></p>
+{%endfor%}
 
 <p>
 Send a new <a href="sendmail/">sponsor email</a>.
