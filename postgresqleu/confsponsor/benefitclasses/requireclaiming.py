@@ -35,7 +35,10 @@ class RequireClaiming(BaseBenefit):
 		return RequireClaimingForm
 
 	def save_form(self, form, claim, request):
-		p = self.validate_params()
+		try:
+			p = simplejson.loads(self.params)
+		except Exception:
+			p = {}
 
 		if int(form.cleaned_data['confirm']) == 2:
 			# This is actually a deny
