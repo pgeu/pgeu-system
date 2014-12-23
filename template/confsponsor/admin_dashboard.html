@@ -71,6 +71,37 @@ No sponsor emails have been sent yet.
 </p>
 {%endif%}
 
+<h2>Benefit matrix</h2>
+<p>
+This matrix gives a quick overview of the status of the different benefits for each sponsor, which can be:
+</p>
+<ul>
+ <li>Blank - not claimed by sponsor</li>
+ <li>Claimed - claimed by sponsor, but needs to be confirmed! See top of this page</li>
+ <li>Confirmed - fully confirmed benefit</li>
+ <li>Declined - sponsor chose to decline this benefit.</li>
+</ul>
+<p></p>
+<table border="1" cellspacing="0" cellpadding="1">
+ <tr>
+  <td></td>
+{%for c in benefitcols%}
+  <td>{{c}}</td>
+{%endfor%}
+ </tr>
+{%for r in benefitmatrix%}
+ <tr>
+ {%for b in r%}<td>
+{%if b == 0%}
+{%elif b == 1%}<div style="color:red;">Declined</div>
+{%elif b == 2%}<div style="color:blue;">Claimed</div>
+{%elif b == 3%}<div style="color:green;">Confirmed</div>
+{%else%}{{b}}{%endif%}
+</td>{%endfor%}
+ </tr>
+{%endfor%}
+</table>
+
 <p>
 Send a new <a href="sendmail/">sponsor email</a>.
 </p>

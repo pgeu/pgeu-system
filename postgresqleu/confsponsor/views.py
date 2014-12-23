@@ -1,7 +1,7 @@
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
+from django.db import transaction, connection
 from django.conf import settings
 from django.template import RequestContext
 from django.contrib import messages
@@ -275,12 +275,44 @@ def sponsor_admin_dashboard(request, confurlname):
 
 	mails = SponsorMail.objects.filter(conference=conference)
 
+	# Maybe we could do this with the ORM based on data we already have, but SQL is easier
+	curs = connection.cursor()
+	curs.execute("""
+SELECT s.name, b.benefitname,
+       CASE WHEN scb.declined='t' THEN 1 WHEN scb.confirmed='f' THEN 2 WHEN scb.confirmed='t' THEN 3 ELSE 0 END AS status
+FROM confsponsor_sponsor s
+INNER JOIN confsponsor_sponsorshiplevel l ON s.level_id=l.id
+INNER JOIN confsponsor_sponsorshipbenefit b ON b.level_id=l.id
+LEFT JOIN confsponsor_sponsorclaimedbenefit scb ON scb.sponsor_id=s.id AND scb.benefit_id=b.id
+WHERE b.benefit_class IS NOT NULL AND s.confirmed AND s.conference_id=%(confid)s
+ORDER BY s.name, b.sortkey, b.benefitname""", {'confid': conference.id})
+	benefitmatrix = []
+	lastsponsor = None
+	currentsponsor = []
+	firstsponsor = True
+	benefitcols = []
+	for sponsor, benefitname, status in curs.fetchall():
+		if lastsponsor != sponsor:
+			# New sponsor...
+			if currentsponsor:
+				# We collected some data, so store it
+				benefitmatrix.append(currentsponsor)
+				firstsponsor = False
+			currentsponsor = [sponsor, ]
+			lastsponsor = sponsor
+		if firstsponsor:
+			benefitcols.append(benefitname)
+		currentsponsor.append(status)
+	benefitmatrix.append(currentsponsor)
+
 	return render_to_response('confsponsor/admin_dashboard.html', {
 		'conference': conference,
 		'confirmed_sponsors': confirmed_sponsors,
 		'unconfirmed_sponsors': unconfirmed_sponsors,
 		'unconfirmed_benefits': unconfirmed_benefits,
 		'mails': mails,
+		'benefitcols': benefitcols,
+		'benefitmatrix': benefitmatrix,
 		}, RequestContext(request))
 
 @ssl_required
