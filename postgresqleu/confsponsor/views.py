@@ -266,7 +266,7 @@ def sponsor_admin_dashboard(request, confurlname):
 	if request.user.is_superuser:
 		conference = get_object_or_404(Conference, urlname=confurlname)
 	else:
-		conference = get_object_or_404(Conference, urlname=confurlname, admin=request.user)
+		conference = get_object_or_404(Conference, urlname=confurlname, administrators=request.user)
 
 	confirmed_sponsors = Sponsor.objects.filter(conference=conference, confirmed=True).order_by('-level__levelcost', 'confirmedat')
 	unconfirmed_sponsors = Sponsor.objects.filter(conference=conference, confirmed=False).order_by('level__levelcost', 'name')
@@ -289,7 +289,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 	if request.user.is_superuser:
 		conference = get_object_or_404(Conference, urlname=confurlname)
 	else:
-		conference = get_object_or_404(Conference, urlname=confurlname, admin=request.user)
+		conference = get_object_or_404(Conference, urlname=confurlname, administrators=request.user)
 
 	sponsor = get_object_or_404(Sponsor, id=sponsorid, conference=conference)
 
@@ -324,7 +324,7 @@ def sponsor_admin_generateinvoice(request, confurlname, sponsorid):
 	if request.user.is_superuser:
 		conference = get_object_or_404(Conference, urlname=confurlname)
 	else:
-		conference = get_object_or_404(Conference, urlname=confurlname, admin=request.user)
+		conference = get_object_or_404(Conference, urlname=confurlname, administrators=request.user)
 
 	sponsor = get_object_or_404(Sponsor, id=sponsorid, conference=conference)
 
@@ -354,7 +354,7 @@ def sponsor_admin_benefit(request, confurlname, benefitid):
 	if request.user.is_superuser:
 		conference = get_object_or_404(Conference, urlname=confurlname)
 	else:
-		conference = get_object_or_404(Conference, urlname=confurlname, admin=request.user)
+		conference = get_object_or_404(Conference, urlname=confurlname, administrators=request.user)
 
 	benefit = get_object_or_404(SponsorClaimedBenefit, id=benefitid, sponsor__conference=conference)
 	if benefit.benefit.benefit_class:
@@ -383,7 +383,7 @@ def sponsor_admin_send_mail(request, confurlname):
 	if request.user.is_superuser:
 		conference = get_object_or_404(Conference, urlname=confurlname)
 	else:
-		conference = get_object_or_404(Conference, urlname=confurlname, admin=request.user)
+		conference = get_object_or_404(Conference, urlname=confurlname, administrators=request.user)
 
 	if request.method == 'POST':
 		form = SponsorSendEmailForm(conference, data=request.POST)
@@ -423,7 +423,7 @@ def sponsor_admin_view_mail(request, confurlname, mailid):
 	if request.user.is_superuser:
 		conference = get_object_or_404(Conference, urlname=confurlname)
 	else:
-		conference = get_object_or_404(Conference, urlname=confurlname, admin=request.user)
+		conference = get_object_or_404(Conference, urlname=confurlname, administrators=request.user)
 
 	mail = get_object_or_404(SponsorMail, conference=conference, id=mailid)
 	return render_to_response('confsponsor/sent_mail.html', {
