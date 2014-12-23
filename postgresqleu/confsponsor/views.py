@@ -1,5 +1,5 @@
 from django.shortcuts import render_to_response, get_object_or_404
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.conf import settings
@@ -35,10 +35,24 @@ def sponsor_dashboard(request):
 		"conferences": conferences,
 		})
 
+def _get_sponsor_and_admin(sponsorid, request, onlyconfirmed=True):
+	if not onlyconfirmed:
+		sponsor = get_object_or_404(Sponsor, id=sponsorid)
+	else:
+		sponsor = get_object_or_404(Sponsor, id=sponsorid, confirmed=True)
+	if not sponsor.managers.filter(pk=request.user.id).exists():
+		if not sponsor.conference.administrators.filter(pk=request.user.id):
+			# XXX: Can only raise 404 for now, should have custom middleware to make this nicer
+			raise Http404("Access denied")
+		return sponsor, True
+	else:
+		return sponsor, False
+
 @ssl_required
 @login_required
 def sponsor_conference(request, sponsorid):
-	sponsor = get_object_or_404(Sponsor, id=sponsorid, managers=request.user)
+	sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request, False)
+
 	unclaimedbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=False).exclude(sponsorclaimedbenefit__sponsor=sponsor)
 	claimedbenefits = SponsorClaimedBenefit.objects.filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey')
 	noclaimbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=True)
@@ -55,6 +69,7 @@ def sponsor_conference(request, sponsorid):
 		'claimedbenefits': claimedbenefits,
 		'noclaimbenefits': noclaimbenefits,
 		'mails': mails,
+		'is_admin': is_admin,
 		}, RequestContext(request))
 
 @ssl_required
@@ -93,7 +108,8 @@ def sponsor_manager_add(request, sponsorid):
 @ssl_required
 @login_required
 def sponsor_view_mail(request, sponsorid, mailid):
-	sponsor = get_object_or_404(Sponsor, id=sponsorid, managers=request.user, confirmed=True)
+	sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
+
 	mail = get_object_or_404(SponsorMail, conference=sponsor.conference, levels=sponsor.level, id=mailid)
 
 	return render_to_response('confsponsor/sent_mail.html', {
@@ -164,7 +180,7 @@ def sponsor_signup(request, confurlname, levelurlname):
 @login_required
 @transaction.commit_on_success
 def sponsor_claim_benefit(request, sponsorid, benefitid):
-	sponsor = get_object_or_404(Sponsor, id=sponsorid, managers=request.user)
+	sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
 	benefit = get_object_or_404(SponsorshipBenefit, id=benefitid, level=sponsor.level)
 
 	if not sponsor.confirmed:

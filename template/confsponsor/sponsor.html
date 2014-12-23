@@ -44,6 +44,9 @@ div.benefit_list div {
     <th>Status:</th>
     <td>{%if sponsor.confirmed%}Confirmed ({{sponsor.confirmedat}}){%else%}<i>Awaiting confirmation</i>{%endif%}</td>
   </tr>
+{%if is_admin%}
+  <tr bgcolor="red"><td colspan="2">You are viewing this as an administrator, <b>not</b> as the manager of the sponsorship!</td></tr>
+{%endif%}
 </table>
 {%if not sponsor.confirmed%}
 {%if sponsor.invoice %}
@@ -124,6 +127,7 @@ The following emails have been sent to the sponsors for this conference.
 </ul>
 {%endif%}
 
+{%if not is_admin%}
 <h2>Edit managers</h2>
 <p>
 If you want your sponsorship to be managed by more than one person, you can manage it here.
@@ -140,13 +144,14 @@ must already have a PostgreSQL community account and have logged in once.
 <li>{{m.first_name}} {{m.last_name}} ({{m.email}}) (<a href="managers/del/?id={{m.id}}">delete</a>)</li>
 {%endfor%}
 </ul>
+
 <p>Add manager:</p>
 <form method="post" action="managers/add/">
 Email: <input type="text" name="email">
 <input type="submit" value="Add manager">
 </form>
-
-{%endif%}
+{%endif%}{%comment%}is_admin{%endcomment%}
+{%endif%}{%comment%}confirmed sponsorship{%endcomment%}
 
 <p>
 <a href="../">Return</a> to your sponsorship overview.
