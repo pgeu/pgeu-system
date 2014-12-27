@@ -1,0 +1,29 @@
+{%extends conftemplbase %}
+{%block title%}Conference PDF schedule{%endblock%}
+{%block extrahead%}
+<style>
+ul.errorlist {
+   display: block;
+}
+</style>
+{%endblock%}
+
+{%block content%}
+<h1>Conference PDF schedule</h1>
+{% if messages %}
+<ul style="background-color: yellow;">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<form method="POST" action=".">
+<table border="0">
+{{form}}
+</table>
+<br/>
+<input type="submit" name="submit" value="Generate PDF"/>
+</form>
+
+{%endblock%}

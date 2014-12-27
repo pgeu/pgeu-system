@@ -9,6 +9,7 @@ import postgresqleu.confreg.views
 import postgresqleu.confreg.reporting
 import postgresqleu.confreg.mobileviews
 import postgresqleu.confreg.feedback
+import postgresqleu.confreg.pdfschedule
 import postgresqleu.membership.views
 import postgresqleu.elections.views
 import postgresqleu.invoicemgr.views
@@ -84,6 +85,7 @@ urlpatterns = patterns('',
     (r'^events/reports/(\w+)/advanced/$', postgresqleu.confreg.views.advanced_report),
     (r'^events/reports/(\w+)/feedback/$', postgresqleu.confreg.feedback.feedback_report),
     (r'^events/reports/(\w+)/feedback/session/$', postgresqleu.confreg.feedback.feedback_sessions),
+    (r'^events/reports/(\w+)/schedule/$', postgresqleu.confreg.pdfschedule.pdfschedule),
     (r'^events/admin/$', 'postgresqleu.confreg.views.admin_dashboard'),
 
     (r'^events/sponsor/', include('postgresqleu.confsponsor.urls')),
