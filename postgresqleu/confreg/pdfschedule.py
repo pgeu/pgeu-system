@@ -255,29 +255,33 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
 				(tsaw, tsah) = ts.wrap(thisroomwidth-2*mm, timestampstyle.fontSize)
 				ts.drawOn(canvas, s_left+1*mm, s_top+s_height-tsah-1*mm)
 
-				title = s.title
 
 				try:
-					while title:
-						for fs in (12,10,9,8):
-							sessionstyle = ParagraphStyle('sessionstyle')
-							sessionstyle.fontName="DejaVu Serif"
-							sessionstyle.fontSize = fs
-							speakersize = fs > 8 and 8 or fs - 1
-							p = Paragraph(title + "<br/><font size=%s>%s</font>" % (speakersize, s.speaker_list), sessionstyle)
+					for includespeaker in (True, False):
+						title = s.title
+						while title:
+							for fs in (12,10,9,8):
+								sessionstyle = ParagraphStyle('sessionstyle')
+								sessionstyle.fontName="DejaVu Serif"
+								sessionstyle.fontSize = fs
+								speakersize = fs > 8 and 8 or fs - 1
+								if includespeaker:
+									p = Paragraph(title + "<br/><font size=%s>%s</font>" % (speakersize, s.speaker_list), sessionstyle)
+								else:
+									p = Paragraph(title, sessionstyle)
 
-							(aw, ah) = p.wrap(thisroomwidth-2*mm, s_height-tsah*1.2-2*mm)
-							if ah <= s_height-tsah*1.2-2*mm:
-								# FIT!
-								p.drawOn(canvas, s_left+1*mm, s_top+s_height-ah-tsah*1.2-1*mm)
-								raise StopIteration
-							else:
-								# Too big, so try to chop down the title and run again
-								# (this is assuming our titles are reasonable length, or we could be
-								# looping for a *very* long time)
-								title = "%s.." % title.rpartition(' ')[0]
-								if title == '..':
-									title = ''
+								(aw, ah) = p.wrap(thisroomwidth-2*mm, s_height-tsah*1.2-2*mm)
+								if ah <= s_height-tsah*1.2-2*mm:
+									# FIT!
+									p.drawOn(canvas, s_left+1*mm, s_top+s_height-ah-tsah*1.2-1*mm)
+									raise StopIteration
+								else:
+									# Too big, so try to chop down the title and run again
+									# (this is assuming our titles are reasonable length, or we could be
+									# looping for a *very* long time)
+									title = "%s.." % title.rpartition(' ')[0]
+									if title == '..':
+										title = ''
 				except StopIteration:
 					pass
 
