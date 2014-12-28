@@ -208,15 +208,32 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
 		roomcount = len(dd['rooms'])
 		roomwidth = usablewidth / roomcount
 
+		# Figure out font size for the room title. Use the biggest one that will still
+		# fit within the boxes.
+		roomtitlefontsize = 20
+		for r in dd['rooms']:
+			for fs in 16,14,12,10,8:
+				fwidth = canvas.stringWidth(r.roomname, "DejaVu Serif", fs)
+				if fwidth < roomwidth-4*mm:
+					# Width at this size is small enough to work, so use it
+					if fs < roomtitlefontsize:
+						roomtitlefontsize = fs
+					break
+		canvas.setFont("DejaVu Serif", roomtitlefontsize)
+
 		roompos = {}
 		for r in sorted(dd['rooms'], key=lambda x: (x.sortkey, x.roomname)):
+			canvas.rect(2*cm + len(roompos) * roomwidth, height-4*cm, roomwidth, 1*cm, stroke=1)
+			canvas.drawCentredString(2*cm + len(roompos) * roomwidth + roomwidth / 2,
+									 height - 4*cm + (1*cm-roomtitlefontsize)/2,
+									 r.roomname)
 			roompos[r] = len(roompos)
 
 		for ps in pagesessions:
 			pagelength = (ps[-1].endtime-ps[0].starttime).seconds
 			first = ps[0].starttime
 
-			canvas.rect(2*cm, height-pagelength*unitspersecond-3*cm, roomcount*roomwidth, pagelength*unitspersecond,stroke=1)
+			canvas.rect(2*cm, height-pagelength*unitspersecond-4*cm, roomcount*roomwidth, pagelength*unitspersecond,stroke=1)
 			for s in ps:
 				if s.cross_schedule:
 					# Cross schedule rooms are very special...
@@ -226,7 +243,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
 					s_left = 2*cm + roompos[s.room] * roomwidth
 					thisroomwidth = roomwidth
 				s_height = (s.endtime-s.starttime).seconds * unitspersecond
-				s_top = height - (s.starttime-first).seconds * unitspersecond - s_height - 3*cm
+				s_top = height - (s.starttime-first).seconds * unitspersecond - s_height - 4*cm
 				if colored:
 					if s.track and s.track.color:
 						canvas.setFillColor(s.track.color)
