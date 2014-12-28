@@ -259,11 +259,12 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
 
 				try:
 					while title:
-						for fs in (12,10,9,8,7,6):
+						for fs in (12,10,9,8):
 							sessionstyle = ParagraphStyle('sessionstyle')
 							sessionstyle.fontName="DejaVu Serif"
 							sessionstyle.fontSize = fs
-							p = Paragraph(title, sessionstyle)
+							speakersize = fs > 8 and 8 or fs - 1
+							p = Paragraph(title + "<br/><font size=%s>%s</font>" % (speakersize, s.speaker_list), sessionstyle)
 
 							(aw, ah) = p.wrap(thisroomwidth-2*mm, s_height-tsah*1.2-2*mm)
 							if ah <= s_height-tsah*1.2-2*mm:
