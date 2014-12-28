@@ -251,11 +251,32 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
 						canvas.setFillColor(colors.white)
 				canvas.rect(s_left,s_top,thisroomwidth,s_height,stroke=1,fill=colored)
 
-				ts = Paragraph("%s-%s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")), timestampstyle)
+				timestampstr = "%s-%s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M"))
+				ts = Paragraph(timestampstr, timestampstyle)
 				(tsaw, tsah) = ts.wrap(thisroomwidth-2*mm, timestampstyle.fontSize)
 				ts.drawOn(canvas, s_left+1*mm, s_top+s_height-tsah-1*mm)
 
 
+				if s_height - tsah*1.2 - 2*mm < tsah:
+					# This can never fit, since it's smaller than our font size!
+					# Instead, print as much as possible on the same row as the time
+					tswidth = canvas.stringWidth(timestampstr, "DejaVu Serif", 8)
+					title = s.title
+					trunc = ''
+					while title:
+						t = title + trunc
+						fwidth = canvas.stringWidth(t, "DejaVu Serif", 8)
+						if fwidth < thisroomwidth - tswidth - 2*mm:
+							# Fits now!
+							canvas.setFont("DejaVu Serif", 8)
+							p = Paragraph(t, timestampstyle)
+							(paw, pah) = p.wrap(thisroomwidth-tswidth-2*mm, timestampstyle.fontSize)
+							p.drawOn(canvas, s_left+1*mm+tswidth+1*mm, s_top+s_height-tsah-1*mm)
+							break
+						else:
+							title = title.rpartition(' ')[0]
+							trunc = '..'
+					continue
 				try:
 					for includespeaker in (True, False):
 						title = s.title
