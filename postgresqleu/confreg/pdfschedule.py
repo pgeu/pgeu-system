@@ -229,7 +229,7 @@ def build_complete_pdf_schedule(conference, day, colored, pagesize, orientation,
 					if s.track and s.track.color:
 						canvas.setFillColor(s.track.color)
 					else:
-						canvas.setFilLColor(colors.white)
+						canvas.setFillColor(colors.white)
 				canvas.rect(s_left,s_top,thisroomwidth,s_height,stroke=1,fill=colored)
 
 				ts = Paragraph("%s-%s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")), timestampstyle)
