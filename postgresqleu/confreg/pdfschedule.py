@@ -108,7 +108,7 @@ def build_linear_pdf_schedule(conference, room, day, colored, pagesize, orientat
 			tbldata.extend([(tstr, '')])
 		else:
 			tbldata.extend([(tstr, (Paragraph(s.title, st_title), Paragraph("<i>%s</i>" % s.speaker_list, st_speakers)))])
-			if colored and s.track.color:
+			if colored and s.track and s.track.color:
 				tblstyle.append(('BACKGROUND', (1,len(tbldata)-1), (1,len(tbldata)-1), s.track.color),)
 
 	_finalize_page()
@@ -225,7 +225,7 @@ def build_complete_pdf_schedule(conference, day, colored, pagesize, orientation,
 					thisroomwidth = roomwidth
 				s_height = (s.endtime-s.starttime).seconds * unitspersecond
 				s_top = height - (s.starttime-first).seconds * unitspersecond - s_height - 3*cm
-				if colored:
+				if colored and s.track and s.track.color:
 					canvas.setFillColor(s.track.color)
 				canvas.rect(s_left,s_top,thisroomwidth,s_height,stroke=1,fill=colored)
 
