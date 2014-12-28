@@ -275,13 +275,12 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
 									# FIT!
 									p.drawOn(canvas, s_left+1*mm, s_top+s_height-ah-tsah*1.2-1*mm)
 									raise StopIteration
-								else:
-									# Too big, so try to chop down the title and run again
-									# (this is assuming our titles are reasonable length, or we could be
-									# looping for a *very* long time)
-									title = "%s.." % title.rpartition(' ')[0]
-									if title == '..':
-										title = ''
+							# Too big, so try to chop down the title and run again
+							# (this is assuming our titles are reasonable length, or we could be
+							# looping for a *very* long time)
+							title = "%s.." % title.rpartition(' ')[0]
+							if title == '..':
+								title = ''
 				except StopIteration:
 					pass
 
