@@ -22,7 +22,7 @@ from reportlab.lib.units import cm, mm
 
 from postgresqleu.util.decorators import ssl_required
 
-from models import Conference, Room, RegistrationDay, ConferenceSession
+from models import Conference, Room, Track, RegistrationDay, ConferenceSession
 from views import render_conference_response
 
 def _get_pagesize(size, orient):
@@ -50,9 +50,10 @@ def _setup_canvas(pagesize, orientation):
 
 # Build a linear PDF schedule for a single room only. Can do muptiple days, in which
 # case each new day will cause a pagebreak.
-def build_linear_pdf_schedule(conference, room, day, colored, pagesize, orientation, titledatefmt):
+def build_linear_pdf_schedule(conference, room, tracks, day, colored, pagesize, orientation, titledatefmt):
 	q = Q(conference=conference, status=1, starttime__isnull=False, endtime__isnull=False)
 	q = q & (Q(room=room) | Q(cross_schedule=True))
+	q = q & (Q(track__in=tracks) | Q(track__isnull=True))
 	if day:
 		q = q & Q(starttime__range=(day.day, day.day + timedelta(days=1)))
 
@@ -120,11 +121,12 @@ def build_linear_pdf_schedule(conference, room, day, colored, pagesize, orientat
 
 
 
-def build_complete_pdf_schedule(conference, day, colored, pagesize, orientation, pagesperday, titledatefmt):
+def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orientation, pagesperday, titledatefmt):
 	pagesperday = int(pagesperday)
 
 	q = Q(conference=conference, status=1, starttime__isnull=False, endtime__isnull=False)
 	q = q & (Q(room__isnull=False) | Q(cross_schedule=True))
+	q = q & (Q(track__in=tracks) | Q(track__isnull=True))
 	if day:
 		q = q & Q(starttime__range=(day.day, day.day + timedelta(days=1)))
 
@@ -270,6 +272,7 @@ class PdfScheduleForm(forms.Form):
 	room = forms.ModelChoiceField(label='Rooms to include', queryset=None, empty_label='(all rooms)', required=False,
 								  help_text="Selecting all rooms will print a full schedule with each session sized to it's length. Selecting a single room will print that rooms schedule in adaptive sized rows in a table.")
 	day = forms.ModelChoiceField(label='Days to include', queryset=None, empty_label='(all days)', required=False)
+	tracks = forms.ModelMultipleChoiceField(label='Tracks to include', queryset=None, required=True, help_text="Filter for some tracks. By default, all tracks are included.")
 	colored = forms.BooleanField(label='Colored tracks', required=False)
 	pagesize = forms.ChoiceField(label='Page size', choices=(('a4', 'A4'),('a3','A3')))
 	orientation = forms.ChoiceField(label='Orientation', choices=(('p', 'Portrait'),('l', 'Landscape')))
@@ -279,10 +282,12 @@ class PdfScheduleForm(forms.Form):
 	def __init__(self, conference, *args, **kwargs):
 		self.conference = conference
 
-		kwargs['initial'] = {'titledatefmt': '%A, %b %d'}
+		alltracks = Track.objects.filter(conference=conference).order_by('sortkey', 'trackname')
+		kwargs['initial'] = {'titledatefmt': '%A, %b %d', 'tracks': alltracks}
 		super(PdfScheduleForm, self).__init__(*args, **kwargs)
 		self.fields['room'].queryset = Room.objects.filter(conference=conference)
 		self.fields['day'].queryset = RegistrationDay.objects.filter(conference=conference)
+		self.fields['tracks'].queryset = alltracks
 
 @ssl_required
 @login_required
@@ -298,6 +303,7 @@ def pdfschedule(request, confname):
 			if form.cleaned_data.has_key('room') and form.cleaned_data['room']:
 				return build_linear_pdf_schedule(conference,
 												 form.cleaned_data['room'],
+												 form.cleaned_data['tracks'],
 												 form.cleaned_data.has_key('day') and form.cleaned_data['day'],
 												 form.cleaned_data.has_key('colored') and form.cleaned_data['colored'],
 												 form.cleaned_data.has_key('pagesize') and form.cleaned_data['pagesize'],
@@ -306,6 +312,7 @@ def pdfschedule(request, confname):
 				)
 			else:
 				return build_complete_pdf_schedule(conference,
+												   form.cleaned_data['tracks'],
 												   form.cleaned_data.has_key('day') and form.cleaned_data['day'],
 												   form.cleaned_data.has_key('colored') and form.cleaned_data['colored'],
 												   form.cleaned_data.has_key('pagesize') and form.cleaned_data['pagesize'],
