@@ -5,6 +5,15 @@
 ul.errorlist {
    display: block;
 }
+table#formtbl {
+   border-spacing: 5px;
+}
+table#formtbl tr {
+   vertical-align: top;
+}
+table#formtbl tr th {
+   white-space: nowrap;
+}
 </style>
 {%endblock%}
 
@@ -19,7 +28,7 @@ ul.errorlist {
 {% endif %}
 
 <form method="POST" action=".">
-<table border="0">
+<table id="formtbl">
 {{form}}
 </table>
 <br/>

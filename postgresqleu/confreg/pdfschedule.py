@@ -264,13 +264,14 @@ def build_complete_pdf_schedule(conference, day, colored, pagesize, orientation,
 	return resp
 
 class PdfScheduleForm(forms.Form):
-	room = forms.ModelChoiceField(label='Rooms to include', queryset=None, empty_label='(all rooms)', required=False)
+	room = forms.ModelChoiceField(label='Rooms to include', queryset=None, empty_label='(all rooms)', required=False,
+								  help_text="Selecting all rooms will print a full schedule with each session sized to it's length. Selecting a single room will print that rooms schedule in adaptive sized rows in a table.")
 	day = forms.ModelChoiceField(label='Days to include', queryset=None, empty_label='(all days)', required=False)
 	colored = forms.BooleanField(label='Colored tracks', required=False)
 	pagesize = forms.ChoiceField(label='Page size', choices=(('a4', 'A4'),('a3','A3')))
 	orientation = forms.ChoiceField(label='Orientation', choices=(('p', 'Portrait'),('l', 'Landscape')))
-	pagesperday = forms.ChoiceField(label='Pages per day', choices=((1,1),(2,2),(3,3)), help_text="Not used for per-room schedules")
-	titledatefmt = forms.CharField(label='Title date format')
+	pagesperday = forms.ChoiceField(label='Pages per day', choices=((1,1),(2,2),(3,3)), help_text="Not used for per-room schedules. Page breaks happen only at cross-schedule sessions.")
+	titledatefmt = forms.CharField(label='Title date format', help_text="strftime format specification used to print the date in the title of the first page for each day")
 
 	def __init__(self, conference, *args, **kwargs):
 		self.conference = conference
