@@ -225,8 +225,11 @@ def build_complete_pdf_schedule(conference, day, colored, pagesize, orientation,
 					thisroomwidth = roomwidth
 				s_height = (s.endtime-s.starttime).seconds * unitspersecond
 				s_top = height - (s.starttime-first).seconds * unitspersecond - s_height - 3*cm
-				if colored and s.track and s.track.color:
-					canvas.setFillColor(s.track.color)
+				if colored:
+					if s.track and s.track.color:
+						canvas.setFillColor(s.track.color)
+					else:
+						canvas.setFilLColor(colors.white)
 				canvas.rect(s_left,s_top,thisroomwidth,s_height,stroke=1,fill=colored)
 
 				ts = Paragraph("%s-%s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")), timestampstyle)
