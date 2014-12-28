@@ -120,7 +120,9 @@ def build_linear_pdf_schedule(conference, room, day, colored, pagesize, orientat
 
 
 
-def build_complete_pdf_schedule(conference, day, colored, pagesize, orientation, titledatefmt):
+def build_complete_pdf_schedule(conference, day, colored, pagesize, orientation, pagesperday, titledatefmt):
+	pagesperday = int(pagesperday)
+
 	q = Q(conference=conference, status=1, starttime__isnull=False, endtime__isnull=False)
 	q = q & (Q(room__isnull=False) | Q(cross_schedule=True))
 	if day:
@@ -148,17 +150,58 @@ def build_complete_pdf_schedule(conference, day, colored, pagesize, orientation,
 		v['length'] = v['last']-v['first']
 		v['rooms'] = set([s.room for s in v['sessions'] if s.room])
 
+	timestampstyle = ParagraphStyle('timestampstyle')
+	timestampstyle.fontName="DejaVu Serif"
+	timestampstyle.fontSize = 8
+
 	# Now build one page for each day
 	for d in sorted(groupedbyday.keys()):
 		dd = groupedbyday[d]
 
-		canvas.setFont("DejaVu Serif", 20)
-		canvas.drawCentredString(width/2, height-2*cm, d.strftime(titledatefmt))
-
 		usableheight = height - 2*2*cm - 1*cm
 		usablewidth = width - 2*2*cm
 
-		unitspersecond = usableheight / dd['length'].seconds
+		pagesessions=[]
+		currentpagesessions=[]
+		if pagesperday > 1:
+			# >1 page per day, so we try to find the breakpoints. We do this by locating
+			# cross-schedule sessions at appropriate times, and including those both on
+			# the previous and the current schedule.
+			secondsperpage = dd['length'].seconds / pagesperday
+
+			cross_sessions = [s for s in dd['sessions'] if s.cross_schedule]
+
+			breakpoints = []
+			# For each breakpoint, find the closest one
+			for p in range(1,pagesperday):
+				breaktime = dd['first'] + timedelta(seconds=p * secondsperpage)
+				breaksession = cross_sessions[min(range(len(cross_sessions)), key=lambda i: abs(cross_sessions[i].starttime-breaktime))]
+				if not breaksession in breakpoints:
+					breakpoints.append(breaksession)
+
+			for s in dd['sessions']:
+				currentpagesessions.append(s)
+				if s in breakpoints:
+					pagesessions.append(currentpagesessions)
+					# Make sure the breaking sessions itself is on both pages
+					currentpagesessions = [s,]
+			pagesessions.append(currentpagesessions)
+		else:
+			# For a single page schedule, just add all sessions to the first page.
+			pagesessions.append(dd['sessions'])
+
+		# Calculate the vertical size once for all pages, to make sure we get the same size on
+		# all pages even if the content is different. We do this by picking the *smallest* size
+		# required for any page (start at usableheight just to be sure it will always get replaced)
+		unitspersecond = usableheight
+		for p in pagesessions:
+			u = usableheight / (p[-1].endtime-p[0].starttime).seconds
+			if u < unitspersecond:
+				unitspersecond = u
+
+		# Only on the first page in multipage schedules
+		canvas.setFont("DejaVu Serif", 20)
+		canvas.drawCentredString(width/2, height-2*cm, d.strftime(titledatefmt))
 
 		roomcount = len(dd['rooms'])
 		roomwidth = usablewidth / roomcount
@@ -167,55 +210,55 @@ def build_complete_pdf_schedule(conference, day, colored, pagesize, orientation,
 		for r in sorted(dd['rooms'], key=lambda x: (x.sortkey, x.roomname)):
 			roompos[r] = len(roompos)
 
-		timestampstyle = ParagraphStyle('timestampstyle')
-		timestampstyle.fontName="DejaVu Serif"
-		timestampstyle.fontSize = 8
+		for ps in pagesessions:
+			pagelength = (ps[-1].endtime-ps[0].starttime).seconds
+			first = ps[0].starttime
 
-		canvas.rect(2*cm, height-dd['length'].seconds*unitspersecond-3*cm, roomcount*roomwidth, dd['length'].seconds*unitspersecond,stroke=1)
-		for s in dd['sessions']:
-			if s.cross_schedule:
-				# Cross schedule rooms are very special...
-				s_left = 2*cm
-				thisroomwidth = roomcount * roomwidth
-			else:
-				s_left = 2*cm + roompos[s.room] * roomwidth
-				thisroomwidth = roomwidth
-			s_height = (s.endtime-s.starttime).seconds * unitspersecond
-			s_top = height - (s.starttime-dd['first']).seconds * unitspersecond - s_height - 3*cm
-			if colored:
-				canvas.setFillColor(s.track.color)
-			canvas.rect(s_left,s_top,thisroomwidth,s_height,stroke=1,fill=colored)
+			canvas.rect(2*cm, height-pagelength*unitspersecond-3*cm, roomcount*roomwidth, pagelength*unitspersecond,stroke=1)
+			for s in ps:
+				if s.cross_schedule:
+					# Cross schedule rooms are very special...
+					s_left = 2*cm
+					thisroomwidth = roomcount * roomwidth
+				else:
+					s_left = 2*cm + roompos[s.room] * roomwidth
+					thisroomwidth = roomwidth
+				s_height = (s.endtime-s.starttime).seconds * unitspersecond
+				s_top = height - (s.starttime-first).seconds * unitspersecond - s_height - 3*cm
+				if colored:
+					canvas.setFillColor(s.track.color)
+				canvas.rect(s_left,s_top,thisroomwidth,s_height,stroke=1,fill=colored)
 
-			ts = Paragraph("%s-%s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")), timestampstyle)
-			(tsaw, tsah) = ts.wrap(thisroomwidth-2*mm, timestampstyle.fontSize)
-			ts.drawOn(canvas, s_left+1*mm, s_top+s_height-tsah-1*mm)
+				ts = Paragraph("%s-%s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")), timestampstyle)
+				(tsaw, tsah) = ts.wrap(thisroomwidth-2*mm, timestampstyle.fontSize)
+				ts.drawOn(canvas, s_left+1*mm, s_top+s_height-tsah-1*mm)
 
-			title = s.title
+				title = s.title
 
-			try:
-				while title:
-					for fs in (12,10,9,8,7,6):
-						sessionstyle = ParagraphStyle('sessionstyle')
-						sessionstyle.fontName="DejaVu Serif"
-						sessionstyle.fontSize = fs
-						p = Paragraph(title, sessionstyle)
+				try:
+					while title:
+						for fs in (12,10,9,8,7,6):
+							sessionstyle = ParagraphStyle('sessionstyle')
+							sessionstyle.fontName="DejaVu Serif"
+							sessionstyle.fontSize = fs
+							p = Paragraph(title, sessionstyle)
 
-						(aw, ah) = p.wrap(thisroomwidth-2*mm, s_height-tsah*1.2-2*mm)
-						if ah <= s_height-tsah*1.2-2*mm:
-							# FIT!
-							p.drawOn(canvas, s_left+1*mm, s_top+s_height-ah-tsah*1.2-1*mm)
-							raise StopIteration
-						else:
-							# Too big, so try to chop down the title and run again
-							# (this is assuming our titles are reasonable length, or we could be
-							# looping for a *very* long time)
-							title = "%s.." % title.rpartition(' ')[0]
-							if title == '..':
-								title = ''
-			except StopIteration:
-				pass
+							(aw, ah) = p.wrap(thisroomwidth-2*mm, s_height-tsah*1.2-2*mm)
+							if ah <= s_height-tsah*1.2-2*mm:
+								# FIT!
+								p.drawOn(canvas, s_left+1*mm, s_top+s_height-ah-tsah*1.2-1*mm)
+								raise StopIteration
+							else:
+								# Too big, so try to chop down the title and run again
+								# (this is assuming our titles are reasonable length, or we could be
+								# looping for a *very* long time)
+								title = "%s.." % title.rpartition(' ')[0]
+								if title == '..':
+									title = ''
+				except StopIteration:
+					pass
 
-		canvas.showPage()
+			canvas.showPage()
 
 	canvas.save()
 	return resp
@@ -226,6 +269,7 @@ class PdfScheduleForm(forms.Form):
 	colored = forms.BooleanField(label='Colored tracks', required=False)
 	pagesize = forms.ChoiceField(label='Page size', choices=(('a4', 'A4'),('a3','A3')))
 	orientation = forms.ChoiceField(label='Orientation', choices=(('p', 'Portrait'),('l', 'Landscape')))
+	pagesperday = forms.ChoiceField(label='Pages per day', choices=((1,1),(2,2),(3,3)), help_text="Not used for per-room schedules")
 	titledatefmt = forms.CharField(label='Title date format')
 
 	def __init__(self, conference, *args, **kwargs):
@@ -262,6 +306,7 @@ def pdfschedule(request, confname):
 												   form.cleaned_data.has_key('colored') and form.cleaned_data['colored'],
 												   form.cleaned_data.has_key('pagesize') and form.cleaned_data['pagesize'],
 												   form.cleaned_data.has_key('orientation') and form.cleaned_data['orientation'],
+												   form.cleaned_data.has_key('pagesperday') and form.cleaned_data['pagesperday'],
 												   form.cleaned_data.has_key('titledatefmt') and form.cleaned_data['titledatefmt'],
 				)
 
