@@ -637,6 +637,7 @@ def callforpapers_edit(request, confname, sessionid):
 
 @ssl_required
 @login_required
+@transaction.commit_on_success
 def callforpapers_confirm(request, confname, sessionid):
 	conference = get_object_or_404(Conference, urlname=confname)
 
@@ -662,6 +663,18 @@ def callforpapers_confirm(request, confname, sessionid):
 	if request.method == 'POST':
 		if request.POST.has_key('is_confirmed') and request.POST['is_confirmed'] == '1':
 			session.status = 1 # Now approved!
+			session.save()
+			# We can generate the email for this right away, so let's do that
+			template = get_template('confreg/mail/session_notify.txt')
+			for spk in session.speaker.all():
+				send_simple_mail(conference.contactaddr,
+								 spk.user.email,
+								 "Your session '%s' submitted to %s" % (session.title, conference),
+								 template.render(Context({
+									 'conference': conference,
+									 'session': session,
+									 })))
+			session.lastnotifiedstatus = 1 # Now also approved
 			session.save()
 			return HttpResponseRedirect(".")
 
