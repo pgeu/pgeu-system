@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 
 from datetime import datetime
 
+from postgresqleu.auth import user_search, user_import
 from postgresqleu.util.decorators import ssl_required
 
 from postgresqleu.confreg.models import Conference
@@ -89,6 +90,7 @@ def sponsor_manager_delete(request, sponsorid):
 
 @ssl_required
 @login_required
+@transaction.commit_on_success
 def sponsor_manager_add(request, sponsorid):
 	sponsor = get_object_or_404(Sponsor, id=sponsorid, managers=request.user, confirmed=True)
 
@@ -102,7 +104,23 @@ def sponsor_manager_add(request, sponsorid):
 		messages.info(request, "User %s added as manager." % user.username)
 		return HttpResponseRedirect('../../')
 	except User.DoesNotExist:
-		messages.warning(request, "Could not find user with email address %s" % request.POST['email'])
+		# Try an upstream search if the user is not here
+		users = user_search(request.POST['email'])
+		if len(users) == 1 and users[0]['e'] == request.POST['email']:
+			try:
+				user_import(users[0]['u'])
+				try:
+					u = User.objects.get(username=users[0]['u'])
+					sponsor.managers.add(u)
+					sponsor.save()
+					messages.info(request, "User with email %s imported as user %s." % (u.email, u.username))
+					messages.info(request, "User %s added as manager." % u.username)
+				except User.DoesNotExist:
+					messages.warning(request, "Failed to re-find user %s after import" % users[0]['u'])
+			except Exception, e:
+				messages.warning(request, "Failed to import user with email %s (userid %s): %s" % (users[0]['e'], users[0]['u'], e))
+		else:
+			messages.warning(request, "Could not find user with email address %s" % request.POST['email'])
 		return HttpResponseRedirect('../../')
 
 @ssl_required

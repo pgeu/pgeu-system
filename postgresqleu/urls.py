@@ -160,6 +160,7 @@ urlpatterns = patterns('',
 
     # Account info callbacks
     (r'^accountinfo/search/$', postgresqleu.accountinfo.views.search),
+    (r'^accountinfo/import/$', postgresqleu.accountinfo.views.importuser),
 
 	# This should not happen in production - serve by apache!
 	url(r'^(favicon.ico)$', 'django.views.static.serve', {

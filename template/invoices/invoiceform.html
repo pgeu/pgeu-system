@@ -54,12 +54,26 @@ function lookup_user() {
    $('#user-lookup').dialog('open');
 }
 
+function conditional_import_user(uid) {
+   if (confirm('Selected user does not exist on this system, but does exist upstream.\n\nTo use this user, you will need to refresh the page first (potentially losing other changes made unless you save them first!)\n\nProceed to import user?')) {
+      $.post('/accountinfo/import/', { 'uid': uid}).done(function(data) {
+         if (data == 'OK') {
+            alert('User imported. Now go save and/or refresh.');
+            return;
+         }
+         alert('Failed to import user: ' + data);
+      }).error(function(data) {
+         alert('Error trying to import user.');
+      });
+   }
+}
+
 $(function() {
    var usermatches = new Array;
    $('#user-lookup-search-button').button().click(function() {
       var term = $('#user-lookup-search-term').val();
       if (!term) return;
-      $.get('/accountinfo/search/', { 'term': term}).done(function(data) {
+      $.get('/accountinfo/search/', { 'term': term, 'upstream': true}).done(function(data) {
          if (!(data instanceof Array)) {
             alert('Returned object is not an array!');
             return;
@@ -69,6 +83,10 @@ $(function() {
             return;
          }
          if (data.length == 1) {
+            if (data[0].ui == -1) {
+               conditional_import_user(data[0].u);
+               return;
+            }
             $('#id_recipient_user').val(data[0].ui);
             $('#id_recipient_email').val(data[0].e);
             $('#id_recipient_name').val(data[0].n);
@@ -89,8 +107,14 @@ $(function() {
       $('#id_recipient_user').val(v);
       $.each(usermatches, function(i,u) {
          if (v == u.ui) {
-            $('#id_recipient_email').val(u.e);
-            $('#id_recipient_name').val(u.n);
+            if (v < 0) {
+               conditional_import_user(u.u);
+            }
+            else {
+               $('#id_recipient_email').val(u.e);
+               $('#id_recipient_name').val(u.n);
+            }
+            return;
          }
       });
       $('#user-lookup').dialog('close');
