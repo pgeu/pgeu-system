@@ -103,7 +103,9 @@ $(function() {
 {%endblock%}
 {%block layoutblock%}
 <h1>{{title}}</h1>
+{%if year != -1%}
 <div class="dateinfo">{{year.year}}-01-01 - {{enddate|date:"Y-m-d"}}</div>
+{%endif%}
 
 {% if messages %}
     <ul class="messages">
@@ -112,8 +114,8 @@ $(function() {
     {% endfor %}
     </ul>
 {% endif %}
-<h2 class="reportfilter">Year: <select id="yearsel">{%for y in years%}<option value="{{y.year}}"{%if y == year%} SELECTED{%endif%}>{{y}}</option>{%endfor%}</select>
-Object: <select id="objsel"><option value="">All</option>{%for o in objects%}<option value="{{o.id}}"{%if o == currentobj%} SELECTED{%endif%}>{{o}}</option>{%endfor%}</select> Enddate: <input type="text" class="datepicker" id="enddate" value="{{enddate|date:"Y-m-d"}}"> <input type="checkbox" id="includeopen" value="1" {%if includeopen %}CHECKED{%endif%}>Include open</h2>
+<h2 class="reportfilter">Year: <select id="yearsel">{%for y in years%}<option value="{{y.year}}"{%if y == year%} SELECTED{%endif%}>{{y}}</option>{%endfor%}{%ifequal reporttype "results"%}<option value="-1"{%if year == -1%} SELECTED{%endif%}>All years</option>{%endifequal%}</select>
+Object: <select id="objsel"><option value="">All</option>{%for o in objects%}<option value="{{o.id}}"{%if o == currentobj%} SELECTED{%endif%}>{{o}}</option>{%endfor%}</select> {%if year != -1%}Enddate: <input type="text" class="datepicker" id="enddate" value="{{enddate|date:"Y-m-d"}}">{%endif%} <input type="checkbox" id="includeopen" value="1" {%if includeopen %}CHECKED{%endif%}>Include open</h2>
 
 <table cellspacing="0" cellpadding="1" class="reporttable">
 <tr><td colspan="3"></td>{%for h in valheaders%}<td class="header amount">{{h}}</td>{%endfor%}</tr>

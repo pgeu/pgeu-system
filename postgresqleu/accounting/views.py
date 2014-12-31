@@ -336,13 +336,17 @@ SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
 @transaction.commit_on_success
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
 def report(request, year, reporttype):
-	year = get_object_or_404(Year, year=year)
-	years = Year.objects.all()
-
-	hasopenentries = JournalEntry.objects.filter(year=year, closed=False).exists()
-
-	if year.isopen:
-		messages.info(request, "This year is still open!")
+	years = list(Year.objects.all())
+	if year == "-1":
+		# This means all years. Only available for results report. It's the only thing
+		# linked, but if something else is picked, just set it back to the latest year
+		if reporttype != 'results':
+			messages.info(request, "Report does not support multi-year, so year has been set to %s" % years[0])
+			year = years[0]
+		else:
+			year = None
+	else:
+		year = get_object_or_404(Year, year=year)
 
 	if request.GET.has_key('obj') and request.GET['obj']:
 		object = get_object_or_404(Object, pk=request.GET['obj'])
@@ -351,26 +355,46 @@ def report(request, year, reporttype):
 		object = None
 		objstr = ''
 
+	if not (object or year):
+		messages.info(request, "Need to specify either object or year. Year has been set to %s." % years[0].year)
+		year = years[0]
+
+	if year:
+		hasopenentries = JournalEntry.objects.filter(year=year, closed=False).exists()
+	else:
+		hasopenentries = False
+
+	if year and year.isopen:
+		messages.info(request, "This year is still open!")
+
 	if request.GET.has_key('acc') and request.GET['acc']:
 		account = get_object_or_404(Account, num=request.GET['acc'])
 	else:
 		account = None
 
-	if request.GET.has_key('ed') and request.GET['ed']:
-		enddate = datetime.strptime(request.GET['ed'], '%Y-%m-%d').date()
-		if enddate.year != year.year:
+	if year:
+		if request.GET.has_key('ed') and request.GET['ed'] and request.GET['ed'] != 'undefined':
+			enddate = datetime.strptime(request.GET['ed'], '%Y-%m-%d').date()
+			if year and enddate.year != year.year:
+				enddate = date(year.year, 12, 31)
+		else:
 			enddate = date(year.year, 12, 31)
 	else:
-		enddate = date(year.year, 12, 31)
+		# Yes, this is ugly indeed :)
+		enddate = date(9999,12,31)
 
 	if request.GET.has_key('io') and request.GET['io'] == '1':
 		includeopen = True
 	else:
 		includeopen = False
 
-	# Get a filtered list of objects that have any records on this year (we always have the year!)
-	# Not the most efficient way, but we'll never have "many" of them
-	filtered_objects = Object.objects.filter(journalitem__journal__year__exact=year).distinct()
+	if year:
+		# Get a filtered list of objects that have any records on this year (we always have the year!)
+		# Not the most efficient way, but we'll never have "many" of them
+		filtered_objects = Object.objects.filter(journalitem__journal__year__exact=year).distinct()
+	else:
+		# If no year is specified, get *all* objects
+		filtered_objects = Object.objects.all()
 
 	if hasopenentries and not includeopen:
 		messages.warning(request, "This year has open entries! These are not included in the report!")
@@ -428,9 +452,12 @@ def report(request, year, reporttype):
 		# The results report is the easiest one, since we can assume that
 		# all accounts enter the year with a value 0. Therefor, we only
 		# care about summing the data for this year.
+		# Object specific reports can go cross-year, in which case year
+		# is at this point set to None.
 		# We only show accounts that have had some transactions on them.
-		(results, totalresult) = _collate_results("WITH t AS (SELECT ac.name as acname, ag.name as agname, ag.foldable, a.num as anum, a.name, sum(-ji.amount) as amount FROM accounting_accountclass ac INNER JOIN accounting_accountgroup ag ON ac.id=ag.accountclass_id INNER JOIN accounting_account a ON ag.id=a.group_id INNER JOIN accounting_journalitem ji ON ji.account_id=a.num INNER JOIN accounting_journalentry je ON je.id=ji.journal_id WHERE je.year_id=%(year)s AND je.date <= %(enddate)s AND (je.closed or %(includeopen)s) AND NOT ac.inbalance " + objstr + " GROUP BY ac.name, ag.name, ag.foldable, a.id, a.name) SELECT acname, agname, anum, name, count(*) over (partition by agname) = 1 and foldable as agfold, sum(amount) over (partition by acname) as acamount, sum(amount) over (partition by agname) as agamount, amount, sum(amount) over () FROM t ORDER BY anum", {
-			'year': year.year,
+		yearrestrict = year and "je.year_id=%(year)s AND" or ""
+		(results, totalresult) = _collate_results("WITH t AS (SELECT ac.name as acname, ag.name as agname, ag.foldable, a.num as anum, a.name, sum(-ji.amount) as amount FROM accounting_accountclass ac INNER JOIN accounting_accountgroup ag ON ac.id=ag.accountclass_id INNER JOIN accounting_account a ON ag.id=a.group_id INNER JOIN accounting_journalitem ji ON ji.account_id=a.num INNER JOIN accounting_journalentry je ON je.id=ji.journal_id WHERE {0} je.date <= %(enddate)s AND (je.closed or %(includeopen)s) AND NOT ac.inbalance {1} GROUP BY ac.name, ag.name, ag.foldable, a.id, a.name) SELECT acname, agname, anum, name, count(*) over (partition by agname) = 1 and foldable as agfold, sum(amount) over (partition by acname) as acamount, sum(amount) over (partition by agname) as agamount, amount, sum(amount) over () FROM t ORDER BY anum".format(yearrestrict, objstr), {
+			'year': year and year.year,
 			'enddate': enddate,
 			'includeopen': includeopen,
 			},
@@ -468,7 +495,7 @@ def report(request, year, reporttype):
 	return render_to_response('accounting/yearreports.html', {
 		'reporttype': reporttype,
 		'title': title,
-		'year': year,
+		'year': year and year or -1,
 		'years': years,
 		'hasopenentries': hasopenentries,
 		'results': results,

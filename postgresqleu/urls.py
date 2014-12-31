@@ -149,7 +149,7 @@ urlpatterns = patterns('',
     (r'^accounting/e/(\d+)/$', postgresqleu.accounting.views.entry),
     (r'^accounting/(\d+)/new/$', postgresqleu.accounting.views.new),
     (r'^accounting/(\d+)/close/$', postgresqleu.accounting.views.closeyear),
-    (r'^accounting/(\d+)/report/(\w+)/$', postgresqleu.accounting.views.report),
+    (r'^accounting/([\d-]+)/report/(\w+)/$', postgresqleu.accounting.views.report),
 
     # Handle paypal data returns
     (r'^p/paypal_return/$', postgresqleu.paypal.views.paypal_return_handler),
