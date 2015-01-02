@@ -5,6 +5,12 @@
 tr.error {
    background-color: #ffb6b6;
 }
+table.emailform tr {
+   vertical-align: top;
+}
+table.emailform input[type=text],textarea {
+   width: 500px;
+}
 </style>
 {%endblock%}
 {%block layoutblock%}
@@ -17,7 +23,7 @@ up as a sponsor at that level later.
 </p>
 
 <form method="post" action=".">
-<table>
+<table class="emailform">
  <tr><th>From</th><td>{{conference.sponsoraddr}}</td></tr>
 {%for field in form%}
  <tr {%if field.errors%}class="error"{%endif%}>
