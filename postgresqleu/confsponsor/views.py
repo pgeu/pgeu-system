@@ -477,15 +477,12 @@ def sponsor_admin_send_mail(request, confurlname):
 
 			# Now also send the email out to the *current* subscribers
 			sponsors = Sponsor.objects.filter(conference=conference, level__in=form.data.getlist('levels'), confirmed=True)
-			recipients = []
 			for sponsor in sponsors:
+				msgtxt = "{0}\n\n-- \nThis message was sent to sponsors of {1}.\nYou can view all communications for this conference at:\n{2}/events/sponsor/{3}/\n".format(msg.message, conference, settings.SITEBASE_SSL, sponsor.pk)
 				for manager in sponsor.managers.all():
-					recipients.append(manager.email)
-			recipients = set(recipients)
-			for r in recipients:
-				send_simple_mail(conference.sponsoraddr, r, msg.subject, msg.message)
+					send_simple_mail(conference.sponsoraddr, manager.email, msg.subject, msgtxt)
 
-			messages.info(request, "Email sent to %s recipients, and added to all sponsor pages" % len(recipients))
+			messages.info(request, "Email sent to %s sponsors, and added to all sponsor pages" % len(sponsors))
 			return HttpResponseRedirect("../")
 	else:
 		form = SponsorSendEmailForm(conference)
