@@ -1,0 +1,19 @@
+{%extends "base.html" %}
+{%block title%}Conference Attendee Email - {{conference}}{%endblock%}
+
+{%block layoutblock%}
+<h1>Conference Attendee Email - {{conference}}</h1>
+
+<h2>{{mail.subject}}</h2>
+<p>
+<div><b>Sent: </b>{{mail.sentat|date:"Y-m-d H:i"}}</div>
+<div><b>Sent to: </b>{{mail.regclasses.all|join:", "}}</div>
+<div>
+{{mail.message|linebreaks}}
+</div>
+</p>
+
+<p></p>
+<p>Return to <a href="../">list</a>.</p>
+
+{%endblock%}

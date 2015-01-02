@@ -9,7 +9,7 @@ from django.utils.safestring import mark_safe
 
 from models import Conference, ConferenceRegistration, RegistrationType, Speaker
 from models import ConferenceSession, Track, Room, ConferenceSessionScheduleSlot
-from models import RegistrationClass, RegistrationDay
+from models import RegistrationClass, RegistrationDay, AttendeeMail
 from models import ShirtSize, ConferenceAdditionalOption
 from models import ConferenceSessionFeedback, ConferenceFeedbackQuestion
 from models import ConferenceFeedbackAnswer, Speaker_Photo
@@ -471,6 +471,19 @@ class BulkPaymentAdmin(admin.ModelAdmin):
 	list_display = ['adminstring', 'conference', 'user', 'numregs', 'paidat', 'ispaid',]
 	list_filter = ['conference', ]
 
+class AttendeeMailAdminForm(forms.ModelForm):
+	class Meta:
+		model = AttendeeMail
+
+	def __init__(self, *args, **kwargs):
+		super(AttendeeMailAdminForm, self).__init__(*args, **kwargs)
+		if 'instance' in kwargs:
+			self.fields['regclasses'].queryset = RegistrationClass.objects.filter(conference=self.instance.conference)
+
+class AttendeeMailAdmin(admin.ModelAdmin):
+	form = AttendeeMailAdminForm
+	filter_horizontal = ('regclasses', )
+
 admin.site.register(Conference, ConferenceAdmin)
 admin.site.register(RegistrationClass, RegistrationClassAdmin)
 admin.site.register(RegistrationDay, RegistrationDayAdmin)
@@ -491,3 +504,4 @@ admin.site.register(PrepaidBatch, PrepaidBatchAdmin)
 admin.site.register(PrepaidVoucher, PrepaidVoucherAdmin)
 admin.site.register(DiscountCode, DiscountCodeAdmin)
 admin.site.register(BulkPayment, BulkPaymentAdmin)
+admin.site.register(AttendeeMail, AttendeeMailAdmin)

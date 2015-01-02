@@ -18,11 +18,13 @@ from models import ConferenceSessionFeedback, Speaker, Speaker_Photo
 from models import ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
 from models import RegistrationType, PrepaidVoucher, PrepaidBatch
 from models import BulkPayment, Room, Track, ConferenceSessionScheduleSlot
+from models import AttendeeMail
 from forms import ConferenceRegistrationForm, ConferenceSessionFeedbackForm
 from forms import ConferenceFeedbackForm, SpeakerProfileForm
 from forms import CallForPapersForm, BulkRegistrationForm
 from forms import PrepaidCreateForm
 from forms import EmailSendForm, EmailSessionForm
+from forms import AttendeeMailForm
 from util import invoicerows_for_registration
 
 from models import get_status_string
@@ -155,8 +157,15 @@ def home(request, confname):
 		# we may want to show the form or not.
 		if reg.payconfirmedat or reg.invoice or reg.bulkpayment:
 			# This registration can't be changed at this point
+
+			# If the registration is fully confirmed, include email informatino
+			if reg.payconfirmedat:
+				mails = AttendeeMail.objects.filter(conference=conference, regclasses=reg.regtype.regclass)
+			else:
+				mails = None
 			return render_conference_response(request, conference, 'confreg/regform_completed.html', {
 				'reg': reg,
+				'mails': mails,
 				'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/register/%s/" % (settings.SITEBASE_SSL, conference.urlname)),
 			})
 
@@ -808,6 +817,19 @@ def invoice(request, confname, regid):
 
 @ssl_required
 @login_required
+def attendee_mail(request, confname, mailid):
+	conference = get_object_or_404(Conference, urlname=confname)
+	reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
+
+	mail = get_object_or_404(AttendeeMail, conference=conference, pk=mailid, regclasses=reg.regtype.regclass)
+
+	return render_conference_response(request, conference, 'confreg/attendee_mail_view.html', {
+		'conference': conference,
+		'mail': mail,
+		})
+
+@ssl_required
+@login_required
 @transaction.commit_on_success
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoicemgr'))
 def createvouchers(request):
@@ -1384,6 +1406,59 @@ def admin_dashboard(request):
 		'firstconf': firstconf,
 		'conferences': conferences,
 	})
+
+@ssl_required
+@login_required
+@transaction.commit_on_success
+def admin_attendeemail(request, urlname):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=urlname)
+	else:
+		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+
+	mails = AttendeeMail.objects.filter(conference=conference)
+
+	if request.method == 'POST':
+		form = AttendeeMailForm(conference, data=request.POST)
+		if form.is_valid():
+			msg = AttendeeMail(conference=conference,
+							   subject=form.data['subject'],
+							   message=form.data['message'])
+			msg.save()
+			for rc in form.data.getlist('regclasses'):
+				msg.regclasses.add(rc)
+			msg.save()
+
+			# Now also send the email out to the currently registered attendees
+			attendees = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, regtype__regclass__in=form.data.getlist('regclasses'))
+			for a in attendees:
+				msgtxt = "{0}\n\n-- \nThis message was sent to attendees of {1}.\nYou can view all communications for this conference at:\n{2}/events/register/{3}/\n".format(msg.message, conference, settings.SITEBASE_SSL, conference.urlname)
+				send_simple_mail(conference.contactaddr, a.email, msg.subject, msgtxt)
+			messages.info(request, "Email sent to %s attendees, and added to registration pages" % len(attendees))
+			return HttpResponseRedirect(".")
+	else:
+		form = AttendeeMailForm(conference)
+
+	return render_to_response('confreg/admin_mail.html', {
+		'conference': conference,
+		'mails': mails,
+		'form': form,
+	}, RequestContext(request))
+
+@ssl_required
+@login_required
+def admin_attendeemail_view(request, urlname, mailid):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=urlname)
+	else:
+		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+
+	mail = get_object_or_404(AttendeeMail, conference=conference, pk=mailid)
+
+	return render_to_response('confreg/admin_mail_view.html', {
+		'conference': conference,
+		'mail': mail,
+		})
 
 @ssl_required
 @login_required

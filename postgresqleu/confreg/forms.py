@@ -9,9 +9,9 @@ from django.utils.html import escape
 from django.db.models.fields.files import ImageFieldFile
 
 from models import Conference, ConferenceRegistration, RegistrationType, Speaker
-from models import ConferenceAdditionalOption, Track
+from models import ConferenceAdditionalOption, Track, RegistrationClass
 from models import ConferenceSession, ConferenceSessionFeedback
-from models import PrepaidVoucher, DiscountCode
+from models import PrepaidVoucher, DiscountCode, AttendeeMail
 
 from regtypes import validate_special_reg_type
 
@@ -441,3 +441,23 @@ class BulkRegistrationForm(forms.Form):
 		if len(emails) < 2:
 			raise ValidationError('Bulk payments can only be done for 2 or more emails')
 		return email_list
+
+class AttendeeMailForm(forms.ModelForm):
+	confirm = forms.BooleanField(label="Confirm", required=False)
+	class Meta:
+		model = AttendeeMail
+		exclude = ('conference', )
+
+	def __init__(self, conference, *args, **kwargs):
+		self.conference = conference
+		super(AttendeeMailForm, self).__init__(*args, **kwargs)
+
+		self.fields['regclasses'].widget = forms.CheckboxSelectMultiple()
+		self.fields['regclasses'].queryset = RegistrationClass.objects.filter(conference=self.conference)
+
+		if not (self.data.get('regclasses') and self.data.get('subject') and self.data.get('message')):
+			del self.fields['confirm']
+
+	def clean_confirm(self):
+		if not self.cleaned_data['confirm']:
+			raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")

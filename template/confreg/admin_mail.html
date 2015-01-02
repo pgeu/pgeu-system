@@ -1,0 +1,62 @@
+{%extends "base.html" %}
+{%block title%}Conference Attendee Email - {{conference}}{%endblock%}
+{%block extrahead%}
+<style>
+tr.error {
+   background-color: #ffb6b6;
+}
+</style>
+{%endblock%}
+{%block layoutblock%}
+<h1>Conference Attendee Email - {{conference}}</h1>
+{% if messages %}
+<ul style="background-color: yellow;">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<h2>Sent email</h2>
+{%if mails%}
+<p>
+The following emails have been sent to attendees of the conference:
+</p>
+<ul>
+{%for m in mails%}
+ <li>{{m.sentat|date:"Y-m-d H:i"}} <a href="{{m.id}}/">{{m.subject}}</a> ({{m.regclasses.all|join:", "}})</li>
+{%endfor%}
+</ul>
+{%else%}
+<p>
+No emails have been sent to attendees yet.
+</p>
+{%endif%}
+
+<h2>New email</h2>
+<p>
+Using this form you can send an email to attendees. It will immediately be
+delivered to all current attendees with the specified registration types,
+and will also be made available historically to both those and to anybody
+else who signs up with the selected registration types later.
+</p>
+
+<form method="post" action=".">
+<table>
+ <tr><th>From</th><td>{{conference.contactaddr}}</td></tr>
+{%for field in form%}
+ <tr {%if field.errors%}class="error"{%endif%}>
+  <th>{{field.label}}</th>
+  <td>{{field}}</td>
+  <td>{%if field.errors%}{{field.errors}}{%endif%}</td>
+ </tr>
+{%endfor%}
+</table>
+
+<input type="submit" value="Send email!">
+</form>
+
+<p></p>
+<p>Return to <a href="../../">dashboard</a>.</p>
+
+{%endblock%}

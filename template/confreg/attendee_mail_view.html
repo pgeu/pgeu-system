@@ -1,0 +1,13 @@
+{%extends conftemplbase %}
+{%block title%}Conference Email - {{conference}}{%endblock%}
+{%block content%}
+<h2>{{mail.subject}}</h2>
+<p>
+<div><b>Sent: </b>{{mail.sentat|date:"Y-m-d H:i"}}</div>
+<div>
+{{mail.message|linebreaks}}
+</div>
+</p>
+
+<p>Return to <a href="../../">registration</a>.</p>
+{%endblock%}

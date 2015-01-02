@@ -30,6 +30,16 @@ between each registration to avoid conflicts.
   Your registration and payment have been confirmed at
   {{reg.payconfirmedat}}. Welcome to {{conference}}!
  </p>
+{%if mails%}
+ <h2>Information emails</h2>
+ <p>The following emails have been sent to attendees of this conference:</p>
+ <ul>
+{%for m in mails%}
+  <li>{{m.sentat|date:"Y-m-d H:i"}} <a href="mail/{{m.id}}/">{{m.subject}}</a>
+{%endfor%}
+ </ul>
+ <p>Any further emails sent will be delivered to your mailbox, as well as shown here.</p>
+{%endif%}
 {%else%}
  {%comment%}Payment not confirmed, so either invoice pending or bulk{%endcomment%}
  {%if reg.invoice%}

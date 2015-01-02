@@ -585,3 +585,16 @@ class DiscountCode(models.Model):
 	@property
 	def count(self):
 		return self.registrations.count()
+
+class AttendeeMail(models.Model):
+	conference = models.ForeignKey(Conference, null=False, blank=False)
+	regclasses = models.ManyToManyField(RegistrationClass,null=False, blank=False)
+	sentat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+	subject = models.CharField(max_length=100, null=False, blank=False)
+	message = models.TextField(max_length=8000, null=False, blank=False)
+
+	def __unicode__(self):
+		return "%s: %s" % (self.sentat.strftime("%Y-%m-%d %H:%M"), self.subject)
+
+	class Meta:
+		ordering = ('-sentat', )
