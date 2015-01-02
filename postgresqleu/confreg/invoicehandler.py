@@ -1,6 +1,7 @@
 from django.conf import settings
 
 from models import ConferenceRegistration, BulkPayment
+from util import notify_reg_confirmed
 
 from datetime import datetime
 
@@ -27,6 +28,7 @@ class InvoiceProcessor(object):
 		reg.payconfirmedat = datetime.today()
 		reg.payconfirmedby = "Invoice paid"
 		reg.save()
+		notify_reg_confirmed(reg)
 
 	# Process an invoice being canceled. This means we need to unlink
 	# it from the registration. We don't actually remove the registration,
@@ -105,6 +107,7 @@ class BulkInvoiceProcessor(object):
 			r.payconfirmedat = datetime.today()
 			r.payconfirmedby = "Bulk paid"
 			r.save()
+			notify_reg_confirmed(r)
 
 		bp.save()
 

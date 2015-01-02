@@ -15,6 +15,8 @@ from models import ConferenceSessionFeedback, ConferenceFeedbackQuestion
 from models import ConferenceFeedbackAnswer, Speaker_Photo
 from models import PrepaidVoucher, PrepaidBatch, BulkPayment, DiscountCode
 
+from util import notify_reg_confirmed
+
 from postgresqleu.confreg.dbimage import InlinePhotoWidget
 from postgresqleu.accounting.models import Object
 
@@ -87,6 +89,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 		if 'instance' in kwargs:
 			self.fields['additionaloptions'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.instance.conference)
 			self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference)
+			self.fields['payconfirmedat'].help_text = self.fields['payconfirmedby'].help_text = "Don't edit this field here - instead, go back to the list of registrations and chose to approve from there!"
 
 
 class ConferenceRegistrationAdmin(admin.ModelAdmin):
@@ -144,8 +147,17 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	bulkpayment_link.short_description = 'Bulk payment'
 
 	def approve_conferenceregistration(self, request, queryset):
-		rows = queryset.filter(payconfirmedat__isnull=True).update(payconfirmedat=datetime.today(), payconfirmedby=request.user.username)
-		self.message_user(request, '%s registration(s) marked as confirmed.' % rows)
+		# We loop over them and update, so we can send notifications.
+		# Not as efficient, but there are never that many to approve
+		# anyway...
+		num = 0
+		for reg in queryset.filter(payconfirmedat__isnull=True):
+			reg.payconfirmedat = datetime.today()
+			reg.payconfirmedby = request.user.username
+			reg.save()
+			notify_reg_confirmed(reg)
+			num += 1
+		self.message_user(request, '%s registration(s) marked as confirmed.' % num)
 	approve_conferenceregistration.short_description = "Confirm payments for selected users"
 
 	def email_recipients(self, request, queryset):

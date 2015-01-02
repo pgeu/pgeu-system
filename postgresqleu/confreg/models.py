@@ -96,6 +96,10 @@ class Conference(models.Model):
 	badgemodule = models.CharField(max_length=128, blank=True, null=True, default=None, help_text="Full path to python module *and class* used to render badges")
 	templatemediabase = models.CharField(max_length=128, blank=True, null=True, default=None, help_text="Relative location to template media (must be local to avoid https/http errors)")
 	callforpapersintro = models.TextField(blank=True, null=False)
+
+	sendwelcomemail = models.BooleanField(blank=False, null=False, default=False)
+	welcomemail = models.TextField(blank=True, null=False)
+
 	lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
 	newsjson = models.CharField(max_length=128, blank=True, null=True, default=None)
 	accounting_object = models.CharField(max_length=30, blank=True, null=True, verbose_name="Accounting object name")

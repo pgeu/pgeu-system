@@ -1,5 +1,7 @@
 from datetime import datetime, date
 
+from postgresqleu.mailqueue.util import send_simple_mail
+
 from models import PrepaidVoucher, DiscountCode
 
 def invoicerows_for_registration(reg, update_used_vouchers):
@@ -78,3 +80,15 @@ def invoicerows_for_registration(reg, update_used_vouchers):
 				pass
 
 	return r
+
+
+def notify_reg_confirmed(reg):
+	if not reg.conference.sendwelcomemail:
+		return
+
+	# Ok, this attendee needs a notification. For now we don't support
+	# any string replacements in it, maybe in the future.
+	send_simple_mail(reg.conference.contactaddr,
+					 reg.email,
+					 "[{0}] Registration complete".format(reg.conference),
+					 reg.conference.welcomemail)

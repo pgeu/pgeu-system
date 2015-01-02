@@ -25,7 +25,7 @@ from forms import CallForPapersForm, BulkRegistrationForm
 from forms import PrepaidCreateForm
 from forms import EmailSendForm, EmailSessionForm
 from forms import AttendeeMailForm
-from util import invoicerows_for_registration
+from util import invoicerows_for_registration, notify_reg_confirmed
 
 from models import get_status_string
 from regtypes import confirm_special_reg_type
@@ -739,6 +739,7 @@ def confirmreg(request, confname):
 				reg.payconfirmedat = datetime.today()
 				reg.payconfirmedby = "no payment reqd"
 				reg.save()
+				notify_reg_confirmed(reg)
 				return HttpResponseRedirect("../")
 
 			# Else there is a cost, so we create an invoice for that
