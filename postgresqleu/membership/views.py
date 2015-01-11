@@ -1,12 +1,13 @@
-from django.shortcuts import render_to_response
-from django.http import HttpResponseRedirect
+from django.shortcuts import render_to_response, get_object_or_404
+from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Q
 
-from models import Member, MemberLog
+from models import Member, MemberLog, Meeting, MemberMeetingKey
 from forms import MemberForm
 
 from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
@@ -15,7 +16,10 @@ from postgresqleu.invoices.models import InvoiceProcessor
 from postgresqleu.confreg.forms import EmailSendForm
 from postgresqleu.mailqueue.util import send_simple_mail
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+import simplejson
+import base64
+import os
 
 @ssl_required
 @login_required
@@ -138,3 +142,71 @@ def admin_email(request):
 		'form': form,
 		'recipientlist': ', '.join(recipients),
 		})
+
+@ssl_required
+@login_required
+def meetings(request):
+	# Only available for actual members
+	member = get_object_or_404(Member, user=request.user)
+	q = Q(dateandtime__gte=datetime.now()+timedelta(hours=4)) & (Q(allmembers=True) | Q(members=member))
+	meetings = Meeting.objects.filter(q).order_by('dateandtime')
+
+	return render_to_response('membership/meetings.html', {
+		'active': member.paiduntil and member.paiduntil >= datetime.today().date(),
+		'member': member,
+		'meetings': meetings,
+		})
+
+@ssl_required
+@login_required
+@transaction.commit_on_success
+def meeting(request, meetingid):
+	# View a single meeting
+	meeting = get_object_or_404(Meeting, pk=meetingid)
+	member = get_object_or_404(Member, user=request.user)
+
+	if not (member.paiduntil and member.paiduntil >= datetime.today().date()):
+		return HttpResponse("Your membership is not active")
+
+	if not meeting.allmembers:
+		if not meeting.members.filter(pk=member.pk).exists():
+			return HttpResponse("Access denied.")
+
+	# Allow four hours in the past, just in case
+	if meeting.dateandtime + timedelta(hours=4) < datetime.now():
+		return HttpResponse("Meeting is in the past.")
+
+	if member.paiduntil < meeting.dateandtime.date():
+		return HttpResponse("Your membership expires before the meeting")
+
+	# All is well with this member. Generate a key if necessary
+	(key, created) = MemberMeetingKey.objects.get_or_create(member=member, meeting=meeting)
+	if created:
+		# New key!
+		key.key = base64.b64encode(os.urandom(40)).rstrip('=')
+		key.save()
+
+	return render_to_response('membership/meeting.html', {
+		'member': member,
+		'meeting': meeting,
+		'key': key,
+		})
+
+# API calls from meeting bot
+@ssl_required
+def meetingcode(request):
+	secret = request.GET['s']
+	meetingid = request.GET['m']
+
+	try:
+		key = MemberMeetingKey.objects.get(key=secret, meeting__pk=meetingid)
+		member = key.member
+	except MemberMeetingKey.DoesNotExist:
+		return HttpResponse(simplejson.dumps({'err': 'Authentication key not found. Please see %s/membership/meetings/ to get your correct key!' % settings.SITEBASE_SSL}),
+							content_type='application/json')
+
+	# Return a JSON object with information about the member
+	return HttpResponse(simplejson.dumps({'username': member.user.username,
+										  'email': member.user.email,
+										  'name': member.fullname,
+									  }), content_type='application/json')

@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect
 from datetime import datetime
 import urllib
 
-from models import Member, MemberLog
+from models import Member, MemberLog, Meeting
 
 class ActiveMemberFilter(admin.SimpleListFilter):
 	title = 'Active'
@@ -45,5 +45,10 @@ class MemberLogAdmin(admin.ModelAdmin):
 	list_display = ('member', 'timestamp', 'message', )
 	ordering = ('-timestamp', )
 
+class MeetingAdmin(admin.ModelAdmin):
+	list_display = ('name', 'dateandtime', )
+	filter_horizontal = ('members', )
+
 admin.site.register(Member, MemberAdmin)
 admin.site.register(MemberLog, MemberLogAdmin)
+admin.site.register(Meeting, MeetingAdmin)

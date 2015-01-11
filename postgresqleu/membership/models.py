@@ -47,3 +47,21 @@ class MemberLog(models.Model):
 
 	def __unicode__(self):
 		return "%s: %s" % (self.timestamp, self.message)
+
+class Meeting(models.Model):
+	name = models.CharField(max_length=100, null=False, blank=False)
+	dateandtime = models.DateTimeField(null=False, blank=False)
+	allmembers = models.BooleanField(null=False, blank=False)
+	members = models.ManyToManyField(Member, null=True, blank=True)
+	botname = models.CharField(max_length=50, null=False, blank=False)
+
+	def __unicode__(self):
+		return "%s (%s)" % (self.name, self.dateandtime)
+
+class MemberMeetingKey(models.Model):
+	member = models.ForeignKey(Member, null=False, blank=False)
+	meeting = models.ForeignKey(Meeting, null=False, blank=False)
+	key = models.CharField(max_length=100, null=False, blank=False)
+
+	class Meta:
+		unique_together = (('member', 'meeting'), )

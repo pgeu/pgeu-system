@@ -106,6 +106,9 @@ urlpatterns = patterns('',
 
 	# Membership management
 	(r'^membership/$', postgresqleu.membership.views.home),
+    (r'^membership/meetings/$', postgresqleu.membership.views.meetings),
+    (r'^membership/meetings/(\d+)/$', postgresqleu.membership.views.meeting),
+    (r'^membership/meetingcode/$', postgresqleu.membership.views.meetingcode),
 	(r'^community/members/$', postgresqleu.membership.views.userlist),
 	(r'^admin/membership/_email/$', 'postgresqleu.membership.views.admin_email'),
 

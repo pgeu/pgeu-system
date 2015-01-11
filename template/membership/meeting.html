@@ -1,0 +1,46 @@
+{%extends "nav_membership.html"%}
+{%block title%}Meeting{%endblock%}
+{%block content%}
+<h1>Meeting</h1>
+
+<h2>{{meeting.name}}</h2>
+<p>
+<b>Date and time:</b> {{meeting.dateandtime|date:"Y-m-d H:i"}}<br/>
+<b>Your personal authentication key: </b><code>{{key.key}}</code><br/>
+<b>IRC network:</b> irc.freenode.net<br/>
+<b>Bot name:</b> {{meeting.botname}}<br/>
+</p>
+
+<h3>Joining this meeting</h3>
+<p>
+To join this meeting, you need an invite, which will be granted to you
+based on the code above. To get the code, send a <i>!knock</i> message
+to the meeting bot, and you will receive both instructions back and the
+invite to the channel.
+</p>
+<ol>
+ <li>Connect to the IRC network <i>irc.freenode.net</i>. Make sure you
+   choose an appropriate nickname - once you have joined the channel
+   our bot will no allow you to change it, so that we can properly track
+   votes.</li>
+ <li>Send a message to the bot <i>{{meeting.botname}}</i> with your code
+   in it, like this:
+   <blockquote>
+     <code>
+/msg {{meeting.botname}} !knock {{key.key}}
+     </code>
+     </blockquote>
+   (Exactly how to send private messages may vary depending on IRC client,
+   so see the documentation of your IRC client for details).
+ </li>
+ <li>Await response from the bot which will tell you how to join the
+   channel.
+ </li>
+</ol>
+
+<p>
+Note that you will not be allowed to join the meeting unless you
+perform the knock step <i>before</i> the meeting begins!
+</p>
+
+{%endblock%}

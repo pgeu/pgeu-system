@@ -1,0 +1,31 @@
+{%extends "nav_membership.html"%}
+{%block title%}Meetings{%endblock%}
+{%block content%}
+<h1>Meetings</h1>
+
+{%if not active%}
+<p>
+Your <a href="/membership/">membership</a> is not active, so you cannot
+participate in any meetings.
+</p>
+{%else%}
+{%if meetings%}
+<p>
+The following upcoming meetings exist. If you wish to attend a meeting,
+click the link for it which will generate a key for you (if one is not
+already generated), and then follow the instructions on that page.
+</p>
+<ul>
+{%for m in meetings%}
+ <li><a href="{{m.id}}/">{{m.name}}</a> ({{m.dateandtime}})</li>
+{%endfor%}
+</ul>
+{%else%}
+<p>
+There are currently no upcoming meetings registered.
+</p>
+{%endif%}
+
+{%endif%}
+
+{%endblock%}
