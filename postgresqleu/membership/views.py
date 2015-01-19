@@ -148,7 +148,7 @@ def admin_email(request):
 def meetings(request):
 	# Only available for actual members
 	member = get_object_or_404(Member, user=request.user)
-	q = Q(dateandtime__gte=datetime.now()+timedelta(hours=4)) & (Q(allmembers=True) | Q(members=member))
+	q = Q(dateandtime__gte=datetime.now()-timedelta(hours=4)) & (Q(allmembers=True) | Q(members=member))
 	meetings = Meeting.objects.filter(q).order_by('dateandtime')
 
 	return render_to_response('membership/meetings.html', {
