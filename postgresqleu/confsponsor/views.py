@@ -154,7 +154,7 @@ def sponsor_signup_dashboard(request, confurlname):
 @transaction.commit_on_success
 def sponsor_signup(request, confurlname, levelurlname):
 	conference = get_object_or_404(Conference, urlname=confurlname, callforsponsorsopen=True)
-	level = get_object_or_404(SponsorshipLevel, conference=conference, urlname=levelurlname)
+	level = get_object_or_404(SponsorshipLevel, conference=conference, urlname=levelurlname, available=True)
 
 	user_name = request.user.first_name + ' ' + request.user.last_name
 

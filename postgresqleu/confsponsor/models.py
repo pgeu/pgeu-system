@@ -34,6 +34,7 @@ class SponsorshipLevel(models.Model):
 	levelname = models.CharField(max_length=100, null=False, blank=False)
 	urlname = models.CharField(max_length=100, null=False, blank=False, validators=[validate_lowercase,])
 	levelcost = models.IntegerField(null=False, blank=False)
+	available = models.BooleanField(null=False, blank=False, default=True, verbose_name="Available for signup")
 	instantbuy = models.BooleanField(null=False, blank=False, default=False)
 	paymentmethods = models.ManyToManyField(InvoicePaymentMethod, null=False, blank=False, verbose_name="Payment methods for generated invoices")
 	contract = models.ForeignKey(SponsorshipContract, blank=True, null=True)

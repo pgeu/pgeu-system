@@ -72,7 +72,12 @@ A full specification of all the levels can be found in the
 If there is a difference, the version listed in the contract takes precedence.
 </p>
 {%endif%}
+{%if level.available%}
 <p><a class="btn" href="{{level.urlname}}/">Sign Up</a></p>
+{%else%}
+<p><i>This level is not currently available for signup.</i></p>
+{%endif%}
+
 <hr/>
 {%endfor%}
 
