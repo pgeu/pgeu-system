@@ -1433,7 +1433,7 @@ def admin_attendeemail(request, urlname):
 			# Now also send the email out to the currently registered attendees
 			attendees = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, regtype__regclass__in=form.data.getlist('regclasses'))
 			for a in attendees:
-				msgtxt = "{0}\n\n-- \nThis message was sent to attendees of {1}.\nYou can view all communications for this conference at:\n{2}/events/register/{3}/\n".format(msg.message, conference, settings.SITEBASE_SSL, conference.urlname)
+				msgtxt = u"{0}\n\n-- \nThis message was sent to attendees of {1}.\nYou can view all communications for this conference at:\n{2}/events/register/{3}/\n".format(msg.message, conference, settings.SITEBASE_SSL, conference.urlname)
 				send_simple_mail(conference.contactaddr, a.email, "[{0}] {1}".format(conference, msg.subject), msgtxt)
 			messages.info(request, "Email sent to %s attendees, and added to registration pages" % len(attendees))
 			return HttpResponseRedirect(".")

@@ -478,7 +478,7 @@ def sponsor_admin_send_mail(request, confurlname):
 			# Now also send the email out to the *current* subscribers
 			sponsors = Sponsor.objects.filter(conference=conference, level__in=form.data.getlist('levels'), confirmed=True)
 			for sponsor in sponsors:
-				msgtxt = "{0}\n\n-- \nThis message was sent to sponsors of {1}.\nYou can view all communications for this conference at:\n{2}/events/sponsor/{3}/\n".format(msg.message, conference, settings.SITEBASE_SSL, sponsor.pk)
+				msgtxt = u"{0}\n\n-- \nThis message was sent to sponsors of {1}.\nYou can view all communications for this conference at:\n{2}/events/sponsor/{3}/\n".format(msg.message, conference, settings.SITEBASE_SSL, sponsor.pk)
 				for manager in sponsor.managers.all():
 					send_simple_mail(conference.sponsoraddr, manager.email, "[{0}] {1}".format(conference, msg.subject), msgtxt)
 
