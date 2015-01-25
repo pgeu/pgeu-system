@@ -515,8 +515,11 @@ def sponsor_admin_imageview(request, benefitid):
 	benefit = get_object_or_404(SponsorClaimedBenefit, id=benefitid)
 	if not request.user.is_superuser:
 		# Check permissions for non superusers
-		if not benefit.sponsor.conference.administrators.filter(pk=request.user.id):
-			return HttpResponseForbidden("Access denied")
+		if not benefit.sponsor.conference.administrators.filter(pk=request.user.id).exists():
+			# Finally, can actually be viewed by the managers of the
+			# sponsor itself.
+			if not benefit.sponsor.managers.filter(pk=request.user.id).exists():
+				return HttpResponseForbidden("Access denied")
 
 	# If the benefit existed, we have verified the permissions, so we can now show
 	# the image itself.
