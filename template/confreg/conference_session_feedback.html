@@ -34,7 +34,7 @@ Jump to <a href="#toplists">toplists</a>.
 <a name="toplists"></a>
 <h1>Toplists</h1>
 
-<form method="post" action="./#toplists">
+<form method="post" action="./#toplists">{% csrf_token %}
 Minimum number of votes required: <input type="text" name="minvotes" value="{{minvotes}}" style="width:50px">
  <input type="submit" value="Update">
 </form>

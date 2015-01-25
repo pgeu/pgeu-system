@@ -27,7 +27,7 @@ table#formtbl tr th {
 </ul>
 {% endif %}
 
-<form method="POST" action=".">
+<form method="POST" action=".">{% csrf_token %}
 <table id="formtbl">
 {{form}}
 </table>

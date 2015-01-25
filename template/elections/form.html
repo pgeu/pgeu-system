@@ -26,7 +26,7 @@ You can click a candidates name for more information about this candidate.
 
 <h2>Your votes</h2>
 
-<form method="post" action=".">
+<form method="post" action=".">{% csrf_token %}
 <table>
 {%for field in form%}
  <tr {%if field.errors%}class="electionError"{%endif%}>

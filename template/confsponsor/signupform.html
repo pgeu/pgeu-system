@@ -28,7 +28,7 @@ agree with the contents in it.
 </p>
 {%endif%}
 
-<form method="post" action=".">
+<form method="post" action=".">{% csrf_token %}
 <table>
  <tr><th>Level</th><td>{{level}}</td><td></td></tr>
  <tr><th>Contact name *</th><td>{{user_name}}</td></tr>

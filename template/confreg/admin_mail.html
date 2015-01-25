@@ -47,7 +47,7 @@ and will also be made available historically to both those and to anybody
 else who signs up with the selected registration types later.
 </p>
 
-<form method="post" action=".">
+<form method="post" action=".">{% csrf_token %}
 <table class="emailform">
  <tr><th>From</th><td>{{conference.contactaddr}}</td></tr>
 {%for field in form%}

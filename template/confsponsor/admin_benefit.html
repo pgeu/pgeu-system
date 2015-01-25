@@ -32,7 +32,7 @@ div.benefit_list div {
 This benefit has not been confirmed. When you've validated the incoming data,
 please do so!
 </p>
-<form method="post" action=".">
+<form method="post" action=".">{% csrf_token %}
 <input type="hidden" name="confirm" value="1">
 <input type="submit" class="btn" value="Confirm this benefit">
 </form>

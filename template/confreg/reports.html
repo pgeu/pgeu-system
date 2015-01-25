@@ -17,8 +17,8 @@
 {%block layoutblock%}
 {%if list%}
 <h1>Reports</h1>
-<form method="post" action="advanced/">
-<table border="1" cellspacing="0" cellpadding="2" id="outertbl">
+<form method="post" action="advanced/">{% csrf_token %}
+<table border="1" cellspacing="0" cellpadding="2" id="outertbl">{% csrf_token %}
   <tr>
     <td class="hdr"><h3>Fields</h3>Select fields to include.<br/>Drag to change order.</td>
     <td>

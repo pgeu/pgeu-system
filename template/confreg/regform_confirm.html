@@ -41,7 +41,7 @@ way incorrect, go <a href="../">back</a> to your registration and adjust
 it.
 </p>
 
-<form method="post" action="." class="pgeuregformconfirm">
+<form method="post" action="." class="pgeuregformconfirm">{% csrf_token %}
 <table border="0" cellspacing="0" cellpadding="1" class="invoiceconfirmtbl">
 {%for r in invoicerows%}
 <tr valign="top">

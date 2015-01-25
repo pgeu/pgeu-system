@@ -3,6 +3,7 @@ from django.db import transaction
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 
 import base64
 
@@ -92,6 +93,7 @@ def adyen_return_handler(request):
 
 
 @ssl_required
+@csrf_exempt
 def adyen_notify_handler(request):
 	# Handle asynchronous notifications from the Adyen payment platform
 

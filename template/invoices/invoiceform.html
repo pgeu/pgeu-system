@@ -192,7 +192,7 @@ system for permanent record. This reason should include details like a
 transaction id from the payment system or bank. It will, of course,
 also be tagged with your userid <i>{{user.username}}</i>.
 </p>
-<form method="post" action="flag/">
+<form method="post" action="flag/">{% csrf_token %}
  Reason: <input type="text" name="reason" />
  <input type="submit" name="submit" value="Flag invoice as paid"/>
 </form>
@@ -203,7 +203,7 @@ also be tagged with your userid <i>{{user.username}}</i>.
 
 <hr/>
 
-<form method="post" action=".">
+<form method="post" action=".">{% csrf_token %}
 <table>
 {%if form.errors%}
  <tr class="errorheader">
@@ -272,7 +272,7 @@ also be tagged with your userid <i>{{user.username}}</i>.
 
 {%if invoice.finalized and not invoice.ispaid %}
 <br/>
-<form method="post" action="cancel/">
+<form method="post" action="cancel/">{% csrf_token %}
  Reason: <input type="text" name="reason" />
  <input type="submit" name="submit" value="Mark invoice as deleted" onclick="return confirm_delete()" />
 </form>
@@ -280,7 +280,7 @@ also be tagged with your userid <i>{{user.username}}</i>.
 
 {%if invoice.ispaid and not invoice.refunded %}
 <br/>
-<form method="post" action="refund/">
+<form method="post" action="refund/">{% csrf_token %}
  Reason: <input type="text" name="reason" />
  <input type="submit" name="submit" value="Mark invoice as refunded" onclick="return confirm_refund()" />
 </form>

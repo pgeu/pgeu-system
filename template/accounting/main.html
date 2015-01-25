@@ -292,7 +292,7 @@ Year: <select id="yearpick" onchange="changeYear()">
   {%endif%}
  {%else%}
   <h2>Edit entry {{entry}}</h2>
-  <form method="post" action=".">
+  <form method="post" action=".">{% csrf_token %}
   {%if form.errors%}
    <p><b>Please correct the errors below, and re-submit the form.</b></p>
   {%endif%}

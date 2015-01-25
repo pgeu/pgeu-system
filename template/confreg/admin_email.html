@@ -9,7 +9,7 @@ This email is for {{whatfor}}.
 </p>
 {%endif%}
 
-<form method="post" action=".">
+<form method="post" action=".">{% csrf_token %}
 <table>
 <tr>
  <td><b>Recipients</b></td>

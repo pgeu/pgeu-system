@@ -67,9 +67,12 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
 	'django.contrib.messages.middleware.MessageMiddleware',
+	'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'postgresqleu.util.middleware.FilterPersistMiddleware',
 )
+
+CSRF_FAILURE_VIEW='postgresqleu.views.csrf_failure'
 
 
 TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + (

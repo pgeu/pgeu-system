@@ -88,7 +88,7 @@ select#id_conferences {
     {% endfor %}
     </ul>
 {% endif %}
-    <form method="POST" action=".">
+    <form method="POST" action=".">{% csrf_token %}
       <table>
       {{form.as_table}}
       </table>

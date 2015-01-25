@@ -7,6 +7,7 @@ from django.template.loaders.filesystem import _loader as filesystem_template_lo
 from django.template.loader import get_template
 from django.template.base import TemplateDoesNotExist
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.conf import settings
@@ -1186,6 +1187,7 @@ def talkvote(request, confname):
 
 @ssl_required
 @login_required
+@csrf_exempt
 @transaction.commit_on_success
 def createschedule(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)

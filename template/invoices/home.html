@@ -41,7 +41,7 @@ ul.messages {
 {%if refunded %}Refunded{%else%}<a href="/invoiceadmin/refunded/">Refunded</a>{%endif%}
 </p>
 
-<form method="post" action="/invoiceadmin/search/" style="margin-bottom: 8px">
+<form method="post" action="/invoiceadmin/search/" style="margin-bottom: 8px">{% csrf_token %}
 <input type="text" name="term" value="{{searchterm|default:""}}"><input type="submit" value="Search"/>
 </form>
 

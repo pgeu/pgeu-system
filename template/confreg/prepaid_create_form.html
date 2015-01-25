@@ -80,7 +80,7 @@ the customer, <i>and</i> verified that payment is completed!
 <p><b style="color:red;">Note! This form contains errors and has not been saved!</b></p>
 {% endif %}
 
-<form method="post" action="." enctype="multipart/form-data">
+<form method="post" action="." enctype="multipart/form-data">{% csrf_token %}
 <table>
 {%for field in form%}
 {%if field.errors%}

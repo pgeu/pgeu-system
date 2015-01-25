@@ -63,7 +63,7 @@ has been paid.
 </ul>
 {% endif %}
 
-<form method="POST" action=".">
+<form method="POST" action=".">{% csrf_token %}
 <table border="0">
 {{form}}
 </table>

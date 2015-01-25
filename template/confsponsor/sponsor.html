@@ -146,7 +146,7 @@ must already have a PostgreSQL community account and have logged in once.
 </ul>
 
 <p>Add manager:</p>
-<form method="post" action="managers/add/">
+<form method="post" action="managers/add/">{% csrf_token %}
 Email: <input type="text" name="email">
 <input type="submit" value="Add manager">
 </form>

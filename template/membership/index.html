@@ -21,7 +21,7 @@ will not be valid even if it is fully paid.
 </p>
 {%endif%}
 
-<form method="post" action=".">
+<form method="post" action=".">{% csrf_token%}
 {% if form.errors %}
 <p><b>Note! This form contains errors and has not been saved!</b></p>
 {% endif %}

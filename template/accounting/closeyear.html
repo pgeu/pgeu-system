@@ -53,7 +53,7 @@ The next year has already been assigned an incoming balance. This should
 normally never happen, so you will have to go investigate it!
 </p>
 {%else%}
-<form method="post" action=".">
+<form method="post" action=".">{% csrf_token %}
 <p>
 You are now ready to close this year.
 </p>

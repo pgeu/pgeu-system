@@ -14,3 +14,10 @@ def index(request):
 		'news': news,
 	})
 
+# Handle CSRF failures
+def csrf_failure(request, reason=''):
+	resp = render_to_response('csrf_failure.html', {
+		'reason': reason,
+		})
+	resp.status_code = 403 # Forbidden
+	return resp

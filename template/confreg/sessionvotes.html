@@ -39,7 +39,7 @@ div.dlg {
 <body>
 <h1>Vote for sessions - {{conference}}</h1>
 
-<form method="post" action=".">
+<form method="post" action=".">{% csrf_token %}
 <table border="1" cellspacing="0" cellpadding="1">
  <tr>
   <th><a href="?sort=session">Session</a></th>

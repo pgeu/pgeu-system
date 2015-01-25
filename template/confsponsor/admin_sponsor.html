@@ -65,7 +65,7 @@ div.benefit_list div {
   <div style="border: 1px solid black">{{b.claimhtml|safe}}</div>
 {%endif%}
 {%if not b.confirmed%}
-<form method="post" action=".">
+<form method="post" action=".">{% csrf_token %}
 <input type="hidden" name="confirm" value="1">
 <input type="hidden" name="claimid" value="{{b.id}}">
 <input type="submit" class="btn" value="Confirm this benefit">

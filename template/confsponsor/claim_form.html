@@ -32,7 +32,7 @@ Please fill out this form to claim the benefit.
 <b>NOTE!</b> Your submitted form contained errors and has <b>not</b> been saved!
 </p>
 {%endif%}
-<form method="post" action="." enctype="multipart/form-data">
+<form method="post" action="." enctype="multipart/form-data">{% csrf_token %}
 <table>
 {%for field in form%}
  <tr {%if field.errors%}class="error"{%endif%}>

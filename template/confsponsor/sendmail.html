@@ -22,7 +22,7 @@ be made available historically to both those and to anybody else who signs
 up as a sponsor at that level later.
 </p>
 
-<form method="post" action=".">
+<form method="post" action=".">{% csrf_token %}
 <table class="emailform">
  <tr><th>From</th><td>{{conference.sponsoraddr}}</td></tr>
 {%for field in form%}

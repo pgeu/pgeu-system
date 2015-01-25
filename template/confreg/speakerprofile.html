@@ -46,7 +46,7 @@ you are a speaker.
 <p><b style="color:red;">Note! This form contains errors and has not been saved!</b></p>
 {% endif %}
 
-<form method="post" action="." enctype="multipart/form-data">
+<form method="post" action="." enctype="multipart/form-data">{% csrf_token %}
 <table id="speakerprofile_table">
 <tr>
  <th>Full name:</th>
