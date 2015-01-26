@@ -34,7 +34,7 @@ def sponsor_dashboard(request):
 		"currentsponsors": currentsponsors,
 		"pastsponsors": pastsponsors,
 		"conferences": conferences,
-		})
+		}, RequestContext(request))
 
 def _get_sponsor_and_admin(sponsorid, request, onlyconfirmed=True):
 	if not onlyconfirmed:
@@ -147,7 +147,7 @@ def sponsor_signup_dashboard(request, confurlname):
 		'conference': conference,
 		'levels': levels,
 		'current': current_signups,
-		})
+		}, RequestContext(request))
 
 @ssl_required
 @login_required
@@ -201,7 +201,7 @@ def sponsor_signup(request, confurlname, levelurlname):
 		'conference': conference,
 		'level': level,
 		'form': form,
-		})
+		}, RequestContext(request))
 
 @ssl_required
 @login_required

@@ -924,7 +924,7 @@ def viewvouchers(request, batchid):
 			'vouchers': vouchers,
 			'userbatch': userbatch,
 			'vouchermailtext': vouchermailtext,
-			})
+			}, RequestContext(request))
 
 @ssl_required
 @login_required
@@ -1383,7 +1383,7 @@ def simple_report(request, confname):
 		'conference': conference,
 		'columns': [d[0] for d in curs.description],
 		'data': curs.fetchall(),
-	})
+	}, RequestContext(request))
 
 @ssl_required
 @login_required
@@ -1408,7 +1408,7 @@ def admin_dashboard(request):
 	return render_to_response('confreg/admin_dashboard.html', {
 		'firstconf': firstconf,
 		'conferences': conferences,
-	})
+	}, RequestContext(request))
 
 @ssl_required
 @login_required
@@ -1461,7 +1461,7 @@ def admin_attendeemail_view(request, urlname, mailid):
 	return render_to_response('confreg/admin_mail_view.html', {
 		'conference': conference,
 		'mail': mail,
-		})
+		}, RequestContext(request))
 
 @ssl_required
 @login_required
