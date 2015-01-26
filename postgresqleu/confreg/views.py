@@ -1531,7 +1531,7 @@ def admin_email(request):
 	return render_to_response('confreg/admin_email.html', {
 		'form': form,
 		'recipientlist': ', '.join(recipients),
-		})
+		}, RequestContext(request))
 
 
 @ssl_required
@@ -1569,4 +1569,4 @@ def admin_email_session(request, sessionids):
 		'form': form,
 		'recipientlist': ", ".join([s.name for s in speakers]),
 		'whatfor': ", ".join(['Session "%s"' % s.title for s in sessions]),
-		})
+		}, RequestContext(request))
