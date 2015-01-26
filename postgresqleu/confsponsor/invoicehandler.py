@@ -61,15 +61,15 @@ class InvoiceProcessor(object):
 
 
 # Generate an invoice for sponsorship
-def create_sponsor_invoice(request, user_name, name, address, conference, level, sponsorid):
+def create_sponsor_invoice(user, user_name, name, address, conference, level, sponsorid):
 	invoicerows = [
 		['%s %s sponsorship' % (conference, level), 1, level.levelcost],
 	]
 	manager = InvoiceManager()
 	processor = invoicemodels.InvoiceProcessor.objects.get(processorname="confsponsor processor")
 	i = manager.create_invoice(
-		request.user,
-		request.user.email,
+		user,
+		user.email,
 		user_name,
 		'%s\n%s' % (name, address),
 		'%s sponsorship' % conference.conferencename,

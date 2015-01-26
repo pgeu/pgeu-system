@@ -174,7 +174,7 @@ def sponsor_signup(request, confurlname, levelurlname):
 
 			if level.instantbuy:
 				# Create the invoice, so it can be paid right away!
-				sponsor.invoice = create_sponsor_invoice(request,
+				sponsor.invoice = create_sponsor_invoice(request.user,
 														 user_name,
 														 form.cleaned_data['name'],
 														 form.cleaned_data['address'],
@@ -412,8 +412,9 @@ def sponsor_admin_generateinvoice(request, confurlname, sponsorid):
 		return HttpResponseRedirect("../")
 
 	# Actually generate the invoice!
-	user_name = sponsor.managers.all()[0].first_name + ' ' + sponsor.managers.all()[0].last_name
-	sponsor.invoice = create_sponsor_invoice(request,
+	manager = sponsor.managers.all()[0]
+	user_name = manager.first_name + ' ' + manager.last_name
+	sponsor.invoice = create_sponsor_invoice(manager,
 											 user_name,
 											 sponsor.name,
 											 sponsor.invoiceaddr,
