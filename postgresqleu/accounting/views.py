@@ -59,7 +59,7 @@ def year(request, year):
 		'year': year,
 		'years': Year.objects.all(),
 		'searchterm': searchterm,
-		})
+		}, RequestContext(request))
 
 @ssl_required
 @login_required
@@ -149,7 +149,7 @@ def entry(request, entryid):
 		'urlformset': urlformset,
 		'years': Year.objects.all(),
 		'searchterm': searchterm,
-		})
+		}, RequestContext(request))
 
 def _get_balance_query(objstr='', includeopen=False):
 	q = """WITH currentyear AS (
