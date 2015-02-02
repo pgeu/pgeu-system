@@ -90,6 +90,7 @@ urlpatterns = patterns('',
     (r'^events/admin/$', 'postgresqleu.confreg.views.admin_dashboard'),
     (r'^events/admin/(\w+)/mail/$', postgresqleu.confreg.views.admin_attendeemail),
     (r'^events/admin/(\w+)/mail/(\d+)/$', postgresqleu.confreg.views.admin_attendeemail_view),
+    (r'^events/admin/(\w+)/regdashboard/$', postgresqleu.confreg.views.admin_registration_dashboard),
 
     (r'^events/sponsor/', include('postgresqleu.confsponsor.urls')),
 

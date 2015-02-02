@@ -1412,6 +1412,49 @@ def admin_dashboard(request):
 
 @ssl_required
 @login_required
+def admin_registration_dashboard(request, urlname):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=urlname)
+	else:
+		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+
+	curs = connection.cursor()
+
+	tables = []
+
+	# Copy/paste string to get the reg status
+	statusstr = "sum(CASE WHEN payconfirmedat IS NOT NULL THEN 1 ELSE 0 END) AS confirmed, sum(CASE WHEN payconfirmedat IS NULL THEN 1 ELSE 0 END) as unconfirmed, count(*) AS total"
+	# Registrations by reg type
+	curs.execute("SELECT regtype, {0} FROM confreg_conferenceregistration r RIGHT JOIN confreg_registrationtype rt ON rt.id=r.regtype_id WHERE rt.conference_id={1} GROUP BY rt.id ORDER BY rt.sortkey".format(statusstr, conference.id))
+	tables.append({'title': 'Registration types',
+				   'columns': ['Type', 'Confirmed', 'Unconfirmed', 'Total'],
+				   'rows': curs.fetchall()})
+
+	# Discount codes
+	curs.execute("SELECT code, maxuses, {0} FROM confreg_conferenceregistration r RIGHT JOIN confreg_discountcode dc ON dc.code=r.vouchercode WHERE dc.conference_id={1} GROUP BY dc.id ORDER BY code".format(statusstr, conference.id))
+	tables.append({'title': 'Discount codes',
+				   'columns': ['Code', 'Max uses', 'Confirmed', 'Unconfirmed', 'Total'],
+				   'rows': curs.fetchall()})
+
+	# Voucher batches
+	curs.execute("SELECT buyername, sum(CASE WHEN user_id IS NOT NULL THEN 1 ELSE 0 END) AS used, sum(CASE WHEN user_id IS NULL THEN 1 ELSE 0 END) AS unused, count(*) AS total FROM confreg_prepaidbatch b INNER JOIN confreg_prepaidvoucher v ON v.batch_id=b.id LEFT JOIN confreg_conferenceregistration r ON r.id=v.user_id WHERE b.conference_id={0} GROUP BY b.id ORDER BY buyername".format(conference.id))
+	tables.append({'title': 'Prepaid vouchers',
+				   'columns': ['Buyer', 'Used', 'Unused', 'Total'],
+				   'rows': curs.fetchall()})
+
+	# Add a sum row for eveything
+	for t in tables:
+		sums = ['Total']
+		for cn in range(len(t['columns'])-1):
+			sums.append(sum((r[cn+1] for r in t['rows'])))
+		t['rows'].append(sums)
+	return render_to_response('confreg/admin_registration_dashboard.html', {
+		'conference': conference,
+		'tables': tables,
+	}, RequestContext(request))
+
+@ssl_required
+@login_required
 @transaction.commit_on_success
 def admin_attendeemail(request, urlname):
 	if request.user.is_superuser:

@@ -1,0 +1,32 @@
+{%extends "base.html" %}
+{%block title%}Conference registrations{%endblock%}
+{%block extrahead%}
+<style>
+table tr.lastrow td {
+   font-weight: bold;
+}
+</style>
+{%endblock%}
+{%block layoutblock%}
+<h1>Conference registrations</h1>
+{%for table in tables%}
+<h2>{{table.title}}</h2>
+<table border="1" cellspacing="0" cellpadding="1">
+ <tr>
+{%for c in table.columns%}
+<th>{{c}}</th>
+{%endfor%}
+{%for row in table.rows %}
+<tr {%if forloop.last%}class="lastrow"{%endif%}>
+{%for c in row%}
+<td>{{c}}</td>
+{%endfor%}
+</tr>
+{%endfor%}
+</table>
+{%endfor%}
+
+<p>
+<a href="/events/admin/">Back</a> to dashboard.
+</p>
+{%endblock%}
