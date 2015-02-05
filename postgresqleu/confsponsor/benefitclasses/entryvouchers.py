@@ -1,5 +1,7 @@
 from django import forms
 from django.core.validators import MaxValueValidator
+from django.template import Context
+from django.template.loader import get_template
 
 import base64
 import os
@@ -7,6 +9,8 @@ import simplejson
 import cStringIO as StringIO
 
 from base import BaseBenefit
+
+from postgresqleu.mailqueue.util import send_simple_mail
 
 from postgresqleu.confreg.models import RegistrationType, PrepaidBatch, PrepaidVoucher
 
@@ -62,12 +66,24 @@ class EntryVouchers(BaseBenefit):
 								 buyer=request.user,
 								 buyername="%s %s" % (request.user.first_name, request.user.last_name))
 			batch.save()
+			vouchers = []
 			for n in range(0, int(form.cleaned_data['vouchercount'])):
 				v = PrepaidVoucher(conference=self.level.conference,
 								   vouchervalue=base64.b64encode(os.urandom(37)).rstrip('='),
 								   batch=batch)
 				v.save()
+				vouchers.append(v)
 
+			# Send an email about the new vouchers
+			send_simple_mail(self.level.conference.sponsoraddr,
+							 request.user.email,
+							 "Entry vouchers for {0}".format(self.level.conference),
+							 get_template('confreg/mail/prepaid_vouchers.txt').render(Context({
+								 'batch': batch,
+								 'vouchers': vouchers,
+								 })))
+
+			# Finally, finish the claim
 			claim.claimdata = batch.id
 			claim.confirmed = True # Always confirmed, they're generated after all
 		return True
