@@ -481,7 +481,12 @@ def sponsor_admin_send_mail(request, confurlname):
 			for sponsor in sponsors:
 				msgtxt = u"{0}\n\n-- \nThis message was sent to sponsors of {1}.\nYou can view all communications for this conference at:\n{2}/events/sponsor/{3}/\n".format(msg.message, conference, settings.SITEBASE_SSL, sponsor.pk)
 				for manager in sponsor.managers.all():
-					send_simple_mail(conference.sponsoraddr, manager.email, "[{0}] {1}".format(conference, msg.subject), msgtxt)
+					send_simple_mail(conference.sponsoraddr,
+									 manager.email,
+									 u"[{0}] {1}".format(conference, msg.subject),
+									 msgtxt,
+									 sendername=conference.conferencename,
+									 receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
 
 			messages.info(request, "Email sent to %s sponsors, and added to all sponsor pages" % len(sponsors))
 			return HttpResponseRedirect("../")

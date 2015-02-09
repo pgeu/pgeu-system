@@ -683,7 +683,10 @@ def callforpapers_confirm(request, confname, sessionid):
 								 template.render(Context({
 									 'conference': conference,
 									 'session': session,
-									 })))
+									 })),
+								 sendername = conference.conferencename,
+								 receivername = spk.fullname,
+							 )
 			session.lastnotifiedstatus = 1 # Now also approved
 			session.save()
 			return HttpResponseRedirect(".")
@@ -942,6 +945,8 @@ def emailvouchers(request, batchid):
 					  batch.buyer.email,
 					  "Attendee vouchers for %s" % batch.conference,
 					  vouchermailtext,
+					 sendername=batch.conference.conferencename,
+					 receivername=u"{0} {1}".format(batch.buyer.first_name, batch.buyer.last_name),
 					  )
 	return HttpResponse('OK')
 
@@ -1479,7 +1484,13 @@ def admin_attendeemail(request, urlname):
 			attendees = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, regtype__regclass__in=form.data.getlist('regclasses'))
 			for a in attendees:
 				msgtxt = u"{0}\n\n-- \nThis message was sent to attendees of {1}.\nYou can view all communications for this conference at:\n{2}/events/register/{3}/\n".format(msg.message, conference, settings.SITEBASE_SSL, conference.urlname)
-				send_simple_mail(conference.contactaddr, a.email, "[{0}] {1}".format(conference, msg.subject), msgtxt)
+				send_simple_mail(conference.contactaddr,
+								 a.email,
+								 u"[{0}] {1}".format(conference, msg.subject),
+								 msgtxt,
+								 sendername=conference.conferencename,
+								 receivername=u'{0} {1}'.format(a.firstname, a.lastname),
+								 )
 			messages.info(request, "Email sent to %s attendees, and added to registration pages" % len(attendees))
 			return HttpResponseRedirect(".")
 	else:
@@ -1529,7 +1540,10 @@ def session_notify_queue(request, urlname):
 								 template.render(Context({
 									 'conference': conference,
 									 'session': s,
-									 })))
+									 })),
+								 sendername=conference.conferencename,
+								 receivername=spk.fullname,
+							 )
 				num += 1
 			s.lastnotifiedstatus = s.status
 			s.save()

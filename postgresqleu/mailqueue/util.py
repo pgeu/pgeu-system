@@ -6,15 +6,21 @@ from email import encoders
 
 from models import QueuedMail
 
-def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=None):
+def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=None, sendername=None, receivername=None):
 	# attachment format, each is a tuple of (name, mimetype,contents)
 	# content should be *binary* and not base64 encoded, since we need to
 	# use the base64 routines from the email library to get a properly
 	# formatted output message
 	msg = MIMEMultipart()
 	msg['Subject'] = subject
-	msg['To'] = receiver
-	msg['From'] = sender
+	if receivername:
+		msg['To'] = u'{0} <{1}>'.format(receivername, receiver)
+	else:
+		msg['To'] = receiver
+	if sendername:
+		msg['From'] = u'{0} <{1}>'.format(sendername, sender)
+	else:
+		msg['From'] = sender
 	msg['Date'] = formatdate(localtime=True)
 
 	msg.attach(MIMEText(msgtxt, _charset='utf-8'))
