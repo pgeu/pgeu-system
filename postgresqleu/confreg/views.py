@@ -1428,7 +1428,7 @@ def admin_registration_dashboard(request, urlname):
 	tables = []
 
 	# Copy/paste string to get the reg status
-	statusstr = "sum(CASE WHEN payconfirmedat IS NOT NULL THEN 1 ELSE 0 END) AS confirmed, sum(CASE WHEN payconfirmedat IS NULL THEN 1 ELSE 0 END) as unconfirmed, count(*) AS total"
+	statusstr = "sum(CASE WHEN payconfirmedat IS NOT NULL THEN 1 ELSE 0 END) AS confirmed, sum(CASE WHEN payconfirmedat IS NULL AND r.id IS NOT NULL THEN 1 ELSE 0 END) as unconfirmed, count(r.id) AS total"
 	# Registrations by reg type
 	curs.execute("SELECT regtype, {0} FROM confreg_conferenceregistration r RIGHT JOIN confreg_registrationtype rt ON rt.id=r.regtype_id WHERE rt.conference_id={1} GROUP BY rt.id ORDER BY rt.sortkey".format(statusstr, conference.id))
 	tables.append({'title': 'Registration types',
