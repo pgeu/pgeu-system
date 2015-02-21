@@ -488,6 +488,13 @@ def sponsor_admin_send_mail(request, confurlname):
 									 sendername=conference.conferencename,
 									 receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
 
+			send_simple_mail(conference.sponsoraddr,
+							 conference.sponsoraddr,
+							 "Email sent to sponsors",
+							 "An email was sent to sponsors of {0}.\n\nTo view it, go to {1}/events/sponsor/admin/{2}/viewmail/{3}/".format(conference, settings.SITEBASE_SSL, conference.urlname, msg.id),
+							 sendername=conference.conferencename,
+							 receivername=conference.conferencename)
+
 			messages.info(request, "Email sent to %s sponsors, and added to all sponsor pages" % len(sponsors))
 			return HttpResponseRedirect("../")
 	else:
