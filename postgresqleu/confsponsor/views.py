@@ -20,6 +20,7 @@ from postgresqleu.invoices.util import InvoiceWrapper
 from models import Sponsor, SponsorshipLevel, SponsorshipBenefit
 from models import SponsorClaimedBenefit, SponsorMail, SponsorshipContract
 from forms import SponsorSignupForm, SponsorSendEmailForm
+from forms import AdminCopySponsorshipLevelForm
 from benefits import get_benefit_class
 from invoicehandler import create_sponsor_invoice
 
@@ -543,3 +544,41 @@ def sponsor_admin_imageview(request, benefitid):
 	resp = HttpResponse(content_type='image/png')
 	resp.write(f.read())
 	return resp
+
+@ssl_required
+@login_required
+@transaction.commit_on_success
+def admin_copy_level(request, levelid):
+	if not request.user.is_superuser:
+		raise Exception("Sorry, at this point only superusers can do this")
+
+	level = get_object_or_404(SponsorshipLevel, id=levelid)
+
+	if request.method == 'POST':
+		form = AdminCopySponsorshipLevelForm(data=request.POST)
+		if form.is_valid():
+			targetconf = Conference.objects.get(pk=form.data['targetconference'])
+			newlevel = get_object_or_404(SponsorshipLevel, id=levelid)
+			# Set pk to none to copy object
+			newlevel.pk = None
+			if targetconf == level.conference:
+				newlevel.levelname = 'Copy of {0}'.format(level.levelname)
+				newlevel.urlname = 'copy_of_{0}'.format(level.urlname)
+			else:
+				newlevel.conference = targetconf
+			newlevel.save()
+			for pm in level.paymentmethods.all():
+				newlevel.paymentmethods.add(pm)
+			newlevel.save()
+			for b in level.sponsorshipbenefit_set.all():
+				b.pk = None
+				b.level = newlevel
+				b.save()
+			return HttpResponseRedirect("/admin/confsponsor/sponsorshiplevel/{0}/".format(newlevel.id))
+	else:
+		form = AdminCopySponsorshipLevelForm()
+
+	return render_to_response('confsponsor/admin_copy_level.html', {
+		'form': form,
+		'sourcelevel': level,
+	}, RequestContext(request))

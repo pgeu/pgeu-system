@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.http import HttpResponseRedirect
 from django.forms.models import BaseInlineFormSet
 from django.forms.util import ErrorList
 from django import forms
@@ -31,7 +32,17 @@ class SponsorshipBenefitInline(admin.TabularInline):
 
 class SponsorshipLevelAdmin(admin.ModelAdmin):
 	list_filter = ['conference', ]
+	list_display = ['levelname', 'conference', ]
 	inlines = [SponsorshipBenefitInline, ]
+	actions = ['copy_sponsorshiplevel', ]
+
+	def copy_sponsorshiplevel(self, request, queryset):
+		source_level = queryset.all()
+		if len(source_level) != 1:
+			raise Exception("Must copy exactly one level at a time!")
+
+		return HttpResponseRedirect("/admin/confsponsor/sponsorshiplevel/{0}/copy".format(source_level[0].id))
+	copy_sponsorshiplevel.short_description = "Copy sponsorship level"
 
 class SponsorAdminForm(forms.ModelForm):
 	class Meta:

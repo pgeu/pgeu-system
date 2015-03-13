@@ -2,6 +2,7 @@ from django import forms
 from django.forms import ValidationError
 
 from models import Sponsor, SponsorMail, SponsorshipLevel
+from confreg.models import Conference
 
 class SponsorSignupForm(forms.Form):
 	name = forms.CharField(label="Company name *", min_length=3, max_length=100)
@@ -36,3 +37,6 @@ class SponsorSendEmailForm(forms.ModelForm):
 	def clean_confirm(self):
 		if not self.cleaned_data['confirm']:
 			raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")
+
+class AdminCopySponsorshipLevelForm(forms.Form):
+	targetconference = forms.ModelChoiceField(queryset=Conference.objects.all(), label='Target conference')

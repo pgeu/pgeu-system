@@ -1,0 +1,24 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Copy sponsorship level{% endblock %}
+{% block content%}
+<h1>Copy sponsorship level</h1>
+
+<form method="post" action=".">{% csrf_token %}
+<table>
+<tr>
+ <td><b>Source conference</b></td>
+ <td>{{sourcelevel.conference}}</td>
+</tr>
+<tr>
+ <td><b>Source level</b></td>
+ <td>{{sourcelevel}}</td>
+</tr>
+{{form.as_table}}
+<tr>
+ <td colspan="2">
+  <input type="submit" value="Copy level">
+ </td>
+</tr>
+</table>
+</form>
+{%endblock%}
