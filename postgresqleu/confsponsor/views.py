@@ -29,7 +29,7 @@ from invoicehandler import create_sponsor_invoice
 def sponsor_dashboard(request):
 	currentsponsors = Sponsor.objects.filter(managers=request.user, conference__enddate__gte=datetime.today()).order_by('conference__startdate')
 	pastsponsors = Sponsor.objects.filter(managers=request.user, conference__enddate__lt=datetime.today()).order_by('conference__startdate')
-	conferences = Conference.objects.filter(callforsponsorsopen=True)
+	conferences = Conference.objects.filter(callforsponsorsopen=True, startdate__gt=datetime.today())
 
 	return render_to_response('confsponsor/dashboard.html', {
 		"currentsponsors": currentsponsors,
