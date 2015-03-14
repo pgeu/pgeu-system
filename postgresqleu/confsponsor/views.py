@@ -139,7 +139,11 @@ def sponsor_view_mail(request, sponsorid, mailid):
 @ssl_required
 @login_required
 def sponsor_signup_dashboard(request, confurlname):
-	conference = get_object_or_404(Conference, urlname=confurlname, callforsponsorsopen=True)
+	conference = get_object_or_404(Conference, urlname=confurlname)
+	if not conference.callforsponsorsopen:
+		# This one is not open. But if we're an admin, we may bypass
+		if not conference.administrators.filter(pk=request.user.id).exists():
+			raise Http404()
 
 	current_signups = Sponsor.objects.filter(managers=request.user, conference=conference)
 	levels = SponsorshipLevel.objects.filter(conference=conference)
