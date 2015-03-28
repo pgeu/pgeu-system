@@ -329,6 +329,8 @@ class SessionSet(object):
 		self.pixelsperminute = pixelsperminute
 
 	def add(self, session):
+		# If no room specified, we can't list the session
+		if not session.room: return
 		if not self.rooms.has_key(session.room):
 			if not session.cross_schedule:
 				self.rooms[session.room] = len(self.rooms)
