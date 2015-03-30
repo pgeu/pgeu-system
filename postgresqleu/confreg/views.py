@@ -1199,7 +1199,8 @@ def talkvote(request, confname):
 def createschedule(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.talkvoters.filter(pk=request.user.id):
-		raise Http404('You are not a talk voter for this conference!')
+		if not request.user.is_superuser:
+			raise Http404('You are not a talk voter for this conference!')
 
 
 	if request.method=="POST":
