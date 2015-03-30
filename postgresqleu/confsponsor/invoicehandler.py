@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager
@@ -65,6 +65,18 @@ def create_sponsor_invoice(user, user_name, name, address, conference, level, sp
 	invoicerows = [
 		['%s %s sponsorship' % (conference, level), 1, level.levelcost],
 	]
+	if conference.startdate < date.today() + timedelta(days=5):
+		# If conference happens in the next 5 days, invoice is due immediately
+		duedate = date.today()
+	elif conference.startdate < date.today() + timedelta(days=30):
+		# Less than 30 days before the conference, set the due date to
+		# 5 days before the conference
+		duedate = conference.startdate - timedelta(days=5)
+	else:
+		# More than 30 days before the conference, set the due date
+		# to 30 days from now.
+		duedate = datetime.now() + timedelta(days=30)
+
 	manager = InvoiceManager()
 	processor = invoicemodels.InvoiceProcessor.objects.get(processorname="confsponsor processor")
 	i = manager.create_invoice(
@@ -74,7 +86,7 @@ def create_sponsor_invoice(user, user_name, name, address, conference, level, sp
 		'%s\n%s' % (name, address),
 		'%s sponsorship' % conference.conferencename,
 		datetime.now(),
-		datetime.now() + timedelta(days=30),
+		duedate,
 		invoicerows,
 		processor = processor,
 		processorid = sponsorid,
