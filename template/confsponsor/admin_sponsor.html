@@ -6,6 +6,10 @@
 <script src="/media/jq/jquery-1.8.2.min.js"></script>
 <script src="/media/jq/jquery-ui.min.js"></script>
 <script language="javascript">
+  function confirmConfirm() {
+    return confirm('Are you sure you want to confirm this sponsor?\n\nThis should *only* be done if the sponsor contract is both signed and countersigned!');
+  }
+
   $(function() {
     $(".benefit_list").accordion({
       collapsible: true,
@@ -109,6 +113,13 @@ div.benefit_list div {
 {%if sponsor.invoice%}
 <p>
 This sponsorship is awaiting an <a href="/invoiceadmin/{{sponsor.invoice.pk}}/">invoice</a> to be paid.
+</p>
+<p>
+<b>Iff</b> there is a signed <i>and</i> countersigned contract available
+for this sponsor, it can be confirmed before the invoice is paid.
+</p>
+<p>
+<a class="btn" href="confirm/" onClick="return confirmConfirm()">Confirm sponsor</a>
 </p>
 {%else%}
 <p>

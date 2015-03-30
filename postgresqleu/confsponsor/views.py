@@ -434,6 +434,24 @@ def sponsor_admin_generateinvoice(request, confurlname, sponsorid):
 
 @ssl_required
 @login_required
+@transaction.commit_on_success
+def sponsor_admin_confirm(request, confurlname, sponsorid):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=confurlname)
+	else:
+		conference = get_object_or_404(Conference, urlname=confurlname, administrators=request.user)
+
+	sponsor = get_object_or_404(Sponsor, id=sponsorid, conference=conference)
+
+	sponsor.confirmed = True
+	sponsor.confirmedat = datetime.now()
+	sponsor.confirmedby = request.user.username
+	sponsor.save()
+
+	return HttpResponseRedirect('../')
+
+@ssl_required
+@login_required
 def sponsor_admin_benefit(request, confurlname, benefitid):
 	if request.user.is_superuser:
 		conference = get_object_or_404(Conference, urlname=confurlname)
