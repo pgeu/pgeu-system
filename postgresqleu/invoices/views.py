@@ -225,7 +225,10 @@ def cancelinvoice(request, invoicenum):
 		return HttpResponseForbidden("Can't cancel an invoice without a reason!")
 
 	manager = InvoiceManager()
-	manager.cancel_invoice(invoice, reason)
+	try:
+		manager.cancel_invoice(invoice, reason)
+	except Exception, ex:
+		messages.warning(request, "Failed to cancel: %s" % ex)
 
 	return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
