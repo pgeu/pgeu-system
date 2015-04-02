@@ -583,6 +583,9 @@ class DiscountCode(models.Model):
 
 	registrations = models.ManyToManyField(ConferenceRegistration, blank=True)
 
+	def __unicode__(self):
+		return self.code
+
 	class Meta:
 		unique_together = ( ('conference', 'code',), )
 
