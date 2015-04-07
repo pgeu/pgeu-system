@@ -76,6 +76,9 @@ class Invoice(models.Model):
 	paidat = models.DateTimeField(null=True, blank=True)
 	paymentdetails = models.CharField(max_length=100, null=False, blank=True)
 
+	# Reminder (if any) sent when?
+	remindersent = models.DateTimeField(null=True, blank=True, verbose_name="Automatic reminder sent at")
+
 	# Once an invoice is paid, a recipient is generated. PDF base64
 	pdf_receipt = models.TextField(blank=True, null=False)
 

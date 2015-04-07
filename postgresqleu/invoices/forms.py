@@ -7,7 +7,7 @@ from models import Invoice, InvoiceRow, InvoicePaymentMethod
 from accounting.models import Account, Object
 
 class InvoiceForm(forms.ModelForm):
-	hidden_until_finalized = ('total_amount',)
+	hidden_until_finalized = ('total_amount', 'remindersent', )
 	available_in_finalized = ('recipient_user', 'recipient_email', 'allowedmethods',)
 	accounting_account = forms.ChoiceField(choices=[], required=False)
 	accounting_object = forms.ChoiceField(choices=[], required=False)
