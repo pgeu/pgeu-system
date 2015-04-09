@@ -1147,6 +1147,9 @@ def talkvote(request, confname):
 			})
 
 	def getusernames(all):
+		if not all:
+			return
+
 		firstid = all[0][0]
 		for id, title, status, abstract, submissionnote, speakers, speakers_full, speakers_long, username, vote, comment, avgvote, track in all:
 			if id != firstid:
@@ -1154,6 +1157,9 @@ def talkvote(request, confname):
 			yield username
 
 	def transform(all):
+		if not all:
+			return
+
 		lastid = -1
 		rd = {}
 		for id, title, status, abstract, submissionnote, speakers, speakers_full, speakers_long, username, vote, comment, avgvote, track in all:
