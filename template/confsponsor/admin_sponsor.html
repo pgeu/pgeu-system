@@ -53,6 +53,14 @@ div.benefit_list div {
     <th>View:</th>
     <td>in <a href="/events/sponsor/{{sponsor.id}}/">user</a> interface, to for example claim benefits on the users behalf</td>
   </tr>
+  <tr>
+    <th>Managers:</th>
+    <td><ul>
+	{%for m in sponsor.managers.all%}
+	<li>{{m.first_name}} {{m.last_name}} ({{m.email}})</li>
+	{%endfor%}
+    </ul></td>
+  </tr>
 </table>
 
 {%if sponsor.confirmed%}
