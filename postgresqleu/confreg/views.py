@@ -637,6 +637,8 @@ def callforpapers_edit(request, confname, sessionid):
 	# Get all additional speakers (that means all speakers who isn't the current one)
 	speaker_initialdata = [{'email': s.user.email} for s in session.speaker.exclude(user=request.user)]
 
+	savedok = False
+
 	if request.method == 'POST':
 		# Save it!
 		form = CallForPapersForm(data=request.POST, instance=session)
@@ -656,7 +658,7 @@ def callforpapers_edit(request, confname, sessionid):
 						session.speaker.remove(spk)
 					else:
 						session.speaker.add(spk)
-			return HttpResponseRedirect("..")
+			savedok = True
 	else:
 		# GET --> render empty form
 		form = CallForPapersForm(instance=session)
@@ -666,6 +668,7 @@ def callforpapers_edit(request, confname, sessionid):
 			'form': form,
 			'speaker_formset': speaker_formset,
 			'session': session,
+			'savedok': savedok,
 	})
 
 @ssl_required
