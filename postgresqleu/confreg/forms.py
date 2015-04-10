@@ -339,6 +339,15 @@ class SpeakerProfileForm(forms.ModelForm):
 			raise ValidationError("Your full name must be given. This will be used both in the speaker profile and in communications with the conference organizers.")
 		return self.cleaned_data['fullname']
 
+
+class CallForPapersSpeakerForm(forms.Form):
+	email = forms.EmailField()
+
+	def clean_email(self):
+		if not Speaker.objects.filter(user__email=self.cleaned_data['email']).exists():
+			raise ValidationError("No speaker profile for user with email %s exists." % self.cleaned_data['email'])
+		return self.cleaned_data['email']
+
 class CallForPapersForm(forms.ModelForm):
 	class Meta:
 		model = ConferenceSession

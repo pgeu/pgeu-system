@@ -13,6 +13,7 @@ from django.contrib import messages
 from django.conf import settings
 from django.db import transaction, connection
 from django.db.models.expressions import F
+from django.forms import formsets
 
 from models import Conference, ConferenceRegistration, ConferenceSession
 from models import ConferenceSessionFeedback, Speaker, Speaker_Photo
@@ -22,7 +23,7 @@ from models import BulkPayment, Room, Track, ConferenceSessionScheduleSlot
 from models import AttendeeMail
 from forms import ConferenceRegistrationForm, ConferenceSessionFeedbackForm
 from forms import ConferenceFeedbackForm, SpeakerProfileForm
-from forms import CallForPapersForm, BulkRegistrationForm
+from forms import CallForPapersForm, CallForPapersSpeakerForm, BulkRegistrationForm
 from forms import PrepaidCreateForm
 from forms import EmailSendForm, EmailSessionForm
 from forms import AttendeeMailForm
@@ -631,19 +632,39 @@ def callforpapers_edit(request, confname, sessionid):
 			'feedbackfields': [f.replace('_',' ').title() for f in feedback_fields],
 			})
 
+	SpeakerFormset = formsets.formset_factory(CallForPapersSpeakerForm, can_delete=True)
+
+	# Get all additional speakers (that means all speakers who isn't the current one)
+	speaker_initialdata = [{'email': s.user.email} for s in session.speaker.exclude(user=request.user)]
 
 	if request.method == 'POST':
 		# Save it!
 		form = CallForPapersForm(data=request.POST, instance=session)
-		if form.is_valid():
+		speaker_formset = SpeakerFormset(data=request.POST, initial=speaker_initialdata, prefix="extra_speakers")
+		if form.is_valid() and speaker_formset.is_valid():
 			form.save()
+			if speaker_formset.has_changed():
+				# Additional speaker either added or removed
+				for f in speaker_formset:
+					# There is at least one empty form at the end, so skip it
+					if not getattr(f, 'cleaned_data', False): continue
+
+					# Speaker always exist, since the form has validated
+					spk = Speaker.objects.get(user__email=f.cleaned_data['email'])
+
+					if f.cleaned_data['DELETE']:
+						session.speaker.remove(spk)
+					else:
+						session.speaker.add(spk)
 			return HttpResponseRedirect("..")
 	else:
 		# GET --> render empty form
 		form = CallForPapersForm(instance=session)
+		speaker_formset = SpeakerFormset(initial=speaker_initialdata, prefix="extra_speakers")
 
 	return render_conference_response(request, conference, 'confreg/callforpapersform.html', {
 			'form': form,
+			'speaker_formset': speaker_formset,
 			'session': session,
 	})
 
