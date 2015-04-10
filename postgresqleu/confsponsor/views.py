@@ -7,7 +7,7 @@ from django.template import RequestContext
 from django.contrib import messages
 from django.contrib.auth.models import User
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from postgresqleu.auth import user_search, user_import
 from postgresqleu.util.decorators import ssl_required
@@ -27,8 +27,9 @@ from invoicehandler import create_sponsor_invoice
 @ssl_required
 @login_required
 def sponsor_dashboard(request):
-	currentsponsors = Sponsor.objects.filter(managers=request.user, conference__enddate__gte=datetime.today()).order_by('conference__startdate')
-	pastsponsors = Sponsor.objects.filter(managers=request.user, conference__enddate__lt=datetime.today()).order_by('conference__startdate')
+	# We define "past sponsors" as those older than a month - because we have to pick something.
+	currentsponsors = Sponsor.objects.filter(managers=request.user, conference__enddate__gte=datetime.today()-timedelta(days=31)).order_by('conference__startdate')
+	pastsponsors = Sponsor.objects.filter(managers=request.user, conference__enddate__lt=datetime.today()-timedelta(days=31)).order_by('conference__startdate')
 	conferences = Conference.objects.filter(callforsponsorsopen=True, startdate__gt=datetime.today())
 
 	return render_to_response('confsponsor/dashboard.html', {
