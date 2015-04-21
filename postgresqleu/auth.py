@@ -118,7 +118,7 @@ def auth_receive(request):
 			changed= True
 		if changed:
 			user.save()
-	except User.DoesNotExist, e:
+	except User.DoesNotExist:
 		# User not found, create it!
 
 		# NOTE! We have some legacy users where there is a user in
