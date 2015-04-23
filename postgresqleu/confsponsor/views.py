@@ -176,6 +176,7 @@ def sponsor_signup(request, confurlname, levelurlname):
 			sponsor = Sponsor(conference=conference,
 							  name=form.cleaned_data['name'],
 							  level=level,
+							  twittername = form.cleaned_data['twittername'],
 							  invoiceaddr = form.cleaned_data['address'])
 			sponsor.save()
 			sponsor.managers.add(request.user)

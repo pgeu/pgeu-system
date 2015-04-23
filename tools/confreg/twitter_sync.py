@@ -58,8 +58,8 @@ if __name__=="__main__":
 	curs = db.cursor()
 
 	# Figure out lists to sync
-	curs.execute("SELECT id, twitter_user, twitter_attendeelist, twitter_speakerlist, twitter_token, twitter_secret FROM confreg_conference WHERE active AND NOT (twitter_user IS NULL OR twitter_user='')")
-	for confid, user, attlist, spklist, token, secret in curs.fetchall():
+	curs.execute("SELECT id, twitter_user, twitter_attendeelist, twitter_speakerlist, twitter_sponsorlist, twitter_token, twitter_secret FROM confreg_conference WHERE active AND NOT (twitter_user IS NULL OR twitter_user='')")
+	for confid, user, attlist, spklist, sponsorlist, token, secret in curs.fetchall():
 		if attlist:
 			# Synchronize the attendee list
 			curs.execute("""SELECT DISTINCT twittername FROM confreg_conferenceregistration cr
@@ -81,4 +81,12 @@ if __name__=="__main__":
 						 { 'id': confid, }
 						 )
 			TwitterListSync(c, user, spklist, token, secret,
+							curs.fetchall()).run()
+
+		if sponsorlist:
+			curs.execute("SELECT DISTINCT twittername FROM confsponsor_sponsor WHERE conference_id=%(id)s AND confirmed", {
+				'id': confid,
+				})
+
+			TwitterListSync(c, user, sponsorlist, token, secret,
 							curs.fetchall()).run()

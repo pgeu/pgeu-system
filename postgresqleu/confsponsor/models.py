@@ -66,6 +66,7 @@ class Sponsor(models.Model):
 	name = models.CharField(max_length=100, null=False, blank=False)
 	invoiceaddr = models.TextField(max_length=500, null=False, blank=True)
 	managers = models.ManyToManyField(User, null=False, blank=False)
+	twittername = models.CharField(max_length=100, null=False, blank=True)
 	level = models.ForeignKey(SponsorshipLevel, null=False, blank=False)
 	invoice = models.ForeignKey(Invoice, null=True, blank=True)
 	confirmed = models.BooleanField(null=False, blank=False, default=False)

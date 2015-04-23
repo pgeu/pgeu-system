@@ -7,11 +7,16 @@ from confreg.models import Conference
 class SponsorSignupForm(forms.Form):
 	name = forms.CharField(label="Company name *", min_length=3, max_length=100)
 	address = forms.CharField(label="Company address *", min_length=10, max_length=500, widget=forms.Textarea)
+	twittername = forms.CharField(label="Company twitter", min_length=0, max_length=100, required=False)
 	confirm = forms.BooleanField(help_text="Check this box to that you have read and agree to the terms in the contract")
 
 	def __init__(self, conference, *args, **kwargs):
 		self.conference = conference
-		return super(SponsorSignupForm, self).__init__(*args, **kwargs)
+
+		super(SponsorSignupForm, self).__init__(*args, **kwargs)
+
+		if not self.conference.twitter_sponsorlist:
+			del self.fields['twittername']
 
 	def clean_name(self):
 		if Sponsor.objects.filter(conference=self.conference, name__iexact=self.cleaned_data['name']).exists():
