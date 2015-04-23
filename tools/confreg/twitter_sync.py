@@ -5,6 +5,7 @@
 
 import ConfigParser
 import psycopg2
+import sys
 from twitterclient import TwitterClient
 
 class TwitterConfWrapper(object):
@@ -57,8 +58,15 @@ if __name__=="__main__":
 	db = psycopg2.connect(c.get('settings','db'))
 	curs = db.cursor()
 
+	# Look for any conflicts
+	curs.execute("SELECT twitter_user, count(conferencename) FROM confreg_conference WHERE twittersync_active AND NOT twitter_user='' GROUP BY twitter_user HAVING count(*) > 1")
+	dupes = curs.fetchall()
+	if dupes:
+		print "Twitter user %s is duplicated for multiple active conference. Twitter sync disabled."
+		sys.exit(1)
+
 	# Figure out lists to sync
-	curs.execute("SELECT id, twitter_user, twitter_attendeelist, twitter_speakerlist, twitter_sponsorlist, twitter_token, twitter_secret FROM confreg_conference WHERE active AND NOT (twitter_user IS NULL OR twitter_user='')")
+	curs.execute("SELECT id, twitter_user, twitter_attendeelist, twitter_speakerlist, twitter_sponsorlist, twitter_token, twitter_secret FROM confreg_conference WHERE twittersync_active AND NOT (twitter_user IS NULL OR twitter_user='')")
 	for confid, user, attlist, spklist, sponsorlist, token, secret in curs.fetchall():
 		if attlist:
 			# Synchronize the attendee list
