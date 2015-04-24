@@ -92,7 +92,7 @@ if __name__=="__main__":
 							curs.fetchall()).run()
 
 		if sponsorlist:
-			curs.execute("SELECT DISTINCT twittername FROM confsponsor_sponsor WHERE conference_id=%(id)s AND confirmed", {
+			curs.execute("SELECT DISTINCT twittername FROM confsponsor_sponsor WHERE conference_id=%(id)s AND confirmed AND NOT twittername=''", {
 				'id': confid,
 				})
 
