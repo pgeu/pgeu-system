@@ -1,4 +1,6 @@
 from django.conf import settings
+from django.template import Context
+from django.template.loader import get_template
 
 from datetime import datetime, timedelta, date
 
@@ -7,6 +9,28 @@ from postgresqleu.invoices.util import InvoiceManager
 
 from models import Sponsor
 import postgresqleu.invoices.models as invoicemodels
+
+def confirm_sponsor(sponsor, who):
+	# Confirm a sponsor, including sending the confirmation email.
+	# This will save the specified sponsor model as well, but the function
+	# expects to be wrapped in external transaction handler.
+	sponsor.confirmed = True
+	sponsor.confirmedat = datetime.now()
+	sponsor.confirmedby = who
+	sponsor.save()
+
+	msgtxt = get_template('confsponsor/mail/sponsor_confirmed.txt').render(Context({
+		'sponsor': sponsor,
+		'conference': sponsor.conference,
+	}))
+	for manager in sponsor.managers.all():
+		send_simple_mail(sponsor.conference.sponsoraddr,
+						 manager.email,
+						 u"[{0}] Sponsorship confirmed".format(sponsor.conference),
+						 msgtxt,
+						 sendername=sponsor.conference.conferencename,
+						 receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
+
 
 class InvoiceProcessor(object):
 	# Process invoices for sponsorship (this should include both automatic
@@ -23,10 +47,7 @@ class InvoiceProcessor(object):
 			# don't care, so we return without updating the date of the confirmation.
 			return
 
-		sponsor.confirmed = True
-		sponsor.confirmedat = datetime.now()
-		sponsor.confirmedby = "Invoice payment"
-		sponsor.save()
+		confirm_sponsor(sponsor, "Invoice payment")
 
 		conference = sponsor.conference
 

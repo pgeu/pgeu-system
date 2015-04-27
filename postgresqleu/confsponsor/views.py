@@ -22,7 +22,7 @@ from models import SponsorClaimedBenefit, SponsorMail, SponsorshipContract
 from forms import SponsorSignupForm, SponsorSendEmailForm
 from forms import AdminCopySponsorshipLevelForm
 from benefits import get_benefit_class
-from invoicehandler import create_sponsor_invoice
+from invoicehandler import create_sponsor_invoice, confirm_sponsor
 
 @ssl_required
 @login_required
@@ -450,10 +450,7 @@ def sponsor_admin_confirm(request, confurlname, sponsorid):
 
 	sponsor = get_object_or_404(Sponsor, id=sponsorid, conference=conference)
 
-	sponsor.confirmed = True
-	sponsor.confirmedat = datetime.now()
-	sponsor.confirmedby = request.user.username
-	sponsor.save()
+	confirm_sponsor(sponsor, request.user.username)
 
 	return HttpResponseRedirect('../')
 
