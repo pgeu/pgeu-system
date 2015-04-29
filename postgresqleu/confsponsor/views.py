@@ -255,12 +255,12 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
 
 			if send_mail:
 				if claim.declined:
-					mailstr = "Sponsor %s for conference %s has declined benefit %s.\n" % (sponsor, sponsor.conference, benefit)
+					mailstr = u"Sponsor %s for conference %s has declined benefit %s.\n" % (sponsor, sponsor.conference, benefit)
 				elif claim.confirmed:
 					# Auto-confirmed, so nothing to do here
-					mailstr = "Sponsor %s for conference %s has claimed benefit %s.\n\nThis has been automatically processed, so there is nothing more to do.\n" % (sponsor, sponsor.conference, benefit)
+					mailstr = u"Sponsor %s for conference %s has claimed benefit %s.\n\nThis has been automatically processed, so there is nothing more to do.\n" % (sponsor, sponsor.conference, benefit)
 				else:
-					mailstr = "Sponsor %s for conference %s has claimed benefit %s\n\nThis benefit requires confirmation (and possibly some\nmore actions before that). Please go to\n%s/events/sponsor/admin/%s/\nand approve as necessary!" % (
+					mailstr = u"Sponsor %s for conference %s has claimed benefit %s\n\nThis benefit requires confirmation (and possibly some\nmore actions before that). Please go to\n%s/events/sponsor/admin/%s/\nand approve as necessary!" % (
 						sponsor,
 						sponsor.conference,
 						benefit,
