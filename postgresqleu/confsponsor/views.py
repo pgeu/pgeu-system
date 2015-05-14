@@ -468,12 +468,17 @@ def sponsor_admin_benefit(request, confurlname, benefitid):
 	else:
 		claimdata = None
 
-	if request.method == 'POST' and request.POST['confirm'] == '1':
+	if request.method == 'POST' and request.POST.get('confirm', '') == '1':
 		# Confirm this benefit!
 		benefit.confirmed = True
 		benefit.save()
 		return HttpResponseRedirect('.')
 
+	if request.method == 'POST' and request.POST.get('unclaim', '') == '1':
+		# Un-claim this benefit. That means we just remove the SponsorClaimedBenefit entry
+		benefit.delete()
+		messages.info(request, "The benefit {0} has been un-claimed from {1}".format(benefit.benefit, benefit.sponsor))
+		return HttpResponseRedirect('../../')
 
 	return render_to_response('confsponsor/admin_benefit.html', {
 		'conference': conference,

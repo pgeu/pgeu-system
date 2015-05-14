@@ -36,6 +36,15 @@ please do so!
 <input type="hidden" name="confirm" value="1">
 <input type="submit" class="btn" value="Confirm this benefit">
 </form>
+<p>
+In case a sponsor has incorrectly claimed a benefit, you can unclaim it here.
+That means it goes back to being claimable. You should normally never do this...
+</p>
+<form method="post" action=".">{% csrf_token %}
+<input type="hidden" name="unclaim" value="1">
+<input type="submit" class="btn" value="Un-claim this benefit">
+</form>
+<form method="post" action=".">
 {%endif%}
 <h3>Benefit details</h3>
 {%if claimdata%}
