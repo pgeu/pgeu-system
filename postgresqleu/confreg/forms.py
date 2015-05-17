@@ -348,6 +348,9 @@ class CallForPapersSpeakerForm(forms.Form):
 			raise ValidationError("No speaker profile for user with email %s exists." % self.cleaned_data['email'])
 		return self.cleaned_data['email']
 
+class CallForPapersSubmissionForm(forms.Form):
+	title = forms.CharField(required=True, max_length=200, min_length=10)
+
 class CallForPapersForm(forms.ModelForm):
 	class Meta:
 		model = ConferenceSession

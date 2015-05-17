@@ -30,11 +30,11 @@ You have made the following submissions to this conference:
 <h2>New submission</h2>
 <p>
 To create a new submission, enter the title here:
-<form method="post" action="new/" class="pgeucfpnewform">{% csrf_token %}
- <input type="text" name="title" /><br/>
+</p>
+<form method="post" action="." class="pgeucfpnewform">{% csrf_token %}
+ {{form.title}}{% if form.title.errors %}{{ form.title.errors}}{% endif %}<br/>
  <input type="submit" value="New submission"/>
 </form>
-</p>
 
 <h2>Remove submission</h2>
 <p>

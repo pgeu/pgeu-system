@@ -23,8 +23,8 @@ from models import BulkPayment, Room, Track, ConferenceSessionScheduleSlot
 from models import AttendeeMail
 from forms import ConferenceRegistrationForm, ConferenceSessionFeedbackForm
 from forms import ConferenceFeedbackForm, SpeakerProfileForm
-from forms import CallForPapersForm, CallForPapersSpeakerForm, BulkRegistrationForm
-from forms import PrepaidCreateForm
+from forms import CallForPapersForm, CallForPapersSpeakerForm, CallForPapersSubmissionForm
+from forms import PrepaidCreateForm, BulkRegistrationForm
 from forms import EmailSendForm, EmailSessionForm
 from forms import AttendeeMailForm
 from util import invoicerows_for_registration, notify_reg_confirmed
@@ -534,9 +534,10 @@ def speakerprofile(request, confurlname=None):
 @login_required
 def callforpapers(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
-
 	# This is called both for open and non-open call for papers, to let submitters view
 	# when the schedule is not published. Thus, no check for callforpapersopen here.
+
+	is_tester = conference.testers.filter(pk=request.user.id).exists()
 
 	try:
 		speaker = Speaker.objects.get(user=request.user)
@@ -544,43 +545,42 @@ def callforpapers(request, confname):
 	except Speaker.DoesNotExist:
 		sessions = []
 
+	if request.method == 'POST':
+		# Submission can of course only happen if the cfp is open. Normally the form isn't even
+		# rendered if it's not open, but if someone "hacks" it or just has an old browser tab
+		# open...
+		if not conference.callforpapersopen and not is_tester:
+			raise Http404('This conference has no open call for papers')
+
+		form =CallForPapersSubmissionForm(data=request.POST)
+		if form.is_valid():
+			# Find the speaker, or create
+			speaker, created = Speaker.objects.get_or_create(user=request.user)
+			if created:
+				speaker.fullname = request.user.first_name
+				speaker.save()
+			s = ConferenceSession(conference=conference,
+								  title=form.cleaned_data['title'],
+								  status=0,
+								  initialsubmit=datetime.now())
+			s.save()
+
+			# Add speaker (must be saved before we can do that)
+			s.speaker.add(speaker)
+			s.save()
+
+			# Redirect to the newly created session
+			return HttpResponseRedirect("%s/" % s.id)
+	else:
+		form = CallForPapersSubmissionForm()
+
+
 	return render_conference_response(request, conference, 'confreg/callforpapers.html', {
 			'sessions': sessions,
-			'is_tester': conference.testers.filter(pk=request.user.id).exists(),
+			'form': form,
+			'is_tester': is_tester,
 	})
 
-@ssl_required
-@login_required
-@transaction.commit_on_success
-def callforpapers_new(request, confname):
-	conference = get_object_or_404(Conference, urlname=confname)
-	is_tester = conference.testers.filter(pk=request.user.id).exists()
-	if not conference.callforpapersopen and not is_tester:
-		raise Http404('This conference has no open call for papers')
-
-	if not request.POST.has_key('title'):
-		raise Http404('Title not specified')
-	if len(request.POST['title']) < 1:
-		raise Http404('Title not specified')
-
-	# Find the speaker, or create
-	speaker, created = Speaker.objects.get_or_create(user=request.user)
-	if created:
-		speaker.fullname = request.user.first_name
-		speaker.save()
-
-	s = ConferenceSession(conference=conference,
-						  title=request.POST['title'],
-						  status=0,
-						  initialsubmit=datetime.now())
-	s.save()
-
-	# Add speaker (must be saved before we can do that)
-	s.speaker.add(speaker)
-	s.save()
-
-	# Redirect back
-	return HttpResponseRedirect("../%s/" % s.id)
 
 @ssl_required
 @login_required
