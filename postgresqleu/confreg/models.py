@@ -590,6 +590,7 @@ class DiscountCode(models.Model):
 
 	class Meta:
 		unique_together = ( ('conference', 'code',), )
+		ordering = ('conference', 'code',)
 
 	@property
 	def count(self):
