@@ -709,6 +709,7 @@ def callforpapers_confirm(request, confname, sessionid):
 								 template.render(Context({
 									 'conference': conference,
 									 'session': session,
+									 'SITEBASE': settings.SITEBASE_SSL,
 									 })),
 								 sendername = conference.conferencename,
 								 receivername = spk.fullname,
@@ -946,6 +947,7 @@ def viewvouchers(request, batchid):
 	vouchermailtext = get_template('confreg/mail/prepaid_vouchers.txt').render(Context({
 		'batch': batch,
 		'vouchers': vouchers,
+		'SITEBASE': settings.SITEBASE_SSL,
 		}))
 
 	return render_to_response('confreg/prepaid_create_list.html', {
@@ -966,6 +968,7 @@ def emailvouchers(request, batchid):
 	vouchermailtext = get_template('confreg/mail/prepaid_vouchers.txt').render(Context({
 		'batch': batch,
 		'vouchers': vouchers,
+		'SITEBASE': settings.SITEBASE_SSL,
 	}))
 	send_simple_mail(batch.conference.contactaddr,
 					  batch.buyer.email,
@@ -1573,6 +1576,7 @@ def session_notify_queue(request, urlname):
 								 template.render(Context({
 									 'conference': conference,
 									 'session': s,
+									 'SITEBASE': settings.SITEBASE_SSL,
 									 })),
 								 sendername=conference.conferencename,
 								 receivername=spk.fullname,

@@ -34,8 +34,8 @@ the codes - in case your mail program has reformatted the lines):
 {%endfor%}
 
 The registration form is available at:
-https://www.postgresql.eu/events/register/{{batch.conference.urlname}}/
+{{SITEBASE}}/events/register/{{batch.conference.urlname}}/
 
 If you have a PostgreSQL community account, you can view the
 current usage of your vouchers at:
-https://www.postgresql.eu/events/prepaid/{{batch.id}}/
+{{SITEBASE}}/events/prepaid/{{batch.id}}/

@@ -25,6 +25,7 @@ def confirm_sponsor(sponsor, who):
 	msgtxt = get_template('confsponsor/mail/sponsor_confirmed.txt').render(Context({
 		'sponsor': sponsor,
 		'conference': sponsor.conference,
+		'SITEBASE': settings.SITEBASE_SSL,
 	}))
 	for manager in sponsor.managers.all():
 		send_simple_mail(sponsor.conference.sponsoraddr,

@@ -6,7 +6,7 @@ has now been fully confirmed. Thank you for your support!
 You can reach the full details about your sponsorship and it's
 benefits by going to the sponsorship dashboard page at:
 
-https://www.postgresql.eu/events/sponsor/{{sponsor.id}}/
+{{SITEBASE}}/events/sponsor/{{sponsor.id}}/
 
 For some of the benefits that comes with your sponsorship we ask that
 you either provide more data, or just indicate that you wish to take

@@ -51,6 +51,7 @@ if __name__ == "__main__":
 					'code': code,
 					'sponsor': code.sponsor,
 					'conference': code.conference,
+					'SITEBASE': settings.SITEBASE_SSL,
 				}))
 				for manager in code.sponsor.managers.all():
 					send_simple_mail(code.conference.sponsoraddr,
@@ -113,6 +114,7 @@ if __name__ == "__main__":
 					'invoice': code.invoice,
 					'curr': settings.CURRENCY_ABBREV,
 					'expired_time': code.validuntil < date.today(),
+					'SITEBASE': settings.SITEBASE_SSL,
 				}))
 				for manager in code.sponsor.managers.all():
 					send_simple_mail(code.conference.sponsoraddr,
