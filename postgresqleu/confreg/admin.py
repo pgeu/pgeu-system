@@ -2,6 +2,7 @@ from django.contrib import admin
 from django import forms
 from django.http import HttpResponseRedirect
 from django.forms import ValidationError
+from django.forms.util import ErrorList
 from django.db.models.fields.files import ImageFieldFile
 from django.db.models import Count
 from django.core import urlresolvers
@@ -19,6 +20,7 @@ from util import notify_reg_confirmed
 
 from postgresqleu.confreg.dbimage import InlinePhotoWidget
 from postgresqleu.accounting.models import Object
+from postgresqleu.confsponsor.models import Sponsor
 
 from datetime import datetime
 import urllib
@@ -392,10 +394,23 @@ class PrepaidVoucherInline(admin.TabularInline):
 	extra = 0
 	can_delete = False
 
+class PrepaidBatchAdminForm(forms.ModelForm):
+	class Meta:
+		model = PrepaidBatch
+
+	def __init__(self, *args, **kwargs):
+		super(PrepaidBatchAdminForm, self).__init__(*args, **kwargs)
+		try:
+			self.fields['sponsor'].queryset = Sponsor.objects.filter(conference=self.instance.conference)
+		except Conference.DoesNotExist:
+			pass
+
+
 class PrepaidBatchAdmin(admin.ModelAdmin):
 	list_display = ['id', 'conference', 'buyer', 'buyername', 'total_num', 'used_num' ]
 	list_filter = ['conference', ]
 	inlines = [PrepaidVoucherInline, ]
+	form = PrepaidBatchAdminForm
 
 	def queryset(self, request):
 		return PrepaidBatch.objects.extra(select={
@@ -445,6 +460,7 @@ class DiscountCodeAdminForm(forms.ModelForm):
 		try:
 			self.fields['registrations'].queryset = ConferenceRegistration.objects.filter(conference=self.instance.conference)
 			self.fields['requiresoption'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.instance.conference)
+			self.fields['sponsor'].queryset = Sponsor.objects.filter(conference=self.instance.conference)
 		except Conference.DoesNotExist:
 			pass
 
@@ -470,6 +486,11 @@ class DiscountCodeAdminForm(forms.ModelForm):
 		if cleaned_data.has_key('discountamount') and cleaned_data.has_key('regonly'):
 			if cleaned_data['discountamount'] > 0 and cleaned_data['regonly']:
 				raise ValidationError('Regonly field can only be set for percentage discounts!')
+
+		if cleaned_data.get('sponsor', None) and not cleaned_data.get('sponsor_rep', None):
+			self._errors['sponsor_rep'] = ErrorList(["Sponsor rep must be given if sponsor is given!"])
+		if cleaned_data.get('sponsor_rep', None) and not cleaned_data.get('sponsor', None):
+			self._errors['sponsor'] = ErrorList(["Sponsor must be given if sponsor rep is given!"])
 
 		return cleaned_data
 

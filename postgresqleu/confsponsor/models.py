@@ -3,7 +3,7 @@ from django.db.models.signals import pre_delete
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 
-from postgresqleu.confreg.models import Conference
+from postgresqleu.confreg.models import Conference, RegistrationType, PrepaidBatch
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.util.storage import InlineFileField, delete_inline_storage
 from postgresqleu.util.validators import validate_lowercase
@@ -38,6 +38,8 @@ class SponsorshipLevel(models.Model):
 	instantbuy = models.BooleanField(null=False, blank=False, default=False)
 	paymentmethods = models.ManyToManyField(InvoicePaymentMethod, null=False, blank=False, verbose_name="Payment methods for generated invoices")
 	contract = models.ForeignKey(SponsorshipContract, blank=True, null=True)
+	canbuyvoucher = models.BooleanField(null=False, blank=False, default=True)
+	canbuydiscountcode = models.BooleanField(null=False, blank=False, default=True)
 
 	def __unicode__(self):
 		return self.levelname
@@ -100,3 +102,11 @@ class SponsorMail(models.Model):
 
 	class Meta:
 		ordering = ('-sentat',)
+
+class PurchasedVoucher(models.Model):
+	sponsor = models.ForeignKey(Sponsor, null=False, blank=False)
+	user = models.ForeignKey(User, null=False, blank=False)
+	regtype = models.ForeignKey(RegistrationType, null=False, blank=False)
+	num = models.IntegerField(null=False, blank=False)
+	invoice = models.ForeignKey(Invoice, null=False, blank=False)
+	batch = models.ForeignKey(PrepaidBatch, null=True, blank=True)

@@ -12,17 +12,20 @@ from datetime import datetime, timedelta
 from postgresqleu.auth import user_search, user_import
 from postgresqleu.util.decorators import ssl_required
 
-from postgresqleu.confreg.models import Conference
+from postgresqleu.confreg.models import Conference, PrepaidVoucher, DiscountCode
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.invoices.util import InvoiceWrapper
 
 from models import Sponsor, SponsorshipLevel, SponsorshipBenefit
 from models import SponsorClaimedBenefit, SponsorMail, SponsorshipContract
+from models import PurchasedVoucher
 from forms import SponsorSignupForm, SponsorSendEmailForm
+from forms import PurchaseVouchersForm, PurchaseDiscountForm
 from forms import AdminCopySponsorshipLevelForm
 from benefits import get_benefit_class
 from invoicehandler import create_sponsor_invoice, confirm_sponsor
+from invoicehandler import create_voucher_invoice
 
 @ssl_required
 @login_required
@@ -60,6 +63,9 @@ def sponsor_conference(request, sponsorid):
 	claimedbenefits = SponsorClaimedBenefit.objects.filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey')
 	noclaimbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=True)
 	mails = SponsorMail.objects.filter(conference=sponsor.conference, levels=sponsor.level)
+	vouchers = PrepaidVoucher.objects.filter(batch__sponsor=sponsor)
+	pendingvouchers = PurchasedVoucher.objects.filter(sponsor=sponsor, batch__isnull=True)
+	discountcodes = DiscountCode.objects.filter(sponsor=sponsor)
 
 	for b in claimedbenefits:
 		if b.benefit.benefit_class and not b.declined:
@@ -72,6 +78,9 @@ def sponsor_conference(request, sponsorid):
 		'claimedbenefits': claimedbenefits,
 		'noclaimbenefits': noclaimbenefits,
 		'mails': mails,
+		'vouchers': vouchers,
+		'pendingvouchers': pendingvouchers,
+		'discountcodes': discountcodes,
 		'is_admin': is_admin,
 		}, RequestContext(request))
 
@@ -135,6 +144,94 @@ def sponsor_view_mail(request, sponsorid, mailid):
 	return render_to_response('confsponsor/sent_mail.html', {
 		'conference': sponsor.conference,
 		'mail': mail,
+		}, RequestContext(request))
+
+@ssl_required
+@login_required
+@transaction.commit_on_success
+def sponsor_purchase_voucher(request, sponsorid):
+	sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
+	conference = sponsor.conference
+
+	if request.method == 'POST':
+		form = PurchaseVouchersForm(conference, data=request.POST)
+		if form.is_valid():
+			# Create an invoice (backwards order?)
+			rt = form.cleaned_data['regtype']
+			invoice = create_voucher_invoice(sponsor,
+											 request.user,
+											 rt,
+											 int(form.cleaned_data['num']))
+
+			# Create a purchase order
+			pv = PurchasedVoucher(sponsor=sponsor,
+								  user=request.user,
+								  regtype=form.cleaned_data['regtype'],
+								  num=int(form.cleaned_data['num']),
+								  invoice=invoice)
+			pv.save()
+			invoice.processorid = pv.pk
+			invoice.save()
+
+			wrapper = InvoiceWrapper(invoice)
+			wrapper.email_invoice()
+
+			return HttpResponseRedirect('/invoices/{0}/'.format(invoice.pk))
+	else:
+		form = PurchaseVouchersForm(conference)
+
+	return render_to_response('confsponsor/purchasevouchers.html', {
+		'conference': conference,
+		'user_name': request.user.first_name + ' ' + request.user.last_name,
+		'sponsor': sponsor,
+		'form': form,
+		}, RequestContext(request))
+
+@ssl_required
+@login_required
+@transaction.commit_on_success
+def sponsor_purchase_discount(request, sponsorid):
+	sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
+	conference = sponsor.conference
+
+	if request.method == 'POST':
+		if request.POST.has_key('confirm'):
+			form = PurchaseDiscountForm(conference, showconfirm=True, data=request.POST)
+		else:
+			form = PurchaseDiscountForm(conference, data=request.POST)
+		if form.is_valid():
+			if not form.cleaned_data.has_key('confirm'):
+				form = PurchaseDiscountForm(conference, showconfirm=True, data=request.POST)
+			else:
+				# Generate the code. We can't generate the invoice at this point, as it
+				# will be depending on the discount code.
+				code = DiscountCode(conference=conference,
+									code=form.cleaned_data['code'],
+									discountamount=form.cleaned_data['amount'],
+									discountpercentage=form.cleaned_data['percent'],
+									regonly=True,
+									validuntil=form.cleaned_data['expires'],
+									maxuses=form.cleaned_data['maxuses'],
+									sponsor=sponsor,
+									sponsor_rep=request.user,
+									is_invoiced=False
+									)
+				code.save()
+				# ManyToMany requires us to save before we can add the required options
+				for o in form.cleaned_data['requiredoptions']:
+					code.requiresoption.add(o)
+				code.save()
+
+				messages.info(request, 'Discount code {0} has been created.'.format(code.code))
+				return HttpResponseRedirect('../../')
+	else:
+		form = PurchaseDiscountForm(conference)
+
+	return render_to_response('confsponsor/purchasediscount.html', {
+		'conference': conference,
+		'user_name': request.user.first_name + ' ' + request.user.last_name,
+		'sponsor': sponsor,
+		'form': form,
 		}, RequestContext(request))
 
 @ssl_required

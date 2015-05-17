@@ -552,6 +552,7 @@ class PrepaidBatch(models.Model):
 	regtype = models.ForeignKey(RegistrationType, null=False, blank=False)
 	buyer = models.ForeignKey(User, null=False, blank=False)
 	buyername = models.CharField(max_length=100, null=True, blank=True)
+	sponsor = models.ForeignKey('confsponsor.Sponsor', null=True, blank=True, verbose_name="Optional sponsor")
 
 	def __unicode__(self):
 		return "%s: %s for %s" % (self.conference, self.regtype, self.buyer)
@@ -584,6 +585,11 @@ class DiscountCode(models.Model):
 	requiresoption = models.ManyToManyField(ConferenceAdditionalOption, blank=True, help_text='Requires this option to be set in order to be valid')
 
 	registrations = models.ManyToManyField(ConferenceRegistration, blank=True)
+
+	# If this discount code is purchased by a sponsor, track it here.
+	sponsor = models.ForeignKey('confsponsor.Sponsor', null=True, blank=True, verbose_name="Optional sponsor.", help_text="Note that if a sponsor is picked, an invoice will be generated once the discount code closes!!!")
+	sponsor_rep = models.ForeignKey(User, null=True, blank=True, verbose_name="Optional sponsor representative.", help_text="Must be set if the sponsor field is set!")
+	is_invoiced = models.BooleanField(null=False, blank=False, default=False, verbose_name="Has an invoice been sent for this discount code.")
 
 	def __unicode__(self):
 		return self.code

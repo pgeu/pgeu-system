@@ -64,7 +64,8 @@ class EntryVouchers(BaseBenefit):
 			batch = PrepaidBatch(conference=self.level.conference,
 								 regtype=RegistrationType.objects.get(conference=self.level.conference, regtype=j['type']),
 								 buyer=request.user,
-								 buyername="%s %s" % (request.user.first_name, request.user.last_name))
+								 buyername="%s %s" % (request.user.first_name, request.user.last_name),
+								 sponsor=claim.sponsor)
 			batch.save()
 			vouchers = []
 			for n in range(0, int(form.cleaned_data['vouchercount'])):

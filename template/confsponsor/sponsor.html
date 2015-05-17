@@ -133,6 +133,99 @@ The following emails have been sent to the sponsors for this conference.
 </ul>
 {%endif%}
 
+{%if sponsor.level.canbuyvoucher or sponsor.level.canbuydiscountcode or vouchers or discountcodes%}
+<h2>Vouchers and discount codes</h2>
+{%if sponsor.level.canbuyvoucher or vouchers%}
+<h3>Vouchers</h3>
+<p>
+Voucher codes are used to pay for an entire registration, and can
+be tied to a specific registration type. Once this code is input,
+it will cover the registration, but any additional items purchased
+will be paid for by the attendee. A single voucher can only be used
+by one attendee.
+</p>
+{%if vouchers%}
+<table>
+ <tr>
+  <th>Code</th>
+  <th>Used by</th>
+  <th>Used at</th>
+ </tr>
+{%for v in vouchers%}
+ <tr>
+  <td>{{v.vouchervalue}}</td>
+  <td>{{v.user.fullname|default:''}}</td>
+  <td>{{v.usedate|default:''}}</td>
+ </tr>
+{%endfor%}
+</table>
+{%endif%}
+{%if pendingvouchers%}
+<h3>Pending vouchers</h3>
+<p>
+The following invoices are currently pending payment for generation
+of vouchers. As soon as they are paid, the vouchers will appear on
+this page.
+</p>
+<ul>
+{%for v in pendingvouchers%}
+ <li>Invoice #<a href="/invoices/{{v.invoice.id}}/">{{v.invoice.id}}</a></li>
+{%endfor%}
+</ul>
+{%endif%}
+{%if sponsor.level.canbuyvoucher%}
+<h3>Purchase vouchers</h3>
+<p>
+<a href="purchase/voucher/">Purchase</a> one or more vouchers.
+</p>
+{%endif%}
+{%endif%}{%comment%}canbuyvoucher or vouchers{%endcomment%}
+
+{%if sponsor.level.canbuydiscountcode or discountcodes%}
+<h3>Discount codes</h3>
+<p>
+Discount codes are codes that will give either a fixed amount of
+discount, or a percentage of of the fees. A discount code can be
+used by multiple attendees, but have a limit on the number of
+uses.
+</p>
+
+{%if discountcodes%}
+<table>
+ <tr>
+   <th>Code</th>
+   <th>Status</th>
+   <th>Max uses</th>
+   <th>Expires</th>
+   <th>Uses</th>
+   <th>Confirmed regs</th>
+ </tr>
+{%for c in discountcodes%}
+ <tr>
+   <td>{{c.code}}</td>
+   <td>{{c.is_invoiced|yesno:"closed,active"}}</td>
+   <td>{{c.maxuses}}</td>
+   <td>{{c.validuntil|date:"Y-m-d"}}</td>
+   <td>{{c.count}}</td>
+   <td><ul>
+{%for r in c.registrations.all%}{%if r.payconfirmedat%}
+<li>{{r.fullname}}</li>
+{%endif%}{%endfor%}
+   </ul></td>
+ </tr>
+{%endfor%}
+</table>
+{%endif%}
+
+{%if sponsor.level.canbuydiscountcode%}
+<p>
+<a href="purchase/discountcode/">Purchase</a> a discount code.
+</p>
+{%endif%}
+{%endif%}{%comment%}canbuydiscountcode or discountcodes{%endcomment%}
+
+{%endif%}{%comment%}anything about discount codes{%endcomment%}
+
 {%if not is_admin%}
 <h2>Edit managers</h2>
 <p>

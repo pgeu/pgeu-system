@@ -1,0 +1,32 @@
+Hello!
+
+Your discount code {{code.code}} for attendees of
+{{conference}} has been closed and invoiced.
+{%if expired_time%}
+The code was closed because it was set to expire on {{code.validuntil}}.
+{%else%}
+The code was closed because it reached the maximum number
+of registrations ({{code.count}}).
+{%endif%}
+
+The following people registered using the discount code:
+{%for r in code.registrations.all%}
+{{r.fullname}}{%endfor%}
+
+An invoice for the amount {{curr}}{{invoice.total_amount}} has
+been generated (invoice number #{{invoice.id}}) and sent to
+{{invoice.recipient_name}} <{{invoice.recipient_email}}>.
+
+This invoice can also be viewed at:
+https://www.postgresql.eu/invoices/{{invoice.pk}}/{{invoice.recipient_secret}}/
+
+The invoice is due to be paid on receipt, to please go ahead and
+complete the payment as soon as possible.
+
+As always, you can find information about the usage of your code, and
+order more codes if you wish to, at the sponsorship dashboard page:
+
+https://www.postgresql.eu/events/sponsor/{{sponsor.id}}/
+
+
+Thank you for your continued support!

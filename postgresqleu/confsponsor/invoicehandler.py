@@ -3,11 +3,14 @@ from django.template import Context
 from django.template.loader import get_template
 
 from datetime import datetime, timedelta, date
+import base64
+import os
 
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager
 
-from models import Sponsor
+from models import Sponsor, PurchasedVoucher
+from postgresqleu.confreg.models import PrepaidBatch, PrepaidVoucher
 import postgresqleu.invoices.models as invoicemodels
 
 def confirm_sponsor(sponsor, who):
@@ -117,4 +120,86 @@ def create_sponsor_invoice(user, user_name, name, address, conference, level, sp
 		autopaymentoptions = False
 	)
 	i.allowedmethods = level.paymentmethods.all()
+	return i
+
+
+class VoucherInvoiceProcessor(object):
+	# Process invoices for sponsor-ordered prepaid vouchers. This includes
+	# actually creating the vouchers as necessary.
+	def process_invoice_payment(self, invoice):
+		try:
+			pv = PurchasedVoucher.objects.get(pk=invoice.processorid)
+		except PurchasedVoucher.DoesNotExist:
+			raise Exception("Could not find voucher order %s" % invoice.processorid)
+
+		if pv.batch:
+			raise Exception("This voucher order has already been processed: %s" % invoice.processorid)
+
+		# Set up the batch
+		batch = PrepaidBatch(conference=pv.sponsor.conference,
+							 regtype=pv.regtype,
+							 buyer=pv.user,
+							 buyername="{0} {1}".format(pv.user.first_name, pv.user.last_name),
+							 sponsor=pv.sponsor)
+		batch.save()
+
+		for n in range(0, pv.num):
+			v = PrepaidVoucher(conference=pv.sponsor.conference,
+							   vouchervalue=base64.b64encode(os.urandom(37)).rstrip('='),
+							   batch=batch)
+			v.save()
+
+		pv.batch = batch
+		pv.save()
+
+		send_simple_mail(pv.sponsor.conference.sponsoraddr,
+						 pv.sponsor.conference.sponsoraddr,
+						 "Sponsor %s purchased vouchers" % pv.sponsor.name,
+						 "The sponsor\n%s\nhas purchased %s vouchers of type \"%s\".\n\n" % (pv.sponsor.name, pv.num, pv.regtype.regtype))
+
+	# An invoice was canceled.
+	def process_invoice_cancellation(self, invoice):
+		try:
+			pv = PurchasedVoucher.objects.get(pk=invoice.processorid)
+		except PurchasedVoucher.DoesNotExist:
+			raise Exception("Could not find voucher order %s" % invoice.processorid)
+
+		if pv.batch:
+			raise Exception("Cannot cancel this invoice, the order has already been processed!")
+
+		# Order not confirmed yet, so we can just remove it
+		pv.delete()
+
+	# Return the user to the sponsor page if they have paid.
+	def get_return_url(self, invoice):
+		try:
+			pv = PurchasedVoucher.objects.get(pk=invoice.processorid)
+		except PurchasedVoucher.DoesNotExist:
+			raise Exception("Could not find voucher order %s" % invoice.processorid)
+		return "%s/events/sponsor/%s/" % (settings.SITEBASE_SSL, pv.sponsor.id)
+
+
+# Generate an invoice for prepaid vouchers
+def create_voucher_invoice(sponsor, user, rt, num):
+	invoicerows = [
+		['Voucher for "%s"' % rt.regtype, num, rt.cost]
+		]
+
+	manager = InvoiceManager()
+	processor = invoicemodels.InvoiceProcessor.objects.get(processorname="confsponsor voucher processor")
+	i = manager.create_invoice(
+		user,
+		user.email,
+		user.first_name + ' ' + user.last_name,
+		sponsor.invoiceaddr,
+		'Prepaid vouchers for %s' % sponsor.conference.conferencename,
+		datetime.now(),
+		date.today(),
+		invoicerows,
+		processor = processor,
+		bankinfo = False,
+		accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT,
+		accounting_object = sponsor.conference.accounting_object,
+		autopaymentoptions = True
+	)
 	return i

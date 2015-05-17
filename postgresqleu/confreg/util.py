@@ -44,6 +44,10 @@ def invoicerows_for_registration(reg, update_used_vouchers):
 				elif d.maxuses > 0 and d.registrations.count() >= d.maxuses:
 					# Same goes for the count
 					pass
+				elif d.is_invoiced:
+					# If it's been invoiced, it cannot be used anymore! Should only happen if one
+					# of the above rules are true as well, but just in case somebody makes a change in the db.
+					pass
 				else:
 					# Valid discount code found!
 					selected_options = reg.additionaloptions.all()

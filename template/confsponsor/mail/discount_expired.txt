@@ -1,0 +1,10 @@
+Hello!
+
+Your discount code {{code.code}} for attendees of
+{{conference}} has expired without anybody using it.
+
+This discount code will no longer be available for use. If you wish
+to order another discount code, you can do so at the sponsorship
+dashboard at:
+
+https://www.postgresql.eu/events/sponsor/{{sponsor.id}}/
