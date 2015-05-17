@@ -12,6 +12,7 @@
 <h2>Your submissions</h2>
 <p>
 You have made the following submissions to this conference:
+</p>
 <ul>
 {%for s in sessions%}
   <li>
@@ -24,7 +25,6 @@ You have made the following submissions to this conference:
   <li>No submission made</li>
 {%endfor%}
 </ul>
-</p>
 
 {%if conference.callforpapersopen or is_tester%}
 <h2>New submission</h2>
