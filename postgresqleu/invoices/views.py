@@ -244,8 +244,11 @@ def refundinvoice(request, invoicenum):
 	if not reason:
 		return HttpResponseForbidden("Can't refund an invoice without a reason!")
 
-	manager = InvoiceManager()
-	manager.refund_invoice(invoice, reason)
+	try:
+		manager = InvoiceManager()
+		manager.refund_invoice(invoice, reason)
+	except Exception, ex:
+		messages.error(request, 'Failed to refund invoice: {0}'.format(ex))
 
 	return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
