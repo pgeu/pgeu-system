@@ -75,6 +75,31 @@ class InvoiceProcessor(object):
 		sponsor.invoice = None
 		sponsor.save()
 
+	# An invoice was refunded. Actually undoing everything from here
+	# is very complicated (e.g. what do we do with attendee vouchers
+	# that have already been used?). Because of that, punt that whole
+	# thing and just send an email about it instead, letting the
+	# operator deal with it.
+	# All we'll do is unconfirm the sponsor itself.
+	def process_invoice_refund(self, invoice):
+		try:
+			sponsor = Sponsor.objects.get(pk=invoice.processorid)
+		except Sponsor.DoesNotExist:
+			raise Exception("Could not find conference sponsorship %s" % invoice.processorid)
+
+		sponsor.confirmed = False
+		sponsor.confirmedat = None
+		sponsor.confirmedby = "Unconfirmed by refund"
+		sponsor.save()
+
+		msgtxt = "The invoice for sponsors {0} has been refunded.\n\nYou need to manually 'undo' any benefits\nthat this sponsor has received, in case that is intended.\n\n".format(sponsor)
+
+		for a in sponsor.conference.sponsoraddr, settings.INVOICE_SENDER_EMAIL:
+			send_simple_mail(sponsor.conference.sponsoraddr,
+							 a,
+							 u"Sponsor {0} refunded!".format(sponsor),
+							 msgtxt,
+							 sendername=sponsor.conference.conferencename)
 
 	# Return the user to the sponsor page if they have paid.
 	def get_return_url(self, invoice):
