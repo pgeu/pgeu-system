@@ -4,17 +4,61 @@
 <h1>Events</h1>
 
 <p>
-PostgreSQL Europe is currently involved in organising presence
-for the following events. We also recommend you check out the
-<a href="http://www.postgresql.org/about/eventarchive">global community</a>
-list of events!
+As part of our work on the annual PostgreSQL Conference Europe, we have
+real-world experience on how to set up and run events. We have built a web
+application that helps us to work quickly with registrations, talk submissions,
+sponsors, and more. We  offer that to any community organisation who wants to
+build an event around PostgreSQL. We regret we're unable to assist with events
+organised solely by a single PostgreSQL commercial organisation.
 </p>
 
-{%for obj in events %}
-<a name="{{obj.id}}"></a>
-<h2>{{obj.title}}</h2>
-{%include "pieces/event_description.html"%}
-{%endfor%}
+<p>
+For legal reasons any events that we provide support for must publicly
+acknowledge our support (typically on their website), and must be considered to
+be "organised by PostgreSQL Europe".
+</p>
+
+<p>
+We have many ways to help. First one is with our event webapp. It can deal
+with:
+<ul>
+  <li>registrations,</li>
+  <li>sponsor registration, and benefit management,</li>
+  <li>sessions (proposals, votes),</li>
+  <li>schedule,</li>
+  <li>payments (sponsors and attendees, discount code, batch payments are
+  available), and invoices,</li>
+  <li>feedback,</li>
+  <li>reporting and statistics.</li>
+</ul>
+</p>
+
+<p>
+Due to their legal nature, our partnership contracts must be used. They've been
+hand written in Plain English and reviewed by a lawyer. A few edits will be
+needed to put the event's name, days, location, and state sponsor costs and
+benefits. All changes must be agreed to by the PostgreSQL Europe Board.
+</p>
+
+<p>
+PostgreSQL Europe requires that the organization complies with these rules:
+<ul>
+  <li>the organization should supply a working budget
+    <ul>
+	  <li>we expect the event to break even, or make a modest profit,</li>
+	</ul>
+  </li>
+  <li>the talk committee should be fully disclosed on its website,</li>
+  <li>no company should have 50% or more members on the talk committee,</li>
+  <li>all members on the talk committee have an equal vote,</li>
+  <li>the organisation must not sign any legal agreements or similar paperwork
+  with the exception of delivery receipts from couriers etc.
+    <ul>
+	  <li>any such paperwork must be signed by an authorised officer of
+	  PostgreSQL Europe.</li>
+    </ul>
+  </li>
+</ul>
+</p>
 
 {%endblock%}
-
