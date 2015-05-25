@@ -1,0 +1,21 @@
+This directory contains the braintree payment implementation.
+
+Unlike other payment implementation, this one is not enabled
+by default, because it relies on an external library.
+
+To enable and use the implementation, set the following
+paramters in local_settings.py:
+
+ENABLE_BRAINTREE=True
+BRAINTREE_NOTIFICATION_RECEIVER='someone@somewhere.com'
+BRAINTREE_SANDBOX=False # Or true for sandbox testing of course
+BRAINTREE_MERCHANT_ID='<from braintree>'
+BRAINTREE_PUBLIC_KEY='<from baintree>'
+BRAINTREE_PRIVATEKEY='<from braintree>'
+
+For automatic accounting, also set/override:
+ACCOUNTING_BRAINTREE_AUTHORIZED_ACCOUNT=1621
+ACCOUNTING_BRAINTREE_PAYABLE_ACCOUNT=1623
+ACCOUNTING_BRAINTREE_PAYOUT_ACCOUNT=1930
+ACCOUNTING_BRAINTREE_FEE_ACCOUNT=6040
+

@@ -1,0 +1,15 @@
+{%extends "base.html" %}
+{%block title%}Invoice payment failed{%endblock%}
+{%block layoutblock%}
+<h1>Invoice payment failed</h1>
+<p>
+Your payment failed at our payment gateway. The reason given was:
+</p>
+<p>
+<strong>{{reason}}</strong>
+</p>
+<p>
+<a href="{{url}}">Return</a> to the invoice page to try again, or to
+try a different payment method.
+</p>
+{%endblock%}

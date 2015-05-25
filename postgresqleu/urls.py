@@ -1,4 +1,5 @@
-from django.conf.urls.defaults import *
+from django.conf.urls.defaults import patterns, include, url
+from django.conf import settings
 from django.contrib import admin
 from django.views.generic.simple import redirect_to
 
@@ -169,7 +170,24 @@ urlpatterns = patterns('',
     (r'^accountinfo/search/$', postgresqleu.accountinfo.views.search),
     (r'^accountinfo/import/$', postgresqleu.accountinfo.views.importuser),
 
-	# This should not happen in production - serve by apache!
+)
+
+if settings.ENABLE_BRAINTREE:
+	import postgresqleu.braintreepayment.views
+
+	urlpatterns.extend(
+		patterns('',
+				 (r'^invoices/braintree/(\d+)/$', postgresqleu.braintreepayment.views.invoicepayment),
+				 (r'^invoices/braintree/(\d+)/(\w+)/$', postgresqleu.braintreepayment.views.invoicepayment_secret),
+				 (r'^p/braintree/$', postgresqleu.braintreepayment.views.payment_post),
+	))
+
+
+
+# Now extend with some fallback URLs as well
+urlpatterns.extend(
+	patterns('',
+			 	# This should not happen in production - serve by apache!
 	url(r'^(favicon.ico)$', 'django.views.static.serve', {
 		'document_root': '../media',
 	}),
@@ -179,4 +197,4 @@ urlpatterns = patterns('',
 
 	# Fallback - send everything nonspecific to the static handler
 	(r'^(.*)/$', postgresqleu.static.views.static_fallback),
-)
+))

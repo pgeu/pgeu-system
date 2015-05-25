@@ -1,0 +1,29 @@
+{%extends "base.html" %}
+{%block title%}Invoice payment{%endblock%}
+{%block extrahead%}
+<script src="https://js.braintreegateway.com/v2/braintree.js"></script>
+<script>
+braintree.setup('{{token}}', "dropin", {
+  container: "payment-form",
+  onReady: function() {
+    document.getElementById('pre-payment-info').remove();
+  }
+});
+</script>
+{%endblock%}
+{%block layoutblock%}
+<h1>Invoice payment</h1>
+<p>You are about to make a payment of <strong>{{currency_symbol}}{{invoice.total_amount}}</strong> for invoice #{{invoice.id}}.</p>
+
+<form id="checkout" method="post" action="/p/braintree/">{%csrf_token%}
+  <input type="hidden" name="invoice" value="{{invoice.id}}">
+  <div id="pre-payment-info">
+    Please wait as the payment processor loads.<br/>
+    If it takes a long time, make sure you have javascript enabled!
+  </div>
+  <div id="payment-form"></div>
+  <br/>
+  <input type="submit" value="Submit payment">
+</form>
+
+{%endblock%}

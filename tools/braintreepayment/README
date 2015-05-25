@@ -1,0 +1,9 @@
+There is an undocumented API from braintree that can be used
+to do things in the sandbox environment. Specifically, it can
+be used to immeaditely flag a payment as settled.
+
+
+configure braintree, then:
+>>> from braintree.testing_gateway import TestingGateway
+>>> t = TestingGateway(braintree.Configuration.gateway())
+>>> help(t)

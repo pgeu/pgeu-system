@@ -1,0 +1,13 @@
+{%extends "base.html" %}
+{%block title%}Payment processing failed{%endblock%}
+{%block layoutblock%}
+<h1>Payment processing failed</h1>
+<p>
+Processing of your payment has failed. However, the payment itself
+<strong>has completed</strong>, so do <i>not</i> try again!
+</p>
+<p>
+Instead, please contact {{contact}} to have the issue resolved
+manually!
+</p>
+{%endblock%}

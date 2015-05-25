@@ -86,7 +86,7 @@ TEMPLATE_DIRS = [
 	'../../template',
 ]
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -111,7 +111,7 @@ INSTALLED_APPS = (
 	'postgresqleu.cmutuel',
 	'postgresqleu.util',
 	'postgresqleu.simplemigrate', # MUST be the last line!
-)
+]
 
 INVOICE_SENDER_EMAIL="treasurer@postgresql.eu"
 MEMBERSHIP_SENDER_EMAIL="webmaster@postgresql.eu"
@@ -119,6 +119,7 @@ MEMBERSHIP_SENDER_EMAIL="webmaster@postgresql.eu"
 # Currency parameter
 CURRENCY_ABBREV='EUR'
 CURRENCY_SYMBOL='€'
+CURRENCY_ISO='EUR'
 
 # Module to build PDF invoices
 INVOICE_PDF_BUILDER='postgresqleu.util.misc.pgeuinvoice'
@@ -173,8 +174,25 @@ SITEBASE_SSL="https://www.postgresql.eu"
 
 DISABLE_HTTPS_REDIRECTS=False
 DATETIME_FORMAT="Y-m-d H:i:s"
+
+# Set to true in local_settings.py to enable braintree integrations
+ENABLE_BRAINTREE=False
+BRAINTREE_SANDBOX=False
+
 # If there is a local_settings.py, let it override our settings
 try:
 	from local_settings import *
 except ImportError, e:
 	pass
+
+
+if ENABLE_BRAINTREE:
+	# Accounts to use for braintree transactions
+	# Override in local_settings.py, and also configure
+	# the public and secret keys there.
+	ACCOUNTING_BRAINTREE_AUTHORIZED_ACCOUNT=1621
+	ACCOUNTING_BRAINTREE_PAYABLE_ACCOUNT=1623
+	ACCOUNTING_BRAINTREE_PAYOUT_ACCOUNT=1930
+	ACCOUNTING_BRAINTREE_FEE_ACCOUNT=6040
+
+	INSTALLED_APPS.append('postgresqleu.braintreepayment')
