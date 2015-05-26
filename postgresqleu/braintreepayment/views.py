@@ -55,6 +55,24 @@ def payment_post(request):
 		BraintreeLog(transid=trans.id,
 					 message='Received successful result for {0}'.format(trans.id)).save()
 
+		if trans.currency_iso_code != settings.CURRENCY_ISO:
+			BraintreeLog(transid=trans.id,
+						 error=True,
+						 message='Invalid currency {0}, should be {1}'.format(trans.currency_iso_code, settings.CURRENCY_ISO)).save()
+
+			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+							 settings.BRAINTREE_NOTIFICATION_RECEIVER,
+							 'Invalid currency received in Braintree payment',
+							 'Transaction {0} paid in {1}, should be {2}.'.format(trans.id, trans.currency_iso_code, settings.CURRENCY_ISO))
+
+			# We'll just throw the "processing error" page, and have
+			# the operator deal with the complaints as this is a
+			# should-never-happen scenario.
+			return render_to_response('braintreepayment/processing_error.html', {
+				'contact': settings.INVOICE_SENDER_EMAIL,
+			}, RequestContext(request))
+
+
 		with transaction.commit_on_success():
 			# Flag the invoice as paid
 			manager = InvoiceManager()
@@ -76,23 +94,6 @@ def payment_post(request):
 								 'Exception occurred processing Braintree result',
 								 "An exception occured processing the payment result for {0}:\n\n{1}\n".format(trans.id, ex))
 
-				return render_to_response('braintreepayment/processing_error.html', {
-					'contact': settings.INVOICE_SENDER_EMAIL,
-				}, RequestContext(request))
-
-			if trans.currency_iso_code != settings.CURRENCY_ISO:
-				BraintreeLog(transid=trans.id,
-							 error=True,
-							 message='Invalid currency {0}, should be {1}'.format(trans.currency_iso_code, settings.CURRENCY_ISO)).save()
-
-				send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-								 settings.BRAINTREE_NOTIFICATION_RECEIVER,
-								 'Invalid currency received in Braintree payment',
-								 'Transaction {0} paid in {1}, should be {2}.'.format(trans.id, trans.currency_iso_code, settings.CURRENCY_ISO))
-
-				# We'll just throw the "processing error" page, and have
-				# the operator deal with the complaints as this is a
-				# should-never-happen scenario.
 				return render_to_response('braintreepayment/processing_error.html', {
 					'contact': settings.INVOICE_SENDER_EMAIL,
 				}, RequestContext(request))
