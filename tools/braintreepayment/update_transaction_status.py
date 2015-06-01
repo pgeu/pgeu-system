@@ -8,6 +8,7 @@
 
 import os
 import sys
+import logging
 from datetime import date, datetime, timedelta
 
 # Set up to run in django environment
@@ -25,7 +26,18 @@ from postgresqleu.braintreepayment.models import BraintreeTransaction, Braintree
 from postgresqleu.braintreepayment.util import initialize_braintree
 from postgresqleu.accounting.util import create_accounting_entry
 
+# We need to filter the log messages since libraries used by the
+# braintree integration spit out debugging information as INFO.
+class LogFilter(object):
+	def filter(self, record):
+		if record.levelno == logging.INFO and record.msg.startswith("Starting new HTTPS connection"):
+			return 0
+		return 1
+
+
 if __name__ == "__main__":
+	logging.getLogger('urllib3.connectionpool').addFilter(LogFilter())
+
 	initialize_braintree()
 
 	with transaction.commit_on_success():
