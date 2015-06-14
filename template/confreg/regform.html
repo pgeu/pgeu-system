@@ -3,9 +3,6 @@
 {%block title%}Conference Registration - {{conference}}{%endblock%}
 {%block extrahead%}
 <script language="javascript">
-function confirmInvoice() {
-   return confirm('Once you proceed to payment, an invoice will be generated for your registration, and you will no longer be able to change it.\n\nThis invoice will be addressed to the person, company and address specified in the registration - please take a moment to review those fields if you need to.\n\nThe invoice will be delivered as a PDF in your browser, no paper invoice will be sent.\n\nNote that if your registration should be part of a bulk payment, you should NOT proceed with this step!\n\nAre you sure you want to proceed to payment?');
-}
 function confirmCancel() {
    return confirm('Are you sure you want to cancel and remove your registration?');
 }
@@ -92,7 +89,7 @@ correction.</p>
    to proceed to the payment options.
  </p>
  <input type="submit" name="submit" value="Save and continue editing"><br/>
- <input type="submit" name="submit" onclick="return confirmInvoice()" value="Save and finish registration"><br/>
+ <input type="submit" name="submit" value="Save and finish registration"><br/>
  <input type="submit" name="submit" onclick="return confirmCancel()" value="Cancel registration"><br/>
 </form>
 {%endblock%}
