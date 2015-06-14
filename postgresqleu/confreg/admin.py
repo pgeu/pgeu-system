@@ -460,6 +460,7 @@ class DiscountCodeAdminForm(forms.ModelForm):
 		try:
 			self.fields['registrations'].queryset = ConferenceRegistration.objects.filter(conference=self.instance.conference)
 			self.fields['requiresoption'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.instance.conference)
+			self.fields['requiresregtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference)
 			self.fields['sponsor'].queryset = Sponsor.objects.filter(conference=self.instance.conference)
 		except Conference.DoesNotExist:
 			pass

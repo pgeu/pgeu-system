@@ -60,6 +60,12 @@ def invoicerows_for_registration(reg, update_used_vouchers):
 							# step... But make sure not to apply it
 							return r
 
+					required_regtypes = d.requiresregtype.all()
+					if required_regtypes:
+						if not reg.regtype in required_regtypes:
+							# See above about raising exception.
+							return r
+
 					if update_used_vouchers:
 						d.registrations.add(reg)
 						d.save()

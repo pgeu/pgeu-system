@@ -77,6 +77,13 @@ class ConferenceRegistrationForm(forms.ModelForm):
 					if c.registrations.count() >= c.maxuses:
 						raise forms.ValidationError('All allowed instances of this discount code have been used.')
 
+				required_regtypes = c.requiresregtype.all()
+				if required_regtypes:
+					# If the list is empty, any goes. But if there's something
+					# in the list, we have to enforce it.
+					if not self.cleaned_data.get('regtype') in required_regtypes:
+						raise forms.ValidationError("This discount code is only valid for registration type(s): {0}".format(", ".join([r.regtype for r in required_regtypes])))
+
 				selected = self.cleaned_data.get('additionaloptions') or ()
 				for o in c.requiresoption.all():
 					if not o in selected:
