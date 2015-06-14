@@ -811,6 +811,7 @@ def confirmreg(request, confname):
 		return HttpResponseRedirect("../")
 
 	return render_conference_response(request, conference, 'confreg/regform_confirm.html', {
+		'reg': reg,
 		'invoicerows': invoicerows,
 		'totalcost': totalcost,
 		'regalert': reg.regtype.alertmessage,

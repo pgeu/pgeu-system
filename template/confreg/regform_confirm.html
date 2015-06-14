@@ -49,6 +49,17 @@ it.
 </p>
 
 <form method="post" action="." class="pgeuregformconfirm">{% csrf_token %}
+<fieldset id="fldset_recipient">
+<legend>Invoice recipient</legend>
+<div>
+{{reg.firstname}} {{reg.lastname}}<br/>
+{%if reg.company%}{{reg.company}}<br/>{%endif%}
+{{reg.address|linebreaksbr}}<br/>
+{{reg.country.name}}<br/>
+</div>
+</fieldset>
+<fieldset id="fldset_contents">
+<legend>Invoice contents</legend>
 <table border="0" cellspacing="0" cellpadding="1" class="invoiceconfirmtbl">
 {%for r in invoicerows%}
 <tr valign="top">
@@ -61,6 +72,7 @@ it.
   <td class="cost">{{currency_symbol}} {{totalcost|intcomma}}</td>
 </tr>
 </table>
+</fieldset>
 
 <p>
 Once you have confirmed your registration, your registration details will
