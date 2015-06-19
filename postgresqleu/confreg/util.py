@@ -101,4 +101,7 @@ def notify_reg_confirmed(reg):
 	send_simple_mail(reg.conference.contactaddr,
 					 reg.email,
 					 "[{0}] Registration complete".format(reg.conference),
-					 reg.conference.welcomemail)
+					 reg.conference.welcomemail,
+					 sendername=reg.conference.conferencename,
+					 receivername=u'{0} {1}'.format(reg.firstname, reg.lastname),
+	)
