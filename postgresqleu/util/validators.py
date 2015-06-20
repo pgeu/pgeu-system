@@ -29,6 +29,10 @@ def TwitterValidator(value):
 	if value.startswith('@'):
 		value = value[1:]
 
+	if value == '':
+		# This can only happen if it was '@' initially
+		raise ValidationError("Enter twitter name or leave field empty")
+
 	conn = httplib.HTTPSConnection("twitter.com", timeout=5, strict=True)
 	conn.request('HEAD', '/{0}'.format(value))
 	conn.sock.settimeout(5) # 5 second TCP timeout
