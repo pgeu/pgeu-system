@@ -8,7 +8,7 @@ from django.conf import settings
 from models import Sponsor, SponsorMail, SponsorshipLevel
 from confreg.models import Conference, RegistrationType, DiscountCode
 from confreg.models import ConferenceAdditionalOption
-from util.validators import BeforeValidator, AfterValidator
+from util.validators import BeforeValidator, AfterValidator, TwitterValidator
 
 from datetime import date, timedelta
 
@@ -23,7 +23,7 @@ def _int_with_default(s, default):
 class SponsorSignupForm(forms.Form):
 	name = forms.CharField(label="Company name *", min_length=3, max_length=100)
 	address = forms.CharField(label="Company address *", min_length=10, max_length=500, widget=forms.Textarea)
-	twittername = forms.CharField(label="Company twitter", min_length=0, max_length=100, required=False)
+	twittername = forms.CharField(label="Company twitter", min_length=0, max_length=100, required=False, validators=[TwitterValidator, ])
 	confirm = forms.BooleanField(help_text="Check this box to that you have read and agree to the terms in the contract")
 
 	def __init__(self, conference, *args, **kwargs):

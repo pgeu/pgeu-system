@@ -14,6 +14,7 @@ from models import ConferenceSession, ConferenceSessionFeedback
 from models import PrepaidVoucher, DiscountCode, AttendeeMail
 
 from regtypes import validate_special_reg_type
+from postgresqleu.util.validators import TwitterValidator
 
 from postgresqleu.countries.models import Country
 
@@ -34,6 +35,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 		self.fields['additionaloptions'].queryset =	ConferenceAdditionalOption.objects.filter(
 			conference=self.instance.conference)
 		self.fields['country'].queryset = Country.objects.order_by('printable_name')
+		self.fields['twittername'].validators.append(TwitterValidator)
 
 	def clean_regtype(self):
 		newval = self.cleaned_data.get('regtype')
