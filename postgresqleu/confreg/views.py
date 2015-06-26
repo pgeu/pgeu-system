@@ -119,7 +119,7 @@ def home(request, confname):
 		reg = ConferenceRegistration.objects.get(conference=conference,
 			attendee=request.user)
 	except:
-		# No previous regisration, grab some data from the user profile
+		# No previous registration, grab some data from the user profile
 		reg = ConferenceRegistration(conference=conference, attendee=request.user)
 		reg.email = request.user.email
 		reg.firstname = request.user.first_name
