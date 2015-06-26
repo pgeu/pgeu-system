@@ -1,0 +1,54 @@
+{%extends conftemplbase %}
+{%block title%}Your Registration - {{conference}}{%endblock%}
+{%block extrahead%}
+<style>
+div#dash_pagelinks_wrap {
+   text-align: center;
+}
+ul.dash_pagelinks li {
+   display: inline;
+}
+</style>
+{%endblock%}
+{%block content%}
+<h1>Your Registration</h1>
+
+<p>
+Your registration (for {{reg.firstname}} {{reg.lastname}}) has been
+completed on {{reg.payconfirmedat}}. Welcome to {{conference}}!
+</p>
+<p>
+On this page you will find all necessary information for attendees
+of the event. We also recommend that you regularly check the
+main <a href="{{conference.confurl}}">event website</a> for public
+news!
+</p>
+<div id="dash_pagelinks_wrap">
+ <ul class="dash_pagelinks" >
+  <li>&bull; <a href="#mails">Information emails</a> &bull;</li>
+{%if conference.callforpapersopen%}
+  <li><a href="/events/callforpapers/{{conference.urlname}}/">Call for papers</a> &bull;</li>
+{%elif is_speaker%}
+  <li><a href="/events/callforpapers/{{conference.urlname}}/">Your speaker profile</a> &bull;</li>
+{%endif%}
+{%if conference.scheduleactive%} <li><a href="/events/schedule/{{conference.urlname}}/">Schedule</a> &bull;</li>{%endif%}
+{%if conference.feedbackopen %} <li><a href="/events/feedback/{{conference.urlname}}/">Feedback</a> &bull;</li>{%endif%}
+ </ul>
+</div>
+
+<a name="mails"></a>
+<h2>Information emails</h2>
+<p>
+The following emails have been sent to attendees of this conference.
+Any future messages sent will both be sent to <i>{{reg.email}}</i> and
+listed here. To ensure that messages are not filtered, we suggest that you
+white-list the address <i>{{conference.contactaddr}}</i> in your
+spamfilters.
+</p>
+<ul>
+{%for m in mails%}
+  <li><a href="mail/{{m.id}}/">{{m.subject}}</a> (<i>sent {{m.sentat|date:"Y-m-d H:i"}}</i>)</li>
+{%endfor%}
+</ul>
+
+{%endblock%}

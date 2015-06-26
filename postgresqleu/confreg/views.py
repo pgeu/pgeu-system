@@ -105,6 +105,17 @@ def render_conference_response(request, conference, templatename, dictionary=Non
 	# Either no override configured, or override not found
 	return render_to_response(templatename, dictionary, context_instance=context)
 
+# Not a view in itself, only called from other views
+def _registration_dashboard(request, conference, reg):
+	mails = AttendeeMail.objects.filter(conference=conference, regclasses=reg.regtype.regclass)
+
+	is_speaker = ConferenceSession.objects.filter(conference=conference, status=1, speaker=request.user).exists()
+	return render_conference_response(request, conference, 'confreg/registration_dashboard.html', {
+		'reg': reg,
+		'is_speaker': is_speaker,
+		'mails': mails,
+	})
+
 @ssl_required
 @login_required
 @transaction.commit_on_success
@@ -157,17 +168,18 @@ def home(request, confname):
 	else:
 		# This is just a get. Depending on the state of the registration,
 		# we may want to show the form or not.
-		if reg.payconfirmedat or reg.invoice or reg.bulkpayment:
-			# This registration can't be changed at this point
+		if reg.payconfirmedat:
+			# This registration is completed. Show the dashboard instead of
+			# the registration form.
+			return _registration_dashboard(request, conference, reg)
 
-			# If the registration is fully confirmed, include email informatino
-			if reg.payconfirmedat:
-				mails = AttendeeMail.objects.filter(conference=conference, regclasses=reg.regtype.regclass)
-			else:
-				mails = None
+		if reg.invoice or reg.bulkpayment:
+			# Invoice generated or part of bulk payment means the registration
+			# can't be changed any more (without having someone cancel the
+			# invoice).
+
 			return render_conference_response(request, conference, 'confreg/regform_completed.html', {
 				'reg': reg,
-				'mails': mails,
 				'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/register/%s/" % (settings.SITEBASE_SSL, conference.urlname)),
 			})
 
