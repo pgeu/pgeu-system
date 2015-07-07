@@ -12,6 +12,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.conf import settings
 from django.db import transaction, connection
+from django.db.models import Q, Count
 from django.db.models.expressions import F
 from django.forms import formsets
 
@@ -20,7 +21,8 @@ from models import ConferenceSessionFeedback, Speaker, Speaker_Photo
 from models import ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
 from models import RegistrationType, PrepaidVoucher, PrepaidBatch
 from models import BulkPayment, Room, Track, ConferenceSessionScheduleSlot
-from models import AttendeeMail
+from models import AttendeeMail, ConferenceAdditionalOption
+from models import PendingAdditionalOrder
 from forms import ConferenceRegistrationForm, ConferenceSessionFeedbackForm
 from forms import ConferenceFeedbackForm, SpeakerProfileForm
 from forms import CallForPapersForm, CallForPapersSpeakerForm, CallForPapersSubmissionForm
@@ -110,10 +112,25 @@ def _registration_dashboard(request, conference, reg):
 	mails = AttendeeMail.objects.filter(conference=conference, regclasses=reg.regtype.regclass)
 
 	is_speaker = ConferenceSession.objects.filter(conference=conference, status=1, speaker=request.user).exists()
+
+	# Options available for buy-up. Option must be for this conference,
+	# not already picked by this user, and not mutually exclusive to
+	# anything picked by this user.
+	# Also exclude any option that has a maxcount, and already has too
+	# many registrations.
+	optionsQ = Q(conference=conference, upsellable=True) & (Q(maxcount=0) | Q(num_regs__lt=F('maxcount'))) & ~Q(conferenceregistration=reg) & ~Q(mutually_exclusive__conferenceregistration=reg)
+	availableoptions = list(ConferenceAdditionalOption.objects.annotate(num_regs=Count('conferenceregistration')).filter(optionsQ))
+	try:
+		pendingadditional = PendingAdditionalOrder.objects.get(reg=reg, payconfirmedat__isnull=True)
+	except PendingAdditionalOrder.DoesNotExist:
+		pendingadditional = None
+
 	return render_conference_response(request, conference, 'confreg/registration_dashboard.html', {
 		'reg': reg,
 		'is_speaker': is_speaker,
 		'mails': mails,
+		'availableoptions': availableoptions,
+		'pendingadditional': pendingadditional,
 	})
 
 @ssl_required
@@ -200,6 +217,143 @@ def feedback_available(request):
 	return render_to_response('confreg/feedback_available.html', {
 		'conferences': conferences,
 	}, context_instance=RequestContext(request))
+
+@ssl_required
+@login_required
+@transaction.commit_on_success
+def reg_add_options(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+	reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
+
+	if not reg.payconfirmedat:
+		messages.warning(request, "Registration not confirmed, should not get here")
+		return HttpResponseRedirect('../')
+
+	if request.POST.get('submit', '') == 'Back':
+		return HttpResponseRedirect('../')
+
+	options = []
+	for k,v in request.POST.items():
+		if k.startswith('ao_') and v == "1":
+			options.append(int(k[3:]))
+
+	if not len(options) > 0:
+		messages.info(request, "No additional options selected, nothing to order")
+		return HttpResponseRedirect('../')
+
+	options = ConferenceAdditionalOption.objects.filter(conference=conference, pk__in=options, upsellable=True)
+	if len(options) < 0:
+		messages.warning(request, "Option searching mismatch, order canceled.")
+
+	# Check the count on each option (yes, this is inefficient, but who cares)
+	totalcost = 0
+	for o in options:
+		totalcost += o.cost
+		if o.maxcount > 0:
+			if o.conferenceregistration_set.count() >= o.maxcount:
+				messages.warning(request, "Option '{0}' is sold out.".format(o.name))
+				return HttpResponseRedirect('../')
+
+	# Check if any of the options are mutually exclusive
+	for o in options:
+		for x in o.mutually_exclusive.all():
+			if x in options:
+				messages.warning(request, "Option '{0}' can't be ordered at the same time as '{1}'".format(o.name, x.name))
+				return HttpResponseRedirect('../')
+
+	# Check if any of the options require a different regtype,
+	# and that this regtype is upsellable.
+	new_regtype = None
+	for o in options:
+		a = o.requires_regtype.all()
+		if a and not reg.regtype in a:
+			# New regtype is required. Figure out if there is an upsellable
+			# one available.
+			upsellable = o.requires_regtype.filter(Q(upsell_target=True, active=True, specialtype__isnull=True) & (Q(activeuntil__isnull=True) | Q(activeuntil__lt=datetime.today().date())))
+			l = len(upsellable)
+			if l == 0:
+				messages.warning(request, "Option {0} requires a registration type that's not available.".format(o.name))
+				return HttpResponseRedirect('../')
+			elif l > 1:
+				messages.warning(request, "Option {0} requires a registration type that cannot be automaticalliy selected. Please email the organizers to make your registration.".format(o.name))
+				return HttpResponseRedirect('../')
+			if new_regtype:
+				# A new registration type has been selected by another option
+				# so we need to verify if it's the same.
+				if new_regtype != upsellable[0]:
+					messages.warning(request, "Requested options require different registration types, and cannot be ordered.")
+					return HttpResponseRedirect('../')
+			else:
+				new_regtype = upsellable[0]
+
+	if new_regtype and new_regtype.cost >= reg.regtype.cost:
+		upsell_cost = new_regtype.cost - reg.regtype.cost
+		totalcost += upsell_cost
+	else:
+		upsell_cost = 0
+
+	if not request.POST.get('confirm', None) == 'yes':
+		# Generate a preview
+		return render_conference_response(request, conference, 'confreg/confirm_addons.html', {
+			'reg': reg,
+			'options': options,
+			'newreg': new_regtype,
+			'upsell_cost': upsell_cost,
+			'totalcost': totalcost,
+		})
+	else:
+		if totalcost == 0:
+			# No payment, but possibly update the registration type, and
+			# definitely add the option.
+			if new_regtype:
+				reg.regtype = new_regtype
+			for o in options:
+				reg.additionaloptions.add(o)
+			reg.save()
+			messages.info(request, 'Additional options added to registration')
+			return HttpResponseRedirect('../')
+
+		# Build our invoice rows
+		invoicerows = []
+		if upsell_cost:
+			invoicerows.append(('Upgrade to {0}'.format(new_regtype.regtype), 1, upsell_cost))
+		for o in options:
+			# Yes, we include €0 options for completeness.
+			invoicerows.append((o.name, 1, o.cost))
+
+		# Create a pending addon order, and generate an invoice
+		order = PendingAdditionalOrder(reg=reg,
+									   createtime=datetime.now())
+		if new_regtype:
+			order.newregtype = new_regtype
+
+		order.save() # So we get a PK and can add m2m values
+		for o in options:
+			order.options.add(o)
+
+		manager = InvoiceManager()
+		processor = InvoiceProcessor.objects.get(processorname='confreg addon processor')
+		order.invoice = manager.create_invoice(
+			request.user,
+			request.user.email,
+			reg.firstname + ' ' + reg.lastname,
+			reg.company + "\n" + reg.address + "\n" + reg.country.name,
+			"%s additional options" % conference.conferencename,
+			datetime.now(),
+			datetime.now(),
+			invoicerows,
+			processor = processor,
+			processorid = order.pk,
+			bankinfo = False,
+			accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT,
+			accounting_object = conference.accounting_object,
+		)
+		order.invoice.save()
+		order.save()
+
+		# Redirect the user to the invoice
+		return HttpResponseRedirect('/invoices/{0}/{1}/'.format(order.invoice.id, order.invoice.recipient_secret))
+
 
 @ssl_required
 @login_required

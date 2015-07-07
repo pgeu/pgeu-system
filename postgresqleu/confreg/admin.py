@@ -15,6 +15,7 @@ from models import ShirtSize, ConferenceAdditionalOption
 from models import ConferenceSessionFeedback, ConferenceFeedbackQuestion
 from models import ConferenceFeedbackAnswer, Speaker_Photo
 from models import PrepaidVoucher, PrepaidBatch, BulkPayment, DiscountCode
+from models import PendingAdditionalOrder
 
 from util import notify_reg_confirmed
 
@@ -539,3 +540,4 @@ admin.site.register(PrepaidVoucher, PrepaidVoucherAdmin)
 admin.site.register(DiscountCode, DiscountCodeAdmin)
 admin.site.register(BulkPayment, BulkPaymentAdmin)
 admin.site.register(AttendeeMail, AttendeeMailAdmin)
+admin.site.register(PendingAdditionalOrder)

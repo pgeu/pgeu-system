@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from models import ConferenceRegistration, BulkPayment
+from models import ConferenceRegistration, BulkPayment, PendingAdditionalOrder
 from util import notify_reg_confirmed
 
 from datetime import datetime
@@ -166,3 +166,54 @@ class BulkInvoiceProcessor(object):
 		except ConferenceRegistration.DoesNotExist:
 			raise Exception("Could not find bulk payment %s" % invoice.processor)
 		return "%s/events/bulkpay/%s/%s/" % (settings.SITEBASE_SSL, bp.conference.urlname, invoice.processorid)
+
+
+
+class AddonInvoiceProcessor(object):
+	# Process invoices for additional options added to an existing
+	# registration.
+	#
+	# Since we lock the registration when the invoice is generated,
+	# we don't actually need to verify that nothing has changed.
+	#
+	# All modifications are already wrapped in a django transaction
+	def process_invoice_payment(self, invoice):
+		try:
+			order = PendingAdditionalOrder.objects.get(pk=invoice.processorid)
+		except PendingAdditionalOrder.DoesNotExist:
+			raise Exception("Could not find additional options order %s!" % invoice.processorid)
+
+		if order.payconfirmedat:
+			raise Exception("Additional options already paid")
+
+		order.payconfirmedat = datetime.today()
+		if order.newregtype:
+			order.reg.regtype = order.newregtype
+
+		for o in order.options.all():
+			order.reg.additionaloptions.add(o)
+
+		order.reg.save()
+		order.save()
+
+	def process_invoice_cancellation(self, invoice):
+		try:
+			order = PendingAdditionalOrder.objects.get(pk=invoice.processorid)
+		except PendingAdditionalOrder.DoesNotExist:
+			raise Exception("Could not find additional options order %s!" % invoice.processorid)
+
+		# We just remove the entry completely, as there is no "unlocking"
+		# here.
+		order.delete()
+
+	def process_invoice_refund(self, invoice):
+		raise Exception("Don't know how to process refunds for this!")
+
+	# Return the user to their dashboard
+	def get_return_url(self, invoice):
+		try:
+			order = PendingAdditionalOrder.objects.get(pk=invoice.processorid)
+		except PendingAdditionalOrder.DoesNotExist:
+			raise Exception("Could not find additional options order %s!" % invoice.processorid)
+
+		return "%s/events/register/%s/" % (settings.SITEBASE_SSL, order.reg.conference.urlname)

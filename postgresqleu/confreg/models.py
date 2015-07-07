@@ -5,6 +5,7 @@ from django.db.models.expressions import F
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.utils.dateformat import DateFormat
 
 from postgresqleu.util.validators import validate_lowercase
 
@@ -172,8 +173,15 @@ class RegistrationDay(models.Model):
 	conference = models.ForeignKey(Conference, null=False)
 	day = models.DateField(null=False, blank=False)
 
+	class Meta:
+		ordering = ('day', )
+
 	def __unicode__(self):
 		return self.day.strftime('%a, %d %b')
+
+	def shortday(self):
+		df = DateFormat(self.day)
+		return df.format('D jS')
 
 class RegistrationType(models.Model):
 	conference = models.ForeignKey(Conference, null=False)
@@ -187,6 +195,7 @@ class RegistrationType(models.Model):
 	specialtype = models.CharField(max_length=5, blank=True, null=True, choices=special_reg_types)
 	days = models.ManyToManyField(RegistrationDay, blank=True)
 	alertmessage =models.TextField(null=False, blank=True)
+	upsell_target = models.BooleanField(null=False, blank=False, default=False, help_text='Is target registration type for upselling in order to add additional options')
 	requires_option = models.ManyToManyField('ConferenceAdditionalOption', blank=True, help_text='Requires at least one of the selected additional options to be picked')
 
 	class Meta:
@@ -224,6 +233,7 @@ class ConferenceAdditionalOption(models.Model):
 	name = models.CharField(max_length=100, null=False, blank=False)
 	cost = models.IntegerField(null=False)
 	maxcount = models.IntegerField(null=False)
+	upsellable = models.BooleanField(null=False, blank=False, default=True, help_text='Can this option be purchased after the registration is completed')
 	requires_regtype = models.ManyToManyField(RegistrationType, blank=True, help_text='Can only be picked with selected registration types')
 	mutually_exclusive = models.ManyToManyField('self', blank=True, help_text='Mutually exlusive with these additional options', symmetrical=True)
 
@@ -615,3 +625,15 @@ class AttendeeMail(models.Model):
 
 	class Meta:
 		ordering = ('-sentat', )
+
+
+class PendingAdditionalOrder(models.Model):
+	reg = models.ForeignKey(ConferenceRegistration, null=False, blank=False)
+	options = models.ManyToManyField(ConferenceAdditionalOption, null=False, blank=False)
+	newregtype = models.ForeignKey(RegistrationType, null=True, blank=True)
+	createtime = models.DateTimeField(null=False, blank=False)
+	invoice = models.ForeignKey(Invoice, null=True, blank=True)
+	payconfirmedat = models.DateTimeField(null=True, blank=True)
+
+	def __unicode__(self):
+		return "%s" % (self.reg, )
