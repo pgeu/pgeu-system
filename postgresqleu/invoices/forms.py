@@ -22,7 +22,7 @@ class InvoiceForm(forms.ModelForm):
 		self.fields['invoicedate'].widget = widgets.DateInput()
 		self.fields['duedate'].widget = widgets.DateInput()
 		self.fields['allowedmethods'].widget = forms.CheckboxSelectMultiple()
-		self.fields['allowedmethods'].queryset = InvoicePaymentMethod.objects.all()
+		self.fields['allowedmethods'].queryset = InvoicePaymentMethod.objects.filter(active=True)
 		self.fields['recipient_user'].queryset = User.objects.order_by('username')
 		self.fields['recipient_user'].label_from_instance = lambda u: "%s (%s)" % (u.username, u.get_full_name())
 		self.fields['accounting_account'].choices = [(0, '----'),] + [(a.num, "%s: %s" % (a.num, a.name)) for a in Account.objects.filter(availableforinvoicing=True)]
