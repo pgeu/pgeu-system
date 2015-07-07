@@ -26,4 +26,10 @@ def register_invoice_payment_methods(app, created_models, verbosity=2, **kwargs)
 			p.save()
 			print "Added payment processor for adyen creditcard"
 
+		(p, created) = InvoicePaymentMethod.objects.get_or_create(name='Dummy', sortkey=999, classname='util.payment.dummy.DummyPayment', auto=False, active=False)
+		if created:
+			p.save()
+			print "Added payment processor for adyen creditcard"
+
+
 signals.post_syncdb.connect(register_invoice_payment_methods)

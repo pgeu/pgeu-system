@@ -372,3 +372,23 @@ def banktransfer(request):
 			'amount': request.GET['amount'],
 			'returnurl': request.GET['ret'],
 			}, context_instance=RequestContext(request))
+
+@ssl_required
+@login_required
+@commit_on_success
+def dummy_payment(request, invoiceid, invoicesecret):
+	if not settings.DEBUG:
+		return HttpResponse("Dummy payments not enabled")
+
+	invoice = get_object_or_404(Invoice, pk=invoiceid, recipient_secret=invoicesecret)
+	manager = InvoiceManager()
+	if invoice.processor:
+		processor = manager.get_invoice_processor(invoice)
+		returnurl = processor.get_return_url(invoice)
+	else:
+		returnurl = "%s/invoices/%s/" % (settings.SITEBASE_SSL, invoice.pk)
+
+	# We'll just cheat and use the Adyen account
+	manager.process_incoming_payment_for_invoice(invoice, invoice.total_amount, 'Dummy payment', 0, settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, 0, None, None)
+
+	return HttpResponseRedirect(returnurl)

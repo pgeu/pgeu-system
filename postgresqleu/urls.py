@@ -148,6 +148,7 @@ urlpatterns = patterns('',
     (r'^invoices/(\d+)/([a-z0-9]{64})/$', postgresqleu.invoices.views.viewinvoice_secret),
     (r'^invoices/(\d+)/([a-z0-9]{64})/pdf/$', postgresqleu.invoices.views.viewinvoicepdf_secret),
     (r'^invoices/(\d+)/([a-z0-9]{64})/receipt/$', postgresqleu.invoices.views.viewreceipt_secret),
+    (r'^invoices/dummy/(\d+)/([a-z0-9]{64})/$', postgresqleu.invoices.views.dummy_payment),
     (r'^invoices/$', postgresqleu.invoices.views.userhome),
     (r'^invoices/banktransfer/$', postgresqleu.invoices.views.banktransfer),
 
