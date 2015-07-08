@@ -32,9 +32,9 @@ function confirmInvoice() {
 
 <h2>Confirm additional options</h2>
 <p>
-The details below will be included on your invoice. If this is in any
-way incorrect, go <a href="../">back</a> to your registration and adjust
-it, or contact <a href="mailto:{{conference.contactaddr}}">{{conference.contactaddr}}</a>.
+The details below will be included on your invoice, as entered on your
+registration. If this is in any way incorrect, please contact
+<a href="mailto:{{conference.contactaddr}}">{{conference.contactaddr}}</a>.
 </p>
 
 <form method="post" action="." class="pgeuregformconfirm">{% csrf_token %}
