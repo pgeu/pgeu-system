@@ -125,12 +125,20 @@ def _registration_dashboard(request, conference, reg):
 	except PendingAdditionalOrder.DoesNotExist:
 		pendingadditional = None
 
+	# Any invoices that should be linked need to be added
+	invoices = []
+	if reg.invoice:
+		invoices.append(('Registration invoice and receipt', reg.invoice))
+	for pao in PendingAdditionalOrder.objects.filter(reg=reg, invoice__isnull=False):
+		invoices.append(('Additional options invoice and receipt', pao.invoice))
+
 	return render_conference_response(request, conference, 'confreg/registration_dashboard.html', {
 		'reg': reg,
 		'is_speaker': is_speaker,
 		'mails': mails,
 		'availableoptions': availableoptions,
 		'pendingadditional': pendingadditional,
+		'invoices': invoices,
 	})
 
 @ssl_required

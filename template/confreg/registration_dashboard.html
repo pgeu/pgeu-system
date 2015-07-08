@@ -85,10 +85,14 @@ This registration type gives you access to the conference on {{reg.regtype.days.
  </dd>
 {%endif%}
 
-{%if reg.invoice%}
+{%if invoices%}
  <dt>Invoice and receipts</dt>
- <dd>You can download a copy of your
-<a href="/invoices/{{reg.invoice.id}}/{{reg.invoice.recipient_secret}}/">invoice and receipt</a>.
+ <dd>You can download a copy of your invoices and receipts:<ul>
+{%for t,i in invoices%}
+  <li><a href="/invoices/{{i.id}}/{{i.recipient_secret}}/">{{t}}</a></li>
+{%endfor%}
+</ul>
+</p>
 If you have made any additional orders, you can always find a copy of all
 invoices and receipts in the <a href="/invoices/">invoice section</a>.
  </dd>
