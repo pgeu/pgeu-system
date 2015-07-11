@@ -1646,6 +1646,12 @@ def admin_registration_dashboard(request, urlname):
 				   'columns': ['Type', 'Confirmed', 'Unconfirmed', 'Total'],
 				   'rows': curs.fetchall()})
 
+	# Additional options
+	curs.execute("SELECT ao.name, ao.maxcount, {0} FROM confreg_conferenceregistration r INNER JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceregistration_id=r.id RIGHT JOIN confreg_conferenceadditionaloption ao ON ao.id=rao.conferenceadditionaloption_id WHERE ao.conference_id={1} GROUP BY ao.name, ao.maxcount ORDER BY ao.name".format(statusstr, conference.id))
+	tables.append({'title': 'Additional options',
+				   'columns': ['Name', 'Max uses', 'Confirmed', 'Unconfirmed', 'Total'],
+				   'rows': curs.fetchall()})
+
 	# Discount codes
 	curs.execute("SELECT code, maxuses, {0} FROM confreg_conferenceregistration r RIGHT JOIN confreg_discountcode dc ON dc.code=r.vouchercode WHERE dc.conference_id={1} AND (r.conference_id=17 OR r.conference_id IS NULL) GROUP BY dc.id ORDER BY code".format(statusstr, conference.id))
 	tables.append({'title': 'Discount codes',
