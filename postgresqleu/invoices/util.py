@@ -393,7 +393,8 @@ class InvoiceManager(object):
 					   autopaymentoptions = True,
 					   bankinfo = True,
 					   accounting_account = None,
-					   accounting_object = None):
+					   accounting_object = None,
+					   canceltime = None):
 		invoice = Invoice(
 			recipient_email=recipient_email,
 			recipient_name=recipient_name,
@@ -404,7 +405,8 @@ class InvoiceManager(object):
 			total_amount=-1,
 			bankinfo=bankinfo,
 			accounting_account=accounting_account,
-			accounting_object=accounting_object)
+			accounting_object=accounting_object,
+			canceltime=canceltime)
 		if recipient_user:
 			invoice.recipient_user = recipient_user
 		if processor:

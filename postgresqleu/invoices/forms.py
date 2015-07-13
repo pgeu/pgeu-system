@@ -21,6 +21,7 @@ class InvoiceForm(forms.ModelForm):
 
 		self.fields['invoicedate'].widget = widgets.DateInput()
 		self.fields['duedate'].widget = widgets.DateInput()
+		self.fields['canceltime'].widget = widgets.DateTimeInput()
 		self.fields['allowedmethods'].widget = forms.CheckboxSelectMultiple()
 		self.fields['allowedmethods'].queryset = InvoicePaymentMethod.objects.filter(active=True)
 		self.fields['recipient_user'].queryset = User.objects.order_by('username')

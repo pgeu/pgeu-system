@@ -6,7 +6,11 @@ Invoice #{{invoice.id}}: {{invoice.title}}
 
 This invoice was due for payment on {{invoice.duedate|date:"Y-m-d"}}, and
 we have not yet registered a payment from you.
-
+{%if invoice.canceltime%}
+If payment for this invoice has not been received by
+{{invoice.canceltime|date:"Y-m-d H:i"}}, this invoice will automatically be
+canceled.
+{%endif%}
 If you feel this invoice was sent in error, or if there there is
 any other reason you have not been able to pay this invoice, please
 let us know at treasurer@postgresql.eu as soon as possible.
