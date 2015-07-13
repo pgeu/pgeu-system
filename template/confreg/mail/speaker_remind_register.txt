@@ -1,0 +1,25 @@
+Hello!
+
+One or more of your presentations for {{conference}}
+have been approved, but we have not yet seen your registration.
+
+In order to have all your details in the system to make sure
+you get all the relevant communications, a correct badge and
+more, we ask that you please make sure you register for the
+conference as soon as convenient.
+
+This is an automated reminder that we are still waiting for
+your registration. To complete your registration, please fill
+out the form at
+
+{{SITEBASE}}/events/register/{{conference.urlname}}/
+
+And pick the registration type for speakers (free).
+
+As always, if you have any questions or need any further
+clarifications, please let us know!
+
+You will keep receiving a reminder once a week until you
+have completed your registration.
+
+

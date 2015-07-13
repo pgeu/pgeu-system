@@ -1,0 +1,27 @@
+Hello!
+
+You were recently sent an email asking you to confirm
+your ability to present the session{%if sessions|length > 1%}s{%endif%}:
+
+{%for session in sessions%}{{session.title|safe}}
+{%endfor%}
+at {{conference}}.
+
+This is an automated reminder that we are still waiting for
+your response to this.
+
+We realize you may not have had time to react to the initial
+notification, but we wanted to make sure that you are aware
+that there is action required.
+
+As always, if you have any questions or need any further
+clarifications, please let us know!
+
+You will keep receiving a reminder once a week until you
+have confirmed your session, or until we have manually
+removed it if you are unable to attend.
+
+To confirm your ability to attend, please use the link below:
+
+{{SITEBASE}}/events/callforpapers/{{conference.urlname}}/
+

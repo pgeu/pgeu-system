@@ -898,6 +898,7 @@ def callforpapers_confirm(request, confname, sessionid):
 								 receivername = spk.fullname,
 							 )
 			session.lastnotifiedstatus = 1 # Now also approved
+			session.lastnotifiedtime = datetime.now()
 			session.save()
 			return HttpResponseRedirect(".")
 
@@ -1786,6 +1787,7 @@ def session_notify_queue(request, urlname):
 							 )
 				num += 1
 			s.lastnotifiedstatus = s.status
+			s.lastnotifiedtime = datetime.now()
 			s.save()
 		messages.info(request, 'Sent email to %s recipients, for %s sessions' % (num, len(notifysessions)))
 		return HttpResponseRedirect('.')
