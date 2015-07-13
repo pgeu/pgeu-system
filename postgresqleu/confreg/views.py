@@ -30,6 +30,7 @@ from forms import PrepaidCreateForm, BulkRegistrationForm
 from forms import EmailSendForm, EmailSessionForm
 from forms import AttendeeMailForm
 from util import invoicerows_for_registration, notify_reg_confirmed
+from util import get_invoice_autocancel
 
 from models import get_status_string
 from regtypes import confirm_special_reg_type
@@ -323,11 +324,18 @@ def reg_add_options(request, confname):
 
 		# Build our invoice rows
 		invoicerows = []
+		autocancel_hours = [conference.invoice_autocancel_hours, ]
+
 		if upsell_cost:
 			invoicerows.append(('Upgrade to {0}'.format(new_regtype.regtype), 1, upsell_cost))
+			if new_regtype.autocancel_hours:
+				autocancel_hours.append(new_regtype.invoice_autocancel_hours)
+
 		for o in options:
 			# Yes, we include €0 options for completeness.
 			invoicerows.append((o.name, 1, o.cost))
+			if o.invoice_autocancel_hours:
+				autocancel_hours.append(o.invoice_autocancel_hours)
 
 		# Create a pending addon order, and generate an invoice
 		order = PendingAdditionalOrder(reg=reg,
@@ -355,6 +363,7 @@ def reg_add_options(request, confname):
 			bankinfo = False,
 			accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT,
 			accounting_object = conference.accounting_object,
+			canceltime = get_invoice_autocancel(*autocancel_hours),
 		)
 		order.invoice.save()
 		order.save()
@@ -951,6 +960,12 @@ def confirmreg(request, confname):
 			# cost. Registration will be confirmed when the invoice is paid.
 			manager = InvoiceManager()
 			processor = InvoiceProcessor.objects.get(processorname="confreg processor")
+
+			# Figure out when to autocancel this invoice, if at all.
+			autocancel = get_invoice_autocancel(conference.invoice_autocancel_hours,
+												reg.regtype.invoice_autocancel_hours,
+												*[a.invoice_autocancel_hours for a in reg.additionaloptions.filter(invoice_autocancel_hours__isnull=False)])
+
 			reg.invoice = manager.create_invoice(
 				request.user,
 				request.user.email,
@@ -964,7 +979,8 @@ def confirmreg(request, confname):
 				processorid = reg.pk,
 				bankinfo = False,
 				accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT,
-				accounting_object = conference.accounting_object
+				accounting_object = conference.accounting_object,
+				canceltime = autocancel,
 			)
 
 			reg.invoice.save()
@@ -1173,6 +1189,7 @@ def bulkpay(request, confname):
 		errors = not form.is_valid()
 		totalcost = 0
 		invoicerows = []
+		autocancel_hours = [conference.invoice_autocancel_hours, ]
 		allregs = []
 		for e in sorted(emails):
 			regs = ConferenceRegistration.objects.filter(conference=conference, invoice=None, bulkpayment=None, payconfirmedat=None, email=e)
@@ -1219,6 +1236,10 @@ def bulkpay(request, confname):
 					for r in allregs:
 						r.bulkpayment = bp
 						r.save()
+						# Yes this is ugly and could be more efficient, but
+						# this will do for now.
+						autocancel_hours.append(r.regtype.invoice_autocancel_hours)
+						autocancel_hours.extend([a.invoice_autocancel_hours for a in r.additionaloptions.filter(invoice_autocancel_hours__isnull=False)])
 
 					# Finally, create an invoice for it
 					manager = InvoiceManager()
@@ -1238,6 +1259,7 @@ def bulkpay(request, confname):
 						bankinfo = False,
 						accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT,
 						accounting_object = conference.accounting_object,
+						canceltime = get_invoice_autocancel(*autocancel_hours),
 					)
 					bp.invoice.save()
 					bp.save()

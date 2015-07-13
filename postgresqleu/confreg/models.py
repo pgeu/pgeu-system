@@ -5,6 +5,7 @@ from django.db.models.expressions import F
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 from django.utils.dateformat import DateFormat
 
 from postgresqleu.util.validators import validate_lowercase
@@ -106,6 +107,7 @@ class Conference(models.Model):
 	lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
 	newsjson = models.CharField(max_length=128, blank=True, null=True, default=None)
 	accounting_object = models.CharField(max_length=30, blank=True, null=True, verbose_name="Accounting object name")
+	invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1),], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
 
 	def __unicode__(self):
 		return self.conferencename
@@ -196,6 +198,7 @@ class RegistrationType(models.Model):
 	days = models.ManyToManyField(RegistrationDay, blank=True)
 	alertmessage =models.TextField(null=False, blank=True)
 	upsell_target = models.BooleanField(null=False, blank=False, default=False, help_text='Is target registration type for upselling in order to add additional options')
+	invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1),], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
 	requires_option = models.ManyToManyField('ConferenceAdditionalOption', blank=True, help_text='Requires at least one of the selected additional options to be picked')
 
 	class Meta:
@@ -234,6 +237,7 @@ class ConferenceAdditionalOption(models.Model):
 	cost = models.IntegerField(null=False)
 	maxcount = models.IntegerField(null=False)
 	upsellable = models.BooleanField(null=False, blank=False, default=True, help_text='Can this option be purchased after the registration is completed')
+	invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1),], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
 	requires_regtype = models.ManyToManyField(RegistrationType, blank=True, help_text='Can only be picked with selected registration types')
 	mutually_exclusive = models.ManyToManyField('self', blank=True, help_text='Mutually exlusive with these additional options', symmetrical=True)
 

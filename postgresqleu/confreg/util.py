@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 from postgresqleu.mailqueue.util import send_simple_mail
 
@@ -105,3 +105,14 @@ def notify_reg_confirmed(reg):
 					 sendername=reg.conference.conferencename,
 					 receivername=u'{0} {1}'.format(reg.firstname, reg.lastname),
 	)
+
+
+
+def get_invoice_autocancel(*args):
+	# Each argument is expected to be an integer with number of hours,
+	# or None if there is no limit
+	hours = [a for a in args if not a is None]
+	if hours:
+		return datetime.now() + timedelta(hours=min(hours))
+	else:
+		return None
