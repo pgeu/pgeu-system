@@ -16,6 +16,10 @@
    <td>{{currency_symbol}}{{invoice.total_amount}}</td>
  </tr>
  <tr>
+   <td style="white-space: nowrap">Due date:</td>
+   <td{%if invoice.isexpired%} style="color:red"{%endif%}>{{invoice.duedate|date:"Y-m-d"}}</td>
+</tr>
+ <tr>
    <td style="white-space: nowrap">Invoice:</td>
    <td><a href="/invoices/{{invoice.pk}}/{%if fromsecret or not invoice.recipient_user%}{{invoice.recipient_secret}}/{%endif%}pdf/">View PDF</a></td>
  </tr>
