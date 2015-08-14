@@ -485,3 +485,29 @@ class AttendeeMailForm(forms.ModelForm):
 	def clean_confirm(self):
 		if not self.cleaned_data['confirm']:
 			raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")
+
+
+class WaitlistOfferForm(forms.Form):
+	hours = forms.IntegerField(min_value=1, max_value=240, label='Offer valid for (hours)', initial=48)
+	confirm = forms.BooleanField(help_text='Confirm')
+
+	def __init__(self, *args, **kwargs):
+		super(WaitlistOfferForm, self).__init__(*args, **kwargs)
+		if self.data and self.data.has_key('hours'):
+			self.reg_list = self._get_id_list_from_data()
+			self.fields['confirm'].help_text = "Confirm that you want to send an offer to {0} attendees on the waitlist".format(len(self.reg_list))
+		else:
+			del self.fields['confirm']
+
+	def _get_id_list_from_data(self):
+		if not self.data: return []
+		l = []
+		for k,v in self.data.items():
+			if v == '1' and k.startswith('reg_'):
+				l.append(int(k[4:]))
+		return l
+
+	def clean(self):
+		if len(self.reg_list)==0:
+			raise ValidationError("At least one registration must be selected to make an offer")
+		return self.cleaned_data

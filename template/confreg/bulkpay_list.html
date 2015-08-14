@@ -28,6 +28,14 @@ You currently have no bulk payments registered for {{conference}}.
 {%endif%}
 </p>
 
+{%if activewaitlist%}
+<h2>Waitlist available</h2>
+<p>
+This conference is unfortunately sold out. There is currently a waitlist
+available, but this is only available for individual registrations and not
+for bulk payments. No new bulk payments can be generated.
+</p>
+{%else%}
 <h2>New bulk payment</h2>
 <p>
 To create a new bulk payment for {{conference}}, list the email
@@ -94,5 +102,6 @@ has been paid.
 {%endif%}{%comment%}state exists{%endcomment%}
 
 </form>
+{%endif%}{%comment%}if activewaitlist{%endcomment%}
 
 {%endblock%}

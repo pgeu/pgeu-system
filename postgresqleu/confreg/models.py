@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from django.db import models
+from django.db.models import Q
 from django.db.models.expressions import F
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -108,6 +109,7 @@ class Conference(models.Model):
 	newsjson = models.CharField(max_length=128, blank=True, null=True, default=None)
 	accounting_object = models.CharField(max_length=30, blank=True, null=True, verbose_name="Accounting object name")
 	invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1),], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
+	attendees_before_waitlist = models.IntegerField(blank=False, null=False, default=0, validators=[MinValueValidator(0),], verbose_name="Attendees before waitlist", help_text="Maximum number of attendees before enabling waitlist management. 0 for no waitlist management")
 
 	def __unicode__(self):
 		return self.conferencename
@@ -149,6 +151,19 @@ class Conference(models.Model):
 			if self.startdate < datetime.datetime.today().date():
 				return 0
 		return self.conferencesession_set.exclude(status=F('lastnotifiedstatus')).count()
+
+	def waitlist_active(self):
+		if self.attendees_before_waitlist == 0:
+			# Never on waitlist if waitlisting is not turned on
+			return False
+
+		# Any registrations that are completed, has an invoice, or has a
+		# bulk payment will count against the total.
+		num = ConferenceRegistration.objects.filter(Q(conference=self) & (Q(payconfirmedat__isnull=False) | Q(invoice__isnull=False) | Q(bulkpayment__isnull=False))).count()
+		if num >= self.attendees_before_waitlist:
+			return True
+
+		return False
 
 class RegistrationClass(models.Model):
 	conference = models.ForeignKey(Conference, null=False)
@@ -350,6 +365,20 @@ class ConferenceRegistration(models.Model):
 	# For the admin interface (mainly)
 	def __unicode__(self):
 		return "%s: %s %s <%s>" % (self.conference, self.firstname, self.lastname, self.email)
+
+class RegistrationWaitlistEntry(models.Model):
+	registration = models.OneToOneField(ConferenceRegistration, primary_key=True)
+	enteredon = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+	offeredon = models.DateTimeField(null=True, blank=True)
+	offerexpires = models.DateTimeField(null=True, blank=True)
+
+class RegistrationWaitlistHistory(models.Model):
+	waitlist = models.ForeignKey(RegistrationWaitlistEntry, null=False, blank=False)
+	time = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+	text = models.CharField(max_length=200, null=False, blank=False)
+
+	class Meta:
+		ordering = ('-time',)
 
 class Track(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)

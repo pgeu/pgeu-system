@@ -23,12 +23,13 @@ from models import RegistrationType, PrepaidVoucher, PrepaidBatch
 from models import BulkPayment, Room, Track, ConferenceSessionScheduleSlot
 from models import AttendeeMail, ConferenceAdditionalOption
 from models import PendingAdditionalOrder
+from models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
 from forms import ConferenceRegistrationForm, ConferenceSessionFeedbackForm
 from forms import ConferenceFeedbackForm, SpeakerProfileForm
 from forms import CallForPapersForm, CallForPapersSpeakerForm, CallForPapersSubmissionForm
 from forms import PrepaidCreateForm, BulkRegistrationForm
 from forms import EmailSendForm, EmailSessionForm
-from forms import AttendeeMailForm
+from forms import AttendeeMailForm, WaitlistOfferForm
 from util import invoicerows_for_registration, notify_reg_confirmed
 from util import get_invoice_autocancel
 
@@ -161,6 +162,18 @@ def home(request, confname):
 		reg.email = request.user.email
 		reg.firstname = request.user.first_name
 		reg.lastname = request.user.last_name
+
+	if reg.invoice and not reg.payconfirmedat:
+		# Pending invoice exists. See if it should be canceled.
+		if reg.invoice.canceltime and reg.invoice.canceltime < datetime.now():
+			# Yup, should be canceled
+			manager = InvoiceManager()
+			manager.cancel_invoice(reg.invoice,
+								   "Invoice passed automatic cancel time {0}".format(reg.invoice.canceltime))
+
+			# cancel_invoice will call the processor to unlink the invoice,
+			# so make sure we refresh the object.
+			reg = ConferenceRegistration.objects.get(id=reg.id)
 
 	form_is_saved = False
 	if request.method == 'POST':
@@ -934,6 +947,49 @@ def confirmreg(request, confname):
 			'reason': s,
 			})
 
+
+	# Is this registration already on the waitlist?
+	if hasattr(reg, 'registrationwaitlistentry'):
+		if reg.registrationwaitlistentry.offeredon:
+			# Waitlist has been offered, but has it expired?
+			if reg.registrationwaitlistentry.offerexpires < datetime.now():
+				# It has expired
+				RegistrationWaitlistHistory(waitlist=reg.registrationwaitlistentry,
+											text="Offer expired at {0}".format(reg.registrationwaitlistentry.offerexpires)).save()
+
+				reg.registrationwaitlistentry.offeredon = None
+				reg.registrationwaitlistentry.offerexpires = None
+				reg.registrationwaitlistentry.save()
+
+				messages.warning(request, "We're sorry, but your registration was not completed in time before the offer expired, and has been moved back to the waitlist.")
+
+				send_simple_mail(reg.conference.contactaddr,
+								 reg.conference.contactaddr,
+								 'Waitlist expired',
+								 'User {0} {1} <{2}> did not complete the registration before the waitlist offer expired.'.format(reg.firstname, reg.lastname, reg.email),
+								 sendername=reg.conference.conferencename)
+
+				return render_conference_response(request, conference, 'confreg/waitlist_status.html', {
+					'reg': reg,
+				})
+			else:
+				# Offer has not expired, so fall through to below and actually
+				# render the form.
+				pass
+		else:
+			# Waitlist has not been offered, but the user is on it
+			return render_conference_response(request, conference, 'confreg/waitlist_status.html', {
+				'reg': reg,
+				})
+	else:
+		# Registration is not on the waitlist, but should it be? Count
+		# Check if we do it at all...
+		if conference.waitlist_active():
+			return render_conference_response(request, conference,
+											  'confreg/offer_waitlist.html', {
+												  'reg': reg,
+											  })
+
 	if request.method == 'POST':
 		if request.POST['submit'].find('Back') >= 0:
 			return HttpResponseRedirect("../")
@@ -966,6 +1022,12 @@ def confirmreg(request, confname):
 			autocancel = get_invoice_autocancel(conference.invoice_autocancel_hours,
 												reg.regtype.invoice_autocancel_hours,
 												*[a.invoice_autocancel_hours for a in reg.additionaloptions.filter(invoice_autocancel_hours__isnull=False)])
+			if hasattr(reg, 'registrationwaitlistentry'):
+				# We're on the waitlist. We've already checked that this is
+				# OK, but this value might control how long the invoice is
+				# available.
+				if autocancel is None or reg.registrationwaitlistentry.offerexpires < autocancel:
+					autocancel = reg.registrationwaitlistentry.offerexpires
 
 			reg.invoice = manager.create_invoice(
 				request.user,
@@ -1011,6 +1073,72 @@ def confirmreg(request, confname):
 
 @ssl_required
 @login_required
+@transaction.commit_on_success
+def waitlist_signup(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+	reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
+
+	# CSRF ensures that this post comes from us.
+	if request.POST['submit'] != 'Sign up on waitlist':
+		raise Exception("Invalid post button")
+	if not request.POST.has_key('confirm') or request.POST['confirm'] != '1':
+		messages.warning(request, "You must check the box to confirm signing up on the waitlist")
+		return HttpResponseRedirect("../confirm/")
+
+	if hasattr(reg, 'registrationwaitlistentry'):
+		raise Exception("This registration is already on the waitlist")
+
+	# Ok, so put this registration on the waitlist
+	waitlist = RegistrationWaitlistEntry(registration=reg)
+	waitlist.save()
+
+	RegistrationWaitlistHistory(waitlist=waitlist, text="Signed up for waitlist").save()
+
+	# Notify the conference organizers
+	send_simple_mail(reg.conference.contactaddr,
+					 reg.conference.contactaddr,
+					 'Waitlist signup',
+					 'User {0} {1} <{2}> signed up for the waitlist.'.format(reg.firstname, reg.lastname, reg.email),
+					 sendername=reg.conference.conferencename)
+
+	# Once on the waitlist, redirect back to the registration form page
+	# which will show the waitlist information.
+	return HttpResponseRedirect("../confirm/")
+
+@ssl_required
+@login_required
+@transaction.commit_on_success
+def waitlist_cancel(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+	reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
+
+	# CSRF ensures that this post comes from us.
+	if request.POST['submit'] != 'Cancel waitlist':
+		raise Exception("Invalid post button")
+	if not request.POST.has_key('confirm') or request.POST['confirm'] != '1':
+		messages.warning(request, "You must check the box to confirm canceling your position on the waitlist.")
+		return HttpResponseRedirect("../confirm/")
+
+	if not hasattr(reg, 'registrationwaitlistentry'):
+		raise Exception("This registration is not on the waitlist")
+
+	reg.registrationwaitlistentry.delete()
+
+	# Notify the conference organizers
+	send_simple_mail(reg.conference.contactaddr,
+					 reg.conference.contactaddr,
+					 'Waitlist cancel',
+					 'User {0} {1} <{2}> canceled from the waitlist.'.format(reg.firstname, reg.lastname, reg.email),
+					 sendername=reg.conference.conferencename)
+
+	messages.info(request, "Your registration has been removed from the waitlist. You may re-enter it if you change your mind.")
+
+	# Once on the waitlist, redirect back to the registration form page
+	# which will show the waitlist information.
+	return HttpResponseRedirect("../confirm/")
+
+@ssl_required
+@login_required
 def cancelreg(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	return render_conference_response(request, conference, 'confreg/canceled.html')
@@ -1032,6 +1160,13 @@ def invoice(request, confname, regid):
 	if not reg.invoice:
 		# We should never get here if we don't have an invoice. If it does
 		# happen, just redirect back.
+		return HttpResponseRedirect('../../')
+
+	if reg.invoice.canceltime and reg.invoice.canceltime < datetime.now() and not reg.payconfirmedat:
+		# Yup, should be canceled
+		manager = InvoiceManager()
+		manager.cancel_invoice(reg.invoice,
+							   "Invoice passed automatic cancel time {0}".format(reg.invoice.canceltime))
 		return HttpResponseRedirect('../../')
 
 	return render_conference_response(request, conference, 'confreg/invoice.html', {
@@ -1178,6 +1313,13 @@ def bulkpay(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 
 	bulkpayments = BulkPayment.objects.filter(conference=conference, user=request.user)
+
+	if conference.waitlist_active():
+		return render_conference_response(request, conference, 'confreg/bulkpay_list.html', {
+			'activewaitlist': True,
+			'bulkpayments': bulkpayments,
+			'currency_symbol': settings.CURRENCY_SYMBOL,
+		})
 
 	if request.method == 'POST':
 		form = BulkRegistrationForm(data=request.POST)
@@ -1697,6 +1839,73 @@ def admin_registration_dashboard(request, urlname):
 		'conference': conference,
 		'tables': tables,
 	}, RequestContext(request))
+
+@ssl_required
+@login_required
+@transaction.commit_on_success
+def admin_waitlist(request, urlname):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=urlname)
+	else:
+		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+
+	if conference.attendees_before_waitlist <= 0:
+		return render_to_response('confreg/admin_waitlist_inactive.html', {
+			'conference': conference,
+			})
+
+	num_confirmedregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False).count()
+	num_invoicedregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True, invoice__isnull=False, registrationwaitlistentry__isnull=True).count()
+	num_invoicedbulkpayregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True, bulkpayment__isnull=False, bulkpayment__paidat__isnull=True).count()
+	num_waitlist_offered = RegistrationWaitlistEntry.objects.filter(registration__conference=conference, offeredon__isnull=False, registration__payconfirmedat__isnull=True).count()
+	waitlist = RegistrationWaitlistEntry.objects.filter(registration__conference=conference).order_by('-registration__payconfirmedat', 'enteredon')
+
+	if request.method == 'POST':
+		# Attempting to make an offer
+		form = WaitlistOfferForm(data=request.POST)
+		if form.is_valid():
+			regs = ConferenceRegistration.objects.filter(conference=conference, id__in=form.reg_list)
+			if len(regs) != len(form.reg_list):
+				raise Exception("Database lookup mismatch")
+			if len(regs) < 1:
+				raise Exception("Somehow got through with zero!")
+			template = get_template('confreg/mail/waitlist_offer.txt')
+			for r in regs:
+				wl = r.registrationwaitlistentry
+				if wl.offeredon:
+					raise Exception("One or more already offered!")
+				wl.offeredon = datetime.now()
+				wl.offerexpires = datetime.now() + timedelta(hours=form.cleaned_data['hours'])
+				wl.save()
+				RegistrationWaitlistHistory(waitlist=wl,
+											text="Made offer valid for {0} hours by {1}".format(form.cleaned_data['hours'], request.user.username)).save()
+				send_simple_mail(conference.contactaddr,
+								 r.email,
+								 "Your waitlisted registration for {0}".format(conference.conferencename),
+								 template.render(Context({
+									 'conference': conference,
+									 'reg': r,
+									 'offerexpires': wl.offerexpires,
+									 'SITEBASE': settings.SITEBASE_SSL,
+									 })),
+								 sendername = conference.conferencename,
+								 receivername = "{0} {1}".format(r.firstname, r.lastname),
+								 )
+				messages.info(request, "Sent offer to {0}".format(r.email))
+			return HttpResponseRedirect(".")
+	else:
+		form = WaitlistOfferForm()
+
+	return render_to_response('confreg/admin_waitlist.html', {
+		'conference': conference,
+		'num_confirmedregs': num_confirmedregs,
+		'num_invoicedregs': num_invoicedregs,
+		'num_invoicedbulkpayregs': num_invoicedbulkpayregs,
+		'num_waitlist_offered': num_waitlist_offered,
+		'num_total': num_confirmedregs + num_invoicedregs + num_invoicedbulkpayregs + num_waitlist_offered,
+		'waitlist': waitlist,
+		'form': form,
+		}, RequestContext(request))
 
 @ssl_required
 @login_required

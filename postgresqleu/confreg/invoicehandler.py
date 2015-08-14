@@ -1,6 +1,7 @@
 from django.conf import settings
 
 from models import ConferenceRegistration, BulkPayment, PendingAdditionalOrder
+from models import RegistrationWaitlistHistory
 from util import notify_reg_confirmed
 
 from datetime import datetime
@@ -46,6 +47,17 @@ class InvoiceProcessor(object):
 		# "unlock" the registration
 		reg.invoice = None
 		reg.save()
+
+		# If the registration was on the waitlist, put it back in the
+		# queue.
+		if hasattr(reg, 'registrationwaitlistentry'):
+			wl = reg.registrationwaitlistentry
+			RegistrationWaitlistHistory(waitlist=wl,
+										text="Invoice was cancelled, moving back to waitlist").save()
+			wl.offeredon = None
+			wl.offerexpires = None
+			wl.enteredon = datetime.now()
+			wl.save()
 
 
 	# Process an invoice being refunded. This means we need to unlink

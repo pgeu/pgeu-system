@@ -49,6 +49,26 @@ you must <a href="/logout">log out</a> and back in (with a different account)
 between each registration to avoid conflicts.
 </p>
 
+{%if reg.registrationwaitlistentry%}
+<h2>Waitlist</h2>
+<p>
+Your registration is currently on the waitlist.
+</p>
+{%if reg.registrationwaitlistentry.offeredon%}
+<p>
+Good news - you have been offered a seat from the waitlist. Please
+complete the form below and click "Save and finish registration" to
+complete the process! The process must be completed before
+{{reg.registrationwaitlistentry.offerexpires|date:"Y-m-d H:i"}} or
+this offer will expire!
+</p>
+{%else%}
+<p>
+We will let you know as soon as a seat shows up!
+</p>
+{%endif%}
+{%endif%}
+
 <form action="." method="post" class="pgeuregform">{% csrf_token %}
 {% if form_is_saved %}
 <p><b>Note!</b> Your registration is not confirmed until the payment

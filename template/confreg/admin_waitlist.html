@@ -1,0 +1,120 @@
+{%extends "base.html" %}
+{%block title%}Conference waitlist{%endblock%}
+{%block extrahead%}
+<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
+<script src="/media/jq/jquery-1.8.2.min.js"></script>
+<script src="/media/jq/jquery-ui.min.js"></script>
+
+<script language="javascript">
+$(function() {
+  $('.dlg').each(function(idx, el) {
+    $(el).dialog({
+      autoOpen: false,
+      minWidth: 600,
+      minHeight: 250,
+    });
+  });
+});
+
+function showDialog(id) {
+   $('#popup_' + id).dialog('option', {
+      'title': 'Status history',
+   }).dialog('open');
+}
+</script>
+{%endblock%}
+
+{%block layoutblock%}
+<h1>Conference waitlist</h1>
+{% if messages %}
+<ul style="background-color: yellow;">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+
+<h3>Registration status</h3>
+<table>
+ <tr>
+   <td>Waitlist activates after</td>
+   <td>{{conference.attendees_before_waitlist}}</td>
+ </tr>
+ <tr>
+   <td>Confirmed registrations</td>
+   <td>{{num_confirmedregs}}</td>
+ </tr>
+ <tr>
+   <td>Pending registrations with invoice</td>
+   <td>{{num_invoicedregs}}</td>
+ </tr>
+ <tr>
+   <td>Pending registrations with bulk payment</td>
+   <td>{{num_invoicedbulkpayregs}}</td>
+ </tr>
+ <tr>
+   <td>Active offers from the waitlist</td>
+   <td>{{num_waitlist_offered}}</td>
+ </tr>
+ <tr>
+   <td>Total registrations including pending</td>
+   <td>{{num_total}}</td>
+ </tr>
+</table>
+
+<h3>Waitlist</h3>
+<p>
+The current entries on the waitlist are:
+</p>
+<form method="post" action=".">{%csrf_token%}
+<table border="1" cellspacing="0" cellpadding="1">
+  <tr>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Type</th>
+    <th>Added to waitlist</th>
+    <th>Offer made</th>
+    <th>Offer expired</th>
+    <th>Status</th>
+    <th></th>
+  </tr>
+{%for w in waitlist%}
+  <tr>
+    <td>{{w.registration.firstname}} {{w.registration.lastname}}</td>
+    <td>{{w.registration.email}}</td>
+    <td>{{w.registration.regtype}}</td>
+    <td>{{w.enteredon|default:''}}</td>
+    <td>{{w.offeredon|default:''}}</td>
+    <td>{{w.offerexpires|default:''}}</td>
+    <td style="white-space: nowrap"><span onClick="showDialog({{w.registration.id}})" class="dlgClickable ui-icon ui-icon-circle-plus" style="display: inline-block"></span>
+{%if w.registration.payconfirmedat%}Registered{%elif w.offeredon%}Offered{%if w.registration.invoice%} (with invoice){%endif%}{%else%}Pending{%endif%}</td>
+{%if not w.offeredon and not w.registration.payconfirmedat%}<td style="white-space: nowrap;"><input type="checkbox" name="reg_{{w.registration.id}}" value="1"{%if w.registration.id in form.reg_list%} CHECKED{%endif%}> offer</td>{%endif%}
+  </tr>
+{%endfor%}
+</table>
+
+{%comment%}Render all status popups{%endcomment%}
+{%for w in waitlist%}
+<div id="popup_{{w.registration.id}}" class="dlg">
+ <table border="1" cellspacing="0" cellpadding="1">
+{%for h in w.registrationwaitlisthistory_set.all %}
+  <tr valign="top">
+    <td style="white-space: nowrap">{{h.time}}</td>
+    <td>{{h.text}}</td>
+  </tr>
+{%endfor%}
+ </table>
+</div>
+{%endfor%}
+
+<table>
+{{form}}
+</table>
+<input type="submit" value="Make offer">
+</form>
+
+<p>
+<a href="/events/admin/">Back</a> to dashboard.
+</p>
+{%endblock%}

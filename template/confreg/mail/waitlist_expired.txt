@@ -1,0 +1,24 @@
+Hello!
+
+You were recently sent an offer from the waitlist for
+{{conference.conferencename}}.
+
+Unfortunately this offer expired on {{offerexpires|date:"Y-m-d H:i"}}
+without being claimed, and has therefor been canceled.
+
+Your registration has been returned to the waitlist at this
+point, and if another seat shows up you will be given another
+chance.
+
+If you are no longer interested in attending the conference, please
+go to
+
+{{SITEBASE}}/events/register/{{conference.urlname}}/confirm/
+
+and remove yourself from the waitlist. That will make our processing
+of waitlist entries for other attendees much smoother, and you will
+no longer receive emails about it from us.
+
+If you wish to remain on the waitlist, you do not need to do
+anything. If another seat shows up, an new email outlining this
+offer and expiry time will be sent to you.
