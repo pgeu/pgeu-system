@@ -2,7 +2,7 @@ from datetime import datetime, date, timedelta
 
 from postgresqleu.mailqueue.util import send_simple_mail
 
-from models import PrepaidVoucher, DiscountCode
+from models import PrepaidVoucher, DiscountCode, RegistrationWaitlistHistory
 
 def invoicerows_for_registration(reg, update_used_vouchers):
 	# Return the rows that would be used to build an invoice for this
@@ -93,6 +93,12 @@ def invoicerows_for_registration(reg, update_used_vouchers):
 
 
 def notify_reg_confirmed(reg):
+	# This one was off the waitlist, so generate a history entry
+	if hasattr(reg, 'registrationwaitlistentry'):
+		RegistrationWaitlistHistory(waitlist=reg.registrationwaitlistentry,
+									text="Completed registration from the waitlist").save()
+
+	# Do we need to send the welcome email?
 	if not reg.conference.sendwelcomemail:
 		return
 
