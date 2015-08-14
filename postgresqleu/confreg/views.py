@@ -328,7 +328,7 @@ def reg_add_options(request, confname):
 
 		if upsell_cost:
 			invoicerows.append(('Upgrade to {0}'.format(new_regtype.regtype), 1, upsell_cost))
-			if new_regtype.autocancel_hours:
+			if new_regtype.invoice_autocancel_hours:
 				autocancel_hours.append(new_regtype.invoice_autocancel_hours)
 
 		for o in options:
