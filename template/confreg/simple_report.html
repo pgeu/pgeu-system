@@ -11,7 +11,7 @@
 {%for r in data%}
 <tr>
   {%for c in r %}
-  <td>{{c}}</td>
+  <td>{{c|default:''}}</td>
   {%endfor%}
 </tr>
 {%endfor%}
