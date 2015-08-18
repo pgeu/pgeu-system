@@ -42,6 +42,7 @@ from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrappe
 from postgresqleu.invoices.models import InvoiceProcessor
 from postgresqleu.mailqueue.util import send_mail, send_simple_mail
 
+from operator import itemgetter
 from datetime import datetime, timedelta
 import base64
 import re
@@ -1759,11 +1760,18 @@ def simple_report(request, confname):
 	curs.execute(simple_reports[request.GET['report']], {
 		'confid': conference.id,
 		})
+	d = curs.fetchall()
+	collist = [dd[0] for dd in curs.description]
+	# Get offsets of all columns that don't start with _
+	colofs = [n for x,n in zip(collist, range(len(collist))) if not x.startswith('_')]
+	if len(colofs) != len(collist):
+		# One or more columns filtered - so filter the data
+		d = map(itemgetter(*colofs), d)
 
 	return render_to_response('confreg/simple_report.html', {
 		'conference': conference,
-		'columns': [d[0] for d in curs.description],
-		'data': curs.fetchall(),
+		'columns': [dd for dd in collist if not dd.startswith('_')],
+		'data': d,
 	}, RequestContext(request))
 
 @ssl_required
