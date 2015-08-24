@@ -1336,10 +1336,16 @@ def bulkpay(request, confname):
 		autocancel_hours = [conference.invoice_autocancel_hours, ]
 		allregs = []
 		for e in sorted(emails):
-			regs = ConferenceRegistration.objects.filter(conference=conference, invoice=None, bulkpayment=None, payconfirmedat=None, email=e)
+			regs = ConferenceRegistration.objects.filter(conference=conference, email=e)
 			if len(regs) == 1:
 				allregs.append(regs[0])
-				if not (regs[0].regtype and regs[0].regtype.active):
+				if regs[0].payconfirmedat:
+					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Email not found or registration already completed.'})
+				elif regs[0].invoice:
+					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'This registration already has an invoice generated for individual payment.'})
+				elif regs[0].bulkpayment:
+					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'This registration is already part of a different bulk registration.'})
+				elif not (regs[0].regtype and regs[0].regtype.active):
 					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration type for this registration is not active!'})
 					errors=1
 				elif regs[0].vouchercode:
@@ -1358,7 +1364,7 @@ def bulkpay(request, confname):
 						totalcost += s
 						invoicerows.extend(regrows)
 			else:
-				state.append({'email': e, 'found': 0, 'text': 'Email not found'})
+				state.append({'email': e, 'found': 0, 'text': 'Email not found or registration already completed.'})
 				errors=1
 
 		if request.POST['submit'] == 'Confirm above registrations and generate invoice':
