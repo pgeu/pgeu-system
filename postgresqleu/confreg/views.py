@@ -150,10 +150,6 @@ def _registration_dashboard(request, conference, reg):
 def home(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 
-	if not conference.active:
-		if not conference.testers.filter(pk=request.user.id):
-			return render_conference_response(request, conference, 'confreg/closed.html')
-
 	try:
 		reg = ConferenceRegistration.objects.get(conference=conference,
 			attendee=request.user)
@@ -163,6 +159,19 @@ def home(request, confname):
 		reg.email = request.user.email
 		reg.firstname = request.user.first_name
 		reg.lastname = request.user.last_name
+
+	is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
+
+	if not is_active:
+		# Registration not open.
+		if reg.payconfirmedat:
+			# Attendee has a completed registration, but registration is closed.
+			# Render the dashboard.
+			return _registration_dashboard(request, conference, reg)
+		else:
+			return render_conference_response(request, conference, 'confreg/closed.html')
+
+	# Else registration is open.
 
 	if reg.invoice and not reg.payconfirmedat:
 		# Pending invoice exists. See if it should be canceled.
