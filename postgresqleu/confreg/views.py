@@ -1350,10 +1350,13 @@ def bulkpay(request, confname):
 				allregs.append(regs[0])
 				if regs[0].payconfirmedat:
 					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Email not found or registration already completed.'})
+					errors=1
 				elif regs[0].invoice:
 					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'This registration already has an invoice generated for individual payment.'})
+					errors=1
 				elif regs[0].bulkpayment:
 					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'This registration is already part of a different bulk registration.'})
+					errors=1
 				elif not (regs[0].regtype and regs[0].regtype.active):
 					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration type for this registration is not active!'})
 					errors=1
