@@ -38,6 +38,7 @@ from regtypes import confirm_special_reg_type
 
 from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod, InvoiceRow
+from postgresqleu.confwiki.models import Wikipage
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
 from postgresqleu.mailqueue.util import send_mail, send_simple_mail
@@ -114,6 +115,9 @@ def render_conference_response(request, conference, templatename, dictionary=Non
 def _registration_dashboard(request, conference, reg):
 	mails = AttendeeMail.objects.filter(conference=conference, regclasses=reg.regtype.regclass)
 
+	wikipagesQ = Q(publicview=True) | Q(viewer_attendee__attendee=request.user) | Q(viewer_regtype__conferenceregistration__attendee=request.user)
+	wikipages = Wikipage.objects.filter(Q(conference=conference) & wikipagesQ).distinct()
+
 	is_speaker = ConferenceSession.objects.filter(conference=conference, status=1, speaker=request.user).exists()
 
 	# Options available for buy-up. Option must be for this conference,
@@ -139,6 +143,7 @@ def _registration_dashboard(request, conference, reg):
 		'reg': reg,
 		'is_speaker': is_speaker,
 		'mails': mails,
+		'wikipages': wikipages,
 		'availableoptions': availableoptions,
 		'pendingadditional': pendingadditional,
 		'invoices': invoices,

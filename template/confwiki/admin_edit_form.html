@@ -1,0 +1,41 @@
+{%extends "base.html"%}
+{%block extrahead%}
+<style>
+tr.error {
+   background-color: #ffb6b6;
+}
+table.pageform tr {
+   vertical-align: top;
+}
+table.pageform input[type=text],textarea,select {
+   width: 500px;
+}
+</style>
+{%endblock%}
+
+{%block layoutblock%}
+{% if messages %}
+    <ul class="messages">
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+<h1>Wiki page</h1>
+<p>
+<b>Note!</b> Changes made on this page will not be reflected in the wiki page
+history. Instead, they will be emailed to the conference list.
+</p>
+<p>To make <b>content changes</b>, use the
+<a href="/events/register/{{conference.urlname}}/wiki/{{page.url}}/">regular editor</a>.
+</p>
+
+<form method="post" action=".">{%csrf_token%}
+<table class="pageform">
+{{form}}
+</table>
+<input type="submit" value="Save">
+</form>
+
+{%endblock%}

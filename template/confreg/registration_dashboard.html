@@ -35,6 +35,9 @@ news!
 <div id="dash_pagelinks_wrap">
  <ul class="dash_pagelinks" >
   <li>&bull; <a href="#mails">Information emails</a> &bull;</li>
+{%if wikipages%}
+  <li><a href="#wiki">Wiki pages</a> &bull;</li>
+{%endif%}
   <li><a href="#summary">Registration summary</a> &bull;</li>
 {%if availableoptions%}
   <li><a href="#options">Additional options</a> &bull;</li>
@@ -62,6 +65,15 @@ spamfilters.
 {%endfor%}
 </ul>
 
+{%if wikipages%}
+<a name="wiki"></a>
+<h2>Wiki pages</h2>
+<ul>
+{%for p in wikipages%}
+ <li><a href="wiki/{{p.url}}/">{{p.title}}</a> (last modified {{p.publishedat|date:"Y-m-d H:i"}})</li>
+{%endfor%}
+</ul>
+{%endif%}
 
 <a name="summary"></a>
 <h2>Registration summary</h2>

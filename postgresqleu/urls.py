@@ -11,6 +11,7 @@ import postgresqleu.confreg.reporting
 import postgresqleu.confreg.mobileviews
 import postgresqleu.confreg.feedback
 import postgresqleu.confreg.pdfschedule
+import postgresqleu.confwiki.views
 import postgresqleu.membership.views
 import postgresqleu.elections.views
 import postgresqleu.invoicemgr.views
@@ -81,6 +82,10 @@ urlpatterns = patterns('',
 	(r'^events/register/(\w+)/invoice/(\d+)/$', postgresqleu.confreg.views.invoice),
     (r'^events/register/(\w+)/mail/(\d+)/$', postgresqleu.confreg.views.attendee_mail),
     (r'^events/register/(\w+)/addopt/$', postgresqleu.confreg.views.reg_add_options),
+    (r'^events/register/(\w+)/wiki/(.*)/edit/$', postgresqleu.confwiki.views.wikipage_edit),
+    (r'^events/register/(\w+)/wiki/(.*)/history/$', postgresqleu.confwiki.views.wikipage_history),
+    (r'^events/register/(\w+)/wiki/(.*)/sub/$', postgresqleu.confwiki.views.wikipage_subscribe),
+    (r'^events/register/(\w+)/wiki/(.*)/$', postgresqleu.confwiki.views.wikipage),
 	(r'^events/prepaid/$', postgresqleu.confreg.views.createvouchers),
 	(r'^events/prepaid/(\d+)/$', postgresqleu.confreg.views.viewvouchers),
 	(r'^events/prepaid/(\d+)/send_email/$', 'postgresqleu.confreg.views.emailvouchers'),
@@ -95,6 +100,8 @@ urlpatterns = patterns('',
     (r'^events/admin/(\w+)/mail/(\d+)/$', postgresqleu.confreg.views.admin_attendeemail_view),
     (r'^events/admin/(\w+)/regdashboard/$', postgresqleu.confreg.views.admin_registration_dashboard),
     (r'^events/admin/(\w+)/waitlist/$', postgresqleu.confreg.views.admin_waitlist),
+    (r'^events/admin/(\w+)/wiki/$', postgresqleu.confwiki.views.admin),
+    (r'^events/admin/(\w+)/wiki/(new|\d+)/$', postgresqleu.confwiki.views.admin_edit_page),
 
     (r'^events/sponsor/', include('postgresqleu.confsponsor.urls')),
 

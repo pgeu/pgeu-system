@@ -102,6 +102,7 @@ INSTALLED_APPS = [
 	'postgresqleu.newsevents',
 	'postgresqleu.confreg',
 	'postgresqleu.confsponsor',
+	'postgresqleu.confwiki',
 	'postgresqleu.membership',
 	'postgresqleu.elections',
 	'postgresqleu.mailqueue',
