@@ -519,6 +519,20 @@ class AttendeeMailAdmin(admin.ModelAdmin):
 	form = AttendeeMailAdminForm
 	filter_horizontal = ('regclasses', )
 
+class PendingAdditionalOrderAdminForm(forms.ModelForm):
+	class Meta:
+		model = PendingAdditionalOrder
+
+	def __init__(self, *args, **kwargs):
+		super(PendingAdditionalOrderAdminForm, self).__init__(*args, **kwargs)
+		if 'instance' in kwargs:
+			self.fields['reg'].queryset = ConferenceRegistration.objects.filter(conference=self.instance.reg.conference)
+			self.fields['options'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.instance.reg.conference)
+			self.fields['newregtype'].queryset = RegistrationType.objects.filter(conference=self.instance.reg.conference)
+
+class PendingAdditionalOrderAdmin(admin.ModelAdmin):
+	form = PendingAdditionalOrderAdminForm
+
 admin.site.register(Conference, ConferenceAdmin)
 admin.site.register(RegistrationClass, RegistrationClassAdmin)
 admin.site.register(RegistrationDay, RegistrationDayAdmin)
@@ -540,4 +554,4 @@ admin.site.register(PrepaidVoucher, PrepaidVoucherAdmin)
 admin.site.register(DiscountCode, DiscountCodeAdmin)
 admin.site.register(BulkPayment, BulkPaymentAdmin)
 admin.site.register(AttendeeMail, AttendeeMailAdmin)
-admin.site.register(PendingAdditionalOrder)
+admin.site.register(PendingAdditionalOrder, PendingAdditionalOrderAdmin)
