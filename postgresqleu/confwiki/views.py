@@ -2,11 +2,12 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, Http404
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
+from django.db import transaction, connection
 from django.db.models import Q
 from django.contrib import messages
 from django.conf import settings
 
+from datetime import datetime
 from cStringIO import StringIO
 import difflib
 
@@ -19,6 +20,8 @@ from postgresqleu.confreg.views import render_conference_response
 from models import Wikipage, WikipageHistory, WikipageSubscriber
 from forms import WikipageEditForm, WikipageAdminEditForm
 
+from models import Signup, AttendeeSignup
+from forms import SignupSubmitForm, SignupAdminEditForm
 
 @ssl_required
 @login_required
@@ -251,3 +254,141 @@ def admin_edit_page(request, urlname, pageid):
 		'page': page,
 	}, RequestContext(request))
 
+
+@ssl_required
+@login_required
+@transaction.commit_on_success
+def signup(request, urlname, signupid):
+	conference = get_object_or_404(Conference, urlname=urlname)
+	reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user, payconfirmedat__isnull=False)
+	signupQ = Q(public=True) | Q(attendees=reg) | Q(regtypes=reg.regtype)
+	signups = Signup.objects.filter(Q(conference=conference, id=signupid) & signupQ).distinct()
+
+	if len(signups) != 1:
+		raise Http404("Page not found")
+	signup = signups[0]
+	attendee_signup = AttendeeSignup.objects.filter(signup=signup, attendee=reg)
+	if len(attendee_signup) == 1:
+		attendee_signup = attendee_signup[0]
+	else:
+		attendee_signup = None
+
+	if signup.visible and attendee_signup:
+		# Include the results
+		cursor = connection.cursor()
+		cursor.execute("SELECT firstname || ' ' || lastname FROM confreg_conferenceregistration r INNER JOIN confwiki_attendeesignup a ON a.attendee_id=r.id WHERE a.signup_id=%(signup)s AND r.payconfirmedat IS NOT NULL ORDER BY lastname, firstname", {
+			'signup': signup.id,
+		})
+		current = [r[0] for r in cursor.fetchall()]
+	else:
+		current = None
+
+	if signup.deadline and signup.deadline < datetime.now():
+		# This one is closed
+		return render_conference_response(request, conference, 'confwiki/signup.html', {
+			'closed': True,
+			'signup': signup,
+			'attendee_signup': attendee_signup,
+			'current': current,
+		})
+
+	# Signup is active, so build a form.
+	if request.method == 'POST':
+		form = SignupSubmitForm(signup, attendee_signup, data=request.POST)
+		if form.is_valid():
+			if form.cleaned_data['choice'] == '':
+				# Remove instead!
+				if attendee_signup:
+					attendee_signup.delete()
+					messages.info(request, "Your response has been deleted.")
+				# If it did not exist, don't bother deleting it
+			else:
+				# Store an actual response
+				if attendee_signup:
+					attendee_signup.choice = form.cleaned_data['choice']
+				else:
+					attendee_signup = AttendeeSignup(attendee=reg,
+													 signup=signup,
+													 choice=form.cleaned_data['choice'])
+				attendee_signup.save()
+				messages.info(request, "Your response has been stored. Thank you!")
+
+			return HttpResponseRedirect('../../')
+	else:
+		form = SignupSubmitForm(signup, attendee_signup)
+
+	return render_conference_response(request, conference, 'confwiki/signup.html', {
+		'closed': False,
+		'signup': signup,
+		'attendee_signup': attendee_signup,
+		'current': current,
+		'form': form,
+	})
+
+@ssl_required
+@login_required
+def signup_admin(request, urlname):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=urlname)
+	else:
+		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+
+	signups = Signup.objects.filter(conference=conference)
+
+	return render_to_response('confwiki/signup_admin.html', {
+		'conference': conference,
+		'signups': signups,
+	}, RequestContext(request))
+
+@ssl_required
+@login_required
+@transaction.commit_on_success
+def signup_admin_edit(request, urlname, signupid):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=urlname)
+	else:
+		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+
+	if signupid != 'new':
+		signup = get_object_or_404(Signup, conference=conference, pk=signupid)
+		# There can be results, so calculate them. We want both a list and
+		# a summary.
+		results = {}
+		cursor = connection.cursor()
+		cursor.execute("SELECT choice,count(*),count(*)*100*4/count(*) OVER () from confwiki_attendeesignup WHERE signup_id=%(signup)s GROUP BY choice ORDER BY 2 DESC", {
+			'signup': signup.id,
+		})
+		results['summary'] = [dict(zip(['choice', 'num', 'percentwidth'], r)) for r in cursor.fetchall()]
+		cursor.execute("SELECT firstname || ' ' || lastname,choice,saved FROM confreg_conferenceregistration r INNER JOIN confwiki_attendeesignup s ON r.id=s.attendee_id WHERE s.signup_id=%(signup)s ORDER BY saved", {
+			'signup': signup.id,
+		})
+		results['details'] = [dict(zip(['name', 'choice', 'when'], r)) for r in cursor.fetchall()]
+
+		# If we have a limited number of attendees, then we can generate
+		# a list of pending users. We don't even try if it's set for public.
+		if not signup.public:
+			cursor.execute("SELECT firstname || ' ' || lastname FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND (regtype_id IN (SELECT registrationtype_id FROM confwiki_signup_regtypes srt WHERE srt.signup_id=%(signup)s) OR id IN (SELECT conferenceregistration_id FROM confwiki_signup_attendees WHERE signup_id=%(signup)s)) AND id NOT IN (SELECT attendee_id FROM confwiki_attendeesignup WHERE signup_id=%(signup)s) ORDER BY lastname, firstname", {
+				'signup': signup.id,
+			})
+			results['awaiting'] = [dict(zip(['name', ], r)) for r in cursor.fetchall()]
+	else:
+		author = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
+		signup = Signup(conference=conference, author=author)
+		results = None
+
+	if request.method == 'POST':
+		form = SignupAdminEditForm(instance=signup, data=request.POST)
+		if form.is_valid():
+			# We don't bother with diffs here as the only one who can
+			# edit things are admins anyway.
+			form.save()
+			return HttpResponseRedirect('../')
+	else:
+		form = SignupAdminEditForm(instance=signup)
+
+	return render_to_response('confwiki/signup_admin_edit_form.html', {
+		'conference': conference,
+		'form': form,
+		'signup': signup,
+		'results': results,
+	}, RequestContext(request))

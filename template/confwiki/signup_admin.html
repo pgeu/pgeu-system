@@ -1,0 +1,20 @@
+{%extends "base.html" %}
+{%block title%}Conference Signups{%endblock%}
+{%block layoutblock%}
+<h1>Conference Signups</h1>
+<h2>Current signups</h2>
+
+<ul>
+{%for s in signups%}
+ <li><a href="{{s.id}}/">{{s.title}}</a>{%if s.deadline%} (deadline {{s.deadline}}){%endif%}</li>
+{%endfor%}
+</ul>
+
+<p>
+<button onClick="location.href='new/'">New signup</button>
+</p>
+
+<p>
+<a href="../../">Back</a> to the dashboard.
+</p>
+{%endblock%}

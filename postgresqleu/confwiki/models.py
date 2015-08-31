@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
 
 from postgresqleu.confreg.models import Conference, ConferenceRegistration
 from postgresqleu.confreg.models import RegistrationType
@@ -84,3 +85,44 @@ class WikipageHistory(models.Model):
 class WikipageSubscriber(models.Model):
 	page = models.ForeignKey(Wikipage, null=False, blank=False, db_index=True)
 	subscriber = models.ForeignKey(ConferenceRegistration, null=False, blank=False)
+
+
+def validate_options(value):
+	pieces = [v.strip() for v in value.split(',')]
+	if len(pieces) < 2:
+		raise ValidationError("At least two options must be given")
+	for v in pieces:
+		if len(v) < 1:
+			raise ValidationError("Empty options are not allowed")
+		if len(v) > 100:
+			raise ValidationError("Options must be less than 100 characters each")
+
+
+# Signups - attendees can sign up for events
+class Signup(models.Model):
+	conference = models.ForeignKey(Conference, null=False, blank=False)
+	author = models.ForeignKey(ConferenceRegistration, null=False, blank=False)
+	title = models.CharField(max_length=100, null=False, blank=False)
+	intro = models.TextField(null=False, blank=False)
+	deadline = models.DateTimeField(null=True, blank=True)
+	maxsignups = models.IntegerField(null=False, blank=False, default=-1)
+	options = models.CharField(max_length=1000, null=False, blank=True, help_text="Comma separated list of options to choose.", validators=[validate_options,])
+
+	public = models.BooleanField(null=False, blank=False, default=False, help_text="All attendees can sign up")
+	visible = models.BooleanField(null=False, blank=False, default=False, help_text="Show who have signed up to all invited attendees")
+	regtypes = models.ManyToManyField(RegistrationType, null=True, blank=True, verbose_name="Available to registration types", related_name="user_regtypes")
+	attendees = models.ManyToManyField(ConferenceRegistration, null=True, blank=True, verbose_name="Available to attendees", related_name="user_attendees")
+
+	class Meta:
+		ordering = ('deadline', 'title', )
+
+class AttendeeSignup(models.Model):
+	signup = models.ForeignKey(Signup, null=False, blank=False)
+	attendee = models.ForeignKey(ConferenceRegistration, null=False, blank=False)
+	choice = models.CharField(max_length=100, null=False, blank=True)
+	saved = models.DateTimeField(null=False, blank=False, auto_now=True)
+
+	class Meta:
+		unique_together = (
+			('signup', 'attendee',),
+		)

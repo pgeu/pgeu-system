@@ -38,6 +38,9 @@ news!
 {%if wikipages%}
   <li><a href="#wiki">Wiki pages</a> &bull;</li>
 {%endif%}
+{%if signups%}
+  <li><a href="#signups">Signups</a> &bull;</li>
+{%endif%}
   <li><a href="#summary">Registration summary</a> &bull;</li>
 {%if availableoptions%}
   <li><a href="#options">Additional options</a> &bull;</li>
@@ -71,6 +74,16 @@ spamfilters.
 <ul>
 {%for p in wikipages%}
  <li><a href="wiki/{{p.url}}/">{{p.title}}</a> (last modified {{p.publishedat|date:"Y-m-d H:i"}})</li>
+{%endfor%}
+</ul>
+{%endif%}
+
+{%if signups%}
+<a name="signups"></a>
+<h2>Signups</h2>
+<ul>
+{%for s in signups%}
+ <li><a href="signup/{{s.id}}/">{{s.title}}</a>{%if s.closed%} (closed){%elif s.deadline%} (closes {{s.deadline|date:"Y-m-d H:i"}}){%endif%}{%if s.savedat%} - you responded on {{s.savedat|date:"Y-m-d H:i"}}{%endif%}</li>
 {%endfor%}
 </ul>
 {%endif%}

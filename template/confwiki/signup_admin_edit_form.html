@@ -1,0 +1,100 @@
+{%extends "base.html"%}
+{%block extrahead%}
+<script src="/media/jq/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" src="/media/js/selectize.min.js"></script>
+<link rel="stylesheet" href="/media/css/selectize.css" />
+<link rel="stylesheet" href="/media/css/selectize.default.css" />
+<style>
+tr.error {
+   background-color: #ffb6b6;
+}
+table.signupform tr {
+   vertical-align: top;
+}
+table.signupform input[type=text],textarea,select {
+   width: 500px;
+}
+</style>
+
+<script language="javascript">
+$(function() {
+   $('#id_author').selectize();
+   $('#id_regtypes, #id_attendees').selectize({plugins: ['remove_button']});
+});
+
+</script>
+{%endblock%}
+
+{%block layoutblock%}
+{% if messages %}
+    <ul class="messages">
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+<h1>Signup</h1>
+
+<p>Current <a href="#results">results</a>.</p>
+
+<form method="post" action=".">{%csrf_token%}
+<table class="signupform">
+{{form}}
+</table>
+<input type="submit" value="Save">
+</form>
+
+<a name="results"></a>
+<h2>Current results</h2>
+<h3>Summary</h3>
+<table border="0" cellspacing="1">
+ <tr>
+  <th>Choice</th>
+  <th>Count</th>
+  <th>Percent</th>
+ </tr>
+{%for r in results.summary %}
+ <tr>
+  <td>{{r.choice}}</td>
+  <td>{{r.num}}</td>
+  <td><div style="background-color: blue; width: {{r.percentwidth}}px; display:inline-block; height: 1em;"></div></td>
+ </tr>
+{%endfor%}
+</table>
+
+<h3>Details</h3>
+<table border="0" cellspacing="1">
+ <tr>
+  <th>Name</th>
+  <th>Choice</th>
+  <th>Time</th>
+ </tr>
+{%for r in results.details %}
+ <tr>
+  <td>{{r.name}}</td>
+  <td>{{r.choice}}</td>
+  <td>{{r.when}}</td>
+ </tr>
+{%endfor%}
+</table>
+
+{%if results.awaiting%}
+<h3>Awaiting response</h3>
+<table border="0" cellspacing="1">
+ <tr>
+  <th>Name</th>
+ </tr>
+{%for r in results.awaiting %}
+ <tr>
+  <td>{{r.name}}</td>
+ </tr>
+{%endfor%}
+</table>
+
+{%endif%}
+
+<p>
+<a href="../">Back</a> to list.
+</p>
+{%endblock%}

@@ -38,7 +38,7 @@ from regtypes import confirm_special_reg_type
 
 from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod, InvoiceRow
-from postgresqleu.confwiki.models import Wikipage
+from postgresqleu.confwiki.models import Wikipage, Signup
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
 from postgresqleu.mailqueue.util import send_mail, send_simple_mail
@@ -118,6 +118,14 @@ def _registration_dashboard(request, conference, reg):
 	wikipagesQ = Q(publicview=True) | Q(viewer_attendee__attendee=request.user) | Q(viewer_regtype__conferenceregistration__attendee=request.user)
 	wikipages = Wikipage.objects.filter(Q(conference=conference) & wikipagesQ).distinct()
 
+	# Left join is hard to do efficiently with the django ORM, so let's do a query instead
+	cursor = connection.cursor()
+	cursor.execute("SELECT s.id, s.title, s.deadline, s.deadline < CURRENT_TIMESTAMP, ats.saved FROM confwiki_signup s LEFT JOIN confwiki_attendeesignup ats ON (s.id=ats.signup_id AND ats.attendee_id=%(regid)s) WHERE s.conference_id=%(confid)s AND (s.deadline IS NULL OR s.deadline > CURRENT_TIMESTAMP OR ats.saved IS NOT NULL) ORDER  BY 4 DESC, 3, 2", {
+		'confid': conference.id,
+		'regid': reg.id,
+		})
+	signups = [dict(zip(['id', 'title', 'deadline', 'closed', 'savedat'], r)) for r in cursor.fetchall()]
+
 	is_speaker = ConferenceSession.objects.filter(conference=conference, status=1, speaker=request.user).exists()
 
 	# Options available for buy-up. Option must be for this conference,
@@ -144,6 +152,7 @@ def _registration_dashboard(request, conference, reg):
 		'is_speaker': is_speaker,
 		'mails': mails,
 		'wikipages': wikipages,
+		'signups': signups,
 		'availableoptions': availableoptions,
 		'pendingadditional': pendingadditional,
 		'invoices': invoices,

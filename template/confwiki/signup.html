@@ -1,0 +1,53 @@
+{%extends conftemplbase %}
+{%block title%}{{signup.title}} - {{conference}}{%endblock%}
+{%block extrahead%}
+<style>
+tr.error {
+   background-color: #ffb6b6;
+}
+table.signupform tr {
+   vertical-align: top;
+}
+table.signupform input[type=text],textarea,select {
+   width: 500px;
+}
+</style>
+{%endblock%}
+
+{%block content%}
+<h2>{{signup.title}}</h2>
+<p>
+{{signup.intro}}
+</p>
+
+{%if closed%}
+<p><b>This signup is closed.</b></p>
+
+{%if attendee_signup%}
+<p>Your response was recorded as: {{attendee_signup.choice}}</p>
+{%endif%}
+{%else%}{%comment%}is it closed?{%endcomment%}
+<form method="post" action=".">{%csrf_token%}
+<table>
+{{form}}
+</table>
+<p></p>
+<input type="submit" name="submit" value="Save">
+</form>
+
+{%if current %}
+<h3>Current attendees</h3>
+<ul>
+{%for s in current%}
+ <li>{{s}}</li>
+{%endfor%}
+</ul>
+{%endif%}
+
+{%endif%}{%comment%}is it closed?{%endcomment%}
+
+<p>
+<a href="../../">Back</a>
+</p>
+
+{%endblock%}
