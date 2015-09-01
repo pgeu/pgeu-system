@@ -1843,24 +1843,25 @@ def admin_registration_dashboard(request, urlname):
 
 	tables = []
 
-	# Copy/paste string to get the reg status
-	statusstr = "sum(CASE WHEN payconfirmedat IS NOT NULL THEN 1 ELSE 0 END) AS confirmed, sum(CASE WHEN payconfirmedat IS NULL AND r.id IS NOT NULL THEN 1 ELSE 0 END) as unconfirmed, count(r.id) AS total"
 	# Registrations by reg type
-	curs.execute("SELECT regtype, {0} FROM confreg_conferenceregistration r RIGHT JOIN confreg_registrationtype rt ON rt.id=r.regtype_id WHERE rt.conference_id={1} GROUP BY rt.id ORDER BY rt.sortkey".format(statusstr, conference.id))
+	curs.execute("SELECT regtype, sum(CASE WHEN payconfirmedat IS NOT NULL THEN 1 ELSE 0 END) AS confirmed, sum(CASE WHEN payconfirmedat IS NULL AND r.id IS NOT NULL THEN 1 ELSE 0 END) as unconfirmed, count(r.id) AS total FROM confreg_conferenceregistration r RIGHT JOIN confreg_registrationtype rt ON rt.id=r.regtype_id WHERE rt.conference_id={0} GROUP BY rt.id ORDER BY rt.sortkey".format(conference.id))
 	tables.append({'title': 'Registration types',
 				   'columns': ['Type', 'Confirmed', 'Unconfirmed', 'Total'],
 				   'rows': curs.fetchall()})
 
+	# Copy/paste string to get the reg status
+	statusstr = "{0}, sum(CASE WHEN payconfirmedat IS NOT NULL THEN 1 ELSE 0 END) AS confirmed, sum(CASE WHEN payconfirmedat IS NULL AND r.id IS NOT NULL THEN 1 ELSE 0 END) as unconfirmed, CASE WHEN {0} > 0 THEN {0}-sum(CASE WHEN payconfirmedat IS NOT NULL THEN 1 ELSE 0 END) ELSE NULL END AS remaining, count(r.id) AS total"
+
 	# Additional options
-	curs.execute("SELECT ao.name, ao.maxcount, {0} FROM confreg_conferenceregistration r INNER JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceregistration_id=r.id RIGHT JOIN confreg_conferenceadditionaloption ao ON ao.id=rao.conferenceadditionaloption_id WHERE ao.conference_id={1} GROUP BY ao.name, ao.maxcount ORDER BY ao.name".format(statusstr, conference.id))
+	curs.execute("SELECT ao.name, {0} FROM confreg_conferenceregistration r INNER JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceregistration_id=r.id RIGHT JOIN confreg_conferenceadditionaloption ao ON ao.id=rao.conferenceadditionaloption_id WHERE ao.conference_id={1} GROUP BY ao.name, ao.maxcount ORDER BY ao.name".format(statusstr.format('ao.maxcount'), conference.id))
 	tables.append({'title': 'Additional options',
-				   'columns': ['Name', 'Max uses', 'Confirmed', 'Unconfirmed', 'Total'],
+				   'columns': ['Name', 'Max uses', 'Confirmed', 'Unconfirmed', 'Remaining', 'Total'],
 				   'rows': curs.fetchall()})
 
 	# Discount codes
-	curs.execute("SELECT code, maxuses, {0} FROM confreg_conferenceregistration r RIGHT JOIN confreg_discountcode dc ON dc.code=r.vouchercode WHERE dc.conference_id={1} AND (r.conference_id={1} OR r.conference_id IS NULL) GROUP BY dc.id ORDER BY code".format(statusstr, conference.id))
+	curs.execute("SELECT code, {0} FROM confreg_conferenceregistration r RIGHT JOIN confreg_discountcode dc ON dc.code=r.vouchercode WHERE dc.conference_id={1} AND (r.conference_id={1} OR r.conference_id IS NULL) GROUP BY dc.id ORDER BY code".format(statusstr.format('maxuses'), conference.id))
 	tables.append({'title': 'Discount codes',
-				   'columns': ['Code', 'Max uses', 'Confirmed', 'Unconfirmed', 'Total'],
+				   'columns': ['Code', 'Max uses', 'Confirmed', 'Unconfirmed', 'Remaining', 'Total'],
 				   'rows': curs.fetchall()})
 
 	# Voucher batches
@@ -1873,7 +1874,7 @@ def admin_registration_dashboard(request, urlname):
 	for t in tables:
 		sums = ['Total']
 		for cn in range(len(t['columns'])-1):
-			sums.append(sum((r[cn+1] for r in t['rows'])))
+			sums.append(sum((r[cn+1] for r in t['rows'] if r[cn+1] != None)))
 		t['rows'].append(sums)
 	return render_to_response('confreg/admin_registration_dashboard.html', {
 		'conference': conference,

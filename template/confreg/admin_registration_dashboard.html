@@ -19,7 +19,7 @@ table tr.lastrow td {
 {%for row in table.rows %}
 <tr {%if forloop.last%}class="lastrow"{%endif%}>
 {%for c in row%}
-<td>{{c}}</td>
+<td>{{c|default_if_none:""}}</td>
 {%endfor%}
 </tr>
 {%endfor%}
