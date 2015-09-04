@@ -36,7 +36,7 @@ The following sponsors are confirmed:
 <h3>{{level.grouper}}</h3>
 <ul>
 {%for s in level.list%}
- <li><a href="{{s.id}}/">{{s}}</a></li>
+ <li><a href="{{s.id}}/">{{s}}</a>{%if s.invoice%}{%if not s.invoice.paidat%} (not paid){%endif%}{%else%} (not invoiced){%endif%}</li>
 {%endfor%}
 </ul>
 {%endfor%}
