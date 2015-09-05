@@ -38,7 +38,7 @@ from regtypes import confirm_special_reg_type
 
 from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod, InvoiceRow
-from postgresqleu.confwiki.models import Wikipage, Signup
+from postgresqleu.confwiki.models import Wikipage
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
 from postgresqleu.mailqueue.util import send_mail, send_simple_mail
