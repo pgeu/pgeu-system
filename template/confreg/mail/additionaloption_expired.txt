@@ -1,0 +1,22 @@
+Hello!
+
+You recently made a registration for {{conference.conferencename}},
+but it was never completed.
+
+As some options for this event are getting close to being sold out,
+they have been removed from your pending registration in order to
+make room for others. The following option{{optionscount|pluralize}} have been removed:
+
+{%for o in options%}{{o.name}}
+{%endfor%}
+
+If you are still interested in ordering this option, you may return
+to the registration page and add this option back to your registration,
+provided it has not yet sold out.
+
+If you do that, make sure you complete the registration including payment,
+as no seats are guaranteed until the process is completed.
+
+To view your existing pending registration, please go to
+
+{{SITEBASE}}/events/register/{{conference.urlname}}/

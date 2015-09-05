@@ -2,7 +2,7 @@ from django.conf import settings
 
 from models import ConferenceRegistration, BulkPayment, PendingAdditionalOrder
 from models import RegistrationWaitlistHistory
-from util import notify_reg_confirmed
+from util import notify_reg_confirmed, expire_additional_options
 
 from datetime import datetime
 
@@ -47,6 +47,11 @@ class InvoiceProcessor(object):
 		# "unlock" the registration
 		reg.invoice = None
 		reg.save()
+
+		# If this registration holds any additional options that are about to expire, release
+		# them for others to use at this point. (This will send an additional email to the
+		# attendee automatically)
+		expire_additional_options(reg)
 
 		# If the registration was on the waitlist, put it back in the
 		# queue.
@@ -140,6 +145,11 @@ class BulkInvoiceProcessor(object):
 		for r in bp.conferenceregistration_set.all():
 			r.bulkpayment = None
 			r.save()
+
+			# If this registration holds any additional options that are about to expire, release
+			# them for others to use at this point. (This will send an additional email to the
+			# attendee automatically)
+			expire_additional_options(r)
 
 		# Now actually *remove* the bulk payment record completely,
 		# since it no longer contains anything interesting.

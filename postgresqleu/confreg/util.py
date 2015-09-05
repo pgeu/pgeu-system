@@ -1,3 +1,7 @@
+from django.conf import settings
+from django.template import Context
+from django.template.loader import get_template
+
 from datetime import datetime, date, timedelta
 
 from postgresqleu.mailqueue.util import send_simple_mail
@@ -122,3 +126,42 @@ def get_invoice_autocancel(*args):
 		return datetime.now() + timedelta(hours=min(hours))
 	else:
 		return None
+
+
+def expire_additional_options(reg):
+	# If there are any additional options on this registrations that are untouched for
+	# longer than the invoice autocancel period, expire them. Send an email to the user
+	# being expired (expects to run within a transaction).
+	# Returns the list of options expired for this particular user.
+
+	hours = int(round((datetime.now() - reg.lastmodified).total_seconds()/3600))
+	expireset = list(reg.additionaloptions.filter(invoice_autocancel_hours__isnull=False,
+												  invoice_autocancel_hours__lt=hours))
+	if expireset:
+		# We have something expired. Step one is to send an email about it, based on a
+		# template. (It's a bit inefficient to re-parse the template every time, but
+		# we don't expire these things very often, so we don't care)
+
+		template = get_template('confreg/mail/additionaloption_expired.txt')
+
+		send_simple_mail(reg.conference.contactaddr,
+						 reg.email,
+						 'Your pending registration for {0}'.format(reg.conference.conferencename),
+						 template.render(Context({
+							 'conference': reg.conference,
+							 'reg': reg,
+							 'options': expireset,
+							 'optionscount': len(expireset),
+							 'SITEBASE': settings.SITEBASE_SSL,
+						 })),
+						 sendername = reg.conference.conferencename,
+						 receivername = "{0} {1}".format(reg.firstname, reg.lastname))
+
+		for ao in expireset:
+			# Notify caller that this one is being expired
+			yield ao.name
+			# And actually expire it
+			reg.additionaloptions.remove(ao)
+
+		# And finally - save
+		reg.save()

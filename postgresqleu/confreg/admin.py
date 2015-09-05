@@ -104,7 +104,7 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	actions= ['approve_conferenceregistration', 'email_recipients']
 	filter_horizontal = ('additionaloptions',)
 	exclude = ('invoice','bulkpayment',)
-	readonly_fields = ('invoice_link','bulkpayment_link',)
+	readonly_fields = ('invoice_link','bulkpayment_link', 'lastmodified', )
 
 	def queryset(self, request):
 		qs = super(ConferenceRegistrationAdmin, self).queryset(request)
