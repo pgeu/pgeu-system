@@ -61,7 +61,7 @@ autocancel hours, to make room for other attendees:
 
 """)
 				for name, option in expired:
-					s.write("{0:<40}{1}\n".format(name, option))
+					s.write(u"{0:<40}{1}\n".format(name, option))
 				s.write("\n\n")
 				send_simple_mail(conference.contactaddr,
 								 conference.contactaddr,
