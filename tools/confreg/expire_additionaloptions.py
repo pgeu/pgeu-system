@@ -9,7 +9,7 @@
 import os
 import sys
 from collections import defaultdict
-from cStringIO import StringIO
+from StringIO import StringIO
 
 # Set up to run in django environment
 from django.core.management import setup_environ
