@@ -49,10 +49,12 @@ if __name__ == "__main__":
 												 )
 
 		expired = defaultdict(list)
+		num = 0
 		for r in regs:
 			expired[r.conference].extend([(r.firstname + ' ' + r.lastname, x) for x in expire_additional_options(r)])
+			num += len(expired[r.conference])
 
-		if expired:
+		if num:
 			for conference, expired in expired.items():
 				s = StringIO()
 				s.write("""The following additional options have been removed from pending
