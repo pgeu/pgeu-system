@@ -7,7 +7,7 @@
 
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # Set up to run in django environment
 from django.core.management import setup_environ
