@@ -1,4 +1,5 @@
 {%extends conftemplbase %}
+{%load markup%}
 {%block title%}{{signup.title}} - {{conference}}{%endblock%}
 {%block extrahead%}
 <style>
@@ -17,7 +18,7 @@ table.signupform input[type=text],textarea,select {
 {%block content%}
 <h2>{{signup.title}}</h2>
 <p>
-{{signup.intro}}
+{{signup.intro|markdown}}
 </p>
 
 {%if closed%}
