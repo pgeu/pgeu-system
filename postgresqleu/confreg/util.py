@@ -137,6 +137,8 @@ def expire_additional_options(reg):
 	hours = int(round((datetime.now() - reg.lastmodified).total_seconds()/3600))
 	expireset = list(reg.additionaloptions.filter(invoice_autocancel_hours__isnull=False,
 												  invoice_autocancel_hours__lt=hours))
+
+	expired_names = []
 	if expireset:
 		# We have something expired. Step one is to send an email about it, based on a
 		# template. (It's a bit inefficient to re-parse the template every time, but
@@ -159,9 +161,11 @@ def expire_additional_options(reg):
 
 		for ao in expireset:
 			# Notify caller that this one is being expired
-			yield ao.name
+			expired_names.append(ao.name)
 			# And actually expire it
 			reg.additionaloptions.remove(ao)
 
 		# And finally - save
 		reg.save()
+
+	return expired_names
