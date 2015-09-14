@@ -40,7 +40,7 @@ class SignupSubmitForm(forms.Form):
 			self.fields['choice'].choices.insert(0, ('', ''))
 		else:
 			# This one is boolean only
-			self.fields['choice'].choices = (('', ''), ('yes','Yes'),)
+			self.fields['choice'].choices = (('', ''), ('yes','Yes'), ('', 'No'), )
 
 		if attendee_signup:
 			self.fields['choice'].initial = attendee_signup.choice
