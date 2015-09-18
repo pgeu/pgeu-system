@@ -23,12 +23,7 @@ def _gzip_string(str):
 	g.close()
 	return s.getvalue()
 
-class AdyenCreditcard(object):
-	description="""
-Using this payment method, you can pay using your creditcard, including
-Mastercard, VISA and American Express.
-"""
-
+class _AdyenBase(object):
 	ADYEN_COMMON={
 		'currencyCode': settings.CURRENCY_ABBREV,
 		'skinCode': settings.ADYEN_SKINCODE,
@@ -36,7 +31,7 @@ Mastercard, VISA and American Express.
 		'shopperLocale': 'en_GB',
 		}
 
-	def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl=None):
+	def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl, allowedMethods, additionalparam):
 		param = self.ADYEN_COMMON
 		orderdata = "<p>%s</p>" % invoicestr
 		param.update({
@@ -45,14 +40,34 @@ Mastercard, VISA and American Express.
 			'orderData': base64.encodestring(_gzip_string(orderdata.encode('utf-8'))).strip().replace("\n",''),
 			'merchantReturnData': '%s%s' % (settings.ADYEN_MERCHANTREF_PREFIX, invoiceid),
 			'sessionValidity': (datetime.utcnow() + timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%M:%SZ'),
-			#shopperEmail - needs to be in the api
-			#shopperId - needs to be in the api
-			#allowedmethods/blockedmethods
+			'allowedMethods': allowedMethods,
 			})
-		param['merchantSig'] = calculate_signature(param, ('paymentAmount', 'currencyCode', 'merchantReference', 'skinCode', 'merchantAccount', 'sessionValidity', 'merchantReturnData', ))
+		param.update(additionalparam)
+
+		param['merchantSig'] = calculate_signature(param, ('paymentAmount', 'currencyCode', 'merchantReference', 'skinCode', 'merchantAccount', 'sessionValidity', 'allowedMethods', 'merchantReturnData', ))
 
 		# use pay.shtml for one-page, or select.shtml for multipage
 		return "%shpp/select.shtml?%s" % (
 			settings.ADYEN_BASEURL,
 			urlencode(param),
 			)
+
+class AdyenCreditcard(_AdyenBase):
+	description="""
+Using this payment method, you can pay using your creditcard, including
+Mastercard, VISA and American Express.
+"""
+
+	def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl=None):
+		return super(AdyenCreditcard, self).build_payment_url(invoicestr, invoiceamount, invoiceid, returnurl, 'card', {})
+
+class AdyenBanktransfer(_AdyenBase):
+	description="""
+Using this payment method, you can pay using a direct IBAN bank transfer.
+"""
+
+	def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl=None):
+		return super(AdyenBanktransfer, self).build_payment_url(invoicestr, invoiceamount, invoiceid, returnurl, 'bankTransfer_IBAN', {
+			'countryCode': 'FR',
+			'skipSelection': 'true',
+		})
