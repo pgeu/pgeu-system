@@ -1,0 +1,1 @@
+ALTER TABLE invoices_invoicepaymentmethod ADD CONSTRAINT invoices_invoicepaymentmethod_classname_key UNIQUE (classname);
