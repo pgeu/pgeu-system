@@ -175,6 +175,14 @@ class InvoiceWrapper(object):
 def _standard_logger(message):
 	print message
 
+def _trunc_string(s, l):
+	# Truncate a string to specified length, adding "..." at the end in case
+	# it's truncated.
+	if len(s) <= l:
+		return s
+
+	return s[:97]+"..."
+
 class InvoiceManager(object):
 	def __init__(self):
 		pass
@@ -418,7 +426,7 @@ class InvoiceManager(object):
 		invoice.save()
 		for r in invoicerows:
 			invoice.invoicerow_set.add(InvoiceRow(invoice=invoice,
-												  rowtext = r[0],
+												  rowtext = _trunc_string(r[0], 100),
 												  rowcount = r[1],
 												  rowamount = r[2]))
 
