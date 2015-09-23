@@ -91,7 +91,7 @@ def process_authorization(notification):
 			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 							 settings.ADYEN_NOTIFICATION_RECEIVER,
 							 'Adyen payment authorized',
-							 "An Adyen payment of %s%s with reference %s was authorized on the Adyen platform.\nInvoice: %s\nRecipient name: %s\nRecipient user: %s\nAdyen reference: %s\n" % (settings.CURRENCY_ABBREV, notification.amount, notification.merchantReference, invoice.title, invoice.recipient_name, invoice.recipient_email, notification.pspReference))
+							 "An Adyen payment of %s%s with reference %s was authorized on the Adyen platform.\nInvoice: %s\nRecipient name: %s\nRecipient user: %s\nPayment method: %s\nAdyen reference: %s\n" % (settings.CURRENCY_ABBREV, notification.amount, notification.merchantReference, invoice.title, invoice.recipient_name, invoice.recipient_email, notification.paymentMethod, notification.pspReference))
 
 		except AdyenProcessingException, ex:
 			# Generate an email telling us about this exception!
