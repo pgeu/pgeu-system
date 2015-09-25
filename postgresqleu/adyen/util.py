@@ -75,7 +75,7 @@ def process_authorization(notification):
 				raise AdyenProcessingException('Invoice with id %s does not exist' % invoiceid)
 
 			def invoice_logger(msg):
-				raise AdyenProcessingException('Invoice processing failed: %s', msg)
+				raise AdyenProcessingException('Invoice processing failed: %s' % msg)
 
 			manager.process_incoming_payment_for_invoice(invoice, notification.amount, 'Adyen id %s' % notification.pspReference, 0, settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, 0, urls, invoice_logger)
 
