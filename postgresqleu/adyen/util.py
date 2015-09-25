@@ -98,7 +98,7 @@ def process_authorization(notification):
 			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 							 settings.ADYEN_NOTIFICATION_RECEIVER,
 							 'Exception occured processing Adyen notification',
-							 "An exception occured processing the notification for %s:\n\n%s\n" % (
+							 "An exception occurred processing the notification for %s:\n\n%s\n" % (
 								 notification.merchantReference,
 								 ex)
 						 )
