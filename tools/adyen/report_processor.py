@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+/bin/env python
 #
 # Process reports from Adyen. This includes downloading them for storage,
 # as well as processing the contents.
@@ -71,7 +71,7 @@ def process_payment_accounting_report(report):
 			except TransactionStatus.DoesNotExist:
 				# Yes, for now we rollback the whole processing of this one
 				raise Exception('Transaction %s not found!' % pspref)
-			if l['Record Type'] == 'SentForSettle':
+			if l['Record Type'] in ('SentForSettle', 'SettledBulk'):
 				# If this is a POS transaction, it typically received a
 				# separate CAPTURE notification, in which case the capture
 				# date is already set. But if not, we'll set it to the
@@ -82,7 +82,7 @@ def process_payment_accounting_report(report):
 					trans.save()
 					AdyenLog(message='Transaction %s captured at %s' % (pspref, bookdate), error=False).save()
 					print "Sent for settle on %s" % pspref
-			elif l['Record Type'] in ('Settled', 'SettledBulk'):
+			elif l['Record Type'] in ('Settled', 'BulkSettlement'):
 				if trans.settledat != None:
 					# Transaction already settled. But we might be reprocessing
 					# the report, so verify if the previously settled one is
@@ -155,7 +155,7 @@ def process_settlement_detail_report_batch(report):
 		elif t == 'DepositCorrection':
 			# Modification of our deposit account - in either direction!
 			acctrows.append((settings.ACCOUNTING_ADYEN_MERCHANT_ACCOUNT, accstr, -amount, None))
-		elif t == 'Refunded' or t == 'RefundedBulk':
+		elif t == 'Refunded':
 			# Refunded - should already be booked against the refunding account
 			acctrows.append((settings.ACCOUNTING_ADYEN_REFUNDS_ACCOUNT, accstr, -amount, None))
 		else:
