@@ -60,8 +60,9 @@ def process_payment_accounting_report(report):
 	for l in reader:
 		# SentForSettle is what we call capture, so we track that
 		# Settled is when we actually receive the money
+		# Changes in Sep 2015 means Settled is sometimes SettledBulk
 		# Everything else we ignore
-		if l['Record Type'] == 'SentForSettle' or l['Record Type'] == 'Settled':
+		if l['Record Type'] == 'SentForSettle' or l['Record Type'] == 'Settled' or l['Record Type'] == 'SettledBulk':
 			# Find the actual payment
 			pspref = l['Psp Reference']
 			bookdate = l['Booking Date']
@@ -81,7 +82,7 @@ def process_payment_accounting_report(report):
 					trans.save()
 					AdyenLog(message='Transaction %s captured at %s' % (pspref, bookdate), error=False).save()
 					print "Sent for settle on %s" % pspref
-			elif l['Record Type'] == 'Settled':
+			elif l['Record Type'] in ('Settled', 'SettledBulk'):
 				if trans.settledat != None:
 					raise Exception('Transaction %s settled more than once?!' % pspref)
 				trans.settledat = bookdate
@@ -126,7 +127,7 @@ def process_settlement_detail_report_batch(report):
 	def sort_types(a):
 		# Special sort method that just ensures that Settled always ends up at the top
 		# and the rest is just alphabetically sorted. (And yes, this is ugly code :P)
-		if a[0] == 'Settled':
+		if a[0] == 'Settled' or a[0] == 'SettledBulk':
 			return 'AAA'
 		return a[0]
 
@@ -138,7 +139,7 @@ def process_settlement_detail_report_batch(report):
 	acctrows = []
 	accstr = "Adyen settlement batch %s for %s" % (batchnum, acct)
 	for t, amount in types.items():
-		if t == 'Settled':
+		if t == 'Settled' or t == 'SettledBulk':
 			# Settled means we took it out of the payable balance
 			acctrows.append((settings.ACCOUNTING_ADYEN_PAYABLE_ACCOUNT, accstr, -amount, None))
 		elif t == 'MerchantPayout':
