@@ -5,6 +5,7 @@ from django.template import Context
 from django.template.loader import get_template
 
 from datetime import datetime, date
+from dateutil import rrule
 import importlib
 import os
 import base64
@@ -26,7 +27,7 @@ class InvoicePresentationWrapper(Invoice):
 
 	@property
 	def allowedmethodwrappers(self):
-		return [PaymentMethodWrapper(m, self.invoicestr, self.total_amount, self.pk, self.__returnurl) for m in self.allowedmethods.all()]
+		return [PaymentMethodWrapper(m, self.__invoice, self.__returnurl) for m in self.allowedmethods.all()]
 
 
 # Functionality wrapper around an invoice that allows actions
@@ -453,3 +454,19 @@ class TestProcessor(object):
 	def get_return_url(self, invoice):
 		print "Trying to get the return url, but I can't!"
 		return "http://unknown.postgresql.eu/"
+
+
+# Calculate the number of workdays between two datetimes.
+def diff_workdays(start, end):
+	# If the end day is before 08:00, adjust it back to the previous day
+	if end.hour < 8:
+		pass
+
+	weekdays = len(list(rrule.rrule(rrule.DAILY, byweekday=range(0, 5), dtstart=start, until=end)))
+
+	if end.hour < 8:
+		weekdays -= 1
+
+	if weekdays < 0: weekdays = 0
+
+	return weekdays

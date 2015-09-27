@@ -71,7 +71,7 @@ def process_payment_accounting_report(report):
 			except TransactionStatus.DoesNotExist:
 				# Yes, for now we rollback the whole processing of this one
 				raise Exception('Transaction %s not found!' % pspref)
-			if l['Record Type'] in ('SentForSettle', 'SettledBulk'):
+			if l['Record Type'] == 'SentForSettle':
 				# If this is a POS transaction, it typically received a
 				# separate CAPTURE notification, in which case the capture
 				# date is already set. But if not, we'll set it to the
@@ -82,7 +82,7 @@ def process_payment_accounting_report(report):
 					trans.save()
 					AdyenLog(message='Transaction %s captured at %s' % (pspref, bookdate), error=False).save()
 					print "Sent for settle on %s" % pspref
-			elif l['Record Type'] in ('Settled', 'BulkSettlement'):
+			elif l['Record Type'] in ('Settled', 'SettledBulk'):
 				if trans.settledat != None:
 					# Transaction already settled. But we might be reprocessing
 					# the report, so verify if the previously settled one is
@@ -92,6 +92,9 @@ def process_payment_accounting_report(report):
 						continue
 					else:
 						raise Exception('Transaction %s settled more than once?!' % pspref)
+				if not trans.capturedat:
+					trans.capturedat = bookdate
+
 				trans.settledat = bookdate
 				trans.settledamount = Decimal(l['Main Amount'], 2)
 				trans.save()

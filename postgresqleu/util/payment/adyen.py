@@ -71,3 +71,16 @@ Using this payment method, you can pay using a direct IBAN bank transfer.
 			'countryCode': 'FR',
 			'skipSelection': 'true',
 		})
+
+	# Override availability for direct bank transfers. We hide it if the invoice will be
+	# automatically canceled in less than 4 working days.
+	def available(self, invoice):
+		if not invoice.canceltime:
+			return True
+
+	def unavailable_reason(self, invoice):
+		if not invoice.canceltime:
+			return False
+
+		if invoice.days_until_autocancel() < 5:
+			return "bazinga"

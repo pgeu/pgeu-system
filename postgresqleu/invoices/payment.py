@@ -1,12 +1,15 @@
-# The PaymentMethodWrapper needs to be in it's own class, so we don't
+# The PaymentMethodWrapper needs to be in it's own file, so we don't
 # create a circular dependency between models and util.
 
 class PaymentMethodWrapper(object):
-	def __init__(self, method, invoicestr, invoiceamount, invoiceid, returnurl=None):
+	def __init__(self, method, invoice, returnurl=None):
 		self.method = method
-		self.invoicestr = invoicestr
-		self.invoiceamount = invoiceamount
-		self.invoiceid = invoiceid
+
+		self.invoice = invoice
+		self.invoicestr = invoice.invoicestr
+		self.invoiceamount = invoice.total_amount
+		self.invoiceid = invoice.pk
+
 		self.returnurl = returnurl
 
 		try:
@@ -16,9 +19,9 @@ class PaymentMethodWrapper(object):
 			mod = __import__(modname, fromlist=[classname, ])
 			self.implementation = getattr(mod, classname) ()
 			self.ok = True
-		except Exception, ex:
-			print ex
+		except Exception:
 			self.ok = False
+
 
 	@property
 	def name(self):
@@ -27,6 +30,22 @@ class PaymentMethodWrapper(object):
 	@property
 	def description(self):
 		return self.implementation.description
+
+	@property
+	def available(self):
+		# If not specifically set, it means the method is always available. If it has the ability
+		# to control availability, call into it.
+		if hasattr(self.implementation, 'available'):
+			return self.implementation.available(self.invoice)
+		else:
+			return True
+
+	@property
+	def unavailable_reason(self):
+		if hasattr(self.implementation, 'available'):
+			return self.implementation.unavailable_reason(self.invoice)
+		else:
+			return None
 
 	@property
 	def paymenturl(self):

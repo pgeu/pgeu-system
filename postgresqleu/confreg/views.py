@@ -550,6 +550,31 @@ class SessionSet(object):
 		self.totalwidth = totalwidth
 		self.pixelsperminute = pixelsperminute
 
+	def _session_template_dict(self, s):
+		if not s.cross_schedule:
+			return {
+				'id': s.id,
+				'title': s.title,
+				'speakers': s.speaker.all(),
+				'timeslot': "%s - %s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")),
+				'track': s.track,
+				'leftpos': self.roomwidth()*self.rooms[s.room],
+				'toppos': self.timediff_to_y_pixels(s.starttime, self.firsttime)+self.headersize,
+				'widthpos': self.roomwidth()-2,
+				'heightpos': self.timediff_to_y_pixels(s.endtime, s.starttime),
+			}
+		else:
+			return {
+				'title': s.title,
+				'timeslot': "%s - %s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")),
+				'track': s.track,
+				'cross_schedule': True,
+				'leftpos': 0,
+				'toppos': self.timediff_to_y_pixels(s.starttime, self.firsttime)+self.headersize,
+				'widthpos': self.roomwidth() * len(self.rooms) - 2,
+				'heightpos': self.timediff_to_y_pixels(s.endtime, s.starttime)-2,
+			}
+
 	def add(self, session):
 		# If no room specified, we can't list the session
 		if not session.room: return
@@ -570,28 +595,7 @@ class SessionSet(object):
 
 	def all(self):
 		for s in self.sessions:
-			if not s.cross_schedule:
-				yield {
-					'id': s.id,
-					'title': s.title,
-					'speakers': s.speaker.all(),
-					'timeslot': "%s - %s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")),
-					'track': s.track,
-					'leftpos': self.roomwidth()*self.rooms[s.room],
-					'toppos': self.timediff_to_y_pixels(s.starttime, self.firsttime)+self.headersize,
-					'widthpos': self.roomwidth()-2,
-					'heightpos': self.timediff_to_y_pixels(s.endtime, s.starttime),
-				}
-			else:
-				yield {
-					'title': s.title,
-					'timeslot': "%s - %s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")),
-					'track': s.track,
-					'leftpos': 0,
-					'toppos': self.timediff_to_y_pixels(s.starttime, self.firsttime)+self.headersize,
-					'widthpos': self.roomwidth() * len(self.rooms) - 2,
-					'heightpos': self.timediff_to_y_pixels(s.endtime, s.starttime)-2,
-				}
+			yield self._session_template_dict(s)
 
 	def schedule_height(self):
 		return self.timediff_to_y_pixels(self.lasttime, self.firsttime)+2+self.headersize
@@ -616,11 +620,18 @@ class SessionSet(object):
 
 	def allrooms(self):
 		return [{
+			'id': r.id,
 			'name': r.roomname,
 			'leftpos': self.roomwidth()*self.rooms[r],
 			'widthpos': self.roomwidth()-2,
 			'heightpos': self.headersize-2,
+			'sessions': self.room_sessions(r.id),
 		} for r in self.rooms]
+
+	def room_sessions(self, roomid):
+		for s in self.sessions:
+			if s.room.id == roomid or s.cross_schedule:
+				yield self._session_template_dict(s)
 
 def schedule(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -646,6 +657,8 @@ def schedule(request, confname):
 		})
 		tracks.update(sessionset.alltracks())
 
+	from pprint import pprint
+	pprint(days)
 	return render_conference_response(request, conference, 'confreg/schedule.html', {
 		'days': days,
 		'tracks': tracks,

@@ -99,7 +99,7 @@ class Invoice(models.Model):
 
 	@property
 	def allowedmethodwrappers(self):
-		return [PaymentMethodWrapper(m, self.invoicestr, self.total_amount, self.pk) for m in self.allowedmethods.all()]
+		return [PaymentMethodWrapper(m, self) for m in self.allowedmethods.all()]
 
 	@property
 	def invoicestr(self):

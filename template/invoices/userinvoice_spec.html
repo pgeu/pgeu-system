@@ -52,7 +52,11 @@
      <li><h3>{{method.name}}</h3>
        {%if method.ok%}
        <p>{{method.description}}</p>
+{%if method.available%}
        <p><a href="{{method.paymenturl}}">Proceed</a> to pay with {{method.name}}</p>
+{%else%}
+       <p><i>This method is currently not available. {{method.unavailable_reason}}</i></p>
+{%endif%}
        {%else%}
        <p>An error occurred when initializing this payment method. Unfortunately, it is not currently available. Please contact the PostgreSQL Europe treasurer to report this.</p>
        {%endif%}
