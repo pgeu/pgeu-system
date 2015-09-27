@@ -1,4 +1,4 @@
-/bin/env python
+#!/usr/bin/env python
 #
 # Process reports from Adyen. This includes downloading them for storage,
 # as well as processing the contents.
