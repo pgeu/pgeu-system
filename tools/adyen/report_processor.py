@@ -84,7 +84,14 @@ def process_payment_accounting_report(report):
 					print "Sent for settle on %s" % pspref
 			elif l['Record Type'] in ('Settled', 'SettledBulk'):
 				if trans.settledat != None:
-					raise Exception('Transaction %s settled more than once?!' % pspref)
+					# Transaction already settled. But we might be reprocessing
+					# the report, so verify if the previously settled one is
+					# *identical*.
+					if trans.settledamount == Decimal(l['Main Amount'], 2):
+						print "Transaction %s already settled at %s, ignoring (NOT creating accounting record)!" % (pspref, trans.settledat)
+						continue
+					else:
+						raise Exception('Transaction %s settled more than once?!' % pspref)
 				trans.settledat = bookdate
 				trans.settledamount = Decimal(l['Main Amount'], 2)
 				trans.save()
