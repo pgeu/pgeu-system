@@ -8,6 +8,15 @@ Entering metadata is still typically done through the
 <a href="/admin/confreg/">main admin interface</a>.
 </p>
 
+{%if user.is_superuser%}
+<h3>Cross-conference</h3>
+<ul>
+  <li><a href="/events/reports/time/">Time reports</a></li>
+</ul>
+
+<h3>All conferences</h3>
+{%endif%}
+
 <table border="1" cellspacing="0" cellpadding="2">
 {%if firstconf%}
  <tr bgcolor="lightgray"><td colspan="2" align="center"><b>Next conference</b></td></tr>
