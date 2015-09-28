@@ -1824,9 +1824,9 @@ def simple_report(request, confname):
 @login_required
 def admin_dashboard(request):
 	if request.user.is_superuser:
-		conferences = Conference.objects.all().order_by('-startdate')
+		conferences = Conference.objects.filter(startdate__gt=datetime.now()-timedelta(days=3*365)).order_by('-startdate')
 	else:
-		conferences = Conference.objects.filter(administrators=request.user).order_by('-startdate')
+		conferences = Conference.objects.filter(administrators=request.user, startdate__gt=datetime.now()-timedelta(days=3*365)).order_by('-startdate')
 
 	# Figure out the very first conference, to render it at the top.
 	# Basically, we look for the first conference (so last in the list)
