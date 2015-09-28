@@ -2070,7 +2070,7 @@ def session_notify_queue(request, urlname):
 def crossmail(request):
 	if request.method == 'POST':
 		form = CrossConferenceMailForm(data=request.POST)
-		recipients = ConferenceRegistration.objects.filter(payconfirmedat__isnull=False, conference__in=form.data.get('attendees_of', [])).exclude(conference__in=form.data.get('attendees_not_of', [])).order_by('lastname', 'firstname')
+		recipients = ConferenceRegistration.objects.filter(payconfirmedat__isnull=False, conference__in=form.data.getlist('attendees_of')).exclude(conference__in=form.data.getlist('attendees_not_of')).distinct().order_by('lastname', 'firstname')
 
 		if form.is_valid():
 			for r in recipients:
