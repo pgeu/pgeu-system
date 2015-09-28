@@ -1,0 +1,43 @@
+{%extends "base.html" %}
+{%block title%}Invoice payment{%endblock%}
+{%block layoutblock%}
+<h1>Invoice payment</h1>
+{%if available%}
+<p>
+Our IBAN payment management is handled by our payment processing company,
+Adyen. The payment should be made to their account, using the reference
+and instructions received after following the link below.
+</p>
+<p>
+Due to the asynchronous nature of IBAN transfers, they are only
+allowed for invoices that are not close to their expiry time. The
+following special rules apply to these payments:
+</p>
+<ul>
+ <li>Payments must be made <i>exactly</i> as instructed on the payment page.
+   There is no manual handling in the process, so if the reference is incorrect,
+   or if the payment is not done in full, it will not be matched by the system.</li>
+ <li>Any transfer fees must be pre-paid (set for sender pays). If any fees are
+   deducted from the payment, it will not match in the system, and thus fail.</li>
+ <li>The payment must reach <i>our systems</i> before the invoice is canceled.
+   This includes delays introduced by sending bank, receiving bank and payment
+   processor. This usually requires 3-5 days, so we recommend that you initiate
+   the payment as soon as possible.</li>
+ <li>If any of these requirements are not fulfilled before the invoice
+   is automatically canceled, the payment will be automatically
+   returned to the sending account, minus transaction fees.  We
+   do <i>not</i> have the ability to override this behaviour.
+ </li>
+</ul>
+
+<p>
+Click <a href="{{paymenturl}}">here</a> to make the payment using IBAN bank
+transfer.
+</p>
+{%else%}
+<h2>Payment method unavailable</h2>
+<p>This payment method is currently not available.
+{{unavailable_reason}}
+</p>
+{%endif%}
+{%endblock%}

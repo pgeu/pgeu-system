@@ -8,6 +8,7 @@ import base64
 import gzip
 import StringIO
 
+from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.util import diff_workdays
 
 def calculate_signature(param, fields):
@@ -69,7 +70,14 @@ Using this payment method, you can pay using a direct IBAN bank transfer.
 """
 
 	def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl=None):
-		return super(AdyenBanktransfer, self).build_payment_url(invoicestr, invoiceamount, invoiceid, returnurl, 'bankTransfer_IBAN', {
+		i = Invoice.objects.get(pk=invoiceid)
+		if i.recipient_secret:
+			return "/invoices/adyen_bank/{0}/{1}/".format(invoiceid, i.recipient_secret)
+		else:
+			return "/invoices/adyen_bank/{0}/".format(invoiceid)
+
+	def build_adyen_payment_url(self, invoicestr, invoiceamount, invoiceid):
+		return super(AdyenBanktransfer, self).build_payment_url(invoicestr, invoiceamount, invoiceid, None, 'bankTransfer_IBAN', {
 			'countryCode': 'FR',
 			'skipSelection': 'true',
 		})

@@ -165,6 +165,8 @@ urlpatterns = patterns('',
     (r'^invoices/dummy/(\d+)/([a-z0-9]{64})/$', postgresqleu.invoices.views.dummy_payment),
     (r'^invoices/$', postgresqleu.invoices.views.userhome),
     (r'^invoices/banktransfer/$', postgresqleu.invoices.views.banktransfer),
+    (r'^invoices/adyen_bank/(\d+)/$', postgresqleu.adyen.views.invoicepayment),
+    (r'^invoices/adyen_bank/(\d+)/(\w+)/$', postgresqleu.adyen.views.invoicepayment_secret),
 
     # Basic accounting system
     (r'^accounting/$', postgresqleu.accounting.views.index),

@@ -1,14 +1,16 @@
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.db import transaction
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 
 import base64
 
 from postgresqleu.util.decorators import ssl_required
 from postgresqleu.util.payment.adyen import calculate_signature
+from postgresqleu.util.payment.adyen import AdyenBanktransfer
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.util import InvoiceManager
 
@@ -127,3 +129,28 @@ def adyen_notify_handler(request):
 	else:
 		return HttpResponse('[internal error]', content_type='text/plain')
 
+
+
+# Rendered views to do bank payment
+def _invoice_payment(request, invoice):
+	method = AdyenBanktransfer()
+	paymenturl = method.build_adyen_payment_url(invoice.invoicestr, invoice.total_amount, invoice.pk)
+	return render_to_response('adyen/adyen_bank_payment.html', {
+		'available': method.available(invoice),
+		'unavailable_reason': method.unavailable_reason(invoice),
+		'paymenturl': paymenturl,
+	}, RequestContext(request))
+
+@ssl_required
+@login_required
+def invoicepayment(request, invoiceid):
+	invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True)
+	if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
+		return HttpResponseForbidden("Access denied")
+
+	return _invoice_payment(request, invoice)
+
+@ssl_required
+def invoicepayment_secret(request, invoiceid, secret):
+	invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True, recipient_secret=secret)
+	return _invoice_payment(request, invoice)
