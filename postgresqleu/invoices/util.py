@@ -458,14 +458,15 @@ class TestProcessor(object):
 
 # Calculate the number of workdays between two datetimes.
 def diff_workdays(start, end):
-	# If the end day is before 08:00, adjust it back to the previous day
-	if end.hour < 8:
-		pass
-
 	weekdays = len(list(rrule.rrule(rrule.DAILY, byweekday=range(0, 5), dtstart=start, until=end)))
 
 	if end.hour < 8:
 		weekdays -= 1
+	if start.hour > 17:
+		weekdays -= 1
+
+	# We want full days only, so drop one
+	weekdays -= 1
 
 	if weekdays < 0: weekdays = 0
 

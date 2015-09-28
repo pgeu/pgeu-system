@@ -8,6 +8,8 @@ import base64
 import gzip
 import StringIO
 
+from postgresqleu.invoices.util import diff_workdays
+
 def calculate_signature(param, fields):
 	str = "".join([param.has_key(f) and param[f] or '' for f in fields])
 	hm = hmac.new(settings.ADYEN_SIGNKEY,
@@ -75,12 +77,12 @@ Using this payment method, you can pay using a direct IBAN bank transfer.
 	# Override availability for direct bank transfers. We hide it if the invoice will be
 	# automatically canceled in less than 4 working days.
 	def available(self, invoice):
-		if not invoice.canceltime:
-			return True
+		if invoice.canceltime:
+			if diff_workdays(datetime.now(), invoice.canceltime) < 5:
+				return False
+		return True
 
 	def unavailable_reason(self, invoice):
-		if not invoice.canceltime:
-			return False
-
-		if invoice.days_until_autocancel() < 5:
-			return "bazinga"
+		if invoice.canceltime:
+			if diff_workdays(datetime.now(), invoice.canceltime) < 5:
+				return "Since this invoice will be automatically canceled in less than 5 working days, it requires the use of a faster payment method."
