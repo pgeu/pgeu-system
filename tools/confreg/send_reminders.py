@@ -10,7 +10,7 @@
 
 import sys
 import os
-from cStringIO import StringIO
+from StringIO import StringIO
 from datetime import datetime, timedelta
 
 # Set up to run in django environment
@@ -26,6 +26,7 @@ from django.template.loader import get_template
 from postgresqleu.mailqueue.util import send_simple_mail
 
 from postgresqleu.confreg.models import Conference, Speaker, ConferenceSession
+from postgresqleu.confreg.models import ConferenceRegistration
 
 def remind_pending_speakers(whatstr, conference):
 	# Remind speakers that are in pending status. But only the ones
@@ -57,7 +58,7 @@ def remind_pending_speakers(whatstr, conference):
 							 receivername = speaker.fullname,
 						 )
 
-			whatstr.write("Reminded speaker {0} to confirm {1} talks\n".format(speaker, len(sessions)))
+			whatstr.write(u"Reminded speaker {0} to confirm {1} talks\n".format(speaker, len(sessions)))
 
 		whatstr.write("\n\n")
 
@@ -91,9 +92,44 @@ def remind_unregistered_speakers(whatstr, conference):
 							 receivername = speaker.fullname,
 						 )
 
-			whatstr.write("Reminded speaker {0} to register\n".format(speaker))
+			whatstr.write(u"Reminded speaker {0} to register\n".format(speaker))
+
+		whatstr.write("\n\n")
 
 
+def remind_pending_registrations(whatstr, conference):
+	# Get registrations made which have no invoice, no bulk registration,
+	# and are not completed. We look at registrations created more than 5
+	# days ago and also unmodified for 5 days. This is intentionally not 7
+	# days in order to "rotate the day of week" the reminders go out on.
+	regs = ConferenceRegistration.objects.filter(conference=conference,
+												 payconfirmedat__isnull=True,
+												 invoice__isnull=True,
+												 bulkpayment__isnull=True,
+												 created__lt=datetime.now()-timedelta(days=5),
+												 lastmodified__lt=datetime.now()-timedelta(days=5))
+
+	if regs:
+		whatstr.write("Found {0} unconfirmed registrations:\n".format(len(regs)))
+		template = get_template('confreg/mail/attendee_stalled_registration.txt')
+		for reg in regs:
+			send_simple_mail(conference.contactaddr,
+							 reg.email,
+							 "Your registration to {0}".format(conference),
+							 template.render(Context({
+								 'conference': conference,
+								 'reg': reg,
+								 'SITEBASE': settings.SITEBASE_SSL,
+							 })),
+							 sendername = conference.conferencename,
+							 receivername = reg.fullname,
+						 )
+			reg.lastmodified = datetime.now()
+			reg.save()
+
+			whatstr.write(u"Reminded attendee {0} that their registration is not confirmed\n".format(reg.fullname))
+
+		whatstr.write("\n\n")
 
 if __name__ == "__main__":
 	for conference in Conference.objects.filter(active=True):
@@ -106,6 +142,8 @@ if __name__ == "__main__":
 			if conference.registrationtype_set.filter(specialtype='spk').exists():
 				remind_pending_speakers(whatstr, conference)
 				remind_unregistered_speakers(whatstr, conference)
+
+			remind_pending_registrations(whatstr, conference)
 
 			# Do we need to send a central mail?
 			if whatstr.tell():
