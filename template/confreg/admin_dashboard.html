@@ -1,6 +1,14 @@
 {%extends "base.html" %}
 {%block title%}Conferences{%endblock%}
 {%block layoutblock%}
+{% if messages %}
+<ul style="background-color: yellow;">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
 <h1>Conferences</h1>
 {%if conferences%}
 <p>
@@ -12,6 +20,7 @@ Entering metadata is still typically done through the
 <h3>Cross-conference</h3>
 <ul>
   <li><a href="/events/reports/time/">Time reports</a></li>
+  <li><a href="/events/admin/crossmail/">Cross conference email</a></li>
 </ul>
 
 <h3>All conferences</h3>

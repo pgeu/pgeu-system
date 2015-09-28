@@ -511,3 +511,24 @@ class WaitlistOfferForm(forms.Form):
 		if len(self.reg_list)==0:
 			raise ValidationError("At least one registration must be selected to make an offer")
 		return self.cleaned_data
+
+
+class CrossConferenceMailForm(forms.Form):
+	senderaddr = forms.EmailField(min_length=5, required=True)
+	sendername = forms.CharField(min_length=5, required=True)
+	attendees_of = forms.ModelMultipleChoiceField(queryset=Conference.objects.all(), label="Send to attendees of")
+	attendees_not_of = forms.ModelMultipleChoiceField(queryset=Conference.objects.all(), label="Who are not attendees of", required=False)
+	subject = forms.CharField(min_length=10, max_length=80, required=True)
+	text = forms.CharField(min_length=30, required=True, widget=forms.Textarea)
+
+	confirm = forms.BooleanField(label="Confirm", required=False)
+
+	def __init__(self, *args, **kwargs):
+		super(CrossConferenceMailForm, self).__init__(*args, **kwargs)
+
+		if not (self.data.get('senderaddr') and self.data.get('sendername') and self.data.get('attendees_of') and self.data.get('subject') and self.data.get('text')):
+			del self.fields['confirm']
+
+	def clean_confirm(self):
+		if not self.cleaned_data['confirm']:
+			raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")

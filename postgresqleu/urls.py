@@ -105,6 +105,7 @@ urlpatterns = patterns('',
     (r'^events/admin/(\w+)/wiki/(new|\d+)/$', postgresqleu.confwiki.views.admin_edit_page),
     (r'^events/admin/(\w+)/signups/$', postgresqleu.confwiki.views.signup_admin),
 	(r'^events/admin/(\w+)/signups/(new|\d+)/$', postgresqleu.confwiki.views.signup_admin_edit),
+    (r'^events/admin/crossmail/$', postgresqleu.confreg.views.crossmail),
 
     (r'^events/sponsor/', include('postgresqleu.confsponsor.urls')),
 

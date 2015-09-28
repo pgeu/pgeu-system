@@ -28,7 +28,7 @@ from forms import ConferenceRegistrationForm, ConferenceSessionFeedbackForm
 from forms import ConferenceFeedbackForm, SpeakerProfileForm
 from forms import CallForPapersForm, CallForPapersSpeakerForm, CallForPapersSubmissionForm
 from forms import PrepaidCreateForm, BulkRegistrationForm
-from forms import EmailSendForm, EmailSessionForm
+from forms import EmailSendForm, EmailSessionForm, CrossConferenceMailForm
 from forms import AttendeeMailForm, WaitlistOfferForm
 from util import invoicerows_for_registration, notify_reg_confirmed
 from util import get_invoice_autocancel
@@ -2060,6 +2060,38 @@ def session_notify_queue(request, urlname):
 		'conference': conference,
 		'notifysessions': notifysessions,
 		}, RequestContext(request))
+
+
+# Send email to attendees of mixed conferences
+@ssl_required
+@login_required
+@user_passes_test_or_error(lambda u:u.is_superuser)
+@transaction.commit_on_success
+def crossmail(request):
+	if request.method == 'POST':
+		form = CrossConferenceMailForm(data=request.POST)
+		recipients = ConferenceRegistration.objects.filter(payconfirmedat__isnull=False, conference__in=form.data.get('attendees_of', [])).exclude(conference__in=form.data.get('attendees_not_of', [])).order_by('lastname', 'firstname')
+
+		if form.is_valid():
+			for r in recipients:
+				send_simple_mail(form.data['senderaddr'],
+								 r.email,
+								 form.data['subject'],
+								 form.data['text'],
+								 sendername=form.data['sendername'],
+								 receivername=r.fullname)
+
+			messages.info(request, "Sent {0} emails.".format(len(recipients)))
+			return HttpResponseRedirect("../")
+	else:
+		form = CrossConferenceMailForm()
+		recipients = None
+
+	return render_to_response('confreg/admin_cross_conference_mail.html', {
+		'form': form,
+		'recipients': recipients,
+		}, RequestContext(request))
+
 
 # Admin view that's used to send email to multiple users
 @ssl_required
