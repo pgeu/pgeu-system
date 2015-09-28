@@ -110,7 +110,7 @@ def remind_pending_registrations(whatstr, conference):
 												 lastmodified__lt=datetime.now()-timedelta(days=5))
 
 	if regs:
-		whatstr.write("Found {0} unconfirmed registrations:\n".format(len(regs)))
+		whatstr.write("Found {0} unconfirmed registrations that are stalled:\n".format(len(regs)))
 		template = get_template('confreg/mail/attendee_stalled_registration.txt')
 		for reg in regs:
 			send_simple_mail(conference.contactaddr,
