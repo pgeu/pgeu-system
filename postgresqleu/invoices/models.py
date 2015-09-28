@@ -19,6 +19,7 @@ class InvoicePaymentMethod(models.Model):
 	name = models.CharField(max_length=100, null=False, blank=False)
 	active = models.BooleanField(null=False, blank=False, default=True)
 	sortkey = models.IntegerField(null=False, blank=False, default=100)
+	internaldescription = models.CharField(max_length=100, null=False, blank=True)
 	# Python class name (full path) to the class that implements
 	# this payment method.
 	classname = models.CharField(max_length=200, null=False, blank=False, unique=True)
