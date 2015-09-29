@@ -140,11 +140,12 @@ def oneinvoice(request, invoicenum):
 			messages.info(request, "Invoice %s deleted." % invoiceid)
 			return HttpResponseRedirect('/invoiceadmin/')
 
-		# Disabled SELECTs are not included in the POST. Therefor, we must copy the
+		# Disabled SELECTs are not included in the POST, and neither are DateTimeInput's
+		# (but DateInput's are). Therefor, we must copy the
 		# data over for those fields.
 		postcopy = request.POST.copy()
 		if not invoicenum == 'new':
-			for fld in ('accounting_account', 'accounting_object', ):
+			for fld in ('accounting_account', 'accounting_object', 'canceltime'):
 				if not postcopy.has_key(fld):
 					postcopy[fld] = getattr(invoice, fld)
 
