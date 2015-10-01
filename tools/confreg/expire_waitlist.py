@@ -44,7 +44,7 @@ if __name__ == "__main__":
 			send_simple_mail(reg.conference.contactaddr,
 							 reg.conference.contactaddr,
 								 'Waitlist expired',
-								 'User {0} {1} <{2}> did not complete the registration before the waitlist offer expired.'.format(reg.firstname, reg.lastname, reg.email),
+								 u'User {0} {1} <{2}> did not complete the registration before the waitlist offer expired.'.format(reg.firstname, reg.lastname, reg.email),
 								 sendername=reg.conference.conferencename)
 
 			# Also send an email to the user

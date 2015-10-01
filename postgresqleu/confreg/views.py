@@ -1004,7 +1004,7 @@ def confirmreg(request, confname):
 				send_simple_mail(reg.conference.contactaddr,
 								 reg.conference.contactaddr,
 								 'Waitlist expired',
-								 'User {0} {1} <{2}> did not complete the registration before the waitlist offer expired.'.format(reg.firstname, reg.lastname, reg.email),
+								 u'User {0} {1} <{2}> did not complete the registration before the waitlist offer expired.'.format(reg.firstname, reg.lastname, reg.email),
 								 sendername=reg.conference.conferencename)
 
 				return render_conference_response(request, conference, 'confreg/waitlist_status.html', {
@@ -1136,7 +1136,7 @@ def waitlist_signup(request, confname):
 	send_simple_mail(reg.conference.contactaddr,
 					 reg.conference.contactaddr,
 					 'Waitlist signup',
-					 'User {0} {1} <{2}> signed up for the waitlist.'.format(reg.firstname, reg.lastname, reg.email),
+					 u'User {0} {1} <{2}> signed up for the waitlist.'.format(reg.firstname, reg.lastname, reg.email),
 					 sendername=reg.conference.conferencename)
 
 	# Once on the waitlist, redirect back to the registration form page
@@ -1166,7 +1166,7 @@ def waitlist_cancel(request, confname):
 	send_simple_mail(reg.conference.contactaddr,
 					 reg.conference.contactaddr,
 					 'Waitlist cancel',
-					 'User {0} {1} <{2}> canceled from the waitlist.'.format(reg.firstname, reg.lastname, reg.email),
+					 u'User {0} {1} <{2}> canceled from the waitlist.'.format(reg.firstname, reg.lastname, reg.email),
 					 sendername=reg.conference.conferencename)
 
 	messages.info(request, "Your registration has been removed from the waitlist. You may re-enter it if you change your mind.")
