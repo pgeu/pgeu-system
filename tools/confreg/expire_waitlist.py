@@ -58,7 +58,7 @@ if __name__ == "__main__":
 								 'SITEBASE': settings.SITEBASE_SSL,
 								 })),
 							 sendername = reg.conference.conferencename,
-							 receivername = "{0} {1}".format(reg.firstname, reg.lastname),
+							 receivername = u"{0} {1}".format(reg.firstname, reg.lastname),
 							 )
 
 			# Now actually expire the offer

@@ -1944,7 +1944,7 @@ def admin_waitlist(request, urlname):
 									 'SITEBASE': settings.SITEBASE_SSL,
 									 })),
 								 sendername = conference.conferencename,
-								 receivername = "{0} {1}".format(r.firstname, r.lastname),
+								 receivername = u"{0} {1}".format(r.firstname, r.lastname),
 								 )
 				messages.info(request, "Sent offer to {0}".format(r.email))
 			return HttpResponseRedirect(".")
