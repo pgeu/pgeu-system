@@ -158,7 +158,7 @@ def process_settlement_detail_report_batch(report):
 		elif t == 'DepositCorrection':
 			# Modification of our deposit account - in either direction!
 			acctrows.append((settings.ACCOUNTING_ADYEN_MERCHANT_ACCOUNT, accstr, -amount, None))
-		elif t == 'Refunded':
+		elif t == 'Refunded' or t == 'RefundedBulk':
 			# Refunded - should already be booked against the refunding account
 			acctrows.append((settings.ACCOUNTING_ADYEN_REFUNDS_ACCOUNT, accstr, -amount, None))
 		else:
