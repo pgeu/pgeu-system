@@ -7,16 +7,24 @@ import hashlib
 import base64
 import gzip
 import StringIO
+import binascii
+from collections import OrderedDict
 
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.util import diff_workdays
 
-def calculate_signature(param, fields):
-	str = "".join([param.has_key(f) and param[f] or '' for f in fields])
-	hm = hmac.new(settings.ADYEN_SIGNKEY,
+def _escapeVal(val):
+	return val.replace('\\','\\\\').replace(':','\\:')
+
+def calculate_signature(param):
+	param = OrderedDict(sorted(param.items(), key=lambda t: t[0]))
+	if param.has_key('merchantSig'):
+		del param['merchantSig']
+	str = ':'.join(map(_escapeVal, param.keys() + param.values()))
+	hm = hmac.new(binascii.a2b_hex(settings.ADYEN_SIGNKEY),
 				  str,
-				  hashlib.sha1)
-	return base64.encodestring(hm.digest()).strip()
+				  hashlib.sha256)
+	return base64.b64encode(hm.digest())
 
 def _gzip_string(str):
 	# Compress a string using gzip including header data
@@ -47,7 +55,7 @@ class _AdyenBase(object):
 			})
 		param.update(additionalparam)
 
-		param['merchantSig'] = calculate_signature(param, ('paymentAmount', 'currencyCode', 'merchantReference', 'skinCode', 'merchantAccount', 'sessionValidity', 'allowedMethods', 'merchantReturnData', ))
+		param['merchantSig'] = calculate_signature(param)
 
 		# use pay.shtml for one-page, or select.shtml for multipage
 		return "%shpp/select.shtml?%s" % (

@@ -20,7 +20,7 @@ from util import process_raw_adyen_notification
 @ssl_required
 @transaction.commit_on_success
 def adyen_return_handler(request):
-	sig = calculate_signature(request.GET, ('authResult', 'pspReference', 'merchantReference', 'skinCode', 'merchantReturnData'))
+	sig = calculate_signature(request.GET)
 
 	if sig != request.GET['merchantSig']:
 		return render_to_response('adyen/sigerror.html',
