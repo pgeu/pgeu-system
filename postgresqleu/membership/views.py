@@ -81,7 +81,7 @@ def home(request):
 					processor = processor,
 					processorid = member.pk,
 					bankinfo = False,
-					canceltime = datetime.now() + timedelta(days=5),
+					canceltime = datetime.now() + timedelta(days=7),
 					accounting_account = settings.ACCOUNTING_MEMBERSHIP_ACCOUNT
 					)
 				member.activeinvoice.save()
