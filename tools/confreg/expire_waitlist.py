@@ -64,6 +64,10 @@ if __name__ == "__main__":
 			# Now actually expire the offer
 			w.offeredon = None
 			w.offerexpires = None
+			# Move the user to the back of the waitlist (we have a history entry for the
+			# initial registration date, so it's still around)
+			w.enteredon = datetime.now()
+
 			w.save()
 
 	connection.close()

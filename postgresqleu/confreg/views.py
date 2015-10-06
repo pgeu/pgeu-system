@@ -997,6 +997,8 @@ def confirmreg(request, confname):
 
 				reg.registrationwaitlistentry.offeredon = None
 				reg.registrationwaitlistentry.offerexpires = None
+				# Move registration to the back of the waitlist
+				reg.registrationwaitlistentry.enteredon = datetime.now()
 				reg.registrationwaitlistentry.save()
 
 				messages.warning(request, "We're sorry, but your registration was not completed in time before the offer expired, and has been moved back to the waitlist.")
