@@ -373,6 +373,10 @@ class RegistrationWaitlistEntry(models.Model):
 	offeredon = models.DateTimeField(null=True, blank=True)
 	offerexpires = models.DateTimeField(null=True, blank=True)
 
+	@property
+	def offers_made(self):
+		return self.registrationwaitlisthistory_set.filter(text__startswith='Made offer').count()
+
 class RegistrationWaitlistHistory(models.Model):
 	waitlist = models.ForeignKey(RegistrationWaitlistEntry, null=False, blank=False)
 	time = models.DateTimeField(null=False, blank=False, auto_now_add=True)
