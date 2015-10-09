@@ -33,7 +33,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 		if not self.instance.conference.asktshirt:
 			del self.fields['shirtsize']
 		self.fields['additionaloptions'].queryset =	ConferenceAdditionalOption.objects.filter(
-			conference=self.instance.conference)
+			conference=self.instance.conference, public=True)
 		self.fields['country'].queryset = Country.objects.order_by('printable_name')
 		self.fields['twittername'].validators.append(TwitterValidator)
 
@@ -236,7 +236,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 				   'legend': 'Conference information',
 				   'fields': fields}
 
-		if conf.conferenceadditionaloption_set.all().exists():
+		if conf.conferenceadditionaloption_set.filter(public=True).exists():
 			yield {'id': 'additional_options',
 				   'legend': 'Additional options',
 				   'intro': conf.additionalintro,

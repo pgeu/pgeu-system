@@ -251,6 +251,7 @@ class ConferenceAdditionalOption(models.Model):
 	name = models.CharField(max_length=100, null=False, blank=False)
 	cost = models.IntegerField(null=False)
 	maxcount = models.IntegerField(null=False)
+	public = models.BooleanField(null=False, blank=False, default=True, help_text='Visible on public forms (opposite of admin only)')
 	upsellable = models.BooleanField(null=False, blank=False, default=True, help_text='Can this option be purchased after the registration is completed')
 	invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1),], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
 	requires_regtype = models.ManyToManyField(RegistrationType, blank=True, help_text='Can only be picked with selected registration types')

@@ -134,7 +134,7 @@ def _registration_dashboard(request, conference, reg):
 	# anything picked by this user.
 	# Also exclude any option that has a maxcount, and already has too
 	# many registrations.
-	optionsQ = Q(conference=conference, upsellable=True) & (Q(maxcount=0) | Q(num_regs__lt=F('maxcount'))) & ~Q(conferenceregistration=reg) & ~Q(mutually_exclusive__conferenceregistration=reg)
+	optionsQ = Q(conference=conference, upsellable=True, public=True) & (Q(maxcount=0) | Q(num_regs__lt=F('maxcount'))) & ~Q(conferenceregistration=reg) & ~Q(mutually_exclusive__conferenceregistration=reg)
 	availableoptions = list(ConferenceAdditionalOption.objects.annotate(num_regs=Count('conferenceregistration')).filter(optionsQ))
 	try:
 		pendingadditional = PendingAdditionalOrder.objects.get(reg=reg, payconfirmedat__isnull=True)
@@ -255,7 +255,7 @@ def home(request, confname):
 		'form_is_saved': form_is_saved,
 		'reg': reg,
 		'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/register/%s/" % (settings.SITEBASE_SSL, conference.urlname)),
-		'additionaloptions': conference.conferenceadditionaloption_set.all(),
+		'additionaloptions': conference.conferenceadditionaloption_set.filter(public=True),
 		'costamount': reg.regtype and reg.regtype.cost or 0,
 	})
 
