@@ -1,5 +1,6 @@
 import os
 import sys
+from xml.sax import saxutils
 
 import Image
 import reportlab.lib.utils
@@ -79,7 +80,7 @@ class BaseBadge(Flowable):
 		style.fontSize = fontsize
 		style.leading = fontsize * 1.2
 		style.alignment = alignment
-		p = Paragraph(txt, style)
+		p = Paragraph(saxutils.escape(txt), style)
 		(actualwidth, actualheight) = p.wrap(width, height)
 		p.drawOn(self.canv, x, y+height-actualheight-yoffset)
 
