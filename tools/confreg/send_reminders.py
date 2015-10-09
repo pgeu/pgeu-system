@@ -106,6 +106,7 @@ def remind_pending_registrations(whatstr, conference):
 												 payconfirmedat__isnull=True,
 												 invoice__isnull=True,
 												 bulkpayment__isnull=True,
+												 registrationwaitlistentry__isnull=True,
 												 created__lt=datetime.now()-timedelta(days=5),
 												 lastmodified__lt=datetime.now()-timedelta(days=5))
 
