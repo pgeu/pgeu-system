@@ -576,8 +576,9 @@ class SessionSet(object):
 			}
 
 	def add(self, session):
-		# If no room specified, we can't list the session
-		if not session.room: return
+		# If no room specified, we can't list the session, unless it's a cross-schedule
+		# session.
+		if not session.room and not session.cross_schedule: return
 		if not self.rooms.has_key(session.room):
 			if not session.cross_schedule:
 				self.rooms[session.room] = len(self.rooms)
@@ -630,7 +631,7 @@ class SessionSet(object):
 
 	def room_sessions(self, roomid):
 		for s in self.sessions:
-			if s.room.id == roomid or s.cross_schedule:
+			if s.cross_schedule or s.room.id == roomid:
 				yield self._session_template_dict(s)
 
 def schedule(request, confname):
