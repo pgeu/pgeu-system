@@ -637,8 +637,12 @@ class SessionSet(object):
 		} for r in self.rooms]
 
 	def room_sessions(self, roomid):
+		roomprevsess = None
 		for s in self.sessions:
 			if s.cross_schedule or s.room.id == roomid:
+				if roomprevsess and roomprevsess.endtime < s.starttime:
+					yield {'empty': True}
+				roomprevsess = s
 				yield self._session_template_dict(s)
 
 def schedule(request, confname):
