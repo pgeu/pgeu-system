@@ -569,6 +569,7 @@ class SessionSet(object):
 				'toppos': self.timediff_to_y_pixels(s.starttime, self.firsttime)+self.headersize,
 				'widthpos': self.roomwidth()-2,
 				'heightpos': self.timediff_to_y_pixels(s.endtime, s.starttime),
+				'length': (s.endtime-s.starttime).total_seconds()/60,
 			}
 		else:
 			return {
@@ -580,6 +581,7 @@ class SessionSet(object):
 				'toppos': self.timediff_to_y_pixels(s.starttime, self.firsttime)+self.headersize,
 				'widthpos': self.roomwidth() * len(self.rooms) - 2,
 				'heightpos': self.timediff_to_y_pixels(s.endtime, s.starttime)-2,
+				'length': (s.endtime-s.starttime).total_seconds()/60,
 			}
 
 	def add(self, session):
