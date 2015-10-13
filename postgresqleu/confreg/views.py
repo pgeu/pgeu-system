@@ -99,6 +99,13 @@ def render_conference_response(request, conference, templatename, dictionary=Non
 	context = ConferenceContext(request, conference)
 	if conference and conference.templateoverridedir:
 		try:
+			if request.GET.has_key('test') and request.GET['test'] == '1':
+				# If we append the test=1 parameter to the URL, we get a test version of
+				# the templates. Basically we just append ".test" to the end of the template
+				# name, making it possible to play interesting symlink tricks and such things
+				# to do testing in production env.
+				templatename += ".test"
+
 			tmpl, display = filesystem_template_loader.load_template(templatename, (conference.templateoverridedir,))
 			if dictionary:
 				context.update(dictionary)
