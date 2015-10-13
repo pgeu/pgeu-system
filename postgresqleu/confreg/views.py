@@ -665,8 +665,6 @@ def schedule(request, confname):
 		})
 		tracks.update(sessionset.alltracks())
 
-	from pprint import pprint
-	pprint(days)
 	return render_conference_response(request, conference, 'confreg/schedule.html', {
 		'days': days,
 		'tracks': tracks,
