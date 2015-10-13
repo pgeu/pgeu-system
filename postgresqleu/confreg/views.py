@@ -641,7 +641,9 @@ class SessionSet(object):
 		for s in self.sessions:
 			if s.cross_schedule or s.room.id == roomid:
 				if roomprevsess and roomprevsess.endtime < s.starttime:
-					yield {'empty': True}
+					yield {'empty': True,
+						   'length': (s.starttime-roomprevsess.endtime).total_seconds()/60,
+					}
 				roomprevsess = s
 				yield self._session_template_dict(s)
 
