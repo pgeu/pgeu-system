@@ -355,7 +355,7 @@ def signup_admin_edit(request, urlname, signupid):
 		# a summary.
 		results = {}
 		cursor = connection.cursor()
-		cursor.execute("SELECT choice,count(*),count(*)*100*4/count(*) OVER () from confwiki_attendeesignup WHERE signup_id=%(signup)s GROUP BY choice ORDER BY 2 DESC", {
+		cursor.execute("WITH t AS (SELECT choice, count(*) AS num FROM confwiki_attendeesignup WHERE signup_id=%(signup)s GROUP BY choice) SELECT choice, num, CAST(num*100*4/sum(num) OVER () AS integer) FROM t ORDER BY 2 DESC", {
 			'signup': signup.id,
 		})
 		results['summary'] = [dict(zip(['choice', 'num', 'percentwidth'], r)) for r in cursor.fetchall()]
