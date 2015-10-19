@@ -152,7 +152,7 @@ def wikipage_edit(request, confurl, wikiurl):
 
 				# Send notifications to admin and to any subscribers
 				subject = '[{0}] Wiki page {1} changed'.format(conference.conferencename, page.title)
-				body = "{0} has modified the page '{1}' with the following changes\n\n\n{2}\n".format(reg.fullname, page.title, diff)
+				body = u"{0} has modified the page '{1}' with the following changes\n\n\n{2}\n".format(reg.fullname, page.title, diff)
 				send_simple_mail(conference.contactaddr,
 								 conference.contactaddr,
 								 subject,
