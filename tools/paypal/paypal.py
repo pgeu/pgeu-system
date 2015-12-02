@@ -153,7 +153,7 @@ class PaypalAPI(object):
 			i += 1
 			if not ret.has_key('L_TRANSACTIONID%i' % i): break
 
-			if ret['L_TYPE%i' % i][0] in ('Payment', 'Donation'):
+			if ret['L_TYPE%i' % i][0] in ('Payment', 'Donation', 'Purchase'):
 				yield PaypalTransaction(self, ret, source, i)
 			elif ret['L_TYPE%i' %i][0] in ('Transfer'):
 				yield PaypalTransfer(self, ret, source, i)
