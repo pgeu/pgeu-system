@@ -94,7 +94,7 @@ class Conference(models.Model):
 	askfood = models.BooleanField(blank=False, null=False, default=True)
 	askshareemail = models.BooleanField(null=False, blank=False, default=False)
 	skill_levels = models.BooleanField(blank=False, null=False, default=True)
-	additionalintro = models.TextField(blank=True, null=False)
+	additionalintro = models.TextField(blank=True, null=False, help_text="Additional text shown just before the list of available additional options")
 	basetemplate = models.CharField(max_length=128, blank=True, null=True, default=None, help_text="Relative name to template used as base to extend any default templates from")
 	templatemodule = models.CharField(max_length=128, blank=True, null=True, default=None, help_text="Full path to python module containing a 'templateextra.py' submodule")
 	templateoverridedir = models.CharField(max_length=128, blank=True, null=True, default=None, help_text="Full path to a directory with override templates in")
