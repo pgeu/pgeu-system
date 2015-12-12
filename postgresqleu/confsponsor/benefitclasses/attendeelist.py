@@ -5,7 +5,7 @@ from datetime import datetime
 import base64
 import cStringIO as StringIO
 import csv
-import simplejson
+import json
 
 from base import BaseBenefit
 
@@ -18,7 +18,7 @@ class AttendeeListForm(forms.Form):
 		super(AttendeeListForm, self).__init__(*args, **kwargs)
 
 		if benefit.class_parameters:
-			params = simplejson.loads(benefit.class_parameters)
+			params = json.loads(benefit.class_parameters)
 			if params.has_key('claimcheckbox'):
 				self.fields['confirm'].help_text = params['claimcheckbox']
 
@@ -33,7 +33,7 @@ class AttendeeList(BaseBenefit):
 	def validate_params(self):
 		# Just see that it's valid json, and then pass it upwards
 		try:
-			simplejson.loads(self.params)
+			json.loads(self.params)
 		except Exception, e:
 			return e
 
@@ -42,7 +42,7 @@ class AttendeeList(BaseBenefit):
 
 	def save_form(self, form, claim, request):
 		try:
-			p = simplejson.loads(self.params)
+			p = json.loads(self.params)
 		except Exception:
 			p = {}
 

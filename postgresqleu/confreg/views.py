@@ -52,7 +52,7 @@ import sys
 import imp
 from email.mime.text import MIMEText
 
-import simplejson as json
+import json
 
 #
 # The ConferenceContext allows overriding of the 'conftemplbase' variable,

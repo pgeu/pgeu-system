@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
-import simplejson
+import json
 from PIL import ImageFile
 
 from postgresqleu.util.storage import InlineEncodedStorage
@@ -10,7 +10,7 @@ from base import BaseBenefit
 
 def _validate_params(params):
 	try:
-		j = simplejson.loads(params)
+		j = json.loads(params)
 		if sorted(j.keys()) != [u"format", u"xres", u"yres"]:
 			raise Exception("Parameters 'format', 'xres' and 'yres' are mandatory")
 		if int(j['xres']) < 1:
@@ -19,7 +19,7 @@ def _validate_params(params):
 			raise Exception("Parameter 'yres' must be positive integer!")
 
 		return j
-	except simplejson.JSONDecodeError:
+	except json.JSONDecodeError:
 		raise Exception("Can't parse JSON")
 
 class ImageUploadForm(forms.Form):

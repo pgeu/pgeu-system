@@ -1,18 +1,18 @@
 from django.core.exceptions import ValidationError
 from django import forms
 
-import simplejson
+import json
 
 from base import BaseBenefit
 
 def _validate_params(params):
 	try:
-		j = simplejson.loads(params)
+		j = json.loads(params)
 		for k in j.keys():
 			if not k in [u"minwords", u"maxwords", u"minchars", u"maxchars"]:
 				raise Exception("Parameter '%s' is unknown" % k)
 		return j
-	except simplejson.JSONDecodeError:
+	except json.JSONDecodeError:
 		raise Exception("Can't parse JSON")
 
 

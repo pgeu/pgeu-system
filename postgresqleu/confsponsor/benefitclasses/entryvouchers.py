@@ -5,7 +5,7 @@ from django.template.loader import get_template
 
 import base64
 import os
-import simplejson
+import json
 import cStringIO as StringIO
 
 from base import BaseBenefit
@@ -16,7 +16,7 @@ from postgresqleu.confreg.models import RegistrationType, PrepaidBatch, PrepaidV
 
 def _validate_params(level, params):
 	try:
-		j = simplejson.loads(params)
+		j = json.loads(params)
 		if sorted(j.keys()) != [u"num", u"type"]:
 			raise Exception("Parameters 'num' and 'type' are mandatory")
 		if int(j['num']) < 1:
@@ -24,7 +24,7 @@ def _validate_params(level, params):
 		if not RegistrationType.objects.filter(conference=level.conference, regtype=j['type']).exists():
 			raise Exception("Registation type '%s' does not exist" % j['type'])
 		return j
-	except simplejson.JSONDecodeError:
+	except json.JSONDecodeError:
 		raise Exception("Can't parse JSON")
 
 

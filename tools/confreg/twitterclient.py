@@ -8,7 +8,7 @@ scripts.
 Copyright (C) 2009-2010 PostgreSQL Global Development Group
 """
 import oauth2 as oauth
-import simplejson as json
+import json
 import time
 import urllib
 

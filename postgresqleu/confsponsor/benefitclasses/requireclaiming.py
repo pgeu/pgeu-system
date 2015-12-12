@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
-import simplejson
+import json
 
 from base import BaseBenefit
 
@@ -12,7 +12,7 @@ class RequireClaimingForm(forms.Form):
 		super(RequireClaimingForm, self).__init__(*args, **kwargs)
 
 		if benefit.class_parameters:
-			params = simplejson.loads(benefit.class_parameters)
+			params = json.loads(benefit.class_parameters)
 			if params.has_key('claimcheckbox'):
 				self.fields['confirm'].help_text = params['claimcheckbox']
 
@@ -27,7 +27,7 @@ class RequireClaiming(BaseBenefit):
 	def validate_params(self):
 		# Just see that it's valid json, and then pass it upwards
 		try:
-			simplejson.loads(self.params)
+			json.loads(self.params)
 		except Exception, e:
 			return e
 
@@ -36,7 +36,7 @@ class RequireClaiming(BaseBenefit):
 
 	def save_form(self, form, claim, request):
 		try:
-			p = simplejson.loads(self.params)
+			p = json.loads(self.params)
 		except Exception:
 			p = {}
 

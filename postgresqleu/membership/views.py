@@ -17,7 +17,7 @@ from postgresqleu.confreg.forms import EmailSendForm
 from postgresqleu.mailqueue.util import send_simple_mail
 
 from datetime import date, datetime, timedelta
-import simplejson
+import json
 import base64
 import os
 
@@ -203,11 +203,11 @@ def meetingcode(request):
 		key = MemberMeetingKey.objects.get(key=secret, meeting__pk=meetingid)
 		member = key.member
 	except MemberMeetingKey.DoesNotExist:
-		return HttpResponse(simplejson.dumps({'err': 'Authentication key not found. Please see %s/membership/meetings/ to get your correct key!' % settings.SITEBASE_SSL}),
+		return HttpResponse(json.dumps({'err': 'Authentication key not found. Please see %s/membership/meetings/ to get your correct key!' % settings.SITEBASE_SSL}),
 							content_type='application/json')
 
 	# Return a JSON object with information about the member
-	return HttpResponse(simplejson.dumps({'username': member.user.username,
+	return HttpResponse(json.dumps({'username': member.user.username,
 										  'email': member.user.email,
 										  'name': member.fullname,
 									  }), content_type='application/json')

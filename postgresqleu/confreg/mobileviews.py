@@ -12,7 +12,7 @@ from models import Conference
 from datetime import datetime
 
 import itertools
-import simplejson as json
+import json
 
 # Version of the HTML manifest. This needs to be bumped whenever the
 # mobile HTML or Javascript code is changed, to make sure that clients

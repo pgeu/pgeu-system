@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 
 
-import simplejson as json
+import json
 
 from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
 from postgresqleu.auth import user_search, user_import
