@@ -23,7 +23,7 @@ session for the conference.
 Before your session is fully approved, we need you to confirm that you
 can still attend the event. Please go to the website (as linked below)
 and confirm your attendance at the conference as soon as you can.
-Thank you, and we look forward to seeing you at {{conference}}.{%elif session.staus == 4%}
+Thank you, and we look forward to seeing you at {{conference}}.{%elif session.status == 4%}
 The session is currently on the reserve list. If you have any questions
 about what this means, please contact the conference organizers.{%endif%}
 
