@@ -1863,6 +1863,18 @@ def admin_dashboard(request):
 
 @ssl_required
 @login_required
+def admin_dashboard_single(request, urlname):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=urlname)
+	else:
+		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+
+	return render_to_response('confreg/admin_dashboard_single.html', {
+		'conference': conference,
+	}, RequestContext(request))
+
+@ssl_required
+@login_required
 def admin_registration_dashboard(request, urlname):
 	if request.user.is_superuser:
 		conference = get_object_or_404(Conference, urlname=urlname)

@@ -1,0 +1,30 @@
+{%extends "base.html" %}
+{%block title%}{{conference.conferencename}} - dashboard{%endblock%}
+{%block layoutblock%}
+{% if messages %}
+<ul style="background-color: yellow;">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<h1>{{conference.conferencename}}</h1>
+
+{%if user.is_superuser%}
+<h3>Cross-conference</h3>
+<ul>
+  <li><a href="/events/reports/time/">Time reports</a></li>
+  <li><a href="/events/admin/crossmail/">Cross conference email</a></li>
+</ul>
+{%endif%}
+
+
+<h3>{{conference.conferencename}}</h3>
+<table border="1" cellspacing="0" cellpadding="2">
+{%with c=conference%}
+{%include "confreg/admin_dashboard_conference.inc.html" %}
+{%endwith%}
+</table>
+
+{%endblock%}
