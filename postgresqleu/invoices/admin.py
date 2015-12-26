@@ -33,7 +33,6 @@ class InvoiceAdminForm(forms.ModelForm):
 			raise ValidationError("Sorry, we never allow editing of the processor!")
 		return self.cleaned_data['processor']
 	def clean(self):
-		print self.cleaned_data
 		return self.cleaned_data
 
 class InvoiceAdmin(admin.ModelAdmin):
