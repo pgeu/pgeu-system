@@ -1,4 +1,4 @@
-{%extends conftemplbase %}
+{%extends "base.html" %}
 {%block title%}Conference PDF schedule{%endblock%}
 {%block extrahead%}
 <style>
@@ -17,7 +17,7 @@ table#formtbl tr th {
 </style>
 {%endblock%}
 
-{%block content%}
+{%block layoutblock%}
 <h1>Conference PDF schedule</h1>
 {% if messages %}
 <ul style="background-color: yellow;">
