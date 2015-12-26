@@ -170,13 +170,13 @@ def process_settlement_detail_report_batch(report):
 		# automatically be balanced by now, so we can safely just complete it.
 		create_accounting_entry(date.today(), acctrows, False)
 
-		msg = "An settlement batch with Adyen has completed for merchant account %s. A summary of the entries are:\n\n%s\n\n" % (acct, msg)
+		msg = "A settlement batch with Adyen has completed for merchant account %s. A summary of the entries are:\n\n%s\n\n" % (acct, msg)
 	else:
 		# All entries were not processed, so we write what we know to the
 		# db, and then just leave the entry open.
 		create_accounting_entry(date.today(), acctrows, True)
 
-		msg = "An settlement batch with Adyen has completed for merchant account %s. At least one entry in this was UNKNOWN, and therefor the accounting record has been left open, and needs to be adjusted manually!\nA summary of the entries are:\n\n%s\n\n" % (acct, msg)
+		msg = "A settlement batch with Adyen has completed for merchant account %s. At least one entry in this was UNKNOWN, and therefor the accounting record has been left open, and needs to be adjusted manually!\nA summary of the entries are:\n\n%s\n\n" % (acct, msg)
 
 	send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 					 settings.ADYEN_NOTIFICATION_RECEIVER,
