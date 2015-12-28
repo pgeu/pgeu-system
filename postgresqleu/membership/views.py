@@ -142,7 +142,7 @@ def admin_email(request):
 	return render_to_response('membership/admin_email.html', {
 		'form': form,
 		'recipientlist': ', '.join(recipients),
-		})
+		}, RequestContext(request))
 
 @ssl_required
 @login_required
