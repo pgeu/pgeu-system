@@ -43,13 +43,17 @@ class PDFInvoice(object):
 			s = s[:len(s)-2]
 		return s
 
+	def textlines(self, t, lines):
+		for l in lines.splitlines():
+			t.textLine(l)
+
 	def _pageheader(self):
 		if self.preview:
 			t = self.canvas.beginText()
 			t.setTextOrigin(6*cm, 4*cm)
 			t.setFont("Times-Italic", 70)
 			t.setFillColorRGB(0.9,0.9,0.9)
-			t.textLines("PREVIEW PREVIEW")
+			t.textLine("PREVIEW PREVIEW")
 			self.canvas.rotate(45)
 			self.canvas.drawText(t)
 			self.canvas.rotate(-45)
@@ -60,7 +64,7 @@ class PDFInvoice(object):
 		t.setFillColorRGB(0,0,0,0)
 		t.setFont("Times-Roman", 10)
 		t.setTextOrigin(6*cm, 27.5*cm)
-		t.textLines("""PostgreSQL Europe
+		self.textlines(t,"""PostgreSQL Europe
 Carpeaux Diem
 13, rue du Square Carpeaux
 75018 PARIS
@@ -72,7 +76,7 @@ France
 		t.setTextOrigin(2*cm, 23*cm)
 		t.setFont("Times-Roman", 10)
 		t.textLine("")
-		t.textLines("""
+		self.textlines(t, """
 Your contact: Guillaume Lelarge
 Function: PostgreSQL Europe Treasurer
 E-mail: treasurer@postgresql.eu
@@ -84,7 +88,7 @@ E-mail: treasurer@postgresql.eu
 		t.setFont("Times-Italic", 11)
 		t.textLine("To:")
 		t.setFont("Times-Roman", 11)
-		t.textLines(self.recipient)
+		self.textlines(t, self.recipient)
 		self.canvas.drawText(t)
 
 		p = self.canvas.beginPath()
@@ -161,7 +165,7 @@ E-mail: treasurer@postgresql.eu
 				t.textLine("Bank references / Références bancaires / Bankverbindungen / Referencias bancarias")
 
 				t.setFont("Times-Roman", 8)
-				t.textLines("""CCM PARIS 1-2 LOUVRE MONTORGUEIL
+				self.textlines(t, """CCM PARIS 1-2 LOUVRE MONTORGUEIL
 28 RUE ETIENNE MARCEL
 75002 PARIS
 FRANCE
