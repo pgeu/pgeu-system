@@ -53,7 +53,7 @@ class Invoice(models.Model):
 
 	# Amount information is calculated when the invoice is finalized
 	total_amount = models.IntegerField(null=False)
-	finalized = models.BooleanField(null=False, blank=True, help_text="Invoice is finalized, should not ever be changed again")
+	finalized = models.BooleanField(null=False, blank=True, default=False, help_text="Invoice is finalized, should not ever be changed again")
 	deleted = models.BooleanField(null=False, blank=False, default=False, help_text="This invoice has been deleted")
 	deletion_reason = models.CharField(max_length=500, null=False, blank=True, default='', help_text="Reason for deletion of invoice")
 	refunded = models.BooleanField(null=False, blank=False, default=False, help_text="This invoice has been refunded")
@@ -129,7 +129,7 @@ class InvoiceHistory(models.Model):
 		ordering = ['time',]
 
 class InvoiceLog(models.Model):
-	timestamp = models.DateTimeField(null=False, blank=False, default=datetime.now())
+	timestamp = models.DateTimeField(null=False, blank=False, auto_now_add=True)
 	message = models.TextField(null=False, blank=False)
 	sent = models.BooleanField(null=False, blank=False, default=False)
 

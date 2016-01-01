@@ -52,7 +52,7 @@ class Meeting(models.Model):
 	name = models.CharField(max_length=100, null=False, blank=False)
 	dateandtime = models.DateTimeField(null=False, blank=False)
 	allmembers = models.BooleanField(null=False, blank=False)
-	members = models.ManyToManyField(Member, null=True, blank=True)
+	members = models.ManyToManyField(Member, blank=True)
 	botname = models.CharField(max_length=50, null=False, blank=False)
 
 	def __unicode__(self):

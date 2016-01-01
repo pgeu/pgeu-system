@@ -76,7 +76,7 @@ class ReturnAuthorizationStatus(models.Model):
 
 
 class AdyenLog(models.Model):
-	timestamp = models.DateTimeField(null=False, blank=False, auto_now=True, auto_now_add=True)
+	timestamp = models.DateTimeField(null=False, blank=False, auto_now_add=True)
 	pspReference = models.CharField(max_length=100, null=False, blank=True)
 	message = models.TextField(null=False, blank=False)
 	error = models.BooleanField(null=False, blank=False, default=False)
