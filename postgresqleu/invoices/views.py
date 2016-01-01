@@ -3,7 +3,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.forms.models import inlineformset_factory
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
-from django.db.transaction import commit_on_success
+from django.db import transaction
 from django.db.models import Q
 from django.template import RequestContext
 from django.contrib import messages
@@ -108,7 +108,7 @@ def search(request):
 @ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
-@commit_on_success
+@transaction.atomic
 def oneinvoice(request, invoicenum):
 	# Called to view an invoice, to edit one, and to create a new one,
 	# since they're all based on the same model and form.
@@ -182,7 +182,7 @@ def oneinvoice(request, invoicenum):
 @ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
-@commit_on_success
+@transaction.atomic
 def flaginvoice(request, invoicenum):
 	invoice = get_object_or_404(Invoice, pk=invoicenum)
 
@@ -216,7 +216,7 @@ def flaginvoice(request, invoicenum):
 @ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
-@commit_on_success
+@transaction.atomic
 def cancelinvoice(request, invoicenum):
 	invoice = get_object_or_404(Invoice, pk=invoicenum)
 
@@ -236,7 +236,7 @@ def cancelinvoice(request, invoicenum):
 @ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
-@commit_on_success
+@transaction.atomic
 def refundinvoice(request, invoicenum):
 	invoice = get_object_or_404(Invoice, pk=invoicenum)
 
@@ -260,14 +260,14 @@ def previewinvoice(request, invoicenum):
 
 	# We assume there is no PDF yet
 	wrapper = InvoiceWrapper(invoice)
-	r = HttpResponse(mimetype='application/pdf')
+	r = HttpResponse(content_type='application/pdf')
 	r.write(wrapper.render_pdf_invoice(True))
 	return r
 
 @ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
-@commit_on_success
+@transaction.atomic
 def emailinvoice(request, invoicenum):
 	if not (request.GET.has_key('really') and request.GET['really'] == 'yes'):
 		return HttpResponse('Secret key is missing!', status=401)
@@ -327,14 +327,14 @@ def viewinvoicepdf(request, invoiceid):
 	if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
 		return HttpResponseForbidden("Access denied")
 
-	r = HttpResponse(mimetype='application/pdf')
+	r = HttpResponse(content_type='application/pdf')
 	r.write(base64.b64decode(invoice.pdf_invoice))
 	return r
 
 @ssl_required
 def viewinvoicepdf_secret(request, invoiceid, invoicesecret):
 	invoice = get_object_or_404(Invoice, pk=invoiceid, recipient_secret=invoicesecret)
-	r = HttpResponse(mimetype='application/pdf')
+	r = HttpResponse(content_type='application/pdf')
 	r.write(base64.b64decode(invoice.pdf_invoice))
 	return r
 
@@ -345,14 +345,14 @@ def viewreceipt(request, invoiceid):
 	if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
 		return HttpResponseForbidden("Access denied")
 
-	r = HttpResponse(mimetype='application/pdf')
+	r = HttpResponse(content_type='application/pdf')
 	r.write(base64.b64decode(invoice.pdf_receipt))
 	return r
 
 @ssl_required
 def viewreceipt_secret(request, invoiceid, invoicesecret):
 	invoice = get_object_or_404(Invoice, pk=invoiceid, recipient_secret=invoicesecret)
-	r = HttpResponse(mimetype='application/pdf')
+	r = HttpResponse(content_type='application/pdf')
 	r.write(base64.b64decode(invoice.pdf_receipt))
 	return r
 
@@ -375,7 +375,7 @@ def banktransfer(request):
 
 @ssl_required
 @login_required
-@commit_on_success
+@transaction.atomic
 def dummy_payment(request, invoiceid, invoicesecret):
 	if not settings.DEBUG:
 		return HttpResponse("Dummy payments not enabled")

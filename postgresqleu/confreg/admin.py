@@ -2,7 +2,7 @@ from django.contrib import admin
 from django import forms
 from django.http import HttpResponseRedirect
 from django.forms import ValidationError
-from django.forms.util import ErrorList
+from django.forms.utils import ErrorList
 from django.db.models.fields.files import ImageFieldFile
 from django.db.models import Count
 from django.core import urlresolvers

@@ -89,7 +89,7 @@ def conferencedata(request, confname, since):
 	else:
 		deldata = {}
 
-	resp = HttpResponse(mimetype='application/json')
+	resp = HttpResponse(content_type='application/json')
 	json.dump({
 		'c': {
 			'news': conference.newsjson,
@@ -115,4 +115,4 @@ def newsproxy(request, confname):
 	r = u.read()
 	u.close()
 
-	return HttpResponse(r, mimetype='application/json')
+	return HttpResponse(r, content_type='application/json')

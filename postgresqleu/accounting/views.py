@@ -42,7 +42,7 @@ def _perform_search(request, year):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
 def year(request, year):
 	year = get_object_or_404(Year, year=int(year))
@@ -63,7 +63,7 @@ def year(request, year):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
 def new(request, year):
 	year = int(year)
@@ -91,7 +91,7 @@ def new(request, year):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
 def entry(request, entryid):
 	entry = get_object_or_404(JournalEntry, pk=entryid)
@@ -252,7 +252,7 @@ def _collate_results(query, queryparam, numvalues):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
 def closeyear(request, year):
 	year = Year.objects.get(pk=year)
@@ -333,7 +333,7 @@ SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
 def report(request, year, reporttype):
 	years = list(Year.objects.all())

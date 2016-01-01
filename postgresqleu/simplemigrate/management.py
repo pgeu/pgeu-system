@@ -19,7 +19,7 @@ def process_sql_scripts(app, created_models, verbosity=2, **kwargs):
 	if namepieces[2] != 'models': return
 	appname = namepieces[1]
 
-	with transaction.commit_on_success():
+	with transaction.atomic():
 		appfiles = list(_get_app_files(appname))
 		curs = connection.cursor()
 		curs.execute("SELECT ver FROM _appscripts WHERE app=%s", [appname,])

@@ -73,7 +73,7 @@ def payment_post(request):
 			}, RequestContext(request))
 
 
-		with transaction.commit_on_success():
+		with transaction.atomic():
 			# Flag the invoice as paid
 			manager = InvoiceManager()
 			try:

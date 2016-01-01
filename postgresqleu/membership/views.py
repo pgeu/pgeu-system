@@ -23,7 +23,7 @@ import os
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def home(request):
 	try:
 		member = Member.objects.get(user=request.user)
@@ -117,7 +117,7 @@ def userlist(request):
 @ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.is_superuser)
-@transaction.commit_on_success
+@transaction.atomic
 def admin_email(request):
 	if request.method == 'POST':
 		form = EmailSendForm(data=request.POST)
@@ -160,7 +160,7 @@ def meetings(request):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def meeting(request, meetingid):
 	# View a single meeting
 	meeting = get_object_or_404(Meeting, pk=meetingid)

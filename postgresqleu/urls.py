@@ -1,7 +1,7 @@
-from django.conf.urls.defaults import patterns, include, url
+from django.conf.urls import patterns, include, url
 from django.conf import settings
 from django.contrib import admin
-from django.views.generic.simple import redirect_to
+from django.views.generic import RedirectView
 
 import postgresqleu.static.views
 import postgresqleu.newsevents.views
@@ -131,7 +131,7 @@ urlpatterns = patterns('',
 	(r'^admin/membership/_email/$', 'postgresqleu.membership.views.admin_email'),
 
 	# Merchandise redirect
-	(r'^merchandise/', redirect_to, {'url': 'http://postgresqleu.spreadshirt.net/'}),
+	(r'^merchandise/', RedirectView.as_view(url='http://postgresqleu.spreadshirt.net/', permanent=False)),
 
 	# Elections
 	(r'^elections/$', postgresqleu.elections.views.home),

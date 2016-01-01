@@ -18,7 +18,7 @@ from models import RawNotification, AdyenLog, ReturnAuthorizationStatus
 from util import process_raw_adyen_notification
 
 @ssl_required
-@transaction.commit_on_success
+@transaction.atomic
 def adyen_return_handler(request):
 	sig = calculate_signature(request.GET)
 

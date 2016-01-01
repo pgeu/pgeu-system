@@ -78,7 +78,7 @@ class VoteForm(forms.Form):
 
 		return self.cleaned_data
 
-	@transaction.commit_on_success
+	@transaction.atomic
 	def save(self):
 		# Let's see if the old votes are here
 		if len(self.votes) == 0:

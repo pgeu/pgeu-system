@@ -16,7 +16,7 @@ from postgresqleu.accounting.util import create_accounting_entry
 from models import TransactionInfo, ErrorLog, SourceAccount
 
 @ssl_required
-@transaction.commit_on_success
+@transaction.atomic
 def paypal_return_handler(request):
 	tx = 'UNKNOWN'
 

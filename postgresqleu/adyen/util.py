@@ -248,7 +248,7 @@ def process_raw_adyen_notification(raw, POST):
 	# a transactional context, as it manages it's own.
 
 	# Now open a transaction for actually processing what we get
-	with transaction.commit_on_success():
+	with transaction.atomic():
 		# Set it to confirmed - if we were unable to process the RAW one,
 		# this will be rolled back by the transaction, and that's the only
 		# thing that htis flag means. Anything else is handled by the

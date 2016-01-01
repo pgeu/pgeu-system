@@ -101,7 +101,7 @@ def sponsor_manager_delete(request, sponsorid):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def sponsor_manager_add(request, sponsorid):
 	sponsor = get_object_or_404(Sponsor, id=sponsorid, managers=request.user, confirmed=True)
 
@@ -148,7 +148,7 @@ def sponsor_view_mail(request, sponsorid, mailid):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def sponsor_purchase_voucher(request, sponsorid):
 	sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
 	conference = sponsor.conference
@@ -189,7 +189,7 @@ def sponsor_purchase_voucher(request, sponsorid):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def sponsor_purchase_discount(request, sponsorid):
 	sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
 	conference = sponsor.conference
@@ -254,7 +254,7 @@ def sponsor_signup_dashboard(request, confurlname):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def sponsor_signup(request, confurlname, levelurlname):
 	conference = get_object_or_404(Conference, urlname=confurlname)
 	if not conference.callforsponsorsopen:
@@ -314,7 +314,7 @@ def sponsor_signup(request, confurlname, levelurlname):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def sponsor_claim_benefit(request, sponsorid, benefitid):
 	sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
 	benefit = get_object_or_404(SponsorshipBenefit, id=benefitid, level=sponsor.level)
@@ -506,7 +506,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def sponsor_admin_generateinvoice(request, confurlname, sponsorid):
 	if request.user.is_superuser:
 		conference = get_object_or_404(Conference, urlname=confurlname)
@@ -538,7 +538,7 @@ def sponsor_admin_generateinvoice(request, confurlname, sponsorid):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def sponsor_admin_confirm(request, confurlname, sponsorid):
 	if request.user.is_superuser:
 		conference = get_object_or_404(Conference, urlname=confurlname)
@@ -586,7 +586,7 @@ def sponsor_admin_benefit(request, confurlname, benefitid):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def sponsor_admin_send_mail(request, confurlname):
 	if request.user.is_superuser:
 		conference = get_object_or_404(Conference, urlname=confurlname)
@@ -675,7 +675,7 @@ def sponsor_admin_imageview(request, benefitid):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def admin_copy_level(request, levelid):
 	if not request.user.is_superuser:
 		raise Exception("Sorry, at this point only superusers can do this")

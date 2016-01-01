@@ -43,7 +43,7 @@ def search(request):
 @ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
-@transaction.commit_on_success
+@transaction.atomic
 def importuser(request):
 	uid = request.POST['uid']
 	try:

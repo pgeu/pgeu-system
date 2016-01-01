@@ -168,7 +168,7 @@ def _registration_dashboard(request, conference, reg):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def home(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 
@@ -274,7 +274,7 @@ def feedback_available(request):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def reg_add_options(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
@@ -510,7 +510,7 @@ def feedback_session(request, confname, sessionid):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def feedback_conference(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 
@@ -703,7 +703,7 @@ def schedule_ical(request, confname):
 		'conference': conference,
 		'sessions': sessions,
 		'servername': request.META['SERVER_NAME'],
-	}, mimetype='text/calendar', context_instance=RequestContext(request))
+	}, content_type='text/calendar', context_instance=RequestContext(request))
 
 def session(request, confname, sessionid, junk=None):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -734,7 +734,7 @@ def speaker(request, confname, speakerid, junk=None):
 
 def speakerphoto(request, speakerid):
 	speakerphoto = get_object_or_404(Speaker_Photo, pk=speakerid)
-	return HttpResponse(base64.b64decode(speakerphoto.photo), mimetype='image/jpg')
+	return HttpResponse(base64.b64decode(speakerphoto.photo), content_type='image/jpg')
 
 @ssl_required
 @login_required
@@ -921,7 +921,7 @@ def callforpapers_edit(request, confname, sessionid):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def callforpapers_confirm(request, confname, sessionid):
 	conference = get_object_or_404(Conference, urlname=confname)
 
@@ -973,7 +973,7 @@ def callforpapers_confirm(request, confname, sessionid):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def confirmreg(request, confname):
 	# Confirm a registration step. This will show the user the final
 	# cost of the registration, minus any discounts found (including
@@ -1127,7 +1127,7 @@ def confirmreg(request, confname):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def waitlist_signup(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
@@ -1161,7 +1161,7 @@ def waitlist_signup(request, confname):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def waitlist_cancel(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
@@ -1199,7 +1199,7 @@ def cancelreg(request, confname):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def invoice(request, confname, regid):
 	# Show the invoice. We do this in a separate view from the main view,
 	# even though the invoice is present on the main view as well, in order
@@ -1243,7 +1243,7 @@ def attendee_mail(request, confname, mailid):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoicemgr'))
 def createvouchers(request):
 	# Creation of pre-paid vouchers for conference registrations
@@ -1303,7 +1303,7 @@ def createvouchers(request):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def viewvouchers(request, batchid):
 	# View existing prepaid vouchers
 
@@ -1340,7 +1340,7 @@ def viewvouchers(request, batchid):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoicemgr'))
 def emailvouchers(request, batchid):
 	batch = PrepaidBatch.objects.get(pk=batchid)
@@ -1362,7 +1362,7 @@ def emailvouchers(request, batchid):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def bulkpay(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 
@@ -1534,7 +1534,7 @@ class UnscheduledSession(object):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def talkvote(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.talkvoters.filter(pk=request.user.id):
@@ -1631,7 +1631,7 @@ def talkvote(request, confname):
 @ssl_required
 @login_required
 @csrf_exempt
-@transaction.commit_on_success
+@transaction.atomic
 def createschedule(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.talkvoters.filter(pk=request.user.id):
@@ -1724,10 +1724,11 @@ def createschedule(request, confname):
 
 @ssl_required
 @login_required
-@transaction.commit_manually
 @user_passes_test_or_error(lambda u: u.is_superuser)
 def publishschedule(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
+
+	transaction.set_autocommit(False)
 
 	changes = []
 	# Render a list of changes and a confirm button
@@ -1925,7 +1926,7 @@ def admin_registration_dashboard(request, urlname):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def admin_waitlist(request, urlname):
 	if request.user.is_superuser:
 		conference = get_object_or_404(Conference, urlname=urlname)
@@ -1992,7 +1993,7 @@ def admin_waitlist(request, urlname):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def admin_attendeemail(request, urlname):
 	if request.user.is_superuser:
 		conference = get_object_or_404(Conference, urlname=urlname)
@@ -2051,7 +2052,7 @@ def admin_attendeemail_view(request, urlname, mailid):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def session_notify_queue(request, urlname):
 	if request.user.is_superuser:
 		conference = get_object_or_404(Conference, urlname=urlname)
@@ -2094,7 +2095,7 @@ def session_notify_queue(request, urlname):
 @ssl_required
 @login_required
 @user_passes_test_or_error(lambda u:u.is_superuser)
-@transaction.commit_on_success
+@transaction.atomic
 def crossmail(request):
 	if request.method == 'POST':
 		form = CrossConferenceMailForm(data=request.POST)
@@ -2125,7 +2126,7 @@ def crossmail(request):
 @ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.is_superuser)
-@transaction.commit_on_success
+@transaction.atomic
 def admin_email(request):
 	if request.method == 'POST':
 		form = EmailSendForm(data=request.POST)
@@ -2160,7 +2161,7 @@ def admin_email(request):
 @ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.is_superuser)
-@transaction.commit_on_success
+@transaction.atomic
 def admin_email_session(request, sessionids):
 	sessions = ConferenceSession.objects.filter(pk__in=sessionids.split(','))
 	speakers = Speaker.objects.filter(conferencesession__in=sessions).distinct()

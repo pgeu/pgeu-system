@@ -48,7 +48,7 @@ def wikipage(request, confurl, wikiurl):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def wikipage_subscribe(request, confurl, wikiurl):
 	conference = get_object_or_404(Conference, urlname=confurl)
 	reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user, payconfirmedat__isnull=False)
@@ -115,7 +115,7 @@ def wikipage_history(request, confurl, wikiurl):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def wikipage_edit(request, confurl, wikiurl):
 	conference = get_object_or_404(Conference, urlname=confurl)
 	reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user, payconfirmedat__isnull=False)
@@ -200,7 +200,7 @@ def admin(request, urlname):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def admin_edit_page(request, urlname, pageid):
 	if request.user.is_superuser:
 		conference = get_object_or_404(Conference, urlname=urlname)
@@ -257,7 +257,7 @@ def admin_edit_page(request, urlname, pageid):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def signup(request, urlname, signupid):
 	conference = get_object_or_404(Conference, urlname=urlname)
 	reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user, payconfirmedat__isnull=False)
@@ -342,7 +342,7 @@ def signup_admin(request, urlname):
 
 @ssl_required
 @login_required
-@transaction.commit_on_success
+@transaction.atomic
 def signup_admin_edit(request, urlname, signupid):
 	if request.user.is_superuser:
 		conference = get_object_or_404(Conference, urlname=urlname)

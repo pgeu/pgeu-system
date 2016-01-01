@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.forms.models import BaseInlineFormSet
-from django.forms.util import ErrorList
+from django.forms.utils import ErrorList
 from django import forms
 from django.core import urlresolvers
 from django.utils.safestring import mark_safe
@@ -47,6 +47,7 @@ class SponsorshipLevelAdmin(admin.ModelAdmin):
 class SponsorAdminForm(forms.ModelForm):
 	class Meta:
 		model = Sponsor
+		exclude = []
 
 	def __init__(self, *args, **kwargs):
 		super(SponsorAdminForm, self).__init__(*args, **kwargs)

@@ -37,7 +37,7 @@ def invoice(request, id):
 @user_passes_test(lambda u: u.has_module_perms('invoicemgr'))
 def invoicepdf(request, id):
 	invoice = get_object_or_404(Invoice, pk=id)
-	r = HttpResponse(mimetype='application/pdf')
+	r = HttpResponse(content_type='application/pdf')
 	r['Content-Disposition'] = 'attachment; filename=%s.pdf' % id
 	invoice.writepdf(r)
 	return r
