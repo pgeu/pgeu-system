@@ -277,6 +277,8 @@ class RegistrationTypeAdminForm(forms.ModelForm):
 			self.fields['regclass'].queryset = RegistrationClass.objects.filter(conference=self.instance.conference)
 			self.fields['days'].queryset = RegistrationDay.objects.filter(conference=self.instance.conference)
 			self.fields['requires_option'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.instance.conference)
+			if self.instance.conference.invoice_autocancel_hours:
+				self.fields['invoice_autocancel_hours'].help_text = "Automatically cancel invoices after this many hours. Conference settings currently override this to minimum value {0}.".format(self.instance.conference.invoice_autocancel_hours)
 		except Conference.DoesNotExist:
 			# If we don't have a conference yet, we can just ignore the fact
 			# that we couldn't list it.
