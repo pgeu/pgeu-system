@@ -7,7 +7,7 @@ the session
 is empty.
 
 If this is unintentional, please go to the page at
-{{SITEBASE}}events/callforpapers/{{conference.urlname}}/{{session.id}}/
+{{SITEBASE}}/events/callforpapers/{{conference.urlname}}/{{session.id}}/
 and fill out the abstract.
 
 If this was an unintentional submission that should not have been made,
