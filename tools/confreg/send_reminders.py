@@ -132,6 +132,32 @@ def remind_pending_registrations(whatstr, conference):
 
 		whatstr.write("\n\n")
 
+def remind_empty_submissions(whatstr, conference):
+	# Get all sessions with empty abstract (they forgot to hit save), if they have not been touched in
+	# 3 days (this will also make the reminder show up every 3 days, and not every day, since we touch
+	# the lastmodified timestemp when a reminder is sent).
+
+	template = get_template('confreg/mail/speaker_empty_submission.txt')
+
+	for sess in conference.conferencesession_set.filter(abstract='',
+														lastmodified__lt=datetime.now()-timedelta(days=3)):
+		for spk in sess.speaker.all():
+			send_simple_mail(conference.contactaddr,
+							 spk.email,
+							 "Your submission to {0}".format(conference),
+							 template.render(Context({
+								 'conference': conference,
+								 'session': sess,
+								 'SITEBASE': settings.SITEBASE_SSL,
+							 })),
+							 sendername = conference.conferencename,
+							 receivername = spk.name,
+						 )
+			whatstr.write(u"Reminded speaker {0} that they have made an empty submission\n".format(spk.name))
+		sess.lastmodified = datetime.now()
+		sess.save()
+
+
 if __name__ == "__main__":
 	for conference in Conference.objects.filter(active=True):
 		# One transaction for each open conference that has registration
@@ -157,3 +183,19 @@ if __name__ == "__main__":
 								 sendername = conference.conferencename,
 								 receivername = conference.conferencename,
 								 )
+
+	for conference in Conference.objects.filter(callforpapersopen=True):
+		# One transaction for each conference with call for papers open, to send reminders
+		# for things related to the cfp.
+		with transaction.commit_on_success():
+			whatstr = StringIO()
+			remind_empty_submissions(whatstr, conference)
+
+			if whatstr.tell():
+				send_simple_mail(conference.contactaddr,
+								 conference.contactaddr,
+								 "CfP reminders sent",
+								 whatstr.getvalue(),
+								 sendername = conference.conferencename,
+								 receivername = conference.conferencename,
+							 )
