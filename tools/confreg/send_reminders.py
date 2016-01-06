@@ -4,8 +4,8 @@
 # Send reminders to speakers and attendees that have their
 # sessions or registration in an unconfirmed state.
 #
-# Intended to run on a weekly or so basis, not more often
-# than that.
+# Intended to run on a daily basis, as each reminder has it's
+# own check for when the user was last notified.
 #
 
 import sys
