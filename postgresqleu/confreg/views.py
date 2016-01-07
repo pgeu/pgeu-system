@@ -3,7 +3,6 @@
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.template import RequestContext, Context
-from django.template.loaders.filesystem import _loader as filesystem_template_loader
 from django.template.loader import get_template
 from django.template.base import TemplateDoesNotExist
 from django.contrib.auth.decorators import login_required
@@ -106,11 +105,16 @@ def render_conference_response(request, conference, templatename, dictionary=Non
 				# to do testing in production env.
 				templatename += ".test"
 
-			tmpl, display = filesystem_template_loader.load_template(templatename, (conference.templateoverridedir,))
+			from django.template import Template
+			with open('{0}/{1}'.format(conference.templateoverridedir, templatename)) as f:
+				tmpl = Template(f.read())
+				print "Loaded"
+				print tmpl.render(context)
+
 			if dictionary:
 				context.update(dictionary)
 			return HttpResponse(tmpl.render(context))
-		except TemplateDoesNotExist:
+		except IOError:
 			# Template not found, so fall through to the default and load the template
 			# from our main directory.
 			pass
