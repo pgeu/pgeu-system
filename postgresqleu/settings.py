@@ -50,7 +50,7 @@ USE_I18N = False
 #MEDIA_URL = '/media/'
 STATIC_URL = '/media/'
 STATICFILES_DIRS = (
-	'../media/',
+	'media/',
 )
 
 # Make this unique, and don't share it with anybody.
@@ -82,8 +82,8 @@ TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + (
 ROOT_URLCONF = 'postgresqleu.urls'
 
 TEMPLATE_DIRS = [
-	'../template',
-	'../../template',
+	'template',
+	'conference_template_links',
 ]
 
 INSTALLED_APPS = [
