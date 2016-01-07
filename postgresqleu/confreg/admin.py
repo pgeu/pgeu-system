@@ -99,7 +99,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
 class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	form = ConferenceRegistrationForm
-	list_display = ['email', 'conference', 'firstname', 'lastname', 'created_short', 'short_regtype', 'payconfirmedat_short', 'has_invoice', 'addoptions']
+	list_display = ['email', 'conference', 'firstname', 'lastname', 'created_short', 'short_regtype', 'payconfirmedat_short', 'has_invoice']
 	list_filter = ['conference', RegtypeListFilter, AdditionalOptionListFilter, ]
 	search_fields = ['email', 'firstname', 'lastname', ]
 	ordering = ['-payconfirmedat', '-created', 'lastname', 'firstname', ]
@@ -110,21 +110,11 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 
 	def queryset(self, request):
 		qs = super(ConferenceRegistrationAdmin, self).queryset(request)
-		# If this is a POST, it's something that can modify data, and we
-		# must not include the annotation there, since it causes the
-		# django ORM to break. We only want it on the GET, which returns
-		# the list that we render.
-		if request.method != 'POST':
-			qs = qs.annotate(addoptcount=Count('additionaloptions'))
 
 		if request.user.is_superuser:
 			return qs
 		else:
 			return qs.filter(conference__administrators=request.user)
-
-	def addoptions(self, inst):
-		return inst.addoptcount
-	addoptions.short_description="Options"
 
 	def payconfirmedat_short(self, inst):
 		return inst.payconfirmedat
