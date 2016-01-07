@@ -8,6 +8,7 @@ from models import Wikipage, WikipageHistory, WikipageSubscriber
 class WikipageAdminForm(forms.ModelForm):
 	class Meta:
 		model = Wikipage
+		exclude = []
 
 	def __init__(self, *args, **kwargs):
 		super(WikipageAdminForm, self).__init__(*args, **kwargs)

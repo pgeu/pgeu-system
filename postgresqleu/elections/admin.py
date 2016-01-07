@@ -6,6 +6,7 @@ from models import Vote, Election, Candidate
 class VoteAdminForm(ModelForm):
 	class Meta:
 		model = Vote
+		exclude = []
 
 	def clean(self):
 		raise ValidationError("You really shouldn't edit votes! If you *really* need to fix something broken, do it in the db")

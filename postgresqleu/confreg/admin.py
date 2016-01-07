@@ -71,6 +71,7 @@ class AdditionalOptionListFilter(admin.SimpleListFilter):
 class ConferenceAdminForm(forms.ModelForm):
 	class Meta:
 		model = Conference
+		exclude = []
 	accounting_object = forms.ChoiceField(choices=[], required=False)
 
 	def __init__(self, *args, **kwargs):
@@ -86,6 +87,7 @@ class ConferenceAdmin(admin.ModelAdmin):
 class ConferenceRegistrationForm(forms.ModelForm):
 	class Meta:
 		model = ConferenceRegistration
+		exclude = []
 
 	def __init__(self, *args, **kwargs):
 		super(ConferenceRegistrationForm, self).__init__(*args, **kwargs)
@@ -195,6 +197,7 @@ class ConferenceSessionFeedbackAdmin(admin.ModelAdmin):
 class ConferenceSessionForm(forms.ModelForm):
 	class Meta:
 		model = ConferenceSession
+		exclude = []
 
 	def __init__(self, *args, **kwargs):
 		super(ConferenceSessionForm, self).__init__(*args, **kwargs)
@@ -270,6 +273,7 @@ class RegistrationDayAdmin(admin.ModelAdmin):
 class RegistrationTypeAdminForm(forms.ModelForm):
 	class Meta:
 		model = RegistrationType
+		exclude = []
 
 	def __init__(self, *args, **kwargs):
 		super(RegistrationTypeAdminForm, self).__init__(*args, **kwargs)
@@ -297,6 +301,7 @@ class ShirtsizeAdmin(admin.ModelAdmin):
 class ConferenceAdditionalOptionAdminForm(forms.ModelForm):
 	class Meta:
 		model = ConferenceAdditionalOption
+		exclude = []
 
 	def __init__(self, *args, **kwargs):
 		super(ConferenceAdditionalOptionAdminForm, self).__init__(*args, **kwargs)
@@ -337,6 +342,7 @@ class ConferenceAdditionalOptionAdmin(admin.ModelAdmin):
 class SpeakerAdminForm(forms.ModelForm):
 	class Meta:
 		model = Speaker
+		exclude = []
 
 	def clean_photofile(self):
 		if not self.cleaned_data['photofile']:
@@ -400,6 +406,7 @@ class PrepaidVoucherInline(admin.TabularInline):
 class PrepaidBatchAdminForm(forms.ModelForm):
 	class Meta:
 		model = PrepaidBatch
+		exclude = []
 
 	def __init__(self, *args, **kwargs):
 		super(PrepaidBatchAdminForm, self).__init__(*args, **kwargs)
@@ -432,6 +439,7 @@ class PrepaidBatchAdmin(admin.ModelAdmin):
 class PrepaidVoucherAdminForm(forms.ModelForm):
 	class Meta:
 		model = PrepaidVoucher
+		exclude = []
 
 	def __init__(self, *args, **kwargs):
 		super(PrepaidVoucherAdminForm, self).__init__(*args, **kwargs)
@@ -452,11 +460,14 @@ class PrepaidVoucherAdmin(admin.ModelAdmin):
 	buyername.allow_tags = True
 
 	def usedby(self, obj):
-		return "%s %s" % (obj.user.firstname, obj.user.lastname)
+		if obj.user:
+			return "%s %s" % (obj.user.firstname, obj.user.lastname)
+		return None
 
 class DiscountCodeAdminForm(forms.ModelForm):
 	class Meta:
 		model = DiscountCode
+		exclude = []
 
 	def __init__(self, *args, **kwargs):
 		super(DiscountCodeAdminForm, self).__init__(*args, **kwargs)
@@ -511,6 +522,7 @@ class BulkPaymentAdmin(admin.ModelAdmin):
 class AttendeeMailAdminForm(forms.ModelForm):
 	class Meta:
 		model = AttendeeMail
+		exclude = []
 
 	def __init__(self, *args, **kwargs):
 		super(AttendeeMailAdminForm, self).__init__(*args, **kwargs)
@@ -524,6 +536,7 @@ class AttendeeMailAdmin(admin.ModelAdmin):
 class PendingAdditionalOrderAdminForm(forms.ModelForm):
 	class Meta:
 		model = PendingAdditionalOrder
+		exclude = []
 
 	def __init__(self, *args, **kwargs):
 		super(PendingAdditionalOrderAdminForm, self).__init__(*args, **kwargs)

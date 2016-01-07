@@ -104,7 +104,7 @@ def entry(request, entryid):
 
 	extra = max(2, 6-entry.journalitem_set.count())
 	inlineformset = inlineformset_factory(JournalEntry, JournalItem, JournalItemForm, JournalItemFormset, can_delete=True, extra=extra)
-	inlineurlformset = inlineformset_factory(JournalEntry, JournalUrl, can_delete=True, extra=2)
+	inlineurlformset = inlineformset_factory(JournalEntry, JournalUrl, can_delete=True, extra=2, exclude=[])
 
 	if request.method == 'POST':
 		if request.POST['submit'] == 'Delete':

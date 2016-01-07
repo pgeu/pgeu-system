@@ -7,6 +7,7 @@ from models import Invoice, InvoiceLog, InvoiceProcessor, InvoicePaymentMethod
 class InvoiceAdminForm(forms.ModelForm):
 	class Meta:
 		model = Invoice
+		exclude = []
 
 	def clean_recipient_email(self):
 		if self.cleaned_data.has_key('finalized'):

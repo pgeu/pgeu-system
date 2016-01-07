@@ -60,6 +60,7 @@ class InvoiceForm(forms.ModelForm):
 class InvoiceRowForm(forms.ModelForm):
 	class Meta:
 		model = InvoiceRow
+		exclude = []
 
 	def clean_rowamount(self):
 		if self.cleaned_data['rowamount'] == 0:
