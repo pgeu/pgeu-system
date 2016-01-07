@@ -134,7 +134,7 @@ def _registration_dashboard(request, conference, reg):
 		})
 	signups = [dict(zip(['id', 'title', 'deadline', 'closed', 'savedat'], r)) for r in cursor.fetchall()]
 
-	is_speaker = ConferenceSession.objects.filter(conference=conference, status=1, speaker=request.user).exists()
+	is_speaker = ConferenceSession.objects.filter(conference=conference, status=1, speaker__user=request.user).exists()
 
 	# Options available for buy-up. Option must be for this conference,
 	# not already picked by this user, and not mutually exclusive to

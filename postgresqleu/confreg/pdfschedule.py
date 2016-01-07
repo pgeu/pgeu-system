@@ -57,7 +57,7 @@ def build_linear_pdf_schedule(conference, room, tracks, day, colored, pagesize, 
 	if day:
 		q = q & Q(starttime__range=(day.day, day.day + timedelta(days=1)))
 
-	sessions = ConferenceSession.objects.select_related('track', 'room', 'speaker').filter(q).order_by('starttime')
+	sessions = ConferenceSession.objects.select_related('track', 'room').filter(q).order_by('starttime')
 
 	(width, height, canvas, resp) = _setup_canvas(pagesize, orientation)
 
@@ -130,7 +130,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
 	if day:
 		q = q & Q(starttime__range=(day.day, day.day + timedelta(days=1)))
 
-	sessions = list(ConferenceSession.objects.select_related('track', 'room', 'speaker').filter(q).order_by('starttime', 'room__sortkey', 'room__roomname'))
+	sessions = list(ConferenceSession.objects.select_related('track', 'room').filter(q).order_by('starttime', 'room__sortkey', 'room__roomname'))
 
 	(width, height, canvas, resp) = _setup_canvas(pagesize, orientation)
 
