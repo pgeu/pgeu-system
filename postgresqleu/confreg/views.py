@@ -660,7 +660,7 @@ def schedule(request, confname):
 	days = []
 	tracks = {}
 	for d in daylist:
-		sessions = ConferenceSession.objects.select_related('track','room','speaker').filter(conference=conference,status=1,starttime__range=(d,d+timedelta(hours=23,minutes=59,seconds=59))).order_by('starttime','room__roomname')
+		sessions = ConferenceSession.objects.select_related('track','room').filter(conference=conference,status=1,starttime__range=(d,d+timedelta(days=1))).order_by('starttime','room__roomname')
 		sessionset = SessionSet(conference.schedulewidth, conference.pixelsperminute)
 		for s in sessions: sessionset.add(s)
 		sessionset.finalize()
@@ -1697,7 +1697,7 @@ def createschedule(request, confname):
 	days = []
 
 	for d in daylist:
-		slots = ConferenceSessionScheduleSlot.objects.filter(conference=conference, starttime__range=(d,d+timedelta(hours=23,minutes=59,seconds=59)))
+		slots = ConferenceSessionScheduleSlot.objects.filter(conference=conference, starttime__range=(d,d+timedelta(days=1)))
 
 		# Generate a sessionset with the slots only, but with one slot for
 		# each room when we have multiple rooms. Create a fake session that

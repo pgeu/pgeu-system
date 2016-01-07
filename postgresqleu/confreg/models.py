@@ -357,7 +357,9 @@ class ConferenceRegistration(models.Model):
 	has_invoice.boolean = True
 
 	def short_regtype(self):
-		return self.regtype.regtype[:30]
+		if self.regtype:
+			return self.regtype.regtype[:30]
+		return None
 	short_regtype.short_description = 'Reg type'
 
 	@property
