@@ -4,7 +4,7 @@ from django.forms import widgets
 from django.contrib.auth.models import User
 
 from models import Invoice, InvoiceRow, InvoicePaymentMethod
-from accounting.models import Account, Object
+from postgresqleu.accounting.models import Account, Object
 
 class InvoiceForm(forms.ModelForm):
 	hidden_until_finalized = ('total_amount', 'remindersent', )

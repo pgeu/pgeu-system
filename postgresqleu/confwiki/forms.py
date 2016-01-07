@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
-from confreg.models import RegistrationType, ConferenceRegistration
+from postgresqleu.confreg.models import RegistrationType, ConferenceRegistration
 from models import Wikipage, Signup
 
 class WikipageEditForm(forms.ModelForm):

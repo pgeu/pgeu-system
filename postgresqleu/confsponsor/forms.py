@@ -1,14 +1,14 @@
 from django import forms
 from django.forms import ValidationError
-from django.forms.util import ErrorList
+from django.forms.utils import ErrorList
 from django.db.models import Q
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.conf import settings
 
 from models import Sponsor, SponsorMail, SponsorshipLevel
-from confreg.models import Conference, RegistrationType, DiscountCode
-from confreg.models import ConferenceAdditionalOption
-from util.validators import BeforeValidator, AfterValidator, TwitterValidator
+from postgresqleu.confreg.models import Conference, RegistrationType, DiscountCode
+from postgresqleu.confreg.models import ConferenceAdditionalOption
+from postgresqleu.util.validators import BeforeValidator, AfterValidator, TwitterValidator
 
 from datetime import date, timedelta
 
