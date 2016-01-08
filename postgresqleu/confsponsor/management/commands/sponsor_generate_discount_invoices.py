@@ -1,21 +1,12 @@
-#!/usr/bin/env python
-#
-#
 # Generate invoices for discount codes. That is, sponsors that have ordered discount codes,
 # that have now either expired or been used fully.
 #
 
-import os
-import sys
+from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
+
 from datetime import date, datetime, timedelta
 
-# Set up to run in django environment
-from django.core.management import setup_environ
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), '../../postgresqleu'))
-import settings
-setup_environ(settings)
-
-from django.db import transaction, connection
 from django.db.models import Q, F, Count
 from django.template import Context
 from django.template.loader import get_template
@@ -25,11 +16,13 @@ from postgresqleu.confsponsor.models import Sponsor # Required for text based re
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager, InvoiceWrapper
 
-if __name__ == "__main__":
-	# We're always going to process all conferences, since most will not have any
-	# open discount codes.
+class Command(BaseCommand):
+	help = 'Generate invoices for discount codes'
 
-	with transaction.commit_on_success():
+	@transaction.atomic
+	def handle(self, *args, **options):
+		# We're always going to process all conferences, since most will not have any
+		# open discount codes.
 		filt = Q(sponsor__isnull=False, is_invoiced=False) & (Q(validuntil__lt=date.today()) | Q(num_uses__gte=F('maxuses')))
 		codes = DiscountCode.objects.annotate(num_uses=Count('registrations')).filter(filt)
 		for code in codes:
@@ -59,6 +52,7 @@ if __name__ == "__main__":
 									 u"[{0}] Discount code {1} expired".format(code.conference, code.code),
 									 msg,
 									 sendername=code.conference.conferencename,
+
 									 receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
 			else:
 				# At least one use, so we generate the invoice
@@ -123,4 +117,3 @@ if __name__ == "__main__":
 									 msg,
 									 sendername=code.conference.conferencename,
 									 receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
-	connection.close()

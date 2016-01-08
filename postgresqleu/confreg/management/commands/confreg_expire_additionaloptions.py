@@ -1,32 +1,26 @@
-#!/usr/bin/env python
-#
 # Expire additional options on pending registration that have not
 # been paid on time, so others can get those seats.
 #
 # Copyright (C) 2015, PostgreSQL Europe
 #
 
-import os
-import sys
+from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
+
 from collections import defaultdict
 from StringIO import StringIO
 
-# Set up to run in django environment
-from django.core.management import setup_environ
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), '../../postgresqleu'))
-import settings
-setup_environ(settings)
-
-from django.db import transaction, connection
 
 from postgresqleu.mailqueue.util import send_simple_mail
 
 from postgresqleu.confreg.util import expire_additional_options
-
 from postgresqleu.confreg.models import ConferenceRegistration
 
-if __name__ == "__main__":
-	with transaction.commit_on_success():
+class Command(BaseCommand):
+	help = 'Expire additional options on pending registrations'
+
+	@transaction.atomic
+	def handle(self, *args, **options):
 		# Expiry of additional options is based on when the registration was last modified, and not
 		# the actual additional option. But the 99.9% case is people who are not touching their
 		# registration at all, so this is not a problem. If they go in and change their address,
@@ -70,5 +64,3 @@ autocancel hours, to make room for other attendees:
 								 'Additional options removed from pending registrations',
 								 s.getvalue(),
 								 sendername=conference.conferencename)
-
-	connection.close()

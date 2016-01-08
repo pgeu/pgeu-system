@@ -5,18 +5,12 @@
 #
 # Copyright (C) 2015, PostgreSQL Europe
 #
+from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
+from django.conf import settings
 
-import os
-import sys
 from datetime import datetime
 
-# Set up to run in django environment
-from django.core.management import setup_environ
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), '../../postgresqleu'))
-import settings
-setup_environ(settings)
-
-from django.db import transaction, connection
 from django.template import Context
 from django.template.loader import get_template
 
@@ -24,8 +18,11 @@ from postgresqleu.mailqueue.util import send_simple_mail
 
 from postgresqleu.confreg.models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
 
-if __name__ == "__main__":
-	with transaction.commit_on_success():
+class Command(BaseCommand):
+	help = 'Expire conference waitlist offers'
+
+	@transaction.atomic
+	def handle(self, *args, **options):
 		# Any entries that actually have an invoice will be canceled by the invoice
 		# system, as the expiry time of the invoice is set synchronized. In this
 		# run, we only care about offers that have not been picked up at all.
@@ -69,5 +66,3 @@ if __name__ == "__main__":
 			w.enteredon = datetime.now()
 
 			w.save()
-
-	connection.close()
