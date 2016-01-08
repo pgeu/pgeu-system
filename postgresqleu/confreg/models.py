@@ -410,16 +410,16 @@ class Room(models.Model):
 		ordering = [ 'sortkey', 'roomname', ]
 
 
-class Speaker(models.Model):
-	def get_upload_path(instance, filename):
-		return "%s" % instance.id
+def _get_upload_path(instance, filename):
+	return "%s" % instance.id
 
+class Speaker(models.Model):
 	user = models.OneToOneField(User, null=True, blank=True, unique=True)
 	fullname = models.CharField(max_length=100, null=False, blank=False)
 	twittername = models.CharField(max_length=32, null=False, blank=True)
 	company = models.CharField(max_length=100, null=False, blank=True)
 	abstract = models.TextField(null=False, blank=True)
-	photofile = models.ImageField(upload_to=get_upload_path, storage=SpeakerImageStorage(), blank=True, null=True, verbose_name="Photo")
+	photofile = models.ImageField(upload_to=_get_upload_path, storage=SpeakerImageStorage(), blank=True, null=True, verbose_name="Photo")
 	lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
 
 

@@ -3,7 +3,9 @@ from django.db import connection
 
 from django.core.files.storage import Storage
 from django.core.files import File
+from django.utils.deconstruct import deconstructible
 
+@deconstructible
 class SpeakerImageStorage(Storage):
 	def __init__(self):
 		pass
