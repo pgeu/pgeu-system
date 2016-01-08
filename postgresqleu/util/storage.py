@@ -2,7 +2,7 @@ import base64
 import cStringIO as StringIO
 from django.core.files.storage import Storage
 from django.core.files import File
-from django.db import connection, transaction
+from django.db import connection
 from django.db.models import FileField
 
 class InlineEncodedStorage(Storage):
@@ -29,7 +29,6 @@ class InlineEncodedStorage(Storage):
 		curs.execute("UPDATE util_storage SET data=%(data)s WHERE key=%(key)s AND storageid=%(id)s", params)
 		if curs.rowcount == 0:
 			curs.execute("INSERT INTO util_storage (key, storageid, data) VALUES (%(key)s, %(id)s, %(data)s)", params)
-		transaction.commit_unless_managed()
 		return name
 
 	def exists(self, name):
@@ -42,7 +41,6 @@ class InlineEncodedStorage(Storage):
 		curs = connection.cursor()
 		curs.execute("DELETE FROM util_storage WHERE key=%(key)s AND storageid=%(id)s",
 					 {'key': self.key, 'id': name})
-		transaction.commit_unless_managed()
 
 	def url(self, name):
 		# XXX: THIS NEEDS TO BE A PARAMETER TO THE CLASS!
@@ -59,7 +57,3 @@ def inlineencoded_upload_path(instance, filename):
 
 def delete_inline_storage(sender, **kwargs):
 	kwargs['instance'].delete_inline_storage()
-
-class InlineFileField(FileField):
-	def __init__(self, storagekey):
-		return super(InlineFileField, self).__init__(null=False, blank=True, storage=InlineEncodedStorage(storagekey), upload_to=inlineencoded_upload_path)

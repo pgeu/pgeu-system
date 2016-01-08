@@ -1,5 +1,5 @@
 import base64
-from django.db import connection, transaction
+from django.db import connection
 
 from django.core.files.storage import Storage
 from django.core.files import File
@@ -28,7 +28,6 @@ class SpeakerImageStorage(Storage):
 		curs.execute("UPDATE confreg_speaker_photo SET photo=%(photo)s WHERE id=%(id)s", params)
 		if curs.rowcount == 0:
 			curs.execute("INSERT INTO confreg_speaker_photo (id, photo) VALUES (%(id)s, %(photo)s)", params)
-		transaction.commit_unless_managed()
 		return name
 
 	def exists(self, name):
@@ -40,7 +39,6 @@ class SpeakerImageStorage(Storage):
 	def delete(self, name):
 		curs = connection.cursor()
 		curs.execute("DELETE FROM confreg_speaker_photo WHERE id=%(id)s" % {'id': name})
-		transaction.commit_unless_managed()
 
 	def url(self, name):
 		return "/events/speaker/%s/photo/" % name

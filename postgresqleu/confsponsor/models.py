@@ -5,14 +5,17 @@ from django.contrib.auth.models import User
 
 from postgresqleu.confreg.models import Conference, RegistrationType, PrepaidBatch
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
-from postgresqleu.util.storage import InlineFileField, delete_inline_storage
+from postgresqleu.util.storage import InlineEncodedStorage
+from postgresqleu.util.storage import delete_inline_storage, inlineencoded_upload_path
 from postgresqleu.util.validators import validate_lowercase
 
 from benefits import benefit_choices
 
+from django.db.models import FileField
+
 class SponsorshipContract(models.Model):
 	contractname = models.CharField(max_length=100, null=False, blank=False)
-	contractpdf = InlineFileField('sponsorcontract')
+	contractpdf = FileField(null=False, blank=True, storage=InlineEncodedStorage('sponsorcontract'), upload_to=inlineencoded_upload_path)
 
 	def __unicode__(self):
 		return self.contractname
