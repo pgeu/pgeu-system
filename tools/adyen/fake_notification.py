@@ -14,12 +14,13 @@ import base64
 import urllib
 import urllib2
 
-# We import the django stuff just so we can get our hands on the
-# settings which have the notification user/password in it.
-from django.core.management import setup_environ
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), '../../postgresqleu'))
-import settings
-setup_environ(settings)
+# Set up for accessing django
+sys.path.append(os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), '../../'))
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "postgresqleu.settings")
+import django
+django.setup()
+
+from django.conf import settings
 
 
 if __name__=="__main__":
