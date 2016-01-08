@@ -1,2 +1,0 @@
-DROP TABLE confreg_conference_paymentoptions;
-DROP TABLE confreg_paymentoption;
