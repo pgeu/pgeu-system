@@ -47,8 +47,8 @@ class Invoice(models.Model):
 
 	# Global invoice info
 	title = models.CharField(max_length=100, blank=False, null=False, verbose_name="Invoice title")
-	invoicedate = models.DateTimeField(null=False, blank=False, default=datetime.now)
-	duedate = models.DateTimeField(null=False, blank=False, default=datetime.now()+timedelta(days=31))
+	invoicedate = models.DateTimeField(null=False, blank=False)
+	duedate = models.DateTimeField(null=False, blank=False)
 	canceltime = models.DateTimeField(null=True, blank=True, help_text="Invoice will automatically be canceled at this time")
 
 	# Amount information is calculated when the invoice is finalized

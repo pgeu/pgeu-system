@@ -185,6 +185,7 @@ def home(request, confname):
 		reg.email = request.user.email
 		reg.firstname = request.user.first_name
 		reg.lastname = request.user.last_name
+		reg.created = datetime.now()
 
 	is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
 

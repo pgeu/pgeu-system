@@ -11,6 +11,7 @@ from django.conf import settings
 
 import base64
 import StringIO
+from datetime import datetime, timedelta
 
 from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
 from models import Invoice, InvoiceRow
@@ -170,7 +171,10 @@ def oneinvoice(request, invoicenum):
 				return HttpResponseRedirect("/invoiceadmin/%s/" % form.instance.pk)
 		# Else fall through
 	else:
-		form = InvoiceForm(instance=invoice)
+		form = InvoiceForm(instance=invoice, initial={
+			'invoicedate': datetime.now(),
+			'duedate': datetime.now()+timedelta(days=31)}
+		)
 		formset = InvoiceRowInlineFormset(instance=invoice)
 
 	return render_to_response('invoices/invoiceform.html', {

@@ -327,7 +327,7 @@ class ConferenceRegistration(models.Model):
 	# Admin fields!
 	payconfirmedat = models.DateField(null=True, blank=True, verbose_name="Payment confirmed")
 	payconfirmedby = models.CharField(max_length=16, null=True, blank=True, verbose_name="Payment confirmed by")
-	created = models.DateTimeField(null=False, blank=False, default=datetime.datetime.now, verbose_name="Registration created")
+	created = models.DateTimeField(null=False, blank=False, verbose_name="Registration created")
 	lastmodified = models.DateTimeField(null=False, blank=False, auto_now=True)
 
 	# If an invoice is generated, link to it here so we can find our
