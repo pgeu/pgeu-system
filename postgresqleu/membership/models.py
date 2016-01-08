@@ -7,7 +7,7 @@ from postgresqleu.invoices.models import Invoice
 from datetime import date, timedelta
 
 class Member(models.Model):
-	user = models.ForeignKey(User, null=False, blank=False, primary_key=True)
+	user = models.OneToOneField(User, null=False, blank=False, primary_key=True)
 	fullname = models.CharField(max_length=500, null=False, blank=False,
 								verbose_name='Full name')
 	country = models.ForeignKey(Country, null=False, blank=False)

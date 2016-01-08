@@ -414,7 +414,7 @@ class Speaker(models.Model):
 	def get_upload_path(instance, filename):
 		return "%s" % instance.id
 
-	user = models.ForeignKey(User, null=True, blank=True, unique=True)
+	user = models.OneToOneField(User, null=True, blank=True, unique=True)
 	fullname = models.CharField(max_length=100, null=False, blank=False)
 	twittername = models.CharField(max_length=32, null=False, blank=True)
 	company = models.CharField(max_length=100, null=False, blank=True)
@@ -451,7 +451,7 @@ class DeletedItems(models.Model):
 	deltime = models.DateTimeField(blank=False, null=False)
 
 class Speaker_Photo(models.Model):
-	speaker = models.ForeignKey(Speaker, db_column='id', primary_key=True)
+	speaker = models.OneToOneField(Speaker, db_column='id', primary_key=True)
 	photo = models.TextField(null=False, blank=False)
 
 	def __unicode__(self):
