@@ -108,8 +108,6 @@ def render_conference_response(request, conference, templatename, dictionary=Non
 			from django.template import Template
 			with open('{0}/{1}'.format(conference.templateoverridedir, templatename)) as f:
 				tmpl = Template(f.read())
-				print "Loaded"
-				print tmpl.render(context)
 
 			if dictionary:
 				context.update(dictionary)
