@@ -12,7 +12,3 @@ cd $UPDDIR/..
 
 # Pull changes from the it repo
 git pull -q|grep -v "Already up-to-date"
-
-# Update the file listing the latest update
-mv -f /tmp/pgeu.update update/lastupdate
-
