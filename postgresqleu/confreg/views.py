@@ -105,14 +105,12 @@ def render_conference_response(request, conference, templatename, dictionary=Non
 				# to do testing in production env.
 				templatename += ".test"
 
-			from django.template import Template
-			with open('{0}/{1}'.format(conference.templateoverridedir, templatename)) as f:
-				tmpl = Template(f.read())
+			tmpl = get_template(templatename, [conference.templateoverridedir,])
 
 			if dictionary:
 				context.update(dictionary)
 			return HttpResponse(tmpl.render(context))
-		except IOError:
+		except TemplateDoesNotExist:
 			# Template not found, so fall through to the default and load the template
 			# from our main directory.
 			pass
