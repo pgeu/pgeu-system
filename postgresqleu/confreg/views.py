@@ -1562,7 +1562,6 @@ def talkvote(request, confname):
 					}
 				for k,v in request.POST.items() if k.startswith("sv_") and (int(v)>0 or request.POST['tc_%s' % k[3:]])
 				])
-		transaction.set_dirty()
 		return HttpResponseRedirect(".")
 
 	order = ""
