@@ -101,7 +101,7 @@ class Command(BaseCommand):
 					trans.settledat = bookdate
 					trans.settledamount = Decimal(l['Main Amount'], 2)
 					trans.save()
-					self.stdout.write("Settled {0}, total amount {0}".format(pspref, trans.settledamount))
+					self.stdout.write("Settled {0}, total amount {1}".format(pspref, trans.settledamount))
 					AdyenLog(message='Transaction %s settled at %s' % (pspref, bookdate), error=False).save()
 
 					# Settled transactions create a booking entry
