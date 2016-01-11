@@ -94,7 +94,7 @@ class Command(BaseCommand):
 						# the report, so verify if the previously settled one is
 						# *identical*.
 						if trans.settledamount == Decimal(l['Main Amount'], 2):
-							self.stdout.write("Transaction {0} already settled at {2}, ignoring (NOT creating accounting record)!".format(pspref, trans.settledat))
+							self.stderr.write("Transaction {0} already settled at {2}, ignoring (NOT creating accounting record)!".format(pspref, trans.settledat))
 							continue
 						else:
 							raise CommandError('Transaction {0} settled more than once?!'.format(pspref))
