@@ -470,6 +470,29 @@ ORDER BY l.levelcost, l.levelname, s.name, b.sortkey, b.benefitname""", {'confid
 		'benefitmatrix': benefitmatrix,
 		}, RequestContext(request))
 
+def _confirm_benefit(request, benefit):
+	with transaction.atomic():
+		benefit.confirmed = True
+		benefit.save()
+
+		messages.info(request, u"Benefit {0} for {1} confirmed.".format(benefit.benefit, benefit.sponsor))
+
+		conference = benefit.sponsor.conference
+
+		# Send email
+		for manager in benefit.sponsor.managers.all():
+			send_simple_mail(conference.sponsoraddr,
+							 manager.email,
+							 u"[{0}] sponsorship benefit confirmed".format(conference.conferencename, benefit.benefit),
+							 u"Your sponsorship benefit {0} at {1} has been marked as confirmed by the organizers.".format(benefit.benefit, conference.conferencename),
+							 sendername=conference.conferencename,
+							 receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
+		send_simple_mail(conference.sponsoraddr,
+						 conference.sponsoraddr,
+						 u"Sponsorhip benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor),
+						 u"Sponsorhip benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor)
+						 )
+
 @ssl_required
 @login_required
 def sponsor_admin_sponsor(request, confurlname, sponsorid):
@@ -483,8 +506,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 	if request.method == 'POST' and request.POST['confirm'] == '1':
 		# Confirm one of the benefits, so do this before we load the list
 		benefit = get_object_or_404(SponsorClaimedBenefit, sponsor=sponsor, id=request.POST['claimid'])
-		benefit.confirmed = True
-		benefit.save()
+		_confirm_benefit(request, benefit)
 		return HttpResponseRedirect('.')
 
 	unclaimedbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=False).exclude(sponsorclaimedbenefit__sponsor=sponsor)
@@ -567,8 +589,7 @@ def sponsor_admin_benefit(request, confurlname, benefitid):
 
 	if request.method == 'POST' and request.POST.get('confirm', '') == '1':
 		# Confirm this benefit!
-		benefit.confirmed = True
-		benefit.save()
+		_confirm_benefit(request, benefit)
 		return HttpResponseRedirect('.')
 
 	if request.method == 'POST' and request.POST.get('unclaim', '') == '1':
