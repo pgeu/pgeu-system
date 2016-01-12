@@ -48,10 +48,13 @@ class Command(BaseCommand):
 					u = urllib2.urlopen(req)
 					resp = u.read()
 					u.close()
-					report.downloadedat = datetime.now()
-					report.contents = resp
-					report.save()
-					AdyenLog(message='Downloaded report {0}'.format(report.url), error=False).save()
+					if len(resp) == 0:
+						self.stderr.write("Downloaded report {0} and got zero bytes (no header). Not storing, will try again.".format(report.url))
+					else:
+						report.downloadedat = datetime.now()
+						report.contents = resp
+						report.save()
+						AdyenLog(message='Downloaded report {0}'.format(report.url), error=False).save()
 			except Exception, ex:
 				self.stderr.write("Failed to download report {0}: {1}".format(report.url, ex))
 				# This might fail again if we had a db problem, but it should be OK as long as it
