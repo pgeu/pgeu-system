@@ -23,6 +23,7 @@ from models import BulkPayment, Room, Track, ConferenceSessionScheduleSlot
 from models import AttendeeMail, ConferenceAdditionalOption
 from models import PendingAdditionalOrder
 from models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
+from models import STATUS_CHOICES
 from forms import ConferenceRegistrationForm, ConferenceSessionFeedbackForm
 from forms import ConferenceFeedbackForm, SpeakerProfileForm
 from forms import CallForPapersForm, CallForPapersSpeakerForm, CallForPapersSubmissionForm
@@ -1541,6 +1542,8 @@ def talkvote(request, confname):
 	if not conference.talkvoters.filter(pk=request.user.id):
 		raise Http404('You are not a talk voter for this conference!')
 
+	isadmin = conference.administrators.filter(pk=request.user.id).exists()
+
 	curs = connection.cursor()
 
 	if request.method=='POST':
@@ -1562,6 +1565,18 @@ def talkvote(request, confname):
 					}
 				for k,v in request.POST.items() if k.startswith("sv_") and (int(v)>0 or request.POST['tc_%s' % k[3:]])
 				])
+
+		# Change status if there is any status to change. Yes, we do an ugly loop so we can trap
+		# which have changed to notify.
+		for k,v in request.POST.items():
+			if k.startswith("stat_"):
+				curs.execute("UPDATE confreg_conferencesession SET status=%(status)s WHERE id=%(id)s AND status != %(status)s RETURNING title", {
+					'status': int(v),
+					'id': int(k[5:]),
+				})
+				for t, in curs.fetchall():
+					messages.info(request, u"Changed status of session {0}".format(t))
+
 		return HttpResponseRedirect(".")
 
 	order = ""
@@ -1571,7 +1586,7 @@ def talkvote(request, confname):
 
 	# Render the form. Need to do this with a manual query, can't figure
 	# out the right way to do it with the django ORM.
-	curs.execute("SELECT s.id, s.title, s.status, s.abstract, s.submissionnote, (SELECT string_agg(spk.fullname, ',') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers, (SELECT string_agg(spk.fullname || '(' || spk.company || ')', ',') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers_full, (SELECT string_agg('####' ||spk.fullname || '\n' || spk.abstract, '\n\n') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers_long, u.username, v.vote, v.comment, avg(v.vote) OVER (PARTITION BY s.id)::numeric(3,2) AS avg, trackname FROM (confreg_conferencesession s CROSS JOIN auth_user u) LEFT JOIN confreg_track track ON track.id=s.track_id LEFT JOIN confreg_conferencesessionvote v ON v.session_id=s.id AND v.voter_id=u.id WHERE s.conference_id=%(confid)s AND u.id IN (SELECT user_id FROM confreg_conference_talkvoters tv WHERE tv.conference_id=%(confid)s) ORDER BY " + order + "s.title,s.id, u.id=%(userid)s DESC, u.username", {
+	curs.execute("SELECT s.id, s.title, s.status, s.lastnotifiedstatus, s.abstract, s.submissionnote, (SELECT string_agg(spk.fullname, ',') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers, (SELECT string_agg(spk.fullname || '(' || spk.company || ')', ',') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers_full, (SELECT string_agg('####' ||spk.fullname || '\n' || spk.abstract, '\n\n') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers_long, u.username, v.vote, v.comment, avg(v.vote) OVER (PARTITION BY s.id)::numeric(3,2) AS avg, trackname FROM (confreg_conferencesession s CROSS JOIN auth_user u) LEFT JOIN confreg_track track ON track.id=s.track_id LEFT JOIN confreg_conferencesessionvote v ON v.session_id=s.id AND v.voter_id=u.id WHERE s.conference_id=%(confid)s AND u.id IN (SELECT user_id FROM confreg_conference_talkvoters tv WHERE tv.conference_id=%(confid)s) ORDER BY " + order + "s.title,s.id, u.id=%(userid)s DESC, u.username", {
 			'confid': conference.id,
 			'userid': request.user.id,
 			})
@@ -1581,7 +1596,7 @@ def talkvote(request, confname):
 			return
 
 		firstid = all[0][0]
-		for id, title, status, abstract, submissionnote, speakers, speakers_full, speakers_long, username, vote, comment, avgvote, track in all:
+		for id, title, status, laststatus, abstract, submissionnote, speakers, speakers_full, speakers_long, username, vote, comment, avgvote, track in all:
 			if id != firstid:
 				return
 			yield username
@@ -1592,14 +1607,16 @@ def talkvote(request, confname):
 
 		lastid = -1
 		rd = {}
-		for id, title, status, abstract, submissionnote, speakers, speakers_full, speakers_long, username, vote, comment, avgvote, track in all:
+		for id, title, status, laststatus, abstract, submissionnote, speakers, speakers_full, speakers_long, username, vote, comment, avgvote, track in all:
 			if id != lastid:
 				if lastid != -1:
 					yield rd
 				rd = {
 					'id': id,
 					'title': title,
+					'statusid': status,
 					'status': get_status_string(status),
+					'laststatusid': laststatus,
 					'abstract': abstract,
 					'submissionnote': submissionnote,
 					'speakers': speakers,
@@ -1626,6 +1643,8 @@ def talkvote(request, confname):
 			'users': getusernames(all),
 			'sessionvotes': transform(all),
 			'conference': conference,
+			'isadmin': isadmin,
+		    'status_choices': STATUS_CHOICES,
 			}, context_instance=RequestContext(request))
 
 @ssl_required

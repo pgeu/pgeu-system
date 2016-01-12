@@ -38,6 +38,13 @@ div.dlg {
 </head>
 <body>
 <h1>Vote for sessions - {{conference}}</h1>
+{% if messages %}
+<ul style="background-color: yellow;">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
 
 <form method="post" action=".">{% csrf_token %}
 <table border="1" cellspacing="0" cellpadding="1">
@@ -74,7 +81,17 @@ div.dlg {
     </p>
     </div>
    </td>
+   {%if isadmin%}
+   <td{%if not s.statusid = s.laststatusid %} bgcolor="yellow"{%endif%}>
+     <select name="stat_{{s.id}}">
+       {%for opt in status_choices%}
+       <option value="{{opt.0}}"{%if opt.0 = s.statusid %} SELECTED{%endif%}>{{opt.1}}</option>
+       {%endfor%}
+     </select>
+   </td>
+{%else%}
    <td>{{s.status}}</td>
+{%endif%}
    {%for u in s.users%}
    <td{%if u|default_if_none:0 == 0%} style="background-color:red"{%endif%}>{%if forloop.first %}
      <select name="sv_{{s.id}}">
@@ -95,6 +112,14 @@ div.dlg {
 </table>
 <input type="submit" value="Save">
 </form>
+{%if isadmin and conference.pending_session_notifications%}
+<h2>Notifications</h2>
+<p>
+  There are pending
+  <a href="/events/sessionnotifyqueue/{{conference.urlname}}/">session notifications</a>
+  to be sent!
+</p>
+{%endif%}
 
 </body>
 </html>
