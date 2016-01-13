@@ -1961,7 +1961,8 @@ def admin_waitlist(request, urlname):
 	num_invoicedregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True, invoice__isnull=False, registrationwaitlistentry__isnull=True).count()
 	num_invoicedbulkpayregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True, bulkpayment__isnull=False, bulkpayment__paidat__isnull=True).count()
 	num_waitlist_offered = RegistrationWaitlistEntry.objects.filter(registration__conference=conference, offeredon__isnull=False, registration__payconfirmedat__isnull=True).count()
-	waitlist = RegistrationWaitlistEntry.objects.filter(registration__conference=conference).order_by('-registration__payconfirmedat', 'enteredon')
+	waitlist = RegistrationWaitlistEntry.objects.filter(registration__conference=conference, registration__payconfirmedat__isnull=True).order_by('enteredon')
+	waitlist_cleared = RegistrationWaitlistEntry.objects.filter(registration__conference=conference, registration__payconfirmedat__isnull=False).order_by('-registration__payconfirmedat', 'enteredon')
 
 	if request.method == 'POST':
 		# Attempting to make an offer
@@ -2007,6 +2008,7 @@ def admin_waitlist(request, urlname):
 		'num_waitlist_offered': num_waitlist_offered,
 		'num_total': num_confirmedregs + num_invoicedregs + num_invoicedbulkpayregs + num_waitlist_offered,
 		'waitlist': waitlist,
+		'waitlist_cleared': waitlist_cleared,
 		'form': form,
 		}, RequestContext(request))
 
