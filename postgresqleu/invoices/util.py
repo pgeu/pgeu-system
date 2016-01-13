@@ -142,13 +142,16 @@ class InvoiceWrapper(object):
 			return
 
 		# Build a text email, and attach the PDF if there is one
-		if self.invoice.recipient_user:
+		if self.invoice.recipient_secret:
+			# If we have the secret, include it in the email even if we have
+			# a user. This is because users often forward that email, and
+			# then the recipient can access it. As long as the secret is
+			# included, both the logged in and the not logged in user
+			# can see it.
+			invoiceurl = '%s/invoices/%s/%s/' % (settings.SITEBASE_SSL, self.invoice.pk, self.invoice.recipient_secret)
+		elif self.invoice.recipient_user:
 			# General URL that shows a normal invoice
 			invoiceurl = '%s/invoices/%s/' % (settings.SITEBASE_SSL, self.invoice.pk)
-		elif self.invoice.recipient_secret:
-			# No user, but a secret, so generate a URL that can be used without
-			# being logged in.
-			invoiceurl = '%s/invoices/%s/%s/' % (settings.SITEBASE_SSL, self.invoice.pk, self.invoice.recipient_secret)
 		else:
 			invoiceurl = None
 
