@@ -19,6 +19,13 @@ table.invoiceconfirmtbl tr.totalrow td.cost {
 form input[type=submit] {
    width: 200px !important;
 }
+div.warnfld {
+   background-color: rgb(255,255,204);
+   border: 1px solid red;
+}
+div.warnfld ul li {
+   font-weight: normal !important;
+}
 </style>
 <script language="javascript">
 function confirmInvoice() {
@@ -83,7 +90,15 @@ be locked and can no longer be edited.
 <i>due for immediate payment</i>. Your registration will not be confirmed
 until this invoice is paid!{%endif%}
 </p>
-
+{%if warnings%}
+<div class="warnfld">
+  <ul>
+    {%for w in warnings%}
+    <li>{{w|safe}}</li>
+    {%endfor%}
+  </ul>
+</div>
+{%endif%}
 <input type="submit" name="submit" value="Confirm and finish registration" onclick="return confirmInvoice()"><br/>
 <input type="submit" name="submit" value="Back">
 </form>
