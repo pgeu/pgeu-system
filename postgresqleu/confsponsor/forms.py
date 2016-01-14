@@ -21,8 +21,10 @@ def _int_with_default(s, default):
 		return default
 
 class SponsorSignupForm(forms.Form):
-	name = forms.CharField(label="Company name *", min_length=3, max_length=100)
+	name = forms.CharField(label="Company name *", min_length=3, max_length=100, help_text="This name is used on invoice and in internal communication")
+	displayname = forms.CharField(label="Display name *", min_length=3, max_length=100, help_text="This name is displayed on websites and in public communication")
 	address = forms.CharField(label="Company address *", min_length=10, max_length=500, widget=forms.Textarea)
+	url = forms.CharField(label="Company URL", min_length=8, max_length=100)
 	twittername = forms.CharField(label="Company twitter", min_length=0, max_length=100, required=False, validators=[TwitterValidator, ])
 	confirm = forms.BooleanField(help_text="Check this box to that you have read and agree to the terms in the contract")
 
@@ -38,6 +40,11 @@ class SponsorSignupForm(forms.Form):
 		if Sponsor.objects.filter(conference=self.conference, name__iexact=self.cleaned_data['name']).exists():
 			raise ValidationError("A sponsor with this name is already signed up for this conference!")
 		return self.cleaned_data['name']
+
+	def clean_displayname(self):
+		if Sponsor.objects.filter(conference=self.conference, displayname__iexact=self.cleaned_data['displayname']).exists():
+			raise ValidationError("A sponsor with this display name is already signed up for this conference!")
+		return self.cleaned_data['displayname']
 
 
 class SponsorSendEmailForm(forms.ModelForm):

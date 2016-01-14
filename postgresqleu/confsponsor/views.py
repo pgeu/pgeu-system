@@ -272,6 +272,8 @@ def sponsor_signup(request, confurlname, levelurlname):
 			# Create a new sponsorship record always
 			sponsor = Sponsor(conference=conference,
 							  name=form.cleaned_data['name'],
+							  displayname=form.cleaned_data['displayname'],
+							  url=form.cleaned_data['url'],
 							  level=level,
 							  twittername = form.cleaned_data.get('twittername', ''),
 							  invoiceaddr = form.cleaned_data['address'])

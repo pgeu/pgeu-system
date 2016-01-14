@@ -69,8 +69,10 @@ class SponsorshipBenefit(models.Model):
 class Sponsor(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
 	name = models.CharField(max_length=100, null=False, blank=False)
+	displayname = models.CharField(max_length=100, null=False, blank=False)
 	invoiceaddr = models.TextField(max_length=500, null=False, blank=True)
 	managers = models.ManyToManyField(User, null=False, blank=False)
+	url = models.URLField(max_length=200, null=False, blank=True)
 	twittername = models.CharField(max_length=100, null=False, blank=True)
 	level = models.ForeignKey(SponsorshipLevel, null=False, blank=False)
 	invoice = models.ForeignKey(Invoice, null=True, blank=True)
