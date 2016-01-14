@@ -191,7 +191,7 @@ class ConferenceSessionForm(forms.ModelForm):
 
 	def __init__(self, *args, **kwargs):
 		super(ConferenceSessionForm, self).__init__(*args, **kwargs)
-		if 'instance' in kwargs:
+		if 'instance' in kwargs and self.instance.conference_id:
 			self.fields['track'].queryset = Track.objects.filter(conference=self.instance.conference)
 			self.fields['room'].queryset = Room.objects.filter(conference=self.instance.conference)
 			self.fields['tentativeroom'].queryset = Room.objects.filter(conference=self.instance.conference)
