@@ -148,7 +148,11 @@ function recalculate_sums() {
 
 function search() {
    searchstr = $('#searchentry').val();
-   document.location.href=document.location.href + '?search=' + searchstr;
+   if (document.location.href.indexOf('?') > 0) {
+      document.location.href=document.location.href + '&search=' + searchstr;
+   } else {
+      document.location.href=document.location.href + '?search=' + searchstr;
+   }
 }
 
 $(function() {
@@ -249,9 +253,15 @@ Year: <select id="yearpick" onchange="changeYear()">
   <b>{{e.closed|yesno:"Closed,Open"}}</b>
   <ul>
  {%endifchanged%}
- <li><a href="/accounting/e/{{e.id}}/">{{e}}</a>{%if not e.closed%} *{%endif%}</li>
+ <li><a href="/accounting/e/{{e.id}}/{%if numpages > 1%}?p={{page}}{%endif%}">{{e}}</a>{%if not e.closed%} *{%endif%}</li>
  {%if forloop.last%}</ul>{%endif%}
-{%endfor%}
+ {%endfor%}
+  {%if numpages > 1 %}
+  <div style="text-align: center">{{numpages}} pages</div>
+  <div style="text-align: center">
+    {%for p in pages%}<a href="?p={{p}}">{{p}}</a> {%endfor%}
+  </div>
+{%endif%}
 {%if year.isopen and not hasopen %}
 <button onclick="document.location.href='/accounting/{{year.year}}/close/'">Close year</button>
 {%endif%}

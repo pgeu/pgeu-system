@@ -6,6 +6,7 @@ from django.template import RequestContext
 from django.forms.models import inlineformset_factory
 from django.db.models import Max
 from django.db import connection, transaction
+from django.core.paginator import Paginator
 
 from datetime import datetime, date
 
@@ -40,6 +41,25 @@ def _perform_search(request, year):
 
 	return ('', list(JournalEntry.objects.filter(year=year).order_by('closed', '-date', '-id')))
 
+class EntryPaginator(Paginator):
+	ENTRIES_PER_PAGE=50
+
+	def __init__(self, entries):
+		return super(EntryPaginator, self).__init__(entries, self.ENTRIES_PER_PAGE)
+
+	def get_pages(self, currentpage):
+		if self.num_pages > 10:
+			# More than 10 won't fit, so split
+
+			if currentpage < 6:
+				return self.page_range[:10]
+			elif currentpage > self.num_pages-5:
+				return self.page_range[-10:]
+			else:
+				return self.page_range[currentpage-5:currentpage-5+10]
+		else:
+			return self.page_range
+
 @ssl_required
 @login_required
 @transaction.atomic
@@ -53,8 +73,14 @@ def year(request, year):
 
 	(searchterm, entries) = _perform_search(request, year)
 
+	paginator = EntryPaginator(entries)
+	currpage = request.GET.has_key('p') and int(request.GET['p']) or 1
+
 	return render_to_response('accounting/main.html', {
-		'entries': entries,
+		'entries': paginator.page(currpage),
+		'page': currpage,
+		'pages': paginator.get_pages(currpage),
+		'numpages': paginator.num_pages,
 		'hasopen': any([not e.closed for e in entries]),
 		'year': year,
 		'years': Year.objects.all(),
@@ -102,6 +128,9 @@ def entry(request, entryid):
 
 	(searchterm, entries) = _perform_search(request, entry.year)
 
+	paginator = EntryPaginator(entries)
+	currpage = request.GET.has_key('p') and int(request.GET['p']) or 1
+
 	extra = max(2, 6-entry.journalitem_set.count())
 	inlineformset = inlineformset_factory(JournalEntry, JournalItem, JournalItemForm, JournalItemFormset, can_delete=True, extra=extra)
 	inlineurlformset = inlineformset_factory(JournalEntry, JournalUrl, can_delete=True, extra=2, exclude=[])
@@ -137,7 +166,10 @@ def entry(request, entryid):
 			  -sum([i.amount for i in items if i.amount<0]))
 	urls = list(entry.journalurl_set.all())
 	return render_to_response('accounting/main.html', {
-		'entries': entries,
+		'entries': paginator.page(currpage),
+		'page': currpage,
+		'pages': paginator.get_pages(currpage),
+		'numpages': paginator.num_pages,
 		'hasopen': any([not e.closed for e in entries]),
 		'year': entry.year,
 		'entry': entry,
