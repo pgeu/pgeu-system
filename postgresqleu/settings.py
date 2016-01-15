@@ -98,6 +98,7 @@ INSTALLED_APPS = [
 	'postgresqleu.countries',
 	'postgresqleu.paypal',
 	'postgresqleu.adyen',
+	'postgresqleu.braintreepayment',
 	'postgresqleu.newsevents',
 	'postgresqleu.confreg',
 	'postgresqleu.confsponsor',
@@ -193,5 +194,3 @@ if ENABLE_BRAINTREE:
 	ACCOUNTING_BRAINTREE_PAYABLE_ACCOUNT=1623
 	ACCOUNTING_BRAINTREE_PAYOUT_ACCOUNT=1930
 	ACCOUNTING_BRAINTREE_FEE_ACCOUNT=6040
-
-	INSTALLED_APPS.append('postgresqleu.braintreepayment')
