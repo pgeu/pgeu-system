@@ -10,8 +10,11 @@ import StringIO
 import binascii
 from collections import OrderedDict
 
+import re
+
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.util import diff_workdays
+from postgresqleu.adyen.models import TransactionStatus
 
 def _escapeVal(val):
 	return val.replace('\\','\\\\').replace(':','\\:')
@@ -62,6 +65,21 @@ class _AdyenBase(object):
 			settings.ADYEN_BASEURL,
 			urlencode(param),
 			)
+
+	_re_adyen = re.compile('^Adyen id ([A-Z0-9]+)$')
+	def payment_fees(self, invoice):
+		m = self._re_adyen.match(invoice.paymentdetails)
+		if m:
+			try:
+				trans = TransactionStatus.objects.get(pspReference=m.groups(1)[0])
+				if trans.settledamount:
+					return "{0}{1}".format(settings.CURRENCY_SYMBOL, trans.amount-trans.settledamount)
+				else:
+					return "not settled yet"
+			except TransactionStatus.DoesNotExist:
+				return "not found"
+		else:
+			return "unknown format"
 
 class AdyenCreditcard(_AdyenBase):
 	description="""

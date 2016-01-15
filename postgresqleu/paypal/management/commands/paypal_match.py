@@ -18,6 +18,7 @@ from datetime import datetime
 import ConfigParser
 
 from postgresqleu.invoices.util import InvoiceManager
+from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.accounting.util import create_accounting_entry
 from postgresqleu.paypal.models import TransactionInfo, ErrorLog
 
@@ -99,7 +100,9 @@ class Command(BaseCommand):
 															  settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT,
 															  settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT,
 															  urls,
-															  payment_logger)
+															  payment_logger,
+															  InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.paypal.Paypal'),
+														  )
 
 			if r == invoicemanager.RESULT_OK:
 				trans.setmatched('Matched standard invoice')

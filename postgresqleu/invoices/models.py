@@ -77,6 +77,7 @@ class Invoice(models.Model):
 	# writes the details of the transaction to the paymentdetails field.
 	paidat = models.DateTimeField(null=True, blank=True)
 	paymentdetails = models.CharField(max_length=100, null=False, blank=True)
+	paidusing = models.ForeignKey(InvoicePaymentMethod, null=True, related_name="paidusing", verbose_name="Payment method actually used")
 
 	# Reminder (if any) sent when?
 	remindersent = models.DateTimeField(null=True, blank=True, verbose_name="Automatic reminder sent at")
@@ -105,6 +106,13 @@ class Invoice(models.Model):
 	@property
 	def invoicestr(self):
 		return "%s #%s - %s" % (settings.INVOICE_TITLE_PREFIX, self.pk, self.title)
+
+	@property
+	def payment_fees(self):
+		if self.paidusing:
+			return PaymentMethodWrapper(self.paidusing, self).payment_fees
+		else:
+			return "unknown"
 
 	def __unicode__(self):
 		return "Invoice #%s" % self.pk

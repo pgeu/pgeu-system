@@ -41,7 +41,7 @@ class InvoiceForm(forms.ModelForm):
 
 	class Meta:
 		model = Invoice
-		exclude = ['finalized', 'pdf_invoice', 'pdf_receipt', 'paidat', 'paymentdetails', 'processor', 'processorid', 'deleted', 'deletion_reason', 'refunded', 'refund_reason', 'recipient_secret']
+		exclude = ['finalized', 'pdf_invoice', 'pdf_receipt', 'paidat', 'paymentdetails', 'paidusing', 'processor', 'processorid', 'deleted', 'deletion_reason', 'refunded', 'refund_reason', 'recipient_secret']
 
 	def clean(self):
 		if not self.cleaned_data['recipient_user'] and self.cleaned_data.has_key('recipient_email') and self.cleaned_data['recipient_email']:

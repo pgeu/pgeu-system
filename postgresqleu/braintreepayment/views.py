@@ -11,7 +11,7 @@ import braintree
 
 from postgresqleu.util.decorators import ssl_required
 
-from postgresqleu.invoices.models import Invoice
+from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.mailqueue.util import send_simple_mail
 
@@ -87,7 +87,9 @@ def payment_post(request):
 															 settings.ACCOUNTING_BRAINTREE_AUTHORIZED_ACCOUNT,
 															 0,
 															 [],
-															 invoice_logger)
+															 invoice_logger,
+															 InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.braintree.Braintree'),
+														 )
 			except BraintreeProcessingException, ex:
 				send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 								 settings.BRAINTREE_NOTIFICATION_RECEIVER,

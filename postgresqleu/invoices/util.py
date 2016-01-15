@@ -198,7 +198,7 @@ class InvoiceManager(object):
 	RESULT_DELETED = 4
 	RESULT_INVALIDAMOUNT = 5
 	RESULT_PROCESSORFAIL = 6
-	def process_incoming_payment(self, transtext, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls=None, logger=None):
+	def process_incoming_payment(self, transtext, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls=None, logger=None, method=None):
 		# If there is no logger specified, just log with print statement
 		if not logger:
 			logger = _standard_logger
@@ -237,10 +237,10 @@ class InvoiceManager(object):
 			logger("Could not find invoice with id '%s'" % invoiceid)
 			return (self.RESULT_NOTFOUND, None, None)
 
-		return self.process_incoming_payment_for_invoice(invoice, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls, logger)
+		return self.process_incoming_payment_for_invoice(invoice, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls, logger, method)
 
 
-	def process_incoming_payment_for_invoice(self, invoice, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls, logger):
+	def process_incoming_payment_for_invoice(self, invoice, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls, logger, method):
 		# Do the same as process_incoming_payment, but assume that the
 		# invoice has already been matched by other means.
 		invoiceid = invoice.pk
@@ -264,6 +264,7 @@ class InvoiceManager(object):
 		# Things look good, flag this invoice as paid
 		invoice.paidat = datetime.now()
 		invoice.paymentdetails = transdetails[:100]
+		invoice.paidusing = method
 
 		# If there is a processor module registered for this invoice,
 		# we need to instantiate it and call it. So, well, let's do

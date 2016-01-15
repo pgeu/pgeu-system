@@ -6,7 +6,7 @@ from datetime import datetime, date
 
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager
-from postgresqleu.invoices.models import Invoice
+from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.accounting.util import create_accounting_entry
 
 from models import TransactionStatus, Report, AdyenLog, Notification, Refund
@@ -77,7 +77,13 @@ def process_authorization(notification):
 			def invoice_logger(msg):
 				raise AdyenProcessingException('Invoice processing failed: %s' % msg)
 
-			manager.process_incoming_payment_for_invoice(invoice, notification.amount, 'Adyen id %s' % notification.pspReference, 0, settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, 0, urls, invoice_logger)
+			# Handle our special case of Adyen where we have two different processors
+			# depending on what method was used at Adyen.
+			if trans.method == 'bankTransfer_IBAN':
+				method = InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.adyen.AdyenBanktransfer')
+			else:
+				method = InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.adyen.AdyenCreditcard')
+			manager.process_incoming_payment_for_invoice(invoice, notification.amount, 'Adyen id %s' % notification.pspReference, 0, settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, 0, urls, invoice_logger, method)
 
 			if invoice.accounting_object:
 				# Store the accounting object so we can properly tag the

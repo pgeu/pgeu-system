@@ -54,3 +54,9 @@ class PaymentMethodWrapper(object):
 		except Exception, ex:
 			print ex
 
+	@property
+	def payment_fees(self):
+		if hasattr(self.implementation, 'payment_fees'):
+			return self.implementation.payment_fees(self.invoice)
+		else:
+			return "unknown"

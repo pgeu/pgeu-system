@@ -1,6 +1,10 @@
 from django.conf import settings
 from urllib import urlencode
 
+import re
+
+from postgresqleu.paypal.models import TransactionInfo
+
 class Paypal(object):
 	description="""
 Using this payment method, you can pay via Paypal. You can use this both
@@ -39,3 +43,16 @@ lower fees.
 		return "%s?%s" % (
 			settings.PAYPAL_BASEURL,
 			urlencode(param))
+
+	_re_paypal = re.compile('^Paypal id ([A-Z0-9]+), ')
+	def payment_fees(self, invoice):
+		# Find the paypal transaction based on the invoice payment info.
+		m = self._re_paypal.match(invoice.paymentdetails)
+		if m:
+			try:
+				trans = TransactionInfo.objects.get(paypaltransid=m.groups(1)[0])
+				return "{0}{1}".format(settings.CURRENCY_SYMBOL, trans.fee)
+			except TransactionInfo.DoesNotExist:
+				return "not found"
+		else:
+			return "unknown format"

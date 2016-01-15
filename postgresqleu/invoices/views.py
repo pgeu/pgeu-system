@@ -14,7 +14,7 @@ import StringIO
 from datetime import datetime, timedelta
 
 from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
-from models import Invoice, InvoiceRow
+from models import Invoice, InvoiceRow, InvoicePaymentMethod
 from forms import InvoiceForm, InvoiceRowForm
 from util import InvoiceWrapper, InvoiceManager, InvoicePresentationWrapper
 
@@ -393,6 +393,6 @@ def dummy_payment(request, invoiceid, invoicesecret):
 		returnurl = "%s/invoices/%s/" % (settings.SITEBASE_SSL, invoice.pk)
 
 	# We'll just cheat and use the Adyen account
-	manager.process_incoming_payment_for_invoice(invoice, invoice.total_amount, 'Dummy payment', 0, settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, 0, None, None)
+	manager.process_incoming_payment_for_invoice(invoice, invoice.total_amount, 'Dummy payment', 0, settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, 0, None, None, InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.dummy.DummyPayment'))
 
 	return HttpResponseRedirect(returnurl)

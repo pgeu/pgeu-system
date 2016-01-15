@@ -10,6 +10,7 @@ import urllib2
 from urllib import urlencode, unquote_plus
 
 from postgresqleu.invoices.util import InvoiceManager
+from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.util.decorators import ssl_required
 from postgresqleu.accounting.util import create_accounting_entry
 
@@ -163,7 +164,9 @@ def paypal_return_handler(request):
 														  settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT,
 														  settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT,
 														  urls,
-														  payment_logger)
+														  payment_logger,
+														  InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.paypal.Paypal'),
+													  )
 		if r == invoicemanager.RESULT_OK:
 			# Matched it!
 			ti.matched = True
