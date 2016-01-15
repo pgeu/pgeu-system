@@ -21,7 +21,7 @@ from util import InvoiceWrapper, InvoiceManager, InvoicePresentationWrapper
 @ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
-def home(request):
+def all(request):
 	return _homeview(request, Invoice.objects.all())
 
 @ssl_required

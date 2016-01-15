@@ -145,8 +145,9 @@ urlpatterns = patterns('',
 	(r'invoicemgr/(\d+)/pdf/$', postgresqleu.invoicemgr.views.invoicepdf),
 
     # Second generation invoice management system
-    (r'^invoiceadmin/$', postgresqleu.invoices.views.home),
+    (r'^invoiceadmin/$', postgresqleu.invoices.views.unpaid),
     (r'^invoiceadmin/unpaid/$', postgresqleu.invoices.views.unpaid),
+    (r'^invoiceadmin/all/$', postgresqleu.invoices.views.all),
     (r'^invoiceadmin/pending/$', postgresqleu.invoices.views.pending),
     (r'^invoiceadmin/deleted/$', postgresqleu.invoices.views.deleted),
     (r'^invoiceadmin/refunded/$', postgresqleu.invoices.views.refunded),

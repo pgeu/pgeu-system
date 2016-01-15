@@ -30,9 +30,9 @@ ul.messages {
 {% endif %}
 
 <p>
-{%if not unpaid and not pending and not deleted and not refunded and not searchterm%}All{%else%}<a href="/invoiceadmin/">All</a>{%endif%}
+{%if not unpaid and not pending and not deleted and not refunded and not searchterm%}All{%else%}<a href="/invoiceadmin/all/">All</a>{%endif%}
 |
-{%if unpaid %}Unpaid{%else%}<a href="/invoiceadmin/unpaid/">Unpaid</a>{%endif%}
+{%if unpaid %}Unpaid{%else%}<a href="/invoiceadmin/">Unpaid</a>{%endif%}
 |
 {%if pending %}Pending{%else%}<a href="/invoiceadmin/pending/">Pending</a>{%endif%}
 |
