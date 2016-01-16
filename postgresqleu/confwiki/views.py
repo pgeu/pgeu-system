@@ -11,7 +11,6 @@ from datetime import datetime
 from cStringIO import StringIO
 import difflib
 
-from postgresqleu.util.decorators import ssl_required
 from postgresqleu.mailqueue.util import send_simple_mail
 
 from postgresqleu.confreg.models import Conference, ConferenceRegistration
@@ -23,7 +22,6 @@ from forms import WikipageEditForm, WikipageAdminEditForm
 from models import Signup, AttendeeSignup
 from forms import SignupSubmitForm, SignupAdminEditForm
 
-@ssl_required
 @login_required
 def wikipage(request, confurl, wikiurl):
 	conference = get_object_or_404(Conference, urlname=confurl)
@@ -46,7 +44,6 @@ def wikipage(request, confurl, wikiurl):
 		'is_subscribed': is_subscribed,
 	})
 
-@ssl_required
 @login_required
 @transaction.atomic
 def wikipage_subscribe(request, confurl, wikiurl):
@@ -68,7 +65,6 @@ def wikipage_subscribe(request, confurl, wikiurl):
 
 	return HttpResponseRedirect('../')
 
-@ssl_required
 @login_required
 def wikipage_history(request, confurl, wikiurl):
 	conference = get_object_or_404(Conference, urlname=confurl)
@@ -113,7 +109,6 @@ def wikipage_history(request, confurl, wikiurl):
 	})
 
 
-@ssl_required
 @login_required
 @transaction.atomic
 def wikipage_edit(request, confurl, wikiurl):
@@ -157,7 +152,7 @@ def wikipage_edit(request, confurl, wikiurl):
 								 conference.contactaddr,
 								 subject,
 								 body)
-				body += "\n\nYou are receiving this message because you are subscribed to changes to\nthis page. To stop receiving notifications, please click\n{0}/events/register/{1}/wiki/{2}/sub/\n\n".format(settings.SITEBASE_SSL, conference.urlname, page.url)
+				body += "\n\nYou are receiving this message because you are subscribed to changes to\nthis page. To stop receiving notifications, please click\n{0}/events/register/{1}/wiki/{2}/sub/\n\n".format(settings.SITEBASE, conference.urlname, page.url)
 				for sub in WikipageSubscriber.objects.filter(page=page):
 					send_simple_mail(conference.contactaddr,
 									 reg.email,
@@ -183,7 +178,6 @@ def wikipage_edit(request, confurl, wikiurl):
 		'diff': diff,
 	})
 
-@ssl_required
 @login_required
 def admin(request, urlname):
 	if request.user.is_superuser:
@@ -198,7 +192,6 @@ def admin(request, urlname):
 		'pages': pages,
 	}, RequestContext(request))
 
-@ssl_required
 @login_required
 @transaction.atomic
 def admin_edit_page(request, urlname, pageid):
@@ -255,7 +248,6 @@ def admin_edit_page(request, urlname, pageid):
 	}, RequestContext(request))
 
 
-@ssl_required
 @login_required
 @transaction.atomic
 def signup(request, urlname, signupid):
@@ -325,7 +317,6 @@ def signup(request, urlname, signupid):
 		'form': form,
 	})
 
-@ssl_required
 @login_required
 def signup_admin(request, urlname):
 	if request.user.is_superuser:
@@ -340,7 +331,6 @@ def signup_admin(request, urlname):
 		'signups': signups,
 	}, RequestContext(request))
 
-@ssl_required
 @login_required
 @transaction.atomic
 def signup_admin_edit(request, urlname, signupid):

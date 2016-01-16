@@ -10,13 +10,12 @@ from django.core.paginator import Paginator
 
 from datetime import datetime, date
 
-from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
+from postgresqleu.util.decorators import user_passes_test_or_error
 
 from models import JournalEntry, JournalItem, JournalUrl, Year, Object
 from models import IncomingBalance, Account
 from forms import JournalEntryForm, JournalItemForm, JournalItemFormset
 
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
 def index(request):
@@ -60,7 +59,6 @@ class EntryPaginator(Paginator):
 		else:
 			return self.page_range
 
-@ssl_required
 @login_required
 @transaction.atomic
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
@@ -87,7 +85,6 @@ def year(request, year):
 		'searchterm': searchterm,
 		}, RequestContext(request))
 
-@ssl_required
 @login_required
 @transaction.atomic
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
@@ -115,7 +112,6 @@ def new(request, year):
 
 	return HttpResponseRedirect('/accounting/e/%s/' % entry.pk)
 
-@ssl_required
 @login_required
 @transaction.atomic
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
@@ -282,7 +278,6 @@ def _collate_results(query, queryparam, numvalues):
 
 	return (results, totalresult)
 
-@ssl_required
 @login_required
 @transaction.atomic
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
@@ -363,7 +358,6 @@ SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
 		'accounts': Account.objects.filter(group__accountclass__inbalance=True),
 	}, context_instance=RequestContext(request))
 
-@ssl_required
 @login_required
 @transaction.atomic
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))

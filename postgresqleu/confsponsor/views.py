@@ -10,7 +10,6 @@ from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 
 from postgresqleu.auth import user_search, user_import
-from postgresqleu.util.decorators import ssl_required
 
 from postgresqleu.confreg.models import Conference, PrepaidVoucher, DiscountCode
 from postgresqleu.mailqueue.util import send_simple_mail
@@ -27,7 +26,6 @@ from benefits import get_benefit_class
 from invoicehandler import create_sponsor_invoice, confirm_sponsor
 from invoicehandler import create_voucher_invoice
 
-@ssl_required
 @login_required
 def sponsor_dashboard(request):
 	# We define "past sponsors" as those older than a month - because we have to pick something.
@@ -54,7 +52,6 @@ def _get_sponsor_and_admin(sponsorid, request, onlyconfirmed=True):
 	else:
 		return sponsor, False
 
-@ssl_required
 @login_required
 def sponsor_conference(request, sponsorid):
 	sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request, False)
@@ -84,7 +81,6 @@ def sponsor_conference(request, sponsorid):
 		'is_admin': is_admin,
 		}, RequestContext(request))
 
-@ssl_required
 @login_required
 def sponsor_manager_delete(request, sponsorid):
 	sponsor = get_object_or_404(Sponsor, id=sponsorid, managers=request.user, confirmed=True)
@@ -99,7 +95,6 @@ def sponsor_manager_delete(request, sponsorid):
 	messages.info(request, "User %s removed as manager." % user.username)
 	return HttpResponseRedirect('../../')
 
-@ssl_required
 @login_required
 @transaction.atomic
 def sponsor_manager_add(request, sponsorid):
@@ -134,7 +129,6 @@ def sponsor_manager_add(request, sponsorid):
 			messages.warning(request, "Could not find user with email address %s" % request.POST['email'])
 		return HttpResponseRedirect('../../')
 
-@ssl_required
 @login_required
 def sponsor_view_mail(request, sponsorid, mailid):
 	sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
@@ -146,7 +140,6 @@ def sponsor_view_mail(request, sponsorid, mailid):
 		'mail': mail,
 		}, RequestContext(request))
 
-@ssl_required
 @login_required
 @transaction.atomic
 def sponsor_purchase_voucher(request, sponsorid):
@@ -187,7 +180,6 @@ def sponsor_purchase_voucher(request, sponsorid):
 		'form': form,
 		}, RequestContext(request))
 
-@ssl_required
 @login_required
 @transaction.atomic
 def sponsor_purchase_discount(request, sponsorid):
@@ -234,7 +226,6 @@ def sponsor_purchase_discount(request, sponsorid):
 		'form': form,
 		}, RequestContext(request))
 
-@ssl_required
 @login_required
 def sponsor_signup_dashboard(request, confurlname):
 	conference = get_object_or_404(Conference, urlname=confurlname)
@@ -252,7 +243,6 @@ def sponsor_signup_dashboard(request, confurlname):
 		'current': current_signups,
 		}, RequestContext(request))
 
-@ssl_required
 @login_required
 @transaction.atomic
 def sponsor_signup(request, confurlname, levelurlname):
@@ -314,7 +304,6 @@ def sponsor_signup(request, confurlname, levelurlname):
 		'form': form,
 		}, RequestContext(request))
 
-@ssl_required
 @login_required
 @transaction.atomic
 def sponsor_claim_benefit(request, sponsorid, benefitid):
@@ -363,7 +352,7 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
 						sponsor,
 						sponsor.conference,
 						benefit,
-						settings.SITEBASE_SSL,
+						settings.SITEBASE,
 						sponsor.conference.urlname)
 				send_simple_mail(sponsor.conference.sponsoraddr,
 								 sponsor.conference.sponsoraddr,
@@ -385,7 +374,6 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
 		}, RequestContext(request))
 
 
-@ssl_required
 @login_required
 def sponsor_contract(request, contractid):
 	# Our contracts are not secret, are they? Anybody can view them, we just require a login
@@ -398,7 +386,6 @@ def sponsor_contract(request, contractid):
 	resp.write(contract.contractpdf.read())
 	return resp
 
-@ssl_required
 @login_required
 def sponsor_admin_dashboard(request, confurlname):
 	if request.user.is_superuser:
@@ -495,7 +482,6 @@ def _confirm_benefit(request, benefit):
 						 u"Sponsorhip benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor)
 						 )
 
-@ssl_required
 @login_required
 def sponsor_admin_sponsor(request, confurlname, sponsorid):
 	if request.user.is_superuser:
@@ -528,7 +514,6 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 		'noclaimbenefits': noclaimbenefits,
 		}, RequestContext(request))
 
-@ssl_required
 @login_required
 @transaction.atomic
 def sponsor_admin_generateinvoice(request, confurlname, sponsorid):
@@ -560,7 +545,6 @@ def sponsor_admin_generateinvoice(request, confurlname, sponsorid):
 	wrapper.email_invoice()
 	return HttpResponseRedirect("../")
 
-@ssl_required
 @login_required
 @transaction.atomic
 def sponsor_admin_confirm(request, confurlname, sponsorid):
@@ -575,7 +559,6 @@ def sponsor_admin_confirm(request, confurlname, sponsorid):
 
 	return HttpResponseRedirect('../')
 
-@ssl_required
 @login_required
 def sponsor_admin_benefit(request, confurlname, benefitid):
 	if request.user.is_superuser:
@@ -607,7 +590,6 @@ def sponsor_admin_benefit(request, confurlname, benefitid):
 		'claimdata': claimdata,
 		}, RequestContext(request))
 
-@ssl_required
 @login_required
 @transaction.atomic
 def sponsor_admin_send_mail(request, confurlname):
@@ -631,7 +613,7 @@ def sponsor_admin_send_mail(request, confurlname):
 			# Now also send the email out to the *current* subscribers
 			sponsors = Sponsor.objects.filter(conference=conference, level__in=form.data.getlist('levels'), confirmed=True)
 			for sponsor in sponsors:
-				msgtxt = u"{0}\n\n-- \nThis message was sent to sponsors of {1}.\nYou can view all communications for this conference at:\n{2}/events/sponsor/{3}/\n".format(msg.message, conference, settings.SITEBASE_SSL, sponsor.pk)
+				msgtxt = u"{0}\n\n-- \nThis message was sent to sponsors of {1}.\nYou can view all communications for this conference at:\n{2}/events/sponsor/{3}/\n".format(msg.message, conference, settings.SITEBASE, sponsor.pk)
 				for manager in sponsor.managers.all():
 					send_simple_mail(conference.sponsoraddr,
 									 manager.email,
@@ -643,7 +625,7 @@ def sponsor_admin_send_mail(request, confurlname):
 			send_simple_mail(conference.sponsoraddr,
 							 conference.sponsoraddr,
 							 "Email sent to sponsors",
-							 "An email was sent to sponsors of {0}.\n\nTo view it, go to {1}/events/sponsor/admin/{2}/viewmail/{3}/".format(conference, settings.SITEBASE_SSL, conference.urlname, msg.id),
+							 "An email was sent to sponsors of {0}.\n\nTo view it, go to {1}/events/sponsor/admin/{2}/viewmail/{3}/".format(conference, settings.SITEBASE, conference.urlname, msg.id),
 							 sendername=conference.conferencename,
 							 receivername=conference.conferencename)
 
@@ -657,7 +639,6 @@ def sponsor_admin_send_mail(request, confurlname):
 		'form': form,
 	}, RequestContext(request))
 
-@ssl_required
 @login_required
 def sponsor_admin_view_mail(request, confurlname, mailid):
 	if request.user.is_superuser:
@@ -672,7 +653,6 @@ def sponsor_admin_view_mail(request, confurlname, mailid):
 		'admin': True,
 		}, RequestContext(request))
 
-@ssl_required
 @login_required
 def sponsor_admin_imageview(request, benefitid):
 	# Image is fetched as part of a benefit, so find the benefit
@@ -696,7 +676,6 @@ def sponsor_admin_imageview(request, benefitid):
 	resp.write(f.read())
 	return resp
 
-@ssl_required
 @login_required
 @transaction.atomic
 def admin_copy_level(request, levelid):

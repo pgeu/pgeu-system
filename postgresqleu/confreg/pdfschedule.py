@@ -20,8 +20,6 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import cm, mm
 
-from postgresqleu.util.decorators import ssl_required
-
 from models import Conference, Room, Track, RegistrationDay, ConferenceSession
 from views import render_conference_response
 
@@ -331,7 +329,6 @@ class PdfScheduleForm(forms.Form):
 		self.fields['day'].queryset = RegistrationDay.objects.filter(conference=conference)
 		self.fields['tracks'].queryset = alltracks
 
-@ssl_required
 @login_required
 def pdfschedule(request, confname):
 	if request.user.is_superuser:

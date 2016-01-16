@@ -154,7 +154,7 @@ def expire_additional_options(reg):
 							 'reg': reg,
 							 'options': expireset,
 							 'optionscount': len(expireset),
-							 'SITEBASE': settings.SITEBASE_SSL,
+							 'SITEBASE': settings.SITEBASE,
 						 })),
 						 sendername = reg.conference.conferencename,
 						 receivername = u"{0} {1}".format(reg.firstname, reg.lastname))

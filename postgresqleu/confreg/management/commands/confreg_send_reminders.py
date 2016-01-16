@@ -89,7 +89,7 @@ class Command(BaseCommand):
 								 template.render(Context({
 									 'conference': conference,
 									 'sessions': sessions,
-									 'SITEBASE': settings.SITEBASE_SSL,
+									 'SITEBASE': settings.SITEBASE,
 								 })),
 								 sendername = conference.conferencename,
 								 receivername = speaker.fullname,
@@ -123,7 +123,7 @@ class Command(BaseCommand):
 								 "Your registration to {0}".format(conference),
 								 template.render(Context({
 									 'conference': conference,
-									 'SITEBASE': settings.SITEBASE_SSL,
+									 'SITEBASE': settings.SITEBASE,
 								 })),
 								 sendername = conference.conferencename,
 								 receivername = speaker.fullname,
@@ -157,7 +157,7 @@ class Command(BaseCommand):
 								 template.render(Context({
 									 'conference': conference,
 									 'reg': reg,
-									 'SITEBASE': settings.SITEBASE_SSL,
+									 'SITEBASE': settings.SITEBASE,
 								 })),
 								 sendername = conference.conferencename,
 								 receivername = reg.fullname,
@@ -185,7 +185,7 @@ class Command(BaseCommand):
 								 template.render(Context({
 									 'conference': conference,
 									 'session': sess,
-									 'SITEBASE': settings.SITEBASE_SSL,
+									 'SITEBASE': settings.SITEBASE,
 								 })),
 								 sendername = conference.conferencename,
 								 receivername = spk.name,

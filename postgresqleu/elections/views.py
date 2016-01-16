@@ -8,8 +8,6 @@ from models import Election, Member, Candidate, Vote
 from forms import VoteForm
 from datetime import date, timedelta
 
-from postgresqleu.util.decorators import ssl_required
-
 def home(request):
 	elections = Election.objects.filter(isopen=True).order_by('startdate')
 	open_elections = [e for e in elections if e.startdate<=date.today() and e.enddate>=date.today()]
@@ -22,7 +20,6 @@ def home(request):
 			'upcoming': upcoming_elections,
 	}, context_instance=RequestContext(request))
 
-@ssl_required
 def election(request, electionid):
 	election = get_object_or_404(Election, pk=electionid)
 	if not election.isopen:
@@ -108,7 +105,6 @@ def candidate(request, election, candidate):
 			'candidate': candidate,
 	}, context_instance=RequestContext(request))
 
-@ssl_required
 @login_required
 def ownvotes(request, electionid):
 	election = get_object_or_404(Election, pk=electionid)

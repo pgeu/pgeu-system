@@ -25,7 +25,7 @@ def confirm_sponsor(sponsor, who):
 	msgtxt = get_template('confsponsor/mail/sponsor_confirmed.txt').render(Context({
 		'sponsor': sponsor,
 		'conference': sponsor.conference,
-		'SITEBASE': settings.SITEBASE_SSL,
+		'SITEBASE': settings.SITEBASE,
 	}))
 	for manager in sponsor.managers.all():
 		send_simple_mail(sponsor.conference.sponsoraddr,
@@ -107,7 +107,7 @@ class InvoiceProcessor(object):
 			sponsor = Sponsor.objects.get(pk=invoice.processorid)
 		except Sponsor.DoesNotExist:
 			raise Exception("Could not find conference sponsorship %s" % invoice.processorid)
-		return "%s/events/sponsor/%s/" % (settings.SITEBASE_SSL, sponsor.id)
+		return "%s/events/sponsor/%s/" % (settings.SITEBASE, sponsor.id)
 
 
 # Generate an invoice for sponsorship
@@ -202,7 +202,7 @@ class VoucherInvoiceProcessor(object):
 			pv = PurchasedVoucher.objects.get(pk=invoice.processorid)
 		except PurchasedVoucher.DoesNotExist:
 			raise Exception("Could not find voucher order %s" % invoice.processorid)
-		return "%s/events/sponsor/%s/" % (settings.SITEBASE_SSL, pv.sponsor.id)
+		return "%s/events/sponsor/%s/" % (settings.SITEBASE, pv.sponsor.id)
 
 
 # Generate an invoice for prepaid vouchers

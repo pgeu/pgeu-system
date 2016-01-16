@@ -11,10 +11,8 @@ from datetime import datetime
 import os
 
 from models import Invoice
-from postgresqleu.util.decorators import ssl_required
 from postgresqleu.confreg.models import Conference, ConferenceRegistration
 
-@ssl_required
 @login_required
 @user_passes_test(lambda u: u.has_module_perms('invoicemgr'))
 def home(request):
@@ -23,7 +21,6 @@ def home(request):
 		'invoices': invoices,
 	}, context_instance=RequestContext(request))
 
-@ssl_required
 @login_required
 @user_passes_test(lambda u: u.has_module_perms('invoicemgr'))
 def invoice(request, id):
@@ -32,7 +29,6 @@ def invoice(request, id):
 			'invoice': invoice,
 	})
 
-@ssl_required
 @login_required
 @user_passes_test(lambda u: u.has_module_perms('invoicemgr'))
 def invoicepdf(request, id):

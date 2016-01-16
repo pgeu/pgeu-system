@@ -8,7 +8,6 @@ from django.views.decorators.csrf import csrf_exempt
 
 import base64
 
-from postgresqleu.util.decorators import ssl_required
 from postgresqleu.util.payment.adyen import calculate_signature
 from postgresqleu.util.payment.adyen import AdyenBanktransfer
 from postgresqleu.invoices.models import Invoice
@@ -17,7 +16,6 @@ from postgresqleu.invoices.util import InvoiceManager
 from models import RawNotification, AdyenLog, ReturnAuthorizationStatus
 from util import process_raw_adyen_notification
 
-@ssl_required
 @transaction.atomic
 def adyen_return_handler(request):
 	sig = calculate_signature(request.GET)
@@ -48,9 +46,9 @@ def adyen_return_handler(request):
 		returnurl = processor.get_return_url(invoice)
 	else:
 		if invoice.recipient_user:
-			returnurl = "%s/invoices/%s/" % (settings.SITEBASE_SSL, invoice.pk)
+			returnurl = "%s/invoices/%s/" % (settings.SITEBASE, invoice.pk)
 		else:
-			returnurl = "%s/invoices/%s/%s/" % (settings.SITEBASE_SSL, invoice.pk, invoice.recipient_secret)
+			returnurl = "%s/invoices/%s/%s/" % (settings.SITEBASE, invoice.pk, invoice.recipient_secret)
 
 	AdyenLog(pspReference='', message='Return handler received %s result for %s' % (request.GET['authResult'], request.GET['merchantReturnData']), error=False).save()
 	if request.GET['authResult'] == 'REFUSED':
@@ -94,7 +92,6 @@ def adyen_return_handler(request):
 			}, context_instance=RequestContext(request))
 
 
-@ssl_required
 @csrf_exempt
 def adyen_notify_handler(request):
 	# Handle asynchronous notifications from the Adyen payment platform
@@ -141,7 +138,6 @@ def _invoice_payment(request, invoice):
 		'paymenturl': paymenturl,
 	}, RequestContext(request))
 
-@ssl_required
 @login_required
 def invoicepayment(request, invoiceid):
 	invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True)
@@ -150,7 +146,6 @@ def invoicepayment(request, invoiceid):
 
 	return _invoice_payment(request, invoice)
 
-@ssl_required
 def invoicepayment_secret(request, invoiceid, secret):
 	invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True, recipient_secret=secret)
 	return _invoice_payment(request, invoice)

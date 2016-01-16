@@ -9,8 +9,6 @@ from datetime import datetime
 
 import braintree
 
-from postgresqleu.util.decorators import ssl_required
-
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.mailqueue.util import send_simple_mail
@@ -21,7 +19,6 @@ from util import initialize_braintree
 class BraintreeProcessingException(Exception):
 	pass
 
-@ssl_required
 def payment_post(request):
 	nonce = request.POST['payment_method_nonce']
 	invoice = get_object_or_404(Invoice, pk=request.POST['invoice'], deleted=False, finalized=True)
@@ -32,9 +29,9 @@ def payment_post(request):
 		returnurl = processor.get_return_url(invoice)
 	else:
 		if invoice.recipient_user:
-			returnurl = "%s/invoices/%s/" % (settings.SITEBASE_SSL, invoice.pk)
+			returnurl = "%s/invoices/%s/" % (settings.SITEBASE, invoice.pk)
 		else:
-			returnurl = "%s/invoices/%s/%s/" % (settings.SITEBASE_SSL, invoice.pk, invoice.recipient_secret)
+			returnurl = "%s/invoices/%s/%s/" % (settings.SITEBASE, invoice.pk, invoice.recipient_secret)
 
 	# Generate the transaction
 	initialize_braintree()
@@ -141,7 +138,6 @@ def _invoice_payment(request, invoice):
 		'token': token,
 	}, RequestContext(request))
 
-@ssl_required
 @login_required
 def invoicepayment(request, invoiceid):
 	invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True)
@@ -150,7 +146,6 @@ def invoicepayment(request, invoiceid):
 
 	return _invoice_payment(request, invoice)
 
-@ssl_required
 def invoicepayment_secret(request, invoiceid, secret):
 	invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True, recipient_secret=secret)
 	return _invoice_payment(request, invoice)

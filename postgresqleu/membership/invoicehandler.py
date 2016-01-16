@@ -60,4 +60,4 @@ class InvoiceProcessor(object):
 	# of their payment. In our case, we just return the user directly
 	# to the membership page.
 	def get_return_url(self, invoice):
-		return "%s/membership/" % settings.SITEBASE_SSL
+		return "%s/membership/" % settings.SITEBASE

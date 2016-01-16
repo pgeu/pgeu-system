@@ -11,12 +11,10 @@ from urllib import urlencode, unquote_plus
 
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.models import InvoicePaymentMethod
-from postgresqleu.util.decorators import ssl_required
 from postgresqleu.accounting.util import create_accounting_entry
 
 from models import TransactionInfo, ErrorLog, SourceAccount
 
-@ssl_required
 @transaction.atomic
 def paypal_return_handler(request):
 	tx = 'UNKNOWN'
@@ -183,11 +181,11 @@ def paypal_return_handler(request):
 				if i.recipient_user:
 					# Registered to a specific user, so request that users
 					# login on redirect
-					url = "%s/invoices/%s/" % (settings.SITEBASE_SSL, i.pk)
+					url = "%s/invoices/%s/" % (settings.SITEBASE, i.pk)
 				else:
 					# No user account registered, so send back to the secret
 					# url version
-					url = "%s/invoices/%s/%s/" % (settings.SITEBASE_SSL, i.pk, i.recipient_secret)
+					url = "%s/invoices/%s/%s/" % (settings.SITEBASE, i.pk, i.recipient_secret)
 
 			return render_to_response('paypal/complete.html', {
 					'invoice': i,

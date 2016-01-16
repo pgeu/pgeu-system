@@ -148,10 +148,10 @@ class InvoiceWrapper(object):
 			# then the recipient can access it. As long as the secret is
 			# included, both the logged in and the not logged in user
 			# can see it.
-			invoiceurl = '%s/invoices/%s/%s/' % (settings.SITEBASE_SSL, self.invoice.pk, self.invoice.recipient_secret)
+			invoiceurl = '%s/invoices/%s/%s/' % (settings.SITEBASE, self.invoice.pk, self.invoice.recipient_secret)
 		elif self.invoice.recipient_user:
 			# General URL that shows a normal invoice
-			invoiceurl = '%s/invoices/%s/' % (settings.SITEBASE_SSL, self.invoice.pk)
+			invoiceurl = '%s/invoices/%s/' % (settings.SITEBASE, self.invoice.pk)
 		else:
 			invoiceurl = None
 
@@ -308,7 +308,7 @@ class InvoiceManager(object):
 			leaveopen = False
 		else:
 			leaveopen = True
-		urls = ['%s/invoices/%s/' % (settings.SITEBASE_SSL, invoice.pk),]
+		urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk),]
 		if extraurls:
 			urls.extend(extraurls)
 

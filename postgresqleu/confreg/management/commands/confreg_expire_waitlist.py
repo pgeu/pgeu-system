@@ -52,7 +52,7 @@ class Command(BaseCommand):
 								 'conference': reg.conference,
 								 'reg': reg,
 								 'offerexpires': w.offerexpires,
-								 'SITEBASE': settings.SITEBASE_SSL,
+								 'SITEBASE': settings.SITEBASE,
 								 })),
 							 sendername = reg.conference.conferencename,
 							 receivername = u"{0} {1}".format(reg.firstname, reg.lastname),

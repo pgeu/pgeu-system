@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import connection
 
-from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
+from postgresqleu.util.decorators import user_passes_test_or_error
 
 from datetime import datetime
 
@@ -19,7 +19,6 @@ class Header(object):
 	def __unicode__(self):
 		return self.hdr
 
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.is_superuser)
 def timereport(request):

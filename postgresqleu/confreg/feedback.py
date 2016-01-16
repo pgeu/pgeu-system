@@ -3,8 +3,6 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.db import connection
 
-from postgresqleu.util.decorators import ssl_required
-
 from models import Conference, ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
 from views import ConferenceContext
 
@@ -31,7 +29,6 @@ def build_feedback_response(question):
 		r['graphdata'] = build_graphdata(question, 'rateanswer', range(0,6))
 	return r
 
-@ssl_required
 @login_required
 def feedback_report(request, confname):
 	if request.user.is_superuser:
@@ -69,7 +66,6 @@ def build_toplists(what, query):
 		tl['list'] = cursor.fetchall()
 		yield tl
 
-@ssl_required
 @login_required
 def feedback_sessions(request, confname):
 	if request.user.is_superuser:

@@ -36,7 +36,7 @@ from util import get_invoice_autocancel
 from models import get_status_string
 from regtypes import confirm_special_reg_type
 
-from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
+from postgresqleu.util.decorators import user_passes_test_or_error
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod, InvoiceRow
 from postgresqleu.confwiki.models import Wikipage
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
@@ -167,7 +167,6 @@ def _registration_dashboard(request, conference, reg):
 		'invoices': invoices,
 	})
 
-@ssl_required
 @login_required
 @transaction.atomic
 def home(request, confname):
@@ -253,7 +252,7 @@ def home(request, confname):
 
 			return render_conference_response(request, conference, 'confreg/regform_completed.html', {
 				'reg': reg,
-				'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/register/%s/" % (settings.SITEBASE_SSL, conference.urlname)),
+				'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/register/%s/" % (settings.SITEBASE, conference.urlname)),
 			})
 
 		# Else fall through and render the form
@@ -263,7 +262,7 @@ def home(request, confname):
 		'form': form,
 		'form_is_saved': form_is_saved,
 		'reg': reg,
-		'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/register/%s/" % (settings.SITEBASE_SSL, conference.urlname)),
+		'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/register/%s/" % (settings.SITEBASE, conference.urlname)),
 		'additionaloptions': conference.conferenceadditionaloption_set.filter(public=True),
 		'costamount': reg.regtype and reg.regtype.cost or 0,
 	})
@@ -274,7 +273,6 @@ def feedback_available(request):
 		'conferences': conferences,
 	}, context_instance=RequestContext(request))
 
-@ssl_required
 @login_required
 @transaction.atomic
 def reg_add_options(request, confname):
@@ -419,7 +417,6 @@ def reg_add_options(request, confname):
 		return HttpResponseRedirect('/invoices/{0}/{1}/'.format(order.invoice.id, order.invoice.recipient_secret))
 
 
-@ssl_required
 @login_required
 def feedback(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -466,7 +463,6 @@ def feedback(request, confname):
 		'is_tester': is_conf_tester,
 	})
 
-@ssl_required
 @login_required
 def feedback_session(request, confname, sessionid):
 	# Room for optimization: don't get these as separate steps
@@ -510,7 +506,6 @@ def feedback_session(request, confname, sessionid):
 	})
 
 
-@ssl_required
 @login_required
 @transaction.atomic
 def feedback_conference(request, confname):
@@ -738,7 +733,6 @@ def speakerphoto(request, speakerid):
 	speakerphoto = get_object_or_404(Speaker_Photo, pk=speakerid)
 	return HttpResponse(base64.b64decode(speakerphoto.photo), content_type='image/jpg')
 
-@ssl_required
 @login_required
 def speakerprofile(request, confurlname=None):
 	speaker = conferences = callforpapers = None
@@ -780,7 +774,6 @@ def speakerprofile(request, confurlname=None):
 			'form': form,
 	})
 
-@ssl_required
 @login_required
 def callforpapers(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -832,7 +825,6 @@ def callforpapers(request, confname):
 	})
 
 
-@ssl_required
 @login_required
 def callforpapers_edit(request, confname, sessionid):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -921,7 +913,6 @@ def callforpapers_edit(request, confname, sessionid):
 			'savedok': savedok,
 	})
 
-@ssl_required
 @login_required
 @transaction.atomic
 def callforpapers_confirm(request, confname, sessionid):
@@ -959,7 +950,7 @@ def callforpapers_confirm(request, confname, sessionid):
 								 template.render(Context({
 									 'conference': conference,
 									 'session': session,
-									 'SITEBASE': settings.SITEBASE_SSL,
+									 'SITEBASE': settings.SITEBASE,
 									 })),
 								 sendername = conference.conferencename,
 								 receivername = spk.fullname,
@@ -973,7 +964,6 @@ def callforpapers_confirm(request, confname, sessionid):
 		'session': session,
 	})
 
-@ssl_required
 @login_required
 @transaction.atomic
 def confirmreg(request, confname):
@@ -1135,7 +1125,6 @@ def confirmreg(request, confname):
 		})
 
 
-@ssl_required
 @login_required
 @transaction.atomic
 def waitlist_signup(request, confname):
@@ -1169,7 +1158,6 @@ def waitlist_signup(request, confname):
 	# which will show the waitlist information.
 	return HttpResponseRedirect("../confirm/")
 
-@ssl_required
 @login_required
 @transaction.atomic
 def waitlist_cancel(request, confname):
@@ -1201,13 +1189,11 @@ def waitlist_cancel(request, confname):
 	# which will show the waitlist information.
 	return HttpResponseRedirect("../confirm/")
 
-@ssl_required
 @login_required
 def cancelreg(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	return render_conference_response(request, conference, 'confreg/canceled.html')
 
-@ssl_required
 @login_required
 @transaction.atomic
 def invoice(request, confname, regid):
@@ -1238,7 +1224,6 @@ def invoice(request, confname, regid):
 			'invoice': reg.invoice,
 			})
 
-@ssl_required
 @login_required
 def attendee_mail(request, confname, mailid):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -1251,7 +1236,6 @@ def attendee_mail(request, confname, mailid):
 		'mail': mail,
 		})
 
-@ssl_required
 @login_required
 @transaction.atomic
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoicemgr'))
@@ -1311,7 +1295,6 @@ def createvouchers(request):
 			'form': form,
 			}, context_instance=RequestContext(request))
 
-@ssl_required
 @login_required
 @transaction.atomic
 def viewvouchers(request, batchid):
@@ -1338,7 +1321,7 @@ def viewvouchers(request, batchid):
 	vouchermailtext = get_template('confreg/mail/prepaid_vouchers.txt').render(Context({
 		'batch': batch,
 		'vouchers': vouchers,
-		'SITEBASE': settings.SITEBASE_SSL,
+		'SITEBASE': settings.SITEBASE,
 		}))
 
 	return render_to_response('confreg/prepaid_create_list.html', {
@@ -1348,7 +1331,6 @@ def viewvouchers(request, batchid):
 			'vouchermailtext': vouchermailtext,
 			}, RequestContext(request))
 
-@ssl_required
 @login_required
 @transaction.atomic
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoicemgr'))
@@ -1359,7 +1341,7 @@ def emailvouchers(request, batchid):
 	vouchermailtext = get_template('confreg/mail/prepaid_vouchers.txt').render(Context({
 		'batch': batch,
 		'vouchers': vouchers,
-		'SITEBASE': settings.SITEBASE_SSL,
+		'SITEBASE': settings.SITEBASE,
 	}))
 	send_simple_mail(batch.conference.contactaddr,
 					  batch.buyer.email,
@@ -1370,7 +1352,6 @@ def emailvouchers(request, batchid):
 					  )
 	return HttpResponse('OK')
 
-@ssl_required
 @login_required
 @transaction.atomic
 def bulkpay(request, confname):
@@ -1502,7 +1483,6 @@ def bulkpay(request, confname):
 		})
 
 
-@ssl_required
 @login_required
 def bulkpay_view(request, confname, bulkpayid):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -1542,7 +1522,6 @@ class UnscheduledSession(object):
 		self.ispending = (session.status == 3)
 
 
-@ssl_required
 @login_required
 @transaction.atomic
 def talkvote(request, confname):
@@ -1655,7 +1634,6 @@ def talkvote(request, confname):
 		    'status_choices': STATUS_CHOICES,
 			}, context_instance=RequestContext(request))
 
-@ssl_required
 @login_required
 @csrf_exempt
 @transaction.atomic
@@ -1749,7 +1727,6 @@ def createschedule(request, confname):
 			'sesswidth': 600 / len(rooms),
 			}, context_instance=RequestContext(request))
 
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.is_superuser)
 def publishschedule(request, confname):
@@ -1799,7 +1776,6 @@ def publishschedule(request, confname):
 				'changes': changes,
 			}, context_instance=RequestContext(request))
 
-@ssl_required
 @login_required
 def reports(request, confname):
 	if request.user.is_superuser:
@@ -1817,7 +1793,6 @@ def reports(request, confname):
 		    }, context_instance=RequestContext(request))
 
 
-@ssl_required
 @login_required
 def advanced_report(request, confname):
 	if request.user.is_superuser:
@@ -1833,7 +1808,6 @@ def advanced_report(request, confname):
 	return build_attendee_report(conference, request.POST )
 
 
-@ssl_required
 @login_required
 def simple_report(request, confname):
 	if request.user.is_superuser:
@@ -1864,7 +1838,6 @@ def simple_report(request, confname):
 		'data': d,
 	}, RequestContext(request))
 
-@ssl_required
 @login_required
 def admin_dashboard(request):
 	if request.user.is_superuser:
@@ -1889,7 +1862,6 @@ def admin_dashboard(request):
 		'conferences': conferences,
 	}, RequestContext(request))
 
-@ssl_required
 @login_required
 def admin_dashboard_single(request, urlname):
 	if request.user.is_superuser:
@@ -1901,7 +1873,6 @@ def admin_dashboard_single(request, urlname):
 		'conference': conference,
 	}, RequestContext(request))
 
-@ssl_required
 @login_required
 def admin_registration_dashboard(request, urlname):
 	if request.user.is_superuser:
@@ -1951,7 +1922,6 @@ def admin_registration_dashboard(request, urlname):
 		'tables': tables,
 	}, RequestContext(request))
 
-@ssl_required
 @login_required
 @transaction.atomic
 def admin_waitlist(request, urlname):
@@ -1998,7 +1968,7 @@ def admin_waitlist(request, urlname):
 									 'conference': conference,
 									 'reg': r,
 									 'offerexpires': wl.offerexpires,
-									 'SITEBASE': settings.SITEBASE_SSL,
+									 'SITEBASE': settings.SITEBASE,
 									 })),
 								 sendername = conference.conferencename,
 								 receivername = u"{0} {1}".format(r.firstname, r.lastname),
@@ -2020,7 +1990,6 @@ def admin_waitlist(request, urlname):
 		'form': form,
 		}, RequestContext(request))
 
-@ssl_required
 @login_required
 @transaction.atomic
 def admin_attendeemail(request, urlname):
@@ -2045,7 +2014,7 @@ def admin_attendeemail(request, urlname):
 			# Now also send the email out to the currently registered attendees
 			attendees = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, regtype__regclass__in=form.data.getlist('regclasses'))
 			for a in attendees:
-				msgtxt = u"{0}\n\n-- \nThis message was sent to attendees of {1}.\nYou can view all communications for this conference at:\n{2}/events/register/{3}/\n".format(msg.message, conference, settings.SITEBASE_SSL, conference.urlname)
+				msgtxt = u"{0}\n\n-- \nThis message was sent to attendees of {1}.\nYou can view all communications for this conference at:\n{2}/events/register/{3}/\n".format(msg.message, conference, settings.SITEBASE, conference.urlname)
 				send_simple_mail(conference.contactaddr,
 								 a.email,
 								 u"[{0}] {1}".format(conference, msg.subject),
@@ -2064,7 +2033,6 @@ def admin_attendeemail(request, urlname):
 		'form': form,
 	}, RequestContext(request))
 
-@ssl_required
 @login_required
 def admin_attendeemail_view(request, urlname, mailid):
 	if request.user.is_superuser:
@@ -2079,7 +2047,6 @@ def admin_attendeemail_view(request, urlname, mailid):
 		'mail': mail,
 		}, RequestContext(request))
 
-@ssl_required
 @login_required
 @transaction.atomic
 def session_notify_queue(request, urlname):
@@ -2102,7 +2069,7 @@ def session_notify_queue(request, urlname):
 								 template.render(Context({
 									 'conference': conference,
 									 'session': s,
-									 'SITEBASE': settings.SITEBASE_SSL,
+									 'SITEBASE': settings.SITEBASE,
 									 })),
 								 sendername=conference.conferencename,
 								 receivername=spk.fullname,
@@ -2121,7 +2088,6 @@ def session_notify_queue(request, urlname):
 
 
 # Send email to attendees of mixed conferences
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u:u.is_superuser)
 @transaction.atomic
@@ -2152,7 +2118,6 @@ def crossmail(request):
 
 
 # Admin view that's used to send email to multiple users
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.is_superuser)
 @transaction.atomic
@@ -2187,7 +2152,6 @@ def admin_email(request):
 		}, RequestContext(request))
 
 
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.is_superuser)
 @transaction.atomic

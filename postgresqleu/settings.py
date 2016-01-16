@@ -169,10 +169,9 @@ CM_USER_ACCOUNT=None
 CM_USER_PASSWORD=None
 
 # Base URLs for generating absolute URLs
-SITEBASE="http://www.postgresql.eu"
-SITEBASE_SSL="https://www.postgresql.eu"
+SITEBASE="https://www.postgresql.eu"
+SESSION_COOKIE_SECURE=True
 
-DISABLE_HTTPS_REDIRECTS=False
 DATETIME_FORMAT="Y-m-d H:i:s"
 
 # Set to true in local_settings.py to enable braintree integrations

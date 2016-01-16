@@ -44,7 +44,7 @@ class Command(BaseCommand):
 					'code': code,
 					'sponsor': code.sponsor,
 					'conference': code.conference,
-					'SITEBASE': settings.SITEBASE_SSL,
+					'SITEBASE': settings.SITEBASE,
 				}))
 				for manager in code.sponsor.managers.all():
 					send_simple_mail(code.conference.sponsoraddr,
@@ -108,7 +108,7 @@ class Command(BaseCommand):
 					'invoice': code.invoice,
 					'curr': settings.CURRENCY_ABBREV,
 					'expired_time': code.validuntil < date.today(),
-					'SITEBASE': settings.SITEBASE_SSL,
+					'SITEBASE': settings.SITEBASE,
 				}))
 				for manager in code.sponsor.managers.all():
 					send_simple_mail(code.conference.sponsoraddr,

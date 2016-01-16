@@ -92,7 +92,7 @@ class InvoiceProcessor(object):
 			reg = ConferenceRegistration.objects.get(pk=invoice.processorid)
 		except ConferenceRegistration.DoesNotExist:
 			raise Exception("Could not find conference registration %s" % invoice.processorid)
-		return "%s/events/register/%s/" % (settings.SITEBASE_SSL, reg.conference.urlname)
+		return "%s/events/register/%s/" % (settings.SITEBASE, reg.conference.urlname)
 
 
 
@@ -187,7 +187,7 @@ class BulkInvoiceProcessor(object):
 			bp = BulkPayment.objects.get(pk=invoice.processorid)
 		except ConferenceRegistration.DoesNotExist:
 			raise Exception("Could not find bulk payment %s" % invoice.processor)
-		return "%s/events/bulkpay/%s/%s/" % (settings.SITEBASE_SSL, bp.conference.urlname, invoice.processorid)
+		return "%s/events/bulkpay/%s/%s/" % (settings.SITEBASE, bp.conference.urlname, invoice.processorid)
 
 
 
@@ -238,4 +238,4 @@ class AddonInvoiceProcessor(object):
 		except PendingAdditionalOrder.DoesNotExist:
 			raise Exception("Could not find additional options order %s!" % invoice.processorid)
 
-		return "%s/events/register/%s/" % (settings.SITEBASE_SSL, order.reg.conference.urlname)
+		return "%s/events/register/%s/" % (settings.SITEBASE, order.reg.conference.urlname)

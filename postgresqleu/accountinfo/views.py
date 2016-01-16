@@ -7,10 +7,9 @@ from django.contrib.auth.models import User
 
 import json
 
-from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
+from postgresqleu.util.decorators import user_passes_test_or_error
 from postgresqleu.auth import user_search, user_import
 
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def search(request):
@@ -40,7 +39,6 @@ def search(request):
 									 'e': u['e'],
 									 } for u in users]), content_type='application/json')
 
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @transaction.atomic

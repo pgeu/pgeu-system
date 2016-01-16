@@ -13,36 +13,31 @@ import base64
 import StringIO
 from datetime import datetime, timedelta
 
-from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
+from postgresqleu.util.decorators import user_passes_test_or_error
 from models import Invoice, InvoiceRow, InvoicePaymentMethod
 from forms import InvoiceForm, InvoiceRowForm
 from util import InvoiceWrapper, InvoiceManager, InvoicePresentationWrapper
 
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def all(request):
 	return _homeview(request, Invoice.objects.all())
 
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def unpaid(request):
 	return _homeview(request, Invoice.objects.filter(paidat=None, deleted=False, finalized=True), unpaid=True)
 
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def pending(request):
 	return _homeview(request, Invoice.objects.filter(finalized=False, deleted=False), pending=True)
 
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def deleted(request):
 	return _homeview(request, Invoice.objects.filter(deleted=True), deleted=True)
 
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def refunded(request):
@@ -73,7 +68,6 @@ def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=Fal
 			}, context_instance=RequestContext(request))
 
 
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def search(request):
@@ -106,7 +100,6 @@ def search(request):
 	messages.info(request, "Showing %s search hits for %s" % (len(invoices), term))
 	return _homeview(request, invoices, searchterm=term)
 
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @transaction.atomic
@@ -183,7 +176,6 @@ def oneinvoice(request, invoicenum):
 			'invoice': invoice,
 			}, context_instance=RequestContext(request))
 
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @transaction.atomic
@@ -217,7 +209,6 @@ def flaginvoice(request, invoicenum):
 	# so we can just return the user right back
 	return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @transaction.atomic
@@ -237,7 +228,6 @@ def cancelinvoice(request, invoicenum):
 	return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
 
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @transaction.atomic
@@ -256,7 +246,6 @@ def refundinvoice(request, invoicenum):
 
 	return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def previewinvoice(request, invoicenum):
@@ -268,7 +257,6 @@ def previewinvoice(request, invoicenum):
 	r.write(wrapper.render_pdf_invoice(True))
 	return r
 
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @transaction.atomic
@@ -305,7 +293,6 @@ def emailinvoice(request, invoicenum):
 #--------------------------------------------------------------------------
 
 
-@ssl_required
 @login_required
 def viewinvoice(request, invoiceid):
 	invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True)
@@ -313,18 +300,16 @@ def viewinvoice(request, invoiceid):
 		return HttpResponseForbidden("Access denied")
 
 	return render_to_response('invoices/userinvoice.html', {
-			'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/" % (settings.SITEBASE_SSL, invoice.pk)),
+			'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/" % (settings.SITEBASE, invoice.pk)),
 			}, context_instance=RequestContext(request))
 
-@ssl_required
 def viewinvoice_secret(request, invoiceid, invoicesecret):
 	invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True, recipient_secret=invoicesecret)
 	return render_to_response('invoices/userinvoice.html', {
-			'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/%s/" % (settings.SITEBASE_SSL, invoice.pk, invoice.recipient_secret)),
+			'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/%s/" % (settings.SITEBASE, invoice.pk, invoice.recipient_secret)),
 			'fromsecret': True,
 			}, context_instance=RequestContext(request))
 
-@ssl_required
 @login_required
 def viewinvoicepdf(request, invoiceid):
 	invoice = get_object_or_404(Invoice, pk=invoiceid)
@@ -335,14 +320,12 @@ def viewinvoicepdf(request, invoiceid):
 	r.write(base64.b64decode(invoice.pdf_invoice))
 	return r
 
-@ssl_required
 def viewinvoicepdf_secret(request, invoiceid, invoicesecret):
 	invoice = get_object_or_404(Invoice, pk=invoiceid, recipient_secret=invoicesecret)
 	r = HttpResponse(content_type='application/pdf')
 	r.write(base64.b64decode(invoice.pdf_invoice))
 	return r
 
-@ssl_required
 @login_required
 def viewreceipt(request, invoiceid):
 	invoice = get_object_or_404(Invoice, pk=invoiceid)
@@ -353,14 +336,12 @@ def viewreceipt(request, invoiceid):
 	r.write(base64.b64decode(invoice.pdf_receipt))
 	return r
 
-@ssl_required
 def viewreceipt_secret(request, invoiceid, invoicesecret):
 	invoice = get_object_or_404(Invoice, pk=invoiceid, recipient_secret=invoicesecret)
 	r = HttpResponse(content_type='application/pdf')
 	r.write(base64.b64decode(invoice.pdf_receipt))
 	return r
 
-@ssl_required
 @login_required
 def userhome(request):
 	invoices = Invoice.objects.filter(recipient_user=request.user, deleted=False, finalized=True)
@@ -368,7 +349,6 @@ def userhome(request):
 			'invoices': invoices,
 			}, context_instance=RequestContext(request))
 
-@ssl_required
 @login_required
 def banktransfer(request):
 	return render_to_response('invoices/banktransfer.html', {
@@ -377,7 +357,6 @@ def banktransfer(request):
 			'returnurl': request.GET['ret'],
 			}, context_instance=RequestContext(request))
 
-@ssl_required
 @login_required
 @transaction.atomic
 def dummy_payment(request, invoiceid, invoicesecret):
@@ -390,7 +369,7 @@ def dummy_payment(request, invoiceid, invoicesecret):
 		processor = manager.get_invoice_processor(invoice)
 		returnurl = processor.get_return_url(invoice)
 	else:
-		returnurl = "%s/invoices/%s/" % (settings.SITEBASE_SSL, invoice.pk)
+		returnurl = "%s/invoices/%s/" % (settings.SITEBASE, invoice.pk)
 
 	# We'll just cheat and use the Adyen account
 	manager.process_incoming_payment_for_invoice(invoice, invoice.total_amount, 'Dummy payment', 0, settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, 0, None, None, InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.dummy.DummyPayment'))

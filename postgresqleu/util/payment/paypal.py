@@ -34,7 +34,7 @@ lower fees.
 			'item_name': invoicestr.encode('utf-8'),
 			'amount': '%s.00' % invoiceamount,
 			'invoice': invoiceid,
-			'return': '%s/p/paypal_return/' % settings.SITEBASE_SSL,
+			'return': '%s/p/paypal_return/' % settings.SITEBASE,
 			})
 		if returnurl:
 			# If the user cancels, send back to specific URL, instead of

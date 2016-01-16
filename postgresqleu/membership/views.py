@@ -10,7 +10,7 @@ from django.db.models import Q
 from models import Member, MemberLog, Meeting, MemberMeetingKey
 from forms import MemberForm
 
-from postgresqleu.util.decorators import user_passes_test_or_error, ssl_required
+from postgresqleu.util.decorators import user_passes_test_or_error
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
 from postgresqleu.confreg.forms import EmailSendForm
@@ -21,7 +21,6 @@ import json
 import base64
 import os
 
-@ssl_required
 @login_required
 @transaction.atomic
 def home(request):
@@ -99,7 +98,7 @@ def home(request):
 	return render_to_response('membership/index.html', {
 		'form': form,
 		'member': member,
-		'invoice': InvoicePresentationWrapper(member.activeinvoice, "%s/membership/" % settings.SITEBASE_SSL),
+		'invoice': InvoicePresentationWrapper(member.activeinvoice, "%s/membership/" % settings.SITEBASE),
 		'registration_complete': registration_complete,
 		'logdata': logdata,
 		'amount': 10, # price for two years
@@ -114,7 +113,6 @@ def userlist(request):
 
 
 # Admin view that's used to send email to multiple users
-@ssl_required
 @login_required
 @user_passes_test_or_error(lambda u: u.is_superuser)
 @transaction.atomic
@@ -144,7 +142,6 @@ def admin_email(request):
 		'recipientlist': ', '.join(recipients),
 		}, RequestContext(request))
 
-@ssl_required
 @login_required
 def meetings(request):
 	# Only available for actual members
@@ -158,7 +155,6 @@ def meetings(request):
 		'meetings': meetings,
 		})
 
-@ssl_required
 @login_required
 @transaction.atomic
 def meeting(request, meetingid):
@@ -194,7 +190,6 @@ def meeting(request, meetingid):
 		})
 
 # API calls from meeting bot
-@ssl_required
 def meetingcode(request):
 	secret = request.GET['s']
 	meetingid = request.GET['m']
@@ -203,7 +198,7 @@ def meetingcode(request):
 		key = MemberMeetingKey.objects.get(key=secret, meeting__pk=meetingid)
 		member = key.member
 	except MemberMeetingKey.DoesNotExist:
-		return HttpResponse(json.dumps({'err': 'Authentication key not found. Please see %s/membership/meetings/ to get your correct key!' % settings.SITEBASE_SSL}),
+		return HttpResponse(json.dumps({'err': 'Authentication key not found. Please see %s/membership/meetings/ to get your correct key!' % settings.SITEBASE}),
 							content_type='application/json')
 
 	# Return a JSON object with information about the member

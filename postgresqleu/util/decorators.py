@@ -1,7 +1,6 @@
 from functools import wraps
 from django.utils.decorators import available_attrs
-from django.http import HttpResponseForbidden, HttpResponseRedirect
-from django.conf import settings
+from django.http import HttpResponseForbidden
 
 # This is like @user_passes_test, except if the user is logged in
 # but does not pass the test we give an error instead of a new
@@ -18,17 +17,3 @@ def user_passes_test_or_error(test_func):
 			return HttpResponseForbidden('Access denied')
 		return _wrapped_view
 	return decorator
-
-
-#
-# This decorator creates a redirect to https if the request arrives
-# without it.
-def ssl_required(fn):
-	@wraps(fn)
-	def _require_ssl(*args, **kwargs):
-		request = args[0]
-		if not request.is_secure() and not settings.DISABLE_HTTPS_REDIRECTS:
-			return HttpResponseRedirect(request.build_absolute_uri().replace('http://', 'https://', 1))
-		else:
-			return fn(*args, **kwargs)
-	return _require_ssl
