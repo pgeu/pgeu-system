@@ -6,6 +6,6 @@ DTSTART:{{session.utcstarttime|date:"Ymd"}}T{{session.utcstarttime|time:"His"}}Z
 DTEND:{{session.utcendtime|date:"Ymd"}}T{{session.utcendtime|time:"His"}}Z
 SUMMARY:{{session.title}} ({{session.speaker_list}})
 LOCATION:{{session.room.roomname}}
-URL:http://{{servername}}/events/schedule/{{conference.urlname}}/session/{{session.id}}/
+URL:https://{{servername}}/events/schedule/{{conference.urlname}}/session/{{session.id}}/
 END:VEVENT
 {%endfor%}END:VCALENDAR
