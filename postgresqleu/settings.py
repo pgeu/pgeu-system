@@ -133,6 +133,10 @@ PAYPAL_BASEURL='https://www.paypal.com/cgi-bin/webscr'
 PAYPAL_EMAIL='paypal@postgresql.eu'
 PAYPAL_PDT_TOKEN='abc123'
 PAYPAL_DEFAULT_SOURCEACCOUNT=1
+PAYPAL_API_USER='someuser'
+PAYPAL_API_PASSWORD='secret'
+PAYPAL_API_SIGNATURE='secret'
+PAYPAL_SANDBOX=True
 
 # Change whether using sandbox or not
 ADYEN_BASEURL='https://test.adyen.com/'
