@@ -15,7 +15,6 @@ from django.db import transaction
 from django.conf import settings
 
 from datetime import datetime
-import ConfigParser
 
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.models import InvoicePaymentMethod
