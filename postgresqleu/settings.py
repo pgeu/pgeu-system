@@ -137,6 +137,7 @@ PAYPAL_API_USER='someuser'
 PAYPAL_API_PASSWORD='secret'
 PAYPAL_API_SIGNATURE='secret'
 PAYPAL_SANDBOX=True
+PAYPAL_REPORT_RECEIVER='somebody@somewhere.com'
 
 # Change whether using sandbox or not
 ADYEN_BASEURL='https://test.adyen.com/'
