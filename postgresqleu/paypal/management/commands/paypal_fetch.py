@@ -87,7 +87,7 @@ class PaypalRefund(PaypalTransaction):
 	def fetch_details(self, api):
 		super(PaypalRefund, self).fetch_details(api)
 		if self.transinfo.transtext:
-			self.transinfo.transtext = "Refund of %s" % self.text
+			self.transinfo.transtext = "Refund of %s" % self.transinfo.transtext
 		else:
 			self.transinfo.transtext = "Refund of unknown transaction"
 
