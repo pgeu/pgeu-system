@@ -23,7 +23,10 @@ class PaypalAPI(object):
 		params.update(self.accessparam)
 		params['METHOD'] = command
 		resp = urllib2.urlopen(self.API_ENDPOINT, urlencode(params)).read()
-		return parse_qs(resp)
+		q = parse_qs(resp)
+		if q['ACK'][0] != 'Success':
+			raise Exception("API error from paypal: {0}/{1}".format(q['L_SHORTMESSAGE0'][0], q['L_LONGMESSAGE0'][0]))
+		return q
 
 	def _dateformat(self, d):
 		return d.strftime("%Y-%m-%dT%H:%M:%S")
