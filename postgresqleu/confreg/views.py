@@ -202,7 +202,7 @@ def home(request, confname):
 			# Yup, should be canceled
 			manager = InvoiceManager()
 			manager.cancel_invoice(reg.invoice,
-								   "Invoice passed automatic cancel time {0}".format(reg.invoice.canceltime))
+								   "Invoice was automatically canceled because payment was not received on time.")
 
 			# cancel_invoice will call the processor to unlink the invoice,
 			# so make sure we refresh the object.
@@ -1216,7 +1216,7 @@ def invoice(request, confname, regid):
 		# Yup, should be canceled
 		manager = InvoiceManager()
 		manager.cancel_invoice(reg.invoice,
-							   "Invoice passed automatic cancel time {0}".format(reg.invoice.canceltime))
+							   "Invoice was automatically canceled because payment was not received on time.")
 		return HttpResponseRedirect('../../')
 
 	return render_conference_response(request, conference, 'confreg/invoice.html', {

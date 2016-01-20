@@ -139,10 +139,12 @@ class InvoiceWrapper(object):
 							  bcc=True)
 		InvoiceHistory(invoice=self.invoice, txt='Sent reminder to %s' % self.invoice.recipient_email).save()
 
-	def email_cancellation(self):
+	def email_cancellation(self, reason):
 		self._email_something('invoice_cancel.txt',
 							  '%s #%s - canceled' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
-							  bcc=True)
+							  bcc=True,
+							  extracontext={'reason': reason},
+		)
 		InvoiceHistory(invoice=self.invoice, txt='Sent cancellation').save()
 
 	def email_refund_initiated(self):
@@ -163,7 +165,7 @@ class InvoiceWrapper(object):
 							  bcc=True)
 		InvoiceHistory(invoice=self.invoice, txt='Sent refund notice').save()
 
-	def _email_something(self, template_name, mail_subject, pdfname=None, pdfcontents=None, bcc=False):
+	def _email_something(self, template_name, mail_subject, pdfname=None, pdfcontents=None, bcc=False, extracontext=None):
 		# Send off the receipt/invoice by email if possible
 		if not self.invoice.recipient_email:
 			return
@@ -182,12 +184,16 @@ class InvoiceWrapper(object):
 		else:
 			invoiceurl = None
 
-		txt = get_template('invoices/mail/%s' % template_name).render(Context({
+		param = {
 				'invoice': self.invoice,
 				'invoiceurl': invoiceurl,
 				'currency_abbrev': settings.CURRENCY_ABBREV,
 				'currency_symbol': settings.CURRENCY_SYMBOL,
-				}))
+		}
+		if extracontext:
+			param.update(extracontext)
+
+		txt = get_template('invoices/mail/%s' % template_name).render(Context(param))
 
 		pdfdata = []
 		if pdfname:
@@ -392,7 +398,7 @@ class InvoiceManager(object):
 		# Send the receipt to the user if possible - that should make
 		# them happy :)
 		wrapper = InvoiceWrapper(invoice)
-		wrapper.email_cancellation()
+		wrapper.email_cancellation(reason)
 
 		InvoiceLog(timestamp=datetime.now(), message="Deleted invoice %s: %s" % (invoice.id, invoice.deletion_reason)).save()
 
