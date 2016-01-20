@@ -4,12 +4,16 @@ The invoice:
 
 Invoice #{{invoice.id}}: {{invoice.title}}
 
-has been refunded. The payment of {{currency_abbrev}} {{invoice.total_amount}} will
-be returned to your account shortly.
+has been refunded.
 
-If you do not already know why this invoice has been refunded, or
-have any other questions, please let us know at
-treasurer@postgresql.eu as soon as possible.
+{{currency_abbrev}} {{invoice.refund.amount}} of the total {{currency_abbrev}} {{invoice.total_amount}} has been returned to the
+original payment source. Depending on which payment method
+was used, it may take a few days before the funds arrive
+in the account.
+
+
+If you have any questions about this refund, please let us
+know at treasurer@postgresql.eu as soon as possible.
 
 
 Thank you!

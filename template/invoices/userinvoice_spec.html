@@ -5,7 +5,17 @@
  </tr>
  <tr>
    <td style="white-space: nowrap">Invoice status:</td>
-   <td><b>{{invoice.ispaid|yesno:"Paid,Awaiting payment"}}</b></td>
+   <td>
+     {%if invoice.ispaid %}
+     {%if invoice.refund %}
+     {%if invoice.refund.completed%}<b>Refunded</b>{%elif invoice.refund.issued%}<b>Refund submitted</b> to payment provider and will complete soon.{%else%}<b>Pending refund</b>{%endif%}
+     {%else%}
+     <b>Paid</b>
+     {%endif%}
+     {%else%}
+     <b>Awaiting payment</b>
+     {%endif%}
+   </td>
  </tr>
  <tr>
    <td style="white-space: nowrap">Invoice title:</td>
@@ -29,12 +39,7 @@
    <td style="white-space: nowrap">Invoice:</td>
    <td><a href="/invoices/{{invoice.pk}}/{%if fromsecret or not invoice.recipient_user%}{{invoice.recipient_secret}}/{%endif%}pdf/">View PDF</a></td>
  </tr>
-{%if invoice.refunded%}
-<tr>
-   <td style="white-space: nowrap">Refund:</td>
-   <td>This invoice has been <i>refunded</i>.</td>
- </tr>
-{%elif invoice.ispaid%}
+{%if invoice.ispaid%}
  <tr>
    <td style="white-space: nowrap">Receipt:</td>
    <td><a href="/invoices/{{invoice.pk}}/{%if fromsecret or not invoice.recipient_user%}{{invoice.recipient_secret}}/{%endif%}receipt/">View receipt</a></td>
@@ -70,6 +75,13 @@
    </td>
  </tr>
 {%endif%}
+{%if invoice.refund and invoice.refund.refund_pdf%}
+ <tr>
+   <td style="white-space: nowrap">Refund:</td>
+   <td><a href="/invoices/{{invoice.pk}}/{%if fromsecret or not invoice.recipient_user%}{{invoice.recipient_secret}}/{%endif%}refundnote/">View refund note</a></td>
+ </tr>
+{%endif%}
+
 {%if not fromsecret%}
 <tr>
    <td style="white-space: nowrap">External link:</td>

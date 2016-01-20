@@ -1,4 +1,5 @@
 from models import Invoice, InvoiceRow, InvoiceHistory, InvoiceLog
+from models import InvoiceRefund
 from models import InvoicePaymentMethod, PaymentMethodWrapper
 from django.conf import settings
 from django.template import Context
@@ -90,6 +91,20 @@ class InvoiceWrapper(object):
 
 		return pdfinvoice.save().getvalue()
 
+	def render_pdf_refund(self):
+		PDFRefund = getattr(importlib.import_module(settings.INVOICE_PDF_BUILDER), 'PDFRefund')
+		pdfnote = PDFRefund("%s\n%s" % (self.invoice.recipient_name, self.invoice.recipient_address),
+							self.invoice.invoicedate,
+							self.invoice.refund.completed,
+							self.invoice.id,
+							self.invoice.total_amount,
+							self.invoice.refund.amount,
+							os.path.realpath('%s/../../media/img/' % os.path.dirname(__file__)),
+							settings.CURRENCY_SYMBOL,
+		)
+
+		return pdfnote.save().getvalue()
+
 	def email_receipt(self):
 		# If no receipt exists yet, we have to bail too
 		if not self.invoice.pdf_receipt:
@@ -130,9 +145,21 @@ class InvoiceWrapper(object):
 							  bcc=True)
 		InvoiceHistory(invoice=self.invoice, txt='Sent cancellation').save()
 
-	def email_refund(self):
+	def email_refund_initiated(self):
+		self._email_something('invoice_refund_initiated.txt',
+							  '%s #%s - refund initiated' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
+							  bcc=True)
+		InvoiceHistory(invoice=self.invoice, txt='Sent refund initiated notice').save()
+
+	def email_refund_sent(self):
+		# Generate the refund notice so we have something to send
+		self.invoice.refund.refund_pdf = base64.b64encode(self.render_pdf_refund())
+		self.invoice.refund.save()
+
 		self._email_something('invoice_refund.txt',
-							  '%s #%s - refund notice' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
+							  '%s #%s - refunded' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
+							  '{0}_refund_{1}.pdf'.format(settings.INVOICE_FILENAME_PREFIX, self.invoice.id),
+							  self.invoice.refund.refund_pdf,
 							  bcc=True)
 		InvoiceHistory(invoice=self.invoice, txt='Sent refund notice').save()
 
@@ -369,7 +396,12 @@ class InvoiceManager(object):
 
 		InvoiceLog(timestamp=datetime.now(), message="Deleted invoice %s: %s" % (invoice.id, invoice.deletion_reason)).save()
 
-	def refund_invoice(self, invoice, reason):
+	def refund_invoice(self, invoice, reason, amount):
+		# Initiate a refund of an invoice if there is a payment provider that supports it.
+		# Otherwise, flag the invoice as refunded, and assume the user took care of it manually.
+		if invoice.refund:
+			raise Exception("This invoice has already been refunded")
+
 		# If this invoice has a processor, we need to start by calling it
 		processor = self.get_invoice_processor(invoice)
 		if processor:
@@ -378,18 +410,103 @@ class InvoiceManager(object):
 			except Exception, ex:
 				raise Exception("Failed to run invoice processor '%s': %s" % (invoice.processor, ex))
 
-		invoice.refunded = True
-		invoice.refund_reason = reason
+		r = InvoiceRefund(reason=reason, amount=amount)
+		r.save()
+		invoice.refund = r
 		invoice.save()
 
-		InvoiceHistory(invoice=invoice, txt='Refunded').save()
+		InvoiceHistory(invoice=invoice,
+					   txt='Registered refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount)).save()
 
-		# Send the receipt to the user if possible - that should make
-		# them happy :)
 		wrapper = InvoiceWrapper(invoice)
-		wrapper.email_refund()
+		if invoice.can_autorefund:
+			# Send an initial notice to the user.
+			wrapper.email_refund_initiated()
 
-		InvoiceLog(timestamp=datetime.now(), message="Refunded invoice %s: %s" % (invoice.id, invoice.deletion_reason)).save()
+			# Accounting record is created when we send the API call to the
+			# provider.
+
+			InvoiceLog(timestamp=datetime.now(),
+					   message="Initiated refund of {0}{1} of invoice {2}: {3}".format(settings.CURRENCY_SYMBOL, amount, invoice.id, reason),
+				   ).save()
+		else:
+			# No automatic refund, so this is flagging something that has
+			# already been done. Update accordingly.
+			r.issued = r.registered
+			r.completed = r.registered
+			r.payment_reference = "MANUAL"
+			r.save()
+
+			# Create accounting record, since we flagged it manually. As we
+			# don't know which account it was refunded from, leave that
+			# end open.
+			if invoice.accounting_account:
+				accountingtxt = 'Refund of invoice #{0}: {1}'.format(invoice.id, invoice.title)
+				accrows = [
+					(invoice.accounting_account, accountingtxt, invoice.total_amount, invoice.accounting_object),
+				]
+				urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk),]
+				create_accounting_entry(date.today(), accrows, True, urls)
+
+			InvoiceHistory(invoice=invoice,
+						   txt='Flagged refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount)).save()
+
+			wrapper.email_refund_sent()
+			InvoiceLog(timestamp=datetime.now(),
+					   message="Flagged invoice {0} as refunded by {1}{2}: {3}".format(invoice.id, settings.CURRENCY_SYMBOL, amount, reason),
+					   ).save()
+
+		return r
+
+	def autorefund_invoice(self, invoice):
+		# Send an API call to initiate a refund
+		if invoice.autorefund():
+			invoice.refund.issued = datetime.now()
+			invoice.refund.save()
+
+			InvoiceHistory(invoice=invoice, txt='Sent refund request to provider').save()
+		else:
+			InvoiceHistory(invoice=invoice, txt='Failed to send refund request to provider').save()
+
+	def complete_refund(self, refundid, refundamount, refundfee, incomeaccount, costaccount, extraurls, method):
+		# Process notification from payment provider that refund has completed
+		refund = InvoiceRefund.objects.get(id=refundid)
+		invoice = refund.invoice
+
+		if refund.completed:
+			raise Exception("Refund {0} has already been completed".format(refundid))
+		if not refund.issued:
+			raise Exception("Refund {0} has not been issued, yet signaled completed!".format(refundid))
+
+		accountingtxt = 'Refund ({0}) of invoice #{1}'.format(refundid, invoice.id)
+		accrows = [
+			(incomeaccount, accountingtxt, -(refundamount-refundfee), None),
+		]
+		if refundfee  > 0:
+			accrows.append(
+				(costaccount, accountingtxt, -refundfee, invoice.accounting_object),
+			)
+		if invoice.accounting_account:
+			accrows.append(
+				(invoice.accounting_account, accountingtxt, refundamount, invoice.accounting_object),
+			)
+			leaveopen = False
+		else:
+			leaveopen = True
+		urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk),]
+		if extraurls:
+			urls.extend(extraurls)
+
+		create_accounting_entry(date.today(), accrows, leaveopen, urls)
+
+		# Also flag the refund as done
+		refund.completed = datetime.now()
+		refund.save()
+
+		wrapper = InvoiceWrapper(invoice)
+		wrapper.email_refund_sent()
+
+		InvoiceHistory(invoice=invoice, txt='Completed refund').save()
 
 	# This creates a complete invoice, and finalizes it
 	def create_invoice(self,

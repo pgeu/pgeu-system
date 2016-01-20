@@ -1,6 +1,8 @@
 # The PaymentMethodWrapper needs to be in it's own file, so we don't
 # create a circular dependency between models and util.
 
+from datetime import datetime
+
 class PaymentMethodWrapper(object):
 	def __init__(self, method, invoice, returnurl=None):
 		self.method = method
@@ -56,7 +58,20 @@ class PaymentMethodWrapper(object):
 
 	@property
 	def payment_fees(self):
-		if hasattr(self.implementation, 'payment_fees'):
+		if hasattr(self, 'implementation') and hasattr(self.implementation, 'payment_fees'):
 			return self.implementation.payment_fees(self.invoice)
 		else:
 			return "unknown"
+
+	@property
+	def can_autorefund(self):
+		return hasattr(self, 'implementation') and hasattr(self.implementation, 'autorefund')
+
+	def autorefund(self):
+		if hasattr(self, 'implementation'):
+			if hasattr(self.implementation, 'autorefund'):
+				return self.implementation.autorefund(self.invoice)
+			else:
+				raise Exception("No support for autorefund in method {0}".format(self.method))
+		else:
+			raise Exception("No implementation found for method {0}".format(self.method))

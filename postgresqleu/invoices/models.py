@@ -31,6 +31,20 @@ class InvoicePaymentMethod(models.Model):
 	class Meta:
 		ordering = ['sortkey',]
 
+class InvoiceRefund(models.Model):
+	reason = models.CharField(max_length=500, null=False, blank=True, default='', help_text="Reason for refunding of invoice")
+
+	amount = models.IntegerField(null=False)
+
+	registered = models.DateTimeField(null=False, auto_now_add=True)
+	issued = models.DateTimeField(null=True, blank=True)
+	completed = models.DateTimeField(null=True, blank=True)
+
+	payment_reference = models.CharField(max_length=100, null=False, blank=True, help_text="Reference in payment system, depending on system used for invoice.")
+
+	refund_pdf = models.TextField(blank=True, null=False)
+
+
 class Invoice(models.Model):
 	# pk = invoice number, which is fully exposed.
 
@@ -56,8 +70,8 @@ class Invoice(models.Model):
 	finalized = models.BooleanField(null=False, blank=True, default=False, help_text="Invoice is finalized, should not ever be changed again")
 	deleted = models.BooleanField(null=False, blank=False, default=False, help_text="This invoice has been deleted")
 	deletion_reason = models.CharField(max_length=500, null=False, blank=True, default='', help_text="Reason for deletion of invoice")
-	refunded = models.BooleanField(null=False, blank=False, default=False, help_text="This invoice has been refunded")
-	refund_reason = models.CharField(max_length=500, null=False, blank=True, default='', help_text="Reason for refunding of invoice")
+
+	refund = models.OneToOneField(InvoiceRefund, null=True, blank=True, on_delete=models.SET_NULL)
 
 	# base64 encoded version of the PDF invoice
 	pdf_invoice = models.TextField(blank=True, null=False)
@@ -113,6 +127,13 @@ class Invoice(models.Model):
 			return PaymentMethodWrapper(self.paidusing, self).payment_fees
 		else:
 			return "unknown"
+
+	@property
+	def can_autorefund(self):
+		return PaymentMethodWrapper(self.paidusing, self).can_autorefund
+
+	def autorefund(self):
+		return PaymentMethodWrapper(self.paidusing, self).autorefund()
 
 	def __unicode__(self):
 		return "Invoice #%s" % self.pk

@@ -62,9 +62,24 @@ class Command(BaseCommand):
 					]
 				create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
 				continue
-			# Record type: payment (or refund)
+			if trans.amount < 0 and trans.transtext.startswith('Refund of Paypal payment: PGEU refund '):
+				trans.setmatched('Matched API initiated refund')
+				# API initiated refund, so we should be able to match it
+				invoicemanager.complete_refund(
+					trans.transtext[38:], # 38 is the length of the string above
+					-trans.amount,
+					-trans.fee,
+					settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT,
+					settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT,
+					urls,
+					InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.paypal.Paypal'),
+				)
+
+				# Accounting record is created by invoice manager
+				continue
+			# Record type: outgoing payment (or manual refund)
 			if trans.amount < 0:
-				trans.setmatched('Payment or refund, automatically matched by script')
+				trans.setmatched('Outgoing payment or manual refund, automatically matched by script')
 				# Refunds typically have a fee (a reversed fee), whereas pure
 				# payments don't have one. We don't make a difference of them
 				# though - we leave the record open for manual verification

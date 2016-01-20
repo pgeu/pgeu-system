@@ -142,6 +142,7 @@ PAYPAL_REPORT_RECEIVER='somebody@somewhere.com'
 # Change whether using sandbox or not
 ADYEN_BASEURL='https://test.adyen.com/'
 ADYEN_CABASEURL='https://test-ca.adyen.com/'
+ADYEN_APIBASEURL='https://pal-test.adyen.com/'
 ADYEN_MERCHANTACCOUNT='whatever'
 ADYEN_SIGNKEY='foobar'
 ADYEN_SKINCODE='abc123'
@@ -150,6 +151,8 @@ ADYEN_NOTIFY_USER='adyennot'
 ADYEN_NOTIFY_PASSWORD='topsecret'
 ADYEN_REPORT_USER='someone'
 ADYEN_REPORT_PASSWORD='topsecret'
+ADYEN_WS_USER='someone'
+ADYEN_WS_PASSWORD='topsecret'
 ADYEN_MERCHANTREF_PREFIX='PGEU'
 
 # Account numbers used for auto-accounting

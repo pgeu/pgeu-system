@@ -41,7 +41,7 @@ class InvoiceForm(forms.ModelForm):
 
 	class Meta:
 		model = Invoice
-		exclude = ['finalized', 'pdf_invoice', 'pdf_receipt', 'paidat', 'paymentdetails', 'paidusing', 'processor', 'processorid', 'deleted', 'deletion_reason', 'refunded', 'refund_reason', 'recipient_secret']
+		exclude = ['finalized', 'pdf_invoice', 'pdf_receipt', 'paidat', 'paymentdetails', 'paidusing', 'processor', 'processorid', 'deleted', 'deletion_reason', 'refund', 'recipient_secret']
 
 	def clean(self):
 		if not self.cleaned_data['recipient_user'] and self.cleaned_data.has_key('recipient_email') and self.cleaned_data['recipient_email']:
@@ -70,3 +70,31 @@ class InvoiceRowForm(forms.ModelForm):
 		if self.cleaned_data['rowcount'] <= 0:
 			raise ValidationError("Must specify a count!")
 		return self.cleaned_data['rowcount']
+
+class RefundForm(forms.Form):
+	amount = forms.IntegerField(required=True)
+	reason = forms.CharField(max_length=100, required=True)
+	confirm = forms.BooleanField()
+
+	def __init__(self, invoice, *args, **kwargs):
+		super(RefundForm, self).__init__(*args, **kwargs)
+		self.invoice = invoice
+
+		if self.data and self.data.has_key('amount') and self.data.has_key('reason'):
+			if invoice.can_autorefund:
+				self.fields['confirm'].help_text = "Check this box to confirm that you want to generate an <b>automatic</b> refund of this invoice."
+			else:
+				self.fields['confirm'].help_text = "check this box to confirm that you have <b>already</b> manually refunded this invoice."
+		else:
+			del self.fields['confirm']
+
+	def clean_amount(self):
+		errstr = "Amount must be an integer between 1 and {0}".format(self.invoice.total_amount)
+
+		try:
+			amount = int(self.cleaned_data['amount'])
+			if amount < 1 or amount > self.invoice.total_amount:
+				raise ValidatonError(errstr)
+			return self.cleaned_data['amount']
+		except:
+			raise ValidationError(errstr)

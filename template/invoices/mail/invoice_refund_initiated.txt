@@ -1,0 +1,17 @@
+Hello!
+
+A refund of {{currency_abbrev}} {{invoice.refund.amount}} of the invoice:
+
+Invoice #{{invoice.id}}: {{invoice.title}}
+
+has been scheduled. As soon as the refund has been processed by our
+systems, you will receive a notice indicating the refund is completed.
+
+If you do not already know why this invoice has been refunded, or
+have any other questions, please let us know at
+treasurer@postgresql.eu as soon as possible.
+
+
+Thank you!
+
+PostgreSQL Europe

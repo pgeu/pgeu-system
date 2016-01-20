@@ -4,6 +4,7 @@ from urllib import urlencode
 import re
 
 from postgresqleu.paypal.models import TransactionInfo
+from postgresqleu.paypal.util import PaypalAPI
 
 class Paypal(object):
 	description="""
@@ -45,14 +46,36 @@ lower fees.
 			urlencode(param))
 
 	_re_paypal = re.compile('^Paypal id ([A-Z0-9]+), ')
-	def payment_fees(self, invoice):
-		# Find the paypal transaction based on the invoice payment info.
+	def _find_invoice_transaction(self, invoice):
 		m = self._re_paypal.match(invoice.paymentdetails)
 		if m:
 			try:
-				trans = TransactionInfo.objects.get(paypaltransid=m.groups(1)[0])
-				return "{0}{1}".format(settings.CURRENCY_SYMBOL, trans.fee)
+				return (TransactionInfo.objects.get(paypaltransid=m.groups(1)[0]), None)
 			except TransactionInfo.DoesNotExist:
-				return "not found"
+				return (None, "not found")
 		else:
-			return "unknown format"
+			return (None, "unknown format")
+
+	def payment_fees(self, invoice):
+		(trans, reason) = self._find_invoice_transaction(invoice)
+		if not trans:
+			return reason
+
+		return "{0}{1}".format(settings.CURRENCY_SYMBOL, trans.fee)
+
+	def autorefund(self, invoice):
+		(trans, reason) = self._find_invoice_transaction(invoice)
+		if not trans:
+			raise Exception(reason)
+
+		api = PaypalAPI()
+		from datetime import datetime
+		invoice.refund.payment_reference = api.refund_transaction(
+			trans.paypaltransid,
+			invoice.refund.amount,
+			invoice.refund.amount == invoice.total_amount,
+			'PGEU refund {0}'.format(invoice.refund.id),
+		)
+		# At this point, we succeeded. Anything that failed will bubble
+		# up as an exception.
+		return True

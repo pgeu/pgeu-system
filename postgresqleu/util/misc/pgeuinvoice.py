@@ -8,33 +8,22 @@ from reportlab.platypus.tables import Table, TableStyle
 from reportlab.platypus.flowables import Image
 import cStringIO as StringIO
 
-class PDFInvoice(object):
-	def __init__(self, recipient, invoicedate, duedate, invoicenum=None, imagedir=None, currency='€', preview=False, receipt=False, bankinfo=True):
+class PDFBase(object):
+	def __init__(self, recipient, invoicenum, imagedir, currency):
 		self.pdfdata = StringIO.StringIO()
 		self.canvas = Canvas(self.pdfdata)
+
 		self.recipient = recipient
 		self.invoicenum = invoicenum
-		self.invoicedate = invoicedate
-		self.duedate = duedate
 		self.imagedir = imagedir or '.'
 		self.currency = currency or '€'
-		self.preview = preview
-		self.receipt = receipt
-		self.bankinfo = bankinfo
-		self.rows = []
 
-		if self.receipt:
-			# Never include bank info on receipts
-			self.bankinfo = False
+		self.preview = False
 
 		self.canvas.setTitle("PostgreSQL Europe Invoice #%s" % self.invoicenum)
 		self.canvas.setSubject("PostgreSQL Europe Invoice #%s" % self.invoicenum)
 		self.canvas.setAuthor("PostgreSQL Europe")
 		self.canvas._doc.info.producer = "PostgreSQL Europe Invoicing System"
-
-	def addrow(self, title, cost, count=1):
-		self.rows.append((title, cost, count,))
-
 
 	def trimstring(self, s, maxlen, fontname, fontsize):
 		while len(s) > 5:
@@ -95,6 +84,25 @@ E-mail: treasurer@postgresql.eu
 		p.moveTo(2*cm, 18.9*cm)
 		p.lineTo(19*cm, 18.9*cm)
 		self.canvas.drawPath(p)
+
+
+class PDFInvoice(PDFBase):
+	def __init__(self, recipient, invoicedate, duedate, invoicenum=None, imagedir=None, currency='€', preview=False, receipt=False, bankinfo=True):
+		self.invoicedate = invoicedate
+		self.duedate = duedate
+		self.preview = preview
+		self.receipt = receipt
+		self.bankinfo = bankinfo
+		self.rows = []
+
+		if self.receipt:
+			# Never include bank info on receipts
+			self.bankinfo = False
+
+		super(PDFInvoice, self).__init__(recipient, invoicenum, imagedir, currency)
+
+	def addrow(self, title, cost, count=1):
+		self.rows.append((title, cost, count,))
 
 
 	def save(self):
@@ -179,6 +187,55 @@ BIC: CMCIFR2A
 			self.canvas.showPage()
 
 		# Last page is finished, flush the PDF output
+		self.canvas.save()
+
+		return self.pdfdata
+
+
+
+class PDFRefund(PDFBase):
+	def __init__(self, recipient, invoicedate, refunddate, invoicenum, invoiceamount, refundamount, imagedir, currency):
+		self.recipient = recipient
+		self.invoicedate = invoicedate
+		self.refunddate = refunddate
+		self.invoiceamount = invoiceamount
+		self.refundamount = refundamount
+
+		super(PDFRefund, self).__init__(recipient, invoicenum, imagedir, currency)
+
+	def save(self):
+		self._pageheader()
+
+		self.canvas.drawCentredString(10.5*cm,19*cm, "REFUND NOTE FOR INVOICE NUMBER {0}".format(self.invoicenum))
+
+		tbldata = [
+			["Item", "Amount"],
+			["Invoice total amount", "{0:.2f} {1}".format(self.invoiceamount, self.currency)],
+			["Refunded amount", "-{0:.2f} {1}".format(self.refundamount, self.currency)],
+			["", "{0:.2f} {1}".format(self.invoiceamount-self.refundamount, self.currency)],
+		]
+		style = [
+			('BACKGROUND',(0,0),(1,0),colors.lightgrey),
+			('ALIGN',(1,0),(1,-1),'RIGHT'),
+			('LINEBELOW',(0,0),(-1,0), 2, colors.black),
+			('OUTLINE', (0,0), (-1, -1), 1, colors.black),
+			('LINEABOVE', (-1,-1), (-1,-1), 2, colors.black),
+		]
+
+		t = Table(tbldata, [10.5*cm, 2.5*cm, 1.5*cm, 2.5*cm])
+		t.setStyle(TableStyle(style))
+		w,h = t.wrapOn(self.canvas,10*cm,10*cm)
+		t.drawOn(self.canvas, 2*cm, 18*cm-h)
+
+		self.canvas.drawCentredString(10.5*cm, 17.3*cm-h, "This refund was issued {0}".format(self.refunddate.strftime("%B %d, %Y")))
+
+		t = self.canvas.beginText()
+		t.setTextOrigin(2*cm, 5*cm)
+		t.setFont("Times-Italic", 10)
+		t.textLine("PostgreSQL Europe is a French non-profit under the French 1901 Law. The association is not VAT registered.")
+		t.textLine("")
+
+		self.canvas.showPage()
 		self.canvas.save()
 
 		return self.pdfdata

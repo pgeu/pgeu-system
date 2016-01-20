@@ -1,5 +1,5 @@
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, render_to_response, get_object_or_404
 from django.forms.models import inlineformset_factory
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 
 from postgresqleu.util.decorators import user_passes_test_or_error
 from models import Invoice, InvoiceRow, InvoicePaymentMethod
-from forms import InvoiceForm, InvoiceRowForm
+from forms import InvoiceForm, InvoiceRowForm, RefundForm
 from util import InvoiceWrapper, InvoiceManager, InvoicePresentationWrapper
 
 @login_required
@@ -41,7 +41,7 @@ def deleted(request):
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def refunded(request):
-	return _homeview(request, Invoice.objects.filter(refunded=True), refunded=True)
+	return _homeview(request, Invoice.objects.filter(refund__isnull=False), refunded=True)
 
 # Not a view, just a utility function, thus no separate permissions check
 def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=False, refunded=False, searchterm=None):
@@ -233,18 +233,27 @@ def cancelinvoice(request, invoicenum):
 @transaction.atomic
 def refundinvoice(request, invoicenum):
 	invoice = get_object_or_404(Invoice, pk=invoicenum)
+	if invoice.refund:
+		raise Exception('This invoice has already been refunded')
 
-	reason = request.POST['reason']
-	if not reason:
-		return HttpResponseForbidden("Can't refund an invoice without a reason!")
+	if request.method == 'POST':
+		form = RefundForm(data=request.POST, invoice=invoice)
+		if form.is_valid():
+			mgr = InvoiceManager()
+			r = mgr.refund_invoice(invoice,
+								   form.cleaned_data['reason'],
+								   int(form.cleaned_data['amount']))
+			return render(request, 'invoices/refundform_complete.html', {
+				'invoice': invoice,
+				'refund': r,
+				})
+	else:
+		form = RefundForm(invoice=invoice)
 
-	try:
-		manager = InvoiceManager()
-		manager.refund_invoice(invoice, reason)
-	except Exception, ex:
-		messages.error(request, 'Failed to refund invoice: {0}'.format(ex))
-
-	return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
+	return render(request, 'invoices/refundform.html', {
+		'form': form,
+		'invoice': invoice,
+		})
 
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
@@ -340,6 +349,22 @@ def viewreceipt_secret(request, invoiceid, invoicesecret):
 	invoice = get_object_or_404(Invoice, pk=invoiceid, recipient_secret=invoicesecret)
 	r = HttpResponse(content_type='application/pdf')
 	r.write(base64.b64decode(invoice.pdf_receipt))
+	return r
+
+@login_required
+def viewrefundnote(request, invoiceid):
+	invoice = get_object_or_404(Invoice, pk=invoiceid)
+	if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
+		return HttpResponseForbidden("Access denied")
+
+	r = HttpResponse(content_type='application/pdf')
+	r.write(base64.b64decode(invoice.refund.refund_pdf))
+	return r
+
+def viewrefundnote_secret(request, invoiceid, invoicesecret):
+	invoice = get_object_or_404(Invoice, pk=invoiceid, recipient_secret=invoicesecret)
+	r = HttpResponse(content_type='application/pdf')
+	r.write(base64.b64decode(invoice.refund.refund_pdf))
 	return r
 
 @login_required

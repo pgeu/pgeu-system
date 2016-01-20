@@ -49,3 +49,20 @@ class PaypalAPI(object):
 		return self._api_call('GetTransactionDetails', {
 			'TRANSACTIONID': transactionid,
 		})
+
+
+	def refund_transaction(self, paypaltransid, amount, isfull, refundnote):
+		r = self._api_call('RefundTransaction', {
+			'TRANSACTIONID': paypaltransid,
+			'REFUNDTYPE': isfull and 'Full' or 'Partial',
+			'AMT': '{0:.2f}'.format(amount),
+			'CURRENCYCODE': settings.CURRENCY_ISO,
+			'NOTE': refundnote,
+		})
+
+		# We ignore the status here as we will parse it from the
+		# actual statement later.
+		if r['ACK'][0] == 'Success':
+			return r['REFUNDTRANSACTIONID'][0]
+
+		raise Exception(r)

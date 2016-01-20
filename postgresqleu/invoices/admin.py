@@ -3,6 +3,7 @@ from django import forms
 from django.forms import ValidationError
 
 from models import Invoice, InvoiceLog, InvoiceProcessor, InvoicePaymentMethod
+from models import InvoiceRefund
 
 class InvoiceAdminForm(forms.ModelForm):
 	class Meta:
@@ -41,11 +42,16 @@ class InvoiceAdmin(admin.ModelAdmin):
 	form = InvoiceAdminForm
 	exclude = ['pdf_invoice', 'pdf_receipt', ]
 	filter_horizontal = ['allowedmethods', ]
+	readonly_fields = ['refund', ]
 
 class InvoiceLogAdmin(admin.ModelAdmin):
 	list_display = ('timestamp', 'message_trunc', 'sent',)
+
+class InvoiceRefundAdmin(admin.ModelAdmin):
+	list_display = ('registered', 'issued', 'completed', 'amount', 'reason')
 
 admin.site.register(Invoice, InvoiceAdmin)
 admin.site.register(InvoiceProcessor)
 admin.site.register(InvoicePaymentMethod)
 admin.site.register(InvoiceLog, InvoiceLogAdmin)
+admin.site.register(InvoiceRefund, InvoiceRefundAdmin)

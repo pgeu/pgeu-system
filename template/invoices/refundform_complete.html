@@ -1,0 +1,48 @@
+{%extends "base.html"%}
+{%block title%}Invoice Refund{%endblock%}
+{%block extrahead%}
+<style>
+input[readonly="readonly"], textarea[readonly="readonly"] {
+   background-color: lightgray;
+}
+ul.messages {
+  background-color: yellow;
+  list-style-type: none;
+  padding: 2px;
+  padding-left: 20px;
+}
+</style>
+{%endblock%}
+{%block layoutblock%}
+<h1>Refund of invoice #{{invoice.id}}</h1>
+{%if invoice.can_autorefund%}
+<p>
+  The refund has been scheduled, and will be processed by a background
+  job shortly. You can keep track of the status on the main invoice page.
+</p>
+<p>
+  Accounting entries will be added automatically once the process has
+  completed.
+</p>
+
+{%else%}
+<p>
+  The invoice has been flagged as refunded.
+</p>
+{%if invoice.accounting_account%}
+<p>
+  An entry has been added to the accounting system but left open, as the
+  source account for the refund cannot be automatically determined. Go into
+  the accounting system and fix that.
+</p>
+{%else%}
+<p>
+  As there was no account set on this invoice, no entry has been generated
+  in the accounting system. That has to be handled manually.
+</p>
+{%endif%}
+
+{%endif%}
+
+<p><a href="../">Back</a> to invoice.</p>
+{%endblock%}

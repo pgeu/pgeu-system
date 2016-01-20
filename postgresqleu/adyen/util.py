@@ -4,6 +4,10 @@ from django.db import transaction
 
 from datetime import datetime, date
 
+import json
+import urllib2
+from base64 import standard_b64encode
+
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
@@ -157,25 +161,48 @@ def process_refund(notification):
 			refund = Refund(notification=notification, transaction=ts, refund_amount=notification.amount)
 			refund.save()
 
-			# Generate an open accounting record for this refund.
-			# We expect this happens so seldom that we can just deal with
-			# manually finishing off the accounting records.
 			urls = [
 				"https://ca-live.adyen.com/ca/ca/accounts/showTx.shtml?pspReference=%s&txType=Payment&accountKey=MerchantAccount.%s" % (notification.pspReference, notification.merchantAccountCode),
 			]
-			accrows = [
-				(settings.ACCOUNTING_ADYEN_REFUNDS_ACCOUNT,
-				 "Refund of %s (transaction %s) "  % (ts.notes, ts.pspReference),
-				 -refund.refund_amount,
-				 None),
-			]
 
-			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-							 settings.ADYEN_NOTIFICATION_RECEIVER,
-							 'Adyen refund received',
-							 "A refund of %s%s for transaction %s was processed\n\nNOTE! You must complete the accounting system entry manually for refunds!" % (settings.CURRENCY_ABBREV, notification.amount, notification.originalReference))
+			# API generated refund?
+			if notification.merchantReference.startswith('PGEUREFUND'):
+				# API generated
+				invoicerefundid = int(notification.merchantReference[10:])
 
-			create_accounting_entry(date.today(), accrows, True, urls)
+				# Get the correct method depending on how it was done
+				if ts.method == 'bankTransfer_IBAN':
+					method = InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.adyen.AdyenBanktransfer')
+				else:
+					method = InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.adyen.AdyenCreditcard')
+
+				manager = InvoiceManager()
+				manager.complete_refund(
+					invoicerefundid,
+					refund.refund_amount,
+					0, # we don't know the fee, it'll be generically booked
+					settings.ACCOUNTING_ADYEN_REFUNDS_ACCOUNT,
+					settings.ACCOUNTING_ADYEN_FEE_ACCOUNT,
+					urls,
+					method)
+
+			else:
+				# Generate an open accounting record for this refund.
+				# We expect this happens so seldom that we can just deal with
+				# manually finishing off the accounting records.
+				accrows = [
+					(settings.ACCOUNTING_ADYEN_REFUNDS_ACCOUNT,
+					 "Refund of %s (transaction %s) "  % (ts.notes, ts.pspReference),
+					 -refund.refund_amount,
+					 None),
+				]
+
+				send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+								 settings.ADYEN_NOTIFICATION_RECEIVER,
+								 'Adyen refund received',
+								 "A refund of %s%s for transaction %s was processed\n\nNOTE! You must complete the accounting system entry manually as it was not API generated!!" % (settings.CURRENCY_ABBREV, notification.amount, notification.originalReference))
+
+				create_accounting_entry(date.today(), accrows, True, urls)
 
 		except TransactionStatus.DoesNotExist:
 			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
@@ -323,3 +350,54 @@ def process_raw_adyen_notification(raw, POST):
 	# Return that we've consumed the report outside the transaction, in
 	# the unlikely event that the COMMIT is what failed
 	return True
+
+
+
+#
+# Accesspoints into the Adyen API
+#
+# Most of the API is off limits to us due to lack of PCI, but we can do a couple
+# of important things like refunding.
+#
+
+class AdyenAPI(object):
+	def refund_transaction(self, refundid, transreference, amount):
+		apiparam = {
+			'merchantAccount': settings.ADYEN_MERCHANTACCOUNT,
+			'modificationAmount': {
+				'value': amount * 100, # "minor units", so cents!
+				'currency': settings.CURRENCY_ISO,
+			},
+			'originalReference': transreference,
+			'reference': 'PGEUREFUND{0}'.format(refundid),
+		}
+
+		try:
+			r = self._api_call('pal/servlet/Payment/v12/refund', apiparam, '[refund-received]')
+			return r['pspReference']
+		except Exception, e:
+			raise Exception("API call to refund transaction {0} (refund {1}) failed: {2}".format(
+				transreference,
+				refundid,
+				e))
+
+
+	def _api_call(self, apiurl, apiparam, okresponse):
+		apijson = json.dumps(apiparam)
+
+		req = urllib2.Request("{0}{1}".format(settings.ADYEN_APIBASEURL, apiurl))
+
+		req.add_header('Authorization', 'Basic {0}'.format(
+			standard_b64encode('{0}:{1}'.format(settings.ADYEN_WS_USER, settings.ADYEN_WS_PASSWORD))))
+		req.add_header('Content-type', 'application/json')
+		u = urllib2.urlopen(req, apijson)
+		resp = u.read()
+		if u.getcode() != 200:
+			raise Exception("http response code {0}".format(u.getcode()))
+		u.close()
+		r = json.loads(resp)
+
+		if r['response'] != okresponse:
+			raise Exception("response returned: {0}".format(r['response']))
+
+		return r

@@ -1,0 +1,77 @@
+{%extends "base.html"%}
+{%block title%}Invoice Refund{%endblock%}
+{%block extrahead%}
+<style>
+input[readonly="readonly"], textarea[readonly="readonly"] {
+   background-color: lightgray;
+}
+ul.messages {
+  background-color: yellow;
+  list-style-type: none;
+  padding: 2px;
+  padding-left: 20px;
+}
+</style>
+{%endblock%}
+{%block layoutblock%}
+<h1>Refund of invoice #{{invoice.id}}</h1>
+
+<p><a href="../">Back</a> to invoice.</p>
+
+{% if messages %}
+    <ul class="messages">
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+<form method="post" action=".">{% csrf_token %}
+<table>
+  <tr>
+    <td>Invoice number</td>
+    <td>{{invoice.id}}</td>
+  </tr>
+  <tr>
+    <td>Title</td>
+    <td>{{invoice.title}}</td>
+  </tr>
+  <tr>
+    <td>Total amount</td>
+    <td>{{invoice.total_amount}}</td>
+  </tr>
+  <tr>
+    <td>Payment fees</td>
+    <td>{{invoice.payment_fees}}</td>
+  </tr>
+{%if form.errors%}
+ <tr class="errorheader">
+  <td colspan="2">Please correct the errors below, and re-submit the form.</td>
+ </tr>
+{%endif%}
+{%for field in form%}
+ {%if field.errors %}
+ <tr class="error">
+  <td colspan="2">{{field.errors.as_ul}}</td>
+ </tr>
+ {%endif%}
+ <tr {%if field.errors%}class="errorinfo"{%endif%}>
+  <th>{{field.label_tag}}</th>
+  <td>{{field}} {{field.help_text|safe}}</td>
+ </tr>
+{%endfor%}
+</table>
+{%if not invoice.can_autorefund%}
+  <p>
+    <b>NOTE!</b> This invoice was paid using {{invoice.paidusing}}, which does not support automatic refunds!
+  </p>
+  <p>
+    You must issue the refund <b>manually</b>,and then flag it here.
+  </p>
+{%endif%}
+
+<input type="submit" name="submit" value="{{invoice.can_autorefund|yesno:"Issue refund,Flag as refunded"}}" />
+<br/>
+<p><a href="../">Back</a> to invoice</p>
+
+{%endblock%}

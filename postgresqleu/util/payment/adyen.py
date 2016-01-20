@@ -15,6 +15,7 @@ import re
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.util import diff_workdays
 from postgresqleu.adyen.models import TransactionStatus
+from postgresqleu.adyen.util import AdyenAPI
 
 def _escapeVal(val):
 	return val.replace('\\','\\\\').replace(':','\\:')
@@ -67,19 +68,40 @@ class _AdyenBase(object):
 			)
 
 	_re_adyen = re.compile('^Adyen id ([A-Z0-9]+)$')
-	def payment_fees(self, invoice):
+	def _find_invoice_transaction(self, invoice):
 		m = self._re_adyen.match(invoice.paymentdetails)
 		if m:
 			try:
-				trans = TransactionStatus.objects.get(pspReference=m.groups(1)[0])
-				if trans.settledamount:
-					return "{0}{1}".format(settings.CURRENCY_SYMBOL, trans.amount-trans.settledamount)
-				else:
-					return "not settled yet"
+				return (TransactionStatus.objects.get(pspReference=m.groups(1)[0]), None)
 			except TransactionStatus.DoesNotExist:
-				return "not found"
+				return (None, "not found")
 		else:
-			return "unknown format"
+			return (None, "unknown format")
+
+	def payment_fees(self, invoice):
+		(trans, reason) = self._find_invoice_transaction(invoice)
+		if not trans:
+			return reason
+
+		if trans.settledamount:
+			return "{0}{1}".format(settings.CURRENCY_SYMBOL, trans.amount-trans.settledamount)
+		else:
+			return "not settled yet"
+
+	def autorefund(self, invoice):
+		(trans, reason) = self._find_invoice_transaction(invoice)
+		if not trans:
+			raise Exception(reason)
+
+		api = AdyenAPI()
+		invoice.refund.payment_reference = api.refund_transaction(
+			invoice.refund.id,
+			trans.pspReference,
+			invoice.refund.amount
+		)
+		# At this point, we succeeded. Anything that failed will bubble
+		# up as an exception.
+		return True
 
 class AdyenCreditcard(_AdyenBase):
 	description="""

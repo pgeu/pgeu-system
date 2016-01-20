@@ -64,7 +64,7 @@ ul.messages {
  <td style="white-space: nowrap; text-align: right;">{%if invoice.total_amount > 0%}{{invoice.total_amount|intcomma}}{%endif%}</td>
  <td style="white-space: nowrap">{{invoice.invoicedate|date:"Y-m-d"}}</td>
  <td style="white-space: nowrap" class="duedate" >{{invoice.duedate|date:"Y-m-d"}}</td>
- <td style="white-space: nowrap">{%if invoice.refunded%}Refunded{%elif invoice.ispaid%}{{invoice.paidat|date:"Y-m-d"}}{%else%}No{%endif%}</td>
+ <td style="white-space: nowrap">{%if invoice.refund%}Refunded{%elif invoice.ispaid%}{{invoice.paidat|date:"Y-m-d"}}{%else%}No{%endif%}</td>
  <td>{{invoice.finalized|yesno}}</td>
 </tr>
 {%endfor%}
