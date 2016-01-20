@@ -10,6 +10,19 @@ ul.messages {
   list-style-type: none;
   padding: 2px;
   padding-left: 20px;
+
+}
+table.refundtable tr td:nth-child(1) {
+  width: 130px;
+}
+table.refundtable tr td:nth-child(2) {
+  text-align: right;
+}
+table.refundtable tr td input {
+  width: 250px;
+}
+table.refundtable tr td input[type="number"] {
+  width: 100px;
 }
 </style>
 {%endblock%}
@@ -27,26 +40,28 @@ ul.messages {
 {% endif %}
 
 <form method="post" action=".">{% csrf_token %}
-<table>
+<table class="refundtable">
   <tr>
-    <td>Invoice number</td>
+    <td colspan="2"><b>#{{invoice.id}} - {{invoice.title}}</b></td>
+  </tr>
+  <tr>
+    <td>Invoice number:</td>
     <td>{{invoice.id}}</td>
   </tr>
   <tr>
-    <td>Title</td>
-    <td>{{invoice.title}}</td>
-  </tr>
-  <tr>
-    <td>Total amount</td>
+    <td>Total amount:</td>
     <td>{{currency_symbol}}{{invoice.total_amount}}</td>
   </tr>
   <tr>
-    <td>Payment fees</td>
+    <td>Payment fees:</td>
     <td>{{currency_symbol}}{{invoice.payment_fees}}</td>
   </tr>
   <tr>
-    <td>Amount remaining</td>
+    <td>Amount remaining:</td>
     <td>{{currency_symbol}}{{invoice.amount_without_fees}}</td>
+  </tr>
+  <tr>
+    <td colspan="2"><hr/></td>
   </tr>
 {%if form.errors%}
  <tr class="errorheader">
@@ -67,7 +82,7 @@ ul.messages {
 </table>
 {%if not invoice.can_autorefund%}
   <p>
-    <b>NOTE!</b> This invoice was paid using {{invoice.paidusing}}, which does not support automatic refunds!
+    <b>NOTE!</b> This invoice was paid using {{invoice.paidusing|default:"an unknown method"}}, which does not support automatic refunds!
   </p>
   <p>
     You must issue the refund <b>manually</b>,and then flag it here.
