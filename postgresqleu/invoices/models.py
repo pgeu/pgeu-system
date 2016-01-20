@@ -129,6 +129,14 @@ class Invoice(models.Model):
 			return "unknown"
 
 	@property
+	def amount_without_fees(self):
+		f = self.payment_fees
+		if type(f) == str:
+			return "Unknown"
+		else:
+			return self.total_amount - f
+
+	@property
 	def can_autorefund(self):
 		return PaymentMethodWrapper(self.paidusing, self).can_autorefund
 

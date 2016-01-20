@@ -174,6 +174,7 @@ def oneinvoice(request, invoicenum):
 			'form': form,
 			'formset': formset,
 			'invoice': invoice,
+			'currency_symbol': settings.CURRENCY_SYMBOL,
 			}, context_instance=RequestContext(request))
 
 @login_required
@@ -253,6 +254,7 @@ def refundinvoice(request, invoicenum):
 	return render(request, 'invoices/refundform.html', {
 		'form': form,
 		'invoice': invoice,
+		'currency_symbol': settings.CURRENCY_SYMBOL,
 		})
 
 @login_required

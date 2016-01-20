@@ -38,11 +38,15 @@ ul.messages {
   </tr>
   <tr>
     <td>Total amount</td>
-    <td>{{invoice.total_amount}}</td>
+    <td>{{currency_symbol}}{{invoice.total_amount}}</td>
   </tr>
   <tr>
     <td>Payment fees</td>
-    <td>{{invoice.payment_fees}}</td>
+    <td>{{currency_symbol}}{{invoice.payment_fees}}</td>
+  </tr>
+  <tr>
+    <td>Amount remaining</td>
+    <td>{{currency_symbol}}{{invoice.amount_without_fees}}</td>
   </tr>
 {%if form.errors%}
  <tr class="errorheader">

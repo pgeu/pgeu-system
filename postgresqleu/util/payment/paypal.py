@@ -61,7 +61,7 @@ lower fees.
 		if not trans:
 			return reason
 
-		return "{0}{1}".format(settings.CURRENCY_SYMBOL, trans.fee)
+		return trans.fee
 
 	def autorefund(self, invoice):
 		(trans, reason) = self._find_invoice_transaction(invoice)

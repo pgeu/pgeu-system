@@ -23,7 +23,7 @@ Mastercard, VISA and American Express.
 			try:
 				trans = BraintreeTransaction.objects.get(transid=m.groups(1)[0])
 				if trans.disbursedamount:
-					return "{0}{1}".format(settings.CURRENCY_SYMBOL, trans.amount-trans.disbursedamount)
+					return trans.amount-trans.disbursedamount
 				else:
 					return "not disbursed yet"
 			except BraintreeTransaction.DoesNotExist:

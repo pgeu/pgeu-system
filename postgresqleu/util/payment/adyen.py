@@ -84,7 +84,7 @@ class _AdyenBase(object):
 			return reason
 
 		if trans.settledamount:
-			return "{0}{1}".format(settings.CURRENCY_SYMBOL, trans.amount-trans.settledamount)
+			return trans.amount-trans.settledamount
 		else:
 			return "not settled yet"
 
