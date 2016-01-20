@@ -2094,16 +2094,17 @@ def session_notify_queue(request, urlname):
 def crossmail(request):
 	if request.method == 'POST':
 		form = CrossConferenceMailForm(data=request.POST)
-		recipients = ConferenceRegistration.objects.filter(payconfirmedat__isnull=False, conference__in=form.data.getlist('attendees_of')).exclude(attendee__conferenceregistration__conference__in=form.data.getlist('attendees_not_of')).order_by('lastname', 'firstname')
+		recipients = ConferenceRegistration.objects.values('email', 'firstname', 'lastname').filter(payconfirmedat__isnull=False, conference__in=form.data.getlist('attendees_of')).exclude(attendee__conferenceregistration__conference__in=form.data.getlist('attendees_not_of')).distinct().order_by('lastname', 'firstname')
 
 		if form.is_valid():
 			for r in recipients:
 				send_simple_mail(form.data['senderaddr'],
-								 r.email,
+								 r['email'],
 								 form.data['subject'],
 								 form.data['text'],
 								 sendername=form.data['sendername'],
-								 receivername=r.fullname)
+								 receivername=u"{0} {1}".format(r['firstname'], r['lastname']),
+				)
 
 			messages.info(request, "Sent {0} emails.".format(len(recipients)))
 			return HttpResponseRedirect("../")
