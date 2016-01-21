@@ -1113,7 +1113,7 @@ def confirmreg(request, confname):
 
 	# Add warnings for mismatching name
 	if reg.firstname != request.user.first_name or reg.lastname != request.user.last_name:
-		registration_warnings.append("Registration name ({0} {1}) does not match account name ({2} {3}). Please make sure that this is correct, and that you are <strong>not</strong> registering using a different account than your own, as access to the account may be needed during the event!".format(reg.firstname, reg.lastname, request.user.first_name, request.user.last_name))
+		registration_warnings.append(u"Registration name ({0} {1}) does not match account name ({2} {3}). Please make sure that this is correct, and that you are <strong>not</strong> registering using a different account than your own, as access to the account may be needed during the event!".format(reg.firstname, reg.lastname, request.user.first_name, request.user.last_name))
 
 
 	return render_conference_response(request, conference, 'confreg/regform_confirm.html', {
