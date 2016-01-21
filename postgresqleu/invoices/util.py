@@ -459,7 +459,7 @@ class InvoiceManager(object):
 
 			wrapper.email_refund_sent()
 			InvoiceLog(timestamp=datetime.now(),
-					   message="Flagged invoice {0} as refunded by {1}{2}: {3}".format(invoice.id, settings.CURRENCY_SYMBOL, amount, reason),
+					   message=u"Flagged invoice {0} as refunded by {1}{2}: {3}".format(invoice.id, settings.CURRENCY_SYMBOL.decode('utf8'), amount, reason),
 					   ).save()
 
 		return r
