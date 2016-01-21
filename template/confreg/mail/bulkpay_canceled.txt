@@ -1,0 +1,20 @@
+Hello!
+
+The invoice for the bulk payment that your registration for
+{{conference}} has been canceled.
+
+As a result of this, your registration has been unlocked, and
+you are *not* confirmed for attendance of the event. If you
+still wish to attend the event, you need to ensure that the
+attendance fee is paid, either by paying it individually or
+by a new bulk payment.
+
+The cancellation may be manual, or it may have been an automatic
+cancel because the invoice was not paid on time. For information
+about the reason for the cancellation, you can contact the
+person in charge of the bulk invoice, which is
+{{bulk.user.first_name}} {{bulk.user.last_name}}.
+
+
+If you have any questions about this registration, you can
+also contact {{conference.contactaddr}}.

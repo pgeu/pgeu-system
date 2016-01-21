@@ -1429,6 +1429,9 @@ def bulkpay(request, confname):
 					bp.numregs = len(allregs)
 					bp.save() # Save so we get a primary key
 
+					# Get a template for notifying the attendees by mail
+					template = get_template('confreg/mail/bulkpay_added.txt')
+
 					# Now assign this bulk record to all our registrations
 					for r in allregs:
 						r.bulkpayment = bp
@@ -1437,6 +1440,20 @@ def bulkpay(request, confname):
 						# this will do for now.
 						autocancel_hours.append(r.regtype.invoice_autocancel_hours)
 						autocancel_hours.extend([a.invoice_autocancel_hours for a in r.additionaloptions.filter(invoice_autocancel_hours__isnull=False)])
+
+						# Also notify these registrants that they have been
+						# added to the bulk payment.
+						send_simple_mail(conference.contactaddr,
+										 r.email,
+										 "Your registration for {0} added to bulk payment".format(conference.conferencename),
+										 template.render(Context({
+											 'conference': conference,
+											 'reg': r,
+											 'bulk': bp,
+										 })),
+										 sendername = conference.conferencename,
+										 receivername = r.fullname,
+									 )
 
 					# Finally, create an invoice for it
 					manager = InvoiceManager()
