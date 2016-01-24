@@ -17,9 +17,13 @@ $(function() {
 });
 
 function showDialog(id, title) {
-   $('#popup_' + id).dialog('option', {
-      'title': title,
-   }).dialog('open');
+   if ($('#popup_' + id).dialog('isOpen')) {
+      $('#popup_' + id).dialog('close');
+   } else {
+      $('#popup_' + id).dialog('option', {
+         'title': title,
+      }).dialog('open');
+   }
 }
 </script>
 <style>
