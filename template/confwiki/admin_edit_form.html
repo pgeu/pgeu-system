@@ -1,6 +1,5 @@
-{%extends "base.html"%}
+{%extends "confreg/confadmin_base.html"%}
 {%block extrahead%}
-<script src="/media/jq/jquery-1.8.2.min.js"></script>
 <script type="text/javascript" src="/media/js/selectize.min.js"></script>
 <link rel="stylesheet" href="/media/css/selectize.css" />
 <link rel="stylesheet" href="/media/css/selectize.default.css" />
@@ -26,14 +25,6 @@ $(function() {
 {%endblock%}
 
 {%block layoutblock%}
-{% if messages %}
-    <ul class="messages">
-    {% for message in messages %}
-      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-    </ul>
-{% endif %}
-
 <h1>Wiki page</h1>
 <p>
 <b>Note!</b> Changes made on this page will not be reflected in the wiki page

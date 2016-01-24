@@ -1,4 +1,4 @@
-{%extends "base.html" %}
+{%extends "confreg/confadmin_base.html" %}
 {%block title%}Conference Signups{%endblock%}
 {%block layoutblock%}
 <h1>Conference Signups</h1>
@@ -15,6 +15,6 @@
 </p>
 
 <p>
-<a href="../../">Back</a> to the dashboard.
+<a href="../../{{conference.urlname}}/">Back</a> to the dashboard.
 </p>
 {%endblock%}

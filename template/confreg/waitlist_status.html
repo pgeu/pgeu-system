@@ -5,14 +5,6 @@
 {%block content%}
 <h1>Conference Registration - {{conference}}</h1>
 
-{% if messages %}
-<ul style="background-color: yellow;">
-    {% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
-
 <h3>Waitlist status</h3>
 <p>
 You are currently <b>on the waitlist</b> to attend this conference. We will

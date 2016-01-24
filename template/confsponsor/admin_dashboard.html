@@ -1,15 +1,7 @@
-{%extends "base.html" %}
+{%extends "confreg/confadmin_base.html" %}
 {%block title%}Conference Sponsorship{%endblock%}
 {%block layoutblock%}
 <h1>Conference Sponsorship - {{conference}}</h1>
-
-{% if messages %}
-<ul style="background-color: yellow;">
-    {% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
 
 {%if unconfirmed_benefits%}
 <h2>Unconfirmed benefits</h2>
@@ -87,21 +79,21 @@ This matrix gives a quick overview of the status of the different benefits for e
 </ul>
 <p></p>
 {%for levelname, level in benefitmatrix.items %}
-<table border="1" cellspacing="0" cellpadding="1" width="100%">
- <tr><td colspan="{{level.matrix|first|length}}" align="center" bgcolor="gray">{{levelname}}</td></tr>
+<table class="table table-bordered table-striped table-hover">
+ <tr><td colspan="{{level.matrix|first|length}}" align="center" bgcolor="gray"><strong>{{levelname}}</strong></td></tr>
  <tr>
   <td></td>
 {%for c in level.cols%}
-  <td>{{c}}</td>
+  <th>{{c}}</th>
 {%endfor%}
  </tr>
 {%for r in level.matrix%}
  <tr>
  {%for b in r%}<td>
 {%if b == 0%}
-{%elif b == 1%}<div style="color:red;">Declined</div>
-{%elif b == 2%}<div style="color:blue;">Claimed</div>
-{%elif b == 3%}<div style="color:green;">Confirmed</div>
+{%elif b == 1%}<span class="label label-danger">Declined</span>
+{%elif b == 2%}<span class="label label-info">Claimed</span>
+{%elif b == 3%}<span class="label label-success">Confirmed</span>
 {%else%}{{b}}{%endif%}
 </td>{%endfor%}
  </tr>

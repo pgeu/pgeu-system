@@ -1,4 +1,4 @@
-{%extends "base.html" %}
+{%extends "confreg/confadmin_base.html" %}
 {%block title%}Conference PDF schedule{%endblock%}
 {%block extrahead%}
 <style>
@@ -19,13 +19,6 @@ table#formtbl tr th {
 
 {%block layoutblock%}
 <h1>Conference PDF schedule</h1>
-{% if messages %}
-<ul style="background-color: yellow;">
-    {% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
 
 <form method="POST" action=".">{% csrf_token %}
 <table id="formtbl">
@@ -35,4 +28,7 @@ table#formtbl tr th {
 <input type="submit" name="submit" value="Generate PDF"/>
 </form>
 
+<p>
+  <a href="/events/admin/{{conference.urlname}}/">Back</a> to dashboard.
+</p>
 {%endblock%}

@@ -1,46 +1,54 @@
-{%extends "base.html" %}
+{%extends "confreg/confadmin_base.html" %}
 {%block title%}Conferences{%endblock%}
 {%block layoutblock%}
-{% if messages %}
-<ul style="background-color: yellow;">
-    {% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
 
 <h1>Conferences</h1>
-{%if conferences%}
+{%if user.is_superuser%}
+<h3>Cross-conference</h3>
+<div>
+  <a class="btn btn-default" href="/events/reports/time/">Time reports</a>
+  <a class="btn btn-default" href="/events/admin/crossmail/">Cross conference email</a>
+</div>
+
+{%endif%}
+
+{%if current%}
+<h3>Current conferences</h3>
+<div class="row">
+{%for c in current %}
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow">
+    <a class="btn btn-primary btn-block" href="/events/admin/{{c.urlname}}/">{{c}}</a>
+  </div>
+{%endfor%}
+</div>
+{%endif%}
+
+{%if upcoming%}
+<h3>Upcoming conferences</h3>
+<div class="row">
+{%for c in upcoming %}
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow">
+    <a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/">{{c}}</a>
+  </div>
+{%endfor%}
+</div>
+{%endif%}
+
+{%if past%}
+<h3>Past conferences</h3>
+<div class="row">
+{%for c in past %}
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow">
+    <a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/">{{c}}</a>
+  </div>
+{%endfor%}
+</div>
+{%endif%}
+
+{%if user.is_superuser%}
 <p>
 Entering metadata is still typically done through the
 <a href="/admin/confreg/">main admin interface</a>.
-</p>
-
-{%if user.is_superuser%}
-<h3>Cross-conference</h3>
-<ul>
-  <li><a href="/events/reports/time/">Time reports</a></li>
-  <li><a href="/events/admin/crossmail/">Cross conference email</a></li>
-</ul>
-
-<h3>All conferences</h3>
-{%endif%}
-
-<table border="1" cellspacing="0" cellpadding="2">
-{%if firstconf%}
- <tr bgcolor="lightgray"><td colspan="2" align="center"><b>Next conference</b></td></tr>
-{%with c=firstconf%}
-{%include "confreg/admin_dashboard_conference.inc.html" %}
-{%endwith%}
- <tr bgcolor="lightgray"><td colspan="2" align="center"><b>All conferences</b></td></tr>
-{%endif%}
- {%for c in conferences%}
-{%include "confreg/admin_dashboard_conference.inc.html" %}
- {%endfor%}
-</table>
-{%else%}
-<p>
-You don't have access to any conferences.
 </p>
 {%endif%}
 

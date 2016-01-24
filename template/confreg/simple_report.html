@@ -1,8 +1,8 @@
-{%extends "base.html" %}
+{%extends "confreg/confadmin_base.html" %}
 {%block title%}Report{%endblock%}
 {%block layoutblock%}
 <h1>Report</h1>
-<table border="1" cellspacing="0" cellpadding="1">
+<table class="table table-bordered table-striped table-hover table-condensed">
   <tr>
 {%for c in columns %}
     <th>{{c}}</th>

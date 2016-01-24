@@ -1,14 +1,8 @@
+{%extends "confreg/confadmin_base.html" %}
 {%load markup%}
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" dir="ltr">
-<head>
- <title>Vote for sessions - {{conference}}</title>
- <meta http-equiv="Content-Type" content="text/xhtml; charset=utf-8" />
- <style type="text/css" media="screen" title="Normal Text">@import url("/media/css/base.css");</style>
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.8.18/themes/base/jquery-ui.css" type="text/css" media="all" />
- <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
- <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
+{%block extrahead%}
+<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
+<script src="/media/jq/jquery-ui.min.js"></script>
 
 <script language="javascript">
 $(function() {
@@ -17,6 +11,7 @@ $(function() {
       autoOpen: false,
       minWidth: 400,
       minHeight: 250,
+      height: 600,
     });
   });
 });
@@ -34,9 +29,14 @@ td.dlgClickable {
 div.dlg {
   display: none;
 }
+
+/* Override bootstrap to make full screen */
+.container {
+width: 100%;
+}
 </style>
-</head>
-<body>
+{%endblock%}
+{%block layoutblock%}
 <h1>Vote for sessions - {{conference}}</h1>
 {% if messages %}
 <ul style="background-color: yellow;">
@@ -47,7 +47,7 @@ div.dlg {
 {% endif %}
 
 <form method="post" action=".">{% csrf_token %}
-<table border="1" cellspacing="0" cellpadding="1">
+<table class="table table-bordered table-condensed">
  <tr>
   <th><a href="?sort=session">Session</a></th>
   <th>Status</th>
@@ -121,5 +121,4 @@ div.dlg {
 </p>
 {%endif%}
 
-</body>
-</html>
+{%endblock%}

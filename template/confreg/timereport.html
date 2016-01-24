@@ -1,8 +1,5 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Time reports</title>
-    <script src="/media/jq/jquery-1.8.2.min.js"></script>
+{%extends "confreg/confadmin_base.html" %}
+{%block extrahead%}
 {%if graphdata%}
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script language="javascript">
@@ -73,21 +70,15 @@ select#id_conferences {
    height: 80px;
 }
     </style>
-  </head>
-  <body>
+{%endblock%}
+
+{%block layoutblock%}
     <p>
       This is a very trivial interface to some time based reports for
       the conferences. For some reports, multiple conferences can be
       selected, to get a comparison over time.
       Right now, reporting is only available to superusers.
     </p>
-{% if messages %}
-    <ul class="messages">
-    {% for message in messages %}
-      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-    </ul>
-{% endif %}
     <form method="POST" action=".">{% csrf_token %}
       <table>
       {{form.as_table}}
@@ -95,5 +86,5 @@ select#id_conferences {
       <input type="submit" value="Generate report">
     </form>
     <div id="chart_div" style="width: 100%; height: 500px;"></div>
-  </body>
-</html>
+
+{%endblock%}

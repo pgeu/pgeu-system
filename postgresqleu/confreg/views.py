@@ -44,7 +44,7 @@ from postgresqleu.invoices.models import InvoiceProcessor
 from postgresqleu.mailqueue.util import send_mail, send_simple_mail
 
 from operator import itemgetter
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import base64
 import re
 import os
@@ -1862,21 +1862,26 @@ def admin_dashboard(request):
 	else:
 		conferences = Conference.objects.filter(administrators=request.user, startdate__gt=datetime.now()-timedelta(days=3*365)).order_by('-startdate')
 
-	# Figure out the very first conference, to render it at the top.
-	# Basically, we look for the first conference (so last in the list)
-	# that still has a date in the future - that'll be the next upcoming
-	# one. We only look at startdate, because really, we won't have to care
-	# about overlapping conferences.
-	firstconf = None
+	# Split conferences in three buckets:
+	#  Current: anything that starts or finishes within two weeks
+	#  Upcoming: anything newer than that
+	#  Past: anything older than that
+
+	current = []
+	upcoming = []
+	past = []
 	for c in conferences:
-		if c.startdate > datetime.today().date():
-			firstconf = c
+		if abs((date.today() - c.startdate).days) < 14 or abs((date.today() - c.enddate).days)  < 14:
+			current.append(c)
+		elif c.startdate > date.today():
+			upcoming.append(c)
 		else:
-			break
+			past.append(c)
 
 	return render_to_response('confreg/admin_dashboard.html', {
-		'firstconf': firstconf,
-		'conferences': conferences,
+		'current': current,
+		'upcoming': upcoming,
+		'past': past,
 	}, RequestContext(request))
 
 @login_required
@@ -1887,7 +1892,7 @@ def admin_dashboard_single(request, urlname):
 		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
 
 	return render_to_response('confreg/admin_dashboard_single.html', {
-		'conference': conference,
+		'c': conference,
 	}, RequestContext(request))
 
 @login_required
@@ -2062,6 +2067,7 @@ def admin_attendeemail_view(request, urlname, mailid):
 	return render_to_response('confreg/admin_mail_view.html', {
 		'conference': conference,
 		'mail': mail,
+		'breadcrumbs': (('/events/admin/{0}/mail/'.format(conference.urlname), 'Attendee emails'), ),
 		}, RequestContext(request))
 
 @login_required

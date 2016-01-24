@@ -1,4 +1,4 @@
-{%extends "base.html" %}
+{%extends "confreg/confadmin_base.html" %}
 {%block title%}Conference Attendee Email - {{conference}}{%endblock%}
 {%block extrahead%}
 <style>
@@ -15,13 +15,6 @@ table.emailform input[type=text],textarea {
 {%endblock%}
 {%block layoutblock%}
 <h1>Conference Attendee Email - {{conference}}</h1>
-{% if messages %}
-<ul style="background-color: yellow;">
-    {% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
 
 <h2>Sent email</h2>
 {%if mails%}
@@ -63,6 +56,6 @@ else who signs up with the selected registration types later.
 </form>
 
 <p></p>
-<p>Return to <a href="../../">dashboard</a>.</p>
+<p>Return to <a href="../../{{conference.urlname}}/">dashboard</a>.</p>
 
 {%endblock%}

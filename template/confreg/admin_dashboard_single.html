@@ -1,30 +1,71 @@
-{%extends "base.html" %}
-{%block title%}{{conference.conferencename}} - dashboard{%endblock%}
+{%extends "confreg/confadmin_base.html" %}
+{%block title%}{{c.conferencename}} - dashboard{%endblock%}
 {%block layoutblock%}
-{% if messages %}
-<ul style="background-color: yellow;">
-    {% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
 
-<h1>{{conference.conferencename}}</h1>
+<h1>{{c.conferencename}}</h1>
+<div>
+  <span class="label label-default">{{c.startdate|date:"Y-m-d"}}</span> - <span class="label label-default">{{c.startdate|date:"Y-m-d"}}</span>
+</div>
 
-{%if user.is_superuser%}
-<h3>Cross-conference</h3>
-<ul>
-  <li><a href="/events/reports/time/">Time reports</a></li>
-  <li><a href="/events/admin/crossmail/">Cross conference email</a></li>
-</ul>
+<h2>Registrations</h2>
+<div class="row">
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/regdashboard/">Reg dashboard</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/waitlist/">Waitlist</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/mail/">Attendee emails</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/wiki/">Manage wiki</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/signups/">Manage signups</a></div>
+</div>
+
+<h2>Sessions and schedule</h2>
+<div class="row">
+{%if c.pending_session_notifications%}
+<div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-warning btn-block" href="/events/sessionnotifyqueue/{{c.urlname}}/">Pending notifications</a></div>
 {%endif%}
 
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/talkvote/{{c.urlname}}/">View sessions and vote</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/confreg/conferencesession/?conference__id__exact={{c.id}}&_directlink=1">Edit sessions</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/schedule/{{c.urlname}}/create/">Create schedule</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/reports/{{c.urlname}}/schedule/">PDF schedules</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/reports/{{c.urlname}}/feedback/">Feedback</a></div>
+</div>
 
-<h3>{{conference.conferencename}}</h3>
-<table border="1" cellspacing="0" cellpadding="2">
-{%with c=conference%}
-{%include "confreg/admin_dashboard_conference.inc.html" %}
-{%endwith%}
-</table>
+<h2>Sponsors</h2>
+<div class="row">
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/sponsor/admin/{{c.urlname}}/">Manage sponsors</a></div>
+</div>
+
+<h2>Reports</h2>
+<div class="row">
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/reports/{{c.urlname}}/">Attendee reports</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/reports/{{c.urlname}}/simple/?report=unregspeaker">Unregistered speakers</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/reports/{{c.urlname}}/simple/?report=unregstaff">Unregistered staff</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/reports/{{c.urlname}}/simple/?report=unconfirmspeaker">Unconfirmed speakers</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/reports/{{c.urlname}}/simple/?report=sessionstatus">Session status statistics</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/reports/{{c.urlname}}/simple/?report=tshirtsizes">T-Shirt size distribution</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/reports/{{c.urlname}}/simple/?report=countries">Attendee countries</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/reports/{{c.urlname}}/simple/?report=regdays">Confirmed per day</a></div>
+</div>
+
+<h2>Prepaid vouchers and discount codes</h2>
+<div class="row">
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/confreg/prepaidvoucher/?conference__id__exact={{c.id}}&_directlink=1">Prepaid vouchers</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/prepaid/">Create prepaid vouchers</a></div>
+</div>
+
+<h2>Metadata</h2>
+<div class="row">
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/confreg/conference/{{c.id}}/">Edit conference entry</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/confreg/">All conference metadata</a></div>
+</div>
+
+<h2>User links</h2>
+<div class="row">
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/register/{{c.urlname}}/">Registration</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/bulkpay/{{c.urlname}}/">Bulk Payment</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/callforpapers/{{c.urlname}}/">Call for papers</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/speakerprofile/{{c.urlname}}/">Speaker profile</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/schedule/{{c.urlname}}/">Schedule</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/sessions/{{c.urlname}}/">Session list</a></div>
+</div>
 
 {%endblock%}

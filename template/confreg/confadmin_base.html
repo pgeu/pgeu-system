@@ -1,0 +1,52 @@
+{%load alertmap%}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" dir="ltr">
+ <head>
+  <title>{%block title%}{%endblock%} - PostgreSQL Europe</title>
+  <meta http-equiv="Content-Type" content="text/xhtml; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="stylesheet" media="screen" href="/media/css/bootstrap.min.css" />
+  <link rel="stylesheet" media="screen" href="/media/css/confadmin.css" />
+  <script src="/media/jq/jquery-1.8.2.min.js"></script>
+  <script src="/media/js/bootstrap.min.js"></script>
+{%block extrahead%}{%endblock%}
+ </head>
+ <body>
+   <nav class="navbar navbar-default">
+     <div class="container-fluid">
+       <div class="navbar-header">
+	 <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+           <span class="icon-bar"></span>
+           <span class="icon-bar"></span>
+           <span class="icon-bar"></span>
+	 </button>
+	 <img class="pull-left" style="margin-right: 8px; margin-top: 5px;" src="/media/img/pgeu_logo_small.png" />
+	 <a class="navbar-brand" href="/events/admin/">Conference admin</a>
+       </div>
+       <div class="collapse navbar-collapse" id="navbar">
+	 <ul class="nav navbar-nav">
+	   {%if conference %}
+	   <li><a href="/events/admin/{{conference.urlname}}/">{{conference}}</a></li>
+	   {%endif%}
+	   {%for k,v in breadcrumbs %}
+	   <li><a href="{{k}}">{{v}}</a></li>
+	   {%endfor%}
+	 </ul>
+       </div>
+     </div>
+   </nav>
+
+   <div class="container">
+{% if messages %}
+{% for message in messages %}
+<div class="alert{% if message.tags %} {{ message.tags|alertmap }}{%endif%}">{{ message }}</div>
+{% endfor %}
+{% endif %}
+
+	 {%block layoutblock%}{%endblock%}
+   </div>
+
+ </body>
+</html>

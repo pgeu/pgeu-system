@@ -245,6 +245,7 @@ def admin_edit_page(request, urlname, pageid):
 		'conference': conference,
 		'form': form,
 		'page': page,
+		'breadcrumbs': (('/events/admin/{0}/wiki/'.format(conference.urlname), 'Wiki'),),
 	}, RequestContext(request))
 
 
@@ -381,4 +382,5 @@ def signup_admin_edit(request, urlname, signupid):
 		'form': form,
 		'signup': signup,
 		'results': results,
+		'breadcrumbs': (('/events/admin/{0}/signups/'.format(conference.urlname), 'Signups'),),
 	}, RequestContext(request))

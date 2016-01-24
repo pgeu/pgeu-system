@@ -512,6 +512,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 		'claimedbenefits': claimedbenefits,
 		'unclaimedbenefits': unclaimedbenefits,
 		'noclaimbenefits': noclaimbenefits,
+		'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
 		}, RequestContext(request))
 
 @login_required

@@ -1,9 +1,8 @@
-{%extends "base.html" %}
+{%extends "confreg/confadmin_base.html" %}
 {%load markup%}
 {%block title%}Conference Sponsorship - {{sponsor}}{%endblock%}
 {%block extrahead%}
 <link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
-<script src="/media/jq/jquery-1.8.2.min.js"></script>
 <script src="/media/jq/jquery-ui.min.js"></script>
 <script language="javascript">
   function confirmConfirm() {
@@ -27,14 +26,6 @@ div.benefit_list div {
 {%endblock%}
 {%block layoutblock%}
 <h1>Conference Sponsorship - {{sponsor}}</h1>
-
-{% if messages %}
-<ul style="background-color: yellow;">
-    {% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
 
 <table border="0" cellspacing="4" cellpadding="0">
   <tr>
@@ -103,8 +94,10 @@ div.benefit_list div {
 <input type="hidden" name="confirm" value="1">
 <input type="hidden" name="claimid" value="{{b.id}}">
 <input type="submit" class="btn" value="Confirm this benefit">
-{%endif%}
 </form>
+{%else%}
+<span class="label label-success">Confirmed</span>
+{%endif%}
 </div>
 {%endfor%}
 </div>
