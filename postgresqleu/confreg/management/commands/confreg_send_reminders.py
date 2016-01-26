@@ -177,6 +177,7 @@ class Command(BaseCommand):
 		template = get_template('confreg/mail/speaker_empty_submission.txt')
 
 		for sess in conference.conferencesession_set.filter(abstract='',
+															status=0,
 															lastmodified__lt=datetime.now()-timedelta(days=3)):
 			for spk in sess.speaker.all():
 				send_simple_mail(conference.contactaddr,
