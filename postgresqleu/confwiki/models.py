@@ -116,6 +116,9 @@ class Signup(models.Model):
 	class Meta:
 		ordering = ('deadline', 'title', )
 
+	def __unicode__(self):
+		return self.title
+
 class AttendeeSignup(models.Model):
 	signup = models.ForeignKey(Signup, null=False, blank=False)
 	attendee = models.ForeignKey(ConferenceRegistration, null=False, blank=False)

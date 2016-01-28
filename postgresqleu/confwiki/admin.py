@@ -3,6 +3,7 @@ from django import forms
 
 from postgresqleu.confreg.models import Conference, ConferenceRegistration, RegistrationType
 from models import Wikipage, WikipageHistory, WikipageSubscriber
+from models import AttendeeSignup
 
 
 class WikipageAdminForm(forms.ModelForm):
@@ -42,5 +43,23 @@ class WikipageAdmin(admin.ModelAdmin):
 	inlines = [WikipageHistoryInline, WikipageSubscriberInline]
 	filter_horizontal = ['viewer_attendee', 'editor_attendee', ]
 
+class AttendeeSignupAdminForm(forms.ModelForm):
+	class Meta:
+		model = AttendeeSignup
+		exclude = []
+		readonly_fields = ['signup',]
+
+	def __init__(self, *args, **kwargs):
+		super(AttendeeSignupAdminForm, self).__init__(*args, **kwargs)
+		try:
+			self.fields['attendee'].queryset = ConferenceRegistration.objects.filter(conference=self.instance.signup.conference)
+		except:
+			pass
+
+class AttendeeSignupAdmin(admin.ModelAdmin):
+	form = AttendeeSignupAdminForm
+	list_display = ['signup', 'attendee',]
+	list_filter = ['signup__conference', ]
 
 admin.site.register(Wikipage, WikipageAdmin)
+admin.site.register(AttendeeSignup, AttendeeSignupAdmin)
