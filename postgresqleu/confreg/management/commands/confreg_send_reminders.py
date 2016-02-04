@@ -140,6 +140,8 @@ class Command(BaseCommand):
 		# days ago and also unmodified for 5 days. This is intentionally not 7
 		# days in order to "rotate the day of week" the reminders go out on.
 		regs = ConferenceRegistration.objects.filter(conference=conference,
+													 conference__active=True,
+													 conference__enddate__gt=datetime.now(),
 													 payconfirmedat__isnull=True,
 													 invoice__isnull=True,
 													 bulkpayment__isnull=True,
