@@ -73,7 +73,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 				c = DiscountCode.objects.get(code=newval, conference=self.instance.conference)
 				if c.is_invoiced:
 					raise forms.ValidationError('This discount code is not valid anymore.')
-				if c.validuntil and c.validuntil <= date.today():
+				if c.validuntil and c.validuntil < date.today():
 					raise forms.ValidationError('This discount code has expired.')
 				if c.maxuses > 0:
 					if c.registrations.count() >= c.maxuses:
