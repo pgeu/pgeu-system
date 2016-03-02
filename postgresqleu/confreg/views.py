@@ -1940,6 +1940,8 @@ def admin_registration_dashboard(request, urlname):
 	# Add a sum row for eveything
 	for t in tables:
 		sums = ['Total']
+		for cn in range(1, t['fixedcols']):
+			sums.append('')
 		for cn in range(t['fixedcols']-1, len(t['columns'])-1):
 			sums.append(sum((r[cn+1] for r in t['rows'] if r[cn+1] != None)))
 		t['rows'].append(sums)
