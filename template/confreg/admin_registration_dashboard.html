@@ -1,4 +1,5 @@
 {%extends "confreg/confadmin_base.html" %}
+{%load date_or_string%}
 {%block title%}Conference registrations{%endblock%}
 {%block extrahead%}
 <style>
@@ -19,7 +20,7 @@ table tr.lastrow td {
 {%for row in table.rows %}
 <tr {%if forloop.last%}class="lastrow"{%endif%}>
 {%for c in row%}
-<td>{{c|default_if_none:""}}</td>
+<td>{{c|date_or_string}}</td>
 {%endfor%}
 </tr>
 {%endfor%}
