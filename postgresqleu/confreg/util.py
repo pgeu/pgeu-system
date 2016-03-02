@@ -40,7 +40,7 @@ def invoicerows_for_registration(reg, update_used_vouchers):
 			# Nonexistant voucher code means discount code was used
 			try:
 				d = DiscountCode.objects.get(code=reg.vouchercode, conference=reg.conference)
-				if d.validuntil and d.validuntil < date.today():
+				if d.validuntil and d.validuntil <= date.today():
 					# Find a way to raise an exception here if the voucher is
 					# expired. But it has already been checked in the form
 					# submission step... But make sure not to apply it
