@@ -53,6 +53,9 @@ $(function() {
  </tr>
 {%endfor%}
 </table>
+{%if results.totalvalues%}
+<p>Total value: <b>{{results.totalvalues}}</b></p>
+{%endif%}
 
 <h3>Details</h3>
 <table border="0" cellspacing="1">

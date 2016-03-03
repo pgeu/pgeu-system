@@ -97,6 +97,16 @@ def validate_options(value):
 		if len(v) > 100:
 			raise ValidationError("Options must be less than 100 characters each")
 
+def validate_optionvalues(value):
+	if value == '':
+		return
+
+	pieces = [v.strip() for v in value.split(',')]
+	for v in pieces:
+		if not v.isdigit():
+			raise ValidationError("All option values must be numbers!")
+		if int(v) < 0:
+			raise ValidationError("All option values must be positive numbers!")
 
 # Signups - attendees can sign up for events
 class Signup(models.Model):
@@ -107,6 +117,7 @@ class Signup(models.Model):
 	deadline = models.DateTimeField(null=True, blank=True)
 	maxsignups = models.IntegerField(null=False, blank=False, default=-1)
 	options = models.CharField(max_length=1000, null=False, blank=True, help_text="Comma separated list of options to choose.", validators=[validate_options,])
+	optionvalues = models.CharField(max_length=1000, null=False, blank=True, help_text="Optional comma separated list of how much each choice counts towards the max value", validators=[validate_optionvalues,])
 
 	public = models.BooleanField(null=False, blank=False, default=False, help_text="All attendees can sign up")
 	visible = models.BooleanField(null=False, blank=False, default=False, help_text="Show who have signed up to all invited attendees")
@@ -118,6 +129,16 @@ class Signup(models.Model):
 
 	def __unicode__(self):
 		return self.title
+
+	def clean(self):
+		if self.options:
+			if self.optionvalues:
+				if len(self.options.split(',')) != len(self.optionvalues.split(',')):
+					raise ValidationError({"optionvalues": "Options and optionvalues must have the same number of entries!"})
+		else:
+			# No options, so there must be no optionvalues
+			if self.optionvalues:
+				raise ValidationError({"optionvalues": "Cannot specify optionvalues if options are not specified!"})
 
 class AttendeeSignup(models.Model):
 	signup = models.ForeignKey(Signup, null=False, blank=False)

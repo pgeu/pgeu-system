@@ -48,12 +48,26 @@ class SignupSubmitForm(forms.Form):
 	def clean_choice(self):
 		if self.cleaned_data.get('choice', '') and self.signup.maxsignups > 0:
 			# Verify maximum uses.
-			if self.attendee_signup:
-				currnum = self.signup.attendeesignup_set.exclude(id=self.attendee_signup.id).count()
+			if self.signup.optionvalues:
+				# We count maximum *value* in this case, not number of entries
+				if self.attendee_signup:
+					qs = self.signup.attendeesignup_set.exclude(id=self.attendee_signup.id)
+				else:
+					qs = self.signup.attendeesignup_set.all()
+				optionstrings = self.signup.options.split(',')
+				optionvalues = self.signup.optionvalues.split(',')
+				currnum = sum([int(optionvalues[optionstrings.index(s.choice)]) for s in qs])
+				addnum = int(optionvalues[optionstrings.index(self.cleaned_data.get('choice'))])
+				if currnum + addnum > self.signup.maxsignups:
+					raise ValidationError("This signup is limited to {0} entries.".format(self.signup.maxsignups))
 			else:
-				currnum = self.signup.attendeesignup_set.count()
-			if currnum >= self.signup.maxsignups:
-				raise ValidationError("This signup is limited to {0} attendees.".format(self.signup.maxsignups))
+				if self.attendee_signup:
+					currnum = self.signup.attendeesignup_set.exclude(id=self.attendee_signup.id).count()
+				else:
+					currnum = self.signup.attendeesignup_set.count()
+				if currnum >= self.signup.maxsignups:
+					raise ValidationError("This signup is limited to {0} attendees.".format(self.signup.maxsignups))
+
 		return self.cleaned_data['choice']
 
 class SignupAdminEditForm(forms.ModelForm):

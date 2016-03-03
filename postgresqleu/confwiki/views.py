@@ -349,11 +349,19 @@ def signup_admin_edit(request, urlname, signupid):
 		cursor.execute("WITH t AS (SELECT choice, count(*) AS num FROM confwiki_attendeesignup WHERE signup_id=%(signup)s GROUP BY choice) SELECT choice, num, CAST(num*100*4/sum(num) OVER () AS integer) FROM t ORDER BY 2 DESC", {
 			'signup': signup.id,
 		})
-		results['summary'] = [dict(zip(['choice', 'num', 'percentwidth'], r)) for r in cursor.fetchall()]
+		sumresults = cursor.fetchall()
+		results['summary'] = [dict(zip(['choice', 'num', 'percentwidth'], r)) for r in sumresults]
 		cursor.execute("SELECT firstname || ' ' || lastname,choice,saved FROM confreg_conferenceregistration r INNER JOIN confwiki_attendeesignup s ON r.id=s.attendee_id WHERE s.signup_id=%(signup)s ORDER BY saved", {
 			'signup': signup.id,
 		})
 		results['details'] = [dict(zip(['name', 'choice', 'when'], r)) for r in cursor.fetchall()]
+		if signup.optionvalues:
+			optionstrings = signup.options.split(',')
+			optionvalues = [int(x) for x in signup.optionvalues.split(',')]
+			totalvalues = 0
+			for choice, num, width in sumresults:
+				totalvalues += num * optionvalues[optionstrings.index(choice)]
+			results['totalvalues'] = totalvalues
 
 		# If we have a limited number of attendees, then we can generate
 		# a list of pending users. We don't even try if it's set for public.
