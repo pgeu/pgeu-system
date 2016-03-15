@@ -55,7 +55,13 @@ class ReportFilter(object):
 		else:
 			if POST.has_key('adv_%s_filter' % self.id) and POST['adv_%s_filter' % self.id]:
 				# Limit by value
-				return Q(**{"%s__icontains" % self.id: POST['adv_%s_filter' % self.id]})
+				v = POST['adv_%s_filter' % self.id]
+				if v.startswith('>'):
+					return Q(**{"%s__gt" % self.id: v[1:]})
+				elif v.startswith('<'):
+					return Q(**{"%s__lt" % self.id: v[1:]})
+				else:
+					return Q(**{"%s__icontains" % self.id: v})
 			else:
 				# Just make sure it exists
 				if self.emptyasnull:
