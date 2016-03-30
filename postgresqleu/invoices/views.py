@@ -164,10 +164,14 @@ def oneinvoice(request, invoicenum):
 				return HttpResponseRedirect("/invoiceadmin/%s/" % form.instance.pk)
 		# Else fall through
 	else:
-		form = InvoiceForm(instance=invoice, initial={
+		# GET request, but it might be for an existing invoice
+		if invoice:
+			form = InvoiceForm(instance=invoice)
+		else:
+			form = InvoiceForm(initial={
 			'invoicedate': datetime.now(),
 			'duedate': datetime.now()+timedelta(days=31)}
-		)
+			)
 		formset = InvoiceRowInlineFormset(instance=invoice)
 
 	return render_to_response('invoices/invoiceform.html', {
