@@ -25,7 +25,7 @@ class Command(BaseCommand):
 			sio = StringIO()
 			sio.write("The following error events have been logged by the Braintree integration:\n\n")
 			for l in lines:
-				sio.write("%s: %20s: %s\n" % (l.timestamp, l.pspReference, l.message))
+				sio.write("%s: %20s: %s\n" % (l.timestamp, l.transid, l.message))
 				l.sent = True
 				l.save()
 			sio.write("\n\n\nAll these events have now been tagged as sent, and will no longer be\nprocessed by the system in any way.\n")
