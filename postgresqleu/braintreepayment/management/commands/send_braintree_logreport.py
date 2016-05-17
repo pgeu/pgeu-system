@@ -1,38 +1,31 @@
-#!/usr/bin/env python
+# This script sends out reports fo errors in the Braintree integration
+# as a summary email.
 #
-# This script sends out reports of errors in the Braintree integration as
-# a summary email.
-#
-
 # Copyright (C) 2015, PostgreSQL Europe
 #
+from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
+from django.core import urlresolvers
+from django.conf import settings
 
-import os
-import sys
-
-# Set up to run in django environment
-from django.core.management import setup_environ
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), '../../postgresqleu'))
-import settings
-setup_environ(settings)
-
+from datetime import datetime, timedelta
 from StringIO import StringIO
-
-from django.db import transaction, connection
 
 from postgresqleu.braintreepayment.models import BraintreeLog
 from postgresqleu.mailqueue.util import send_simple_mail
 
+class Command(BaseCommand):
+	help = 'Send log information about Braintree events'
 
+	def handle(self, *args, **options):
+		with transaction.atomic():
+			lines = list(BraintreeLog.objects.filter(error=True,sent=False).order_by('timestamp'))
 
-if __name__=="__main__":
-	with transaction.commit_on_success():
-		lines = list(BraintreeLog.objects.filter(error=True,sent=False).order_by('timestamp'))
 		if len(lines):
 			sio = StringIO()
 			sio.write("The following error events have been logged by the Braintree integration:\n\n")
 			for l in lines:
-				sio.write("%s: %20s: %s\n" % (l.timestamp, l.transid, l.message))
+				sio.write("%s: %20s: %s\n" % (l.timestamp, l.pspReference, l.message))
 				l.sent = True
 				l.save()
 			sio.write("\n\n\nAll these events have now been tagged as sent, and will no longer be\nprocessed by the system in any way.\n")
@@ -41,5 +34,3 @@ if __name__=="__main__":
 							 settings.BRAINTREE_NOTIFICATION_RECEIVER,
 							 'Braintree integration error report',
 							 sio.getvalue())
-
-	connection.close()
