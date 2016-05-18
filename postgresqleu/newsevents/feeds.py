@@ -24,7 +24,7 @@ class LatestEvents(Feed):
 	description_template = "pieces/event_description.html"
 	
 	def items(self):
-		return Event.objects.filter(startdate__gte=datetime.datetime.today)[:10]
+		return Event.objects.filter(startdate__gte=datetime.datetime.today())[:10]
 		
 	def item_link(self, event):
 		return "%s/events/%s" % (settings.SITEBASE, event.id)

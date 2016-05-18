@@ -5,7 +5,7 @@ from postgresqleu.newsevents.models import Event
 import datetime
 
 def eventlist(request):
-	events = Event.objects.filter(startdate__gte=datetime.datetime.today)
+	events = Event.objects.filter(startdate__gte=datetime.datetime.today())
 	return render_to_response('pages/events.html', {
 		"events": events,
 	})
@@ -17,7 +17,7 @@ def event(request, eventid):
 	})
 	
 def eventarchive(request):
-	events = Event.objects.filter(startdate__lte=datetime.datetime.today)
+	events = Event.objects.filter(startdate__lte=datetime.datetime.today())
 	return render_to_response('pages/eventarchive.html', {
 		"events": events,
 	})

@@ -7,7 +7,7 @@ import datetime
 
 # Handle the frontpage
 def index(request):
-	events = Event.objects.filter(startdate__gte=datetime.datetime.today)[:3]
+	events = Event.objects.filter(startdate__gte=datetime.datetime.today())[:3]
 	news = News.objects.filter()[:5]
 	return render_to_response('index.html', {
 		'events': events,
