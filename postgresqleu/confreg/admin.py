@@ -108,8 +108,8 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 	exclude = ('invoice','bulkpayment',)
 	readonly_fields = ('invoice_link','bulkpayment_link', 'lastmodified', )
 
-	def queryset(self, request):
-		qs = super(ConferenceRegistrationAdmin, self).queryset(request)
+	def get_queryset(self, request):
+		qs = super(ConferenceRegistrationAdmin, self).get_queryset(request)
 
 		if request.user.is_superuser:
 			return qs
@@ -218,8 +218,8 @@ class ConferenceSessionAdmin(admin.ModelAdmin):
 	filter_horizontal = ('speaker',)
 	actions= ['email_recipients', ]
 
-	def queryset(self, request):
-		qs = super(ConferenceSessionAdmin, self).queryset(request)
+	def get_queryset(self, request):
+		qs = super(ConferenceSessionAdmin, self).get_queryset(request)
 		if request.user.is_superuser:
 			return qs
 		else:
@@ -310,7 +310,7 @@ class ConferenceAdditionalOptionAdmin(admin.ModelAdmin):
 	filter_horizontal = ('requires_regtype', 'mutually_exclusive', )
 	form = ConferenceAdditionalOptionAdminForm
 
-	def queryset(self, request):
+	def get_queryset(self, request):
 		return ConferenceAdditionalOption.objects.extra(select={
 			'confirmed_count': 'SELECT count(*) FROM confreg_conferenceregistration r INNER JOIN confreg_conferenceregistration_additionaloptions cao ON cao.conferenceregistration_id=r.id WHERE cao.conferenceadditionaloption_id=confreg_conferenceadditionaloption.id AND r.payconfirmedat IS NOT NULL',
 			'unconfirmed_count': 'SELECT count(*) FROM confreg_conferenceregistration r INNER JOIN confreg_conferenceregistration_additionaloptions cao ON cao.conferenceregistration_id=r.id WHERE cao.conferenceadditionaloption_id=confreg_conferenceadditionaloption.id AND r.payconfirmedat IS NULL',
@@ -412,7 +412,7 @@ class PrepaidBatchAdmin(admin.ModelAdmin):
 	inlines = [PrepaidVoucherInline, ]
 	form = PrepaidBatchAdminForm
 
-	def queryset(self, request):
+	def get_queryset(self, request):
 		return PrepaidBatch.objects.extra(select={
 			'num': 'SELECT count(*) FROM confreg_prepaidvoucher WHERE batch_id=confreg_prepaidbatch.id',
 			'used': 'SELECT count(*) FROM confreg_prepaidvoucher WHERE batch_id=confreg_prepaidbatch.id AND usedate IS NOT NULL',
