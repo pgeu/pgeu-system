@@ -36,8 +36,13 @@ class PaypalAPI(object):
 			'STARTDATE': self._dateformat(firstdate),
 			'STATUS': 'Success',
 			})
-		for i in itertools.count(1):
+		for i in itertools.count(0):
 			if not r.has_key('L_TRANSACTIONID{0}'.format(i)):
+				if i == 0:
+					# Special case as it seems inconsistent if it starts on 0 or on 1.
+					# So if there is no 0, just retry the loop at 1, and if there is still
+					# nothing, give up then.
+					continue
 				break
 
 			yield dict([(k,r.get('L_{0}{1}'.format(k, i),[''])[0])
