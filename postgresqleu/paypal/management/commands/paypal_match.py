@@ -50,6 +50,18 @@ class Command(BaseCommand):
 					]
 				create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
 				continue
+			# Record type: payment, but with no notice (auto-generated elsewhere, the text is
+			# hard-coded in paypal_fetch.py
+			if trans.transtext == "Paypal payment with empty note":
+				trans.setmatched('Empty payment description, leaving for operator')
+
+				accstr = "Unlabeled paypal payment from {0}".format(trans.sender)
+				accrows = [
+					(settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, accstr, trans.amount-trans.fee, None),
+					(settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, accstr, trans.fee, None),
+				]
+				create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
+				continue
 			# Record type: transfer
 			if trans.amount < 0 and trans.transtext == 'Transfer from Paypal to bank':
 				trans.setmatched('Bank transfer, automatically matched by script')
