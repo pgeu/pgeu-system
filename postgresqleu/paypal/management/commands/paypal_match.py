@@ -58,8 +58,11 @@ class Command(BaseCommand):
 				accstr = "Unlabeled paypal payment from {0}".format(trans.sender)
 				accrows = [
 					(settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, accstr, trans.amount-trans.fee, None),
-					(settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, accstr, trans.fee, None),
 				]
+				if trans.fee:
+					accrows.append(
+						(settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, accstr, trans.fee, None),
+					)
 				create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
 				continue
 			# Record type: transfer
