@@ -18,7 +18,7 @@ from django.forms import formsets
 from models import Conference, ConferenceRegistration, ConferenceSession
 from models import ConferenceSessionFeedback, Speaker, Speaker_Photo
 from models import ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
-from models import RegistrationType, PrepaidVoucher, PrepaidBatch
+from models import RegistrationType, PrepaidVoucher, PrepaidBatch, DiscountCode
 from models import BulkPayment, Room, Track, ConferenceSessionScheduleSlot
 from models import AttendeeMail, ConferenceAdditionalOption
 from models import PendingAdditionalOrder
@@ -1367,6 +1367,7 @@ def bulkpay(request, confname):
 		})
 
 	if request.method == 'POST':
+		confirmstep = (request.POST['submit'] == 'Confirm above registrations and generate invoice')
 		form = BulkRegistrationForm(data=request.POST)
 		email_list = request.POST['email_list']
 		emails = [e for e in email_list.splitlines(False) if e]
@@ -1379,6 +1380,11 @@ def bulkpay(request, confname):
 		invoicerows = []
 		autocancel_hours = [conference.invoice_autocancel_hours, ]
 		allregs = []
+
+		# Set up a savepoint for rolling back the counter of discount codes if necessary
+		if confirmstep:
+			savepoint = transaction.savepoint()
+
 		for e in sorted(emails):
 			regs = ConferenceRegistration.objects.filter(conference=conference, email=e)
 			if len(regs) == 1:
@@ -1395,31 +1401,47 @@ def bulkpay(request, confname):
 				elif not (regs[0].regtype and regs[0].regtype.active):
 					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration type for this registration is not active!'})
 					errors=1
-				elif regs[0].vouchercode:
+				elif regs[0].vouchercode and not DiscountCode.objects.filter(code=regs[0].vouchercode, conference=regs[0].conference).exists():
+					# Discount codes should still be allowed, just not full vouchers
 					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration has a voucher code entered, and cannot be used for bulk payments.'})
 					errors=1
 				else:
-					regrows = invoicerows_for_registration(regs[0], False)
+					# If this is the confirmation step, we flag vouchers as used
+					regrows = invoicerows_for_registration(regs[0], confirmstep)
 					s = sum([r[2] for r in regrows])
 					if s == 0:
 						# No payment needed
 						state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration type does not need payment'})
 						errors=1
 					else:
-						# Normal registration, so add it
-						state.append({'email': e, 'found': 1, 'pay': 1, 'total': s, 'rows':[u'%s (%s%s)' % (r[0], settings.CURRENCY_SYMBOL.decode('utf8'), r[2]) for r in regrows]})
-						totalcost += s
-						invoicerows.extend(regrows)
+						# Normal registration. Check if discount code is valid, and then add it.
+						if regs[0].vouchercode:
+							dc = DiscountCode.objects.get(code=regs[0].vouchercode, conference=regs[0].conference)
+							if dc.is_invoiced:
+								state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration uses discount code {0} which is not valid.'.format(dc.code)})
+								errors=1
+							elif dc.validuntil and dc.validuntil < date.today():
+								state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration uses discount code {0} which has expired.'.format(dc.code)})
+								errors=1
+							elif dc.maxuses > 0 and dc.registrations.count() >= dc.maxuses:
+								state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration uses discount code {0} which does not have enough remaining instances.'.format(dc.code)})
+								errors=1
+							# Else discount code is fine, so fall through
+						if errors == 0:
+							state.append({'email': e, 'found': 1, 'pay': 1, 'total': s, 'rows':[u'%s (%s%s)' % (r[0], settings.CURRENCY_SYMBOL.decode('utf8'), r[2]) for r in regrows]})
+							totalcost += s
+							invoicerows.extend(regrows)
 			else:
 				state.append({'email': e, 'found': 0, 'text': 'Email not found or registration already completed.'})
 				errors=1
 
-		if request.POST['submit'] == 'Confirm above registrations and generate invoice':
+		if confirmstep:
 			# Trying to finish things off, are we? :)
 			if not errors:
 				# Verify the total cost
 				if int(request.POST['confirmed_total_cost']) != totalcost:
 					messages.warning(request, 'Total cost changed, probably because somebody modified their registration during processing. Please verify the costs below, and retry.')
+					transaction.savepoint_rollback(savepoint)
 				else:
 					# Ok, actually generate an invoice for this one.
 					# Create a bulk payment record
@@ -1481,6 +1503,7 @@ def bulkpay(request, confname):
 					return HttpResponseRedirect('%s/' % bp.pk)
 			else:
 				messages.warning(request, 'An error occurred processing the registrations, please review the email addresses on the list')
+				transaction.savepoint_rollback(savepoint)
 
 		return render_conference_response(request, conference, 'confreg/bulkpay_list.html', {
 			'form': form,
