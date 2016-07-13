@@ -67,6 +67,15 @@ class InvoiceProcessor(object):
 			wl.enteredon = datetime.now()
 			wl.save()
 
+		# If the registration was attached to a discount code, remove it so that it is no
+		# longer counted against it. Also clear out the field, in case others want to use
+		# that discount code.
+		if reg.discountcode_set.exists():
+			reg.discountcode_set.clear()
+			reg.save()
+		if reg.vouchercode:
+			reg.vouchercode = ''
+			reg.save()
 
 	# Process an invoice being refunded. This means we need to unlink
 	# it from the registration, and also unconfirm the registration.
@@ -167,6 +176,16 @@ class BulkInvoiceProcessor(object):
 			# them for others to use at this point. (This will send an additional email to the
 			# attendee automatically)
 			expire_additional_options(r)
+
+			# If the registration was attached to a discount code, remove it so that it is no
+			# longer counted against it. Also clear out the field, in case others want to use
+			# that discount code.
+			if r.discountcode_set.exists():
+				r.discountcode_set.clear()
+				r.save()
+			if r.vouchercode:
+				r.vouchercode = ''
+				r.save()
 
 		# Now actually *remove* the bulk payment record completely,
 		# since it no longer contains anything interesting.
