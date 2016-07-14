@@ -429,7 +429,10 @@ class Speaker(models.Model):
 
 	@property
 	def email(self):
-		return self.user.email
+		if self.user:
+			return self.user.email
+		else:
+			return None
 
 	def has_abstract(self):
 		return len(self.abstract)>0
