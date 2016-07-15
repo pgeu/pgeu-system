@@ -16,6 +16,11 @@ from models import ConferenceFeedbackQuestion, Speaker_Photo
 from models import PrepaidVoucher, PrepaidBatch, BulkPayment, DiscountCode
 from models import PendingAdditionalOrder
 
+from selectable.forms.widgets import AutoCompleteSelectWidget, AutoCompleteSelectMultipleWidget
+from postgresqleu.accountinfo.lookups import UserLookup
+from postgresqleu.confreg.lookups import RegistrationLookup
+from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
+
 from util import notify_reg_confirmed
 
 from postgresqleu.confreg.dbimage import InlinePhotoWidget
@@ -67,26 +72,35 @@ class AdditionalOptionListFilter(admin.SimpleListFilter):
 #
 # General admin classes
 #
-class ConferenceAdminForm(forms.ModelForm):
+class ConferenceAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
 	class Meta:
 		model = Conference
 		exclude = []
+		widgets = {
+			'administrators': AutoCompleteSelectMultipleWidget(lookup_class=UserLookup),
+			'testers': AutoCompleteSelectMultipleWidget(lookup_class=UserLookup),
+			'talkvoters': AutoCompleteSelectMultipleWidget(lookup_class=UserLookup),
+			'staff': AutoCompleteSelectMultipleWidget(lookup_class=UserLookup),
+		}
 	accounting_object = forms.ChoiceField(choices=[], required=False)
 
 	def __init__(self, *args, **kwargs):
 		super(ConferenceAdminForm, self).__init__(*args, **kwargs)
 		self.fields['accounting_object'].choices = [('', '----'),] + [(o.name, o.name) for o in Object.objects.filter(active=True)]
 
+
 class ConferenceAdmin(admin.ModelAdmin):
 	form = ConferenceAdminForm
 	list_display = ('conferencename', 'active', 'startdate', 'enddate')
 	ordering = ('-startdate', )
-	filter_horizontal = ('administrators','testers','talkvoters', 'staff', )
 
-class ConferenceRegistrationForm(forms.ModelForm):
+class ConferenceRegistrationForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
 	class Meta:
 		model = ConferenceRegistration
 		exclude = []
+		widgets = {
+			'attendee': AutoCompleteSelectWidget(lookup_class=UserLookup),
+		}
 
 	def __init__(self, *args, **kwargs):
 		super(ConferenceRegistrationForm, self).__init__(*args, **kwargs)
@@ -383,10 +397,13 @@ class PrepaidVoucherInline(admin.TabularInline):
 	extra = 0
 	can_delete = False
 
-class PrepaidBatchAdminForm(forms.ModelForm):
+class PrepaidBatchAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
 	class Meta:
 		model = PrepaidBatch
 		exclude = []
+		widgets = {
+			'buyer': AutoCompleteSelectWidget(lookup_class=UserLookup),
+		}
 
 	def __init__(self, *args, **kwargs):
 		super(PrepaidBatchAdminForm, self).__init__(*args, **kwargs)
@@ -416,15 +433,19 @@ class PrepaidBatchAdmin(admin.ModelAdmin):
 		return inst.used
 	used_num.short_description = 'Used vouchers'
 
-class PrepaidVoucherAdminForm(forms.ModelForm):
+class PrepaidVoucherAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
 	class Meta:
 		model = PrepaidVoucher
 		exclude = []
+		widgets = {
+			'user': AutoCompleteSelectWidget(lookup_class=RegistrationLookup),
+		}
 
 	def __init__(self, *args, **kwargs):
 		super(PrepaidVoucherAdminForm, self).__init__(*args, **kwargs)
 		try:
 			self.fields['batch'].queryset = PrepaidBatch.objects.filter(conference=self.instance.conference)
+			self.fields['user'].widget.widget.update_query_parameters({'conference': self.instance.conference.id})
 			self.fields['user'].queryset = ConferenceRegistration.objects.filter(conference=self.instance.conference)
 		except Conference.DoesNotExist:
 			pass
@@ -444,14 +465,19 @@ class PrepaidVoucherAdmin(admin.ModelAdmin):
 			return "%s %s" % (obj.user.firstname, obj.user.lastname)
 		return None
 
-class DiscountCodeAdminForm(forms.ModelForm):
+class DiscountCodeAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
 	class Meta:
 		model = DiscountCode
 		exclude = []
+		widgets = {
+			'sponsor_rep': AutoCompleteSelectWidget(lookup_class=UserLookup),
+			'registrations': AutoCompleteSelectMultipleWidget(lookup_class=RegistrationLookup),
+		}
 
 	def __init__(self, *args, **kwargs):
 		super(DiscountCodeAdminForm, self).__init__(*args, **kwargs)
 		try:
+			self.fields['registrations'].widget.widget.update_query_parameters({'conference': self.instance.conference.id})
 			self.fields['registrations'].queryset = ConferenceRegistration.objects.filter(conference=self.instance.conference)
 			self.fields['requiresoption'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.instance.conference)
 			self.fields['requiresregtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference)
@@ -493,9 +519,17 @@ class DiscountCodeAdmin(admin.ModelAdmin):
 	list_display = ['code', 'conference', 'maxuses', 'count', ]
 	list_filter = ['conference', ]
 	form = DiscountCodeAdminForm
-	filter_horizontal = ('registrations',)
+
+class BulkPaymentAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
+	class Meta:
+		model = BulkPayment
+		exclude = []
+		widgets = {
+			'user': AutoCompleteSelectWidget(lookup_class=UserLookup),
+		}
 
 class BulkPaymentAdmin(admin.ModelAdmin):
+	form = BulkPaymentAdminForm
 	list_display = ['adminstring', 'conference', 'user', 'numregs', 'paidat', 'ispaid',]
 	list_filter = ['conference', ]
 

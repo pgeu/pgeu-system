@@ -6,6 +6,10 @@ from django import forms
 from django.core import urlresolvers
 from django.utils.safestring import mark_safe
 
+from selectable.forms.widgets import AutoCompleteSelectMultipleWidget
+from postgresqleu.accountinfo.lookups import UserLookup
+from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
+
 from models import SponsorshipContract, SponsorshipLevel, Sponsor
 from models import SponsorshipBenefit, SponsorClaimedBenefit
 
@@ -44,10 +48,13 @@ class SponsorshipLevelAdmin(admin.ModelAdmin):
 		return HttpResponseRedirect("/admin/confsponsor/sponsorshiplevel/{0}/copy".format(source_level[0].id))
 	copy_sponsorshiplevel.short_description = "Copy sponsorship level"
 
-class SponsorAdminForm(forms.ModelForm):
+class SponsorAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
 	class Meta:
 		model = Sponsor
 		exclude = []
+		widgets = {
+			'managers': AutoCompleteSelectMultipleWidget(lookup_class=UserLookup),
+		}
 
 	def __init__(self, *args, **kwargs):
 		super(SponsorAdminForm, self).__init__(*args, **kwargs)
@@ -78,7 +85,6 @@ class LevelListFilter(admin.SimpleListFilter):
 class SponsorAdmin(admin.ModelAdmin):
 	exclude = ('invoice', )
 	readonly_fields = ('invoice_link', )
-	filter_horizontal = ('managers', )
 	form = SponsorAdminForm
 	inlines = [SponsorClaimedBenefitInline, ]
 	list_filter = ['conference', LevelListFilter, ]

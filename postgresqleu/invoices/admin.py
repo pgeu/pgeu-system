@@ -2,13 +2,20 @@ from django.contrib import admin
 from django import forms
 from django.forms import ValidationError
 
+from selectable.forms.widgets import AutoCompleteSelectWidget
+from postgresqleu.accountinfo.lookups import UserLookup
+from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
+
 from models import Invoice, InvoiceLog, InvoiceProcessor, InvoicePaymentMethod
 from models import InvoiceRefund
 
-class InvoiceAdminForm(forms.ModelForm):
+class InvoiceAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
 	class Meta:
 		model = Invoice
 		exclude = []
+		widgets = {
+			'recipient_user': AutoCompleteSelectWidget(lookup_class=UserLookup),
+		}
 
 	def clean_recipient_email(self):
 		if self.cleaned_data.has_key('finalized'):
