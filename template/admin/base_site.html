@@ -4,3 +4,19 @@ Welcome to the PostgreSQL EU administration site. Shortcuts:
 <a href="/invoiceadmin/">Invoices</a> |
 <a href="/events/admin/">Conferences</a> |
 {%endblock%}
+{%block extrahead%}
+<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" type="text/css">
+<link href="/media/selectable/css/dj.selectable.css" type="text/css" media="all" rel="stylesheet">
+<script src="/media/jq/jquery-1.8.2.min.js"></script>
+<script src="/media/jq/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/media/selectable/js/jquery.dj.selectable.js"></script>
+<style>
+ul.selectable-deck li.selectable-deck-item a.selectable-deck-remove {
+   float: none;
+   margin-left: 10px;
+}
+div.related-widget-wrapper input.ui-autocomplete-input {
+   width: 20em;
+}
+</style>
+{%endblock%}
