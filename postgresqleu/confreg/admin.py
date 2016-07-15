@@ -12,8 +12,7 @@ from models import Conference, ConferenceRegistration, RegistrationType, Speaker
 from models import ConferenceSession, Track, Room, ConferenceSessionScheduleSlot
 from models import RegistrationClass, RegistrationDay, AttendeeMail
 from models import ShirtSize, ConferenceAdditionalOption
-from models import ConferenceSessionFeedback, ConferenceFeedbackQuestion
-from models import ConferenceFeedbackAnswer, Speaker_Photo
+from models import ConferenceFeedbackQuestion, Speaker_Photo
 from models import PrepaidVoucher, PrepaidBatch, BulkPayment, DiscountCode
 from models import PendingAdditionalOrder
 
@@ -177,12 +176,6 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 			return True
 		else:
 			return False
-
-class ConferenceSessionFeedbackAdmin(admin.ModelAdmin):
-	ordering = ['session']
-	list_display = ['conference', 'session', 'attendee', ]
-	list_filter = ['conference', ]
-	search_fields = ['session__title', ]
 
 class ConferenceSessionForm(forms.ModelForm):
 	class Meta:
@@ -383,9 +376,6 @@ class ConferenceFeedbackQuestionAdmin(admin.ModelAdmin):
 	list_display = ['conference', 'sortkey', 'newfieldset', 'question',]
 	list_filter = ['conference', ]
 
-class ConferenceFeedbackAnswerAdmin(admin.ModelAdmin):
-	list_filter = ['conference', ]
-
 class PrepaidVoucherInline(admin.TabularInline):
 	model = PrepaidVoucher
 	readonly_fields = ['user', 'usedate' ]
@@ -545,7 +535,6 @@ admin.site.register(RegistrationType, RegistrationTypeAdmin)
 admin.site.register(ShirtSize, ShirtsizeAdmin)
 admin.site.register(ConferenceRegistration, ConferenceRegistrationAdmin)
 admin.site.register(ConferenceSession, ConferenceSessionAdmin)
-admin.site.register(ConferenceSessionFeedback, ConferenceSessionFeedbackAdmin)
 admin.site.register(ConferenceSessionScheduleSlot, ConferenceSessionScheduleSlotAdmin)
 admin.site.register(Track, TrackAdmin)
 admin.site.register(Room, RoomAdmin)
@@ -553,7 +542,6 @@ admin.site.register(Speaker, SpeakerAdmin)
 admin.site.register(Speaker_Photo, SpeakerPhotoAdmin)
 admin.site.register(ConferenceAdditionalOption, ConferenceAdditionalOptionAdmin)
 admin.site.register(ConferenceFeedbackQuestion, ConferenceFeedbackQuestionAdmin)
-admin.site.register(ConferenceFeedbackAnswer, ConferenceFeedbackAnswerAdmin)
 admin.site.register(PrepaidBatch, PrepaidBatchAdmin)
 admin.site.register(PrepaidVoucher, PrepaidVoucherAdmin)
 admin.site.register(DiscountCode, DiscountCodeAdmin)
