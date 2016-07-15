@@ -214,6 +214,9 @@ urlpatterns.extend(
 		'document_root': '../media',
 	}),
 
+	# Selectable, only used on admin site for now
+	(r'^admin/selectable/', include('selectable.urls')),
+
 	# Admin site
     (r'^admin/', include(admin.site.urls)),
 

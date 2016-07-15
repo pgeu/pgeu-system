@@ -94,6 +94,7 @@ INSTALLED_APPS = [
 	'django_markwhat',
 	'django.contrib.staticfiles',
 	'django.contrib.humanize',
+	'postgresqleu.selectable',
 	'postgresqleu.static',
 	'postgresqleu.countries',
 	'postgresqleu.paypal',
