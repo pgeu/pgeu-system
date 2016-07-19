@@ -478,8 +478,8 @@ def _confirm_benefit(request, benefit):
 							 receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
 		send_simple_mail(conference.sponsoraddr,
 						 conference.sponsoraddr,
-						 u"Sponsorhip benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor),
-						 u"Sponsorhip benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor)
+						 u"Sponsorship benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor),
+						 u"Sponsorship benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor)
 						 )
 
 @login_required
