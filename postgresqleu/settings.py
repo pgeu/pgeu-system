@@ -63,14 +63,14 @@ TEMPLATE_LOADERS = (
 #     'django.template.loaders.eggs.load_template_source',
 )
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE_CLASSES = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'postgresqleu.util.middleware.FilterPersistMiddleware',
-)
+]
 
 CSRF_FAILURE_VIEW='postgresqleu.views.csrf_failure'
 
@@ -187,11 +187,18 @@ DATETIME_FORMAT="Y-m-d H:i:s"
 ENABLE_BRAINTREE=False
 BRAINTREE_SANDBOX=False
 
+# Set to a username and password in local_settings.py to enable global http auth
+GLOBAL_LOGIN_USER=''
+GLOBAL_LOGIN_PASSWORD=''
+
 # If there is a local_settings.py, let it override our settings
 try:
 	from local_settings import *
 except ImportError, e:
 	pass
+
+if GLOBAL_LOGIN_USER:
+	MIDDLEWARE_CLASSES.append('postgresqleu.util.middleware.GlobalLoginMiddleware')
 
 
 if ENABLE_BRAINTREE:

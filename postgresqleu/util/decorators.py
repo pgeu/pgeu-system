@@ -17,3 +17,12 @@ def user_passes_test_or_error(test_func):
 			return HttpResponseForbidden('Access denied')
 		return _wrapped_view
 	return decorator
+
+
+
+# Exclude an URL from global logins, if they are enabled at all
+def global_login_exempt(view_func):
+	def wrapped_view(*args, **kwargs):
+		return view_func(*args, **kwargs)
+	wrapped_view.global_login_exempt = True
+	return wraps(view_func, assigned=available_attrs(view_func))(wrapped_view)

@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 import base64
 
+from postgresqleu.util.decorators import global_login_exempt
 from postgresqleu.util.payment.adyen import calculate_signature
 from postgresqleu.util.payment.adyen import AdyenBanktransfer
 from postgresqleu.invoices.models import Invoice
@@ -91,7 +92,7 @@ def adyen_return_handler(request):
 			'result': request.GET['authResult'],
 			}, context_instance=RequestContext(request))
 
-
+@global_login_exempt
 @csrf_exempt
 def adyen_notify_handler(request):
 	# Handle asynchronous notifications from the Adyen payment platform

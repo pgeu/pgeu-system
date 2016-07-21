@@ -1,4 +1,7 @@
 from django import http
+from django.conf import settings
+
+import base64
 
 class FilterPersistMiddleware(object):
 	def process_request(self, request):
@@ -39,3 +42,30 @@ class FilterPersistMiddleware(object):
 					return None
 		else:
 			return None
+
+
+
+class GlobalLoginMiddleware(object):
+	def process_view(self, request, callback, callback_args, callback_kwargs):
+		if not settings.GLOBAL_LOGIN_USER or not settings.GLOBAL_LOGIN_PASSWORD:
+			# Not configured to do global auth
+			return None
+
+		if getattr(callback, 'global_login_exempt', False):
+			# No global auth on this specific url
+			return None
+
+		if 'HTTP_AUTHORIZATION' in request.META:
+			auth = request.META['HTTP_AUTHORIZATION'].split()
+			if len(auth) != 2:
+				return http.HttpResponseForbidden("Invalid authentication")
+			if auth[0].lower() == "basic":
+				user, pwd = base64.b64decode(auth[1]).split(':')
+				if user == settings.GLOBAL_LOGIN_USER and pwd == settings.GLOBAL_LOGIN_PASSWORD:
+					return None
+			# Else we fall through and request a login prompt
+
+		response = http.HttpResponse()
+		response.status_code = 401
+		response['WWW-Authenticate'] = 'Basic realm={0}'.format(settings.SITEBASE)
+		return response
