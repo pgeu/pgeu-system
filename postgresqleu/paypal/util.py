@@ -3,6 +3,7 @@ from django.conf import settings
 import urllib2
 from urllib import urlencode
 from urlparse import parse_qs
+from decimal import Decimal
 import itertools
 
 class PaypalAPI(object):
@@ -55,6 +56,12 @@ class PaypalAPI(object):
 			'TRANSACTIONID': transactionid,
 		})
 
+	def get_primary_balance(self):
+		r = self._api_call('GetBalance', {})
+		if r['L_CURRENCYCODE0'] != settings.CURRENCY_ISO:
+			raise Exception("Paypal primary currency reportsed as {0} instead of {1}!".format(
+				r['L_CURRENCYCODE0'], settings.CURRENCY_ISO))
+		return Decimal(r['L_AMT0'])
 
 	def refund_transaction(self, paypaltransid, amount, isfull, refundnote):
 		r = self._api_call('RefundTransaction', {
