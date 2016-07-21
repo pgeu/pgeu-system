@@ -46,4 +46,4 @@ This could be because some entry has been missed in the accouting
 that the system deosn't know about.
 
 Better go check manually!
-""")
+""".format(paypal_balance, accounting_balance))
