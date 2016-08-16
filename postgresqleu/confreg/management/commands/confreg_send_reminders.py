@@ -55,6 +55,7 @@ class Command(BaseCommand):
 			with transaction.atomic():
 				whatstr = StringIO()
 				self.remind_empty_submissions(whatstr, conference)
+				self.remind_empty_speakers(whatstr, conference)
 
 				if whatstr.tell():
 					send_simple_mail(conference.contactaddr,
@@ -197,3 +198,29 @@ class Command(BaseCommand):
 			sess.lastmodified = datetime.now()
 			sess.save()
 
+	def remind_empty_speakers(self, whatstr, conference):
+		# Get all the speakers with an active submission to this conference
+		# but no bio included, if they have not been touched in  3 days.
+
+		speakers = Speaker.objects.filter(conferencesession__conference=conference,
+										  conferencesession__status=0,
+										  lastmodified__lt=datetime.now()-timedelta(days=3),
+										  abstract='',
+									  ).distinct()
+
+		template = get_template('confreg/mail/speaker_empty_profile.txt')
+		for spk in speakers:
+			send_simple_mail(conference.contactaddr,
+							 spk.email,
+							 "Your submission to {0}".format(conference),
+							 template.render(Context({
+								 'conference': conference,
+								 'speaker': spk,
+								 'SITEBASE': settings.SITEBASE,
+							 })),
+							 sendername = conference.conferencename,
+							 receivername = spk.name,
+			)
+			spk.lastmodified = datetime.now()
+			spk.save()
+			whatstr.write(u"Reminded speaker {0} that their profile is empty\n".format(spk.name))
