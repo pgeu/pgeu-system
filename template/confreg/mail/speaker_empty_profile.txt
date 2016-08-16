@@ -5,7 +5,7 @@ but your speaker profile is empty. In particular, the bio field
 does not contain a description.
 
 For your session to be considered, please go to your speaker
-proflie at
+profile at
 {{SITEBASE}}/events/speakerprofile/{{conference.urlname}}/
 and fill out the bio.
 
