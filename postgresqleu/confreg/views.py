@@ -775,6 +775,7 @@ def speakerprofile(request, confurlname=None):
 	})
 
 @login_required
+@transaction.atomic
 def callforpapers(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	# This is called both for open and non-open call for papers, to let submitters view
