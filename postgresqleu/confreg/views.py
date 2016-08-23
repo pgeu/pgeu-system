@@ -1598,6 +1598,18 @@ def talkvote(request, confname):
 		# which have changed to notify.
 		for k,v in request.POST.items():
 			if k.startswith("stat_"):
+				# Explicitly forbid changing status to "approved". Status changes should go
+				# through pending when approving.
+				if int(v) == 1:
+					curs.execute("SELECT status, title FROM confreg_conferencesession WHERE id=%(id)s", {
+						'id': int(k[5:]),
+					})
+					prevstatus, t = curs.fetchone()
+					if prevstatus != 1:
+						messages.warning(request, u"Not changing status of session {0}: approved sessions should be changed to 'pending'. To override, use admin interface.".format(t))
+					continue
+
+				# Else update the status as requested
 				curs.execute("UPDATE confreg_conferencesession SET status=%(status)s WHERE id=%(id)s AND status != %(status)s RETURNING title", {
 					'status': int(v),
 					'id': int(k[5:]),
