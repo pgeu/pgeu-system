@@ -1594,29 +1594,6 @@ def talkvote(request, confname):
 				for k,v in request.POST.items() if k.startswith("sv_") and (int(v)>0 or request.POST['tc_%s' % k[3:]])
 				])
 
-		# Change status if there is any status to change. Yes, we do an ugly loop so we can trap
-		# which have changed to notify.
-		for k,v in request.POST.items():
-			if k.startswith("stat_"):
-				# Explicitly forbid changing status to "approved". Status changes should go
-				# through pending when approving.
-				if int(v) == 1:
-					curs.execute("SELECT status, title FROM confreg_conferencesession WHERE id=%(id)s", {
-						'id': int(k[5:]),
-					})
-					prevstatus, t = curs.fetchone()
-					if prevstatus != 1:
-						messages.warning(request, u"Not changing status of session {0}: approved sessions should be changed to 'pending'. To override, use admin interface.".format(t))
-					continue
-
-				# Else update the status as requested
-				curs.execute("UPDATE confreg_conferencesession SET status=%(status)s WHERE id=%(id)s AND status != %(status)s RETURNING title", {
-					'status': int(v),
-					'id': int(k[5:]),
-				})
-				for t, in curs.fetchall():
-					messages.info(request, u"Changed status of session {0}".format(t))
-
 		return HttpResponseRedirect(".")
 
 	order = ""
@@ -1686,6 +1663,27 @@ def talkvote(request, confname):
 			'isadmin': isadmin,
 		    'status_choices': STATUS_CHOICES,
 			}, context_instance=RequestContext(request))
+
+@login_required
+@transaction.atomic
+def talkvote_status(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+	if not conference.talkvoters.filter(pk=request.user.id):
+		raise Http404('You are not a talk voter for this conference!')
+
+	isadmin = conference.administrators.filter(pk=request.user.id).exists()
+	if not isadmin:
+		raise Http404('Only admins can change the status')
+
+	if request.method!='POST':
+		raise Http404('Can only use POST')
+
+	session = get_object_or_404(ConferenceSession, conference=conference, id=request.POST['sessionid'])
+	session.status = int(request.POST['newstatus'])
+	session.save()
+	return HttpResponse("{0};{1}".format(get_status_string(session.status),
+										 session.status!=session.lastnotifiedstatus and 1 or 0,
+									 ),	content_type='text/plain')
 
 @login_required
 @csrf_exempt

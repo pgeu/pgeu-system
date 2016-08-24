@@ -14,6 +14,14 @@ $(function() {
       height: 600,
     });
   });
+
+  $('#dlgStatus').dialog({
+     autoOpen: false,
+     modal: true,
+     resizable: false,
+  });
+
+  $('#ajaxStatus').hide();
 });
 
 function showDialog(id, title) {
@@ -24,6 +32,58 @@ function showDialog(id, title) {
          'title': title,
       }).dialog('open');
    }
+}
+
+var buttonoptions = {
+{%for o in status_choices%}
+   {{o.0}}: '{{o.1}}',
+{%endfor%}
+};
+var buttonoptions_reverse = {
+{%for o in status_choices%}
+   '{{o.1}}': {{o.0}},
+{%endfor%}
+};
+
+function doUpdateStatus(id, statustext) {
+   statusval = buttonoptions_reverse[statustext];
+   $.post('changestatus/',
+      {
+         'csrfmiddlewaretoken': '{{csrf_token}}',
+         'sessionid': id,
+         'newstatus': statusval,
+      },
+      function(data) {
+         var pieces = data.split(';');
+         $('#ajaxStatus').text('Changed status to ' + pieces[0]).fadeIn(500).delay(1000).fadeOut(500);
+         $('#statusstr' + id).text(pieces[0]).css('background-color', pieces[1]=='1'?'yellow':'white');
+      }
+   ).fail(function() {
+      alert('AJAX call failed');
+   });
+}
+
+function changeStatus(id) {
+   var currentstatus = buttonoptions_reverse[$('#statusstr' + id).text()];
+   var buttons = {};
+   for (var k in buttonoptions) {
+      if (k != currentstatus && k != 1) {
+         buttons[buttonoptions[k]] = function(event) {
+            doUpdateStatus(id, $(event.target).text());
+            $(this).dialog("close");
+         };
+      }
+   }
+   buttons['Cancel'] = function() {
+           $( this ).dialog( "close" );
+   };
+
+   $('#dlgStatus').dialog('option', {
+      'title': 'Change status',
+      'modal': true,
+   }).dialog('option', {
+     buttons: buttons,
+   }).dialog('open');
 }
 </script>
 <style>
@@ -42,6 +102,8 @@ width: 100%;
 {%endblock%}
 {%block layoutblock%}
 <h1>Vote for sessions - {{conference}}</h1>
+
+<div id="ajaxStatus" class="alert alert-success" style="position: fixed; width: 100%;opacity: .8; text-align: center; font-weight: bold; font-size: 1.2em;">Nothing Yet</div>
 
 <form method="post" action=".">{% csrf_token %}
 <table class="table table-bordered table-condensed">
@@ -79,13 +141,7 @@ width: 100%;
     </div>
    </td>
    {%if isadmin%}
-   <td{%if not s.statusid = s.laststatusid %} bgcolor="yellow"{%endif%}>
-     <select name="stat_{{s.id}}">
-       {%for opt in status_choices%}
-       <option value="{{opt.0}}"{%if opt.0 = s.statusid %} SELECTED{%endif%}>{{opt.1}}</option>
-       {%endfor%}
-     </select>
-   </td>
+   <td{%if not s.statusid = s.laststatusid %} bgcolor="yellow"{%endif%} onClick="changeStatus({{s.id}})" class="dlgClickable" id="statusstr{{s.id}}">{{s.status}}</td>
 {%else%}
    <td>{{s.status}}</td>
 {%endif%}
@@ -117,5 +173,8 @@ width: 100%;
   to be sent!
 </p>
 {%endif%}
+
+<div id="dlgStatus">
+</div>
 
 {%endblock%}
