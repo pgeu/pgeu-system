@@ -42,13 +42,6 @@ width: 100%;
 {%endblock%}
 {%block layoutblock%}
 <h1>Vote for sessions - {{conference}}</h1>
-{% if messages %}
-<ul style="background-color: yellow;">
-    {% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
 
 <form method="post" action=".">{% csrf_token %}
 <table class="table table-bordered table-condensed">
