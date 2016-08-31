@@ -6,6 +6,10 @@
 tr.error {
    background-color: #ffb6b6;
 }
+div.benefitClaimPrompt {
+   color: red;
+   font-weight: bold;
+}
 </style>
 {%endblock%}
 {%block layoutblock%}
@@ -22,7 +26,7 @@ Please fill out this form to claim the benefit.
 </p>
 
 {%if benefit.claimprompt%}
-<div>
+<div class="benefitClaimPrompt">
 {{benefit.claimprompt|markdown}}
 </div>
 {%endif%}
