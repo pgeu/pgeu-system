@@ -638,7 +638,7 @@ class DiscountCode(models.Model):
 	validuntil = models.DateField(blank=True, null=True)
 	maxuses = models.IntegerField(null=False, blank=False, default=0)
 	requiresoption = models.ManyToManyField(ConferenceAdditionalOption, blank=True, help_text='Requires this option to be set in order to be valid')
-	requiresregtype = models.ManyToManyField(RegistrationType, blank=True, help_text='Rrequire a specific registration type to be valid')
+	requiresregtype = models.ManyToManyField(RegistrationType, blank=True, help_text='Require a specific registration type to be valid')
 
 	registrations = models.ManyToManyField(ConferenceRegistration, blank=True)
 
