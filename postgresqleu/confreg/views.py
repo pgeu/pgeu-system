@@ -1226,6 +1226,34 @@ def invoice(request, confname, regid):
 			})
 
 @login_required
+@transaction.atomic
+def invoice_cancel(request, confname, regid):
+	# Show an optional cancel of this invoice
+	conference = get_object_or_404(Conference, urlname=confname)
+	reg = get_object_or_404(ConferenceRegistration, id=regid, attendee=request.user, conference=conference)
+
+	if not reg.invoice:
+		# We should never get here if we don't have an invoice. If it does
+		# happen, just redirect back.
+		return HttpResponseRedirect('../../../')
+	if reg.payconfirmedat:
+		# If the invoice is already paid while we were waiting, don't allow
+		# cancellation any more.
+		return HttpResponseRedirect('../../../')
+
+	if request.method == 'POST':
+		if request.POST['submit'].find('Cancel invoice') >= 0:
+			manager = InvoiceManager()
+			manager.cancel_invoice(reg.invoice, u"User {0} requested cancellation".format(request.user))
+			return HttpResponseRedirect('../../../')
+		else:
+			return HttpResponseRedirect('../')
+
+	return render_conference_response(request, conference, 'confreg/invoicecancel.html', {
+		'reg': reg,
+	})
+
+@login_required
 def attendee_mail(request, confname, mailid):
 	conference = get_object_or_404(Conference, urlname=confname)
 	reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
