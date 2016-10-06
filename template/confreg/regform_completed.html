@@ -32,6 +32,13 @@ between each registration to avoid conflicts.
   An invoice has been created for your registration, but we have not yet
   received a payment for it.
   </p>
+  <p>
+    If there is something wrong on this invoice, or if it was generated
+    in error (for example in case the registration was supposed to be part
+    of a bulk registration paid for by somebody else), you can
+    <a href="invoice/{{reg.id}}/cancel/">cancel the invoice</a> and it will be possible
+    to make modifications to the registration again.
+  </p>
   {%include "invoices/userinvoice_spec.html"%}
   <p>
     <b>Note!</b> Your registration is <b>not</b> confirmed until the invoice
