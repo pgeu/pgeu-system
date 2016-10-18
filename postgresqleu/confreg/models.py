@@ -165,6 +165,10 @@ class Conference(models.Model):
 
 		return False
 
+	@property
+	def pending_waitlist(self):
+		return RegistrationWaitlistEntry.objects.filter(registration__conference=self, offeredon__isnull=True).exists()
+
 class RegistrationClass(models.Model):
 	conference = models.ForeignKey(Conference, null=False)
 	regclass = models.CharField(max_length=64, null=False, blank=False)
