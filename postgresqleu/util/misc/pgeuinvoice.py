@@ -6,6 +6,8 @@ from reportlab.lib.units import cm
 from reportlab.lib import colors
 from reportlab.platypus.tables import Table, TableStyle
 from reportlab.platypus.flowables import Image
+from reportlab.pdfbase.pdfmetrics import registerFont
+from reportlab.pdfbase.ttfonts import TTFont
 import cStringIO as StringIO
 
 class PDFBase(object):
@@ -24,6 +26,9 @@ class PDFBase(object):
 		self.canvas.setSubject("PostgreSQL Europe Invoice #%s" % self.invoicenum)
 		self.canvas.setAuthor("PostgreSQL Europe")
 		self.canvas._doc.info.producer = "PostgreSQL Europe Invoicing System"
+
+		registerFont(TTFont('DejaVu Serif', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf"))
+		registerFont(TTFont('DejaVu Serif Italic', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif-Italic.ttf"))
 
 	def trimstring(self, s, maxlen, fontname, fontsize):
 		while len(s) > 5:
@@ -51,7 +56,7 @@ class PDFBase(object):
 		im.drawOn(self.canvas, 2*cm, 25*cm)
 		t = self.canvas.beginText()
 		t.setFillColorRGB(0,0,0,0)
-		t.setFont("Times-Roman", 10)
+		t.setFont("DejaVu Serif", 9)
 		t.setTextOrigin(6*cm, 27.5*cm)
 		self.textlines(t,"""PostgreSQL Europe
 Carpeaux Diem
@@ -63,7 +68,7 @@ France
 
 		t = self.canvas.beginText()
 		t.setTextOrigin(2*cm, 23*cm)
-		t.setFont("Times-Roman", 10)
+		t.setFont("DejaVu Serif", 9)
 		t.textLine("")
 		self.textlines(t, """
 Your contact: Guillaume Lelarge
@@ -74,9 +79,9 @@ E-mail: treasurer@postgresql.eu
 
 		t = self.canvas.beginText()
 		t.setTextOrigin(11*cm, 23*cm)
-		t.setFont("Times-Italic", 11)
+		t.setFont("DejaVu Serif Italic", 10)
 		t.textLine("To:")
-		t.setFont("Times-Roman", 11)
+		t.setFont("DejaVu Serif", 10)
 		self.textlines(t, self.recipient)
 		self.canvas.drawText(t)
 
@@ -132,7 +137,7 @@ class PDFInvoice(PDFBase):
 			else:
 				tbldata = [["Item - continued from page %s" % pagenum, "Price", "count", "amount"], ]
 
-			tbldata.extend([(self.trimstring(title, 10.5*cm, "Times-Roman", 10),
+			tbldata.extend([(self.trimstring(title, 10.5*cm, "DejaVu Serif", 9),
 							 "%.2f %s" % (cost, self.currency),
 							 count,
 							 "%.2f %s" % ((cost * count), self.currency))
