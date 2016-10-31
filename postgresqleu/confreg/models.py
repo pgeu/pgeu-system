@@ -62,6 +62,7 @@ class Conference(models.Model):
 	startdate = models.DateField(blank=False, null=False)
 	enddate = models.DateField(blank=False, null=False)
 	location = models.CharField(max_length=128, blank=False, null=False)
+	timediff = models.IntegerField(null=False, blank=False, default=0)
 	contactaddr = models.EmailField(blank=False,null=False)
 	sponsoraddr = models.EmailField(blank=False,null=False)
 	active = models.BooleanField(blank=False,null=False,default=True, verbose_name="Registration open")
@@ -542,11 +543,11 @@ class ConferenceSession(models.Model):
 
 	@property
 	def utcstarttime(self):
-		return self._utc_time(self.starttime)
+		return self._utc_time(self.starttime + datetime.timedelta(hours=self.conference.timediff))
 
 	@property
 	def utcendtime(self):
-		return self._utc_time(self.endtime)
+		return self._utc_time(self.endtime + datetime.timedelta(hours=self.conference.timediff))
 
 	def _utc_time(self, time):
 		if not hasattr(self, '_localtz'):
