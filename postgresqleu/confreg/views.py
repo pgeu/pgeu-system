@@ -694,7 +694,7 @@ def schedule_ical(request, confname):
 
 	if not conference.scheduleactive:
 		# Not open. But we can't really render an error, so render a
-		# completely empty sesison list instead
+		# completely empty session list instead
 		sessions = None
 	else:
 		sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).filter(starttime__isnull=False).order_by('starttime')
