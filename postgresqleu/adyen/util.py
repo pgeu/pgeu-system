@@ -57,10 +57,27 @@ def process_authorization(notification):
 
 			# For manual payments, we can only create an open-ended entry
 			# in the accounting
-			accstr = "Manual Adyen payment: %s (%s)" % (notification.merchantReference, notification.pspReference)
-			accrows = [
-				(settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, accstr, trans.amount, None),
+
+			# If the amount was for less than one euro (or dollar), the
+			# rounded value is zero. In this case, create a special
+			# accounting entry of one euro with a warning (yes, this is
+			# ugly, but it Should Never HappeN (TM))
+			if trans.amount == 0:
+				accstr = "FIXME: ZERO SUM Manual Adyen Payment %s (%s)" % (notification.merchantReference, notification.pspReference)
+				accrows = [
+					(settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, accstr, 1, None),
 				]
+				send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+								 settings.ADYEN_NOTIFICATION_RECEIVER,
+								 'Zero Sum Adyen payment registered',
+								 "An Adyen payment of zero was authorized on the platform.\nThis most likely means it was less than %s1 and rounded down.\nReference: %s\n\nGo in and fix it manually in the accounting system!\n" % (settings.CURRENCY_ABBREV, notification.pspReference))
+
+			else:
+				accstr = "Manual Adyen payment: %s (%s)" % (notification.merchantReference, notification.pspReference)
+				accrows = [
+					(settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, accstr, trans.amount, None),
+				]
+
 			create_accounting_entry(date.today(), accrows, True, urls)
 			return
 
