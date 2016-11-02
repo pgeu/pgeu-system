@@ -61,7 +61,7 @@ def process_authorization(notification):
 			# If the amount was for less than one euro (or dollar), the
 			# rounded value is zero. In this case, create a special
 			# accounting entry of one euro with a warning (yes, this is
-			# ugly, but it Should Never HappeN (TM))
+			# ugly, but it Should Never Happen (TM))
 			if trans.amount == 0:
 				accstr = "FIXME: ZERO SUM Manual Adyen Payment %s (%s)" % (notification.merchantReference, notification.pspReference)
 				accrows = [
