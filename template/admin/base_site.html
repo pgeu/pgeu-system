@@ -1,6 +1,10 @@
 {%extends "admin/base.html"%}
 {%block branding%}
-Welcome to the PostgreSQL EU administration site. Shortcuts:
+{%if is_debugging%}
+PGEU CODEBASE IN DEBUG MODE!
+{%else%}
+Welcome to the PostgreSQL EU administration site. {%endif%}
+Shortcuts:
 <a href="/invoiceadmin/">Invoices</a> |
 <a href="/events/admin/">Conferences</a> |
 {%endblock%}
@@ -18,5 +22,10 @@ ul.selectable-deck li.selectable-deck-item a.selectable-deck-remove {
 div.related-widget-wrapper input.ui-autocomplete-input {
    width: 20em;
 }
+{%if is_debugging%}
+#header {
+   background: red;
+}
+{%endif%}
 </style>
 {%endblock%}

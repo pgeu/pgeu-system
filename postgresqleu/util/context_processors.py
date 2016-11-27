@@ -9,4 +9,5 @@ def settings_context(request):
 	return {
 		'currency_abbrev': settings.CURRENCY_ABBREV,
 		'currency_symbol': settings.CURRENCY_SYMBOL,
+		'is_debugging': settings.DEBUG,
 	}
