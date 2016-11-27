@@ -25,7 +25,7 @@ class Notification(models.Model):
 	paymentMethod = models.CharField(max_length=50, null=False, blank=True)
 	# We ignore the operations field, we're never using it
 	reason = models.CharField(max_length=1000, null=False, blank=True)
-	amount = models.IntegerField(null=True)
+	amount = models.DecimalField(decimal_places=2, max_digits=20, null=True)
 
 	confirmed = models.BooleanField(null=False, default=False)
 
@@ -49,7 +49,7 @@ class TransactionStatus(models.Model):
 	authorizedat = models.DateTimeField(null=False, blank=False)
 	capturedat = models.DateTimeField(null=True, blank=True)
 	settledat = models.DateTimeField(null=True, blank=True)
-	amount = models.IntegerField(null=False)
+	amount = models.DecimalField(decimal_places=2, max_digits=20, null=False)
 	settledamount = models.DecimalField(null=True, decimal_places=2, max_digits=20)
 	method = models.CharField(max_length=100, null=True, blank=True)
 	notes = models.CharField(max_length=1000, null=True, blank=True)
@@ -65,7 +65,7 @@ class Refund(models.Model):
 	receivedat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
 	notification = models.ForeignKey(Notification, null=False, blank=False)
 	transaction = models.OneToOneField(TransactionStatus)
-	refund_amount = models.IntegerField(null=False)
+	refund_amount = models.DecimalField(decimal_places=2, max_digits=20, null=False)
 
 	def __unicode__(self):
 		return unicode(self.refund_amount)

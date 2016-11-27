@@ -3,6 +3,7 @@ from django.core import urlresolvers
 from django.db import transaction
 
 from datetime import datetime, date
+from decimal import Decimal
 
 import json
 import urllib2
@@ -58,25 +59,10 @@ def process_authorization(notification):
 			# For manual payments, we can only create an open-ended entry
 			# in the accounting
 
-			# If the amount was for less than one euro (or dollar), the
-			# rounded value is zero. In this case, create a special
-			# accounting entry of one euro with a warning (yes, this is
-			# ugly, but it Should Never Happen (TM))
-			if trans.amount == 0:
-				accstr = "FIXME: ZERO SUM Manual Adyen Payment %s (%s)" % (notification.merchantReference, notification.pspReference)
-				accrows = [
-					(settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, accstr, 1, None),
-				]
-				send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-								 settings.ADYEN_NOTIFICATION_RECEIVER,
-								 'Zero Sum Adyen payment registered',
-								 "An Adyen payment of zero was authorized on the platform.\nThis most likely means it was less than %s1 and rounded down.\nReference: %s\n\nGo in and fix it manually in the accounting system!\n" % (settings.CURRENCY_ABBREV, notification.pspReference))
-
-			else:
-				accstr = "Manual Adyen payment: %s (%s)" % (notification.merchantReference, notification.pspReference)
-				accrows = [
-					(settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, accstr, trans.amount, None),
-				]
+			accstr = "Manual Adyen payment: %s (%s)" % (notification.merchantReference, notification.pspReference)
+			accrows = [
+				(settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, accstr, trans.amount, None),
+			]
 
 			create_accounting_entry(date.today(), accrows, True, urls)
 			return
@@ -208,29 +194,12 @@ def process_refund(notification):
 				# We expect this happens so seldom that we can just deal with
 				# manually finishing off the accounting records.
 
-				# If the amount was for less than one euro (or dollar), the
-				# rounded value is zero. In this case, create a special
-				# accounting entry of one euro with a warning (yes, this is
-				# ugly, but it Should Never Happen (TM))
-				if refund.refund_amount == 0:
-					accrows = [
-						(settings.ACCOUNTING_ADYEN_REFUNDS_ACCOUNT,
-						 "FIXME: ZERO SUM Refund of %s (transaction %s) "  % (ts.notes, ts.pspReference),
-						 -1,
-						 None),
-					]
-					send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-									 settings.ADYEN_NOTIFICATION_RECEIVER,
-									 'Zero Sum Adyen refund registered',
-									 "An Adyen refund of zero was received.\nThis most likely means it was less than %s1 and rounded down.\nReference: %s\n\nGo in and fix it manually in the accounting system!\n" % (settings.CURRENCY_ABBREV, notification.pspReference))
-
-				else:
-					accrows = [
-						(settings.ACCOUNTING_ADYEN_REFUNDS_ACCOUNT,
-						 "Refund of %s (transaction %s) "  % (ts.notes, ts.pspReference),
-						 -refund.refund_amount,
-						 None),
-					]
+				accrows = [
+					(settings.ACCOUNTING_ADYEN_REFUNDS_ACCOUNT,
+					 "Refund of %s (transaction %s) "  % (ts.notes, ts.pspReference),
+					 -refund.refund_amount,
+					 None),
+				]
 
 				send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 								 settings.ADYEN_NOTIFICATION_RECEIVER,
@@ -360,7 +329,7 @@ def process_raw_adyen_notification(raw, POST):
 			notification.paymentMethod = POST['paymentMethod']
 			notification.reason = POST['reason']
 			try:
-				notification.amount = int(POST['value'])/100 # We only deal in whole euros
+				notification.amount = Decimal(POST['value'])/100
 			except:
 				# Invalid amount, set to -1
 				AdyenLog(pspReference=notification.pspReference, message='Received invalid amount %s' % POST['value'], error=True).save()
