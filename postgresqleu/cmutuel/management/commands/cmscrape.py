@@ -152,8 +152,7 @@ class Command(BaseCommand):
 		})
 		if c.getinfo(pycurl.RESPONSE_CODE) != 200:
 			raise CommandException("Supposed to receive 200, got %s" % c.getinfo(c.RESPONSE_CODE))
-		with open('csv.csv', 'w') as f:
-			f.write(s.getvalue())
+
 		reader = csv.reader(s.getvalue().splitlines(), delimiter=';')
 
 		# Write everything to the database
