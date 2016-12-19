@@ -80,25 +80,22 @@ class Command(BaseCommand):
 		curl = CurlWrapper()
 
 		if verbose: self.stdout.write("Logging in...")
-		(c,s) = curl.post("https://www.creditmutuel.fr/cmcee/en/identification/default.cgi",
-				  {
-					  '_cm_app': 'SITFIN',
-					  '_cm_idtype': '',
-					  '_cm_langue': 'en',
+		(c,s) = curl.post("https://www.creditmutuel.fr/en/authentification.html", {
 					  '_cm_user': settings.CM_USER_ACCOUNT,
 					  '_cm_pwd': settings.CM_USER_PASSWORD,
+					  'flag': 'password',
 				  })
 		if c.getinfo(pycurl.RESPONSE_CODE) != 302:
 			raise CommandError("Supposed to receive 302, got %s" % c.getinfo(c.RESPONSE_CODE))
-		if c.getinfo(pycurl.REDIRECT_URL) != 'https://www.creditmutuel.fr/cmidf/en/banque/situation_financiere.cgi':
+		if c.getinfo(pycurl.REDIRECT_URL) != 'https://www.creditmutuel.fr/en/banque/pageaccueil.html':
 			raise CommandError("Received unexpected redirect to '%s'" % c.getinfo(pycurl.REDIRECT_URL))
 
-		# Go to the "situation financiere" to pick up more cookies (SessionStart and SessionTimeout)
-		(c,s) = curl.get('https://www.creditmutuel.fr/cmidf/en/banque/situation_financiere.cgi')
+		# Get this downloaded page to fetch further cookies
+		(c,s) = curl.get('https://www.creditmutuel.fr/en/banque/pageaccueil.html')
 		if c.getinfo(pycurl.RESPONSE_CODE) != 302:
-			raise CommandError("Supposed to receive 302, got %s" % c.getinfo(c.RESPONSE_CODE))
-		if c.getinfo(pycurl.REDIRECT_URL) != 'https://www.creditmutuel.fr/cmidf/en/banque/situation_financiere.cgi' and c.getinfo(pycurl.REDIRECT_URL) != 'https://www.creditmutuel.fr/cmidf/en/banque/homepage_dispatcher.cgi':
-			raise CommandError("Received unexpected redirect to '%s'" % c.getinfo(pycurl.REDIRECT_URL))
+			raise CommandError("Supposed to receive 302 for pageaccueil.html, got %s" % c.getinfo(c.RESPONSE_CODE))
+		if c.getinfo(pycurl.REDIRECT_URL) != 'https://www.creditmutuel.fr/en/banque/homepage_dispatcher.cgi':
+			raise CommandError("Received unexpected redirect from pageaccueil.html to '%s'" % c.getinfo(pycurl.REDIRECT_URL))
 
 		# Download the form
 		if verbose: self.stdout.write("Downloading form...")
