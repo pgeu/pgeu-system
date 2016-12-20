@@ -91,7 +91,7 @@ class ConferenceAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
 
 class ConferenceAdmin(admin.ModelAdmin):
 	form = ConferenceAdminForm
-	list_display = ('conferencename', 'active', 'startdate', 'enddate')
+	list_display = ('conferencename', 'active', 'callforpapersopen', 'callforsponsorsopen', 'feedbackopen', 'startdate', 'enddate')
 	ordering = ('-startdate', )
 
 class ConferenceRegistrationForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
