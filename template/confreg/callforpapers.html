@@ -2,6 +2,13 @@
 {%block title%}Call for Papers - {{conference}}{%endblock%}
 {%block content%}
 <h1>Call for Papers - {{conference}}</h1>
+{%if messages%}
+<div class="confregmessage">
+{%for m in messages%}
+{{m}}<br/>
+{%endfor%}
+</div>
+{%endif%}
 
 {%if conference.callforpapersopen%}
 <p>
@@ -33,12 +40,8 @@ You have made the following submissions to this conference:
 {%if conference.callforpapersopen or is_tester%}
 <h2>New submission</h2>
 <p>
-To create a new submission, enter the title here:
+  Click <a href="new/">here</a> to make a new submission to {{conference}}.
 </p>
-<form method="post" action="." class="pgeucfpnewform">{% csrf_token %}
- {{form.title}}{% if form.title.errors %}{{ form.title.errors}}{% endif %}<br/>
- <input type="submit" value="New submission"/>
-</form>
 
 <h2>Remove submission</h2>
 <p>

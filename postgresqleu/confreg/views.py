@@ -788,43 +788,12 @@ def callforpapers(request, confname):
 
 	try:
 		speaker = Speaker.objects.get(user=request.user)
-		sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker)
+		sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker).order_by('title')
 	except Speaker.DoesNotExist:
 		sessions = []
 
-	if request.method == 'POST':
-		# Submission can of course only happen if the cfp is open. Normally the form isn't even
-		# rendered if it's not open, but if someone "hacks" it or just has an old browser tab
-		# open...
-		if not conference.callforpapersopen and not is_tester:
-			raise Http404('This conference has no open call for papers')
-
-		form =CallForPapersSubmissionForm(data=request.POST)
-		if form.is_valid():
-			# Find the speaker, or create
-			speaker, created = Speaker.objects.get_or_create(user=request.user)
-			if created:
-				speaker.fullname = request.user.first_name
-				speaker.save()
-			s = ConferenceSession(conference=conference,
-								  title=form.cleaned_data['title'],
-								  status=0,
-								  initialsubmit=datetime.now())
-			s.save()
-
-			# Add speaker (must be saved before we can do that)
-			s.speaker.add(speaker)
-			s.save()
-
-			# Redirect to the newly created session
-			return HttpResponseRedirect("%s/" % s.id)
-	else:
-		form = CallForPapersSubmissionForm()
-
-
 	return render_conference_response(request, conference, 'cfp', 'confreg/callforpapers.html', {
 			'sessions': sessions,
-			'form': form,
 			'is_tester': is_tester,
 	})
 
@@ -834,12 +803,25 @@ def callforpapers_edit(request, confname, sessionid):
 	conference = get_object_or_404(Conference, urlname=confname)
 	is_tester = conference.testers.filter(pk=request.user.id).exists()
 
-	# Find users speaker record (should always exist when we get this far)
-	speaker = get_object_or_404(Speaker, user=request.user)
+	if sessionid == 'new':
+		if not (conference.callforpapersopen or is_tester):
+			# Should never happen, so just redirect the user
+			return HttpResponseRedirect("../")
 
-	# Find the session record (should always exist when we get this far)
-	session = get_object_or_404(ConferenceSession, conference=conference,
-								speaker=speaker, pk=sessionid)
+		# Create speaker record if necessary
+		speaker, created = Speaker.objects.get_or_create(user=request.user)
+		if created:
+			speaker.fullname = request.user.first_name
+			speaker.save()
+
+		session = ConferenceSession(conference=conference, status=0, initialsubmit=datetime.now())
+	else:
+		# Find users speaker record (should always exist when we get this far)
+		speaker = get_object_or_404(Speaker, user=request.user)
+
+		# Find the session record (should always exist when we get this far)
+		session = get_object_or_404(ConferenceSession, conference=conference,
+									speaker=speaker, pk=sessionid)
 
 	# If the user is a tester, it overrides the callforpapersopen check
 	isopen = conference.callforpapersopen or is_tester
@@ -878,10 +860,13 @@ def callforpapers_edit(request, confname, sessionid):
 			'feedbackfields': [f.replace('_',' ').title() for f in feedback_fields],
 			})
 
-	SpeakerFormset = formsets.formset_factory(CallForPapersSpeakerForm, can_delete=True)
+	SpeakerFormset = formsets.formset_factory(CallForPapersSpeakerForm, can_delete=True, extra=1)
 
-	# Get all additional speakers (that means all speakers who isn't the current one)
-	speaker_initialdata = [{'email': s.user.email} for s in session.speaker.exclude(user=request.user)]
+	if sessionid != 'new':
+		# Get all additional speakers (that means all speakers who isn't the current one)
+		speaker_initialdata = [{'email': s.user.email} for s in session.speaker.exclude(user=request.user)]
+	else:
+		speaker_initialdata = None
 
 	savedok = False
 
@@ -891,6 +876,9 @@ def callforpapers_edit(request, confname, sessionid):
 		speaker_formset = SpeakerFormset(data=request.POST, initial=speaker_initialdata, prefix="extra_speakers")
 		if form.is_valid() and speaker_formset.is_valid():
 			form.save()
+			# Explicitly add the submitter as a speaker
+			session.speaker.add(speaker)
+
 			if speaker_formset.has_changed():
 				# Additional speaker either added or removed
 				for f in speaker_formset:
@@ -904,7 +892,8 @@ def callforpapers_edit(request, confname, sessionid):
 						session.speaker.remove(spk)
 					else:
 						session.speaker.add(spk)
-			savedok = True
+			messages.info(request, "Your session '%s' has been saved!" % session.title)
+			return HttpResponseRedirect("../")
 	else:
 		# GET --> render empty form
 		form = CallForPapersForm(instance=session)
@@ -914,7 +903,6 @@ def callforpapers_edit(request, confname, sessionid):
 			'form': form,
 			'speaker_formset': speaker_formset,
 			'session': session,
-			'savedok': savedok,
 	})
 
 @login_required
