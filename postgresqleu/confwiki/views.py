@@ -38,7 +38,7 @@ def wikipage(request, confurl, wikiurl):
 	# edit (so do we show the button?)
 	editable = page.publicedit or page.editor_attendee.filter(id=reg.id).exists() or page.editor_regtype.filter(id=reg.regtype.id).exists()
 
-	return render_conference_response(request, conference, 'confwiki/wikipage.html', {
+	return render_conference_response(request, conference, 'wiki', 'confwiki/wikipage.html', {
 		'page': page,
 		'editable': editable,
 		'is_subscribed': is_subscribed,
@@ -101,7 +101,7 @@ def wikipage_history(request, confurl, wikiurl):
 	else:
 		diff = ''
 
-	return render_conference_response(request, conference, 'confwiki/wikipage_history.html', {
+	return render_conference_response(request, conference, 'wiki', 'confwiki/wikipage_history.html', {
 		'page': page,
 		'diff': diff,
 		'fromid': fromid,
@@ -170,7 +170,7 @@ def wikipage_edit(request, confurl, wikiurl):
 	else:
 		form = WikipageEditForm(instance=page)
 
-	return render_conference_response(request, conference, 'confwiki/wikipage_edit.html', {
+	return render_conference_response(request, conference, 'wiki', 'confwiki/wikipage_edit.html', {
 		'page': page,
 		'form': form,
 		'baseform': baseform,
@@ -278,7 +278,7 @@ def signup(request, urlname, signupid):
 
 	if signup.deadline and signup.deadline < datetime.now():
 		# This one is closed
-		return render_conference_response(request, conference, 'confwiki/signup.html', {
+		return render_conference_response(request, conference, 'wiki', 'confwiki/signup.html', {
 			'closed': True,
 			'signup': signup,
 			'attendee_signup': attendee_signup,
@@ -310,7 +310,7 @@ def signup(request, urlname, signupid):
 	else:
 		form = SignupSubmitForm(signup, attendee_signup)
 
-	return render_conference_response(request, conference, 'confwiki/signup.html', {
+	return render_conference_response(request, conference, 'wiki', 'confwiki/signup.html', {
 		'closed': False,
 		'signup': signup,
 		'attendee_signup': attendee_signup,

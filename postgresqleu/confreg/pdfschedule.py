@@ -364,6 +364,6 @@ def pdfschedule(request, confname):
 	else:
 		form = PdfScheduleForm(conference)
 
-	return render_conference_response(request, conference, 'confreg/pdfschedule.html', {
+	return render_conference_response(request, conference, 'schedule', 'confreg/pdfschedule.html', {
 		'form': form,
 		})
