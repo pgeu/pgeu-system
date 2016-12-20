@@ -527,6 +527,10 @@ class ConferenceSession(models.Model):
 	def lastnotified_status_string(self):
 		return get_status_string(self.lastnotifiedstatus)
 
+	@property
+	def has_feedback(self):
+		return self.conferencesessionfeedback_set.exists()
+
 	def __unicode__(self):
 		return "%s: %s (%s)" % (
 			self.speaker_list,
