@@ -3,12 +3,11 @@
 {%block content%}
 <h1>Call for Papers - {{conference}}</h1>
 {%if messages%}
-<div class="confregmessage">
-{%for m in messages%}
-{{m}}<br/>
-{%endfor%}
-</div>
-<br/><br/>
+<ul style="background-color: yellow;" class="confreg_cfp_messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
 {%endif%}
 
 {%if conference.callforpapersopen%}
