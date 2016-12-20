@@ -457,7 +457,7 @@ def feedback(request, confname):
 	for s in sessions:
 		fb = [f for f in feedback if f.session==s]
 		if len(fb):
-			s.has_feedback = True
+			s.has_given_feedback = True
 
 	return render_conference_response(request, conference, 'feedback', 'confreg/feedback_index.html', {
 		'sessions': sessions,

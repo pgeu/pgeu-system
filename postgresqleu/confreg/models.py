@@ -505,7 +505,7 @@ class ConferenceSession(models.Model):
 
 	# Not a db field, but set from the view to track if the current user
 	# has given any feedback on this session.
-	has_feedback = False
+	has_given_feedback = False
 
 	@property
 	def speaker_list(self):
