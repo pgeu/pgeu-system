@@ -10,6 +10,11 @@
 {%endif%}
 
 <h2>Your submissions</h2>
+{%if not sessions%}
+<p>
+You have not made any submissions yet.
+</p>
+{%else%}
 <p>
 You have made the following submissions to this conference:
 </p>
@@ -21,10 +26,9 @@ You have made the following submissions to this conference:
   (<a href="/events/schedule/{{conference.urlname}}/session/{{s.id}}/">public view)</a>
   {%endifequal%}
   </li>
-{%empty%}
-  <li>No submission made</li>
 {%endfor%}
 </ul>
+{%endif%}
 
 {%if conference.callforpapersopen or is_tester%}
 <h2>New submission</h2>
