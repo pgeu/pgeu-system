@@ -29,6 +29,7 @@ class Trustly(TrustlyWrapper):
 	def process_raw_trustly_notification(self, raw):
 		(uuid, method, data) = self.parse_notification(raw.contents)
 		if not data:
+			TrustlyLog(message="Failed to parse trustly raw notification {0}".format(raw.id), error=True).save()
 			return (False, uuid, method)
 
 		n = None
