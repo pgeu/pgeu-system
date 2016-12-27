@@ -15,6 +15,10 @@ ul.messages {
 <link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
 <script src="/media/jq/jquery-1.8.2.min.js"></script>
 <script src="/media/jq/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/media/js/selectize.min.js"></script>
+<script type="text/javascript" src="/media/selectable/js/jquery.dj.selectable.js"></script>
+<link rel="stylesheet" href="/media/css/selectize.css" />
+<link rel="stylesheet" href="/media/css/selectize.default.css" />
 
 <script language="javascript">
 function sendEmail() {
@@ -52,92 +56,16 @@ function confirm_reallydelete() {
    return confirm('Are you sure you want to delete this invoice?');
 }
 
-function lookup_user() {
-   $('#user-lookup').dialog('open');
-}
-
-function conditional_import_user(uid) {
-   if (confirm('Selected user does not exist on this system, but does exist upstream.\n\nTo use this user, you will need to refresh the page first (potentially losing other changes made unless you save them first!)\n\nProceed to import user?')) {
-      $.post('/accountinfo/import/', { 'uid': uid}).done(function(data) {
-         if (data == 'OK') {
-            alert('User imported. Now go save and/or refresh.');
-            return;
-         }
-         alert('Failed to import user: ' + data);
-      }).error(function(data) {
-         alert('Error trying to import user.');
-      });
-   }
-}
-
 $(function() {
-   var usermatches = new Array;
-   $('#user-lookup-search-button').button().click(function() {
-      var term = $('#user-lookup-search-term').val();
-      if (!term) return;
-      $.get('/accountinfo/search/', { 'term': term, 'upstream': true}).done(function(data) {
-         if (!(data instanceof Array)) {
-            alert('Returned object is not an array!');
-            return;
-         }
-         if (data.length == 0) {
-            alert('Nothing found');
-            return;
-         }
-         if (data.length == 1) {
-            if (data[0].ui == -1) {
-               conditional_import_user(data[0].u);
-               return;
-            }
-            $('#id_recipient_user').val(data[0].ui);
-            $('#id_recipient_email').val(data[0].e);
-            $('#id_recipient_name').val(data[0].n);
-            $('#user-lookup').dialog('close');
-            return;
-         }
-         /* many found */
-         $.each(data, function(i, u) {
-            $('#user-lookup-select').append('<option value="' + u.ui +'">' + u.u + ' (' + u.n + '&lt;' + u.e + '&gt;)</option>');
-         });
-         $('#user-lookup-search-wrap').hide();
-         $('#user-lookup-select-wrap').show();
-         usermatches = data;
-      });
-   });
-   $('#user-lookup-select-button').button().click(function() {
-      var v = $('#user-lookup-select').val();
-      $('#id_recipient_user').val(v);
-      $.each(usermatches, function(i,u) {
-         if (v == u.ui) {
-            if (v < 0) {
-               conditional_import_user(u.u);
-            }
-            else {
-               $('#id_recipient_email').val(u.e);
-               $('#id_recipient_name').val(u.n);
-            }
-            return;
-         }
-      });
-      $('#user-lookup').dialog('close');
-   });
-   $('#user-lookup').dialog({
-      autoOpen: false,
-      height: 300,
-      width: 500,
-      modal: true,
-      title: 'Lookup user',
-      open: function() {
-         $('#user-lookup-search-term').val('');
-         $('#user-lookup-select').find('option').remove();
-         $('#user-lookup-search-wrap').show();
-         $('#user-lookup-select-wrap').hide();
-      },
-      buttons: {
-         'Close': function() { $(this).dialog('close');}
+   $('#id_recipient_user_0').change(function() {
+      var v = $('#id_recipient_user_0').val();
+      var r = new RegExp("^.*\\((.*) \\[(.*)\\]\\)$");
+      var a = r.exec(v);
+      if (a) {
+         $('#id_recipient_name').val(a[1]);
+         $('#id_recipient_email').val(a[2]);
       }
    });
-   return false;
 });
 </script>
 {%endblock%}
@@ -235,13 +163,12 @@ also be tagged with your userid <i>{{user.username}}</i>.
 {%for field in form%}
  {%if field.errors %}
  <tr class="error">
-  <td colspan="3">{{field.errors.as_ul}}</td>
+  <td colspan="2">{{field.errors.as_ul}}</td>
  </tr>
  {%endif%}
  <tr {%if field.errors%}class="errorinfo"{%endif%}>
   <th>{{field.label_tag}}</th>
   <td>{{field}}</td>
-  <td>{% if field.name == "recipient_user"%}<a href="#" onclick="javascript:lookup_user()">Lookup</a>{%endif%}</td>
  </tr>
 {%endfor%}
 </table>
@@ -323,13 +250,4 @@ The following events have occured throughout the life of this invoice:
 <br/>
 <a href="/invoiceadmin/">Back</a>
 
-<div id="user-lookup">
- <div id="user-lookup-search-wrap">
-  Search: <input id="user-lookup-search-term" type="text" style="width:100%"> <div id="user-lookup-search-button">Search</div>
- </div>
- <div id="user-lookup-select-wrap" style="display:none">
-  <select id="user-lookup-select" size="5" style="width:100%"></select><br/>
-  <div id="user-lookup-select-button">Select</div>
- </div>
-</div>
 {%endblock%}

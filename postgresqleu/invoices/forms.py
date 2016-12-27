@@ -3,6 +3,9 @@ from django.forms import ValidationError
 from django.forms import widgets
 from django.contrib.auth.models import User
 
+from selectable.forms.widgets import AutoCompleteSelectWidget
+from postgresqleu.accountinfo.lookups import UserLookup
+
 from models import Invoice, InvoiceRow, InvoicePaymentMethod
 from postgresqleu.accounting.models import Account, Object
 
@@ -25,8 +28,7 @@ class InvoiceForm(forms.ModelForm):
 		self.fields['allowedmethods'].widget = forms.CheckboxSelectMultiple()
 		self.fields['allowedmethods'].queryset = InvoicePaymentMethod.objects.filter(active=True)
 		self.fields['allowedmethods'].label_from_instance = lambda m: "{0} ({1})".format(m.name, m.internaldescription)
-		self.fields['recipient_user'].queryset = User.objects.order_by('username')
-		self.fields['recipient_user'].label_from_instance = lambda u: "%s (%s)" % (u.username, u.get_full_name())
+
 		self.fields['accounting_account'].choices = [(0, '----'),] + [(a.num, "%s: %s" % (a.num, a.name)) for a in Account.objects.filter(availableforinvoicing=True)]
 		self.fields['accounting_object'].choices = [('', '----'),] + [(o.name, o.name) for o in Object.objects.filter(active=True)]
 
@@ -42,6 +44,9 @@ class InvoiceForm(forms.ModelForm):
 	class Meta:
 		model = Invoice
 		exclude = ['finalized', 'pdf_invoice', 'pdf_receipt', 'paidat', 'paymentdetails', 'paidusing', 'processor', 'processorid', 'deleted', 'deletion_reason', 'refund', 'recipient_secret']
+		widgets = {
+			'recipient_user': AutoCompleteSelectWidget(lookup_class=UserLookup),
+		}
 
 	def clean(self):
 		if not self.cleaned_data['recipient_user'] and self.cleaned_data.has_key('recipient_email') and self.cleaned_data['recipient_email']:
