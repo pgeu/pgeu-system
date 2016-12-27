@@ -111,8 +111,11 @@ def newsproxy(request, confname):
 			raise Exception("Invalid parameter")
 
 	# Proxy request
-	u = urllib2.urlopen("%s?%s" % (conference.newsjson, urlencode(request.GET)))
-	r = u.read()
-	u.close()
+	try:
+		u = urllib2.urlopen("%s?%s" % (conference.newsjson, urlencode(request.GET)))
+		r = u.read()
+		u.close()
+	except:
+		raise Http404("News load failure")
 
 	return HttpResponse(r, content_type='application/json')
