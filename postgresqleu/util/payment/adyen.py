@@ -105,8 +105,7 @@ class _AdyenBase(object):
 
 class AdyenCreditcard(_AdyenBase):
 	description="""
-Using this payment method, you can pay using your creditcard, including
-Mastercard, VISA and American Express.
+Pay using your creditcard, including Mastercard, VISA and American Express.
 """
 
 	def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl=None):
@@ -114,7 +113,8 @@ Mastercard, VISA and American Express.
 
 class AdyenBanktransfer(_AdyenBase):
 	description="""
-Using this payment method, you can pay using a direct IBAN bank transfer.
+Pay using a direct IBAN bank transfer. Note that this method is slow and should
+only be used if others are not possible.
 """
 
 	def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl=None):
