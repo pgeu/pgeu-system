@@ -100,6 +100,7 @@ INSTALLED_APPS = [
 	'postgresqleu.paypal',
 	'postgresqleu.adyen',
 	'postgresqleu.braintreepayment',
+	'postgresqleu.trustlypayment',
 	'postgresqleu.newsevents',
 	'postgresqleu.confreg',
 	'postgresqleu.confsponsor',
@@ -191,6 +192,9 @@ BRAINTREE_SANDBOX=False
 GLOBAL_LOGIN_USER=''
 GLOBAL_LOGIN_PASSWORD=''
 
+# Set to true in local_settings.py to enable trustly integrations
+ENABLE_TRUSTLY=False
+
 # If there is a local_settings.py, let it override our settings
 try:
 	from local_settings import *
@@ -209,3 +213,13 @@ if ENABLE_BRAINTREE:
 	ACCOUNTING_BRAINTREE_PAYABLE_ACCOUNT=1623
 	ACCOUNTING_BRAINTREE_PAYOUT_ACCOUNT=1930
 	ACCOUNTING_BRAINTREE_FEE_ACCOUNT=6040
+
+if ENABLE_TRUSTLY:
+	# Accounts to use for trustly transactions
+	ACCOUNTING_TRUSTLY_ACCOUNT=1624
+
+	# Load the keys
+	with open('postgresqleu/trustly_public.pem', 'r') as f:
+		TRUSTLY_PUBLIC_KEY=f.read()
+	with open('postgresqleu/trustly_private.pem', 'r') as f:
+		TRUSTLY_PRIVATE_KEY=f.read()

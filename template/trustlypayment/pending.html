@@ -1,0 +1,41 @@
+{%extends "navbase.html"%}
+{%block extrahead%}
+<meta http-equiv="refresh" content="{{refresh}}">
+{%endblock%}
+{%block title%}Payment pending{%endblock%}
+{%block content%}
+<h1>Payment pending</h1>
+<p>
+Your payment is pending.
+</p>
+
+<p>
+Your payment order was registered with Trustly at {{createdat|date:"Y-m-d H:i"}}.
+</p>
+{%if pendingat%}
+<p>
+  Your payment has been initially confirmed from Trustly at
+  {{pendingat|date:"Y-m-d H:i"}}. However, the money has not yet been
+  deposited in the account, normally due to some processing delays
+  with one of the banks. The payment will completed as soon as the
+  money has arrived.
+</p>
+{%else%}
+<p>
+  We are currently waiting for a first confirmation from Trustly.
+  This will normally only take a couple of seconds, but in times of
+  high load it can take longer.
+</p>
+{%endif%}
+
+<p>
+  As soon as your payment has been completed, a receipt will be generated
+  and emailed to you automatically. You can also refresh this page to
+  follow the status of your payment.
+</p>
+
+<p>
+  If you have any questions about this payment, please feel free to
+  contact us at treasurer@postgresql.eu.
+</p>
+{%endblock%}

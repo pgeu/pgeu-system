@@ -43,3 +43,7 @@ class Command(BaseCommand):
 		(p, created) = InvoicePaymentMethod.objects.get_or_create(classname='postgresqleu.util.payment.braintree.BrainTree', defaults={'name':'Credit card', 'sortkey':51, 'auto':False, 'internaldescription': 'Braintree managed creditcard', 'active': False})
 		if created:
 			self.stdout.write("Created payment method Braintree creditcard ({0})".format(self.style.WARNING("disabled")))
+
+		(p, created) = InvoicePaymentMethod.objects.get_or_create(classname='postgresqleu.util.payment.trustly.TrustlyPayment', defaults={'name': 'Bank payment using Trustly', 'sortkey': 60, 'auto': False, 'internaldescription': 'Trustly managed bank transfer', 'active': False})
+		if created:
+			self.stdout.write("Created payment method Trustly bank transfer ({0})".format(self.style.WARNING("disabled")))

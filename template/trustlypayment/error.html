@@ -1,0 +1,19 @@
+{%extends "navbase.html"%}
+{%block title%}Payment error{%endblock%}
+{%block content%}
+<h1>Payment error</h1>
+<p>
+Our payment processor reported a failure with the payment.
+</p>
+
+<p>
+This means your payment has <i>not</i> been processed. If you believe this
+to be in error, please contact treasurer@postgresql.eu citing the
+full details of your payment for manual processing.
+</p>
+
+<p>
+You can also <a href="{{url}}">return</a> to the original URL and try again.
+</p>
+
+{%endblock%}

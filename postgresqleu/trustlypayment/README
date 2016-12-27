@@ -1,0 +1,24 @@
+This directory contains the Trustly payment implementation
+
+To enable and use this implementation, set the following parameters
+in local_settings.py (obviously changed for production keys)
+
+ENABLE_TRUSTLY=True
+TRUSTLY_APIBASE="https://test.trustly.com"
+TRUSTLY_NOTIFICATION_RECEIVER="treasurer@postgresql.eu"
+TRUSTLY_USER="someuser"
+TRUSTLY_PASSWORD="supertopsecret"
+TRUSTLY_COUNTRIES=["country1","country2"]
+
+
+Put the keys in trustly_public.pem and trustly_private.pem in the same
+directory as local_settings.py is located.
+
+The TRUSTLY_COUNTRIES setting is only used for display purposes. The
+actual countries where Trustly is available in is controlled from the
+Trustly side (and is unfortunately not available from the API).
+
+Currently PostgreSQL Europe has a deal which makes all transactions
+through Trustly be completely free. For this reason, no fee accounting
+is supported at all in the code. Should we need to support fees at
+some point, actual accounting support for it needs to be implemented.

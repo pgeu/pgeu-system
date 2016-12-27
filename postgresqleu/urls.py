@@ -196,6 +196,16 @@ urlpatterns = patterns('',
 
 )
 
+if settings.ENABLE_TRUSTLY:
+	import postgresqleu.trustlypayment.views
+
+	urlpatterns.extend(
+		patterns('',
+				 (r'^invoices/trustlypay/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.invoicepayment_secret),
+				 (r'^trustly_notification/$', postgresqleu.trustlypayment.views.notification),
+				 (r'^trustly_success/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.success),
+				 (r'^trustly_failure/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.failure),
+	))
 if settings.ENABLE_BRAINTREE:
 	import postgresqleu.braintreepayment.views
 
