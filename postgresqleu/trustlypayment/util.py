@@ -96,6 +96,7 @@ class Trustly(TrustlyWrapper):
 				if not trans.pendingat:
 					trans.pendingat = datetime.now()
 					trans.save()
+					return True
 			else:
 				# Credit! The payment is completed!
 				if not trans.pendingat:
