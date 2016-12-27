@@ -26,7 +26,7 @@ class TrustlyNotification(models.Model):
 	notificationid = models.BigIntegerField(null=False, blank=False)
 	orderid = models.BigIntegerField(null=False, blank=False)
 	method = models.CharField(max_length=80, null=False, blank=False)
-	amount = models.DecimalField(decimal_places=2, max_digits=20, null=False)
+	amount = models.DecimalField(decimal_places=2, max_digits=20, null=True, blank=True)
 	messageid = models.CharField(max_length=80, null=False, blank=False)
 
 	confirmed = models.BooleanField(null=False, default=False)

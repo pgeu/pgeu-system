@@ -50,7 +50,7 @@ class Trustly(TrustlyWrapper):
 				method=method,
 				notificationid=data['notificationid'],
 				orderid=data['orderid'],
-				amount=Decimal(data['amount']),
+				amount=data.has_key('amount') and Decimal(data['amount']) or None,
 				messageid=data['messageid'],
 			)
 			n.save()
