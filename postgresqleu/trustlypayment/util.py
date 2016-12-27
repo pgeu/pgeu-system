@@ -118,13 +118,12 @@ class Trustly(TrustlyWrapper):
 		elif notification.method == 'cancel':
 			try:
 				trans = TrustlyTransaction.objects.get(orderid=notification.orderid)
+				if trans.pendingat:
+					self.log_and_email("Transaction {0} canceled by notification {1} but already in progress. Ignoring cancel!".format(notification.orderid, notification.id))
+					return False
+				TrustlyLog(message='Transaction {0} canceled from notification'.format(notification.orderid)).save()
 			except TrustlyTransaction.DoesNotExist:
 				TrustlyLog("Abandoned transaction {0} canceled from notification".format(notification.orderid))
-				return False
-			if trans.pendingat:
-				self.log_and_email("Transaction {0} canceled by notification {1} but already in progress. Ignoring cancel!".format(notification.orderid, notification.id))
-				return False
-			TrustlyLog(message='Transaction {0} canceled from notification'.format(notification.orderid)).save()
 			trans.delete()
 			notification.confirmed = True
 			notification.save()
