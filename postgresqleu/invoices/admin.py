@@ -57,8 +57,11 @@ class InvoiceLogAdmin(admin.ModelAdmin):
 class InvoiceRefundAdmin(admin.ModelAdmin):
 	list_display = ('registered', 'issued', 'completed', 'amount', 'reason')
 
+class InvoicePaymentMethodAdmin(admin.ModelAdmin):
+	list_display = ('name', 'internaldescription', 'classname', )
+
 admin.site.register(Invoice, InvoiceAdmin)
 admin.site.register(InvoiceProcessor)
-admin.site.register(InvoicePaymentMethod)
+admin.site.register(InvoicePaymentMethod, InvoicePaymentMethodAdmin)
 admin.site.register(InvoiceLog, InvoiceLogAdmin)
 admin.site.register(InvoiceRefund, InvoiceRefundAdmin)
