@@ -133,7 +133,7 @@ class Trustly(TrustlyWrapper):
 			notification.save()
 			return True
 		else:
-			self.log_and_email("Unknown noficiation type '{0}' in notification {1}".format(notification.method, notification.id))
+			self.log_and_email("Unknown notification type '{0}' in notification {1}".format(notification.method, notification.id))
 			return False
 
 		# Can't reach here
