@@ -96,7 +96,7 @@ class TrustlyWrapper(object):
 		}
 		apijson = json.dumps(p)
 
-		req = urllib2.Request("{0}/api/1".format(self.apibase))
+		req = urllib2.Request(self.apibase)
 		req.add_header('Content-type', 'application/json')
 		u = urllib2.urlopen(req, apijson)
 		resp = u.read()
