@@ -85,7 +85,7 @@ class TrustlyWrapper(object):
 		}
 		params['Data']['Username'] = self.username
 		params['Data']['Password'] = self.password
-		tosign = unicode(method+params['UUID']+self._serializestruct(params['Data']))
+		tosign = unicode((method+params['UUID']+self._serializestruct(params['Data'])).decode('utf8'))
 		sha1hash = SHA.new(tosign.encode('utf-8'))
 		signature = self.signer.sign(sha1hash)
 		params['Signature'] = base64.b64encode(signature)
@@ -152,5 +152,7 @@ class TrustlyWrapper(object):
 					serialized += k
 			return serialized
 		# XXX: Handle regular arrays?
+		elif (type(struct) == unicode):
+			return struct.encode('utf-8')
 		else:
 			return str(struct)
