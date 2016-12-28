@@ -20,6 +20,9 @@ from postgresqleu.accounting.util import create_accounting_entry
 # Proxy around an invoice that adds presentation information,
 # such as the ability to render a return URL for the invoice.
 class InvoicePresentationWrapper(Invoice):
+	class Meta:
+		proxy = True
+
 	def __init__(self, invoice, returnurl):
 		self.__invoice = invoice
 		self.__returnurl = returnurl
