@@ -157,6 +157,9 @@ class InvoiceRow(models.Model):
 	rowcount = models.IntegerField(null=False, default=1, verbose_name="Count")
 	rowamount = models.IntegerField(null=False, default=0, verbose_name="Amount per item")
 
+	def __unicode__(self):
+		return self.rowtext
+
 class InvoiceHistory(models.Model):
 	invoice = models.ForeignKey(Invoice, null=False)
 	time = models.DateTimeField(null=False, blank=False, auto_now_add=True)
@@ -164,6 +167,9 @@ class InvoiceHistory(models.Model):
 
 	class Meta:
 		ordering = ['time',]
+
+	def __unicode__(self):
+		return self.txt
 
 class InvoiceLog(models.Model):
 	timestamp = models.DateTimeField(null=False, blank=False, auto_now_add=True)
