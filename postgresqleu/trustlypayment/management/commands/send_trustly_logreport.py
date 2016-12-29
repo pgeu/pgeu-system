@@ -58,7 +58,7 @@ class Command(BaseCommand):
 		# got the first step of confirmation. The ones that were never started are uninteresting.
 		UNFINISHED_THRESHOLD=3
 
-		lines = list(TrustlyTransaction.objects.filter(completedat__isnull=True, pendingat__isnull=False, pendingat__lt=datetime.now()-timedelta(days=UNFINISHED_THRESHOLD)).order_by('pendingat')
+		lines = list(TrustlyTransaction.objects.filter(completedat__isnull=True, pendingat__isnull=False, pendingat__lt=datetime.now()-timedelta(days=UNFINISHED_THRESHOLD)).order_by('pendingat'))
 		if len(lines):
 			sio = StringIO()
 			sio.write("The following payments have been authorized, but not finished for more than %s days.\nThese probably need to be verified manually.\n\n\n" % UNFINISHED_THRESHOLD)
