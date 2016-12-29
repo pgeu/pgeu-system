@@ -27,7 +27,7 @@ class Command(BaseCommand):
 		cursor.execute("SELECT year FROM accounting_year WHERE isopen")
 		year = cursor.fetchall()[0][0]
 
-		cursor.execute("SELECT sum(amount)+(SELECT amount FROM accounting_incomingbalance WHERE year_id=%(year)s AND account_id=%(account)s) FROM accounting_journalitem ji INNER JOIN accounting_journalentry je ON ji.journal_id=je.id WHERE je.year_id=%(year)s AND ji.account_id=%(account)s", {
+		cursor.execute("SELECT sum(amount)+COALESCE((SELECT amount FROM accounting_incomingbalance WHERE year_id=%(year)s AND account_id=%(account)s),0) FROM accounting_journalitem ji INNER JOIN accounting_journalentry je ON ji.journal_id=je.id WHERE je.year_id=%(year)s AND ji.account_id=%(account)s", {
 			'account': settings.ACCOUNTING_TRUSTLY_ACCOUNT,
 			'year': year,
 		})
