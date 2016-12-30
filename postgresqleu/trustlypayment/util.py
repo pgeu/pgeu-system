@@ -99,6 +99,9 @@ class Trustly(TrustlyWrapper):
 					trans.save()
 				notification.confirmed=True
 				notification.save()
+
+				TrustlyLog(message="Pending payment for Trustly id {0} (order {1}) received".format(trans.id, trans.orderid)).save()
+
 				return True
 			else:
 				# Credit! The payment is completed!
@@ -159,6 +162,9 @@ class Trustly(TrustlyWrapper):
 													 [],
 													 invoice_logger,
 													 method)
+
+		TrustlyLog(message="Completed payment for Trustly id {0} (order {1}), {2}{3}, invoice {4}".format(trans.id, trans.orderid, settings.CURRENCY_ABBREV, trans.amount, invoice.id)).save()
+
 		send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 						 settings.TRUSTLY_NOTIFICATION_RECEIVER,
 						 "Trustly payment completed",
