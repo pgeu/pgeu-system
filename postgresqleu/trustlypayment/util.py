@@ -162,5 +162,5 @@ class Trustly(TrustlyWrapper):
 		send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 						 settings.TRUSTLY_NOTIFICATION_RECEIVER,
 						 "Trustly payment completed",
-						 "A Trustly payment of {0}{1} for invoice {2} was completed on the Trustly platform.\n\nInvoice: {3}\nRecipient name: {4}\nRecipient email: {5}\n".format(settings.CURRENCY_ABBREV, trans.amount, invoice.id, invoice.title, invoice.recipient_name, invoice.recipient_email),
+						 u"A Trustly payment of {0}{1} for invoice {2} was completed on the Trustly platform.\n\nInvoice: {3}\nRecipient name: {4}\nRecipient email: {5}\n".format(settings.CURRENCY_ABBREV, trans.amount, invoice.id, invoice.title, invoice.recipient_name, invoice.recipient_email),
 						 )
