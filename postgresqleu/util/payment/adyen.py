@@ -106,7 +106,7 @@ class _AdyenBase(object):
 
 class AdyenCreditcard(_AdyenBase):
 	description="""
-Pay using your creditcard, including Mastercard, VISA and American Express.
+Pay using your credit card, including Mastercard, VISA and American Express.
 """
 
 	def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl=None):

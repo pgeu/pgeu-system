@@ -20,7 +20,7 @@ class Command(BaseCommand):
 			self.stdout.write("Updated classname for {0}.".format(self.style.WARNING(c)))
 
 		# Create the ones that don't exist if any
-		(p, created) = InvoicePaymentMethod.objects.get_or_create(classname='postgresqleu.util.payment.paypal.Paypal', defaults={'name':'Paypal or creditcard', 'sortkey':100, 'auto': False, 'internaldescription': 'Paypal', 'active': False})
+		(p, created) = InvoicePaymentMethod.objects.get_or_create(classname='postgresqleu.util.payment.paypal.Paypal', defaults={'name':'Paypal or credit card', 'sortkey':100, 'auto': False, 'internaldescription': 'Paypal', 'active': False})
 		if created:
 			self.stdout.write("Created payment method Paypal ({0})".format(self.style.WARNING("disabled")))
 

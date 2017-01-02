@@ -10,10 +10,10 @@ class Paypal(object):
 	description="""
 Pay using Paypal. You can use this both
 to pay from your Paypal balance if you have a Paypal account, or you can
-use it to pay with any creditcard supported by Paypal (Visa, Mastercard, American Express).
+use it to pay with any credit card supported by Paypal (Visa, Mastercard, American Express).
 In most countries, you do not need a Paypal account if you choose to pay
-with creditcard. However, we do recommend using the payment method called
-"Credit card" instead of Paypal if you are paying with a creditcard, as it has
+with credit card. However, we do recommend using the payment method called
+"Credit card" instead of Paypal if you are paying with a credit card, as it has
 lower fees.
 """
 

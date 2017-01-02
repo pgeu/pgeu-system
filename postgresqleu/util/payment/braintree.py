@@ -5,7 +5,7 @@ from postgresqleu.braintreepayment.models import BraintreeTransaction
 
 class Braintree(object):
 	description="""
-Using this payment method, you can pay using your creditcard, including
+Using this payment method, you can pay using your credit card, including
 Mastercard, VISA and American Express.
 """
 

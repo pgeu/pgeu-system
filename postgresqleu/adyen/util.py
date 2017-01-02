@@ -124,7 +124,7 @@ def process_authorization(notification):
 		send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 						 settings.ADYEN_NOTIFICATION_RECEIVER,
 						 'Unsuccessful Adyen authorization received',
-						 "A creditcard authorization for %s on account %s has failed.\nThe reason given was:\n%s\n\nYou don't need to take any further action, nothing has been confirmed in the systems." % (
+						 "A credit card authorization for %s on account %s has failed.\nThe reason given was:\n%s\n\nYou don't need to take any further action, nothing has been confirmed in the systems." % (
 							 notification.merchantReference,
 							 notification.merchantAccountCode,
 							 notification.reason,
@@ -149,7 +149,7 @@ def process_capture(notification):
 		send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 						 settings.ADYEN_NOTIFICATION_RECEIVER,
 						 'Unsuccessful adyen capture received',
-						 "A creditcard capture for %s has failed.\nThe reason given was:\n%s\n\nYou want to investigate this since the payment was probably flagged as completed on authorization!\n" % (
+						 "A credit card capture for %s has failed.\nThe reason given was:\n%s\n\nYou want to investigate this since the payment was probably flagged as completed on authorization!\n" % (
 							 notification.merchantReference,
 							 notification.reason))
 	# We confirm the notification even if we sent it, since there is not much more we can do
