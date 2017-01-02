@@ -15,6 +15,7 @@ from postgresqleu.confreg.dbimage import SpeakerImageStorage
 
 import datetime
 import pytz
+from decimal import Decimal
 
 from postgresqleu.countries.models import Country
 from postgresqleu.invoices.models import Invoice, VatRate
@@ -232,7 +233,14 @@ class RegistrationType(models.Model):
 		else:
 			return "%s (%s %s)" % (self.regtype,
 								   settings.CURRENCY_ABBREV,
-								   self.cost)
+								   self.total_cost)
+
+	@property
+	def total_cost(self):
+		if self.conference.vat_registrations:
+			return "%.2f incl VAT" % (self.cost * (1+self.conference.vat_registrations.vatpercent/Decimal(100.0)))
+		else:
+			return self.cost
 
 	def is_registered_type(self):
 		# Starts with * means "not attending"
