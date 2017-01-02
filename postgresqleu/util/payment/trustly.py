@@ -9,7 +9,7 @@ from postgresqleu.trustlypayment.util import Trustly
 
 class TrustlyPayment(object):
 	description="""
-Pay directly using online banking. Currently supported in {0}.
+Pay directly using online banking. Currently supported with most banks in {0}.
 """.format(', '.join(settings.TRUSTLY_COUNTRIES))
 
 	def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl=None):
