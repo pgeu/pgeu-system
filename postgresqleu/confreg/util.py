@@ -3,6 +3,7 @@ from django.template import Context
 from django.template.loader import get_template
 
 from datetime import datetime, date, timedelta
+from decimal import Decimal
 
 from postgresqleu.mailqueue.util import send_simple_mail
 
@@ -13,12 +14,16 @@ def invoicerows_for_registration(reg, update_used_vouchers):
 	# registration. Format is tuple of (description, num, cost)
 
 	# Main conference registration
-	r = [('%s - %s (%s)' % (reg.conference, reg.regtype.regtype, reg.email), 1, reg.regtype.cost)]
+	r = [['%s - %s' % (reg.email, reg.regtype.regtype),
+		  1,
+		  reg.regtype.cost,
+		  reg.conference.vat_registrations,
+		  ]]
 
 	# Any additional options
 	for a in reg.additionaloptions.all():
 		if a.cost > 0:
-			r.append(('   %s' % a.name, 1, a.cost))
+			r.append(['   %s' % a.name, 1, a.cost, reg.conference.vat_registrations])
 
 	# Any voucher if present
 	if reg.vouchercode:
@@ -35,7 +40,7 @@ def invoicerows_for_registration(reg, update_used_vouchers):
 					v.user = reg
 					v.save()
 				# Add a row with the discount of the registration type
-				r.append(('   Discount voucher %s...' % reg.vouchercode[:30], 1, -reg.regtype.cost))
+				r.append(['   Discount voucher %s...' % reg.vouchercode[:30], 1, -reg.regtype.cost, reg.conference.vat_registrations])
 		except PrepaidVoucher.DoesNotExist:
 			# Nonexistant voucher code means discount code was used
 			try:
@@ -86,7 +91,7 @@ def invoicerows_for_registration(reg, update_used_vouchers):
 						else:
 							discount = current_total*d.discountpercentage/100
 					if discount > 0:
-						r.append(('   Discount code %s' % d.code, 1, -discount))
+						r.append(['   Discount code %s' % d.code, 1, -discount, reg.conference.vat_registrations])
 			except DiscountCode.DoesNotExist:
 				# An invalid voucher should never make it this far, but if it does
 				# we'll just ignore it. Errors would've been given when the form

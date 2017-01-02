@@ -130,6 +130,9 @@ INVOICE_PDF_BUILDER='postgresqleu.util.misc.pgeuinvoice'
 INVOICE_TITLE_PREFIX='PostgreSQL Europe Invoice'
 INVOICE_FILENAME_PREFIX='pgeu'
 
+# Process EU-specific VAT rules
+EU_VAT=False
+
 # Change these when using sandbox!
 PAYPAL_BASEURL='https://www.paypal.com/cgi-bin/webscr'
 PAYPAL_EMAIL='paypal@postgresql.eu'
@@ -173,6 +176,7 @@ ACCOUNTING_CONFREG_ACCOUNT=3003
 ACCOUNTING_CONFSPONSOR_ACCOUNT=3004
 ACCOUNTING_MEMBERSHIP_ACCOUNT=3001
 ACCOUNTING_DONATIONS_ACCOUNT=3601
+ACCOUNTING_INVOICE_VAT_ACCOUNT=2610
 
 # CM balance fetching account
 CM_USER_ACCOUNT=None

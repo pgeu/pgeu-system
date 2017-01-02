@@ -1,9 +1,12 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import User
 from django.conf import settings
 
 from datetime import datetime, timedelta
 from payment import PaymentMethodWrapper
+
+from postgresqleu.accounting.models import Account
 
 class InvoiceProcessor(models.Model):
 	# The processor name is purely cosmetic
@@ -66,7 +69,8 @@ class Invoice(models.Model):
 	canceltime = models.DateTimeField(null=True, blank=True, help_text="Invoice will automatically be canceled at this time")
 
 	# Amount information is calculated when the invoice is finalized
-	total_amount = models.IntegerField(null=False)
+	total_amount = models.DecimalField(decimal_places=2, max_digits=10, null=False)
+	total_vat = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0)
 	finalized = models.BooleanField(null=False, blank=True, default=False, help_text="Invoice is finalized, should not ever be changed again")
 	deleted = models.BooleanField(null=False, blank=False, default=False, help_text="This invoice has been deleted")
 	deletion_reason = models.CharField(max_length=500, null=False, blank=True, default='', help_text="Reason for deletion of invoice")
@@ -149,13 +153,32 @@ class Invoice(models.Model):
 	class Meta:
 		ordering = ('-id', )
 
+
+class VatRate(models.Model):
+	name = models.CharField(max_length=100, blank=False, null=False)
+	shortname = models.CharField(max_length=16, blank=False, null=False)
+	vatpercent = models.IntegerField(null=False, default=0, verbose_name="VAT percentage",
+									 validators=[MaxValueValidator(100), MinValueValidator(0)])
+	vataccount = models.ForeignKey(Account, null=False, blank=False)
+
+	def __unicode__(self):
+		return u"{0} ({1}%)".format(self.name, self.vatpercent)
+
+	@property
+	def shortstr(self):
+		return "%s%% (%s)" % (self.vatpercent, self.shortname)
+
 class InvoiceRow(models.Model):
 	# Invoice rows are only used up until the invoice is finished,
 	# but allows us to save a half-finished invoice.
 	invoice = models.ForeignKey(Invoice, null=False)
 	rowtext = models.CharField(max_length=100, blank=False, null=False, verbose_name="Text")
 	rowcount = models.IntegerField(null=False, default=1, verbose_name="Count")
-	rowamount = models.IntegerField(null=False, default=0, verbose_name="Amount per item")
+	rowamount = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0, verbose_name="Amount per item (ex VAT)")
+	vatrate = models.ForeignKey(VatRate, null=True)
+
+	def __unicode__(self):
+		return self.rowtext
 
 	def __unicode__(self):
 		return self.rowtext

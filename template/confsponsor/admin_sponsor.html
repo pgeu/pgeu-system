@@ -41,6 +41,20 @@ div.benefit_list div {
     <td>{{sponsor.displayname}}</td>
   </tr>
   <tr>
+    <th>Invoice address:</th>
+    <td>{{sponsor.invoiceaddr|linebreaks}}</td>
+  </tr>
+{%if euvat%}
+  <tr>
+    <th>VAT number:</th>
+    <td>{{sponsor.vatnumber}}</td>
+  </tr>
+  <tr>
+    <th>EU VAT Area:</th>
+    <td>{{sponsor.invatarea|yesno|capfirst}}</td>
+  </tr>
+{%endif%}
+  <tr>
     <th>URL:</th>
     <td>{{sponsor.url}}</td>
   </tr>

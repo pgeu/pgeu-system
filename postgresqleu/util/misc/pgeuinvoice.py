@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from decimal import Decimal
+
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.units import cm
 from reportlab.lib import colors
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.platypus import Paragraph
 from reportlab.platypus.tables import Table, TableStyle
 from reportlab.platypus.flowables import Image
 from reportlab.pdfbase.pdfmetrics import registerFont
@@ -29,6 +33,7 @@ class PDFBase(object):
 
 		registerFont(TTFont('DejaVu Serif', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf"))
 		registerFont(TTFont('DejaVu Serif Italic', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif-Italic.ttf"))
+		registerFont(TTFont('DejaVu Serif Bold', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif-Bold.ttf"))
 
 	def trimstring(self, s, maxlen, fontname, fontsize):
 		while len(s) > 5:
@@ -41,11 +46,21 @@ class PDFBase(object):
 		for l in lines.splitlines():
 			t.textLine(l)
 
+	def _draw_multiline_aligned(self, txt, left, top, width, height):
+		t = txt.replace("\n", "<br/>")
+		style = ParagraphStyle('temp')
+		style.fontName = 'DejaVu Serif'
+		style.fontSize = 9
+		style.leading = 9 * 1.2
+		p = Paragraph(t, style)
+		(actualwidth, actualheight) = p.wrap(width, height)
+		p.drawOn(self.canvas, left, top-actualheight)
+
 	def _pageheader(self):
 		if self.preview:
 			t = self.canvas.beginText()
 			t.setTextOrigin(6*cm, 4*cm)
-			t.setFont("Times-Italic", 70)
+			t.setFont("DejaVu Serif Italic", 70)
 			t.setFillColorRGB(0.9,0.9,0.9)
 			t.textLine("PREVIEW PREVIEW")
 			self.canvas.rotate(45)
@@ -63,27 +78,18 @@ Carpeaux Diem
 13, rue du Square Carpeaux
 75018 PARIS
 France
+SIREN 823839535
+VAT# FR36823839535
 """)
 		self.canvas.drawText(t)
 
-		t = self.canvas.beginText()
-		t.setTextOrigin(2*cm, 23*cm)
-		t.setFont("DejaVu Serif", 9)
-		t.textLine("")
-		self.textlines(t, """
-Your contact: Guillaume Lelarge
+		self._draw_multiline_aligned("""Your contact: Guillaume Lelarge
 Function: PostgreSQL Europe Treasurer
-E-mail: treasurer@postgresql.eu
-""")
-		self.canvas.drawText(t)
+E-mail: treasurer@postgresql.eu""",
+									 2*cm, 23.5*cm, 9*cm, 4*cm)
 
-		t = self.canvas.beginText()
-		t.setTextOrigin(11*cm, 23*cm)
-		t.setFont("DejaVu Serif Italic", 10)
-		t.textLine("To:")
-		t.setFont("DejaVu Serif", 10)
-		self.textlines(t, self.recipient)
-		self.canvas.drawText(t)
+		self._draw_multiline_aligned(u"To:\n%s" % self.recipient,
+									 11*cm, 23.5*cm, 9*cm, 4*cm)
 
 		p = self.canvas.beginPath()
 		p.moveTo(2*cm, 18.9*cm)
@@ -92,71 +98,104 @@ E-mail: treasurer@postgresql.eu
 
 
 class PDFInvoice(PDFBase):
-	def __init__(self, recipient, invoicedate, duedate, invoicenum=None, imagedir=None, currency='€', preview=False, receipt=False, bankinfo=True):
+	def __init__(self, title, recipient, invoicedate, duedate, invoicenum=None, imagedir=None, currency='€', preview=False, receipt=False, bankinfo=True, totalvat=0):
+		super(PDFInvoice, self).__init__(recipient, invoicenum, imagedir, currency)
+
+		self.title = title
 		self.invoicedate = invoicedate
 		self.duedate = duedate
 		self.preview = preview
 		self.receipt = receipt
 		self.bankinfo = bankinfo
+		self.totalvat = totalvat
 		self.rows = []
 
 		if self.receipt:
 			# Never include bank info on receipts
 			self.bankinfo = False
 
-		super(PDFInvoice, self).__init__(recipient, invoicenum, imagedir, currency)
 
-	def addrow(self, title, cost, count=1):
-		self.rows.append((title, cost, count,))
+	def addrow(self, title, cost, count, vatrate):
+		self.rows.append((title, cost, count, vatrate, vatrate and vatrate.vatpercent or 0))
 
 
+	ROWS_PER_PAGE=16
 	def save(self):
-		# We can fit 15 rows on one page. We might want to do something
+		# We can fit ROWS_PER_PAGE rows on one page. We might want to do something
 		# cute to avoid a single row on it's own page in the future, but
 		# for now, just split it evenly.
-		for pagenum in range(0, (len(self.rows)-1)/15+1):
+		for pagenum in range(0, (len(self.rows)-1)/self.ROWS_PER_PAGE+1):
 			self._pageheader()
-			islastpage = (pagenum == (len(self.rows)-1)/15)
+			islastpage = (pagenum == (len(self.rows)-1)/self.ROWS_PER_PAGE)
 
-			if len(self.rows) > 15:
-				suffix = " (page %s/%s)" % (pagenum+1, len(self.rows)/15+1)
+			if len(self.rows) > self.ROWS_PER_PAGE:
+				suffix = " (page %s/%s)" % (pagenum+1, len(self.rows)/self.ROWS_PER_PAGE+1)
 			else:
 				suffix = ''
 
+			self.canvas.setFont('DejaVu Serif Bold', 12)
 			# Center between 2 and 19 is 10.5
+			self.canvas.drawCentredString(10.5*cm, 19*cm, self.title)
+			self.canvas.setFont('DejaVu Serif', 9)
+
 			if self.invoicenum:
 				if self.receipt:
-					self.canvas.drawCentredString(10.5*cm,19*cm, "RECEIPT FOR INVOICE NUMBER %s%s" % (self.invoicenum, suffix))
+					self.canvas.drawCentredString(10.5*cm,18.5*cm, "Receipt for invoice number %s%s" % (self.invoicenum, suffix))
 				else:
-					self.canvas.drawCentredString(10.5*cm,19*cm, "INVOICE NUMBER %s - %s%s" % (self.invoicenum, self.invoicedate.strftime("%B %d, %Y"),suffix))
+					self.canvas.drawCentredString(10.5*cm,18.5*cm, "Invoice number %s - %s%s" % (self.invoicenum, self.invoicedate.strftime("%B %d, %Y"),suffix))
+				self.canvas.setFont('DejaVu Serif Bold', 10)
+				if self.receipt:
+					self.canvas.drawCentredString(17*cm, 28*cm, "Receipt #%s" % self.invoicenum)
+				else:
+					self.canvas.drawCentredString(17*cm, 28*cm, "Invoice #%s" % self.invoicenum)
 			else:
-				self.canvas.drawCentredString(10.5*cm,19*cm, "RECEIPT - %s%s" % (self.invoicedate.strftime("%B %d, %Y"), suffix))
+				self.canvas.drawCentredString(10.5*cm,18.5*cm, "Receipt - %s%s" % (self.invoicedate.strftime("%B %d, %Y"), suffix))
 
 			if pagenum == 0:
-				tbldata = [["Item", "Price", "Count", "Amount"], ]
+				firstcol = "Item"
 			else:
-				tbldata = [["Item - continued from page %s" % pagenum, "Price", "count", "amount"], ]
+				firstcol = "Item - continued from page %s" % pagenum
+			tbldata = [[firstcol, "Quantity", "Ex VAT", "VAT", "Incl VAT"]]
+			tblcols = len(tbldata[0])
 
-			tbldata.extend([(self.trimstring(title, 10.5*cm, "DejaVu Serif", 9),
-							 "%.2f %s" % (cost, self.currency),
+			tbldata.extend([(self.trimstring(title, 9.5*cm, "DejaVu Serif", 8),
 							 count,
-							 "%.2f %s" % ((cost * count), self.currency))
-							for title,cost, count in self.rows[pagenum*15:(pagenum+1)*15]])
+							 "%.2f %s" % (cost, self.currency),
+							 vatrate and vatrate.shortstr or "No VAT",
+							 "%.2f %s" % ((cost * count) * (1+(vatpercent/Decimal(100))), self.currency))
+							for title,cost, count, vatrate, vatpercent in self.rows[pagenum*self.ROWS_PER_PAGE:(pagenum+1)*self.ROWS_PER_PAGE]])
 			style = [
-					('BACKGROUND',(0,0),(3,0),colors.lightgrey),
-					('ALIGN',(1,0),(3,-1),'RIGHT'),
+					('FONTSIZE', (0, 0), (-1, -1), 8),
+					('BACKGROUND',(0,0),(tblcols-1,0),colors.lightgrey),
+					('ALIGN',(1,0),(tblcols-1,-1),'RIGHT'),
 					('LINEBELOW',(0,0),(-1,0), 2, colors.black),
 					('OUTLINE', (0,0), (-1, -1), 1, colors.black),
 				]
 			if islastpage:
-				tbldata.append(['','','Total',"%.2f %s" % (sum([cost*count for title,cost,count in self.rows]),self.currency)])
-				style.append(('LINEABOVE', (-2,-1), (-1, -1), 2, colors.black))
+				totalexcl = sum([cost*count for title,cost,count,vatrate,vatpercent in self.rows])
+				totalvat = sum([cost*count*(vatpercent/Decimal(100)) for title,cost,count,vatrate,vatpercent in self.rows])
+				totalincl = sum([cost*count*(1+vatpercent/Decimal(100)) for title,cost,count,vatrate,vatpercent in self.rows])
+				if self.totalvat>0 and totalvat.quantize(Decimal('.01')) != self.totalvat:
+					raise Exception("Specified total VAT {0} does not match calcualted VAT {1}".format(self.totalvat, totalvat))
+
+				tbldata.extend([
+					('Total excl VAT', '', '','' , '%.2f %s' % (totalexcl, self.currency)),
+					('Total VAT', '', '', '', '%.2f %s' % (totalvat, self.currency)),
+					('Total incl VAT', '', '', '', '%.2f %s' % (totalincl, self.currency)),
+				])
+				style.extend([
+					('SPAN', (0, -3), (3, -3)),
+					('SPAN', (0, -2), (3, -2)),
+					('SPAN', (0, -1), (3, -1)),
+					('ALIGN', (0, -3), (0, -1), 'RIGHT'),
+					('LINEABOVE', (-4,-3), (-1, -3), 2, colors.black),
+				])
 			else:
 				tbldata.append(['          Continued on page %s' % (pagenum + 2), '', '', ''])
 				style.append(('ALIGN', (0, -1), (-1, -1), 'CENTER'))
-				style.append(('FONT', (0, -1), (-1, -1), 'Times-Italic'))
+				style.append(('FONT', (0, -1), (-1, -1), 'DejaVu Serif Italic'))
 
-			t = Table(tbldata, [10.5*cm, 2.5*cm, 1.5*cm, 2.5*cm])
+			t = Table(tbldata, [9.5*cm, 1.5*cm, 2.5*cm, 2*cm, 2.5*cm])
 			t.setStyle(TableStyle(style))
 			w,h = t.wrapOn(self.canvas,10*cm,10*cm)
 			t.drawOn(self.canvas, 2*cm, 18*cm-h)
@@ -167,18 +206,24 @@ class PDFInvoice(PDFBase):
 				self.canvas.drawCentredString(10.5*cm,17.3*cm-h, "This invoice is due: %s" % self.duedate.strftime("%B %d, %Y"))
 
 
-			t = self.canvas.beginText()
-			t.setTextOrigin(2*cm, 5*cm)
-			t.setFont("Times-Italic", 10)
-			t.textLine("PostgreSQL Europe is a French non-profit under the French 1901 Law. The association is not VAT registered.")
-			t.textLine("")
+			if islastpage:
+				t = self.canvas.beginText()
+				t.setTextOrigin(2*cm, 1.5*cm)
+				t.setFont("DejaVu Serif", 6)
+				self.textlines(t, """Penalty for late payment: Three times the French Legal Interest Rate on the due amount.
+Compensation due for any recovery costs incurred: €40
+Discount for prepayment: None.
+""")
+				self.canvas.drawText(t)
 
-			if islastpage and self.bankinfo:
-				t.setFont("Times-Bold", 10)
-				t.textLine("Bank references / Références bancaires / Bankverbindungen / Referencias bancarias")
+				if self.bankinfo:
+					t = self.canvas.beginText()
+					t.setTextOrigin(13*cm, 3*cm)
+					t.setFont("DejaVu Serif Bold", 9)
+					t.textLine("Bank references")
 
-				t.setFont("Times-Roman", 8)
-				self.textlines(t, """CCM PARIS 1-2 LOUVRE MONTORGUEIL
+					t.setFont("DejaVu Serif", 7)
+					self.textlines(t, """CCM PARIS 1-2 LOUVRE MONTORGUEIL
 28 RUE ETIENNE MARCEL
 75002 PARIS
 FRANCE
@@ -186,7 +231,7 @@ IBAN: FR76 1027 8060 3100 0205 2290 114
 BIC: CMCIFR2A
 """)
 
-			self.canvas.drawText(t)
+					self.canvas.drawText(t)
 
 			# Finish this page off, and optionally loop to another one
 			self.canvas.showPage()
@@ -233,12 +278,6 @@ class PDFRefund(PDFBase):
 		t.drawOn(self.canvas, 2*cm, 18*cm-h)
 
 		self.canvas.drawCentredString(10.5*cm, 17.3*cm-h, "This refund was issued {0}".format(self.refunddate.strftime("%B %d, %Y")))
-
-		t = self.canvas.beginText()
-		t.setTextOrigin(2*cm, 5*cm)
-		t.setFont("Times-Italic", 10)
-		t.textLine("PostgreSQL Europe is a French non-profit under the French 1901 Law. The association is not VAT registered.")
-		t.textLine("")
 
 		self.canvas.showPage()
 		self.canvas.save()

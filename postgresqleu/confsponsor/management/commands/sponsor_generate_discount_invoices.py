@@ -4,6 +4,7 @@
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.conf import settings
 
 from datetime import date, datetime, timedelta
 
@@ -66,7 +67,7 @@ class Command(BaseCommand):
 						# only support a registration-only style discount code, so only count it
 						# against that.
 						discountvalue = r.regtype.cost * code.discountpercentage/100
-					invoicerows.append(['Attendee "{0}"'.format(r.fullname), 1, discountvalue])
+					invoicerows.append(['Attendee "{0}"'.format(r.fullname), 1, discountvalue, r.conference.vat_registrations])
 				# All invoices are always due immediately
 				manager = InvoiceManager()
 				code.invoice = manager.create_invoice(

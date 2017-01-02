@@ -5,13 +5,14 @@
 {%block extrahead%}
 <style>
 table.invoiceconfirmtbl {
-   width: 550px;
+   width: 700px;
 }
 table.invoiceconfirmtbl td.desc {
 }
 table.invoiceconfirmtbl tr td.cost {
    text-align: right;
    white-space: nowrap;
+   width: 85px;
 }
 table.invoiceconfirmtbl tr.totalrow td.cost {
    border-top: 1px solid black;
@@ -70,15 +71,31 @@ it.
 <fieldset id="fldset_contents">
 <legend>Invoice contents</legend>
 <table border="0" cellspacing="0" cellpadding="1" class="invoiceconfirmtbl">
+<tr valign="top">
+  <td class="desc"></td>
+  <td class="cost">Amount</td>
+{%if totalwithvat != totalcost%}
+  <td class="cost">VAT</td>
+  <td class="cost">Total</td>
+{%endif%}
+</tr>
 {%for r in invoicerows%}
 <tr valign="top">
   <td class="desc">{{r.0|leadingnbsp}}</td>
-  <td class="cost">{{currency_symbol}} {{r.2|intcomma}}</td>
+  <td class="cost">{{currency_symbol}} {{r.2|floatformat:2|intcomma}}</td>
+{%if totalwithvat != totalcost %}
+  <td class="cost">{{r.3.vatpercent}}%</td>
+  <td class="cost">{{currency_symbol}} {{r.4|floatformat:2|intcomma}}</td>
+{%endif%}
 </tr>
 {%endfor%}
 <tr valign="top" class="totalrow">
   <td class="desc"></td>
-  <td class="cost">{{currency_symbol}} {{totalcost|intcomma}}</td>
+  <td class="cost">{{currency_symbol}} {{totalcost|floatformat:2|intcomma}}</td>
+{%if totalwithvat != totalcost %}
+  <td class="cost"></td>
+  <td class="cost">{{currency_symbol}} {{totalwithvat|floatformat:2|intcomma}}</td>
+{%endif%}
 </tr>
 </table>
 </fieldset>

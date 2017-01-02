@@ -7,7 +7,7 @@ from postgresqleu.accountinfo.lookups import UserLookup
 from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
 
 from models import Invoice, InvoiceLog, InvoiceProcessor, InvoicePaymentMethod
-from models import InvoiceRefund
+from models import InvoiceRefund, VatRate
 
 class InvoiceAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
 	class Meta:
@@ -37,6 +37,10 @@ class InvoiceAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
 		if self.cleaned_data.has_key('finalized'):
 			raise ValidationError("Can't edit total amount field on a finalized invoice!")
 		return self.cleaned_data['total_amount']
+	def clean_total_vat(self):
+		if self.cleaned_data.has_key('finalized'):
+			raise ValidationError("Can't edit total vat field on a finalized invoice!")
+		return self.cleaned_data['total_vat']
 	def clean_processor(self):
 		if "processor" in self.changed_data:
 			raise ValidationError("Sorry, we never allow editing of the processor!")
@@ -65,3 +69,4 @@ admin.site.register(InvoiceProcessor)
 admin.site.register(InvoicePaymentMethod, InvoicePaymentMethodAdmin)
 admin.site.register(InvoiceLog, InvoiceLogAdmin)
 admin.site.register(InvoiceRefund, InvoiceRefundAdmin)
+admin.site.register(VatRate)

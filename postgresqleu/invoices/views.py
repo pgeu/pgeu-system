@@ -14,7 +14,7 @@ import StringIO
 from datetime import datetime, timedelta
 
 from postgresqleu.util.decorators import user_passes_test_or_error
-from models import Invoice, InvoiceRow, InvoicePaymentMethod
+from models import Invoice, InvoiceRow, InvoicePaymentMethod, VatRate
 from forms import InvoiceForm, InvoiceRowForm, RefundForm
 from util import InvoiceWrapper, InvoiceManager, InvoicePresentationWrapper
 
@@ -179,6 +179,7 @@ def oneinvoice(request, invoicenum):
 			'formset': formset,
 			'invoice': invoice,
 			'currency_symbol': settings.CURRENCY_SYMBOL,
+			'vatrates': VatRate.objects.all(),
 			}, context_instance=RequestContext(request))
 
 @login_required

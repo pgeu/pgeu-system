@@ -5,8 +5,10 @@ from django.conf import settings
 from django.template import Context
 from django.template.loader import get_template
 
+from collections import defaultdict
 from datetime import datetime, date
 from dateutil import rrule
+from decimal import Decimal
 import importlib
 import os
 import base64
@@ -45,10 +47,15 @@ class InvoiceWrapper(object):
 		# generate the actual PDF
 
 		# Calculate the total
-		total = 0
+		total = Decimal(0)
+		totalvat = Decimal(0)
 		for r in self.invoice.invoicerow_set.all():
 			total += r.rowamount * r.rowcount
-		self.invoice.total_amount = total
+			if r.vatrate:
+				totalvat += r.rowamount * r.rowcount * r.vatrate.vatpercent / Decimal(100)
+		totalvat = totalvat.quantize(Decimal('.01')) # Round off to two digits
+		self.invoice.total_amount = total + totalvat
+		self.invoice.total_vat = totalvat
 
 		# Generate pdf
 		self.invoice.pdf_invoice = base64.b64encode(self.render_pdf_invoice())
@@ -76,21 +83,24 @@ class InvoiceWrapper(object):
 
 	def _render_pdf(self, preview=False, receipt=False):
 		PDFInvoice = getattr(importlib.import_module(settings.INVOICE_PDF_BUILDER), 'PDFInvoice')
-		pdfinvoice = PDFInvoice("%s\n%s" % (self.invoice.recipient_name, self.invoice.recipient_address),
+		pdfinvoice = PDFInvoice(self.invoice.title,
+								"%s\n%s" % (self.invoice.recipient_name, self.invoice.recipient_address),
 								self.invoice.invoicedate,
 								receipt and self.invoice.paidat or self.invoice.duedate,
 								self.invoice.pk,
 								os.path.realpath('%s/../../media/img/' % os.path.dirname(__file__)),
 								preview=preview,
 								receipt=receipt,
-								bankinfo=self.invoice.bankinfo)
+								bankinfo=self.invoice.bankinfo,
+								totalvat=self.invoice.total_vat,
+							)
 
 		# Order of rows is important - so preserve whatever order they were created
 		# in. This is also the order that they get rendered by automatically by
 		# djangos inline forms, so it should be consistent with whatever is shown
 		# on the website.
 		for r in self.invoice.invoicerow_set.all().order_by('id'):
-			pdfinvoice.addrow(r.rowtext, r.rowamount, r.rowcount)
+			pdfinvoice.addrow(r.rowtext, r.rowamount, r.rowcount, r.vatrate)
 
 		return pdfinvoice.save().getvalue()
 
@@ -327,6 +337,7 @@ class InvoiceManager(object):
 		# Create an accounting entry for this invoice. If we have the required
 		# information on the invoice, we can finalize it. If not, we will
 		# need to create an open ended one.
+
 		accountingtxt = 'Invoice #%s: %s' % (invoice.id, invoice.title)
 		accrows = [
 			(incomeaccount, accountingtxt, invoice.total_amount-transcost, None),
@@ -337,9 +348,26 @@ class InvoiceManager(object):
 			accrows.append(
 			(costaccount, accountingtxt, transcost, invoice.accounting_object),
 		)
+		if invoice.total_vat:
+			# If there was VAT on this invoice, create a separate accounting row for this
+			# part. As there can in theory (though maybe not in practice?) be multiple different
+			# VATs on the invoice, we need to summarize the rows.
+			vatsum = defaultdict(int)
+			for r in invoice.invoicerow_set.all():
+				if r.vatrate_id:
+					vatsum[r.vatrate.vataccount.num] += (r.rowamount * r.rowcount * r.vatrate.vatpercent / Decimal(100)).quantize(Decimal('0.01'))
+			total_vatsum = sum(vatsum.values())
+			if invoice.total_vat != total_vatsum:
+				raise Exception("Stored VAT total %s does not match calculated %s" % (invoice.total_vat, total_vatsum))
+
+			for accountnum, s in vatsum.items():
+				accrows.append(
+					(accountnum, accountingtxt, -s, None),
+				)
+
 		if invoice.accounting_account:
 			accrows.append(
-				(invoice.accounting_account, accountingtxt, -invoice.total_amount, invoice.accounting_object),
+				(invoice.accounting_account, accountingtxt, -(invoice.total_amount-invoice.total_vat), invoice.accounting_object),
 			)
 			leaveopen = False
 		else:
@@ -559,7 +587,9 @@ class InvoiceManager(object):
 			invoice.invoicerow_set.add(InvoiceRow(invoice=invoice,
 												  rowtext = _trunc_string(r[0], 100),
 												  rowcount = r[1],
-												  rowamount = r[2]))
+												  rowamount = r[2],
+												  vatrate = r[3],
+											  ))
 
 		if autopaymentoptions:
 			invoice.allowedmethods = InvoicePaymentMethod.objects.filter(auto=True)

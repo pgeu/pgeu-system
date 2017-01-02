@@ -43,6 +43,7 @@ from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrappe
 from postgresqleu.invoices.models import InvoiceProcessor
 from postgresqleu.mailqueue.util import send_mail, send_simple_mail
 
+from decimal import Decimal
 from operator import itemgetter
 from datetime import datetime, timedelta, date
 import base64
@@ -373,13 +374,13 @@ def reg_add_options(request, confname):
 		autocancel_hours = [conference.invoice_autocancel_hours, ]
 
 		if upsell_cost:
-			invoicerows.append(('Upgrade to {0}'.format(new_regtype.regtype), 1, upsell_cost))
+			invoicerows.append(('Upgrade to {0}'.format(new_regtype.regtype), 1, upsell_cost, conference.vat_registrations))
 			if new_regtype.invoice_autocancel_hours:
 				autocancel_hours.append(new_regtype.invoice_autocancel_hours)
 
 		for o in options:
 			# Yes, we include €0 options for completeness.
-			invoicerows.append((o.name, 1, o.cost))
+			invoicerows.append((o.name, 1, o.cost, conference.vat_registrations))
 			if o.invoice_autocancel_hours:
 				autocancel_hours.append(o.invoice_autocancel_hours)
 
@@ -1038,7 +1039,7 @@ def confirmreg(request, confname):
 			# (committed at the end of the view so if something
 			# goes wrong they automatically go back to unused)
 			invoicerows = invoicerows_for_registration(reg, True)
-			totalcost = sum([r[2] for r in invoicerows])
+			totalcost = sum([r[2]*(1+(r[3] and r[3].vatpercent or 0)/Decimal(100.0)) for r in invoicerows])
 
 			if len(invoicerows) <= 0:
 				return HttpResponseRedirect("../")
@@ -1074,7 +1075,7 @@ def confirmreg(request, confname):
 				request.user.email,
 				reg.firstname + ' ' + reg.lastname,
 				reg.company + "\n" + reg.address + "\n" + reg.country.name,
-				"%s invoice for %s" % (conference.conferencename, reg.email),
+				"%s registration for %s" % (conference.conferencename, reg.email),
 				datetime.now(),
 				datetime.now(),
 				invoicerows,
@@ -1096,7 +1097,15 @@ def confirmreg(request, confname):
 	# Figure out what should go on the invoice. Don't flag possible
 	# vouchers as used, since confirmation isn't done yet.
 	invoicerows = invoicerows_for_registration(reg, False)
+	for r in invoicerows:
+		# Calculate the with-vat information for this row
+		if r[3]:
+			r.append(r[2]*(100+r[3].vatpercent)/Decimal(100))
+		else:
+			r.append(r[2])
+
 	totalcost = sum([r[2] for r in invoicerows])
+	totalwithvat = sum([r[4] for r in invoicerows])
 
 	# It should be impossible to end up with zero invoice rows, so just
 	# redirect back if that happens
@@ -1112,6 +1121,7 @@ def confirmreg(request, confname):
 		'reg': reg,
 		'invoicerows': invoicerows,
 		'totalcost': totalcost,
+		'totalwithvat': totalwithvat,
 		'regalert': reg.regtype.alertmessage,
 		'warnings': registration_warnings,
 		})
@@ -1289,7 +1299,7 @@ def createvouchers(request):
 				invoice = Invoice(recipient_user=buyer,
 								  recipient_email=buyer.email,
 								  recipient_name=buyername,
-								  title='Prepaid vouchers for %s' % conference.conferencename,
+								  title='%s prepaid vouchers' % conference.conferencename,
 								  invoicedate=datetime.now(),
 								  duedate=datetime.now(),
 								  finalized=False,
@@ -1302,7 +1312,9 @@ def createvouchers(request):
 				invoice.invoicerow_set.add(InvoiceRow(invoice=invoice,
 													  rowtext='Voucher for "%s"' % regtype.regtype,
 													  rowcount=regcount,
-													  rowamount=regtype.cost))
+													  rowamount=regtype.cost,
+													  vatrate=conference.vat_registrations,
+												  ))
 				invoice.allowedmethods = InvoicePaymentMethod.objects.filter(auto=True)
 				invoice.save()
 			return HttpResponseRedirect('%s/' % batch.id)
@@ -1428,7 +1440,7 @@ def bulkpay(request, confname):
 				else:
 					# If this is the confirmation step, we flag vouchers as used
 					regrows = invoicerows_for_registration(regs[0], confirmstep)
-					s = sum([r[2] for r in regrows])
+					s = sum([r[1]*r[2] for r in regrows])
 					if s == 0:
 						# No payment needed
 						state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration type does not need payment'})
@@ -1459,7 +1471,7 @@ def bulkpay(request, confname):
 			# Trying to finish things off, are we? :)
 			if not errors:
 				# Verify the total cost
-				if int(request.POST['confirmed_total_cost']) != totalcost:
+				if Decimal(request.POST['confirmed_total_cost']) != totalcost:
 					messages.warning(request, 'Total cost changed, probably because somebody modified their registration during processing. Please verify the costs below, and retry.')
 					transaction.savepoint_rollback(savepoint)
 				else:
@@ -1506,7 +1518,7 @@ def bulkpay(request, confname):
 						request.user.email,
 						form.data['recipient_name'],
 						form.data['recipient_address'],
-						"%s bulk payment" % conference.conferencename,
+						"%s bulk registrations" % conference.conferencename,
 						datetime.now(),
 						datetime.now(),
 						invoicerows,

@@ -33,7 +33,7 @@ lower fees.
 		param.update({
 			'cmd': '_xclick',
 			'item_name': invoicestr.encode('utf-8'),
-			'amount': '%s.00' % invoiceamount,
+			'amount': '%.2f' % invoiceamount,
 			'invoice': invoiceid,
 			'return': '%s/p/paypal_return/' % settings.SITEBASE,
 			})

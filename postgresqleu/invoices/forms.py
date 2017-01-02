@@ -10,7 +10,7 @@ from models import Invoice, InvoiceRow, InvoicePaymentMethod
 from postgresqleu.accounting.models import Account, Object
 
 class InvoiceForm(forms.ModelForm):
-	hidden_until_finalized = ('total_amount', 'remindersent', )
+	hidden_until_finalized = ('total_amount', 'total_vat', 'remindersent', )
 	available_in_finalized = ('recipient_user', 'recipient_email', 'allowedmethods',)
 	accounting_account = forms.ChoiceField(choices=[], required=False)
 	accounting_object = forms.ChoiceField(choices=[], required=False)
@@ -66,6 +66,13 @@ class InvoiceRowForm(forms.ModelForm):
 	class Meta:
 		model = InvoiceRow
 		exclude = []
+
+	def __init__(self, *args, **kwargs):
+		super(InvoiceRowForm, self).__init__(*args, **kwargs)
+		self.fields['rowcount'].widget.attrs['class'] = "sumfield"
+		self.fields['rowamount'].widget.attrs['class'] = "sumfield"
+		self.fields['vatrate'].widget.attrs['class'] = "sumfield"
+		self.fields['vatrate'].required = False
 
 	def clean_rowamount(self):
 		if self.cleaned_data['rowamount'] == 0:

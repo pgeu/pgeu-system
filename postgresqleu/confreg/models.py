@@ -17,7 +17,7 @@ import datetime
 import pytz
 
 from postgresqleu.countries.models import Country
-from postgresqleu.invoices.models import Invoice
+from postgresqleu.invoices.models import Invoice, VatRate
 from regtypes import special_reg_types
 
 SKILL_CHOICES = (
@@ -109,6 +109,8 @@ class Conference(models.Model):
 	lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
 	newsjson = models.CharField(max_length=128, blank=True, null=True, default=None)
 	accounting_object = models.CharField(max_length=30, blank=True, null=True, verbose_name="Accounting object name")
+	vat_registrations = models.ForeignKey(VatRate, null=True, blank=True, verbose_name='VAT rate for registrations', related_name='vat_registrations')
+	vat_sponsorship = models.ForeignKey(VatRate, null=True, blank=True, verbose_name='VAT rate for sponsorships', related_name='vat_sponsorship')
 	invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1),], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
 	attendees_before_waitlist = models.IntegerField(blank=False, null=False, default=0, validators=[MinValueValidator(0),], verbose_name="Attendees before waitlist", help_text="Maximum number of attendees before enabling waitlist management. 0 for no waitlist management")
 
@@ -209,7 +211,7 @@ class RegistrationType(models.Model):
 	conference = models.ForeignKey(Conference, null=False)
 	regtype = models.CharField(max_length=64, null=False, blank=False)
 	regclass = models.ForeignKey(RegistrationClass, null=True, blank=True)
-	cost = models.IntegerField(null=False)
+	cost = models.DecimalField(decimal_places=2, max_digits=10, null=False)
 	active = models.BooleanField(null=False, blank=False, default=True)
 	activeuntil = models.DateField(null=True, blank=True)
 	inlist = models.BooleanField(null=False, blank=False, default=True)
@@ -254,7 +256,7 @@ class ShirtSize(models.Model):
 class ConferenceAdditionalOption(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
 	name = models.CharField(max_length=100, null=False, blank=False)
-	cost = models.IntegerField(null=False)
+	cost = models.DecimalField(decimal_places=2, max_digits=10, null=False)
 	maxcount = models.IntegerField(null=False)
 	public = models.BooleanField(null=False, blank=False, default=True, help_text='Visible on public forms (opposite of admin only)')
 	upsellable = models.BooleanField(null=False, blank=False, default=True, help_text='Can this option be purchased after the registration is completed')
@@ -641,7 +643,7 @@ class PrepaidVoucher(models.Model):
 class DiscountCode(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
 	code = models.CharField(max_length=100, null=False, blank=False)
-	discountamount = models.IntegerField(null=False, blank=False, default=0)
+	discountamount = models.DecimalField(decimal_places=2, max_digits=10, null=False)
 	discountpercentage = models.IntegerField(null=False, blank=False, default=0)
 	regonly = models.BooleanField(null=False, blank=False, default=False, help_text="Apply percentage discount only to the registration cost, not additional options. By default, it's applied to both.")
 	validuntil = models.DateField(blank=True, null=True)

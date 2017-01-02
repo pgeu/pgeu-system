@@ -267,6 +267,9 @@ def sponsor_signup(request, confurlname, levelurlname):
 							  level=level,
 							  twittername = form.cleaned_data.get('twittername', ''),
 							  invoiceaddr = form.cleaned_data['address'])
+			if settings.EU_VAT:
+				sponsor.vatnumber = form.cleaned_data['vatnumber']
+				sponsor.invatarea = form.cleaned_data['invatarea']
 			sponsor.save()
 			sponsor.managers.add(request.user)
 			sponsor.save()
@@ -275,13 +278,7 @@ def sponsor_signup(request, confurlname, levelurlname):
 
 			if level.instantbuy:
 				# Create the invoice, so it can be paid right away!
-				sponsor.invoice = create_sponsor_invoice(request.user,
-														 user_name,
-														 form.cleaned_data['name'],
-														 form.cleaned_data['address'],
-														 conference,
-														 level,
-														 sponsor.pk)
+				sponsor.invoice = create_sponsor_invoice(request.user, sponsor)
 				sponsor.invoice.save()
 				sponsor.save()
 				mailstr += "An invoice (#%s) has automatically been generated\nand is awaiting payment." % sponsor.invoice.pk
@@ -513,6 +510,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 		'unclaimedbenefits': unclaimedbenefits,
 		'noclaimbenefits': noclaimbenefits,
 		'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
+		'euvat': settings.EU_VAT,
 		}, RequestContext(request))
 
 @login_required
@@ -532,14 +530,7 @@ def sponsor_admin_generateinvoice(request, confurlname, sponsorid):
 
 	# Actually generate the invoice!
 	manager = sponsor.managers.all()[0]
-	user_name = manager.first_name + ' ' + manager.last_name
-	sponsor.invoice = create_sponsor_invoice(manager,
-											 user_name,
-											 sponsor.name,
-											 sponsor.invoiceaddr,
-											 sponsor.conference,
-											 sponsor.level,
-											 sponsor.pk)
+	sponsor.invoice = create_sponsor_invoice(manager, sponsor)
 	sponsor.invoice.save()
 	sponsor.save()
 	wrapper = InvoiceWrapper(sponsor.invoice)

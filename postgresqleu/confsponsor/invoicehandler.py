@@ -111,9 +111,22 @@ class InvoiceProcessor(object):
 
 
 # Generate an invoice for sponsorship
-def create_sponsor_invoice(user, user_name, name, address, conference, level, sponsorid):
+def create_sponsor_invoice(user, sponsor):
+	conference = sponsor.conference
+	level = sponsor.level
+
+	if settings.EU_VAT:
+		# VAT gets assigned on all sponsorships to customers *in the EU*
+		if sponsor.invatarea:
+			vatlevel = conference.vat_sponsorship
+		else:
+			vatlevel = None
+	else:
+		# Not caring about EU VAT, so assign whatever the conference said
+		vatlevel = conference.vat_sponsorship
+
 	invoicerows = [
-		['%s %s sponsorship' % (conference, level), 1, level.levelcost],
+		['%s %s sponsorship' % (conference, level), 1, level.levelcost, vatlevel],
 	]
 	if conference.startdate < date.today() + timedelta(days=5):
 		# If conference happens in the next 5 days, invoice is due immediately
@@ -127,19 +140,24 @@ def create_sponsor_invoice(user, user_name, name, address, conference, level, sp
 		# to 30 days from now.
 		duedate = datetime.now() + timedelta(days=30)
 
+	if settings.EU_VAT and sponsor.vatnumber:
+		addrstr = u"{0}\n{1}\n\nVAT: {2}".format(sponsor.name, sponsor.invoiceaddr, sponsor.vatnumber)
+	else:
+		addrstr = u"{0}\n{1}".format(sponsor.name, sponsor.invoiceaddr)
+
 	manager = InvoiceManager()
 	processor = invoicemodels.InvoiceProcessor.objects.get(processorname="confsponsor processor")
 	i = manager.create_invoice(
 		user,
 		user.email,
-		user_name,
-		'%s\n%s' % (name, address),
+		user.first_name + ' ' + user.last_name,
+		addrstr,
 		'%s sponsorship' % conference.conferencename,
 		datetime.now(),
 		duedate,
 		invoicerows,
 		processor = processor,
-		processorid = sponsorid,
+		processorid = sponsor.pk,
 		bankinfo = True,
 		accounting_account = settings.ACCOUNTING_CONFSPONSOR_ACCOUNT,
 		accounting_object = conference.accounting_object,
@@ -208,7 +226,7 @@ class VoucherInvoiceProcessor(object):
 # Generate an invoice for prepaid vouchers
 def create_voucher_invoice(sponsor, user, rt, num):
 	invoicerows = [
-		['Voucher for "%s"' % rt.regtype, num, rt.cost]
+		['Voucher for "%s"' % rt.regtype, num, rt.cost, rt.conference.vat_registrations]
 		]
 
 	manager = InvoiceManager()
