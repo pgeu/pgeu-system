@@ -21,10 +21,10 @@ def _int_with_default(s, default):
 		return default
 
 class SponsorSignupForm(forms.Form):
-	name = forms.CharField(label="Company name *", min_length=3, max_length=100, help_text="This name is used on invoice and in internal communication")
+	name = forms.CharField(label="Company name *", min_length=3, max_length=100, help_text="This name is used on invoices and in internal communication")
 	displayname = forms.CharField(label="Display name *", min_length=3, max_length=100, help_text="This name is displayed on websites and in public communication")
 	address = forms.CharField(label="Company invoice address *", min_length=10, max_length=500, widget=forms.Textarea)
-	vatnumber = forms.CharField(label="VAT Number", min_length=5, max_length=50, help_text="Enter EU VAT Number to be included on invoice if assigned one.", required=False)
+	vatnumber = forms.CharField(label="VAT Number", min_length=5, max_length=50, help_text="Enter EU VAT Number to be included on invoices if assigned one.", required=False)
 	invatarea = forms.BooleanField(label="In EU VAT Area", help_text="Uncheck this box if the company is located outside the EU VAT Area. If uncertain, leave checked.", required=False, initial=True)
 	url = forms.CharField(label="Company URL *", min_length=8, max_length=100)
 	twittername = forms.CharField(label="Company twitter", min_length=0, max_length=100, required=False, validators=[TwitterValidator, ])
