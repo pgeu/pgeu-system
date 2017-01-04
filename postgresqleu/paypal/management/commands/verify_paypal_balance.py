@@ -8,10 +8,11 @@
 
 
 from django.core.management.base import BaseCommand, CommandError
-from django.db import connection, transaction
+from django.db import transaction
 from django.conf import settings
 
 from postgresqleu.paypal.util import PaypalAPI
+from postgresqleu.accounting.util import get_latest_account_balance
 from postgresqleu.mailqueue.util import send_simple_mail
 
 class Command(BaseCommand):
@@ -24,16 +25,7 @@ class Command(BaseCommand):
 		# We only ever care about the primary currency
 		paypal_balance = api.get_primary_balance()
 
-		cursor = connection.cursor()
-		cursor.execute("SELECT year FROM accounting_year WHERE isopen")
-		year = cursor.fetchall()[0][0]
-
-		cursor.execute("SELECT sum(amount)+(SELECT amount FROM accounting_incomingbalance WHERE year_id=%(year)s AND account_id=%(account)s) FROM accounting_journalitem ji INNER JOIN accounting_journalentry je ON ji.journal_id=je.id WHERE je.year_id=%(year)s AND ji.account_id=%(account)s", {
-			'account': settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT,
-			'year': year,
-		})
-
-		accounting_balance = cursor.fetchall()[0][0]
+		accounting_balance = get_latest_account_balance(settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT)
 
 		if accounting_balance != paypal_balance:
 			send_simple_mail(settings.INVOICE_SENDER_EMAIL,

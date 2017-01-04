@@ -1,8 +1,8 @@
 #
-# This is the API entrypoints for the accounting system.
+# These are the internal API entrypoints for the accounting system.
 #
 
-from django.db import transaction
+from django.db import connection, transaction
 from django.db.models import Max
 from django.conf import settings
 
@@ -92,3 +92,25 @@ def create_accounting_entry(date,
 	except:
 		transaction.savepoint_rollback(sid)
 		raise
+
+
+def get_latest_account_balance(accountid):
+	# Start from the year with the first incoming balance (meaning that the previous year
+	# was closed and it was transferred) and sum up all accounting entries for the specified
+	# account since then. We intentionally include open items, so we can track pending transfers
+	# between the banks.
+	cursor = connection.cursor()
+
+	cursor.execute("""WITH incoming_balance(incoming_year, incoming_amount) AS (
+  SELECT year_id, amount FROM accounting_incomingbalance WHERE account_id=%(account)s
+  UNION ALL VALUES (0,0)
+  ORDER BY year_id DESC LIMIT 1
+)
+SELECT sum(amount)+COALESCE((SELECT incoming_amount FROM incoming_balance),0)
+ FROM accounting_journalitem ji INNER JOIN accounting_journalentry je ON ji.journal_id=je.id
+  WHERE account_id=%(account)s
+   AND  je.year_id >= (SELECT incoming_year FROM incoming_balance)""", {
+	   'account': accountid,
+   })
+
+	return cursor.fetchall()[0][0]
