@@ -220,7 +220,7 @@ if ENABLE_BRAINTREE:
 
 if ENABLE_TRUSTLY:
 	# Accounts to use for trustly transactions
-	ACCOUNTING_TRUSTLY_ACCOUNT=1624
+	ACCOUNTING_TRUSTLY_ACCOUNT=1972
 
 	# Load the keys
 	with open('postgresqleu/trustly_public.pem', 'r') as f:
