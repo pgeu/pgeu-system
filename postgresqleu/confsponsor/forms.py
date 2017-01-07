@@ -85,7 +85,7 @@ class PurchaseVouchersForm(forms.Form):
 		activeQ = Q(activeuntil__isnull=True) | Q(activeuntil__gt=date.today())
 		if self.data and self.data.has_key('regtype') and self.data['regtype'] and self.data.has_key('num') and self.data['num'] and _int_with_default(self.data['num'], 0) > 0:
 			rt = RegistrationType.objects.get(pk=self.data['regtype'])
-			self.fields['confirm'].help_text = 'Check this box to confirm that you will pay the generated invoice for {0} {1}.'.format(settings.CURRENCY_ABBREV, rt.cost * int(self.data['num']))
+			self.fields['confirm'].help_text = 'Check this box to confirm that you will pay the generated invoice'
 			self.fields['num'].widget.attrs['readonly'] = True
 			self.fields['regtype'].queryset = RegistrationType.objects.filter(pk=self.data['regtype'])
 		else:
