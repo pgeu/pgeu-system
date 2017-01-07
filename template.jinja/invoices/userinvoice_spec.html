@@ -1,0 +1,92 @@
+<table style="border: 1px solid black;">
+ <tr>
+  <td style="white-space: nowrap">Invoice number:</td>
+  <td>{{invoice.pk}}</td>
+ </tr>
+ <tr>
+   <td style="white-space: nowrap">Invoice status:</td>
+   <td>
+     {%if invoice.ispaid %}
+     {%if invoice.refund %}
+     {%if invoice.refund.completed%}<b>Refunded</b>{%elif invoice.refund.issued%}<b>Refund submitted</b> to payment provider and will complete soon.{%else%}<b>Pending refund</b>{%endif%}
+     {%else%}
+     <b>Paid</b>
+     {%endif%}
+     {%else%}
+     <b>Awaiting payment</b>
+     {%endif%}
+   </td>
+ </tr>
+ <tr>
+   <td style="white-space: nowrap">Invoice title:</td>
+   <td>{{invoice.title}}</td>
+ </tr>
+ <tr>
+   <td style="white-space: nowrap">Total amount:</td>
+   <td>{{currency_symbol}}{{invoice.total_amount}}</td>
+ </tr>
+ <tr>
+   <td style="white-space: nowrap">Due date:</td>
+   <td{%if invoice.isexpired%} style="color:red"{%endif%}>{{invoice.duedate|date:"Y-m-d"}}</td>
+</tr>
+{%if invoice.isexpired and invoice.canceltime%}
+ <tr>
+   <td style="white-space: nowrap">Auto cancel:</td>
+   <td>If not paid before {{invoice.canceltime|date:"Y-m-d H:i"}}, this invoice will automatically be cancelled.</td>
+ </tr>
+{%endif%}
+ <tr>
+   <td style="white-space: nowrap">Invoice:</td>
+   <td><a href="/invoices/{{invoice.pk}}/{%if fromsecret or not invoice.recipient_user%}{{invoice.recipient_secret}}/{%endif%}pdf/">View PDF</a></td>
+ </tr>
+{%if invoice.ispaid%}
+ <tr>
+   <td style="white-space: nowrap">Receipt:</td>
+   <td><a href="/invoices/{{invoice.pk}}/{%if fromsecret or not invoice.recipient_user%}{{invoice.recipient_secret}}/{%endif%}receipt/">View receipt</a></td>
+ </tr>
+{%else%}
+ <tr>
+   <td style="white-space: nowrap">Pay invoice:</td>
+   <td>
+     <p>
+       This invoice can be paid using one of the methods listed below. Note
+       that <b>only</b> payments made using these methods are accepted.
+     </p>
+     <ul>
+     {%for method in invoice.allowedmethodwrappers%}
+     <li><h3>{{method.name}}</h3>
+       {%if method.ok%}
+       <p>{{method.description}}</p>
+{%if method.available%}
+       <p><a href="{{method.paymenturl}}">Proceed</a> to pay with {{method.name}}</p>
+{%else%}
+       <p><i>This method is currently not available. {{method.unavailable_reason}}</i></p>
+{%endif%}
+       {%else%}
+       <p>An error occurred when initializing this payment method. Unfortunately, it is not currently available. Please contact the PostgreSQL Europe treasurer to report this.</p>
+       {%endif%}
+     </li>
+     {%empty%}
+     There are no payment methods allowed for this invoice. Please contact
+     PostgreSQL Europe &lt;treasurer at postgresql dot eu&gt; reporting
+     your invoice number to get one or more methods assigned to it.
+     {%endfor%}
+     </ul>
+   </td>
+ </tr>
+{%endif%}
+{%if invoice.refund and invoice.refund.refund_pdf%}
+ <tr>
+   <td style="white-space: nowrap">Refund:</td>
+   <td><a href="/invoices/{{invoice.pk}}/{%if fromsecret or not invoice.recipient_user%}{{invoice.recipient_secret}}/{%endif%}refundnote/">View refund note</a></td>
+ </tr>
+{%endif%}
+
+{%if not fromsecret%}
+<tr>
+   <td style="white-space: nowrap">External link:</td>
+   <td>Using <a href="/invoices/{{invoice.pk}}/{{invoice.recipient_secret}}/">this link</a> you can give somebody else access to
+view or pay this invoice, without being logged in to your account.</td>
+</tr>
+{%endif%}
+</table>

@@ -1,0 +1,27 @@
+{%extends conftemplbase %}
+{%load markup%}
+{%block title%}Conference Schedule - {{conference}}{%endblock%}
+{%block content%}
+<h1>Conference Schedule - {{conference}}</h1>
+<a href="../../">Back</a><br/>
+
+{%if speaker.photofile %}
+<img src="../../../../speaker/{{speaker.id}}/photo/" align="right" />
+{%endif%}
+<h2>{{speaker.name}}</h2>
+{%if speaker.company%}<div>Company: {{speaker.company}}</div>{%endif%}
+{%if speaker.twittername%}<div>Twitter: <a href="https://twitter.com/{{speaker.twittername}}">{{speaker.twittername}}</a></div>{%endif%}
+<p>
+{{speaker.abstract|markdown}}
+</p>
+
+<h2>Sessions</h2>
+<ul>
+{%for session in sessions%}
+ <li><a href="../../session/{{session.id}}-{{session.title|slugify}}/">{{session.title}}</a></li>
+{%endfor%}
+</ul>
+
+
+{%endblock%}
+

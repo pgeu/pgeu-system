@@ -1,0 +1,90 @@
+{%extends conftemplbase %}
+{%load humanize%}
+{%load leadingnbsp%}
+{%block title%}Conference Registration - {{conference}}{%endblock%}
+{%block extrahead%}
+<style>
+table.invoiceconfirmtbl {
+   width: 550px;
+}
+table.invoiceconfirmtbl td.desc {
+}
+table.invoiceconfirmtbl tr td.cost {
+   text-align: right;
+   white-space: nowrap;
+}
+table.invoiceconfirmtbl tr.totalrow td.cost {
+   border-top: 1px solid black;
+}
+form input[type=submit] {
+   width: 200px !important;
+}
+</style>
+<script language="javascript">
+function confirmInvoice() {
+   return confirm('Once you proceed to payment, an invoice will be generated for your registration, and you will no longer be able to change it.\n\nThis invoice will be addressed to the person, company and address specified in the registration.\n\nThe invoice will be delivered as a PDF in your browser, no paper invoice will be sent.\n\nAre you sure you want to proceed to payment?');
+}
+</script>
+
+{%endblock%}
+{%block content%}
+<h1>Conference Registration - {{conference}}</h1>
+
+<h2>Confirm additional options</h2>
+<p>
+The details below will be included on your invoice, as entered on your
+registration. If this is in any way incorrect, please contact
+<a href="mailto:{{conference.contactaddr}}">{{conference.contactaddr}}</a>.
+</p>
+
+<form method="post" action="." class="pgeuregformconfirm">{% csrf_token %}
+<fieldset id="fldset_recipient">
+<legend>Invoice recipient</legend>
+<div>
+{{reg.firstname}} {{reg.lastname}}<br/>
+{%if reg.company%}{{reg.company}}<br/>{%endif%}
+{{reg.address|linebreaksbr}}<br/>
+{{reg.country.name}}<br/>
+</div>
+</fieldset>
+
+<fieldset id="fldset_contents">
+<legend>Invoice contents</legend>
+<table border="0" cellspacing="0" cellpadding="1" class="invoiceconfirmtbl">
+{%if upsell_cost%}
+<tr valign="top">
+  <td class="desc">Upgrade to '{{newreg.regtype}}'</td>
+  <td class="cost">{{curency_symbol}} {{upsell_cost|intcomma}}</td>
+</tr>
+{%endif%}
+{%for o in options%}
+<tr valign="top">
+  <td class="desc">{{o.name}} <input type="hidden" name="ao_{{o.id}}" value="1"></td>
+  <td class="cost">{{currency_symbol}} {{o.cost|intcomma}}</td>
+</tr>
+{%endfor%}
+<tr valign="top" class="totalrow">
+  <td class="desc"></td>
+  <td class="cost">{{currency_symbol}} {{totalcost|intcomma}}</td>
+</tr>
+</table>
+</fieldset>
+
+<p>
+Once you have confirmed the details,
+{%if totalcost%}
+an invoice will be generated, and this invoice will be
+<i>due for immediate payment</i>. Your additional options will not be
+confirmed until this invoice is paid, and may be cancelled without
+warning!
+{%else%}
+the options requested will be added to your registration.
+{%endif%}
+</p>
+
+<input type="hidden" name="confirm" value="yes">
+<input type="submit" name="submit" value="Confirm and order options" {%if totalcost%}onclick="return confirmInvoice()"{%endif%}><br/>
+<input type="submit" name="submit" value="Back">
+
+</form>
+{%endblock%}

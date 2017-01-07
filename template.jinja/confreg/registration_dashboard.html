@@ -1,0 +1,161 @@
+{%extends conftemplbase %}
+{%load join_days %}
+{%block title%}Your Registration - {{conference}}{%endblock%}
+{%block extrahead%}
+<style>
+div#dash_pagelinks_wrap {
+   text-align: center;
+}
+ul.dash_pagelinks li {
+   display: inline;
+}
+</style>
+{%endblock%}
+{%block content%}
+{% if messages %}
+<ul style="background-color: yellow;">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<h1>Your Registration</h1>
+
+<p>
+Your registration (for {{reg.firstname}} {{reg.lastname}}) has been
+completed on {{reg.payconfirmedat}}. Welcome to {{conference}}!
+</p>
+<p>
+On this page you will find all necessary information for attendees
+of the event. We also recommend that you regularly check the
+main <a href="{{conference.confurl}}">event website</a> for public
+news!
+</p>
+<div id="dash_pagelinks_wrap">
+ <ul class="dash_pagelinks" >
+  <li>&bull; <a href="#mails">Information emails</a> &bull;</li>
+{%if wikipages%}
+  <li><a href="#wiki">Wiki pages</a> &bull;</li>
+{%endif%}
+{%if signups%}
+  <li><a href="#signups">Signups</a> &bull;</li>
+{%endif%}
+  <li><a href="#summary">Registration summary</a> &bull;</li>
+{%if availableoptions%}
+  <li><a href="#options">Additional options</a> &bull;</li>
+{%endif%}
+{%if conference.callforpapersopen%}
+  <li><a href="/events/callforpapers/{{conference.urlname}}/">Call for papers</a> &bull;</li>
+{%elif is_speaker%}
+  <li><a href="/events/callforpapers/{{conference.urlname}}/">Your speaker profile</a> &bull;</li>
+{%endif%}
+ </ul>
+</div>
+
+<a name="mails"></a>
+<h2>Information emails</h2>
+<p>
+The following emails have been sent to attendees of this conference.
+Any future messages sent will both be sent to <i>{{reg.email}}</i> and
+listed here. To ensure that messages are not filtered, we suggest that you
+white-list the address <i>{{conference.contactaddr}}</i> in your
+spamfilters.
+</p>
+<ul>
+{%for m in mails%}
+  <li><a href="mail/{{m.id}}/">{{m.subject}}</a> (<i>sent {{m.sentat|date:"Y-m-d H:i"}}</i>)</li>
+{%endfor%}
+</ul>
+
+{%if wikipages%}
+<a name="wiki"></a>
+<h2>Wiki pages</h2>
+<ul>
+{%for p in wikipages%}
+ <li><a href="wiki/{{p.url}}/">{{p.title}}</a> (last modified {{p.publishedat|date:"Y-m-d H:i"}})</li>
+{%endfor%}
+</ul>
+{%endif%}
+
+{%if signups%}
+<a name="signups"></a>
+<h2>Signups</h2>
+<ul>
+{%for s in signups%}
+ <li><a href="signup/{{s.id}}/">{{s.title}}</a>{%if s.closed%} (closed){%elif s.deadline%} (closes {{s.deadline|date:"Y-m-d H:i"}}){%endif%}{%if s.savedat%} - you responded on {{s.savedat|date:"Y-m-d H:i"}}{%endif%}</li>
+{%endfor%}
+</ul>
+{%endif%}
+
+<a name="summary"></a>
+<h2>Registration summary</h2>
+<p>
+<dl>
+ <dt>Registration type</dt>
+ <dd>Your registration type is <i>{{reg.regtype}}</i>.
+{%if reg.regtype.days.count %}
+This registration type gives you access to the conference on {{reg.regtype.days.all|join_days}}.
+{%endif%}
+ </dd>
+
+{%if reg.additionaloptions.all%}
+ <dt>Additional options</dt>
+ <dd>You are registered for the following additional options:
+   <ul>
+{%for a in reg.additionaloptions.all%}
+    <li>{{a.name}}</li>
+{%endfor%}
+   </ul>
+ </dd>
+{%endif%}
+
+{%if invoices%}
+ <dt>Invoice and receipts</dt>
+ <dd>You can download a copy of your invoices and receipts:<ul>
+{%for t,i in invoices%}
+  <li><a href="/invoices/{{i.id}}/{{i.recipient_secret}}/">{{t}}</a></li>
+{%endfor%}
+</ul>
+</p>
+If you have made any additional orders, you can always find a copy of all
+invoices and receipts in the <a href="/invoices/">invoice section</a>.
+ </dd>
+{%endif%}
+
+</dl>
+</p>
+
+
+{%if availableoptions%}
+<a name="options"></a>
+<h2>Additional options</h2>
+{%if pendingadditional%}
+<p>
+You have a pending order for additional options, wich has not yet been
+paid. Please pay this invoice as soon as possible to ensure your
+registration is completed!
+</p>
+{%with invoice=pendingadditional.invoice%}
+{%include "invoices/userinvoice_spec.html"%}
+{%endwith%}
+{%else%}
+<p>
+There are additional options that you can add to your registration. Note
+that many of these have limited availability, so if you want to register
+for one of them, we suggest you do so as soon as possible. Note that some
+options may not be available due to being sold out or due to an existing
+registration being mutually exlusive.
+</p>
+<form method="post" action="addopt/">{%csrf_token%}
+{%for o in availableoptions %}
+<input type="checkbox" name="ao_{{o.id}}" value="1" /> {{o}}<br/>
+{%endfor%}
+<br/>
+<input type="submit" value="Register for additional options">
+</form>
+{%endif%}
+
+{%endif%}
+
+{%endblock%}

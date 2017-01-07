@@ -1,0 +1,100 @@
+{%extends conftemplbase %}
+{%load markup%}
+{%block title%}Conference Session - {{conference}}{%endblock%}
+{%block extrahead%}
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script language="javascript">
+google.load("visualization", "1", {packages:["corechart"]});
+google.setOnLoadCallback(drawCharts);
+function prep_datatable() {
+   var d = new google.visualization.DataTable();
+   d.addColumn('string', 'Rating');
+   d.addColumn('number', 'Count');
+   return d;
+}
+function drawCharts() {
+{%for f in feedbackdata%}
+// {{f.key}}
+   var data = prep_datatable();
+   data.addRows([{%for v in f.num%}['{{forloop.counter}}',{{v}}],{%endfor%}]);
+   var options = {
+      'title': '{{f.title}}',
+   };
+   var chart = new google.visualization.PieChart(document.getElementById('chart_{{f.key}}'));
+   chart.draw(data, options);
+
+{%endfor%}
+}
+</script>
+
+<style>
+div.feedbackchart {
+   width: 47%;
+   display: inline-block;
+}
+</style>
+{%endblock%}
+
+{%block content%}
+<h1>Conference Session - {{conference}}</h1>
+<a href="../">Back</a><br/>
+
+<h2>{{session.title}}</h2>
+<p>
+<b>Status: </b>{{session.status_string_long}}<br/>
+</p>
+
+<p>
+{{session.abstract|markdown}}
+</p>
+
+{%if session.submissionnote%}
+<h3>Submission notes</h3>
+<p>
+{{session.submissionnote}}
+</p>
+{%endif%}
+
+{%if feedbackcount%}
+<h2>Feedback</h2>
+{%if conference.feedbackopen%}
+<h3>Preliminary feedback!</h3>
+<p>
+This is preliminary feedback only, since the feedback system is still
+open. It's only shown to people registered as testers.
+</p>
+{%endif%}
+
+<p>
+The following feedback has been given on this presentation by
+{{feedbackcount}} people.
+</p>
+{%for f in feedbackdata%}
+<div id="chart_{{f.key}}" class="feedbackchart">
+</div>
+{%endfor%}
+
+{%if feedbacktext%}
+<h3>Comments</h3>
+<table border="1" cellspacing="0" cellpadding="2">
+ <tr>
+  <th>Comment</th>
+{%for f in feedbackfields%}
+  <th>{{f}}</th>
+{%endfor%}
+ </tr>
+{%for fb in feedbacktext%}
+ <tr>
+  <td>{{fb.feedback}}</td>
+{%for f in fb.scores%}
+  <td>{{f}}</td>
+  {%endfor%}
+ </tr>
+{%endfor%}
+</table>
+
+{%endif%}
+
+{%endif%}
+{%endblock%}
+

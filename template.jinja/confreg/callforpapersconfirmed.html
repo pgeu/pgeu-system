@@ -1,0 +1,27 @@
+{%extends conftemplbase %}
+{%block title%}Confirm session - {{conference}}{%endblock%}
+{%block content%}
+<h1>Confirm session - {{conference}}</h1>
+
+<p>
+Your session <strong>{{session.title}}</strong> has now been
+confirmed!
+</p>
+
+<p>
+We look forward to seeing you at {{conference}}!
+</p>
+
+{%if conference.active %}
+<p>
+If you have not already done so, you can now proceed to
+<a href="/events/register/{{conference.urlname}}/">register</a>
+for the conference.
+</p>
+{%endif%}
+
+<p>
+<a href="../../">Return</a> to your list of sessions.
+</p>
+{%endblock%}
+
