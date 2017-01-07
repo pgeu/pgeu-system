@@ -34,11 +34,21 @@ class SponsorshipBenefitInline(admin.TabularInline):
 	extra = 1
 	formset = SponsorshipBenefitInlineFormset
 
+class SponsorshipLevelForm(forms.ModelForm):
+	class Meta:
+		model = SponsorshipLevel
+		exclude = []
+
+	def __init__(self, *args, **kwargs):
+		super(SponsorshipLevelForm, self).__init__(*args, **kwargs)
+		self.fields['paymentmethods'].label_from_instance = lambda x: x.internaldescription
+
 class SponsorshipLevelAdmin(admin.ModelAdmin):
 	list_filter = ['conference', ]
 	list_display = ['levelname', 'conference', ]
 	inlines = [SponsorshipBenefitInline, ]
 	actions = ['copy_sponsorshiplevel', ]
+	form = SponsorshipLevelForm
 
 	def copy_sponsorshiplevel(self, request, queryset):
 		source_level = queryset.all()
