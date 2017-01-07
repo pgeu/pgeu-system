@@ -364,6 +364,7 @@ class SpeakerAdminForm(forms.ModelForm):
 
 class SpeakerAdmin(admin.ModelAdmin):
 	list_display = ['user', 'email', 'fullname', 'has_abstract', 'has_photo']
+	search_fields = ['fullname', 'user__email']
 	ordering = ['fullname']
 	form = SpeakerAdminForm
 
