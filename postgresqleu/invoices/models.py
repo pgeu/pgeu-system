@@ -110,6 +110,10 @@ class Invoice(models.Model):
 	accounting_object = models.CharField(null=True, blank=True, max_length=30, verbose_name="Accounting object")
 
 	@property
+	def has_recipient_user(self):
+		return self.recipientuser and True or False
+
+	@property
 	def ispaid(self):
 		return self.paidat is not None
 
