@@ -242,11 +242,6 @@ class RegistrationType(models.Model):
 		else:
 			return self.cost
 
-	def is_registered_type(self):
-		# Starts with * means "not attending"
-		if self.regtype.startswith('*'): return False
-		return True
-
 	@property
 	def stringcost(self):
 		return str(self.cost)
