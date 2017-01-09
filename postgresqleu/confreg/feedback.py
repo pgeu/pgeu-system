@@ -4,7 +4,7 @@ from django.db.models import Count
 from django.db import connection
 
 from models import Conference, ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
-from views import ConferenceContext
+from views import ConferenceContext, render_conference_response
 
 from collections import OrderedDict
 
@@ -52,10 +52,9 @@ def feedback_report(request, confname):
 	else:
 		sections.append(currentsection)
 
-	return render_to_response('confreg/conference_feedback.html', {
-		'conference': conference,
+	return render_conference_response(request, conference, 'reg', 'confreg/conference_feedback.html', {
 		'feedback': sections,
-	}, context_instance=ConferenceContext(request, conference))
+	})
 
 
 def build_toplists(what, query):
@@ -92,9 +91,8 @@ def feedback_sessions(request, confname):
 	# Now let's do the speakers
 	toplists.extend(build_toplists('Speakers', "SELECT (SELECT string_agg(fullname, ', ') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker css ON css.speaker_id=spk.id WHERE css.conferencesession_id=s.id) AS speakername, avg(fb.{{key}}), count(*), stddev(fb.{{key}}) FROM confreg_conferencesessionfeedback fb INNER JOIN confreg_conferencesession s ON fb.session_id=s.id WHERE s.conference_id=%s AND fb.{{key}}>0 GROUP BY speakername HAVING count(*)>%s ORDER BY 2 DESC" % (conference.id, minvotes)))
 
-	return render_to_response('confreg/conference_session_feedback.html', {
-		'conference': conference,
+	return render_conference_response(request, conference, 'reg', 'confreg/conference_session_feedback.html', {
 		'toplists': toplists,
 		'minvotes': minvotes,
 		'commented_sessions': commented_sessions,
-	}, context_instance=ConferenceContext(request, conference))
+	})
