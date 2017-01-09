@@ -154,9 +154,9 @@ def _registration_dashboard(request, conference, reg):
 	# Any invoices that should be linked need to be added
 	invoices = []
 	if reg.invoice:
-		invoices.append(('Registration invoice and receipt', reg.invoice))
+		invoices.append(('Registration invoice and receipt', InvoicePresentationWrapper(reg.invoice,'.')))
 	for pao in PendingAdditionalOrder.objects.filter(reg=reg, invoice__isnull=False):
-		invoices.append(('Additional options invoice and receipt', pao.invoice))
+		invoices.append(('Additional options invoice and receipt', InvoicePresentationWrapper(pao.invoice, '.')))
 
 	return render_conference_response(request, conference, 'reg', 'confreg/registration_dashboard.html', {
 		'reg': reg,
@@ -1223,7 +1223,7 @@ def invoice(request, confname, regid):
 
 	return render_conference_response(request, conference, 'reg', 'confreg/invoice.html', {
 			'reg': reg,
-			'invoice': reg.invoice,
+			'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/register/%s/" % (settings.SITEBASE, conference.urlname)),
 			})
 
 @login_required
