@@ -132,9 +132,6 @@ urlpatterns = patterns('',
 	(r'^community/members/$', postgresqleu.membership.views.userlist),
 	(r'^admin/membership/_email/$', 'postgresqleu.membership.views.admin_email'),
 
-	# Merchandise redirect
-	(r'^merchandise/', RedirectView.as_view(url='http://postgresqleu.spreadshirt.net/', permanent=False)),
-
 	# Elections
 	(r'^elections/$', postgresqleu.elections.views.home),
 	(r'^elections/(\d+)/$', postgresqleu.elections.views.election),
