@@ -4,7 +4,7 @@ from django.db.models import Count
 from django.db import connection
 
 from models import Conference, ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
-from views import ConferenceContext, render_conference_response
+from views import render_conference_response
 
 from collections import OrderedDict
 

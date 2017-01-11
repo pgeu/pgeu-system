@@ -1,6 +1,4 @@
-{%extends conftemplbase %}
-{%load humanize%}
-{%load leadingnbsp%}
+{%extends "base.html" %}
 {%block title%}Conference Registration - {{conference}}{%endblock%}
 {%block extrahead%}
 <style>
@@ -58,13 +56,13 @@ way incorrect, go <a href="../">back</a> to your registration and adjust
 it.
 </p>
 
-<form method="post" action="." class="pgeuregformconfirm">{% csrf_token %}
+<form method="post" action="." class="pgeuregformconfirm">{{ csrf_input }}
 <fieldset id="fldset_recipient">
 <legend>Invoice recipient</legend>
 <div>
 {{reg.firstname}} {{reg.lastname}}<br/>
 {%if reg.company%}{{reg.company}}<br/>{%endif%}
-{{reg.address|linebreaksbr}}<br/>
+{{"<br>".join(reg.address.splitlines())}}<br/>
 {{reg.country.name}}<br/>
 </div>
 </fieldset>
@@ -82,19 +80,19 @@ it.
 {%for r in invoicerows%}
 <tr valign="top">
   <td class="desc">{{r.0|leadingnbsp}}</td>
-  <td class="cost">{{currency_symbol}} {{r.2|floatformat:2|intcomma}}</td>
+  <td class="cost">{{r.2|currency_format}}</td>
 {%if totalwithvat != totalcost %}
   <td class="cost">{{r.3.vatpercent}}%</td>
-  <td class="cost">{{currency_symbol}} {{r.4|floatformat:2|intcomma}}</td>
+  <td class="cost">{{r.4|currency_format}}</td>
 {%endif%}
 </tr>
 {%endfor%}
 <tr valign="top" class="totalrow">
   <td class="desc"></td>
-  <td class="cost">{{currency_symbol}} {{totalcost|floatformat:2|intcomma}}</td>
+  <td class="cost">{{totalcost|currency_format}}</td>
 {%if totalwithvat != totalcost %}
   <td class="cost"></td>
-  <td class="cost">{{currency_symbol}} {{totalwithvat|floatformat:2|intcomma}}</td>
+  <td class="cost">{{totalwithvat|currency_format}}</td>
 {%endif%}
 </tr>
 </table>

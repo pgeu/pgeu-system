@@ -1,5 +1,4 @@
-{%extends conftemplbase %}
-{%load markup%}
+{%extends "base.html" %}
 {%block title%}Conference Session Feedback - {{conference}}{%endblock%}
 {%block content%}
 <h1>Conference Session Feedback - {{conference}}</h1>
@@ -13,18 +12,13 @@ Jump to <a href="#toplists">toplists</a>.
 </p>
 
 <h2>Comments per session</h2>
-{%for session, comment in commented_sessions%}
-{%ifchanged session%}
-{%if not forloop.first%}
-</ul>
-{%endif%}
-<h3>{{session}}</h3>
+{%for g in commented_sessions|groupby('0')%}
+<h3>{{g.grouper}}</h3>
 <ul>
-{%endifchanged%}
- <li>{{comment}}</li>
-{%if forloop.last%}
+{%for comment in g.list %}
+ <li>{{comment.1}}</li>
+{%endfor%}
 </ul>
-{%endif%}
 {%endfor%}
 
 <p>
@@ -34,7 +28,7 @@ Jump to <a href="#toplists">toplists</a>.
 <a name="toplists"></a>
 <h1>Toplists</h1>
 
-<form method="post" action="./#toplists">{% csrf_token %}
+<form method="post" action="./#toplists">{{ csrf_input }}
 Minimum number of votes required: <input type="text" name="minvotes" value="{{minvotes}}" style="width:50px">
  <input type="submit" value="Update">
 </form>
@@ -51,9 +45,9 @@ Minimum number of votes required: <input type="text" name="minvotes" value="{{mi
 {%for title,avg,votes,stddev in toplist.list%}
  <tr>
   <td>{{title}}</td>
-  <td>{{avg|floatformat:1}}</td>
+  <td>{{avg|floatstr(1)}}</td>
   <td>{{votes}}</td>
-  <td>{{stddev|floatformat:1}}</td>
+  <td>{{stddev|floatstr(1)}}</td>
  </tr>
 {%endfor%}
 </table>

@@ -35,6 +35,7 @@ class Wikipage(models.Model, DiffableModel):
 	viewer_attendee = models.ManyToManyField(ConferenceRegistration, blank=True, related_name='viewer_attendees', verbose_name="Viewer attendees")
 	editor_attendee = models.ManyToManyField(ConferenceRegistration, blank=True, related_name='editor_attendees', verbose_name="Editor attendees")
 
+	_unsafe_attributes = ('viewer_regtype', 'editor_regtype', 'viewer_attendee', 'editor_attendee')
 	class Meta:
 		unique_together = [
 			('conference', 'url', )
@@ -74,6 +75,8 @@ class WikipageHistory(models.Model):
 	author = models.ForeignKey(ConferenceRegistration, null=False, blank=False)
 	publishedat = models.DateTimeField(null=False, blank=False)
 	contents = models.TextField(null=False, blank=False)
+
+	_safe_attributes = ('id', 'author', 'page', 'publishedat', 'contents', )
 
 	class Meta:
 		ordering = ('-publishedat',)

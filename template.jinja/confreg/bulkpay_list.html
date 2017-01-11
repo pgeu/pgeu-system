@@ -1,4 +1,4 @@
-{%extends conftemplbase %}
+{%extends "base.html" %}
 {%block title%}Conference registration bulk payments{%endblock%}
 {%block extrahead%}
 <script language="javascript">
@@ -71,7 +71,7 @@ has been paid.
 </ul>
 {% endif %}
 
-<form method="POST" action=".">{% csrf_token %}
+<form method="POST" action=".">{{ csrf_input }}
 <table border="0">
 {{form}}
 </table>
@@ -99,9 +99,9 @@ has been paid.
 <input type="hidden" name="confirmed_total_cost" value="{{totalcost}}"/>
 <input type="submit" name="submit" value="Confirm above registrations and generate invoice" onclick="return confirmInvoice()"/>
 {%endif%}
-{%endif%}{%comment%}state exists{%endcomment%}
+{%endif%}{# state exists #}
 
 </form>
-{%endif%}{%comment%}if activewaitlist{%endcomment%}
+{%endif%}{# if activewaitlist #}
 
 {%endblock%}

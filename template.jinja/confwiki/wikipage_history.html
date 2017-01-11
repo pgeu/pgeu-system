@@ -1,5 +1,4 @@
-{%extends conftemplbase %}
-{%load markup%}
+{%extends "base.html" %}
 {%block title%}{{page.title}} - {{conference}}{%endblock%}
 {%block extrahead%}
 <style>
@@ -20,7 +19,7 @@ table.versiontable tr td,th {
 </ul>
 {% endif %}
 
-<form method="post" action=".">{%csrf_token%}
+<form method="post" action=".">{{ csrf_input }}
 <table border="1" class="versiontable">
 <tr>
  <th>Diff<br/>from</th>
@@ -31,14 +30,14 @@ table.versiontable tr td,th {
 <tr>
  <td></td>
  <td><input type="radio" name="to" value="-1"{%if not toid%} CHECKED{%endif%}></td>
- <td>{{page.publishedat|date:"Y-m-d H:i"}}</td>
+ <td>{{page.publishedat.strftime("%Y-%m-%d %H:%M")}}</td>
  <td>{{page.author.fullname}}</td>
 </tr>
-{%for h in page.wikipagehistory_set.all%}
+{%for h in page.wikipagehistory_set.all()%}
 <tr>
- <td><input type="radio" name="from" value="{{h.id}}"{%if fromid == h.id or forloop.first and not fromid%} CHECKED{%endif%}></td>
+ <td><input type="radio" name="from" value="{{h.id}}"{%if fromid == h.id or loop.first and not fromid%} CHECKED{%endif%}></td>
  <td><input type="radio" name="to" value="{{h.id}}"{%if toid == h.id%} CHECKED{%endif%}></td>
- <td>{{h.publishedat|date:"Y-m-d H:i"}}</td>
+ <td>{{h.publishedat.strftime("%Y-%m-%d %H:%M")}}</td>
  <td>{{h.author.fullname}}</td>
 </tr>
 {%endfor%}

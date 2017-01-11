@@ -35,6 +35,7 @@ from util import get_invoice_autocancel
 
 from models import get_status_string
 from regtypes import confirm_special_reg_type
+from jinjafunc import render_jinja_conference_response
 
 from postgresqleu.util.decorators import user_passes_test_or_error
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod, InvoiceRow
@@ -97,6 +98,10 @@ def ConferenceContext(request, conference):
 # on the conference.
 #
 def render_conference_response(request, conference, pagemagic, templatename, dictionary=None):
+	if conference.jinjadir:
+		# Use the cleaner (?) jinja based rendering system
+		return render_jinja_conference_response(request, conference, pagemagic, templatename, dictionary)
+
 	context = ConferenceContext(request, conference)
 	context['pagemagic'] = pagemagic
 	if conference and conference.templateoverridedir:
@@ -148,8 +153,10 @@ def _registration_dashboard(request, conference, reg):
 	availableoptions = list(ConferenceAdditionalOption.objects.annotate(num_regs=Count('conferenceregistration')).filter(optionsQ))
 	try:
 		pendingadditional = PendingAdditionalOrder.objects.get(reg=reg, payconfirmedat__isnull=True)
+		pendingadditionalinvoice = InvoicePresentationWrapper(pendingadditional.invoice, '.')
 	except PendingAdditionalOrder.DoesNotExist:
 		pendingadditional = None
+		pendingadditionalinvoice = None
 
 	# Any invoices that should be linked need to be added
 	invoices = []
@@ -166,6 +173,7 @@ def _registration_dashboard(request, conference, reg):
 		'signups': signups,
 		'availableoptions': availableoptions,
 		'pendingadditional': pendingadditional,
+		'pendingadditionalinvoice': pendingadditionalinvoice,
 		'invoices': invoices,
 	})
 

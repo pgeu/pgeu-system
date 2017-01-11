@@ -1,36 +1,171 @@
-Some minor notes about the confreg system.
+Some minor notes about the confreg system, in particular how to
+skin it for individual conferences.
 
 Conference skinning
 ===================
-By default all conference pages are rendered in the standard template. There is, however,
-the ability to override certain things, which is configured by fields in the conference
-model.
 
-basetemplate
-------------
-All conference templates inherit from this template. This template must contain a block named
-"content", within which all the data goes. It must also contain a block called "extrahead" where
-things like javascript and CSS can be appended.
+By default all conference pages are rendered in the standard
+template. There is, however, the ability to override certain things,
+which is configured by fields in the conference model.
 
-templatemodule
---------------
-This is a Python module that lets the conference override what goes in the context that is handed
-to the template. Typically used to randomize sponsor order and such things. Set to a full path
-to a directory containing a file called "templateextra", which must contain a function named
-"context_template_additions". This function will be called, with no arguments, for each page
-being rendered, and must return a dictionary that is merged with the current context.
+The proper way to do this in the current version is to use the
+`jinja2` based method, as this will also allow for automatic
+deployment of static pages for the conference (if wanted).
 
-tempalteoverridedir
--------------------
-Setting this will make the system search for templates in this directory first, before falling
-back to the regular template loader. For more advanced layouts, this allows the complete overriding
-of individual templates. Typically useful for things like the forms. Start from a copy of the
-existing template, and know that this might break if major changes are made to the structure...
-All templates names are of the format confreg/<nnn>, so there should always be a subdirectory
-named "confreg" in the directory configured here.
+To utilize this sytem, for each conference to be skinned, create a
+directory structure like:
 
-templatemediabase
------------------
-This is a directory where media files for this template will be loaded. Typically this will be
-/ext/<something>/. We always want to load this from the same hostname as the forms etc, in order
-to avoid SSL errors when the main website is on http and the forms are on https.
+/templates
+ /pages
+ /confreg
+/static
+
+
+Iin the /static directory, place any static files (and subdirectories)
+to be included in a static site deploy. If no static site deploy will
+be done, this directory can be ignored and won't be used.
+
+In /templates, place a file called base.html. All the conference
+templates will inherit from this file, so without it, all urls will
+return 404.
+
+If the static webpage system is used, templates can be added under the
+/templates/pages directory. Each file will be rendered using jinja2
+into an output file called index.html in a directory named by the
+template. So for example, templates/pages/about.html will render into
+about/index.html in the resulting static directory. The only exception
+to this is index.html, which will be rendered as index.html without a
+subdirectory.
+
+
+Base template
+-------------
+
+In the base template, the entire HTML structure should be defined, and
+also the blocks:
+
+title
+  This block gets the page title. Normally just defined as the
+  contents of the <title> tag. By default it should contain a generic
+  title, such as the name of the conference.
+extrahead
+  This block must be declared inside <head>, so the other templates
+  can insert javascript and css. By default it should be empty.
+content
+  This block gets the main content of the page. It should be declared
+  inside whatever container elements are used. By default it should be
+  empty.
+
+You can of course also declare any other blocks you want.
+
+Variables
+---------
+
+When rendering the main conference pages, the following variables are
+always available:
+
+pgeu_hosted
+  Always set to True, so it can be used to detect how the page was
+  rendered.
+conference
+  Contains the conference object for the current conference
+pagemagic
+  Contains a magic value indicating which part of the site this page
+  renders for. The values can be
+    reg
+      Registration form and related pages
+    schedule
+      Schedule and related pages
+    sessions
+      Session list and related pages
+    feedback
+      Feedback and related pages
+    cfp
+      Call for papers and related pages
+username
+  Contains the current logged in users username
+githash
+  Contains the hash of the current git head for the active
+  checkout. This can be used for cache-busting URLs. If git is not
+  used, this will of course be empty.
+csrf_input
+  If a form, this will contain the django CSRF input field
+csrf_token
+  If a form, this will contain the django CSRF token
+
+Additional variables may be available on individual pages, but
+normally that's handled by the builtin templates.
+
+
+Additional variables
+--------------------
+
+If additional variables need to be used, they can be defined in a file
+called context.json in the templates directory. The contents of this
+hash will be added to all requests, both when deployed as static and
+when run under the main conference system.
+
+Overriding variables
+--------------------
+
+For the static deployment process, as second json file called
+context.override.json can be created in the same directory. Any
+variables specified in this file will override those coming from
+context.json and any defined from the deploy script, such as the git
+hash.
+
+This file is typically used to for example override the git hash (by
+specifying "githash":"" in the json data) to turn of cache busting on
+local test deployments.
+
+This file is normally not committed to the git repository, as it would
+in that case apply to the main static checkout.
+
+
+Overriding templates
+--------------------
+
+Normally, it's enough to use the base template and then let the
+upstream templates render what's in the "content" block. But in some
+cases it might be necessary to take control over the complete
+tepmlate. When doing that, it's important to remember that the
+variables passed to the template might change at some point in the
+future, at which point the template has to be updated.
+
+To override a template, simply put a HTML file in the
+templates/confreg/ directory - for example
+templates/confreg/schedule.html.
+
+When testing template overriding it might be necessary to push a
+template to the production server and test it there. To do that, add a
+.test to the end of the filename (e.g. schedule.html.test) and then
+access the URL with ?test=1.
+
+Static building
+===============
+
+If static pages are used, the script `deploystatic.py` can be used to
+create a directory that can be served up as a static website, either
+locally or on a server. Note that this command doesn't actually serve
+anything, it just creates the directory. A simple way to serve up a
+directory for testing is to just run "python -m SimpleHTTPServe 9000"
+(9000 being the port number), which will serve up the current
+directory.
+
+The syntax is:
+
+deploystatic.py <sourcepath> <destpath>
+
+Where <sourcepath> should point at the root directory as described in
+the first section of this file. The contents of the static/
+subdirectory will be copied directly into the <destpath> directory,
+and for each file in templates/pages/, standard jinja2 template
+processing will be applied and the output written to a subdirectory of
+the <destpath> directory (see the same section for structure).
+
+Care is taken to only update files that have actually changed.
+
+The recommendation is to copy the deploystatic.py script from the
+latest version of the upstream repository rather than include it in
+the conference website repository, to make sure that it's the same
+version that's used on the central server that's being used.

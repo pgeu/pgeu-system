@@ -102,6 +102,7 @@ class Conference(models.Model):
 	templateoverridedir = models.CharField(max_length=128, blank=True, null=True, default=None, help_text="Full path to a directory with override templates in")
 	badgemodule = models.CharField(max_length=128, blank=True, null=True, default=None, help_text="Full path to python module *and class* used to render badges")
 	templatemediabase = models.CharField(max_length=128, blank=True, null=True, default=None, help_text="Relative location to template media (must be local to avoid https/http errors)")
+	jinjadir = models.CharField(max_length=200, blank=True, null=True, default=None, help_text="Full path to new style jinja repository root")
 	callforpapersintro = models.TextField(blank=True, null=False)
 
 	sendwelcomemail = models.BooleanField(blank=False, null=False, default=False)
@@ -114,6 +115,12 @@ class Conference(models.Model):
 	vat_sponsorship = models.ForeignKey(VatRate, null=True, blank=True, verbose_name='VAT rate for sponsorships', related_name='vat_sponsorship')
 	invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1),], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
 	attendees_before_waitlist = models.IntegerField(blank=False, null=False, default=0, validators=[MinValueValidator(0),], verbose_name="Attendees before waitlist", help_text="Maximum number of attendees before enabling waitlist management. 0 for no waitlist management")
+
+	# Attributes that are safe to access in jinja templates
+	_safe_attributes = ('active', 'askfood', 'askshareemail', 'asktshirt',
+						'callforpapersintro', 'callforpapersopen',
+						'conferencefeedbackopen', 'confurl', 'contactaddr',
+						'feedbackopen', 'skill_levels', 'urlname', )
 
 	def __unicode__(self):
 		return self.conferencename
@@ -243,8 +250,11 @@ class RegistrationType(models.Model):
 			return self.cost
 
 	@property
-	def stringcost(self):
-		return str(self.cost)
+	def available_days(self):
+		dd = list(self.days.all())
+		if len(dd) == 1:
+			return dd[0].shortday()
+		return ", ".join([x.shortday() for x in dd[:-1]]) + " and " + dd[-1].shortday()
 
 class ShirtSize(models.Model):
 	shirtsize = models.CharField(max_length=32)
@@ -432,6 +442,7 @@ class Speaker(models.Model):
 	photofile = models.ImageField(upload_to=_get_upload_path, storage=SpeakerImageStorage(), blank=True, null=True, verbose_name="Photo")
 	lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
 
+	_safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract' ,'photofile', 'lastmodified')
 
 	@property
 	def name(self):

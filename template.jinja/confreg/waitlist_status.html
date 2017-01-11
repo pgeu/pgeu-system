@@ -1,4 +1,4 @@
-{%extends conftemplbase %}
+{%extends "base.html" %}
 {%block title%}Conference Registration - {{conference}}{%endblock%}
 {%block extrahead%}
 {%endblock%}
@@ -25,7 +25,7 @@ to use the seats that may show up. If so, plase do it using the form
 below:
 </p>
 
-<form method="post" action="../waitlist_cancel/">{% csrf_token %}
+<form method="post" action="../waitlist_cancel/">{{ csrf_input }}
 <input type="checkbox" name="confirm" value="1">Check this box to confirm you want to cancel your waitlist position.<br/>
 <input type="submit" name="submit" value="Cancel waitlist">
 </form>

@@ -1,4 +1,4 @@
-{%extends conftemplbase %}
+{%extends "base.html" %}
 {%block title%}Conference Feedback - {{conference}}{%endblock%}
 {%block content%}
 <h1>Conference Feedback - {{conference}}</h1>
@@ -21,17 +21,17 @@ text field.
 {% if form.errors %}
 <p><b style="color:red;">Note! This form contains errors and has not been saved!</b></p>
 {% endif %}
-<form method="post" action=".">{% csrf_token %}
+<form method="post" action=".">{{ csrf_input }}
 {%for field in form %}
 {%if field.help_text%}
-{%if not forloop.first %}
+{%if not loop.first %}
 </fieldset>
 {%endif%}
 <fieldset>
  <legend>{{field.help_text}}</legend>
 {%endif%}
  <div class="feedbackRow">
-  <div class="feedbackRowHead">{{field.label_tag}}</div>
+  <div class="feedbackRowHead">{{field.label_tag()}}</div>
   <div class="feedbackRowField">{{field.errors}}{{field}}</div>
  </div>
 {%endfor%}

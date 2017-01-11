@@ -1,4 +1,4 @@
-{%extends conftemplbase %}
+{%extends "base.html" %}
 {%block title%}Conference Registration - {{conference}}{%endblock%}
 {%block extrahead%}
 <style>
@@ -25,7 +25,7 @@ you must <a href="/logout">log out</a> and back in (with a different account)
 between each registration to avoid conflicts.
 </p>
 
-{%comment%}Payment not confirmed, so either invoice pending or bulk{%endcomment%}
+{# Payment not confirmed, so either invoice pending or bulk #}
 {%if reg.invoice%}
   <h2>Invoice</h2>
   <p>
@@ -44,7 +44,7 @@ between each registration to avoid conflicts.
     <b>Note!</b> Your registration is <b>not</b> confirmed until the invoice
     has been paid and confirmed!
   </p>
-{%else%}{%comment%}must mean reg.bulkpayment{%endcomment%}
+{%else%}{# must mean reg.bulkpayment #}
   <p>
   Your registration has been made part of a bulk payment invoice owned by
   {{reg.bulkpayment.user.email}}. Once this invoice has been paid by the
@@ -61,12 +61,12 @@ at {{conference.contactaddr}}.
 <fieldset id="personal_information">
  <legend>Personal information</legend>
  <table class="reginfotbl">
-  <tr><td class="firstcol">Username</td><td>{{user.username}}</td></tr>
+  <tr><td class="firstcol">Username</td><td>{{username}}</td></tr>
   <tr><td class="firstcol">Registration type</td><td>{{reg.regtype}}</td></tr>
   <tr><td class="firstcol">First name</td><td>{{reg.firstname}}</td></tr>
   <tr><td class="firstcol">Last name</td><td>{{reg.lastname}}</td></tr>
   <tr><td class="firstcol">Company</td><td>{{reg.company}}</td></tr>
-  <tr><td class="firstcol">Address</td><td>{{reg.address|linebreaks}}</td></tr>
+  <tr><td class="firstcol">Address</td><td>{{"<br>".join(reg.address.splitlines()}}</td></tr>
   <tr><td class="firstcol">Country</td><td>{{reg.country}}</td></tr>
   <tr><td class="firstcol">Email</td><td>{{reg.email}}</td></tr>
   <tr><td class="firstcol">Phone</td><td>{{reg.phone}}</td></tr>
@@ -79,13 +79,13 @@ at {{conference.contactaddr}}.
  <legend>Conference information</legend>
  <table class="reginfotbl">
  {%if conference.asktshirt%}
-  <tr><td class="firstcol">T-shirt size</td><td>{{reg.shirtsize|default:''}}</td></tr>
+  <tr><td class="firstcol">T-shirt size</td><td>{{reg.shirtsize|default('')}}</td></tr>
  {%endif%}
  {%if conference.askfood%}
   <tr><td class="firstcol">Dietary needs</td><td>{{reg.dietary}}</td></tr>
  {%endif%}
  {%if conference.askshareemail%}
-  <tr><td class="firstcol">Share email</td><td>{{reg.shareemail|yesno:"Yes,No"}}</td></tr>
+  <tr><td class="firstcol">Share email</td><td>{{reg.shareemail|yesno("Yes,No")}}</td></tr>
  {%endif%}
  </table>
 </fieldset>
@@ -93,7 +93,7 @@ at {{conference.contactaddr}}.
 {%if reg.additionaloptions.all %}
 <fieldset>
  <legend>Additional options</legend>
- <ul>{%for ao in reg.additionaloptions.all%}<li>{{ao.name}}</li>{%endfor%}</ul>
+ <ul>{%for ao in reg.additionaloptions.all()%}<li>{{ao.name}}</li>{%endfor%}</ul>
 </fieldset>
 {%endif%}
 

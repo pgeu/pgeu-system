@@ -1,5 +1,4 @@
-{%extends conftemplbase %}
-{%load join_days %}
+{%extends "base.html" %}
 {%block title%}Your Registration - {{conference}}{%endblock%}
 {%block extrahead%}
 <style>
@@ -64,7 +63,7 @@ spamfilters.
 </p>
 <ul>
 {%for m in mails%}
-  <li><a href="mail/{{m.id}}/">{{m.subject}}</a> (<i>sent {{m.sentat|date:"Y-m-d H:i"}}</i>)</li>
+  <li><a href="mail/{{m.id}}/">{{m.subject}}</a> (<i>sent {{m.sentat.strftime("%Y-%m-%d %H:%M")}}</i>)</li>
 {%endfor%}
 </ul>
 
@@ -73,7 +72,7 @@ spamfilters.
 <h2>Wiki pages</h2>
 <ul>
 {%for p in wikipages%}
- <li><a href="wiki/{{p.url}}/">{{p.title}}</a> (last modified {{p.publishedat|date:"Y-m-d H:i"}})</li>
+ <li><a href="wiki/{{p.url}}/">{{p.title}}</a> (last modified {{p.publishedat.strftime("%Y-%m-%d %H:%M")}})</li>
 {%endfor%}
 </ul>
 {%endif%}
@@ -83,7 +82,7 @@ spamfilters.
 <h2>Signups</h2>
 <ul>
 {%for s in signups%}
- <li><a href="signup/{{s.id}}/">{{s.title}}</a>{%if s.closed%} (closed){%elif s.deadline%} (closes {{s.deadline|date:"Y-m-d H:i"}}){%endif%}{%if s.savedat%} - you responded on {{s.savedat|date:"Y-m-d H:i"}}{%endif%}</li>
+ <li><a href="signup/{{s.id}}/">{{s.title}}</a>{%if s.closed%} (closed){%elif s.deadline%} (closes {{s.deadline.strftime("%Y-%m-%d %H:%M")}}){%endif%}{%if s.savedat%} - you responded on {{s.savedat.strftime("%Y-%m-%d %H:%M")}}{%endif%}</li>
 {%endfor%}
 </ul>
 {%endif%}
@@ -94,16 +93,16 @@ spamfilters.
 <dl>
  <dt>Registration type</dt>
  <dd>Your registration type is <i>{{reg.regtype}}</i>.
-{%if reg.regtype.days.count %}
-This registration type gives you access to the conference on {{reg.regtype.days.all|join_days}}.
+{%if reg.regtype.days.count() %}
+This registration type gives you access to the conference on {{reg.regtype.available_days}}.
 {%endif%}
  </dd>
 
-{%if reg.additionaloptions.all%}
+{%if reg.additionaloptions.all()%}
  <dt>Additional options</dt>
  <dd>You are registered for the following additional options:
    <ul>
-{%for a in reg.additionaloptions.all%}
+{%for a in reg.additionaloptions.all()%}
     <li>{{a.name}}</li>
 {%endfor%}
    </ul>
@@ -117,14 +116,12 @@ This registration type gives you access to the conference on {{reg.regtype.days.
   <li><a href="/invoices/{{i.id}}/{{i.recipient_secret}}/">{{t}}</a></li>
 {%endfor%}
 </ul>
-</p>
 If you have made any additional orders, you can always find a copy of all
 invoices and receipts in the <a href="/invoices/">invoice section</a>.
  </dd>
 {%endif%}
 
 </dl>
-</p>
 
 
 {%if availableoptions%}
@@ -136,9 +133,8 @@ You have a pending order for additional options, wich has not yet been
 paid. Please pay this invoice as soon as possible to ensure your
 registration is completed!
 </p>
-{%with invoice=pendingadditional.invoice%}
+{%set invoice=pendingadditionalinvoice%}
 {%include "invoices/userinvoice_spec.html"%}
-{%endwith%}
 {%else%}
 <p>
 There are additional options that you can add to your registration. Note
@@ -147,7 +143,7 @@ for one of them, we suggest you do so as soon as possible. Note that some
 options may not be available due to being sold out or due to an existing
 registration being mutually exlusive.
 </p>
-<form method="post" action="addopt/">{%csrf_token%}
+<form method="post" action="addopt/">{{ csrf_input }}
 {%for o in availableoptions %}
 <input type="checkbox" name="ao_{{o.id}}" value="1" /> {{o}}<br/>
 {%endfor%}

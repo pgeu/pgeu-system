@@ -1,5 +1,4 @@
-{%extends conftemplbase %}
-{%load markup%}
+{%extends "base.html" %}
 {%block title%}Conference Session - {{conference}}{%endblock%}
 {%block extrahead%}
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
@@ -16,7 +15,7 @@ function drawCharts() {
 {%for f in feedbackdata%}
 // {{f.key}}
    var data = prep_datatable();
-   data.addRows([{%for v in f.num%}['{{forloop.counter}}',{{v}}],{%endfor%}]);
+   data.addRows([{%for v in f.num%}['{{loop.counter}}',{{v}}],{%endfor%}]);
    var options = {
       'title': '{{f.title}}',
    };

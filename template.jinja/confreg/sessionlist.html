@@ -1,4 +1,4 @@
-{%extends conftemplbase %}
+{%extends "base.html" %}
 {%block title%}Conference Sessions - {{conference}}{%endblock%}
 {%block content%}
 <h1>Conference Sessions - {{conference}}</h1>
@@ -10,18 +10,13 @@ You can find the full conference information at the
 <a href="{{conference.confurl}}">conference website</a>.
 </p>
 
-{%for session in sessions%}
-{%ifchanged session.track%}
-{%if not forloop.first%}
-</ul>
-{%endif%}
-<h2>{{session.track.trackname}}</h2>
+{%for track,sessionlist in sessions|groupby_sort('track', 'sortkey')%}
+<h2>{{track}}</h2>
 <ul>
-{%endifchanged%}
+{%for session in sessionlist %}
  <li><a href="session/{{session.id}}-{{session.title|slugify}}/">{{session.title}}</a> ({{session.speaker_list}})</li>
-{%if forloop.last%}
+{%endfor%}
 </ul>
-{%endif%}
 {%endfor%}
 
 

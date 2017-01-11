@@ -1,11 +1,11 @@
-{%extends conftemplbase %}
+{%extends "base.html" %}
 {%block title%}Conference Email - {{conference}}{%endblock%}
 {%block content%}
 <h2>{{mail.subject}}</h2>
 <p>
-<div><b>Sent: </b>{{mail.sentat|date:"Y-m-d H:i"}}</div>
+<div><b>Sent: </b>{{mail.sentat.strftime("%Y-%m-%d %H:%M")}}</div>
 <div>
-{{mail.message|linebreaks}}
+{{"<br>".join(mail.message.splitlines())}}
 </div>
 </p>
 

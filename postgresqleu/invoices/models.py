@@ -165,6 +165,8 @@ class VatRate(models.Model):
 									 validators=[MaxValueValidator(100), MinValueValidator(0)])
 	vataccount = models.ForeignKey(Account, null=False, blank=False)
 
+	_safe_attributes = ('vatpercent', 'shortstr', 'shortname', 'name')
+
 	def __unicode__(self):
 		return u"{0} ({1}%)".format(self.name, self.vatpercent)
 

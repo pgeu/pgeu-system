@@ -21,14 +21,21 @@ from postgresqleu.accounting.util import create_accounting_entry
 
 # Proxy around an invoice that adds presentation information,
 # such as the ability to render a return URL for the invoice.
+# It also blocks access to unsafe variables that could be used
+# to traverse the object tree outside the invoice.
 class InvoicePresentationWrapper(Invoice):
 	class Meta:
 		proxy = True
 
+	_unsafe_attributes = ('recipient_user', 'processor', 'allowedmethods', 'paidusing', )
 	def __init__(self, invoice, returnurl):
 		self.__invoice = invoice
 		self.__returnurl = returnurl
 	def __getattr__(self, name):
+		# Most attributes are perfectly safe to return, but there are a couple that needs "sandboxing"
+		if name in self._unsafe_attributes:
+			return None
+
 		return getattr(self.__invoice, name)
 
 	@property

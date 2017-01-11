@@ -1,5 +1,4 @@
-{%extends conftemplbase %}
-{%load markup%}
+{%extends "base.html" %}
 {%block title%}Conference Registration - {{conference}}{%endblock%}
 {%block extrahead%}
 <script language="javascript">
@@ -59,7 +58,7 @@ Your registration is currently on the waitlist.
 Good news - you have been offered a seat from the waitlist. Please
 complete the form below and click "Save and finish registration" to
 complete the process! The process must be completed before
-{{reg.registrationwaitlistentry.offerexpires|date:"Y-m-d H:i"}} or
+{{reg.registrationwaitlistentry.offerexpires.strftime("%Y-%m-%d %H:%M")}} or
 this offer will expire!
 </p>
 {%else%}
@@ -69,7 +68,7 @@ We will let you know as soon as a seat shows up!
 {%endif%}
 {%endif%}
 
-<form action="." method="post" class="pgeuregform">{% csrf_token %}
+<form action="." method="post" class="pgeuregform">{{ csrf_input }}
 {% if form_is_saved %}
 <p><b>Note!</b> Your registration is not confirmed until the payment
 has been confirmed.</p>
@@ -81,18 +80,18 @@ The fields with invalid input have been highlighted below with a message describ
 correction.</p>
 {% endif %}
 
-{%if form.non_field_errors%}{{form.non_field_errors}}{%endif%}
+{%if form.non_field_errors()%}{{form.non_field_errors()}}{%endif%}
 
 {%for fieldset in form.fieldsets%}
  <fieldset id="{{fieldset.id}}">
   <legend>{{fieldset.legend}}</legend>
   {%if fieldset.intro or fieldset.introhtml%}
-  <div>{{fieldset.intro|markdown}}{{fieldset.introhtml}}</div>
+  <div>{%if fieldset.intro%}{{fieldset.intro|markdown}}{%endif%}{%if fieldset.introhtml%}{{fieldset.introhtml}}{%endif%}</div>
   {%endif%}
   {%for f in fieldset.fields%}
   <div class="regwrap{%if f.errors%} errfld{%endif%}">
     <div class="regleft">
-      {{f.label_tag}} <br/>
+      {{f.label_tag()}} <br/>
       {{f}}
     </div>
     <div class="regright">

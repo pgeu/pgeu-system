@@ -1,4 +1,4 @@
-{%extends conftemplbase %}
+{%extends "base.html" %}
 {%block title%}Confirm session - {{conference}}{%endblock%}
 {%block content%}
 <h1>Confirm session - {{conference}}</h1>
@@ -24,7 +24,7 @@ the organizers!
 </p>
 
 <h3>Confirmation</h3>
-<form method="post" action=".">{% csrf_token %}
+<form method="post" action=".">{{ csrf_input }}
 <input type="checkbox" name="is_confirmed" value="1"> By checking this box,
 you confirm that you will be able to attend and deliver this session.
 <br/>

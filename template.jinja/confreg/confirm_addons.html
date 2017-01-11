@@ -1,6 +1,4 @@
-{%extends conftemplbase %}
-{%load humanize%}
-{%load leadingnbsp%}
+{%extends "base.html" %}
 {%block title%}Conference Registration - {{conference}}{%endblock%}
 {%block extrahead%}
 <style>
@@ -37,13 +35,13 @@ registration. If this is in any way incorrect, please contact
 <a href="mailto:{{conference.contactaddr}}">{{conference.contactaddr}}</a>.
 </p>
 
-<form method="post" action="." class="pgeuregformconfirm">{% csrf_token %}
+<form method="post" action="." class="pgeuregformconfirm">{{ csrf_input }}
 <fieldset id="fldset_recipient">
 <legend>Invoice recipient</legend>
 <div>
 {{reg.firstname}} {{reg.lastname}}<br/>
 {%if reg.company%}{{reg.company}}<br/>{%endif%}
-{{reg.address|linebreaksbr}}<br/>
+{{"<br>".join(reg.address.splitlines()}}<br/>
 {{reg.country.name}}<br/>
 </div>
 </fieldset>
@@ -54,18 +52,18 @@ registration. If this is in any way incorrect, please contact
 {%if upsell_cost%}
 <tr valign="top">
   <td class="desc">Upgrade to '{{newreg.regtype}}'</td>
-  <td class="cost">{{curency_symbol}} {{upsell_cost|intcomma}}</td>
+  <td class="cost">{{upsell_cost|currency_format}}</td>
 </tr>
 {%endif%}
 {%for o in options%}
 <tr valign="top">
   <td class="desc">{{o.name}} <input type="hidden" name="ao_{{o.id}}" value="1"></td>
-  <td class="cost">{{currency_symbol}} {{o.cost|intcomma}}</td>
+  <td class="cost">{{o.cost|currency_format}}</td>
 </tr>
 {%endfor%}
 <tr valign="top" class="totalrow">
   <td class="desc"></td>
-  <td class="cost">{{currency_symbol}} {{totalcost|intcomma}}</td>
+  <td class="cost">{{totalcost|currency_format}}</td>
 </tr>
 </table>
 </fieldset>

@@ -1,4 +1,4 @@
-{%extends conftemplbase %}
+{%extends "base.html" %}
 {%block title%}Cancel registration invoice{%endblock%}
 {%block content%}
 <h1>Cancel registration invoice</h1>
@@ -6,7 +6,7 @@
 Are you sure that you want to cancel the invoice for this registration? Not that
 by canceling your invoice, you may lose your seat if the event is full!
 </p>
-<form method="post" action=".">{%csrf_token%}
+<form method="post" action=".">{{ csrf_input }}
 <table style="border: 1px solid black;">
   <tr>
     <td style="white-space: nowrap">Conference:</td>

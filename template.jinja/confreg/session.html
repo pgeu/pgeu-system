@@ -1,5 +1,4 @@
-{%extends conftemplbase %}
-{%load markup%}
+{%extends "base.html" %}
 {%block title%}Conference Schedule - {{conference}}{%endblock%}
 {%block content%}
 <h1>Conference Schedule - {{conference}}</h1>
@@ -7,8 +6,8 @@
 
 <h2>{{session.title}}</h2>
 <p>
-<b>Date:</b> {{session.starttime|date}}<br/>
-<b>Time:</b> {{session.starttime|time:"H:i"}} - {{session.endtime|time:"H:i"}}<br/>
+{%if session.starttime%}<b>Date:</b> {{session.starttime.strftime("%Y-%m-%d")}}<br/>{%endif%}
+{%if session.starttime%}<b>Time:</b> {{session.starttime.strftime("%H:%M")}} - {{session.endtime.strftime("%H:%M")}}<br/>{%endif%}
 <b>Room:</b> {{session.room.roomname}}<br/>
 {%if conference.skill_levels %}
 <b>Level:</b> {{session.skill_level_string}}<br/>
@@ -22,8 +21,8 @@
 {{session.abstract|markdown}}
 </p>
 
-{%for speaker in session.speaker.all%}
-{%if forloop.first%}
+{%for speaker in session.speaker.all()%}
+{%if loop.first%}
 <h2>Speaker</h2>
 {%endif%}
 <b><a href="../../speaker/{{speaker.id}}-{{speaker.name|slugify}}/">{{speaker.name}}</a></b><br/>

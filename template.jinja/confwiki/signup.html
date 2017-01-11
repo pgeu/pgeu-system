@@ -1,5 +1,4 @@
-{%extends conftemplbase %}
-{%load markup%}
+{%extends "base.html" %}
 {%block title%}{{signup.title}} - {{conference}}{%endblock%}
 {%block extrahead%}
 <style>
@@ -27,8 +26,8 @@ table.signupform input[type=text],textarea,select {
 {%if attendee_signup%}
 <p>Your response was recorded as: {{attendee_signup.choice}}</p>
 {%endif%}
-{%else%}{%comment%}is it closed?{%endcomment%}
-<form method="post" action=".">{%csrf_token%}
+{%else%}{# is it closed? #}
+<form method="post" action=".">{{ csrf_input }}
 <table>
 {{form}}
 </table>
@@ -45,7 +44,7 @@ table.signupform input[type=text],textarea,select {
 </ul>
 {%endif%}
 
-{%endif%}{%comment%}is it closed?{%endcomment%}
+{%endif%}{# is it closed? #}
 
 <p>
 <a href="../../">Back</a>

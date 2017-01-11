@@ -1,5 +1,4 @@
-{%extends conftemplbase %}
-{%load markup%}
+{%extends "base.html" %}
 {%block title%}{{page.title}} - {{conference}}{%endblock%}
 {%block extrahead%}
 <style>
@@ -26,7 +25,7 @@ table.pageform textarea {
 {%block content%}
 <a href="../"><h2>{{page.title}}</h2></a>
 
-<form method="post" action=".">{%csrf_token%}
+<form method="post" action=".">{{ csrf_input }}
 <table class="pageform">
 <tr>
   <td>
