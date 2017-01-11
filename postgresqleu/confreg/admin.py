@@ -88,6 +88,15 @@ class ConferenceAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
 		super(ConferenceAdminForm, self).__init__(*args, **kwargs)
 		self.fields['accounting_object'].choices = [('', '----'),] + [(o.name, o.name) for o in Object.objects.filter(active=True)]
 
+	def clean(self):
+		data = super(ConferenceAdminForm, self).clean()
+
+		if data['jinjadir']:
+			for f in ('basetemplate', 'templatemodule', 'templateoverridedir', 'templatemediabase'):
+				if data[f]:
+					raise ValidationError('Cannot use {0} together with jinjadir'.format(f))
+
+		return data
 
 class ConferenceAdmin(admin.ModelAdmin):
 	form = ConferenceAdminForm
