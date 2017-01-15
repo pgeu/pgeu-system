@@ -92,7 +92,7 @@ class ConferenceAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
 		data = super(ConferenceAdminForm, self).clean()
 
 		if data['jinjadir']:
-			for f in ('basetemplate', 'templatemodule', 'templateoverridedir', 'templatemediabase'):
+			for f in ('basetemplate', 'templatemodule', 'templateoverridedir', 'templatemediabase', 'badgemodule'):
 				if data[f]:
 					raise ValidationError('Cannot use {0} together with jinjadir'.format(f))
 

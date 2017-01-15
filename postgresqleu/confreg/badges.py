@@ -18,6 +18,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 import qrencode
 
 import badgetypes
+from jinjabadge import render_jinja_badges
 
 class BaseBadge(Flowable):
 	def __init__(self, badgetype, reg):
@@ -111,6 +112,16 @@ class BadgeBuilder(object):
 		self.conference = conference
 		self.registrations = registrations
 
+		if not self.conference.jinjadir:
+			self.initialize_legacy()
+
+		# Shared initialization
+
+		# Register truetype fonts that we're going to end up embedding
+		registerFont(TTFont('DejaVu Serif', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf"))
+		registerFont(TTFont('DejaVu Serif Bold', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif-Bold.ttf"))
+
+	def initialize_legacy(self):
 		# Instantiate the class we need to build things with
 		if not conference.badgemodule:
 			raise Exception("Badge module not specified!")
@@ -134,13 +145,11 @@ class BadgeBuilder(object):
 			# Ok, module exists now, so instantiate the class
 			self.badgetype = getattr(sys.modules[modname], classname)()
 
-
-		# Register truetype fonts that we're going to end up embedding
-		registerFont(TTFont('DejaVu Serif', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf"))
-		registerFont(TTFont('DejaVu Serif Bold', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif-Bold.ttf"))
-
 	# Render of a specific type
 	def render(self, output):
+		if self.conference.jinjadir:
+			return render_jinja_badges(self.conference, self.registrations, output)
+
 		story = []
 		for reg in self.registrations:
 			story.append(BaseBadge(self.badgetype, reg))

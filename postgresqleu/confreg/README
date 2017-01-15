@@ -169,3 +169,80 @@ The recommendation is to copy the deploystatic.py script from the
 latest version of the upstream repository rather than include it in
 the conference website repository, to make sure that it's the same
 version that's used on the central server that's being used.
+
+
+Badges
+======
+
+The system also has the ability to automatically generate badges based
+on the templates. This is done in two stages - first a jinja template
+is applied to a source JSON file, generating a complete JSON
+definition of the badge. Then this JSON is parsed and turned into an
+actual PDF format badge.
+
+To use the badge generation system, create a file called `badge.json`
+in the templates directory. This is the jinja template, and it will be
+passed the same context as the regular pages (so this can be used to
+add conference-global things) as well as a structure called 'reg' that
+contains the current registration. To view an example of this reg
+structure, generate an attendee report (using the regular reporting
+system) in format 'json'.
+
+At the root of the json structure, two elements have to be defined:
+width and height. All positions and sizes are defined in mm.
+
+If the element 'border' is set to true, a thin black border will be
+drawn around the outer edges of the badge (for cutting).
+
+If the element 'forcebreaks' is set to true, a pagebreak will be forced
+between each badge, making sure there is only one badge per
+page. Without this, as many badges as possible will be added to a page.
+
+Finally, an element called 'elements' must exist, and contain an array
+of objects. Each of these objects represents something to be drawn on
+the badge, and will be drawn in order.
+
+The currently supported element types are:
+
+box        - draws an empty or filled rectangle
+image      - draws an image (which must be in the static/ subdirectory)
+paragraph  - draws a dynamically sized paragraph of text
+
+All elements require that the parameters 'x', 'y', 'width' and
+'height' are specified. Further attributes depend on the element:
+
+box
+   fill    - Color to fill with. Leave empty for no fill.
+   stroke  - Set to true to draw a line around the box (and not just fill)
+image
+   src     - Path (relative to static/) to PNG image
+   mask    - Mask to use (defaults to "auto")
+   prserveAspect - Set to true to preserve aspect ratio
+paragraph
+   text    - The actual text to write
+   color   - The color to use (defaults to "black")
+   bold    - Use a bold font (defaults to false)
+   maxsize - Maximum size to use for dynamically sized font
+   align   - Alignment ("left" (default), "right", "center")
+
+Color are specified either by name ("white", "black") or by RGB value
+in the form of an array containing [r,b,g] color values (0-255).
+
+
+Testing badges
+--------------
+
+To test badges, the `postgresqleu/confreg/jinjabadge.py` file can be
+run indepdently. It does not depend on django (but does require jinja2
+and reportlab, of course) or the rest of the repository structure, so
+it's recommended that a new version of this file is simply downloaded
+from the main repository when testing (rather than adding it to a
+conference specific repository).
+
+To get attendee data to test the badges on, use the `json` format
+attendee report and save it to a file. Then run the script:
+
+jinjabadge.py /path/to/repo /path/to/attendees.json /path/to/badges.pdf
+
+The repository path should be the root of the repository, the same one
+used for `deploystatic.py`.
