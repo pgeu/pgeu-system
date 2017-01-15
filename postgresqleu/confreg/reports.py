@@ -10,6 +10,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.styles import getSampleStyleSheet
 
 import csv
+import json
 
 from postgresqleu.confreg.badges import BadgeBuilder
 
@@ -205,6 +206,13 @@ def build_attendee_report(conference, POST):
 		writer.set_orientation(orientation)
 	elif format=='csv':
 		writer = ReportWriterCsv(title, borders)
+	elif format=='json':
+		# Don't want to use normal renderer here, since we need to pass
+		# the filtered full objects into the builder (because it needs to
+		# be the same data as the badges get)
+		resp = HttpResponse(content_type='application/json')
+		json.dump([r.safe_export() for r in result], resp, indent=2)
+		return resp
 	elif format=='badge':
 		# Can't use a normal renderer here, since we need to actually
 		# pass the full objects into the badge builder.

@@ -192,14 +192,30 @@ class RegistrationClass(models.Model):
 	def colortuple(self):
 		return tuple([int(self.badgecolor[n*2+1:n*2+2+1], 16) for n in range(0,3)])
 
+	@property
+	def bgcolortuplestr(self):
+		return ','.join(map(str, self.colortuple()))
+
 	def foregroundcolortuple(self):
 		if len(self.badgeforegroundcolor):
 			return tuple([int(self.badgeforegroundcolor[n*2+1:n*2+2+1], 16) for n in range(0,3)])
 		else:
 			return None
 
+	@property
+	def fgcolortuplestr(self):
+		if self.badgeforegroundcolor:
+			return ','.join(map(str, self.foregroundcolortuple()))
+		else:
+			return None
+
 	class Meta:
 		verbose_name_plural = 'Registration classes'
+
+	def safe_export(self):
+		attribs = ['regclass', 'badgecolor', 'badgeforegroundcolor', 'bgcolortuplestr', 'fgcolortuplestr']
+		d = dict((a, getattr(self, a) and unicode(getattr(self, a))) for a in attribs)
+		return d
 
 class RegistrationDay(models.Model):
 	conference = models.ForeignKey(Conference, null=False)
@@ -255,6 +271,13 @@ class RegistrationType(models.Model):
 		if len(dd) == 1:
 			return dd[0].shortday()
 		return ", ".join([x.shortday() for x in dd[:-1]]) + " and " + dd[-1].shortday()
+
+	def safe_export(self):
+		attribs = ['regtype', 'specialtype']
+		d = dict((a, getattr(self, a) and unicode(getattr(self, a))) for a in attribs)
+		d['regclass'] = self.regclass.safe_export()
+		d['days'] = [d.day.strftime('%Y-%m-%d') for d in self.days.all()]
+		return d
 
 class ShirtSize(models.Model):
 	shirtsize = models.CharField(max_length=32)
@@ -389,6 +412,14 @@ class ConferenceRegistration(models.Model):
 	# For the admin interface (mainly)
 	def __unicode__(self):
 		return "%s: %s %s <%s>" % (self.conference, self.firstname, self.lastname, self.email)
+
+	# For exporting "safe attributes" to external systems
+	def safe_export(self):
+		attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'shareemail',]
+		d = dict((a, getattr(self, a) and unicode(getattr(self, a))) for a in attribs)
+		d['regtype'] = self.regtype.safe_export()
+		d['additionaloptions'] = [ao.name for ao in self.additionaloptions.all()]
+		return d
 
 class RegistrationWaitlistEntry(models.Model):
 	registration = models.OneToOneField(ConferenceRegistration, primary_key=True)
