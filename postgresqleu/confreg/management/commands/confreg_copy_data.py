@@ -6,8 +6,11 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.conf import settings
 
+from datetime import timedelta
+
 from postgresqleu.confreg.models import Conference
 from postgresqleu.confreg.models import RegistrationClass, RegistrationType
+from postgresqleu.confreg.models import ConferenceSessionScheduleSlot
 
 class Command(BaseCommand):
 	help = 'Copy conference metadata'
@@ -42,7 +45,23 @@ class Command(BaseCommand):
 					self.copy_regclasses(True)
 					print "Done."
 			elif options['type'] == 'talkslots':
-				raise CommandError("Not implemented yet")
+				if self.dest.conferencesessionscheduleslot_set.exists():
+					raise CommandError("Destination already has talk slots!")
+				num = self.source.conferencesessionscheduleslot_set.count()
+				if num == 0:
+					raise CommandError("Source does not have any talk slots!")
+
+				# How many days to move forward
+				days = (self.dest.startdate-self.source.startdate).days
+				print "First talk slot will be: {0}".format(self.source.conferencesessionscheduleslot_set.order_by('starttime')[0].starttime + timedelta(days=days))
+				print "Last talk slot will be: {0}".format(self.source.conferencesessionscheduleslot_set.order_by('-starttime')[0].starttime + timedelta(days=days))
+
+				if self.confirm('Proceed to copy {0} talk slots, forwading {1} days?'.format(num, days)):
+					for s in self.source.conferencesessionscheduleslot_set.order_by('starttime'):
+						ConferenceSessionScheduleSlot(conference=self.dest,
+													  starttime=s.starttime + timedelta(days=days),
+													  endtime=s.endtime + timedelta(days=days),
+													  ).save()
 			else:
 				# Could not happen, so throw hard exception
 				raise CommandError("Invalid type specified")
