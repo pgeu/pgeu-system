@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Deploy a static site based on jinja2 templates (sanxboxed)
+# Deploy a static site based on jinja2 templates (sandboxed)
 
 import argparse
 import sys
@@ -48,7 +48,7 @@ def load_context(jsonfile):
 	else:
 		return {}
 
-# Locaate which git revision we're on
+# Locate which git revision we're on
 def find_git_revision(path):
 	while path != '/':
 		if os.path.exists(os.path.join(path, ".git/HEAD")):
@@ -95,7 +95,7 @@ if __name__ == "__main__":
 		print "Source path is not absolute!"
 		sys.exit(1)
 	if not os.path.isabs(args.destpath):
-		print "Destination path isn ot absolute!"
+		print "Destination path is not absolute!"
 		sys.exit(1)
 
 	if not os.path.isdir(args.sourcepath):
