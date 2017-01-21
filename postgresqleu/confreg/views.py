@@ -675,7 +675,7 @@ def schedule(request, confname):
 		sessionset.finalize()
 		days.append({
 			'day': d,
-			'sessions': sessionset.all(),
+			'sessions': list(sessionset.all()),
 			'rooms': sessionset.allrooms(),
 			'schedule_height': sessionset.schedule_height(),
 			'schedule_width': sessionset.schedule_width(),
