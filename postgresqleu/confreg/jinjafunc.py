@@ -8,6 +8,8 @@ import json
 import os.path
 import random
 from itertools import groupby
+from datetime import datetime, date, time
+import dateutil.parser
 
 import jinja2
 import jinja2.sandbox
@@ -164,6 +166,14 @@ def filter_currency_format(v):
 def filter_float_str(f, n):
 	return '{{0:.{0}f}}'.format(int(n)).format(f)
 
+# Format a datetime. If it'sa datetime, call strftime. If it's a
+# string, assume it's iso format and convert it to a date first.
+def filter_datetimeformat(value, fmt):
+	if isinstance(value, date) or isinstance(value, datetime) or isinstance(value,time):
+		return value.strftime(fmt)
+	else:
+		return dateutil.parser.parse(value).strftime(fmt)
+
 
 # Render a conference response based on jinja2 templates configured for the conference.
 # Returns the appropriate django HttpResponse object.
@@ -178,6 +188,7 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
 		'currency_format': filter_currency_format,
 		'escapejs': defaultfilters.escapejs_filter,
 		'floatstr': filter_float_str,
+		'datetimeformat': filter_datetimeformat,
 		'groupby_sort': filter_groupby_sort,
 		'leadingnbsp': leadingnbsp,
 		'markdown': lambda t: jinja2.Markup(markdown.markdown(t)),

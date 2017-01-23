@@ -11,12 +11,17 @@ import filecmp
 import shutil
 import json
 import random
+import re
+import unicodedata
 import io
 import subprocess
 import tarfile
 
 import jinja2
 import jinja2.sandbox
+
+from datetime import datetime, date, time
+import dateutil.parser
 
 #
 # Some useful filters. We include them inline in this file to make it
@@ -37,9 +42,27 @@ def filter_shuffle(l):
 	except:
 		return l
 
+# Format a datetime. If it'sa datetime, call strftime. If it's a
+# string, assume it's iso format and convert it to a date first.
+def filter_datetimeformat(value, fmt):
+	if isinstance(value, date) or isinstance(value, datetime) or isinstance(value,time):
+		return value.strftime(fmt)
+	else:
+		return dateutil.parser.parse(value).strftime(fmt)
+
+# Slugify a text
+def filter_slugify(value):
+	if not value:
+		return ''
+	value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+	value = re.sub(r'[^\w\s-]', '', value).strip().lower()
+	return re.sub(r'[-\s]+', '-', value)
+
 global_filters = {
 	'groupby_sort': filter_groupby_sort,
 	'shuffle': filter_shuffle,
+	'slugify': filter_slugify,
+	'datetimeformat': filter_datetimeformat,
 }
 
 
