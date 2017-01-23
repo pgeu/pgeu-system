@@ -446,6 +446,8 @@ class Track(models.Model):
 	sortkey = models.IntegerField(null=False, default=100, blank=False)
 	incfp = models.BooleanField(null=False, default=False, blank=False)
 
+	json_included_attributes = ['trackname', 'color', 'sortkey', 'incfp']
+
 	def __unicode__(self):
 		return "%s (%s)" % (self.trackname, self.conference)
 
@@ -453,6 +455,8 @@ class Room(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
 	roomname = models.CharField(max_length=20, null=False, blank=False)
 	sortkey = models.IntegerField(null=False, blank=False, default=100)
+
+	json_included_attributes = ['roomname', 'sortkey']
 
 	def __unicode__(self):
 		return "%s (%s)" % (self.roomname, self.conference)
@@ -474,6 +478,7 @@ class Speaker(models.Model):
 	lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
 
 	_safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract' ,'photofile', 'lastmodified')
+	json_included_attributes = ['fullname', 'twittername', 'company', 'abstract', 'lastmodified']
 
 	@property
 	def name(self):

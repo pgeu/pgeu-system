@@ -43,6 +43,7 @@ from postgresqleu.confwiki.models import Wikipage
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
 from postgresqleu.mailqueue.util import send_mail, send_simple_mail
+from postgresqleu.util.jsonutil import JsonSerializer
 
 from decimal import Decimal
 from operator import itemgetter
@@ -676,10 +677,32 @@ def _scheduledata(request, conference):
 		})
 		tracks.update(sessionset.alltracks())
 
-	return render_conference_response(request, conference, 'schedule', 'confreg/schedule.html', {
+	return {
 		'days': days,
-		'tracks': tracks,
-	})
+		'tracks': list(tracks),
+	}
+
+def schedule(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+
+	if not conference.scheduleactive:
+		if not conference.testers.filter(pk=request.user.id):
+			return render_conference_response(request, conference, 'schedule', 'confreg/scheduleclosed.html')
+
+
+	return render_conference_response(request, conference, 'schedule', 'confreg/schedule.html', _scheduledata(request, conference))
+
+@login_required
+def schedulejson(request, confname):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=confname)
+	else:
+		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+
+	return HttpResponse(json.dumps(_scheduledata(request, conference),
+								   cls=JsonSerializer,
+								   indent=2),
+						content_type='application/json')
 
 def sessionlist(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
