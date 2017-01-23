@@ -557,7 +557,7 @@ class SessionSet(object):
 	def __init__(self, totalwidth, pixelsperminute):
 		self.headersize = 30
 		self.rooms = {}
-		self.tracks = {}
+		self.tracks = set()
 		self.sessions = []
 		self.firsttime = datetime(2999,1,1)
 		self.lasttime = datetime(1970,1,1)
@@ -569,7 +569,7 @@ class SessionSet(object):
 			return {
 				'id': s.id,
 				'title': s.title,
-				'speakers': s.speaker.all(),
+				'speakers': list(s.speaker.all()),
 				'timeslot': "%s - %s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")),
 				'track': s.track,
 				'room': s.room,
@@ -600,8 +600,8 @@ class SessionSet(object):
 		if not self.rooms.has_key(session.room):
 			if not session.cross_schedule:
 				self.rooms[session.room] = len(self.rooms)
-		if not self.tracks.has_key(session.track):
-			self.tracks[session.track] = session.track
+		if session.track:
+			self.tracks.update((session.track,))
 		if session.starttime < self.firsttime:
 			self.firsttime = session.starttime
 		if session.endtime > self.lasttime:
@@ -644,7 +644,7 @@ class SessionSet(object):
 			'leftpos': self.roomwidth()*self.rooms[r],
 			'widthpos': self.roomwidth()-2,
 			'heightpos': self.headersize-2,
-			'sessions': self.room_sessions(r.id),
+			'sessions': list(self.room_sessions(r.id)),
 		} for r in self.rooms]
 
 	def room_sessions(self, roomid):
@@ -658,16 +658,10 @@ class SessionSet(object):
 				roomprevsess = s
 				yield self._session_template_dict(s)
 
-def schedule(request, confname):
-	conference = get_object_or_404(Conference, urlname=confname)
-
-	if not conference.scheduleactive:
-		if not conference.testers.filter(pk=request.user.id):
-			return render_conference_response(request, conference, 'schedule', 'confreg/scheduleclosed.html')
-
+def _scheduledata(request, conference):
 	daylist = ConferenceSession.objects.filter(conference=conference, status=1).dates('starttime', 'day')
 	days = []
-	tracks = {}
+	tracks = set()
 	for d in daylist:
 		sessions = ConferenceSession.objects.select_related('track','room').filter(conference=conference,status=1,starttime__range=(d,d+timedelta(days=1))).order_by('starttime','room__roomname')
 		sessionset = SessionSet(conference.schedulewidth, conference.pixelsperminute)
