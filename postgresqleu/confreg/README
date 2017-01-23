@@ -128,7 +128,7 @@ Overriding templates
 Normally, it's enough to use the base template and then let the
 upstream templates render what's in the "content" block. But in some
 cases it might be necessary to take control over the complete
-tepmlate. When doing that, it's important to remember that the
+template. When doing that, it's important to remember that the
 variables passed to the template might change at some point in the
 future, at which point the template has to be updated.
 
