@@ -1420,7 +1420,7 @@ def bulkpay(request, confname):
 		return render_conference_response(request, conference, 'reg', 'confreg/bulkpay_list.html', {
 			'activewaitlist': True,
 			'bulkpayments': bulkpayments,
-			'currency_symbol': settings.CURRENCY_SYMBOL,
+			'currency_symbol': settings.CURRENCY_SYMBOL.decode('utf8'),
 		})
 
 	if request.method == 'POST':
@@ -1569,14 +1569,14 @@ def bulkpay(request, confname):
 			'totalcost': errors and -1 or totalcost,
 			'state': state,
 			'bulkpayments': bulkpayments,
-			'currency_symbol': settings.CURRENCY_SYMBOL,
+			'currency_symbol': settings.CURRENCY_SYMBOL.decode('utf8'),
 		})
 	else:
 		form = BulkRegistrationForm()
 		return render_conference_response(request, conference, 'reg', 'confreg/bulkpay_list.html', {
 			'form': form,
 			'bulkpayments': bulkpayments,
-			'currency_symbol': settings.CURRENCY_SYMBOL,
+			'currency_symbol': settings.CURRENCY_SYMBOL.decode('utf8'),
 		})
 
 
