@@ -1588,7 +1588,7 @@ def bulkpay_view(request, confname, bulkpayid):
 
 	return render_conference_response(request, conference, 'reg', 'confreg/bulkpay_view.html', {
 		'bulkpayment': bulkpayment,
-		'invoice': bulkpayment.invoice,
+		'invoice': InvoicePresentationWrapper(bulkpayment.invoice, '.'),
 	})
 
 #
