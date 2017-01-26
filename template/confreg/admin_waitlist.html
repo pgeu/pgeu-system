@@ -63,7 +63,7 @@ function showDialog(id) {
 The current entries on the waitlist are:
 </p>
 <form method="post" action=".">{%csrf_token%}
-{%with waitlist=waitlist_active%}
+{%with waitlist_type="waitlist_active"%}
 {%include "confreg/admin_waitlist_list.inc.html"%}
 {%endwith%}
 

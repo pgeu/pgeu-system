@@ -7,7 +7,7 @@
     <th>Offer made</th>
     <th>Offer expired</th>
     <th>Status</th>
-    {%if waitlist == "waitlist_active" %}
+    {%if waitlist_type == "waitlist_active" %}
       <th>Action</th>
     {%endif%}
   </tr>
@@ -21,7 +21,7 @@
     <td>{{w.offerexpires|default:''}}</td>
     <td style="white-space: nowrap"><span onClick="showDialog({{w.registration.id}})" class="dlgClickable ui-icon ui-icon-circle-plus" style="display: inline-block"></span>
 {%if w.registration.payconfirmedat%}Registered{%elif w.offeredon%}Offered{%if w.registration.invoice%} (with invoice){%endif%}{%else%}Pending ({{w.offers_made}} offers){%endif%}</td>
-{%if waitlist == "waitlist_active" %}
+{%if waitlist_type == "waitlist_active" %}
     {%if not w.offeredon and not w.registration.payconfirmedat%}<td style="white-space: nowrap;"><input type="checkbox" name="reg_{{w.registration.id}}" value="1"{%if w.registration.id in form.reg_list%} CHECKED{%endif%}> offer</td>{%else%}<td></td>{%endif%}
 {%endif%}
   </tr>
