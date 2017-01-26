@@ -123,9 +123,9 @@ class BadgeBuilder(object):
 
 	def initialize_legacy(self):
 		# Instantiate the class we need to build things with
-		if not conference.badgemodule:
+		if not self.conference.badgemodule:
 			raise Exception("Badge module not specified!")
-		if conference.badgemodule.find('/') < 0:
+		if self.conference.badgemodule.find('/') < 0:
 			# No slash means it's a class from this file
 			try:
 				self.badgetype = getattr(badgetypes, conference.badgemodule)()
@@ -133,11 +133,11 @@ class BadgeBuilder(object):
 				raise Exception("Module class not found in main system")
 		else:
 			# Load this from an external module.
-			modfile = os.path.dirname(conference.badgemodule)
-			classname = os.path.basename(conference.badgemodule)
+			modfile = os.path.dirname(self.conference.badgemodule)
+			classname = os.path.basename(self.conference.badgemodule)
 
 			# First check if the module already exists
-			modname = "conference_badges_%s" % conference.id
+			modname = "conference_badges_%s" % self.conference.id
 			if not modname in sys.modules:
 				# We need to import the module
 				import imp
