@@ -1,2 +1,4 @@
 paypal.ini
 *.pyc
+twitter_sync.ini
+mailman_sync.ini
