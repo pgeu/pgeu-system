@@ -99,7 +99,9 @@ def ConferenceContext(request, conference):
 # on the conference.
 #
 def render_conference_response(request, conference, pagemagic, templatename, dictionary=None):
-	if conference.jinjadir:
+	# Conference can be None for pages that can be both inside and outside
+	# the framework, such as the speaker profile.
+	if conference and conference.jinjadir:
 		# Use the cleaner (?) jinja based rendering system
 		return render_jinja_conference_response(request, conference, pagemagic, templatename, dictionary)
 
