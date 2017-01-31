@@ -152,6 +152,10 @@ class Invoice(models.Model):
 			return self.total_amount - f
 
 	@property
+	def amount_without_vat(self):
+		return self.total_amount - self.total_vat
+
+	@property
 	def can_autorefund(self):
 		return PaymentMethodWrapper(self.paidusing, self).can_autorefund
 

@@ -62,12 +62,16 @@ table.refundtable input[type="number"] {
     <td>{{invoice.id}}</td>
   </tr>
   <tr>
-    <td>Total amount:</td>
-    <td>{{currency_symbol}}{{invoice.total_amount}}</td>
+    <td>Total without VAT:</td>
+    <td>{{currency_symbol}}{{invoice.amount_without_vat}}</td>
   </tr>
   <tr>
     <td>Total VAT:</td>
     <td>{{currency_symbol}}{{invoice.total_vat}}</td>
+  </tr>
+  <tr>
+    <td>Total amount:</td>
+    <td>{{currency_symbol}}{{invoice.total_amount}}</td>
   </tr>
   <tr>
     <td>Payment fees:</td>
