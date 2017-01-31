@@ -95,6 +95,12 @@ class InvoiceProcessor(object):
 		reg.payconfirmedby = None
 		reg.save()
 
+		# Once unlinked, remove the registration as well. If we don't
+		# do this, the user will get notifications to remember to
+		# complete their registration in the future, and that will be
+		# confusing.
+		reg.delete()
+
 	# Return the user to a page showing what happened as a result
 	# of their payment. In our case, we just return the user directly
 	# to the registration page.
