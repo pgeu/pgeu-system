@@ -117,13 +117,23 @@ class InvoiceWrapper(object):
 							self.invoice.invoicedate,
 							self.invoice.refund.completed,
 							self.invoice.id,
-							self.invoice.total_amount,
+							self.invoice.total_amount - self.invoice.total_vat,
+							self.invoice.total_vat,
 							self.invoice.refund.amount,
+							self.invoice.refund.vatamount,
 							os.path.realpath('%s/../../media/img/' % os.path.dirname(__file__)),
 							settings.CURRENCY_SYMBOL,
+							self.used_payment_details(),
 		)
 
 		return pdfnote.save().getvalue()
+
+	def used_payment_details(self):
+		try:
+			pm = PaymentMethodWrapper(self.invoice.paidusing, self.invoice)
+			return pm.used_method_details
+		except:
+			raise
 
 	def email_receipt(self):
 		# If no receipt exists yet, we have to bail too

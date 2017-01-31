@@ -37,3 +37,7 @@ Pay directly using online banking. Currently supported with most banks in {0}.
 		invoice.refund.payment_reference = trans.orderid
 
 		return True
+
+	def used_method_details(self, invoice):
+		# Bank transfers don't need any extra information
+		return "Trustly"

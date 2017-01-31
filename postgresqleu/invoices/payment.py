@@ -67,6 +67,11 @@ class PaymentMethodWrapper(object):
 	def can_autorefund(self):
 		return hasattr(self, 'implementation') and hasattr(self.implementation, 'autorefund')
 
+	@property
+	def used_method_details(self):
+		if hasattr(self, 'implementation') and hasattr(self.implementation, 'used_method_details'):
+			return self.implementation.used_method_details(self.invoice)
+
 	def autorefund(self):
 		if hasattr(self, 'implementation'):
 			if hasattr(self.implementation, 'autorefund'):

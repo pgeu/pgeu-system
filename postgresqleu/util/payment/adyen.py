@@ -112,6 +112,14 @@ Pay using your credit card, including Mastercard, VISA and American Express.
 	def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl=None):
 		return super(AdyenCreditcard, self).build_payment_url(invoicestr, invoiceamount, invoiceid, returnurl, 'card', {})
 
+	def used_method_details(self, invoice):
+		# For credit card payments we try to figure out which type of
+		# card it is as well.
+		(trans, reason) = self._find_invoice_transaction(invoice)
+		if not trans:
+			raise Exception(reason)
+		return "Credit Card ({0})".format(trans.method)
+
 class AdyenBanktransfer(_AdyenBase):
 	description="""
 Pay using a direct IBAN bank transfer. Note that this method is slow and should
@@ -143,3 +151,7 @@ only be used if others are not possible.
 		if invoice.canceltime:
 			if diff_workdays(datetime.now(), invoice.canceltime) < 5:
 				return "Since this invoice will be automatically canceled in less than 5 working days, it requires the use of a faster payment method."
+
+	def used_method_details(self, invoice):
+		# Bank transfers don't need any extra information
+		return "IBAN bank transfers"

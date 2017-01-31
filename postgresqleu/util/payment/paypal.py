@@ -79,3 +79,7 @@ lower fees.
 		# At this point, we succeeded. Anything that failed will bubble
 		# up as an exception.
 		return True
+
+	def used_method_details(self, invoice):
+		# Bank transfers don't need any extra information
+		return "PayPal"
