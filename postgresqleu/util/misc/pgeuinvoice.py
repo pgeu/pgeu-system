@@ -244,12 +244,15 @@ BIC: CMCIFR2A
 
 
 class PDFRefund(PDFBase):
-	def __init__(self, recipient, invoicedate, refunddate, invoicenum, invoiceamount, refundamount, imagedir, currency):
+	def __init__(self, recipient, invoicedate, refunddate, invoicenum, invoiceamount, invoicevat, refundamount, refundvat, imagedir, currency, paymentmethod):
 		self.recipient = recipient
 		self.invoicedate = invoicedate
 		self.refunddate = refunddate
 		self.invoiceamount = invoiceamount
+		self.invoicevat = invoicevat
 		self.refundamount = refundamount
+		self.refundvat = refundvat
+		self.paymentmethod = paymentmethod
 
 		super(PDFRefund, self).__init__(recipient, invoicenum, imagedir, currency)
 
@@ -258,26 +261,53 @@ class PDFRefund(PDFBase):
 
 		self.canvas.drawCentredString(10.5*cm,19*cm, "REFUND NOTE FOR INVOICE NUMBER {0}".format(self.invoicenum))
 
-		tbldata = [
+		tblpaid = [
+			["Amount paid"],
 			["Item", "Amount"],
-			["Invoice total amount", "{0:.2f} {1}".format(self.invoiceamount, self.currency)],
-			["Refunded amount", "-{0:.2f} {1}".format(self.refundamount, self.currency)],
-			["", "{0:.2f} {1}".format(self.invoiceamount-self.refundamount, self.currency)],
+			["Amount", "{0:.2f} {1}".format(self.invoiceamount, self.currency)],
 		]
-		style = [
-			('BACKGROUND',(0,0),(1,0),colors.lightgrey),
-			('ALIGN',(1,0),(1,-1),'RIGHT'),
-			('LINEBELOW',(0,0),(-1,0), 2, colors.black),
-			('OUTLINE', (0,0), (-1, -1), 1, colors.black),
-			('LINEABOVE', (-1,-1), (-1,-1), 2, colors.black),
+		tblrefunded = [
+			["Amount refunded"],
+			["Item", "Amount"],
+			["Amount", "{0:.2f} {1}".format(self.refundamount, self.currency)],
 		]
+		if self.invoicevat:
+			tblpaid.extend([
+				["VAT", "{0:.2f} {1}".format(self.invoicevat, self.currency)],
+				["", "{0:.2f} {1}".format(self.invoiceamount + self.invoicevat, self.currency)],
+			])
+			tblrefunded.extend([
+				["VAT", "{0:.2f} {1}".format(self.refundvat, self.currency)],
+				["", "{0:.2f} {1}".format(self.refundamount + self.refundvat, self.currency)],
+			])
 
-		t = Table(tbldata, [10.5*cm, 2.5*cm, 1.5*cm, 2.5*cm])
+		style = [
+			('SPAN', (0,0), (1,0)),
+			('BACKGROUND',(0,0),(-1,0),colors.lightgrey),
+			('ALIGN',(0,0),(0,0),'CENTER'),
+			('ALIGN',(1,1),(1,-1),'RIGHT'),
+			('LINEBELOW',(0,1),(-1,1), 1, colors.black),
+			('OUTLINE', (0,0), (-1, -1), 1, colors.black),
+		]
+		if self.invoicevat:
+			style.append(
+				('LINEABOVE', (-1,-1), (-1,-1), 2, colors.black),
+			)
+
+		t = Table(tblpaid, [10.5*cm, 2.5*cm, 1.5*cm, 2.5*cm])
 		t.setStyle(TableStyle(style))
 		w,h = t.wrapOn(self.canvas,10*cm,10*cm)
-		t.drawOn(self.canvas, 2*cm, 18*cm-h)
+		t.drawOn(self.canvas, (self.canvas._pagesize[0]-w)/2, 18*cm-h)
 
-		self.canvas.drawCentredString(10.5*cm, 17.3*cm-h, "This refund was issued {0}".format(self.refunddate.strftime("%B %d, %Y")))
+		t = Table(tblrefunded, [10.5*cm, 2.5*cm, 1.5*cm, 2.5*cm])
+		t.setStyle(TableStyle(style))
+		w,h = t.wrapOn(self.canvas,10*cm,10*cm)
+		t.drawOn(self.canvas, (self.canvas._pagesize[0]-w)/2, 18*cm-h*2-1*cm)
+
+		self.canvas.drawCentredString(10.5*cm, 17.3*cm-h*2 - 2*cm, "This refund was issued {0}".format(self.refunddate.strftime("%B %d, %Y")))
+
+		if self.paymentmethod:
+			self.canvas.drawCentredString(10.5*cm, 17.3*cm-h*2-3*cm, "Refunded to the original form of payment: {0}.".format(self.paymentmethod))
 
 		self.canvas.showPage()
 		self.canvas.save()

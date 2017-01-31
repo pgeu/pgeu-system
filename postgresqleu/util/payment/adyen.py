@@ -98,7 +98,7 @@ class _AdyenBase(object):
 		invoice.refund.payment_reference = api.refund_transaction(
 			invoice.refund.id,
 			trans.pspReference,
-			invoice.refund.amount
+			invoice.refund.fullamount,
 		)
 		# At this point, we succeeded. Anything that failed will bubble
 		# up as an exception.

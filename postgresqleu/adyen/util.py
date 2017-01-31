@@ -369,7 +369,7 @@ class AdyenAPI(object):
 		apiparam = {
 			'merchantAccount': settings.ADYEN_MERCHANTACCOUNT,
 			'modificationAmount': {
-				'value': amount * 100, # "minor units", so cents!
+				'value': int(amount * 100), # "minor units", so cents!
 				'currency': settings.CURRENCY_ISO,
 			},
 			'originalReference': transreference,

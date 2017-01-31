@@ -24,6 +24,19 @@ table.refundtable tr td input {
 table.refundtable tr td input[type="number"] {
   width: 100px;
 }
+table.refundtable table.invoicerows {
+  width: 600px;
+}
+table.refundtable table.invoicerows th:nth-child(1) {
+   text-align: center;
+}
+table.refundtable table.invoicerows td:nth-child(1) {
+   width: 350px;
+   text-align: left;
+}
+table.refundtable input[type="number"] {
+   text-align: right;
+}
 </style>
 {%endblock%}
 {%block layoutblock%}
@@ -53,12 +66,37 @@ table.refundtable tr td input[type="number"] {
     <td>{{currency_symbol}}{{invoice.total_amount}}</td>
   </tr>
   <tr>
+    <td>Total VAT:</td>
+    <td>{{currency_symbol}}{{invoice.total_vat}}</td>
+  </tr>
+  <tr>
     <td>Payment fees:</td>
     <td>{{currency_symbol}}{{invoice.payment_fees}}</td>
   </tr>
   <tr>
     <td>Amount remaining:</td>
     <td>{{currency_symbol}}{{invoice.amount_without_fees}}</td>
+  </tr>
+  <tr>
+    <td>Invoice rows:</td>
+    <td>
+      <table class="invoicerows">
+	<tr>
+	  <th>Text</th>
+	  <th>Amount ex VAT</th>
+	  <th>VAT</th>
+	  <th>Amount inc VAT</th>
+	</tr>
+{%for r in invoice.invoicerow_set.all%}
+	<tr>
+	  <td>{{r.rowtext}}</td>
+	  <td>{{r.totalrow}}</td>
+	  <td>{{r.totalvat}}</td>
+	  <td>{{r.totalwithvat}}</td>
+	</tr>
+{%endfor%}
+      </table>
+    </td>
   </tr>
   <tr>
     <td colspan="2"><hr/></td>

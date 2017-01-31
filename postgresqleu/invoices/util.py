@@ -58,8 +58,7 @@ class InvoiceWrapper(object):
 		totalvat = Decimal(0)
 		for r in self.invoice.invoicerow_set.all():
 			total += r.rowamount * r.rowcount
-			if r.vatrate:
-				totalvat += r.rowamount * r.rowcount * r.vatrate.vatpercent / Decimal(100)
+			totalvat += r.totalvat
 		totalvat = totalvat.quantize(Decimal('.01')) # Round off to two digits
 		self.invoice.total_amount = total + totalvat
 		self.invoice.total_vat = totalvat
@@ -450,7 +449,7 @@ class InvoiceManager(object):
 
 		InvoiceLog(timestamp=datetime.now(), message="Deleted invoice %s: %s" % (invoice.id, invoice.deletion_reason)).save()
 
-	def refund_invoice(self, invoice, reason, amount):
+	def refund_invoice(self, invoice, reason, amount, vatamount, vatrate):
 		# Initiate a refund of an invoice if there is a payment provider that supports it.
 		# Otherwise, flag the invoice as refunded, and assume the user took care of it manually.
 		if invoice.refund:
@@ -464,13 +463,13 @@ class InvoiceManager(object):
 			except Exception, ex:
 				raise Exception("Failed to run invoice processor '%s': %s" % (invoice.processor, ex))
 
-		r = InvoiceRefund(reason=reason, amount=amount)
+		r = InvoiceRefund(reason=reason, amount=amount, vatamount=vatamount, vatrate=vatrate)
 		r.save()
 		invoice.refund = r
 		invoice.save()
 
 		InvoiceHistory(invoice=invoice,
-					   txt='Registered refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount)).save()
+					   txt='Registered refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount+vatamount)).save()
 
 		wrapper = InvoiceWrapper(invoice)
 		if invoice.can_autorefund:
@@ -481,7 +480,7 @@ class InvoiceManager(object):
 			# provider.
 
 			InvoiceLog(timestamp=datetime.now(),
-					   message="Initiated refund of {0}{1} of invoice {2}: {3}".format(settings.CURRENCY_SYMBOL, amount, invoice.id, reason),
+					   message="Initiated refund of {0}{1} of invoice {2}: {3}".format(settings.CURRENCY_SYMBOL, amount+vatamount, invoice.id, reason),
 				   ).save()
 		else:
 			# No automatic refund, so this is flagging something that has
@@ -497,17 +496,22 @@ class InvoiceManager(object):
 			if invoice.accounting_account:
 				accountingtxt = 'Refund of invoice #{0}: {1}'.format(invoice.id, invoice.title)
 				accrows = [
-					(invoice.accounting_account, accountingtxt, invoice.total_amount, invoice.accounting_object),
+					(invoice.accounting_account, accountingtxt, invoice.total_amount-vatamount, invoice.accounting_object),
 				]
+				if vatamount:
+					accrows.append(
+						(invoice.refund.vatrate.vataccount.num, accountingtxt, vatamount, None),
+					)
+
 				urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk),]
 				create_accounting_entry(date.today(), accrows, True, urls)
 
 			InvoiceHistory(invoice=invoice,
-						   txt='Flagged refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount)).save()
+						   txt='Flagged refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount+vatamount)).save()
 
 			wrapper.email_refund_sent()
 			InvoiceLog(timestamp=datetime.now(),
-					   message=u"Flagged invoice {0} as refunded by {1}{2}: {3}".format(invoice.id, settings.CURRENCY_SYMBOL.decode('utf8'), amount, reason),
+					   message=u"Flagged invoice {0} as refunded by {1}{2}: {3}".format(invoice.id, settings.CURRENCY_SYMBOL.decode('utf8'), amount+vatamount, reason),
 					   ).save()
 
 		return r
@@ -536,13 +540,17 @@ class InvoiceManager(object):
 		accrows = [
 			(incomeaccount, accountingtxt, -(refundamount-refundfee), None),
 		]
+		if refund.vatamount:
+			accrows.append(
+				(refund.vatrate.vataccount.num, accountingtxt, refund.vatamount, None),
+			)
 		if refundfee  > 0:
 			accrows.append(
 				(costaccount, accountingtxt, -refundfee, invoice.accounting_object),
 			)
 		if invoice.accounting_account:
 			accrows.append(
-				(invoice.accounting_account, accountingtxt, refundamount, invoice.accounting_object),
+				(invoice.accounting_account, accountingtxt, refundamount-refund.vatamount, invoice.accounting_object),
 			)
 			leaveopen = False
 		else:

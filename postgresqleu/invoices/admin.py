@@ -59,7 +59,7 @@ class InvoiceLogAdmin(admin.ModelAdmin):
 	list_display = ('timestamp', 'message_trunc', 'sent',)
 
 class InvoiceRefundAdmin(admin.ModelAdmin):
-	list_display = ('registered', 'issued', 'completed', 'amount', 'reason')
+	list_display = ('registered', 'issued', 'completed', 'amount', 'vatamount', 'reason')
 
 class InvoicePaymentMethodAdmin(admin.ModelAdmin):
 	list_display = ('name', 'internaldescription', 'classname', )

@@ -28,7 +28,7 @@ Pay directly using online banking. Currently supported with most banks in {0}.
 
 		t = Trustly()
 		try:
-			t.refund(trans.orderid, invoice.refund.amount)
+			t.refund(trans.orderid, invoice.refund.fullamount)
 		except TrustlyException, e:
 			TrustlyLog(message='Refund API failed: {0}'.format(e), error=True).save()
 			return False

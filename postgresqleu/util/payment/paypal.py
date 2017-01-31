@@ -72,8 +72,8 @@ lower fees.
 		from datetime import datetime
 		invoice.refund.payment_reference = api.refund_transaction(
 			trans.paypaltransid,
-			invoice.refund.amount,
-			invoice.refund.amount == invoice.total_amount,
+			invoice.refund.fullamount,
+			invoice.refund.fullamount == invoice.total_amount,
 			'PGEU refund {0}'.format(invoice.refund.id),
 		)
 		# At this point, we succeeded. Anything that failed will bubble

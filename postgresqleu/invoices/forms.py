@@ -3,11 +3,14 @@ from django.forms import ValidationError
 from django.forms import widgets
 from django.contrib.auth.models import User
 
+from decimal import Decimal
+
 from selectable.forms.widgets import AutoCompleteSelectWidget
 from postgresqleu.accountinfo.lookups import UserLookup
 
 from models import Invoice, InvoiceRow, InvoicePaymentMethod
 from postgresqleu.accounting.models import Account, Object
+from postgresqleu.invoices.models import VatRate
 
 class InvoiceForm(forms.ModelForm):
 	hidden_until_finalized = ('total_amount', 'total_vat', 'remindersent', )
@@ -84,7 +87,9 @@ class InvoiceRowForm(forms.ModelForm):
 		return self.cleaned_data['rowcount']
 
 class RefundForm(forms.Form):
-	amount = forms.IntegerField(required=True)
+	amount = forms.DecimalField(required=True)
+	vatamount = forms.DecimalField(required=True)
+	vatrate = forms.ModelChoiceField(queryset=VatRate.objects.all(), required=False)
 	reason = forms.CharField(max_length=100, required=True)
 	confirm = forms.BooleanField()
 
@@ -101,12 +106,38 @@ class RefundForm(forms.Form):
 			del self.fields['confirm']
 
 	def clean_amount(self):
-		errstr = "Amount must be an integer between 1 and {0}".format(self.invoice.total_amount)
+		errstr = "Amount must be a decimal between 1 and {0}".format(self.invoice.total_amount-self.invoice.total_vat)
 
 		try:
-			amount = int(self.cleaned_data['amount'])
-			if amount < 1 or amount > self.invoice.total_amount:
+			amount = Decimal(self.cleaned_data['amount'])
+			if amount < 1 or amount > self.invoice.total_amount-self.invoice.total_vat:
 				raise ValidatonError(errstr)
+			if amount.as_tuple().exponent > 0 or amount.as_tuple().exponent < -2:
+				raise ValidationError("Maximum two decimal digits supported")
 			return self.cleaned_data['amount']
+		except ValidationError:
+			raise
 		except:
 			raise ValidationError(errstr)
+
+	def clean_vatamount(self):
+		errstr = "VAT Amount must be a decimal between 1 and {0}".format(self.invoice.total_vat)
+
+		try:
+			amount = Decimal(self.cleaned_data['vatamount'])
+			if amount < 1 or amount > self.invoice.total_vat:
+				raise ValidatonError(errstr)
+			if amount.as_tuple().exponent > 0 or amount.as_tuple().exponent < -2:				raise ValidationError("Maximum two decimal digits supported")
+			return self.cleaned_data['vatamount']
+		except ValidationError:
+			raise
+		except:
+			raise ValidationError(errstr)
+
+	def clean(self):
+		data = super(RefundForm, self).clean()
+
+		if data.has_key('vatamount') and Decimal(data['vatamount']) > 0:
+			if not data.has_key('vatrate') or not data['vatrate']:
+				raise ValidationError({'vatrate': ['When VAT amount is specified, at VAT rate must be selected']})
+		return data

@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 from django.conf import settings
 
 from datetime import datetime, timedelta
+from decimal import Decimal
+
 from payment import PaymentMethodWrapper
 
 from postgresqleu.accounting.models import Account
@@ -37,7 +39,9 @@ class InvoicePaymentMethod(models.Model):
 class InvoiceRefund(models.Model):
 	reason = models.CharField(max_length=500, null=False, blank=True, default='', help_text="Reason for refunding of invoice")
 
-	amount = models.IntegerField(null=False)
+	amount = models.DecimalField(max_digits=10, decimal_places=2, null=False)
+	vatamount = models.DecimalField(max_digits=10, decimal_places=2, null=False)
+	vatrate = models.ForeignKey('VatRate', null=True)
 
 	registered = models.DateTimeField(null=False, auto_now_add=True)
 	issued = models.DateTimeField(null=True, blank=True)
@@ -47,6 +51,9 @@ class InvoiceRefund(models.Model):
 
 	refund_pdf = models.TextField(blank=True, null=False)
 
+	@property
+	def fullamount(self):
+		return self.amount + self.vatamount
 
 class Invoice(models.Model):
 	# pk = invoice number, which is fully exposed.
@@ -188,6 +195,21 @@ class InvoiceRow(models.Model):
 
 	def __unicode__(self):
 		return self.rowtext
+
+	@property
+	def totalvat(self):
+		if self.vatrate:
+			return self.rowamount * self.rowcount * self.vatrate.vatpercent / Decimal(100)
+		else:
+			return 0
+
+	@property
+	def totalrow(self):
+		return self.rowamount * self.rowcount
+
+	@property
+	def totalwithvat(self):
+		return self.totalrow + self.totalvat
 
 class InvoiceHistory(models.Model):
 	invoice = models.ForeignKey(Invoice, null=False)

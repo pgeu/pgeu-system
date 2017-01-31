@@ -12,6 +12,7 @@ from django.conf import settings
 import base64
 import StringIO
 from datetime import datetime, timedelta
+from decimal import Decimal
 
 from postgresqleu.util.decorators import user_passes_test_or_error
 from models import Invoice, InvoiceRow, InvoicePaymentMethod, VatRate
@@ -248,7 +249,10 @@ def refundinvoice(request, invoicenum):
 			mgr = InvoiceManager()
 			r = mgr.refund_invoice(invoice,
 								   form.cleaned_data['reason'],
-								   int(form.cleaned_data['amount']))
+								   Decimal(form.cleaned_data['amount']),
+								   Decimal(form.cleaned_data['vatamount']),
+								   form.cleaned_data['vatrate'],
+			)
 			return render(request, 'invoices/refundform_complete.html', {
 				'invoice': invoice,
 				'refund': r,
