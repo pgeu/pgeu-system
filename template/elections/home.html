@@ -6,7 +6,7 @@
 <h2>Open elections</h2>
 <ul>
 {%for e in open %}
- <li><a href="{{e.id}}/">{{e.name}}</a> ({{e.startdate}} - {{e.enddate}})</li>
+ <li><a href="{{e.id}}/">{{e.name}}</a> ({{e.startdate}} - {{e.enddate}}). Voting closes at 23:59 CET</li>
 {%empty%}
  <li>There are currently no open elections.</li>
 {%endfor%}
