@@ -20,6 +20,8 @@ import tarfile
 import jinja2
 import jinja2.sandbox
 
+import markdown
+
 from datetime import datetime, date, time
 import dateutil.parser
 
@@ -63,6 +65,7 @@ global_filters = {
 	'shuffle': filter_shuffle,
 	'slugify': filter_slugify,
 	'datetimeformat': filter_datetimeformat,
+	'markdown': lambda t: jinja2.Markup(markdown.markdown(t)),
 }
 
 
