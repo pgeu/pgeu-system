@@ -180,7 +180,7 @@ def meeting(request, meetingid):
 	(key, created) = MemberMeetingKey.objects.get_or_create(member=member, meeting=meeting)
 	if created:
 		# New key!
-		key.key = base64.b64encode(os.urandom(40)).rstrip('=')
+		key.key = base64.urlsafe_b64encode(os.urandom(40)).rstrip('=')
 		key.save()
 
 	return render_to_response('membership/meeting.html', {
