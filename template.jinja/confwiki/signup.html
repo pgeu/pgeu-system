@@ -16,9 +16,7 @@ table.signupform input[type=text],textarea,select {
 
 {%block content%}
 <h2>{{signup.title}}</h2>
-<p>
 {{signup.intro|markdown}}
-</p>
 
 {%if closed%}
 <p><b>This signup is closed.</b></p>
