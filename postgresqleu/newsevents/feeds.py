@@ -6,9 +6,9 @@ from models import News, Event
 import datetime
 
 class LatestNews(Feed):
-	title = "News - PostgreSQL Europe"
+	title = "News - %s" % settings.ORG_NAME
 	link = "/"
-	description = "The latest news from PostgreSQL Europe"
+	description = "The latest news from %s" % settings.ORG_NAME
 	description_template = "pieces/news_description.html"
 	
 	def items(self):
@@ -18,9 +18,9 @@ class LatestNews(Feed):
 		return "%s/news/%s" % (settings.SITEBASE, news.id)
 
 class LatestEvents(Feed):
-	title = "Events - PostgreSQL Europe"
+	title = "Events - %s" % settings.ORG_NAME
 	link = "%s/events/" % settings.SITEBASE
-	description = "The latest events from PostgreSQL Europe"
+	description = "The latest events from %s" % settings.ORG_NAME
 	description_template = "pieces/event_description.html"
 	
 	def items(self):
