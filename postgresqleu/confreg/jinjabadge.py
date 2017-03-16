@@ -95,6 +95,10 @@ class JinjaBadge(Flowable):
 		fontname = 'DejaVu Serif{0}'.format(o.get('bold', False) and ' Bold' or '')
 		lines = o['text'].splitlines()
 
+		if len(lines) == 0:
+			# Don't try to draw empty lines
+			return
+
 		# Max height is total height divided by lines divided by 1.2 since
 		# we multiply the leading value with 1.2 later
 		maxsize = o.get('maxsize', None)
