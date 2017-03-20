@@ -36,7 +36,7 @@ def payment_post(request):
 	# Generate the transaction
 	initialize_braintree()
 	result = braintree.Transaction.sale({
-		'amount': '{0}.00'.format(invoice.total_amount),
+		'amount': '{0}'.format(invoice.total_amount),
 		'order_id': '#{0}'.format(invoice.pk),
 		'payment_method_nonce': nonce,
 		'options' : {
