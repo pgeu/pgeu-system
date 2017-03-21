@@ -23,5 +23,5 @@ removed it if you are unable to attend.
 
 To confirm your ability to attend, please use the link below:
 
-{{SITEBASE}}/events/callforpapers/{{conference.urlname}}/
+{{sitebase}}/events/callforpapers/{{conference.urlname}}/
 

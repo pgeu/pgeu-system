@@ -1,11 +1,10 @@
 from django.conf import settings
 from django.template import Context
-from django.template.loader import get_template
 
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 
-from postgresqleu.mailqueue.util import send_simple_mail
+from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 
 from models import PrepaidVoucher, DiscountCode, RegistrationWaitlistHistory
 
@@ -149,20 +148,19 @@ def expire_additional_options(reg):
 		# template. (It's a bit inefficient to re-parse the template every time, but
 		# we don't expire these things very often, so we don't care)
 
-		template = get_template('confreg/mail/additionaloption_expired.txt')
-
-		send_simple_mail(reg.conference.contactaddr,
-						 reg.email,
-						 'Your pending registration for {0}'.format(reg.conference.conferencename),
-						 template.render(Context({
+		send_template_mail(reg.conference.contactaddr,
+						   reg.email,
+						   'Your pending registration for {0}'.format(reg.conference.conferencename),
+						   'confreg/mail/additionaloption_expired.txt',
+						   {
 							 'conference': reg.conference,
 							 'reg': reg,
 							 'options': expireset,
 							 'optionscount': len(expireset),
-							 'SITEBASE': settings.SITEBASE,
-						 })),
-						 sendername = reg.conference.conferencename,
-						 receivername = u"{0} {1}".format(reg.firstname, reg.lastname))
+						   },
+						   sendername = reg.conference.conferencename,
+						   receivername = u"{0} {1}".format(reg.firstname, reg.lastname)
+					   )
 
 		for ao in expireset:
 			# Notify caller that this one is being expired

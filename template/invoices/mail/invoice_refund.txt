@@ -13,9 +13,9 @@ in the account.
 
 
 If you have any questions about this refund, please let us
-know at treasurer@postgresql.eu as soon as possible.
+know at {{treasurer_email}} as soon as possible.
 
 
 Thank you!
 
-PostgreSQL Europe
+{{org_name}}

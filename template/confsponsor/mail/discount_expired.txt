@@ -7,4 +7,4 @@ This discount code will no longer be available for use. If you wish
 to order another discount code, you can do so at the sponsorship
 dashboard at:
 
-{{SITEBASE}}/events/sponsor/{{sponsor.id}}/
+{{sitebase}}/events/sponsor/{{sponsor.id}}/

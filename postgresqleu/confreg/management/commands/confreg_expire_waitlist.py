@@ -12,9 +12,8 @@ from django.conf import settings
 from datetime import datetime
 
 from django.template import Context
-from django.template.loader import get_template
 
-from postgresqleu.mailqueue.util import send_simple_mail
+from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 
 from postgresqleu.confreg.models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
 
@@ -27,8 +26,6 @@ class Command(BaseCommand):
 		# system, as the expiry time of the invoice is set synchronized. In this
 		# run, we only care about offers that have not been picked up at all.
 		wlentries = RegistrationWaitlistEntry.objects.filter(registration__payconfirmedat__isnull=True, registration__invoice__isnull=True, offerexpires__lt=datetime.now())
-
-		template = get_template('confreg/mail/waitlist_expired.txt')
 
 		for w in wlentries:
 			reg = w.registration
@@ -45,18 +42,18 @@ class Command(BaseCommand):
 								 sendername=reg.conference.conferencename)
 
 			# Also send an email to the user
-			send_simple_mail(reg.conference.contactaddr,
-							 reg.email,
-							 'Your waitlist offer for {0}'.format(reg.conference.conferencename),
-							 template.render(Context({
-								 'conference': reg.conference,
-								 'reg': reg,
-								 'offerexpires': w.offerexpires,
-								 'SITEBASE': settings.SITEBASE,
-								 })),
-							 sendername = reg.conference.conferencename,
-							 receivername = u"{0} {1}".format(reg.firstname, reg.lastname),
-							 )
+			send_template_mail(reg.conference.contactaddr,
+							   reg.email,
+							   'Your waitlist offer for {0}'.format(reg.conference.conferencename),
+							   'confreg/mail/waitlist_expired.txt',
+							   {
+								   'conference': reg.conference,
+								   'reg': reg,
+								   'offerexpires': w.offerexpires,
+							   },
+							   sendername = reg.conference.conferencename,
+							   receivername = u"{0} {1}".format(reg.firstname, reg.lastname),
+						   )
 
 			# Now actually expire the offer
 			w.offeredon = None

@@ -9,9 +9,9 @@ systems, you will receive a notice indicating the refund is completed.
 
 If you do not already know why this invoice has been refunded, or
 have any other questions, please let us know at
-treasurer@postgresql.eu as soon as possible.
+{{treasurer_email}} as soon as possible.
 
 
 Thank you!
 
-PostgreSQL Europe
+{{org_name}}

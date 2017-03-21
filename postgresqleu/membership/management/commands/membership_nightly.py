@@ -10,12 +10,11 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.db.models import Q
 from django.template import Context
-from django.template.loader import get_template
 from django.conf import settings
 
 from datetime import datetime, timedelta
 
-from postgresqleu.mailqueue.util import send_simple_mail
+from postgresqleu.mailqueue.util import send_template_mail
 from postgresqleu.membership.models import Member, MemberLog
 
 class Command(BaseCommand):
@@ -28,13 +27,14 @@ class Command(BaseCommand):
 		for m in expired:
 			MemberLog(member=m, timestamp=datetime.now(), message='Membership expired').save()
 			# Generate an email to the user
-			txt = get_template('membership/mail/expired.txt').render(Context({
-						'member': m,
-						}))
-			send_simple_mail(settings.MEMBERSHIP_SENDER_EMAIL,
-							 m.user.email,
+			send_template_mail(settings.MEMBERSHIP_SENDER_EMAIL,
+							   m.user.email,
 							 "Your {0} membership has expired".format(settings.ORG_NAME),
-							 txt)
+							   'membership/mail/expired.txt',
+							   {
+								   'member': m,
+							   },
+						   )
 			self.stdout.write(u"Expired member {0} (paid until {1})".format(m, m.paiduntil))
 			# An expired member has no membersince and no paiduntil.
 			m.membersince = None
@@ -57,13 +57,14 @@ class Command(BaseCommand):
 		for m in warning:
 			MemberLog(member=m, timestamp=datetime.now(), message='Membership expiry warning sent to %s' % m.user.email).save()
 			# Generate an email to the user
-			txt = get_template('membership/mail/warning.txt').render(Context({
-						'member': m,
-						}))
-			send_simple_mail(settings.MEMBERSHIP_SENDER_EMAIL,
-							 m.user.email,
+			send_template_mail(settings.MEMBERSHIP_SENDER_EMAIL,
+							   m.user.email,
 							 "Your {0} membership will expire soon".format(settings.ORG_NAME),
-							 txt)
+							   'membership/mail/warning.txt',
+							   {
+								   'member': m,
+							   },
+						   )
 			self.stdout.write(u"Sent warning to member {0} (paid until {1}, last warned {2})".format(m, m.paiduntil, m.expiry_warning_sent))
 			m.expiry_warning_sent = datetime.now()
 			m.save()

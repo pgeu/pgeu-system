@@ -9,12 +9,10 @@ from django.conf import settings
 from datetime import date, datetime, timedelta
 
 from django.db.models import Q, F, Count
-from django.template import Context
-from django.template.loader import get_template
 
 from postgresqleu.confreg.models import DiscountCode
 from postgresqleu.confsponsor.models import Sponsor # Required for text based resolving in DiscountCode
-from postgresqleu.mailqueue.util import send_simple_mail
+from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 from postgresqleu.invoices.util import InvoiceManager, InvoiceWrapper
 
 class Command(BaseCommand):
@@ -41,20 +39,19 @@ class Command(BaseCommand):
 								 code.conference.sponsoraddr,
 								 u"[{0}] Discount code expired".format(code.conference),
 								 u"Discount code {0} has expired without any uses.".format(code.code))
-				msg = get_template('confsponsor/mail/discount_expired.txt').render(Context({
-					'code': code,
-					'sponsor': code.sponsor,
-					'conference': code.conference,
-					'SITEBASE': settings.SITEBASE,
-				}))
-				for manager in code.sponsor.managers.all():
-					send_simple_mail(code.conference.sponsoraddr,
-									 manager.email,
-									 u"[{0}] Discount code {1} expired".format(code.conference, code.code),
-									 msg,
-									 sendername=code.conference.conferencename,
 
-									 receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
+				for manager in code.sponsor.managers.all():
+					send_template_mail(code.conference.sponsoraddr,
+									   manager.email,
+									   u"[{0}] Discount code {1} expired".format(code.conference, code.code),
+									   'confsponsor/mail/discount_expired.txt',
+									   {
+										   'code': code,
+										   'sponsor': code.sponsor,
+										   'conference': code.conference,
+									   },
+									   sendername=code.conference.conferencename,
+									   receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
 			else:
 				# At least one use, so we generate the invoice
 				invoicerows = []
@@ -102,19 +99,20 @@ class Command(BaseCommand):
 									 len(invoicerows),
 									 code.invoice.total_amount,
 								 ))
-				msg = get_template('confsponsor/mail/discount_invoiced.txt').render(Context({
-					'code': code,
-					'conference': code.conference,
-					'sponsor': code.sponsor,
-					'invoice': code.invoice,
-					'curr': settings.CURRENCY_ABBREV,
-					'expired_time': code.validuntil < date.today(),
-					'SITEBASE': settings.SITEBASE,
-				}))
+
 				for manager in code.sponsor.managers.all():
-					send_simple_mail(code.conference.sponsoraddr,
-									 manager.email,
-									 u"[{0}] Discount code {1} has been invoiced".format(code.conference, code.code),
-									 msg,
-									 sendername=code.conference.conferencename,
-									 receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
+					send_template_mail(code.conference.sponsoraddr,
+									   manager.email,
+									   u"[{0}] Discount code {1} has been invoiced".format(code.conference, code.code),
+									   'confsponsor/mail/discount_invoiced.txt',
+									   {
+										   'code': code,
+										   'conference': code.conference,
+										   'sponsor': code.sponsor,
+										   'invoice': code.invoice,
+										   'curr': settings.CURRENCY_ABBREV,
+										   'expired_time': code.validuntil < date.today(),
+									   },
+									   sendername=code.conference.conferencename,
+									   receivername=u'{0} {1}'.format(manager.first_name, manager.last_name)
+								   )

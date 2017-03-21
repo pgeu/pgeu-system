@@ -1,6 +1,6 @@
 Hello!
 
-You were recently sent an invoice from PostgreSQL Europe:
+You were recently sent an invoice from {{org_name}}:
 
 Invoice #{{invoice.id}}: {{invoice.title}}
 
@@ -15,12 +15,12 @@ If you have recently paid this invoice with a bank transfer then
 we haven't received the payment yet due to processing delays at
 the banks which is outside of our control. Once the payment is
 received you will get a receipt via email. Please contact your
-bank and us at treasurer@postgresql.eu in case this is taking
+bank and us at {{treasurer_email}} in case this is taking
 too long.
 
 If you feel this invoice was sent in error, or if there there is
 any other reason you have not been able to pay this invoice, please
-let us know at treasurer@postgresql.eu as soon as possible.
+let us know at {{treasurer_email}} as soon as possible.
 
 Please view the attached invoice for details.
 
@@ -33,4 +33,4 @@ payment options at:
 
 Thank you!
 
-PostgreSQL Europe
+{{org_name}}

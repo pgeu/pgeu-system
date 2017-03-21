@@ -18,7 +18,7 @@ been generated (invoice number #{{invoice.id}}) and sent to
 {{invoice.recipient_name}} <{{invoice.recipient_email}}>.
 
 This invoice can also be viewed at:
-{{SITEBASE}}/invoices/{{invoice.pk}}/{{invoice.recipient_secret}}/
+{{sitebase}}/invoices/{{invoice.pk}}/{{invoice.recipient_secret}}/
 
 The invoice is due to be paid on receipt, to please go ahead and
 complete the payment as soon as possible.
@@ -26,7 +26,7 @@ complete the payment as soon as possible.
 As always, you can find information about the usage of your code, and
 order more codes if you wish to, at the sponsorship dashboard page:
 
-{{SITEBASE}}/events/sponsor/{{sponsor.id}}/
+{{sitebase}}/events/sponsor/{{sponsor.id}}/
 
 
 Thank you for your continued support!

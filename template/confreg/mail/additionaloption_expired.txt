@@ -19,4 +19,4 @@ as no seats are guaranteed until the process is completed.
 
 To view your existing pending registration, please go to
 
-{{SITEBASE}}/events/register/{{conference.urlname}}/
+{{sitebase}}/events/register/{{conference.urlname}}/

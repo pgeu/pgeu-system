@@ -42,7 +42,7 @@ from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod, InvoiceR
 from postgresqleu.confwiki.models import Wikipage
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
-from postgresqleu.mailqueue.util import send_mail, send_simple_mail
+from postgresqleu.mailqueue.util import send_mail, send_simple_mail, send_template_mail, template_to_string
 from postgresqleu.util.jsonutil import JsonSerializer
 
 from decimal import Decimal
@@ -962,19 +962,18 @@ def callforpapers_confirm(request, confname, sessionid):
 			session.status = 1 # Now approved!
 			session.save()
 			# We can generate the email for this right away, so let's do that
-			template = get_template('confreg/mail/session_notify.txt')
 			for spk in session.speaker.all():
-				send_simple_mail(conference.contactaddr,
-								 spk.user.email,
-								 "Your session '%s' submitted to %s" % (session.title, conference),
-								 template.render(Context({
+				send_template_mail(conference.contactaddr,
+								   spk.user.email,
+								   "Your session '%s' submitted to %s" % (session.title, conference),
+								   'confreg/mail/session_notify.txt',
+								   {
 									 'conference': conference,
 									 'session': session,
-									 'SITEBASE': settings.SITEBASE,
-									 })),
-								 sendername = conference.conferencename,
-								 receivername = spk.fullname,
-							 )
+								   },
+								   sendername = conference.conferencename,
+								   receivername = spk.fullname,
+							   )
 			session.lastnotifiedstatus = 1 # Now also approved
 			session.lastnotifiedtime = datetime.now()
 			session.save()
@@ -1377,11 +1376,10 @@ def viewvouchers(request, batchid):
 
 	vouchers = batch.prepaidvoucher_set.all()
 
-	vouchermailtext = get_template('confreg/mail/prepaid_vouchers.txt').render(Context({
+	vouchermailtext = template_to_string('confreg/mail/prepaid_vouchers.txt'),{
 		'batch': batch,
 		'vouchers': vouchers,
-		'SITEBASE': settings.SITEBASE,
-		}))
+		}
 
 	return render_to_response('confreg/prepaid_create_list.html', {
 			'batch': batch,
@@ -1397,18 +1395,17 @@ def emailvouchers(request, batchid):
 	batch = PrepaidBatch.objects.get(pk=batchid)
 	vouchers = batch.prepaidvoucher_set.all()
 
-	vouchermailtext = get_template('confreg/mail/prepaid_vouchers.txt').render(Context({
-		'batch': batch,
-		'vouchers': vouchers,
-		'SITEBASE': settings.SITEBASE,
-	}))
-	send_simple_mail(batch.conference.contactaddr,
-					  batch.buyer.email,
-					  "Attendee vouchers for %s" % batch.conference,
-					  vouchermailtext,
-					 sendername=batch.conference.conferencename,
-					 receivername=u"{0} {1}".format(batch.buyer.first_name, batch.buyer.last_name),
-					  )
+	send_template_mail(batch.conference.contactaddr,
+					   batch.buyer.email,
+					   "Attendee vouchers for %s" % batch.conference,
+					   'confreg/mail/prepaid_vouchers.txt',
+					   {
+						   'batch': batch,
+						   'vouchers': vouchers,
+					   },
+					   sendername=batch.conference.conferencename,
+					   receivername=u"{0} {1}".format(batch.buyer.first_name, batch.buyer.last_name),
+				   )
 	return HttpResponse('OK')
 
 @login_required
@@ -1510,9 +1507,6 @@ def bulkpay(request, confname):
 					bp.numregs = len(allregs)
 					bp.save() # Save so we get a primary key
 
-					# Get a template for notifying the attendees by mail
-					template = get_template('confreg/mail/bulkpay_added.txt')
-
 					# Now assign this bulk record to all our registrations
 					for r in allregs:
 						r.bulkpayment = bp
@@ -1524,17 +1518,18 @@ def bulkpay(request, confname):
 
 						# Also notify these registrants that they have been
 						# added to the bulk payment.
-						send_simple_mail(conference.contactaddr,
-										 r.email,
-										 "Your registration for {0} added to bulk payment".format(conference.conferencename),
-										 template.render(Context({
-											 'conference': conference,
-											 'reg': r,
-											 'bulk': bp,
-										 })),
-										 sendername = conference.conferencename,
-										 receivername = r.fullname,
-									 )
+						send_template_mail(conference.contactaddr,
+										   r.email,
+										   "Your registration for {0} added to bulk payment".format(conference.conferencename),
+										   'confreg/mail/bulkpay_added.txt',
+										   {
+											   'conference': conference,
+											   'reg': r,
+											   'bulk': bp,
+										   },
+										   sendername = conference.conferencename,
+										   receivername = r.fullname,
+									   )
 
 					# Finally, create an invoice for it
 					manager = InvoiceManager()
@@ -2071,7 +2066,7 @@ def admin_waitlist(request, urlname):
 				raise Exception("Database lookup mismatch")
 			if len(regs) < 1:
 				raise Exception("Somehow got through with zero!")
-			template = get_template('confreg/mail/waitlist_offer.txt')
+
 			for r in regs:
 				wl = r.registrationwaitlistentry
 				if wl.offeredon:
@@ -2081,18 +2076,18 @@ def admin_waitlist(request, urlname):
 				wl.save()
 				RegistrationWaitlistHistory(waitlist=wl,
 											text="Made offer valid for {0} hours by {1}".format(form.cleaned_data['hours'], request.user.username)).save()
-				send_simple_mail(conference.contactaddr,
-								 r.email,
-								 "Your waitlisted registration for {0}".format(conference.conferencename),
-								 template.render(Context({
-									 'conference': conference,
-									 'reg': r,
-									 'offerexpires': wl.offerexpires,
-									 'SITEBASE': settings.SITEBASE,
-									 })),
-								 sendername = conference.conferencename,
-								 receivername = u"{0} {1}".format(r.firstname, r.lastname),
-								 )
+				send_template_mail(conference.contactaddr,
+								   r.email,
+								   "Your waitlisted registration for {0}".format(conference.conferencename),
+								   'confreg/mail/waitlist_offer.txt',
+								   {
+									   'conference': conference,
+									   'reg': r,
+									   'offerexpires': wl.offerexpires,
+								   },
+								   sendername = conference.conferencename,
+								   receivername = u"{0} {1}".format(r.firstname, r.lastname),
+							   )
 				messages.info(request, "Sent offer to {0}".format(r.email))
 			return HttpResponseRedirect(".")
 	else:
@@ -2181,20 +2176,19 @@ def session_notify_queue(request, urlname):
 	if request.method == 'POST' and request.POST.has_key('confirm_sending') and request.POST['confirm_sending'] == '1':
 		# Ok, it would appear we should actually send them...
 		num = 0
-		template = get_template('confreg/mail/session_notify.txt')
 		for s in notifysessions:
 			for spk in s.speaker.all():
-				send_simple_mail(conference.contactaddr,
-								 spk.user.email,
-								 "Your session '%s' submitted to %s" % (s.title, conference),
-								 template.render(Context({
-									 'conference': conference,
-									 'session': s,
-									 'SITEBASE': settings.SITEBASE,
-									 })),
-								 sendername=conference.conferencename,
-								 receivername=spk.fullname,
-							 )
+				send_template_mail(conference.contactaddr,
+								   spk.user.email,
+								   "Your session '%s' submitted to %s" % (s.title, conference),
+								   'confreg/mail/session_notify.txt',
+								   {
+									   'conference': conference,
+									   'session': s,
+								   },
+								   sendername=conference.conferencename,
+								   receivername=spk.fullname,
+							   )
 				num += 1
 			s.lastnotifiedstatus = s.status
 			s.lastnotifiedtime = datetime.now()

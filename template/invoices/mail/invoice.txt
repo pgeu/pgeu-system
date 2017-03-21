@@ -1,6 +1,6 @@
 Hello!
 
-You have been sent an invoice from PostgreSQL Europe:
+You have been sent an invoice from {{org_name}}:
 
 Invoice #{{invoice.id}}: {{invoice.title}}
 
@@ -18,4 +18,4 @@ we'll try to respond as quickly as possible.
 
 Thank you!
 
-PostgreSQL Europe
+{{org_name}}

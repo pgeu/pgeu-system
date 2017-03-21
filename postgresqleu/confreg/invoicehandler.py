@@ -1,8 +1,6 @@
 from django.conf import settings
-from django.template import Context
-from django.template.loader import get_template
 
-from postgresqleu.mailqueue.util import send_simple_mail
+from postgresqleu.mailqueue.util import send_template_mail
 from models import ConferenceRegistration, BulkPayment, PendingAdditionalOrder
 from models import RegistrationWaitlistHistory
 from util import notify_reg_confirmed, expire_additional_options
@@ -160,23 +158,22 @@ class BulkInvoiceProcessor(object):
 		# Unlink this bulk payment from all registrations. This will
 		# automatically unlock the registrations. Also notify the
 		# attendees that this happened.
-		template = get_template('confreg/mail/bulkpay_canceled.txt')
-
 		for r in bp.conferenceregistration_set.all():
 			r.bulkpayment = None
 			r.save()
 
-			send_simple_mail(bp.conference.contactaddr,
-							 r.email,
-							 "Your registration for {0} bulk payment canceled".format(bp.conference.conferencename),
-							 template.render(Context({
-								 'conference': bp.conference,
-								 'reg': r,
-								 'bulk': bp,
-							 })),
-							 sendername = bp.conference.conferencename,
-							 receivername = r.fullname,
-						 )
+			send_template_mail(bp.conference.contactaddr,
+							   r.email,
+							   "Your registration for {0} bulk payment canceled".format(bp.conference.conferencename),
+							   'confreg/mail/bulkpay_canceled.txt',
+							   {
+								   'conference': bp.conference,
+								   'reg': r,
+								   'bulk': bp,
+							   },
+							   sendername = bp.conference.conferencename,
+							   receivername = r.fullname,
+						   )
 
 			# If this registration holds any additional options that are about to expire, release
 			# them for others to use at this point. (This will send an additional email to the
@@ -211,25 +208,24 @@ class BulkInvoiceProcessor(object):
 		# Unlink this bulk payment from all registrations. This will
 		# automatically unlock the registrations. Also inform the
 		# attendee that this happened.
-		template = get_template('confreg/mail/bulkpay_refunded.txt')
-
 		for r in bp.conferenceregistration_set.all():
 			r.bulkpayment = None
 			r.payconfirmedat = None
 			r.payconfirmedby = None
 			r.save()
 
-			send_simple_mail(bp.conference.contactaddr,
-							 r.email,
-							 "Your registration for {0} bulk payment refunded".format(bp.conference.conferencename),
-							 template.render(Context({
-								 'conference': bp.conference,
-								 'reg': r,
-								 'bulk': bp,
-							 })),
-							 sendername = bp.conference.conferencename,
-							 receivername = r.fullname,
-						 )
+			send_template_mail(bp.conference.contactaddr,
+							   r.email,
+							   "Your registration for {0} bulk payment refunded".format(bp.conference.conferencename),
+							   'confreg/mail/bulkpay_refunded.txt',
+							   {
+								   'conference': bp.conference,
+								   'reg': r,
+								   'bulk': bp,
+							   },
+							   sendername = bp.conference.conferencename,
+							   receivername = r.fullname,
+						   )
 
 		# Now actually *remove* the bulk payment record completely,
 		# since it no longer contains anything interesting.

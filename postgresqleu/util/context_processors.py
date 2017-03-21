@@ -5,7 +5,7 @@
 
 from django.conf import settings
 
-def settings_context(request):
+def settings_context(request=None):
 	return {
 		'org_name': settings.ORG_NAME,
 		'treasurer_email': settings.TREASURER_EMAIL,

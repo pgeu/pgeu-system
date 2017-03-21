@@ -1,7 +1,6 @@
 from django import forms
 from django.core.validators import MaxValueValidator
 from django.template import Context
-from django.template.loader import get_template
 
 import base64
 import os
@@ -10,7 +9,7 @@ import cStringIO as StringIO
 
 from base import BaseBenefit
 
-from postgresqleu.mailqueue.util import send_simple_mail
+from postgresqleu.mailqueue.util import send_template_mail
 
 from postgresqleu.confreg.models import RegistrationType, PrepaidBatch, PrepaidVoucher
 
@@ -76,13 +75,15 @@ class EntryVouchers(BaseBenefit):
 				vouchers.append(v)
 
 			# Send an email about the new vouchers
-			send_simple_mail(self.level.conference.sponsoraddr,
-							 request.user.email,
-							 "Entry vouchers for {0}".format(self.level.conference),
-							 get_template('confreg/mail/prepaid_vouchers.txt').render(Context({
+			send_template_mail(self.level.conference.sponsoraddr,
+							   request.user.email,
+							   "Entry vouchers for {0}".format(self.level.conference),
+							   'confreg/mail/prepaid_vouchers.txt',
+							   {
 								 'batch': batch,
 								 'vouchers': vouchers,
-								 })))
+							   }
+						   )
 
 			# Finally, finish the claim
 			claim.claimdata = batch.id

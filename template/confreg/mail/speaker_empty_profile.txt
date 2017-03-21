@@ -6,7 +6,7 @@ does not contain a description.
 
 For your session to be considered, please go to your speaker
 profile at
-{{SITEBASE}}/events/speakerprofile/{{conference.urlname}}/
+{{sitebase}}/events/speakerprofile/{{conference.urlname}}/
 and fill out the bio.
 
 Please do this as soon as possible, so that your session can

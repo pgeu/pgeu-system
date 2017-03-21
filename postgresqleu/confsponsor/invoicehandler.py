@@ -1,12 +1,11 @@
 from django.conf import settings
 from django.template import Context
-from django.template.loader import get_template
 
 from datetime import datetime, timedelta, date
 import base64
 import os
 
-from postgresqleu.mailqueue.util import send_simple_mail
+from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 from postgresqleu.invoices.util import InvoiceManager
 
 from models import Sponsor, PurchasedVoucher
@@ -22,18 +21,17 @@ def confirm_sponsor(sponsor, who):
 	sponsor.confirmedby = who
 	sponsor.save()
 
-	msgtxt = get_template('confsponsor/mail/sponsor_confirmed.txt').render(Context({
-		'sponsor': sponsor,
-		'conference': sponsor.conference,
-		'SITEBASE': settings.SITEBASE,
-	}))
 	for manager in sponsor.managers.all():
-		send_simple_mail(sponsor.conference.sponsoraddr,
-						 manager.email,
-						 u"[{0}] Sponsorship confirmed".format(sponsor.conference),
-						 msgtxt,
-						 sendername=sponsor.conference.conferencename,
-						 receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
+		send_template_mail(sponsor.conference.sponsoraddr,
+						   manager.email,
+						   u"[{0}] Sponsorship confirmed".format(sponsor.conference),
+						   'confsponsor/mail/sponsor_confirmed.txt',
+						   {
+							   'sponsor': sponsor,
+							   'conference': sponsor.conference,
+						   },
+						   sendername=sponsor.conference.conferencename,
+						   receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
 
 
 class InvoiceProcessor(object):

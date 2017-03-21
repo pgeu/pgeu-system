@@ -2,8 +2,6 @@ from models import Invoice, InvoiceRow, InvoiceHistory, InvoiceLog
 from models import InvoiceRefund
 from models import InvoicePaymentMethod, PaymentMethodWrapper
 from django.conf import settings
-from django.template import Context
-from django.template.loader import get_template
 
 from collections import defaultdict
 from datetime import datetime, date
@@ -16,7 +14,7 @@ import re
 from Crypto.Hash import SHA256
 from Crypto import Random
 
-from postgresqleu.mailqueue.util import send_simple_mail
+from postgresqleu.mailqueue.util import send_template_mail
 from postgresqleu.accounting.util import create_accounting_entry
 
 # Proxy around an invoice that adds presentation information,
@@ -222,20 +220,19 @@ class InvoiceWrapper(object):
 		if extracontext:
 			param.update(extracontext)
 
-		txt = get_template('invoices/mail/%s' % template_name).render(Context(param))
-
 		pdfdata = []
 		if pdfname:
 			pdfdata = [(pdfname, 'application/pdf',	base64.b64decode(pdfcontents)), ]
 
 		# Queue up in the database for email sending soon
-		send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-						 self.invoice.recipient_email,
-						 mail_subject,
-						 txt,
-						 pdfdata,
-						 bcc=bcc and settings.INVOICE_SENDER_EMAIL or None,
-						 )
+		send_template_mail(settings.INVOICE_SENDER_EMAIL,
+						   self.invoice.recipient_email,
+						   mail_subject,
+						   'invoices/mail/%s' % template_name,
+						   param,
+						   pdfdata,
+						   bcc=bcc and settings.INVOICE_SENDER_EMAIL or None,
+					   )
 
 
 def _standard_logger(message):

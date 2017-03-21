@@ -4,7 +4,22 @@ from email.mime.nonmultipart import MIMENonMultipart
 from email.Utils import formatdate
 from email import encoders
 
+from postgresqleu.util.context_processors import settings_context
+
+from django.template import Context
+from django.template.loader import get_template
+
 from models import QueuedMail
+
+def template_to_string(templatename, attrs = {}):
+	context = Context(attrs)
+	context.update(settings_context())
+	return get_template(templatename).render(context)
+
+def send_template_mail(sender, receiver, subject, templatename, templateattr={}, attachments=None, bcc=None, sendername=None, receivername=None):
+	send_simple_mail(sender, receiver, subject,
+					 template_to_string(templatename, templateattr),
+					 attachments, bcc, sendername, receivername)
 
 def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=None, sendername=None, receivername=None):
 	# attachment format, each is a tuple of (name, mimetype,contents)

@@ -12,9 +12,9 @@ The following reason was given for the cancellation:
 
 
 If you have any further questions about this invoice, please
-let us know at treasurer@postgresql.eu as soon as possible.
+let us know at {{treasurer_email}} as soon as possible.
 
 
 Thank you!
 
-PostgreSQL Europe
+{{org_name}}

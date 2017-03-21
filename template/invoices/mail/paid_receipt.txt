@@ -7,4 +7,4 @@ You will find your receipt for this payment in the attached file.
 
 Thank you!
 
-PostgreSQL Europe
+{{org_name}}
