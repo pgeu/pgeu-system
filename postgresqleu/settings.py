@@ -118,6 +118,11 @@ INSTALLED_APPS = [
 INVOICE_SENDER_EMAIL="treasurer@postgresql.eu"
 MEMBERSHIP_SENDER_EMAIL="webmaster@postgresql.eu"
 
+# Years of membership per payment
+MEMBERSHIP_LENGTH=2
+# Cost for membership
+MEMBERSHIP_COST=10
+
 # Currency parameter
 CURRENCY_ABBREV='EUR'
 CURRENCY_SYMBOL='€'

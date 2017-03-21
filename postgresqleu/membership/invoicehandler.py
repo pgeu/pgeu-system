@@ -24,9 +24,9 @@ class InvoiceProcessor(object):
 		# Extend the membership. If already paid to a date in the future,
 		# extend from that date. Otherwise, from today.
 		if member.paiduntil and member.paiduntil > date.today():
-			member.paiduntil = member.paiduntil + timedelta(days=2*365)
+			member.paiduntil = member.paiduntil + timedelta(days=settings.MEMBERSHIP_LENGTH*365)
 		else:
-			member.paiduntil = date.today()+timedelta(days=2*365)
+			member.paiduntil = date.today()+timedelta(days=settings.MEMBERSHIP_LENGTH*365)
 		member.expiry_warning_sent = None
 
 		# If the member isn't already a member, set todays date as the
@@ -37,7 +37,7 @@ class InvoiceProcessor(object):
 		member.save()
 
 		# Create a log record too, and save it
-		MemberLog(member=member, timestamp=datetime.now(), message="Payment for 2 years received, membership extended to %s" % member.paiduntil).save()
+		MemberLog(member=member, timestamp=datetime.now(), message="Payment for %s years received, membership extended to %s" % (settings.MEMBERSHIP_LENGTH, member.paiduntil)).save()
 
 	# Process an invoice being canceled. This means we need to unlink
 	# it from the membership.

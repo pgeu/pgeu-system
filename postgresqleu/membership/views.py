@@ -67,7 +67,7 @@ def home(request):
 					raise Exception("This should not happen - generating invoice when one already exists!")
 				manager = InvoiceManager()
 				processor = InvoiceProcessor.objects.get(processorname="membership processor")
-				invoicerows = [('%s - 2 years membership - %s' % (settings.ORG_NAME, request.user.email), 1, 10, None),]
+				invoicerows = [('%s - %s years membership - %s' % (settings.ORG_NAME, settings.MEMBERSHIP_LENGTH, request.user.email), 1, settings.MEMBERSHIP_COST, None),]
 				member.activeinvoice = manager.create_invoice(
 					request.user,
 					request.user.email,
@@ -101,7 +101,7 @@ def home(request):
 		'invoice': InvoicePresentationWrapper(member.activeinvoice, "%s/membership/" % settings.SITEBASE),
 		'registration_complete': registration_complete,
 		'logdata': logdata,
-		'amount': 10, # price for two years
+		'amount': settings.MEMBERSHIP_COST, # price for settings.MEMBERSHIP_LENGTH years
 	}, context_instance=RequestContext(request))
 
 
