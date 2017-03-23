@@ -8,7 +8,7 @@ import datetime
 # Handle the frontpage
 def index(request):
 	events = Event.objects.filter(startdate__gte=datetime.datetime.today())[:5]
-	news = News.objects.filter()[:5]
+	news = News.objects.filter(datetime__lte=datetime.datetime.today())[:5]
 	return render_to_response('index.html', {
 		'events': events,
 		'news': news,
@@ -16,7 +16,7 @@ def index(request):
 
 # Handle the news page
 def news(request):
-	news = News.objects.filter()[:5]
+	news = News.objects.filter(datetime__lte=datetime.datetime.today())[:5]
 	return render_to_response('news.html', {
 		'news': news,
 	})
