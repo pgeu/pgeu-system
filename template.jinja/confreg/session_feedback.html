@@ -15,7 +15,7 @@ function drawCharts() {
 {%for f in feedbackdata%}
 // {{f.key}}
    var data = prep_datatable();
-   data.addRows([{%for v in f.num%}['{{loop.counter}}',{{v}}],{%endfor%}]);
+   data.addRows([{%for v in f.num%}['{{loop.index}}',{{v}}],{%endfor%}]);
    var options = {
       'title': '{{f.title|escapejs}}',
    };
