@@ -17,7 +17,7 @@ function drawCharts() {
    var data = prep_datatable();
    data.addRows([{%for v in f.num%}['{{loop.counter}}',{{v}}],{%endfor%}]);
    var options = {
-      'title': '{{f.title}}',
+      'title': '{{f.title|escapejs}}',
    };
    var chart = new google.visualization.PieChart(document.getElementById('chart_{{f.key}}'));
    chart.draw(data, options);
