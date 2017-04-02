@@ -176,6 +176,9 @@ def meeting(request, meetingid):
 	if member.paiduntil < meeting.dateandtime.date():
 		return HttpResponse("Your membership expires before the meeting")
 
+	if not meeting.joining_active:
+		return HttpResponse("This meeting is not open for joining yet")
+
 	# All is well with this member. Generate a key if necessary
 	(key, created) = MemberMeetingKey.objects.get_or_create(member=member, meeting=meeting)
 	if created:

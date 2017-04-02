@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from postgresqleu.countries.models import Country
 from postgresqleu.invoices.models import Invoice
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 class Member(models.Model):
 	user = models.OneToOneField(User, null=False, blank=False, primary_key=True)
@@ -57,6 +57,12 @@ class Meeting(models.Model):
 
 	def __unicode__(self):
 		return "%s (%s)" % (self.name, self.dateandtime)
+
+	@property
+	def joining_active(self):
+		if datetime.now() > self.dateandtime-timedelta(hours=4):
+			return True
+		return False
 
 class MemberMeetingKey(models.Model):
 	member = models.ForeignKey(Member, null=False, blank=False)
