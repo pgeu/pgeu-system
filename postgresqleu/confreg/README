@@ -21,7 +21,7 @@ directory structure like:
 /static
 
 
-Iin the /static directory, place any static files (and subdirectories)
+In the /static directory, place any static files (and subdirectories)
 to be included in a static site deploy. If no static site deploy will
 be done, this directory can be ignored and won't be used.
 
