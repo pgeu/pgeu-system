@@ -43,7 +43,6 @@ urlpatterns = patterns('',
 	(r'^events$', postgresqleu.newsevents.views.eventlist),
 	(r'^events/(\d+)$', postgresqleu.newsevents.views.event),
 	(r'^events/archive$', postgresqleu.newsevents.views.eventarchive),
-	(r'^news$', postgresqleu.views.news),
 
 	# Feeds
     (r'^feeds/news/$', LatestNews()),
