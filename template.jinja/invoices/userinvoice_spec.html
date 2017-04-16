@@ -63,12 +63,12 @@
        <p><i>This method is currently not available. {{method.unavailable_reason}}</i></p>
 {%endif%}
        {%else%}
-       <p>An error occurred when initializing this payment method. Unfortunately, it is not currently available. Please contact the PostgreSQL Europe treasurer to report this.</p>
+       <p>An error occurred when initializing this payment method. Unfortunately, it is not currently available. Please contact the {{org_name}} treasurer to report this.</p>
        {%endif%}
      </li>
      {%else%}
      There are no payment methods allowed for this invoice. Please contact
-     PostgreSQL Europe &lt;treasurer at postgresql dot eu&gt; reporting
+     {{org_name}} {{treasurer_email|safe}} reporting
      your invoice number to get one or more methods assigned to it.
      {%endfor%}
      </ul>

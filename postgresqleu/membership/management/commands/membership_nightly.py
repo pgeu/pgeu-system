@@ -33,7 +33,7 @@ class Command(BaseCommand):
 						}))
 			send_simple_mail(settings.MEMBERSHIP_SENDER_EMAIL,
 							 m.user.email,
-							 "Your PostgreSQL Europe membership has expired",
+							 "Your " + settings.ORG_NAME + " membership has expired",
 							 txt)
 			self.stdout.write(u"Expired member {0} (paid until {1})".format(m, m.paiduntil))
 			# An expired member has no membersince and no paiduntil.
@@ -62,7 +62,7 @@ class Command(BaseCommand):
 						}))
 			send_simple_mail(settings.MEMBERSHIP_SENDER_EMAIL,
 							 m.user.email,
-							 "Your PostgreSQL Europe membership will expire soon",
+							 "Your " + settings.ORG_NAME + " membership will expire soon",
 							 txt)
 			self.stdout.write(u"Sent warning to member {0} (paid until {1}, last warned {2})".format(m, m.paiduntil, m.expiry_warning_sent))
 			m.expiry_warning_sent = datetime.now()

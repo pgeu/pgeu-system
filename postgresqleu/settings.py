@@ -199,6 +199,12 @@ GLOBAL_LOGIN_PASSWORD=''
 # Set to true in local_settings.py to enable trustly integrations
 ENABLE_TRUSTLY=False
 
+# Organization name
+ORG_NAME="PostgreSQL Europe"
+
+# Treasurer email address
+TREASURER_EMAIL="treasurer@postgresql.eu"
+
 # If there is a local_settings.py, let it override our settings
 try:
 	from local_settings import *

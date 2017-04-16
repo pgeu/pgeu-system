@@ -120,7 +120,7 @@ class Conference(models.Model):
 	_safe_attributes = ('active', 'askfood', 'askshareemail', 'asktshirt',
 						'callforpapersintro', 'callforpapersopen',
 						'conferencefeedbackopen', 'confurl', 'contactaddr',
-						'feedbackopen', 'skill_levels', 'urlname', )
+						'feedbackopen', 'org_name', 'skill_levels', 'treasurer_email', 'urlname', )
 
 	def __unicode__(self):
 		return self.conferencename
@@ -477,7 +477,7 @@ class Speaker(models.Model):
 	photofile = models.ImageField(upload_to=_get_upload_path, storage=SpeakerImageStorage(), blank=True, null=True, verbose_name="Photo")
 	lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
 
-	_safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract' ,'photofile', 'lastmodified')
+	_safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract' ,'photofile', 'lastmodified', 'org_name', 'treasurer_email')
 	json_included_attributes = ['fullname', 'twittername', 'company', 'abstract', 'lastmodified']
 
 	@property
