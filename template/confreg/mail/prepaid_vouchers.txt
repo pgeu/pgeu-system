@@ -12,7 +12,7 @@ during the event, as well as pre-conference emails.
 
 At the bottom of the registration form, there is a field named
 "Voucher code". Enter the code from below into that field,
-and then click "Save and finish registration" (when all other
+and then click "Save and finish" (when all other
 details are completed). If no additional items at cost have
 been added, that will result in a total cost of zero, and once
 that is confirmed, the registration will complete automatically.

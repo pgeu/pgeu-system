@@ -56,7 +56,7 @@ Your registration is currently on the waitlist.
 {%if reg.registrationwaitlistentry.offeredon%}
 <p>
 Good news - you have been offered a seat from the waitlist. Please
-complete the form below and click "Save and finish registration" to
+complete the form below and click "Save and finish" to
 complete the process! The process must be completed before
 {{reg.registrationwaitlistentry.offerexpires.strftime("%Y-%m-%d %H:%M")}} or
 this offer will expire!
@@ -104,11 +104,11 @@ correction.</p>
 
  <p>
    You can edit your registration details and save as many times as you want
-   in the process. Once you are finished, click <i>Save and finish registration</i>
+   in the process. Once you are finished, click <i>Save and finish</i>
    to proceed to the payment options.
  </p>
  <input type="submit" name="submit" value="Save and continue editing"><br/>
- <input type="submit" name="submit" value="Save and finish registration"><br/>
+ <input type="submit" name="submit" value="Save and finish"><br/>
  <input type="submit" name="submit" onclick="return confirmCancel()" value="Cancel registration"><br/>
 </form>
 {%endblock%}
