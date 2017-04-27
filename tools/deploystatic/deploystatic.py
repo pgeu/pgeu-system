@@ -44,7 +44,7 @@ def filter_shuffle(l):
 	except:
 		return l
 
-# Format a datetime. If it'sa datetime, call strftime. If it's a
+# Format a datetime. If it's a datetime, call strftime. If it's a
 # string, assume it's iso format and convert it to a date first.
 def filter_datetimeformat(value, fmt):
 	if isinstance(value, date) or isinstance(value, datetime) or isinstance(value,time):

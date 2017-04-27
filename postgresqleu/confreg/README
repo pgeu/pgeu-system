@@ -233,7 +233,7 @@ Testing badges
 --------------
 
 To test badges, the `postgresqleu/confreg/jinjabadge.py` file can be
-run indepdently. It does not depend on django (but does require jinja2
+run independently. It does not depend on django (but does require jinja2
 and reportlab, of course) or the rest of the repository structure, so
 it's recommended that a new version of this file is simply downloaded
 from the main repository when testing (rather than adding it to a
