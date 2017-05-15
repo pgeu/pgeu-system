@@ -239,12 +239,12 @@ def home(request, confname):
 			form_is_saved = True
 
 			# Figure out if the user clicked a "magic save button"
-			if request.POST['submit'].find('finish registration') > 0:
+			if request.POST['submit'] == 'Confirm and finish' or request.POST['submit'] == 'Save and finish':
 				# Complete registration!
 				return HttpResponseRedirect("confirm/")
 
 			# Or did they click cancel?
-			if request.POST['submit'].find('Cancel') >= 0:
+			if request.POST['submit'] == 'Cancel registration':
 				reg.delete()
 				return HttpResponseRedirect("canceled/")
 
@@ -1060,7 +1060,7 @@ def confirmreg(request, confname):
 	if request.method == 'POST':
 		if request.POST['submit'].find('Back') >= 0:
 			return HttpResponseRedirect("../")
-		if request.POST['submit'].find('finish registration') >= 0:
+		if request.POST['submit'] == 'Confirm and finish':
 			# Get the invoice rows and flag any vouchers as used
 			# (committed at the end of the view so if something
 			# goes wrong they automatically go back to unused)
