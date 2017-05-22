@@ -46,7 +46,7 @@ class InlineEncodedStorage(Storage):
 
 	def url(self, name):
 		# XXX: THIS NEEDS TO BE A PARAMETER TO THE CLASS!
-		return "/events/sponsorship/contracts/%s/" % name
+		return "/events/sponsor/viewcontract/%s/" % name
 
 	def size(self, name):
 		return None
