@@ -2086,7 +2086,7 @@ def admin_waitlist(request, urlname):
 									   'offerexpires': wl.offerexpires,
 								   },
 								   sendername = conference.conferencename,
-								   receivername = u"{0} {1}".format(r.firstname, r.lastname),
+								   receivername = r.fullname,
 							   )
 				messages.info(request, "Sent offer to {0}".format(r.email))
 			return HttpResponseRedirect(".")
@@ -2135,7 +2135,7 @@ def admin_attendeemail(request, urlname):
 								 u"[{0}] {1}".format(conference, msg.subject),
 								 msgtxt,
 								 sendername=conference.conferencename,
-								 receivername=u'{0} {1}'.format(a.firstname, a.lastname),
+								 receivername=a.fullname,
 								 )
 			messages.info(request, "Email sent to %s attendees, and added to registration pages" % len(attendees))
 			return HttpResponseRedirect(".")
@@ -2218,7 +2218,7 @@ def crossmail(request):
 								 form.data['subject'],
 								 form.data['text'],
 								 sendername=form.data['sendername'],
-								 receivername=u"{0} {1}".format(r['firstname'], r['lastname']),
+								 receivername=r.fullname,
 				)
 
 			messages.info(request, "Sent {0} emails.".format(len(recipients)))

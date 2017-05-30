@@ -52,7 +52,7 @@ class Command(BaseCommand):
 								   'offerexpires': w.offerexpires,
 							   },
 							   sendername = reg.conference.conferencename,
-							   receivername = u"{0} {1}".format(reg.firstname, reg.lastname),
+							   receivername = reg.fullname,
 						   )
 
 			# Now actually expire the offer

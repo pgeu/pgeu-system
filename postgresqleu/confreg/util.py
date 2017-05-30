@@ -117,7 +117,7 @@ def notify_reg_confirmed(reg):
 					 "[{0}] Registration complete".format(reg.conference),
 					 reg.conference.welcomemail,
 					 sendername=reg.conference.conferencename,
-					 receivername=u'{0} {1}'.format(reg.firstname, reg.lastname),
+					 receivername=reg.fullname,
 	)
 
 
@@ -159,7 +159,7 @@ def expire_additional_options(reg):
 							 'optionscount': len(expireset),
 						   },
 						   sendername = reg.conference.conferencename,
-						   receivername = u"{0} {1}".format(reg.firstname, reg.lastname)
+						   receivername = reg.fullname,
 					   )
 
 		for ao in expireset:
