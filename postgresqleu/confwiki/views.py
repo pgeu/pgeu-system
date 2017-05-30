@@ -151,13 +151,16 @@ def wikipage_edit(request, confurl, wikiurl):
 				send_simple_mail(conference.contactaddr,
 								 conference.contactaddr,
 								 subject,
-								 body)
+								 body,
+								 sendername=conference.conferencename)
 				body += "\n\nYou are receiving this message because you are subscribed to changes to\nthis page. To stop receiving notifications, please click\n{0}/events/register/{1}/wiki/{2}/sub/\n\n".format(settings.SITEBASE, conference.urlname, page.url)
 				for sub in WikipageSubscriber.objects.filter(page=page):
 					send_simple_mail(conference.contactaddr,
 									 reg.email,
 									 subject,
-									 body)
+									 body,
+									 sendername=conference.conferencename,
+									 receivername=reg.fullname)
 
 				return HttpResponseRedirect('../')
 			elif request.POST['submit'] == 'Back to editing':
@@ -223,7 +226,8 @@ def admin_edit_page(request, urlname, pageid):
 									 ", ".join([r.regtype for r in form.cleaned_data['editor_regtype']]),
 									 ", ".join([r.fullname for r in form.cleaned_data['viewer_attendee']]),
 									 ", ".join([r.fullname for r in form.cleaned_data['editor_attendee']]),
-									 ))
+									 ),
+								 sendername=conference.conferencename)
 			else:
 				f = form.save(commit=False)
 				form.save_m2m()
@@ -235,7 +239,8 @@ def admin_edit_page(request, urlname, pageid):
 					send_simple_mail(conference.contactaddr,
 									 conference.contactaddr,
 									 "Wiki page '{0}' edited by {1}".format(form.cleaned_data['url'], request.user),
-									 s.getvalue())
+									 s.getvalue(),
+									 sendername=conference.conferencename)
 				f.save()
 			return HttpResponseRedirect('../')
 	else:

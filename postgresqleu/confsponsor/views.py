@@ -288,7 +288,8 @@ def sponsor_signup(request, confurlname, levelurlname):
 			send_simple_mail(conference.sponsoraddr,
 							 conference.sponsoraddr,
 							 "Sponsor %s signed up for %s" % (sponsor.name, conference),
-							 mailstr)
+							 mailstr,
+							 sendername=conference.conferencename)
 			# Redirect back to edit the actual sponsorship entry
 			return HttpResponseRedirect('/events/sponsor/%s/' % sponsor.id)
 	else:
@@ -355,6 +356,7 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
 								 sponsor.conference.sponsoraddr,
 								 "Sponsor %s %s sponsorship benefit %s" % (sponsor, claim.declined and 'declined' or 'claimed', benefit),
 								 mailstr,
+								 sendername=sponsor.conference.conferencename,
 								 )
 
 
@@ -476,7 +478,8 @@ def _confirm_benefit(request, benefit):
 		send_simple_mail(conference.sponsoraddr,
 						 conference.sponsoraddr,
 						 u"Sponsorship benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor),
-						 u"Sponsorship benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor)
+						 u"Sponsorship benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor),
+						 sendername=conference.conferencename,
 						 )
 
 @login_required

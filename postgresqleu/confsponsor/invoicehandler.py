@@ -56,7 +56,8 @@ class InvoiceProcessor(object):
 		send_simple_mail(conference.sponsoraddr,
 						 conference.sponsoraddr,
 						 "Confirmed sponsor: %s" % sponsor.name,
-						 "The sponsor\n%s\nhas completed payment of the sponsorship invoice,\nand is now activated.\nBenefits are not claimed yet." % sponsor.name)
+						 "The sponsor\n%s\nhas completed payment of the sponsorship invoice,\nand is now activated.\nBenefits are not claimed yet." % sponsor.name,
+						 sendername=conference.conferencename)
 
 	# An invoice was canceled.
 	def process_invoice_cancellation(self, invoice):
@@ -197,7 +198,8 @@ class VoucherInvoiceProcessor(object):
 		send_simple_mail(pv.sponsor.conference.sponsoraddr,
 						 pv.sponsor.conference.sponsoraddr,
 						 "Sponsor %s purchased vouchers" % pv.sponsor.name,
-						 "The sponsor\n%s\nhas purchased %s vouchers of type \"%s\".\n\n" % (pv.sponsor.name, pv.num, pv.regtype.regtype))
+						 "The sponsor\n%s\nhas purchased %s vouchers of type \"%s\".\n\n" % (pv.sponsor.name, pv.num, pv.regtype.regtype),
+						 sendername=pv.sponsor.conference.conferencename)
 
 	# An invoice was canceled.
 	def process_invoice_cancellation(self, invoice):
