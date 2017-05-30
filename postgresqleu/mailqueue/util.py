@@ -1,7 +1,8 @@
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.nonmultipart import MIMENonMultipart
-from email.Utils import formatdate
+from email.Utils import formatdate, formataddr
+from email.header import Header
 from email import encoders
 
 from postgresqleu.util.context_processors import settings_context
@@ -21,6 +22,11 @@ def send_template_mail(sender, receiver, subject, templatename, templateattr={},
 					 template_to_string(templatename, templateattr),
 					 attachments, bcc, sendername, receivername)
 
+def _encoded_email_header(name, email):
+	if name:
+		return formataddr((str(Header(name, 'utf-8')), email))
+	return email
+
 def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=None, sendername=None, receivername=None):
 	# attachment format, each is a tuple of (name, mimetype,contents)
 	# content should be *binary* and not base64 encoded, since we need to
@@ -28,14 +34,8 @@ def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=No
 	# formatted output message
 	msg = MIMEMultipart()
 	msg['Subject'] = subject
-	if receivername:
-		msg['To'] = u'{0} <{1}>'.format(receivername, receiver)
-	else:
-		msg['To'] = receiver
-	if sendername:
-		msg['From'] = u'{0} <{1}>'.format(sendername, sender)
-	else:
-		msg['From'] = sender
+	msg['To'] = _encoded_email_header(receivername, receiver)
+	msg['From'] = _encoded_email_header(sendername, sender)
 	msg['Date'] = formatdate(localtime=True)
 
 	msg.attach(MIMEText(msgtxt, _charset='utf-8'))
