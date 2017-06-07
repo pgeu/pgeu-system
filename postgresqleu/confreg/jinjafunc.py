@@ -226,6 +226,15 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
 		'csrf_input': csrf_input_lazy(request),
 		'csrf_token': csrf_token_lazy(request),
 	})
+
+	# For local testing, there may also be a context.override.json
+	if os.path.exists(os.path.join(conference.jinjadir, 'templates/context.override.json')):
+		try:
+			with open(os.path.join(conference.jinjadir, 'templates/context.override.json')) as f:
+				c.update(json.load(f))
+		except Exception:
+			pass
+
 	if dictionary:
 		c.update(dictionary)
 	c.update(settings_context())
