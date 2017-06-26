@@ -46,7 +46,7 @@
  </tr>
 {%else%}
  <tr>
-   <td style="white-space: nowrap">Pay invoice:</td>
+   <td valign="top" style="white-space: nowrap">Pay invoice:</td>
    <td>
      <p>
        This invoice can be paid using one of the methods listed below. Note
@@ -84,7 +84,7 @@
 
 {%if not fromsecret%}
 <tr>
-   <td style="white-space: nowrap">External link:</td>
+   <td valign="top" style="white-space: nowrap">External link:</td>
    <td>Using <a href="/invoices/{{invoice.pk}}/{{invoice.recipient_secret}}/">this link</a> you can give somebody else access to
 view or pay this invoice, without being logged in to your account.</td>
 </tr>
