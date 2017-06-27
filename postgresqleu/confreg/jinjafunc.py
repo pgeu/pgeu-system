@@ -11,7 +11,7 @@ from itertools import groupby
 from datetime import datetime, date, time
 import dateutil.parser
 
-from postgresqleu.util.context_processors import settings_context
+from postgresqleu.util.context_processors import settings_context_unicode
 
 import jinja2
 import jinja2.sandbox
@@ -237,6 +237,6 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
 
 	if dictionary:
 		c.update(dictionary)
-	c.update(settings_context())
+	c.update(settings_context_unicode())
 
 	return HttpResponse(t.render(**c), content_type='text/html')
