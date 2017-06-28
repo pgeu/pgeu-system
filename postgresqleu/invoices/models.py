@@ -206,7 +206,7 @@ class InvoiceRow(models.Model):
 	@property
 	def totalvat(self):
 		if self.vatrate:
-			return self.rowamount * self.rowcount * self.vatrate.vatpercent / Decimal(100)
+			return (self.rowamount * self.rowcount * self.vatrate.vatpercent / Decimal(100)).quantize(Decimal('.01'))
 		else:
 			return 0
 
