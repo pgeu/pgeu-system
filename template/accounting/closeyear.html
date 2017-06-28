@@ -2,7 +2,7 @@
 {%load humanize%}
 {%block title%}Accounting - close year{%endblock%}
 {%block extrahead%}
-<script src="/media/jq/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" src="/media/jq/jquery-1.8.2.min.js"></script>
 <style>
 ul.messages {
   list-style-type: none;
@@ -23,7 +23,7 @@ div#pgContainer {
    width: 1200px;
 }
 </style>
-<script language="javascript">
+<script type="text/javascript">
 function confirmCloseYear() {
    return confirm('Are you absolutely sure you want to close this year?\n\nThere really is no going back! And you can no longer make changes to the year!\n');
 }

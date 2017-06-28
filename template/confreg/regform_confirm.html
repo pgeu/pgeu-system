@@ -28,7 +28,7 @@ div.warnfld ul li {
    font-weight: normal !important;
 }
 </style>
-<script language="javascript">
+<script type="text/javascript">
 function confirmInvoice() {
   {%if totalcost == 0 %}return true;{%else%}
    return confirm('Once you proceed to payment, an invoice will be generated for your registration, and you will no longer be able to change it.\n\nThis invoice will be addressed to the person, company and address specified in the registration - please take a moment to review those fields if you need to.\n\nThe invoice will be delivered as a PDF in your browser, no paper invoice will be sent.\n\nNote that if your registration should be part of a bulk payment, you should NOT proceed with this step!\n\nAre you sure you want to proceed to payment?');
@@ -37,7 +37,7 @@ function confirmInvoice() {
 </script>
 
 {%if regalert%}
-<script language="javascript" defer>
+<script type="text/javascript" defer>
    window.onload = function() {
    alert('{{regalert|escapejs}}');
    }

@@ -3,7 +3,7 @@
 {%block extrahead%}
 {%if graphdata%}
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-    <script language="javascript">
+    <script type="text/javascript">
   google.load("visualization", "1", {packages:["corechart"]});
   google.setOnLoadCallback(drawChart);
   function drawChart() {
@@ -35,7 +35,7 @@
   }
 </script>
     {%endif%}
-<script language="javascript">
+<script type="text/javascript">
 $(function() {
   /* Set up the filtering box for conferences */
   $('#id_conferences').after('<div style="display: inline; vertical-align: top; margin-left: 20px;">Filter: <input type="text" id="conffilter"></div>');
