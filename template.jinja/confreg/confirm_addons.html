@@ -41,7 +41,7 @@ registration. If this is in any way incorrect, please contact
 <div>
 {{reg.firstname}} {{reg.lastname}}<br/>
 {%if reg.company%}{{reg.company}}<br/>{%endif%}
-{{"<br>".join(reg.address.splitlines()}}<br/>
+{{"<br>".join(reg.address.splitlines())}}<br/>
 {{reg.country.name}}<br/>
 </div>
 </fieldset>
