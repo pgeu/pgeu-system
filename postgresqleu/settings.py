@@ -122,6 +122,8 @@ MEMBERSHIP_SENDER_EMAIL="webmaster@postgresql.eu"
 MEMBERSHIP_LENGTH=2
 # Cost for membership
 MEMBERSHIP_COST=10
+# Function called to valide that country is acceptable for membership
+MEMBERSHIP_COUNTRY_VALIDATOR=None
 
 # Currency parameter
 CURRENCY_ABBREV='EUR'

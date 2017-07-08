@@ -24,6 +24,8 @@ class Member(models.Model):
 	# sending them over and over again
 	expiry_warning_sent = models.DateTimeField(null=True, blank=True)
 
+	country_exception = models.BooleanField(null=False, blank=False, default=False, help_text="Enable to allow member to bypass country validation")
+
 	# WARNING! New fields should most likely be added to the exclude list
 	# in MemberForm!!!
 

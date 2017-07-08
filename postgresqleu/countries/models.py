@@ -63,3 +63,11 @@ class UsState(models.Model):
 
 	def __unicode__(self):
 		return self.name
+
+
+# XXX: this table is added by pgeu :)
+class EuropeCountry(models.Model):
+	iso = models.OneToOneField(Country, null=False, blank=False, primary_key=True)
+
+	def __unicode__(self):
+		return iso.name
