@@ -307,7 +307,10 @@ class ConferenceAdditionalOption(models.Model):
 		# This is what renders in the multichoice checkboxes, so make
 		# it nice for the end user.
 		if self.cost > 0:
-			coststr = " (%s %s)" % (settings.CURRENCY_ABBREV, self.cost)
+			if self.conference.vat_registrations:
+				coststr = " (%s %.2f)" % (settings.CURRENCY_ABBREV, self.cost * (1+self.conference.vat_registrations.vatpercent/Decimal(100.0)))
+			else:
+				coststr = " (%s %s)" % (settings.CURRENCY_ABBREV, self.cost)
 		else:
 			coststr = ""
 		if self.maxcount == -1:
