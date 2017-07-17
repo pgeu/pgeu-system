@@ -36,6 +36,9 @@ registration. If this is in any way incorrect, please contact
 </p>
 
 <form method="post" action="." class="pgeuregformconfirm">{{ csrf_input }}
+{%for o in options%}
+<input type="hidden" name="ao_{{o.id}}" value="1">
+{%endfor%}
 <fieldset id="fldset_recipient">
 <legend>Invoice recipient</legend>
 <div>
@@ -49,21 +52,31 @@ registration. If this is in any way incorrect, please contact
 <fieldset id="fldset_contents">
 <legend>Invoice contents</legend>
 <table border="0" cellspacing="0" cellpadding="1" class="invoiceconfirmtbl">
-{%if upsell_cost%}
 <tr valign="top">
-  <td class="desc">Upgrade to '{{newreg.regtype}}'</td>
-  <td class="cost">{{upsell_cost|currency_format}}</td>
-</tr>
+  <td class="desc"></td>
+  <td class="cost">Amount</td>
+{%if totalwithvat != totalcost%}
+  <td class="cost">VAT</td>
+  <td class="cost">Total</td>
 {%endif%}
-{%for o in options%}
+</tr>
+{%for r in invoicerows%}
 <tr valign="top">
-  <td class="desc">{{o.name}} <input type="hidden" name="ao_{{o.id}}" value="1"></td>
-  <td class="cost">{{o.cost|currency_format}}</td>
+  <td class="desc">{{r.0|leadingnbsp}}</td>
+  <td class="cost">{{r.2|currency_format}}</td>
+{%if totalwithvat != totalcost %}
+  <td class="cost">{{r.3.vatpercent}}%</td>
+  <td class="cost">{{r.4|currency_format}}</td>
+{%endif%}
 </tr>
 {%endfor%}
 <tr valign="top" class="totalrow">
   <td class="desc"></td>
   <td class="cost">{{totalcost|currency_format}}</td>
+{%if totalwithvat != totalcost %}
+  <td class="cost"></td>
+  <td class="cost">{{totalwithvat|currency_format}}</td>
+{%endif%}
 </tr>
 </table>
 </fieldset>

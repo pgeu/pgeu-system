@@ -313,9 +313,7 @@ def reg_add_options(request, confname):
 		messages.warning(request, "Option searching mismatch, order canceled.")
 
 	# Check the count on each option (yes, this is inefficient, but who cares)
-	totalcost = 0
 	for o in options:
-		totalcost += o.cost
 		if o.maxcount > 0:
 			if o.conferenceregistration_set.count() >= o.maxcount:
 				messages.warning(request, "Option '{0}' is sold out.".format(o.name))
@@ -355,18 +353,41 @@ def reg_add_options(request, confname):
 
 	if new_regtype and new_regtype.cost >= reg.regtype.cost:
 		upsell_cost = new_regtype.cost - reg.regtype.cost
-		totalcost += upsell_cost
 	else:
 		upsell_cost = 0
+
+	# Build our invoice rows
+	invoicerows = []
+	if upsell_cost:
+		invoicerows.append(['Upgrade to {0}'.format(new_regtype.regtype), 1, upsell_cost, conference.vat_registrations])
+		if new_regtype.invoice_autocancel_hours:
+			autocancel_hours.append(new_regtype.invoice_autocancel_hours)
+
+	for o in options:
+		# Yes, we include €0 options for completeness.
+		invoicerows.append([o.name, 1, o.cost, conference.vat_registrations])
+		if o.invoice_autocancel_hours:
+			autocancel_hours.append(o.invoice_autocancel_hours)
+
+	# Add VAT information to invoice rows
+	for r in invoicerows:
+		# Calculate the with-vat information for this row
+		if r[3]:
+			r.append(r[2]*(100+r[3].vatpercent)/Decimal(100))
+		else:
+			r.append(r[2])
+
+	totalcost = sum([r[2] for r in invoicerows])
+	totalwithvat = sum([r[4] for r in invoicerows])
 
 	if not request.POST.get('confirm', None) == 'yes':
 		# Generate a preview
 		return render_conference_response(request, conference, 'reg', 'confreg/confirm_addons.html', {
 			'reg': reg,
 			'options': options,
-			'newreg': new_regtype,
-			'upsell_cost': upsell_cost,
+			'invoicerows': invoicerows,
 			'totalcost': totalcost,
+			'totalwithvat': totalwithvat,
 		})
 	else:
 		if totalcost == 0:
@@ -380,20 +401,7 @@ def reg_add_options(request, confname):
 			messages.info(request, 'Additional options added to registration')
 			return HttpResponseRedirect('../')
 
-		# Build our invoice rows
-		invoicerows = []
 		autocancel_hours = [conference.invoice_autocancel_hours, ]
-
-		if upsell_cost:
-			invoicerows.append(('Upgrade to {0}'.format(new_regtype.regtype), 1, upsell_cost, conference.vat_registrations))
-			if new_regtype.invoice_autocancel_hours:
-				autocancel_hours.append(new_regtype.invoice_autocancel_hours)
-
-		for o in options:
-			# Yes, we include €0 options for completeness.
-			invoicerows.append((o.name, 1, o.cost, conference.vat_registrations))
-			if o.invoice_autocancel_hours:
-				autocancel_hours.append(o.invoice_autocancel_hours)
 
 		# Create a pending addon order, and generate an invoice
 		order = PendingAdditionalOrder(reg=reg,
