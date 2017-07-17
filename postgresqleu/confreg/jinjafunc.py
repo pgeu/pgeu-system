@@ -1,6 +1,7 @@
 from django.http import Http404, HttpResponse
 from django.template.backends.utils import csrf_input_lazy, csrf_token_lazy
 from django.template import defaultfilters
+from django.contrib.messages.api import get_messages
 from django.utils.text import slugify
 from django.conf import settings
 
@@ -225,6 +226,7 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
 		'githash': find_git_revision(conference.jinjadir),
 		'csrf_input': csrf_input_lazy(request),
 		'csrf_token': csrf_token_lazy(request),
+		'messages': get_messages(request),
 	})
 
 	# For local testing, there may also be a context.override.json
