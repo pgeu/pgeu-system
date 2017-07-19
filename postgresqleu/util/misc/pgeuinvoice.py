@@ -173,9 +173,9 @@ class PDFInvoice(PDFBase):
 				]
 			if islastpage:
 				totalexcl = sum([cost*count for title,cost,count,vatrate,vatpercent in self.rows])
-				totalvat = sum([cost*count*(vatpercent/Decimal(100)) for title,cost,count,vatrate,vatpercent in self.rows])
-				totalincl = sum([cost*count*(1+vatpercent/Decimal(100)) for title,cost,count,vatrate,vatpercent in self.rows])
-				if self.totalvat>0 and totalvat.quantize(Decimal('.01')) != self.totalvat:
+				totalvat = sum([(cost*count*(vatpercent/Decimal(100))).quantize(Decimal('0.01')) for title,cost,count,vatrate,vatpercent in self.rows])
+				totalincl = sum([(cost*count*(1+vatpercent/Decimal(100))).quantize(Decimal('0.01')) for title,cost,count,vatrate,vatpercent in self.rows])
+				if self.totalvat>0 and totalvat != self.totalvat:
 					raise Exception("Specified total VAT {0} does not match calculated VAT {1}".format(self.totalvat, totalvat))
 
 				tbldata.extend([
