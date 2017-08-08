@@ -665,6 +665,8 @@ def sponsor_admin_imageview(request, benefitid):
 	# the image itself.
 	storage = InlineEncodedStorage('benefit_image')
 	f = storage.open(str(benefit.id))
+	if not f:
+		raise Http404('Benefit image not found')
 
 	# XXX: do we need to support non-png at some point? store info in claimdata!
 	resp = HttpResponse(content_type='image/png')
