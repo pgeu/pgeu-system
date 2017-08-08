@@ -920,6 +920,10 @@ def callforpapers_edit(request, confname, sessionid):
 					# There is at least one empty form at the end, so skip it
 					if not getattr(f, 'cleaned_data', False): continue
 
+					# Somehow we can end up with an unspecified email. Not sure how it can happen,
+					# since the field is mandatory, but if it does just ignore it.
+					if not 'email' in f.cleaned_data: continue
+
 					# Speaker always exist, since the form has validated
 					spk = Speaker.objects.get(user__email=f.cleaned_data['email'])
 
