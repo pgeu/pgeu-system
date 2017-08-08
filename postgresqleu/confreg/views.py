@@ -358,6 +358,7 @@ def reg_add_options(request, confname):
 
 	# Build our invoice rows
 	invoicerows = []
+	autocancel_hours = [conference.invoice_autocancel_hours, ]
 	if upsell_cost:
 		invoicerows.append(['Upgrade to {0}'.format(new_regtype.regtype), 1, upsell_cost, conference.vat_registrations])
 		if new_regtype.invoice_autocancel_hours:
@@ -400,8 +401,6 @@ def reg_add_options(request, confname):
 			reg.save()
 			messages.info(request, 'Additional options added to registration')
 			return HttpResponseRedirect('../')
-
-		autocancel_hours = [conference.invoice_autocancel_hours, ]
 
 		# Create a pending addon order, and generate an invoice
 		order = PendingAdditionalOrder(reg=reg,
