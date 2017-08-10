@@ -49,6 +49,12 @@ function sendEmail() {
    }
 }
 
+function extendCancel() {
+   if (confirm('Are you sure you want to extend the cancelation date by 5 days?\n(Note that no notification is sent to the user)')) {
+      document.location.href = 'extend_cancel/';
+   }
+}
+
 function confirm_delete() {
     return confirm('Are you sure you want to mark this invoice as deleted?');
 }
@@ -267,6 +273,13 @@ also be tagged with your userid <i>{{user.username}}</i>.
  <br/>
  <p><b>Note!</b> The reason given is included in the cancellation notice to the end user!</p>
 </form>
+{%if invoice.canceltime%}
+<h3>Auto cancellation</h3>
+<p>
+This invoice will be automatically canceled at {{invoice.canceltime}}.
+</p>
+<button onclick="extendCancel()">Extend by 5 days</button><br/>
+{%endif%}
 {%endif%}
 
 <h2>Invoice history</h2>

@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from postgresqleu.util.decorators import user_passes_test_or_error
-from models import Invoice, InvoiceRow, InvoicePaymentMethod, VatRate
+from models import Invoice, InvoiceRow, InvoiceHistory, InvoicePaymentMethod, VatRate
 from forms import InvoiceForm, InvoiceRowForm, RefundForm
 from util import InvoiceWrapper, InvoiceManager, InvoicePresentationWrapper
 
@@ -234,6 +234,18 @@ def cancelinvoice(request, invoicenum):
 
 	return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
+@login_required
+@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
+@transaction.atomic
+def extend_cancel(request, invoicenum):
+	invoice = get_object_or_404(Invoice, pk=invoicenum)
+
+	invoice.canceltime += timedelta(days=5)
+	invoice.save()
+
+	InvoiceHistory(invoice=invoice, txt='Extended autocancel by 5 days to {0}'.format(invoice.canceltime)).save()
+
+	return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
