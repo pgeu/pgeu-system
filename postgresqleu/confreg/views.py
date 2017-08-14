@@ -2229,7 +2229,7 @@ def crossmail(request):
 								 form.data['subject'],
 								 form.data['text'],
 								 sendername=form.data['sendername'],
-								 receivername=r.fullname,
+								 receivername=u"{0} {1}".format(r['firstname'], r['lastname']),
 				)
 
 			messages.info(request, "Sent {0} emails.".format(len(recipients)))
