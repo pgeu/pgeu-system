@@ -245,16 +245,13 @@ if __name__ == "__main__":
 		for relpath, relname in source.walkfiles('templates'):
 			if relpath == 'templates/pages': continue
 
-			# Remove templates/ prefix, since it will always be there
-			destrelpath = relpath[len('templates/'):]
-
-			if not os.path.isdir(os.path.join(args.destpath, destrelpath)):
-				os.makedirs(os.path.join(args.destpath, destrelpath))
+			if not os.path.isdir(os.path.join(args.destpath, relpath)):
+				os.makedirs(os.path.join(args.destpath, relpath))
 
 			relsource = os.path.join(relpath, relname)
-			source.copy_if_changed(relsource, os.path.join(args.destpath, destrelpath, relname))
+			source.copy_if_changed(relsource, os.path.join(args.destpath, relsource))
 
-			knownfiles.append(os.path.join(destrelpath, relname))
+			knownfiles.append(relsource)
 
 		# Look for things to remove
 		for dn, subdirs, filenames in os.walk(args.destpath):
