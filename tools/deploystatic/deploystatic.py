@@ -205,6 +205,7 @@ if __name__ == "__main__":
 	parser.add_argument('sourcepath', type=str, help='Source path')
 	parser.add_argument('destpath', type=str, help='Destination path')
 	parser.add_argument('--branch', type=str, help='Deploy directly from branch')
+	parser.add_argument('--templates', action='store_true', help='Deploy templates (except pages) instead of pages')
 
 	args = parser.parse_args()
 
@@ -236,6 +237,36 @@ if __name__ == "__main__":
 		if not source.isdir(d):
 			print "'{0}' subdirectory does not exist in source!".format(d)
 			sys.exit(1)
+
+	if args.templates:
+		# Just deploy templates. They are simply copied over, for use by backend
+		# system.
+		knownfiles = []
+		for relpath, relname in source.walkfiles('templates'):
+			if relpath == 'templates/pages': continue
+
+			# Remove templates/ prefix, since it will always be there
+			destrelpath = relpath[len('templates/'):]
+
+			if not os.path.isdir(os.path.join(args.destpath, destrelpath)):
+				os.makedirs(os.path.join(args.destpath, destrelpath))
+
+			relsource = os.path.join(relpath, relname)
+			source.copy_if_changed(relsource, os.path.join(args.destpath, destrelpath, relname))
+
+			knownfiles.append(os.path.join(destrelpath, relname))
+
+		# Look for things to remove
+		for dn, subdirs, filenames in os.walk(args.destpath):
+			relpath = os.path.relpath(dn, args.destpath)
+			if relpath == '.':
+				relpath = ''
+			for fn in filenames:
+				f = os.path.join(relpath, fn)
+				if not f in knownfiles:
+					os.unlink(os.path.join(args.destpath, f))
+
+		sys.exit(0)
 
 	staticdest = os.path.join(args.destpath, 'static/')
 
