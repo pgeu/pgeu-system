@@ -1453,7 +1453,7 @@ def bulkpay(request, confname):
 			savepoint = transaction.savepoint()
 
 		for e in sorted(emails):
-			regs = ConferenceRegistration.objects.filter(conference=conference, email=e)
+			regs = ConferenceRegistration.objects.filter(conference=conference, email__iexact=e)
 			if len(regs) == 1:
 				allregs.append(regs[0])
 				if regs[0].payconfirmedat:
@@ -1495,7 +1495,7 @@ def bulkpay(request, confname):
 								errors=1
 							# Else discount code is fine, so fall through
 						if errors == 0:
-							state.append({'email': e, 'found': 1, 'pay': 1, 'total': s, 'rows':[u'%s (%s%s)' % (r[0], settings.CURRENCY_SYMBOL.decode('utf8'), r[2]) for r in regrows]})
+							state.append({'email': regs[0].email, 'found': 1, 'pay': 1, 'total': s, 'rows':[u'%s (%s%s)' % (r[0], settings.CURRENCY_SYMBOL.decode('utf8'), r[2]) for r in regrows]})
 							totalcost += s
 							invoicerows.extend(regrows)
 			else:
