@@ -559,6 +559,7 @@ class AttendeeMailAdmin(admin.ModelAdmin):
 
 class PendingAdditionalOrderAdminForm(forms.ModelForm):
 	class Meta:
+		list_display = ('reg', 'createtime', 'payconfirmedat')
 		model = PendingAdditionalOrder
 		exclude = []
 
