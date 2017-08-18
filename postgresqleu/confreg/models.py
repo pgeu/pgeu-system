@@ -745,4 +745,4 @@ class PendingAdditionalOrder(models.Model):
 	payconfirmedat = models.DateTimeField(null=True, blank=True)
 
 	def __unicode__(self):
-		return "%s" % (self.reg, )
+		return u"%s" % (self.reg, )
