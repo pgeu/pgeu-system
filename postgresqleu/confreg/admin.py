@@ -559,7 +559,6 @@ class AttendeeMailAdmin(admin.ModelAdmin):
 
 class PendingAdditionalOrderAdminForm(forms.ModelForm):
 	class Meta:
-		list_display = ('reg', 'createtime', 'payconfirmedat')
 		model = PendingAdditionalOrder
 		exclude = []
 
@@ -572,6 +571,7 @@ class PendingAdditionalOrderAdminForm(forms.ModelForm):
 
 class PendingAdditionalOrderAdmin(admin.ModelAdmin):
 	form = PendingAdditionalOrderAdminForm
+	list_display = ('reg', 'createtime', 'payconfirmedat')
 
 admin.site.register(Conference, ConferenceAdmin)
 admin.site.register(RegistrationClass, RegistrationClassAdmin)
