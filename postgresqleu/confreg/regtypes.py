@@ -18,6 +18,21 @@ _specialregtypes['spk'] = {
 	'func': validate_speaker_registration,
 	}
 
+def validate_speaker_or_reserve_registration(reg):
+	# This registration is only available if a speaker is *confirmed*
+	# or *reserve listed* at this conference.
+	from models import ConferenceSession
+	if not ConferenceSession.objects.filter(conference=reg.conference,
+											speaker__user=reg.attendee,
+											status__in=(1,4), # approved/reserve
+										).exists():
+		raise ValidationError('This registration type is only available if you are a confirmed speaker at this conference')
+
+_specialregtypes['spkr'] = {
+	'name': 'Confirmed or reserve speaker',
+	'func': validate_speaker_or_reserve_registration,
+	}
+
 def validate_staff_registration(reg):
 	if not reg.conference.staff.filter(pk=reg.attendee.pk).exists():
 		raise ValidationError('This registration type is only available if you are confirmed staff at this conference')
