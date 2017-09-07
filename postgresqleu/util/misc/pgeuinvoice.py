@@ -70,7 +70,7 @@ class PDFBase(object):
 		im = Image("%s/PostgreSQL_logo.1color_blue.300x300.png" % self.imagedir, width=3*cm, height=3*cm)
 		im.drawOn(self.canvas, 2*cm, 25*cm)
 		t = self.canvas.beginText()
-		t.setFillColorRGB(0,0,0,0)
+		t.setFillColor(colors.black)
 		t.setFont("DejaVu Serif", 9)
 		t.setTextOrigin(6*cm, 27.5*cm)
 		self.textlines(t,"""PostgreSQL Europe
