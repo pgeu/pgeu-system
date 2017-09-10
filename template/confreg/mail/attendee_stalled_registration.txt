@@ -17,6 +17,11 @@ please go to that same form and click the "Cancel registration"
 button at the bottom. This will remove the registration completely,
 and you will receive no further communications from us.
 
+Details about the pending registration:
+Name:    {{reg.fullname}}
+Email:   {{reg.email}}
+Account: {{reg.attendee.username}}
+
 You will keep receiving a reminder at regular intervals until you
 have either confirmed your registration or canceled it.
 
