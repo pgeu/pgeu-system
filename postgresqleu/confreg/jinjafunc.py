@@ -197,7 +197,7 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
 		'markdown': lambda t: jinja2.Markup(markdown.markdown(t)),
 		'shuffle': filter_shuffle,
 		'slugify': slugify,
-		'yesno': lambda b,v: v.split(',')[b and 0 or 1],
+		'yesno': lambda b,v: v.split(',')[not b],
 	})
 
 	# If ?test=1 is specified, try to load a template with .test in the
