@@ -53,11 +53,11 @@ you are a speaker.
  <td>{{form.fullname}}{% if form.fullname.errors %}{{ form.fullname.errors}}{% endif %}</td>
 </tr>
 <tr>
- <th>{{form.twittername.label_tag}}:</th>
+ <th>{{form.twittername.label_tag}}</th>
  <td>{{form.twittername}}{% if form.twittername.errors %}{{ form.twittername.errors}}{% endif %}</td>
 </tr>
 <tr>
- <th>{{form.company.label_tag}}:</th>
+ <th>{{form.company.label_tag}}</th>
  <td>{{form.company}}{% if form.company.errors %}{{ form.company.errors}}{% endif %}</td>
 </tr>
 <tr>
@@ -65,7 +65,7 @@ you are a speaker.
  <td>{{form.abstract}}{% if form.abstract.errors %}{{ form.abstract.errors}}{% endif %}</td>
 </tr>
 <tr>
- <th>{{form.photofile.label_tag}}:</th>
+ <th>{{form.photofile.label_tag}}</th>
  <td>{%if speaker.photofile%}<img src="{{speaker.photofile.url}}"/><br/>{%endif%}{{form.photofile}}{% if form.photofile.errors %}{{ form.photofile.errors}}{% endif %}</td>
 </tr>
 </table>
