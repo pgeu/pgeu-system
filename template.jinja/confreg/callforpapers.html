@@ -23,7 +23,7 @@ You have not made any submissions yet.
 </p>
 {%else%}
 <p>
-You have made the following submissions to this conference:
+You have made the following submission{%if sessions|length > 1%}s{%endif%} to this conference:
 </p>
 <ul>
 {%for s in sessions%}
