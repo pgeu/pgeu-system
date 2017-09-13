@@ -2,7 +2,7 @@ Dependencies needed before running
 ----------------------------------
 
 The following dependencies are required for manually rebuilding all the required
-python modules. If using distribution pacakged python modules most of them won't
+python modules. If using distribution packaged python modules most of them won't
 be necessary, but then things usually just work out of the box and no need for
 this script.
 
@@ -20,3 +20,8 @@ For invoice generation to work, DejaVu needs to be installed in
 /usr/share/fonts/truetype/ttf-dejavu/
 
 On debian, just install ttf-dejavu.
+
+macOS support
+-------------
+All required dependencies except virtualenv can be installed via Homebrew,
+virtualenv is installed with pip.
