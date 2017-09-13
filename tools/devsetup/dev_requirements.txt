@@ -1,0 +1,17 @@
+Django==1.8.18
+Jinja2==2.7.3
+Markdown==2.6.5
+MarkupSafe==0.23
+Pillow==2.6.1
+argparse
+cryptography
+django-markdown==0.8.4
+django-markwhat==1.4
+flup
+httplib2
+psycopg2==2.5.4
+pycrypto
+reportlab==3.1.8
+wsgiref
+pytz
+python-dateutil
