@@ -62,9 +62,13 @@ white-list the address <i>{{conference.contactaddr}}</i> in your
 spamfilters.
 </p>
 <ul>
-{%for m in mails%}
-  <li><a href="mail/{{m.id}}/">{{m.subject}}</a> (<i>sent {{m.sentat.strftime("%Y-%m-%d %H:%M")}}</i>)</li>
-{%endfor%}
+{%if not mails%}
+  <li>No emails have been sent yet</li>
+{%else%}
+  {%for m in mails%}
+    <li><a href="mail/{{m.id}}/">{{m.subject}}</a> (<i>sent {{m.sentat.strftime("%Y-%m-%d %H:%M")}}</i>)</li>
+  {%endfor%}
+{%endif%}
 </ul>
 
 {%if wikipages%}
