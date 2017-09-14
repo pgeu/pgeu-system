@@ -28,7 +28,7 @@ class Command(BaseCommand):
 			with transaction.atomic():
 				whatstr = StringIO()
 
-				if conference.registrationtype_set.filter(specialtype='spk').exists():
+				if conference.registrationtype_set.filter(specialtype__in=('spk', 'spkr')).exists():
 					self.remind_pending_speakers(whatstr, conference)
 					self.remind_unregistered_speakers(whatstr, conference)
 
