@@ -98,7 +98,7 @@ E-mail: treasurer@postgresql.eu""",
 
 
 class PDFInvoice(PDFBase):
-	def __init__(self, title, recipient, invoicedate, duedate, invoicenum=None, imagedir=None, currency='€', preview=False, receipt=False, bankinfo=True, totalvat=0):
+	def __init__(self, title, recipient, invoicedate, duedate, invoicenum=None, imagedir=None, currency='€', preview=False, receipt=False, bankinfo=True, totalvat=0, **kw):
 		super(PDFInvoice, self).__init__(recipient, invoicenum, imagedir, currency)
 
 		self.title = title
