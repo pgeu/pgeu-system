@@ -1387,10 +1387,10 @@ def viewvouchers(request, batchid):
 
 	vouchers = batch.prepaidvoucher_set.all()
 
-	vouchermailtext = template_to_string('confreg/mail/prepaid_vouchers.txt'),{
+	vouchermailtext = template_to_string('confreg/mail/prepaid_vouchers.txt',{
 		'batch': batch,
 		'vouchers': vouchers,
-		}
+		})
 
 	return render_to_response('confreg/prepaid_create_list.html', {
 			'batch': batch,
