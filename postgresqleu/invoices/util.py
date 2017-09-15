@@ -61,12 +61,6 @@ class InvoiceWrapper(object):
 		self.invoice.total_amount = total + totalvat
 		self.invoice.total_vat = totalvat
 
-		# Generate pdf
-		self.invoice.pdf_invoice = base64.b64encode(self.render_pdf_invoice())
-
-		# Indicate that we're finalized
-		self.invoice.finalized = True
-
 		# Generate a secret key that can be used to view the invoice if
 		# there is no associated account
 		s = SHA256.new()
@@ -74,6 +68,12 @@ class InvoiceWrapper(object):
 		s.update(self.invoice.pdf_invoice)
 		s.update(r.read(250))
 		self.invoice.recipient_secret = s.hexdigest()
+
+		# Generate pdf
+		self.invoice.pdf_invoice = base64.b64encode(self.render_pdf_invoice())
+
+		# Indicate that we're finalized
+		self.invoice.finalized = True
 
 		# And we're done!
 		self.invoice.save()
@@ -87,6 +87,10 @@ class InvoiceWrapper(object):
 
 	def _render_pdf(self, preview=False, receipt=False):
 		PDFInvoice = getattr(importlib.import_module(settings.INVOICE_PDF_BUILDER), 'PDFInvoice')
+		if self.invoice.recipient_secret:
+			paymentlink = '{0}/invoices/{1}/{2}/'.format(settings.SITEBASE, self.invoice.pk, self.invoice.recipient_secret)
+		else:
+			paymentlink = None
 		pdfinvoice = PDFInvoice(self.invoice.title,
 								"%s\n%s" % (self.invoice.recipient_name, self.invoice.recipient_address),
 								self.invoice.invoicedate,
@@ -97,6 +101,7 @@ class InvoiceWrapper(object):
 								receipt=receipt,
 								bankinfo=self.invoice.bankinfo,
 								totalvat=self.invoice.total_vat,
+								paymentlink=paymentlink,
 							)
 
 		# Order of rows is important - so preserve whatever order they were created

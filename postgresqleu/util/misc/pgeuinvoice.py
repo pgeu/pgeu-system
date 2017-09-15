@@ -7,11 +7,13 @@ from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.units import cm
 from reportlab.lib import colors
 from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.utils import ImageReader
 from reportlab.platypus import Paragraph
 from reportlab.platypus.tables import Table, TableStyle
 from reportlab.platypus.flowables import Image
 from reportlab.pdfbase.pdfmetrics import registerFont
 from reportlab.pdfbase.ttfonts import TTFont
+import qrencode
 import cStringIO as StringIO
 
 class PDFBase(object):
@@ -98,7 +100,7 @@ E-mail: treasurer@postgresql.eu""",
 
 
 class PDFInvoice(PDFBase):
-	def __init__(self, title, recipient, invoicedate, duedate, invoicenum=None, imagedir=None, currency='€', preview=False, receipt=False, bankinfo=True, totalvat=0, **kw):
+	def __init__(self, title, recipient, invoicedate, duedate, invoicenum=None, imagedir=None, currency='€', preview=False, receipt=False, bankinfo=True, totalvat=0, paymentlink=None, **kw):
 		super(PDFInvoice, self).__init__(recipient, invoicenum, imagedir, currency)
 
 		self.title = title
@@ -108,6 +110,7 @@ class PDFInvoice(PDFBase):
 		self.receipt = receipt
 		self.bankinfo = bankinfo
 		self.totalvat = totalvat
+		self.paymentlink = paymentlink
 		self.rows = []
 
 		if self.receipt:
@@ -232,6 +235,20 @@ BIC: CMCIFR2A
 """)
 
 					self.canvas.drawText(t)
+
+				if self.paymentlink:
+					style = ParagraphStyle('temp')
+					style.fontName = 'DejaVu Serif'
+					style.fontSize = 5
+					p = Paragraph('Payment details and instructions:<br/><nobr><a href="{0}">{0}</a></nobr>'.format(self.paymentlink), style)
+					p.wrapOn(self.canvas, 12*cm, 2*cm)
+					p.drawOn(self.canvas, 2*cm, 3.5*cm)
+
+					(ver, size, qrimage) = qrencode.encode(self.paymentlink)
+					qrimage = qrimage.resize((size*4, size*4))
+					self.canvas.drawImage(ImageReader(qrimage),
+										  2*cm, 1.8*cm,
+										  1.5*cm, 1.5*cm)
 
 			# Finish this page off, and optionally loop to another one
 			self.canvas.showPage()
