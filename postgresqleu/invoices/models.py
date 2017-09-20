@@ -78,6 +78,8 @@ class Invoice(models.Model):
 	# Amount information is calculated when the invoice is finalized
 	total_amount = models.DecimalField(decimal_places=2, max_digits=10, null=False)
 	total_vat = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0)
+	reverse_vat = models.BooleanField(null=False, blank=False, default=False, help_text="Invoice is subject to EU reverse VAT")
+
 	finalized = models.BooleanField(null=False, blank=True, default=False, help_text="Invoice is finalized, should not ever be changed again")
 	deleted = models.BooleanField(null=False, blank=False, default=False, help_text="This invoice has been deleted")
 	deletion_reason = models.CharField(max_length=500, null=False, blank=True, default='', help_text="Reason for deletion of invoice")

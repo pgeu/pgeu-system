@@ -269,7 +269,6 @@ def sponsor_signup(request, confurlname, levelurlname):
 							  invoiceaddr = form.cleaned_data['address'])
 			if settings.EU_VAT:
 				sponsor.vatnumber = form.cleaned_data['vatnumber']
-				sponsor.invatarea = form.cleaned_data['invatarea']
 			sponsor.save()
 			sponsor.managers.add(request.user)
 			sponsor.save()

@@ -139,6 +139,10 @@ INVOICE_FILENAME_PREFIX='pgeu'
 
 # Process EU-specific VAT rules
 EU_VAT=False
+# Home country prefix for EU VAT
+EU_VAT_HOME_COUNTRY="FR"
+# On-line validate EU vat numbers
+EU_VAT_VALIDATE=False
 
 # Change these when using sandbox!
 PAYPAL_BASEURL='https://www.paypal.com/cgi-bin/webscr'

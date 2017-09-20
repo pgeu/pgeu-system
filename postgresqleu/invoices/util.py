@@ -61,6 +61,9 @@ class InvoiceWrapper(object):
 		self.invoice.total_amount = total + totalvat
 		self.invoice.total_vat = totalvat
 
+		if self.invoice.reverse_vat and self.invoice.total_vat > 0:
+			raise Exception("Can't have both reverse VAT and a non-zero VAT!")
+
 		# Generate a secret key that can be used to view the invoice if
 		# there is no associated account
 		s = SHA256.new()
@@ -101,6 +104,7 @@ class InvoiceWrapper(object):
 								receipt=receipt,
 								bankinfo=self.invoice.bankinfo,
 								totalvat=self.invoice.total_vat,
+								reverse_vat=self.invoice.reverse_vat,
 								paymentlink=paymentlink,
 							)
 
@@ -588,7 +592,8 @@ class InvoiceManager(object):
 					   bankinfo = True,
 					   accounting_account = None,
 					   accounting_object = None,
-					   canceltime = None):
+					   canceltime = None,
+					   reverse_vat = False):
 		invoice = Invoice(
 			recipient_email=recipient_email,
 			recipient_name=recipient_name,
@@ -600,7 +605,8 @@ class InvoiceManager(object):
 			bankinfo=bankinfo,
 			accounting_account=accounting_account,
 			accounting_object=accounting_object,
-			canceltime=canceltime)
+			canceltime=canceltime,
+			reverse_vat=reverse_vat)
 		if recipient_user:
 			invoice.recipient_user = recipient_user
 		if processor:

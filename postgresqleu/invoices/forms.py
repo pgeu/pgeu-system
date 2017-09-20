@@ -2,6 +2,7 @@ from django import forms
 from django.forms import ValidationError
 from django.forms import widgets
 from django.contrib.auth.models import User
+from django.conf import settings
 
 from decimal import Decimal
 
@@ -24,6 +25,9 @@ class InvoiceForm(forms.ModelForm):
 		if not self.instance.finalized:
 			for fld in self.hidden_until_finalized:
 				del self.fields[fld]
+
+		if not settings.EU_VAT:
+			del self.fields['reverse_vat']
 
 		self.fields['invoicedate'].widget = widgets.DateInput()
 		self.fields['duedate'].widget = widgets.DateInput()

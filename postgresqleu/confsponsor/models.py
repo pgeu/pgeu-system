@@ -72,7 +72,6 @@ class Sponsor(models.Model):
 	displayname = models.CharField(max_length=100, null=False, blank=False)
 	invoiceaddr = models.TextField(max_length=500, null=False, blank=True)
 	vatnumber = models.CharField(max_length=100, null=False, blank=True)
-	invatarea = models.BooleanField(null=False, blank=False, default=True)
 	managers = models.ManyToManyField(User, null=False, blank=False)
 	url = models.URLField(max_length=200, null=False, blank=True)
 	twittername = models.CharField(max_length=100, null=False, blank=True)

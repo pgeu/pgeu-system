@@ -115,14 +115,23 @@ def create_sponsor_invoice(user, sponsor):
 	level = sponsor.level
 
 	if settings.EU_VAT:
-		# VAT gets assigned on all sponsorships to customers *in the EU*
-		if sponsor.invatarea:
-			vatlevel = conference.vat_sponsorship
-		else:
+		# If a sponsor has an EU VAT Number, we do *not* charge VAT.
+		# For any sponsor without a VAT number, charge VAT.
+		# If a sponsor is from our home country, meaning they have a
+		#  VAT number and it starts with our prefix, charge VAT.
+		# XXX: we should probably have *accounting* entries for reverse
+		#      VAT on the ones with a number, but EU vat is currently
+		#      handled manually outside the process for now.
+		if sponsor.vatnumber and not sponsor.vatnumber.startswith(settings.EU_VAT_HOME_COUNTRY):
 			vatlevel = None
+			reverse_vat = True
+		else:
+			vatlevel = conference.vat_sponsorship
+			reverse_vat = False
 	else:
 		# Not caring about EU VAT, so assign whatever the conference said
 		vatlevel = conference.vat_sponsorship
+		reverse_vat = False
 
 	invoicerows = [
 		['%s %s sponsorship' % (conference, level), 1, level.levelcost, vatlevel],
@@ -160,7 +169,8 @@ def create_sponsor_invoice(user, sponsor):
 		bankinfo = True,
 		accounting_account = settings.ACCOUNTING_CONFSPONSOR_ACCOUNT,
 		accounting_object = conference.accounting_object,
-		autopaymentoptions = False
+		autopaymentoptions = False,
+		reverse_vat = reverse_vat,
 	)
 	i.allowedmethods = level.paymentmethods.all()
 	return i

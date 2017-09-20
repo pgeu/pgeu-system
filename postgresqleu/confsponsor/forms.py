@@ -7,6 +7,8 @@ from django.conf import settings
 
 from models import Sponsor, SponsorMail, SponsorshipLevel
 from postgresqleu.confreg.models import Conference, RegistrationType, DiscountCode
+from postgresqleu.countries.models import EuropeCountry
+
 from postgresqleu.confreg.models import ConferenceAdditionalOption
 from postgresqleu.util.validators import BeforeValidator, AfterValidator, TwitterValidator
 
@@ -24,8 +26,7 @@ class SponsorSignupForm(forms.Form):
 	name = forms.CharField(label="Company name *", min_length=3, max_length=100, help_text="This name is used on invoices and in internal communication")
 	displayname = forms.CharField(label="Display name *", min_length=3, max_length=100, help_text="This name is displayed on websites and in public communication")
 	address = forms.CharField(label="Company invoice address *", min_length=10, max_length=500, widget=forms.Textarea)
-	vatnumber = forms.CharField(label="VAT Number", min_length=5, max_length=50, help_text="Enter EU VAT Number to be included on invoices if assigned one.", required=False)
-	invatarea = forms.BooleanField(label="In EU VAT Area", help_text="Uncheck this box if the company is located outside the EU VAT Area. If uncertain, leave checked.", required=False, initial=True)
+	vatnumber = forms.CharField(label="EU VAT Number", min_length=5, max_length=50, help_text="Enter EU VAT Number to be included on invoices if assigned one. Leave empty if outside the EU or without assigned VAT number.", required=False)
 	url = forms.CharField(label="Company URL *", min_length=8, max_length=100)
 	twittername = forms.CharField(label="Company twitter", min_length=0, max_length=100, required=False, validators=[TwitterValidator, ])
 	confirm = forms.BooleanField(help_text="Check this box to that you have read and agree to the terms in the contract")
@@ -40,7 +41,6 @@ class SponsorSignupForm(forms.Form):
 
 		if not settings.EU_VAT:
 			del self.fields['vatnumber']
-			del self.fields['invatarea']
 
 	def clean_name(self):
 		if Sponsor.objects.filter(conference=self.conference, name__iexact=self.cleaned_data['name']).exists():
@@ -51,6 +51,25 @@ class SponsorSignupForm(forms.Form):
 		if Sponsor.objects.filter(conference=self.conference, displayname__iexact=self.cleaned_data['displayname']).exists():
 			raise ValidationError("A sponsor with this display name is already signed up for this conference!")
 		return self.cleaned_data['displayname']
+
+	def clean_vatnumber(self):
+		# EU VAT numbers begin with a two letter country-code, so let's
+		# validate that first
+		v = self.cleaned_data['vatnumber'].upper()
+
+		if v == "":
+			# We allow empty VAT numbers, for sponsors from outside of
+			# europe.
+			return v
+
+		if not EuropeCountry.objects.filter(iso=v[:2]).exists():
+			raise ValidationError("VAT numbers must begin with the two letter country code")
+		if settings.EU_VAT_VALIDATE:
+			import vatutil
+			r = vatutil.validate_eu_vat_number(v)
+			if r:
+				raise ValidationError("Invalid VAT number: %s" % r)
+		return v
 
 
 class SponsorSendEmailForm(forms.ModelForm):

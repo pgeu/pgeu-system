@@ -100,7 +100,7 @@ E-mail: treasurer@postgresql.eu""",
 
 
 class PDFInvoice(PDFBase):
-	def __init__(self, title, recipient, invoicedate, duedate, invoicenum=None, imagedir=None, currency='€', preview=False, receipt=False, bankinfo=True, totalvat=0, paymentlink=None, **kw):
+	def __init__(self, title, recipient, invoicedate, duedate, invoicenum=None, imagedir=None, currency='€', preview=False, receipt=False, bankinfo=True, totalvat=0, reverse_vat=None, paymentlink=None, **kw):
 		super(PDFInvoice, self).__init__(recipient, invoicenum, imagedir, currency)
 
 		self.title = title
@@ -110,6 +110,7 @@ class PDFInvoice(PDFBase):
 		self.receipt = receipt
 		self.bankinfo = bankinfo
 		self.totalvat = totalvat
+		self.reverse_vat = reverse_vat
 		self.paymentlink = paymentlink
 		self.rows = []
 
@@ -122,7 +123,7 @@ class PDFInvoice(PDFBase):
 		self.rows.append((title, cost, count, vatrate, vatrate and vatrate.vatpercent or 0))
 
 
-	ROWS_PER_PAGE=16
+	ROWS_PER_PAGE=14
 	def save(self):
 		# We can fit ROWS_PER_PAGE rows on one page. We might want to do something
 		# cute to avoid a single row on it's own page in the future, but
@@ -181,9 +182,18 @@ class PDFInvoice(PDFBase):
 				if self.totalvat>0 and totalvat != self.totalvat:
 					raise Exception("Specified total VAT {0} does not match calculated VAT {1}".format(self.totalvat, totalvat))
 
+				if self.reverse_vat:
+					if totalvat != 0:
+						raise Exception("Can't use reverse VAT and specified VAT at the same time!")
+					vathdr = 'Total VAT *'
+					vatstr = "0 %s *" % (self.currency)
+				else:
+					vathdr = 'Total VAT'
+					vatstr = '%.2f %s' % (totalvat, self.currency)
+
 				tbldata.extend([
 					('Total excl VAT', '', '','' , '%.2f %s' % (totalexcl, self.currency)),
-					('Total VAT', '', '', '', '%.2f %s' % (totalvat, self.currency)),
+					(vathdr, '', '', '', vatstr),
 					('Total incl VAT', '', '', '', '%.2f %s' % (totalincl, self.currency)),
 				])
 				style.extend([
@@ -249,6 +259,13 @@ BIC: CMCIFR2A
 					self.canvas.drawImage(ImageReader(qrimage),
 										  2*cm, 1.8*cm,
 										  1.5*cm, 1.5*cm)
+
+				if self.reverse_vat:
+					t = self.canvas.beginText()
+					t.setTextOrigin(2*cm, 4.8*cm)
+					t.setFont("DejaVu Serif", 6)
+					self.textlines(t, "* Services subject to the reverse charge - VAT to be accounted for by the recipient as per Article 196 of Council Directive 2006/112/EC")
+					self.canvas.drawText(t)
 
 			# Finish this page off, and optionally loop to another one
 			self.canvas.showPage()
