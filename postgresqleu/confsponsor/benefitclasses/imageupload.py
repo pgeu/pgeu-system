@@ -11,15 +11,18 @@ from base import BaseBenefit
 def _validate_params(params):
 	try:
 		j = json.loads(params)
-		if sorted(j.keys()) != [u"format", u"xres", u"yres"]:
+		keys = set(j.keys())
+		if not keys.issuperset([u"format", u"xres", u"yres"]):
 			raise Exception("Parameters 'format', 'xres' and 'yres' are mandatory")
+		if not keys.issubset([u"format", u"xres", u"yres", u"transparent"]):
+			raise Exception("Only parameters 'format', 'xres', 'yres' and 'transparent' can be specified")
 		if int(j['xres']) < 1:
 			raise Exception("Parameter 'xres' must be positive integer!")
 		if int(j['yres']) < 1:
 			raise Exception("Parameter 'yres' must be positive integer!")
 
 		return j
-	except json.JSONDecodeError:
+	except ValueError:
 		raise Exception("Can't parse JSON")
 
 class ImageUploadForm(forms.Form):
@@ -70,13 +73,18 @@ class ImageUploadForm(forms.Form):
 		if image.size[0] != xres and image.size[1] != yres:
 			raise ValidationError("Image must be %s pixels wide or %s pixels high, fitting within a box of %s. Uploaded image is %s." % (xres, yres, resstr, upresstr))
 
-		# XXX: future improvement: support transparency check
+		if int(self.params.get('transparent', 0)) == 1:
+			# Require transparency, only supported for PNG
+			if self.params['format'].upper() != 'PNG':
+				raise ValidationError("Transparency validation requires PNG images")
+			if image.mode != 'RGBA':
+				raise ValidationError("Image must have transparent background")
 
 		return self.cleaned_data['image']
 
 class ImageUpload(BaseBenefit):
 	description = 'Require uploaded image'
-	default_params = '{"format": "png", "xres": 1, "yres": 1}'
+	default_params = '{"format": "png", "xres": 1, "yres": 1, "transparent": 0}'
 	def validate_params(self):
 		try:
 			_validate_params(self.params)
