@@ -5,7 +5,11 @@
     <th>Type</th>
     <th>Added to waitlist</th>
     <th>Offer made</th>
-    <th>Offer expired</th>
+    {%if waitlist_type == "waitlist_active" %}
+      <th>Offer expires</th>
+    {%else%}
+      <th>Offer expired</th>
+    {%endif%}
     <th>Status</th>
     {%if waitlist_type == "waitlist_active" %}
       <th>Action</th>
