@@ -17,7 +17,7 @@ class RegistrationLookup(ModelLookup):
 	def get_query(self, request, term):
 		q = super(RegistrationLookup, self).get_query(request, term)
 		if request.GET.has_key('conference'):
-			return q.filter(conference_id=request.GET['conference'])
+			return q.filter(conference_id=request.GET['conference'], payconfirmedat__isnull=False)
 		else:
 			# Don't return anything if parameter not present
 			return None

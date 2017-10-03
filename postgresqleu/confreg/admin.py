@@ -7,6 +7,7 @@ from django.db.models.fields.files import ImageFieldFile
 from django.db.models import Count
 from django.core import urlresolvers
 from django.utils.safestring import mark_safe
+from django.contrib.postgres.forms.ranges import RangeWidget
 
 from models import Conference, ConferenceRegistration, RegistrationType, Speaker
 from models import ConferenceSession, Track, Room, ConferenceSessionScheduleSlot
@@ -15,6 +16,7 @@ from models import ShirtSize, ConferenceAdditionalOption
 from models import ConferenceFeedbackQuestion, Speaker_Photo
 from models import PrepaidVoucher, PrepaidBatch, BulkPayment, DiscountCode
 from models import PendingAdditionalOrder
+from models import VolunteerSlot
 
 from selectable.forms.widgets import AutoCompleteSelectWidget, AutoCompleteSelectMultipleWidget
 from postgresqleu.accountinfo.lookups import UserLookup
@@ -81,11 +83,13 @@ class ConferenceAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
 			'testers': AutoCompleteSelectMultipleWidget(lookup_class=UserLookup),
 			'talkvoters': AutoCompleteSelectMultipleWidget(lookup_class=UserLookup),
 			'staff': AutoCompleteSelectMultipleWidget(lookup_class=UserLookup),
+			'volunteers': AutoCompleteSelectMultipleWidget(lookup_class=RegistrationLookup)
 		}
 	accounting_object = forms.ChoiceField(choices=[], required=False)
 
 	def __init__(self, *args, **kwargs):
 		super(ConferenceAdminForm, self).__init__(*args, **kwargs)
+		self.fields['volunteers'].widget.widget.update_query_parameters({'conference': self.instance.id})
 		self.fields['accounting_object'].choices = [('', '----'),] + [(o.name, o.name) for o in Object.objects.filter(active=True)]
 
 	def clean(self):
@@ -573,6 +577,28 @@ class PendingAdditionalOrderAdmin(admin.ModelAdmin):
 	form = PendingAdditionalOrderAdminForm
 	list_display = ('reg', 'createtime', 'payconfirmedat')
 
+
+class VolunteerSlotAdminForm(forms.ModelForm):
+	class Meta:
+		model = VolunteerSlot
+		exclude = []
+		widgets = {
+			'timerange': RangeWidget(admin.widgets.AdminSplitDateTime()),
+		}
+
+	def clean(self):
+		data = super(VolunteerSlotAdminForm, self).clean()
+
+		if data['max_staff'] < data['min_staff']:
+			raise ValidationError("Max staff can't be less than min staff!")
+		return data
+
+class VolunteerSlotAdmin(admin.ModelAdmin):
+	form = VolunteerSlotAdminForm
+	list_filter = ['conference', ]
+	list_display = ('__unicode__', 'title')
+
+
 admin.site.register(Conference, ConferenceAdmin)
 admin.site.register(RegistrationClass, RegistrationClassAdmin)
 admin.site.register(RegistrationDay, RegistrationDayAdmin)
@@ -593,3 +619,4 @@ admin.site.register(DiscountCode, DiscountCodeAdmin)
 admin.site.register(BulkPayment, BulkPaymentAdmin)
 admin.site.register(AttendeeMail, AttendeeMailAdmin)
 admin.site.register(PendingAdditionalOrder, PendingAdditionalOrderAdmin)
+admin.site.register(VolunteerSlot, VolunteerSlotAdmin)

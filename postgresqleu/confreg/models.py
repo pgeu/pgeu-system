@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.utils.dateformat import DateFormat
+from django.contrib.postgres.fields import DateTimeRangeField
 
 from postgresqleu.util.validators import validate_lowercase
 
@@ -92,6 +93,7 @@ class Conference(models.Model):
 	testers = models.ManyToManyField(User, null=False, blank=True, related_name="testers_set")
 	talkvoters = models.ManyToManyField(User, null=False, blank=True, related_name="talkvoters_set")
 	staff = models.ManyToManyField(User, null=False, blank=True, related_name="staff_set", help_text="Users who can register as staff")
+	volunteers = models.ManyToManyField('ConferenceRegistration', null=False, blank=True, related_name="volunteers_set", help_text="Users who volunteer")
 	asktshirt = models.BooleanField(blank=False, null=False, default=True)
 	askfood = models.BooleanField(blank=False, null=False, default=True)
 	askshareemail = models.BooleanField(null=False, blank=False, default=False)
@@ -388,6 +390,10 @@ class ConferenceRegistration(models.Model):
 	# foreign key :)
 	vouchercode = models.CharField(max_length=100, null=False, blank=True, verbose_name='Voucher code')
 
+	# Token to uniquely identify this registration in case we want to
+	# access it without a login.
+	regtoken = models.TextField(null=True, blank=True, unique=True)
+
 	@property
 	def fullname(self):
 		return "%s %s" % (self.firstname, self.lastname)
@@ -411,6 +417,10 @@ class ConferenceRegistration(models.Model):
 	@property
 	def additionaloptionlist(self):
 		return ",\n".join([a.name for a in self.additionaloptions.all()])
+
+	@property
+	def is_volunteer(self):
+		return self.volunteers_set.exists()
 
 	# For the admin interface (mainly)
 	def __unicode__(self):
@@ -665,6 +675,45 @@ class ConferenceFeedbackAnswer(models.Model):
 
 	class Meta:
 		ordering = ['conference', 'attendee', 'question', ]
+
+class VolunteerSlot(models.Model):
+	conference = models.ForeignKey(Conference, null=False, blank=False)
+	timerange = DateTimeRangeField(null=False, blank=False)
+	title = models.CharField(max_length=50, null=False, blank=False)
+	min_staff = models.IntegerField(null=False, blank=False, default=1, validators=[MinValueValidator(1)])
+	max_staff = models.IntegerField(null=False, blank=False, default=1, validators=[MinValueValidator(1)])
+
+	def __unicode__(self):
+		return "{0} - {1}".format(self.timerange.lower, self.timerange.upper)
+
+	@property
+	def countvols(self):
+		return self.volunteerassignment_set.all().count()
+
+	@property
+	def weekday(self):
+		return self.timerange.lower.strftime('%A %Y-%m-%d')
+
+	@property
+	def utcstarttime(self):
+		return self._utc_time(self.timerange.lower + datetime.timedelta(hours=self.conference.timediff))
+
+	@property
+	def utcendtime(self):
+		return self._utc_time(self.timerange.lower + datetime.timedelta(hours=self.conference.timediff))
+
+	def _utc_time(self, time):
+		if not hasattr(self, '_localtz'):
+			self._localtz = pytz.timezone(settings.TIME_ZONE)
+		return self._localtz.localize(time).astimezone(pytz.utc)
+
+class VolunteerAssignment(models.Model):
+	slot = models.ForeignKey(VolunteerSlot, null=False, blank=False)
+	reg = models.ForeignKey(ConferenceRegistration, null=False, blank=False)
+	vol_confirmed = models.BooleanField(null=False, blank=False, default=False, verbose_name="Confirmed by volunteer")
+	org_confirmed = models.BooleanField(null=False, blank=False, default=False, verbose_name="Confirmed by organizers")
+
+	_safe_attributes = ('id', 'slot', 'reg', 'vol_confirmed', 'org_confirmed')
 
 class PrepaidBatch(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)

@@ -186,7 +186,8 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
 	if not os.path.exists(os.path.join(conference.jinjadir, 'templates/base.html')):
 		raise Http404()
 
-	env = ConfSandbox(loader=ConfTemplateLoader(conference, templatename))
+	env = ConfSandbox(loader=ConfTemplateLoader(conference, templatename),
+					  extensions=['jinja2.ext.with_'])
 	env.filters.update({
 		'currency_format': filter_currency_format,
 		'escapejs': defaultfilters.escapejs_filter,

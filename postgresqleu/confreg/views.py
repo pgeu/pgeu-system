@@ -38,6 +38,7 @@ from regtypes import confirm_special_reg_type
 from jinjafunc import render_jinja_conference_response
 
 from postgresqleu.util.decorators import user_passes_test_or_error
+from postgresqleu.util.random import generate_random_token
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod, InvoiceRow
 from postgresqleu.confwiki.models import Wikipage
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
@@ -195,6 +196,7 @@ def home(request, confname):
 		reg.firstname = request.user.first_name
 		reg.lastname = request.user.last_name
 		reg.created = datetime.now()
+		reg.regtoken = generate_random_token()
 
 	is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
 

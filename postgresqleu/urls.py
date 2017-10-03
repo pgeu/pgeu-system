@@ -11,6 +11,7 @@ import postgresqleu.confreg.reporting
 import postgresqleu.confreg.mobileviews
 import postgresqleu.confreg.feedback
 import postgresqleu.confreg.pdfschedule
+import postgresqleu.confreg.volsched
 import postgresqleu.confwiki.views
 import postgresqleu.membership.views
 import postgresqleu.elections.views
@@ -66,6 +67,7 @@ urlpatterns = patterns('',
 	(r'^events/schedule/([^/]+)/create/$', postgresqleu.confreg.views.createschedule),
 	(r'^events/schedule/([^/]+)/create/publish/$', postgresqleu.confreg.views.publishschedule),
     (r'^events/schedule/([^/]+)/jsonschedule/$', postgresqleu.confreg.views.schedulejson),
+    (r'^events/volunteer/(?P<urlname>[^/]+)/', include(postgresqleu.confreg.volsched)),
 	(r'^events/talkvote/([^/]+)/$', postgresqleu.confreg.views.talkvote),
 	(r'^events/talkvote/([^/]+)/changestatus/$', postgresqleu.confreg.views.talkvote_status),
     (r'^events/reports/time/$', postgresqleu.confreg.reporting.timereport),

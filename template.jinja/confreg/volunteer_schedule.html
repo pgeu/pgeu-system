@@ -1,0 +1,120 @@
+{%extends "base.html" %}
+{%block title%}Volunteer Schedule - {{conference}}{%endblock%}
+{%block extrahead%}
+<script type="text/javascript">
+$(function() {
+   $('.add_volunteer_dropdown').change(function(event) {
+      if (event.target.value == -1)
+         return;
+      slotid = event.target.id.substring('add_vol_'.length);
+      document.location.href = 'add/' + slotid + '-' + event.target.value + '/';
+   });
+});
+</script>
+{%endblock%}
+{%block content%}
+<h1>Volunteer Schedule</h1>
+{% if messages %}
+<ul style="background-color: yellow;">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<h2>Schedule</h2>
+{%if reg.regtoken%}
+<p>
+  You can also get the <a href="ical/{{reg.regtoken}}/">ical</a> version.
+</p>
+<p>
+  Green background indicates a slot assigned to you.
+</p>
+{%endif%}
+{%if admin%}
+<p>
+  <b>NOTE!</b> You are using the system as an administrator!
+</p>
+{%endif%}
+
+<table class="table">
+  <tr>
+    <th>Time</th>
+    <th>Title</th>
+    <th>Count</th>
+    <th>Volunteers</th>
+  </tr>
+{%for day in slots|groupby('weekday')%}
+  <tr class="info">
+    <th colspan="4">{{day.grouper}}</th>
+  </tr>
+{%for s in day.list%}
+{%with assigned_slot = s.volunteerassignment_set.filter(reg=reg).exists()%}
+{%if rowerror[0] == s.id %}
+  <tr class="danger"><td colspan="4">Error: {{rowerror.1}}</td></tr>
+{%endif%}
+  <tr{%if rowerror[0] == s.id%} class="danger"{%elif assigned_slot%} class="success"{%endif%}>
+    <td>{{s.timerange.lower.strftime("%H:%M")}} - {{s.timerange.upper.strftime("%H: %M")}}</td>
+    <td>{{s.title}}</td>
+    <td{%if s.countvols < s.min_staff%} class="danger"{%endif%}>{{s.countvols}} / {{s.max_staff}}{%if s.max_staff != s.min_staff%} (min {{s.min_staff}}){%endif%}</td>
+    <td>
+      <div class="container-fluid">
+{%for v in s.volunteerassignment_set.all()%}
+       <div class="row">
+	 <div class="col-md-6">{{v.reg.fullname}}</div>
+	 <div class="col-md-6">
+{%if admin %}
+  {%if v.vol_confirmed and v.org_confirmed%}<span class="label label-success">confirmed</span>{%else%}<span class="label label-warning">unconfirmed</span>{%endif%}
+{%if not v.org_confirmed%}<a class="btn btn-primary btn-xs" href="confirm/{{s.id}}-{{v.id}}/">confirm</a>{%endif%}
+<a class="btn btn-primary btn-xs" href="remove/{{s.id}}-{{v.id}}/">delete</a>
+{%else%}
+{# non-admin #}
+ {%if v.reg == reg %}
+  {%if not v.vol_confirmed%}<a class="btn btn-primary btn-xs" href="confirm/{{s.id}}-{{v.id}}/">confirm</a>{%endif%}
+  {%if not v.org_confirmed%}<a class="btn btn-primary btn-xs" href="remove/{{s.id}}-{{v.id}}/">remove</a>{%endif%}
+ {%endif%}
+{%endif%}
+	 </div>
+       </div>
+{%endfor%}
+   </div>{# list of current volunteers #}
+{%if s.countvols < s.max_staff%}
+ {%if not assigned_slot and not admin%}<a class="btn btn-default btn-sm" href="signup/{{s.id}}/">Sign up </a>
+ {%endif%}
+ {%if admin %}
+<div>
+<select id="add_vol_{{s.id}}" class="add_volunteer_dropdown form-control">
+<option value="-1">* Add volunteer</option>
+ {%for r in allregs%}<option value="{{r.id}}">{{r.fullname}}</option>{%endfor%}
+</select></div>
+ {%endif%}
+{%endif%}
+    </td>
+  </tr>
+{%endwith%}
+{%endfor%}
+{%endfor%}
+
+</table>
+
+<h2>Statistics</h2>
+<p>
+ The following volunteers are currently assigned slots:
+</p>
+<table class="table table-condensed">
+  <tr class="info">
+    <th>Volunteer</th>
+    <th>Assignments</th>
+    <th>Total time</th>
+  </tr>
+{%for s in stats%}
+  <tr>
+    <td>{{s.fullname}}</td>
+    <td>{{s.num_assignments}}</td>
+    <td>{{s.total_time}}</td>
+  </tr>
+{%endfor%}
+</table>
+
+
+{%endblock%}

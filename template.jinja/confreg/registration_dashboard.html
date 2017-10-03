@@ -49,6 +49,9 @@ news!
 {%elif is_speaker%}
   <li><a href="/events/callforpapers/{{conference.urlname}}/">Your speaker profile</a> &bull;</li>
 {%endif%}
+{%if reg.is_volunteer%}
+  <li><a href="/events/volunteer/{{conference.urlname}}/">Volunteer schedule</a> &bull;</li>
+{%endif%}
  </ul>
 </div>
 

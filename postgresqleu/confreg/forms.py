@@ -214,7 +214,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
 	class Meta:
 		model = ConferenceRegistration
-		exclude = ('conference','attendee','payconfirmedat','payconfirmedby','created',)
+		exclude = ('conference','attendee','payconfirmedat','payconfirmedby','created', 'regtoken')
 
 	@property
 	def fieldsets(self):

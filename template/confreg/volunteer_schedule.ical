@@ -1,0 +1,31 @@
+BEGIN:VCALENDAR
+PRODID:-//postgresqleu/confreg//NONSGML v1.0//EN
+VERSION:2.0
+X-WR-CALNAME:{{conference}} volunteer schedule
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+{%for assignment in assignments%}BEGIN:VEVENT
+DTSTART:{{assignment.slot.utcstarttime|date:"Ymd"}}T{{assignment.slot.utcstarttime|time:"His"}}Z
+DTEND:{{assignment.slot.utcendtime|date:"Ymd"}}T{{assignment.slot.utcendtime|time:"His"}}Z
+DTSTAMP:{{now|date:"Ymd"}}T{{now|date:"His"}}Z
+UID:{{conference.urlname}}-{{assignment.id}}
+CREATED:19000101T120000Z
+DESCRIPTION:
+LAST-MODIFIED:{{now|date:"Ymd"}}T{{now|date:"His"}}Z
+LOCATION:
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:{{assignment.slot.title}}
+TRANSP:OPAQUE
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:10 minute reminder!
+TRIGGER:-P0DT0H10M0S
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:30 minute reminder!
+TRIGGER:-P0DT0H30M0S
+END:VALARM
+END:VEVENT
+{%endfor%}END:VCALENDAR
