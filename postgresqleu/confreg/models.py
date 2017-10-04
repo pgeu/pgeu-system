@@ -683,6 +683,9 @@ class VolunteerSlot(models.Model):
 	min_staff = models.IntegerField(null=False, blank=False, default=1, validators=[MinValueValidator(1)])
 	max_staff = models.IntegerField(null=False, blank=False, default=1, validators=[MinValueValidator(1)])
 
+	class Meta:
+		ordering = [ 'timerange', ]
+
 	def __unicode__(self):
 		return "{0} - {1}".format(self.timerange.lower, self.timerange.upper)
 
