@@ -72,6 +72,12 @@ class JinjaBadge(Flowable):
 							stroke=o['stroke'] and 1 or 0,
 							fill=fill)
 
+	def draw_line(self, o):
+		self.canv.line(getmm(o, 'x'),
+					   self.calc_y(o),
+					   getmm(o, 'x') + getmm(o, 'width'),
+					   self.calc_y(o) + getmm(o, 'height'))
+
 	def resolve_image_path(self, src):
 		p = os.path.normpath(os.path.join(self.imgpath, src))
 		if not p.startswith(self.imgpath):
