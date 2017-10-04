@@ -89,14 +89,14 @@ class ConfTemplateLoader(jinja2.FileSystemLoader):
 #   - For any models outside the confreg and confwiki namespaces, only attributes
 #     specifically listed in the models _safe_attributes are allowed.
 #   - The same applies to any model wihin confreg that has a _safe_attributes set
-#   - Any model that has a member named conference are considered part oc confreg,
+#   - Any model that has a member named conference are considered part of confreg,
 #     and access will be allowed to all attributes on it.
 #     - Except if it has a member called _unsafe_attributes, in which case they are
 #       restricted.
 #   - Specifically for InvoicePresentationWrapper, access is allowed except for
 #     things listed in _unsafe_attributes.
 #
-# For all other access, the jinja2 default sanbox rules apply.
+# For all other access, the jinja2 default sandbox rules apply.
 #
 class ConfSandbox(jinja2.sandbox.SandboxedEnvironment):
 	def is_safe_attribute(self, obj, attr, value):
