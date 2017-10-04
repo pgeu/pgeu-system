@@ -140,6 +140,14 @@ class JinjaBadge(Flowable):
 		p.drawOn(self.canv, getmm(o, 'x'), self.calc_y(o)+getmm(o, 'height')-actualheight-yoffset)
 
 
+def escapejson_filter(v):
+	# Dumping a string/unicode to json will add double quotes at beginning and end. Strip
+	# those, but only one if there is more than one.
+	return re.sub(r'^"|"$', '', json.dumps(v))
+
+def test_inlist(v,l):
+	return v in l
+
 class JinjaRenderer(object):
 	def __init__(self, rootdir, debug=False):
 		self.templatedir = os.path.join(rootdir, 'templates')
@@ -149,6 +157,13 @@ class JinjaRenderer(object):
 
 		with open(os.path.join(self.templatedir, 'badge.json')) as f:
 			env = jinja2.sandbox.SandboxedEnvironment()
+			env.filters.update({
+				'escapejson': escapejson_filter,
+				'yesno': lambda b,v: v.split(',')[not b],
+			})
+			env.tests.update({
+				'inlist': test_inlist,
+			})
 			self.template = env.from_string(f.read())
 
 		self.context = self._load_context(os.path.join(self.templatedir, 'context.json'))
