@@ -278,7 +278,7 @@ class RegistrationType(models.Model):
 		attribs = ['regtype', 'specialtype']
 		d = dict((a, getattr(self, a) and unicode(getattr(self, a))) for a in attribs)
 		d['regclass'] = self.regclass and self.regclass.safe_export()
-		d['days'] = [d.day.strftime('%Y-%m-%d') for d in self.days.all()]
+		d['days'] = [dd.day.strftime('%Y-%m-%d') for dd in self.days.all()]
 		return d
 
 class ShirtSize(models.Model):
