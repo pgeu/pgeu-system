@@ -151,6 +151,7 @@ def test_inlist(v,l):
 class JinjaRenderer(object):
 	def __init__(self, rootdir, debug=False):
 		self.templatedir = os.path.join(rootdir, 'templates')
+		self.debug = debug
 
 		if not os.path.exists(os.path.join(self.templatedir, 'badge.json')):
 			raise Exception("badge.json not found for conference")
