@@ -48,6 +48,8 @@ class JinjaBadge(Flowable):
 			self.canv.rect(0,0,self.width,self.height)
 
 		for e in self.js['elements']:
+			if e == {}:
+				continue
 			f = getattr(self, 'draw_' + e['type'], None)
 			if callable(f):
 				f(e)
