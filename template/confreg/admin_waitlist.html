@@ -39,6 +39,10 @@ function showDialog(id) {
       <td>{{num_confirmedregs}}</td>
     </tr>
     <tr>
+      <td>Attendees on the waitlist</td>
+      <td>{{waitlist|length}}</td>
+    </tr>
+    <tr>
       <td>Pending registrations with invoice</td>
       <td>{{num_invoicedregs}}</td>
     </tr>
@@ -49,6 +53,10 @@ function showDialog(id) {
     <tr>
       <td>Active offers from the waitlist</td>
       <td>{{num_waitlist_offered}}</td>
+    </tr>
+    <tr>
+      <td>Offers accepted from the waitlist</td>
+      <td>{{waitlist_cleared|length}}</td>
     </tr>
     <tr>
       <td>Total registrations including offered and invoiced</td>
