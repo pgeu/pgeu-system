@@ -22,7 +22,6 @@ from selectable.forms.widgets import AutoCompleteSelectWidget, AutoCompleteSelec
 from postgresqleu.accountinfo.lookups import UserLookup
 from postgresqleu.confreg.lookups import RegistrationLookup
 from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
-from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
 from util import notify_reg_confirmed
 
@@ -578,7 +577,8 @@ class PendingAdditionalOrderAdmin(admin.ModelAdmin):
 	form = PendingAdditionalOrderAdminForm
 	list_display = ('reg', 'createtime', 'payconfirmedat')
 
-class VolunteerSlotAdminForm(ConcurrentProtectedModelForm):
+
+class VolunteerSlotAdminForm(forms.ModelForm):
 	class Meta:
 		model = VolunteerSlot
 		exclude = []
