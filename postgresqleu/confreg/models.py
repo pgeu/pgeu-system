@@ -431,7 +431,7 @@ class ConferenceRegistration(models.Model):
 		attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'shareemail',]
 		d = dict((a, getattr(self, a) and unicode(getattr(self, a))) for a in attribs)
 		d['regtype'] = self.regtype.safe_export()
-		d['additionaloptions'] = [ao.name for ao in self.additionaloptions.all()]
+		d['additionaloptions'] = [{'id': ao.id, 'name': ao.name} for ao in self.additionaloptions.all()]
 		return d
 
 class RegistrationWaitlistEntry(models.Model):
