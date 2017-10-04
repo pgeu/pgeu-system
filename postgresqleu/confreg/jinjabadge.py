@@ -3,6 +3,8 @@
 import json
 import os.path
 import argparse
+import sys
+import re
 
 from reportlab.lib.units import mm
 from reportlab.lib.pagesizes import A4
@@ -167,12 +169,13 @@ class JinjaRenderer(object):
 		s = self.template.render(**ctx)
 		try:
 			js = json.loads(s)
-		except ValueError:
+		except ValueError, e:
 			if self.debug:
 				print "JSON parse failed. Template output:"
 				print s
 				print "------------------------"
-				print "JSON parse failed, see template output above."
+				print "JSON parse failed: %s" % e
+				print "see template output above."
 				sys.exit(1)
 			else:
 				raise Exception("JSON parse failed.")
