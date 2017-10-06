@@ -167,12 +167,15 @@ class Command(BaseCommand):
 			elif t == 'DepositCorrection':
 				# Modification of our deposit account - in either direction!
 				acctrows.append((settings.ACCOUNTING_ADYEN_MERCHANT_ACCOUNT, accstr, -amount, None))
+			elif t == 'InvoiceDeduction':
+				# Adjustment of the invoiced costs. So adjust the payment fees!
+				acctrows.append((settings.ACCOUNTING_ADYEN_FEE_ACCOUNT, accstr, -amount, None))
 			elif t == 'Refunded' or t == 'RefundedBulk':
 				# Refunded - should already be booked against the refunding account
 				acctrows.append((settings.ACCOUNTING_ADYEN_REFUNDS_ACCOUNT, accstr, -amount, None))
 			else:
-				# There is at least InvoiceDeduction, but we'll process those
-				# completely manually for now
+				# Other rows that we don't know about will generate an open accounting entry
+				# for manual fixing.
 				pass
 		if len(acctrows) == len(types):
 			# If all entries were processed, the accounting entry should
