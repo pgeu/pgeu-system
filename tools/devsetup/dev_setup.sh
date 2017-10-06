@@ -29,7 +29,7 @@ DATABASES={
    'ENGINE': 'django.db.backends.postgresql_psycopg2',
    'NAME': '$PGD',
    'HOST': '$PGH',
-   'PORT': '$PGP'
+   'PORT': '$PGP',
    'USER': '$PGU',
  }
 }
