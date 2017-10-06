@@ -695,7 +695,7 @@ class VolunteerSlot(models.Model):
 
 	@property
 	def weekday(self):
-		return self.timerange.lower.strftime('%A %Y-%m-%d')
+		return self.timerange.lower.strftime('%Y-%m-%d (%A)')
 
 	@property
 	def utcstarttime(self):
