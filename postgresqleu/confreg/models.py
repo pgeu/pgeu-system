@@ -703,7 +703,7 @@ class VolunteerSlot(models.Model):
 
 	@property
 	def utcendtime(self):
-		return self._utc_time(self.timerange.lower + datetime.timedelta(hours=self.conference.timediff))
+		return self._utc_time(self.timerange.upper + datetime.timedelta(hours=self.conference.timediff))
 
 	def _utc_time(self, time):
 		if not hasattr(self, '_localtz'):
