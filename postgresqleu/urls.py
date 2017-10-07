@@ -112,6 +112,7 @@ urlpatterns = patterns('',
     (r'^events/admin/(\w+)/wiki/(new|\d+)/$', postgresqleu.confwiki.views.admin_edit_page),
     (r'^events/admin/(\w+)/signups/$', postgresqleu.confwiki.views.signup_admin),
 	(r'^events/admin/(\w+)/signups/(new|\d+)/$', postgresqleu.confwiki.views.signup_admin_edit),
+    (r'^events/admin/(?P<urlname>[^/]+)/volunteer/', include(postgresqleu.confreg.volsched), {'adm': True}),
 
     (r'^events/sponsor/', include('postgresqleu.confsponsor.urls')),
 

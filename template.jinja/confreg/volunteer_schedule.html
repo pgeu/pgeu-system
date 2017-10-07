@@ -33,7 +33,11 @@ $(function() {
 {%endif%}
 {%if admin%}
 <p>
-  <b>NOTE!</b> You are using the system as an administrator!
+  <b>NOTE!</b> You are using the system as an administrator! <a href="/events/volunteer/{{conference.urlname}}/">Switch</a> to volunteer view.
+</p>
+{%elif can_admin%}
+<p>
+  You are using the system as a volunteer. <a href="/events/admin/{{conference.urlname}}/volunteer/">Switch</a> to admin mode.
 </p>
 {%endif%}
 
@@ -64,14 +68,14 @@ $(function() {
 	 <div class="col-md-6">{{v.reg.fullname}}</div>
 	 <div class="col-md-6">
 {%if admin %}
-  {%if v.vol_confirmed and v.org_confirmed%}<span class="label label-success">confirmed</span>{%else%}<span class="label label-warning">unconfirmed</span>{%endif%}
+  {%if v.vol_confirmed and v.org_confirmed%}<span class="label label-success">confirmed</span>{%else%}<span class="label label-warning" title="{%if v.vol_confirmed%}Awaiting organizer confirmation{%else%}Awaiting volunteer confirmation{%endif%}">unconfirmed</span>{%endif%}
 {%if not v.org_confirmed%}<a class="btn btn-primary btn-xs" href="confirm/{{s.id}}-{{v.id}}/">confirm</a>{%endif%}
 <a class="btn btn-primary btn-xs" href="remove/{{s.id}}-{{v.id}}/">delete</a>
 {%else%}
 {# non-admin #}
  {%if v.reg == reg %}
   {%if not v.vol_confirmed%}<a class="btn btn-primary btn-xs" href="confirm/{{s.id}}-{{v.id}}/">confirm</a>{%endif%}
-  {%if not v.org_confirmed%}<a class="btn btn-primary btn-xs" href="remove/{{s.id}}-{{v.id}}/">remove</a>{%endif%}
+{%if not v.org_confirmed%}<span class="label label-warning" title="Awaiting organizer confirmation">unconfirmed</span> <a class="btn btn-primary btn-xs" href="remove/{{s.id}}-{{v.id}}/">remove</a>{%endif%}
  {%endif%}
 {%endif%}
 	 </div>

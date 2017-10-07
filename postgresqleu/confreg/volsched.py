@@ -32,14 +32,16 @@ def _get_conference_and_reg(request, urlname):
 	return (conference, is_admin, reg)
 
 @login_required
-def volunteerschedule(request, urlname):
+def volunteerschedule(request, urlname, adm=False):
 	try:
-		(conference, is_admin, reg) = _get_conference_and_reg(request, urlname)
+		(conference, can_admin, reg) = _get_conference_and_reg(request, urlname)
 	except ConferenceRegistration.DoesNotExist:
 		return HttpResponse("Must be registered for conference to view volunteer schedule")
 
 	slots = VolunteerSlot.objects.filter(conference=conference).order_by('timerange', 'title')
 	allregs = conference.volunteers.all()
+
+	is_admin = can_admin and adm
 
 	stats = ConferenceRegistration.objects.filter(conference=conference) \
 										  .annotate(num_assignments=Count('volunteerassignment')) \
@@ -51,6 +53,7 @@ def volunteerschedule(request, urlname):
 
 	return render_conference_response(request, conference, 'reg', 'confreg/volunteer_schedule.html', {
 		'admin': is_admin,
+		'can_admin': can_admin,
 		'reg': reg,
 		'slots': slots,
 		'allregs': allregs,
@@ -60,7 +63,7 @@ def volunteerschedule(request, urlname):
 
 @login_required
 @transaction.atomic
-def signup(request, urlname, slotid):
+def signup(request, urlname, slotid, adm=False):
 	(conference, is_admin, reg) = _get_conference_and_reg(request, urlname)
 
 	slot = get_object_or_404(VolunteerSlot, conference=conference, id=slotid)
@@ -76,7 +79,7 @@ def signup(request, urlname, slotid):
 
 @login_required
 @transaction.atomic
-def add(request, urlname, slotid, regid):
+def add(request, urlname, slotid, regid, adm=False):
 	(conference, is_admin, reg) = _get_conference_and_reg(request, urlname)
 	if not is_admin:
 		return HttpResponseRedirect("../..")
@@ -95,7 +98,7 @@ def add(request, urlname, slotid, regid):
 
 @login_required
 @transaction.atomic
-def remove(request, urlname, slotid, aid):
+def remove(request, urlname, slotid, aid, adm=False):
 	(conference, is_admin, reg) = _get_conference_and_reg(request, urlname)
 
 	slot = get_object_or_404(VolunteerSlot, conference=conference, id=slotid)
@@ -112,11 +115,11 @@ def remove(request, urlname, slotid, aid):
 
 @login_required
 @transaction.atomic
-def confirm(request, urlname, slotid, aid):
+def confirm(request, urlname, slotid, aid, adm=False):
 	(conference, is_admin, reg) = _get_conference_and_reg(request, urlname)
 
 	slot = get_object_or_404(VolunteerSlot, conference=conference, id=slotid)
-	if is_admin:
+	if is_admin and adm:
 		# Admins can make organization confirms
 		a = get_object_or_404(VolunteerAssignment, slot=slot, id=aid)
 		if a.org_confirmed:
