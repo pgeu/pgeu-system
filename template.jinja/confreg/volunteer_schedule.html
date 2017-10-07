@@ -83,7 +83,7 @@ $(function() {
 {%endfor%}
    </div>{# list of current volunteers #}
 {%if s.countvols < s.max_staff%}
- {%if not assigned_slot and not admin%}<a class="btn btn-default btn-sm" href="signup/{{s.id}}/">Sign up </a>
+ {%if not assigned_slot and not admin%}<a class="btn btn-default btn-xs btn-primary" href="signup/{{s.id}}/">Sign up </a>
  {%endif%}
  {%if admin %}
 <div>
