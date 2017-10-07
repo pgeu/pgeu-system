@@ -74,8 +74,10 @@ $(function() {
 {%else%}
 {# non-admin #}
  {%if v.reg == reg %}
-  {%if not v.vol_confirmed%}<a class="btn btn-primary btn-xs" href="confirm/{{s.id}}-{{v.id}}/">confirm</a>{%endif%}
-{%if not v.org_confirmed%}<span class="label label-warning" title="Awaiting organizer confirmation">unconfirmed</span> <a class="btn btn-primary btn-xs" href="remove/{{s.id}}-{{v.id}}/">remove</a>{%endif%}
+  {%if not v.vol_confirmed%}<a class="btn btn-primary btn-xs" href="confirm/{{s.id}}-{{v.id}}/">confirm</a>
+  {%elif not v.org_confirmed%}<span class="label label-warning" title="Awaiting organizer confirmation">unconfirmed</span> <a class="btn btn-primary btn-xs" href="remove/{{s.id}}-{{v.id}}/">remove</a>
+  {%else%}<span class="label label-success">confirmed</span>
+  {%endif%}
  {%endif%}
 {%endif%}
 	 </div>
