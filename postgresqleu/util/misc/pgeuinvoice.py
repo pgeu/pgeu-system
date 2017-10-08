@@ -220,14 +220,15 @@ class PDFInvoice(PDFBase):
 
 
 			if islastpage:
-				t = self.canvas.beginText()
-				t.setTextOrigin(2*cm, 1.5*cm)
-				t.setFont("DejaVu Serif", 6)
-				self.textlines(t, """Penalty for late payment: Three times the French Legal Interest Rate on the due amount.
+				if not self.receipt:
+					t = self.canvas.beginText()
+					t.setTextOrigin(2*cm, 1.5*cm)
+					t.setFont("DejaVu Serif", 6)
+					self.textlines(t, """Penalty for late payment: Three times the French Legal Interest Rate on the due amount.
 Compensation due for any recovery costs incurred: €40
 Discount for prepayment: None.
 """)
-				self.canvas.drawText(t)
+					self.canvas.drawText(t)
 
 				if self.bankinfo:
 					t = self.canvas.beginText()
