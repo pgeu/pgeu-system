@@ -1,6 +1,7 @@
 {%extends "base.html"%}
 {%block title%}Invoice Refund{%endblock%}
 {%block extrahead%}
+<script type="text/javascript" src="/media/jq/jquery-1.8.2.min.js"></script>
 <style>
 input[readonly="readonly"], textarea[readonly="readonly"] {
    background-color: lightgray;
@@ -38,6 +39,28 @@ table.refundtable input[type="number"] {
    text-align: right;
 }
 </style>
+<script language="javascript">
+$(function() {
+   $('#refundpercent').change(function() {
+      var p = $('#refundpercent').val();
+      $('#id_amount').val({{invoice.amount_without_vat}}*p/100);
+      $('#id_vatamount').val({{invoice.total_vat}}*p/100);
+      $('#totalrefund').text(Number($('#id_amount').val()) + Number($('#id_vatamount').val()));
+      $('#id_vatrate').val({{globalvat}});
+   });
+
+   $('#id_amount, #id_vatamount').change(function() {
+      $('#totalrefund').text(Number($('#id_amount').val()) + Number($('#id_vatamount').val()));
+   });
+
+{%if samevat%}
+   $('#refundpercent').focus();
+{%else%}
+   $('#id_amount').focus();
+{%endif%}
+});
+
+</script>
 {%endblock%}
 {%block layoutblock%}
 <h1>Refund of invoice #{{invoice.id}}</h1>
@@ -109,6 +132,16 @@ table.refundtable input[type="number"] {
   <tr>
     <td colspan="2"><hr/></td>
   </tr>
+{%if samevat%}
+  <tr>
+    <td>Calculate refund percentage</td>
+    <td><input type="number" min="0" max="100" id="refundpercent" name="refundpercent" value="0"></td>
+  </tr>
+  <tr>
+    <td colspan="2"><hr/></td>
+  </tr>
+{%endif%}
+
 {%if form.errors%}
  <tr class="errorheader">
   <td colspan="2">Please correct the errors below, and re-submit the form.</td>
@@ -125,6 +158,10 @@ table.refundtable input[type="number"] {
   <td>{{field}} {{field.help_text|safe}}</td>
  </tr>
 {%endfor%}
+ <tr>
+   <td>Total amount to refund</td>
+   <td><span id="totalrefund">0</span></td>
+ </tr>
 </table>
 {%if not invoice.can_autorefund%}
   <p>

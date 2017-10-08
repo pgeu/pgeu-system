@@ -4,7 +4,7 @@ from django.forms.models import inlineformset_factory
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Count, Max
 from django.template import RequestContext
 from django.contrib import messages
 from django.conf import settings
@@ -272,10 +272,15 @@ def refundinvoice(request, invoicenum):
 	else:
 		form = RefundForm(invoice=invoice)
 
+	# Check if all invoicerows have the same VAT rate (NULL or specified)
+	vinfo = invoice.invoicerow_set.all().aggregate(n=Count('vatrate', distinct=True), v=Max('vatrate'))
+
 	return render(request, 'invoices/refundform.html', {
 		'form': form,
 		'invoice': invoice,
 		'currency_symbol': settings.CURRENCY_SYMBOL,
+		'samevat': (vinfo['n'] <= 1),
+		'globalvat': vinfo['v'],
 		})
 
 @login_required
