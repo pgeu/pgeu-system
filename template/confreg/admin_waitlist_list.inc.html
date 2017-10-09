@@ -1,5 +1,6 @@
 <table class="table">
   <tr class="info">
+    <th>Pos</th>
     <th>Name</th>
     <th>Email</th>
     <th>Type</th>
@@ -17,6 +18,7 @@
   </tr>
 {%for w in waitlist%}
   <tr>
+    <td>{{forloop.counter}}</td>
     <td>{{w.registration.firstname}} {{w.registration.lastname}}</td>
     <td>{{w.registration.email}}</td>
     <td>{{w.registration.regtype}}</td>
