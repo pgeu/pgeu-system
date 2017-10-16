@@ -199,13 +199,27 @@ def deploy_template(env, template, destfile, context):
 	with open(destfile, 'w') as f:
 		f.write(s)
 
+def _deploy_static(source, destpath):
+	knownfiles =[]
+	# We could use copytree(), but we need to know which files are there so we can
+	# remove old files, so we might as well do the full processing this way.
+	for relpath, relname in source.walkfiles('static'):
+		if not os.path.isdir(os.path.join(destpath, relpath)):
+			os.makedirs(os.path.join(destpath, relpath))
+
+		relsource = os.path.join(relpath, relname)
+		source.copy_if_changed(relsource, os.path.join(destpath, relsource))
+
+		knownfiles.append(relsource)
+	return knownfiles
+
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='Deploy jinja based static site')
 	parser.add_argument('sourcepath', type=str, help='Source path')
 	parser.add_argument('destpath', type=str, help='Destination path')
 	parser.add_argument('--branch', type=str, help='Deploy directly from branch')
-	parser.add_argument('--templates', action='store_true', help='Deploy templates (except pages) instead of pages')
+	parser.add_argument('--templates', action='store_true', help='Deploy templates (except pages) and static instead of pages')
 
 	args = parser.parse_args()
 
@@ -253,6 +267,8 @@ if __name__ == "__main__":
 
 			knownfiles.append(relsource)
 
+		knownfiles.extend(_deploy_static(source, args.destpath))
+
 		# Look for things to remove
 		for dn, subdirs, filenames in os.walk(args.destpath):
 			relpath = os.path.relpath(dn, args.destpath)
@@ -264,8 +280,6 @@ if __name__ == "__main__":
 					os.unlink(os.path.join(args.destpath, f))
 
 		sys.exit(0)
-
-	staticdest = os.path.join(args.destpath, 'static/')
 
 	# Set up jinja environment
 	if args.branch:
@@ -285,16 +299,7 @@ if __name__ == "__main__":
 
 
 	knownfiles = []
-	# We could use copytree(), but we need to know which files are there so we can
-	# remove old files, so we might as well do the full processing this way.
-	for relpath, relname in source.walkfiles('static'):
-		if not os.path.isdir(os.path.join(args.destpath, relpath)):
-			os.makedirs(os.path.join(args.destpath, relpath))
-
-		relsource = os.path.join(relpath, relname)
-		source.copy_if_changed(relsource, os.path.join(args.destpath, relsource))
-
-		knownfiles.append(relsource)
+	knownfiles = _deploy_static(source, args.destpath)
 
 	for fn in source.listfiles('templates/pages'):
 		# We don't use subdirectories yet, so don't bother even looking at that
