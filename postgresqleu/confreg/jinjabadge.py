@@ -5,6 +5,7 @@ import os.path
 import argparse
 import sys
 import re
+import operator
 
 from reportlab.lib.units import mm
 from reportlab.lib.pagesizes import A4
@@ -164,6 +165,7 @@ class JinjaRenderer(object):
 			})
 			env.tests.update({
 				'inlist': test_inlist,
+				'equalto': operator.eq,
 			})
 			self.template = env.from_string(f.read())
 
