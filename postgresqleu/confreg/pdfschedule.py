@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
+from django.shortcuts import render_to_response
+from django.template import RequestContext
 from django import forms
 from django.http import HttpResponse
 from django.db.models import Q
@@ -21,7 +23,6 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import cm, mm
 
 from models import Conference, Room, Track, RegistrationDay, ConferenceSession
-from views import render_conference_response
 
 def _get_pagesize(size, orient):
 	so = (size, orient)
@@ -364,6 +365,6 @@ def pdfschedule(request, confname):
 	else:
 		form = PdfScheduleForm(conference)
 
-	return render_conference_response(request, conference, 'schedule', 'confreg/pdfschedule.html', {
+	return render_to_response('confreg/pdfschedule.html', {
 		'form': form,
-		})
+	}, context_instance=RequestContext(request))
