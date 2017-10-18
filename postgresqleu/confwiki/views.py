@@ -156,11 +156,11 @@ def wikipage_edit(request, confurl, wikiurl):
 				body += "\n\nYou are receiving this message because you are subscribed to changes to\nthis page. To stop receiving notifications, please click\n{0}/events/register/{1}/wiki/{2}/sub/\n\n".format(settings.SITEBASE, conference.urlname, page.url)
 				for sub in WikipageSubscriber.objects.filter(page=page):
 					send_simple_mail(conference.contactaddr,
-									 reg.email,
+									 sub.subscriber.email,
 									 subject,
 									 body,
 									 sendername=conference.conferencename,
-									 receivername=reg.fullname)
+									 receivername=sub.subscriber.fullname)
 
 				return HttpResponseRedirect('../')
 			elif request.POST['submit'] == 'Back to editing':
