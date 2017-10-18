@@ -217,15 +217,15 @@ def admin_edit_page(request, urlname, pageid):
 				send_simple_mail(conference.contactaddr,
 								 conference.contactaddr,
 								 "Wiki page '{0}' created by {1}".format(form.cleaned_data['url'], request.user),
-								 "Title: {0}\nAuthor: {1}\nPublic view: {2}\nPublic edit: {3}\nViewer types: {4}\nEditor types: {5}\nViewer attendees: {6}\nEditor attendees: {7}\n\n".format(
+								 u"Title: {0}\nAuthor: {1}\nPublic view: {2}\nPublic edit: {3}\nViewer types: {4}\nEditor types: {5}\nViewer attendees: {6}\nEditor attendees: {7}\n\n".format(
 									 form.cleaned_data['title'],
 									 form.cleaned_data['author'].fullname,
 									 form.cleaned_data['publicview'],
 									 form.cleaned_data['publicedit'],
-									 ", ".join([r.regtype for r in form.cleaned_data['viewer_regtype']]),
-									 ", ".join([r.regtype for r in form.cleaned_data['editor_regtype']]),
-									 ", ".join([r.fullname for r in form.cleaned_data['viewer_attendee']]),
-									 ", ".join([r.fullname for r in form.cleaned_data['editor_attendee']]),
+									 u", ".join([r.regtype for r in form.cleaned_data['viewer_regtype']]),
+									 u", ".join([r.regtype for r in form.cleaned_data['editor_regtype']]),
+									 u", ".join([r.fullname for r in form.cleaned_data['viewer_attendee']]),
+									 u", ".join([r.fullname for r in form.cleaned_data['editor_attendee']]),
 									 ),
 								 sendername=conference.conferencename)
 			else:
