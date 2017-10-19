@@ -194,9 +194,9 @@ class BulkInvoiceProcessor(object):
 		# since it no longer contains anything interesting.
 		bp.delete()
 
-	# Process an invoice being refunded. This means we need to unlink
-	# it from the registration, as well as remove the payment confirmation
-	# from the registrations.
+	# Process an invoice being refunded. Since this is often just a part
+	# of a bulk payment, we cannot just cancel all registrations. Instead
+	# we'll just generate a notification...
 	def process_invoice_refund(self, invoice):
 		try:
 			bp = BulkPayment.objects.get(pk=invoice.processorid)
@@ -205,31 +205,15 @@ class BulkInvoiceProcessor(object):
 		if not bp.paidat:
 			raise Exception("Bulk registration not paid - things are out of sync")
 
-		# Unlink this bulk payment from all registrations. This will
-		# automatically unlock the registrations. Also inform the
-		# attendee that this happened.
-		for r in bp.conferenceregistration_set.all():
-			r.bulkpayment = None
-			r.payconfirmedat = None
-			r.payconfirmedby = None
-			r.save()
-
-			send_template_mail(bp.conference.contactaddr,
-							   r.email,
-							   "Your registration for {0} bulk payment refunded".format(bp.conference.conferencename),
-							   'confreg/mail/bulkpay_refunded.txt',
-							   {
-								   'conference': bp.conference,
-								   'reg': r,
-								   'bulk': bp,
-							   },
-							   sendername = bp.conference.conferencename,
-							   receivername = r.fullname,
-						   )
-
-		# Now actually *remove* the bulk payment record completely,
-		# since it no longer contains anything interesting.
-		bp.delete()
+		send_simple_mail(bp.conference.contactaddr,
+						 bp.conference.contactaddr,
+						 'Bulk invoice refunded',
+						 u"The bulk payment with id {0} has been refunded.\nNote that the registrations on this bulk invoice has\nNOT been canceled!!!\n\nThis needs to be processedm manually since it may be a partial refund.\n\nThe following registrations are attached:\n\n{1}\n".format(
+							 bp.id,
+							 [r.fullname for r in bp.conferenceregistration_set.all()],
+						 ),
+						 sendername=reg.conference.conferencename,
+						 )
 
 	# Return the user to a page showing what happened as a result
 	# of their payment. In our case, we just return the user directly
