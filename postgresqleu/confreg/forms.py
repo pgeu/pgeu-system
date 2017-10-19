@@ -512,6 +512,21 @@ class WaitlistOfferForm(forms.Form):
 			raise ValidationError("At least one registration must be selected to make an offer")
 		return self.cleaned_data
 
+class TransferRegForm(forms.Form):
+	transfer_from = forms.ModelChoiceField(ConferenceRegistration)
+	transfer_to = forms.ModelChoiceField(ConferenceRegistration)
+	confirm = forms.BooleanField(help_text="Confirm that you want to transfer the registration with the given steps!", required=False)
+
+	def __init__(self, conference, *args, **kwargs):
+		self.conference = conference
+		super(TransferRegForm, self).__init__(*args, **kwargs)
+		self.fields['transfer_from'].queryset = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False)
+		self.fields['transfer_to'].queryset = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True)
+		if not (self.data.has_key('transfer_from') and self.data.has_key('transfer_to')):
+			del self.fields['confirm']
+	def remove_confirm(self):
+		del self.fields['confirm']
+
 
 class CrossConferenceMailForm(forms.Form):
 	senderaddr = forms.EmailField(min_length=5, required=True)

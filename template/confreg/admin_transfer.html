@@ -1,0 +1,48 @@
+{%extends "confreg/confadmin_base.html" %}
+{%block title%}Transfer registration{%endblock%}
+
+{% block extrahead%}
+<script type="text/javascript" src="/media/js/selectize.min.js"></script>
+<link rel="stylesheet" href="/media/css/selectize.css" />
+<link rel="stylesheet" href="/media/css/selectize.default.css" />
+
+<style>
+tr.error {
+   background-color: #ffb6b6;
+}
+table.transferform tr {
+   vertical-align: top;
+}
+table.transferform input[type=text],textarea,select {
+   width: 500px !important;
+}
+</style>
+
+<script type="text/javascript">
+$(function() {
+   $('#id_transfer_from, #id_transfer_to').selectize({plugins: ['remove_button']});
+});
+</script>
+{% endblock %}
+
+{%block layoutblock%}
+<h1>Transfer registration</h1>
+
+<form method="post" action=".">{% csrf_token %}
+<input type="hidden" name="stephash" value="{{stephash}}">
+<table class="transferform">
+{{form.as_table}}
+</table>
+{%if steps%}
+<h3>About to perform these steps</h3>
+<ul>
+ {%for s in steps%}
+ <li>{{s}}</li>
+ {%endfor%}
+</ul>
+{%endif%}
+
+<input type="submit" value="Transfer registration">
+</form>
+
+{%endblock%}

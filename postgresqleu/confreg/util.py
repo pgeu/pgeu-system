@@ -100,9 +100,9 @@ def invoicerows_for_registration(reg, update_used_vouchers):
 	return r
 
 
-def notify_reg_confirmed(reg):
+def notify_reg_confirmed(reg, updatewaitlist=True):
 	# This one was off the waitlist, so generate a history entry
-	if hasattr(reg, 'registrationwaitlistentry'):
+	if updatewaitlist and hasattr(reg, 'registrationwaitlistentry'):
 		RegistrationWaitlistHistory(waitlist=reg.registrationwaitlistentry,
 									text="Completed registration from the waitlist").save()
 

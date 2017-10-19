@@ -1,0 +1,13 @@
+Hello!
+
+Your registration for {{conference}}
+has been transferred to {{toreg.email}}.
+
+That means that your registration is cancelled, and
+instead {{toreg.fullname}} will be welcome to the
+conference.
+
+If this is in any way incorrect, please contact us
+immediately!
+
+
