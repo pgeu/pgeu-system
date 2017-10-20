@@ -2292,10 +2292,11 @@ def transfer_reg(request, urlname):
 
 				# Actively attached to a discount code. Can't deal with that
 				# right now.
-				if toreg.disconutcode_set.exists():
+				if toreg.discountcode_set.exists():
 					raise ValidationError("Receiving registration is connected to discount code. Cannot handle.")
 			if fromreg.vouchercode:
 				# It actually has one. So we have to transfer it
+				toreg.vouchercode = fromreg.vouchercode
 				dcs = fromreg.discountcode_set.all()
 				if dcs:
 					# It's a discount code. There can only ever be one.
