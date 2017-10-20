@@ -2237,7 +2237,7 @@ def transfer_reg(request, urlname):
 			raise ValidationError("Destination registration has additional options")
 
 		if hasattr(toreg, 'registrationwaitlistentry'):
-			raise ValidationEntry("Destination registration is on the waitlist")
+			raise ValidationError("Destination registration is on the waitlist")
 
 		# Transfer registration type
 		if toreg.regtype != fromreg.regtype:
