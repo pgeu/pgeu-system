@@ -11,6 +11,7 @@ from datetime import timedelta
 from postgresqleu.confreg.models import Conference
 from postgresqleu.confreg.models import RegistrationClass, RegistrationType
 from postgresqleu.confreg.models import ConferenceSessionScheduleSlot
+from postgresqleu.confreg.models import ConferenceFeedbackQuestion
 
 class Command(BaseCommand):
 	help = 'Copy conference metadata'
@@ -18,7 +19,7 @@ class Command(BaseCommand):
 	def add_arguments(self, parser):
 		parser.add_argument('source', type=str)
 		parser.add_argument('dest', type=str)
-		parser.add_argument('type', type=str, choices=('regtypes', 'talkslots'))
+		parser.add_argument('type', type=str, choices=('regtypes', 'talkslots', 'feedback'))
 
 	def handle(self, *args, **options):
 		with transaction.atomic():
@@ -62,6 +63,20 @@ class Command(BaseCommand):
 													  starttime=s.starttime + timedelta(days=days),
 													  endtime=s.endtime + timedelta(days=days),
 													  ).save()
+			elif options['type'] == 'feedback':
+				if self.dest.conferencefeedbackquestion_set.exists():
+					raise CommandError("Destination already has feedback questions!")
+				num = self.source.conferencefeedbackquestion_set.count()
+				if self.confirm("Proceed to copy {0} feedback questions, replacing conference name and location?".format(num)):
+					for q in self.source.conferencefeedbackquestion_set.order_by('sortkey'):
+						ConferenceFeedbackQuestion(
+							conference=self.dest,
+							question=q.question.replace(self.source.conferencename, self.dest.conferencename).replace(self.source.location, self.dest.location),
+							isfreetext=q.isfreetext,
+							textchoices=q.textchoices,
+							sortkey=q.sortkey,
+							newfieldset=q.newfieldset,
+						).save()
 			else:
 				# Could not happen, so throw hard exception
 				raise CommandError("Invalid type specified")
