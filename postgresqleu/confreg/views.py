@@ -2389,7 +2389,7 @@ def transfer_reg(request, urlname):
 			if steps:
 				sh = SHA256.new()
 				for s in steps:
-					sh.update(s)
+					sh.update(s.encode('utf8'))
 				stephash = sh.hexdigest()
 
 			if form.cleaned_data['confirm']:
