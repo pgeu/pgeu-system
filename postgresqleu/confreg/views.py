@@ -2241,7 +2241,7 @@ def transfer_reg(request, urlname):
 
 		# Transfer registration type
 		if toreg.regtype != fromreg.regtype:
-			yield u"Change registration type from %s to %s" % (fromreg.regtype, toreg.regtype)
+			yield u"Change registration type from %s to %s" % (toreg.regtype, fromreg.regtype)
 			if fromreg.regtype.specialtype:
 				try:
 					validate_special_reg_type(fromreg.regtype.specialtype, toreg)
