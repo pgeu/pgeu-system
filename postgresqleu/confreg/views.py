@@ -43,7 +43,7 @@ from postgresqleu.util.random import generate_random_token
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod, InvoiceRow
 from postgresqleu.confwiki.models import Wikipage
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
-from postgresqleu.invoices.models import InvoiceProcessor
+from postgresqleu.invoices.models import InvoiceProcessor, InvoiceHistory
 from postgresqleu.mailqueue.util import send_mail, send_simple_mail, send_template_mail, template_to_string
 from postgresqleu.util.jsonutil import JsonSerializer
 
