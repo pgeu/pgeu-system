@@ -20,6 +20,12 @@ function showDialog(id) {
       'title': 'Status history',
    }).dialog('open');
 }
+
+function cancelWaitlist(id) {
+   if (confirm('Are you really sure you want to cancel this waitlist entry?\nAll history will be lost, and a notification sent.')) {
+      document.location.href = 'cancel/' + id + '/';
+   }
+}
 </script>
 {%endblock%}
 

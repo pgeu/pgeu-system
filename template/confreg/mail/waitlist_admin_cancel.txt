@@ -1,0 +1,10 @@
+Hello!
+
+Your entry on the waitlist for {{conference.conferencename}}
+has been canceled by an administrator.
+
+This probably happened because of some ongoing modification to your
+registration. If you are not already in contact with the conference
+organizers about this, and have any questions about why this is
+done, please contact us as soon as you can by replying to this
+email.

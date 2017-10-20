@@ -28,7 +28,7 @@
     <td style="white-space: nowrap"><span onClick="showDialog({{w.registration.id}})" class="dlgClickable ui-icon ui-icon-circle-plus" style="display: inline-block"></span>
 {%if w.registration.payconfirmedat%}Registered{%elif w.offeredon%}Offered{%if w.registration.invoice%} (with invoice){%endif%}{%else%}Pending ({{w.offers_made}} offers){%endif%}</td>
 {%if waitlist_type == "waitlist_active" %}
-    {%if not w.offeredon and not w.registration.payconfirmedat%}<td style="white-space: nowrap;"><input type="checkbox" name="reg_{{w.registration.id}}" value="1"{%if w.registration.id in form.reg_list%} CHECKED{%endif%}> offer</td>{%else%}<td></td>{%endif%}
+    {%if not w.offeredon and not w.registration.payconfirmedat%}<td style="white-space: nowrap;"><input type="checkbox" name="reg_{{w.registration.id}}" value="1"{%if w.registration.id in form.reg_list%} CHECKED{%endif%}> offer<br><a href="javascript:cancelWaitlist({{w.pk}})" class="btn btn-default btn-xs">Cancel</a></td>{%else%}<td></td>{%endif%}
 {%endif%}
   </tr>
 {%endfor%}

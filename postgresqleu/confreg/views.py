@@ -2122,6 +2122,40 @@ def admin_waitlist(request, urlname):
 
 @login_required
 @transaction.atomic
+def admin_waitlist_cancel(request, urlname, wlid):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=urlname)
+	else:
+		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+
+	wl = get_object_or_404(RegistrationWaitlistEntry, pk=wlid, registration__conference=conference)
+	reg = wl.registration
+	wl.delete()
+
+	send_simple_mail(reg.conference.contactaddr,
+					 reg.conference.contactaddr,
+					 'Waitlist cancel',
+					 u'User {0} {1} <{2}> removed from the waitlist by {3}.'.format(reg.firstname, reg.lastname, reg.email, request.user),
+					 sendername=reg.conference.conferencename)
+
+	send_template_mail(reg.conference.contactaddr,
+					   reg.email,
+					   'Waitlist canceled',
+					   'confreg/mail/waitlist_admin_cancel.txt',
+					   {
+						   'conference': conference,
+						   'reg': reg,
+					   },
+					   sendername=reg.conference.conferencename,
+					   receivername=reg.fullname,
+					   )
+
+	messages.info(request, "Waitlist entry removed.")
+	return HttpResponseRedirect("../../")
+
+
+@login_required
+@transaction.atomic
 def admin_attendeemail(request, urlname):
 	if request.user.is_superuser:
 		conference = get_object_or_404(Conference, urlname=urlname)
