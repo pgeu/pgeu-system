@@ -212,7 +212,7 @@ class BulkInvoiceProcessor(object):
 							 bp.id,
 							 [r.fullname for r in bp.conferenceregistration_set.all()],
 						 ),
-						 sendername=reg.conference.conferencename,
+						 sendername=bp.conference.conferencename,
 						 )
 
 	# Return the user to a page showing what happened as a result
