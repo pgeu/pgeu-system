@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from postgresqleu.mailqueue.util import send_template_mail
+from postgresqleu.mailqueue.util import send_template_mail, send_simple_mail
 from models import ConferenceRegistration, BulkPayment, PendingAdditionalOrder
 from models import RegistrationWaitlistHistory
 from util import notify_reg_confirmed, expire_additional_options
