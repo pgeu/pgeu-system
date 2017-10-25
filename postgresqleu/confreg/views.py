@@ -17,6 +17,7 @@ from django.forms import formsets
 from django.forms import ValidationError
 
 from models import Conference, ConferenceRegistration, ConferenceSession
+from models import ConferenceSessionSlides
 from models import ConferenceSessionFeedback, Speaker, Speaker_Photo
 from models import ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
 from models import RegistrationType, PrepaidVoucher, PrepaidBatch, DiscountCode
@@ -31,6 +32,7 @@ from forms import CallForPapersForm, CallForPapersSpeakerForm, CallForPapersSubm
 from forms import PrepaidCreateForm, BulkRegistrationForm
 from forms import EmailSendForm, EmailSessionForm, CrossConferenceMailForm
 from forms import AttendeeMailForm, WaitlistOfferForm, TransferRegForm
+from forms import SessionSlidesUrlForm, SessionSlidesFileForm
 from util import invoicerows_for_registration, notify_reg_confirmed
 from util import get_invoice_autocancel
 
@@ -592,6 +594,7 @@ class SessionSet(object):
 				'widthpos': self.roomwidth()-2,
 				'heightpos': self.timediff_to_y_pixels(s.endtime, s.starttime),
 				'length': (s.endtime-s.starttime).total_seconds()/60,
+				'has_slides': s.conferencesessionslides_set.exists(),
 			}
 		else:
 			return {
@@ -605,6 +608,7 @@ class SessionSet(object):
 				'widthpos': self.roomwidth() * len(self.rooms) - 2,
 				'heightpos': self.timediff_to_y_pixels(s.endtime, s.starttime)-2,
 				'length': (s.endtime-s.starttime).total_seconds()/60,
+				'has_slides': False,
 			}
 
 	def add(self, session):
@@ -754,7 +758,20 @@ def session(request, confname, sessionid, junk=None):
 	session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False, status=1)
 	return render_conference_response(request, conference, 'schedule', 'confreg/session.html', {
 		'session': session,
+		'slides': ConferenceSessionSlides.objects.filter(session=session),
 	})
+
+def session_slides(request, confname, sessionid, slideid):
+	conference = get_object_or_404(Conference, urlname=confname)
+
+	if not conference.sessionsactive:
+		if not conference.testers.filter(pk=request.user.id):
+			return render_conference_response(request, conference, 'schedule', 'confreg/sessionsclosed.html')
+
+	session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False, status=1)
+	slides = get_object_or_404(ConferenceSessionSlides, session=session, id=slideid)
+	return HttpResponse(slides.content,
+						content_type='application/pdf')
 
 def speaker(request, confname, speakerid, junk=None):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -891,12 +908,42 @@ def callforpapers_edit(request, confname, sessionid):
 			feedbackdata = None
 			feedbacktext = None
 
+		# Slides slides slides!
+		if request.method == 'POST':
+			slidesurlform = SessionSlidesUrlForm(data=request.POST)
+			slidesfileform = SessionSlidesFileForm(data=request.POST, files=request.FILES)
+			if slidesurlform.is_valid() and slidesfileform.is_valid():
+				# URL first!
+				if slidesurlform.cleaned_data['url']:
+					ConferenceSessionSlides(session=session,
+											name=slidesurlform.cleaned_data['url'],
+											url=slidesurlform.cleaned_data['url'],
+											content=None).save()
+					return HttpResponseRedirect(".")
+				elif request.FILES:
+					if len(request.FILES) != 1:
+						raise Exception("Only one file at a time, sorry!")
+					for k,v in request.FILES.items():
+						ConferenceSessionSlides(session=session,
+												name=v.name,
+												content=v.read()).save()
+					return HttpResponseRedirect(".")
+				else:
+					# No url, no file, so just re-render
+					pass
+		else:
+			slidesurlform = SessionSlidesUrlForm()
+			slidesfileform = SessionSlidesFileForm()
+
 		return render_conference_response(request, conference, 'cfp', 'confreg/session_feedback.html', {
 			'session': session,
 			'feedbackcount': feedbackcount,
 			'feedbackdata': feedbackdata,
 			'feedbacktext': feedbacktext,
 			'feedbackfields': [f.replace('_',' ').title() for f in feedback_fields],
+			'slidesurlform': slidesurlform,
+			'slidesfileform': slidesfileform,
+			'slides': ConferenceSessionSlides.objects.filter(session=session),
 			})
 
 	SpeakerFormset = formsets.formset_factory(CallForPapersSpeakerForm, can_delete=True, extra=1)
@@ -947,6 +994,16 @@ def callforpapers_edit(request, confname, sessionid):
 			'speaker_formset': speaker_formset,
 			'session': session,
 	})
+
+@login_required
+def callforpapers_delslides(request, confname, sessionid, slideid):
+	conference = get_object_or_404(Conference, urlname=confname)
+	speaker = get_object_or_404(Speaker, user=request.user)
+	session = get_object_or_404(ConferenceSession, conference=conference,
+								speaker=speaker, pk=sessionid)
+	slide = get_object_or_404(ConferenceSessionSlides, session=session, id=slideid)
+	slide.delete()
+	return HttpResponseRedirect('../../')
 
 @login_required
 @transaction.atomic

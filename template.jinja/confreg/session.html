@@ -21,6 +21,18 @@
 {{session.abstract|markdown}}
 </p>
 
+{%if slides%}
+<h2>Slides</h2>
+<p>
+  The following slides have been made available for this session:
+</p>
+<ul>
+</ul>
+{%for sl in slides%}
+<li><a href="{%if sl.url%}{{sl.url}}{%else%}/events/sessions/{{conference.urlname}}/session/{{session.id}}/slides/{{sl.id}}/{{sl.name}}{%endif%}">{{sl.name}}</a></li>
+{%endfor%}
+{%endif%}
+
 {%for speaker in session.speaker.all()%}
 {%if loop.first%}
 <h2>Speaker</h2>

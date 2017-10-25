@@ -626,6 +626,14 @@ class ConferenceSession(models.Model):
 	class Meta:
 		ordering = [ 'starttime', ]
 
+class ConferenceSessionSlides(models.Model):
+	session = models.ForeignKey(ConferenceSession, null=False, blank=False)
+	name = models.CharField(max_length=100, null=False, blank=False)
+	url = models.URLField(null=False, blank=True)
+	content = models.BinaryField(null=True, blank=False)
+
+	_safe_attributes = ('id', 'name', 'url', 'content')
+
 class ConferenceSessionVote(models.Model):
 	session = models.ForeignKey(ConferenceSession, null=False, blank=False)
 	voter = models.ForeignKey(User, null=False, blank=False)

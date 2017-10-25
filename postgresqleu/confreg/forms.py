@@ -19,6 +19,7 @@ from postgresqleu.util.validators import TwitterValidator
 from postgresqleu.countries.models import Country
 
 from datetime import datetime, date
+import requests
 
 class ConferenceRegistrationForm(forms.ModelForm):
 	additionaloptions = forms.ModelMultipleChoiceField(widget=forms.CheckboxSelectMultiple,
@@ -390,6 +391,43 @@ class CallForPapersForm(forms.ModelForm):
 			raise ValidationError("Please choose the track that is the closest match to your talk")
 		return self.cleaned_data.get('track')
 
+class SessionSlidesUrlForm(forms.Form):
+	url = forms.URLField(label='URL', required=False)
+
+	def clean_url(self):
+		if not self.cleaned_data.get('url', None):
+			return
+		u = self.cleaned_data['url']
+		# Ping out to the URL but with a very short timeout
+		try:
+			r = requests.get(u, timeout=2)
+			if r.status_code != 200:
+				raise ValidationError("URL returns status %s" % r.status_code)
+		except ValidationError:
+			raise
+		except:
+			raise ValidationError("URL does not validate")
+		return u
+
+class SessionSlidesFileForm(forms.Form):
+	f = forms.FileField(label='Upload', required=False)
+	license = forms.BooleanField(label='License', required=False, help_text='I confirm that this this file may be redistributed by the conference website')
+
+	def clean_f(self):
+		if not self.cleaned_data.has_key('f') or not self.cleaned_data['f']:
+			return
+		f = self.cleaned_data['f']
+		if f.content_type != 'application/pdf':
+			raise ValidationError("Uploaded files must be mime type PDF only")
+		if not f.name.endswith('.pdf'):
+			raise ValidationError("Uploaded files must have a filename ending in PDF")
+		return f
+
+	def clean(self):
+		cleaned_data = super(SessionSlidesFileForm, self).clean()
+		if cleaned_data.get('f', None) and not cleaned_data['license']:
+			self.add_error('license', 'You must accept the license')
+		return cleaned_data
 
 class PrepaidCreateForm(forms.Form):
 	conference = forms.ModelChoiceField(queryset=Conference.objects.filter(active=True))

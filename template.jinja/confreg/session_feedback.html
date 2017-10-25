@@ -54,6 +54,30 @@ div.feedbackchart {
 </p>
 {%endif%}
 
+<h2>Slides</h2>
+<p>
+  You can upload slides or link to the slides to make them available
+  to the attendees.
+</p>
+<ul>
+{%for sl in slides%}
+<li><a href="{%if sl.url%}{{sl.url}}{%else%}/events/sessions/{{conference.urlname}}/session/{{session.id}}/slides/{{sl.id}}/{{sl.name}}{%endif%}">{{sl.name}}</a> (<a href="delslides/{{sl.id}}/">delete</a>)</li>
+{%endfor%}
+</ul>
+<form method="post" action=".">{{csrf_input}}
+<table id="slides_url_table">
+{{slidesurlform.as_table()}}
+</table>
+<input type="submit" name="submit" value="Add link to slides">
+</form>
+<br/>
+<form method="post" action="." enctype="multipart/form-data">{{csrf_input}}
+<table id="slides_file_table">
+{{slidesfileform.as_table()}}
+</table>
+<input type="submit" name="submit" value="Upload slides">
+</form>
+
 {%if feedbackcount%}
 <h2>Feedback</h2>
 {%if conference.feedbackopen%}
