@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('confreg', '0008_separate_registrator'),
+        ('confreg', '0008_volunteers'),
     ]
 
     operations = [
