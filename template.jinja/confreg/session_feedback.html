@@ -12,6 +12,7 @@ function prep_datatable() {
    return d;
 }
 function drawCharts() {
+{%if feedbackcount%}
 {%for f in feedbackdata%}
 // {{f.key}}
    var data = prep_datatable();
@@ -23,6 +24,7 @@ function drawCharts() {
    chart.draw(data, options);
 
 {%endfor%}
+{%endif%}
 }
 </script>
 
