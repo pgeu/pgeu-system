@@ -12,7 +12,7 @@ def _validate_params(params):
 			if not k in [u"minwords", u"maxwords", u"minchars", u"maxchars"]:
 				raise Exception("Parameter '%s' is unknown" % k)
 		return j
-	except json.JSONDecodeError:
+	except ValueError:
 		raise Exception("Can't parse JSON")
 
 

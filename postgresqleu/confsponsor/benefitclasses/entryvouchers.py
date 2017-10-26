@@ -23,7 +23,7 @@ def _validate_params(level, params):
 		if not RegistrationType.objects.filter(conference=level.conference, regtype=j['type']).exists():
 			raise Exception("Registation type '%s' does not exist" % j['type'])
 		return j
-	except json.JSONDecodeError:
+	except ValueError:
 		raise Exception("Can't parse JSON")
 
 
