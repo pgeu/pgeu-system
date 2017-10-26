@@ -916,7 +916,7 @@ def callforpapers_edit(request, confname, sessionid):
 				# URL first!
 				if slidesurlform.cleaned_data['url']:
 					ConferenceSessionSlides(session=session,
-											name=slidesurlform.cleaned_data['url'],
+											name=slidesurlform.cleaned_data['url'][:100],
 											url=slidesurlform.cleaned_data['url'],
 											content=None).save()
 					return HttpResponseRedirect(".")

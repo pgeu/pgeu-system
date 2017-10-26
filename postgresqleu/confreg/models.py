@@ -629,7 +629,7 @@ class ConferenceSession(models.Model):
 class ConferenceSessionSlides(models.Model):
 	session = models.ForeignKey(ConferenceSession, null=False, blank=False)
 	name = models.CharField(max_length=100, null=False, blank=False)
-	url = models.URLField(null=False, blank=True)
+	url = models.URLField(max_length=1000, null=False, blank=True)
 	content = models.BinaryField(null=True, blank=False)
 
 	_safe_attributes = ('id', 'name', 'url', 'content')

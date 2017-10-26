@@ -392,7 +392,7 @@ class CallForPapersForm(forms.ModelForm):
 		return self.cleaned_data.get('track')
 
 class SessionSlidesUrlForm(forms.Form):
-	url = forms.URLField(label='URL', required=False, max_length=100)
+	url = forms.URLField(label='URL', required=False, max_length=1000)
 
 	def clean_url(self):
 		if not self.cleaned_data.get('url', None):
