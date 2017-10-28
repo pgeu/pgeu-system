@@ -210,7 +210,7 @@ class BulkInvoiceProcessor(object):
 						 'Bulk invoice refunded',
 						 u"The bulk payment with id {0} has been refunded.\nNote that the registrations on this bulk invoice has\nNOT been canceled!!!\n\nThis needs to be processedm manually since it may be a partial refund.\n\nThe following registrations are attached:\n\n{1}\n".format(
 							 bp.id,
-							 [r.fullname for r in bp.conferenceregistration_set.all()],
+							 u"\n".join([u'* {0}'.format(r.fullname) for r in bp.conferenceregistration_set.all()]),
 						 ),
 						 sendername=bp.conference.conferencename,
 						 )
