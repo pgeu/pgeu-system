@@ -418,7 +418,7 @@ class SessionSlidesFileForm(forms.Form):
 			return
 		f = self.cleaned_data['f']
 		if f.content_type != 'application/pdf':
-			raise ValidationError("Uploaded files must be mime type PDF only")
+			raise ValidationError("Uploaded files must be mime type PDF only, not %s" % f.content_type)
 		if not f.name.endswith('.pdf'):
 			raise ValidationError("Uploaded files must have a filename ending in PDF")
 		return f
