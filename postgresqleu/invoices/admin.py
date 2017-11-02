@@ -5,11 +5,12 @@ from django.forms import ValidationError
 from selectable.forms.widgets import AutoCompleteSelectWidget
 from postgresqleu.accountinfo.lookups import UserLookup
 from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
+from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
 from models import Invoice, InvoiceLog, InvoiceProcessor, InvoicePaymentMethod
 from models import InvoiceRefund, VatRate
 
-class InvoiceAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
+class InvoiceAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
 	class Meta:
 		model = Invoice
 		exclude = []
@@ -45,8 +46,6 @@ class InvoiceAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
 		if "processor" in self.changed_data:
 			raise ValidationError("Sorry, we never allow editing of the processor!")
 		return self.cleaned_data['processor']
-	def clean(self):
-		return self.cleaned_data
 
 class InvoiceAdmin(admin.ModelAdmin):
 	list_display = ('id', 'title', 'recipient_name', 'total_amount', 'ispaid')

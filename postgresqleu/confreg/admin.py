@@ -22,6 +22,7 @@ from selectable.forms.widgets import AutoCompleteSelectWidget, AutoCompleteSelec
 from postgresqleu.accountinfo.lookups import UserLookup
 from postgresqleu.confreg.lookups import RegistrationLookup
 from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
+from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
 from util import notify_reg_confirmed
 
@@ -74,7 +75,7 @@ class AdditionalOptionListFilter(admin.SimpleListFilter):
 #
 # General admin classes
 #
-class ConferenceAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
+class ConferenceAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
 	class Meta:
 		model = Conference
 		exclude = []
@@ -107,7 +108,7 @@ class ConferenceAdmin(admin.ModelAdmin):
 	list_display = ('conferencename', 'active', 'callforpapersopen', 'callforsponsorsopen', 'feedbackopen', 'startdate', 'enddate')
 	ordering = ('-startdate', )
 
-class ConferenceRegistrationForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
+class ConferenceRegistrationForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
 	class Meta:
 		model = ConferenceRegistration
 		exclude = []
@@ -204,7 +205,7 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 		else:
 			return False
 
-class ConferenceSessionForm(forms.ModelForm):
+class ConferenceSessionForm(ConcurrentProtectedModelForm):
 	class Meta:
 		model = ConferenceSession
 		exclude = []
@@ -280,7 +281,7 @@ class RegistrationDayAdmin(admin.ModelAdmin):
 	list_filter = ['conference', ]
 	ordering = ['conference', 'day', ]
 
-class RegistrationTypeAdminForm(forms.ModelForm):
+class RegistrationTypeAdminForm(ConcurrentProtectedModelForm):
 	class Meta:
 		model = RegistrationType
 		exclude = []
@@ -308,7 +309,7 @@ class RegistrationTypeAdmin(admin.ModelAdmin):
 class ShirtsizeAdmin(admin.ModelAdmin):
 	list_display = ['shirtsize', 'sortkey', ]
 
-class ConferenceAdditionalOptionAdminForm(forms.ModelForm):
+class ConferenceAdditionalOptionAdminForm(ConcurrentProtectedModelForm):
 	class Meta:
 		model = ConferenceAdditionalOption
 		exclude = []
@@ -349,7 +350,7 @@ class ConferenceAdditionalOptionAdmin(admin.ModelAdmin):
 		return inst.confirmed_count + inst.unconfirmed_count
 	used_count.short_description = 'Total used'
 
-class SpeakerAdminForm(forms.ModelForm):
+class SpeakerAdminForm(ConcurrentProtectedModelForm):
 	class Meta:
 		model = Speaker
 		exclude = []
@@ -411,7 +412,7 @@ class PrepaidVoucherInline(admin.TabularInline):
 	extra = 0
 	can_delete = False
 
-class PrepaidBatchAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
+class PrepaidBatchAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
 	class Meta:
 		model = PrepaidBatch
 		exclude = []
@@ -447,7 +448,7 @@ class PrepaidBatchAdmin(admin.ModelAdmin):
 		return inst.used
 	used_num.short_description = 'Used vouchers'
 
-class PrepaidVoucherAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
+class PrepaidVoucherAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
 	class Meta:
 		model = PrepaidVoucher
 		exclude = []
@@ -479,7 +480,7 @@ class PrepaidVoucherAdmin(admin.ModelAdmin):
 			return "%s %s" % (obj.user.firstname, obj.user.lastname)
 		return None
 
-class DiscountCodeAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
+class DiscountCodeAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
 	class Meta:
 		model = DiscountCode
 		exclude = []
@@ -534,7 +535,7 @@ class DiscountCodeAdmin(admin.ModelAdmin):
 	list_filter = ['conference', ]
 	form = DiscountCodeAdminForm
 
-class BulkPaymentAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
+class BulkPaymentAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
 	class Meta:
 		model = BulkPayment
 		exclude = []
@@ -547,7 +548,7 @@ class BulkPaymentAdmin(admin.ModelAdmin):
 	list_display = ['adminstring', 'conference', 'user', 'numregs', 'paidat', 'ispaid',]
 	list_filter = ['conference', ]
 
-class AttendeeMailAdminForm(forms.ModelForm):
+class AttendeeMailAdminForm(ConcurrentProtectedModelForm):
 	class Meta:
 		model = AttendeeMail
 		exclude = []
@@ -561,7 +562,7 @@ class AttendeeMailAdmin(admin.ModelAdmin):
 	form = AttendeeMailAdminForm
 	filter_horizontal = ('regclasses', )
 
-class PendingAdditionalOrderAdminForm(forms.ModelForm):
+class PendingAdditionalOrderAdminForm(ConcurrentProtectedModelForm):
 	class Meta:
 		model = PendingAdditionalOrder
 		exclude = []
@@ -577,8 +578,7 @@ class PendingAdditionalOrderAdmin(admin.ModelAdmin):
 	form = PendingAdditionalOrderAdminForm
 	list_display = ('reg', 'createtime', 'payconfirmedat')
 
-
-class VolunteerSlotAdminForm(forms.ModelForm):
+class VolunteerSlotAdminForm(ConcurrentProtectedModelForm):
 	class Meta:
 		model = VolunteerSlot
 		exclude = []

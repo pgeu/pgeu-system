@@ -9,6 +9,7 @@ from django.utils.safestring import mark_safe
 from selectable.forms.widgets import AutoCompleteSelectMultipleWidget
 from postgresqleu.accountinfo.lookups import UserLookup
 from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
+from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
 from models import SponsorshipContract, SponsorshipLevel, Sponsor
 from models import SponsorshipBenefit, SponsorClaimedBenefit
@@ -34,7 +35,7 @@ class SponsorshipBenefitInline(admin.TabularInline):
 	extra = 1
 	formset = SponsorshipBenefitInlineFormset
 
-class SponsorshipLevelForm(forms.ModelForm):
+class SponsorshipLevelForm(ConcurrentProtectedModelForm):
 	class Meta:
 		model = SponsorshipLevel
 		exclude = []
@@ -58,7 +59,7 @@ class SponsorshipLevelAdmin(admin.ModelAdmin):
 		return HttpResponseRedirect("/admin/confsponsor/sponsorshiplevel/{0}/copy".format(source_level[0].id))
 	copy_sponsorshiplevel.short_description = "Copy sponsorship level"
 
-class SponsorAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
+class SponsorAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
 	class Meta:
 		model = Sponsor
 		exclude = []

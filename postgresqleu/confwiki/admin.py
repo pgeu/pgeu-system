@@ -4,13 +4,14 @@ from django import forms
 from selectable.forms.widgets import AutoCompleteSelectWidget, AutoCompleteSelectMultipleWidget
 from postgresqleu.confreg.lookups import RegistrationLookup
 from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
+from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
 from postgresqleu.confreg.models import Conference, ConferenceRegistration, RegistrationType
 from models import Wikipage, WikipageHistory, WikipageSubscriber
 from models import AttendeeSignup
 
 
-class WikipageAdminForm(SelectableWidgetAdminFormMixin, forms.ModelForm):
+class WikipageAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
 	class Meta:
 		model = Wikipage
 		exclude = []
@@ -52,7 +53,7 @@ class WikipageAdmin(admin.ModelAdmin):
 	form = WikipageAdminForm
 	inlines = [WikipageHistoryInline, WikipageSubscriberInline]
 
-class AttendeeSignupAdminForm(forms.ModelForm):
+class AttendeeSignupAdminForm(ConcurrentProtectedModelForm):
 	class Meta:
 		model = AttendeeSignup
 		exclude = []
