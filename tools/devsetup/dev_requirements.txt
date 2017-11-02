@@ -16,3 +16,4 @@ wsgiref
 pytz
 python-dateutil
 requests
+file-magic
