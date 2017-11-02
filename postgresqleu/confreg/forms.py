@@ -20,6 +20,13 @@ from postgresqleu.countries.models import Country
 
 from datetime import datetime, date
 import requests
+import magic
+
+
+# Globally load and cache the magicdb
+magicdb = magic.open(magic.MIME)
+magicdb.load()
+
 
 class ConferenceRegistrationForm(forms.ModelForm):
 	additionaloptions = forms.ModelMultipleChoiceField(widget=forms.CheckboxSelectMultiple,
@@ -417,8 +424,10 @@ class SessionSlidesFileForm(forms.Form):
 		if not self.cleaned_data.has_key('f') or not self.cleaned_data['f']:
 			return
 		f = self.cleaned_data['f']
-		if f.content_type != 'application/pdf':
-			raise ValidationError("Uploaded files must be mime type PDF only, not %s" % f.content_type)
+		mtype = magicdb.buffer(f.read())
+		if not mtype.startswith('application/pdf'):
+			raise ValidationError("Uploaded files must be mime type PDF only, not %s" % mtype)
+		f.seek(0)
 		if not f.name.endswith('.pdf'):
 			raise ValidationError("Uploaded files must have a filename ending in PDF")
 		return f
