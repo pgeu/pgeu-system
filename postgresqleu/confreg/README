@@ -115,7 +115,7 @@ context.json and any defined from the deploy script, such as the git
 hash.
 
 This file is typically used to for example override the git hash (by
-specifying "githash":"" in the json data) to turn of cache busting on
+specifying "githash":"" in the json data) to turn off cache busting on
 local test deployments.
 
 This file is normally not committed to the git repository, as it would
