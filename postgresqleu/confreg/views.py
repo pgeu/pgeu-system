@@ -48,6 +48,7 @@ from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrappe
 from postgresqleu.invoices.models import InvoiceProcessor, InvoiceHistory
 from postgresqleu.mailqueue.util import send_mail, send_simple_mail, send_template_mail, template_to_string
 from postgresqleu.util.jsonutil import JsonSerializer
+from postgresqleu.util.db import exec_to_dict, exec_to_grouped_dict, exec_to_keyed_dict
 
 from decimal import Decimal
 from operator import itemgetter
@@ -570,72 +571,44 @@ def feedback_conference(request, confname):
 
 
 class SessionSet(object):
-	def __init__(self, totalwidth, pixelsperminute):
+	def __init__(self, allrooms, day_rooms, totalwidth, pixelsperminute, sessions):
 		self.headersize = 30
-		self.rooms = {}
-		self.tracks = set()
-		self.sessions = []
-		self.firsttime = datetime(2999,1,1)
-		self.lasttime = datetime(1970,1,1)
+		self.available_rooms = allrooms
 		self.totalwidth = totalwidth
 		self.pixelsperminute = pixelsperminute
 
+		# Get a dict from each roomid to the 0-based position of the room from left to right,
+		# so the position can be calculated.
+		self.rooms = dict(zip(day_rooms, range(len(day_rooms))))
+
+		# Populate the dict for all sessions
+		self.sessions = [self._session_template_dict(s) for s in sessions if s['room_id'] or s['cross_schedule']]
+
 	def _session_template_dict(self, s):
-		if not s.cross_schedule:
-			return {
-				'id': s.id,
-				'title': s.title,
-				'speakers': list(s.speaker.all()),
-				'timeslot': "%s - %s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")),
-				'track': s.track,
-				'room': s.room,
-				'leftpos': self.roomwidth()*self.rooms[s.room],
-				'toppos': self.timediff_to_y_pixels(s.starttime, self.firsttime)+self.headersize,
+		# For old-style rendering, update positions
+		if not s['cross_schedule']:
+			s.update({
+				'leftpos': self.roomwidth()*self.rooms[s['room_id']],
+				'toppos': self.timediff_to_y_pixels(s['starttime'], s['firsttime'])+self.headersize,
 				'widthpos': self.roomwidth()-2,
-				'heightpos': self.timediff_to_y_pixels(s.endtime, s.starttime),
-				'length': (s.endtime-s.starttime).total_seconds()/60,
-				'has_slides': s.conferencesessionslides_set.exists(),
-			}
+				'heightpos': self.timediff_to_y_pixels(s['endtime'], s['starttime']),
+			})
 		else:
-			return {
-				'title': s.title,
-				'timeslot': "%s - %s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")),
-				'track': s.track,
-				'room': s.room,
-				'cross_schedule': True,
+			s.update({
 				'leftpos': 0,
-				'toppos': self.timediff_to_y_pixels(s.starttime, self.firsttime)+self.headersize,
+				'toppos': self.timediff_to_y_pixels(s['starttime'], s['firsttime'])+self.headersize,
 				'widthpos': self.roomwidth() * len(self.rooms) - 2,
-				'heightpos': self.timediff_to_y_pixels(s.endtime, s.starttime)-2,
-				'length': (s.endtime-s.starttime).total_seconds()/60,
-				'has_slides': False,
-			}
-
-	def add(self, session):
-		# If no room specified, we can't list the session, unless it's a cross-schedule
-		# session.
-		if not session.room and not session.cross_schedule: return
-		if not self.rooms.has_key(session.room):
-			if not session.cross_schedule:
-				self.rooms[session.room] = len(self.rooms)
-		if session.track:
-			self.tracks.update((session.track,))
-		if session.starttime < self.firsttime:
-			self.firsttime = session.starttime
-		if session.endtime > self.lasttime:
-			self.lasttime = session.endtime
-		self.sessions.append(session)
-
-	def finalize(self):
-		# Re-sort the rooms based on sortkey and name
-		self.rooms = dict(zip([roomname for roomname in sorted(self.rooms.keys(), key=lambda r:(r.sortkey, r.roomname))], range(0,len(self.rooms))))
+				'heightpos': self.timediff_to_y_pixels(s['endtime'], s['starttime'])-2,
+			})
+			if 'id' in s:
+				del s['id']
+		return s
 
 	def all(self):
-		for s in self.sessions:
-			yield self._session_template_dict(s)
+		return self.sessions
 
 	def schedule_height(self):
-		return self.timediff_to_y_pixels(self.lasttime, self.firsttime)+2+self.headersize
+		return self.timediff_to_y_pixels(self.sessions[0]['lasttime'], self.sessions[0]['firsttime'])+2+self.headersize
 
 	def schedule_width(self):
 		if len(self.rooms):
@@ -652,39 +625,51 @@ class SessionSet(object):
 	def timediff_to_y_pixels(self, t, compareto):
 		return ((t - compareto).seconds/60)*self.pixelsperminute
 
-	def alltracks(self):
-		return self.tracks
-
 	def allrooms(self):
 		return [{
-			'id': r.id,
-			'name': r.roomname,
-			'leftpos': self.roomwidth()*self.rooms[r],
+			'id': id,
+			'name': self.available_rooms[id]['roomname'],
+			'leftpos': self.roomwidth()*self.rooms[id],
 			'widthpos': self.roomwidth()-2,
 			'heightpos': self.headersize-2,
-			'sessions': list(self.room_sessions(r.id)),
-		} for r in self.rooms]
+			'sessions': list(self.room_sessions(id)),
+		} for id, idx in sorted(self.rooms.items(), key=lambda x: x[1])]
 
 	def room_sessions(self, roomid):
 		roomprevsess = None
 		for s in self.sessions:
-			if s.cross_schedule or s.room.id == roomid:
-				if roomprevsess and roomprevsess.endtime < s.starttime:
+			if s['cross_schedule'] or s['room_id'] == roomid:
+				if roomprevsess and roomprevsess['endtime'] < s['starttime']:
 					yield {'empty': True,
-						   'length': (s.starttime-roomprevsess.endtime).total_seconds()/60,
+						   'length': (s['starttime']-roomprevsess['endtime']).total_seconds()/60,
 					}
 				roomprevsess = s
-				yield self._session_template_dict(s)
+				yield s
+
 
 def _scheduledata(request, conference):
-	daylist = ConferenceSession.objects.filter(conference=conference, status=1).dates('starttime', 'day')
+	tracks = exec_to_dict("SELECT id, color, incfp, trackname, sortkey FROM confreg_track t WHERE conference_id=%(confid)s AND EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.track_id=t.id AND s.status=1) ORDER BY sortkey", {
+		'confid': conference.id,
+	})
+
+	allrooms = exec_to_keyed_dict("SELECT id, sortkey, roomname FROM confreg_room r WHERE conference_id=%(confid)s", {
+		'confid': conference.id,
+	})
+
+	day_rooms = exec_to_keyed_dict("WITH t AS (SELECT DISTINCT s.starttime::date AS day, room_id FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND status=1 AND s.room_id IS NOT NULL) SELECT day, array_agg(room_id ORDER BY r.sortkey, r.roomname) AS rooms FROM t INNER JOIN confreg_room r on r.id=t.room_id GROUP BY day", {
+		'confid': conference.id,
+	})
+
+	raw = exec_to_grouped_dict("SELECT s.starttime::date AS day, s.id, s.starttime, s.endtime, to_json(t.*) AS track, s.track_id, to_json(r.*) AS room, s.room_id, s.title, to_char(starttime, 'HH24:MM') || ' - ' || to_char(endtime, 'HH24:MM') AS timeslot, extract(epoch FROM endtime-starttime)/60 AS length, min(starttime) OVER days AS firsttime, max(endtime) OVER days AS lasttime, cross_schedule, EXISTS (SELECT 1 FROM confreg_conferencesessionslides sl WHERE sl.session_id=s.id) AS has_slides, json_agg(json_build_object('id', spk.id, 'name', spk.fullname, 'company', spk.company, 'twittername', spk.twittername)) FILTER (WHERE spk.id IS NOT NULL) AS speakers FROM confreg_conferencesession s LEFT JOIN confreg_track t ON t.id=s.track_id INNER JOIN confreg_room r ON r.id=s.room_id LEFT JOIN confreg_conferencesession_speaker css ON css.conferencesession_id=s.id LEFT JOIN confreg_speaker spk ON spk.id=css.speaker_id WHERE s.conference_id=%(confid)s AND s.status=1 GROUP BY s.id, t.id, r.id WINDOW days AS (PARTITION BY s.starttime::date) ORDER BY day, r.sortkey, s.starttime", {
+		'confid': conference.id,
+	})
+
 	days = []
-	tracks = set()
-	for d in daylist:
-		sessions = ConferenceSession.objects.select_related('track','room').filter(conference=conference,status=1,starttime__range=(d,d+timedelta(days=1))).order_by('starttime','room__roomname')
-		sessionset = SessionSet(conference.schedulewidth, conference.pixelsperminute)
-		for s in sessions: sessionset.add(s)
-		sessionset.finalize()
+	for d, sessions in raw.items():
+		print(day_rooms.keys())
+		sessionset = SessionSet(allrooms, day_rooms[d]['rooms'],
+								conference.schedulewidth, conference.pixelsperminute,
+								sessions)
 		days.append({
 			'day': d,
 			'sessions': list(sessionset.all()),
@@ -692,11 +677,10 @@ def _scheduledata(request, conference):
 			'schedule_height': sessionset.schedule_height(),
 			'schedule_width': sessionset.schedule_width(),
 		})
-		tracks.update(sessionset.alltracks())
 
 	return {
 		'days': days,
-		'tracks': list(tracks),
+		'tracks': tracks,
 	}
 
 def schedule(request, confname):
