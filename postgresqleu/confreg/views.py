@@ -2074,10 +2074,10 @@ def admin_registration_dashboard(request, urlname):
 				   'rows': curs.fetchall()})
 
 	# Voucher batches
-	curs.execute("SELECT buyername, sum(CASE WHEN user_id IS NOT NULL THEN 1 ELSE 0 END) AS used, sum(CASE WHEN user_id IS NULL THEN 1 ELSE 0 END) AS unused, count(*) AS total FROM confreg_prepaidbatch b INNER JOIN confreg_prepaidvoucher v ON v.batch_id=b.id LEFT JOIN confreg_conferenceregistration r ON r.id=v.user_id WHERE b.conference_id={0} GROUP BY b.id ORDER BY buyername".format(conference.id))
+	curs.execute("SELECT b.buyername, s.name as sponsorname, sum(CASE WHEN v.user_id IS NOT NULL THEN 1 ELSE 0 END) AS used, sum(CASE WHEN v.user_id IS NULL THEN 1 ELSE 0 END) AS unused, count(*) AS total FROM confreg_prepaidbatch b INNER JOIN confreg_prepaidvoucher v ON v.batch_id=b.id LEFT JOIN confreg_conferenceregistration r ON r.id=v.user_id LEFT JOIN confsponsor_sponsor s ON s.id = b.sponsor_id WHERE b.conference_id={0} GROUP BY b.id, s.name ORDER BY buyername".format(conference.id))
 	tables.append({'title': 'Prepaid vouchers',
-				   'columns': ['Buyer', 'Used', 'Unused', 'Total'],
-				   'fixedcols': 1,
+				   'columns': ['Buyer', 'Sponsor', 'Used', 'Unused', 'Total'],
+				   'fixedcols': 2,
 				   'rows': curs.fetchall()})
 
 	# Add a sum row for eveything
