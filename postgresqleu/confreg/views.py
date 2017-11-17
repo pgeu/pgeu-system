@@ -2050,14 +2050,14 @@ def admin_registration_dashboard(request, urlname):
 	tables = []
 
 	# Registrations by reg type
-	curs.execute("SELECT regtype, sum(CASE WHEN payconfirmedat IS NOT NULL THEN 1 ELSE 0 END) AS confirmed, sum(CASE WHEN payconfirmedat IS NULL AND r.id IS NOT NULL THEN 1 ELSE 0 END) as unconfirmed, count(r.id) AS total FROM confreg_conferenceregistration r RIGHT JOIN confreg_registrationtype rt ON rt.id=r.regtype_id WHERE rt.conference_id={0} GROUP BY rt.id ORDER BY rt.sortkey".format(conference.id))
+	curs.execute("SELECT regtype, count(payconfirmedat) AS confirmed, count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed, count(r.id) AS total FROM confreg_conferenceregistration r RIGHT JOIN confreg_registrationtype rt ON rt.id=r.regtype_id WHERE rt.conference_id={0} GROUP BY rt.id ORDER BY rt.sortkey".format(conference.id))
 	tables.append({'title': 'Registration types',
 				   'columns': ['Type', 'Confirmed', 'Unconfirmed', 'Total'],
 				   'fixedcols': 1,
 				   'rows': curs.fetchall()},)
 
 	# Copy/paste string to get the reg status
-	statusstr = "{0}, sum(CASE WHEN payconfirmedat IS NOT NULL THEN 1 ELSE 0 END) AS confirmed, sum(CASE WHEN payconfirmedat IS NULL AND r.id IS NOT NULL THEN 1 ELSE 0 END) as unconfirmed, count(r.id) AS total, CASE WHEN {0} > 0 THEN {0}-count(r.id) ELSE NULL END AS remaining"
+	statusstr = "{0}, count(payconfirmedat) AS confirmed, count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed, count(r.id) AS total, CASE WHEN {0} > 0 THEN {0}-count(r.id) ELSE NULL END AS remaining"
 
 	# Additional options
 	curs.execute("SELECT ao.name, {0} FROM confreg_conferenceregistration r INNER JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceregistration_id=r.id RIGHT JOIN confreg_conferenceadditionaloption ao ON ao.id=rao.conferenceadditionaloption_id WHERE ao.conference_id={1} GROUP BY ao.name, ao.maxcount ORDER BY ao.name".format(statusstr.format('ao.maxcount'), conference.id))
@@ -2074,7 +2074,7 @@ def admin_registration_dashboard(request, urlname):
 				   'rows': curs.fetchall()})
 
 	# Voucher batches
-	curs.execute("SELECT b.buyername, s.name as sponsorname, sum(CASE WHEN v.user_id IS NOT NULL THEN 1 ELSE 0 END) AS used, sum(CASE WHEN v.user_id IS NULL THEN 1 ELSE 0 END) AS unused, count(*) AS total FROM confreg_prepaidbatch b INNER JOIN confreg_prepaidvoucher v ON v.batch_id=b.id LEFT JOIN confreg_conferenceregistration r ON r.id=v.user_id LEFT JOIN confsponsor_sponsor s ON s.id = b.sponsor_id WHERE b.conference_id={0} GROUP BY b.id, s.name ORDER BY buyername".format(conference.id))
+	curs.execute("SELECT b.buyername, s.name as sponsorname, count(v.user_id) AS used, count(*) FILTER (WHERE v.user_id IS NULL) AS unused, count(*) AS total FROM confreg_prepaidbatch b INNER JOIN confreg_prepaidvoucher v ON v.batch_id=b.id LEFT JOIN confreg_conferenceregistration r ON r.id=v.user_id LEFT JOIN confsponsor_sponsor s ON s.id = b.sponsor_id WHERE b.conference_id={0} GROUP BY b.id, s.name ORDER BY buyername".format(conference.id))
 	tables.append({'title': 'Prepaid vouchers',
 				   'columns': ['Buyer', 'Sponsor', 'Used', 'Unused', 'Total'],
 				   'fixedcols': 2,
