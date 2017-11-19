@@ -887,10 +887,24 @@ def callforpapers_edit(request, confname, sessionid):
 						'feedback': f.speaker_feedback,
 						'scores': [getattr(f, fn) for fn in feedback_fields],
 						})
+			# Build the histogram data. For now, one query per measurement
+			curs = connection.cursor()
+			feedbackcomparisons = []
+			for measurement in feedback_fields:
+				curs.execute("SELECT g.g,g.g+0.25,COALESCE(y.count,0),this FROM generate_series(0,4.75,0.25) g(g) LEFT JOIN (SELECT r, count(*), max(this::int) AS this FROM (SELECT session_id,round(floor(avg({0})*4)/4,2) AS r,session_id=%(sessid)s AS this FROM confreg_conferencesessionfeedback WHERE conference_id=%(confid)s GROUP BY session_id) x GROUP BY r) y ON g.g=y.r".format(measurement), {
+					'confid': conference.id,
+					'sessid': session.id,
+				})
+				feedbackcomparisons.append({
+					'key': measurement,
+					'title': measurement.replace('_',' ').title(),
+					'vals': curs.fetchall(),
+				})
 		else:
 			feedbackcount = 0
 			feedbackdata = None
 			feedbacktext = None
+			feedbackcomparisons = None
 
 		# Slides slides slides!
 		if request.method == 'POST':
@@ -924,6 +938,7 @@ def callforpapers_edit(request, confname, sessionid):
 			'feedbackcount': feedbackcount,
 			'feedbackdata': feedbackdata,
 			'feedbacktext': feedbacktext,
+			'feedbackcomparisons': feedbackcomparisons,
 			'feedbackfields': [f.replace('_',' ').title() for f in feedback_fields],
 			'slidesurlform': slidesurlform,
 			'slidesfileform': slidesfileform,
