@@ -5,7 +5,7 @@
 #
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from django.db.models import Max
+from django.db.models import Max, Q
 from django.conf import settings
 
 import pycurl
@@ -176,7 +176,10 @@ class Command(BaseCommand):
 
 		# Now send things off if there is anything to send
 		with transaction.atomic():
-			if CMutuelTransaction.objects.filter(sent=False).exclude(description__startswith='VIR STG ADYEN ').exists():
+			if CMutuelTransaction.objects.filter(sent=False).exclude(
+					Q(description__startswith='VIR STG ADYEN ') |
+					Q(description__startswith='VIR ADYEN BV ')
+			).exists():
 				sio = cStringIO.StringIO()
 				sio.write("One or more new transactions have been recorded in the Credit Mutuel account:\n\n")
 				sio.write("%-10s  %15s  %s\n" % ('Date', 'Amount', 'Description'))
