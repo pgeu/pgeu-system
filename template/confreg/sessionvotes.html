@@ -159,7 +159,7 @@ width: 100%;
    </td>
    {%endfor%}
    <td>{{s.avg|default_if_none:''}}</td>
-   <td><input type="text" name="tc_{{s.id}}" value="{{s.owncomment}}"/></td>
+   <td><input type="text" name="tc_{{s.id}}" maxlength="200" value="{{s.owncomment}}"/></td>
    <td>{{s.comments|safe}}</td>
  </tr>
 {%endfor%}
