@@ -189,7 +189,7 @@ class Command(BaseCommand):
 					# Maybe this shouldn't be hardcoded, but for now it is.
 					# Exclude Adyen transactions, since they are already reported separately.
 					# Still flag them as sent though, so they don't queue up forever.
-					if not cmt.description.startswith('VIR STG ADYEN '):
+					if not (cmt.description.startswith('VIR STG ADYEN ') or cmt.description.startswith('VIR ADYEN BV ')):
 						sio.write("%10s  %15s  %s\n" % (cmt.opdate, cmt.amount, cmt.description))
 
 					cmt.sent = True
