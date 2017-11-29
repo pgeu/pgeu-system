@@ -31,7 +31,7 @@ $(function() {
 Mail will be sent to the following {{recipients.all.count}} recipients:
 </p>
 <ul>
-{%for r in recipients%} <li>{{r.firstname}} {{r.lastname}}</li>{%endfor%}
+{%for r in recipients%} <li>{{r.firstname}} {{r.lastname}} &lt;{{r.email}}&gt;</li>{%endfor%}
 </ul>
 {%endif%}
 {%endblock%}
