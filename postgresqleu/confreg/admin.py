@@ -9,7 +9,8 @@ from django.core import urlresolvers
 from django.utils.safestring import mark_safe
 from django.contrib.postgres.forms.ranges import RangeWidget
 
-from models import Conference, ConferenceRegistration, RegistrationType, Speaker
+from models import ConferenceSeries, Conference, ConferenceRegistration
+from models import RegistrationType, Speaker
 from models import ConferenceSession, Track, Room, ConferenceSessionScheduleSlot
 from models import RegistrationClass, RegistrationDay, AttendeeMail
 from models import ShirtSize, ConferenceAdditionalOption
@@ -599,6 +600,7 @@ class VolunteerSlotAdmin(admin.ModelAdmin):
 	list_display = ('__unicode__', 'title')
 
 
+admin.site.register(ConferenceSeries)
 admin.site.register(Conference, ConferenceAdmin)
 admin.site.register(RegistrationClass, RegistrationClassAdmin)
 admin.site.register(RegistrationDay, RegistrationDayAdmin)

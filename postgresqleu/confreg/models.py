@@ -58,6 +58,27 @@ def color_validator(value):
 		except ValueError:
 			raise ValidationError('Invalid value in color specification')
 
+class ConferenceSeries(models.Model):
+	name = models.CharField(max_length=64, blank=False, null=False)
+
+	def __unicode__(self):
+		return self.name
+
+class ConferenceSeriesOptOut(models.Model):
+	# Users opting out of communications about a specific conference
+	series = models.ForeignKey(ConferenceSeries, null=False, blank=False)
+	user = models.ForeignKey(User, null=False, blank=False)
+
+	class Meta:
+		unique_together = (
+			('user', 'series'),
+		)
+
+class GlobalOptOut(models.Model):
+	# Users who are opting out of *all* future communications
+	user = models.OneToOneField(User, null=False, blank=False, primary_key=True)
+
+
 class Conference(models.Model):
 	urlname = models.CharField(max_length=32, blank=False, null=False, unique=True, validators=[validate_lowercase,])
 	conferencename = models.CharField(max_length=64, blank=False, null=False)
@@ -117,6 +138,7 @@ class Conference(models.Model):
 	vat_sponsorship = models.ForeignKey(VatRate, null=True, blank=True, verbose_name='VAT rate for sponsorships', related_name='vat_sponsorship')
 	invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1),], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
 	attendees_before_waitlist = models.IntegerField(blank=False, null=False, default=0, validators=[MinValueValidator(0),], verbose_name="Attendees before waitlist", help_text="Maximum number of attendees before enabling waitlist management. 0 for no waitlist management")
+	series = models.ForeignKey(ConferenceSeries, null=True, blank=True)
 
 	# Attributes that are safe to access in jinja templates
 	_safe_attributes = ('active', 'askfood', 'askshareemail', 'asktshirt',
@@ -489,6 +511,7 @@ class Speaker(models.Model):
 	abstract = models.TextField(null=False, blank=True)
 	photofile = models.ImageField(upload_to=_get_upload_path, storage=SpeakerImageStorage(), blank=True, null=True, verbose_name="Photo")
 	lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
+	speakertoken = models.TextField(null=False, blank=False, unique=True)
 
 	_safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract' ,'photofile', 'lastmodified', 'org_name', 'treasurer_email')
 	json_included_attributes = ['fullname', 'twittername', 'company', 'abstract', 'lastmodified']

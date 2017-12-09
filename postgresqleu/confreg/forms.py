@@ -578,8 +578,8 @@ class TransferRegForm(forms.Form):
 class CrossConferenceMailForm(forms.Form):
 	senderaddr = forms.EmailField(min_length=5, required=True)
 	sendername = forms.CharField(min_length=5, required=True)
-	attendees_of = forms.ModelMultipleChoiceField(queryset=Conference.objects.all(), label="Send to attendees of")
-	attendees_not_of = forms.ModelMultipleChoiceField(queryset=Conference.objects.all(), label="Who are not attendees of", required=False)
+	include = forms.CharField(widget=forms.widgets.HiddenInput(), required=False)
+	exclude = forms.CharField(widget=forms.widgets.HiddenInput(), required=False)
 	subject = forms.CharField(min_length=10, max_length=80, required=True)
 	text = forms.CharField(min_length=30, required=True, widget=forms.Textarea)
 
@@ -588,9 +588,13 @@ class CrossConferenceMailForm(forms.Form):
 	def __init__(self, *args, **kwargs):
 		super(CrossConferenceMailForm, self).__init__(*args, **kwargs)
 
-		if not (self.data.get('senderaddr') and self.data.get('sendername') and self.data.get('attendees_of') and self.data.get('subject') and self.data.get('text')):
-			del self.fields['confirm']
+		if not (self.data.get('senderaddr') and self.data.get('sendername') and self.data.get('subject') and self.data.get('text')):
+			self.remove_confirm()
 
 	def clean_confirm(self):
 		if not self.cleaned_data['confirm']:
 			raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")
+
+	def remove_confirm(self):
+		if 'confirm' in self.fields:
+			del self.fields['confirm']

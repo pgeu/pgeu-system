@@ -17,7 +17,8 @@ from django.forms import formsets
 from django.forms import ValidationError
 
 from models import Conference, ConferenceRegistration, ConferenceSession
-from models import ConferenceSessionSlides
+from models import ConferenceSessionSlides, ConferenceSeries
+from models import ConferenceSeriesOptOut, GlobalOptOut
 from models import ConferenceSessionFeedback, Speaker, Speaker_Photo
 from models import ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
 from models import RegistrationType, PrepaidVoucher, PrepaidBatch, DiscountCode
@@ -49,6 +50,7 @@ from postgresqleu.invoices.models import InvoiceProcessor, InvoiceHistory
 from postgresqleu.mailqueue.util import send_mail, send_simple_mail, send_template_mail, template_to_string
 from postgresqleu.util.jsonutil import JsonSerializer
 from postgresqleu.util.db import exec_to_dict, exec_to_grouped_dict, exec_to_keyed_dict
+from postgresqleu.util.db import exec_no_result, exec_to_list
 
 from decimal import Decimal
 from operator import itemgetter
@@ -60,6 +62,7 @@ import sys
 import imp
 from email.mime.text import MIMEText
 from Crypto.Hash import SHA256
+from StringIO import StringIO
 
 import json
 
@@ -795,6 +798,7 @@ def speakerprofile(request, confurlname=None):
 		# If this is a new speaker, create an instance for it
 		if not speaker:
 			speaker = Speaker(user=request.user, fullname=request.user.first_name)
+			speaker.generate_random_token()
 			speaker.save()
 
 		form = SpeakerProfileForm(data=request.POST, files=request.FILES, instance=speaker)
@@ -1362,6 +1366,51 @@ def attendee_mail(request, confname, mailid):
 		'conference': conference,
 		'mail': mail,
 		})
+
+@transaction.atomic
+def optout(request, token):
+	try:
+		reg = ConferenceRegistration.objects.get(regtoken=token)
+		userid = reg.attendee_id
+		email = reg.email
+	except ConferenceRegistration.DoesNotExist:
+		try:
+			speaker = Speaker.objects.get(speakertoken=token)
+			userid = speaker.user_id
+			email = speaker.user.email
+		except Speaker.DoesNotExist:
+			raise Http404("Token not found")
+
+
+	if request.method == 'POST':
+		global_optout = request.POST.get('global', '0')=='1'
+		sids = exec_to_list("SELECT id FROM confreg_conferenceseries")
+		optout_ids = [i for i, in sids if request.POST.get('series_{0}'.format(i), '0') == '1']
+
+		if global_optout:
+			exec_no_result('INSERT INTO confreg_globaloptout (user_id) VALUES (%(u)s) ON CONFLICT DO NOTHING', {'u': userid})
+		else:
+			exec_no_result('DELETE FROM confreg_globaloptout WHERE user_id=%(u)s', {'u': userid})
+
+		exec_no_result('DELETE FROM confreg_conferenceseriesoptout WHERE user_id=%(u)s AND NOT series_id=ANY(%(series)s)',{
+			'u': userid,
+			'series': optout_ids,
+		})
+		exec_no_result('INSERT INTO confreg_conferenceseriesoptout (series_id, user_id) SELECT s, %(u)s FROM UNNEST(%(series)s::int[]) s(s) WHERE NOT EXISTS (SELECT 1 FROM confreg_conferenceseriesoptout o WHERE o.user_id=%(u)s AND o.series_id=s.s) ON CONFLICT DO NOTHING', {
+			'u': userid,
+			'series': optout_ids,
+		})
+		return HttpResponse("Your conference opt-out settings have been updated.")
+
+	series = exec_to_dict("SELECT s.id, s.name, oo IS NOT NULL AS optout FROM confreg_conferenceseries s LEFT JOIN confreg_conferenceseriesoptout oo ON oo.series_id=s.id AND oo.user_id=%(userid)s", {
+		'userid': userid,
+	})
+
+	return render_to_response('confreg/optout.html', {
+		'email': email,
+		'globaloptout': GlobalOptOut.objects.filter(user=userid).exists(),
+		'series': series,
+	},context_instance=RequestContext(request))
 
 @login_required
 @transaction.atomic
@@ -2477,22 +2526,75 @@ def transfer_reg(request, urlname):
 @user_passes_test_or_error(lambda u:u.is_superuser)
 @transaction.atomic
 def crossmail(request):
+	def _get_recipients_for_crossmail(postdict):
+		def _get_one_filter(conf, filt, optout_filter=False):
+			(t,v) = filt.split(':')
+			if t == 'rt':
+				# Regtype
+				q = "SELECT attendee_id, email, firstname || ' ' || lastname, regtoken FROM confreg_conferenceregistration WHERE conference_id={0} AND payconfirmedat IS NOT NULL".format(int(conf))
+				if v != '*':
+					q += ' AND regtype_id={0}'.format(int(v))
+				if optout_filter:
+					q += " AND NOT EXISTS (SELECT 1 FROM confreg_conferenceseriesoptout INNER JOIN confreg_conference ON confreg_conference.series_id=confreg_conferenceseriesoptout.series_id WHERE user_id=attendee_id AND confreg_conference.id={0})".format(int(conf))
+			elif t == 'sp':
+				# Speaker
+				if v == '*':
+					sf=""
+				elif v == '?':
+					sf = " AND status IN (1,3)"
+				else:
+					sf = " AND status = {0}".format(int(v))
+
+				q = "SELECT user_id, email, fullname, speakertoken FROM confreg_speaker INNER JOIN auth_user ON auth_user.id=confreg_speaker.user_id WHERE EXISTS (SELECT 1 FROM confreg_conferencesession_speaker INNER JOIN confreg_conferencesession ON confreg_conferencesession.id=conferencesession_id WHERE speaker_id=confreg_speaker.id AND conference_id={0}{1})".format(int(conf), sf)
+				if optout_filter:
+					q += " AND NOT EXISTS (SELECT 1 FROM confreg_conferenceseriesoptout INNER JOIN confreg_conference ON confreg_conference.series_id=confreg_conferenceseriesoptout.series_id WHERE confreg_conferenceseriesoptout.user_id=confreg_speaker.user_id AND confreg_conference.id={0})".format(int(conf))
+			else:
+				raise Exception("Invalid filter type")
+			return q
+
+		if postdict['include'] == '':
+			return []
+
+		# Parse all includes and excludes
+		incs = [_get_one_filter(*i.split('@'), optout_filter=True) for i in postdict['include'].split(';') if i != '']
+		excs = [_get_one_filter(*i.split('@')) for i in postdict['exclude'].split(';') if i != '']
+
+		q = StringIO()
+		q.write("WITH incs (userid, email, fullname, token) AS (")
+		q.write("\nUNION ALL\n".join(incs))
+		q.write("\n)")
+		if excs:
+			q.write(", excs (userid, email, fullname, token) AS (\n")
+			q.write("\nUNION ALL\n".join(excs))
+			q.write("\n)\n")
+		q.write("SELECT DISTINCT ON (email) email, fullname, token FROM incs\n")
+		q.write(" WHERE userid NOT IN (SELECT user_id FROM confreg_globaloptout)\n")
+		if excs:
+			q.write(" and email NOT IN (SELECT email FROM excs)\n")
+		q.write("ORDER BY email")
+
+		return exec_to_dict(q.getvalue())
+
 	if request.method == 'POST':
 		form = CrossConferenceMailForm(data=request.POST)
-		recipients = ConferenceRegistration.objects.values('email', 'firstname', 'lastname').filter(payconfirmedat__isnull=False, conference__in=form.data.getlist('attendees_of')).exclude(attendee__conferenceregistration__conference__in=form.data.getlist('attendees_not_of')).distinct().order_by('lastname', 'firstname')
 
-		if form.is_valid():
+		recipients = _get_recipients_for_crossmail(request.POST)
+
+		if form.is_valid() and recipients:
 			for r in recipients:
 				send_simple_mail(form.data['senderaddr'],
 								 r['email'],
 								 form.data['subject'],
-								 form.data['text'],
+								 u"{0}\n\n\nThis email was sent to you from {1}.\nTo opt-out from further communications about our events, please fill out the form at:\n{2}/events/optout/{3}/".format(form.data['text'], settings.ORG_NAME, settings.SITEBASE, r['token']),
 								 sendername=form.data['sendername'],
-								 receivername=u"{0} {1}".format(r['firstname'], r['lastname']),
+								 receivername=r['fullname'],
 				)
 
 			messages.info(request, "Sent {0} emails.".format(len(recipients)))
 			return HttpResponseRedirect("../")
+		if not recipients:
+			form.add_error(None, "No recipients matched")
+			form.remove_confirm()
 	else:
 		form = CrossConferenceMailForm()
 		recipients = None
@@ -2500,8 +2602,34 @@ def crossmail(request):
 	return render_to_response('confreg/admin_cross_conference_mail.html', {
 		'form': form,
 		'recipients': recipients,
+		'conferences': Conference.objects.all(),
 		}, RequestContext(request))
 
+
+@login_required
+@user_passes_test_or_error(lambda u:u.is_superuser)
+@transaction.atomic
+def crossmailoptions(request):
+	conf = get_object_or_404(Conference, id=request.GET['conf'])
+
+	# Get a list of different crossmail options for this conference. Note that
+	# each of them must have an implementation in _get_one_filter() or bad things
+	# will happen.
+	r = [
+		{'id': 'rt:*', 'title': 'Reg: all'},
+	]
+	r.extend([
+		{'id': 'rt:{0}'.format(rt.id), 'title': 'Reg: {0}'.format(rt.regtype)}
+		for rt in RegistrationType.objects.filter(conference=conf)])
+	r.extend([
+		{'id': 'sp:*', 'title': 'Speaker: all'},
+		{'id': 'sp:?', 'title': 'Speaker: accept+reserve'},
+	])
+	r.extend([
+		{'id': 'sp:{0}'.format(k), 'title': 'Speaker: {0}'.format(v)}
+		for k,v in STATUS_CHOICES
+	])
+	return HttpResponse(json.dumps(r), content_type="application/json")
 
 # Admin view that's used to send email to multiple users
 @login_required

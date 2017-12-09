@@ -1,0 +1,43 @@
+{%extends "nav_events.html"%}
+{%block title%}Conference Opt-Out{%endblock%}
+{%block content%}
+<h1>Conference Opt-Out</h1>
+<p>
+ {{org_name}} will occasionally send emails related to different events
+ based on events that you have previously attended. If you do not wish
+ to receive this information, you can opt out using this page. You can
+ of course also opt out of all communications about events.
+</p>
+<p>
+  Note that even if you opt out, you will still receive information
+  directly related to an event that you have registered for, such as
+  your registration confirmation email. You will also keep receiving
+  information regarding payments you make, such as they payment
+  receipts!
+</p>
+
+<h2>Opt-out settings for {{email}}</h2>
+<form method="post" action=".">{%csrf_token%}
+<table border="0" cellspacing="1" cellpadding="0">
+  <tr>
+    <th>Global opt-out:</th>
+    <td><select name="global">
+	<option value="0"{%if not globaloptout%} SELECTED{%endif%}>Receive emails, except as listed below</option>
+	<option value="1"{%if globaloptout%} SELECTED{%endif%}>Receive no emails</option>
+    </select></td>
+  </tr>
+  <tr><td colspan="2">&nbsp;</td></tr>
+{%for s in series%}
+   <th>{{s.name}}</th>
+   <td><select name="series_{{s.id}}">
+       <option value="0"{%if not s.optout%} SELECTED{%endif%}>Receive emails for this series</option>
+       <option value="1"{%if s.optout%} SELECTED{%endif%}>Receive no emails about this series</option>
+     </select>
+   </td>
+  </tr>
+{%endfor%}
+</table>
+<input type="submit" value="Save">
+</form>
+
+{%endblock%}
