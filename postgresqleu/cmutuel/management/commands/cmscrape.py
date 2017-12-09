@@ -172,7 +172,7 @@ class Command(BaseCommand):
 										   description=description,
 										   balance=balance).save()
 				except Exception, e:
-					sys.stderr.write("Exception '{0}' when parsing row {2}".format(e, row))
+					sys.stderr.write("Exception '{0}' when parsing row {1}".format(e, row))
 
 		# Now send things off if there is anything to send
 		with transaction.atomic():
