@@ -1,6 +1,10 @@
 from django.db import connection
 import collections
 
+def exec_no_result(query, params=None):
+	curs = connection.cursor()
+	curs.execute(query, params)
+
 def exec_to_list(query, params=None):
 	curs = connection.cursor()
 	curs.execute(query, params)
