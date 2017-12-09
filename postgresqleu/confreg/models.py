@@ -414,7 +414,7 @@ class ConferenceRegistration(models.Model):
 
 	# Token to uniquely identify this registration in case we want to
 	# access it without a login.
-	regtoken = models.TextField(null=True, blank=True, unique=True)
+	regtoken = models.TextField(null=False, blank=False, unique=True)
 
 	@property
 	def fullname(self):
