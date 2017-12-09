@@ -155,7 +155,7 @@ class Command(BaseCommand):
 		# Write everything to the database
 		with transaction.atomic():
 			for row in reader:
-				if row[0] == 'Operation date':
+				if row[0] == 'Operation date' or row[0] == 'Date':
 					# This is just a header
 					continue
 				try:
