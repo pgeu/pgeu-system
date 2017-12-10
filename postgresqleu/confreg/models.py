@@ -138,7 +138,7 @@ class Conference(models.Model):
 	vat_sponsorship = models.ForeignKey(VatRate, null=True, blank=True, verbose_name='VAT rate for sponsorships', related_name='vat_sponsorship')
 	invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1),], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
 	attendees_before_waitlist = models.IntegerField(blank=False, null=False, default=0, validators=[MinValueValidator(0),], verbose_name="Attendees before waitlist", help_text="Maximum number of attendees before enabling waitlist management. 0 for no waitlist management")
-	series = models.ForeignKey(ConferenceSeries, null=True, blank=True)
+	series = models.ForeignKey(ConferenceSeries, null=False, blank=False)
 
 	# Attributes that are safe to access in jinja templates
 	_safe_attributes = ('active', 'askfood', 'askshareemail', 'asktshirt',
