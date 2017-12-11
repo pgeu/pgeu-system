@@ -151,10 +151,10 @@ the talk slot, if your schedule supports multiple different lengths.
   <font size="30">Please wait, talking to Mr Server...</font>
 </div>
 
-<div id="availablewrapper" style="float:right; border:1px solid blue;width:{{sesswidth}}px;height:500px;">
+<div id="availablewrapper" style="float:right; border:1px solid blue;width:{{sesswidth}}px;height:{{availableheight}}px;">
   <h3>Available sessions</h3>
   {%for s in sessions %}
-   <div id="sess{{s.id}}" class="sessblock actualsession track{{s.track.id}}{%if s.ispending%} sesspending{%endif%}" style="top: {{s.top}}px; width: {{sesswidth}}px; height: {{s.height}}px;">{{s.title}}<br/><i>{{s.speaker_list}}</i></div>
+   <div id="sess{{s.id}}" class="sessblock actualsession track{{s.track_id}}{%if s.ispending%} sesspending{%endif%}" style="top: {{s.top}}px; width: {{sesswidth}}px; height: 75px;">{{s.title}}<br/><i>{{s.speaker_list}}</i></div>
   {%endfor%}
 </div>
 

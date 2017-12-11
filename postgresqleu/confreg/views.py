@@ -1707,33 +1707,6 @@ def bulkpay_view(request, confname, bulkpayid):
 		'invoice': InvoicePresentationWrapper(bulkpayment.invoice, '.'),
 	})
 
-#
-# Handle unscheduled sessions, with a little app to make them scheduled
-#
-class EmptySpeaker(object):
-	def all(self):
-		return ['']
-class SessionSlot(object):
-	def __init__(self, room, slot):
-		self.room = room
-		self.starttime = slot.starttime
-		self.endtime = slot.endtime
-		# completely faked data
-		self.track = 'unscheduled'
-		self.cross_schedule = False
-		self.id = room.id * 1000000 + slot.id
-		self.title = ''
-		self.speaker = EmptySpeaker()
-class UnscheduledSession(object):
-	def __init__(self, session, n):
-		self.id = session.id
-		self.title = session.title
-		self.speaker_list = session.speaker_list
-		self.track = session.track
-		self.top = (n+1) * 75
-		self.height = 50 * 1.5 # 50 minute slots hardcoded. nice...
-		self.ispending = (session.status == 3)
-
 
 @login_required
 @transaction.atomic
@@ -1907,34 +1880,32 @@ def createschedule(request, confname):
 
 	# Not post - so generate the page
 
-	# We include *all* (non cross-schedule) sessions here, whether they
-	# are approved or not.
-	sessions = []
-	for s in ConferenceSession.objects.filter(conference=conference, cross_schedule=False, status__in=(1,3)):
-		sessions.append(UnscheduledSession(s, len(sessions)+1))
+	# Complete list of all available sessions
+	sessions = exec_to_dict("SELECT s.id, track_id, (status = 3) AS ispending, (row_number() over() +1)*75 AS top, title, string_agg(spk.fullname, ', ') AS speaker_list FROM confreg_conferencesession s LEFT JOIN confreg_conferencesession_speaker csp ON csp.conferencesession_id=s.id LEFT JOIN confreg_speaker spk ON spk.id=csp.speaker_id WHERE conference_id=%(confid)s AND status IN (1,3) AND NOT cross_schedule GROUP BY s.id ORDER BY starttime, id", {
+		'confid': conference.id,
+	})
 
+	# Generate a sessionset with the slots only, but with one slot for
+	# each room when we have multiple rooms.
+	raw = exec_to_grouped_dict("SELECT s.starttime::date AS day, r.id * 1000000 + s.id AS id, s.starttime, s.endtime, r.id AS room_id, to_char(starttime, 'HH24:MI') || ' - ' || to_char(endtime, 'HH24:MI') AS timeslot, min(starttime) OVER days AS firsttime,max(endtime) OVER days AS lasttime, 'f'::boolean as cross_schedule FROM confreg_conferencesessionscheduleslot s CROSS JOIN confreg_room r WHERE r.conference_id=%(confid)s AND s.conference_id=%(confid)s WINDOW days AS (PARTITION BY s.starttime::date) ORDER BY day, s.starttime", {
+		'confid': conference.id,
+	})
 
-	daylist = ConferenceSessionScheduleSlot.objects.filter(conference=conference).dates('starttime', 'day')
-	if len(daylist) == 0:
+	if len(raw) == 0:
 		return HttpResponse('No schedule slots defined for this conference, cannot create schedule yet.')
-	rooms = Room.objects.filter(conference=conference)
-	if len(rooms) == 0:
-		return HttpResponse('No rooms defined for this conference, cannot create schedule yet.')
+
 	tracks = Track.objects.filter(conference=conference).order_by('sortkey')
+
+	allrooms = exec_to_keyed_dict("SELECT id, sortkey, roomname FROM confreg_room r WHERE conference_id=%(confid)s ORDER BY sortkey, roomname", {
+		'confid': conference.id,
+	})
+	if len(allrooms) == 0:
+		return HttpResponse('No rooms defined for this conference, cannot create schedule yet.')
 
 	days = []
 
-	for d in daylist:
-		slots = ConferenceSessionScheduleSlot.objects.filter(conference=conference, starttime__range=(d,d+timedelta(days=1)))
-
-		# Generate a sessionset with the slots only, but with one slot for
-		# each room when we have multiple rooms. Create a fake session that
-		# just has enough for the wrapper to work.
-		sessionset = SessionSet(conference.schedulewidth, conference.pixelsperminute)
-		for s in slots:
-			for r in rooms:
-				sessionset.add(SessionSlot(r, s))
-		sessionset.finalize()
+	for d,d_sessions in raw.items():
+		sessionset = SessionSet(allrooms, allrooms, conference.schedulewidth, conference.pixelsperminute, d_sessions)
 		days.append({
 				'day': d,
 				'sessions': sessionset.all(),
@@ -1947,7 +1918,8 @@ def createschedule(request, confname):
 			'days': days,
 			'sessions': sessions,
 			'tracks': tracks,
-			'sesswidth': 600 / len(rooms),
+			'sesswidth': 600 / len(allrooms),
+			'availableheight': len(sessions)*75,
 			}, context_instance=RequestContext(request))
 
 @login_required
