@@ -669,7 +669,6 @@ def _scheduledata(request, conference):
 
 	days = []
 	for d, sessions in raw.items():
-		print(day_rooms.keys())
 		sessionset = SessionSet(allrooms, day_rooms[d]['rooms'],
 								conference.schedulewidth, conference.pixelsperminute,
 								sessions)
