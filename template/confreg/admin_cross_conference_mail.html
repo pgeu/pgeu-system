@@ -101,9 +101,6 @@ function submit_form() {
 }
 
 $(function() {
-   $('#id_attendees_of, #id_attendees_not_of').selectize({'plugins': ['remove_button']});
-
-
    function prepare_picker(type) {
       var e = $('#id_' + type);
       if (e.val()) {
