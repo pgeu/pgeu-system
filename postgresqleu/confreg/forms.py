@@ -323,7 +323,7 @@ class ConferenceFeedbackForm(forms.Form):
 class SpeakerProfileForm(forms.ModelForm):
 	class Meta:
 		model = Speaker
-		exclude = ('user', )
+		exclude = ('user', 'speakertoken')
 
 	def clean_photofile(self):
 		if not self.cleaned_data['photofile']:
