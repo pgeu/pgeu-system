@@ -12,7 +12,7 @@ This is an automated reminder that we are still waiting for
 your registration. To complete your registration, please fill
 out the form at
 
-{{sitebase}}/events/register/{{conference.urlname}}/
+{{sitebase}}/events/{{conference.urlname}}/register/
 
 And pick the registration type for speakers (free).
 

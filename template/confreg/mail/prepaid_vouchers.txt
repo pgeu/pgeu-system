@@ -34,7 +34,7 @@ the codes - in case your mail program has reformatted the lines):
 {%endfor%}
 
 The registration form is available at:
-{{sitebase}}/events/register/{{batch.conference.urlname}}/
+{{sitebase}}/events/{{batch.conference.urlname}}/register/
 
 If you have a PostgreSQL community account, you can view the
 current usage of your vouchers at:

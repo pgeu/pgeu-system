@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response, get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect, HttpResponse, Http404
 from django.template import RequestContext, Context
 from django.template.loader import get_template
 from django.template.base import TemplateDoesNotExist
@@ -275,7 +275,7 @@ def home(request, confname):
 
 			return render_conference_response(request, conference, 'reg', 'confreg/regform_completed.html', {
 				'reg': reg,
-				'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/register/%s/" % (settings.SITEBASE, conference.urlname)),
+				'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/%s/register/" % (settings.SITEBASE, conference.urlname)),
 			})
 
 		# Else fall through and render the form
@@ -285,7 +285,7 @@ def home(request, confname):
 		'form': form,
 		'form_is_saved': form_is_saved,
 		'reg': reg,
-		'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/register/%s/" % (settings.SITEBASE, conference.urlname)),
+		'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/%s/register/" % (settings.SITEBASE, conference.urlname)),
 		'additionaloptions': conference.conferenceadditionaloption_set.filter(public=True),
 		'costamount': reg.regtype and reg.regtype.cost or 0,
 	})
@@ -1077,7 +1077,7 @@ def confirmreg(request, confname):
 	# If there is already an invoice, then this registration has
 	# been processed already.
 	if reg.invoice:
-		return HttpResponseRedirect("/events/register/%s/" % conference.urlname)
+		return HttpResponseRedirect("/events/%s/register/" % conference.urlname)
 
 	# See if the registration type blocks it
 	s = confirm_special_reg_type(reg.regtype.specialtype, reg)
@@ -1323,7 +1323,7 @@ def invoice(request, confname, regid):
 
 	return render_conference_response(request, conference, 'reg', 'confreg/invoice.html', {
 			'reg': reg,
-			'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/register/%s/" % (settings.SITEBASE, conference.urlname)),
+			'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/%s/register/" % (settings.SITEBASE, conference.urlname)),
 			})
 
 @login_required
@@ -2254,7 +2254,7 @@ def admin_attendeemail(request, urlname):
 			# Now also send the email out to the currently registered attendees
 			attendees = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, regtype__regclass__in=form.data.getlist('regclasses'))
 			for a in attendees:
-				msgtxt = u"{0}\n\n-- \nThis message was sent to attendees of {1}.\nYou can view all communications for this conference at:\n{2}/events/register/{3}/\n".format(msg.message, conference, settings.SITEBASE, conference.urlname)
+				msgtxt = u"{0}\n\n-- \nThis message was sent to attendees of {1}.\nYou can view all communications for this conference at:\n{2}/events/{3}/register/\n".format(msg.message, conference, settings.SITEBASE, conference.urlname)
 				send_simple_mail(conference.contactaddr,
 								 a.email,
 								 u"[{0}] {1}".format(conference, msg.subject),
@@ -2672,3 +2672,12 @@ def admin_email_session(request, sessionids):
 		'recipientlist': ", ".join([s.name for s in speakers]),
 		'whatfor': ", ".join(['Session "%s"' % s.title for s in sessions]),
 		}, RequestContext(request))
+
+
+# Redirect from old style event URLs
+def legacy_redirect(self, what, confname, resturl=None):
+	# Fallback to most basic syntax
+	if resturl:
+		return HttpResponsePermanentRedirect('/events/{0}/{1}/{2}'.format(confname, what, resturl))
+	else:
+		return HttpResponsePermanentRedirect('/events/{0}/{1}/'.format(confname, what))

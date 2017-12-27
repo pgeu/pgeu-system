@@ -30,7 +30,7 @@ You have made the following submission{%if sessions|length > 1%}s{%endif%} to th
   <li>
   <a href="{{s.id}}/">{{s.title}}</a> ({{s.status_string_long}}{%if s.status == 3 %} - <a href="{{s.id}}/speakerconfirm/">confirm</a>{%endif%}{%if s.status == 1 and s.has_feedback and not conference.feedbackopen%} - <a href="{{s.id}}/">View feedback</a>{%endif%})
   {%if s.status == 1 %}{# Approved - so link to the public description #}
-  (<a href="/events/schedule/{{conference.urlname}}/session/{{s.id}}/">public view</a>)
+  (<a href="/events/{{conference.urlname}}/schedule/session/{{s.id}}/">public view</a>)
   {%endif%}
   </li>
 {%endfor%}
@@ -52,7 +52,7 @@ To remove a submission, please contact <a href="mailto:{{conference.contactaddr}
 
 <h2>Speaker profile</h2>
 <p>
-Your <a href="/events/speakerprofile/{{conference.urlname}}/">shared {{org_name}} speaker profile</a>
+Your <a href="/events/{{conference.urlname}}/speakerprofile/">shared {{org_name}} speaker profile</a>
 will be used for all submissions.
 </p>
 

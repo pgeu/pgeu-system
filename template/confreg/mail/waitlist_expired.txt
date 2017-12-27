@@ -13,7 +13,7 @@ chance.
 If you are no longer interested in attending the conference, please
 go to
 
-{{sitebase}}/events/register/{{conference.urlname}}/confirm/
+{{sitebase}}/events/{{conference.urlname}}/register/confirm/
 
 and remove yourself from the waitlist. That will make our processing
 of waitlist entries for other attendees much smoother, and you will

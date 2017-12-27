@@ -10,7 +10,7 @@ reserved for you.
 To make sure you can attend the conference, we suggest you
 complete the registration as soon as possible, using the form at
 
-{{sitebase}}/events/register/{{conference.urlname}}/
+{{sitebase}}/events/{{conference.urlname}}/register/
 
 If you do not wish to receive any further reminders of this type,
 please go to that same form and click the "Cancel registration"

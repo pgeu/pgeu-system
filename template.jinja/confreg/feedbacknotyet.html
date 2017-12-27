@@ -3,6 +3,6 @@
 {%block content%}
 <h1>Conference Registration - {{conference}}</h1>
 <p>
-The session <a href="/events/schedule/{{conference.urlname}}/session/{{session.id}}-{{session.title|slugify}}/">{{session.title}}</a> hasn't started yet.
+The session <a href="/events/{{conference.urlname}}/schedule/session/{{session.id}}-{{session.title|slugify}}/">{{session.title}}</a> hasn't started yet.
 </p>
 {%endblock%}

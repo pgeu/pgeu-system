@@ -7,7 +7,7 @@ We have some good news for you! We've been able to open up a seat
 at the conference, and made it available for you. If you are still
 interested in attending, please go to the website at
 
-{{sitebase}}/events/register/{{conference.urlname}}/
+{{sitebase}}/events/{{conference.urlname}}/register/
 
 and complete the registration as soon as possible.
 

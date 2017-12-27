@@ -33,7 +33,7 @@ $(function() {
 {%endif%}
 {%if admin%}
 <p>
-  <b>NOTE!</b> You are using the system as an administrator! <a href="/events/volunteer/{{conference.urlname}}/">Switch</a> to volunteer view.
+  <b>NOTE!</b> You are using the system as an administrator! <a href="/events/{{conference.urlname}}/volunteer/">Switch</a> to volunteer view.
 </p>
 {%elif can_admin%}
 <p>

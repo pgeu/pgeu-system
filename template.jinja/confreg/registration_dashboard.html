@@ -45,12 +45,12 @@ news!
   <li><a href="#options">Additional options</a> &bull;</li>
 {%endif%}
 {%if conference.callforpapersopen%}
-  <li><a href="/events/callforpapers/{{conference.urlname}}/">Call for papers</a> &bull;</li>
+  <li><a href="/events/{{conference.urlname}}/callforpapers/">Call for papers</a> &bull;</li>
 {%elif is_speaker%}
-  <li><a href="/events/callforpapers/{{conference.urlname}}/">Your speaker profile</a> &bull;</li>
+  <li><a href="/events/{{conference.urlname}}/callforpapers/">Your speaker profile</a> &bull;</li>
 {%endif%}
 {%if reg.is_volunteer%}
-  <li><a href="/events/volunteer/{{conference.urlname}}/">Volunteer schedule</a> &bull;</li>
+  <li><a href="/events/{{conference.urlname}}/volunteer/">Volunteer schedule</a> &bull;</li>
 {%endif%}
  </ul>
 </div>

@@ -17,7 +17,7 @@ this is done, you will be presented with a list of open call for papers.
 The following conferences currently have open call for papers:
 <ul>
   {%for c in callforpapers%}
-  <li><a href="/events/callforpapers/{{c.urlname}}/">{{c}}</a></li>
+  <li><a href="/events/{{c.urlname}}/callforpapers/">{{c}}</a></li>
   {%endfor%}
 </ul>
 </p>
@@ -29,7 +29,7 @@ The following conferences currently have open call for papers:
 You have submitted talks to the following conferences:
 <ul>
 {%for c in conferences %}
-  <li><a href="/events/callforpapers/{{c.urlname}}/">{{c}}</a></li>
+  <li><a href="/events/{{c.urlname}}/callforpapers/">{{c}}</a></li>
 {%endfor%}
 </ul>
 </p>
