@@ -852,10 +852,10 @@ def callforpapers_edit(request, confname, sessionid):
 			return HttpResponseRedirect("../")
 
 		# Create speaker record if necessary
-		speaker, created = Speaker.objects.get_or_create(user=request.user)
-		if created:
-			speaker.fullname = request.user.first_name
-			speaker.save()
+		speaker, created = Speaker.objects.get_or_create(user=request.user, defaults={
+			'fullname': request.user.first_name,
+			'speakertoken': generate_random_token(),
+		})
 
 		session = ConferenceSession(conference=conference, status=0, initialsubmit=datetime.now())
 	else:
