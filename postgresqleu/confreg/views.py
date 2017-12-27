@@ -189,6 +189,17 @@ def _registration_dashboard(request, conference, reg):
 		'invoices': invoices,
 	})
 
+def confhome(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+
+	# If there is a registration, redirect to the registration dashboard.
+	# If not, or if the user is not logged in, redirect to the conference homepage.
+	if request.user.is_authenticated():
+		if ConferenceRegistration.objects.filter(conference=conference, attendee=request.user).exists():
+			return HttpResponseRedirect('register/')
+
+	return HttpResponseRedirect(conference.confurl)
+
 @login_required
 @transaction.atomic
 def home(request, confname):

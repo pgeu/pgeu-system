@@ -122,6 +122,9 @@ urlpatterns = patterns('',
 
     (r'^events/sponsor/', include('postgresqleu.confsponsor.urls')),
 
+    # "Homepage" for events
+    (r'^events/([^/]+)/$', postgresqleu.confreg.views.confhome),
+
     # Mobile conference stuff
     (r'^m/(\w+)/$', postgresqleu.confreg.mobileviews.index),
     (r'^m/(\w+)/cache.manifest/$', postgresqleu.confreg.mobileviews.cachemanifest),
