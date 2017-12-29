@@ -218,7 +218,7 @@ def build_attendee_report(conference, POST):
 		# pass the full objects into the badge builder.
 		try:
 			resp = HttpResponse(content_type='application/pdf')
-			render_jinja_badges(conference, result, resp, False)
+			render_jinja_badges(conference, result, resp, borders)
 			return resp
 		except Exception, e:
 			return HttpResponse("Exception occured: %s" % e, content_type='text/plain')

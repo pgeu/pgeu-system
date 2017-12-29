@@ -192,7 +192,10 @@ At the root of the json structure, two elements have to be defined:
 width and height. All positions and sizes are defined in mm.
 
 If the element 'border' is set to true, a thin black border will be
-drawn around the outer edges of the badge (for cutting).
+drawn around the outer edges of the badge (for cutting). If the element
+is set to false, no border will be printed. If the element is not set
+at all, printing will be controlled from the form field when building the
+badges.
 
 If the element 'forcebreaks' is set to true, a pagebreak will be forced
 between each badge, making sure there is only one badge per

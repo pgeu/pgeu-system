@@ -150,9 +150,10 @@ def test_inlist(v,l):
 	return v in l
 
 class JinjaRenderer(object):
-	def __init__(self, rootdir, debug=False):
+	def __init__(self, rootdir, debug=False, border=False):
 		self.templatedir = os.path.join(rootdir, 'templates')
 		self.debug = debug
+		self.border = border
 
 		registerFont(TTFont('DejaVu Serif', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf"))
 		registerFont(TTFont('DejaVu Serif Bold', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif-Bold.ttf"))
@@ -209,6 +210,8 @@ class JinjaRenderer(object):
 			else:
 				raise Exception("JSON parse failed.")
 
+		if not 'border' in js:
+			js['border'] = self.border
 		self.story.append(JinjaBadge(js, self.staticdir))
 
 		if js.get('forcebreaks', False):
@@ -221,8 +224,8 @@ class JinjaRenderer(object):
 
 # Render badges from within the website scope, meaning we have access to the
 # django objects here.
-def render_jinja_badges(conference, registrations, output):
-	renderer = JinjaRenderer(conference.jinjadir)
+def render_jinja_badges(conference, registrations, output, border):
+	renderer = JinjaRenderer(conference.jinjadir, border=border)
 
 	for reg in registrations:
 		renderer.add_badge(reg.safe_export())
@@ -235,10 +238,11 @@ if __name__ == "__main__":
 	parser.add_argument('repopath', type=str, help='Template repository directory')
 	parser.add_argument('attendeelist', type=str, help='JSON file with attendee list')
 	parser.add_argument('outputfile', type=str, help='Name of output PDF file')
+	parser.add_argument('--borders', action='store_true', help='Enable borders on written file')
 
 	args = parser.parse_args()
 
-	renderer = JinjaRenderer(args.repopath, debug=True)
+	renderer = JinjaRenderer(args.repopath, debug=True, border=args.borders)
 
 	with open(args.attendeelist) as f:
 		a = json.load(f)
