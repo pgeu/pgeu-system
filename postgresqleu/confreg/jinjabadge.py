@@ -154,6 +154,9 @@ class JinjaRenderer(object):
 		self.templatedir = os.path.join(rootdir, 'templates')
 		self.debug = debug
 
+		registerFont(TTFont('DejaVu Serif', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf"))
+		registerFont(TTFont('DejaVu Serif Bold', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif-Bold.ttf"))
+
 		if not os.path.exists(os.path.join(self.templatedir, 'badge.json')):
 			raise Exception("badge.json not found for conference")
 
@@ -228,9 +231,6 @@ def render_jinja_badges(conference, registrations, output):
 
 
 if __name__ == "__main__":
-	registerFont(TTFont('DejaVu Serif', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf"))
-	registerFont(TTFont('DejaVu Serif Bold', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif-Bold.ttf"))
-
 	parser = argparse.ArgumentParser(description='Render jinja based badges')
 	parser.add_argument('repopath', type=str, help='Template repository directory')
 	parser.add_argument('attendeelist', type=str, help='JSON file with attendee list')

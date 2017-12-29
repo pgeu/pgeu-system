@@ -12,7 +12,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 import csv
 import json
 
-from postgresqleu.confreg.badges import BadgeBuilder
+from jinjabadge import render_jinja_badges
 
 from postgresqleu.countries.models import Country
 from models import ConferenceRegistration, RegistrationType, ConferenceAdditionalOption, ShirtSize
@@ -218,8 +218,7 @@ def build_attendee_report(conference, POST):
 		# pass the full objects into the badge builder.
 		try:
 			resp = HttpResponse(content_type='application/pdf')
-			builder = BadgeBuilder(conference, result)
-			builder.render(resp)
+			render_jinja_badges(conference, result, resp, False)
 			return resp
 		except Exception, e:
 			return HttpResponse("Exception occured: %s" % e, content_type='text/plain')
