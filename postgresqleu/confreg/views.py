@@ -71,9 +71,10 @@ import json
 # if the conference is configured for jinja templates.
 #
 def render_conference_response(request, conference, pagemagic, templatename, dictionary=None):
-	# Conference can be None for pages that can be both inside and outside
-	# the framework, such as the speaker profile.
-	if conference and conference.jinjadir:
+	if not conference:
+		raise Exception("Conference has to be specified!")
+
+	if conference.jinjadir:
 		# If a jinjadir is defined, then *always* use jinja.
 		return render_jinja_conference_response(request, conference, pagemagic, templatename, dictionary)
 
@@ -744,7 +745,8 @@ def speakerphoto(request, speakerid):
 	return HttpResponse(base64.b64decode(speakerphoto.photo), content_type='image/jpg')
 
 @login_required
-def speakerprofile(request, confurlname=None):
+def speakerprofile(request, confurlname):
+	conf = get_object_or_404(Conference, urlname=confurlname)
 	speaker = conferences = callforpapers = None
 	try:
 		speaker = get_object_or_404(Speaker, user=request.user)
@@ -774,10 +776,6 @@ def speakerprofile(request, confurlname=None):
 	else:
 		form = SpeakerProfileForm(instance=speaker)
 
-	if confurlname:
-		conf = get_object_or_404(Conference, urlname=confurlname)
-	else:
-		conf = None
 	return render_conference_response(request, conf, 'cfp', 'confreg/speakerprofile.html', {
 			'speaker': speaker,
 			'conferences': conferences,
