@@ -30,7 +30,7 @@ from models import STATUS_CHOICES
 from forms import ConferenceRegistrationForm, ConferenceSessionFeedbackForm
 from forms import ConferenceFeedbackForm, SpeakerProfileForm
 from forms import CallForPapersForm, CallForPapersSpeakerForm, CallForPapersSubmissionForm
-from forms import PrepaidCreateForm, BulkRegistrationForm
+from forms import CallForPapersCopyForm, PrepaidCreateForm, BulkRegistrationForm
 from forms import EmailSendForm, EmailSessionForm, CrossConferenceMailForm
 from forms import AttendeeMailForm, WaitlistOfferForm, TransferRegForm
 from forms import SessionSlidesUrlForm, SessionSlidesFileForm
@@ -843,10 +843,13 @@ def callforpapers(request, confname):
 	try:
 		speaker = Speaker.objects.get(user=request.user)
 		sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker).order_by('title')
+		other_submissions = ConferenceSession.objects.filter(speaker=speaker).exclude(conference=conference).exists()
 	except Speaker.DoesNotExist:
+		other_submissions = False
 		sessions = []
 
 	return render_conference_response(request, conference, 'cfp', 'confreg/callforpapers.html', {
+			'other_submissions': other_submissions,
 			'sessions': sessions,
 			'is_tester': is_tester,
 	})
@@ -1006,6 +1009,39 @@ def callforpapers_edit(request, confname, sessionid):
 			'form': form,
 			'speaker_formset': speaker_formset,
 			'session': session,
+	})
+
+@login_required
+@transaction.atomic
+def callforpapers_copy(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+	speaker = get_object_or_404(Speaker, user=request.user)
+
+	if request.method == 'POST':
+		form = CallForPapersCopyForm(conference, speaker, data=request.POST)
+		if form.is_valid():
+			for s in form.cleaned_data['sessions']:
+				# The majority of all fields should just be blank in the new submission, so create
+				# a new session object instead of trying to copy the old one.
+				submissionnote = u"Submission copied from {0}.".format(s.conference)
+				if s.submissionnote:
+					submissionnote += " Original note:\n\n" + s.submissionnote
+
+				n = ConferenceSession(conference=conference,
+									  title=s.title,
+									  abstract=s.abstract,
+									  skill_level=s.skill_level,
+									  status=0,
+									  submissionnote=submissionnote,
+									  )
+				n.save()
+				n.speaker = s.speaker.all()
+			return HttpResponseRedirect('../')
+	else:
+		form = CallForPapersCopyForm(conference, speaker)
+
+	return render_conference_response(request, conference, 'cfp', 'confreg/callforpaperscopyform.html', {
+		'form': form,
 	})
 
 @login_required

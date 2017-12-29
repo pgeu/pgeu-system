@@ -42,6 +42,12 @@ You have made the following submission{%if sessions|length > 1%}s{%endif%} to th
 <p>
   Click <a href="new/">here</a> to make a new submission to {{conference}}.
 </p>
+{%if other_submissions%}
+<p>
+  If you have submitted to other conferences managed by {{org_name}} in the past, you can also
+  <a href="copy/">copy</a> and update a previous submission.
+</p>
+{%endif%}
 
 <h2>Remove submission</h2>
 <p>

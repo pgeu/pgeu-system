@@ -589,7 +589,7 @@ class ConferenceSession(models.Model):
 	lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
 
 	# NOTE! Any added fields need to be considered for inclusion in
-	# forms.CallForPapersForm!
+	# forms.CallForPapersForm and in views.callforpapers_copy()!
 
 	# Not a db field, but set from the view to track if the current user
 	# has given any feedback on this session.

@@ -398,6 +398,21 @@ class CallForPapersForm(forms.ModelForm):
 			raise ValidationError("Please choose the track that is the closest match to your talk")
 		return self.cleaned_data.get('track')
 
+class SessionCopyField(forms.ModelMultipleChoiceField):
+	def label_from_instance(self, obj):
+		return u"{0}: {1} ({2})".format(obj.conference, obj.title, obj.status_string)
+
+class CallForPapersCopyForm(forms.Form):
+	sessions = SessionCopyField(widget=forms.CheckboxSelectMultiple,
+								required=True,
+								queryset=ConferenceSession.objects.filter(id=-1),
+								label='Select sessions')
+	def __init__(self, conference, speaker, *args, **kwargs):
+		self.conference = conference
+		self.speaker = speaker
+		super(CallForPapersCopyForm, self).__init__(*args, **kwargs)
+		self.fields['sessions'].queryset = ConferenceSession.objects.select_related('conference').filter(speaker=speaker).exclude(conference=conference).order_by('-conference__startdate', 'title')
+
 class SessionSlidesUrlForm(forms.Form):
 	url = forms.URLField(label='URL', required=False, max_length=1000)
 

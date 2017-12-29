@@ -1,0 +1,29 @@
+{%extends "base.html" %}
+{%block title%}Call for Papers - {{conference}}{%endblock%}
+{%block content%}
+<h1>Call for Papers - {{conference}}</h1>
+
+<h2>Copy submissions</h2>
+<p>
+Select which fields you would like to copy to your new submission. You will be
+given a chance to edit the submissions once you are done, but please only copy
+those entries that you actually want to submit.
+</p>
+<p>
+In particular, please verify that the speakers listed for the submission is correct when
+there are multiple speakers of a session.
+</p>
+
+{% if form.errors %}
+<p><b style="color:red;">Note! This form contains errors and has not been saved!</b></p>
+{% endif %}
+<form class="pgeucfpform" method="post" action=".">{{ csrf_input }}
+<table id="cfp_table">
+{{form.as_table()}}
+</table>
+<input type="submit" value="Copy">
+<input class="button" type="button" onclick="window.location.href = '../'" value="Cancel" />
+</form>
+<br/>
+
+{%endblock%}
