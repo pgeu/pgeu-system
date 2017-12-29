@@ -42,8 +42,13 @@ def find_git_revision(path):
 			with open(refname) as f:
 				fullref = f.readline()
 				return fullref[:7]
+		elif os.path.exists(os.path.join(path, ".deploystatic_githash")):
+			with open(os.path.join(path, ".deploystatic_githash")) as f:
+				return f.readline().strip()
+
 		# Else step up one level
 		path = os.path.dirname(path)
+	# If no direct git hash found, search for a deploystatic file
 	return None
 
 

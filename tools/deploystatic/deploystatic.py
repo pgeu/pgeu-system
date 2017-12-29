@@ -279,6 +279,10 @@ if __name__ == "__main__":
 				if not f in knownfiles:
 					os.unlink(os.path.join(args.destpath, f))
 
+		# Generate a githash file
+		with open(os.path.join(args.destpath, ".deploystatic_githash"), "w") as f:
+			f.write(find_git_revision(args.sourcepath))
+
 		sys.exit(0)
 
 	# Set up jinja environment
