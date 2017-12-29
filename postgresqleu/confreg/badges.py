@@ -113,37 +113,12 @@ class BadgeBuilder(object):
 		self.registrations = registrations
 
 		if not self.conference.jinjadir:
-			self.initialize_legacy()
-
-		# Shared initialization
+			raise Exception("No jinja template directory defined")
 
 		# Register truetype fonts that we're going to end up embedding
 		registerFont(TTFont('DejaVu Serif', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf"))
 		registerFont(TTFont('DejaVu Serif Bold', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif-Bold.ttf"))
 
-	def initialize_legacy(self):
-		# Instantiate the class we need to build things with
-		if not self.conference.badgemodule:
-			raise Exception("Badge module not specified!")
-		if self.conference.badgemodule.find('/') < 0:
-			# No slash means it's a class from this file
-			try:
-				self.badgetype = getattr(badgetypes, conference.badgemodule)()
-			except:
-				raise Exception("Module class not found in main system")
-		else:
-			# Load this from an external module.
-			modfile = os.path.dirname(self.conference.badgemodule)
-			classname = os.path.basename(self.conference.badgemodule)
-
-			# First check if the module already exists
-			modname = "conference_badges_%s" % self.conference.id
-			if not modname in sys.modules:
-				# We need to import the module
-				import imp
-				imp.load_source(modname, '%s.py' % modfile)
-			# Ok, module exists now, so instantiate the class
-			self.badgetype = getattr(sys.modules[modname], classname)()
 
 	# Render of a specific type
 	def render(self, output):

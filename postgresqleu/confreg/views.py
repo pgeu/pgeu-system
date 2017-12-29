@@ -39,7 +39,7 @@ from util import get_invoice_autocancel
 
 from models import get_status_string
 from regtypes import confirm_special_reg_type, validate_special_reg_type
-from jinjafunc import render_jinja_conference_response
+from jinjafunc import render_jinja_conference_response, JINJA_TEMPLATE_ROOT
 
 from postgresqleu.util.decorators import user_passes_test_or_error
 from postgresqleu.util.random import generate_random_token
@@ -67,73 +67,27 @@ from StringIO import StringIO
 import json
 
 #
-# The ConferenceContext allows overriding of the 'conftemplbase' variable,
-# which is used to control the base template of all the confreg web pages.
-# This allows a single conference to override the "framework" template
-# around itself, while retaining all the contents.
-#
-def ConferenceContext(request, conference):
-	d = RequestContext(request)
-	if conference and conference.template_override:
-		conftemplbase = conference.template_override
-	else:
-		conftemplbase = "nav_events.html"
-	d.update({
-			'conftemplbase': conftemplbase,
-			'conference': conference,
-			})
-	if conference and conference.mediabase_override:
-		d['mediabase'] = conference.mediabase_override
-
-	# Check if there is any additional data to put into the context
-	if conference and conference.templatemodule:
-		try:
-			modname = 'conference_templateextra_%s' % conference.id
-			if modname in sys.modules:
-				m = sys.modules[modname]
-			else:
-				# Not loaded, so try to load it!
-				m = imp.load_source(modname, '%s/templateextra.py' % conference.templatemodule)
-			d.update(m.context_template_additions())
-		except Exception:
-			# Ignore problems, because we're lazy. Better render without the
-			# data than not render at all.
-			pass
-
-	return d
-
-#
-# Render a conference page. This automatically attaches the ConferenceContext.
-# It will also load the template from the override directory if one is configured
-# on the conference.
+# Render a conference page. It will load the template using the jinja system
+# if the conference is configured for jinja templates.
 #
 def render_conference_response(request, conference, pagemagic, templatename, dictionary=None):
 	# Conference can be None for pages that can be both inside and outside
 	# the framework, such as the speaker profile.
 	if conference and conference.jinjadir:
-		# Use the cleaner (?) jinja based rendering system
+		# If a jinjadir is defined, then *always* use jinja.
 		return render_jinja_conference_response(request, conference, pagemagic, templatename, dictionary)
 
-	context = ConferenceContext(request, conference)
-	context['pagemagic'] = pagemagic
-	if conference and conference.templateoverridedir:
-		try:
-			if request.GET.has_key('test') and request.GET['test'] == '1':
-				# If we append the test=1 parameter to the URL, we get a test version of
-				# the templates. Basically we just append ".test" to the end of the template
-				# name, making it possible to play interesting symlink tricks and such things
-				# to do testing in production env.
-				templatename += ".test"
+	# If a jinjadir is not defined, then use jinja only for specific templates. This is somewhat ugly,
+	# but it's better than maintaining duplicate templates.
+	if os.path.exists(os.path.join(JINJA_TEMPLATE_ROOT, templatename)):
+		return render_jinja_conference_response(request, conference, pagemagic, templatename, dictionary)
 
-			tmpl = get_template(templatename, [conference.templateoverridedir,])
-
-			if dictionary:
-				context.update(dictionary)
-			return HttpResponse(tmpl.render(context))
-		except TemplateDoesNotExist:
-			# Template not found, so fall through to the default and load the template
-			# from our main directory.
-			pass
+	context = RequestContext(request)
+	context.update({
+		'conftemplbase': "nav_events.html",
+		'conference': conference,
+		'pagemagic': pagemagic,
+	})
 
 	# Either no override configured, or override not found
 	return render_to_response(templatename, dictionary, context_instance=context)

@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" dir="ltr">
+ <head>
+  <title>{%block title%}{%endblock%} - PostgreSQL Europe</title>
+  <meta http-equiv="Content-Type" content="text/xhtml; charset=utf-8" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <style type="text/css" media="screen" title="Normal Text">@import url("/media/css/base.css");</style>
+  <style type="text/css" media="screen" title="Normal Text">@import url("/media/css/geckofixes.css");</style>
+{%block extrahead%}{%endblock%}
+ </head>
+ <body>
+  <div id="pgContainerWrap">
+   <div id="pgContainer">
+    <div id="pgHeaderContainer">
+	 <div id="pgHeader">
+	  <div id="pgHeaderLogoLeft">
+	   <a href="https://www.postgresql.eu/"><img alt="PostgreSQL Europe" height="80" width="230" src="/media/img/layout/hdr_left.png" /></a>
+	  </div>
+	  <div id="pgHeaderLogoRight">
+	   <a href="/"><img width="210" height="80" alt="PostgreSQL Europe" src="/media/img/layout/hdr_right.png" /></a>
+	  </div>
+	 </div> <!-- pgHeader -->
+
+	 <div id="pgTopNav">
+	  <div id="pgTopNavLeft"><img width="7" height="23" alt="" src="/media/img/layout/nav_lft.png" /></div>
+	  <div id="pgTopNavRight"><img width="7" height="23" alt="" src="/media/img/layout/nav_rgt.png" /></div>
+	  <ul id="pgTopNavList">
+	   <li><a href="/" title="Home">Home</a></li>
+	   <li><a href="/about" title="About">About</a></li>
+	   <li><a href="/events" title="Events">Events</a></li>
+	   <li><a href="/community" title="Community">Community</a></li>
+	   <li><a href="/donate" title="Donate">Donate</a></li>
+	   <li><a href="/merchandise" title="Merchandise">Merchandise</a></li>
+	   <li><a href="/membership" title="Your membership">Your membership</a></li>
+	  </ul>
+	 </div> <!-- pgTopNav -->
+	</div> <!-- pgHeaderContainer -->
+	<div id="pgContent">
+{%block content%}{%endblock%}
+     <br class="pgClearBoth" />
+    </div> <!-- pgContent -->
+	<div id="pgFooter">
+         <a class="navFooter" href="/about/privacypolicy">Privacy Policy</a> |
+         <a class="navFooter" href="/about/website">About the website</a><br/>
+	 Copyright &copy; 2008-2017 PostgreSQL Europe
+	</div> <!-- pgFooter -->
+   </div>
+  </div> <!-- pgContainerWrap -->
+ </body>
+</html>

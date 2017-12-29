@@ -83,7 +83,6 @@ ROOT_URLCONF = 'postgresqleu.urls'
 
 TEMPLATE_DIRS = [
 	'template',
-	'conference_template_links',
 ]
 
 INSTALLED_APPS = [

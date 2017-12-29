@@ -23,7 +23,7 @@ from postgresqleu.confreg.templatetags.leadingnbsp import leadingnbsp
 
 # We use a separate root directory for jinja2 templates, so find that
 # directory by searching relative to ourselves.
-TEMPLATE_ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__), '../../template.jinja'))
+JINJA_TEMPLATE_ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__), '../../template.jinja'))
 
 
 # Locate the git revision for a repository in the given path, including
@@ -64,13 +64,20 @@ class ConfTemplateLoader(jinja2.FileSystemLoader):
 	def __init__(self, conference, roottemplate):
 		self.conference = conference
 		self.roottemplate = roottemplate
-		super(ConfTemplateLoader, self).__init__([os.path.join(conference.jinjadir, 'templates'), TEMPLATE_ROOT])
+		if conference and conference.jinjadir:
+			pathlist = [os.path.join(conference.jinjadir, 'templates'), JINJA_TEMPLATE_ROOT]
+		else:
+			pathlist = [JINJA_TEMPLATE_ROOT,]
+
+		super(ConfTemplateLoader, self).__init__(pathlist)
 
 	def get_source(self, environment, template):
 		# Only allow loading of the root template from confreg. Everything else we allow
 		# only from the conference specific directory. This is so we don't end up
 		# loading a template with the wrong parameters passed to it.
-		if template != self.roottemplate:
+		# If no conference is specified, then we allow loading all entries from the root,
+		# for obvious reasons.
+		if self.conference and self.conference.jinjadir and template != self.roottemplate:
 			if not os.path.exists(os.path.join(self.conference.jinjadir, 'templates', template)):
 				# This template may exist in pgeu, so reject it unless it's specifically
 				# whitelisted as something we want to load.
@@ -183,7 +190,7 @@ def filter_datetimeformat(value, fmt):
 def render_jinja_conference_response(request, conference, pagemagic, templatename, dictionary):
 	# It all starts from the base template for this conference. If it
 	# does not exist, just throw a 404 early.
-	if not os.path.exists(os.path.join(conference.jinjadir, 'templates/base.html')):
+	if conference and conference.jinjadir and not os.path.exists(os.path.join(conference.jinjadir, 'templates/base.html')):
 		raise Http404()
 
 	env = ConfSandbox(loader=ConfTemplateLoader(conference, templatename),
@@ -208,7 +215,7 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
 	t = env.get_template(templatename)
 
 	# Optionally load the JSON context with template-specific data
-	if os.path.exists(os.path.join(conference.jinjadir, 'templates/context.json')):
+	if conference and conference.jinjadir and os.path.exists(os.path.join(conference.jinjadir, 'templates/context.json')):
 		try:
 			with open(os.path.join(conference.jinjadir, 'templates/context.json')) as f:
 				c = json.load(f)
@@ -224,14 +231,16 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
 		'conference': conference,
 		'pagemagic': pagemagic,
 		'username': request.user and request.user.username or None,
-		'githash': find_git_revision(conference.jinjadir),
 		'csrf_input': csrf_input_lazy(request),
 		'csrf_token': csrf_token_lazy(request),
 		'messages': get_messages(request),
 	})
+	if conference and conference.jinjadir:
+		c['githash'] = find_git_revision(conference.jinjadir)
+
 
 	# For local testing, there may also be a context.override.json
-	if os.path.exists(os.path.join(conference.jinjadir, 'templates/context.override.json')):
+	if conference and conference.jinjadir and os.path.exists(os.path.join(conference.jinjadir, 'templates/context.override.json')):
 		try:
 			with open(os.path.join(conference.jinjadir, 'templates/context.override.json')) as f:
 				c.update(json.load(f))

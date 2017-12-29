@@ -120,11 +120,6 @@ class Conference(models.Model):
 	askshareemail = models.BooleanField(null=False, blank=False, default=False)
 	skill_levels = models.BooleanField(blank=False, null=False, default=True)
 	additionalintro = models.TextField(blank=True, null=False, help_text="Additional text shown just before the list of available additional options")
-	basetemplate = models.CharField(max_length=128, blank=True, null=True, default=None, help_text="Relative name to template used as base to extend any default templates from")
-	templatemodule = models.CharField(max_length=128, blank=True, null=True, default=None, help_text="Full path to python module containing a 'templateextra.py' submodule")
-	templateoverridedir = models.CharField(max_length=128, blank=True, null=True, default=None, help_text="Full path to a directory with override templates in")
-	badgemodule = models.CharField(max_length=128, blank=True, null=True, default=None, help_text="Full path to python module *and class* used to render badges")
-	templatemediabase = models.CharField(max_length=128, blank=True, null=True, default=None, help_text="Relative location to template media (must be local to avoid https/http errors)")
 	jinjadir = models.CharField(max_length=200, blank=True, null=True, default=None, help_text="Full path to new style jinja repository root")
 	callforpapersintro = models.TextField(blank=True, null=False)
 
@@ -161,18 +156,6 @@ class Conference(models.Model):
 			)
 		else:
 			return self.startdate.strftime("%Y-%m-%d")
-
-	@property
-	def template_override(self):
-		if self.basetemplate and len(self.basetemplate) > 0:
-			return self.basetemplate
-		return None
-
-	@property
-	def mediabase_override(self):
-		if self.templatemediabase and len(self.templatemediabase) > 0:
-			return self.templatemediabase
-		return None
 
 	@property
 	def pending_session_notifications(self):
