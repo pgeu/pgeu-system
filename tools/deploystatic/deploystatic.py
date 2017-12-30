@@ -305,22 +305,29 @@ if __name__ == "__main__":
 	knownfiles = []
 	knownfiles = _deploy_static(source, args.destpath)
 
-	for fn in source.listfiles('templates/pages'):
-		# We don't use subdirectories yet, so don't bother even looking at that
+	for relpath, fn in source.walkfiles('templates/pages'):
+		# We only process HTML files in templates
 		if os.path.splitext(fn)[1] != '.html':
 			continue
 
 		if fn == 'index.html':
+			if relpath != 'templates/pages':
+				print "index.html can only be used in the root directory!"
+				sys.exit(1)
 			destdir = ''
 		else:
-			destdir = os.path.splitext(fn)[0]
+			noext = os.path.splitext(fn)[0]
+			if relpath == 'templates/pages':
+				destdir = noext
+			else:
+				destdir = '{0}/{1}'.format(relpath[len('templates/pages/'):], noext)
 
 		if not os.path.isdir(os.path.join(args.destpath, destdir)):
-			os.mkdir(os.path.join(args.destpath, destdir))
+			os.makedirs(os.path.join(args.destpath, destdir))
 
 		context['page'] = destdir
 
-		deploy_template(env, os.path.join('pages', fn),
+		deploy_template(env, os.path.join(relpath[len('templates/'):], fn),
 						os.path.join(args.destpath, destdir, 'index.html'),
 						context)
 
