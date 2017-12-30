@@ -214,6 +214,26 @@ def _deploy_static(source, destpath):
 	return knownfiles
 
 
+def remove_unknown(knownfiles, destpath):
+	# Build a list of known directories. This includes any directories with
+	# files in them, but also parents of any such directories.
+	knowndirs = set([os.path.dirname(f) for f in knownfiles])
+	knowndirs.update([os.path.dirname(d) for d in knowndirs if not os.path.dirname(d) in knowndirs])
+	for dn, subdirs, filenames in os.walk(destpath):
+		relpath = os.path.relpath(dn, destpath)
+		if relpath == '.':
+			relpath = ''
+		for fn in filenames:
+			f = os.path.join(relpath, fn)
+			if not f in knownfiles:
+				os.unlink(os.path.join(destpath, f))
+		for dn in subdirs:
+			d = os.path.join(relpath, dn)
+			if not d in knowndirs:
+				# Remove directory recursively, since there can be nothing left
+				# in it.
+				shutil.rmtree(os.path.join(destpath, d))
+
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='Deploy jinja based static site')
 	parser.add_argument('sourcepath', type=str, help='Source path')
@@ -269,15 +289,7 @@ if __name__ == "__main__":
 
 		knownfiles.extend(_deploy_static(source, args.destpath))
 
-		# Look for things to remove
-		for dn, subdirs, filenames in os.walk(args.destpath):
-			relpath = os.path.relpath(dn, args.destpath)
-			if relpath == '.':
-				relpath = ''
-			for fn in filenames:
-				f = os.path.join(relpath, fn)
-				if not f in knownfiles:
-					os.unlink(os.path.join(args.destpath, f))
+		remove_unknown(knownfiles, args.destpath)
 
 		# Generate a githash file
 		with open(os.path.join(args.destpath, ".deploystatic_githash"), "w") as f:
@@ -347,23 +359,4 @@ if __name__ == "__main__":
 
 			knownfiles.append(os.path.join(destdir, 'index.html'))
 
-	# Look for things to remove
-
-	# Build a list of known directories. This includes any directories with
-	# files in them, but also parents of any such directories.
-	knowndirs = set([os.path.dirname(f) for f in knownfiles])
-	knowndirs.update([os.path.dirname(d) for d in knowndirs if not os.path.dirname(d) in knowndirs])
-	for dn, subdirs, filenames in os.walk(args.destpath):
-		relpath = os.path.relpath(dn, args.destpath)
-		if relpath == '.':
-			relpath = ''
-		for fn in filenames:
-			f = os.path.join(relpath, fn)
-			if not f in knownfiles:
-				os.unlink(os.path.join(args.destpath, f))
-		for dn in subdirs:
-			d = os.path.join(relpath, dn)
-			if not d in knowndirs:
-				# Remove directory recursively, since there can be nothing left
-				# in it.
-				shutil.rmtree(os.path.join(args.destpath, d))
+	remove_unknown(knownfiles, args.destpath)
