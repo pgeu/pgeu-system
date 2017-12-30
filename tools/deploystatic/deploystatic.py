@@ -327,6 +327,11 @@ if __name__ == "__main__":
 		knownfiles.append(os.path.join(destdir, 'index.html'))
 
 	# Look for things to remove
+
+	# Build a list of known directories. This includes any directories with
+	# files in them, but also parents of any such directories.
+	knowndirs = set([os.path.dirname(f) for f in knownfiles])
+	knowndirs.update([os.path.dirname(d) for d in knowndirs if not os.path.dirname(d) in knowndirs])
 	for dn, subdirs, filenames in os.walk(args.destpath):
 		relpath = os.path.relpath(dn, args.destpath)
 		if relpath == '.':
@@ -335,3 +340,9 @@ if __name__ == "__main__":
 			f = os.path.join(relpath, fn)
 			if not f in knownfiles:
 				os.unlink(os.path.join(args.destpath, f))
+		for dn in subdirs:
+			d = os.path.join(relpath, dn)
+			if not d in knowndirs:
+				# Remove directory recursively, since there can be nothing left
+				# in it.
+				shutil.rmtree(os.path.join(args.destpath, d))
