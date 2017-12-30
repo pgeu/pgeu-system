@@ -305,33 +305,47 @@ if __name__ == "__main__":
 	knownfiles = []
 	knownfiles = _deploy_static(source, args.destpath)
 
-	for relpath, fn in source.walkfiles('templates/pages'):
-		# We only process HTML files in templates
-		if os.path.splitext(fn)[1] != '.html':
-			continue
+	# If we have a .deploystaticmap, parse that one instead of the full list of
+	# parsing everything.
+	fmap = source.readfile('templates/pages/.deploystaticmap')
+	if fmap:
+		for l in fmap.splitlines():
+			(src, dest) = l.split(':')
+			if not os.path.isdir(os.path.join(args.destpath, dest)):
+				os.makedirs(os.path.join(args.destpath, dest))
+			context['page'] = dest
+			deploy_template(env, os.path.join('pages', src),
+							os.path.join(args.destpath, dest, 'index.html'),
+							context)
+			knownfiles.append(os.path.join(dest, 'index.html'))
+	else:
+		for relpath, fn in source.walkfiles('templates/pages'):
+			# We only process HTML files in templates
+			if os.path.splitext(fn)[1] != '.html':
+				continue
 
-		if fn == 'index.html':
-			if relpath != 'templates/pages':
-				print "index.html can only be used in the root directory!"
-				sys.exit(1)
-			destdir = ''
-		else:
-			noext = os.path.splitext(fn)[0]
-			if relpath == 'templates/pages':
-				destdir = noext
+			if fn == 'index.html':
+				if relpath != 'templates/pages':
+					print "index.html can only be used in the root directory!"
+					sys.exit(1)
+				destdir = ''
 			else:
-				destdir = '{0}/{1}'.format(relpath[len('templates/pages/'):], noext)
+				noext = os.path.splitext(fn)[0]
+				if relpath == 'templates/pages':
+					destdir = noext
+				else:
+					destdir = '{0}/{1}'.format(relpath[len('templates/pages/'):], noext)
 
-		if not os.path.isdir(os.path.join(args.destpath, destdir)):
-			os.makedirs(os.path.join(args.destpath, destdir))
+			if not os.path.isdir(os.path.join(args.destpath, destdir)):
+				os.makedirs(os.path.join(args.destpath, destdir))
 
-		context['page'] = destdir
+			context['page'] = destdir
 
-		deploy_template(env, os.path.join(relpath[len('templates/'):], fn),
-						os.path.join(args.destpath, destdir, 'index.html'),
-						context)
+			deploy_template(env, os.path.join(relpath[len('templates/'):], fn),
+							os.path.join(args.destpath, destdir, 'index.html'),
+							context)
 
-		knownfiles.append(os.path.join(destdir, 'index.html'))
+			knownfiles.append(os.path.join(destdir, 'index.html'))
 
 	# Look for things to remove
 
