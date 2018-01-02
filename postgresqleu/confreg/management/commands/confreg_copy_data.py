@@ -102,6 +102,7 @@ class Command(BaseCommand):
 										  abstract=s.abstract,
 										  skill_level=s.skill_level,
 										  status=0,
+										  initialsubmit=s.initialsubmit,
 										  submissionnote=s.submissionnote,
 					)
 					n.save()

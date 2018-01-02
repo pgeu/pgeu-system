@@ -984,6 +984,7 @@ def callforpapers_copy(request, confname):
 									  abstract=s.abstract,
 									  skill_level=s.skill_level,
 									  status=0,
+									  initialsubmit=datetime.now(),
 									  submissionnote=submissionnote,
 									  )
 				n.save()
