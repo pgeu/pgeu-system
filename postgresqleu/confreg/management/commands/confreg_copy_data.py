@@ -12,6 +12,7 @@ from postgresqleu.confreg.models import Conference
 from postgresqleu.confreg.models import RegistrationClass, RegistrationType
 from postgresqleu.confreg.models import ConferenceSessionScheduleSlot
 from postgresqleu.confreg.models import ConferenceFeedbackQuestion
+from postgresqleu.confreg.models import Track, ConferenceSession
 
 class Command(BaseCommand):
 	help = 'Copy conference metadata'
@@ -19,7 +20,9 @@ class Command(BaseCommand):
 	def add_arguments(self, parser):
 		parser.add_argument('source', type=str)
 		parser.add_argument('dest', type=str)
-		parser.add_argument('type', type=str, choices=('regtypes', 'talkslots', 'feedback'))
+		parser.add_argument('type', type=str, choices=('regtypes', 'talkslots', 'feedback', 'sessions'))
+		parser.add_argument('--sourcetrack', type=str)
+		parser.add_argument('--desttrack', type=str)
 
 	def handle(self, *args, **options):
 		with transaction.atomic():
@@ -77,6 +80,34 @@ class Command(BaseCommand):
 							sortkey=q.sortkey,
 							newfieldset=q.newfieldset,
 						).save()
+			elif options['type'] == 'sessions':
+				if not options['sourcetrack'] or not options['desttrack']:
+					raise CommandError("Track must be given when copying sessions")
+				try:
+					self.sourcetrack = Track.objects.get(conference=self.source, trackname=options['sourcetrack'])
+				except Track.DoesNotExist:
+					raise CommandError("Source track '{0}' does not exist.".format(options['sourcetrack']))
+				try:
+					self.desttrack = Track.objects.get(conference=self.dest, trackname=options['desttrack'])
+				except Track.DoesNotExist:
+					raise CommandError("Destination track '{0}' does not exist.".format(options['desttrack']))
+				sessions = list(ConferenceSession.objects.filter(conference=self.source, track=self.sourcetrack))
+				if len(sessions) == 0:
+					raise CommandError("No sessions found.")
+				for s in sessions:
+					print "Copying session %s" % s.title
+					n = ConferenceSession(conference=self.dest,
+										  track=self.desttrack,
+										  title=s.title,
+										  abstract=s.abstract,
+										  skill_level=s.skill_level,
+										  status=0,
+										  submissionnote=s.submissionnote,
+					)
+					n.save()
+					n.speaker = s.speaker.all()
+				if not self.confirm('Copied {0} sessions. Proceed to commit?'.format(len(sessions))):
+					raise CommandError("Aborting")
 			else:
 				# Could not happen, so throw hard exception
 				raise CommandError("Invalid type specified")
