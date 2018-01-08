@@ -21,9 +21,6 @@ def paypal_return_handler(request):
 
 	# Custom error return that can get to the request context
 	def paypal_error(reason):
-		# Explicitly roll back the transaction, since our
-		# error page will look like a success to django...
-		transaction.rollback()
 		return render_to_response('paypal/error.html', {
 				'reason': reason,
 				}, context_instance=RequestContext(request))
