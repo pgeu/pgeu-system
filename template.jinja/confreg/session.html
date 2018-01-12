@@ -27,10 +27,10 @@
   The following slides have been made available for this session:
 </p>
 <ul>
-</ul>
 {%for sl in slides%}
 <li><a href="{%if sl.url%}{{sl.url}}{%else%}/events/{{conference.urlname}}/sessions/session/{{session.id}}/slides/{{sl.id}}/{{sl.name}}{%endif%}">{{sl.name}}</a></li>
 {%endfor%}
+</ul>
 {%endif%}
 
 {%for speaker in session.speaker.all()%}
