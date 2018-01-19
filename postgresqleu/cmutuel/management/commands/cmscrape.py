@@ -64,6 +64,16 @@ class CurlWrapper(object):
 	def post(self, url, postdict):
 		return self.request(url, True, postdict)
 
+	def expect_redirect(self, fetchpage, redirectto, postdata=None):
+		if postdata:
+			(c,s) = self.post(fetchpage, postdata)
+		else:
+			(c,s) = self.get(fetchpage)
+		if c.getinfo(pycurl.RESPONSE_CODE) != 302:
+			raise CommandError("Supposed to receive 302 for %s, got %s" % (fetchpage, c.getinfo(c.RESPONSE_CODE)))
+		if c.getinfo(pycurl.REDIRECT_URL) != redirectto:
+			raise CommandError("Received unexpected redirect from %s to '%s'" % (fetchpage, c.getinfo(pycurl.REDIRECT_URL)))
+
 
 class Command(BaseCommand):
 	help = 'Scrape the CM website for list of recent transactions'
@@ -80,22 +90,18 @@ class Command(BaseCommand):
 		curl = CurlWrapper()
 
 		if verbose: self.stdout.write("Logging in...")
-		(c,s) = curl.post("https://www.creditmutuel.fr/en/authentification.html", {
-					  '_cm_user': settings.CM_USER_ACCOUNT,
-					  '_cm_pwd': settings.CM_USER_PASSWORD,
-					  'flag': 'password',
-				  })
-		if c.getinfo(pycurl.RESPONSE_CODE) != 302:
-			raise CommandError("Supposed to receive 302, got %s" % c.getinfo(c.RESPONSE_CODE))
-		if c.getinfo(pycurl.REDIRECT_URL) != 'https://www.creditmutuel.fr/en/banque/pageaccueil.html':
-			raise CommandError("Received unexpected redirect to '%s'" % c.getinfo(pycurl.REDIRECT_URL))
+		curl.expect_redirect('https://www.creditmutuel.fr/en/authentification.html',
+							 'https://www.creditmutuel.fr/en/banque/pageaccueil.html', {
+								 '_cm_user': settings.CM_USER_ACCOUNT,
+								 '_cm_pwd': settings.CM_USER_PASSWORD,
+								 'flag': 'password',
+							 })
 
-		# Get this downloaded page to fetch further cookies
-		(c,s) = curl.get('https://www.creditmutuel.fr/en/banque/pageaccueil.html')
-		if c.getinfo(pycurl.RESPONSE_CODE) != 302:
-			raise CommandError("Supposed to receive 302 for pageaccueil.html, got %s" % c.getinfo(c.RESPONSE_CODE))
-		if c.getinfo(pycurl.REDIRECT_URL) != 'https://www.creditmutuel.fr/en/banque/homepage_dispatcher.cgi':
-			raise CommandError("Received unexpected redirect from pageaccueil.html to '%s'" % c.getinfo(pycurl.REDIRECT_URL))
+		# Follow a redirect chain to collect more cookies
+		curl.expect_redirect('https://www.creditmutuel.fr/en/banque/pageaccueil.html',
+							 'https://www.creditmutuel.fr/en/banque/paci_engine/engine.aspx')
+		curl.expect_redirect('https://www.creditmutuel.fr/en/banque/paci_engine/engine.aspx',
+							 'https://www.creditmutuel.fr/en/banque/homepage_dispatcher.cgi')
 
 		# Download the form
 		if verbose: self.stdout.write("Downloading form...")
