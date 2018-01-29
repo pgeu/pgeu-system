@@ -1,0 +1,68 @@
+{%extends "base.html" %}
+{%block title%}Create Invoice - {{conference}}{%endblock%}
+{%block extrahead%}
+<style>
+table.invoiceconfirmtbl {
+   width: 700px;
+}
+table.invoiceconfirmtbl td.desc {
+}
+table.invoiceconfirmtbl tr td.cost,th.cost {
+   text-align: right;
+   white-space: nowrap;
+   width: 85px;
+}
+table.invoiceconfirmtbl tr.totalrow td.cost {
+   border-top: 1px solid black;
+}
+</style>
+{%endblock%}
+{%block content%}
+<h1>Create Invoice - {{conference}}</h1>
+<p>
+  Please enter invoice recipient information below. The contents of the
+  recipient and address will be copied directly to the invoice, so make
+  sure you enter <i>all</i> the information you want on the invoice!
+</p>
+<form action="." method="post">{{ csrf_input }}
+ <input type="hidden" name="totalwithvat" value="{{totalwithvat}}">
+  <table>
+{{form}}
+  </table>
+<p>Verify the contents below, and then create the invoice.</p>
+<input type="submit" name="submit" value="Create">
+<input type="submit" name="submit" value="Cancel">
+</form>
+
+<h2>Invoice contents</h2>
+<table class="invoiceconfirmtbl">
+<tr>
+  <th>Description</th>
+  <th class="cost">Amount</th>
+{%if totalwithvat != totalcost%}
+  <th class="cost">VAT</th>
+  <th class="cost">Total</th>
+{%endif%}
+</tr>
+{%for r,num,amount,vatrate,total in invoicerows%}
+<tr>
+  <td>{{r|leadingnbsp}}</td>
+  <td class="cost">{{amount|currency_format}}</td>
+{%if totalwithvat != totalcost%}
+  <td class="cost">{{vatrate.vatpercent}}%</td>
+  <td class="cost">{{total|currency_format}}</td>
+{%endif%}
+</tr>
+{%endfor%}
+<tr valign="top" class="totalrow">
+  <td class="desc"></td>
+  <td class="cost">{{totalcost|currency_format}}</td>
+{%if totalwithvat != totalcost %}
+  <td class="cost"></td>
+  <td class="cost">{{totalwithvat|currency_format}}</td>
+{%endif%}
+</tr>
+</table>
+
+{%endblock%}
+

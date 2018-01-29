@@ -1,12 +1,18 @@
 from django.conf import settings
 from django.template import Context
+from django.contrib.auth.models import User
 
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 
 from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
+from postgresqleu.util.random import generate_random_token
 
 from models import PrepaidVoucher, DiscountCode, RegistrationWaitlistHistory
+from models import ConferenceRegistration
+
+class InvoicerowsException(Exception):
+	pass
 
 def invoicerows_for_registration(reg, update_used_vouchers):
 	# Return the rows that would be used to build an invoice for this
@@ -31,7 +37,7 @@ def invoicerows_for_registration(reg, update_used_vouchers):
 			if v.usedate:
 				# Find a way to raise an exception here if the voucher is
 				# already used? For now, we just ignore it.
-				pass
+				raise InvoicerowsException("Prepaid voucher already used")
 			else:
 				# Valid voucher found!
 				if update_used_vouchers:
@@ -45,34 +51,22 @@ def invoicerows_for_registration(reg, update_used_vouchers):
 			try:
 				d = DiscountCode.objects.get(code=reg.vouchercode, conference=reg.conference)
 				if d.validuntil and d.validuntil < date.today():
-					# Find a way to raise an exception here if the voucher is
-					# expired. But it has already been checked in the form
-					# submission step... But make sure not to apply it
-					pass
+					raise InvoicerowsException("Discount code is no longer valid")
 				elif d.maxuses > 0 and d.registrations.count() >= d.maxuses:
-					# Same goes for the count
-					pass
+					raise InvoicerowsException("Discount code does not have enough remaining instances")
 				elif d.is_invoiced:
-					# If it's been invoiced, it cannot be used anymore! Should only happen if one
-					# of the above rules are true as well, but just in case somebody makes a change in the db.
-					pass
+					raise InvoicerowsException("Discount code has already been invoiced and is no longer valid")
 				else:
 					# Valid discount code found!
 					selected_options = reg.additionaloptions.all()
 					for o in d.requiresoption.all():
 						if not o in selected_options:
-							# Find a way to raise an exception here if
-							# the voucher requires an option that is
-							# not selected. But it has already been
-							# checked in the form submission
-							# step... But make sure not to apply it
-							return r
+							raise InvoicerowsException(u"Discount code requires option {0}".format(o.name))
 
 					required_regtypes = d.requiresregtype.all()
 					if required_regtypes:
 						if not reg.regtype in required_regtypes:
-							# See above about raising exception.
-							return r
+							raise InvoicerowsException(u"Discount code requires registration types {0}".format(u",".join(required_regtypes)))
 
 					if update_used_vouchers:
 						d.registrations.add(reg)
@@ -92,11 +86,7 @@ def invoicerows_for_registration(reg, update_used_vouchers):
 					if discount > 0:
 						r.append(['   Discount code %s' % d.code, 1, -discount, reg.conference.vat_registrations])
 			except DiscountCode.DoesNotExist:
-				# An invalid voucher should never make it this far, but if it does
-				# we'll just ignore it. Errors would've been given when the form
-				# was saved.
-				pass
-
+				raise InvoicerowsException("Invalid voucher code")
 	return r
 
 
@@ -105,6 +95,43 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
 	if updatewaitlist and hasattr(reg, 'registrationwaitlistentry'):
 		RegistrationWaitlistHistory(waitlist=reg.registrationwaitlistentry,
 									text="Completed registration from the waitlist").save()
+
+	# If this registration has no user attached to it, it means that
+	# it was a "register for somebody else". In this case we need to
+	# send the user an email with information that otherwise would not
+	# be available. This means that the user will get two separate
+	# emails in case welcome emails is enabled, but that is necessary
+	# since we need to include links and things in this email.
+	if not reg.attendee:
+		# First we see if we can just find a user match on email, this
+		# being a user that has not already registered for this
+		# conference.
+		found = False
+		try:
+			u = User.objects.get(email=reg.email)
+			if not ConferenceRegistration.objects.filter(conference=reg.conference, attendee=u).exists():
+				# Found user by this id, not used yet, so attach it
+				# to their account.
+				reg.attendee = u
+				reg.save()
+				found = True
+		except User.DoesNotExist:
+			pass
+
+		if not found:
+			# User not found, so we use the random token and send it
+			# to ask them to attach their account to this registration.
+			send_template_mail(reg.conference.contactaddr,
+							   reg.email,
+							   "Your registration for {0}".format(reg.conference),
+							   'confreg/mail/regmulti_attach.txt',
+							   {
+								   'conference': reg.conference,
+								   'reg': reg,
+							   },
+							   sendername=reg.conference.conferencename,
+							   receivername=reg.fullname,
+			)
 
 	# Do we need to send the welcome email?
 	if not reg.conference.sendwelcomemail:
@@ -148,19 +175,20 @@ def expire_additional_options(reg):
 		# template. (It's a bit inefficient to re-parse the template every time, but
 		# we don't expire these things very often, so we don't care)
 
-		send_template_mail(reg.conference.contactaddr,
-						   reg.email,
-						   'Your pending registration for {0}'.format(reg.conference.conferencename),
-						   'confreg/mail/additionaloption_expired.txt',
-						   {
-							 'conference': reg.conference,
-							 'reg': reg,
-							 'options': expireset,
-							 'optionscount': len(expireset),
-						   },
-						   sendername = reg.conference.conferencename,
-						   receivername = reg.fullname,
-					   )
+		if reg.attendee:
+			send_template_mail(reg.conference.contactaddr,
+							   reg.email,
+							   'Your pending registration for {0}'.format(reg.conference.conferencename),
+							   'confreg/mail/additionaloption_expired.txt',
+							   {
+								   'conference': reg.conference,
+								   'reg': reg,
+								   'options': expireset,
+								   'optionscount': len(expireset),
+							   },
+							   sendername = reg.conference.conferencename,
+							   receivername = reg.fullname,
+			)
 
 		for ao in expireset:
 			# Notify caller that this one is being expired

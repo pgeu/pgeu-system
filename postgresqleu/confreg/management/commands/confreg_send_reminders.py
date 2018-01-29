@@ -33,6 +33,7 @@ class Command(BaseCommand):
 					self.remind_unregistered_speakers(whatstr, conference)
 
 				self.remind_pending_registrations(whatstr, conference)
+				self.remind_pending_multiregs(whatstr, conference)
 
 				# Do we need to send a central mail?
 				if whatstr.tell():
@@ -135,9 +136,12 @@ class Command(BaseCommand):
 		# and are not completed. We look at registrations created more than 5
 		# days ago and also unmodified for 5 days. This is intentionally not 7
 		# days in order to "rotate the day of week" the reminders go out on.
+		# Only send reminders if attendee has a value, meaning we don't send
+		# reminders to registrations that are managed by somebody else.
 		regs = ConferenceRegistration.objects.filter(conference=conference,
 													 conference__active=True,
 													 conference__enddate__gt=datetime.now(),
+													 attendee__isnull=False,
 													 payconfirmedat__isnull=True,
 													 invoice__isnull=True,
 													 bulkpayment__isnull=True,
@@ -165,6 +169,50 @@ class Command(BaseCommand):
 				whatstr.write(u"Reminded attendee {0} that their registration is not confirmed\n".format(reg.fullname))
 
 			whatstr.write("\n\n")
+
+	def remind_pending_multiregs(self, whatstr, conference):
+		# Reminde owners of "multiregs" that have not been completed. Basic rules
+		# are the same as remind_pending_registrations(), but we only consider
+		# those that are managed by somebody else.
+		regs = ConferenceRegistration.objects.filter(conference=conference,
+													 conference__active=True,
+													 conference__enddate__gt=datetime.now(),
+													 attendee__isnull=True,
+													 registrator__isnull=False,
+													 payconfirmedat__isnull=True,
+													 invoice__isnull=True,
+													 bulkpayment__isnull=True,
+													 registrationwaitlistentry__isnull=True,
+													 created__lt=datetime.now()-timedelta(days=5),
+													 lastmodified__lt=datetime.now()-timedelta(days=5))
+
+		if regs:
+			multiregs = set([r.registrator for r in  regs])
+
+			whatstr.write("Found {0} unconfirmed multiregistrations that are stalled:\n".format(len(multiregs)))
+
+			for r in multiregs:
+				send_template_mail(conference.contactaddr,
+								   r.email,
+								   "Your registrations for {0}".format(conference),
+								   'confreg/mail/multireg_stalled_registration.txt',
+								   {
+									   'conference': conference,
+									   'registrator': r,
+								   },
+								   sendername = conference.conferencename,
+								   receivername = u"{0} {1}".format(r.first_name, r.last_name),
+							   )
+
+				whatstr.write(u"Reminded user {0} ({1}) that their multi-registration is not confirmed\n".format(r.username, r.email))
+
+			whatstr.write("\n\n")
+
+			# Separately mark each part of the multireg as touched
+			for reg in regs:
+				reg.lastmodified = datetime.now()
+				reg.save()
+
 
 	def remind_empty_submissions(self, whatstr, conference):
 		# Get all sessions with empty abstract (they forgot to hit save), if they have not been touched in

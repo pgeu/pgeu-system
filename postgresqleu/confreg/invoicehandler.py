@@ -162,18 +162,21 @@ class BulkInvoiceProcessor(object):
 			r.bulkpayment = None
 			r.save()
 
-			send_template_mail(bp.conference.contactaddr,
-							   r.email,
-							   "Your registration for {0} bulk payment canceled".format(bp.conference.conferencename),
-							   'confreg/mail/bulkpay_canceled.txt',
-							   {
-								   'conference': bp.conference,
-								   'reg': r,
-								   'bulk': bp,
-							   },
-							   sendername = bp.conference.conferencename,
-							   receivername = r.fullname,
-						   )
+			if r.attendee:
+				# Only notify if this attendee actually knows about the
+				# registration.
+				send_template_mail(bp.conference.contactaddr,
+								   r.email,
+								   "Your registration for {0} bulk payment canceled".format(bp.conference.conferencename),
+								   'confreg/mail/bulkpay_canceled.txt',
+								   {
+									   'conference': bp.conference,
+									   'reg': r,
+									   'bulk': bp,
+								   },
+								   sendername = bp.conference.conferencename,
+								   receivername = r.fullname,
+				)
 
 			# If this registration holds any additional options that are about to expire, release
 			# them for others to use at this point. (This will send an additional email to the

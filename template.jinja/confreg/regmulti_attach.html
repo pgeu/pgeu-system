@@ -1,0 +1,21 @@
+{%extends "base.html" %}
+{%block title%}Conference registration account{%endblock%}
+{%block content%}
+<h1>Conference registration account</h1>
+<p>
+  The registration for <i>{{reg.fullname}} &lt;{{reg.email}}&gt;</i> is
+  currently not attached to an account. By attaching it to an account
+  you make it possible for the account holder to participate in some
+  activities at the conference that require a login.
+</p>
+<p>
+  To attach this registration to the account
+  <i>{{username}} ({{userfullname}} &lt;{{useremail}}&gt;)</i>, click the confirm button
+  below. Please <b>make sure</b> that you attach the registration to
+  the correct account, as this is an action that cannot be undone.
+</p>
+
+<form method="post" action=".">{{ csrf_input }}
+  <input type="submit" name="submit" value="Confirm and attach account">
+</form>
+{%endblock%}

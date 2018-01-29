@@ -1,11 +1,6 @@
 {%extends "base.html" %}
 {%block title%}Conference Registration - {{conference}}{%endblock%}
 {%block extrahead%}
-<script type="text/javascript">
-function confirmCancel() {
-   return confirm('Are you sure you want to cancel and remove your registration?');
-}
-</script>
 <style>
 div.regwrap {
    width: 100%;
@@ -40,39 +35,8 @@ form input[type=submit] {
 {%block content%}
 <h1>Conference Registration - {{conference}}</h1>
 
-<p>On this page you can register for <a href="{{conference.confurl}}">{{conference}}</a>.
-</p>
-<p>
-If you wish to register multiple people, or somebody other than yourself,
-please use the <a href="{{redir_root}}other/">advanced form</a>.
-</p>
-
-{%if reg.registrationwaitlistentry%}
-<h2>Waitlist</h2>
-<p>
-Your registration is currently on the waitlist.
-</p>
-{%if reg.registrationwaitlistentry.offeredon%}
-<p>
-Good news - you have been offered a seat from the waitlist. Please
-complete the form below and click "Save and finish" to
-complete the process! The process must be completed before
-{{reg.registrationwaitlistentry.offerexpires.strftime("%Y-%m-%d %H:%M")}} or
-this offer will expire!
-</p>
-{%else%}
-<p>
-We will let you know as soon as a seat shows up!
-</p>
-{%endif%}
-{%endif%}
-
 <form action="." method="post" class="pgeuregform">{{ csrf_input }}
-{% if form_is_saved %}
-<p><b>Note!</b> Your registration is not confirmed until the payment
-has been confirmed.</p>
-{% endif %}
-
+<input type="hidden" name="_email" value="{{_email}}">
 {% if form.errors %}
 <p style="color:red; font-weight: bold">Note! This form contains errors and has not been saved!
 The fields with invalid input have been highlighted below with a message describing the required
@@ -101,14 +65,9 @@ correction.</p>
  </fieldset>
 {%endfor%}
 
- <p>
-   You can edit your registration details and save as many times as you want
-   in the process. Once you are finished, click <i>Save and finish</i>
-   to proceed to the payment options.
- </p>
- <input type="submit" name="submit" value="Save and continue editing"><br/>
- <input type="submit" name="submit" value="Save and finish"><br/>
- <input type="submit" name="submit" onclick="return confirmCancel()" value="Cancel registration"><br/>
+ <input type="submit" name="submit" value="Save"><br/>
+ <input type="submit" name="submit" value="Cancel"><br/>
+ <input type="submit" name="submit" value="Delete">
 </form>
 {%endblock%}
 

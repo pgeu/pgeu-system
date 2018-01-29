@@ -33,6 +33,7 @@ from forms import CallForPapersForm, CallForPapersSpeakerForm, CallForPapersSubm
 from forms import CallForPapersCopyForm, PrepaidCreateForm, BulkRegistrationForm
 from forms import EmailSendForm, EmailSessionForm, CrossConferenceMailForm
 from forms import AttendeeMailForm, WaitlistOfferForm, TransferRegForm
+from forms import NewMultiRegForm, MultiRegInvoiceForm
 from forms import SessionSlidesUrlForm, SessionSlidesFileForm
 from util import invoicerows_for_registration, notify_reg_confirmed
 from util import get_invoice_autocancel
@@ -94,7 +95,7 @@ def render_conference_response(request, conference, pagemagic, templatename, dic
 	return render_to_response(templatename, dictionary, context_instance=context)
 
 # Not a view in itself, only called from other views
-def _registration_dashboard(request, conference, reg):
+def _registration_dashboard(request, conference, reg, has_other_multiregs, redir_root):
 	mails = AttendeeMail.objects.filter(conference=conference, regclasses=reg.regtype.regclass)
 
 	wikipagesQ = Q(publicview=True) | Q(viewer_attendee__attendee=request.user) | Q(viewer_regtype__conferenceregistration__attendee=request.user)
@@ -133,8 +134,10 @@ def _registration_dashboard(request, conference, reg):
 		invoices.append(('Additional options invoice and receipt', InvoicePresentationWrapper(pao.invoice, '.')))
 
 	return render_conference_response(request, conference, 'reg', 'confreg/registration_dashboard.html', {
+		'redir_root': redir_root,
 		'reg': reg,
 		'is_speaker': is_speaker,
+		'has_other_multiregs': has_other_multiregs,
 		'mails': mails,
 		'wikipages': wikipages,
 		'signups': signups,
@@ -157,13 +160,30 @@ def confhome(request, confname):
 
 @login_required
 @transaction.atomic
-def home(request, confname):
+def home(request, confname, whatfor=None):
 	conference = get_object_or_404(Conference, urlname=confname)
+	if whatfor:
+		whatfor = whatfor.rstrip('/')
+		redir_root = '../'
+	else:
+		redir_root = ''
 
+	has_other_multiregs = ConferenceRegistration.objects.filter(Q(conference=conference, registrator=request.user) & ~Q(attendee=request.user)).exists()
+	if (not whatfor) and has_other_multiregs and \
+	   not ConferenceRegistration.objects.filter(conference=conference, attendee=request.user).exists():
+		return HttpResponseRedirect('other/')
+
+	# Either not specifying or registering for self.
 	try:
 		reg = ConferenceRegistration.objects.get(conference=conference,
-			attendee=request.user)
-	except:
+												 attendee=request.user)
+	except ConferenceRegistration.DoesNotExist:
+		# No previous registration exists. Let the user choose what to
+		# do. If already under "self" suburl, copy the data from the
+		# user profile and move on.
+		if whatfor == None:
+			return render_conference_response(request, conference, 'reg', 'confreg/prompt_regfor.html')
+
 		# No previous registration, grab some data from the user profile
 		reg = ConferenceRegistration(conference=conference, attendee=request.user)
 		reg.email = request.user.email
@@ -179,7 +199,7 @@ def home(request, confname):
 		if reg.payconfirmedat:
 			# Attendee has a completed registration, but registration is closed.
 			# Render the dashboard.
-			return _registration_dashboard(request, conference, reg)
+			return _registration_dashboard(request, conference, reg, has_other_multiregs, redir_root)
 		else:
 			return render_conference_response(request, conference, 'reg', 'confreg/closed.html')
 
@@ -205,11 +225,21 @@ def home(request, confname):
 		if reg.invoice:
 			return render_conference_response(request, conference, 'reg', 'confreg/invoiceexists.html')
 
+		# Did the user click cancel? We want to check that before we
+		# check form.is_valid(), to avoid the user getting errors like
+		# "you must specify country in order to cancel".
+		if request.POST['submit'] == 'Cancel registration':
+			if reg.id:
+				reg.delete()
+			return HttpResponseRedirect("{0}canceled/".format(redir_root))
+
+
 		form = ConferenceRegistrationForm(request.user, data=request.POST, instance=reg)
 		if form.is_valid():
 			reg = form.save(commit=False)
 			reg.conference = conference
 			reg.attendee = request.user
+			reg.registrator = request.user
 			reg.save()
 			form.save_m2m()
 			form_is_saved = True
@@ -217,12 +247,16 @@ def home(request, confname):
 			# Figure out if the user clicked a "magic save button"
 			if request.POST['submit'] == 'Confirm and finish' or request.POST['submit'] == 'Save and finish':
 				# Complete registration!
-				return HttpResponseRedirect("confirm/")
+				return HttpResponseRedirect("{0}confirm/".format(redir_root))
 
 			# Or did they click cancel?
 			if request.POST['submit'] == 'Cancel registration':
 				reg.delete()
-				return HttpResponseRedirect("canceled/")
+				return HttpResponseRedirect("{0}canceled/".format(redir_root))
+
+			# Or did they save but we're on the "wrong" url
+			if redir_root:
+				return HttpResponseRedirect(redir_root)
 
 			# Else it was a general save, and we'll fall through and
 			# show the form again so details can be edited.
@@ -232,7 +266,7 @@ def home(request, confname):
 		if reg.payconfirmedat:
 			# This registration is completed. Show the dashboard instead of
 			# the registration form.
-			return _registration_dashboard(request, conference, reg)
+			return _registration_dashboard(request, conference, reg, has_other_multiregs, redir_root)
 
 		if reg.invoice or reg.bulkpayment:
 			# Invoice generated or part of bulk payment means the registration
@@ -241,6 +275,7 @@ def home(request, confname):
 
 			return render_conference_response(request, conference, 'reg', 'confreg/regform_completed.html', {
 				'reg': reg,
+				'redir_root': redir_root,
 				'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/%s/register/" % (settings.SITEBASE, conference.urlname)),
 			})
 
@@ -251,10 +286,279 @@ def home(request, confname):
 		'form': form,
 		'form_is_saved': form_is_saved,
 		'reg': reg,
+		'redir_root': redir_root,
 		'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/%s/register/" % (settings.SITEBASE, conference.urlname)),
 		'additionaloptions': conference.conferenceadditionaloption_set.filter(public=True),
 		'costamount': reg.regtype and reg.regtype.cost or 0,
 	})
+
+@login_required
+@transaction.atomic
+def multireg(request, confname, regid=None):
+	# "Register for somebody else" functionality.
+	conference = get_object_or_404(Conference, urlname=confname)
+	is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
+	if not is_active:
+		# Registration not open.
+		return render_conference_response(request, conference, 'reg', 'confreg/closed.html')
+
+	allregs = ConferenceRegistration.objects.filter(conference=conference, registrator=request.user)
+	try:
+		haspending = (not (a.payconfirmedat or a.bulkpayment) for a in allregs).next()
+	except StopIteration:
+		haspending = False
+
+	if regid:
+		# Editing a specific registration
+		regid = regid.rstrip('/')
+		reg = get_object_or_404(ConferenceRegistration,
+								pk=regid,
+								conference=conference,
+								registrator=request.user)
+		redir_root='../'
+	else:
+		reg = ConferenceRegistration(conference=conference,
+									 registrator=request.user,
+									 created=datetime.now(),
+									 regtoken=generate_random_token(),
+		)
+		redir_root='./'
+
+
+	if request.method == 'POST':
+		if request.POST['submit'] == 'New registration':
+			# New registration form
+			newform = NewMultiRegForm(conference, data=request.POST)
+			if newform.is_valid():
+				# Create a registration form for the details, and render
+				# a separate page for it.
+				# Create a registration but don't save it until we have
+				# details entered.
+				reg.email = newform.cleaned_data['email']
+				regform = ConferenceRegistrationForm(request.user, instance=reg, regforother=True)
+				return render_conference_response(request, conference, 'reg', 'confreg/regmulti_form.html', {
+					'form': regform,
+					'_email': newform.cleaned_data['email'],
+				})
+		elif request.POST['submit'] == 'Cancel':
+			return HttpResponseRedirect(redir_root)
+		elif request.POST['submit'] == 'Delete':
+			reg.delete()
+			return HttpResponseRedirect(redir_root)
+		elif request.POST['submit'] == 'Save':
+			reg.email = request.POST['_email']
+			regform = ConferenceRegistrationForm(request.user, data=request.POST, instance=reg, regforother=True)
+			if regform.is_valid():
+				reg = regform.save(commit=False)
+				reg.conference = conference
+				reg.registrator = request.user
+				reg.attendee = None
+				reg.save()
+				regform.save_m2m()
+				return HttpResponseRedirect(redir_root)
+			else:
+				return render_conference_response(request, conference, 'reg', 'confreg/regmulti_form.html', {
+					'form': regform,
+				})
+		else:
+			return HttpResponse("Unknown button pressed")
+			newform = None
+	else:
+		if regid:
+			# Editing a specific registration
+			reg = get_object_or_404(ConferenceRegistration,
+									pk=regid,
+									conference=conference,
+									registrator=request.user)
+			regform = ConferenceRegistrationForm(request.user, instance=reg, regforother=True)
+			return render_conference_response(request, conference, 'reg', 'confreg/regmulti_form.html', {
+				'form': regform,
+			})
+		else:
+			# Root page, so just render the base form
+			newform = NewMultiRegForm(conference)
+
+	return render_conference_response(request, conference, 'reg', 'confreg/regmulti.html', {
+		'newform': newform,
+		'allregs': allregs,
+		'haspending': haspending,
+		'activewaitlist': conference.waitlist_active(),
+		'bulkpayments': BulkPayment.objects.filter(conference=conference, user=request.user),
+	})
+
+
+def _create_and_assign_bulk_payment(user, conference, regs, invoicerows, recipient_name, recipient_address, send_mail):
+	autocancel_hours = [conference.invoice_autocancel_hours, ]
+
+	bp = BulkPayment()
+	bp.user = user
+	bp.conference = conference
+	bp.numregs = len(regs)
+	bp.save()
+
+	for r in regs:
+		r.bulkpayment = bp
+		r.save()
+
+		autocancel_hours.append(r.regtype.invoice_autocancel_hours)
+		autocancel_hours.extend([a.invoice_autocancel_hours for a in r.additionaloptions.filter(invoice_autocancel_hours__isnull=False)])
+
+		if send_mail:
+			# Also notify these registrants that they have been
+			# added to the bulk payment.
+			send_template_mail(conference.contactaddr,
+							   r.email,
+							   "Your registration for {0} added to bulk payment".format(conference.conferencename),
+							   'confreg/mail/bulkpay_added.txt',
+							   {
+								   'conference': conference,
+								   'reg': r,
+								   'bulk': bp,
+							   },
+							   sendername = conference.conferencename,
+							   receivername = r.fullname,
+			)
+
+	# Now that our bulkpayment is complete, create an invoice for it
+	manager = InvoiceManager()
+	processor = InvoiceProcessor.objects.get(processorname="confreg bulk processor")
+
+	bp.invoice = manager.create_invoice(
+		user,
+		user.email,
+		recipient_name,
+		recipient_address,
+		"%s bulk registrations" % conference.conferencename,
+		datetime.now(),
+		datetime.now(),
+		invoicerows,
+		processor=processor,
+		processorid = bp.pk,
+		bankinfo = False,
+		accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT,
+		accounting_object = conference.accounting_object,
+		canceltime = get_invoice_autocancel(*autocancel_hours),
+	)
+	bp.invoice.save()
+	bp.save()
+
+	return bp
+
+@login_required
+@transaction.atomic
+def multireg_newinvoice(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+	is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
+	if not is_active:
+		# Registration not open.
+		return render_conference_response(request, conference, 'reg', 'confreg/closed.html')
+
+	if request.method == 'POST' and request.POST['submit'] == 'Cancel':
+		return HttpResponseRedirect('../')
+
+	# Collect all pending regs
+	pendingregs = ConferenceRegistration.objects.filter(conference=conference,
+														registrator=request.user,
+														payconfirmedat__isnull=True,
+														invoice__isnull=True,
+														bulkpayment__isnull=True)
+	if not pendingregs.exists():
+		# No pending registrations exist, so just send back (should not
+		# happen scenario)
+		return HttpResponseRedirect('../')
+
+	finalize = (request.method == 'POST' and request.POST['submit'] == 'Create')
+
+	# Almost like a bulk invoice, but we know the registrations were
+    # created so they exist.
+	errors = []
+	invoicerows = []
+	for r in pendingregs:
+		if not r.regtype:
+			errors.append(u'{0} has no registration type specified'.format(r.email))
+		elif not r.regtype.active:
+			errors.append(u'{0} uses registration type {1} which is not active'.format(r.email, r.regtype))
+		elif r.regtype.activeuntil and r.regtype.activeuntil < date.today():
+			errors.append(u'{0} uses registration type {1} which is not active'.format(r.email, r.regtype))
+		else:
+			try:
+				invoicerows.extend(invoicerows_for_registration(r, finalize))
+			except InvoiceRowsException, ex:
+				errors.append(u'{0}: {1}'.format(r.email, ex))
+
+	for r in invoicerows:
+		# Calculate the with-vat information for this row
+		if r[3]:
+			r.append(r[2]*(100+r[3].vatpercent)/Decimal(100))
+		else:
+			r.append(r[2])
+	totalcost = sum([r[2] for r in invoicerows])
+	totalwithvat = sum([r[4] for r in invoicerows])
+
+	if finalize:
+		form = MultiRegInvoiceForm(data=request.POST)
+		if totalwithvat != Decimal(request.POST['totalwithvat']):
+			errors.append('Total amount has changed, likely due to a registration being concurrently changed. Please try again.')
+
+		if form.is_valid() and not errors:
+			bp = _create_and_assign_bulk_payment(request.user,
+												 conference,
+												 pendingregs,
+												 invoicerows,
+												 form.data['recipient'],
+												 form.data['address'],
+												 False)
+
+			return HttpResponseRedirect("../b{0}/".format(bp.id))
+	else:
+		form = MultiRegInvoiceForm()
+
+	for e in errors:
+		form.add_error(None, e)
+
+	return render_conference_response(request, conference, 'reg', 'confreg/regmulti_invoice.html', {
+		'form': form,
+		'invoicerows': invoicerows,
+		'totalcost': totalcost,
+		'totalwithvat': totalwithvat,
+	})
+
+@login_required
+@transaction.atomic
+def multireg_bulkview(request, confname, bulkid):
+	conference = get_object_or_404(Conference, urlname=confname)
+	is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
+	if not is_active:
+		# Registration not open.
+		return render_conference_response(request, conference, 'reg', 'confreg/closed.html')
+
+	bp = get_object_or_404(BulkPayment, conference=conference, pk=bulkid, user=request.user)
+
+	return render_conference_response(request, conference, 'reg', 'confreg/regmulti_bulk.html', {
+		'bulkpayment': bp,
+		'invoice': InvoicePresentationWrapper(bp.invoice, '.'),
+	})
+
+@login_required
+@transaction.atomic
+def multireg_attach(request, token):
+	reg = get_object_or_404(ConferenceRegistration, regtoken=token)
+	if reg.attendee:
+		return HttpResponse("This registration has already been attached to an account")
+
+	conference = reg.conference
+	if ConferenceRegistration.objects.filter(conference=conference, attendee=request.user).exists():
+		return HttpResponse("Logged in user ({0}) already has a registration at this conference".format(request.user.username))
+
+	# Else we ask the user to confirm
+	if request.method == "POST" and request.POST['submit'] == 'Confirm and attach account':
+		reg.attendee = request.user
+		reg.save()
+		return HttpResponseRedirect('/events/register/{0}/'.format(conference.urlname))
+	else:
+		return render_conference_response(request, conference, 'reg', 'confreg/regmulti_attach.html', {
+			'reg': reg,
+		})
 
 def feedback_available(request):
 	conferences = Conference.objects.filter(feedbackopen=True).order_by('startdate')
@@ -1138,7 +1442,13 @@ def confirmreg(request, confname):
 			# Get the invoice rows and flag any vouchers as used
 			# (committed at the end of the view so if something
 			# goes wrong they automatically go back to unused)
-			invoicerows = invoicerows_for_registration(reg, True)
+			try:
+				invoicerows = invoicerows_for_registration(reg, True)
+			except InvoicerowsException:
+				# This Should Never Happen (TM) due to validations,
+				# so just redirect back to the page for retry.
+				return HttpResponseRedirect("../")
+
 			totalcost = sum([r[2]*(1+(r[3] and r[3].vatpercent or 0)/Decimal(100.0)) for r in invoicerows])
 
 			if len(invoicerows) <= 0:
@@ -1196,7 +1506,13 @@ def confirmreg(request, confname):
 
 	# Figure out what should go on the invoice. Don't flag possible
 	# vouchers as used, since confirmation isn't done yet.
-	invoicerows = invoicerows_for_registration(reg, False)
+	try:
+		invoicerows = invoicerows_for_registration(reg, False)
+	except InvoicerowsException:
+		# This should not be possible because of previous validations,
+		# so if it does just redirect back for retry.
+		return HttpResponseRedirect("../")
+
 	for r in invoicerows:
 		# Calculate the with-vat information for this row
 		if r[3]:
@@ -1553,7 +1869,6 @@ def bulkpay(request, confname):
 		errors = not form.is_valid()
 		totalcost = 0
 		invoicerows = []
-		autocancel_hours = [conference.invoice_autocancel_hours, ]
 		allregs = []
 
 		# Set up a savepoint for rolling back the counter of discount codes if necessary
@@ -1564,51 +1879,45 @@ def bulkpay(request, confname):
 			regs = ConferenceRegistration.objects.filter(conference=conference, email__iexact=e)
 			if len(regs) == 1:
 				allregs.append(regs[0])
-				if regs[0].payconfirmedat:
-					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Email not found or registration already completed.'})
-					errors=1
-				elif regs[0].invoice:
-					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'This registration already has an invoice generated for individual payment.'})
-					errors=1
-				elif regs[0].bulkpayment:
-					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'This registration is already part of a different bulk registration.'})
-					errors=1
-				elif not (regs[0].regtype and regs[0].regtype.active):
-					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration type for this registration is not active!'})
-					errors=1
-				elif regs[0].vouchercode and not DiscountCode.objects.filter(code=regs[0].vouchercode, conference=regs[0].conference).exists():
-					# Discount codes should still be allowed, just not full vouchers
-					state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration has a voucher code entered, and cannot be used for bulk payments.'})
-					errors=1
-				else:
-					# If this is the confirmation step, we flag vouchers as used
-					regrows = invoicerows_for_registration(regs[0], confirmstep)
-					s = sum([r[1]*r[2] for r in regrows])
-					if s == 0:
-						# No payment needed
-						state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration type does not need payment'})
-						errors=1
-					else:
-						# Normal registration. Check if discount code is valid, and then add it.
-						if regs[0].vouchercode:
-							dc = DiscountCode.objects.get(code=regs[0].vouchercode, conference=regs[0].conference)
-							if dc.is_invoiced:
-								state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration uses discount code {0} which is not valid.'.format(dc.code)})
-								errors=1
-							elif dc.validuntil and dc.validuntil < date.today():
-								state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration uses discount code {0} which has expired.'.format(dc.code)})
-								errors=1
-							elif dc.maxuses > 0 and dc.registrations.count() >= dc.maxuses:
-								state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration uses discount code {0} which does not have enough remaining instances.'.format(dc.code)})
-								errors=1
-							# Else discount code is fine, so fall through
-						if errors == 0:
-							state.append({'email': regs[0].email, 'found': 1, 'pay': 1, 'total': s, 'rows':[u'%s (%s%s)' % (r[0], settings.CURRENCY_SYMBOL.decode('utf8'), r[2]) for r in regrows]})
-							totalcost += s
-							invoicerows.extend(regrows)
 			else:
 				state.append({'email': e, 'found': 0, 'text': 'Email not found or registration already completed.'})
 				errors=1
+
+		# Validate each entry
+		for r in allregs:
+			e = r.email
+
+			if r.payconfirmedat:
+				state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Email not found or registration already completed.'})
+				errors=1
+			elif r.invoice:
+				state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'This registration already has an invoice generated for individual payment.'})
+				errors=1
+			elif r.bulkpayment:
+				state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'This registration is already part of a different bulk registration.'})
+				errors=1
+			elif not (r.regtype and r.regtype.active):
+				state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration type for this registration is not active!'})
+				errors=1
+			else:
+				# If this is the confirmation step, we flag vouchers as used.
+				# Else we just get the data and generate a confirmation page
+				try:
+					regrows = invoicerows_for_registration(r, confirmstep)
+					s = sum([r[1]*r[2] for r in regrows])
+					if s == 0:
+						# No payment needed
+						state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration does not need payment'})
+						errors=1
+					else:
+						# All content is valid, so just append it
+						state.append({'email': regs[0].email, 'found': 1, 'pay': 1, 'total': s, 'rows':[u'%s (%s%s)' % (r[0], settings.CURRENCY_SYMBOL.decode('utf8'), r[2]) for r in regrows]})
+						totalcost += s
+						invoicerows.extend(regrows)
+
+				except InvoiceRowsException, ex:
+					state.append({'email': e, 'found': 1, 'pay': 0, 'text': unicode(ex)})
+					errors = 1
 
 		if confirmstep:
 			# Trying to finish things off, are we? :)
@@ -1620,59 +1929,13 @@ def bulkpay(request, confname):
 				else:
 					# Ok, actually generate an invoice for this one.
 					# Create a bulk payment record
-					bp = BulkPayment()
-					bp.user = request.user
-					bp.conference = conference
-					bp.numregs = len(allregs)
-					bp.save() # Save so we get a primary key
-
-					# Now assign this bulk record to all our registrations
-					for r in allregs:
-						r.bulkpayment = bp
-						r.save()
-						# Yes this is ugly and could be more efficient, but
-						# this will do for now.
-						autocancel_hours.append(r.regtype.invoice_autocancel_hours)
-						autocancel_hours.extend([a.invoice_autocancel_hours for a in r.additionaloptions.filter(invoice_autocancel_hours__isnull=False)])
-
-						# Also notify these registrants that they have been
-						# added to the bulk payment.
-						send_template_mail(conference.contactaddr,
-										   r.email,
-										   "Your registration for {0} added to bulk payment".format(conference.conferencename),
-										   'confreg/mail/bulkpay_added.txt',
-										   {
-											   'conference': conference,
-											   'reg': r,
-											   'bulk': bp,
-										   },
-										   sendername = conference.conferencename,
-										   receivername = r.fullname,
-									   )
-
-					# Finally, create an invoice for it
-					manager = InvoiceManager()
-					processor = InvoiceProcessor.objects.get(processorname="confreg bulk processor")
-
-					bp.invoice = manager.create_invoice(
-						request.user,
-						request.user.email,
-						form.data['recipient_name'],
-						form.data['recipient_address'],
-						"%s bulk registrations" % conference.conferencename,
-						datetime.now(),
-						datetime.now(),
-						invoicerows,
-						processor=processor,
-						processorid = bp.pk,
-						bankinfo = False,
-						accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT,
-						accounting_object = conference.accounting_object,
-						canceltime = get_invoice_autocancel(*autocancel_hours),
-					)
-					bp.invoice.save()
-					bp.save()
-
+					bp = _create_and_assign_bulk_payment(request.user,
+														 conference,
+														 allregs,
+														 invoicerows,
+														 form.data['recipient_name'],
+														 form.data['recipient_address'],
+														 True)
 					return HttpResponseRedirect('%s/' % bp.pk)
 			else:
 				messages.warning(request, 'An error occurred processing the registrations, please review the email addresses on the list')

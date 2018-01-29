@@ -35,15 +35,24 @@ class ConferenceRegistrationForm(forms.ModelForm):
 		label='Additional options')
 
 	def __init__(self, user, *args, **kwargs):
+		self.regforother = kwargs.pop('regforother', None)
 		super(ConferenceRegistrationForm, self).__init__(*args, **kwargs)
 		self.user = user
 		self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference).order_by('sortkey')
 		if not self.instance.conference.asktshirt:
 			del self.fields['shirtsize']
+		if self.regforother:
+			self.fields['email'].widget.attrs['readonly'] = True
 		self.fields['additionaloptions'].queryset =	ConferenceAdditionalOption.objects.filter(
 			conference=self.instance.conference, public=True)
 		self.fields['country'].queryset = Country.objects.order_by('printable_name')
 		self.fields['twittername'].validators.append(TwitterValidator)
+
+		if not self.regforother:
+			self.intro_html = mark_safe(u'<p>You are currently making a registration for community account<br/><i>{0} ({1} {2} &lt;{3}&gt;).</i></p>'.format(escape(self.user.username), escape(self.user.first_name), escape(self.user.last_name), escape(self.user.email)))
+		else:
+			self.intro_html = mark_safe(u'<p>You are currently editing a registration for somebody other than yourself.</p>')
+
 
 	def clean_regtype(self):
 		newval = self.cleaned_data.get('regtype')
@@ -67,6 +76,24 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
 		return newval
 
+	def clean_email(self):
+		e = self.cleaned_data.get('email')
+		try:
+			r = ConferenceRegistration.objects.get(email=e, conference=self.instance.conference)
+			if r.id != self.instance.id:
+				# A registration is already made with this email address. If this is made by somebody
+				# else but for us, we can in some cases let them know who it is.
+				if r.registrator != getattr(self.instance, 'registrator', None):
+					raise ValidationError(u'There is already a registration made with this email address, that is part of a multiple registration entry made by {0} {1} ({2}).'.format(
+						r.registrator.first_name,
+						r.registrator.last_name,
+						r.registrator.email))
+				# Else give a generic error
+				raise ValidationError('There is already a registration made with this email address')
+		except ConferenceRegistration.DoesNotExist:
+			pass
+		return e
+
 	def clean_vouchercode(self):
 		newval = self.cleaned_data.get('vouchercode')
 		if newval=='': return newval
@@ -75,6 +102,11 @@ class ConferenceRegistrationForm(forms.ModelForm):
 			v = PrepaidVoucher.objects.get(vouchervalue=newval, conference=self.instance.conference)
 			if v.usedate:
 				raise forms.ValidationError('This voucher has already been used')
+			r = ConferenceRegistration.objects.filter(vouchercode=newval,
+													  conference=self.instance.conference)
+			if r:
+				if r[0].id != self.instance.id:
+					raise forms.ValidationError('This voucher is already pending on another registration')
 		except PrepaidVoucher.DoesNotExist:
 			# It could be that it's a discount code
 			try:
@@ -222,7 +254,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
 	class Meta:
 		model = ConferenceRegistration
-		exclude = ('conference','attendee','payconfirmedat','payconfirmedby','created', 'regtoken')
+		exclude = ('conference','attendee','registrator','payconfirmedat','payconfirmedby','created', 'regtoken', )
 
 	@property
 	def fieldsets(self):
@@ -231,7 +263,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
 		yield {'id': 'personal_information',
 			   'legend': 'Personal information',
-			   'introhtml': mark_safe(u'<p>You are currently making a registration for community account<br/><i>{0} ({1} {2} &lt;{3}&gt;).</i></p>'.format(escape(self.user.username), escape(self.user.first_name), escape(self.user.last_name), escape(self.user.email))),
+			   'introhtml': self.intro_html,
 			   'fields': [self[x] for x in ('regtype', 'firstname', 'lastname', 'company', 'address', 'country', 'email', 'phone', 'twittername', 'nick')],
 			   }
 
@@ -265,6 +297,24 @@ rating_choices = (
     (5, '5 (Best)'),
     (0, 'N/A'),
 )
+
+class NewMultiRegForm(forms.Form):
+	email = forms.EmailField(required=True)
+
+	def __init__(self, conference, *args, **kwargs):
+		self.conference = conference
+		super(NewMultiRegForm, self).__init__(*args, **kwargs)
+
+	def clean_email(self):
+		e = self.cleaned_data.get('email')
+
+		if ConferenceRegistration.objects.filter(conference=self.conference, email=e).exists():
+			raise ValidationError("A registration for this email address already exists. For privacy reasons, management of a registration cannot be transferred.")
+		return e
+
+class MultiRegInvoiceForm(forms.Form):
+	recipient = forms.CharField(max_length=100, required=True)
+	address = forms.CharField(widget=forms.widgets.Textarea, required=True)
 
 class ConferenceSessionFeedbackForm(forms.ModelForm):
 	topic_importance = forms.ChoiceField(widget=RadioSelect,choices=rating_choices, label='Importance of the topic')

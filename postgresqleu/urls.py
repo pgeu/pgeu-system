@@ -50,7 +50,11 @@ urlpatterns = patterns('',
     (r'^feeds/events/$', LatestEvents()),
 
 	# Conference registration
-	(r'^events/([^/]+)/register/$', postgresqleu.confreg.views.home),
+	(r'^events/(?P<confname>[^/]+)/register/(?P<whatfor>(self)/)?$', postgresqleu.confreg.views.home),
+	(r'^events/(?P<confname>[^/]+)/register/other/(?P<regid>(\d+)/)?$', postgresqleu.confreg.views.multireg),
+	(r'^events/(?P<confname>[^/]+)/register/other/newinvoice/$', postgresqleu.confreg.views.multireg_newinvoice),
+	(r'^events/(?P<confname>[^/]+)/register/other/b(?P<bulkid>(\d+))/$', postgresqleu.confreg.views.multireg_bulkview),
+	(r'^events/register/attach/([a-z0-9]{64})/$', postgresqleu.confreg.views.multireg_attach),
 	(r'^events/([^/]+)/bulkpay/$', postgresqleu.confreg.views.bulkpay),
 	(r'^events/([^/]+)/bulkpay/(\d+)/$', postgresqleu.confreg.views.bulkpay_view),
 

@@ -362,7 +362,8 @@ class BulkPayment(models.Model):
 class ConferenceRegistration(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
 	regtype = models.ForeignKey(RegistrationType, null=True, blank=True, verbose_name="Registration type")
-	attendee = models.ForeignKey(User, null=False, blank=False)
+	attendee = models.ForeignKey(User, null=True, blank=True)
+	registrator = models.ForeignKey(User, null=False, blank=False, related_name="registrator")
 	firstname = models.CharField(max_length=100, null=False, blank=False, verbose_name="First name")
 	lastname = models.CharField(max_length=100, null=False, blank=False, verbose_name="Last name")
 	email = models.EmailField(null=False, blank=False, verbose_name="E-mail address")
@@ -412,6 +413,21 @@ class ConferenceRegistration(models.Model):
 			return True
 		return False
 	has_invoice.boolean = True
+
+	@property
+	def invoice_status(self):
+		if self.payconfirmedat:
+			return "paid and confirmed"
+		elif self.invoice:
+			return "invoice generated, not paid"
+		elif self.bulkpayment:
+			return "bulk invoice generated, not paid"
+		else:
+			return "pending"
+
+	@property
+	def can_edit(self):
+		return not (self.payconfirmedat or self.invoice or self.bulkpayment)
 
 	def short_regtype(self):
 		if self.regtype:

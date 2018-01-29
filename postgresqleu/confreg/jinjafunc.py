@@ -231,11 +231,19 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
 	else:
 		c = {}
 
+	if request.user and request.user.is_authenticated():
+		fullname = u'{0} {1}'.format(request.user.first_name, request.user.last_name)
+		email = request.user.email
+	else:
+		fullname = None
+		email = None
 	c.update({
 		'pgeu_hosted': True,
 		'conference': conference,
 		'pagemagic': pagemagic,
 		'username': request.user and request.user.username or None,
+		'userfullname': fullname,
+		'useremail': email,
 		'csrf_input': csrf_input_lazy(request),
 		'csrf_token': csrf_token_lazy(request),
 		'messages': get_messages(request),

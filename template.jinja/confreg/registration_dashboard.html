@@ -25,6 +25,12 @@ ul.dash_pagelinks li {
 Your registration (for {{reg.firstname}} {{reg.lastname}}) has been
 completed on {{reg.payconfirmedat}}. Welcome to {{conference}}!
 </p>
+{%if not has_other_multiregs%}
+<p>
+If you wish to make another registration for somebody else, please
+<a href="{{redir_root}}other/">click here</a>.
+</p>
+{%endif%}
 <p>
 On this page you will find all necessary information for attendees
 of the event. We also recommend that you regularly check the
@@ -54,6 +60,15 @@ news!
 {%endif%}
  </ul>
 </div>
+
+{%if has_other_multiregs%}
+<h2>Other registrations</h2>
+<p>
+  You are also managing registrations for other attendees.
+  <a href="{{redir_root}}other/">click here</a> to view details about them
+  or register more attendees.
+</p>
+{%endif%}
 
 <a name="mails"></a>
 <h2>Information emails</h2>

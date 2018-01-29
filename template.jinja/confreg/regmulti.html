@@ -1,0 +1,81 @@
+{%extends "base.html" %}
+{%block title%}Conference Registration - {{conference}}{%endblock%}
+{%block extrahead%}
+{%endblock%}
+{%block content%}
+<h1>Conference Registration - {{conference}}</h1>
+
+<p>
+  <a href="../self/">Return</a> to your personal registration form.</p>
+</p>
+
+<h2>Current registrations</h2>
+{%if allregs%}
+<p>
+  You are currently managing the following registrations:
+</p>
+<ul>
+{%for r in allregs %}
+<li>{{r.email}} - {%if r.can_edit%}<a href="{{r.id}}/">edit</a> -{%endif%} {{r.invoice_status}}</li>
+{%endfor%}
+</ul>
+{%else%}
+<p>
+  You are currently not managing any registratoins.
+</p>
+{%endif%}
+
+{%if bulkpayments%}
+<h2>Invoices</h2>
+<p>
+  The following invoices have been issued from your account.
+</p>
+<ul>
+{%for b in bulkpayments%}
+ <li><a href="b{{b.id}}/">{{b.createdat}}</a> for {{b.numregs}} registrations ({{b.ispaid()|yesno("Paid,Unpaid")}})</li>
+{%endfor%}
+</ul>
+{%endif%}
+
+{%if haspending%}
+<h2>Create invoice</h2>
+{%if activewaitlist%}
+<p>
+  This conference is sold out and the waitlist is active. At this point,
+  each registrant must place their own registration on the waitlist and
+  pay it individually.
+</p>
+{%else%}
+<p>
+  Once you have added all the registrations you want, you can proceed
+  to create a single invoice for all pending registrations to pay for
+them all.
+</p>
+<form method="post" action="newinvoice/">{{ csrf_input }}
+  <input type="submit" name="submit" value="Create invoice" />
+</form>
+{%endif%}
+{%endif%}
+
+<h2>Add registration</h2>
+{%if activewaitlist%}
+<p>
+  This conference is sold out and the waitlist is active. At this point,
+  only personal registrations can be placed on the waitlist.
+</p>
+{%else%}
+<p>
+  Enter an email address to create a new registration for somebody else.
+  This registration will be maintained (and paid for) from your account,
+  but the attendee will be somebody else.
+</p>
+<form method="post" action=".">{{ csrf_input }}
+  <table>
+  {{newform}}
+  </table>
+  <input type="submit" name="submit" value="New registration">
+</form>
+{%endif%}
+
+{%endblock%}
+
