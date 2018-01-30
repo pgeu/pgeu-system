@@ -1458,7 +1458,7 @@ def confirmreg(request, confname):
 				# Paid in total with vouchers, or completely free
 				# registration type. So just flag the registration
 				# as confirmed.
-				reg.payconfirmedat = datetime.today()
+				reg.payconfirmedat = datetime.now()
 				reg.payconfirmedby = "no payment reqd"
 				reg.save()
 				notify_reg_confirmed(reg)

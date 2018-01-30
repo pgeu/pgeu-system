@@ -170,7 +170,7 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 		# anyway...
 		num = 0
 		for reg in queryset.filter(payconfirmedat__isnull=True):
-			reg.payconfirmedat = datetime.today()
+			reg.payconfirmedat = datetime.now()
 			reg.payconfirmedby = request.user.username
 			reg.save()
 			notify_reg_confirmed(reg)

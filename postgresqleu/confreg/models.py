@@ -379,7 +379,7 @@ class ConferenceRegistration(models.Model):
 	shareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Share e-mail address with sponsors")
 
 	# Admin fields!
-	payconfirmedat = models.DateField(null=True, blank=True, verbose_name="Payment confirmed")
+	payconfirmedat = models.DateTimeField(null=True, blank=True, verbose_name="Payment confirmed")
 	payconfirmedby = models.CharField(max_length=16, null=True, blank=True, verbose_name="Payment confirmed by")
 	created = models.DateTimeField(null=False, blank=False, verbose_name="Registration created")
 	lastmodified = models.DateTimeField(null=False, blank=False, auto_now=True)

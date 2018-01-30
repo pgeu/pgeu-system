@@ -27,7 +27,7 @@ class InvoiceProcessor(object):
 		if reg.payconfirmedat:
 			raise Exception("Registration already paid")
 
-		reg.payconfirmedat = datetime.today()
+		reg.payconfirmedat = datetime.now()
 		reg.payconfirmedby = "Invoice paid"
 		reg.save()
 		notify_reg_confirmed(reg)
@@ -137,7 +137,7 @@ class BulkInvoiceProcessor(object):
 
 		# Confirm all related ones
 		for r in bp.conferenceregistration_set.all():
-			r.payconfirmedat = datetime.today()
+			r.payconfirmedat = datetime.now()
 			r.payconfirmedby = "Bulk paid"
 			r.save()
 			notify_reg_confirmed(r)
@@ -247,7 +247,7 @@ class AddonInvoiceProcessor(object):
 		if order.payconfirmedat:
 			raise Exception("Additional options already paid")
 
-		order.payconfirmedat = datetime.today()
+		order.payconfirmedat = datetime.now()
 		if order.newregtype:
 			order.reg.regtype = order.newregtype
 
