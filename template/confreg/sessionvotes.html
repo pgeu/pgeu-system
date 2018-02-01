@@ -109,7 +109,7 @@ width: 100%;
 <form method="post" action=".">{% csrf_token %}
 <table class="table table-bordered table-condensed">
  <tr>
-  <th><a href="?sort=session">Session</a></th>
+  <th><a href="?sort=session">Session</a> | <a href="?sort=speakers">Speakers</a></th>
   <th>Status</th>
   {%for u in users%}
   <th>{{u}}</th>

@@ -2008,6 +2008,8 @@ def talkvote(request, confname):
 	if request.GET.has_key("sort"):
 		if request.GET["sort"] == "avg":
 			order = "avg DESC NULLS LAST,"
+		elif request.GET["sort"] == "speakers":
+			order = "speakers_full,"
 
 	# Render the form. Need to do this with a manual query, can't figure
 	# out the right way to do it with the django ORM.
