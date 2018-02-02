@@ -423,12 +423,16 @@ def _create_and_assign_bulk_payment(user, conference, regs, invoicerows, recipie
 	manager = InvoiceManager()
 	processor = InvoiceProcessor.objects.get(processorname="confreg bulk processor")
 
+	if bp.numregs > 1:
+		invoicetitle = '%s multiple registrations' % conference.conferencename
+	else:
+		invoicetitle = "%s registration" % conference.conferencename
 	bp.invoice = manager.create_invoice(
 		user,
 		user.email,
 		recipient_name,
 		recipient_address,
-		"%s bulk registrations" % conference.conferencename,
+		invoicetitle,
 		datetime.now(),
 		datetime.now(),
 		invoicerows,
