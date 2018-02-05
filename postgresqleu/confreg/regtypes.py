@@ -7,6 +7,8 @@ def validate_speaker_registration(reg):
 	# This registration is only available if a speaker is *confirmed*
 	# at this conference.
 	from models import ConferenceSession
+	if reg.attendee is None:
+		raise ValidationError('Speaker registrations have to be done by the speaker directly')
 	if not ConferenceSession.objects.filter(conference=reg.conference,
 											speaker__user=reg.attendee,
 											status=1, # approved
@@ -22,6 +24,8 @@ def validate_speaker_or_reserve_registration(reg):
 	# This registration is only available if a speaker is *confirmed*
 	# or *reserve listed* at this conference.
 	from models import ConferenceSession
+	if reg.attendee is None:
+		raise ValidationError('Speaker registrations have to be done by the speaker directly')
 	if not ConferenceSession.objects.filter(conference=reg.conference,
 											speaker__user=reg.attendee,
 											status__in=(1,4), # approved/reserve
@@ -34,6 +38,8 @@ _specialregtypes['spkr'] = {
 	}
 
 def validate_staff_registration(reg):
+	if reg.attendee is None:
+		raise ValidationError('Staff registrations have to be done by the attendee directly')
 	if not reg.conference.staff.filter(pk=reg.attendee.pk).exists():
 		raise ValidationError('This registration type is only available if you are confirmed staff at this conference')
 
