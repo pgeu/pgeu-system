@@ -343,7 +343,10 @@ def multireg(request, confname, regid=None):
 		elif request.POST['submit'] == 'Cancel':
 			return HttpResponseRedirect(redir_root)
 		elif request.POST['submit'] == 'Delete':
-			reg.delete()
+			if reg.pk:
+				# Only delete if it has a primary key. Not having a primary key means
+				# it was never saved, so there is nothing to delete.
+				reg.delete()
 			return HttpResponseRedirect(redir_root)
 		elif request.POST['submit'] == 'Save':
 			reg.email = request.POST['_email']
