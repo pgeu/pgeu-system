@@ -9,9 +9,9 @@
 
 <h2>Registrations</h2>
 <div class="row">
-  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/regdashboard/">Reg dashboard</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/regdashboard/">Registration dashboard</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn {%if c.pending_waitlist%}btn-warning{%else%}btn-default{%endif%} btn-block" href="/events/admin/{{c.urlname}}/waitlist/">Waitlist</a></div>
-  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/transfer/">Transfer reg</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/transfer/">Transfer registration</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/mail/">Attendee emails</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/wiki/">Manage wiki</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/signups/">Manage signups</a></div>
@@ -28,7 +28,7 @@
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/{{c.urlname}}/schedule/create/">Create schedule</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/volunteer/">Volunteer schedule</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/{{c.urlname}}/reports/schedule/">PDF schedules</a></div>
-  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/{{c.urlname}}/reports/feedback/">Feedback</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/{{c.urlname}}/reports/feedback/">Conference feedback</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/{{c.urlname}}/schedule/jsonschedule/">JSON schedule dump</a></div>
 </div>
 
@@ -49,7 +49,7 @@
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/{{c.urlname}}/reports/simple/?report=tshirtsizes">T-Shirt size distribution</a></div>
   {%endif%}
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/{{c.urlname}}/reports/simple/?report=countries">Attendee countries</a></div>
-  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/{{c.urlname}}/reports/simple/?report=regdays">Confirmed per day</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/{{c.urlname}}/reports/simple/?report=regdays">Confirmed attendees per day</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/{{c.urlname}}/reports/simple/?report=sessnoroom">Sessions with no room</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/{{c.urlname}}/reports/simple/?report=sessnotrack">Sessions with no track</a></div>
 </div>
