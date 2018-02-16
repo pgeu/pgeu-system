@@ -490,7 +490,7 @@ def multireg_newinvoice(request, confname):
 		else:
 			try:
 				invoicerows.extend(invoicerows_for_registration(r, finalize))
-			except InvoiceRowsException, ex:
+			except InvoicerowsException, ex:
 				errors.append(u'{0}: {1}'.format(r.email, ex))
 
 	for r in invoicerows:
@@ -1922,7 +1922,7 @@ def bulkpay(request, confname):
 						totalcost += s
 						invoicerows.extend(regrows)
 
-				except InvoiceRowsException, ex:
+				except InvoicerowsException, ex:
 					state.append({'email': e, 'found': 1, 'pay': 0, 'text': unicode(ex)})
 					errors = 1
 
