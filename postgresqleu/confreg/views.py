@@ -35,7 +35,7 @@ from forms import EmailSendForm, EmailSessionForm, CrossConferenceMailForm
 from forms import AttendeeMailForm, WaitlistOfferForm, TransferRegForm
 from forms import NewMultiRegForm, MultiRegInvoiceForm
 from forms import SessionSlidesUrlForm, SessionSlidesFileForm
-from util import invoicerows_for_registration, notify_reg_confirmed
+from util import invoicerows_for_registration, notify_reg_confirmed, InvoicerowsException
 from util import get_invoice_autocancel
 
 from models import get_status_string
