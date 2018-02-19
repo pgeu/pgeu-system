@@ -2,7 +2,7 @@ from django.conf import settings
 
 from postgresqleu.mailqueue.util import send_template_mail, send_simple_mail
 from models import ConferenceRegistration, BulkPayment, PendingAdditionalOrder
-from models import RegistrationWaitlistHistory
+from models import RegistrationWaitlistHistory, PrepaidVoucher
 from util import notify_reg_confirmed, expire_additional_options
 
 from datetime import datetime
@@ -190,6 +190,12 @@ class BulkInvoiceProcessor(object):
 				r.discountcode_set.clear()
 				r.save()
 			if r.vouchercode:
+				# Also mark the voucher code as not used anymore
+				vc = PrepaidVoucher.objects.get(vouchervalue=r.vouchercode)
+				vc.usedate = None
+				vc.user = None
+				vc.save()
+
 				r.vouchercode = ''
 				r.save()
 
