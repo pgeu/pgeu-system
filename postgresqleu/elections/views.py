@@ -33,7 +33,7 @@ def election(request, electionid):
 		if not election.resultspublic:
 			# If user is an admin, show anyway, otherwise throw an error
 			if not request.user.is_superuser:
-				raise Http404("The results for this election isn't published yet.")
+				raise Http404("The results for this election aren't published yet.")
 
 		# Ok, so we do have the results. Use a custom query to make sure we get decently formatted data
 		# and no client-side ORM aggregation
