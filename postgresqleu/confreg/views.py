@@ -517,11 +517,13 @@ def multireg_newinvoice(request, confname):
 												 False)
 
 			return HttpResponseRedirect("../b{0}/".format(bp.id))
+
+		# Add the errors to the form, so they're actually visible.
+		for e in errors:
+			form.add_error(None, e)
 	else:
 		form = MultiRegInvoiceForm()
 
-	for e in errors:
-		form.add_error(None, e)
 
 	return render_conference_response(request, conference, 'reg', 'confreg/regmulti_invoice.html', {
 		'form': form,
