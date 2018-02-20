@@ -304,7 +304,8 @@ def multireg(request, confname, regid=None):
 
 	allregs = ConferenceRegistration.objects.filter(conference=conference, registrator=request.user)
 	try:
-		haspending = (not (a.payconfirmedat or a.bulkpayment) for a in allregs).next()
+		(a for a in allregs if not (a.payconfirmedat or a.bulkpayment)).next()
+		haspending = True
 	except StopIteration:
 		haspending = False
 
