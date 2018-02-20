@@ -508,15 +508,28 @@ def multireg_newinvoice(request, confname):
 			errors.append('Total amount has changed, likely due to a registration being concurrently changed. Please try again.')
 
 		if form.is_valid() and not errors:
-			bp = _create_and_assign_bulk_payment(request.user,
-												 conference,
-												 pendingregs,
-												 invoicerows,
-												 form.data['recipient'],
-												 form.data['address'],
-												 False)
+			if totalwithvat == 0:
+				# Free! This is either a multireg for example for speakers, or it could be
+				# a registration made entirely out of vouchers. So just mark the payments
+				# as completed (the invoicerows_for_registration step has already marked any
+				# vouchers or discount codes as used)
+				for r in pendingregs:
+					r.payconfirmedat = datetime.now()
+					r.payconfirmedby = "Multireg/nopay"
+					r.save()
+					notify_reg_confirmed(r)
+				return HttpResponseRedirect("../z/")
+			else:
+				# Else generate a bulk payment and invoice for it
+				bp = _create_and_assign_bulk_payment(request.user,
+													 conference,
+													 pendingregs,
+													 invoicerows,
+													 form.data['recipient'],
+													 form.data['address'],
+													 False)
 
-			return HttpResponseRedirect("../b{0}/".format(bp.id))
+				return HttpResponseRedirect("../b{0}/".format(bp.id))
 
 		# Add the errors to the form, so they're actually visible.
 		for e in errors:
@@ -530,6 +543,12 @@ def multireg_newinvoice(request, confname):
 		'invoicerows': invoicerows,
 		'totalcost': totalcost,
 		'totalwithvat': totalwithvat,
+	})
+
+@login_required
+def multireg_zeropay(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+	return render_conference_response(request, conference, 'reg', 'confreg/regmulti_zeropay.html', {
 	})
 
 @login_required
