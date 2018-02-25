@@ -86,6 +86,7 @@ class VoteForm(forms.Form):
 			for k,v in self.cleaned_data.items():
 				id = int(k[4:])
 				Vote(election=self.election, voter=self.member, candidate_id=id, score=v).save()
+			self.votes = Vote.objects.filter(election=self.election, voter=self.member)
 			MemberLog(member=self.member, timestamp=datetime.now(),
 					  message="Voted in election '%s'" % self.election.name).save()
 			self.saved_and_modified = True

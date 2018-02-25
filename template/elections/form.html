@@ -25,7 +25,14 @@ You can click a candidates name for more information about this candidate.
 {%endif%}
 
 <h2>Your votes</h2>
-
+<p>
+{%if form.votes %}
+Your votes have been cast, and the values below indicate what you voted. You can
+change your votes up until the final day of the elections.
+{%else%}
+Please cast your votes below.
+{%endif%}
+</p>
 <form method="post" action=".">{% csrf_token %}
 <table>
 {%for field in form%}
