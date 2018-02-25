@@ -71,8 +71,11 @@ class CurlWrapper(object):
 			(c,s) = self.get(fetchpage)
 		if c.getinfo(pycurl.RESPONSE_CODE) != 302:
 			raise CommandError("Supposed to receive 302 for %s, got %s" % (fetchpage, c.getinfo(c.RESPONSE_CODE)))
-		if c.getinfo(pycurl.REDIRECT_URL) != redirectto:
-			raise CommandError("Received unexpected redirect from %s to '%s'" % (fetchpage, c.getinfo(pycurl.REDIRECT_URL)))
+		if not isinstance(redirectto, list):
+			redirrectto = [redirectto, ]
+		if not c.getinfo(pycurl.REDIRECT_URL) in redirectto:
+			raise CommandError("Received unexpected redirect from %s to '%s' (expected %s)" % (fetchpage, c.getinfo(pycurl.REDIRECT_URL), redirectto))
+		return c.getinfo(pycurl.REDIRECT_URL)
 
 
 class Command(BaseCommand):
@@ -100,8 +103,13 @@ class Command(BaseCommand):
 		# Follow a redirect chain to collect more cookies
 		curl.expect_redirect('https://www.creditmutuel.fr/en/banque/pageaccueil.html',
 							 'https://www.creditmutuel.fr/en/banque/paci_engine/engine.aspx')
-		curl.expect_redirect('https://www.creditmutuel.fr/en/banque/paci_engine/engine.aspx',
-							 'https://www.creditmutuel.fr/en/banque/homepage_dispatcher.cgi')
+		got_redir = curl.expect_redirect('https://www.creditmutuel.fr/en/banque/paci_engine/engine.aspx',
+										 ['https://www.creditmutuel.fr/en/banque/homepage_dispatcher.cgi',
+										 'https://www.creditmutuel.fr/en/banque/paci_engine/static_content_manager.aspx'])
+		if got_redir == 'https://www.creditmutuel.fr/en/banque/paci_engine/static_content_manager.aspx':
+			# Got the "please fill out your personal data" form. So let's bypass it
+			curl.expect_redirect('https://www.creditmutuel.fr/en/banque/paci_engine/static_content_manager.aspx?_productfilter=PACI&_pid=ContentManager&_fid=DoStopPaciAndRemind',
+								 'https://www.creditmutuel.fr/en/banque/homepage_dispatcher.cgi')
 
 		# Download the form
 		if verbose: self.stdout.write("Downloading form...")
