@@ -25,6 +25,12 @@ def exec_to_scalar(query, params=None):
 	# If the query returns no rows at all, then just return None
 	return None
 
+def conditional_exec_to_scalar(condition, query, params=None):
+	if condition:
+		return exec_to_scalar(query, params)
+	else:
+		return False
+
 def exec_to_keyed_dict(query, params=None):
 	curs = connection.cursor()
 	curs.execute(query, params)
