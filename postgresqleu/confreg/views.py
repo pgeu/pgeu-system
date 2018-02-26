@@ -2459,8 +2459,9 @@ def admin_registration_list(request, urlname):
 
 	return render_to_response('confreg/admin_registration_list.html', {
 		'conference': conference,
+		'waitlist_active': conference.waitlist_active,
 		'sortkey': (revsort and '-' or '') + skey,
-		'regs': ConferenceRegistration.objects.select_related('regtype').filter(conference=conference).order_by((revsort and '-' or '') + sortmap[skey]),
+		'regs': ConferenceRegistration.objects.select_related('regtype').select_related('registrationwaitlistentry').filter(conference=conference).order_by((revsort and '-' or '') + sortmap[skey]),
 	}, RequestContext(request))
 
 @login_required

@@ -21,6 +21,7 @@ a.nocolor {
   <th><a href="?sort={%if sortkey == "company" %}-{%endif%}company">Company</a></th>
   <th><a href="?sort={%if sortkey == "typ" %}-{%endif%}type">Registration type</a></th>
   <th><a href="?sort={%if sortkey == "date" %}-{%endif%}date">Confirmed</a></th>
+  {%if waitlist_active%}<th>Waitlist status</th>{%endif%}
  </tr>
 {%for r in regs%}
  <tr {%if not r.payconfirmedat%}class="warning"{%endif%}>
@@ -29,6 +30,13 @@ a.nocolor {
   <td>{{r.company}}</td>
   <td>{{r.regtype.regtype}}</td>
   <td>{{r.payconfirmedat|default:""}}</td>
+{%if waitlist_active %}
+  <td>{%if r.registrationwaitlistentry %}
+   {%if r.payconfirmedat%}Accepted{%else%}
+     {%if r.registrationwaitlistentry.offeredon%}Offer until {{r.registrationwaitlistentry.offeredon}}{%else%}No offer{%endif%}<br/>Total {{r.registrationwaitlistentry.offers_made}} offers made.
+   {%endif%}
+   {%else%}{%if r.payconfirmedat%}Completed pre-waitlist{%endif%}{%endif%}</td>
+{%endif%}
  </tr>
 {%endfor%}
 </table>
