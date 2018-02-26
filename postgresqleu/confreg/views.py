@@ -2005,7 +2005,7 @@ def bulkpay_view(request, confname, bulkpayid):
 def talkvote(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.talkvoters.filter(pk=request.user.id):
-		raise Http404('You are not a talk voter for this conference!')
+		return HttpResponse('You are not a talk voter for this conference!')
 
 	isadmin = conference.administrators.filter(pk=request.user.id).exists()
 
@@ -2108,14 +2108,14 @@ def talkvote(request, confname):
 def talkvote_status(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.talkvoters.filter(pk=request.user.id):
-		raise Http404('You are not a talk voter for this conference!')
+		return HttpResponse('You are not a talk voter for this conference!')
 
 	isadmin = conference.administrators.filter(pk=request.user.id).exists()
 	if not isadmin:
-		raise Http404('Only admins can change the status')
+		return HttpResponse('Only admins can change the status')
 
 	if request.method!='POST':
-		raise Http404('Can only use POST')
+		return HttpResponse('Can only use POST')
 
 	session = get_object_or_404(ConferenceSession, conference=conference, id=request.POST['sessionid'])
 	session.status = int(request.POST['newstatus'])
@@ -2131,7 +2131,7 @@ def createschedule(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.talkvoters.filter(pk=request.user.id):
 		if not request.user.is_superuser:
-			raise Http404('You are not a talk voter for this conference!')
+			return Http404('You are not a talk voter for this conference!')
 
 
 	if request.method=="POST":
