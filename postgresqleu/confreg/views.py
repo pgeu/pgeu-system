@@ -51,7 +51,7 @@ from postgresqleu.invoices.models import InvoiceProcessor, InvoiceHistory
 from postgresqleu.mailqueue.util import send_mail, send_simple_mail, send_template_mail, template_to_string
 from postgresqleu.util.jsonutil import JsonSerializer
 from postgresqleu.util.db import exec_to_dict, exec_to_grouped_dict, exec_to_keyed_dict
-from postgresqleu.util.db import exec_no_result, exec_to_list
+from postgresqleu.util.db import exec_no_result, exec_to_list, exec_to_scalar
 
 from decimal import Decimal
 from operator import itemgetter
@@ -2365,6 +2365,13 @@ def admin_dashboard_single(request, urlname):
 
 	return render_to_response('confreg/admin_dashboard_single.html', {
 		'c': conference,
+		'pending_session_notifications': conference.pending_session_notifications,
+		'pending_waitlist': RegistrationWaitlistEntry.objects.filter(registration__conference=conference, offeredon__isnull=True).exists(),
+		'unregistered_staff': exec_to_scalar("SELECT EXISTS (SELECT user_id FROM confreg_conference_staff s WHERE s.conference_id=%(confid)s AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND attendee_id=s.user_id))", {'confid': conference.id}),
+		'unregistered_speakers': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id WHERE s.conference_id=%(confid)s AND s.status=1 AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.attendee_id=spk.user_id))", { 'confid': conference.id}),
+		'unconfirmed_speakers': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession_speaker css INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id WHERE s.conference_id=%(confid)s AND s.status=3)", {'confid': conference.id}),
+		'sessions_noroom': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=1 AND s.room_id IS NULL)", {'confid': conference.id}),
+		'sessions_notrack': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=1 AND s.track_id IS NULL)", {'confid': conference.id}),
 	}, RequestContext(request))
 
 @login_required
