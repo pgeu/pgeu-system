@@ -167,6 +167,14 @@ class Invoice(models.Model):
 	def autorefund(self):
 		return PaymentMethodWrapper(self.paidusing, self).autorefund()
 
+	@property
+	def payment_method_description(self):
+		if not self.paidat:
+			return "not paid"
+		if self.paidusing:
+			return "paid using {0}.".format(self.paidusing.name)
+		return "manually flagged as paid."
+
 	def __unicode__(self):
 		return "Invoice #%s" % self.pk
 

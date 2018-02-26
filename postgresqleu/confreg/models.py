@@ -346,6 +346,18 @@ class BulkPayment(models.Model):
 	def adminstring(self):
 		return "%s at %s" % (self.user, self.createdat)
 
+	@property
+	def payment_method_description(self):
+		if not self.paidat:
+			return "not paid."
+		if self.invoice:
+			if self.invoice.paidat:
+				return "paid with invoice #{0}.\nInvoice {1}".format(self.invoice.id, self.invoice.payment_method_description)
+			else:
+				return "supposedly paid with invoice #{0}, which is not flagged as paid. SOMETHING IS WRONG!".format(self.invoice.id)
+		else:
+			return "no invoice assigned. SOMETHING IS WRONG!"
+
 	def __unicode__(self):
 		return u"Bulk payment for %s created %s (%s registrations, %s%s): %s" % (
 			self.conference,
@@ -438,6 +450,22 @@ class ConferenceRegistration(models.Model):
 	@property
 	def is_volunteer(self):
 		return self.volunteers_set.exists()
+
+	@property
+	def payment_method_description(self):
+		if not self.payconfirmedat:
+			return "Not paid."
+		if self.payconfirmedby == "no payment reqd":
+			return "Registration does not require payment."
+		if self.payconfirmedby == "Multireg/nopay":
+			return "Registration is part of multi payment batch that does not require payment."
+		if self.payconfirmedby == "Invoice paid":
+			# XXX dig deeper!
+			return "Paid by individual invoice #{0}.\n Invoice {1}".format(self.invoice.id, self.invoice.payment_method_description)
+		if self.payconfirmedby == "Bulk paid":
+			return "Paid by bulk payment #{0}.\n Bulk {1}".format(self.bulkpayment.id, self.bulkpayment.payment_method_description)
+
+		return "Payment details not available"
 
 	# For the admin interface (mainly)
 	def __unicode__(self):
