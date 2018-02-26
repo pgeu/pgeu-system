@@ -1,0 +1,148 @@
+{%extends "confreg/confadmin_base.html" %}
+{%load date_or_string%}
+{%block title%}Conference registration{%endblock%}
+
+{%block layoutblock%}
+<h1>Conference registration</h1>
+<h2>{{reg.fullname}}</h2>
+
+{%if not reg.payconfirmedat%}
+<div class="alert alert-danger">NOTE! This registration is not completed!</div>
+{%endif%}
+
+<table class="table">
+ <tr>
+  <th colspan="2" class="col-md-12">Personal information</th>
+ </tr>
+ <tr>
+  <td class="col-md-3">First name</td>
+  <td class="col-md-9">{{reg.firstname}}</td>
+ </tr>
+ <tr>
+  <td>Last name</td>
+  <td>{{reg.lastname}}</td>
+ </tr>
+ <tr>
+  <td>Company</td>
+  <td>{{reg.company}}</td>
+ </tr>
+ <tr>
+  <td>Address</td>
+  <td>{{reg.address}}</td>
+ </tr>
+ <tr>
+  <td>Country</td>
+  <td>{{reg.country}}</td>
+ </tr>
+ <tr>
+  <td>Email</td>
+  <td>{{reg.email}}</td>
+ </tr>
+ <tr>
+  <td>Phone</td>
+  <td>{{reg.phone}}</td>
+ </tr>
+ <tr>
+  <td>Twitter</td>
+  <td>{{reg.twittername}}</td>
+ </tr>
+ <tr>
+  <td>Nick</td>
+  <td>{{reg.nick}}</td>
+ </tr>
+
+ <tr>
+  <th colspan="2" class="col-md-12">Attendee specifics</th>
+ </tr>
+{%if conference.asktshirt%}
+ <tr>
+  <td>T-shirt size</td>
+  <td>{{reg.shirtsize|default:""}}</td>
+ </tr>
+{%endif%}
+{%if conference.askfood%}
+ <tr>
+  <td>Dietary needs</td>
+  <td>{{reg.dietary}}</td>
+ </tr>
+{%endif%}
+ <tr>
+  <td>Additional options</td>
+  <td>
+   <ul>
+{%for ao in reg.additionaloptions.all %}
+<li>{{ao.name}}</li>
+{%endfor%}
+   </ul>
+  </td>
+ </tr>
+
+ <tr>
+  <th colspan="2" class="col-md-12">Registration process</th>
+ </tr>
+ <tr>
+  <td>Registration type</td>
+  <td>{{reg.regtype.regtype}}</td>
+ </tr>
+ <tr>
+  <td>Registration started</td>
+  <td>{{reg.created}}</td>
+ </tr>
+ <tr{%if not reg.payconfirmedat%} class="danger"{%endif%}>
+  <td>Registration completed</td>
+  <td>{{reg.payconfirmedat|default:"Registration is NOT completed"}}</td>
+ </tr>
+{%if reg.attendee != reg.registrator %}
+ <tr>
+  <td>Registration made by</td>
+  <td>{{reg.registrator}} ({{reg.registrator.first_name}} {{reg.registrator.last_name}} &lt;{{reg.registrator.email}}&gt;)</td>
+ </tr>
+{%endif%}
+ <tr>
+  <td>Voucher/discount code used</td>
+  <td>{{reg.vouchercode}}</td>
+ </tr>
+ <tr>
+  <td>Payment method</td>
+  <td>{{reg.payment_method_description|linebreaksbr}}</td>
+ </tr>
+
+{%if sessions%}
+ <tr>
+  <th colspan="2" class="col-md-12">Speaker status</th>
+ </tr>
+ <tr>
+  <td>Sessions</td>
+  <td><ul>{%for s in sessions%}
+    <li>{{s.title}} ({{s.status_string}})</li>
+{%endfor%}
+  </ul></td>
+ </tr>
+{%endif%}
+
+{%if signups%}
+ <tr>
+  <th colspan="2" class="col-md-12">Signups</th>
+ </tr>
+
+ <tr>
+  <td>Signups</td>
+  <td><ul>{%for s in signups %}
+    <li>{{s.title}} ({%if s.savedat%}responded {{s.savedat}}{%else%}did not respond{%endif%})</li>
+{%endfor%}
+  </ul></td>
+ </tr>
+{%endif%}
+
+</table>
+
+{%if user.is_superuser%}
+<p>
+<a href="/admin/confreg/conferenceregistration/{{reg.id}}/">View</a> registration through admin view.
+</p>
+{%endif%}
+
+<p>
+<a href="/events/admin/{{conference.urlname}}/regdashboard/list/">Back</a> to list.
+</p>
+{%endblock%}

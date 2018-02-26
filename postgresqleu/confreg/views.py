@@ -2434,6 +2434,53 @@ def admin_registration_dashboard(request, urlname):
 	}, RequestContext(request))
 
 @login_required
+def admin_registration_list(request, urlname):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=urlname)
+	else:
+		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+
+	skey = request.GET.get('sort', '-date')
+	if skey[0] == '-':
+		revsort = True
+		skey=skey[1:]
+	else:
+		revsort = False
+
+	sortmap = {
+		'last':'lastname',
+		'first': 'firstname',
+		'company': 'company',
+		'type': 'regtype__sortkey',
+		'date': 'payconfirmedat',
+	}
+	if not skey in sortmap:
+		return HttpResponse("Bad sort key.")
+
+	return render_to_response('confreg/admin_registration_list.html', {
+		'conference': conference,
+		'sortkey': (revsort and '-' or '') + skey,
+		'regs': ConferenceRegistration.objects.select_related('regtype').filter(conference=conference).order_by((revsort and '-' or '') + sortmap[skey]),
+	}, RequestContext(request))
+
+@login_required
+def admin_registration_single(request, urlname, regid):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=urlname)
+	else:
+		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+
+	reg = get_object_or_404(ConferenceRegistration, id=regid, conference=conference)
+
+	return render_to_response('confreg/admin_registration_single.html', {
+		'conference': conference,
+		'reg': reg,
+		'sessions': ConferenceSession.objects.filter(conference=conference, speaker__user=reg.attendee),
+		'signups': _get_registration_signups(conference, reg),
+	}, RequestContext(request))
+
+
+@login_required
 @transaction.atomic
 def admin_waitlist(request, urlname):
 	if request.user.is_superuser:
