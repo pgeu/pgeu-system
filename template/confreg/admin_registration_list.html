@@ -14,6 +14,10 @@ a.nocolor {
 
 {%block layoutblock%}
 <h1>Conference registrations</h1>
+<p>
+ Total {{regsummary.confirmed}} confirmed and {{regsummary.unconfirmed}} unconfirmed registrations.
+</p>
+
 <table class="table table-bordered table-striped table-hover table-condensed">
  <tr>
   <th><a href="?sort={%if sortkey == "last" %}-{%endif%}last">Last name</a></th>

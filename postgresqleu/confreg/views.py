@@ -2462,6 +2462,7 @@ def admin_registration_list(request, urlname):
 		'waitlist_active': conference.waitlist_active,
 		'sortkey': (revsort and '-' or '') + skey,
 		'regs': ConferenceRegistration.objects.select_related('regtype').select_related('registrationwaitlistentry').filter(conference=conference).order_by((revsort and '-' or '') + sortmap[skey]),
+		'regsummary': exec_to_dict("SELECT count(1) FILTER (WHERE payconfirmedat IS NOT NULL) AS confirmed, count(1) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed FROM confreg_conferenceregistration WHERE conference_id=%(confid)s", {'confid': conference.id})[0],
 	}, RequestContext(request))
 
 @login_required
