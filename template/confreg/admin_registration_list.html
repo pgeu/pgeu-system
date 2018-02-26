@@ -41,13 +41,10 @@ a.nocolor {
 {%endfor%}
 </table>
 
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/">Back to registration dashboard</a>
+
 {%if user.is_superuser%}
-<p>
-<a href="/admin/confreg/conferenceregistration/?conference__id__exact={{conference.id}}&_directlink=1">View</a> all registrations through admin view.
-</p>
+<a class="btn btn-default btn-block" href="/admin/confreg/conferenceregistration/?conference__id__exact={{conference.id}}&_directlink=1">View all registrations through admin view</a>
 {%endif%}
 
-<p>
-<a href="/events/admin/{{conference.urlname}}/regdashboard/">Back</a> to dashboard.
-</p>
 {%endblock%}

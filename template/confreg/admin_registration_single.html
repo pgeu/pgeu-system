@@ -136,13 +136,10 @@
 
 </table>
 
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/">Back to list</a>
+
 {%if user.is_superuser%}
-<p>
-<a href="/admin/confreg/conferenceregistration/{{reg.id}}/">View</a> registration through admin view.
-</p>
+<a class="btn btn-default btn-block" href="/admin/confreg/conferenceregistration/{{reg.id}}/">View registration through admin view</a>
 {%endif%}
 
-<p>
-<a href="/events/admin/{{conference.urlname}}/regdashboard/list/">Back</a> to list.
-</p>
 {%endblock%}
