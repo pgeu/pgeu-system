@@ -16,11 +16,13 @@ from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.confreg.models import Conference, ConferenceRegistration
 from postgresqleu.confreg.views import render_conference_response
 
+from postgresqleu.util.db import exec_to_scalar, exec_to_list
+
 from models import Wikipage, WikipageHistory, WikipageSubscriber
 from forms import WikipageEditForm, WikipageAdminEditForm
 
 from models import Signup, AttendeeSignup
-from forms import SignupSubmitForm, SignupAdminEditForm
+from forms import SignupSubmitForm, SignupAdminEditForm, SignupSendmailForm
 
 @login_required
 def wikipage(request, confurl, wikiurl):
@@ -396,4 +398,84 @@ def signup_admin_edit(request, urlname, signupid):
 		'signup': signup,
 		'results': results,
 		'breadcrumbs': (('/events/admin/{0}/signups/'.format(conference.urlname), 'Signups'),),
+	}, RequestContext(request))
+
+
+@login_required
+@transaction.atomic
+def signup_admin_sendmail(request, urlname, signupid):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=urlname)
+	else:
+		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+
+	signup = get_object_or_404(Signup, conference=conference, pk=signupid)
+
+	optionstrings = signup.options.split(',')
+	additional_choices = [('r_{0}'.format(r), 'Recipients who responded {0}'.format(optionstrings[r])) for r in range(len(optionstrings))]
+
+	if request.method == 'POST':
+		params = {'confid': conference.id, 'signup': signup.id}
+		rr = request.POST['recipients']
+		if signup.public:
+			qq = "FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND conference_id=%(confid)s"
+		else:
+			qq = "FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND conference_id=%(confid)s AND (regtype_id IN (SELECT registrationtype_id FROM confwiki_signup_regtypes srt WHERE srt.signup_id=%(signup)s) OR id IN (SELECT conferenceregistration_id FROM confwiki_signup_attendees WHERE signup_id=%(signup)s)) AND id NOT IN (SELECT attendee_id FROM confwiki_attendeesignup WHERE signup_id=%(signup)s)"
+
+		if rr == 'responded':
+			qq += " AND EXISTS (SELECT 1 FROM confwiki_attendeesignup was WHERE was.signup_id=%(signup)s AND was.attendee_id=r.id)"
+		elif rr == 'noresp':
+			qq += " AND NOT EXISTS (SELECT 1 FROM confwiki_attendeesignup was WHERE was.signup_id=%(signup)s AND was.attendee_id=r.id)"
+
+		elif rr.startswith('r_'):
+			optnum = int(rr[2:])
+			qq += " AND EXISTS (SELECT 1 FROM confwiki_attendeesignup was WHERE was.signup_id=%(signup)s AND was.attendee_id=r.id AND choice=%(choice)s)"
+			params['choice'] = optionstrings[optnum]
+
+		numtosend = exec_to_scalar("SELECT count(*) {0}".format(qq), params)
+
+		form = SignupSendmailForm(additional_choices, data=request.POST, num=numtosend)
+		if form.is_valid():
+			towhat = next(v for k,v in form.recipient_choices if k == rr)
+			recipients = exec_to_list("SELECT firstname || ' ' || lastname, email {0}".format(qq), params)
+			for n,e in recipients:
+				send_simple_mail(conference.contactaddr,
+								 e,
+								 form.cleaned_data['subject'],
+								 "{0}\n\nTo view the signup, please see {1}/events/{2}/register/signup/{3}/".format(
+									 form.cleaned_data['body'],
+									 settings.SITEBASE, conference.urlname, signup.id),
+								 sendername=conference.conferencename,
+								 receivername=n)
+			send_simple_mail(conference.contactaddr,
+							 conference.contactaddr,
+							 u'Email sent to signup {0}'.format(signup.id),
+							 u"""An email was sent to recipients of the signup "{0}"\nIt was sent to {1}, leading to {2} recipients.\n\nSubject:{3}\nBody:\n{4}\n""".format(
+								 signup.title,
+								 towhat,
+								 numtosend,
+								 form.cleaned_data['subject'],
+								 form.cleaned_data['body'],
+							 ),
+							 sendername=conference.conferencename,
+			)
+			messages.info(request, "E-mail delivered to {0} recipients.".format(numtosend))
+			return HttpResponseRedirect('../')
+		else:
+			if signup.public and rr == 'all':
+				messages.warning(request, "Since this is a public signup and you are sending to all attendees, you should probably consider using regular mail send instead of signup mail send, so it gets delivered to future attendees as well!")
+	else:
+		form = SignupSendmailForm(additional_choices)
+		numtosend = None
+
+
+	return render_to_response('confwiki/signup_sendmail_form.html', {
+		'conference': conference,
+		'form': form,
+		'signup': signup,
+		'numtosend': numtosend,
+		'breadcrumbs': (
+			('/events/admin/{0}/signups/'.format(conference.urlname), 'Signups'),
+			('/events/admin/{0}/signups/{1}/'.format(conference.urlname, signup.id), signup.title),
+		),
 	}, RequestContext(request))

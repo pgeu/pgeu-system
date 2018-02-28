@@ -83,3 +83,41 @@ class SignupAdminEditForm(forms.ModelForm):
 		model = Signup
 		exclude = ['conference', ]
 
+
+class SignupSendmailForm(forms.Form):
+	_recipient_choices = [
+		('*', '** Pick recipients of mail'),
+		('all', 'All recipieints'),
+		('responded', 'Recipients who have responded'),
+		('noresp', 'Recipients who have not responded'),
+	]
+
+	subject = forms.CharField(max_length=100, required=True)
+	body = forms.CharField(widget=forms.widgets.Textarea, required=True)
+	recipients = forms.ChoiceField(required=True)
+	confirm = forms.BooleanField(required=True)
+
+	def __init__(self, additional_choices, *args, **kwargs):
+		if 'num' in kwargs:
+			self.num = kwargs['num']
+			del kwargs['num']
+		else:
+			self.num = None
+
+		r = super(SignupSendmailForm, self).__init__(*args, **kwargs)
+
+		self.recipient_choices = self._recipient_choices + additional_choices
+		self.fields['recipients'].choices = self.recipient_choices
+
+		if 'data' in kwargs:
+			# This is a re-post of the form.
+			self.fields['confirm'].help_text = "Please confirm that you want to send this to {0} recipients".format(self.num)
+		else:
+			# First post of the form!
+			del self.fields['confirm']
+
+		return r
+
+	def clean_recipients(self):
+		if self.cleaned_data['recipients'] == '*':
+			raise ValidationError("Pick a set of recipients for this mail!")

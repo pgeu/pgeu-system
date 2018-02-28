@@ -1,0 +1,31 @@
+{%extends "confreg/confadmin_base.html"%}
+{%block extrahead%}
+<style>
+tr.error {
+   background-color: #ffb6b6;
+}
+table.sendmailform tr {
+   vertical-align: top;
+}
+table.sendmailform input[type="text"],textarea,select {
+   width: 500px;
+   margin-bottom: 10px;
+}
+</style>
+{%endblock%}
+
+{%block layoutblock%}
+<h1>Signup - send mail</h1>
+
+<form method="post" action=".">{%csrf_token%}
+<table class="sendmailform">
+{{form}}
+</table>
+<input type="submit" value="Send mail" class="btn btn-default">
+</form>
+
+<p>
+<br/><br/>
+<a href="../">Back</a> to list.
+</p>
+{%endblock%}
