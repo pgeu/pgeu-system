@@ -44,12 +44,13 @@ def volunteerschedule(request, urlname, adm=False):
 	is_admin = can_admin and adm
 
 	stats = ConferenceRegistration.objects.filter(conference=conference) \
+										  .filter(volunteers_set=conference) \
 										  .annotate(num_assignments=Count('volunteerassignment')) \
 										  .annotate(total_time=Sum(Func(
 											  Func(F('volunteerassignment__slot__timerange'), function='upper'),
 											  Func(F('volunteerassignment__slot__timerange'), function='lower'),
 											  function='age'))) \
-										  .filter(num_assignments__gt=0).order_by('lastname', 'firstname')
+										  .order_by('lastname', 'firstname')
 
 	return render_conference_response(request, conference, 'reg', 'confreg/volunteer_schedule.html', {
 		'admin': is_admin,
