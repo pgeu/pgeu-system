@@ -19,7 +19,14 @@ table.sendmailform input[type="text"],textarea,select {
 
 <form method="post" action=".">{%csrf_token%}
 <table class="sendmailform">
+<tr>
+ <th>Sender</th>
+ <td>{{conference.conferencename}} &lt;{{conference.contactaddr}}&gt;</td>
 {{form}}
+<tr>
+ <th>Suffix</th>
+ <td>The email will contain a suffix with a link to {{sitebase}}/events/{{conference.urlname}}/register/signup/{{signup.id}}/</td>
+</tr>
 </table>
 <input type="submit" value="Send mail" class="btn btn-default">
 </form>
