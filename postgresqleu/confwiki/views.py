@@ -420,7 +420,7 @@ def signup_admin_sendmail(request, urlname, signupid):
 		if signup.public:
 			qq = "FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND conference_id=%(confid)s"
 		else:
-			qq = "FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND conference_id=%(confid)s AND (regtype_id IN (SELECT registrationtype_id FROM confwiki_signup_regtypes srt WHERE srt.signup_id=%(signup)s) OR id IN (SELECT conferenceregistration_id FROM confwiki_signup_attendees WHERE signup_id=%(signup)s)) AND id NOT IN (SELECT attendee_id FROM confwiki_attendeesignup WHERE signup_id=%(signup)s)"
+			qq = "FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND conference_id=%(confid)s AND (regtype_id IN (SELECT registrationtype_id FROM confwiki_signup_regtypes srt WHERE srt.signup_id=%(signup)s) OR id IN (SELECT conferenceregistration_id FROM confwiki_signup_attendees WHERE signup_id=%(signup)s))"
 
 		if rr == 'responded':
 			qq += " AND EXISTS (SELECT 1 FROM confwiki_attendeesignup was WHERE was.signup_id=%(signup)s AND was.attendee_id=r.id)"
