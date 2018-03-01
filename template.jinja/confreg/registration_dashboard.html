@@ -84,7 +84,7 @@ spamfilters.
   <li>No emails have been sent yet</li>
 {%else%}
   {%for m in mails%}
-    <li><a href="mail/{{m.id}}/">{{m.subject}}</a> (<i>sent {{m.sentat.strftime("%Y-%m-%d %H:%M")}}</i>)</li>
+    <li><a href="{{redir_root}}mail/{{m.id}}/">{{m.subject}}</a> (<i>sent {{m.sentat.strftime("%Y-%m-%d %H:%M")}}</i>)</li>
   {%endfor%}
 {%endif%}
 </ul>
@@ -94,7 +94,7 @@ spamfilters.
 <h2>Wiki pages</h2>
 <ul>
 {%for p in wikipages%}
- <li><a href="wiki/{{p.url}}/">{{p.title}}</a> (last modified {{p.publishedat.strftime("%Y-%m-%d %H:%M")}})</li>
+ <li><a href="{{redir_root}}wiki/{{p.url}}/">{{p.title}}</a> (last modified {{p.publishedat.strftime("%Y-%m-%d %H:%M")}})</li>
 {%endfor%}
 </ul>
 {%endif%}
@@ -104,7 +104,7 @@ spamfilters.
 <h2>Signups</h2>
 <ul>
 {%for s in signups%}
- <li><a href="signup/{{s.id}}/">{{s.title}}</a>{%if s.closed%} (closed){%elif s.deadline%} (closes {{s.deadline.strftime("%Y-%m-%d %H:%M")}}){%endif%}{%if s.savedat%} - you responded on {{s.savedat.strftime("%Y-%m-%d %H:%M")}}{%endif%}</li>
+ <li><a href="{{redir_root}}signup/{{s.id}}/">{{s.title}}</a>{%if s.closed%} (closed){%elif s.deadline%} (closes {{s.deadline.strftime("%Y-%m-%d %H:%M")}}){%endif%}{%if s.savedat%} - you responded on {{s.savedat.strftime("%Y-%m-%d %H:%M")}}{%endif%}</li>
 {%endfor%}
 </ul>
 {%endif%}
