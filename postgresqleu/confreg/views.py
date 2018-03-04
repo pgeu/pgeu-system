@@ -2474,10 +2474,14 @@ def admin_registration_single(request, urlname, regid):
 
 	reg = get_object_or_404(ConferenceRegistration, id=regid, conference=conference)
 
+	if reg.attendee:
+		sessions = ConferenceSession.objects.filter(conference=conference, speaker__user=reg.attendee)
+	else:
+		sessions = None
 	return render_to_response('confreg/admin_registration_single.html', {
 		'conference': conference,
 		'reg': reg,
-		'sessions': ConferenceSession.objects.filter(conference=conference, speaker__user=reg.attendee),
+		'sessions': sessions,
 		'signups': _get_registration_signups(conference, reg),
 	}, RequestContext(request))
 
