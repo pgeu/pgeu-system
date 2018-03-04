@@ -33,7 +33,7 @@ a.nocolor {
   <td>{{r.firstname}}</td>
   <td>{{r.company}}</td>
   <td>{{r.regtype.regtype}}</td>
-  <td>{{r.payconfirmedat|default:""}}</td>
+  <td>{%if r.payconfirmedat%}{{r.payconfirmedat}}{%elif r.invoice%}Invoice generated{%elif r.bulkpayment%}Bulk payment generated{%endif%}</td>
 {%if waitlist_active %}
   <td>{%if r.registrationwaitlistentry %}
    {%if r.payconfirmedat%}Accepted{%else%}

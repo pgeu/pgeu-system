@@ -90,7 +90,7 @@
  </tr>
  <tr{%if not reg.payconfirmedat%} class="danger"{%endif%}>
   <td>Registration completed</td>
-  <td>{{reg.payconfirmedat|default:"Registration is NOT completed"}}</td>
+  <td>{%if reg.payconfirmedat%}{{reg.payconfirmedat}}{%elif reg.invoice%}Invoice generated, NOT paid{%elif reg.bulkpayment%}Bulk payment generated, NOT paid{%endif%}</td>
  </tr>
 {%if reg.attendee != reg.registrator %}
  <tr>
