@@ -197,7 +197,10 @@ class RegistrationClass(models.Model):
 
 	@property
 	def bgcolortuplestr(self):
-		return ','.join(map(str, self.colortuple()))
+		if len(self.badgecolor):
+			return ','.join(map(str, self.colortuple()))
+		else:
+			return None
 
 	def foregroundcolortuple(self):
 		if len(self.badgeforegroundcolor):
