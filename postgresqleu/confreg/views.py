@@ -479,6 +479,8 @@ def multireg_newinvoice(request, confname):
 		return HttpResponseRedirect('../')
 
 	finalize = (request.method == 'POST' and request.POST['submit'] == 'Create')
+	if finalize:
+		savepoint = transaction.savepoint()
 
 	# Almost like a bulk invoice, but we know the registrations were
     # created so they exist.
@@ -510,6 +512,7 @@ def multireg_newinvoice(request, confname):
 		form = MultiRegInvoiceForm(data=request.POST)
 		if totalwithvat != Decimal(request.POST['totalwithvat']):
 			errors.append('Total amount has changed, likely due to a registration being concurrently changed. Please try again.')
+			# Error set, so will fall through into the path that rolls back
 
 		if form.is_valid() and not errors:
 			if totalwithvat == 0:
@@ -526,6 +529,10 @@ def multireg_newinvoice(request, confname):
 													 False)
 
 				return HttpResponseRedirect("../b{0}/".format(bp.id))
+
+		# If we flagged discount codes etc as used, but came down her in the error path,
+	    # make sure we roll back the change.
+		transaction.savepoint_rollback(savepoint)
 
 		# Add the errors to the form, so they're actually visible.
 		for e in errors:
