@@ -25,18 +25,6 @@
 </p>
 {%endif%}
 
-{%if bulkpayments%}
-<h2>Invoices</h2>
-<p>
-  The following invoices have been issued from your account.
-</p>
-<ul>
-{%for b in bulkpayments%}
- <li><a href="b{{b.id}}/">{{b.createdat}}</a> for {{b.numregs}} registrations ({{b.ispaid()|yesno("Paid,Unpaid")}})</li>
-{%endfor%}
-</ul>
-{%endif%}
-
 {%if haspending%}
 <h2>Create invoice</h2>
 {%if activewaitlist%}
@@ -55,6 +43,18 @@ them all.
   <input type="submit" name="submit" value="Create invoice" />
 </form>
 {%endif%}
+{%endif%}
+
+{%if bulkpayments%}
+<h2>Invoices</h2>
+<p>
+  The following invoices have been issued from your account.
+</p>
+<ul>
+{%for b in bulkpayments%}
+ <li><a href="b{{b.id}}/">{{b.createdat}}</a> for {{b.numregs}} registrations ({{b.ispaid()|yesno("Paid,Unpaid")}})</li>
+{%endfor%}
+</ul>
 {%endif%}
 
 <h2>Add registration</h2>
