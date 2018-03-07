@@ -513,16 +513,8 @@ def multireg_newinvoice(request, confname):
 
 		if form.is_valid() and not errors:
 			if totalwithvat == 0:
-				# Free! This is either a multireg for example for speakers, or it could be
-				# a registration made entirely out of vouchers. So just mark the payments
-				# as completed (the invoicerows_for_registration step has already marked any
-				# vouchers or discount codes as used)
-				for r in pendingregs:
-					r.payconfirmedat = datetime.now()
-					r.payconfirmedby = "Multireg/nopay"
-					r.save()
-					notify_reg_confirmed(r)
-				return HttpResponseRedirect("../z/")
+				errors.append('Should never happen, invoice should have already been bypassed for zero')
+				# Fall through to render with errors
 			else:
 				# Else generate a bulk payment and invoice for it
 				bp = _create_and_assign_bulk_payment(request.user,
@@ -539,6 +531,19 @@ def multireg_newinvoice(request, confname):
 		for e in errors:
 			form.add_error(None, e)
 	else:
+		# No need to show the form in case we actually have a total cost of zero.
+		# Instead, just immediately flag them as used.
+		if totalwithvat == 0 and not errors:
+			for r in pendingregs:
+				# Flag discount code/vouchers as used
+				invoicerows_for_registration(r, True)
+				# Now mark the registration as done.
+				r.payconfirmedat = datetime.now()
+				r.payconfirmedby = "Multireg/nopay"
+				r.save()
+				notify_reg_confirmed(r)
+			return HttpResponseRedirect("../z/")
+
 		form = MultiRegInvoiceForm()
 
 
