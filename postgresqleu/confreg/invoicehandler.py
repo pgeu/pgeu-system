@@ -3,7 +3,7 @@ from django.conf import settings
 from postgresqleu.mailqueue.util import send_template_mail, send_simple_mail
 from models import ConferenceRegistration, BulkPayment, PendingAdditionalOrder
 from models import RegistrationWaitlistHistory, PrepaidVoucher
-from util import notify_reg_confirmed, expire_additional_options
+from util import notify_reg_confirmed, expire_additional_options, cancel_registration
 
 from datetime import datetime
 
@@ -83,21 +83,7 @@ class InvoiceProcessor(object):
 		except ConferenceRegistration.DoesNotExist:
 			raise Exception("Could not find conference registration %s" % invoice.processorid)
 
-		if not reg.payconfirmedat:
-			raise Exception("Registration not paid, data is out of sync!")
-
-		# Unlink this invoice from the registration, and remove the payment
-		# confirmation. This will automatically "unlock" the registration.
-		reg.invoice = None
-		reg.payconfirmedat = None
-		reg.payconfirmedby = None
-		reg.save()
-
-		# Once unlinked, remove the registration as well. If we don't
-		# do this, the user will get notifications to remember to
-		# complete their registration in the future, and that will be
-		# confusing.
-		reg.delete()
+		cancel_registration(reg)
 
 	# Return the user to a page showing what happened as a result
 	# of their payment. In our case, we just return the user directly

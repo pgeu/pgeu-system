@@ -1,0 +1,9 @@
+Your registration for {{conference.conferencename}} has been canceled.
+
+If you did not expect this or do not know why this happened,
+please contact us ASAP by responding to this email, and we will
+investigate the situation.
+
+Your registration has now been fully canceled, so you do not need
+to do anything else to complete it. We hope to see you again at
+a future event!

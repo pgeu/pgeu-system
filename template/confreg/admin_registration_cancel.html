@@ -1,0 +1,45 @@
+{%extends "confreg/confadmin_base.html" %}
+{%load date_or_string%}
+{%block extrahead%}
+<script language="javascript">
+function confirmit() {
+   return confirm('Are you absolutely sure you want to cancel this registration? There is no way to roll i tback!');
+}
+</script>
+{%endblock%}
+
+{%block title%}Cancel registration{%endblock%}
+
+{%block layoutblock%}
+<h1>Cancel registration</h1>
+<h2>{{reg.fullname}}</h2>
+{%if reg.invoice%}
+<p>
+  This registration has an invoice attached to it. If you want to do a refund of this
+  invoice (full or partial), the cancellation must currently be done through the
+  invoice system.
+</p>
+<a class="btn btn-default btn-block" href="/invoiceadmin/{{reg.invoice.pk}}/refund/">Cancel with refund</a>
+{%elif reg.bulkpayment%}
+<p>
+  This registration is part of a bulk payment or a pay by somebody else invoice.
+  If you want to do a refund of this registration, has to be done through the
+  invoice system. However, in doing so the actual registration will not be canceled,
+  so you will <i>also</i> need to manually cancel thre reservation in question.
+</p>
+<a class="btn btn-default btn-block" href="/invoiceadmin/{{reg.bulkpayment.invoice.pk}}/refund/">Refund bulk invoice</a>
+{%else%}
+<p>
+  This registration does not have an invoice or bulk payment. That means it was either
+  a no-pay registration (such as voucher) or a manually confirmed one (speaker, staff,
+  or fully manual).
+</p>
+{%endif%}
+<form method="post" action=".">{% csrf_token %}
+  <input type="hidden" name="docancel" value="1">
+  <input type="submit" class="btn btn-default btn-block" value="Cancel registration without refund"  onclick="return confirmit()">
+</form>
+
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/">Back to registration</a>
+
+{%endblock%}

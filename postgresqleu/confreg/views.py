@@ -36,7 +36,7 @@ from forms import AttendeeMailForm, WaitlistOfferForm, TransferRegForm
 from forms import NewMultiRegForm, MultiRegInvoiceForm
 from forms import SessionSlidesUrlForm, SessionSlidesFileForm
 from util import invoicerows_for_registration, notify_reg_confirmed, InvoicerowsException
-from util import get_invoice_autocancel
+from util import get_invoice_autocancel, cancel_registration
 
 from models import get_status_string
 from regtypes import confirm_special_reg_type, validate_special_reg_type
@@ -2497,6 +2497,28 @@ def admin_registration_single(request, urlname, regid):
 		'signups': _get_registration_signups(conference, reg),
 	}, RequestContext(request))
 
+@login_required
+@transaction.atomic
+def admin_registration_cancel(request, urlname, regid):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=urlname)
+	else:
+		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+
+	reg = get_object_or_404(ConferenceRegistration, id=regid, conference=conference)
+
+	if request.method == 'POST' and request.POST.get('docancel') == '1':
+		name = reg.fullname
+		cancel_registration(reg)
+		return render_to_response('confreg/admin_registration_cancel_confirm.html', {
+			'conference': conference,
+			'name': name,
+		})
+	else:
+		return render_to_response('confreg/admin_registration_cancel.html', {
+			'conference': conference,
+			'reg': reg,
+		}, RequestContext(request))
 
 @login_required
 @transaction.atomic

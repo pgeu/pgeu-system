@@ -136,6 +136,10 @@
 
 </table>
 
+{%if reg.payconfirmedat%}
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/cancel/">Cancel registration</a>
+{%endif%}
+
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/">Back to list</a>
 
 {%if user.is_superuser%}

@@ -148,6 +148,48 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
 	)
 
 
+def cancel_registration(reg):
+	# Verify that we're only canceling a real registration
+	if not reg.payconfirmedat:
+		raise Exception("Registration not paid, data is out of sync!")
+
+	# If we sent a welcome mail, also send a goodbye mail
+	if reg.conference.sendwelcomemail:
+		send_template_mail(reg.conference.contactaddr,
+						   reg.email,
+						   "[{0}] Registration canceled".format(reg.conference),
+						   'confreg/mail/reg_canceled.txt',
+						   {
+							   'conference': reg.conference,
+							   'reg': reg,
+						   },
+						   sendername=reg.conference.conferencename,
+						   receivername=reg.fullname,
+		)
+
+	# Now actually delete the reg. Start by unlinking things that might be there.
+	if reg.vouchercode:
+		if PrepaidVoucher.objects.filter(user=reg).exists():
+			v = PrepaidVoucher.objects.get(user=reg)
+			v.user = None
+			v.usedate = None
+			v.save()
+		elif DiscountCode.objects.filter(registrations=reg).exists():
+			d = DiscountCode.objects.get(registrations=reg)
+			d.registrations.remove(reg)
+			d.save()
+	reg.invoice = None
+	reg.payconfirmedat = None
+	reg.payconfirmedby = None
+	reg.save()
+
+	# Once unlinked, remove the registration as well. If we don't
+	# do this, the user will get notifications to remember to
+	# complete their registration in the future, and that will be
+	# confusing.
+	reg.delete()
+
+
 
 def get_invoice_autocancel(*args):
 	# Each argument is expected to be an integer with number of hours,
