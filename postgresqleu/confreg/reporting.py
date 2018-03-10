@@ -12,9 +12,8 @@ class ReportException(Exception):
 	pass
 
 class Header(object):
-	def __init__(self, hdr, hastoday):
+	def __init__(self, hdr):
 		self.hdr = hdr
-		self.hastoday = hastoday
 
 	def __unicode__(self):
 		return self.hdr
@@ -28,6 +27,7 @@ def timereport(request):
 		if form.is_valid():
 			reporttype = int(form.cleaned_data['reporttype'])
 			conferences = form.cleaned_data['conferences']
+			trendlines = form.cleaned_data['trendline']
 
 			report = None
 			try:
@@ -39,6 +39,9 @@ def timereport(request):
 					'ylabel': report.ylabel,
 					'headers': report.headers,
 					'graphdata': report.graphdata,
+					'maxpred': report.maxpred,
+					'trendlines': report.does_trendlines and trendlines or '',
+					'trendlines_supported': report.does_trendlines,
 					}, context_instance=RequestContext(request))
 			except ReportException, e:
 				messages.error(request, e)
@@ -65,28 +68,36 @@ class MultiConferenceReport(object):
 		self.ylabel = ylabel
 		self.conferences = conferences
 		self.headers = None
+		self.maxpred = 0
+		self.does_trendlines = True
 		self.curs = connection.cursor()
 
 	def run(self):
-		(max,min) = self.maxmin()
-		if not max:
+		(maxday,minday) = self.maxmin()
+		if not maxday:
 			raise ReportException("There are no %s at this conference." % self.title.lower())
-		if min > 0: min = 0
-		allvals = [range(max, min-1, -1), ]
+		allvals = [range(maxday, minday-1, -1), ]
 		self.headers = ['Days']
+		maxseen = 0
 		for c in self.conferences:
-			allvals.append([r[0] for r in self.fetch_all_data(c, min, max)])
-			todaydaysago = (c.startdate-datetime.today().date()).days
-			self.headers.append(Header(c.conferencename, todaydaysago in allvals[0]))
-			if todaydaysago in allvals[0]:
-				allvals.append([(r >= todaydaysago) and 'true' or 'false' for r in allvals[0]])
+			myvals = [r[0] for r in self.fetch_all_data(c, minday, maxday)]
+			allvals.append(myvals)
+			self.headers.append(Header(c.conferencename))
+			maxseen = max(max(myvals), maxseen)
 
+		if maxday-minday:
+			maxpred = float(maxseen)*maxday/(maxday-minday)
+		else:
+			maxpred = 10
 		self.graphdata = zip(*allvals)
+		self.maxpred = maxpred
 
 class SingleConferenceReport(object):
 	def __init__(self, title, conferences):
 		self.title = title
 		self.ylabel = 'Number of registrations'
+		self.maxpred = 0
+		self.does_trendlines = False
 
 		if len(conferences) != 1:
 			raise ReportException('For this report type you must pick a single conference')
@@ -98,20 +109,16 @@ class SingleConferenceReport(object):
 		self.curs.execute("SELECT max(startdate-payconfirmedat::date), min(startdate-payconfirmedat::date),max(startdate) FROM confreg_conferenceregistration r INNER JOIN confreg_conference c ON r.conference_id=c.id WHERE r.conference_id=%(id)s AND r.payconfirmedat IS NOT NULL", {
 			'id': self.conference.id
 		})
-		(max,min,startdate) = self.curs.fetchone()
-		if not max:
-			raise ReportException('There are no confirmed registrations at this conference.')
-		todaydaysago = (startdate-datetime.today().date()).days
-		if min > 0: min = 0
-		allvals = [range(max,min-1,-1), ]
-		hasfuture = todaydaysago in allvals[0]
+		(maxday,minday,startdate) = self.curs.fetchone()
+		if not maxday:
+			raise ReportException("There are no %s at this conference." % self.title.lower())
+		allvals = [range(maxday,minday-1,-1), ]
 		self.headers = ['Days']
-		for header, rows in self.fetch_all_data(min, max, startdate):
+		for header, rows in self.fetch_all_data(minday, maxday, startdate):
 			allvals.append([r[0] for r in rows])
-			self.headers.append(Header(header, hasfuture))
-			if hasfuture:
-				allvals.append([(r >= todaydaysago) and 'true' or 'false' for r in allvals[0]])
+			self.headers.append(Header(header))
 		self.graphdata = zip(*allvals)
+
 
 
 ###########################################################3
