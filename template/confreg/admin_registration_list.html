@@ -37,7 +37,7 @@ a.nocolor {
 {%if waitlist_active %}
   <td>{%if r.registrationwaitlistentry %}
    {%if r.payconfirmedat%}Accepted{%else%}
-     {%if r.registrationwaitlistentry.offeredon%}Offer until {{r.registrationwaitlistentry.offeredon}}{%else%}No offer{%endif%}<br/>Total {{r.registrationwaitlistentry.offers_made}} offers made.
+     {%if r.registrationwaitlistentry.offeredon%}Offer until {{r.registrationwaitlistentry.offerexpires}}{%else%}No offer{%endif%}<br/>Total {{r.registrationwaitlistentry.offers_made}} offers made.
    {%endif%}
    {%else%}{%if r.payconfirmedat%}Completed pre-waitlist{%endif%}{%endif%}</td>
 {%endif%}
