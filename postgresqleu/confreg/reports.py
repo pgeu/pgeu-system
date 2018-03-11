@@ -183,6 +183,7 @@ def build_attendee_report(conference, POST):
 	format = POST['format']
 	orientation = POST['orientation']
 	borders = POST.has_key('border')
+	pagebreaks = POST.has_key('pagebreaks')
 	fields = POST.getlist('fields')
 	extracols = filter(None, map(lambda x: x.strip(), POST['additionalcols'].split(',')))
 
@@ -218,7 +219,7 @@ def build_attendee_report(conference, POST):
 		# pass the full objects into the badge builder.
 		try:
 			resp = HttpResponse(content_type='application/pdf')
-			render_jinja_badges(conference, result, resp, borders)
+			render_jinja_badges(conference, result, resp, borders, pagebreaks)
 			return resp
 		except Exception, e:
 			return HttpResponse("Exception occured: %s" % e, content_type='text/plain')

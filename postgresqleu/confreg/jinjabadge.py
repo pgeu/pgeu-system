@@ -150,10 +150,11 @@ def test_inlist(v,l):
 	return v in l
 
 class JinjaRenderer(object):
-	def __init__(self, rootdir, debug=False, border=False):
+	def __init__(self, rootdir, debug=False, border=False, pagebreaks=False):
 		self.templatedir = os.path.join(rootdir, 'templates')
 		self.debug = debug
 		self.border = border
+		self.pagebreaks = pagebreaks
 
 		registerFont(TTFont('DejaVu Serif', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf"))
 		registerFont(TTFont('DejaVu Serif Bold', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif-Bold.ttf"))
@@ -214,6 +215,8 @@ class JinjaRenderer(object):
 			js['border'] = self.border
 		self.story.append(JinjaBadge(js, self.staticdir))
 
+		if not 'forcebreaks' in js:
+			js['forcebreaks'] = self.pagebreaks
 		if js.get('forcebreaks', False):
 			self.story.append(PageBreak())
 
@@ -224,8 +227,8 @@ class JinjaRenderer(object):
 
 # Render badges from within the website scope, meaning we have access to the
 # django objects here.
-def render_jinja_badges(conference, registrations, output, border):
-	renderer = JinjaRenderer(conference.jinjadir, border=border)
+def render_jinja_badges(conference, registrations, output, border, pagebreaks):
+	renderer = JinjaRenderer(conference.jinjadir, border=border, pagebreaks=pagebreaks)
 
 	for reg in registrations:
 		renderer.add_badge(reg.safe_export())
@@ -239,10 +242,11 @@ if __name__ == "__main__":
 	parser.add_argument('attendeelist', type=str, help='JSON file with attendee list')
 	parser.add_argument('outputfile', type=str, help='Name of output PDF file')
 	parser.add_argument('--borders', action='store_true', help='Enable borders on written file')
+	parser.add_argument('--pagebreaks', action='store_true', help='Enable pagebreaks on written file')
 
 	args = parser.parse_args()
 
-	renderer = JinjaRenderer(args.repopath, debug=True, border=args.borders)
+	renderer = JinjaRenderer(args.repopath, debug=True, border=args.borders, pagebreaks=args.pagebreaks)
 
 	with open(args.attendeelist) as f:
 		a = json.load(f)
