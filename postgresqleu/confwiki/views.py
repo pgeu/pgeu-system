@@ -442,7 +442,7 @@ def signup_admin_sendmail(request, urlname, signupid):
 				send_simple_mail(conference.contactaddr,
 								 e,
 								 form.cleaned_data['subject'],
-								 "{0}\n\nTo view the signup, please see {1}/events/{2}/register/signup/{3}/".format(
+								 u"{0}\n\nTo view the signup, please see {1}/events/{2}/register/signup/{3}/".format(
 									 form.cleaned_data['body'],
 									 settings.SITEBASE, conference.urlname, signup.id),
 								 sendername=conference.conferencename,
