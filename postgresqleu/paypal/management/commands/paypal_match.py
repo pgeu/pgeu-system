@@ -99,10 +99,10 @@ class Command(BaseCommand):
 				# payments don't have one. We don't make a difference of them
 				# though - we leave the record open for manual verification
 				accrows = [
-					(settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, trans.transtext, trans.amount - trans.fee, None),
+					(settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, trans.transtext[:200], trans.amount - trans.fee, None),
 				]
 				if trans.fee <> 0:
-					accrows.append((settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, trans.transtext, trans.fee, None),)
+					accrows.append((settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, trans.transtext[:200], trans.fee, None),)
 				create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
 				continue
 
