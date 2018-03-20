@@ -154,6 +154,7 @@ PAYPAL_API_PASSWORD='secret'
 PAYPAL_API_SIGNATURE='secret'
 PAYPAL_SANDBOX=True
 PAYPAL_REPORT_RECEIVER='paypal@postgresql.eu'
+PAYPAL_DONATION_TEXT="PostgreSQL Europe"
 
 # Change whether using sandbox or not
 ADYEN_BASEURL='https://test.adyen.com/'

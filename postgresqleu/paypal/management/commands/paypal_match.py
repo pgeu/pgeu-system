@@ -37,7 +37,7 @@ class Command(BaseCommand):
 			# Manual handling of some record types
 
 			# Record type: donation
-			if trans.transtext == "PostgreSQL Europe donation":
+			if trans.transtext == settings.PAYPAL_DONATION_TEXT:
 				trans.setmatched('Donation, automatically matched by script')
 
 				# Generate a simple accounting record, that will have to be
