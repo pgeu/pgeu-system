@@ -133,7 +133,7 @@ def paypal_return_handler(request):
 		urls = ["https://www.paypal.com/cgi-bin/webscr?cmd=_view-a-trans&id=%s" % ti.paypaltransid,]
 
 		# Separate out donations made through our website
-		if ti.transtext == "PostgreSQL Europe donation":
+		if ti.transtext == "PostgreSQL Europe":
 			ti.matched = True
 			ti.matchinfo = 'Donation, automatically matched'
 			ti.save()
