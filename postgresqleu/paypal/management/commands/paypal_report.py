@@ -3,7 +3,7 @@
 # integration, as well as a list of any unmatched payments still in
 # the system.
 #
-# Copyright (C) 2010-2016, PostgreSQL Europe
+# Copyright (C) 2010-2018, PostgreSQL Europe
 #
 
 from django.core.management.base import BaseCommand, CommandError
@@ -20,11 +20,11 @@ class Command(BaseCommand):
 	def handle(self, *args, **options):
 		entries = ErrorLog.objects.filter(sent=False).order_by('id')
 		if len(entries):
-			msg = """
+			msg = u"""
 Events reported by the paypal integration:
 
 {0}
-""".format("\n".join(["{0}: {1}".format(e.timestamp, e.message) for e in entries]))
+""".format("\n".join([u"{0}: {1}".format(e.timestamp, e.message) for e in entries]))
 
 			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 							 settings.PAYPAL_REPORT_RECEIVER,
