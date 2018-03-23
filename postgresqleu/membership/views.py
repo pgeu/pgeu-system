@@ -58,7 +58,7 @@ def home(request):
 				# Figure out what changed
 				MemberLog(member=member,
 						  timestamp=datetime.now(),
-						  message="Modified registration data for field(s): %s" % (", ".join(form._changed_data)),
+						  message="Modified registration data for field(s): %s" % (", ".join(form.changed_data)),
 						  ).save()
 			if request.POST["submit"] == "Generate invoice":
 				# Generate an invoice for the user
