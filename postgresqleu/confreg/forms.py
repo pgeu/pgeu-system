@@ -625,8 +625,8 @@ class WaitlistOfferForm(forms.Form):
 		return self.cleaned_data
 
 class TransferRegForm(forms.Form):
-	transfer_from = forms.ModelChoiceField(ConferenceRegistration)
-	transfer_to = forms.ModelChoiceField(ConferenceRegistration)
+	transfer_from = forms.ModelChoiceField(ConferenceRegistration.objects.filter(id=-1))
+	transfer_to = forms.ModelChoiceField(ConferenceRegistration.objects.filter(id=-1))
 	confirm = forms.BooleanField(help_text="Confirm that you want to transfer the registration with the given steps!", required=False)
 
 	def __init__(self, conference, *args, **kwargs):
