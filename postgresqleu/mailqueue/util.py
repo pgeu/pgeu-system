@@ -7,13 +7,13 @@ from email import encoders
 
 from postgresqleu.util.context_processors import settings_context
 
-from django.template import Context
 from django.template.loader import get_template
 
 from models import QueuedMail
 
 def template_to_string(templatename, attrs = {}):
-	context = Context(attrs)
+	context = {}
+	context.update(attrs)
 	context.update(settings_context())
 	return get_template(templatename).render(context)
 
