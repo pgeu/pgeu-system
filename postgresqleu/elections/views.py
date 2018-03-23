@@ -1,6 +1,5 @@
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, Http404
-from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.db import connection
 
@@ -14,11 +13,11 @@ def home(request):
 	past_elections = [e for e in elections if e.startdate<date.today() and e.enddate<date.today()]
 	upcoming_elections = [e for e in elections if e.startdate>date.today()]
 
-	return render_to_response('elections/home.html', {
+	return render(request, 'elections/home.html', {
 			'open': open_elections,
 			'past': past_elections,
 			'upcoming': upcoming_elections,
-	}, context_instance=RequestContext(request))
+	})
 
 def election(request, electionid):
 	election = get_object_or_404(Election, pk=electionid)
@@ -45,11 +44,11 @@ def election(request, electionid):
 		if len(res) == 0:
 			raise Http404('No results found for this election')
 
-		return render_to_response('elections/results.html', {
+		return render(request, 'elections/results.html', {
 				'election': election,
 				'topscore': res[0][1],
 				'scores': [{'name': r[0], 'score': r[1], 'width': 300*r[1]/res[0][1]} for r in res],
-				}, context_instance=RequestContext(request))
+				})
 
 	if len(election.candidate_set.all()) <= 0:
 		raise Http404("This election has no candidates!")
@@ -63,24 +62,24 @@ def election(request, electionid):
 
 		# Make sure member has paid
 		if not member.paiduntil:
-			return render_to_response('elections/mustbemember.html', {},
+			return render(request, 'elections/mustbemember.html', {},
 									  context_instance=RequestContext(request))
 
 		# Make sure that the membership hasn't expired
 		if member.paiduntil < date.today():
-			return render_to_response('elections/mustbemember.html', {},
+			return render(request, 'elections/mustbemember.html', {},
 									  context_instance=RequestContext(request))
 
 		# Verify that the user has been a member for at least 28 days.
 		if member.membersince > election.startdate - timedelta(days=28):
-			return render_to_response('elections/memberfourweeks.html', {
+			return render(request, 'elections/memberfourweeks.html', {
 					'registered_at': member.paiduntil - timedelta(days=365),
 					'mustregbefore': election.startdate - timedelta(days=28),
 					'election': election,
-					}, context_instance=RequestContext(request))
+					})
 
 	except Member.DoesNotExist:
-		return render_to_response('elections/mustbemember.html', {},
+		return render(request, 'elections/mustbemember.html', {},
 								  context_instance=RequestContext(request))
 
 	if request.method == "POST":
@@ -93,17 +92,17 @@ def election(request, electionid):
 		form = VoteForm(election, member)
 
 
-	return render_to_response('elections/form.html', {
+	return render(request, 'elections/form.html', {
 			'form': form,
 			'election': election,
-	}, context_instance=RequestContext(request))
+	})
 
 def candidate(request, election, candidate):
 	candidate = get_object_or_404(Candidate, election=election, pk=candidate)
 
-	return render_to_response('elections/candidate.html', {
+	return render(request, 'elections/candidate.html', {
 			'candidate': candidate,
-	}, context_instance=RequestContext(request))
+	})
 
 @login_required
 def ownvotes(request, electionid):
@@ -118,7 +117,7 @@ def ownvotes(request, electionid):
 
 	votes = Vote.objects.select_related().filter(voter=member, election=election).order_by('-score')
 
-	return render_to_response('elections/ownvotes.html', {
+	return render(request, 'elections/ownvotes.html', {
 			'election': election,
 			'votes': votes,
-	}, context_instance=RequestContext(request))
+	})

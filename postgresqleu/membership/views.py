@@ -1,6 +1,5 @@
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
-from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
@@ -95,21 +94,21 @@ def home(request):
 
 	logdata = MemberLog.objects.filter(member=member).order_by('-timestamp')[:30]
 
-	return render_to_response('membership/index.html', {
+	return render(request, 'membership/index.html', {
 		'form': form,
 		'member': member,
 		'invoice': InvoicePresentationWrapper(member.activeinvoice, "%s/membership/" % settings.SITEBASE),
 		'registration_complete': registration_complete,
 		'logdata': logdata,
 		'amount': settings.MEMBERSHIP_COST, # price for settings.MEMBERSHIP_LENGTH years
-	}, context_instance=RequestContext(request))
+	})
 
 
 def userlist(request):
 	members = Member.objects.select_related('country').filter(listed=True, paiduntil__gt=datetime.now()).order_by('fullname')
-	return render_to_response('community/userlist.html', {
+	return render(request, 'community/userlist.html', {
 		'members': members,
-	}, context_instance=RequestContext(request))
+	})
 
 
 # Admin view that's used to send email to multiple users
@@ -137,10 +136,10 @@ def admin_email(request):
 		ids = ids.split(',')
 
 	recipients = [m.user.email for m in Member.objects.filter(pk__in=ids)]
-	return render_to_response('membership/admin_email.html', {
+	return render(request, 'membership/admin_email.html', {
 		'form': form,
 		'recipientlist': ', '.join(recipients),
-		}, RequestContext(request))
+		})
 
 @login_required
 def meetings(request):
@@ -149,7 +148,7 @@ def meetings(request):
 	q = Q(dateandtime__gte=datetime.now()-timedelta(hours=4)) & (Q(allmembers=True) | Q(members=member))
 	meetings = Meeting.objects.filter(q).order_by('dateandtime')
 
-	return render_to_response('membership/meetings.html', {
+	return render(request, 'membership/meetings.html', {
 		'active': member.paiduntil and member.paiduntil >= datetime.today().date(),
 		'member': member,
 		'meetings': meetings,
@@ -186,7 +185,7 @@ def meeting(request, meetingid):
 		key.key = base64.urlsafe_b64encode(os.urandom(40)).rstrip('=')
 		key.save()
 
-	return render_to_response('membership/meeting.html', {
+	return render(request, 'membership/meeting.html', {
 		'member': member,
 		'meeting': meeting,
 		'key': key,

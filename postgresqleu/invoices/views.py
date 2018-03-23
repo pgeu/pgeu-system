@@ -1,11 +1,10 @@
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
-from django.shortcuts import render, render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.forms.models import inlineformset_factory
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Q, Count, Max
-from django.template import RequestContext
 from django.contrib import messages
 from django.conf import settings
 
@@ -59,14 +58,14 @@ def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=Fal
 	except (EmptyPage, InvalidPage):
 		invoices = paginator.page(paginator.num_pages)
 
-	return render_to_response('invoices/home.html', {
+	return render(request, 'invoices/home.html', {
 			'invoices': invoices,
 			'unpaid': unpaid,
 			'pending': pending,
 			'deleted': deleted,
 			'refunded': refunded,
 			'searchterm': searchterm,
-			}, context_instance=RequestContext(request))
+			})
 
 
 @login_required
@@ -175,13 +174,13 @@ def oneinvoice(request, invoicenum):
 			)
 		formset = InvoiceRowInlineFormset(instance=invoice)
 
-	return render_to_response('invoices/invoiceform.html', {
+	return render(request, 'invoices/invoiceform.html', {
 			'form': form,
 			'formset': formset,
 			'invoice': invoice,
 			'currency_symbol': settings.CURRENCY_SYMBOL,
 			'vatrates': VatRate.objects.all(),
-			}, context_instance=RequestContext(request))
+			})
 
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
@@ -336,16 +335,16 @@ def viewinvoice(request, invoiceid):
 	if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
 		return HttpResponseForbidden("Access denied")
 
-	return render_to_response('invoices/userinvoice.html', {
+	return render(request, 'invoices/userinvoice.html', {
 			'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/" % (settings.SITEBASE, invoice.pk)),
-			}, context_instance=RequestContext(request))
+			})
 
 def viewinvoice_secret(request, invoiceid, invoicesecret):
 	invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True, recipient_secret=invoicesecret)
-	return render_to_response('invoices/userinvoice.html', {
+	return render(request, 'invoices/userinvoice.html', {
 			'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/%s/" % (settings.SITEBASE, invoice.pk, invoice.recipient_secret)),
 			'fromsecret': True,
-			}, context_instance=RequestContext(request))
+			})
 
 @login_required
 def viewinvoicepdf(request, invoiceid):
@@ -398,17 +397,17 @@ def viewrefundnote_secret(request, invoiceid, invoicesecret):
 @login_required
 def userhome(request):
 	invoices = Invoice.objects.filter(recipient_user=request.user, deleted=False, finalized=True)
-	return render_to_response('invoices/userhome.html', {
+	return render(request, 'invoices/userhome.html', {
 			'invoices': invoices,
-			}, context_instance=RequestContext(request))
+			})
 
 @login_required
 def banktransfer(request):
-	return render_to_response('invoices/banktransfer.html', {
+	return render(request, 'invoices/banktransfer.html', {
 			'title': request.GET['title'],
 			'amount': request.GET['amount'],
 			'returnurl': request.GET['ret'],
-			}, context_instance=RequestContext(request))
+			})
 
 @login_required
 @transaction.atomic

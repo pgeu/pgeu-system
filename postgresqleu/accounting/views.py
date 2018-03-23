@@ -1,8 +1,7 @@
 from django.http import HttpResponseRedirect, Http404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.shortcuts import render_to_response, get_object_or_404
-from django.template import RequestContext
+from django.shortcuts import render, get_object_or_404
 from django.forms.models import inlineformset_factory
 from django.db.models import Max
 from django.db import connection, transaction
@@ -74,7 +73,7 @@ def year(request, year):
 	paginator = EntryPaginator(entries)
 	currpage = request.GET.has_key('p') and int(request.GET['p']) or 1
 
-	return render_to_response('accounting/main.html', {
+	return render(request, 'accounting/main.html', {
 		'entries': paginator.page(currpage),
 		'page': currpage,
 		'pages': paginator.get_pages(currpage),
@@ -83,7 +82,7 @@ def year(request, year):
 		'year': year,
 		'years': Year.objects.all(),
 		'searchterm': searchterm,
-		}, RequestContext(request))
+		})
 
 @login_required
 @transaction.atomic
@@ -161,7 +160,7 @@ def entry(request, entryid):
 	totals = (sum([i.amount for i in items if i.amount>0]),
 			  -sum([i.amount for i in items if i.amount<0]))
 	urls = list(entry.journalurl_set.all())
-	return render_to_response('accounting/main.html', {
+	return render(request, 'accounting/main.html', {
 		'entries': paginator.page(currpage),
 		'page': currpage,
 		'pages': paginator.get_pages(currpage),
@@ -177,7 +176,7 @@ def entry(request, entryid):
 		'urlformset': urlformset,
 		'years': Year.objects.all(),
 		'searchterm': searchterm,
-		}, RequestContext(request))
+		})
 
 def _get_balance_query(objstr='', includeopen=False):
 	q = """WITH currentyear AS (
@@ -349,14 +348,14 @@ SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
 
 			return HttpResponseRedirect('/accounting/%s/' % year.year)
 
-	return render_to_response('accounting/closeyear.html', {
+	return render(request, 'accounting/closeyear.html', {
 		'year': year,
 		'hasopen': hasopen,
 		'hasnext': hasnext,
 		'outgoingbalance': balance,
 		'yearresult': yearresult,
 		'accounts': Account.objects.filter(group__accountclass__inbalance=True),
-	}, context_instance=RequestContext(request))
+	})
 
 @login_required
 @transaction.atomic
@@ -462,7 +461,7 @@ def report(request, year, reporttype):
 				lastaccount = row[0]
 			items[-1]['entries'].append(dict(zip([col[0] for col in curs.description[4:]], row[4:])))
 
-		return render_to_response('accounting/ledgerreport.html', {
+		return render(request, 'accounting/ledgerreport.html', {
 			'year': year,
 			'years': years,
 			'objects': filtered_objects,
@@ -473,7 +472,7 @@ def report(request, year, reporttype):
 			'items': items,
 			'enddate': enddate,
 			'includeopen': includeopen,
-		}, context_instance=RequestContext(request))
+		})
 	elif reporttype == 'results':
 		# The results report is the easiest one, since we can assume that
 		# all accounts enter the year with a value 0. Therefor, we only
@@ -518,7 +517,7 @@ def report(request, year, reporttype):
 		raise Http404("Unknown report")
 
 	# XXX: PDF maybe?
-	return render_to_response('accounting/yearreports.html', {
+	return render(request, 'accounting/yearreports.html', {
 		'reporttype': reporttype,
 		'title': title,
 		'year': year and year or -1,
@@ -532,4 +531,4 @@ def report(request, year, reporttype):
 		'currentobj': object,
 		'enddate': enddate,
 		'includeopen': includeopen,
-	}, context_instance=RequestContext(request))
+	})
