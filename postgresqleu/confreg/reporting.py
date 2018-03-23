@@ -1,5 +1,4 @@
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import connection
@@ -33,7 +32,7 @@ def timereport(request):
 			try:
 				report = reporttypes[reporttype-1][1](reporttypes[reporttype-1][0],conferences)
 				report.run()
-				return render_to_response('confreg/timereport.html', {
+				return render(request, 'confreg/timereport.html', {
 					'form': form,
 					'title': report.title,
 					'ylabel': report.ylabel,
@@ -42,18 +41,18 @@ def timereport(request):
 					'maxpred': report.maxpred,
 					'trendlines': report.does_trendlines and trendlines or '',
 					'trendlines_supported': report.does_trendlines,
-					}, context_instance=RequestContext(request))
+					})
 			except ReportException, e:
 				messages.error(request, e)
-				return render_to_response('confreg/timereport.html', {
+				return render(request, 'confreg/timereport.html', {
 					'form': form,
-					}, context_instance=RequestContext(request))
+					})
 	else:
 		form = TimeReportForm()
 
-	return render_to_response('confreg/timereport.html', {
+	return render(request, 'confreg/timereport.html', {
 		'form': form,
-		}, context_instance=RequestContext(request))
+		})
 
 
 # Dynamically built list of all available report types

@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.template import Context
 
 from datetime import datetime, timedelta, date
 import base64

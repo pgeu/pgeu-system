@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, Http404
 from django.db import connection
 from django.conf import settings
@@ -27,7 +27,7 @@ else:
 def index(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 
-	return render_to_response('confreg/mobile/index.html', {
+	return render(request, 'confreg/mobile/index.html', {
 			'conf': conference,
 			'html5manifestversion': MANIFESTVERSION,
 			})

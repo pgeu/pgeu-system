@@ -1,6 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render_to_response, get_object_or_404
-from django.template import RequestContext
+from django.shortcuts import render, get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.db import transaction
@@ -143,11 +142,11 @@ def ical(request, urlname, token):
 	conference = get_object_or_404(Conference, urlname=urlname)
 	reg = get_object_or_404(ConferenceRegistration, regtoken=token)
 	assignments = VolunteerAssignment.objects.filter(reg=reg).order_by('slot__timerange')
-	return render_to_response('confreg/volunteer_schedule.ical', {
+	return render(request, 'confreg/volunteer_schedule.ical', {
 		'conference': conference,
 		'assignments': assignments,
 		'now': datetime.utcnow(),
-	}, content_type='text/calendar', context_instance=RequestContext(request))
+	}, content_type='text/calendar')
 
 
 from django.conf.urls import url

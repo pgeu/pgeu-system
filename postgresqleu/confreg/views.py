@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect, HttpResponse, Http404
-from django.template import RequestContext, Context
 from django.template.loader import get_template
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -597,9 +596,9 @@ def multireg_attach(request, token):
 
 def feedback_available(request):
 	conferences = Conference.objects.filter(feedbackopen=True).order_by('startdate')
-	return render_to_response('confreg/feedback_available.html', {
+	return render(request, 'confreg/feedback_available.html', {
 		'conferences': conferences,
-	}, context_instance=RequestContext(request))
+	})
 
 @login_required
 @transaction.atomic
@@ -1033,11 +1032,11 @@ def schedule_ical(request, confname):
 		sessions = None
 	else:
 		sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).filter(starttime__isnull=False).order_by('starttime')
-	return render_to_response('confreg/schedule.ical', {
+	return render(request, 'confreg/schedule.ical', {
 		'conference': conference,
 		'sessions': sessions,
 		'servername': request.META['SERVER_NAME'],
-	}, content_type='text/calendar', context_instance=RequestContext(request))
+	}, content_type='text/calendar')
 
 def session(request, confname, sessionid, junk=None):
 	conference = get_object_or_404(Conference, urlname=confname)
@@ -1756,11 +1755,11 @@ def optout(request, token):
 		'userid': userid,
 	})
 
-	return render_to_response('confreg/optout.html', {
+	return render(request, 'confreg/optout.html', {
 		'email': email,
 		'globaloptout': GlobalOptOut.objects.filter(user=userid).exists(),
 		'series': series,
-	},context_instance=RequestContext(request))
+	})
 
 @login_required
 @transaction.atomic
@@ -1819,9 +1818,9 @@ def createvouchers(request):
 		# Get request means we render an empty form
 		form = PrepaidCreateForm()
 
-	return render_to_response('confreg/prepaid_create_form.html', {
+	return render(request, 'confreg/prepaid_create_form.html', {
 			'form': form,
-			}, context_instance=RequestContext(request))
+			})
 
 @login_required
 @transaction.atomic
@@ -1851,12 +1850,12 @@ def viewvouchers(request, batchid):
 		'vouchers': vouchers,
 		})
 
-	return render_to_response('confreg/prepaid_create_list.html', {
+	return render(request, 'confreg/prepaid_create_list.html', {
 			'batch': batch,
 			'vouchers': vouchers,
 			'userbatch': userbatch,
 			'vouchermailtext': vouchermailtext,
-			}, RequestContext(request))
+			})
 
 @login_required
 @transaction.atomic
@@ -2101,13 +2100,13 @@ def talkvote(request, confname):
 		yield rd
 
 	all = curs.fetchall()
-	return render_to_response('confreg/sessionvotes.html', {
+	return render(request, 'confreg/sessionvotes.html', {
 			'users': getusernames(all),
 			'sessionvotes': transform(all),
 			'conference': conference,
 			'isadmin': isadmin,
 		    'status_choices': STATUS_CHOICES,
-			}, context_instance=RequestContext(request))
+			})
 
 @login_required
 @transaction.atomic
@@ -2213,14 +2212,14 @@ def createschedule(request, confname):
 				'schedule_height': sessionset.schedule_height(),
 				'schedule_width': sessionset.schedule_width(),
 				})
-	return render_to_response('confreg/schedule_create.html', {
+	return render(request, 'confreg/schedule_create.html', {
 			'conference': conference,
 			'days': days,
 			'sessions': sessions,
 			'tracks': tracks,
 			'sesswidth': 600 / len(allrooms),
 			'availableheight': len(sessions)*75,
-			}, context_instance=RequestContext(request))
+			})
 
 @login_required
 @user_passes_test_or_error(lambda u: u.is_superuser)
@@ -2262,14 +2261,14 @@ def publishschedule(request, confname):
 
 	if request.GET.has_key('doit') and request.GET['doit'] == '1':
 		transaction.commit()
-		return render_to_response('confreg/schedule_publish.html', {
+		return render(request, 'confreg/schedule_publish.html', {
 				'done': 1,
-			}, context_instance=RequestContext(request))
+			})
 	else:
 		transaction.rollback()
-		return render_to_response('confreg/schedule_publish.html', {
+		return render(request, 'confreg/schedule_publish.html', {
 				'changes': changes,
-			}, context_instance=RequestContext(request))
+			})
 
 @login_required
 def reports(request, confname):
@@ -2280,12 +2279,12 @@ def reports(request, confname):
 
 	# Include information for the advanced reports
 	from reports import attendee_report_fields, attendee_report_filters
-	return render_to_response('confreg/reports.html', {
+	return render(request, 'confreg/reports.html', {
 			'list': True,
 			'additionaloptions': conference.conferenceadditionaloption_set.all(),
 			'adv_fields': attendee_report_fields,
 			'adv_filters': attendee_report_filters(conference),
-		    }, context_instance=RequestContext(request))
+		    })
 
 
 @login_required
@@ -2327,11 +2326,11 @@ def simple_report(request, confname):
 		# One or more columns filtered - so filter the data
 		d = map(itemgetter(*colofs), d)
 
-	return render_to_response('confreg/simple_report.html', {
+	return render(request, 'confreg/simple_report.html', {
 		'conference': conference,
 		'columns': [dd for dd in collist if not dd.startswith('_')],
 		'data': d,
-	}, RequestContext(request))
+	})
 
 @login_required
 def admin_dashboard(request):
@@ -2356,11 +2355,11 @@ def admin_dashboard(request):
 		else:
 			past.append(c)
 
-	return render_to_response('confreg/admin_dashboard.html', {
+	return render(request, 'confreg/admin_dashboard.html', {
 		'current': current,
 		'upcoming': upcoming,
 		'past': past,
-	}, RequestContext(request))
+	})
 
 @login_required
 def admin_dashboard_single(request, urlname):
@@ -2369,7 +2368,7 @@ def admin_dashboard_single(request, urlname):
 	else:
 		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
 
-	return render_to_response('confreg/admin_dashboard_single.html', {
+	return render(request, 'confreg/admin_dashboard_single.html', {
 		'c': conference,
 		'pending_session_notifications': conference.pending_session_notifications,
 		'pending_waitlist': RegistrationWaitlistEntry.objects.filter(registration__conference=conference, offeredon__isnull=True).exists(),
@@ -2379,7 +2378,7 @@ def admin_dashboard_single(request, urlname):
 		'sessions_noroom': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=1 AND s.room_id IS NULL)", {'confid': conference.id}),
 		'sessions_notrack': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=1 AND s.track_id IS NULL)", {'confid': conference.id}),
 		'pending_sessions': conditional_exec_to_scalar(conference.scheduleactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=0)", {'confid': conference.id}),
-	}, RequestContext(request))
+	})
 
 @login_required
 def admin_registration_dashboard(request, urlname):
@@ -2431,10 +2430,10 @@ def admin_registration_dashboard(request, urlname):
 		for cn in range(t['fixedcols']-1, len(t['columns'])-1):
 			sums.append(sum((r[cn+1] for r in t['rows'] if r[cn+1] != None)))
 		t['rows'].append(sums)
-	return render_to_response('confreg/admin_registration_dashboard.html', {
+	return render(request, 'confreg/admin_registration_dashboard.html', {
 		'conference': conference,
 		'tables': tables,
-	}, RequestContext(request))
+	})
 
 @login_required
 def admin_registration_list(request, urlname):
@@ -2460,13 +2459,13 @@ def admin_registration_list(request, urlname):
 	if not skey in sortmap:
 		return HttpResponse("Bad sort key.")
 
-	return render_to_response('confreg/admin_registration_list.html', {
+	return render(request, 'confreg/admin_registration_list.html', {
 		'conference': conference,
 		'waitlist_active': conference.waitlist_active,
 		'sortkey': (revsort and '-' or '') + skey,
 		'regs': ConferenceRegistration.objects.select_related('regtype').select_related('registrationwaitlistentry').filter(conference=conference).order_by((revsort and '-' or '') + sortmap[skey], '-created'),
 		'regsummary': exec_to_dict("SELECT count(1) FILTER (WHERE payconfirmedat IS NOT NULL) AS confirmed, count(1) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed FROM confreg_conferenceregistration WHERE conference_id=%(confid)s", {'confid': conference.id})[0],
-	}, RequestContext(request))
+	})
 
 @login_required
 def admin_registration_single(request, urlname, regid):
@@ -2481,12 +2480,12 @@ def admin_registration_single(request, urlname, regid):
 		sessions = ConferenceSession.objects.filter(conference=conference, speaker__user=reg.attendee)
 	else:
 		sessions = None
-	return render_to_response('confreg/admin_registration_single.html', {
+	return render(request, 'confreg/admin_registration_single.html', {
 		'conference': conference,
 		'reg': reg,
 		'sessions': sessions,
 		'signups': _get_registration_signups(conference, reg),
-	}, RequestContext(request))
+	})
 
 @login_required
 @transaction.atomic
@@ -2501,15 +2500,15 @@ def admin_registration_cancel(request, urlname, regid):
 	if request.method == 'POST' and request.POST.get('docancel') == '1':
 		name = reg.fullname
 		cancel_registration(reg)
-		return render_to_response('confreg/admin_registration_cancel_confirm.html', {
+		return render(request, 'confreg/admin_registration_cancel_confirm.html', {
 			'conference': conference,
 			'name': name,
 		})
 	else:
-		return render_to_response('confreg/admin_registration_cancel.html', {
+		return render(request, 'confreg/admin_registration_cancel.html', {
 			'conference': conference,
 			'reg': reg,
-		}, RequestContext(request))
+		})
 
 @login_required
 @transaction.atomic
@@ -2520,7 +2519,7 @@ def admin_waitlist(request, urlname):
 		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
 
 	if conference.attendees_before_waitlist <= 0:
-		return render_to_response('confreg/admin_waitlist_inactive.html', {
+		return render(request, 'confreg/admin_waitlist_inactive.html', {
 			'conference': conference,
 			})
 
@@ -2567,7 +2566,7 @@ def admin_waitlist(request, urlname):
 	else:
 		form = WaitlistOfferForm()
 
-	return render_to_response('confreg/admin_waitlist.html', {
+	return render(request, 'confreg/admin_waitlist.html', {
 		'conference': conference,
 		'num_confirmedregs': num_confirmedregs,
 		'num_invoicedregs': num_invoicedregs,
@@ -2577,7 +2576,7 @@ def admin_waitlist(request, urlname):
 		'waitlist': waitlist,
 		'waitlist_cleared': waitlist_cleared,
 		'form': form,
-		}, RequestContext(request))
+		})
 
 @login_required
 @transaction.atomic
@@ -2650,11 +2649,11 @@ def admin_attendeemail(request, urlname):
 	else:
 		form = AttendeeMailForm(conference)
 
-	return render_to_response('confreg/admin_mail.html', {
+	return render(request, 'confreg/admin_mail.html', {
 		'conference': conference,
 		'mails': mails,
 		'form': form,
-	}, RequestContext(request))
+	})
 
 @login_required
 def admin_attendeemail_view(request, urlname, mailid):
@@ -2665,11 +2664,11 @@ def admin_attendeemail_view(request, urlname, mailid):
 
 	mail = get_object_or_404(AttendeeMail, conference=conference, pk=mailid)
 
-	return render_to_response('confreg/admin_mail_view.html', {
+	return render(request, 'confreg/admin_mail_view.html', {
 		'conference': conference,
 		'mail': mail,
 		'breadcrumbs': (('/events/admin/{0}/mail/'.format(conference.urlname), 'Attendee emails'), ),
-		}, RequestContext(request))
+		})
 
 @login_required
 @transaction.atomic
@@ -2704,10 +2703,10 @@ def session_notify_queue(request, urlname):
 		messages.info(request, 'Sent email to %s recipients, for %s sessions' % (num, len(notifysessions)))
 		return HttpResponseRedirect('.')
 
-	return render_to_response('confreg/admin_session_queue.html', {
+	return render(request, 'confreg/admin_session_queue.html', {
 		'conference': conference,
 		'notifysessions': notifysessions,
-		}, RequestContext(request))
+		})
 
 @login_required
 @transaction.atomic
@@ -2867,12 +2866,12 @@ def transfer_reg(request, urlname):
 	else:
 		form = TransferRegForm(conference)
 
-	return render_to_response('confreg/admin_transfer.html', {
+	return render(request, 'confreg/admin_transfer.html', {
 		'conference': conference,
 		'form': form,
 		'steps': steps,
 		'stephash': stephash,
-	}, RequestContext(request))
+	})
 
 
 # Send email to attendees of mixed conferences
@@ -2953,11 +2952,11 @@ def crossmail(request):
 		form = CrossConferenceMailForm()
 		recipients = None
 
-	return render_to_response('confreg/admin_cross_conference_mail.html', {
+	return render(request, 'confreg/admin_cross_conference_mail.html', {
 		'form': form,
 		'recipients': recipients,
 		'conferences': Conference.objects.all(),
-		}, RequestContext(request))
+		})
 
 
 @login_required
@@ -3014,10 +3013,10 @@ def admin_email(request):
 		ids = ids.split(',')
 
 	recipients = [r.email for r in ConferenceRegistration.objects.filter(pk__in=ids)]
-	return render_to_response('confreg/admin_email.html', {
+	return render(request, 'confreg/admin_email.html', {
 		'form': form,
 		'recipientlist': ', '.join(recipients),
-		}, RequestContext(request))
+		})
 
 
 @login_required
@@ -3050,11 +3049,11 @@ def admin_email_session(request, sessionids):
 		form = EmailSessionForm(initial={'sender': sessions[0].conference.contactaddr, 'returnurl': request.GET.has_key('orig') and request.GET['orig'] or ''})
 
 
-	return render_to_response('confreg/admin_email.html', {
+	return render(request, 'confreg/admin_email.html', {
 		'form': form,
 		'recipientlist': ", ".join([s.name for s in speakers]),
 		'whatfor': ", ".join(['Session "%s"' % s.title for s in sessions]),
-		}, RequestContext(request))
+		})
 
 
 # Redirect from old style event URLs

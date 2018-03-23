@@ -11,8 +11,6 @@ from django.conf import settings
 
 from datetime import datetime
 
-from django.template import Context
-
 from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 
 from postgresqleu.confreg.models import RegistrationWaitlistEntry, RegistrationWaitlistHistory

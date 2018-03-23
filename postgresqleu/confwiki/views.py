@@ -1,6 +1,5 @@
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, Http404
-from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.db import transaction, connection
 from django.db.models import Q
@@ -192,10 +191,10 @@ def admin(request, urlname):
 
 	pages = Wikipage.objects.filter(conference=conference)
 
-	return render_to_response('confwiki/admin.html', {
+	return render(request, 'confwiki/admin.html', {
 		'conference': conference,
 		'pages': pages,
-	}, RequestContext(request))
+	})
 
 @login_required
 @transaction.atomic
@@ -248,12 +247,12 @@ def admin_edit_page(request, urlname, pageid):
 	else:
 		form = WikipageAdminEditForm(instance=page)
 
-	return render_to_response('confwiki/admin_edit_form.html', {
+	return render(request, 'confwiki/admin_edit_form.html', {
 		'conference': conference,
 		'form': form,
 		'page': page,
 		'breadcrumbs': (('/events/admin/{0}/wiki/'.format(conference.urlname), 'Wiki'),),
-	}, RequestContext(request))
+	})
 
 
 @login_required
@@ -334,10 +333,10 @@ def signup_admin(request, urlname):
 
 	signups = Signup.objects.filter(conference=conference)
 
-	return render_to_response('confwiki/signup_admin.html', {
+	return render(request, 'confwiki/signup_admin.html', {
 		'conference': conference,
 		'signups': signups,
-	}, RequestContext(request))
+	})
 
 @login_required
 @transaction.atomic
@@ -392,13 +391,13 @@ def signup_admin_edit(request, urlname, signupid):
 	else:
 		form = SignupAdminEditForm(instance=signup)
 
-	return render_to_response('confwiki/signup_admin_edit_form.html', {
+	return render(request, 'confwiki/signup_admin_edit_form.html', {
 		'conference': conference,
 		'form': form,
 		'signup': signup,
 		'results': results,
 		'breadcrumbs': (('/events/admin/{0}/signups/'.format(conference.urlname), 'Signups'),),
-	}, RequestContext(request))
+	})
 
 
 @login_required
@@ -469,7 +468,7 @@ def signup_admin_sendmail(request, urlname, signupid):
 		numtosend = None
 
 
-	return render_to_response('confwiki/signup_sendmail_form.html', {
+	return render(request, 'confwiki/signup_sendmail_form.html', {
 		'conference': conference,
 		'form': form,
 		'signup': signup,
@@ -478,4 +477,4 @@ def signup_admin_sendmail(request, urlname, signupid):
 			('/events/admin/{0}/signups/'.format(conference.urlname), 'Signups'),
 			('/events/admin/{0}/signups/{1}/'.format(conference.urlname, signup.id), signup.title),
 		),
-	}, RequestContext(request))
+	})

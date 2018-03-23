@@ -1,9 +1,8 @@
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.contrib.auth.decorators import login_required
 from django.db import transaction, connection
 from django.conf import settings
-from django.template import RequestContext
 from django.contrib import messages
 from django.contrib.auth.models import User
 
@@ -33,11 +32,11 @@ def sponsor_dashboard(request):
 	pastsponsors = Sponsor.objects.filter(managers=request.user, conference__enddate__lt=datetime.today()-timedelta(days=31)).order_by('conference__startdate')
 	conferences = Conference.objects.filter(callforsponsorsopen=True, startdate__gt=datetime.today()).order_by('startdate')
 
-	return render_to_response('confsponsor/dashboard.html', {
+	return render(request, 'confsponsor/dashboard.html', {
 		"currentsponsors": currentsponsors,
 		"pastsponsors": pastsponsors,
 		"conferences": conferences,
-		}, RequestContext(request))
+		})
 
 def _get_sponsor_and_admin(sponsorid, request, onlyconfirmed=True):
 	if not onlyconfirmed:
@@ -68,7 +67,7 @@ def sponsor_conference(request, sponsorid):
 		if b.benefit.benefit_class and not b.declined:
 			b.claimhtml = get_benefit_class(b.benefit.benefit_class)(sponsor.level, b.benefit.class_parameters).render_claimdata(b)
 
-	return render_to_response('confsponsor/sponsor.html', {
+	return render(request, 'confsponsor/sponsor.html', {
 		'conference': sponsor.conference,
 		'sponsor': sponsor,
 		'unclaimedbenefits': unclaimedbenefits,
@@ -79,7 +78,7 @@ def sponsor_conference(request, sponsorid):
 		'pendingvouchers': pendingvouchers,
 		'discountcodes': discountcodes,
 		'is_admin': is_admin,
-		}, RequestContext(request))
+		})
 
 @login_required
 def sponsor_manager_delete(request, sponsorid):
@@ -135,10 +134,10 @@ def sponsor_view_mail(request, sponsorid, mailid):
 
 	mail = get_object_or_404(SponsorMail, conference=sponsor.conference, levels=sponsor.level, id=mailid)
 
-	return render_to_response('confsponsor/sent_mail.html', {
+	return render(request, 'confsponsor/sent_mail.html', {
 		'conference': sponsor.conference,
 		'mail': mail,
-		}, RequestContext(request))
+		})
 
 @login_required
 @transaction.atomic
@@ -173,12 +172,12 @@ def sponsor_purchase_voucher(request, sponsorid):
 	else:
 		form = PurchaseVouchersForm(conference)
 
-	return render_to_response('confsponsor/purchasevouchers.html', {
+	return render(request, 'confsponsor/purchasevouchers.html', {
 		'conference': conference,
 		'user_name': request.user.first_name + ' ' + request.user.last_name,
 		'sponsor': sponsor,
 		'form': form,
-		}, RequestContext(request))
+		})
 
 @login_required
 @transaction.atomic
@@ -219,12 +218,12 @@ def sponsor_purchase_discount(request, sponsorid):
 	else:
 		form = PurchaseDiscountForm(conference)
 
-	return render_to_response('confsponsor/purchasediscount.html', {
+	return render(request, 'confsponsor/purchasediscount.html', {
 		'conference': conference,
 		'user_name': request.user.first_name + ' ' + request.user.last_name,
 		'sponsor': sponsor,
 		'form': form,
-		}, RequestContext(request))
+		})
 
 @login_required
 def sponsor_signup_dashboard(request, confurlname):
@@ -237,11 +236,11 @@ def sponsor_signup_dashboard(request, confurlname):
 	current_signups = Sponsor.objects.filter(managers=request.user, conference=conference)
 	levels = SponsorshipLevel.objects.filter(conference=conference)
 
-	return render_to_response('confsponsor/signup.html', {
+	return render(request, 'confsponsor/signup.html', {
 		'conference': conference,
 		'levels': levels,
 		'current': current_signups,
-		}, RequestContext(request))
+		})
 
 @login_required
 @transaction.atomic
@@ -294,12 +293,12 @@ def sponsor_signup(request, confurlname, levelurlname):
 	else:
 		form = SponsorSignupForm(conference)
 
-	return render_to_response('confsponsor/signupform.html', {
+	return render(request, 'confsponsor/signupform.html', {
 		'user_name': user_name,
 		'conference': conference,
 		'level': level,
 		'form': form,
-		}, RequestContext(request))
+		})
 
 @login_required
 @transaction.atomic
@@ -364,12 +363,12 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
 	else:
 		form = formclass(benefit)
 
-	return render_to_response('confsponsor/claim_form.html', {
+	return render(request, 'confsponsor/claim_form.html', {
 		'conference': sponsor.conference,
 		'sponsor': sponsor,
 		'benefit': benefit,
 		'form': form,
-		}, RequestContext(request))
+		})
 
 
 @login_required
@@ -447,7 +446,7 @@ ORDER BY l.levelcost, l.levelname, s.name, b.sortkey, b.benefitname""", {'confid
 		'cols': benefitcols,
 	}
 
-	return render_to_response('confsponsor/admin_dashboard.html', {
+	return render(request, 'confsponsor/admin_dashboard.html', {
 		'conference': conference,
 		'confirmed_sponsors': confirmed_sponsors,
 		'unconfirmed_sponsors': unconfirmed_sponsors,
@@ -455,7 +454,7 @@ ORDER BY l.levelcost, l.levelname, s.name, b.sortkey, b.benefitname""", {'confid
 		'mails': mails,
 		'benefitcols': benefitcols,
 		'benefitmatrix': benefitmatrix,
-		}, RequestContext(request))
+		})
 
 def _confirm_benefit(request, benefit):
 	with transaction.atomic():
@@ -505,7 +504,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 			b.claimhtml = get_benefit_class(b.benefit.benefit_class)(sponsor.level, b.benefit.class_parameters).render_claimdata(b)
 
 
-	return render_to_response('confsponsor/admin_sponsor.html', {
+	return render(request, 'confsponsor/admin_sponsor.html', {
 		'conference': conference,
 		'sponsor': sponsor,
 		'claimedbenefits': claimedbenefits,
@@ -513,7 +512,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 		'noclaimbenefits': noclaimbenefits,
 		'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
 		'euvat': settings.EU_VAT,
-		}, RequestContext(request))
+		})
 
 @login_required
 @transaction.atomic
@@ -577,12 +576,12 @@ def sponsor_admin_benefit(request, confurlname, benefitid):
 		messages.info(request, "The benefit {0} has been un-claimed from {1}".format(benefit.benefit, benefit.sponsor))
 		return HttpResponseRedirect('../../')
 
-	return render_to_response('confsponsor/admin_benefit.html', {
+	return render(request, 'confsponsor/admin_benefit.html', {
 		'conference': conference,
 		'sponsor': benefit.sponsor,
 		'benefit': benefit,
 		'claimdata': claimdata,
-		}, RequestContext(request))
+		})
 
 @login_required
 @transaction.atomic
@@ -628,10 +627,10 @@ def sponsor_admin_send_mail(request, confurlname):
 	else:
 		form = SponsorSendEmailForm(conference)
 
-	return render_to_response('confsponsor/sendmail.html', {
+	return render(request, 'confsponsor/sendmail.html', {
 		'conference': conference,
 		'form': form,
-	}, RequestContext(request))
+	})
 
 @login_required
 def sponsor_admin_view_mail(request, confurlname, mailid):
@@ -641,11 +640,11 @@ def sponsor_admin_view_mail(request, confurlname, mailid):
 		conference = get_object_or_404(Conference, urlname=confurlname, administrators=request.user)
 
 	mail = get_object_or_404(SponsorMail, conference=conference, id=mailid)
-	return render_to_response('confsponsor/sent_mail.html', {
+	return render(request, 'confsponsor/sent_mail.html', {
 		'conference': conference,
 		'mail': mail,
 		'admin': True,
-		}, RequestContext(request))
+		})
 
 @login_required
 def sponsor_admin_imageview(request, benefitid):
@@ -704,7 +703,7 @@ def admin_copy_level(request, levelid):
 	else:
 		form = AdminCopySponsorshipLevelForm()
 
-	return render_to_response('confsponsor/admin_copy_level.html', {
+	return render(request, 'confsponsor/admin_copy_level.html', {
 		'form': form,
 		'sourcelevel': level,
-	}, RequestContext(request))
+	})

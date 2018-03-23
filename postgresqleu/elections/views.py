@@ -62,13 +62,11 @@ def election(request, electionid):
 
 		# Make sure member has paid
 		if not member.paiduntil:
-			return render(request, 'elections/mustbemember.html', {},
-									  context_instance=RequestContext(request))
+			return render(request, 'elections/mustbemember.html', {})
 
 		# Make sure that the membership hasn't expired
 		if member.paiduntil < date.today():
-			return render(request, 'elections/mustbemember.html', {},
-									  context_instance=RequestContext(request))
+			return render(request, 'elections/mustbemember.html', {})
 
 		# Verify that the user has been a member for at least 28 days.
 		if member.membersince > election.startdate - timedelta(days=28):
@@ -79,8 +77,7 @@ def election(request, electionid):
 					})
 
 	except Member.DoesNotExist:
-		return render(request, 'elections/mustbemember.html', {},
-								  context_instance=RequestContext(request))
+		return render(request, 'elections/mustbemember.html', {})
 
 	if request.method == "POST":
 		form = VoteForm(election, member, data=request.POST)

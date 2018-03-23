@@ -1,6 +1,5 @@
 from django import forms
 from django.core.validators import MaxValueValidator
-from django.template import Context
 
 import base64
 import os
