@@ -50,11 +50,11 @@ class EntryPaginator(Paginator):
 			# More than 10 won't fit, so split
 
 			if currentpage < 6:
-				return self.page_range[:10]
+				return list(self.page_range)[:10]
 			elif currentpage > self.num_pages-5:
-				return self.page_range[-10:]
+				return list(self.page_range)[-10:]
 			else:
-				return self.page_range[currentpage-5:currentpage-5+10]
+				return list(self.page_range)[currentpage-5:currentpage-5+10]
 		else:
 			return self.page_range
 
