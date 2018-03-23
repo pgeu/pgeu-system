@@ -97,7 +97,7 @@ class Invoice(models.Model):
 	processorid = models.IntegerField(null=True, blank=True)
 
 	# Allowed payment methods
-	allowedmethods = models.ManyToManyField(InvoicePaymentMethod, null=False, blank=True, verbose_name="Allowed payment methods")
+	allowedmethods = models.ManyToManyField(InvoicePaymentMethod, blank=True, verbose_name="Allowed payment methods")
 	bankinfo = models.BooleanField(null=False, blank=False, default=True, verbose_name="Include bank details on invoice")
 
 	# Payment status of this invoice. Once it's paid, the payment system

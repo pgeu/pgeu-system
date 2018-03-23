@@ -110,11 +110,11 @@ class Conference(models.Model):
 	twitter_token = models.CharField(max_length=128, blank=True, null=False)
 	twitter_secret = models.CharField(max_length=128, blank=True, null=False)
 
-	administrators = models.ManyToManyField(User, null=False, blank=True)
-	testers = models.ManyToManyField(User, null=False, blank=True, related_name="testers_set")
-	talkvoters = models.ManyToManyField(User, null=False, blank=True, related_name="talkvoters_set")
-	staff = models.ManyToManyField(User, null=False, blank=True, related_name="staff_set", help_text="Users who can register as staff")
-	volunteers = models.ManyToManyField('ConferenceRegistration', null=False, blank=True, related_name="volunteers_set", help_text="Users who volunteer")
+	administrators = models.ManyToManyField(User, blank=True)
+	testers = models.ManyToManyField(User, blank=True, related_name="testers_set")
+	talkvoters = models.ManyToManyField(User, blank=True, related_name="talkvoters_set")
+	staff = models.ManyToManyField(User, blank=True, related_name="staff_set", help_text="Users who can register as staff")
+	volunteers = models.ManyToManyField('ConferenceRegistration', blank=True, related_name="volunteers_set", help_text="Users who volunteer")
 	asktshirt = models.BooleanField(blank=False, null=False, default=True)
 	askfood = models.BooleanField(blank=False, null=False, default=True)
 	askshareemail = models.BooleanField(null=False, blank=False, default=False)
@@ -384,7 +384,7 @@ class ConferenceRegistration(models.Model):
 	phone = models.CharField(max_length=100, null=False, blank=True, verbose_name="Phone number")
 	shirtsize = models.ForeignKey(ShirtSize, null=True, blank=True, verbose_name="Preferred T-shirt size")
 	dietary = models.CharField(max_length=100, null=False, blank=True, verbose_name="Special dietary needs")
-	additionaloptions = models.ManyToManyField(ConferenceAdditionalOption, null=False, blank=True, verbose_name="Additional options")
+	additionaloptions = models.ManyToManyField(ConferenceAdditionalOption, blank=True, verbose_name="Additional options")
 	twittername = models.CharField(max_length=100, null=False, blank=True, verbose_name="Twitter account")
 	nick = models.CharField(max_length=100, null=False, blank=True, verbose_name="Nickname")
 	shareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Share e-mail address with sponsors")
@@ -833,7 +833,7 @@ class DiscountCode(models.Model):
 
 class AttendeeMail(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
-	regclasses = models.ManyToManyField(RegistrationClass,null=False, blank=False)
+	regclasses = models.ManyToManyField(RegistrationClass, blank=False)
 	sentat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
 	subject = models.CharField(max_length=100, null=False, blank=False)
 	message = models.TextField(max_length=8000, null=False, blank=False)
@@ -847,7 +847,7 @@ class AttendeeMail(models.Model):
 
 class PendingAdditionalOrder(models.Model):
 	reg = models.ForeignKey(ConferenceRegistration, null=False, blank=False)
-	options = models.ManyToManyField(ConferenceAdditionalOption, null=False, blank=False)
+	options = models.ManyToManyField(ConferenceAdditionalOption, blank=False)
 	newregtype = models.ForeignKey(RegistrationType, null=True, blank=True)
 	createtime = models.DateTimeField(null=False, blank=False)
 	invoice = models.ForeignKey(Invoice, null=True, blank=True)

@@ -39,7 +39,7 @@ class SponsorshipLevel(models.Model):
 	levelcost = models.IntegerField(null=False, blank=False)
 	available = models.BooleanField(null=False, blank=False, default=True, verbose_name="Available for signup")
 	instantbuy = models.BooleanField(null=False, blank=False, default=False)
-	paymentmethods = models.ManyToManyField(InvoicePaymentMethod, null=False, blank=False, verbose_name="Payment methods for generated invoices")
+	paymentmethods = models.ManyToManyField(InvoicePaymentMethod, blank=False, verbose_name="Payment methods for generated invoices")
 	contract = models.ForeignKey(SponsorshipContract, blank=True, null=True)
 	canbuyvoucher = models.BooleanField(null=False, blank=False, default=True)
 	canbuydiscountcode = models.BooleanField(null=False, blank=False, default=True)
@@ -72,7 +72,7 @@ class Sponsor(models.Model):
 	displayname = models.CharField(max_length=100, null=False, blank=False)
 	invoiceaddr = models.TextField(max_length=500, null=False, blank=True)
 	vatnumber = models.CharField(max_length=100, null=False, blank=True)
-	managers = models.ManyToManyField(User, null=False, blank=False)
+	managers = models.ManyToManyField(User, blank=False)
 	url = models.URLField(max_length=200, null=False, blank=True)
 	twittername = models.CharField(max_length=100, null=False, blank=True)
 	level = models.ForeignKey(SponsorshipLevel, null=False, blank=False)
@@ -98,7 +98,7 @@ class SponsorClaimedBenefit(models.Model):
 
 class SponsorMail(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
-	levels = models.ManyToManyField(SponsorshipLevel, null=False, blank=False)
+	levels = models.ManyToManyField(SponsorshipLevel, blank=False)
 	sentat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
 	subject = models.CharField(max_length=100, null=False, blank=False)
 	message = models.TextField(max_length=8000, null=False, blank=False)
