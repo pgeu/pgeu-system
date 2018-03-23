@@ -7,7 +7,6 @@ from django.conf import global_settings
 # Django settings for postgresqleu project.
 
 DEBUG = False
-TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
 		  ('postgresql.eu webmaster', 'webmaster@postgresql.eu'),
@@ -56,13 +55,6 @@ STATICFILES_DIRS = (
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'zya5w8sfr)i(7q^p3s50-3hk5&4=k(&z6+*1x!#lt#8h%!sizu'
 
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.load_template_source',
-)
-
 MIDDLEWARE_CLASSES = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -74,16 +66,22 @@ MIDDLEWARE_CLASSES = [
 
 CSRF_FAILURE_VIEW='postgresqleu.views.csrf_failure'
 
-
-TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + (
-	'postgresqleu.util.context_processors.settings_context',
-)
-
 ROOT_URLCONF = 'postgresqleu.urls'
 
-TEMPLATE_DIRS = [
-	'template',
-]
+TEMPLATES = [{
+	'BACKEND': 'django.template.backends.django.DjangoTemplates',
+	'DIRS': ['template', ],
+	'APP_DIRS': True,
+	'OPTIONS': {
+		'context_processors': [
+			'django.template.context_processors.request',
+			'django.contrib.auth.context_processors.auth',
+			'django.contrib.messages.context_processors.messages',
+			'postgresqleu.util.context_processors.settings_context',
+
+		],
+	},
+}]
 
 INSTALLED_APPS = [
     'django.contrib.auth',
