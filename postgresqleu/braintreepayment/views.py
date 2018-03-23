@@ -1,7 +1,6 @@
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, HttpResponseRedirect
-from django.template import RequestContext
 from django.conf import settings
 from django.db import transaction
 
@@ -65,9 +64,9 @@ def payment_post(request):
 			# We'll just throw the "processing error" page, and have
 			# the operator deal with the complaints as this is a
 			# should-never-happen scenario.
-			return render_to_response('braintreepayment/processing_error.html', {
+			return render(request, 'braintreepayment/processing_error.html', {
 				'contact': settings.INVOICE_SENDER_EMAIL,
-			}, RequestContext(request))
+			})
 
 
 		with transaction.atomic():
@@ -93,9 +92,9 @@ def payment_post(request):
 								 'Exception occurred processing Braintree result',
 								 "An exception occured processing the payment result for {0}:\n\n{1}\n".format(trans.id, ex))
 
-				return render_to_response('braintreepayment/processing_error.html', {
+				return render(request, 'braintreepayment/processing_error.html', {
 					'contact': settings.INVOICE_SENDER_EMAIL,
-				}, RequestContext(request))
+				})
 
 			# Create a braintree transaction - so we can update it later when the transaction settles
 			bt = BraintreeTransaction(transid=trans.id,
@@ -123,20 +122,20 @@ def payment_post(request):
 					 message='Received FAILED result for {0}'.format(trans.id),
 					 error=True).save()
 
-		return render_to_response('braintreepayment/payment_failed.html', {
+		return render(request, 'braintreepayment/payment_failed.html', {
 			'invoice': invoice,
 			'reason': reason,
 			'url': returnurl,
-		}, RequestContext(request))
+		})
 
 def _invoice_payment(request, invoice):
 	initialize_braintree()
 	token = braintree.ClientToken.generate({})
 
-	return render_to_response('braintreepayment/invoice_payment.html', {
+	return render(request, 'braintreepayment/invoice_payment.html', {
 		'invoice': invoice,
 		'token': token,
-	}, RequestContext(request))
+	})
 
 @login_required
 def invoicepayment(request, invoiceid):

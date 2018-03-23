@@ -1,6 +1,5 @@
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render_to_response
-from django.template import RequestContext
+from django.shortcuts import get_object_or_404, render
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
@@ -88,7 +87,7 @@ def success(request, invoiceid, secret):
 	status, created = ReturnAuthorizationStatus.objects.get_or_create(orderid=trans.orderid)
 	status.seencount += 1
 	status.save()
-	return render_to_response('trustlypayment/pending.html', {
+	return render(request, 'trustlypayment/pending.html', {
 		'refresh': 3*status.seencount,
 		'url': '/invoices/{0}/{1}/'.format(invoiceid, secret),
 		'createdat': trans.createdat,
@@ -96,9 +95,9 @@ def success(request, invoiceid, secret):
 	})
 
 def failure(request, invoiceid, secret):
-	return render_to_response('trustlypayment/error.html', {
+	return render(request, 'trustlypayment/error.html', {
 		'url': '/invoices/{0}/{1}/'.format(invoiceid, secret),
-	}, context_instance=RequestContext(request))
+	})
 
 @csrf_exempt
 def notification(request):

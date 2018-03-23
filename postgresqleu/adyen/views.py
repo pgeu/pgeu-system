@@ -1,7 +1,6 @@
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.db import transaction
-from django.shortcuts import render_to_response, get_object_or_404
-from django.template import RequestContext
+from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -22,25 +21,24 @@ def adyen_return_handler(request):
 	sig = calculate_signature(request.GET)
 
 	if sig != request.GET['merchantSig']:
-		return render_to_response('adyen/sigerror.html',
-								  context_instance=RequestContext(request))
+		return render(request, 'adyen/sigerror.html')
 
 	# We're going to need the invoice for pretty much everything,
 	# so attempt to find it.
 	if request.GET['merchantReturnData'] != request.GET['merchantReference'] or not request.GET['merchantReturnData'].startswith(settings.ADYEN_MERCHANTREF_PREFIX):
 		AdyenLog(pspReference='', message='Return handler received invalid reference %s/%s' % (request.GET['merchantReturnData'], request.GET['merchantReference']), error=True).save()
-		return render_to_response('adyen/invalidreference.html', {
+		return render(request, 'adyen/invalidreference.html', {
 			'reference': "%s//%s" % (request.GET['merchantReturnData'], request.GET['merchantReference']),
-		}, context_instance=RequestContext(request))
+		})
 
 	invoiceid = int(request.GET['merchantReturnData'][len(settings.ADYEN_MERCHANTREF_PREFIX):])
 	try:
 		invoice = Invoice.objects.get(pk=invoiceid)
 	except Invoice.DoesNotExist:
 		AdyenLog(pspReference='', message='Return handler could not find invoice for reference %s' % request.GET['merchantReturnData'], error=True).save()
-		return render_to_response('adyen/invalidreference.html', {
+		return render(request, 'adyen/invalidreference.html', {
 			'reference': request.GET['merchantReturnData'],
-		}, context_instance=RequestContext(request))
+		})
 	manager = InvoiceManager()
 	if invoice.processor:
 		processor = manager.get_invoice_processor(invoice)
@@ -53,19 +51,19 @@ def adyen_return_handler(request):
 
 	AdyenLog(pspReference='', message='Return handler received %s result for %s' % (request.GET['authResult'], request.GET['merchantReturnData']), error=False).save()
 	if request.GET['authResult'] == 'REFUSED':
-		return render_to_response('adyen/refused.html', {
+		return render(request, 'adyen/refused.html', {
 			'url': returnurl,
-			}, context_instance=RequestContext(request))
+			})
 	elif request.GET['authResult'] == 'CANCELLED':
 		return HttpResponseRedirect(returnurl)
 	elif request.GET['authResult'] == 'ERROR':
-		return render_to_response('adyen/transerror.html', {
+		return render(request, 'adyen/transerror.html', {
 			'url': returnurl,
-			}, context_instance=RequestContext(request))
+			})
 	elif request.GET['authResult'] == 'PENDING':
-		return render_to_response('adyen/pending.html', {
+		return render(request, 'adyen/pending.html', {
 			'url': returnurl,
-			}, context_instance=RequestContext(request))
+			})
 	elif request.GET['authResult'] == 'AUTHORISED':
 		# NOTE! Adyen strongly recommends not reacting on
 		# authorized values, but deal with them from the
@@ -83,14 +81,14 @@ def adyen_return_handler(request):
 		status, created = ReturnAuthorizationStatus.objects.get_or_create(pspReference=request.GET['pspReference'])
 		status.seencount += 1
 		status.save()
-		return render_to_response('adyen/authorized.html', {
+		return render(request, 'adyen/authorized.html', {
 			'refresh': 3**status.seencount,
 			'url': returnurl,
-			}, context_instance=RequestContext(request))
+			})
 	else:
-		return render_to_response('adyen/invalidresult.html', {
+		return render(request, 'adyen/invalidresult.html', {
 			'result': request.GET['authResult'],
-			}, context_instance=RequestContext(request))
+			})
 
 @global_login_exempt
 @csrf_exempt
@@ -133,11 +131,11 @@ def adyen_notify_handler(request):
 def _invoice_payment(request, invoice):
 	method = AdyenBanktransfer()
 	paymenturl = method.build_adyen_payment_url(invoice.invoicestr, invoice.total_amount, invoice.pk)
-	return render_to_response('adyen/adyen_bank_payment.html', {
+	return render(request, 'adyen/adyen_bank_payment.html', {
 		'available': method.available(invoice),
 		'unavailable_reason': method.unavailable_reason(invoice),
 		'paymenturl': paymenturl,
-	}, RequestContext(request))
+	})
 
 @login_required
 def invoicepayment(request, invoiceid):

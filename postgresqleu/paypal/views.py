@@ -1,7 +1,6 @@
 from django.http import HttpResponseForbidden, HttpResponse
 from django.db import transaction
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 from django.conf import settings
 
 from datetime import datetime, date
@@ -21,9 +20,9 @@ def paypal_return_handler(request):
 
 	# Custom error return that can get to the request context
 	def paypal_error(reason):
-		return render_to_response('paypal/error.html', {
+		return render(request, 'paypal/error.html', {
 				'reason': reason,
-				}, context_instance=RequestContext(request))
+				})
 
 	# Logger for the invoice processing - we store it in the genereal
 	# paypal logs
@@ -148,8 +147,8 @@ def paypal_return_handler(request):
 				]
 			create_accounting_entry(date.today(), accrows, True, urls)
 
-			return render_to_response('paypal/noinvoice.html', {
-					}, context_instance=RequestContext(request))
+			return render(request, 'paypal/noinvoice.html', {
+					})
 
 		invoicemanager = InvoiceManager()
 		(r,i,p) = invoicemanager.process_incoming_payment(ti.transtext,
@@ -184,16 +183,16 @@ def paypal_return_handler(request):
 					# url version
 					url = "%s/invoices/%s/%s/" % (settings.SITEBASE, i.pk, i.recipient_secret)
 
-			return render_to_response('paypal/complete.html', {
+			return render(request, 'paypal/complete.html', {
 					'invoice': i,
 					'url': url,
-					}, context_instance=RequestContext(request))
+					})
 		else:
 			# Did not match an invoice anywhere!
 			# We'll leave the transaction in the paypal transaction
 			# list, where it will generate an alert in the nightly mail.
-			return render_to_response('paypal/noinvoice.html', {
-					}, context_instance=RequestContext(request))
+			return render(request, 'paypal/noinvoice.html', {
+					})
 
 	# For a pending payment, we set ourselves up with a redirect loop
 	if d['payment_status'] == 'Pending':
@@ -201,7 +200,7 @@ def paypal_return_handler(request):
 			pending_reason = d['pending_reason']
 		except:
 			pending_reason = 'no reason given'
-		return render_to_response('paypal/pending.html', {
+		return render(request, 'paypal/pending.html', {
 				'reason': pending_reason,
-				}, context_instance=RequestContext(request))
+				})
 	return paypal_error('Unknown payment status %s.' % d['payment_status'])
