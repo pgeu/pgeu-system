@@ -23,7 +23,7 @@
     <td class="hdr"><h3>Fields</h3>Select fields to include.<br/>Drag to change order.</td>
     <td>
       <ul id="fieldlist">
-      {%for f,fn,d in adv_fields %}
+      {%for f,fn,d,fk in adv_fields %}
       <li><input type="checkbox" name="fields" value="{{f}}"{%if d%} CHECKED{%endif%}/>{{fn}}</li>
       {%endfor%}
       </ul>
@@ -48,8 +48,8 @@
   <tr>
     <td class="hdr"><h3>Order by</h3></td>
     <td>
-      <select name="orderby1">{%for f,fn in adv_fields %}<option value="{{f}}">{{fn}}</option>{%endfor%}</select>
-      <select name="orderby2">{%for f,fn in adv_fields %}<option value="{{f}}">{{fn}}</option>{%endfor%}</select>
+      <select name="orderby1">{%for f,fn,d,fk in adv_fields %}<option value="{{f}}">{{fn}}</option>{%endfor%}</select>
+      <select name="orderby2">{%for f,fn,d,fk in adv_fields %}<option value="{{f}}">{{fn}}</option>{%endfor%}</select>
     </td>
   </tr>
   <tr>
