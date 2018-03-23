@@ -110,6 +110,7 @@ class ConferenceRegistrationForm(SelectableWidgetAdminFormMixin, ConcurrentProte
 		exclude = []
 		widgets = {
 			'attendee': AutoCompleteSelectWidget(lookup_class=UserLookup),
+			'registrator': AutoCompleteSelectWidget(lookup_class=UserLookup),
 		}
 
 	def __init__(self, *args, **kwargs):
