@@ -78,20 +78,12 @@ def render_conference_response(request, conference, pagemagic, templatename, dic
 		# If a jinjadir is defined, then *always* use jinja.
 		return render_jinja_conference_response(request, conference, pagemagic, templatename, dictionary)
 
-	# If a jinjadir is not defined, then use jinja only for specific templates. This is somewhat ugly,
-	# but it's better than maintaining duplicate templates.
+	# At this point all conference templates are in jinja except the admin ones, and admin does not render
+	# through render_conference_response(). Thus, if it's not here now, we can 404.
 	if os.path.exists(os.path.join(JINJA_TEMPLATE_ROOT, templatename)):
 		return render_jinja_conference_response(request, conference, pagemagic, templatename, dictionary)
 
-	context = RequestContext(request)
-	context.update({
-		'conftemplbase': "nav_events.html",
-		'conference': conference,
-		'pagemagic': pagemagic,
-	})
-
-	# Either no override configured, or override not found
-	return render_to_response(templatename, dictionary, context_instance=context)
+	raise Http404("Template not found")
 
 def _get_registration_signups(conference, reg):
 	# Left join is hard to do efficiently with the django ORM, so let's do a query instead
