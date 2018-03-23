@@ -19,7 +19,7 @@ class DiffableModel(object):
 		diffs = dict([(k, (v, d2[k])) for k, v in d1.items() if v != d2[k]])
 		# Foreign key lookups
 		for k,v in diffs.items():
-			if type(self._meta.get_field_by_name(k)[0]) is django.db.models.fields.related.ForeignKey:
+			if type(self._meta.get_field(k)) is django.db.models.fields.related.ForeignKey:
 				# If it's a foreign key, look up the name again on ourselves.
 				# Since we only care about the *new* value, it's easy enough.
 				diffs[k] = (v[0], getattr(self, k))
