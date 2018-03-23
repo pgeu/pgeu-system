@@ -152,11 +152,11 @@ def ical(request, urlname, token):
 
 from django.conf.urls import url
 
-urlpatterns = (
+urlpatterns = [
 	url(r'^$', volunteerschedule),
 	url(r'^signup/(?P<slotid>\d+)/$', signup),
 	url(r'^remove/(?P<slotid>\d+)-(?P<aid>\d+)/$', remove),
 	url(r'^confirm/(?P<slotid>\d+)-(?P<aid>\d+)/$', confirm),
 	url(r'^add/(?P<slotid>\d+)-(?P<regid>\d+)/$', add),
 	url(r'^ical/(?P<token>[a-z0-9]{64})/$', ical),
-)
+]

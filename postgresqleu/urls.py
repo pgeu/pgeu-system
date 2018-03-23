@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.conf import settings
 from django.contrib import admin
 from django.views.generic import RedirectView
@@ -29,233 +29,225 @@ from postgresqleu.newsevents.feeds import LatestNews, LatestEvents
 admin.autodiscover()
 
 
-urlpatterns = patterns('',
+urlpatterns = [
 	# Frontpage
-	(r'^$', postgresqleu.views.index),
+	url(r'^$', postgresqleu.views.index),
 
 	# Log in/log out
-	(r'^login/?$', 'postgresqleu.auth.login'),
-	(r'^logout/?$', 'postgresqleu.auth.logout'),
-	(r'^accounts/login/$', 'postgresqleu.auth.login'),
-	(r'^accounts/logout/$', 'postgresqleu.auth.logout'),
-    (r'^auth_receive/$', 'postgresqleu.auth.auth_receive'),
+	url(r'^login/?$', postgresqleu.auth.login),
+	url(r'^logout/?$', postgresqleu.auth.logout),
+	url(r'^accounts/login/$', postgresqleu.auth.login),
+	url(r'^accounts/logout/$', postgresqleu.auth.logout),
+	url(r'^auth_receive/$', postgresqleu.auth.auth_receive),
 
 	# News & Events
-	(r'^events$', postgresqleu.newsevents.views.eventlist),
-	(r'^events/(\d+)$', postgresqleu.newsevents.views.event),
-	(r'^events/archive$', postgresqleu.newsevents.views.eventarchive),
+	url(r'^events$', postgresqleu.newsevents.views.eventlist),
+	url(r'^events/(\d+)$', postgresqleu.newsevents.views.event),
+	url(r'^events/archive$', postgresqleu.newsevents.views.eventarchive),
 
 	# Feeds
-    (r'^feeds/news/$', LatestNews()),
-    (r'^feeds/events/$', LatestEvents()),
+	url(r'^feeds/news/$', LatestNews()),
+	url(r'^feeds/events/$', LatestEvents()),
 
 	# Conference registration
-	(r'^events/(?P<confname>[^/]+)/register/(?P<whatfor>(self)/)?$', postgresqleu.confreg.views.home),
-	(r'^events/(?P<confname>[^/]+)/register/other/(?P<regid>(\d+)/)?$', postgresqleu.confreg.views.multireg),
-	(r'^events/(?P<confname>[^/]+)/register/other/newinvoice/$', postgresqleu.confreg.views.multireg_newinvoice),
-	(r'^events/(?P<confname>[^/]+)/register/other/b(?P<bulkid>(\d+))/$', postgresqleu.confreg.views.multireg_bulkview),
-	(r'^events/(?P<confname>[^/]+)/register/other/z/$', postgresqleu.confreg.views.multireg_zeropay),
-	(r'^events/register/attach/([a-z0-9]{64})/$', postgresqleu.confreg.views.multireg_attach),
-	(r'^events/([^/]+)/bulkpay/$', postgresqleu.confreg.views.bulkpay),
-	(r'^events/([^/]+)/bulkpay/(\d+)/$', postgresqleu.confreg.views.bulkpay_view),
+	url(r'^events/(?P<confname>[^/]+)/register/(?P<whatfor>(self)/)?$', postgresqleu.confreg.views.home),
+	url(r'^events/(?P<confname>[^/]+)/register/other/(?P<regid>(\d+)/)?$', postgresqleu.confreg.views.multireg),
+	url(r'^events/(?P<confname>[^/]+)/register/other/newinvoice/$', postgresqleu.confreg.views.multireg_newinvoice),
+	url(r'^events/(?P<confname>[^/]+)/register/other/b(?P<bulkid>(\d+))/$', postgresqleu.confreg.views.multireg_bulkview),
+	url(r'^events/(?P<confname>[^/]+)/register/other/z/$', postgresqleu.confreg.views.multireg_zeropay),
+	url(r'^events/register/attach/([a-z0-9]{64})/$', postgresqleu.confreg.views.multireg_attach),
+	url(r'^events/([^/]+)/bulkpay/$', postgresqleu.confreg.views.bulkpay),
+	url(r'^events/([^/]+)/bulkpay/(\d+)/$', postgresqleu.confreg.views.bulkpay_view),
 
-	(r'^events/([^/]+)/feedback/$', postgresqleu.confreg.views.feedback),
-	(r'^events/([^/]+)/feedback/(\d+)/$', postgresqleu.confreg.views.feedback_session),
-	(r'^events/([^/]+)/feedback/conference/$', postgresqleu.confreg.views.feedback_conference),
-	(r'^events/feedback/$', postgresqleu.confreg.views.feedback_available),
-	(r'^events/([^/]+)/schedule/$', postgresqleu.confreg.views.schedule),
-	(r'^events/([^/]+)/schedule/ical/$', postgresqleu.confreg.views.schedule_ical),
-	(r'^events/([^/]+)/schedule/session/(\d+)(-.*)?/$', postgresqleu.confreg.views.session),
-    (r'^events/([^/]+)/sessions/session/(\d+)(-.*)?/$', postgresqleu.confreg.views.session),
-    (r'^events/([^/]+)/sessions/session/(\d+)(?:-.*)?/slides/(\d+)/.*$', postgresqleu.confreg.views.session_slides),
-	(r'^events/([^/]+)/schedule/speaker/(\d+)(-.*)?/$', postgresqleu.confreg.views.speaker),
-	(r'^events/([^/]+)/sessions/speaker/(\d+)(-.*)?/$', postgresqleu.confreg.views.speaker),
-	(r'^events/([^/]+)/schedule/create/$', postgresqleu.confreg.views.createschedule),
-	(r'^events/([^/]+)/schedule/create/publish/$', postgresqleu.confreg.views.publishschedule),
-    (r'^events/([^/]+)/schedule/jsonschedule/$', postgresqleu.confreg.views.schedulejson),
-    (r'^events/(?P<urlname>[^/]+)/volunteer/', include(postgresqleu.confreg.volsched)),
-	(r'^events/([^/]+)/talkvote/$', postgresqleu.confreg.views.talkvote),
-	(r'^events/([^/]+)/talkvote/changestatus/$', postgresqleu.confreg.views.talkvote_status),
-    (r'^events/reports/time/$', postgresqleu.confreg.reporting.timereport),
-    (r'^events/([^/]+)/sessions/$', postgresqleu.confreg.views.sessionlist),
-	(r'^events/speaker/(\d+)/photo/$', postgresqleu.confreg.views.speakerphoto),
-	(r'^events/([^/]+)/speakerprofile/$', postgresqleu.confreg.views.speakerprofile),
-	(r'^events/([^/]+)/callforpapers/$', postgresqleu.confreg.views.callforpapers),
-	(r'^events/([^/]+)/callforpapers/(\d+|new)/$', postgresqleu.confreg.views.callforpapers_edit),
-	(r'^events/([^/]+)/callforpapers/copy/$', postgresqleu.confreg.views.callforpapers_copy),
-	(r'^events/([^/]+)/callforpapers/(\d+)/delslides/(\d+)/$', 'postgresqleu.confreg.views.callforpapers_delslides'),
-	(r'^events/([^/]+)/callforpapers/(\d+)/speakerconfirm/$', postgresqleu.confreg.views.callforpapers_confirm),
-	(r'^events/([^/]+)/sessionnotifyqueue/$', postgresqleu.confreg.views.session_notify_queue),
-	(r'^events/([^/]+)/register/confirm/$', postgresqleu.confreg.views.confirmreg),
-    (r'^events/([^/]+)/register/waitlist_signup/$', postgresqleu.confreg.views.waitlist_signup),
-    (r'^events/([^/]+)/register/waitlist_cancel/$', postgresqleu.confreg.views.waitlist_cancel),
-    (r'^events/([^/]+)/register/canceled/$', postgresqleu.confreg.views.cancelreg),
-    (r'^events/([^/]+)/register/invoice/(\d+)/$', postgresqleu.confreg.views.invoice),
-    (r'^events/([^/]+)/register/invoice/(\d+)/cancel/$', postgresqleu.confreg.views.invoice_cancel),
-    (r'^events/([^/]+)/register/mail/(\d+)/$', postgresqleu.confreg.views.attendee_mail),
-    (r'^events/([^/]+)/register/addopt/$', postgresqleu.confreg.views.reg_add_options),
-    (r'^events/([^/]+)/register/wiki/(.*)/edit/$', postgresqleu.confwiki.views.wikipage_edit),
-    (r'^events/([^/]+)/register/wiki/(.*)/history/$', postgresqleu.confwiki.views.wikipage_history),
-    (r'^events/([^/]+)/register/wiki/(.*)/sub/$', postgresqleu.confwiki.views.wikipage_subscribe),
-    (r'^events/([^/]+)/register/wiki/(.*)/$', postgresqleu.confwiki.views.wikipage),
-    (r'^events/([^/]+)/register/signup/(\d+)/$', postgresqleu.confwiki.views.signup),
-    (r'^events/optout/(?P<token>[a-z0-9]{64})/$', postgresqleu.confreg.views.optout),
-	(r'^events/prepaid/$', postgresqleu.confreg.views.createvouchers),
-	(r'^events/prepaid/(\d+)/$', postgresqleu.confreg.views.viewvouchers),
-	(r'^events/prepaid/(\d+)/send_email/$', 'postgresqleu.confreg.views.emailvouchers'),
-    (r'^events/([^/]+)/reports/$', postgresqleu.confreg.views.reports),
-    (r'^events/([^/]+)/reports/simple/$', postgresqleu.confreg.views.simple_report),
-    (r'^events/([^/]+)/reports/advanced/$', postgresqleu.confreg.views.advanced_report),
-    (r'^events/([^/]+)/reports/feedback/$', postgresqleu.confreg.feedback.feedback_report),
-    (r'^events/([^/]+)/reports/feedback/session/$', postgresqleu.confreg.feedback.feedback_sessions),
-    (r'^events/([^/]+)/reports/schedule/$', postgresqleu.confreg.pdfschedule.pdfschedule),
-    (r'^events/admin/$', 'postgresqleu.confreg.views.admin_dashboard'),
-    (r'^events/admin/crossmail/$', postgresqleu.confreg.views.crossmail),
-    (r'^events/admin/crossmail/options/$', postgresqleu.confreg.views.crossmailoptions),
-    (r'^events/admin/(\w+)/$', postgresqleu.confreg.views.admin_dashboard_single),
-    (r'^events/admin/(\w+)/mail/$', postgresqleu.confreg.views.admin_attendeemail),
-    (r'^events/admin/(\w+)/mail/(\d+)/$', postgresqleu.confreg.views.admin_attendeemail_view),
-    (r'^events/admin/(\w+)/regdashboard/$', postgresqleu.confreg.views.admin_registration_dashboard),
-    (r'^events/admin/(\w+)/regdashboard/list/$', postgresqleu.confreg.views.admin_registration_list),
-    (r'^events/admin/(\w+)/regdashboard/list/(\d+)/$', postgresqleu.confreg.views.admin_registration_single),
-    (r'^events/admin/(\w+)/regdashboard/list/(\d+)/cancel/$', postgresqleu.confreg.views.admin_registration_cancel),
-    (r'^events/admin/(\w+)/waitlist/$', postgresqleu.confreg.views.admin_waitlist),
-    (r'^events/admin/(\w+)/waitlist/cancel/(\d+)/$', postgresqleu.confreg.views.admin_waitlist_cancel),
-    (r'^events/admin/(\w+)/wiki/$', postgresqleu.confwiki.views.admin),
-    (r'^events/admin/(\w+)/wiki/(new|\d+)/$', postgresqleu.confwiki.views.admin_edit_page),
-    (r'^events/admin/(\w+)/signups/$', postgresqleu.confwiki.views.signup_admin),
-	(r'^events/admin/(\w+)/signups/(new|\d+)/$', postgresqleu.confwiki.views.signup_admin_edit),
-	(r'^events/admin/(\w+)/signups/(\d+)/sendmail/$', postgresqleu.confwiki.views.signup_admin_sendmail),
-    (r'^events/admin/(\w+)/transfer/$', postgresqleu.confreg.views.transfer_reg),
-    (r'^events/admin/(?P<urlname>[^/]+)/volunteer/', include(postgresqleu.confreg.volsched), {'adm': True}),
+	url(r'^events/([^/]+)/feedback/$', postgresqleu.confreg.views.feedback),
+	url(r'^events/([^/]+)/feedback/(\d+)/$', postgresqleu.confreg.views.feedback_session),
+	url(r'^events/([^/]+)/feedback/conference/$', postgresqleu.confreg.views.feedback_conference),
+	url(r'^events/feedback/$', postgresqleu.confreg.views.feedback_available),
+	url(r'^events/([^/]+)/schedule/$', postgresqleu.confreg.views.schedule),
+	url(r'^events/([^/]+)/schedule/ical/$', postgresqleu.confreg.views.schedule_ical),
+	url(r'^events/([^/]+)/schedule/session/(\d+)(-.*)?/$', postgresqleu.confreg.views.session),
+	url(r'^events/([^/]+)/sessions/session/(\d+)(-.*)?/$', postgresqleu.confreg.views.session),
+	url(r'^events/([^/]+)/sessions/session/(\d+)(?:-.*)?/slides/(\d+)/.*$', postgresqleu.confreg.views.session_slides),
+	url(r'^events/([^/]+)/schedule/speaker/(\d+)(-.*)?/$', postgresqleu.confreg.views.speaker),
+	url(r'^events/([^/]+)/sessions/speaker/(\d+)(-.*)?/$', postgresqleu.confreg.views.speaker),
+	url(r'^events/([^/]+)/schedule/create/$', postgresqleu.confreg.views.createschedule),
+	url(r'^events/([^/]+)/schedule/create/publish/$', postgresqleu.confreg.views.publishschedule),
+	url(r'^events/([^/]+)/schedule/jsonschedule/$', postgresqleu.confreg.views.schedulejson),
+	url(r'^events/(?P<urlname>[^/]+)/volunteer/', include(postgresqleu.confreg.volsched)),
+	url(r'^events/([^/]+)/talkvote/$', postgresqleu.confreg.views.talkvote),
+	url(r'^events/([^/]+)/talkvote/changestatus/$', postgresqleu.confreg.views.talkvote_status),
+	url(r'^events/reports/time/$', postgresqleu.confreg.reporting.timereport),
+	url(r'^events/([^/]+)/sessions/$', postgresqleu.confreg.views.sessionlist),
+	url(r'^events/speaker/(\d+)/photo/$', postgresqleu.confreg.views.speakerphoto),
+	url(r'^events/([^/]+)/speakerprofile/$', postgresqleu.confreg.views.speakerprofile),
+	url(r'^events/([^/]+)/callforpapers/$', postgresqleu.confreg.views.callforpapers),
+	url(r'^events/([^/]+)/callforpapers/(\d+|new)/$', postgresqleu.confreg.views.callforpapers_edit),
+	url(r'^events/([^/]+)/callforpapers/copy/$', postgresqleu.confreg.views.callforpapers_copy),
+	url(r'^events/([^/]+)/callforpapers/(\d+)/delslides/(\d+)/$', postgresqleu.confreg.views.callforpapers_delslides),
+	url(r'^events/([^/]+)/callforpapers/(\d+)/speakerconfirm/$', postgresqleu.confreg.views.callforpapers_confirm),
+	url(r'^events/([^/]+)/sessionnotifyqueue/$', postgresqleu.confreg.views.session_notify_queue),
+	url(r'^events/([^/]+)/register/confirm/$', postgresqleu.confreg.views.confirmreg),
+	url(r'^events/([^/]+)/register/waitlist_signup/$', postgresqleu.confreg.views.waitlist_signup),
+	url(r'^events/([^/]+)/register/waitlist_cancel/$', postgresqleu.confreg.views.waitlist_cancel),
+	url(r'^events/([^/]+)/register/canceled/$', postgresqleu.confreg.views.cancelreg),
+	url(r'^events/([^/]+)/register/invoice/(\d+)/$', postgresqleu.confreg.views.invoice),
+	url(r'^events/([^/]+)/register/invoice/(\d+)/cancel/$', postgresqleu.confreg.views.invoice_cancel),
+	url(r'^events/([^/]+)/register/mail/(\d+)/$', postgresqleu.confreg.views.attendee_mail),
+	url(r'^events/([^/]+)/register/addopt/$', postgresqleu.confreg.views.reg_add_options),
+	url(r'^events/([^/]+)/register/wiki/(.*)/edit/$', postgresqleu.confwiki.views.wikipage_edit),
+	url(r'^events/([^/]+)/register/wiki/(.*)/history/$', postgresqleu.confwiki.views.wikipage_history),
+	url(r'^events/([^/]+)/register/wiki/(.*)/sub/$', postgresqleu.confwiki.views.wikipage_subscribe),
+	url(r'^events/([^/]+)/register/wiki/(.*)/$', postgresqleu.confwiki.views.wikipage),
+	url(r'^events/([^/]+)/register/signup/(\d+)/$', postgresqleu.confwiki.views.signup),
+	url(r'^events/optout/(?P<token>[a-z0-9]{64})/$', postgresqleu.confreg.views.optout),
+	url(r'^events/prepaid/$', postgresqleu.confreg.views.createvouchers),
+	url(r'^events/prepaid/(\d+)/$', postgresqleu.confreg.views.viewvouchers),
+	url(r'^events/prepaid/(\d+)/send_email/$', postgresqleu.confreg.views.emailvouchers),
+	url(r'^events/([^/]+)/reports/$', postgresqleu.confreg.views.reports),
+	url(r'^events/([^/]+)/reports/simple/$', postgresqleu.confreg.views.simple_report),
+	url(r'^events/([^/]+)/reports/advanced/$', postgresqleu.confreg.views.advanced_report),
+	url(r'^events/([^/]+)/reports/feedback/$', postgresqleu.confreg.feedback.feedback_report),
+	url(r'^events/([^/]+)/reports/feedback/session/$', postgresqleu.confreg.feedback.feedback_sessions),
+	url(r'^events/([^/]+)/reports/schedule/$', postgresqleu.confreg.pdfschedule.pdfschedule),
+	url(r'^events/admin/$', postgresqleu.confreg.views.admin_dashboard),
+	url(r'^events/admin/crossmail/$', postgresqleu.confreg.views.crossmail),
+	url(r'^events/admin/crossmail/options/$', postgresqleu.confreg.views.crossmailoptions),
+	url(r'^events/admin/(\w+)/$', postgresqleu.confreg.views.admin_dashboard_single),
+	url(r'^events/admin/(\w+)/mail/$', postgresqleu.confreg.views.admin_attendeemail),
+	url(r'^events/admin/(\w+)/mail/(\d+)/$', postgresqleu.confreg.views.admin_attendeemail_view),
+	url(r'^events/admin/(\w+)/regdashboard/$', postgresqleu.confreg.views.admin_registration_dashboard),
+	url(r'^events/admin/(\w+)/regdashboard/list/$', postgresqleu.confreg.views.admin_registration_list),
+	url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/$', postgresqleu.confreg.views.admin_registration_single),
+	url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/cancel/$', postgresqleu.confreg.views.admin_registration_cancel),
+	url(r'^events/admin/(\w+)/waitlist/$', postgresqleu.confreg.views.admin_waitlist),
+	url(r'^events/admin/(\w+)/waitlist/cancel/(\d+)/$', postgresqleu.confreg.views.admin_waitlist_cancel),
+	url(r'^events/admin/(\w+)/wiki/$', postgresqleu.confwiki.views.admin),
+	url(r'^events/admin/(\w+)/wiki/(new|\d+)/$', postgresqleu.confwiki.views.admin_edit_page),
+	url(r'^events/admin/(\w+)/signups/$', postgresqleu.confwiki.views.signup_admin),
+	url(r'^events/admin/(\w+)/signups/(new|\d+)/$', postgresqleu.confwiki.views.signup_admin_edit),
+	url(r'^events/admin/(\w+)/signups/(\d+)/sendmail/$', postgresqleu.confwiki.views.signup_admin_sendmail),
+	url(r'^events/admin/(\w+)/transfer/$', postgresqleu.confreg.views.transfer_reg),
+	url(r'^events/admin/(?P<urlname>[^/]+)/volunteer/', include(postgresqleu.confreg.volsched), {'adm': True}),
 
-    (r'^events/sponsor/', include('postgresqleu.confsponsor.urls')),
+	url(r'^events/sponsor/', include('postgresqleu.confsponsor.urls')),
 
-    # "Homepage" for events
-    (r'^events/([^/]+)/$', postgresqleu.confreg.views.confhome),
+	# "Homepage" for events
+	url(r'^events/([^/]+)/$', postgresqleu.confreg.views.confhome),
 
-    # Mobile conference stuff
-    (r'^m/(\w+)/$', postgresqleu.confreg.mobileviews.index),
-    (r'^m/(\w+)/cache.manifest/$', postgresqleu.confreg.mobileviews.cachemanifest),
-    (r'^m/(\w+)/cdj/(\d+)?$', postgresqleu.confreg.mobileviews.conferencedata),
-    (r'^m/(\w+)/newsj/$', postgresqleu.confreg.mobileviews.newsproxy),
+	# Mobile conference stuff
+	url(r'^m/(\w+)/$', postgresqleu.confreg.mobileviews.index),
+	url(r'^m/(\w+)/cache.manifest/$', postgresqleu.confreg.mobileviews.cachemanifest),
+	url(r'^m/(\w+)/cdj/(\d+)?$', postgresqleu.confreg.mobileviews.conferencedata),
+	url(r'^m/(\w+)/newsj/$', postgresqleu.confreg.mobileviews.newsproxy),
 
 
-    # Conference admin
-    (r'^admin/confreg/_email/$', 'postgresqleu.confreg.views.admin_email'),
-    (r'^admin/confreg/_email_session_speaker/([,\d]+)/$', 'postgresqleu.confreg.views.admin_email_session'),
-    (r'^admin/confsponsor/sponsorshiplevel/(\d+)/copy/$', 'postgresqleu.confsponsor.views.admin_copy_level'),
+	# Conference admin
+	url(r'^admin/confreg/_email/$', postgresqleu.confreg.views.admin_email),
+	url(r'^admin/confreg/_email_session_speaker/([,\d]+)/$', postgresqleu.confreg.views.admin_email_session),
+	url(r'^admin/confsponsor/sponsorshiplevel/(\d+)/copy/$', postgresqleu.confsponsor.views.admin_copy_level),
 
-    # Legacy event URLs
-    (r'^events/(register|bulkpay|feedback|schedule|sessions|talkvote|speakerprofile|callforpapers|reports)/([^/]+)/(.*)?$', postgresqleu.confreg.views.legacy_redirect),
+	# Legacy event URLs
+	url(r'^events/(register|bulkpay|feedback|schedule|sessions|talkvote|speakerprofile|callforpapers|reports)/([^/]+)/(.*)?$', postgresqleu.confreg.views.legacy_redirect),
 
 
 	# Membership management
-	(r'^membership/$', postgresqleu.membership.views.home),
-    (r'^membership/meetings/$', postgresqleu.membership.views.meetings),
-    (r'^membership/meetings/(\d+)/$', postgresqleu.membership.views.meeting),
-    (r'^membership/meetingcode/$', postgresqleu.membership.views.meetingcode),
-	(r'^community/members/$', postgresqleu.membership.views.userlist),
-	(r'^admin/membership/_email/$', 'postgresqleu.membership.views.admin_email'),
+	url(r'^membership/$', postgresqleu.membership.views.home),
+	url(r'^membership/meetings/$', postgresqleu.membership.views.meetings),
+	url(r'^membership/meetings/(\d+)/$', postgresqleu.membership.views.meeting),
+	url(r'^membership/meetingcode/$', postgresqleu.membership.views.meetingcode),
+	url(r'^community/members/$', postgresqleu.membership.views.userlist),
+	url(r'^admin/membership/_email/$', postgresqleu.membership.views.admin_email),
 
 	# Elections
-	(r'^elections/$', postgresqleu.elections.views.home),
-	(r'^elections/(\d+)/$', postgresqleu.elections.views.election),
-	(r'^elections/(\d+)/candidate/(\d+)/$', postgresqleu.elections.views.candidate),
-	(r'^elections/(\d+)/ownvotes/$', postgresqleu.elections.views.ownvotes),
+	url(r'^elections/$', postgresqleu.elections.views.home),
+	url(r'^elections/(\d+)/$', postgresqleu.elections.views.election),
+	url(r'^elections/(\d+)/candidate/(\d+)/$', postgresqleu.elections.views.candidate),
+	url(r'^elections/(\d+)/ownvotes/$', postgresqleu.elections.views.ownvotes),
 
 	# Invoice manager (admins only!)
-	(r'invoicemgr/$', postgresqleu.invoicemgr.views.home),
-	(r'invoicemgr/(\d+)/$', postgresqleu.invoicemgr.views.invoice),
-	(r'invoicemgr/(\d+)/pdf/$', postgresqleu.invoicemgr.views.invoicepdf),
+	url(r'invoicemgr/$', postgresqleu.invoicemgr.views.home),
+	url(r'invoicemgr/(\d+)/$', postgresqleu.invoicemgr.views.invoice),
+	url(r'invoicemgr/(\d+)/pdf/$', postgresqleu.invoicemgr.views.invoicepdf),
 
-    # Second generation invoice management system
-    (r'^invoiceadmin/$', postgresqleu.invoices.views.unpaid),
-    (r'^invoiceadmin/unpaid/$', postgresqleu.invoices.views.unpaid),
-    (r'^invoiceadmin/all/$', postgresqleu.invoices.views.all),
-    (r'^invoiceadmin/pending/$', postgresqleu.invoices.views.pending),
-    (r'^invoiceadmin/deleted/$', postgresqleu.invoices.views.deleted),
-    (r'^invoiceadmin/refunded/$', postgresqleu.invoices.views.refunded),
-    (r'^invoiceadmin/search/$', postgresqleu.invoices.views.search),
-    (r'^invoiceadmin/(\d+)/$', postgresqleu.invoices.views.oneinvoice),
-    (r'^invoiceadmin/(new)/$', postgresqleu.invoices.views.oneinvoice),
-    (r'^invoiceadmin/(\d+)/flag/$', postgresqleu.invoices.views.flaginvoice),
-    (r'^invoiceadmin/(\d+)/cancel/$', postgresqleu.invoices.views.cancelinvoice),
-    (r'^invoiceadmin/(\d+)/refund/$', postgresqleu.invoices.views.refundinvoice),
-    (r'^invoiceadmin/(\d+)/preview/$', postgresqleu.invoices.views.previewinvoice),
-    (r'^invoiceadmin/(\d+)/send_email/$', postgresqleu.invoices.views.emailinvoice),
-    (r'^invoiceadmin/(\d+)/extend_cancel/$', postgresqleu.invoices.views.extend_cancel),
-    (r'^invoices/(\d+)/$', postgresqleu.invoices.views.viewinvoice),
-    (r'^invoices/(\d+)/pdf/$', postgresqleu.invoices.views.viewinvoicepdf),
-    (r'^invoices/(\d+)/receipt/$', postgresqleu.invoices.views.viewreceipt),
-    (r'^invoices/(\d+)/refundnote/$', postgresqleu.invoices.views.viewrefundnote),
-    (r'^invoices/(\d+)/([a-z0-9]{64})/$', postgresqleu.invoices.views.viewinvoice_secret),
-    (r'^invoices/(\d+)/([a-z0-9]{64})/pdf/$', postgresqleu.invoices.views.viewinvoicepdf_secret),
-    (r'^invoices/(\d+)/([a-z0-9]{64})/receipt/$', postgresqleu.invoices.views.viewreceipt_secret),
-    (r'^invoices/(\d+)/([a-z0-9]{64})/refundnote/$', postgresqleu.invoices.views.viewrefundnote_secret),
-    (r'^invoices/dummy/(\d+)/([a-z0-9]{64})/$', postgresqleu.invoices.views.dummy_payment),
-    (r'^invoices/$', postgresqleu.invoices.views.userhome),
-    (r'^invoices/banktransfer/$', postgresqleu.invoices.views.banktransfer),
-    (r'^invoices/adyen_bank/(\d+)/$', postgresqleu.adyen.views.invoicepayment),
-    (r'^invoices/adyen_bank/(\d+)/(\w+)/$', postgresqleu.adyen.views.invoicepayment_secret),
+	# Second generation invoice management system
+	url(r'^invoiceadmin/$', postgresqleu.invoices.views.unpaid),
+	url(r'^invoiceadmin/unpaid/$', postgresqleu.invoices.views.unpaid),
+	url(r'^invoiceadmin/all/$', postgresqleu.invoices.views.all),
+	url(r'^invoiceadmin/pending/$', postgresqleu.invoices.views.pending),
+	url(r'^invoiceadmin/deleted/$', postgresqleu.invoices.views.deleted),
+	url(r'^invoiceadmin/refunded/$', postgresqleu.invoices.views.refunded),
+	url(r'^invoiceadmin/search/$', postgresqleu.invoices.views.search),
+	url(r'^invoiceadmin/(\d+)/$', postgresqleu.invoices.views.oneinvoice),
+	url(r'^invoiceadmin/(new)/$', postgresqleu.invoices.views.oneinvoice),
+	url(r'^invoiceadmin/(\d+)/flag/$', postgresqleu.invoices.views.flaginvoice),
+	url(r'^invoiceadmin/(\d+)/cancel/$', postgresqleu.invoices.views.cancelinvoice),
+	url(r'^invoiceadmin/(\d+)/refund/$', postgresqleu.invoices.views.refundinvoice),
+	url(r'^invoiceadmin/(\d+)/preview/$', postgresqleu.invoices.views.previewinvoice),
+	url(r'^invoiceadmin/(\d+)/send_email/$', postgresqleu.invoices.views.emailinvoice),
+	url(r'^invoiceadmin/(\d+)/extend_cancel/$', postgresqleu.invoices.views.extend_cancel),
+	url(r'^invoices/(\d+)/$', postgresqleu.invoices.views.viewinvoice),
+	url(r'^invoices/(\d+)/pdf/$', postgresqleu.invoices.views.viewinvoicepdf),
+	url(r'^invoices/(\d+)/receipt/$', postgresqleu.invoices.views.viewreceipt),
+	url(r'^invoices/(\d+)/refundnote/$', postgresqleu.invoices.views.viewrefundnote),
+	url(r'^invoices/(\d+)/([a-z0-9]{64})/$', postgresqleu.invoices.views.viewinvoice_secret),
+	url(r'^invoices/(\d+)/([a-z0-9]{64})/pdf/$', postgresqleu.invoices.views.viewinvoicepdf_secret),
+	url(r'^invoices/(\d+)/([a-z0-9]{64})/receipt/$', postgresqleu.invoices.views.viewreceipt_secret),
+	url(r'^invoices/(\d+)/([a-z0-9]{64})/refundnote/$', postgresqleu.invoices.views.viewrefundnote_secret),
+	url(r'^invoices/dummy/(\d+)/([a-z0-9]{64})/$', postgresqleu.invoices.views.dummy_payment),
+	url(r'^invoices/$', postgresqleu.invoices.views.userhome),
+	url(r'^invoices/banktransfer/$', postgresqleu.invoices.views.banktransfer),
+	url(r'^invoices/adyen_bank/(\d+)/$', postgresqleu.adyen.views.invoicepayment),
+	url(r'^invoices/adyen_bank/(\d+)/(\w+)/$', postgresqleu.adyen.views.invoicepayment_secret),
 
-    # Basic accounting system
-    (r'^accounting/$', postgresqleu.accounting.views.index),
-    (r'^accounting/(\d+)/$', postgresqleu.accounting.views.year),
-    (r'^accounting/e/(\d+)/$', postgresqleu.accounting.views.entry),
-    (r'^accounting/(\d+)/new/$', postgresqleu.accounting.views.new),
-    (r'^accounting/(\d+)/close/$', postgresqleu.accounting.views.closeyear),
-    (r'^accounting/([\d-]+)/report/(\w+)/$', postgresqleu.accounting.views.report),
+	# Basic accounting system
+	url(r'^accounting/$', postgresqleu.accounting.views.index),
+	url(r'^accounting/(\d+)/$', postgresqleu.accounting.views.year),
+	url(r'^accounting/e/(\d+)/$', postgresqleu.accounting.views.entry),
+	url(r'^accounting/(\d+)/new/$', postgresqleu.accounting.views.new),
+	url(r'^accounting/(\d+)/close/$', postgresqleu.accounting.views.closeyear),
+	url(r'^accounting/([\d-]+)/report/(\w+)/$', postgresqleu.accounting.views.report),
 
-    # Handle paypal data returns
-    (r'^p/paypal_return/$', postgresqleu.paypal.views.paypal_return_handler),
+	# Handle paypal data returns
+	url(r'^p/paypal_return/$', postgresqleu.paypal.views.paypal_return_handler),
 
-    # Handle adyen data returns
-    (r'^p/adyen_return/$', postgresqleu.adyen.views.adyen_return_handler),
-    (r'^p/adyen_notify/$', postgresqleu.adyen.views.adyen_notify_handler),
+	# Handle adyen data returns
+	url(r'^p/adyen_return/$', postgresqleu.adyen.views.adyen_return_handler),
+	url(r'^p/adyen_notify/$', postgresqleu.adyen.views.adyen_notify_handler),
 
-    # Account info callbacks
-    (r'^accountinfo/search/$', postgresqleu.accountinfo.views.search),
-    (r'^accountinfo/import/$', postgresqleu.accountinfo.views.importuser),
-
-)
+	# Account info callbacks
+	url(r'^accountinfo/search/$', postgresqleu.accountinfo.views.search),
+	url(r'^accountinfo/import/$', postgresqleu.accountinfo.views.importuser),
+]
 
 if settings.ENABLE_TRUSTLY:
 	import postgresqleu.trustlypayment.views
 
-	urlpatterns.extend(
-		patterns('',
-				 (r'^invoices/trustlypay/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.invoicepayment_secret),
-				 (r'^trustly_notification/$', postgresqleu.trustlypayment.views.notification),
-				 (r'^trustly_success/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.success),
-				 (r'^trustly_failure/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.failure),
-	))
+	urlpatterns.extend([
+		url(r'^invoices/trustlypay/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.invoicepayment_secret),
+		url(r'^trustly_notification/$', postgresqleu.trustlypayment.views.notification),
+		url(r'^trustly_success/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.success),
+		url(r'^trustly_failure/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.failure),
+	])
+
 if settings.ENABLE_BRAINTREE:
 	import postgresqleu.braintreepayment.views
 
-	urlpatterns.extend(
-		patterns('',
-				 (r'^invoices/braintree/(\d+)/$', postgresqleu.braintreepayment.views.invoicepayment),
-				 (r'^invoices/braintree/(\d+)/(\w+)/$', postgresqleu.braintreepayment.views.invoicepayment_secret),
-				 (r'^p/braintree/$', postgresqleu.braintreepayment.views.payment_post),
-	))
+	urlpatterns.extend([
+		url(r'^invoices/braintree/(\d+)/$', postgresqleu.braintreepayment.views.invoicepayment),
+		url(r'^invoices/braintree/(\d+)/(\w+)/$', postgresqleu.braintreepayment.views.invoicepayment_secret),
+		url(r'^p/braintree/$', postgresqleu.braintreepayment.views.payment_post),
+	])
 
 
 
 # Now extend with some fallback URLs as well
-urlpatterns.extend(
-	patterns('',
-			 	# This should not happen in production - serve by apache!
-	url(r'^(favicon.ico)$', 'django.views.static.serve', {
-		'document_root': '../media',
-	}),
-
+urlpatterns.extend([
 	# Selectable, only used on admin site for now
-	(r'^admin/selectable/', include('selectable.urls')),
+	url(r'^admin/selectable/', include('selectable.urls')),
 
 	# Admin site
-    (r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', include(admin.site.urls)),
 
 	# Fallback - send everything nonspecific to the static handler
-	(r'^(.*)/$', postgresqleu.static.views.static_fallback),
-))
+	url(r'^(.*)/$', postgresqleu.static.views.static_fallback),
+])
