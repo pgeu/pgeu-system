@@ -1809,7 +1809,7 @@ def createvouchers(request):
 													  rowcount=regcount,
 													  rowamount=regtype.cost,
 													  vatrate=conference.vat_registrations,
-												  ))
+				), bulk=False)
 				invoice.allowedmethods = InvoicePaymentMethod.objects.filter(auto=True)
 				invoice.save()
 			return HttpResponseRedirect('%s/' % batch.id)

@@ -22,6 +22,9 @@ from postgresqleu.accounting.util import create_accounting_entry
 # It also blocks access to unsafe variables that could be used
 # to traverse the object tree outside the invoice.
 class InvoicePresentationWrapper(object):
+	class Meta:
+		proxy = True
+
 	_unsafe_attributes = ('recipient_user', 'processor', 'allowedmethods', 'paidusing', )
 	def __init__(self, invoice, returnurl):
 		self.__invoice = invoice
@@ -614,14 +617,12 @@ class InvoiceManager(object):
 		# But we expect to be in a transaction anyway.
 		invoice.save()
 		for r in invoicerows:
-			r = InvoiceRow(invoice=invoice,
-						   rowtext = _trunc_string(r[0], 100),
-						   rowcount = r[1],
-						   rowamount = r[2],
-						   vatrate = r[3],
-			)
-			r.save()
-			invoice.invoicerow_set.add(r)
+			invoice.invoicerow_set.add(InvoiceRow(invoice=invoice,
+												  rowtext = _trunc_string(r[0], 100),
+												  rowcount = r[1],
+												  rowamount = r[2],
+												  vatrate = r[3],
+											  ), bulk=False)
 
 		if autopaymentoptions:
 			invoice.allowedmethods = InvoicePaymentMethod.objects.filter(auto=True)
