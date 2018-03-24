@@ -1,6 +1,6 @@
-{%extends "base.html" %}
+{%extends "confreg/confadmin_base.html" %}
 {%block title%}Conference Session Feedback - {{conference}}{%endblock%}
-{%block content%}
+{%block layoutblock%}
 <h1>Conference Session Feedback - {{conference}}</h1>
 
 <p>
@@ -12,13 +12,18 @@ Jump to <a href="#toplists">toplists</a>.
 </p>
 
 <h2>Comments per session</h2>
-{%for g in commented_sessions|groupby('0')%}
-<h3>{{g.grouper}}</h3>
-<ul>
-{%for comment in g.list %}
- <li>{{comment.1}}</li>
-{%endfor%}
+{%for session, comment in commented_sessions%}
+{%ifchanged session%}
+{%if not forloop.first%}
 </ul>
+{%endif%}
+<h3>{{session}}</h3>
+<ul>
+{%endifchanged%}
+ <li>{{comment}}</li>
+{%if forloop.last%}
+</ul>
+{%endif%}
 {%endfor%}
 
 <p>
@@ -28,7 +33,7 @@ Jump to <a href="#toplists">toplists</a>.
 <a name="toplists"></a>
 <h1>Toplists</h1>
 
-<form method="post" action="./#toplists">{{ csrf_input }}
+<form method="post" action="./#toplists">{% csrf_token %}
 Minimum number of votes required: <input type="text" name="minvotes" value="{{minvotes}}" style="width:50px">
  <input type="submit" value="Update">
 </form>
@@ -45,9 +50,9 @@ Minimum number of votes required: <input type="text" name="minvotes" value="{{mi
 {%for title,avg,votes,stddev in toplist.list%}
  <tr>
   <td>{{title}}</td>
-  <td>{{avg|floatstr(1)}}</td>
+  <td>{{avg|floatformat:1}}</td>
   <td>{{votes}}</td>
-  <td>{{stddev|floatstr(1)}}</td>
+  <td>{{stddev|floatformat:1}}</td>
  </tr>
 {%endfor%}
 </table>
