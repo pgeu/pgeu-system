@@ -2217,7 +2217,7 @@ def createschedule(request, confname):
 			'days': days,
 			'sessions': sessions,
 			'tracks': tracks,
-			'sesswidth': 600 / len(allrooms),
+			'sesswidth': min(600 / len(allrooms), 150),
 			'availableheight': len(sessions)*75,
 			})
 

@@ -1,12 +1,9 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" dir="ltr">
-<head>
- <title>Create Conference Schedule - {{conference}}</title>
- <meta http-equiv="Content-Type" content="text/xhtml; charset=utf-8" />
- <style type="text/css" media="screen" title="Normal Text">@import url("/media/css/base.css");</style>
- <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js"></script>
- <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script><style media="print">
+{%extends "confreg/confadmin_base.html" %}
+{%block title%}Create schedule{%endblock%}
+{%block extrahead%}
+<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
+<script type="text/javascript" src="/media/jq/jquery-ui.min.js"></script>
+<style media="print">
 #pgHeaderContainer, #pgSideWrap { display:none; }
 div.schedwrap {
    font-size: 69%;
@@ -137,9 +134,9 @@ function saveDraft() {
    });
 }
 </script>
+{%endblock%}
 
-</head>
-<body>
+{%block layoutblock%}
 <h1>Create Conference Schedule - {{conference}}</h1>
 <p>
 <b>NOTE! THIS IS FOR CREATING A TENTATIVE SCHEDULE ONLY!</b>
@@ -151,10 +148,10 @@ the talk slot, if your schedule supports multiple different lengths.
   <font size="30">Please wait, talking to Mr Server...</font>
 </div>
 
-<div id="availablewrapper" style="float:right; border:1px solid blue;width:{{sesswidth}}px;height:{{availableheight}}px;">
-  <h3>Available sessions</h3>
+<div id="availablewrapper" style="float:right; border:1px solid blue;width:{{sesswidth}}px;height:{{availableheight}}px; margin-top: 0px;">
+  <h3>Available sessions</h3> 
   {%for s in sessions %}
-   <div id="sess{{s.id}}" class="sessblock actualsession track{{s.track_id}}{%if s.ispending%} sesspending{%endif%}" style="top: {{s.top}}px; width: {{sesswidth}}px; height: 75px;">{{s.title}}<br/><i>{{s.speaker_list}}</i></div>
+   <div id="sess{{s.id}}" class="sessblock actualsession track{{s.track_id}}{%if s.ispending%} sesspending{%endif%}" style="top: {{s.top|add:"120"}}px; width: {{sesswidth}}px; height: 75px;">{{s.title}}<br/><i>{{s.speaker_list}}</i></div>
   {%endfor%}
 </div>
 
@@ -179,5 +176,4 @@ the talk slot, if your schedule supports multiple different lengths.
 When you are ready to publish, click <a href="publish/">here</a>. (you must
 save using the standard save button first, of course)
 </p>
-</body>
-</html>
+{%endblock%}
