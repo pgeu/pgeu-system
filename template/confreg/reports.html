@@ -1,4 +1,4 @@
-{%extends "base.html" %}
+{%extends "confreg/confadmin_base.html" %}
 {%block title%}Reports{%endblock%}
 {%block extrahead%}
 <link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
@@ -7,20 +7,16 @@
 <style>
 #fieldlist { list-style-type: none; margin: 0; padding: 0; }
 #fieldlist li { cursor: move;}
-#outertbl { width: 750px; }
-#outertbl tr td { vertical-align: top; width: 450px;}
-#outertbl tr td h3 { margin-top: 0px; }
-#outertbl tr td.hdr { width: 150px; }
-#outertbl tr td blockquote { margin-left: 20px; margin-right: 0px; width: 450px;}
+input[type=checkbox] { margin-right: 1em; }
 </style>
 {%endblock%}
 {%block layoutblock%}
 {%if list%}
 <h1>Reports</h1>
 <form method="post" action="advanced/">{% csrf_token %}
-<table border="1" cellspacing="0" cellpadding="2" id="outertbl">{% csrf_token %}
+<table class="table">
   <tr>
-    <td class="hdr"><h3>Fields</h3>Select fields to include.<br/>Drag to change order.</td>
+    <td class="col-md-3"><h3>Fields</h3>Select fields to include.<br/>Drag to change order.</td>
     <td>
       <ul id="fieldlist">
       {%for f,fn,d,fk in adv_fields %}
@@ -30,7 +26,7 @@
     </td>
   </tr>
  <tr>
-    <td class="hdr"><h3>Filters</h3>Select filters to apply</td>
+    <td class="col-md-3"><h3>Filters</h3>Select filters to apply</td>
     <td>
       {%for filter in adv_filters%}
       {{filter.html|safe}}
@@ -38,22 +34,22 @@
     </td>
   </tr>
   <tr>
-    <td class="hdr"><h3>Title</h3></td>
+    <td class="col-md-3"><h3>Title</h3></td>
     <td><input type="text" name="title"></td>
   </tr>
   <tr>
-    <td class="hdr"><h3>Additional columns</h3>(These columns will be added empty, for manual entry. Separate with comma.)</td>
+    <td class="col-md-3"><h3>Additional columns</h3>(These columns will be added empty, for manual entry. Separate with comma.)</td>
     <td><input type="text" name="additionalcols"></td>
   </tr>
   <tr>
-    <td class="hdr"><h3>Order by</h3></td>
+    <td class="col-md-3"><h3>Order by</h3></td>
     <td>
       <select name="orderby1">{%for f,fn,d,fk in adv_fields %}<option value="{{f}}">{{fn}}</option>{%endfor%}</select>
       <select name="orderby2">{%for f,fn,d,fk in adv_fields %}<option value="{{f}}">{{fn}}</option>{%endfor%}</select>
     </td>
   </tr>
   <tr>
-    <td class="hdr"><h3>Format</h3></td>
+    <td class="col-md-3"><h3>Format</h3></td>
     <td>
       <table border="0" cellspacing="1" cellpadding="0">
 	<tr>
@@ -84,7 +80,7 @@ $(function() {
     $( "#fieldlist" ).sortable();
     $( "#fieldlist" ).disableSelection();
 
-    $('input.adv_filter_box').each(function(i, e) {
+    $('input.adv_filter_box, blockquote.adv_filter_wrap').each(function(i, e) {
        if ($(e).prev().is(':checked')) {
           $(e).show();
        } else {

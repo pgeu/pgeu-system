@@ -92,7 +92,7 @@ class ReportFilter(object):
 						return super(MultipleChoiceWrapper, self).label_from_instance(obj)
 
 			field = MultipleChoiceWrapper(queryset=self.queryset)
-			return "<blockquote>%s</blockquote><br/>" % (field.widget.render("adv_%s" % self.id, None), )
+			return "<blockquote class=\"adv_filter_wrap\">%s</blockquote><br/>" % (field.widget.render("adv_%s" % self.id, None), )
 		else:
 			return '<input type="text" class="adv_filter_box" name="adv_%s_filter"><br/>' % self.id
 
