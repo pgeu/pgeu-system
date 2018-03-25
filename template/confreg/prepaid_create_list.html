@@ -1,4 +1,4 @@
-{%extends "navbase.html" %}
+{%extends "confreg/confadmin_base.html" %}
 {%block title%}Prepaid vouchers{%endblock%}
 {%block extrahead%}
 <script type="text/javascript" src="/media/jq/jquery-1.8.2.min.js"></script>
@@ -19,7 +19,7 @@ function sendEmail() {
 </script>
 {%endblock%}
 
-{%block content%}
+{%block layoutblock%}
 <h1>Prepaid vouchers</h1>
 <h2>Batch</h2>
 <table>
@@ -60,18 +60,17 @@ function sendEmail() {
 {%for v in vouchers%}{{v.vouchervalue}}
 {%endfor%}</textarea>
 
-{%if not userbatch%}
 <h2>And once more</h2>
-<p><i>Only shown to administrators!</i></p>
 <p>
 In a format suitable to paste into an email which includes
 the details for how to actually use them.
 </p>
 <input type="text" size="60" value="Attendee vouchers for {{batch.conference}}" />
+<p>
 <textarea cols="80" rows="50">
 {{vouchermailtext}}
 </textarea>
+</p>
 <button onclick="sendEmail()">Send with email</button><br/>
-{%endif%}
 
 {%endblock%}

@@ -81,6 +81,7 @@ class EntryVouchers(BaseBenefit):
 							   {
 								 'batch': batch,
 								 'vouchers': vouchers,
+								 'conference': self.level.conference,
 							   }
 						   )
 

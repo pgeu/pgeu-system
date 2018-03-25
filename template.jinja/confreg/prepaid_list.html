@@ -1,0 +1,34 @@
+{%extends "base.html" %}
+{%block title%}Prepaid Vouchers - {{conference}}{%endblock%}
+{%block content%}
+<h1>Prepaid Vouchers - {{conference}}</h1>
+<h3>Voucher usage</h3>
+<p>
+Usage statistics for prepaid voucher batch {{batch.id}} for
+registration type {{batch.regtype.regtype}}.
+</p>
+<table>
+<tr>
+ <th>Voucher code</th>
+ <th>User by</th>
+ <th>Used at</th>
+</tr>
+{% for v in vouchers %}
+<tr>
+ <td><code>{{v.vouchervalue}}</code></td>
+ <td>{{v.user.fullname|default('')}}</td>
+ <td>{{v.usedate|default('', true)}}</td>
+</tr>
+{%endfor%}
+</table>
+
+<h3>Voucher codes</h3>
+<p>
+Here is another copy of the voucher codes in a format suitable for copying to clipboard.
+</p>
+<textarea cols="60" rows="{{vouchers|length}}">
+{%for v in vouchers%}{{v.vouchervalue}}
+{%endfor%}</textarea>
+
+
+{%endblock%}

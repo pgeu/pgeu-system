@@ -1,0 +1,40 @@
+{%extends "confreg/confadmin_base.html" %}
+{%block title%}Prepaid vouchers{%endblock%}
+
+{%block extrahead%}
+<script language="javascript">
+function confirmDeleteVoucher() {
+   return confirm('Deleting this voucher will remove it from the database. Note that any user who has received a copy of it by email will of course still have the code in their email. Any generated invoices will also remain unchanged.\n\nAre you sure you want to delete this voucher?');
+}
+</script>
+{%endblock%}
+
+{%block layoutblock%}
+<h1>Prepaid vouchers</h1>
+<p>
+  Status of all prepaid vouchers. Click an individual batch to get the ability to send
+  email to the buyer.
+</p>
+<table class="table table-hover">
+  <tr>
+    <th>Voucher code</th>
+    <th>Used by</th>
+    <th>Used at</th>
+  </tr>
+{%for b in batches%}
+ <tr class="info">
+   <td colspan="3"><a href="../{{b.id}}/">Batch {{b.id}}</a> for {{b.buyername}}{%if b.sponsor%} (sponsor {{b.sponsor}}){%endif%}, registration type {{b.regtype.regtype}}</td>
+ </tr>
+{%for v in b.prepaidvoucher_set.all %}
+ <tr>
+   <td>{{v.vouchervalue}}</code></td>
+   <td>{%if v.user%}<a href="../../regdashboard/list/{{v.user.id}}/">{{v.user.fullname}}</a>{%endif%}</td>
+   <td>{{v.usedate|default:""}}{%if not v.usedate%}<a href="../{{b.id}}/del/{{v.id}}/" onclick="return confirmDeleteVoucher()"><i class="glyphicon glyphicon-remove" style="float:right"></i></a>{%endif%}</td>
+ </tr>
+{%endfor%}
+{%endfor%}
+</table>
+
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/prepaid/">Create prepaid vouchers</a></div>
+
+{%endblock%}

@@ -1763,20 +1763,23 @@ def optout(request, token):
 
 @login_required
 @transaction.atomic
-@user_passes_test_or_error(lambda u: u.has_module_perms('invoicemgr'))
-def createvouchers(request):
+def createvouchers(request, confname):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=confname)
+	else:
+		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+
 	# Creation of pre-paid vouchers for conference registrations
 	if request.method == 'POST':
-		form = PrepaidCreateForm(data=request.POST)
+		form = PrepaidCreateForm(conference, data=request.POST)
 		if form.is_valid():
 			# All data is correct, create the vouchers
 			# (by first creating a batch)
 
-			conference = Conference.objects.get(pk=form.data['conference'])
 			regtype = RegistrationType.objects.get(pk=form.data['regtype'], conference=conference)
 			regcount = int(form.data['count'])
 			buyer = User.objects.get(pk=form.data['buyer'])
-			buyername = form.data['buyername']
+			buyername = u'{0} {1}'.format(buyer.first_name, buyer.last_name)
 
 			batch = PrepaidBatch(conference=conference,
 								 regtype=regtype,
@@ -1812,55 +1815,102 @@ def createvouchers(request):
 				), bulk=False)
 				invoice.allowedmethods = InvoicePaymentMethod.objects.filter(auto=True)
 				invoice.save()
+				messages.warning(request, "Invoice created for this batch, but NOT finalized. Go do that manually!")
 			return HttpResponseRedirect('%s/' % batch.id)
 		# Else fall through to re-render
 	else:
 		# Get request means we render an empty form
-		form = PrepaidCreateForm()
+		form = PrepaidCreateForm(conference)
 
 	return render(request, 'confreg/prepaid_create_form.html', {
-			'form': form,
-			})
+		'form': form,
+		'conference': conference,
+		'breadcrumbs': (('/events/admin/{0}/prepaid/list/'.format(conference.urlname), 'Prepaid vouchers'),),
+	})
 
 @login_required
-@transaction.atomic
-def viewvouchers(request, batchid):
-	# View existing prepaid vouchers
-
-	# WARNING! THIS VIEW IS NOT RESTRICTED TO ADMINS!
-	# The same view is also used by the person who bought the voucher!
-	# therefor, we need to make very sure he has permission!
-	userbatch = False
-	if not request.user.has_module_perms('invoicemgr'):
-		# Superusers and invoice managers gain access through the generic
-		# permission. Anybody else can only view his/her own batches
-		batch = PrepaidBatch.objects.get(pk=batchid)
-		if batch.buyer != request.user:
-			raise Http404()
-		userbatch = True
+def listvouchers(request, confname):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=confname)
 	else:
-		# User has direct permissions, just retrieve the batch
-		batch = PrepaidBatch.objects.get(pk=batchid)
-	# Done with permissions checks
+		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
 
+	batches = PrepaidBatch.objects.select_related('regtype').filter(conference=conference).prefetch_related('prepaidvoucher_set')
+
+	return render(request, 'confreg/prepaid_list.html', {
+		'conference': conference,
+		'batches': batches,
+	})
+
+@login_required
+def viewvouchers(request, confname, batchid):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=confname)
+	else:
+		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+
+	batch = get_object_or_404(PrepaidBatch, conference=conference, pk=batchid)
 	vouchers = batch.prepaidvoucher_set.all()
 
 	vouchermailtext = template_to_string('confreg/mail/prepaid_vouchers.txt',{
 		'batch': batch,
 		'vouchers': vouchers,
+		'conference': conference,
 		})
 
 	return render(request, 'confreg/prepaid_create_list.html', {
-			'batch': batch,
-			'vouchers': vouchers,
-			'userbatch': userbatch,
-			'vouchermailtext': vouchermailtext,
-			})
+		'conference': conference,
+		'batch': batch,
+		'vouchers': vouchers,
+		'vouchermailtext': vouchermailtext,
+		'breadcrumbs': (('/events/admin/{0}/prepaid/list/'.format(conference.urlname), 'Prepaid vouchers'),),
+	})
 
 @login_required
 @transaction.atomic
-@user_passes_test_or_error(lambda u: u.has_module_perms('invoicemgr'))
-def emailvouchers(request, batchid):
+def delvouchers(request, confname, batchid, voucherid):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=confname)
+	else:
+		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+
+	batch = get_object_or_404(PrepaidBatch, conference=conference, pk=batchid)
+	voucher = get_object_or_404(PrepaidVoucher, batch=batch, pk=voucherid)
+
+	if voucher.user or voucher.usedate:
+		messages.error(request, "Unable to delete voucher, it has been used!")
+	else:
+		# OK, delete the voucher
+		vcode = voucher.vouchervalue
+		voucher.delete()
+		messages.info(request, "Voucher {0} deleted.".format(vcode))
+		if not batch.prepaidvoucher_set.exists():
+			# Nothing left, so delete the batch
+			batch.delete()
+			messages.info(request, "Batch {0} now empty, so also deleted.".format(batchid))
+
+	return HttpResponseRedirect('/events/admin/{0}/prepaid/list/'.format(confname))
+
+@login_required
+def viewvouchers_user(request, confname, batchid):
+	conference = get_object_or_404(Conference, urlname=confname)
+	batch = get_object_or_404(PrepaidBatch, conference=conference, pk=batchid)
+	if batch.buyer != request.user:
+		raise Http404()
+	vouchers = batch.prepaidvoucher_set.all()
+
+	return render_conference_response(request, conference, 'reg', 'confreg/prepaid_list.html', {
+		'batch': batch,
+		'vouchers': vouchers,
+	})
+
+@login_required
+def emailvouchers(request, confname, batchid):
+	if request.user.is_superuser:
+		conference = get_object_or_404(Conference, urlname=confname)
+	else:
+		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+
 	batch = PrepaidBatch.objects.get(pk=batchid)
 	vouchers = batch.prepaidvoucher_set.all()
 
@@ -1871,6 +1921,7 @@ def emailvouchers(request, batchid):
 					   {
 						   'batch': batch,
 						   'vouchers': vouchers,
+						   'conference': conference,
 					   },
 					   sendername=batch.conference.conferencename,
 					   receivername=u"{0} {1}".format(batch.buyer.first_name, batch.buyer.last_name),

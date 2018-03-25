@@ -504,32 +504,22 @@ class SessionSlidesFileForm(forms.Form):
 		return cleaned_data
 
 class PrepaidCreateForm(forms.Form):
-	conference = forms.ModelChoiceField(queryset=Conference.objects.filter(active=True))
-	regtype = forms.ModelChoiceField(queryset=RegistrationType.objects.all())
+	regtype = forms.ModelChoiceField(queryset=RegistrationType.objects.filter(id=-1))
 	count = forms.IntegerField(min_value=1, max_value=100)
-	buyer = forms.ModelChoiceField(queryset=User.objects.all().order_by('username'), help_text="Pick the user who bought the batch. If he/she is not registered, pick your own userid")
-	buyername = forms.CharField(max_length=100,help_text="Display name of the user who bought the batch. Internal use and copied to invoice")
-	invoice = forms.BooleanField(help_text="Automatically create invoice template for these vouchers. Note that the vouchers are created immediately, not at payment time!", required=False)
+	buyer = forms.ModelChoiceField(queryset=User.objects.all().order_by('username'), help_text="Pick the user who bought the batch. If he/she does not have an account, pick your own userid")
+	invoice = forms.BooleanField(help_text="Automatically create invoice template for these vouchers. Note that the vouchers are created immediately, not at payment time! Also note that only a template is created and has to be finalized!", required=False)
 	confirm = forms.BooleanField(help_text="Confirm that the chosen registration type and count are correct (there is no undo past this point, the vouchers will be created!")
 
-	def __init__(self, *args, **kwargs):
+	def __init__(self, conference, *args, **kwargs):
+		self.conference = conference
 		super(PrepaidCreateForm, self).__init__(*args, **kwargs)
-		if self.data and self.data.has_key('conference'):
-			self.fields['regtype'].queryset=RegistrationType.objects.filter(conference=self.data.get('conference'))
-			if not (self.data.has_key('regtype')
-					and self.data.has_key('count')
-					and self.data.get('regtype')
-					and self.data.get('buyername')
-					and self.data.get('count')):
-				del self.fields['confirm']
-		else:
-			# No conference selected, so remove other fields
-			del self.fields['regtype']
-			del self.fields['count']
-			del self.fields['buyer']
-			del self.fields['buyername']
+		self.fields['regtype'].queryset=RegistrationType.objects.filter(conference=conference)
+		self.fields['buyer'].label_from_instance=lambda x: u'{0} {1} <{2}> ({3})'.format(x.first_name, x.last_name, x.email, x.username)
+		if not (self.data.has_key('regtype')
+				and self.data.has_key('count')
+				and self.data.get('regtype')
+				and self.data.get('count')):
 			del self.fields['confirm']
-			del self.fields['invoice']
 
 class EmailSendForm(forms.Form):
 	ids = forms.CharField(label="List of id's", widget=forms.widgets.HiddenInput())
