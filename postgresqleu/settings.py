@@ -71,7 +71,6 @@ ROOT_URLCONF = 'postgresqleu.urls'
 TEMPLATES = [{
 	'BACKEND': 'django.template.backends.django.DjangoTemplates',
 	'DIRS': ['template', ],
-	'APP_DIRS': True,
 	'OPTIONS': {
 		'context_processors': [
 			'django.template.context_processors.request',
@@ -79,6 +78,10 @@ TEMPLATES = [{
 			'django.contrib.messages.context_processors.messages',
 			'postgresqleu.util.context_processors.settings_context',
 
+		],
+		'loaders': [
+			'django.template.loaders.filesystem.Loader',
+			'django.template.loaders.app_directories.Loader',
 		],
 	},
 }]
