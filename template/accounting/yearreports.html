@@ -2,6 +2,7 @@
 {%load humanize%}
 {%block title%}Accounting - {{title}}{%endblock%}
 {%block extrahead%}
+<script type="text/javascript" src="/media/js/pgeu_accounting.js"></script>
 <style type="text/css" media="print" title="Print base">@import url("/media/css/base.css");</style>
 <style>
 input.datepicker {
@@ -59,11 +60,6 @@ table.reporttable tr.finalrow td.amount {
 </style>
 
 <script type="text/javascript">
-function pickReport() {
-   v = $('#reportpick').val();
-   if (!v) return;
-   document.location.href = '/accounting/{{year.year}}/report/' + v + '/';
-}
 function refreshlocation() {
       o = $('#objsel').val();
       y = $('#yearsel').val();
@@ -90,7 +86,7 @@ $(function() {
 {%block navbarextra%}
 <form class="navbar-form navbar-right">
   <div class="form-group">
-    <select id="reportpick" onchange="pickReport()"><option value="">Select report</option><option value="results">Results</optioN><option value="balance">Balance</option><option value="ledger">General ledger</option></select>
+    <select id="reportpick" onchange="pickReport({{year.year}}, true)"><option value="">Select report</option><option value="results">Results</optioN><option value="balance">Balance</option><option value="ledger">General ledger</option></select>
   </div>
 </form>
 {%endblock%}
