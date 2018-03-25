@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.forms.models import BaseInlineFormSet
 
 
-from models import JournalEntry, JournalItem, Object
+from models import JournalEntry, JournalItem, Object, JournalUrl
 
 class JournalEntryForm(forms.ModelForm):
 	def __init__(self, *args, **kwargs):
@@ -31,12 +31,12 @@ class JournalItemForm(forms.ModelForm):
 				self.fields['debit'].initial = self.instance.amount
 			elif self.instance.amount <0:
 				self.fields['credit'].initial = -self.instance.amount
-		self.fields['account'].widget.attrs['class'] = 'itembox accountbox chosenbox'
-		self.fields['object'].widget.attrs['class'] = 'itembox objectbox chosenbox'
+		self.fields['account'].widget.attrs['class'] = 'dropdownbox'
+		self.fields['object'].widget.attrs['class'] = 'dropdownbox'
 		self.fields['object'].queryset = Object.objects.filter(active=True)
-		self.fields['description'].widget.attrs['class'] = 'itembox descriptionbox'
-		self.fields['debit'].widget.attrs['class'] = 'itembox debitbox'
-		self.fields['credit'].widget.attrs['class'] = 'itembox creditbox'
+		self.fields['description'].widget.attrs['class'] = 'descriptionbox form-control'
+		self.fields['debit'].widget.attrs['class'] = 'debitbox form-control'
+		self.fields['credit'].widget.attrs['class'] = 'creditbox form-control'
 
 	class Meta:
 		model = JournalItem
@@ -54,14 +54,15 @@ class JournalItemForm(forms.ModelForm):
 		return self.cleaned_data
 
 	def clean_object(self):
-		if self.cleaned_data['account'].objectrequirement == 1:
-			# object is required
-			if not self.cleaned_data['object']:
-				raise ValidationError("Account %s requires an object to be specified" % self.cleaned_data['account'].num)
-		elif self.cleaned_data['account'].objectrequirement == 2:
-			# object is forbidden
-			if self.cleaned_data['object']:
-				raise ValidationError("Account %s does not allow an object to be specified" % self.cleaned_data['account'].num)
+		if self.cleaned_data.has_key('account'):
+			if self.cleaned_data['account'].objectrequirement == 1:
+				# object is required
+				if not self.cleaned_data['object']:
+					raise ValidationError("Account %s requires an object to be specified" % self.cleaned_data['account'].num)
+			elif self.cleaned_data['account'].objectrequirement == 2:
+				# object is forbidden
+				if self.cleaned_data['object']:
+					raise ValidationError("Account %s does not allow an object to be specified" % self.cleaned_data['account'].num)
 		return self.cleaned_data['object']
 
 	def save(self, commit=True):
@@ -81,8 +82,8 @@ class JournalItemForm(forms.ModelForm):
 			return 0
 		if self.cleaned_data['DELETE']:
 			return 0
-		debit = self.cleaned_data['debit'] and self.cleaned_data['debit'] or 0
-		credit = self.cleaned_data['credit'] and self.cleaned_data['credit'] or 0
+		debit = self.cleaned_data.has_key('debit') and self.cleaned_data['debit'] or 0
+		credit = self.cleaned_data.has_key('credit') and self.cleaned_data['credit'] or 0
 		return debit-credit
 
 class JournalItemFormset(BaseInlineFormSet):
@@ -96,3 +97,12 @@ class JournalItemFormset(BaseInlineFormSet):
 		n = sum([1 for f in self.forms if f.get_amount() != 0])
 		if n == 0:
 			raise ValidationError("Journal entry must have at least one item!")
+
+class JournalUrlForm(forms.ModelForm):
+	class Meta:
+		model = JournalUrl
+		exclude = ()
+
+	def __init__(self, *args, **kwargs):
+		super(JournalUrlForm, self).__init__(*args, **kwargs)
+		self.fields['url'].widget.attrs['class'] = 'form-control'

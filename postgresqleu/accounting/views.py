@@ -13,7 +13,7 @@ from postgresqleu.util.decorators import user_passes_test_or_error
 
 from models import JournalEntry, JournalItem, JournalUrl, Year, Object
 from models import IncomingBalance, Account
-from forms import JournalEntryForm, JournalItemForm, JournalItemFormset
+from forms import JournalEntryForm, JournalItemForm, JournalItemFormset, JournalUrlForm
 
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
@@ -128,7 +128,7 @@ def entry(request, entryid):
 
 	extra = max(2, 6-entry.journalitem_set.count())
 	inlineformset = inlineformset_factory(JournalEntry, JournalItem, JournalItemForm, JournalItemFormset, can_delete=True, extra=extra)
-	inlineurlformset = inlineformset_factory(JournalEntry, JournalUrl, can_delete=True, extra=2, exclude=[])
+	inlineurlformset = inlineformset_factory(JournalEntry, JournalUrl, JournalUrlForm, can_delete=True, extra=2, exclude=[])
 
 	if request.method == 'POST':
 		if request.POST['submit'] == 'Delete':

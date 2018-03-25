@@ -1,40 +1,19 @@
-{%extends "base.html"%}
+{%extends "accounting/accounting_base.html"%}
 {%load humanize%}
 {%block title%}Accounting{%endblock%}
 {%block extrahead%}
-<script type="text/javascript" src="/media/jq/jquery-1.8.2.min.js"></script>
-<script type="text/javascript" src="/media/jq/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/media/jq/chosen.jquery.min.js"></script>
-<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
-<link rel="stylesheet" href="/media/jq/chosen.min.css" />
+<script type="text/javascript" src="/media/js/selectize.min.js"></script>
+<link rel="stylesheet" href="/media/css/selectize.css" />
+<link rel="stylesheet" href="/media/css/selectize.default.css" />
 <style>
-div#pgContainer {
-   width: 1200px;
-}
-div#accountingmenu {
-   border-bottom: 1px solid black;
-   padding-bottom: 5px;
-}
-div#accountingwrap {
-   width: 1200px;
-}
-div#accountingleft {
-   width: 200px;
-   float: left;
-   padding-right: 5px;
+.selectize-control { display: inline-block; }
+
+div.accounting-left {
    border-right: 1px solid black;
 }
-div#accountingright {
-   float: left;
-   margin-left: 10px;
-   width: 940px;
-}
-button#newentrybutton {
-   float: right;
-}
-input#searchentry {
-   width: 75px;
-   font-size: small;
+ul.journal-entry-list {
+   list-style-type: none;
+   padding: 0px;
 }
 
 input.datepicker {
@@ -46,30 +25,11 @@ table#entryheader {
 }
 
 /* Account form */
-.itembox {
-   font-size: small;
-}
 input.debitbox, input.creditbox {
-   width: 60px;
    text-align: right;
 }
-.accountbox {
-   width: 250px;
-}
-.accountbox li {
-   font-size: smaller;
-}
-.objectbox {
-   width: 200px;
-}
-.objectbox li {
-   font-size: smaller;
-}
-input.descriptionbox {
-   width: 300px;
-}
-div.urldiv input[type=text] {
-   width: 500px;
+.dropdownbox {
+   width: 100%;
 }
 
 /* Viewing a journal entry */
@@ -146,13 +106,19 @@ function recalculate_sums() {
       $('#difftotal').text((debit-credit).toFixed(2));
 }
 
-function search() {
-   searchstr = $('#searchentry').val();
+function _do_search(searchstr) {
    if (document.location.href.indexOf('?') > 0) {
       document.location.href=document.location.href + '&search=' + searchstr;
    } else {
       document.location.href=document.location.href + '?search=' + searchstr;
    }
+}
+
+function search() {
+   _do_search($('#searchentry').val());
+}
+function resetSearch() {
+   _do_search('');
 }
 
 $(function() {
@@ -164,10 +130,7 @@ $(function() {
    $('input.datepicker').datepicker({
       'dateFormat': 'yy-mm-dd',
    });
-   $('.chosenbox').chosen({
-      'search_contains': true,
-      'inherit_select_classes': true,
-   });
+   $('.dropdownbox').selectize({selectOnTab: true});
    $('.debitbox, .creditbox').change(function() {
       if ($(this).val() != '') {
          $(this).val(Number($(this).val()).toFixed(2));
@@ -215,43 +178,46 @@ $(function() {
 });
 </script>
 {%endblock%}
-{%block layoutblock%}
-<h1>Accounting</h1>
 
-{% if messages %}
-    <ul class="messages">
-    {% for message in messages %}
-      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-    </ul>
-{% endif %}
-
-<div id="accountingmenu">
-Year: <select id="yearpick" onchange="changeYear()">
-{%for y in years%}
+{%block navbarextra%}
+<form class="navbar-form navbar-left">
+  <div class="form-group">
+    <select class="form-control" id="yearpick" onchange="changeYear()">{%for y in years%}
 '{{y.year}}' vs '{{year}}'
 <option value="{{y.year}}"{%if y.year == year.year %} SELECTED{%endif%}>{{y}}</option>
 {%endfor%}
 </select>
+  </div>
+</form>
 
-<span style="float:right">Reports:  <select id="reportpick" onchange="pickReport()"><option value="">Select report</option><option value="results">Results</optioN><option value="balance">Balance</option><option value="ledger">General ledger</option></select></span>
-</div>
+<form class="navbar-form navbar-left" role="search">
+  <div class="form-group">
+    <input type="text" id="searchentry" class="form-control" placeholder="Search">
+  </div>
+  <button type="submit" class="btn btn-default">Search</button>
+</form>
 
-<div id="accountingwrap">
- <div id="accountingleft">
-  <h2>Journal entries</h2>
-<span>
-<input type="text" id="searchentry" value="{{searchterm}}"><button id="searchbutton" onclick="search()">Search</button>
+<form class="navbar-form navbar-right">
+  <div class="form-group">
+    <select id="reportpick" onchange="pickReport()"><option value="">Select report</option><option value="results">Results</optioN><option value="balance">Balance</option><option value="ledger">General ledger</option></select>
+  </div>
+</form>
+{%endblock%}
+
+{%block layoutblock%}
+<h1>Accounting</h1>
+
+<div class="row">
+  <div class="col-md-3 col-lg-2 accounting-left">
 {%if year.isopen%}
-<button id="newentrybutton" onclick="if (confirmNew()) document.location.href='/accounting/{{year.year}}/new/'">New</button><br/>
+<button id="newentrybutton" onclick="if (confirmNew()) document.location.href='/accounting/{{year.year}}/new/'" class="btn btn-default">New</button><br/>
 {%endif%}
-</span>
-{%if searchterm%}<p>Search results for <i>{{searchterm}}</i></p>{%endif%}
+{%if searchterm%}<p>Search results for <i>{{searchterm}}</i>. <a href="javascript:resetSearch()">Reset</a>.</p>{%endif%}
 {%for e in entries %}
  {%ifchanged e.closed%}
   {%if not forloop.first%}</ul>{%endif%}
   <b>{{e.closed|yesno:"Closed,Open"}}</b>
-  <ul>
+  <ul class="journal-entry-list">
  {%endifchanged%}
  <li><a href="/accounting/e/{{e.id}}/{%if numpages > 1%}?p={{page}}{%endif%}">{{e}}</a>{%if not e.closed%} *{%endif%}</li>
  {%if forloop.last%}</ul>{%endif%}
@@ -265,8 +231,8 @@ Year: <select id="yearpick" onchange="changeYear()">
 {%if year.isopen and not hasopen %}
 <button onclick="document.location.href='/accounting/{{year.year}}/close/'">Close year</button>
 {%endif%}
- </div>
- <div id="accountingright">
+ </div> <!-- left -->
+ <div class="col-md-9 col-lg-10 accounting-right">
 {%if entry %}
  {%if entry.closed%}
   <h2>Entry {{entry}}</h2>
@@ -302,7 +268,7 @@ Year: <select id="yearpick" onchange="changeYear()">
   {%endif%}
  {%else%}
   <h2>Edit entry {{entry}}</h2>
-  <form method="post" action=".">{% csrf_token %}
+  <form method="post" action="." class="form">{% csrf_token %}
   {%if form.errors%}
    <p><b>Please correct the errors below, and re-submit the form.</b></p>
   {%endif%}
@@ -311,8 +277,9 @@ Year: <select id="yearpick" onchange="changeYear()">
      <td>Date: {{form.date}}</td>
    </tr>
   </table>
+
 {%if form.non_field_errors%}{{form.non_field_errors}}{%endif%}
-  <table>
+  <table class="table">
   {{formset.management_form }}
   {%if formset.non_form_errors%}{{formset.non_form_errors}}{%endif%}
   {%for form in formset.forms%}
@@ -327,12 +294,12 @@ Year: <select id="yearpick" onchange="changeYear()">
    <tr><td colspan="4">{{form.non_field_errors}}</td></tr>
    {%endif%}
    <tr>
-    {%for field in form.visible_fields%}
-    <td>{%if forloop.first%}{{form.id}}{%endif%}
-      {{field.errors}}
-      {{field}}
-    </td>
-    {%endfor%}
+     <td class="col-md-3">{{form.id}}{{form.account.errors}} {{form.account}}</td>
+     <td class="col-md-2">{{form.object.errors}} {{form.object}}</td>
+     <td class="col-md-5">{{form.description.errors}} {{form.description}}</td>
+     <td class="col-md-1">{{form.debit.errors}} {{form.debit}}</td>
+     <td class="col-md-1">{{form.credit.errors}} {{form.credit}}</td>
+     <td class="col-md-1">{{form.DELETE.errors}} {{form.DELETE}}</td>
    </tr>
   {%endfor%}
   <tr>
@@ -351,7 +318,7 @@ Year: <select id="yearpick" onchange="changeYear()">
   {%if urlformset.non_form_errors%}{{urlformset.non_form_errors}}{%endif%}
   {%for form in urlformset.forms%}
   {{form.id}}
-  <div class="urldiv">
+  <div class="form-inline form-group">
     {%for field in form.visible_fields%}
     {{field.errors}}{{field}}
     {%endfor%}
@@ -362,15 +329,15 @@ Year: <select id="yearpick" onchange="changeYear()">
   {%endfor%}
   <br/><br/>
 
-  <input type="submit" name="submit" value="Save">
-  <input type="submit" name="submit" value="Close" onclick="return confirmClose()">
-  <input type="submit" name="submit" value="Delete" onclick="return confirmDelete()">
+  <input type="submit" name="submit" value="Save" class="btn btn-default">
+  <input type="submit" name="submit" value="Close" onclick="return confirmClose()" class="btn btn-default">
+  <input type="submit" name="submit" value="Delete" onclick="return confirmDelete()" class="btn btn-default">
   </form>
  {%endif%}
 {%else%}
   <h2>Entry</h2>
   <p>Pick a journal entry from the list on the left!</p>
 {%endif%}
- </div>
-</div>
+ </div> <!-- right -->
+</div> <!-- row -->
 {%endblock%}
