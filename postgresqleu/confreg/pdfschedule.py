@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django import forms
@@ -22,6 +21,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import cm, mm
 
 from models import Conference, Room, Track, RegistrationDay, ConferenceSession
+from backendviews import get_authenticated_conference
 
 def _get_pagesize(size, orient):
 	so = (size, orient)
@@ -329,12 +329,8 @@ class PdfScheduleForm(forms.Form):
 		self.fields['day'].queryset = RegistrationDay.objects.filter(conference=conference)
 		self.fields['tracks'].queryset = alltracks
 
-@login_required
 def pdfschedule(request, confname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+	conference = get_authenticated_conference(request, confname)
 
 	if request.method == "POST":
 		form = PdfScheduleForm(conference, data=request.POST)

@@ -1,9 +1,9 @@
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 from django.db.models import Count
 from django.db import connection
 
 from models import Conference, ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
+from backendviews import get_authenticated_conference
 
 from collections import OrderedDict
 
@@ -28,12 +28,8 @@ def build_feedback_response(question):
 		r['graphdata'] = build_graphdata(question, 'rateanswer', range(0,6))
 	return r
 
-@login_required
 def feedback_report(request, confname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+	conference = get_authenticated_conference(request, confname)
 
 	sections = []
 	# Get the global conference feedback. Yes, this will be inefficient, but it will work
@@ -65,12 +61,8 @@ def build_toplists(what, query):
 		tl['list'] = cursor.fetchall()
 		yield tl
 
-@login_required
 def feedback_sessions(request, confname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+	conference = get_authenticated_conference(request, confname)
 
 	# Get all sessions that have actual comments on them
 	cursor = connection.cursor()

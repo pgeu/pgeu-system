@@ -14,6 +14,7 @@ from postgresqleu.mailqueue.util import send_simple_mail
 
 from postgresqleu.confreg.models import Conference, ConferenceRegistration
 from postgresqleu.confreg.views import render_conference_response
+from postgresqleu.confreg.backendviews import get_authenticated_conference
 
 from postgresqleu.util.db import exec_to_scalar, exec_to_list
 
@@ -182,12 +183,8 @@ def wikipage_edit(request, confurl, wikiurl):
 		'diff': diff,
 	})
 
-@login_required
 def admin(request, urlname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=urlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+	conference = get_authenticated_conference(request, urlname)
 
 	pages = Wikipage.objects.filter(conference=conference)
 
@@ -196,13 +193,9 @@ def admin(request, urlname):
 		'pages': pages,
 	})
 
-@login_required
 @transaction.atomic
 def admin_edit_page(request, urlname, pageid):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=urlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+	conference = get_authenticated_conference(request, urlname)
 
 	if pageid != 'new':
 		page = get_object_or_404(Wikipage, conference=conference, pk=pageid)
@@ -324,12 +317,8 @@ def signup(request, urlname, signupid):
 		'form': form,
 	})
 
-@login_required
 def signup_admin(request, urlname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=urlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+	conference = get_authenticated_conference(request, urlname)
 
 	signups = Signup.objects.filter(conference=conference)
 
@@ -338,13 +327,9 @@ def signup_admin(request, urlname):
 		'signups': signups,
 	})
 
-@login_required
 @transaction.atomic
 def signup_admin_edit(request, urlname, signupid):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=urlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+	conference = get_authenticated_conference(request, urlname)
 
 	if signupid != 'new':
 		signup = get_object_or_404(Signup, conference=conference, pk=signupid)
@@ -400,13 +385,9 @@ def signup_admin_edit(request, urlname, signupid):
 	})
 
 
-@login_required
 @transaction.atomic
 def signup_admin_sendmail(request, urlname, signupid):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=urlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+	conference = get_authenticated_conference(request, urlname)
 
 	signup = get_object_or_404(Signup, conference=conference, pk=signupid)
 

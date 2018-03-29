@@ -39,6 +39,7 @@ from util import get_invoice_autocancel, cancel_registration
 from models import get_status_string
 from regtypes import confirm_special_reg_type, validate_special_reg_type
 from jinjafunc import render_jinja_conference_response, JINJA_TEMPLATE_ROOT
+from backendviews import get_authenticated_conference
 
 from postgresqleu.util.decorators import user_passes_test_or_error
 from postgresqleu.util.random import generate_random_token
@@ -999,12 +1000,8 @@ def schedule(request, confname):
 
 	return render_conference_response(request, conference, 'schedule', 'confreg/schedule.html', _scheduledata(request, conference))
 
-@login_required
 def schedulejson(request, confname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+	conference = get_authenticated_conference(request, confname)
 
 	return HttpResponse(json.dumps(_scheduledata(request, conference),
 								   cls=JsonSerializer,
@@ -1761,13 +1758,9 @@ def optout(request, token):
 		'series': series,
 	})
 
-@login_required
 @transaction.atomic
 def createvouchers(request, confname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+	conference = get_authenticated_conference(request, confname)
 
 	# Creation of pre-paid vouchers for conference registrations
 	if request.method == 'POST':
@@ -1828,12 +1821,8 @@ def createvouchers(request, confname):
 		'breadcrumbs': (('/events/admin/{0}/prepaid/list/'.format(conference.urlname), 'Prepaid vouchers'),),
 	})
 
-@login_required
 def listvouchers(request, confname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+	conference = get_authenticated_conference(request, confname)
 
 	batches = PrepaidBatch.objects.select_related('regtype').filter(conference=conference).prefetch_related('prepaidvoucher_set')
 
@@ -1842,12 +1831,8 @@ def listvouchers(request, confname):
 		'batches': batches,
 	})
 
-@login_required
 def viewvouchers(request, confname, batchid):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+	conference = get_authenticated_conference(request, confname)
 
 	batch = get_object_or_404(PrepaidBatch, conference=conference, pk=batchid)
 	vouchers = batch.prepaidvoucher_set.all()
@@ -1866,13 +1851,9 @@ def viewvouchers(request, confname, batchid):
 		'breadcrumbs': (('/events/admin/{0}/prepaid/list/'.format(conference.urlname), 'Prepaid vouchers'),),
 	})
 
-@login_required
 @transaction.atomic
 def delvouchers(request, confname, batchid, voucherid):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+	conference = get_authenticated_conference(request, confname)
 
 	batch = get_object_or_404(PrepaidBatch, conference=conference, pk=batchid)
 	voucher = get_object_or_404(PrepaidVoucher, batch=batch, pk=voucherid)
@@ -1904,12 +1885,8 @@ def viewvouchers_user(request, confname, batchid):
 		'vouchers': vouchers,
 	})
 
-@login_required
 def emailvouchers(request, confname, batchid):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+	conference = get_authenticated_conference(request, confname)
 
 	batch = PrepaidBatch.objects.get(pk=batchid)
 	vouchers = batch.prepaidvoucher_set.all()
@@ -2321,12 +2298,8 @@ def publishschedule(request, confname):
 				'changes': changes,
 			})
 
-@login_required
 def reports(request, confname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+	conference = get_authenticated_conference(request, confname)
 
 	# Include information for the advanced reports
 	from reports import attendee_report_fields, attendee_report_filters
@@ -2338,12 +2311,8 @@ def reports(request, confname):
 		    })
 
 
-@login_required
 def advanced_report(request, confname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+	conference = get_authenticated_conference(request, confname)
 
 	if request.method != "POST":
 		raise Http404()
@@ -2353,12 +2322,8 @@ def advanced_report(request, confname):
 	return build_attendee_report(conference, request.POST )
 
 
-@login_required
 def simple_report(request, confname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confname, administrators=request.user)
+	conference = get_authenticated_conference(request, confname)
 
 	from reports import simple_reports
 
@@ -2412,12 +2377,8 @@ def admin_dashboard(request):
 		'past': past,
 	})
 
-@login_required
 def admin_dashboard_single(request, urlname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=urlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+	conference = get_authenticated_conference(request, urlname)
 
 	return render(request, 'confreg/admin_dashboard_single.html', {
 		'c': conference,
@@ -2431,12 +2392,8 @@ def admin_dashboard_single(request, urlname):
 		'pending_sessions': conditional_exec_to_scalar(conference.scheduleactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=0)", {'confid': conference.id}),
 	})
 
-@login_required
 def admin_registration_dashboard(request, urlname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=urlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+	conference = get_authenticated_conference(request, urlname)
 
 	curs = connection.cursor()
 
@@ -2486,12 +2443,8 @@ def admin_registration_dashboard(request, urlname):
 		'tables': tables,
 	})
 
-@login_required
 def admin_registration_list(request, urlname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=urlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+	conference = get_authenticated_conference(request, urlname)
 
 	skey = request.GET.get('sort', '-date')
 	if skey[0] == '-':
@@ -2519,12 +2472,8 @@ def admin_registration_list(request, urlname):
 		'breadcrumbs': (('/events/admin/{0}/regdashboard/'.format(urlname), 'Registration dashboard'),),
 	})
 
-@login_required
 def admin_registration_single(request, urlname, regid):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=urlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+	conference = get_authenticated_conference(request, urlname)
 
 	reg = get_object_or_404(ConferenceRegistration, id=regid, conference=conference)
 
@@ -2543,13 +2492,9 @@ def admin_registration_single(request, urlname, regid):
 		),
 	})
 
-@login_required
 @transaction.atomic
 def admin_registration_cancel(request, urlname, regid):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=urlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+	conference = get_authenticated_conference(request, urlname)
 
 	reg = get_object_or_404(ConferenceRegistration, id=regid, conference=conference)
 
@@ -2566,13 +2511,9 @@ def admin_registration_cancel(request, urlname, regid):
 			'reg': reg,
 		})
 
-@login_required
 @transaction.atomic
 def admin_waitlist(request, urlname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=urlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+	conference = get_authenticated_conference(request, urlname)
 
 	if conference.attendees_before_waitlist <= 0:
 		return render(request, 'confreg/admin_waitlist_inactive.html', {
@@ -2634,13 +2575,9 @@ def admin_waitlist(request, urlname):
 		'form': form,
 		})
 
-@login_required
 @transaction.atomic
 def admin_waitlist_cancel(request, urlname, wlid):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=urlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+	conference = get_authenticated_conference(request, urlname)
 
 	wl = get_object_or_404(RegistrationWaitlistEntry, pk=wlid, registration__conference=conference)
 	reg = wl.registration
@@ -2668,13 +2605,9 @@ def admin_waitlist_cancel(request, urlname, wlid):
 	return HttpResponseRedirect("../../")
 
 
-@login_required
 @transaction.atomic
 def admin_attendeemail(request, urlname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=urlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+	conference = get_authenticated_conference(request, urlname)
 
 	mails = AttendeeMail.objects.filter(conference=conference)
 
@@ -2711,12 +2644,8 @@ def admin_attendeemail(request, urlname):
 		'form': form,
 	})
 
-@login_required
 def admin_attendeemail_view(request, urlname, mailid):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=urlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+	conference = get_authenticated_conference(request, urlname)
 
 	mail = get_object_or_404(AttendeeMail, conference=conference, pk=mailid)
 
@@ -2726,13 +2655,9 @@ def admin_attendeemail_view(request, urlname, mailid):
 		'breadcrumbs': (('/events/admin/{0}/mail/'.format(conference.urlname), 'Attendee emails'), ),
 		})
 
-@login_required
 @transaction.atomic
 def session_notify_queue(request, urlname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=urlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+	conference = get_authenticated_conference(request, urlname)
 
 	notifysessions = ConferenceSession.objects.filter(conference=conference).exclude(status=F('lastnotifiedstatus'))
 
@@ -2764,13 +2689,9 @@ def session_notify_queue(request, urlname):
 		'notifysessions': notifysessions,
 		})
 
-@login_required
 @transaction.atomic
 def transfer_reg(request, urlname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=urlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+	conference = get_authenticated_conference(request, urlname)
 
 	def _make_transfer(fromreg, toreg):
 		yield u"Initiating transfer from %s to %s" % (fromreg.fullname, toreg.fullname)
