@@ -7,6 +7,7 @@ import postgresqleu.static.views
 import postgresqleu.newsevents.views
 import postgresqleu.views
 import postgresqleu.confreg.views
+import postgresqleu.confreg.backendviews
 import postgresqleu.confreg.reporting
 import postgresqleu.confreg.mobileviews
 import postgresqleu.confreg.feedback
@@ -111,11 +112,13 @@ urlpatterns = [
 	url(r'^events/admin/crossmail/$', postgresqleu.confreg.views.crossmail),
 	url(r'^events/admin/crossmail/options/$', postgresqleu.confreg.views.crossmailoptions),
 	url(r'^events/admin/(\w+)/$', postgresqleu.confreg.views.admin_dashboard_single),
+	url(r'^events/admin/(\w+)/edit/$', postgresqleu.confreg.backendviews.edit_conference),
 	url(r'^events/admin/(\w+)/mail/$', postgresqleu.confreg.views.admin_attendeemail),
 	url(r'^events/admin/(\w+)/mail/(\d+)/$', postgresqleu.confreg.views.admin_attendeemail_view),
 	url(r'^events/admin/(\w+)/regdashboard/$', postgresqleu.confreg.views.admin_registration_dashboard),
 	url(r'^events/admin/(\w+)/regdashboard/list/$', postgresqleu.confreg.views.admin_registration_list),
 	url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/$', postgresqleu.confreg.views.admin_registration_single),
+	url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/edit/$', postgresqleu.confreg.backendviews.edit_registration),
 	url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/cancel/$', postgresqleu.confreg.views.admin_registration_cancel),
 	url(r'^events/admin/(\w+)/prepaid/$', postgresqleu.confreg.views.createvouchers),
 	url(r'^events/admin/(\w+)/prepaid/list/$', postgresqleu.confreg.views.listvouchers),
@@ -131,6 +134,8 @@ urlpatterns = [
 	url(r'^events/admin/(\w+)/signups/(\d+)/sendmail/$', postgresqleu.confwiki.views.signup_admin_sendmail),
 	url(r'^events/admin/(\w+)/transfer/$', postgresqleu.confreg.views.transfer_reg),
 	url(r'^events/admin/(?P<urlname>[^/]+)/volunteer/', include(postgresqleu.confreg.volsched), {'adm': True}),
+	url(r'^events/admin/(\w+)/regclasses/(.*/)?$', postgresqleu.confreg.backendviews.edit_regclasses),
+	url(r'^events/admin/(\w+)/regtypes/(.*/)?$', postgresqleu.confreg.backendviews.edit_regtypes),
 
 	url(r'^events/sponsor/', include('postgresqleu.confsponsor.urls')),
 

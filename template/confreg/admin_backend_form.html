@@ -1,0 +1,26 @@
+{%extends "confreg/confadmin_base.html"%}
+{%block title%}Edit {{what}}{%endblock%}
+{%block extrahead%}
+<script type="text/javascript" src="/media/js/selectize.min.js"></script>
+<link rel="stylesheet" href="/media/css/selectize.css" />
+<link rel="stylesheet" href="/media/css/selectize.default.css" />
+
+<script language="javascript">
+$(function() {
+{%for f in selectize_multiple_fields%}
+   $('#id_{{f}}').selectize({plugins: ['remove_button']});
+{%endfor%}
+});
+
+function confirm_delete(what) {
+   return(confirm('Are you sure you want to delete this ' + what + '?\n\nThere is no undo!'));
+}
+</script>
+{%endblock%}
+
+{%block layoutblock%}
+<h1>Edit {{what}}</h1>
+<form class="form-horizontal" method="POST" action=".">{%csrf_token%}
+{%include "confreg/admin_backend_form_content.html" %}
+</form>
+{%endblock%}

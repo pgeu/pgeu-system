@@ -1,0 +1,43 @@
+{%load formutil%}
+{%if form.non_field_errors%}
+ <div class="alert alert-danger">{{form.non_field_errors}}</div>
+{%endif%}
+{%if note%}
+<div class="alert alert-info">{{note|safe}}</div>
+{%endif%}
+ {%for field in form%}
+ {%if not field.is_hidden%}
+<div class="form-group">
+   {{field|label_class:"control-label col-lg-3"}}
+<div class="col-lg-9 controls">
+{%if field|ischeckbox%}<div class="row"><div class="col-lg-1">{%else%}{%endif%}
+  {%if field.errors %}
+   {%for e in field.errors%}
+ <div class="alert alert-danger">{{e}}</div>
+   {%endfor%}
+  {%endif%}
+{%if not field.name in selectize_multiple_fields%}
+{{field|field_class:"form-control"}}
+{%else%}
+{{field}}
+{%endif%}
+{%if field|ischeckbox%}</div></div>{%endif%}
+{%if field.help_text%}<div>{{field.help_text|safe}}</div>{%endif%}</div>
+ </div>
+ {%else%}{# field.is_hidden #}
+{{field}}
+ {%endif%}
+{%endfor%}
+ <div class="form-group">
+  <div class="col-lg-12">
+   <div class="control">
+     <input type="submit" name="submit" class="btn btn-default" value="{{savebutton|default:"Save"}}">
+{%if allow_delete%}
+     &nbsp;&nbsp;<input type="submit" name="submit" class="btn btn-default" value="Delete" onclick="return confirm_delete('{{what}}')">
+{%endif%}
+{%if cancelurl%}
+     &nbsp;&nbsp;<a class="btn btn-default" href="{{cancelurl}}">{{cancelname|default:"Cancel"}}</a>
+{%endif%}
+   </div>
+  </div>
+ </div>
