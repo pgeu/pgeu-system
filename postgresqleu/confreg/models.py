@@ -183,6 +183,11 @@ class Conference(models.Model):
 
 		return False
 
+	def clean(self):
+		cc = super(Conference, self).clean()
+		if self.sendwelcomemail and not self.welcomemail:
+			raise ValidationError("Must specify an actual welcome mail if it's enabled!")
+
 class RegistrationClass(models.Model):
 	conference = models.ForeignKey(Conference, null=False)
 	regclass = models.CharField(max_length=64, null=False, blank=False)
