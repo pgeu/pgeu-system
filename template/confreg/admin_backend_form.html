@@ -10,6 +10,24 @@ $(function() {
 {%for f in selectize_multiple_fields%}
    $('#id_{{f}}').selectize({plugins: ['remove_button']});
 {%endfor%}
+
+   $('.backend-vat-field').each(function(i, e) {
+      $(e).change(function(e) {
+         if ($(this).hasClass('backend-vat-reg-field')) { vatrate = 1.{{conference.vat_registrations.vatpercent|default:0}};}
+         else if ($(this).hasClass('backend-vat-sponsor.field')) { vatrate = 1.{{conference.vat_sponsorship.vatpercent|default:0}};}
+         else return;
+         if (vatrate == 1) return;
+
+         v = $(this).val()*vatrate;
+         var old = $(this).next().text();
+         var newtext = old;
+         if (old.indexOf('Including VAT: ') > -1) {
+            newtext = old.substring(0, old.indexOf('Including VAT: ')) + ' ';
+         }
+         $(this).next().text(newtext + ' Including VAT: ' + v);
+      });
+      $(e).trigger('change');
+   });
 });
 
 function confirm_delete(what) {

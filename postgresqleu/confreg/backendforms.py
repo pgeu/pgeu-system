@@ -21,6 +21,7 @@ class BackendDateInput(TextInput):
 
 class BackendForm(ConcurrentProtectedModelForm):
 	selectize_multiple_fields = None
+	vat_fields = {}
 	def __init__(self, conference, *args, **kwargs):
 		self.conference = conference
 		super(BackendForm, self).__init__(*args, **kwargs)
@@ -30,6 +31,9 @@ class BackendForm(ConcurrentProtectedModelForm):
 		for k,v in self.fields.items():
 			if isinstance(v, django.forms.fields.DateField):
 				v.widget = BackendDateInput()
+
+		for field, vattype in self.vat_fields.items():
+			self.fields[field].widget.attrs['class'] = 'backend-vat-field backend-vat-{0}-field'.format(vattype)
 
 	def fix_fields(self):
 		pass
@@ -78,6 +82,7 @@ class BackendRegistrationClassForm(BackendForm):
 
 class BackendRegistrationTypeForm(BackendForm):
 	list_fields = ['regtype', 'regclass', 'cost', 'active', 'sortkey']
+	vat_fields = {'cost': 'reg'}
 	class Meta:
 		model = RegistrationType
 		fields = ['regtype', 'regclass', 'cost', 'active', 'activeuntil', 'days', 'sortkey', 'specialtype', 'alertmessage', 'invoice_autocancel_hours', 'requires_option', 'upsell_target']
