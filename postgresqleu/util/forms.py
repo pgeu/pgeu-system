@@ -15,14 +15,14 @@ class ConcurrentProtectedModelForm(forms.ModelForm):
 
 	def _filter_initial(self):
 		# self.initial will include things given in the URL after ?, so filter it to
-		# inly include items that are actually form fields.
+		# only include items that are actually form fields.
 		return {k:v for k,v in self.initial.items() if k in self.fields.keys()}
 
+	def update_protected_fields(self):
+		self.fields['_validator'].initial = Signer().sign(base64.urlsafe_b64encode(cPickle.dumps(self._filter_initial(), -1)))
 	def __init__(self, *args, **kwargs):
 		r = super(ConcurrentProtectedModelForm, self).__init__(*args, **kwargs)
-
-		self.fields['_validator'].initial = Signer().sign(base64.urlsafe_b64encode(cPickle.dumps(self._filter_initial(), -1)))
-
+		self.update_protected_fields()
 		return r
 
 	def clean(self):
