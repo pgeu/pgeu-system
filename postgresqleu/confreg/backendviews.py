@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.db import transaction
 from django import forms
+from django.core import urlresolvers
 from django.http import HttpResponseRedirect, Http404
 from django.contrib.admin.utils import NestedObjects
 from django.contrib import messages
@@ -87,6 +88,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 		'selectize_multiple_fields': formclass.selectize_multiple_fields,
 		'breadcrumbs': breadcrumbs,
 		'allow_delete': allow_delete and instance.pk,
+		'adminurl': urlresolvers.reverse('admin:{0}_{1}_change'.format(instance._meta.app_label, instance._meta.model_name), args=(instance.id,)),
 	})
 
 def backend_list_editor(request, urlname, formclass, resturl, return_url='../', allow_new=False, allow_delete=False, conference=None):

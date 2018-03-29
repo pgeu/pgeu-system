@@ -41,4 +41,8 @@ function confirm_delete(what) {
 <form class="form-horizontal" method="POST" action=".">{%csrf_token%}
 {%include "confreg/admin_backend_form_content.html" %}
 </form>
+
+{%if user.is_superuser and adminurl%}
+<a class="btn btn-default btn-block" href="{{adminurl}}">Superuser: edit {{what}} through django admin interface</a>
+{%endif%}
 {%endblock%}
