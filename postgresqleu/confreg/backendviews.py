@@ -105,7 +105,7 @@ def backend_list_editor(request, urlname, formclass, resturl, return_url='../', 
 		return render(request, 'confreg/admin_backend_list.html', {
 			'conference': conference,
 			'values': values,
-			'title': formclass.Meta.model._meta.verbose_name_plural,
+			'title': formclass.Meta.model._meta.verbose_name_plural.capitalize(),
 			'singular_name': formclass.Meta.model._meta.verbose_name,
 			'headers': [formclass.Meta.model._meta.get_field(f).verbose_name.capitalize() for f in formclass.list_fields],
 			'return_url': return_url,
