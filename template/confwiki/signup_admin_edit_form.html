@@ -10,8 +10,29 @@ tr.error {
 table.signupform tr {
    vertical-align: top;
 }
+table.signupform th, td {
+   padding: 5px;
+}
 table.signupform input[type=text],textarea,select {
    width: 500px;
+}
+table.signupresults {
+   border-spacing: 1px;
+}
+table.signupresults th, td {
+   padding: 5px;
+}
+table.signupdetails {
+   border-spacing: 1px;
+}
+table.signupdetails th, td {
+   padding: 5px;
+}
+table.signupresponse {
+   border-spacing: 1px;
+}
+table.signupresponse th, td {
+   padding: 5px;
 }
 </style>
 
@@ -44,7 +65,7 @@ $(function() {
 <a name="results"></a>
 <h2>Current results</h2>
 <h3>Summary</h3>
-<table border="0" cellspacing="1">
+<table border="0" class="signupresults">
  <tr>
   <th>Choice</th>
   <th>Count</th>
@@ -63,7 +84,7 @@ $(function() {
 {%endif%}
 
 <h3>Details</h3>
-<table border="0" cellspacing="1">
+<table border="0" class="signupdetails">
  <tr>
   <th>Name</th>
   <th>Choice</th>
@@ -80,7 +101,7 @@ $(function() {
 
 {%if results.awaiting%}
 <h3>Awaiting response</h3>
-<table border="0" cellspacing="1">
+<table border="0" class="signupresponse">
  <tr>
   <th>Name</th>
  </tr>
