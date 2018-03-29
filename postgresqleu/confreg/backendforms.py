@@ -96,6 +96,11 @@ class BackendRegistrationTypeForm(BackendForm):
 			del self.fields['days']
 			self.update_protected_fields()
 
+		if not ConferenceAdditionalOption.objects.filter(conference=self.conference).exists():
+			del self.fields['requires_option']
+			del self.fields['upsell_target']
+			self.update_protected_fields()
+
 
 class BackendRegistrationDayForm(BackendForm):
 	list_fields = [ 'day', ]
