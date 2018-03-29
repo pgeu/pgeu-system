@@ -17,6 +17,7 @@ from models import RegistrationType, RegistrationClass
 
 from backendforms import BackendConferenceForm, BackendRegistrationForm
 from backendforms import BackendRegistrationTypeForm, BackendRegistrationClassForm
+from backendforms import BackendRegistrationDayForm
 
 def get_authenticated_conference(request, urlname):
 	if not request.user.is_authenticated:
@@ -175,3 +176,10 @@ def edit_regtypes(request, urlname, rest):
 							   allow_new=True,
 							   allow_delete=True)
 
+def edit_regdays(request, urlname, rest):
+	return backend_list_editor(request,
+							   urlname,
+							   BackendRegistrationDayForm,
+							   rest,
+							   allow_new=True,
+							   allow_delete=True)

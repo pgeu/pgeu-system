@@ -97,3 +97,8 @@ class BackendRegistrationTypeForm(BackendForm):
 			self.update_protected_fields()
 
 
+class BackendRegistrationDayForm(BackendForm):
+	list_fields = [ 'day', ]
+	class Meta:
+		model = RegistrationDay
+		fields = ['day', ]

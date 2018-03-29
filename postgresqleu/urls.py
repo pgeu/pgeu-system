@@ -134,6 +134,7 @@ urlpatterns = [
 	url(r'^events/admin/(\w+)/signups/(\d+)/sendmail/$', postgresqleu.confwiki.views.signup_admin_sendmail),
 	url(r'^events/admin/(\w+)/transfer/$', postgresqleu.confreg.views.transfer_reg),
 	url(r'^events/admin/(?P<urlname>[^/]+)/volunteer/', include(postgresqleu.confreg.volsched), {'adm': True}),
+	url(r'^events/admin/(\w+)/regdays/(.*/)?$', postgresqleu.confreg.backendviews.edit_regdays),
 	url(r'^events/admin/(\w+)/regclasses/(.*/)?$', postgresqleu.confreg.backendviews.edit_regclasses),
 	url(r'^events/admin/(\w+)/regtypes/(.*/)?$', postgresqleu.confreg.backendviews.edit_regtypes),
 
