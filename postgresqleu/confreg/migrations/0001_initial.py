@@ -266,9 +266,9 @@ class Migration(migrations.Migration):
             name='RegistrationClass',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('regclass', models.CharField(max_length=64)),
-                ('badgecolor', models.CharField(blank=True, help_text=b'Badge background color in hex format', max_length=20, validators=[postgresqleu.confreg.models.color_validator])),
-                ('badgeforegroundcolor', models.CharField(blank=True, help_text=b'Badge foreground color in hex format', max_length=20, validators=[postgresqleu.confreg.models.color_validator])),
+                ('regclass', models.CharField(max_length=64, verbose_name="Registration class")),
+                ('badgecolor', models.CharField(blank=True, verbose_name="Badge color", help_text=b'Badge background color in hex format', max_length=20, validators=[postgresqleu.confreg.models.color_validator])),
+                ('badgeforegroundcolor', models.CharField(blank=True, verbose_name="Badge foreground", help_text=b'Badge foreground color in hex format', max_length=20, validators=[postgresqleu.confreg.models.color_validator])),
                 ('conference', models.ForeignKey(to='confreg.Conference')),
             ],
             options={

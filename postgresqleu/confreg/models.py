@@ -190,9 +190,9 @@ class Conference(models.Model):
 
 class RegistrationClass(models.Model):
 	conference = models.ForeignKey(Conference, null=False)
-	regclass = models.CharField(max_length=64, null=False, blank=False)
-	badgecolor = models.CharField(max_length=20, null=False, blank=True, help_text='Badge background color in hex format', validators=[color_validator, ])
-	badgeforegroundcolor = models.CharField(max_length=20, null=False, blank=True, help_text='Badge foreground color in hex format', validators=[color_validator, ])
+	regclass = models.CharField(max_length=64, null=False, blank=False, verbose_name="Registration class")
+	badgecolor = models.CharField(max_length=20, null=False, blank=True, verbose_name="Badge color", help_text='Badge background color in hex format', validators=[color_validator, ])
+	badgeforegroundcolor = models.CharField(max_length=20, null=False, blank=True, verbose_name="Badge foreground", help_text='Badge foreground color in hex format', validators=[color_validator, ])
 
 	def __unicode__(self):
 		return self.regclass
@@ -246,7 +246,7 @@ class RegistrationType(models.Model):
 	conference = models.ForeignKey(Conference, null=False)
 	regtype = models.CharField(max_length=64, null=False, blank=False)
 	regclass = models.ForeignKey(RegistrationClass, null=True, blank=True)
-	cost = models.DecimalField(decimal_places=2, max_digits=10, null=False)
+	cost = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0, help_text="Cost excluding VAT.")
 	active = models.BooleanField(null=False, blank=False, default=True)
 	activeuntil = models.DateField(null=True, blank=True)
 	inlist = models.BooleanField(null=False, blank=False, default=True)
@@ -303,7 +303,7 @@ class ShirtSize(models.Model):
 class ConferenceAdditionalOption(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
 	name = models.CharField(max_length=100, null=False, blank=False)
-	cost = models.DecimalField(decimal_places=2, max_digits=10, null=False)
+	cost = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0, help_text="Cost excluding VAT.")
 	maxcount = models.IntegerField(null=False)
 	public = models.BooleanField(null=False, blank=False, default=True, help_text='Visible on public forms (opposite of admin only)')
 	upsellable = models.BooleanField(null=False, blank=False, default=True, help_text='Can this option be purchased after the registration is completed')

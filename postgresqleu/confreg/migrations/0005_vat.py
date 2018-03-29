@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='conferenceadditionaloption',
             name='cost',
-            field=models.DecimalField(max_digits=10, decimal_places=2),
+            field=models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Cost excluding VAT."),
         ),
         migrations.AlterField(
             model_name='discountcode',
@@ -35,6 +35,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='registrationtype',
             name='cost',
-            field=models.DecimalField(max_digits=10, decimal_places=2),
+            field=models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Cost excluding VAT."),
         ),
     ]
