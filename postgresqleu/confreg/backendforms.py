@@ -1,4 +1,10 @@
+import django.forms
+import django.forms.widgets
+from django.forms.widgets import TextInput
+
+
 from selectable.forms.widgets import AutoCompleteSelectWidget, AutoCompleteSelectMultipleWidget
+
 from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
@@ -8,12 +14,22 @@ from postgresqleu.confreg.lookups import RegistrationLookup
 from postgresqleu.confreg.models import Conference, ConferenceRegistration, ConferenceAdditionalOption
 from postgresqleu.confreg.models import RegistrationClass, RegistrationType, RegistrationDay
 
+class BackendDateInput(TextInput):
+	def __init__(self, *args, **kwargs):
+		kwargs.update({'attrs': {'type': 'date', 'required-pattern': '[0-9]{4}-[0-9]{2}-[0-9]{2}'}})
+		super(BackendDateInput, self).__init__(*args, **kwargs)
+
 class BackendForm(ConcurrentProtectedModelForm):
 	selectize_multiple_fields = None
 	def __init__(self, conference, *args, **kwargs):
 		self.conference = conference
 		super(BackendForm, self).__init__(*args, **kwargs)
 		self.fix_fields()
+
+		# Adjust widgets
+		for k,v in self.fields.items():
+			if isinstance(v, django.forms.fields.DateField):
+				v.widget = BackendDateInput()
 
 	def fix_fields(self):
 		pass
