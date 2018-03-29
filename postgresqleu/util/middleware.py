@@ -1,4 +1,5 @@
 from django import http
+from django import shortcuts
 from django.conf import settings
 
 import base64
@@ -69,3 +70,13 @@ class GlobalLoginMiddleware(object):
 		response.status_code = 401
 		response['WWW-Authenticate'] = 'Basic realm={0}'.format(settings.SITEBASE)
 		return response
+
+# Ability to redirect using raise()
+class RedirectException(Exception):
+	def __init__(self, url):
+		self.url = url
+
+class RedirectMiddleware(object):
+	def process_exception(self, request, exception):
+		if isinstance(exception, RedirectException):
+			return shortcuts.redirect(exception.url)
