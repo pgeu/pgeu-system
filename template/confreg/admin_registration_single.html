@@ -66,6 +66,12 @@
   <td>{{reg.dietary}}</td>
  </tr>
 {%endif%}
+{%if conference.askshareemail%}
+ <tr>
+  <td>Share email</td>
+  <td>{{reg.shareemail|yesno}}</td>
+ </tr>
+{%endif%}
  <tr>
   <td>Additional options</td>
   <td>
