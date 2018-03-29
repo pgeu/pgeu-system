@@ -219,12 +219,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conference',
             name='talkvoters',
-            field=models.ManyToManyField(related_name='talkvoters_set', to=settings.AUTH_USER_MODEL, blank=True),
+            field=models.ManyToManyField(related_name='talkvoters_set', to=settings.AUTH_USER_MODEL, blank=True, help_text="Users who can view talks pre-approval, vote on the talks, and leave comments"),
         ),
         migrations.AddField(
             model_name='conference',
             name='testers',
-            field=models.ManyToManyField(related_name='testers_set', to=settings.AUTH_USER_MODEL, blank=True),
+            field=models.ManyToManyField(related_name='testers_set', to=settings.AUTH_USER_MODEL, blank=True, help_text="Users who can bypass the '<function> is open' check and access pages before they're open, in order to test"),
         ),
         migrations.AddField(
             model_name='bulkpayment',
