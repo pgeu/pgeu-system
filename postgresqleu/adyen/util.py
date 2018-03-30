@@ -82,7 +82,9 @@ def process_authorization(notification):
 				raise AdyenProcessingException('Invoice with id %s does not exist' % invoiceid)
 
 			def invoice_logger(msg):
-				raise AdyenProcessingException('Invoice processing failed: %s' % msg)
+				invoice_logger.invoice_log += msg
+				invoice_logger.invoice_log += "\n"
+			invoice_logger.invoice_log = ""
 
 			# Handle our special case of Adyen where we have two different processors
 			# depending on what method was used at Adyen.
@@ -90,7 +92,30 @@ def process_authorization(notification):
 				method = InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.adyen.AdyenBanktransfer')
 			else:
 				method = InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.adyen.AdyenCreditcard')
-			manager.process_incoming_payment_for_invoice(invoice, notification.amount, 'Adyen id %s' % notification.pspReference, 0, settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, 0, urls, invoice_logger, method)
+			(status, _invoice, _processor) = manager.process_incoming_payment_for_invoice(invoice, notification.amount, 'Adyen id %s' % notification.pspReference, 0, settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, 0, urls, invoice_logger, method)
+			if status != manager.RESULT_OK:
+				# An error occurred, but nevertheless the money is in our account at this
+				# point. The invoice itself will not have been flagged as paid since something
+				# went wrong, and this also means no full accounting record has been created.
+				# At this point we have no transaction cost, so we just have the payment itself.
+				# Someone will manually have to figure out where to stick it.
+				accrows = [
+					(settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, "Incorrect payment for invoice #{0}".format(invoice.id), notification.amount, None),
+				]
+				create_accounting_entry(date.today(), accrows, True, urls)
+
+				send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+								 settings.ADYEN_NOTIFICATION_RECEIVER,
+								 'Error processing invoice from Adyen notification',
+								 u"An error occured processing the notification for invoice #{0}.\n\nThe messages given were:\n{1}\n\nAn incomplete accounting record has been created, and the situation needs to be handled manually.\n".format(
+									 invoice.id,
+									 invoice_logger.invoice_log),
+				)
+				# Actually flag the notification as handled, so we don't end up repeating it.
+				notification.confirmed = True
+				notification.save()
+				return
+
 
 			if invoice.accounting_object:
 				# Store the accounting object so we can properly tag the
