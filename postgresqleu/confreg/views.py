@@ -2162,9 +2162,11 @@ def talkvote_status(request, confname):
 @transaction.atomic
 def createschedule(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
-	if not conference.talkvoters.filter(pk=request.user.id):
-		if not request.user.is_superuser:
-			return Http404('You are not a talk voter for this conference!')
+	if not (request.user.is_superuser or
+			conference.administrators.filter(pk=request.user.id).exists() or
+			conference.talkvoters.filter(pk=request.user.id).exists()
+			):
+		raise Http404('You are not an administrator or talk voter for this conference!')
 
 
 	if request.method=="POST":
@@ -2250,9 +2252,8 @@ def createschedule(request, confname):
 			})
 
 @login_required
-@user_passes_test_or_error(lambda u: u.is_superuser)
 def publishschedule(request, confname):
-	conference = get_object_or_404(Conference, urlname=confname)
+	conference = get_authenticated_conference(request, confname)
 
 	transaction.set_autocommit(False)
 
