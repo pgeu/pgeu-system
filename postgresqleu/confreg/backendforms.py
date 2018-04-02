@@ -19,6 +19,8 @@ from postgresqleu.confreg.models import Conference, ConferenceRegistration, Conf
 from postgresqleu.confreg.models import RegistrationClass, RegistrationType, RegistrationDay
 from postgresqleu.confreg.models import ConferenceSession, Track, Room
 
+from postgresqleu.confreg.models import valid_status_transitions, get_status_string
+
 class BackendDateInput(TextInput):
 	def __init__(self, *args, **kwargs):
 		kwargs.update({'attrs': {'type': 'date', 'required-pattern': '[0-9]{4}-[0-9]{2}-[0-9]{2}'}})
@@ -147,8 +149,8 @@ class BackendConferenceSessionForm(BackendForm):
 
 	class Meta:
 		model = ConferenceSession
-		fields = ['title', 'speaker', 'starttime', 'endtime', 'cross_schedule', 'track', 'room',
-				  'can_feedback', 'skill_level', 'abstract', 'submissionnote']
+		fields = ['title', 'speaker', 'status', 'starttime', 'endtime', 'cross_schedule',
+				  'track', 'room', 'can_feedback', 'skill_level', 'abstract', 'submissionnote']
 
 	def fix_fields(self):
 		self.fields['track'].queryset = Track.objects.filter(conference=self.conference)
@@ -162,6 +164,9 @@ class BackendConferenceSessionForm(BackendForm):
 			MinValueValidator(datetime.datetime.combine(self.conference.startdate, datetime.time(0,0,0))),
 			MaxValueValidator(datetime.datetime.combine(self.conference.enddate+datetime.timedelta(days=1), datetime.time(0,0,0))),
 		])
+
+		if self.instance.status != self.instance.lastnotifiedstatus:
+			self.fields['status'].help_text = '<b>Warning!</b> This session has <a href="/events/admin/{0}/sessionnotifyqueue/">pending notifications</a> that have not been sent. You probably want to make sure those are sent before editing the status!'.format(self.conference.urlname)
 
 		if not self.conference.skill_levels:
 			del self.fields['skill_level']
@@ -182,3 +187,22 @@ class BackendConferenceSessionForm(BackendForm):
 			self.add_error('room', 'Room cannot be specified for cross schedule sessions!')
 
 		return cleaned_data
+
+	def clean_status(self):
+		newstatus = self.cleaned_data.get('status')
+		if newstatus == self.instance.status:
+			return newstatus
+
+		# If there are speakers on the session, we lock it to the workflow. For sessions
+		# with no speakers, anything goes
+		if not self.cleaned_data.get('speaker').exists():
+			return newstatus
+
+		if not newstatus in valid_status_transitions[self.instance.status]:
+			raise ValidationError("Sessions with speaker cannot change from {0} to {1}. Only one of {2} is allowed.".format(
+				get_status_string(self.instance.status),
+				get_status_string(newstatus),
+				", ".join(["{0} ({1})".format(get_status_string(s), v) for s,v in valid_status_transitions[self.instance.status].items()]),
+			))
+
+		return newstatus

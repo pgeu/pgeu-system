@@ -47,6 +47,14 @@ def get_status_string(val):
 def get_status_string_long(val):
 	return (t for v,t in STATUS_CHOICES_LONG if v==val).next()
 
+valid_status_transitions = {
+	0: {3: 'Talk approved', 2: 'Talk is rejected', 4: 'Talk added to reserve list'},
+	1: {2: 'Talk withdrawn', },
+	2: {0: 'Talk processing reset', },
+	3: {0: 'Talk unapproved', 1: 'Speaker confirms', 2: 'Speaker declines'},
+	4: {1: 'Last-minute reservelist', 3: 'Activated from reservelist' },
+}
+
 def color_validator(value):
 	if not value.startswith('#'):
 		raise ValidationError('Color values must start with #')
