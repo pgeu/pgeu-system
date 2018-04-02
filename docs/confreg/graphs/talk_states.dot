@@ -1,0 +1,31 @@
+digraph talkstates {
+	subgraph legend {
+		key[shape=box, label=<
+		    <font color="blue">Actions by admin</font><br/>
+		    <font color="green">Actions by speaker</font><br/>
+		>, labeljust="l"]
+	}
+
+	start[shape=circle label=Start];
+
+	submitted[shape=box label=Submitted];
+	pending[shape=box label=Pending];
+	approved[shape=box label=Approved];
+	reserve[shape=box label=Reserve];
+	pendingreserve[shape=diamond label="Contact speaker to ask\nabout reserve list"];
+	rejected[shape=box label=Rejected];
+
+	start -> submitted [label = "Speaker submits talk", color=green];
+	submitted -> pending [label = "Talk approved", color=blue]
+	pending -> approved [label = "Speaker confirms", color=green]
+	pending -> rejected [label = "Speaker declines", color=green]
+	pending -> submitted [label = "Talk unapproved", color=blue]
+	submitted -> rejected [label = "Talk rejected", color=blue]
+	submitted -> pendingreserve [xabel = "Talk to\nreserve list", color=blue]
+	pendingreserve -> reserve [label = "Confirmed to\nreserve list", color=blue]
+	pendingreserve -> rejected [label = "Speaker declined", color=blue]
+	reserve -> pending [label = "Normal activate talk\n from reserve list", color=blue]
+	approved -> rejected [label = "Speaker withdraws", color=blue]
+	rejected -> submitted [label = "Processing reset", color=blue]
+	reserve -> approved [label = "Last minute activate\nfrom reserve", color=blue]
+}
