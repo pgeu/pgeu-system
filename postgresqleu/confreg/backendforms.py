@@ -24,6 +24,7 @@ class BackendDateInput(TextInput):
 class BackendForm(ConcurrentProtectedModelForm):
 	selectize_multiple_fields = None
 	vat_fields = {}
+	verbose_field_names = {}
 	def __init__(self, conference, *args, **kwargs):
 		self.conference = conference
 		super(BackendForm, self).__init__(*args, **kwargs)
@@ -40,6 +41,11 @@ class BackendForm(ConcurrentProtectedModelForm):
 	def fix_fields(self):
 		pass
 
+	@classmethod
+	def get_field_verbose_name(self, f):
+		if f in self.verbose_field_names:
+			return self.verbose_field_names[f]
+		return self.Meta.model._meta.get_field(f).verbose_name.capitalize()
 
 class BackendConferenceForm(BackendForm):
 	class Meta:
