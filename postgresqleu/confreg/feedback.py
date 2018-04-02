@@ -88,5 +88,5 @@ def feedback_sessions(request, confname):
 		'toplists': toplists,
 		'minvotes': minvotes,
 		'commented_sessions': commented_sessions,
-		'breadcrumbs': (('/events/{0}/reports/feedback/'.format(conference.urlname), 'Feedback'), ),
+		'breadcrumbs': (('/events/admin/{0}/reports/feedback/'.format(conference.urlname), 'Feedback'), ),
 	})
