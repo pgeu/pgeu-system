@@ -18,6 +18,7 @@ from models import RegistrationType, RegistrationClass
 from backendforms import BackendConferenceForm, BackendRegistrationForm
 from backendforms import BackendRegistrationTypeForm, BackendRegistrationClassForm
 from backendforms import BackendRegistrationDayForm
+from backendforms import BackendTrackForm, BackendRoomForm, BackendConferenceSessionForm
 
 def get_authenticated_conference(request, urlname):
 	if not request.user.is_authenticated:
@@ -180,6 +181,30 @@ def edit_regdays(request, urlname, rest):
 	return backend_list_editor(request,
 							   urlname,
 							   BackendRegistrationDayForm,
+							   rest,
+							   allow_new=True,
+							   allow_delete=True)
+
+def edit_tracks(request, urlname, rest):
+	return backend_list_editor(request,
+							   urlname,
+							   BackendTrackForm,
+							   rest,
+							   allow_new=True,
+							   allow_delete=True)
+
+def edit_rooms(request, urlname, rest):
+	return backend_list_editor(request,
+							   urlname,
+							   BackendRoomForm,
+							   rest,
+							   allow_new=True,
+							   allow_delete=True)
+
+def edit_sessions(request, urlname, rest):
+	return backend_list_editor(request,
+							   urlname,
+							   BackendConferenceSessionForm,
 							   rest,
 							   allow_new=True,
 							   allow_delete=True)

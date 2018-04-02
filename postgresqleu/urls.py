@@ -141,6 +141,9 @@ urlpatterns = [
 	url(r'^events/admin/(\w+)/regdays/(.*/)?$', postgresqleu.confreg.backendviews.edit_regdays),
 	url(r'^events/admin/(\w+)/regclasses/(.*/)?$', postgresqleu.confreg.backendviews.edit_regclasses),
 	url(r'^events/admin/(\w+)/regtypes/(.*/)?$', postgresqleu.confreg.backendviews.edit_regtypes),
+	url(r'^events/admin/(\w+)/tracks/(.*/)?$', postgresqleu.confreg.backendviews.edit_tracks),
+	url(r'^events/admin/(\w+)/rooms/(.*/)?$', postgresqleu.confreg.backendviews.edit_rooms),
+	url(r'^events/admin/(\w+)/sessions/(.*/)?$', postgresqleu.confreg.backendviews.edit_sessions),
 
 	url(r'^events/sponsor/', include('postgresqleu.confsponsor.urls')),
 

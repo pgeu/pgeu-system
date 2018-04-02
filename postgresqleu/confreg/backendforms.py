@@ -1,9 +1,11 @@
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Q
 import django.forms
 import django.forms.widgets
 from django.forms.widgets import TextInput
 
+import datetime
 
 from selectable.forms.widgets import AutoCompleteSelectWidget, AutoCompleteSelectMultipleWidget
 
@@ -15,6 +17,7 @@ from postgresqleu.confreg.lookups import RegistrationLookup
 
 from postgresqleu.confreg.models import Conference, ConferenceRegistration, ConferenceAdditionalOption
 from postgresqleu.confreg.models import RegistrationClass, RegistrationType, RegistrationDay
+from postgresqleu.confreg.models import ConferenceSession, Track, Room
 
 class BackendDateInput(TextInput):
 	def __init__(self, *args, **kwargs):
@@ -121,3 +124,61 @@ class BackendRegistrationDayForm(BackendForm):
 	class Meta:
 		model = RegistrationDay
 		fields = ['day', ]
+
+class BackendTrackForm(BackendForm):
+	list_fields = ['trackname', 'sortkey']
+	class Meta:
+		model = Track
+		fields = ['trackname', 'sortkey', 'color', 'incfp']
+
+class BackendRoomForm(BackendForm):
+	list_fields = ['roomname', 'sortkey']
+	class Meta:
+		model = Room
+		fields = ['roomname', 'sortkey']
+
+class BackendConferenceSessionForm(BackendForm):
+	list_fields = [ 'title', 'speaker_list', 'status_string', 'starttime', 'track', 'room']
+	verbose_field_names = {
+		'speaker_list': 'Speakers',
+		'status_string': 'Status',
+	}
+	selectize_multiple_fields = ['speaker']
+
+	class Meta:
+		model = ConferenceSession
+		fields = ['title', 'speaker', 'starttime', 'endtime', 'cross_schedule', 'track', 'room',
+				  'can_feedback', 'skill_level', 'abstract', 'submissionnote']
+
+	def fix_fields(self):
+		self.fields['track'].queryset = Track.objects.filter(conference=self.conference)
+		self.fields['room'].queryset = Room.objects.filter(conference=self.conference)
+
+		self.fields['starttime'].validators.extend([
+			MinValueValidator(datetime.datetime.combine(self.conference.startdate, datetime.time(0,0,0))),
+			MaxValueValidator(datetime.datetime.combine(self.conference.enddate+datetime.timedelta(days=1), datetime.time(0,0,0))),
+		])
+		self.fields['endtime'].validators.extend([
+			MinValueValidator(datetime.datetime.combine(self.conference.startdate, datetime.time(0,0,0))),
+			MaxValueValidator(datetime.datetime.combine(self.conference.enddate+datetime.timedelta(days=1), datetime.time(0,0,0))),
+		])
+
+		if not self.conference.skill_levels:
+			del self.fields['skill_level']
+			self.update_protected_fields()
+
+	def clean(self):
+		cleaned_data = super(BackendConferenceSessionForm, self).clean()
+
+		if cleaned_data.get('starttime') and not cleaned_data.get('endtime'):
+			self.add_error('endtime', 'End time must be specified if start time is!')
+		elif cleaned_data.get('endtime') and not cleaned_data.get('starttime'):
+			self.add_error('starttime', 'Start time must be specified if end time is!')
+		elif cleaned_data.get('starttime') and cleaned_data.get('endtime'):
+			if cleaned_data.get('endtime') < cleaned_data.get('starttime'):
+				self.add_error('endtime', 'End time must be later than start time!')
+
+		if cleaned_data.get('cross_schedule') and cleaned_data.get('room'):
+			self.add_error('room', 'Room cannot be specified for cross schedule sessions!')
+
+		return cleaned_data
