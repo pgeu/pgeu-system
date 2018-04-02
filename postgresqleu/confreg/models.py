@@ -518,7 +518,7 @@ class Track(models.Model):
 	json_included_attributes = ['trackname', 'color', 'sortkey', 'incfp']
 
 	def __unicode__(self):
-		return "%s (%s)" % (self.trackname, self.conference)
+		return self.trackname
 
 class Room(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
@@ -528,7 +528,7 @@ class Room(models.Model):
 	json_included_attributes = ['roomname', 'sortkey']
 
 	def __unicode__(self):
-		return "%s (%s)" % (self.roomname, self.conference)
+		return self.roomname
 
 	class Meta:
 		ordering = [ 'sortkey', 'roomname', ]
