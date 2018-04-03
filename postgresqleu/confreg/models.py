@@ -760,6 +760,9 @@ class VolunteerSlot(models.Model):
 		ordering = [ 'timerange', ]
 
 	def __unicode__(self):
+		return self._display_timerange()
+
+	def _display_timerange(self):
 		return "{0} - {1}".format(self.timerange.lower, self.timerange.upper)
 
 	@property

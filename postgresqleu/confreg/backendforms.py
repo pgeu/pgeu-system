@@ -18,6 +18,7 @@ from postgresqleu.confreg.lookups import RegistrationLookup
 from postgresqleu.confreg.models import Conference, ConferenceRegistration, ConferenceAdditionalOption
 from postgresqleu.confreg.models import RegistrationClass, RegistrationType, RegistrationDay
 from postgresqleu.confreg.models import ConferenceSession, Track, Room
+from postgresqleu.confreg.models import ConferenceSessionScheduleSlot, VolunteerSlot
 
 from postgresqleu.confreg.models import valid_status_transitions, get_status_string
 
@@ -206,3 +207,24 @@ class BackendConferenceSessionForm(BackendForm):
 			))
 
 		return newstatus
+
+class BackendConferenceSessionSlotForm(BackendForm):
+	list_fields = [ 'starttime', 'endtime', ]
+
+	class Meta:
+		model = ConferenceSessionScheduleSlot
+		fields = ['starttime', 'endtime' ]
+
+class BackendVolunteerSlotForm(BackendForm):
+	list_fields = [ 'timerange', 'title', 'min_staff', 'max_staff' ]
+
+	class Meta:
+		model = VolunteerSlot
+		fields = [ 'timerange', 'title', 'min_staff', 'max_staff' ]
+
+	def clean(self):
+		cleaned_data = super(BackendVolunteerSlotForm, self).clean()
+		if cleaned_data.get('min_staff') > cleaned_data.get('max_staff'):
+			self.add_error('max_staff', 'Max staff must be at least as high as min_staff!')
+
+		return cleaned_data
