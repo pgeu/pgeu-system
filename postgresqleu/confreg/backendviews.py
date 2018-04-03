@@ -102,7 +102,7 @@ def backend_list_editor(request, urlname, formclass, resturl, return_url='../', 
 	if resturl == '' or resturl == None:
 		# Render the list of objects
 		objects = formclass.Meta.model.objects.filter(conference=conference)
-		values = [{'id': o.id, 'vals': [getattr(o, f) for f in formclass.list_fields]} for o in objects]
+		values = [{'id': o.id, 'vals': [getattr(o, '_display_{0}'.format(f), getattr(o, f)) for f in formclass.list_fields]} for o in objects]
 		return render(request, 'confreg/admin_backend_list.html', {
 			'conference': conference,
 			'values': values,
