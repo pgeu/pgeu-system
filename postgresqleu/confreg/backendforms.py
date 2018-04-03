@@ -31,15 +31,31 @@ class BackendForm(ConcurrentProtectedModelForm):
 	selectize_multiple_fields = None
 	vat_fields = {}
 	verbose_field_names = {}
+	exclude_date_validators = []
+
 	def __init__(self, conference, *args, **kwargs):
 		self.conference = conference
 		super(BackendForm, self).__init__(*args, **kwargs)
+
 		self.fix_fields()
 
-		# Adjust widgets
 		for k,v in self.fields.items():
+			# Adjust widgets
 			if isinstance(v, django.forms.fields.DateField):
 				v.widget = BackendDateInput()
+
+			# Any datetime or date fields that are not explicitly excluded will be forced to be within
+			# the conference dates.
+			if isinstance(v, django.forms.fields.DateTimeField) and not k in self.exclude_date_validators:
+				v.validators.extend([
+					MinValueValidator(datetime.datetime.combine(self.conference.startdate, datetime.time(0,0,0))),
+					MaxValueValidator(datetime.datetime.combine(self.conference.enddate+datetime.timedelta(days=1), datetime.time(0,0,0))),
+				])
+			elif isinstance(v, django.forms.fields.DateField) and not k in self.exclude_date_validators:
+				v.validators.extend([
+					MinValueValidator(self.conference.startdate),
+					MaxValueValidator(self.conference.enddate),
+				])
 
 		for field, vattype in self.vat_fields.items():
 			self.fields[field].widget.attrs['class'] = 'backend-vat-field backend-vat-{0}-field'.format(vattype)
@@ -156,15 +172,6 @@ class BackendConferenceSessionForm(BackendForm):
 	def fix_fields(self):
 		self.fields['track'].queryset = Track.objects.filter(conference=self.conference)
 		self.fields['room'].queryset = Room.objects.filter(conference=self.conference)
-
-		self.fields['starttime'].validators.extend([
-			MinValueValidator(datetime.datetime.combine(self.conference.startdate, datetime.time(0,0,0))),
-			MaxValueValidator(datetime.datetime.combine(self.conference.enddate+datetime.timedelta(days=1), datetime.time(0,0,0))),
-		])
-		self.fields['endtime'].validators.extend([
-			MinValueValidator(datetime.datetime.combine(self.conference.startdate, datetime.time(0,0,0))),
-			MaxValueValidator(datetime.datetime.combine(self.conference.enddate+datetime.timedelta(days=1), datetime.time(0,0,0))),
-		])
 
 		if self.instance.status != self.instance.lastnotifiedstatus:
 			self.fields['status'].help_text = '<b>Warning!</b> This session has <a href="/events/admin/{0}/sessionnotifyqueue/">pending notifications</a> that have not been sent. You probably want to make sure those are sent before editing the status!'.format(self.conference.urlname)
