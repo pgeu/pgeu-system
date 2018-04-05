@@ -160,7 +160,7 @@ def backend_list_editor(request, urlname, formclass, resturl, return_url='../', 
 									None,
 									allow_new=True,
 									allow_delete=allow_delete,
-									breadcrumbs=[('../', formclass.Meta.model._meta.verbose_name_plural), ],
+									breadcrumbs=[('../', formclass.Meta.model._meta.verbose_name_plural.capitalize()), ],
 									conference=conference)
 
 	# Is it an id?
