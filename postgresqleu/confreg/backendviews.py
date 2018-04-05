@@ -38,15 +38,47 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 	if not formclass.Meta.fields:
 		raise Exception("This view only works if fields are explicitly listed")
 
+	nopostprocess = False
+	newformdata = None
+
 	if allow_new and not id:
-		instance = formclass.Meta.model(conference=conference)
+		if formclass.form_before_new:
+			if request.method == 'POST' and '_validator' in request.POST:
+				# This is a postback from the *actual* form
+				print("Setting newformdata 1!")
+				newformdata = request.POST['_newformdata']
+				instance = formclass.Meta.model(conference=conference)
+			else:
+				# Postback to the first step create form
+				newinfo = False
+				if request.method == 'POST':
+					# Making the new one!
+					newform = formclass.form_before_new(request.POST)
+					if newform.is_valid():
+						newinfo = True
+				else:
+					newform = formclass.form_before_new()
+				if not newinfo:
+					return render(request, 'confreg/admin_backend_form.html', {
+						'conference': conference,
+						'form': newform,
+						'what': 'New {0}'.format(formclass.Meta.model._meta.verbose_name),
+						'cancelurl': cancel_url,
+						'breadcrumbs': breadcrumbs,
+					})
+				instance = formclass.Meta.model(conference=conference)
+				newformdata = newform.get_newform_data()
+				nopostprocess = True
+		else:
+			# No special form_before_new, so just create an empty instance
+			instance = formclass.Meta.model(conference=conference)
 	else:
 		if bypass_conference_filter:
 			instance = get_object_or_404(formclass.Meta.model, pk=id)
 		else:
 			instance = get_object_or_404(formclass.Meta.model, pk=id, conference=conference)
 
-	if request.method == 'POST':
+	if request.method == 'POST' and not nopostprocess:
 		extra_error=None
 		if allow_delete and request.POST['submit'] == 'Delete':
 			if instance.pk:
@@ -66,7 +98,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 				messages.warning(request, "New {0} not deleted, object was never saved.".format(formclass.Meta.model._meta.verbose_name.capitalize()))
 				return HttpResponseRedirect(cancel_url)
 
-		form = formclass(conference, instance=instance, data=request.POST)
+		form = formclass(conference, instance=instance, data=request.POST, newformdata=newformdata)
 		if extra_error:
 			form.add_error(None, extra_error)
 
@@ -79,10 +111,10 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 				if allow_new and not instance.pk:
 					form.save()
 				form._save_m2m()
-				form.instance.save(update_fields=[f for f in form.fields.keys() if not f=='_validator' and not isinstance(form[f].field, forms.ModelMultipleChoiceField)])
+				form.instance.save(update_fields=[f for f in form.fields.keys() if not f in ('_validator', '_newformdata') and not isinstance(form[f].field, forms.ModelMultipleChoiceField)])
 				return HttpResponseRedirect(saved_url)
 	else:
-		form = formclass(conference, instance=instance)
+		form = formclass(conference, instance=instance, newformdata=newformdata)
 
 	return render(request, 'confreg/admin_backend_form.html', {
 		'conference': conference,

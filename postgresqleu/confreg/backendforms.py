@@ -28,15 +28,33 @@ class BackendDateInput(TextInput):
 		kwargs.update({'attrs': {'type': 'date', 'required-pattern': '[0-9]{4}-[0-9]{2}-[0-9]{2}'}})
 		super(BackendDateInput, self).__init__(*args, **kwargs)
 
+class _NewFormDataField(django.forms.Field):
+	required=True
+	widget=django.forms.HiddenInput
+
 class BackendForm(ConcurrentProtectedModelForm):
 	selectize_multiple_fields = None
 	vat_fields = {}
 	verbose_field_names = {}
 	exclude_date_validators = []
+	form_before_new = None
+	newformdata = None
+	_newformdata = _NewFormDataField()
 
 	def __init__(self, conference, *args, **kwargs):
 		self.conference = conference
+
+		if 'newformdata' in kwargs:
+			self.newformdata = kwargs['newformdata']
+			del kwargs['newformdata']
+
 		super(BackendForm, self).__init__(*args, **kwargs)
+
+		if self.newformdata:
+			self.fields['_newformdata'].initial = self.newformdata
+		else:
+			del self.fields['_newformdata']
+
 
 		self.fix_fields()
 

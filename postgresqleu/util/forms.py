@@ -29,6 +29,11 @@ class ConcurrentProtectedModelForm(forms.ModelForm):
 		# Process the form itself
 		data = super(ConcurrentProtectedModelForm, self).clean()
 
+		if not self.instance.pk:
+			# No primary key, means instance was not previously saved, so there can be
+			# no concurrent edit.
+			return data
+
 		# Fetch the list of values from the currernt object in the db
 		i = self._filter_initial()
 		try:
