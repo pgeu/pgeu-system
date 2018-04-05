@@ -20,7 +20,7 @@ from backendforms import BackendRegistrationTypeForm, BackendRegistrationClassFo
 from backendforms import BackendRegistrationDayForm, BackendAdditionalOptionForm
 from backendforms import BackendTrackForm, BackendRoomForm, BackendConferenceSessionForm
 from backendforms import BackendConferenceSessionSlotForm, BackendVolunteerSlotForm
-from backendforms import BackendFeedbackQuestionForm
+from backendforms import BackendFeedbackQuestionForm, BackendDiscountCodeForm
 
 def get_authenticated_conference(request, urlname):
 	if not request.user.is_authenticated:
@@ -275,6 +275,14 @@ def edit_feedbackquestions(request, urlname, rest):
 	return backend_list_editor(request,
 							   urlname,
 							   BackendFeedbackQuestionForm,
+							   rest,
+							   allow_new=True,
+							   allow_delete=True)
+
+def edit_discountcodes(request, urlname, rest):
+	return backend_list_editor(request,
+							   urlname,
+							   BackendDiscountCodeForm,
 							   rest,
 							   allow_new=True,
 							   allow_delete=True)

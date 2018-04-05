@@ -20,6 +20,7 @@ from postgresqleu.confreg.models import RegistrationClass, RegistrationType, Reg
 from postgresqleu.confreg.models import ConferenceAdditionalOption, ConferenceFeedbackQuestion
 from postgresqleu.confreg.models import ConferenceSession, Track, Room
 from postgresqleu.confreg.models import ConferenceSessionScheduleSlot, VolunteerSlot
+from postgresqleu.confreg.models import DiscountCode
 
 from postgresqleu.confreg.models import valid_status_transitions, get_status_string
 
@@ -274,3 +275,46 @@ class BackendFeedbackQuestionForm(BackendForm):
 		model = ConferenceFeedbackQuestion
 		fields = ['question', 'isfreetext', 'textchoices', 'sortkey', 'newfieldset']
 
+
+class BackendNewDiscountCodeForm(django.forms.Form):
+	codetype = django.forms.ChoiceField(choices=((1, 'Fixed amount discount'), (2, 'Percentage discount')))
+
+	def get_newform_data(self):
+		return self.cleaned_data['codetype']
+
+class BackendDiscountCodeForm(BackendForm):
+	list_fields = ['code', 'validuntil', 'maxuses']
+
+	form_before_new = BackendNewDiscountCodeForm
+
+	exclude_date_validators = ['validuntil', ]
+
+	class Meta:
+		model = DiscountCode
+		fields = ['code', 'discountamount', 'discountpercentage', 'regonly', 'validuntil', 'maxuses',
+				  'requiresregtype', 'requiresoption']
+
+	def fix_fields(self):
+		if self.newformdata == "1" and not self.instance.discountamount:
+			self.instance.discountamount = 1
+		elif self.newformdata == "2" and not self.instance.discountpercentage:
+			self.instance.discountpercentage = 1
+
+		if self.instance.discountamount:
+			# Fixed amount discount
+			del self.fields['discountpercentage']
+			del self.fields['regonly']
+			self.fields['discountamount'].validators.append(MinValueValidator(1))
+		else:
+			# Percentage discount
+			del self.fields['discountamount']
+			self.fields['discountpercentage'].validators.extend([
+				MinValueValidator(1),
+				MaxValueValidator(99),
+			])
+		self.fields['maxuses'].validators.append(MinValueValidator(0))
+
+		self.fields['requiresregtype'].queryset = RegistrationType.objects.filter(conference=self.conference)
+		self.fields['requiresoption'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference).exclude(pk=self.instance.pk)
+
+		self.update_protected_fields()

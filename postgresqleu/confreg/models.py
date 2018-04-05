@@ -824,7 +824,7 @@ class PrepaidVoucher(models.Model):
 class DiscountCode(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False)
 	code = models.CharField(max_length=100, null=False, blank=False)
-	discountamount = models.DecimalField(decimal_places=2, max_digits=10, null=False)
+	discountamount = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0)
 	discountpercentage = models.IntegerField(null=False, blank=False, default=0)
 	regonly = models.BooleanField(null=False, blank=False, default=False, help_text="Apply percentage discount only to the registration cost, not additional options. By default, it's applied to both.")
 	validuntil = models.DateField(blank=True, null=True)
