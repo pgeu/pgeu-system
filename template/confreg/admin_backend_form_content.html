@@ -16,7 +16,7 @@
  <div class="alert alert-danger">{{e}}</div>
    {%endfor%}
   {%endif%}
-{%if not field.name in selectize_multiple_fields%}
+{%if not field.name in selectize_multiple_fields and not field|ischeckbox%}
 {{field|field_class:"form-control"}}
 {%else%}
 {{field}}
