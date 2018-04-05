@@ -17,6 +17,7 @@ from postgresqleu.confreg.lookups import RegistrationLookup
 
 from postgresqleu.confreg.models import Conference, ConferenceRegistration, ConferenceAdditionalOption
 from postgresqleu.confreg.models import RegistrationClass, RegistrationType, RegistrationDay
+from postgresqleu.confreg.models import ConferenceAdditionalOption
 from postgresqleu.confreg.models import ConferenceSession, Track, Room
 from postgresqleu.confreg.models import ConferenceSessionScheduleSlot, VolunteerSlot
 
@@ -143,6 +144,18 @@ class BackendRegistrationDayForm(BackendForm):
 	class Meta:
 		model = RegistrationDay
 		fields = ['day', ]
+
+class BackendAdditionalOptionForm(BackendForm):
+	list_fields = ['name', 'cost', 'maxcount', ]
+	vat_fields = {'cost': 'reg'}
+	class Meta:
+		model = ConferenceAdditionalOption
+		fields = ['name', 'cost', 'maxcount', 'public', 'upsellable', 'invoice_autocancel_hours',
+				  'requires_regtype', 'mutually_exclusive']
+
+	def fix_fields(self):
+		self.fields['requires_regtype'].queryset = RegistrationType.objects.filter(conference=self.conference)
+		self.fields['mutually_exclusive'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference).exclude(pk=self.instance.pk)
 
 class BackendTrackForm(BackendForm):
 	list_fields = ['trackname', 'sortkey']
