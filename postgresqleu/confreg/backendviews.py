@@ -116,6 +116,10 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 	else:
 		form = formclass(conference, instance=instance, newformdata=newformdata)
 
+	if instance.id:
+		adminurl = urlresolvers.reverse('admin:{0}_{1}_change'.format(instance._meta.app_label, instance._meta.model_name), args=(instance.id,))
+	else:
+		adminurl = None
 	return render(request, 'confreg/admin_backend_form.html', {
 		'conference': conference,
 		'form': form,
@@ -124,7 +128,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 		'selectize_multiple_fields': formclass.selectize_multiple_fields,
 		'breadcrumbs': breadcrumbs,
 		'allow_delete': allow_delete and instance.pk,
-		'adminurl': urlresolvers.reverse('admin:{0}_{1}_change'.format(instance._meta.app_label, instance._meta.model_name), args=(instance.id,)),
+		'adminurl': adminurl,
 	})
 
 def backend_list_editor(request, urlname, formclass, resturl, return_url='../', allow_new=False, allow_delete=False, conference=None):
