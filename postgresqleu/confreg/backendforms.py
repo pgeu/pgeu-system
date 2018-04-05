@@ -17,7 +17,7 @@ from postgresqleu.confreg.lookups import RegistrationLookup
 
 from postgresqleu.confreg.models import Conference, ConferenceRegistration, ConferenceAdditionalOption
 from postgresqleu.confreg.models import RegistrationClass, RegistrationType, RegistrationDay
-from postgresqleu.confreg.models import ConferenceAdditionalOption
+from postgresqleu.confreg.models import ConferenceAdditionalOption, ConferenceFeedbackQuestion
 from postgresqleu.confreg.models import ConferenceSession, Track, Room
 from postgresqleu.confreg.models import ConferenceSessionScheduleSlot, VolunteerSlot
 
@@ -248,3 +248,11 @@ class BackendVolunteerSlotForm(BackendForm):
 			self.add_error('max_staff', 'Max staff must be at least as high as min_staff!')
 
 		return cleaned_data
+
+class BackendFeedbackQuestionForm(BackendForm):
+	list_fields = ['newfieldset', 'question', 'sortkey',]
+
+	class Meta:
+		model = ConferenceFeedbackQuestion
+		fields = ['question', 'isfreetext', 'textchoices', 'sortkey', 'newfieldset']
+
