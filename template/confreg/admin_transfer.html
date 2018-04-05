@@ -28,6 +28,12 @@ $(function() {
 {%block layoutblock%}
 <h1>Transfer registration</h1>
 
+<p>
+Have the new user sign up for the conference, possibly go on the waitlist if the same is already activated.
+But do not create an invoice for the new user.<br/>
+Then use this tool to swap the old and the new registration.<br/>
+</p>
+
 <form method="post" action=".">{% csrf_token %}
 <input type="hidden" name="stephash" value="{{stephash}}">
 <table class="transferform">
