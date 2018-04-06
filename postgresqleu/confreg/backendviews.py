@@ -15,6 +15,8 @@ from postgresqleu.util.middleware import RedirectException
 from models import Conference, ConferenceRegistration
 from models import RegistrationType, RegistrationClass
 
+from postgresqleu.invoices.models import Invoice
+
 from backendforms import BackendConferenceForm, BackendRegistrationForm
 from backendforms import BackendRegistrationTypeForm, BackendRegistrationClassForm
 from backendforms import BackendRegistrationDayForm, BackendAdditionalOptionForm
@@ -286,3 +288,19 @@ def edit_discountcodes(request, urlname, rest):
 							   rest,
 							   allow_new=True,
 							   allow_delete=True)
+
+
+###
+# Non-simple-editor views
+###
+def pendinginvoices(request, urlname):
+	conference = get_authenticated_conference(request, urlname)
+
+	return render(request, 'confreg/admin_pending_invoices.html', {
+		'conference': conference,
+		'invoices': {
+			'Attendee invoices': Invoice.objects.filter(paidat__isnull=True, conferenceregistration__conference=conference),
+			'Bulk payment invoices': Invoice.objects.filter(paidat__isnull=True, bulkpayment__conference=conference),
+			'Sponsor invoices': Invoice.objects.filter(paidat__isnull=True, sponsor__conference=conference),
+		},
+	})

@@ -1,0 +1,62 @@
+{%extends "confreg/confadmin_base.html" %}
+{%block extrahead%}
+<style>
+.history_content {
+   display: none;
+}
+</style>
+<script language="javascript">
+$(function () {
+//  $('[data-toggle="popover"]').popover()
+   $('.history_popover').popover({
+      container: 'body',
+      html: true,
+      content: function () {
+         return $(this).find('.history_content').html();
+      }
+   });
+})
+</script>
+{%endblock%}
+{%block title%}Pending invoices{%endblock%}
+
+{%block layoutblock%}
+<h1>Pending invoices</h1>
+
+{%for t,l in invoices.items%}
+<h2>{{t}}</h2>
+<table class="table table-bordered table-striped table-hover table-condensed">
+  <tr>
+    <th class="col-md-1">Number</td>
+    <th>Title</td>
+    <th>Recipient</td>
+    <th class="col-md-1">Amount</td>
+    <th class="col-md-2">Sent</td>
+    <th class="col-md-2">Due</td>
+    <th class="col-md-2">Cancel</td>
+  </tr>
+{%for i in l%}
+  <tr class="history_popover" data-toggle="popover" data-trigger="hover" data-container="body" data-placement="bottom">
+    <td>#{%if user.is_superuser%}<a href="/invoiceadmin/{{i.id}}/">{{i.id}}</a>{%else%}{{i.id}}{%endif%}
+<div class="history_content">
+{%for h in i.invoicehistory_set.all %}
+{{h.time}}: {{h.txt}}<br/>
+{%endfor%}
+</div>
+</td>
+    <td>{{i.title}}</td>
+    <td>{{i.recipient_name}}</td>
+    <td>{{i.total_amount}}</td>
+    <td>{{i.invoicedate}}</td>
+    <td>{{i.duedate}}</td>
+    <td>{{i.canceltime|default:""}}</td>
+  </tr>
+{%endfor%}
+</table>
+{%endfor%}
+
+<a class="btn btn-default btn-block" href="../">Back</a>
+
+<div id="history_2213">Kalle!</div>
+
+{%endblock%}
