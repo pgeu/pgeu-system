@@ -33,7 +33,7 @@ def get_authenticated_conference(request, urlname):
 	else:
 		return get_object_or_404(Conference, urlname=urlname, administrators=request.user)
 
-def backend_process_form(request, urlname, formclass, id, cancel_url='../', saved_url='../', allow_new=False, allow_delete=False, breadcrumbs=None, permissions_already_checked=False, conference=None, bypass_conference_filter=False):
+def backend_process_form(request, urlname, formclass, id, cancel_url='../', saved_url='../', allow_new=True, allow_delete=True, breadcrumbs=None, permissions_already_checked=False, conference=None, bypass_conference_filter=False):
 	if not conference:
 		conference = get_authenticated_conference(request, urlname)
 
@@ -133,7 +133,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 		'adminurl': adminurl,
 	})
 
-def backend_list_editor(request, urlname, formclass, resturl, return_url='../', allow_new=False, allow_delete=False, conference=None):
+def backend_list_editor(request, urlname, formclass, resturl, return_url='../', allow_new=True, allow_delete=True, conference=None):
 	if not conference:
 		conference = get_authenticated_conference(request, urlname)
 
@@ -193,101 +193,83 @@ def edit_conference(request, urlname):
 								urlname,
 								BackendConferenceForm,
 								get_object_or_404(Conference, urlname=urlname).pk,
-								bypass_conference_filter=True)
+								bypass_conference_filter=True,
+								allow_new=False,
+								allow_delete=False)
 
 def edit_registration(request, urlname, regid):
 	return backend_process_form(request,
 								urlname,
 								BackendRegistrationForm,
-								regid)
+								regid,
+								allow_new=False,
+								allow_delete=False)
 
 def edit_regclasses(request, urlname, rest):
 	return backend_list_editor(request,
 							   urlname,
 							   BackendRegistrationClassForm,
-							   rest,
-							   allow_new=True,
-							   allow_delete=True)
+							   rest)
 
 def edit_regtypes(request, urlname, rest):
 	return backend_list_editor(request,
 							   urlname,
 							   BackendRegistrationTypeForm,
-							   rest,
-							   allow_new=True,
-							   allow_delete=True)
+							   rest)
 
 def edit_regdays(request, urlname, rest):
 	return backend_list_editor(request,
 							   urlname,
 							   BackendRegistrationDayForm,
-							   rest,
-							   allow_new=True,
-							   allow_delete=True)
+							   rest)
 
 def edit_additionaloptions(request, urlname, rest):
 	return backend_list_editor(request,
 							   urlname,
 							   BackendAdditionalOptionForm,
-							   rest,
-							   allow_new=True,
-							   allow_delete=True)
+							   rest)
 
 def edit_tracks(request, urlname, rest):
 	return backend_list_editor(request,
 							   urlname,
 							   BackendTrackForm,
-							   rest,
-							   allow_new=True,
-							   allow_delete=True)
+							   rest)
 
 def edit_rooms(request, urlname, rest):
 	return backend_list_editor(request,
 							   urlname,
 							   BackendRoomForm,
-							   rest,
-							   allow_new=True,
-							   allow_delete=True)
+							   rest)
 
 def edit_sessions(request, urlname, rest):
 	return backend_list_editor(request,
 							   urlname,
 							   BackendConferenceSessionForm,
-							   rest,
-							   allow_new=True,
-							   allow_delete=True)
+							   rest)
 
 def edit_scheduleslots(request, urlname, rest):
 	return backend_list_editor(request,
 							   urlname,
 							   BackendConferenceSessionSlotForm,
-							   rest,
-							   allow_new=True,
-							   allow_delete=True)
+							   rest)
 
 def edit_volunteerslots(request, urlname, rest):
 	return backend_list_editor(request,
 							   urlname,
 							   BackendVolunteerSlotForm,
-							   rest,
-							   allow_new=True,
-							   allow_delete=True)
+							   rest)
 
 def edit_feedbackquestions(request, urlname, rest):
 	return backend_list_editor(request,
 							   urlname,
 							   BackendFeedbackQuestionForm,
-							   rest,
-							   allow_new=True,
-							   allow_delete=True)
+							   rest)
 
 def edit_discountcodes(request, urlname, rest):
 	return backend_list_editor(request,
 							   urlname,
 							   BackendDiscountCodeForm,
-							   rest,
-							   allow_new=True,
-							   allow_delete=True)
+							   rest)
 
 
 ###
