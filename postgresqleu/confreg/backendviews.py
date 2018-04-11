@@ -17,6 +17,7 @@ from models import RegistrationType, RegistrationClass
 
 from postgresqleu.invoices.models import Invoice
 
+from backendforms import BackendCopySelectConferenceForm
 from backendforms import BackendConferenceForm, BackendRegistrationForm
 from backendforms import BackendRegistrationTypeForm, BackendRegistrationClassForm
 from backendforms import BackendRegistrationDayForm, BackendAdditionalOptionForm
@@ -133,7 +134,98 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 		'adminurl': adminurl,
 	})
 
-def backend_list_editor(request, urlname, formclass, resturl, return_url='../', allow_new=True, allow_delete=True, conference=None):
+def backend_handle_copy_previous(request, formclass, restpieces, conference):
+	if len(restpieces) == 1:
+		# No conference selected yet, so start by doing that
+		if request.method == 'POST':
+			form = BackendCopySelectConferenceForm(request, conference, formclass.Meta.model, data=request.POST)
+			if form.is_valid():
+				return HttpResponseRedirect("{0}/".format(form.cleaned_data.get('conference').id))
+		else:
+			form = BackendCopySelectConferenceForm(request, conference, formclass.Meta.model)
+		return render(request, 'confreg/admin_backend_copy_select_conf.html', {
+			'conference': conference,
+			'form': form,
+			'what': formclass.Meta.model._meta.verbose_name,
+			'savebutton': 'Copy',
+			'cancelurl': '../',
+			'breadcrumbs': [('../', formclass.Meta.model._meta.verbose_name_plural.capitalize()), ],
+		})
+	elif len(restpieces) == 2:
+		idlist = None
+		confirmed_transform_value = None
+		confirmed_transform_example = None
+		sourceconfid = int(restpieces[1])
+		sourceconf = get_object_or_404(Conference, pk=sourceconfid, administrators=request.user)
+
+		if request.method == "POST":
+			idlist = sorted([int(k[2:]) for k,v in request.POST.items() if k.startswith('c_') and v == '1'])
+			if formclass.copy_transform_form:
+				# First validate the transform form
+				transform_form = formclass.copy_transform_form(conference, sourceconf, data=request.POST)
+				if transform_form.is_valid():
+					# Transform input is valid, but is it correct?
+					if request.POST.get('confirmed_transform', '') == transform_form.confirm_value():
+						with transaction.atomic():
+							errors = list(formclass.copy_from_conference(conference, sourceconf, idlist, transform_form))
+							if errors:
+								for e in errors:
+									messages.error(request, e)
+									transaction.set_rollback(True)
+									# Fall-through and re-render the form
+							else:
+								return HttpResponseRedirect("../../")
+					else:
+						# Transform input is valid, but it has not been confirmed.
+						confirmed_transform_example = formclass.get_transform_example(conference, sourceconf, idlist, transform_form)
+						if confirmed_transform_example:
+							confirmed_transform_value = transform_form.confirm_value()
+						# Fall-through to re-render the form
+			else:
+				with transaction.atomic():
+					errors = list(formclass.copy_from_conference(conference, sourceconf, idlist))
+					if errors:
+						for e in errors:
+							messages.error(request, e)
+						transaction.set_rollback(True)
+						transform_form = None
+						# Fall through and re-render our forms
+					else:
+						return HttpResponseRedirect("../../")
+
+		else:
+			if formclass.copy_transform_form:
+				transform_form = formclass.copy_transform_form(conference, sourceconf)
+			else:
+				transform_form = None
+
+		objects = formclass.Meta.model.objects.filter(conference=sourceconf)
+		values = [{'id': o.id, 'vals': [getattr(o, '_display_{0}'.format(f), getattr(o, f)) for f in formclass.list_fields]} for o in objects]
+		return render(request, 'confreg/admin_backend_list.html', {
+			'conference': conference,
+			'values': values,
+			'title': formclass.Meta.model._meta.verbose_name_plural.capitalize(),
+			'singular_name': formclass.Meta.model._meta.verbose_name,
+			'plural_name': formclass.Meta.model._meta.verbose_name_plural,
+			'headers': [formclass.get_field_verbose_name(f) for f in formclass.list_fields],
+			'coltypes': formclass.coltypes,
+			'return_url': '../',
+			'allow_new': False,
+			'allow_delete': False,
+			'allow_copy_previous': False,
+			'is_copy_previous': True,
+			'transform_form': transform_form,
+			'idlist': idlist,
+			'confirmed_transform_value': confirmed_transform_value,
+			'transform_example': confirmed_transform_example,
+			'breadcrumbs': [
+				('../../', formclass.Meta.model._meta.verbose_name_plural.capitalize()),
+				('../', 'Copy {0}'.format(formclass.Meta.model._meta.verbose_name_plural.capitalize())),
+			],
+		})
+
+
+def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, allow_delete=True, conference=None):
 	if not conference:
 		conference = get_authenticated_conference(request, urlname)
 
@@ -154,6 +246,7 @@ def backend_list_editor(request, urlname, formclass, resturl, return_url='../', 
 			'return_url': '../',
 			'allow_new': allow_new,
 			'allow_delete': allow_delete,
+			'allow_copy_previous': formclass.allow_copy_previous,
 		})
 
 	if allow_new and resturl=='new':
@@ -166,6 +259,10 @@ def backend_list_editor(request, urlname, formclass, resturl, return_url='../', 
 									allow_delete=allow_delete,
 									breadcrumbs=[('../', formclass.Meta.model._meta.verbose_name_plural.capitalize()), ],
 									conference=conference)
+
+	restpieces = resturl.split('/')
+	if formclass.allow_copy_previous and restpieces[0] == 'copy':
+		return backend_handle_copy_previous(request, formclass, restpieces, conference)
 
 	# Is it an id?
 	try:

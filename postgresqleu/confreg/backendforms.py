@@ -41,6 +41,8 @@ class BackendForm(ConcurrentProtectedModelForm):
 	form_before_new = None
 	newformdata = None
 	_newformdata = _NewFormDataField()
+	allow_copy_previous = False
+	copy_transform_form = None
 	coltypes = {}
 
 	def __init__(self, conference, *args, **kwargs):
@@ -339,3 +341,16 @@ class BackendDiscountCodeForm(BackendForm):
 		self.fields['requiresoption'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference).exclude(pk=self.instance.pk)
 
 		self.update_protected_fields()
+
+
+#
+# Form to pick a conference to copy from
+#
+class BackendCopySelectConferenceForm(django.forms.Form):
+	conference = django.forms.ModelChoiceField(Conference.objects.all())
+
+	def __init__(self, request, conference, model, *args, **kwargs):
+		super(BackendCopySelectConferenceForm, self).__init__(*args, **kwargs)
+		self.fields['conference'].queryset = Conference.objects.filter(administrators=request.user).exclude(pk=conference.pk).extra(
+			where=["EXISTS (SELECT 1 FROM {0} WHERE conference_id=confreg_conference.id)".format(model._meta.db_table), ]
+		)

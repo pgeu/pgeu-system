@@ -1,0 +1,10 @@
+{%extends "confreg/confadmin_base.html"%}
+{%block title%}Copy {{what}}{%endblock%}
+
+{%block layoutblock%}
+<h1>Copy {{what}}</h1>
+<form class="form-horizontal" method="POST" action=".">{%csrf_token%}
+{%include "confreg/admin_backend_form_content.html" %}
+</form>
+
+{%endblock%}
