@@ -6,6 +6,7 @@ import django.forms.widgets
 from django.forms.widgets import TextInput
 
 import datetime
+from psycopg2.extras import DateTimeTZRange
 
 from selectable.forms.widgets import AutoCompleteSelectWidget, AutoCompleteSelectMultipleWidget
 
@@ -129,13 +130,28 @@ class BackendRegistrationForm(BackendForm):
 
 class BackendRegistrationClassForm(BackendForm):
 	list_fields = ['regclass', 'badgecolor', 'badgeforegroundcolor']
+	allow_copy_previous = True
 	class Meta:
 		model = RegistrationClass
 		fields = ['regclass', 'badgecolor', 'badgeforegroundcolor']
 
+	@classmethod
+	def copy_from_conference(self, targetconf, sourceconf, idlist):
+		# Registration classes are copied straight over, but we disallow duplicates
+		for id in idlist:
+			source = RegistrationClass.objects.get(conference=sourceconf, pk=id)
+			if RegistrationClass.objects.filter(conference=targetconf, regclass=source.regclass).exists():
+				yield 'A registration class with name {0} already exists.'.format(source.regclass)
+			else:
+				RegistrationClass(conference=targetconf,
+								  regclass=source.regclass,
+								  badgecolor=source.badgecolor,
+								  badgeforegroundcolor=source.badgeforegroundcolor).save()
+
 class BackendRegistrationTypeForm(BackendForm):
 	list_fields = ['regtype', 'regclass', 'cost', 'active', 'sortkey']
 	vat_fields = {'cost': 'reg'}
+	allow_copy_previous = True
 	coltypes = {
 		'Sortkey': ['nosearch' ],
 	}
@@ -165,6 +181,40 @@ class BackendRegistrationTypeForm(BackendForm):
 
 		return self.cleaned_data['cost']
 
+	@classmethod
+	def copy_from_conference(self, targetconf, sourceconf, idlist):
+		# Registration types are copied straight over, but we disallow duplicates. We also
+		# have to match the registration class.
+		# NOTE! We do *not* attempt to adjust VAT rates!
+		for id in idlist:
+			source = RegistrationType.objects.get(conference=sourceconf, pk=id)
+			if RegistrationType.objects.filter(conference=targetconf, regtype=source.regtype).exists():
+				yield 'A registration type with name {0} already exists.'.format(source.regtype)
+			else:
+				try:
+					if source.regclass:
+						targetclass = RegistrationClass.objects.get(conference=targetconf,
+																	regclass=source.regclass.regclass)
+					else:
+						targetclass = None
+					RegistrationType(conference=targetconf,
+									 regtype=source.regtype,
+									 regclass=targetclass,
+									 active=source.active,
+									 # Not copying activeuntil
+									 inlist=source.inlist,
+									 sortkey=source.sortkey,
+									 specialtype=source.specialtype,
+									 # Not copying days
+									 alertmessage=source.alertmessage,
+									 upsell_target=source.upsell_target,
+									 # Not copying invoice_autocancel_hours
+									 # Not copying requires_option
+					).save()
+				except RegistrationClass.DoesNotExist:
+					yield 'Could not find registration class {0} for registration type {1}'.format(
+						source.regclass.regclass, source.regtype)
+
 class BackendRegistrationDayForm(BackendForm):
 	list_fields = [ 'day', ]
 	class Meta:
@@ -188,12 +238,28 @@ class BackendAdditionalOptionForm(BackendForm):
 
 class BackendTrackForm(BackendForm):
 	list_fields = ['trackname', 'sortkey']
+	allow_copy_previous = True
 	class Meta:
 		model = Track
 		fields = ['trackname', 'sortkey', 'color', 'incfp']
 	coltypes = {
 		'Sortkey': ['nosearch' ],
 	}
+
+	@classmethod
+	def copy_from_conference(self, targetconf, sourceconf, idlist):
+		# Tracks are copied straight over, but we disallow duplicates
+		for id in idlist:
+			source = Track.objects.get(conference=sourceconf, pk=id)
+			if Track.objects.filter(conference=targetconf, trackname=source.trackname).exists():
+				yield 'A track with name {0} already exists.'.format(source.trackname)
+			else:
+				Track(conference=targetconf,
+					  trackname=source.trackname,
+					  color=source.color,
+					  sortkey=source.sortkey,
+					  incfp=source.incfp,
+				).save()
 
 class BackendRoomForm(BackendForm):
 	list_fields = ['roomname', 'sortkey']
@@ -204,6 +270,19 @@ class BackendRoomForm(BackendForm):
 		'Sortkey': ['nosearch' ],
 	}
 
+class BackendTransformConferenceDateTimeForm(django.forms.Form):
+	timeshift = django.forms.DurationField(required=True, help_text="Shift all times by this much")
+
+	def __init__(self, source, target, *args, **kwargs):
+		self.source = source
+		self.target = target
+		super(BackendTransformConferenceDateTimeForm, self).__init__(*args, **kwargs)
+		self.fields['timeshift'].initial = self.source.startdate-self.target.startdate
+
+	def confirm_value(self):
+		return str(self.cleaned_data['timeshift'])
+
+
 class BackendConferenceSessionForm(BackendForm):
 	list_fields = [ 'title', 'speaker_list', 'status_string', 'starttime', 'track', 'room']
 	verbose_field_names = {
@@ -211,6 +290,8 @@ class BackendConferenceSessionForm(BackendForm):
 		'status_string': 'Status',
 	}
 	selectize_multiple_fields = ['speaker']
+	allow_copy_previous = True
+	copy_transform_form = BackendTransformConferenceDateTimeForm
 
 	class Meta:
 		model = ConferenceSession
@@ -263,15 +344,83 @@ class BackendConferenceSessionForm(BackendForm):
 
 		return newstatus
 
+	@classmethod
+	def copy_from_conference(self, targetconf, sourceconf, idlist, transformform):
+		xform = transformform.cleaned_data['timeshift']
+		for id in idlist:
+			source = ConferenceSession.objects.get(conference=sourceconf, pk=id)
+			try:
+				if source.track:
+					targettrack = Track.objects.get(conference=targetconf,
+													trackname=source.track.trackname)
+				else:
+					targettrack = None
+				s = ConferenceSession(conference=targetconf,
+									  title=source.title,
+									  starttime=source.starttime and source.starttime + xform,
+									  endtime=source.starttime and source.endtime + xform,
+									  track=targettrack,
+									  cross_schedule=source.cross_schedule,
+									  can_feedback=source.can_feedback,
+									  abstract=source.abstract,
+									  skill_level=source.skill_level,
+									  status=0,
+									  submissionnote=source.submissionnote,
+									  initialsubmit=source.initialsubmit,
+				)
+				s.save()
+				for spk in source.speaker.all():
+					s.speaker.add(spk)
+
+			except Track.DoesNotExist:
+				yield 'Could not find track {0}'.format(source.track.trackname)
+
+	@classmethod
+	def get_transform_example(self, targetconf, sourceconf, idlist, transformform):
+		xform = transformform.cleaned_data['timeshift']
+		slotlist = ConferenceSession.objects.filter(conference=sourceconf, id__in=idlist, starttime__isnull=False)[:2]
+		if slotlist:
+			return " and ".join(["time {0} becomes {1}".format(s.starttime, s.starttime + xform) for s in slotlist])
+
+		# Do we have sessions without time?
+		slotlist = ConferenceSession.objects.filter(conference=sourceconf, id__in=idlist)
+		if slotlist:
+			return "no scheduled sessions picked, so no transformation will happen"
+		return None
+
 class BackendConferenceSessionSlotForm(BackendForm):
 	list_fields = [ 'starttime', 'endtime', ]
+	allow_copy_previous = True
+	copy_transform_form = BackendTransformConferenceDateTimeForm
 
 	class Meta:
 		model = ConferenceSessionScheduleSlot
 		fields = ['starttime', 'endtime' ]
 
+	@classmethod
+	def copy_from_conference(self, targetconf, sourceconf, idlist, transformform):
+		xform = transformform.cleaned_data['timeshift']
+		for id in idlist:
+			source = ConferenceSessionScheduleSlot.objects.get(conference=sourceconf, pk=id)
+			ConferenceSessionScheduleSlot(conference=targetconf,
+										  starttime=source.starttime + xform,
+										  endtime=source.endtime + xform,
+										  ).save()
+		return
+		yield None # Turn this into a generator
+
+	@classmethod
+	def get_transform_example(self, targetconf, sourceconf, idlist, transformform):
+		xform = transformform.cleaned_data['timeshift']
+		slotlist = [ConferenceSessionScheduleSlot.objects.get(conference=sourceconf, id=i) for i in idlist[:2]]
+		xstr = " and ".join(["time {0} becomes {1}".format(s.starttime, s.starttime + xform) for s in slotlist])
+		return xstr
+
+
 class BackendVolunteerSlotForm(BackendForm):
 	list_fields = [ 'timerange', 'title', 'min_staff', 'max_staff' ]
+	allow_copy_previous = True
+	copy_transform_form = BackendTransformConferenceDateTimeForm
 
 	class Meta:
 		model = VolunteerSlot
@@ -288,8 +437,35 @@ class BackendVolunteerSlotForm(BackendForm):
 
 		return cleaned_data
 
+	@classmethod
+	def copy_from_conference(self, targetconf, sourceconf, idlist, transformform):
+		xform = transformform.cleaned_data['timeshift']
+		for id in idlist:
+			source = VolunteerSlot.objects.get(conference=sourceconf, pk=id)
+			VolunteerSlot(conference=targetconf,
+						  timerange=DateTimeTZRange(source.timerange.lower + xform,
+													source.timerange.upper + xform),
+						  title=source.title,
+						  min_staff=source.min_staff,
+						  max_staff=source.max_staff,
+			).save()
+		return
+		yield None # Turn this into a generator
+
+	@classmethod
+	def get_transform_example(self, targetconf, sourceconf, idlist, transformform):
+		xform = transformform.cleaned_data['timeshift']
+		if not idlist:
+			return None
+		s = VolunteerSlot.objects.get(conference=sourceconf, id=idlist[0])
+		return "range {0}-{1} becomes {2}-{3}".format(
+			s.timerange.lower, s.timerange.upper,
+			s.timerange.lower + xform, s.timerange.upper + xform,
+		)
+
 class BackendFeedbackQuestionForm(BackendForm):
 	list_fields = ['newfieldset', 'question', 'sortkey',]
+	allow_copy_previous = True
 
 	class Meta:
 		model = ConferenceFeedbackQuestion
@@ -297,6 +473,22 @@ class BackendFeedbackQuestionForm(BackendForm):
 	coltypes = {
 		'Sortkey': ['nosearch' ],
 	}
+
+	@classmethod
+	def copy_from_conference(self, targetconf, sourceconf, idlist):
+		# Conference feedback questions are copied straight over, but we disallow duplicates
+		for id in idlist:
+			source = ConferenceFeedbackQuestion.objects.get(conference=sourceconf, pk=id)
+			if ConferenceFeedbackQuestion.objects.filter(conference=targetconf, question=source.question).exists():
+				yield 'A question {0} already exists.'.format(source.question)
+			else:
+				ConferenceFeedbackQuestion(conference=targetconf,
+										   question=source.question,
+										   isfreetext=source.isfreetext,
+										   textchoices=source.textchoices,
+										   sortkey=source.sortkey,
+										   newfieldset=source.newfieldset,
+										   ).save()
 
 
 class BackendNewDiscountCodeForm(django.forms.Form):
