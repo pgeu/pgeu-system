@@ -1,13 +1,36 @@
 {%extends "confreg/confadmin_base.html" %}
+{%load dictutil%}
 {%block title%}{{title}}{%endblock%}
+{%block extrahead%}
+<link rel="stylesheet" type="text/css" href="/media/datatables/datatables.min.css"/>
+<script type="text/javascript" src="/media/datatables/datatables.min.js"></script>
+
+<script language="javascript">
+$(document).ready(function() {
+   $('.datatable-tbl').DataTable({
+      'paging': false,
+      'info': false,
+      'columnDefs': [
+         { targets: 'coltype-copy', orderable: false, searchable: false},
+         { targets: 'coltype-nosort', orderable: false},
+         { targets: 'coltype-nosearch', searchable: false},
+
+      ],
+   });
+});
+</script>
+{%endblock%}
 
 {%block layoutblock%}
 <h1>{{title}}</h1>
 
-<table class="table table-bordered table-striped table-hover table-condensed">
+<table class="table table-bordered table-striped table-hover table-condensed datatable-tbl">
+<thead>
  <tr>
-   {%for h in headers%}<th>{{h}}</th>{%endfor%}
+   {%for h in headers%}<th{%if coltypes|dictlookup:h%} class="{%for k in coltypes|dictlookup:h%}coltype-{{k}} {%endfor%}"{%endif%}>{{h}}</th>{%endfor%}
  </tr>
+</thead>
+<tbody>
 {%for o in values%}
  <tr>
 {%for v in o.vals%}
@@ -15,6 +38,7 @@
 {%endfor%}
  </tr>
 {%endfor%}
+</tbody>
 </table>
 
 {%if allow_new%}

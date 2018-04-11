@@ -41,6 +41,7 @@ class BackendForm(ConcurrentProtectedModelForm):
 	form_before_new = None
 	newformdata = None
 	_newformdata = _NewFormDataField()
+	coltypes = {}
 
 	def __init__(self, conference, *args, **kwargs):
 		self.conference = conference
@@ -133,6 +134,10 @@ class BackendRegistrationClassForm(BackendForm):
 class BackendRegistrationTypeForm(BackendForm):
 	list_fields = ['regtype', 'regclass', 'cost', 'active', 'sortkey']
 	vat_fields = {'cost': 'reg'}
+	coltypes = {
+		'Sortkey': ['nosearch' ],
+	}
+
 	class Meta:
 		model = RegistrationType
 		fields = ['regtype', 'regclass', 'cost', 'active', 'activeuntil', 'days', 'sortkey', 'specialtype', 'alertmessage', 'invoice_autocancel_hours', 'requires_option', 'upsell_target']
@@ -171,6 +176,9 @@ class BackendAdditionalOptionForm(BackendForm):
 		model = ConferenceAdditionalOption
 		fields = ['name', 'cost', 'maxcount', 'public', 'upsellable', 'invoice_autocancel_hours',
 				  'requires_regtype', 'mutually_exclusive']
+	coltypes = {
+		'Maxcount': ['nosearch' ],
+	}
 
 	def fix_fields(self):
 		self.fields['requires_regtype'].queryset = RegistrationType.objects.filter(conference=self.conference)
@@ -181,12 +189,18 @@ class BackendTrackForm(BackendForm):
 	class Meta:
 		model = Track
 		fields = ['trackname', 'sortkey', 'color', 'incfp']
+	coltypes = {
+		'Sortkey': ['nosearch' ],
+	}
 
 class BackendRoomForm(BackendForm):
 	list_fields = ['roomname', 'sortkey']
 	class Meta:
 		model = Room
 		fields = ['roomname', 'sortkey']
+	coltypes = {
+		'Sortkey': ['nosearch' ],
+	}
 
 class BackendConferenceSessionForm(BackendForm):
 	list_fields = [ 'title', 'speaker_list', 'status_string', 'starttime', 'track', 'room']
@@ -260,6 +274,10 @@ class BackendVolunteerSlotForm(BackendForm):
 	class Meta:
 		model = VolunteerSlot
 		fields = [ 'timerange', 'title', 'min_staff', 'max_staff' ]
+	coltypes = {
+		'Min staff': ['nosearch' ],
+		'Max staff': ['nosearch' ],
+	}
 
 	def clean(self):
 		cleaned_data = super(BackendVolunteerSlotForm, self).clean()
@@ -274,6 +292,9 @@ class BackendFeedbackQuestionForm(BackendForm):
 	class Meta:
 		model = ConferenceFeedbackQuestion
 		fields = ['question', 'isfreetext', 'textchoices', 'sortkey', 'newfieldset']
+	coltypes = {
+		'Sortkey': ['nosearch' ],
+	}
 
 
 class BackendNewDiscountCodeForm(django.forms.Form):
