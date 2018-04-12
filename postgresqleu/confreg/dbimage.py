@@ -35,7 +35,9 @@ class SpeakerImageStorage(Storage):
 	def exists(self, name):
 		return False
 
-	def get_available_name(self, name):
+	def get_available_name(self, name, max_length=None):
+		if max_length:
+			return name[:max_length]
 		return name
 
 	def delete(self, name):

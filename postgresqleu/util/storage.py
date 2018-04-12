@@ -36,7 +36,9 @@ class InlineEncodedStorage(Storage):
 	def exists(self, name):
 		return False # Not sure why, but we don't need it :)
 
-	def get_available_name(self, name):
+	def get_available_name(self, name, max_length=None):
+		if max_length:
+			return name[:max_length]
 		return name
 
 	def _delete(self, name):
