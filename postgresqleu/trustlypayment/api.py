@@ -78,6 +78,13 @@ class TrustlyWrapper(object):
 			raise TrustlyException('Found no balance for {0}'.format(self.currency))
 		return balance
 
+	def getwithdrawal(self, orderid):
+		r = self.apicall('GetWithdrawals', {'OrderID': orderid})
+		w = r['data']
+		if len(w) != 1:
+			raise TrustlyException('Received more than one withdrawal for order {0}'.format(orderid))
+		return w[0]
+
 	def apicall(self, method, data):
 		params = {
 				'UUID': self.new_uuid(),
