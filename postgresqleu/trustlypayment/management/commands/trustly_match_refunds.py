@@ -25,7 +25,7 @@ class Command(BaseCommand):
 	@transaction.atomic
 	def handle(self, *args, **options):
 		trustly = Trustly()
-		manager = InvoiceManager
+		manager = InvoiceManager()
 		method = InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.trustly.TrustlyPayment')
 
 		refunds = InvoiceRefund.objects.filter(completed__isnull=True, invoice__paidusing=method)
