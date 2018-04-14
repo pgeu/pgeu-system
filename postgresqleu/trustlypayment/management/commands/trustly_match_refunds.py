@@ -17,6 +17,8 @@ from postgresqleu.invoices.models import InvoiceRefund, InvoicePaymentMethod
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.mailqueue.util import send_simple_mail
 
+from decimal import Decimal
+
 class Command(BaseCommand):
 	help = 'Verify that a Trustly refund has completed, and flag it as such'
 
