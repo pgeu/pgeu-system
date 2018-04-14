@@ -10,9 +10,13 @@
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.conf import settings
 
 from postgresqleu.invoices.models import InvoiceRefund
 from postgresqleu.invoices.util import InvoiceManager
+from postgresqleu.mailqueue.util import send_simple_mail
+
+from datetime import datetime, timedelta
 
 class Command(BaseCommand):
 	help = 'Send off API-based refunds'
@@ -37,3 +41,22 @@ class Command(BaseCommand):
 				manager.autorefund_invoice(rr.invoice)
 
 				self.stdout.write("Issued API refund of invoice {0}.".format(rr.invoice.pk))
+
+		# Send alerts for any refunds that have been issued but that have not completed within
+		# 3 days (completely arbitrary, but normally it happens within seconds/minutes/hours).
+		stalledrefunds = InvoiceRefund.objects.filter(issued__isnull=False, completed__isnull=True,
+													  issued__lt=datetime.now()-timedelta(days=3))
+		if stalledrefunds:
+			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+							 settings.INVOICE_SENDER_EMAIL,
+							 "Stalled invoice refunds",
+							 u"""One or more invoice refunds appear to be stalled.
+These refunds have been issued to the provider, but no confirmation has
+shown up. This requires manual investigation.
+
+The following invoices have stalled refunds:
+
+{0}
+
+Better go check!
+""".format(u"\n".join([r.invoice.invoicestr for r in stalledrefunds])))
