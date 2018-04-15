@@ -6,6 +6,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.conf import settings
 
 from models import Sponsor, SponsorMail, SponsorshipLevel
+from models import vat_status_choices
 from postgresqleu.confreg.models import Conference, RegistrationType, DiscountCode
 from postgresqleu.countries.models import EuropeCountry
 
@@ -26,6 +27,7 @@ class SponsorSignupForm(forms.Form):
 	name = forms.CharField(label="Company name *", min_length=3, max_length=100, help_text="This name is used on invoices and in internal communication")
 	displayname = forms.CharField(label="Display name *", min_length=3, max_length=100, help_text="This name is displayed on websites and in public communication")
 	address = forms.CharField(label="Company invoice address *", min_length=10, max_length=500, widget=forms.Textarea)
+	vatstatus = forms.ChoiceField(label="Company VAT status", choices=vat_status_choices)
 	vatnumber = forms.CharField(label="EU VAT Number", min_length=5, max_length=50, help_text="Enter EU VAT Number to be included on invoices if assigned one. Leave empty if outside the EU or without assigned VAT number.", required=False)
 	url = forms.CharField(label="Company URL *", min_length=8, max_length=100)
 	twittername = forms.CharField(label="Company twitter", min_length=0, max_length=100, required=False, validators=[TwitterValidator, ])
@@ -40,6 +42,7 @@ class SponsorSignupForm(forms.Form):
 			del self.fields['twittername']
 
 		if not settings.EU_VAT:
+			del self.fields['vatstatus']
 			del self.fields['vatnumber']
 
 	def clean_name(self):
@@ -71,6 +74,23 @@ class SponsorSignupForm(forms.Form):
 				raise ValidationError("Invalid VAT number: %s" % r)
 		return v
 
+	def clean(self):
+		cleaned_data = super(SponsorSignupForm, self).clean()
+		if settings.EU_VAT:
+			if int(cleaned_data['vatstatus']) == 0:
+				# Company inside EU and has VAT number
+				if not cleaned_data.get('vatnumber', None):
+					self.add_error('vatnumber', 'VAT number must be specified for companies inside EU with VAT number')
+			elif int(cleaned_data['vatstatus']) == 1:
+				# Company inside EU but without VAT number
+				if cleaned_data.get('vatnumber', None):
+					self.add_error('vatnumber', 'VAT number should not be specified for companies without one!')
+			else:
+				# Company outside EU
+				if cleaned_data.get('vatnumber', None):
+					self.add_error('vatnumber', 'VAT number should not be specified for companies outside EU')
+
+		return cleaned_data
 
 class SponsorSendEmailForm(forms.ModelForm):
 	confirm = forms.BooleanField(label="Confirm", required=False)

@@ -13,6 +13,12 @@ from benefits import benefit_choices
 
 from django.db.models import FileField
 
+vat_status_choices = (
+	(0, 'Company is from inside EU and has VAT number'),
+	(1, 'Company is from inside EU, but does not have VAT number'),
+	(2, 'Company is from outside EU'),
+)
+
 class SponsorshipContract(models.Model):
 	contractname = models.CharField(max_length=100, null=False, blank=False)
 	contractpdf = FileField(null=False, blank=True, storage=InlineEncodedStorage('sponsorcontract'), upload_to=inlineencoded_upload_path)
@@ -71,6 +77,7 @@ class Sponsor(models.Model):
 	name = models.CharField(max_length=100, null=False, blank=False)
 	displayname = models.CharField(max_length=100, null=False, blank=False)
 	invoiceaddr = models.TextField(max_length=500, null=False, blank=True)
+	vatstatus = models.IntegerField(null=False, blank=False, choices=vat_status_choices)
 	vatnumber = models.CharField(max_length=100, null=False, blank=True)
 	managers = models.ManyToManyField(User, blank=False)
 	url = models.URLField(max_length=200, null=False, blank=True)

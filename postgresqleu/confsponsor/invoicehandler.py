@@ -116,16 +116,31 @@ def create_sponsor_invoice(user, sponsor):
 	if settings.EU_VAT:
 		# If a sponsor has an EU VAT Number, we do *not* charge VAT.
 		# For any sponsor without a VAT number, charge VAT.
+		# Except if the sponsor is from outside the EU, in which case no VAT.
 		# If a sponsor is from our home country, meaning they have a
 		#  VAT number and it starts with our prefix, charge VAT.
 		# XXX: we should probably have *accounting* entries for reverse
 		#      VAT on the ones with a number, but EU vat is currently
 		#      handled manually outside the process for now.
-		if sponsor.vatnumber and not sponsor.vatnumber.startswith(settings.EU_VAT_HOME_COUNTRY):
-			vatlevel = None
-			reverse_vat = True
-		else:
+		if sponsor.vatstatus == 0:
+			# Sponsor inside EU with VAT number
+			if not sponsor.vatnumber:
+				raise Exception("Cannot happen")
+			if sponsor.vatnumber.startswith(settings.EU_VAT_HOME_COUNTRY):
+				# Home country, so we charge vat
+				vatlevel = conference.vat_sponsorship
+				reverse_vat = False
+			else:
+				# Not home country but has VAT number
+				vatlevel = None
+				reverse_vat = True
+		elif sponsor.vatstatus == 1:
+			# Sponsor inside EU but no VAT number
 			vatlevel = conference.vat_sponsorship
+			reverse_vat = False
+		else:
+			# Sponsor outside EU
+			vatlevel = None
 			reverse_vat = False
 	else:
 		# Not caring about EU VAT, so assign whatever the conference said
