@@ -1,5 +1,6 @@
 *~
 *.pyc
 python
+.idea/
 template/admin/login.html.save_no_communityauth
 tools/devsetup/venv_dev/
