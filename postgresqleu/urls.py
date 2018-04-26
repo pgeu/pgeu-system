@@ -98,6 +98,7 @@ urlpatterns = [
 	url(r'^events/([^/]+)/register/signup/(\d+)/$', postgresqleu.confwiki.views.signup),
 
 	# Opt out of communications
+	url(r'^events/optout/$', postgresqleu.confreg.views.optout),
 	url(r'^events/optout/(?P<token>[a-z0-9]{64})/$', postgresqleu.confreg.views.optout),
 
 	# Backend/admin urls

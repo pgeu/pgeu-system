@@ -1714,19 +1714,25 @@ def attendee_mail(request, confname, mailid):
 		})
 
 @transaction.atomic
-def optout(request, token):
-	try:
-		reg = ConferenceRegistration.objects.get(regtoken=token)
-		userid = reg.attendee_id
-		email = reg.email
-	except ConferenceRegistration.DoesNotExist:
+def optout(request, token=None):
+	if token:
 		try:
-			speaker = Speaker.objects.get(speakertoken=token)
-			userid = speaker.user_id
-			email = speaker.user.email
-		except Speaker.DoesNotExist:
-			raise Http404("Token not found")
-
+			reg = ConferenceRegistration.objects.get(regtoken=token)
+			userid = reg.attendee_id
+			email = reg.email
+		except ConferenceRegistration.DoesNotExist:
+			try:
+				speaker = Speaker.objects.get(speakertoken=token)
+				userid = speaker.user_id
+				email = speaker.user.email
+			except Speaker.DoesNotExist:
+				raise Http404("Token not found")
+	else:
+		# No token, so require login
+		if not request.user.is_authenticated:
+			return HttpResponseRedirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+		userid = request.user.id
+		email = request.user.email
 
 	if request.method == 'POST':
 		global_optout = request.POST.get('global', '0')=='1'
