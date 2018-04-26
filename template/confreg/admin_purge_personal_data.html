@@ -1,0 +1,24 @@
+{%extends "confreg/confadmin_base.html"%}
+{%block title%}Purge personal data{%endblock%}
+
+{%block layoutblock%}
+<h1>Purge personal data</h1>
+<p>
+  You are about to purge the following data:
+</p>
+<div class="row"><div class="col-sm-6">
+<table class="table">
+{%for k,v in counts.items%}
+  <tr>
+    <th scope="col">{{k}}</th>
+    <td>{{v}}</td>
+  </tr>
+{%endfor%}
+</table>
+</div></div>
+
+<form class="form-horizontal" method="POST" action=".">{%csrf_token%}
+  <input type="submit" class="btn btn-default" value="Purge and summarize data">
+</form>
+
+{%endblock%}

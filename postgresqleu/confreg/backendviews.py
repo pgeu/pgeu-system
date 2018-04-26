@@ -9,8 +9,10 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 
 import urllib
+import datetime
 
 from postgresqleu.util.middleware import RedirectException
+from postgresqleu.util.db import exec_to_dict, exec_no_result
 
 from models import Conference, ConferenceRegistration
 from models import RegistrationType, RegistrationClass
@@ -384,4 +386,34 @@ def pendinginvoices(request, urlname):
 			'Bulk payment invoices': Invoice.objects.filter(paidat__isnull=True, bulkpayment__conference=conference),
 			'Sponsor invoices': Invoice.objects.filter(paidat__isnull=True, sponsor__conference=conference),
 		},
+	})
+
+
+@transaction.atomic
+def purge_personal_data(request, urlname):
+	conference = get_authenticated_conference(request, urlname)
+
+	if conference.personal_data_purged:
+		messages.warning(request, 'Personal data for this conference has already been purged')
+		return HttpResponseRedirect('../')
+
+	if request.method == 'POST':
+		exec_no_result("INSERT INTO confreg_aggregatedtshirtsizes (conference_id, size_id, num) SELECT conference_id, shirtsize_id, count(*) FROM confreg_conferenceregistration WHERE conference_id=%(confid)s AND shirtsize_id IS NOT NULL GROUP BY conference_id, shirtsize_id", {'confid': conference.id, })
+		exec_no_result("INSERT INTO confreg_aggregateddietary (conference_id, dietary, num) SELECT conference_id, lower(dietary), count(*) FROM confreg_conferenceregistration WHERE conference_id=%(confid)s AND dietary IS NOT NULL AND dietary != '' GROUP BY conference_id, lower(dietary)", {'confid': conference.id, })
+		exec_no_result("UPDATE confreg_conferenceregistration SET shirtsize_id=NULL, dietary='', phone='', address='' WHERE conference_id=%(confid)s", {'confid': conference.id, })
+		conference.personal_data_purged = datetime.datetime.now()
+		conference.save()
+		messages.info(request, "Personal data purged from conference")
+		return HttpResponseRedirect('../')
+
+	return render(request, 'confreg/admin_purge_personal_data.html', {
+		'conference': conference,
+		'counts': exec_to_dict("""SELECT
+  count(1) FILTER (WHERE shirtsize_id IS NOT NULL) AS "T-shirt size registrations",
+  count(1) FILTER (WHERE dietary IS NOT NULL AND dietary != '') AS "Dietary needs",
+  count(1) FILTER (WHERE phone IS NOT NULL AND phone != '') AS "Phone numbers",
+  count(1) FILTER (WHERE address IS NOT NULL AND address != '') AS "Addresses"
+FROM confreg_conferenceregistration WHERE conference_id=%(confid)s""", {
+	'confid': conference.id,
+		})[0],
 	})

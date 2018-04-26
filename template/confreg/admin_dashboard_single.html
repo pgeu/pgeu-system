@@ -7,6 +7,16 @@
   <span class="label label-default">{{c.startdate|date:"Y-m-d"}}</span> - <span class="label label-default">{{c.enddate|date:"Y-m-d"}}</span>
 </div>
 
+{%if c.needs_data_purge %}
+<h2>Purge personal data</h2>
+<p>
+  Once we don't need it anymore, personal data should be purged/aggregated for the conference.
+</p>
+<div class="row">
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-danger btn-block" href="/events/admin/{{c.urlname}}/purgedata/">Purge personal data</a></div>
+</div>
+{%endif%}
+
 <h2>Registrations</h2>
 <div class="row">
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/regdashboard/">Registration dashboard</a></div>

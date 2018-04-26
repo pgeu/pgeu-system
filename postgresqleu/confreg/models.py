@@ -142,6 +142,7 @@ class Conference(models.Model):
 	invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1),], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
 	attendees_before_waitlist = models.IntegerField(blank=False, null=False, default=0, validators=[MinValueValidator(0),], verbose_name="Attendees before waitlist", help_text="Maximum number of attendees before enabling waitlist management. 0 for no waitlist management")
 	series = models.ForeignKey(ConferenceSeries, null=False, blank=False)
+	personal_data_purged = models.DateTimeField(null=True, blank=True, help_text="Personal data for registrations for this conference have been purged")
 
 	# Attributes that are safe to access in jinja templates
 	_safe_attributes = ('active', 'askfood', 'askshareemail', 'asktshirt',
@@ -190,6 +191,10 @@ class Conference(models.Model):
 			return True
 
 		return False
+
+	@property
+	def needs_data_purge(self):
+		return self.enddate < datetime.date.today() and not self.personal_data_purged
 
 	def clean(self):
 		cc = super(Conference, self).clean()
@@ -874,3 +879,21 @@ class PendingAdditionalOrder(models.Model):
 
 	def __unicode__(self):
 		return u"%s" % (self.reg, )
+
+
+
+class AggregatedTshirtSizes(models.Model):
+	conference = models.ForeignKey(Conference, null=False, blank=False)
+	size = models.ForeignKey(ShirtSize, null=False, blank=False)
+	num = models.IntegerField(null=False, blank=False)
+
+	class Meta:
+		unique_together = ( ('conference', 'size'), )
+
+class AggregatedDietary(models.Model):
+	conference = models.ForeignKey(Conference, null=False, blank=False)
+	dietary = models.CharField(max_length=100, null=False, blank=False)
+	num = models.IntegerField(null=False, blank=False)
+
+	class Meta:
+		unique_together = ( ('conference', 'dietary'), )
