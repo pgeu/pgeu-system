@@ -2334,11 +2334,19 @@ def simple_report(request, confname):
 
 	from reports import simple_reports
 
+	if "__" in request.GET['report']:
+		raise Http404("Invalid character in report name")
+
 	if not simple_reports.has_key(request.GET['report']):
 		raise Http404("Report not found")
 
+	if conference.personal_data_purged and simple_reports.has_key('{0}__anon'.format(request.GET['report'])):
+		query = simple_reports['{0}__anon'.format(request.GET['report'])]
+	else:
+		query = simple_reports[request.GET['report']]
+
 	curs = connection.cursor()
-	curs.execute(simple_reports[request.GET['report']], {
+	curs.execute(query, {
 		'confid': conference.id,
 		})
 	d = curs.fetchall()
