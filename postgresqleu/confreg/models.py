@@ -247,6 +247,9 @@ class RegistrationDay(models.Model):
 
 	class Meta:
 		ordering = ('day', )
+		unique_together = (
+			('conference', 'day'),
+		)
 
 	def __unicode__(self):
 		return self.day.strftime('%a, %d %b')
