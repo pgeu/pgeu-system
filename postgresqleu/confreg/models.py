@@ -268,6 +268,7 @@ class RegistrationType(models.Model):
 	inlist = models.BooleanField(null=False, blank=False, default=True)
 	sortkey = models.IntegerField(null=False, blank=False, default=10)
 	specialtype = models.CharField(max_length=5, blank=True, null=True, choices=special_reg_types)
+	require_phone = models.BooleanField(null=False, blank=False, default=False, help_text="Require phone number to be entered")
 	days = models.ManyToManyField(RegistrationDay, blank=True)
 	alertmessage =models.TextField(null=False, blank=True)
 	upsell_target = models.BooleanField(null=False, blank=False, default=False, help_text='Is target registration type for upselling in order to add additional options')

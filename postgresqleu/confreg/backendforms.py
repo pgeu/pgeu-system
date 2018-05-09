@@ -158,7 +158,7 @@ class BackendRegistrationTypeForm(BackendForm):
 
 	class Meta:
 		model = RegistrationType
-		fields = ['regtype', 'regclass', 'cost', 'active', 'activeuntil', 'days', 'sortkey', 'specialtype', 'alertmessage', 'invoice_autocancel_hours', 'requires_option', 'upsell_target']
+		fields = ['regtype', 'regclass', 'cost', 'active', 'activeuntil', 'days', 'sortkey', 'specialtype', 'require_phone', 'alertmessage', 'invoice_autocancel_hours', 'requires_option', 'upsell_target']
 
 	def fix_fields(self):
 		self.fields['regclass'].queryset = RegistrationClass.objects.filter(conference=self.conference)

@@ -1466,10 +1466,18 @@ def confirmreg(request, confname):
 												  'reg': reg,
 											  })
 
+	phone_error = errors = False
+
 	if request.method == 'POST':
 		if request.POST['submit'].find('Back') >= 0:
 			return HttpResponseRedirect("../")
-		if request.POST['submit'] == 'Confirm and finish':
+		if reg.regtype.require_phone:
+			reg.phone = request.POST['phone']
+			if len(reg.phone) < 3:
+				phone_error = True
+				errors = True
+
+		if request.POST['submit'] == 'Confirm and finish' and not errors:
 			# Get the invoice rows and flag any vouchers as used
 			# (committed at the end of the view so if something
 			# goes wrong they automatically go back to unused)
@@ -1571,6 +1579,8 @@ def confirmreg(request, confname):
 		'totalwithvat': totalwithvat,
 		'regalert': reg.regtype.alertmessage,
 		'warnings': registration_warnings,
+		'phone': reg.phone,
+		'phone_error': phone_error,
 		})
 
 

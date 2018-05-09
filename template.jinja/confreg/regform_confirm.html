@@ -105,6 +105,15 @@ be locked and can no longer be edited.
 <i>due for immediate payment</i>. Your registration will not be confirmed
 until this invoice is paid!{%endif%}
 </p>
+{%if reg.regtype.require_phone%}
+<p>
+  For registrations of type {{reg.regtype.regtype}}, we ask that you provide your
+  phone number, so we can contact you during the event if necessary.
+</p>
+<div {%if phone_error%} class="warnfld"{%endif%}>
+  Phone number: <input type="text" name="phone" value="{{reg.phone}}">
+</div>
+{%endif%}
 {%if warnings%}
 <div class="warnfld">
   <ul>

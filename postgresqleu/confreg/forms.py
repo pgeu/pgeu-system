@@ -264,7 +264,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 		yield {'id': 'personal_information',
 			   'legend': 'Personal information',
 			   'introhtml': self.intro_html,
-			   'fields': [self[x] for x in ('regtype', 'firstname', 'lastname', 'company', 'address', 'country', 'email', 'phone', 'twittername', 'nick')],
+			   'fields': [self[x] for x in ('regtype', 'firstname', 'lastname', 'company', 'address', 'country', 'email', 'twittername', 'nick')],
 			   }
 
 		if conf.asktshirt or conf.askfood or conf.askshareemail:
