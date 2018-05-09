@@ -2321,6 +2321,7 @@ def reports(request, confname):
 	# Include information for the advanced reports
 	from reports import attendee_report_fields, attendee_report_filters
 	return render(request, 'confreg/reports.html', {
+			'conference': conference,
 			'list': True,
 			'additionaloptions': conference.conferenceadditionaloption_set.all(),
 			'adv_fields': attendee_report_fields,
