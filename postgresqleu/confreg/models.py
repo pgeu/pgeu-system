@@ -125,6 +125,8 @@ class Conference(models.Model):
 	volunteers = models.ManyToManyField('ConferenceRegistration', blank=True, related_name="volunteers_set", help_text="Users who volunteer")
 	asktshirt = models.BooleanField(blank=False, null=False, default=True, verbose_name="Field: t-shirt", help_text="Include field for T-shirt size")
 	askfood = models.BooleanField(blank=False, null=False, default=True, verbose_name="Field: dietary", help_text="Include field for dietary needs")
+	asktwitter = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: twitter name", help_text="Include field for twitter name")
+	asknick = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: nick", help_text="Include field for nick")
 	askshareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: share email", help_text="Include field for sharing email with sponsors")
 	skill_levels = models.BooleanField(blank=False, null=False, default=True)
 	additionalintro = models.TextField(blank=True, null=False, help_text="Additional text shown just before the list of available additional options")
@@ -145,7 +147,7 @@ class Conference(models.Model):
 	personal_data_purged = models.DateTimeField(null=True, blank=True, help_text="Personal data for registrations for this conference have been purged")
 
 	# Attributes that are safe to access in jinja templates
-	_safe_attributes = ('active', 'askfood', 'askshareemail', 'asktshirt',
+	_safe_attributes = ('active', 'askfood', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
 						'callforpapersintro', 'callforpapersopen',
 						'conferencefeedbackopen', 'confurl', 'contactaddr',
 						'feedbackopen', 'org_name', 'skill_levels', 'treasurer_email', 'urlname', )

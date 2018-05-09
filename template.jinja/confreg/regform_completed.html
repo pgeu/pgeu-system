@@ -69,8 +69,12 @@ at {{conference.contactaddr}}.
   <tr><td class="firstcol">Country</td><td>{{reg.country}}</td></tr>
   <tr><td class="firstcol">Email</td><td>{{reg.email}}</td></tr>
   <tr><td class="firstcol">Phone</td><td>{{reg.phone}}</td></tr>
+{%if conference.asktwitter%}
   <tr><td class="firstcol">Twitter name</td><td>{{reg.twittername}}</td></tr>
+{%endif%}
+{%if conference.asknick%}
   <tr><td class="firstcol">Nickname</td><td>{{reg.nick}}</td></tr>
+{%endif%}
  </table>
 </fieldset>
 {%if conference.asktshirt or conference.askfood or conference.askshareemail%}

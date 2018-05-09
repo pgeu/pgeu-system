@@ -100,7 +100,7 @@ class BackendConferenceForm(BackendForm):
 				  'conferencefeedbackopen', 'scheduleactive', 'sessionsactive',
 				  'schedulewidth', 'pixelsperminute',
 				  'testers', 'talkvoters', 'staff', 'volunteers',
-				  'asktshirt', 'askfood', 'askshareemail', 'skill_levels',
+				  'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'skill_levels',
 				  'additionalintro', 'callforpapersintro', 'sendwelcomemail', 'welcomemail',
 				  'invoice_autocancel_hours', 'attendees_before_waitlist']
 	selectize_multiple_fields = ['testers', 'talkvoters', 'staff', 'volunteers']

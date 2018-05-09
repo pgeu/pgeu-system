@@ -41,12 +41,18 @@ class ConferenceRegistrationForm(forms.ModelForm):
 		self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference).order_by('sortkey')
 		if not self.instance.conference.asktshirt:
 			del self.fields['shirtsize']
+		if not self.instance.conference.asknick:
+			del self.fields['nick']
+		if not self.instance.conference.asktwitter:
+			del self.fields['twittername']
+		else:
+			self.fields['twittername'].validators.append(TwitterValidator)
+
 		if self.regforother:
 			self.fields['email'].widget.attrs['readonly'] = True
 		self.fields['additionaloptions'].queryset =	ConferenceAdditionalOption.objects.filter(
 			conference=self.instance.conference, public=True)
 		self.fields['country'].queryset = Country.objects.order_by('printable_name')
-		self.fields['twittername'].validators.append(TwitterValidator)
 
 		if not self.regforother:
 			self.intro_html = mark_safe(u'<p>You are currently making a registration for community account<br/><i>{0} ({1} {2} &lt;{3}&gt;).</i></p>'.format(escape(self.user.username), escape(self.user.first_name), escape(self.user.last_name), escape(self.user.email)))
@@ -261,10 +267,15 @@ class ConferenceRegistrationForm(forms.ModelForm):
 		# Return a set of fields used for our rendering
 		conf = self.instance.conference
 
+		fields = ['regtype', 'firstname', 'lastname', 'company', 'address', 'country', 'email']
+		if conf.asktwitter:
+			fields.append('twittername')
+		if conf.asknick:
+			fields.append('nick')
 		yield {'id': 'personal_information',
 			   'legend': 'Personal information',
 			   'introhtml': self.intro_html,
-			   'fields': [self[x] for x in ('regtype', 'firstname', 'lastname', 'company', 'address', 'country', 'email', 'twittername', 'nick')],
+			   'fields': [self[x] for x in fields],
 			   }
 
 		if conf.asktshirt or conf.askfood or conf.askshareemail:

@@ -42,14 +42,18 @@
   <td>Phone</td>
   <td>{{reg.phone}}</td>
  </tr>
+{%if conference.asktwitter%}
  <tr>
   <td>Twitter</td>
   <td>{{reg.twittername}}</td>
  </tr>
+{%endif%}
+{%if conference.asknick%}
  <tr>
   <td>Nick</td>
   <td>{{reg.nick}}</td>
  </tr>
+{%endif%}
 
  <tr>
   <th colspan="2" class="col-md-12">Attendee specifics</th>
