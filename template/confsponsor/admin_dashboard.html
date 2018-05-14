@@ -102,4 +102,16 @@ This matrix gives a quick overview of the status of the different benefits for e
 <p></p>
 {%endfor%}
 
+{%if eu_vat and  user.is_superuser %}
+<h2>VAT testing</h2>
+<p>
+  Paste a VAT number to run a test on it, the same way that the sponsor
+  signup form would do.
+</p>
+<form method="post" action="testvat/"> {% csrf_token %}
+  <input type="text" name="vatnumber" placeholder="VAT number">
+  <input class="btn btn-default" type="submit" value="Validate">
+</form>
+{%endif%}
+
 {%endblock%}

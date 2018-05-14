@@ -13,6 +13,7 @@ from postgresqleu.auth import user_search, user_import
 from postgresqleu.confreg.models import Conference, PrepaidVoucher, DiscountCode
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.storage import InlineEncodedStorage
+from postgresqleu.util.decorators import user_passes_test_or_error
 from postgresqleu.invoices.util import InvoiceWrapper
 
 from models import Sponsor, SponsorshipLevel, SponsorshipBenefit
@@ -24,6 +25,7 @@ from forms import AdminCopySponsorshipLevelForm
 from benefits import get_benefit_class
 from invoicehandler import create_sponsor_invoice, confirm_sponsor
 from invoicehandler import create_voucher_invoice
+from vatutil import validate_eu_vat_number
 
 @login_required
 def sponsor_dashboard(request):
@@ -708,3 +710,17 @@ def admin_copy_level(request, levelid):
 		'form': form,
 		'sourcelevel': level,
 	})
+
+@login_required
+@user_passes_test_or_error(lambda u: u.is_superuser)
+def sponsor_admin_test_vat(request, confurlname):
+	conference = get_object_or_404(Conference, urlname=confurlname)
+
+	vn = request.POST.get('vatnumber', '')
+	if not vn:
+		return HttpResponse("Empty search")
+
+	r = validate_eu_vat_number(vn)
+	if r:
+		return HttpResponse("VAT validation error: %s" % r)
+	return HttpResponse("VAT number is valid")

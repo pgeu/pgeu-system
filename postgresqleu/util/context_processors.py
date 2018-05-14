@@ -13,6 +13,7 @@ def settings_context(request=None):
 		'currency_abbrev': settings.CURRENCY_ABBREV,
 		'currency_symbol': settings.CURRENCY_SYMBOL,
 		'is_debugging': settings.DEBUG,
+		'eu_vat': settings.EU_VAT,
 	}
 
 def settings_context_unicode(request=None):

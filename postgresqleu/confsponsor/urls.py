@@ -23,4 +23,5 @@ urlpatterns = [
    url(r'^admin/(\w+)/benefit/(\d+)/$', views.sponsor_admin_benefit),
    url(r'^admin/(\w+)/sendmail/$', views.sponsor_admin_send_mail),
    url(r'^admin/(\w+)/viewmail/(\d+)/$', views.sponsor_admin_view_mail),
+   url(r'^admin/(\w+)/testvat/$', views.sponsor_admin_test_vat),
 ]
