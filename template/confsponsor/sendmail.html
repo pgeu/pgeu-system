@@ -22,6 +22,16 @@ be made available historically to both those and to anybody else who signs
 up as a sponsor at that level later.
 </p>
 
+{%if mails%}
+<h2>Previous emails</h2>
+<ul>
+{%for m in mails%}
+ <li>{{m.sentat|date:"Y-m-d H:i"}} <a href="../viewmail/{{m.id}}/">{{m.subject}}</a> ({{m.levels.all|join:", "}})</li>
+{%endfor%}
+</ul>
+{%endif%}
+
+<h2>New email</h2>
 <form method="post" action=".">{% csrf_token %}
 <table class="emailform">
  <tr><th>From</th><td>{{conference.sponsoraddr}}</td></tr>

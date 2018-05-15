@@ -633,6 +633,7 @@ def sponsor_admin_send_mail(request, confurlname):
 	return render(request, 'confsponsor/sendmail.html', {
 		'conference': conference,
 		'form': form,
+		'mails': SponsorMail.objects.filter(conference=conference).order_by('sentat'),
 	})
 
 @login_required
