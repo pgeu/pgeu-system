@@ -584,6 +584,7 @@ def sponsor_admin_benefit(request, confurlname, benefitid):
 		'sponsor': benefit.sponsor,
 		'benefit': benefit,
 		'claimdata': claimdata,
+		'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
 		})
 
 @login_required
@@ -634,6 +635,7 @@ def sponsor_admin_send_mail(request, confurlname):
 		'conference': conference,
 		'form': form,
 		'mails': SponsorMail.objects.filter(conference=conference).order_by('sentat'),
+		'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
 	})
 
 @login_required
@@ -648,6 +650,7 @@ def sponsor_admin_view_mail(request, confurlname, mailid):
 		'conference': conference,
 		'mail': mail,
 		'admin': True,
+		'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
 		})
 
 @login_required
