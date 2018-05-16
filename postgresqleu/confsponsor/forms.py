@@ -29,7 +29,7 @@ class SponsorSignupForm(forms.Form):
 	address = forms.CharField(label="Company invoice address *", min_length=10, max_length=500, widget=forms.Textarea)
 	vatstatus = forms.ChoiceField(label="Company VAT status", choices=vat_status_choices)
 	vatnumber = forms.CharField(label="EU VAT Number", min_length=5, max_length=50, help_text="Enter EU VAT Number to be included on invoices if assigned one. Leave empty if outside the EU or without assigned VAT number.", required=False)
-	url = forms.CharField(label="Company URL *", min_length=8, max_length=100)
+	url = forms.URLField(label="Company URL *")
 	twittername = forms.CharField(label="Company twitter", min_length=0, max_length=100, required=False, validators=[TwitterValidator, ])
 	confirm = forms.BooleanField(help_text="Check this box to that you have read and agree to the terms in the contract")
 
