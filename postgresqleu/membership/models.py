@@ -66,10 +66,19 @@ class Meeting(models.Model):
 			return True
 		return False
 
+	def get_key_for(self, member):
+		try:
+			return MemberMeetingKey.objects.get(meeting=self, member=member)
+		except MemberMeetingKey.DoesNotExist:
+			return None
+
+
 class MemberMeetingKey(models.Model):
 	member = models.ForeignKey(Member, null=False, blank=False)
 	meeting = models.ForeignKey(Meeting, null=False, blank=False)
 	key = models.CharField(max_length=100, null=False, blank=False)
+	proxyname = models.CharField(max_length=200, null=True, blank=False)
+	proxyaccesskey = models.CharField(max_length=100, null=True, blank=False)
 
 	class Meta:
 		unique_together = (('member', 'meeting'), )

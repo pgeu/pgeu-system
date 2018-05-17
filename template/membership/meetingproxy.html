@@ -1,0 +1,41 @@
+{%extends "nav_membership.html"%}
+{%block title%}Proxy voting{%endblock%}
+{%block content%}
+<h1>Proxy voting</h1>
+
+{%if key.proxyname %}
+<h2>Proxy voter</h2>
+<p>
+  You are currently set up to allow {{key.proxyname}} to attend and vote on your
+  behalf in {{meeting.name}}.
+</p>
+<p>
+  For them to retreive the instructions for connecting, plase ask them to visit
+  the page at
+  <a href="/membership/meetings/{{meeting.id}}/{{key.proxyaccesskey}}/">{{sitebase}}/membership/meetings/{{meeting.id}}/{{key.proxyaccesskey}}/</a>
+  within 4 hours before the meeting.
+</p>
+{%else%}
+<p>
+  On this form you can assign a proxy voter. This person will be able to attend
+  and vote on your behalf in {{meeting.name}}.
+</p>
+{%endif%}
+
+<h2>New proxy voter</h2>
+{%if form.errors%}
+<p>
+<b>NOTE!</b> Your submitted form contained errors and has <b>not</b> been saved!
+</p>
+{%endif%}
+
+<form method="post" action=".">{% csrf_token %}
+<table>
+{{form}}
+</table>
+
+<input type="submit" value="Save">
+</form>
+
+<p><a href="../../">Return</a> to list of meetings</p>
+{%endblock%}

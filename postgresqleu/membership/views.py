@@ -7,9 +7,10 @@ from django.db import transaction
 from django.db.models import Q
 
 from models import Member, MemberLog, Meeting, MemberMeetingKey
-from forms import MemberForm
+from forms import MemberForm, ProxyVoterForm
 
 from postgresqleu.util.decorators import user_passes_test_or_error
+from postgresqleu.util.random import generate_random_token
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
 from postgresqleu.confreg.forms import EmailSendForm
@@ -148,19 +149,22 @@ def meetings(request):
 	q = Q(dateandtime__gte=datetime.now()-timedelta(hours=4)) & (Q(allmembers=True) | Q(members=member))
 	meetings = Meeting.objects.filter(q).order_by('dateandtime')
 
+	meetinginfo = [{
+		'id': m.id,
+		'name': m.name,
+		'joining_active': m.joining_active,
+		'dateandtime': m.dateandtime,
+		'key': m.get_key_for(member),
+		} for m in meetings]
+
 	return render(request, 'membership/meetings.html', {
 		'active': member.paiduntil and member.paiduntil >= datetime.today().date(),
 		'member': member,
-		'meetings': meetings,
+		'meetings': meetinginfo,
 		})
 
-@login_required
 @transaction.atomic
-def meeting(request, meetingid):
-	# View a single meeting
-	meeting = get_object_or_404(Meeting, pk=meetingid)
-	member = get_object_or_404(Member, user=request.user)
-
+def _meeting(request, member, meeting, isproxy):
 	if not (member.paiduntil and member.paiduntil >= datetime.today().date()):
 		return HttpResponse("Your membership is not active")
 
@@ -185,10 +189,83 @@ def meeting(request, meetingid):
 		key.key = base64.urlsafe_b64encode(os.urandom(40)).rstrip('=')
 		key.save()
 
+	if key.proxyname and not isproxy:
+		return HttpResponse(u"You have assigned a proxy attendee for this meeting ({0}). This means you cannot attend the meeting yourself.".format(key.proxyname))
+
 	return render(request, 'membership/meeting.html', {
 		'member': member,
 		'meeting': meeting,
 		'key': key,
+		})
+
+@login_required
+def meeting(request, meetingid):
+	# View a single meeting
+	meeting = get_object_or_404(Meeting, pk=meetingid)
+	member = get_object_or_404(Member, user=request.user)
+	return _meeting(request, member, meeting, False)
+
+def meeting_by_key(request, meetingid, token):
+	key = get_object_or_404(MemberMeetingKey, proxyaccesskey=token)
+	return _meeting(request, key.member, key.meeting, True)
+
+@login_required
+@transaction.atomic
+def meeting_proxy(request, meetingid):
+	# Assign proxy voter for meeting
+	meeting = get_object_or_404(Meeting, pk=meetingid)
+	member = get_object_or_404(Member, user=request.user)
+
+	if not (member.paiduntil and member.paiduntil >= datetime.today().date()):
+		return HttpResponse("Your membership is not active")
+
+	if not meeting.allmembers:
+		if not meeting.members.filter(pk=member.pk).exists():
+			return HttpResponse("Access denied.")
+
+	if member.paiduntil < meeting.dateandtime.date():
+		return HttpResponse("Your membership expires before the meeting")
+
+	# Do we have one already?
+	try:
+		key = MemberMeetingKey.objects.get(member=member, meeting=meeting)
+	except MemberMeetingKey.DoesNotExist:
+		key = MemberMeetingKey()
+		key.meeting = meeting
+		key.member = member
+
+	initial = {
+		'name': key.proxyname,
+	}
+
+	if request.method == 'POST':
+		form = ProxyVoterForm(initial=initial, data=request.POST)
+		if form.is_valid():
+			if form.cleaned_data['name']:
+				key.proxyname = form.cleaned_data['name']
+				key.proxyaccesskey = generate_random_token()
+				key.key = base64.urlsafe_b64encode(os.urandom(40)).rstrip('=')
+				key.save()
+				MemberLog(member=member,
+						  timestamp=datetime.now(),
+						  message=u"Assigned {0} as proxy voter in {1}".format(key.proxyname, meeting.name)
+				).save()
+				return HttpResponseRedirect('.')
+			else:
+				key.delete()
+				MemberLog(member=member,
+						  timestamp=datetime.now(),
+						  message=u"Canceled proxy voting in {0}".format(meeting.name)
+				).save()
+				return HttpResponseRedirect("../../")
+	else:
+		form = ProxyVoterForm(initial=initial)
+
+	return render(request, 'membership/meetingproxy.html', {
+		'member': member,
+		'meeting': meeting,
+		'key': key,
+		'form': form,
 		})
 
 # API calls from meeting bot
@@ -198,13 +275,21 @@ def meetingcode(request):
 
 	try:
 		key = MemberMeetingKey.objects.get(key=secret, meeting__pk=meetingid)
+		if key.meeting.dateandtime + timedelta(hours=4) < datetime.now():
+			return HttpResponse(jsuon.dumps({'err': 'This meeting is not open for signing in yet.'}),
+								content_type='application/json')
 		member = key.member
 	except MemberMeetingKey.DoesNotExist:
 		return HttpResponse(json.dumps({'err': 'Authentication key not found. Please see %s/membership/meetings/ to get your correct key!' % settings.SITEBASE}),
 							content_type='application/json')
 
+	if key.proxyname:
+		name = u"{0} (proxy for {1})".format(key.proxyname, member.fullname)
+	else:
+		name = member.fullname
+
 	# Return a JSON object with information about the member
 	return HttpResponse(json.dumps({'username': member.user.username,
 										  'email': member.user.email,
-										  'name': member.fullname,
+										  'name': name,
 									  }), content_type='application/json')
