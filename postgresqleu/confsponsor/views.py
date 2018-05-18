@@ -262,6 +262,7 @@ def sponsor_signup(request, confurlname, levelurlname):
 		if form.is_valid():
 			# Create a new sponsorship record always
 			sponsor = Sponsor(conference=conference,
+							  signupat=datetime.now(),
 							  name=form.cleaned_data['name'],
 							  displayname=form.cleaned_data['displayname'],
 							  url=form.cleaned_data['url'],

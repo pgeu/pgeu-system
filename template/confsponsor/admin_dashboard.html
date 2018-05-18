@@ -42,7 +42,7 @@ sponsor manually, you may want to confirm them manually as well...
 </p>
 <ul>
 {%for s in unconfirmed_sponsors%}
- <li><a href="{{s.id}}/">{{s}}</a> ({{s.level}})</li>
+ <li><a href="{{s.id}}/">{{s}}</a> ({{s.level}}, signed up {{s.signupat}})</li>
 {%endfor%}
 </ul>
 {%endif%}

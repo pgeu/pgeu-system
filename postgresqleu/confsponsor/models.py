@@ -87,6 +87,7 @@ class Sponsor(models.Model):
 	confirmed = models.BooleanField(null=False, blank=False, default=False)
 	confirmedat = models.DateTimeField(null=True, blank=True)
 	confirmedby = models.CharField(max_length=50, null=False, blank=True)
+	signupat = models.DateTimeField(null=False, blank=False)
 
 	def __unicode__(self):
 		return self.name
