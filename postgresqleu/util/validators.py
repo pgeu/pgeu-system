@@ -1,7 +1,6 @@
 from django.core.exceptions import ValidationError
 
-import httplib
-import socket
+import requests
 
 def validate_lowercase(value):
 	if value != value.lower():
@@ -33,14 +32,14 @@ def TwitterValidator(value):
 		# This can only happen if it was '@' initially
 		raise ValidationError("Enter twitter name or leave field empty")
 
-	conn = httplib.HTTPSConnection("twitter.com", timeout=5, strict=True)
-	conn.request('HEAD', '/{0}'.format(value))
-	conn.sock.settimeout(5) # 5 second TCP timeout
 	try:
-		r = conn.getresponse()
-	except socket.timeout:
+		r = requests.head('https://twitter.com/{0}'.format(value),
+						  headers={'User-agent': 'Firefox/60'},
+						  timeout=5)
+	except requests.exceptions.ReadTimeout:
 		raise ValidationError("Could not verify twitter name - timeout")
-	if r.status != 200:
+
+	if r.status_code != 200:
 		raise ValidationError("Could not verify twitter name: {0}".format(r.status))
 
 	# All is well! :)
