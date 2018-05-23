@@ -92,6 +92,10 @@ class BackendForm(ConcurrentProtectedModelForm):
 		pass
 
 	@classmethod
+	def get_initial(self):
+		return {}
+
+	@classmethod
 	def get_field_verbose_name(self, f):
 		if f in self.verbose_field_names:
 			return self.verbose_field_names[f]

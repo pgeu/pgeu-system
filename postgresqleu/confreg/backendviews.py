@@ -77,6 +77,10 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 		else:
 			# No special form_before_new, so just create an empty instance
 			instance = formclass.Meta.model(conference=conference)
+
+		# Set initial values on newly created instance, if any are set
+		for k,v in formclass.get_initial().items():
+			setattr(instance, k, v)
 	else:
 		if bypass_conference_filter:
 			instance = get_object_or_404(formclass.Meta.model, pk=id)
