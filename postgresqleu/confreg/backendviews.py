@@ -50,7 +50,6 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 		if formclass.form_before_new:
 			if request.method == 'POST' and '_validator' in request.POST:
 				# This is a postback from the *actual* form
-				print("Setting newformdata 1!")
 				newformdata = request.POST['_newformdata']
 				instance = formclass.Meta.model(conference=conference)
 			else:
