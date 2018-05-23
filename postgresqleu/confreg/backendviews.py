@@ -465,7 +465,7 @@ def tokendata(request, urlname, token, datatype, dataformat):
 		for r in exec_to_list("SELECT code, maxuses, count(payconfirmedat) AS confirmed, count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed FROM confreg_conferenceregistration r RIGHT JOIN confreg_discountcode dc ON dc.code=r.vouchercode WHERE dc.conference_id=%(confid)s AND (r.conference_id=%(confid)s OR r.conference_id IS NULL) GROUP BY dc.id ORDER BY code", {'confid': conference.id, }):
 			writer.writerow(_reencode_row(r))
 	elif datatype == 'vouchers':
-		writer.writerow(["Code", "Buyer", "Used", "Unused"])
+		writer.writerow(["Buyer", "Used", "Unused"])
 		for r in exec_to_list("SELECT b.buyername, count(v.user_id) AS used, count(*) FILTER (WHERE v.user_id IS NULL) AS unused FROM confreg_prepaidbatch b INNER JOIN confreg_prepaidvoucher v ON v.batch_id=b.id WHERE b.conference_id=%(confid)s GROUP BY b.id ORDER BY buyername", {'confid': conference.id, }):
 			writer.writerow(_reencode_row(r))
 	elif datatype == 'sponsors':
