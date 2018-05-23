@@ -45,6 +45,7 @@ class BackendForm(ConcurrentProtectedModelForm):
 	allow_copy_previous = False
 	copy_transform_form = None
 	coltypes = {}
+	readonly_fields = []
 
 	def __init__(self, conference, *args, **kwargs):
 		self.conference = conference
@@ -83,6 +84,9 @@ class BackendForm(ConcurrentProtectedModelForm):
 
 		for field, vattype in self.vat_fields.items():
 			self.fields[field].widget.attrs['class'] = 'backend-vat-field backend-vat-{0}-field'.format(vattype)
+
+		for field in self.readonly_fields:
+			self.fields[field].widget.attrs['readonly'] = 'true'
 
 	def fix_fields(self):
 		pass
