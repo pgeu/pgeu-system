@@ -2,3 +2,6 @@ div.buttonrow .btn {
     margin-bottom: 10px;
 }
 
+div.backendform_checkbox ul {
+    list-style-type: none;
+}

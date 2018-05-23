@@ -17,7 +17,7 @@ def field_class(value, arg):
 
 @register.filter(is_safe=True)
 def ischeckbox(obj):
-	return obj.field.widget.__class__.__name__ == "CheckboxInput" and not getattr(obj.field, 'regular_field', False)
+	return obj.field.widget.__class__.__name__ in ("CheckboxInput", "CheckboxSelectMultiple") and not getattr(obj.field, 'regular_field', False)
 
 @register.filter(is_safe=True)
 def isrequired_error(obj):

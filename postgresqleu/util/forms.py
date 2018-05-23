@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import ValidationError
 from django.core.signing import Signer, BadSignature
+from django.contrib.postgres.fields import ArrayField
 
 import cPickle
 import base64
@@ -51,3 +52,13 @@ class ConcurrentProtectedModelForm(forms.ModelForm):
 			raise ValidationError("Bad serialized python form state")
 
 		return data
+
+
+class ChoiceArrayField(ArrayField):
+    def formfield(self, **kwargs):
+        defaults = {
+            'form_class': forms.MultipleChoiceField,
+            'choices': self.base_field.choices,
+        }
+        defaults.update(kwargs)
+        return super(ArrayField, self).formfield(**defaults)
