@@ -150,8 +150,11 @@ urlpatterns = [
 	url(r'^events/admin/(\w+)/volunteerslots/(.*/)?$', postgresqleu.confreg.backendviews.edit_volunteerslots),
 	url(r'^events/admin/(\w+)/feedbackquestions/(.*/)?$', postgresqleu.confreg.backendviews.edit_feedbackquestions),
 	url(r'^events/admin/(\w+)/discountcodes/(.*/)?$', postgresqleu.confreg.backendviews.edit_discountcodes),
+	url(r'^events/admin/(\w+)/accesstokens/(.*/)?$', postgresqleu.confreg.backendviews.edit_accesstokens),
 	url(r'^events/admin/(\w+)/pendinginvoices/$', postgresqleu.confreg.backendviews.pendinginvoices),
 	url(r'^events/admin/(\w+)/purgedata/$', postgresqleu.confreg.backendviews.purge_personal_data),
+
+	url(r'^events/admin/(\w+)/tokendata/([a-z0-9]{64})/(\w+)\.(tsv|csv)$', postgresqleu.confreg.backendviews.tokendata),
 
 	url(r'^events/sponsor/', include('postgresqleu.confsponsor.urls')),
 

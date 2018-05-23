@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.db import transaction
 from django import forms
 from django.core import urlresolvers
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib.admin.utils import NestedObjects
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -10,14 +10,17 @@ from django.conf import settings
 
 import urllib
 import datetime
+import csv
 
 from postgresqleu.util.middleware import RedirectException
-from postgresqleu.util.db import exec_to_dict, exec_no_result
+from postgresqleu.util.db import exec_to_list, exec_to_dict, exec_no_result
 
 from models import Conference, ConferenceRegistration
 from models import RegistrationType, RegistrationClass
+from models import AccessToken
 
 from postgresqleu.invoices.models import Invoice
+from postgresqleu.confsponsor.util import get_sponsor_dashboard_data
 
 from backendforms import BackendCopySelectConferenceForm
 from backendforms import BackendConferenceForm, BackendRegistrationForm
@@ -26,6 +29,7 @@ from backendforms import BackendRegistrationDayForm, BackendAdditionalOptionForm
 from backendforms import BackendTrackForm, BackendRoomForm, BackendConferenceSessionForm
 from backendforms import BackendConferenceSessionSlotForm, BackendVolunteerSlotForm
 from backendforms import BackendFeedbackQuestionForm, BackendDiscountCodeForm
+from backendforms import BackendAccessTokenForm
 
 def get_authenticated_conference(request, urlname):
 	if not request.user.is_authenticated:
@@ -375,6 +379,12 @@ def edit_discountcodes(request, urlname, rest):
 							   BackendDiscountCodeForm,
 							   rest)
 
+def edit_accesstokens(request, urlname, rest):
+	return backend_list_editor(request,
+							   urlname,
+							   BackendAccessTokenForm,
+							   rest)
+
 
 ###
 # Non-simple-editor views
@@ -420,3 +430,50 @@ FROM confreg_conferenceregistration WHERE conference_id=%(confid)s""", {
 	'confid': conference.id,
 		})[0],
 	})
+
+
+
+def _reencode_row(r):
+	def _reencode_value(v):
+		if isinstance(v, unicode):
+			return v.encode('utf-8')
+		return v
+	return [_reencode_value(x) for x in r]
+
+def tokendata(request, urlname, token, datatype, dataformat):
+	conference = get_object_or_404(Conference, urlname=urlname)
+	if not AccessToken.objects.filter(conference=conference, token=token, permissions__contains=[datatype,]).exists():
+		raise Http404()
+
+	if dataformat.lower() == 'csv':
+		delimiter = ","
+	elif dataformat.lower() == 'tsv':
+		delimiter = "\t"
+	else:
+		raise Http404()
+
+	response = HttpResponse(content_type='text/plain; charset=utf-8')
+	writer = csv.writer(response, delimiter=delimiter)
+	writer.writerow(["File loaded", datetime.datetime.now()])
+
+	if datatype == 'regtypes':
+		writer.writerow(['Type', 'Confirmed', 'Unconfirmed'])
+		for r in exec_to_list("SELECT regtype, count(payconfirmedat) AS confirmed, count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed FROM confreg_conferenceregistration r RIGHT JOIN confreg_registrationtype rt ON rt.id=r.regtype_id WHERE rt.conference_id=%(confid)s GROUP BY rt.id ORDER BY rt.sortkey", { 'confid': conference.id, }):
+			writer.writerow(_reencode_row(r))
+	elif datatype == 'discounts':
+		writer.writerow(['Code', 'Max uses', 'Confirmed', 'Unconfirmed'])
+		for r in exec_to_list("SELECT code, maxuses, count(payconfirmedat) AS confirmed, count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed FROM confreg_conferenceregistration r RIGHT JOIN confreg_discountcode dc ON dc.code=r.vouchercode WHERE dc.conference_id=%(confid)s AND (r.conference_id=%(confid)s OR r.conference_id IS NULL) GROUP BY dc.id ORDER BY code", {'confid': conference.id, }):
+			writer.writerow(_reencode_row(r))
+	elif datatype == 'vouchers':
+		writer.writerow(["Code", "Buyer", "Used", "Unused"])
+		for r in exec_to_list("SELECT b.buyername, count(v.user_id) AS used, count(*) FILTER (WHERE v.user_id IS NULL) AS unused FROM confreg_prepaidbatch b INNER JOIN confreg_prepaidvoucher v ON v.batch_id=b.id WHERE b.conference_id=%(confid)s GROUP BY b.id ORDER BY buyername", {'confid': conference.id, }):
+			writer.writerow(_reencode_row(r))
+	elif datatype == 'sponsors':
+		(headers, data) = get_sponsor_dashboard_data(conference)
+		writer.writerow(headers)
+		for r in data:
+			writer.writerow(_reencode_row(r))
+	else:
+		raise Http404()
+
+	return response

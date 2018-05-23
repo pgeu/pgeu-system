@@ -11,6 +11,7 @@ from django.utils.dateformat import DateFormat
 from django.contrib.postgres.fields import DateTimeRangeField
 
 from postgresqleu.util.validators import validate_lowercase
+from postgresqleu.util.forms import ChoiceArrayField
 
 from postgresqleu.confreg.dbimage import SpeakerImageStorage
 
@@ -903,3 +904,28 @@ class AggregatedDietary(models.Model):
 
 	class Meta:
 		unique_together = ( ('conference', 'dietary'), )
+
+
+AccessTokenPermissions = (
+	('regtypes', 'Registration types and counters'),
+	('discounts', 'Discount codes'),
+	('vouchers', 'Voucher codes'),
+	('sponsors', 'Sponsors and counts'),
+)
+
+class AccessToken(models.Model):
+	conference = models.ForeignKey(Conference, null=False, blank=False)
+	token = models.CharField(max_length=200, null=False, blank=False)
+	description = models.TextField(null=False, blank=False)
+	permissions = ChoiceArrayField(
+		models.CharField(max_length=32, blank=False, null=False, choices=AccessTokenPermissions)
+	)
+
+	class Meta:
+		unique_together = ( ('conference', 'token'), )
+
+	def __unicode__(self):
+		return self.token
+
+	def _display_permissions(self):
+		return ", ".join(self.permissions)

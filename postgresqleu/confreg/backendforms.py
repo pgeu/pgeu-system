@@ -4,6 +4,7 @@ from django.db.models import Q
 import django.forms
 import django.forms.widgets
 from django.forms.widgets import TextInput
+from django.utils.safestring import mark_safe
 
 import datetime
 from psycopg2.extras import DateTimeTZRange
@@ -12,6 +13,7 @@ from selectable.forms.widgets import AutoCompleteSelectWidget, AutoCompleteSelec
 
 from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
+from postgresqleu.util.random import generate_random_token
 
 from postgresqleu.accountinfo.lookups import UserLookup
 from postgresqleu.confreg.lookups import RegistrationLookup
@@ -21,7 +23,7 @@ from postgresqleu.confreg.models import RegistrationClass, RegistrationType, Reg
 from postgresqleu.confreg.models import ConferenceAdditionalOption, ConferenceFeedbackQuestion
 from postgresqleu.confreg.models import ConferenceSession, Track, Room
 from postgresqleu.confreg.models import ConferenceSessionScheduleSlot, VolunteerSlot
-from postgresqleu.confreg.models import DiscountCode
+from postgresqleu.confreg.models import DiscountCode, AccessToken, AccessTokenPermissions
 
 from postgresqleu.confreg.models import valid_status_transitions, get_status_string
 
@@ -542,6 +544,30 @@ class BackendDiscountCodeForm(BackendForm):
 
 		self.update_protected_fields()
 
+
+class BackendAccessTokenForm(BackendForm):
+	list_fields = ['token', 'description', 'permissions', ]
+	readonly_fields = ['token', ]
+
+	class Meta:
+		model = AccessToken
+		fields = ['token', 'description', 'permissions', ]
+
+	def _transformed_accesstoken_permissions(self):
+		for k,v in AccessTokenPermissions:
+			baseurl = '/events/admin/{0}/tokendata/{1}/{2}'.format(self.conference.urlname, self.instance.token, k)
+			yield k, mark_safe('{0} (<a href="{1}.csv">csv</a>, <a href="{1}.tsv">tsv</a>)'.format(v, baseurl))
+
+	def fix_fields(self):
+		self.fields['permissions'].widget = django.forms.CheckboxSelectMultiple(
+			choices=self._transformed_accesstoken_permissions(),
+		)
+
+	@classmethod
+	def get_initial(self):
+		return {
+			'token': generate_random_token()
+		}
 
 #
 # Form to pick a conference to copy from
