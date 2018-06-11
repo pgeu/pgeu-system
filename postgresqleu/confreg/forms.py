@@ -47,6 +47,10 @@ class ConferenceRegistrationForm(forms.ModelForm):
 			del self.fields['twittername']
 		else:
 			self.fields['twittername'].validators.append(TwitterValidator)
+		if not self.instance.conference.askphotoconsent:
+			del self.fields['photoconsent']
+		else:
+			self.fields['photoconsent'].required = True
 
 		if self.regforother:
 			self.fields['email'].widget.attrs['readonly'] = True
@@ -261,6 +265,9 @@ class ConferenceRegistrationForm(forms.ModelForm):
 	class Meta:
 		model = ConferenceRegistration
 		exclude = ('conference','attendee','registrator','payconfirmedat','payconfirmedby','created', 'regtoken', )
+		widgets = {
+			'photoconsent': forms.Select(choices=((None, ''), (True, 'I consent to having my photo taken'), (False, "I don't want my photo taken"))),
+		}
 
 	@property
 	def fieldsets(self):
@@ -286,6 +293,12 @@ class ConferenceRegistrationForm(forms.ModelForm):
 			yield {'id': 'conference_info',
 				   'legend': 'Conference information',
 				   'fields': fields}
+
+		if self.instance.conference.askphotoconsent:
+			yield {'id': 'consent_info',
+				   'legend': 'Consent',
+				   'fields': [self[x] for x in ['photoconsent', ]],
+			}
 
 		if conf.conferenceadditionaloption_set.filter(public=True).exists():
 			yield {'id': 'additional_options',

@@ -129,6 +129,7 @@ class Conference(models.Model):
 	asktwitter = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: twitter name", help_text="Include field for twitter name")
 	asknick = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: nick", help_text="Include field for nick")
 	askshareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: share email", help_text="Include field for sharing email with sponsors")
+	askphotoconsent = models.BooleanField(null=False, blank=False, default=True, verbose_name="Field: photo consent", help_text="Include field for getting photo consent")
 	skill_levels = models.BooleanField(blank=False, null=False, default=True)
 	additionalintro = models.TextField(blank=True, null=False, help_text="Additional text shown just before the list of available additional options")
 	jinjadir = models.CharField(max_length=200, blank=True, null=True, default=None, help_text="Full path to new style jinja repository root")
@@ -413,6 +414,7 @@ class ConferenceRegistration(models.Model):
 	twittername = models.CharField(max_length=100, null=False, blank=True, verbose_name="Twitter account")
 	nick = models.CharField(max_length=100, null=False, blank=True, verbose_name="Nickname")
 	shareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Share e-mail address with sponsors")
+	photoconsent = models.NullBooleanField(null=True, blank=False, verbose_name="Consent to having your photo taken at the event by the organisers")
 
 	# Admin fields!
 	payconfirmedat = models.DateTimeField(null=True, blank=True, verbose_name="Payment confirmed")
