@@ -1,5 +1,5 @@
 from django.http import HttpResponse, Http404
-from django.template import loader
+from django.template import loader, TemplateDoesNotExist
 
 # Fallback handler for URLs not matching anything else. Fall them
 # back to a static template. If that one is not found, send a 404
@@ -9,6 +9,9 @@ def static_fallback(request, url):
 	if url.find('..') > -1:
 		raise Http404('Page not found')
 
-	t = loader.get_template('pages/%s.html' % url)
-	return HttpResponse(t.render())
+	try:
+		t = loader.get_template('pages/%s.html' % url)
+		return HttpResponse(t.render())
+	except TemplateDoesNotExist:
+		raise Http404('Page not found')
 
