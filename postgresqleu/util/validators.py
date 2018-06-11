@@ -40,6 +40,6 @@ def TwitterValidator(value):
 		raise ValidationError("Could not verify twitter name - timeout")
 
 	if r.status_code != 200:
-		raise ValidationError("Could not verify twitter name: {0}".format(r.status))
+		raise ValidationError("Could not verify twitter name: {0}".format(r.status_code))
 
 	# All is well! :)
