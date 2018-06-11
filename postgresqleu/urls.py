@@ -56,6 +56,7 @@ urlpatterns = [
 	url(r'^events/(?P<confname>[^/]+)/register/other/newinvoice/$', postgresqleu.confreg.views.multireg_newinvoice),
 	url(r'^events/(?P<confname>[^/]+)/register/other/b(?P<bulkid>(\d+))/$', postgresqleu.confreg.views.multireg_bulkview),
 	url(r'^events/(?P<confname>[^/]+)/register/other/z/$', postgresqleu.confreg.views.multireg_zeropay),
+	url(r'^events/(?P<confname>[^/]+)/register/change/$', postgresqleu.confreg.views.changereg),
 	url(r'^events/register/attach/([a-z0-9]{64})/$', postgresqleu.confreg.views.multireg_attach),
 	url(r'^events/([^/]+)/bulkpay/$', postgresqleu.confreg.views.bulkpay),
 	url(r'^events/([^/]+)/bulkpay/(\d+)/$', postgresqleu.confreg.views.bulkpay_view),

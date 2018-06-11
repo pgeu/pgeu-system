@@ -107,7 +107,7 @@ class BackendConferenceForm(BackendForm):
 	class Meta:
 		model = Conference
 		fields = ['active', 'callforpapersopen', 'callforsponsorsopen', 'feedbackopen',
-				  'conferencefeedbackopen', 'scheduleactive', 'sessionsactive',
+				  'conferencefeedbackopen', 'scheduleactive', 'sessionsactive', 'allowedit',
 				  'schedulewidth', 'pixelsperminute',
 				  'testers', 'talkvoters', 'staff', 'volunteers',
 				  'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'askphotoconsent',

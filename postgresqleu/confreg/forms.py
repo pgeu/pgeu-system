@@ -304,6 +304,21 @@ class ConferenceRegistrationForm(forms.ModelForm):
 				'fields': [self['vouchercode'],],
 				}
 
+class RegistrationChangeForm(forms.ModelForm):
+	def __init__(self, *args, **kwargs):
+		super(RegistrationChangeForm, self).__init__(*args, **kwargs)
+		self.fields['photoconsent'].required = True
+		for f in self.instance.conference.remove_fields:
+			del self.fields[f]
+
+	class Meta:
+		model = ConferenceRegistration
+		fields = ('shirtsize', 'dietary', 'twittername', 'nick', 'shareemail', 'photoconsent', )
+		widgets = {
+			'photoconsent': forms.Select(choices=((None, ''), (True, 'I consent to having my photo taken'), (False, "I don't want my photo taken"))),
+		}
+
+
 rating_choices = (
     (1, '1 (Worst)'),
     (2, '2'),

@@ -25,7 +25,7 @@ from models import AttendeeMail, ConferenceAdditionalOption
 from models import PendingAdditionalOrder
 from models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
 from models import STATUS_CHOICES
-from forms import ConferenceRegistrationForm, ConferenceSessionFeedbackForm
+from forms import ConferenceRegistrationForm, RegistrationChangeForm, ConferenceSessionFeedbackForm
 from forms import ConferenceFeedbackForm, SpeakerProfileForm
 from forms import CallForPapersForm, CallForPapersSpeakerForm, CallForPapersSubmissionForm
 from forms import CallForPapersCopyForm, PrepaidCreateForm, BulkRegistrationForm
@@ -127,6 +127,24 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
 	for pao in PendingAdditionalOrder.objects.filter(reg=reg, invoice__isnull=False):
 		invoices.append(('Additional options invoice and receipt', InvoicePresentationWrapper(pao.invoice, '.')))
 
+	if conference.allowedit:
+		# Form for changeable fields
+		if request.method == 'POST':
+			changeform = RegistrationChangeForm(instance=reg, data=request.POST)
+			if changeform.is_valid():
+				changeform.save()
+				messages.info(request, "Registration updated.")
+				return HttpResponseRedirect("../")
+		else:
+			changeform = RegistrationChangeForm(instance=reg)
+	else:
+		changeform = None
+
+	fields = ['shirtsize', 'dietary', 'nick', 'twittername', 'shareemail', 'photoconsent']
+	for f in conference.remove_fields:
+		fields.remove(f)
+	displayfields = [(reg._meta.get_field(k).verbose_name.capitalize(), reg.get_field_string(k)) for k in fields]
+
 	return render_conference_response(request, conference, 'reg', 'confreg/registration_dashboard.html', {
 		'redir_root': redir_root,
 		'reg': reg,
@@ -139,6 +157,8 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
 		'pendingadditional': pendingadditional,
 		'pendingadditionalinvoice': pendingadditionalinvoice,
 		'invoices': invoices,
+		'changeform': changeform,
+		'displayfields': displayfields,
 	})
 
 def confhome(request, confname):
@@ -285,6 +305,18 @@ def home(request, confname, whatfor=None):
 		'additionaloptions': conference.conferenceadditionaloption_set.filter(public=True),
 		'costamount': reg.regtype and reg.regtype.cost or 0,
 	})
+
+@login_required
+@transaction.atomic
+def changereg(request, confname):
+	# Change certain allowed fields on a registration.
+	conference = get_object_or_404(Conference, urlname=confname)
+	reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
+
+	if not conference.allowedit:
+		return HttpResponseRedirect('../')
+
+	return _registration_dashboard(request, conference, reg, False, '../')
 
 @login_required
 @transaction.atomic

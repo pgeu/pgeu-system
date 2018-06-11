@@ -103,6 +103,7 @@ class Conference(models.Model):
 	callforsponsorsopen = models.BooleanField(blank=False,null=False,default=False, verbose_name="Call for sponsors open")
 	feedbackopen = models.BooleanField(blank=False,null=False,default=False, verbose_name="Session feedback open")
 	conferencefeedbackopen = models.BooleanField(blank=False,null=False,default=False, verbose_name="Conference feedback open")
+	allowedit = models.BooleanField(blank=False,null=False,default=True, verbose_name="Allow editing registrations")
 	scheduleactive = models.BooleanField(blank=False,null=False,default=False,verbose_name="Schedule publishing active")
 	sessionsactive = models.BooleanField(blank=False,null=False,default=False,verbose_name="Session list publishing active")
 	schedulewidth = models.IntegerField(blank=False, default=600, null=False, verbose_name="Width of HTML schedule")
@@ -508,6 +509,12 @@ class ConferenceRegistration(models.Model):
 			return "Paid by bulk payment #{0}.\n Bulk {1}".format(self.bulkpayment.id, self.bulkpayment.payment_method_description)
 
 		return "Payment details not available"
+
+	def get_field_string(self, field):
+		r = getattr(self, field)
+		if isinstance(r, bool):
+			return r and 'Yes' or 'No'
+		return getattr(self, field)
 
 	# For the admin interface (mainly)
 	def __unicode__(self):

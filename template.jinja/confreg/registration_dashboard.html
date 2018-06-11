@@ -8,6 +8,35 @@ div#dash_pagelinks_wrap {
 ul.dash_pagelinks li {
    display: inline;
 }
+
+div.regwrap {
+   width: 100%;
+   overflow: hidden;
+}
+div.regleft {
+   width: 450px;
+   float: left;
+}
+div.regright {
+   width: 200px;
+   float: right;
+}
+div.regright ul {
+   padding: 0px;
+}
+div.regright ul li {
+   margin-top: 0px;
+}
+div.regwrap.errfld {
+   background-color: rgb(255,255,204);
+   border: 1px solid red;
+}
+div.regwrap.errfld ul.errorlist li {
+   font-weight: normal !important;
+}
+form input[type=submit] {
+   width: 200px !important;
+}
 </style>
 {%endblock%}
 {%block content%}
@@ -118,6 +147,17 @@ spamfilters.
 This registration type gives you access to the conference on {{reg.regtype.available_days}}.
 {%endif%}
  </dd>
+ <dt>Registration details</dt>
+ <dd>
+   <p>
+     This registration is made for <i>{{reg.firstname}} {{reg.lastname}}</i> with email address <i>{{reg.email}}</i>.
+   </p>
+   <ul>
+{%for k,v in displayfields%}
+    <li>{{k}}: {{v}}</li>
+{%endfor%}
+   </ul>
+ </dd>
 
 {%if reg.additionaloptions.all()%}
  <dt>Additional options</dt>
@@ -144,6 +184,28 @@ invoices and receipts in the <a href="/invoices/">invoice section</a>.
 
 </dl>
 
+{%if changeform%}
+<h2>Change your registration</h2>
+<p>
+A limited number of fields on your registration can be changed. If you need
+to change anything other than this, please contact the conference organizers.
+</p>
+{%if changeform.non_field_errors()%}{{changeform.non_field_errors()}}{%endif%}
+<form method="post" action="{{redir_root}}change/">{{ csrf_input }}
+  {%for f in changeform %}
+  <div class="regwrap{%if f.errors%} errfld{%endif%}">
+    <div class="regleft">
+      {{f.label_tag()}} <br/>
+      {{f}}
+    </div>
+    <div class="regright">
+      {% if f.errors %}{{ f.errors}}{% endif %}
+    </div>
+  </div>
+  {%endfor%}
+<input type="submit" value="Update registration">
+</form>
+{%endif%}
 
 {%if availableoptions%}
 <a name="options"></a>
