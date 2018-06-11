@@ -39,18 +39,9 @@ class ConferenceRegistrationForm(forms.ModelForm):
 		super(ConferenceRegistrationForm, self).__init__(*args, **kwargs)
 		self.user = user
 		self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference).order_by('sortkey')
-		if not self.instance.conference.asktshirt:
-			del self.fields['shirtsize']
-		if not self.instance.conference.asknick:
-			del self.fields['nick']
-		if not self.instance.conference.asktwitter:
-			del self.fields['twittername']
-		else:
-			self.fields['twittername'].validators.append(TwitterValidator)
-		if not self.instance.conference.askphotoconsent:
-			del self.fields['photoconsent']
-		else:
-			self.fields['photoconsent'].required = True
+		self.fields['photoconsent'].required = True
+		for f in self.instance.conference.remove_fields:
+			del self.fields[f]
 
 		if self.regforother:
 			self.fields['email'].widget.attrs['readonly'] = True

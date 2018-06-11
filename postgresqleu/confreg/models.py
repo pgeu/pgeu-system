@@ -11,6 +11,7 @@ from django.utils.dateformat import DateFormat
 from django.contrib.postgres.fields import DateTimeRangeField
 
 from postgresqleu.util.validators import validate_lowercase
+from postgresqleu.util.validators import TwitterValidator
 from postgresqleu.util.forms import ChoiceArrayField
 
 from postgresqleu.confreg.dbimage import SpeakerImageStorage
@@ -169,6 +170,17 @@ class Conference(models.Model):
 			)
 		else:
 			return self.startdate.strftime("%Y-%m-%d")
+
+	@property
+	def remove_fields(self):
+		if not self.asktshirt:
+			yield 'shirtsize'
+		if not self.asknick:
+			yield 'nick'
+		if not self.asktwitter:
+			yield 'twittername'
+		if not self.askphotoconsent:
+			yield 'photoconsent'
 
 	@property
 	def pending_session_notifications(self):
@@ -411,7 +423,7 @@ class ConferenceRegistration(models.Model):
 	shirtsize = models.ForeignKey(ShirtSize, null=True, blank=True, verbose_name="Preferred T-shirt size")
 	dietary = models.CharField(max_length=100, null=False, blank=True, verbose_name="Special dietary needs")
 	additionaloptions = models.ManyToManyField(ConferenceAdditionalOption, blank=True, verbose_name="Additional options")
-	twittername = models.CharField(max_length=100, null=False, blank=True, verbose_name="Twitter account")
+	twittername = models.CharField(max_length=100, null=False, blank=True, verbose_name="Twitter account", validators=[TwitterValidator, ])
 	nick = models.CharField(max_length=100, null=False, blank=True, verbose_name="Nickname")
 	shareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Share e-mail address with sponsors")
 	photoconsent = models.NullBooleanField(null=True, blank=False, verbose_name="Consent to having your photo taken at the event by the organisers")

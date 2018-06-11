@@ -143,7 +143,7 @@ class Migration(migrations.Migration):
                 ('address', models.TextField(max_length=200, verbose_name=b'Address', blank=True)),
                 ('phone', models.CharField(max_length=100, verbose_name=b'Phone number', blank=True)),
                 ('dietary', models.CharField(max_length=100, verbose_name=b'Special dietary needs', blank=True)),
-                ('twittername', models.CharField(max_length=100, verbose_name=b'Twitter account', blank=True)),
+                ('twittername', models.CharField(max_length=100, verbose_name=b'Twitter account', blank=True, validators=[postgresqleu.util.validators.TwitterValidator])),
                 ('nick', models.CharField(max_length=100, verbose_name=b'Nickname', blank=True)),
                 ('shareemail', models.BooleanField(default=False, verbose_name=b'Share e-mail address with sponsors')),
                 ('payconfirmedat', models.DateField(null=True, verbose_name=b'Payment confirmed', blank=True)),
