@@ -77,7 +77,7 @@ This matrix gives a quick overview of the status of the different benefits for e
  <li>Confirmed - fully confirmed benefit</li>
  <li>Declined - sponsor chose to decline this benefit.</li>
 </ul>
-<p></p>
+<br>
 {%for levelname, level in benefitmatrix.items %}
 <table class="table table-bordered table-striped table-hover">
  <tr><td colspan="{{level.matrix|first|length}}" align="center" bgcolor="gray"><strong>{{levelname}}</strong></td></tr>
@@ -99,7 +99,7 @@ This matrix gives a quick overview of the status of the different benefits for e
  </tr>
 {%endfor%}
 </table>
-<p></p>
+<br>
 {%endfor%}
 
 {%if eu_vat and  user.is_superuser %}
