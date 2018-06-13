@@ -71,7 +71,7 @@ class ImageUploadForm(forms.Form):
 		# One of the sizes has to be exactly what the spec says, otherwise we might have an image that's
 		# too small.
 		if image.size[0] != xres and image.size[1] != yres:
-			raise ValidationError("Image must be %s pixels wide or %s pixels high, fitting within a box of %s. Uploaded image is %s." % (xres, yres, resstr, upresstr))
+			raise ValidationError("Image must be %s pixels wide or %s pixels high. Uploaded image is %s." % (xres, yres, upresstr))
 
 		if int(self.params.get('transparent', 0)) == 1:
 			# Require transparency, only supported for PNG
