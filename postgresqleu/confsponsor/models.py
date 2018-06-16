@@ -31,10 +31,10 @@ class SponsorshipContract(models.Model):
 		if self.contractpdf and not self.pk:
 			raise ValidationError("Can't upload a file until saved at least once! Try again without uploading a file!")
 
-	def save(self, force_insert=False, force_update=False):
+	def save(self, force_insert=False, force_update=False, update_fields=None):
 		if not self.contractpdf:
 			self.contractpdf.storage._delete(self.id)
-		return super(SponsorshipContract, self).save()
+		return super(SponsorshipContract, self).save(update_fields=update_fields)
 	def delete_inline_storage(self):
 		self.contractpdf.storage._delete(self.id)
 pre_delete.connect(delete_inline_storage, sender=SponsorshipContract)
