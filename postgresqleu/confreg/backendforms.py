@@ -38,6 +38,7 @@ class _NewFormDataField(django.forms.Field):
 
 class BackendForm(ConcurrentProtectedModelForm):
 	selectize_multiple_fields = None
+	json_fields = None
 	vat_fields = {}
 	verbose_field_names = {}
 	exclude_date_validators = []

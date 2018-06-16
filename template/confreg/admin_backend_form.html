@@ -2,6 +2,7 @@
 {%block title%}Edit {{what}}{%endblock%}
 {%block extrahead%}
 <script type="text/javascript" src="/media/js/selectize.min.js"></script>
+<script type="text/javascript" src="/media/ace/ace.js"></script>
 <link rel="stylesheet" href="/media/css/selectize.css" />
 <link rel="stylesheet" href="/media/css/selectize.default.css" />
 
@@ -10,6 +11,30 @@ $(function() {
 {%for f in form.selectize_multiple_fields%}
    $('#id_{{f}}').selectize({plugins: ['remove_button']});
 {%endfor%}
+
+{%for f in form.json_fields%}
+$('#id_{{f}}').addClass('jsoneditor');
+{%endfor%}
+
+  $('textarea.jsoneditor').each(function() {
+    var textarea = $(this);
+    var editDiv = $('<div>', {
+      position: 'absolute',
+      width: textarea.width(),
+      height: textarea.height(),
+      'class': textarea.attr('class')
+    }).insertBefore(textarea);
+    textarea.css('display', 'none');
+    var editor = ace.edit(editDiv[0]);
+    editor.renderer.setShowGutter(textarea.data('gutter'));
+    editor.getSession().setValue(textarea.val());
+    editor.getSession().setMode("ace/mode/json");
+
+    textarea.closest('form').submit(function() {
+      textarea.val(editor.getSession().getValue());
+    })
+  });
+
 
    $('.backend-vat-field').each(function(i, e) {
       $(e).change(function(e) {
