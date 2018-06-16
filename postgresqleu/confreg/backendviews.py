@@ -145,9 +145,13 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 		form = formclass(conference, instance=instance, newformdata=newformdata)
 
 	if instance.id:
-		adminurl = urlresolvers.reverse('admin:{0}_{1}_change'.format(instance._meta.app_label, instance._meta.model_name), args=(instance.id,))
+		try:
+			adminurl = urlresolvers.reverse('admin:{0}_{1}_change'.format(instance._meta.app_label, instance._meta.model_name), args=(instance.id,))
+		except urlresolvers.NoReverseMatch:
+			adminurl = None
 	else:
 		adminurl = None
+
 	return render(request, 'confreg/admin_backend_form.html', {
 		'conference': conference,
 		'form': form,
