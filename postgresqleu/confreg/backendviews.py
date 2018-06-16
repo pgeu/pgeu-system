@@ -40,7 +40,7 @@ def get_authenticated_conference(request, urlname):
 	else:
 		return get_object_or_404(Conference, urlname=urlname, administrators=request.user)
 
-def backend_process_form(request, urlname, formclass, id, cancel_url='../', saved_url='../', allow_new=True, allow_delete=True, breadcrumbs=None, permissions_already_checked=False, conference=None, bypass_conference_filter=False):
+def backend_process_form(request, urlname, formclass, id, cancel_url='../', saved_url='../', allow_new=True, allow_delete=True, breadcrumbs=None, permissions_already_checked=False, conference=None, bypass_conference_filter=False, instancemaker=None):
 	if not conference:
 		conference = get_authenticated_conference(request, urlname)
 
@@ -50,12 +50,15 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 	nopostprocess = False
 	newformdata = None
 
+	if not instancemaker:
+		instancemaker = lambda: formclass.Meta.model(conference=conference)
+
 	if allow_new and not id:
 		if formclass.form_before_new:
 			if request.method == 'POST' and '_validator' in request.POST:
 				# This is a postback from the *actual* form
 				newformdata = request.POST['_newformdata']
-				instance = formclass.Meta.model(conference=conference)
+				instance = instancemaker()
 			else:
 				# Postback to the first step create form
 				newinfo = False
@@ -74,12 +77,12 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 						'cancelurl': cancel_url,
 						'breadcrumbs': breadcrumbs,
 					})
-				instance = formclass.Meta.model(conference=conference)
+				instance = instancemaker()
 				newformdata = newform.get_newform_data()
 				nopostprocess = True
 		else:
 			# No special form_before_new, so just create an empty instance
-			instance = formclass.Meta.model(conference=conference)
+			instance = instancemaker()
 
 		# Set initial values on newly created instance, if any are set
 		for k,v in formclass.get_initial().items():
