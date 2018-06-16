@@ -50,6 +50,7 @@ class BackendForm(ConcurrentProtectedModelForm):
 	coltypes = {}
 	readonly_fields = []
 	file_fields = []
+	linked_objects = {}
 
 	def __init__(self, conference, *args, **kwargs):
 		self.conference = conference

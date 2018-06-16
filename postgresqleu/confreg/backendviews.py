@@ -160,6 +160,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 		'breadcrumbs': breadcrumbs,
 		'allow_delete': allow_delete and instance.pk,
 		'adminurl': adminurl,
+		'linked': [(url, handler, handler.get_list(form.instance)) for url, handler in form.linked_objects.items() if form.instance],
 	})
 
 def backend_handle_copy_previous(request, formclass, restpieces, conference):
@@ -295,9 +296,45 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
 
 	# Is it an id?
 	try:
-		id = int(resturl)
+		id = int(restpieces[0])
 	except ValueError:
 		# No id. So we don't know. Fail.
+		raise Http404()
+
+	if len(restpieces) > 2 and restpieces[1] in formclass.linked_objects:
+		# We are editing a sub-object!
+
+		handler = formclass.linked_objects[restpieces[1]]
+		masterobj = formclass.Meta.model.objects.get(pk=id, conference=conference)
+
+		if restpieces[2] == 'new':
+			subid = None
+		else:
+			try:
+				subid = int(restpieces[2])
+				subobj = handler.get_object(masterobj, subid)
+				if not subobj:
+					raise Http404()
+			except ValueError:
+				# No proper subid. So fail.
+				raise Http404()
+
+		return backend_process_form(request,
+									urlname,
+									handler.get_form(),
+									subid,
+									breadcrumbs=breadcrumbs + [
+										('../../../', formclass.Meta.model._meta.verbose_name_plural.capitalize()),
+										('../../', masterobj),
+									],
+									cancel_url='../../',
+									saved_url='../../',
+									conference=conference,
+									bypass_conference_filter=True,
+									instancemaker=handler.get_instancemaker(masterobj),
+		)
+
+	if len(restpieces) > 1:
 		raise Http404()
 
 	return backend_process_form(request,
