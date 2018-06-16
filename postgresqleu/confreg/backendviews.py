@@ -234,7 +234,7 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
 		})
 
 
-def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, allow_delete=True, conference=None):
+def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, allow_delete=True, conference=None, breadcrumbs=[]):
 	if not conference:
 		conference = get_authenticated_conference(request, urlname)
 
@@ -256,6 +256,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
 			'allow_new': allow_new,
 			'allow_delete': allow_delete,
 			'allow_copy_previous': formclass.allow_copy_previous,
+			'breadcrumbs': breadcrumbs,
 		})
 
 	if allow_new and resturl=='new':
@@ -266,7 +267,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
 									None,
 									allow_new=True,
 									allow_delete=allow_delete,
-									breadcrumbs=[('../', formclass.Meta.model._meta.verbose_name_plural.capitalize()), ],
+									breadcrumbs=breadcrumbs + [('../', formclass.Meta.model._meta.verbose_name_plural.capitalize()), ],
 									conference=conference)
 
 	restpieces = resturl.split('/')
@@ -285,7 +286,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
 								formclass,
 								id,
 								allow_delete=allow_delete,
-								breadcrumbs=[('../', formclass.Meta.model._meta.verbose_name_plural.capitalize()), ],
+								breadcrumbs=breadcrumbs + [('../', formclass.Meta.model._meta.verbose_name_plural.capitalize()), ],
 								conference=conference)
 
 
