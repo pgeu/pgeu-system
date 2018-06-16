@@ -7,7 +7,7 @@
 
 <script language="javascript">
 $(function() {
-{%for f in selectize_multiple_fields%}
+{%for f in form.selectize_multiple_fields%}
    $('#id_{{f}}').selectize({plugins: ['remove_button']});
 {%endfor%}
 

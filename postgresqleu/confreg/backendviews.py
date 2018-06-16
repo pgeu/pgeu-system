@@ -150,7 +150,6 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 		'form': form,
 		'what': formclass.Meta.model._meta.verbose_name,
 		'cancelurl': cancel_url,
-		'selectize_multiple_fields': formclass.selectize_multiple_fields,
 		'breadcrumbs': breadcrumbs,
 		'allow_delete': allow_delete and instance.pk,
 		'adminurl': adminurl,
