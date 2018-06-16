@@ -15,17 +15,12 @@ from models import PrepaidVoucher, DiscountCode, AttendeeMail
 
 from regtypes import validate_special_reg_type
 from postgresqleu.util.validators import TwitterValidator
+from postgresqleu.util.magic import magicdb
 
 from postgresqleu.countries.models import Country
 
 from datetime import datetime, date
 import requests
-import magic
-
-
-# Globally load and cache the magicdb
-magicdb = magic.open(magic.MIME)
-magicdb.load()
 
 
 class ConferenceRegistrationForm(forms.ModelForm):
