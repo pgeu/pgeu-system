@@ -57,6 +57,7 @@ class BackendSponsorshipLevelForm(BackendForm):
 	linked_objects = OrderedDict({
 		'benefit': BackendSponsorshipLevelBenefitManager(),
 	})
+	allow_copy_previous = True
 	class Meta:
 		model = SponsorshipLevel
 		fields = ['levelname', 'urlname', 'levelcost', 'available', 'instantbuy',
@@ -66,6 +67,29 @@ class BackendSponsorshipLevelForm(BackendForm):
 		self.fields['contract'].queryset = SponsorshipContract.objects.filter(conference=self.conference)
 		self.fields['paymentmethods'].label_from_instance = lambda x: x.internaldescription
 
+
+	@classmethod
+	def copy_from_conference(self, targetconf, sourceconf, idlist):
+		for id in idlist:
+			level = SponsorshipLevel.objects.get(pk=id, conference=sourceconf)
+			if SponsorshipLevel.objects.filter(conference=targetconf, urlname=level.urlname).exists():
+				yield 'A sponsorship level with urlname {0} already exists.'.format(level.urlname)
+				continue
+
+			# Get a separate instance that we will modify
+			newlevel = SponsorshipLevel.objects.get(pk=id, conference=sourceconf)
+			# Set pk to None to make a copy
+			newlevel.pk = None
+			newlevel.conference = targetconf
+			newlevel.contract = None
+			newlevel.save()
+			for pm in level.paymentmethods.all():
+				newlevel.paymentmethods.add(pm)
+			newlevel.save()
+			for b in level.sponsorshipbenefit_set.all():
+				b.pk = None
+				b.level = newlevel
+				b.save()
 
 class BackendSponsorshipContractForm(BackendForm):
 	list_fields = ['contractname', ]

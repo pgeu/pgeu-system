@@ -172,7 +172,6 @@ urlpatterns = [
 	# Conference admin
 	url(r'^admin/confreg/_email/$', postgresqleu.confreg.views.admin_email),
 	url(r'^admin/confreg/_email_session_speaker/([,\d]+)/$', postgresqleu.confreg.views.admin_email_session),
-	url(r'^admin/confsponsor/sponsorshiplevel/(\d+)/copy/$', postgresqleu.confsponsor.views.admin_copy_level),
 
 	# Legacy event URLs
 	url(r'^events/(register|bulkpay|feedback|schedule|sessions|talkvote|speakerprofile|callforpapers|reports)/([^/]+)/(.*)?$', postgresqleu.confreg.views.legacy_redirect),
