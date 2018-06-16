@@ -38,7 +38,7 @@ function confirm_delete(what) {
 
 {%block layoutblock%}
 <h1>Edit {{what}}</h1>
-<form class="form-horizontal" method="POST" action=".">{%csrf_token%}
+<form class="form-horizontal" method="POST" action="." enctype="multipart/form-data">{%csrf_token%}
 {%include "confreg/admin_backend_form_content.html" %}
 </form>
 

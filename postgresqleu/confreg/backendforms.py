@@ -48,6 +48,7 @@ class BackendForm(ConcurrentProtectedModelForm):
 	copy_transform_form = None
 	coltypes = {}
 	readonly_fields = []
+	file_fields = []
 
 	def __init__(self, conference, *args, **kwargs):
 		self.conference = conference

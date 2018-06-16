@@ -115,16 +115,29 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 			form.add_error(None, extra_error)
 
 		if form.is_valid():
-			# We don't want to use form.save(), because it actually saves all
-			# fields on the model, including those we don't care about.
-			# The savem2m model, however, *does* care about the lsited fields.
-			# Consistency is overrated!
-			with transaction.atomic():
-				if allow_new and not instance.pk:
-					form.save()
-				form._save_m2m()
-				form.instance.save(update_fields=[f for f in form.fields.keys() if not f in ('_validator', '_newformdata') and not isinstance(form[f].field, forms.ModelMultipleChoiceField)])
-				return HttpResponseRedirect(saved_url)
+			# If there are any file fields, they have to be independently verified
+			# since the django default form handling doesn't care about them.
+			errors = False
+			for f in form.file_fields:
+				r = form.validate_file(f, request.FILES.get(f, None))
+				if r:
+					form.add_error(f, r)
+					errors = True
+
+			if not errors:
+				# We don't want to use form.save(), because it actually saves all
+				# fields on the model, including those we don't care about.
+				# The savem2m model, however, *does* care about the listed fields.
+				# Consistency is overrated!
+				with transaction.atomic():
+					if allow_new and not instance.pk:
+						form.save()
+					form._save_m2m()
+					for f in form.file_fields:
+						if f in request.FILES:
+							setattr(form.instance, f, request.FILES[f])
+					form.instance.save(update_fields=[f for f in form.fields.keys() if not f in ('_validator', '_newformdata') and not isinstance(form[f].field, forms.ModelMultipleChoiceField)])
+					return HttpResponseRedirect(saved_url)
 	else:
 		form = formclass(conference, instance=instance, newformdata=newformdata)
 
