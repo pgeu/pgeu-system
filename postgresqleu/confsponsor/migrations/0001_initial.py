@@ -72,7 +72,7 @@ class Migration(migrations.Migration):
                 ('benefitdescription', models.TextField(blank=True)),
                 ('claimprompt', models.TextField(blank=True)),
                 ('benefit_class', models.IntegerField(default=None, null=True, blank=True, choices=[(1, b'Require uploaded image'), (2, b'Requires explicit claiming'), (3, b'Claim entry vouchers'), (4, b'Provide text string'), (5, b'List of attendee email addresses')])),
-                ('class_parameters', models.TextField(max_length=500, blank=True)),
+                ('class_parameters', models.TextField(max_length=500, blank=True, default='{}')),
             ],
             options={
                 'ordering': ('sortkey', 'benefitname'),
@@ -82,8 +82,8 @@ class Migration(migrations.Migration):
             name='SponsorshipContract',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('contractname', models.CharField(max_length=100)),
-                ('contractpdf', models.FileField(storage=postgresqleu.util.storage.InlineEncodedStorage(b'sponsorcontract'), upload_to=postgresqleu.util.storage.inlineencoded_upload_path, blank=True)),
+                ('contractname', models.CharField(max_length=100, verbose_name='Contract name')),
+                ('contractpdf', models.FileField(storage=postgresqleu.util.storage.InlineEncodedStorage(b'sponsorcontract'), upload_to=postgresqleu.util.storage.inlineencoded_upload_path, blank=True, verbose_name='Contract PDF')),
             ],
         ),
         migrations.CreateModel(
@@ -94,9 +94,9 @@ class Migration(migrations.Migration):
                 ('urlname', models.CharField(max_length=100, validators=[postgresqleu.util.validators.validate_lowercase])),
                 ('levelcost', models.IntegerField()),
                 ('available', models.BooleanField(default=True, verbose_name=b'Available for signup')),
-                ('instantbuy', models.BooleanField(default=False)),
-                ('canbuyvoucher', models.BooleanField(default=True)),
-                ('canbuydiscountcode', models.BooleanField(default=True)),
+                ('instantbuy', models.BooleanField(default=False, verbose_name="Instant buy available")),
+                ('canbuyvoucher', models.BooleanField(default=True, verbose_name="Can buy vouchers")),
+                ('canbuydiscountcode', models.BooleanField(default=True, verbose_name="Can buy discount codes")),
                 ('conference', models.ForeignKey(to='confreg.Conference')),
                 ('contract', models.ForeignKey(blank=True, to='confsponsor.SponsorshipContract', null=True)),
                 ('paymentmethods', models.ManyToManyField(to='invoices.InvoicePaymentMethod', verbose_name=b'Payment methods for generated invoices')),

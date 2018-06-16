@@ -20,8 +20,9 @@ vat_status_choices = (
 )
 
 class SponsorshipContract(models.Model):
-	contractname = models.CharField(max_length=100, null=False, blank=False)
-	contractpdf = FileField(null=False, blank=True, storage=InlineEncodedStorage('sponsorcontract'), upload_to=inlineencoded_upload_path)
+	conference = models.ForeignKey(Conference, null=False, blank=False)
+	contractname = models.CharField(max_length=100, null=False, blank=False, verbose_name='Contract name')
+	contractpdf = FileField(null=False, blank=True, storage=InlineEncodedStorage('sponsorcontract'), upload_to=inlineencoded_upload_path, verbose_name='Contract PDF')
 
 	def __unicode__(self):
 		return self.contractname
@@ -44,11 +45,11 @@ class SponsorshipLevel(models.Model):
 	urlname = models.CharField(max_length=100, null=False, blank=False, validators=[validate_lowercase,])
 	levelcost = models.IntegerField(null=False, blank=False)
 	available = models.BooleanField(null=False, blank=False, default=True, verbose_name="Available for signup")
-	instantbuy = models.BooleanField(null=False, blank=False, default=False)
+	instantbuy = models.BooleanField(null=False, blank=False, default=False, verbose_name="Instant buy available")
 	paymentmethods = models.ManyToManyField(InvoicePaymentMethod, blank=False, verbose_name="Payment methods for generated invoices")
 	contract = models.ForeignKey(SponsorshipContract, blank=True, null=True)
-	canbuyvoucher = models.BooleanField(null=False, blank=False, default=True)
-	canbuydiscountcode = models.BooleanField(null=False, blank=False, default=True)
+	canbuyvoucher = models.BooleanField(null=False, blank=False, default=True, verbose_name="Can buy vouchers")
+	canbuydiscountcode = models.BooleanField(null=False, blank=False, default=True, verbose_name="Can buy discount codes")
 
 	def __unicode__(self):
 		return self.levelname
@@ -64,7 +65,7 @@ class SponsorshipBenefit(models.Model):
 	benefitdescription = models.TextField(null=False, blank=True)
 	claimprompt = models.TextField(null=False, blank=True)
 	benefit_class = models.IntegerField(null=True, blank=True, default=None, choices=benefit_choices)
-	class_parameters = models.TextField(max_length=500, blank=True, null=False)
+	class_parameters = models.TextField(max_length=500, blank=True, null=False, default='{}')
 
 	def __unicode__(self):
 		return self.benefitname
