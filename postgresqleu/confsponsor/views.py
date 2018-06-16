@@ -729,3 +729,4 @@ def sponsor_admin_test_vat(request, confurlname):
 	if r:
 		return HttpResponse("VAT validation error: %s" % r)
 	return HttpResponse("VAT number is valid")
+

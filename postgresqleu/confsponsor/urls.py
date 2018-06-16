@@ -1,6 +1,7 @@
 from django.conf.urls import url
 
 import views
+import backendviews
 
 # All urls already start with /events/sponsor/
 urlpatterns = [
@@ -24,4 +25,6 @@ urlpatterns = [
    url(r'^admin/(\w+)/sendmail/$', views.sponsor_admin_send_mail),
    url(r'^admin/(\w+)/viewmail/(\d+)/$', views.sponsor_admin_view_mail),
    url(r'^admin/(\w+)/testvat/$', views.sponsor_admin_test_vat),
+   url(r'^admin/(\w+)/levels/(.*/)?$', backendviews.edit_sponsorship_levels),
+   url(r'^admin/(\w+)/contracts/(.*/)?$', backendviews.edit_sponsorship_contracts),
 ]
