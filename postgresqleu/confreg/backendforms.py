@@ -51,6 +51,7 @@ class BackendForm(ConcurrentProtectedModelForm):
 	readonly_fields = []
 	file_fields = []
 	linked_objects = {}
+	auto_cascade_delete_to = []
 
 	def __init__(self, conference, *args, **kwargs):
 		self.conference = conference
@@ -168,6 +169,7 @@ class BackendRegistrationTypeForm(BackendForm):
 	coltypes = {
 		'Sortkey': ['nosearch' ],
 	}
+	auto_cascade_delete_to=['registrationtype_days', 'registrationtype_requires_option']
 
 	class Meta:
 		model = RegistrationType
@@ -237,6 +239,8 @@ class BackendRegistrationDayForm(BackendForm):
 class BackendAdditionalOptionForm(BackendForm):
 	list_fields = ['name', 'cost', 'maxcount', ]
 	vat_fields = {'cost': 'reg'}
+	auto_cascade_delete_to = ['registrationtype_requires_option', 'conferenceadditionaloption_requires_regtype',
+							  'conferenceadditionaloption_mutually_exclusive',]
 	class Meta:
 		model = ConferenceAdditionalOption
 		fields = ['name', 'cost', 'maxcount', 'public', 'upsellable', 'invoice_autocancel_hours',
@@ -305,6 +309,7 @@ class BackendConferenceSessionForm(BackendForm):
 	selectize_multiple_fields = ['speaker']
 	allow_copy_previous = True
 	copy_transform_form = BackendTransformConferenceDateTimeForm
+	auto_cascade_delete_to = ['conferencesession_speaker', ]
 
 	class Meta:
 		model = ConferenceSession

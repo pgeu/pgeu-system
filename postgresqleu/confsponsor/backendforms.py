@@ -58,6 +58,8 @@ class BackendSponsorshipLevelForm(BackendForm):
 		'benefit': BackendSponsorshipLevelBenefitManager(),
 	})
 	allow_copy_previous = True
+	auto_cascade_delete_to = ['sponsorshiplevel_paymentmethods', 'sponsorshipbenefit']
+
 	class Meta:
 		model = SponsorshipLevel
 		fields = ['levelname', 'urlname', 'levelcost', 'available', 'instantbuy',

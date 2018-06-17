@@ -14,6 +14,7 @@ import csv
 
 from postgresqleu.util.middleware import RedirectException
 from postgresqleu.util.db import exec_to_list, exec_to_dict, exec_no_result
+from postgresqleu.util.lists import flatten_list
 
 from models import Conference, ConferenceRegistration
 from models import RegistrationType, RegistrationClass
@@ -103,7 +104,9 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 				to_delete = collector.nested()
 				to_delete.remove(instance)
 				if to_delete:
-					pieces=[unicode(to_delete[0][n]) for n in range(0, min(5, len(to_delete[0]))) if not isinstance(to_delete[0][n], list)]
+					to_delete = [d for d in flatten_list(to_delete[0]) if not d._meta.model_name in formclass.auto_cascade_delete_to]
+				if to_delete:
+					pieces=[unicode(to_delete[n]) for n in range(0, min(5, len(to_delete))) if not isinstance(to_delete[n], list)]
 					extra_error=u"This {0} cannot be deleted. It would have resulted in the following other objects also being deleted: {1}".format(formclass.Meta.model._meta.verbose_name,u', '.join(pieces))
 				else:
 					messages.info(request, "{0} {1} deleted.".format(formclass.Meta.model._meta.verbose_name.capitalize(), instance))
