@@ -25,9 +25,10 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
 			if params in ("","{}") and benefit.default_params:
 				# Need a copy of the local data to make it mutable and change our default
 				self.data = self.data.copy()
-				self.data['class_parameters'] = benefit.default_params
-				self.instance.class_parameters = benefit.default_params
-				benefit.params = benefit.default_params
+				dp = json.dumps(benefit.default_params)
+				self.data['class_parameters'] = dp
+				self.instance.class_parameters = dp
+				benefit.params = dp
 			s = benefit.validate_params()
 			if s:
 				self.add_error('class_parameters', s)

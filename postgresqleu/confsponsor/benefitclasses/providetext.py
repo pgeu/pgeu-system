@@ -54,7 +54,7 @@ class ProvideTextForm(forms.Form):
 
 class ProvideText(BaseBenefit):
 	description = "Provide text string"
-	default_params = '{"minwords": 0, "maxwords": 0, "minchars": 0, "maxchars": 0}'
+	default_params = {"minwords": 0, "maxwords": 0, "minchars": 0, "maxchars": 0}
 	def validate_params(self):
 		try:
 			_validate_params(self.params)

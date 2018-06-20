@@ -1,5 +1,5 @@
 class BaseBenefit(object):
-	default_params = ''
+	default_params = {}
 	def __init__(self, level, params):
 		self.level = level
 		self.params = params
