@@ -84,7 +84,7 @@ def sponsor_conference(request, sponsorid):
 
 @login_required
 def sponsor_manager_delete(request, sponsorid):
-	sponsor = get_object_or_404(Sponsor, id=sponsorid, managers=request.user, confirmed=True)
+	sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
 	user = get_object_or_404(User, id=request.GET['id'])
 
 	if user == request.user:
@@ -99,7 +99,7 @@ def sponsor_manager_delete(request, sponsorid):
 @login_required
 @transaction.atomic
 def sponsor_manager_add(request, sponsorid):
-	sponsor = get_object_or_404(Sponsor, id=sponsorid, managers=request.user, confirmed=True)
+	sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
 
 	if not request.POST['email']:
 		messages.warning(request, "Email not specified")
