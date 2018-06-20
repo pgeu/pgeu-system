@@ -97,6 +97,10 @@ class BackendForm(ConcurrentProtectedModelForm):
 	def fix_fields(self):
 		pass
 
+	@property
+	def get_json_merge_data(self):
+		pass
+
 	@classmethod
 	def get_initial(self):
 		return {}

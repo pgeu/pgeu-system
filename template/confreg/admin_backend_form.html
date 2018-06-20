@@ -29,12 +29,33 @@ $('#id_{{f}}').addClass('jsoneditor');
     editor.renderer.setShowGutter(textarea.data('gutter'));
     editor.getSession().setValue(textarea.val());
     editor.getSession().setMode("ace/mode/json");
+    textarea.data('jsoneditor', editor);
 
     textarea.closest('form').submit(function() {
       textarea.val(editor.getSession().getValue());
     })
   });
 
+{%if form.json_merge_data %}
+  var mergedata = {{form.json_merge_data|safe}};
+  $.each(mergedata, function(i,v) {
+    $('#'+v['source']).change(function(e) {
+       var val = e.target.value;
+       var mergewith = v['map'][val];
+       var editor = $('#'+v['target']).data('jsoneditor');
+       try {
+          current = JSON.parse(editor.getSession().getValue());
+       }
+       catch {
+         /* If current JSON is invalid, we can't merge. So just give up */
+         return;
+       }
+       var dest = $.extend({}, mergewith, current);
+       editor.setValue(JSON.stringify(dest, null, 2), -1);
+    });
+  });
+
+{%endif%}
 
    $('.backend-vat-field').each(function(i, e) {
       $(e).change(function(e) {
