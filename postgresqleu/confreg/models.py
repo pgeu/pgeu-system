@@ -180,6 +180,8 @@ class Conference(models.Model):
 			yield 'nick'
 		if not self.asktwitter:
 			yield 'twittername'
+		if not self.askshareemail:
+			yield 'shareemail'
 		if not self.askphotoconsent:
 			yield 'photoconsent'
 
