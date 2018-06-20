@@ -21,11 +21,13 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
 		cleaned_data = super(BackendSponsorshipLevelBenefitForm, self).clean()
 		if cleaned_data.get('benefit_class') >= 0:
 			params = cleaned_data.get('class_parameters')
-			benefit = get_benefit_class(cleaned_data.get('benefit_class'))(self.instance, params)
-			if params == "" and benefit.default_params:
-				cleaned_data['class_parameters'] = benefit.default_params
+			benefit = get_benefit_class(cleaned_data.get('benefit_class'))(self.instance.level, params)
+			if params in ("","{}") and benefit.default_params:
+				# Need a copy of the local data to make it mutable and change our default
+				self.data = self.data.copy()
+				self.data['class_parameters'] = benefit.default_params
 				self.instance.class_parameters = benefit.default_params
-				params = benefit.default_params
+				benefit.params = benefit.default_params
 			s = benefit.validate_params()
 			if s:
 				self.add_error('class_parameters', s)
