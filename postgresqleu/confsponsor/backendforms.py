@@ -9,6 +9,9 @@ from postgresqleu.confreg.backendforms import BackendForm
 from models import SponsorshipLevel, SponsorshipContract, SponsorshipBenefit
 
 from benefits import get_benefit_class
+from benefitclasses import all_benefits
+
+import json
 
 class BackendSponsorshipLevelBenefitForm(BackendForm):
 	json_fields = ['class_parameters', ]
@@ -35,6 +38,13 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
 
 		return cleaned_data
 
+	@property
+	def json_merge_data(self):
+		return json.dumps([{
+			'source': 'id_benefit_class',
+			'target': 'id_class_parameters',
+			'map': {k:v['class'].default_params for k,v in all_benefits.items()}
+		}])
 
 class BackendSponsorshipLevelBenefitManager(object):
 	title = 'Benefits'
