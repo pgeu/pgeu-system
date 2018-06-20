@@ -8,9 +8,9 @@ from base import BaseBenefit
 def _validate_params(params):
 	try:
 		j = json.loads(params)
-		for k in j.keys():
-			if not k in [u"minwords", u"maxwords", u"minchars", u"maxchars"]:
-				raise Exception("Parameter '%s' is unknown" % k)
+		keys = set(j.keys())
+		if not keys.issubset([u"minwords", u"maxwords", u"minchars", u"maxchars"]):
+			raise Exception("Only parameters 'minwords', 'maxwords', 'minchars', 'maxchars' can be specified")
 		return j
 	except ValueError:
 		raise Exception("Can't parse JSON")
@@ -54,7 +54,7 @@ class ProvideTextForm(forms.Form):
 
 class ProvideText(BaseBenefit):
 	description = "Provide text string"
-	default_params = '{}'
+	default_params = '{"minwords": 0, "maxwords": 0, "minchars": 0, "maxchars": 0}'
 	def validate_params(self):
 		try:
 			_validate_params(self.params)

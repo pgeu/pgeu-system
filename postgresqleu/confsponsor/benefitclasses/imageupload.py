@@ -84,7 +84,7 @@ class ImageUploadForm(forms.Form):
 
 class ImageUpload(BaseBenefit):
 	description = 'Require uploaded image'
-	default_params = '{"format": "png", "xres": 1, "yres": 1, "transparent": 0}'
+	default_params = '{"format": "png", "xres": 0, "yres": 0, "transparent": 0}'
 	def validate_params(self):
 		try:
 			_validate_params(self.params)

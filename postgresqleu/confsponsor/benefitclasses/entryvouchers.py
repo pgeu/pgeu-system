@@ -39,13 +39,12 @@ class EntryVouchersForm(forms.Form):
 
 class EntryVouchers(BaseBenefit):
 	description = "Claim entry vouchers"
-	default_params = '{}'
+	default_params = '{"num": 1, "type": ""}'
 	def validate_params(self):
 		try:
 			_validate_params(self.level, self.params)
 		except Exception, e:
 			return e
-
 
 	def generate_form(self):
 		return EntryVouchersForm
