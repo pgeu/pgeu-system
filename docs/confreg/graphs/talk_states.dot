@@ -13,7 +13,7 @@ digraph talkstates {
 	approved[shape=box label=Approved];
 	reserve[shape=box label=Reserve];
 	pendingreserve[shape=diamond label="Contact speaker to ask\nabout reserve list"];
-	rejected[shape=box label=Rejected];
+	rejected[shape=box label="Not Accepted"];
 
 	start -> submitted [label = "Speaker submits talk", color=green];
 	submitted -> pending [label = "Talk approved", color=blue]

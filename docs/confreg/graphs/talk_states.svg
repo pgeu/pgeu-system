@@ -57,13 +57,13 @@
 </g>
 <!-- rejected -->
 <g id="node8" class="node"><title>rejected</title>
-<polygon fill="none" stroke="black" points="374,-36 310,-36 310,-0 374,-0 374,-36"/>
-<text text-anchor="middle" x="342" y="-14.3" font-family="Times,serif" font-size="14.00">Rejected</text>
+<polygon fill="none" stroke="black" points="388,-36 296,-36 296,-0 388,-0 388,-36"/>
+<text text-anchor="middle" x="342" y="-14.3" font-family="Times,serif" font-size="14.00">Not Accepted</text>
 </g>
 <!-- submitted&#45;&gt;rejected -->
 <g id="edge6" class="edge"><title>submitted&#45;&gt;rejected</title>
-<path fill="none" stroke="blue" d="M152.11,-506.318C97.1078,-501.607 0,-483.827 0,-417 0,-417 0,-417 0,-104 0,-42.8799 208.323,-25.3883 299.789,-20.654"/>
-<polygon fill="blue" stroke="blue" points="300.009,-24.1475 309.825,-20.1617 299.666,-17.1559 300.009,-24.1475"/>
+<path fill="none" stroke="blue" d="M152.11,-506.318C97.1078,-501.607 0,-483.827 0,-417 0,-417 0,-417 0,-104 0,-45.855 188.535,-27.1945 285.639,-21.4396"/>
+<polygon fill="blue" stroke="blue" points="286.09,-24.9198 295.876,-20.8606 285.695,-17.931 286.09,-24.9198"/>
 <text text-anchor="middle" x="36" y="-239.3" font-family="Times,serif" font-size="14.00">Talk rejected</text>
 </g>
 <!-- pending&#45;&gt;submitted -->
@@ -85,8 +85,8 @@
 </g>
 <!-- pending&#45;&gt;rejected -->
 <g id="edge4" class="edge"><title>pending&#45;&gt;rejected</title>
-<path fill="none" stroke="green" d="M192.923,-173.834C189.939,-151.716 188.14,-113.022 206,-87 227.769,-55.2825 268.825,-37.6402 300.155,-28.3265"/>
-<polygon fill="green" stroke="green" points="301.26,-31.6517 309.948,-25.5879 299.375,-24.9103 301.26,-31.6517"/>
+<path fill="none" stroke="green" d="M192.923,-173.834C189.939,-151.716 188.14,-113.022 206,-87 224.655,-59.8195 257.474,-42.9755 286.198,-32.8514"/>
+<polygon fill="green" stroke="green" points="287.372,-36.1493 295.756,-29.6704 285.162,-29.5074 287.372,-36.1493"/>
 <text text-anchor="middle" x="252" y="-101.3" font-family="Times,serif" font-size="14.00">Speaker declines</text>
 </g>
 <!-- approved&#45;&gt;rejected -->
@@ -123,13 +123,13 @@
 </g>
 <!-- pendingreserve&#45;&gt;rejected -->
 <g id="edge9" class="edge"><title>pendingreserve&#45;&gt;rejected</title>
-<path fill="none" stroke="blue" d="M410.33,-392.317C447.331,-372.603 490,-340.095 490,-295 490,-295 490,-295 490,-104 490,-54.7941 427.722,-33.6591 383.964,-24.8821"/>
-<polygon fill="blue" stroke="blue" points="384.585,-21.4377 374.114,-23.0486 383.304,-28.3195 384.585,-21.4377"/>
+<path fill="none" stroke="blue" d="M410.33,-392.317C447.331,-372.603 490,-340.095 490,-295 490,-295 490,-295 490,-104 490,-59.8354 439.829,-38.2844 397.91,-27.9858"/>
+<polygon fill="blue" stroke="blue" points="398.546,-24.541 388.017,-25.72 396.983,-31.3643 398.546,-24.541"/>
 <text text-anchor="middle" x="537" y="-188.3" font-family="Times,serif" font-size="14.00">Speaker declined</text>
 </g>
 <!-- rejected&#45;&gt;submitted -->
 <g id="edge12" class="edge"><title>rejected&#45;&gt;submitted</title>
-<path fill="none" stroke="blue" d="M374.033,-22.2454C445.553,-30.3783 612,-54.6113 612,-104 612,-417 612,-417 612,-417 612,-493.227 346.141,-505.785 235.961,-507.716"/>
+<path fill="none" stroke="blue" d="M388.108,-23.9138C465.223,-33.4255 612,-57.6213 612,-104 612,-417 612,-417 612,-417 612,-493.227 346.141,-505.785 235.961,-507.716"/>
 <polygon fill="blue" stroke="blue" points="235.744,-504.219 225.799,-507.872 235.851,-511.218 235.744,-504.219"/>
 <text text-anchor="middle" x="656" y="-239.3" font-family="Times,serif" font-size="14.00">Processing reset</text>
 </g>
