@@ -250,6 +250,7 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
 			'idlist': idlist,
 			'confirmed_transform_value': confirmed_transform_value,
 			'transform_example': confirmed_transform_example,
+			'noeditlinks': True,
 			'breadcrumbs': [
 				('../../', formclass.Meta.model._meta.verbose_name_plural.capitalize()),
 				('../', 'Copy {0}'.format(formclass.Meta.model._meta.verbose_name_plural.capitalize())),
