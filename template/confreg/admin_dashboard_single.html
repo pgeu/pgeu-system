@@ -1,6 +1,7 @@
 {%extends "confreg/confadmin_base.html" %}
 {%block title%}{{c.conferencename}} - dashboard{%endblock%}
 {%block layoutblock%}
+{%with conference as c%}
 
 <h1>{{c.conferencename}}</h1>
 <div>
@@ -101,4 +102,5 @@
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/sponsor/signup/{{c.urlname}}/">Sponsor signup</a></div>
 </div>
 
+{%endwith%}
 {%endblock%}

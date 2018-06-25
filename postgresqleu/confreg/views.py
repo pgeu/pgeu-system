@@ -2439,7 +2439,7 @@ def admin_dashboard_single(request, urlname):
 	conference = get_authenticated_conference(request, urlname)
 
 	return render(request, 'confreg/admin_dashboard_single.html', {
-		'c': conference,
+		'conference': conference,
 		'pending_session_notifications': conference.pending_session_notifications,
 		'pending_waitlist': RegistrationWaitlistEntry.objects.filter(registration__conference=conference, offeredon__isnull=True).exists(),
 		'unregistered_staff': exec_to_scalar("SELECT EXISTS (SELECT user_id FROM confreg_conference_staff s WHERE s.conference_id=%(confid)s AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND attendee_id=s.user_id))", {'confid': conference.id}),
