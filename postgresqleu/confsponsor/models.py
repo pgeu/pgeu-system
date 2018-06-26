@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models.signals import pre_delete
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import JSONField
 
 from postgresqleu.confreg.models import Conference, RegistrationType, PrepaidBatch
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
@@ -65,7 +66,7 @@ class SponsorshipBenefit(models.Model):
 	benefitdescription = models.TextField(null=False, blank=True)
 	claimprompt = models.TextField(null=False, blank=True)
 	benefit_class = models.IntegerField(null=True, blank=True, default=None, choices=benefit_choices)
-	class_parameters = models.TextField(max_length=500, blank=True, null=False, default='{}')
+	class_parameters = JSONField(blank=True, null=False)
 
 	def __unicode__(self):
 		return self.benefitname
