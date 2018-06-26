@@ -1,37 +1,17 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
-import json
 from PIL import ImageFile
 
 from postgresqleu.util.storage import InlineEncodedStorage
 
-from base import BaseBenefit
+from base import BaseBenefit, BaseBenefitForm
 
-def _validate_params(params):
-	try:
-		j = json.loads(params)
-		keys = set(j.keys())
-		if not keys.issuperset([u"format", u"xres", u"yres"]):
-			raise Exception("Parameters 'format', 'xres' and 'yres' are mandatory")
-		if not keys.issubset([u"format", u"xres", u"yres", u"transparent"]):
-			raise Exception("Only parameters 'format', 'xres', 'yres' and 'transparent' can be specified")
-		if int(j['xres']) < 1:
-			raise Exception("Parameter 'xres' must be positive integer!")
-		if int(j['yres']) < 1:
-			raise Exception("Parameter 'yres' must be positive integer!")
-
-		return j
-	except ValueError:
-		raise Exception("Can't parse JSON")
-
-class ImageUploadForm(forms.Form):
+class ImageUploadForm(BaseBenefitForm):
 	decline = forms.BooleanField(label='Decline this benefit', required=False)
 	image = forms.FileField(label='Image file', required=False)
 
-	def __init__(self, benefit, *args, **kwargs):
-		self.params = _validate_params(benefit.class_parameters)
-
+	def __init__(self, *args, **kwargs):
 		super(ImageUploadForm, self).__init__(*args, **kwargs)
 
 		self.fields['image'].help_text = "Upload a file in %s format, fitting in a box of %sx%s pixels." % (self.params['format'].upper(), self.params['xres'], self.params['yres'])
@@ -85,11 +65,12 @@ class ImageUploadForm(forms.Form):
 class ImageUpload(BaseBenefit):
 	description = 'Require uploaded image'
 	default_params = {"format": "png", "xres": 0, "yres": 0, "transparent": 0}
-	def validate_params(self):
-		try:
-			_validate_params(self.params)
-		except Exception, e:
-			return e
+	param_struct = {
+		'format': unicode,
+		'xres': int,
+		'yres': int,
+		'transparent': int,
+	}
 
 	def generate_form(self):
 		return ImageUploadForm

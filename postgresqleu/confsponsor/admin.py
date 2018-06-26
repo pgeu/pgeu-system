@@ -16,19 +16,16 @@ from models import SponsorshipBenefit, SponsorClaimedBenefit
 
 from benefits import get_benefit_class
 
-import json
-
 class SponsorshipBenefitInlineFormset(BaseInlineFormSet):
 	def clean(self):
 		for f in self.forms:
 			if f.cleaned_data.get('benefit_class') >= 0:
 				params = f.cleaned_data.get('class_parameters')
 				benefit = get_benefit_class(f.cleaned_data.get('benefit_class'))(self.instance, params)
-				if params == "" and benefit.default_params:
-					dp = json.dumps(benefit.default_params)
-					f.cleaned_data['class_parameters'] = dp
-					f.instance.class_parameters = dp
-					params = dp
+				if benefit.default_params and not params:
+					f.cleaned_data['class_parameters'] = benefit.default_params
+					f.instance.class_parameters = benefit.default_params
+					params = benefit.default_params
 				s = benefit.validate_params()
 				if s:
 					f._errors['class_parameters'] = ErrorList([s])

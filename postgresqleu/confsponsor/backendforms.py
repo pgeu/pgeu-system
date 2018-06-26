@@ -3,7 +3,7 @@ from django.forms import ValidationError
 from collections import OrderedDict
 
 from postgresqleu.util.magic import magicdb
-from postgresqleu.util.widgets import RequiredFileUploadWidget
+from postgresqleu.util.widgets import RequiredFileUploadWidget, PrettyPrintJsonWidget
 from postgresqleu.confreg.backendforms import BackendForm
 
 from models import SponsorshipLevel, SponsorshipContract, SponsorshipBenefit
@@ -19,23 +19,30 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
 		model = SponsorshipBenefit
 		fields = ['benefitname', 'benefitdescription', 'sortkey', 'benefit_class',
 				  'claimprompt', 'class_parameters', ]
+		widgets = {
+			'class_parameters': PrettyPrintJsonWidget,
+		}
 
 	def clean(self):
 		cleaned_data = super(BackendSponsorshipLevelBenefitForm, self).clean()
 		if cleaned_data.get('benefit_class') >= 0:
 			params = cleaned_data.get('class_parameters')
 			benefit = get_benefit_class(cleaned_data.get('benefit_class'))(self.instance.level, params)
-			if params in ("","{}") and benefit.default_params:
+			if not params:
 				# Need a copy of the local data to make it mutable and change our default
 				self.data = self.data.copy()
-				dp = json.dumps(benefit.default_params)
-				self.data['class_parameters'] = dp
+				if benefit.default_params:
+					dp = benefit.default_params
+				else:
+					dp = {}
+				self.data['class_parameters'] = json.dumps(dp)
 				self.instance.class_parameters = dp
+				cleaned_data['class_parameters'] = dp
 				benefit.params = dp
-			s = benefit.validate_params()
-			if s:
-				self.add_error('class_parameters', s)
-
+			try:
+				benefit.do_validate_params()
+			except ValidationError, e:
+				self.add_error('class_parameters', e)
 		return cleaned_data
 
 	@property

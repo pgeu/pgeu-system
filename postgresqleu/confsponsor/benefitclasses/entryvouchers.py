@@ -3,35 +3,18 @@ from django.core.validators import MaxValueValidator
 
 import base64
 import os
-import json
 import cStringIO as StringIO
 
-from base import BaseBenefit
+from base import BaseBenefit, BaseBenefitForm
 
 from postgresqleu.mailqueue.util import send_template_mail
 
 from postgresqleu.confreg.models import RegistrationType, PrepaidBatch, PrepaidVoucher
 
-def _validate_params(level, params):
-	try:
-		j = json.loads(params)
-		if sorted(j.keys()) != [u"num", u"type"]:
-			raise Exception("Parameters 'num' and 'type' are mandatory")
-		if int(j['num']) < 1:
-			raise Exception("Parameter 'num' must be positive integer!")
-		if not RegistrationType.objects.filter(conference=level.conference, regtype=j['type']).exists():
-			raise Exception("Registation type '%s' does not exist" % j['type'])
-		return j
-	except ValueError:
-		raise Exception("Can't parse JSON")
-
-
-class EntryVouchersForm(forms.Form):
+class EntryVouchersForm(BaseBenefitForm):
 	vouchercount = forms.IntegerField(label='Number of vouchers', min_value=0)
 
-	def __init__(self, benefit, *args, **kwargs):
-		self.params = _validate_params(benefit.level, benefit.class_parameters)
-
+	def __init__(self, *args, **kwargs):
 		super(EntryVouchersForm, self).__init__(*args, **kwargs)
 
 		self.fields['vouchercount'].validators.append(MaxValueValidator(int(self.params['num'])))
@@ -40,17 +23,19 @@ class EntryVouchersForm(forms.Form):
 class EntryVouchers(BaseBenefit):
 	description = "Claim entry vouchers"
 	default_params = {"num": 1, "type": ""}
+	param_struct = {
+		'num': int,
+		'type': unicode,
+	}
+
 	def validate_params(self):
-		try:
-			_validate_params(self.level, self.params)
-		except Exception, e:
-			return e
+		if not RegistrationType.objects.filter(conference=self.level.conference, regtype=self.params['type']).exists():
+			raise forms.ValidationError("Registration type '%s' does not exist" % self.params['type'])
 
 	def generate_form(self):
 		return EntryVouchersForm
 
 	def save_form(self, form, claim, request):
-		j = _validate_params(self.level, self.params)
 		if int(form.cleaned_data['vouchercount']) == 0:
 			# No vouchers --> unclaim this benefit
 			claim.claimdata = "0"
@@ -59,7 +44,7 @@ class EntryVouchers(BaseBenefit):
 		else:
 			# Actual number, form has been validated, so create the vouchers.
 			batch = PrepaidBatch(conference=self.level.conference,
-								 regtype=RegistrationType.objects.get(conference=self.level.conference, regtype=j['type']),
+								 regtype=RegistrationType.objects.get(conference=self.level.conference, regtype=self.params['type']),
 								 buyer=request.user,
 								 buyername="%s %s" % (request.user.first_name, request.user.last_name),
 								 sponsor=claim.sponsor)
