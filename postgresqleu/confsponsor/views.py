@@ -13,7 +13,7 @@ from postgresqleu.auth import user_search, user_import
 from postgresqleu.confreg.models import Conference, PrepaidVoucher, DiscountCode
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.storage import InlineEncodedStorage
-from postgresqleu.util.decorators import user_passes_test_or_error
+from postgresqleu.util.decorators import superuser_required
 from postgresqleu.invoices.util import InvoiceWrapper
 
 from models import Sponsor, SponsorshipLevel, SponsorshipBenefit
@@ -679,8 +679,7 @@ def sponsor_admin_imageview(request, benefitid):
 	resp.write(f.read())
 	return resp
 
-@login_required
-@user_passes_test_or_error(lambda u: u.is_superuser)
+@superuser_required
 def sponsor_admin_test_vat(request, confurlname):
 	conference = get_object_or_404(Conference, urlname=confurlname)
 

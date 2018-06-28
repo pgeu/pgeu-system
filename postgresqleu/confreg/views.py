@@ -41,7 +41,7 @@ from regtypes import confirm_special_reg_type, validate_special_reg_type
 from jinjafunc import render_jinja_conference_response, JINJA_TEMPLATE_ROOT
 from backendviews import get_authenticated_conference
 
-from postgresqleu.util.decorators import user_passes_test_or_error
+from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod, InvoiceRow
 from postgresqleu.confwiki.models import Wikipage
@@ -2910,8 +2910,7 @@ def transfer_reg(request, urlname):
 
 
 # Send email to attendees of mixed conferences
-@login_required
-@user_passes_test_or_error(lambda u:u.is_superuser)
+@superuser_required
 @transaction.atomic
 def crossmail(request):
 	def _get_recipients_for_crossmail(postdict):
@@ -2994,8 +2993,7 @@ def crossmail(request):
 		})
 
 
-@login_required
-@user_passes_test_or_error(lambda u:u.is_superuser)
+@superuser_required
 @transaction.atomic
 def crossmailoptions(request):
 	conf = get_object_or_404(Conference, id=request.GET['conf'])
@@ -3020,8 +3018,7 @@ def crossmailoptions(request):
 	return HttpResponse(json.dumps(r), content_type="application/json")
 
 # Admin view that's used to send email to multiple users
-@login_required
-@user_passes_test_or_error(lambda u: u.is_superuser)
+@superuser_required
 @transaction.atomic
 def admin_email(request):
 	if request.method == 'POST':
@@ -3054,8 +3051,7 @@ def admin_email(request):
 		})
 
 
-@login_required
-@user_passes_test_or_error(lambda u: u.is_superuser)
+@superuser_required
 @transaction.atomic
 def admin_email_session(request, sessionids):
 	sessions = ConferenceSession.objects.filter(pk__in=sessionids.split(','))

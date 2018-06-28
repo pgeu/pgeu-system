@@ -9,7 +9,7 @@ from django.db.models import Q
 from models import Member, MemberLog, Meeting, MemberMeetingKey
 from forms import MemberForm, ProxyVoterForm
 
-from postgresqleu.util.decorators import user_passes_test_or_error
+from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
@@ -113,8 +113,7 @@ def userlist(request):
 
 
 # Admin view that's used to send email to multiple users
-@login_required
-@user_passes_test_or_error(lambda u: u.is_superuser)
+@superuser_required
 @transaction.atomic
 def admin_email(request):
 	if request.method == 'POST':

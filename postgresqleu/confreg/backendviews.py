@@ -16,6 +16,7 @@ import csv
 from postgresqleu.util.middleware import RedirectException
 from postgresqleu.util.db import exec_to_list, exec_to_dict, exec_no_result
 from postgresqleu.util.lists import flatten_list
+from postgresqleu.util.decorators import superuser_required
 
 from models import Conference, ConferenceRegistration
 from models import RegistrationType, RegistrationClass
@@ -368,7 +369,7 @@ def edit_conference(request, urlname):
 								allow_new=False,
 								allow_delete=False)
 
-@login_required
+@superuser_required
 def superedit_conference(request, urlname):
 	if not request.user.is_superuser:
 		raise PermissionDenied("Superuser only")

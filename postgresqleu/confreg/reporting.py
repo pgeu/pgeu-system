@@ -1,9 +1,8 @@
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import connection
 
-from postgresqleu.util.decorators import user_passes_test_or_error
+from postgresqleu.util.decorators import superuser_required
 
 from datetime import datetime
 
@@ -17,8 +16,7 @@ class Header(object):
 	def __unicode__(self):
 		return self.hdr
 
-@login_required
-@user_passes_test_or_error(lambda u: u.is_superuser)
+@superuser_required
 def timereport(request):
 	from reportingforms import TimeReportForm
 	if request.method == 'POST':
