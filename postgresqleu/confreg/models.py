@@ -90,14 +90,14 @@ class GlobalOptOut(models.Model):
 
 
 class Conference(models.Model):
-	urlname = models.CharField(max_length=32, blank=False, null=False, unique=True, validators=[validate_lowercase,])
-	conferencename = models.CharField(max_length=64, blank=False, null=False)
-	startdate = models.DateField(blank=False, null=False)
-	enddate = models.DateField(blank=False, null=False)
+	urlname = models.CharField(max_length=32, blank=False, null=False, unique=True, validators=[validate_lowercase,], verbose_name="URL name")
+	conferencename = models.CharField(max_length=64, blank=False, null=False, verbose_name="Conference name")
+	startdate = models.DateField(blank=False, null=False, verbose_name="Start date")
+	enddate = models.DateField(blank=False, null=False, verbose_name="End date")
 	location = models.CharField(max_length=128, blank=False, null=False)
 	timediff = models.IntegerField(null=False, blank=False, default=0)
-	contactaddr = models.EmailField(blank=False,null=False)
-	sponsoraddr = models.EmailField(blank=False,null=False)
+	contactaddr = models.EmailField(blank=False,null=False, verbose_name="Contact address")
+	sponsoraddr = models.EmailField(blank=False,null=False, verbose_name="Sponsor address")
 	active = models.BooleanField(blank=False,null=False,default=False, verbose_name="Registration open")
 	callforpapersopen = models.BooleanField(blank=False,null=False,default=False, verbose_name="Call for papers open")
 	callforsponsorsopen = models.BooleanField(blank=False,null=False,default=False, verbose_name="Call for sponsors open")
@@ -108,7 +108,7 @@ class Conference(models.Model):
 	sessionsactive = models.BooleanField(blank=False,null=False,default=False,verbose_name="Session list publishing active")
 	schedulewidth = models.IntegerField(blank=False, default=600, null=False, verbose_name="Width of HTML schedule")
 	pixelsperminute = models.FloatField(blank=False, default=1.5, null=False, verbose_name="Vertical pixels per minute")
-	confurl = models.CharField(max_length=128, blank=False, null=False, validators=[validate_lowercase,])
+	confurl = models.CharField(max_length=128, blank=False, null=False, validators=[validate_lowercase,], verbose_name="Conference URL")
 	listadminurl = models.CharField(max_length=128, blank=True, null=False)
 	listadminpwd = models.CharField(max_length=128, blank=True, null=False)
 	speakerlistadminurl = models.CharField(max_length=128, blank=True, null=False)
@@ -134,7 +134,7 @@ class Conference(models.Model):
 	askphotoconsent = models.BooleanField(null=False, blank=False, default=True, verbose_name="Field: photo consent", help_text="Include field for getting photo consent")
 	skill_levels = models.BooleanField(blank=False, null=False, default=True)
 	additionalintro = models.TextField(blank=True, null=False, help_text="Additional text shown just before the list of available additional options")
-	jinjadir = models.CharField(max_length=200, blank=True, null=True, default=None, help_text="Full path to new style jinja repository root")
+	jinjadir = models.CharField(max_length=200, blank=True, null=True, default=None, help_text="Full path to new style jinja repository root", verbose_name="Jinja directory")
 	callforpapersintro = models.TextField(blank=True, null=False)
 
 	sendwelcomemail = models.BooleanField(blank=False, null=False, default=False, verbose_name="Send welcome email", help_text="Send an email to attendees once their registration is completed.")
