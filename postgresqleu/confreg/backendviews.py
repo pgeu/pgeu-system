@@ -137,6 +137,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 				# Consistency is overrated!
 				with transaction.atomic():
 					if allow_new and not instance.pk:
+						form.pre_create_item()
 						form.save()
 					form._save_m2m()
 					for f in form.file_fields:

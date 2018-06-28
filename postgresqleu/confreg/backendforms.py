@@ -97,6 +97,9 @@ class BackendForm(ConcurrentProtectedModelForm):
 	def fix_fields(self):
 		pass
 
+	def pre_create_item(self):
+		pass
+
 	@property
 	def get_json_merge_data(self):
 		pass
