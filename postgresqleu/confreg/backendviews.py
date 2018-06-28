@@ -364,15 +364,14 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
 #######################
 # Simple editing views
 #######################
-
 def edit_conference(request, urlname):
-	# Need to bypass the conference filter, since conference is not linked to
-	# conference. However, the validation on urlname is already done, so there
-	# is no way to access it without having the permissions in the first place.
+	conference = get_authenticated_conference(request, urlname)
+
 	return backend_process_form(request,
 								urlname,
 								BackendConferenceForm,
-								get_object_or_404(Conference, urlname=urlname).pk,
+								conference.pk,
+								conference=conference,
 								bypass_conference_filter=True,
 								allow_new=False,
 								allow_delete=False)
@@ -402,11 +401,8 @@ def edit_series(request, rest):
 							   return_url='../../',
 	)
 
-@login_required
+@superuser_required
 def new_conference(request):
-	if not request.user.is_superuser:
-		raise PermissionDenied("Superuser only")
-
 	return backend_process_form(request,
 								None,
 								BackendSuperConferenceForm,
