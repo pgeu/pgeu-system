@@ -25,6 +25,7 @@ from postgresqleu.confreg.models import ConferenceAdditionalOption, ConferenceFe
 from postgresqleu.confreg.models import ConferenceSession, Track, Room
 from postgresqleu.confreg.models import ConferenceSessionScheduleSlot, VolunteerSlot
 from postgresqleu.confreg.models import DiscountCode, AccessToken, AccessTokenPermissions
+from postgresqleu.confreg.models import ConferenceSeries
 
 from postgresqleu.confreg.models import valid_status_transitions, get_status_string
 
@@ -157,6 +158,13 @@ class BackendSuperConferenceForm(BackendForm):
 		(obj, created) = postgresqleu.accounting.models.Object.objects.get_or_create(name=self.instance.urlname,
 																					 defaults={'active': True})
 		self.instance.accounting_object = obj
+
+
+class BackendConferenceSeriesForm(BackendForm):
+	list_fields = ['name', ]
+	class Meta:
+		model = ConferenceSeries
+		fields = ['name', ]
 
 class BackendRegistrationForm(BackendForm):
 	class Meta:

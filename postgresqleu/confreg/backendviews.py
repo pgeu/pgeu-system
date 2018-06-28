@@ -33,6 +33,7 @@ from backendforms import BackendTrackForm, BackendRoomForm, BackendConferenceSes
 from backendforms import BackendConferenceSessionSlotForm, BackendVolunteerSlotForm
 from backendforms import BackendFeedbackQuestionForm, BackendDiscountCodeForm
 from backendforms import BackendAccessTokenForm
+from backendforms import BackendConferenceSeriesForm
 
 def get_authenticated_conference(request, urlname):
 	if not request.user.is_authenticated:
@@ -388,6 +389,18 @@ def superedit_conference(request, urlname):
 								bypass_conference_filter=True,
 								allow_new=False,
 								allow_delete=False)
+
+@superuser_required
+def edit_series(request, rest):
+	return backend_list_editor(request,
+							   None,
+							   BackendConferenceSeriesForm,
+							   rest,
+							   allow_new=True,
+							   allow_delete=True,
+							   bypass_conference_filter=True,
+							   return_url='../../',
+	)
 
 @login_required
 def new_conference(request):

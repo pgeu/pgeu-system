@@ -46,10 +46,13 @@
 {%endif%}
 
 {%if user.is_superuser%}
-<h3>New conference</h3>
+<h3>Superuser operations</h3>
 <div class="row">
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow">
     <a class="btn btn-default btn-block" href="/events/admin/newconference/">Create new conference</a>
+  </div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow">
+    <a class="btn btn-default btn-block" href="/events/admin/meta/series/">Edit conference series</a>
   </div>
 </div>
 {%endif%}

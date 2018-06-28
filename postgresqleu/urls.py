@@ -114,6 +114,7 @@ urlpatterns = [
 	url(r'^events/admin/([^/]+)/reports/feedback/session/$', postgresqleu.confreg.feedback.feedback_sessions),
 	url(r'^events/admin/([^/]+)/reports/schedule/$', postgresqleu.confreg.pdfschedule.pdfschedule),
 	url(r'^events/admin/newconference/$', postgresqleu.confreg.backendviews.new_conference),
+	url(r'^events/admin/meta/series/(.*/)?$', postgresqleu.confreg.backendviews.edit_series),
 	url(r'^events/admin/(\w+)/$', postgresqleu.confreg.views.admin_dashboard_single),
 	url(r'^events/admin/(\w+)/edit/$', postgresqleu.confreg.backendviews.edit_conference),
 	url(r'^events/admin/(\w+)/superedit/$', postgresqleu.confreg.backendviews.superedit_conference),
