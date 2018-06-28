@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.db import transaction
 from django import forms
 from django.core import urlresolvers
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib.admin.utils import NestedObjects
 from django.contrib import messages
@@ -24,7 +25,7 @@ from postgresqleu.invoices.models import Invoice
 from postgresqleu.confsponsor.util import get_sponsor_dashboard_data
 
 from backendforms import BackendCopySelectConferenceForm
-from backendforms import BackendConferenceForm, BackendRegistrationForm
+from backendforms import BackendConferenceForm, BackendSuperConferenceForm, BackendRegistrationForm
 from backendforms import BackendRegistrationTypeForm, BackendRegistrationClassForm
 from backendforms import BackendRegistrationDayForm, BackendAdditionalOptionForm
 from backendforms import BackendTrackForm, BackendRoomForm, BackendConferenceSessionForm
@@ -366,6 +367,35 @@ def edit_conference(request, urlname):
 								bypass_conference_filter=True,
 								allow_new=False,
 								allow_delete=False)
+
+@login_required
+def superedit_conference(request, urlname):
+	if not request.user.is_superuser:
+		raise PermissionDenied("Superuser only")
+
+	return backend_process_form(request,
+								urlname,
+								BackendSuperConferenceForm,
+								get_object_or_404(Conference, urlname=urlname).pk,
+								bypass_conference_filter=True,
+								allow_new=False,
+								allow_delete=False)
+
+@login_required
+def new_conference(request):
+	if not request.user.is_superuser:
+		raise PermissionDenied("Superuser only")
+
+	return backend_process_form(request,
+								None,
+								BackendSuperConferenceForm,
+								None,
+								bypass_conference_filter=True,
+								allow_new=True,
+								allow_delete=False,
+								conference=Conference(),
+								instancemaker=lambda: Conference(),
+	)
 
 def edit_registration(request, urlname, regid):
 	return backend_process_form(request,

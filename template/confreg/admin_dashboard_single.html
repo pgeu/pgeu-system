@@ -75,6 +75,9 @@
 <h2>Metadata</h2>
 <div class="row">
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/edit/">Conference entry</a></div>
+{%if user.is_superuser%}
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/superedit/">Superuser conference entry</a></div>
+{%endif%}
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/accesstokens/">Access tokens</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/feedbackquestions/">Feedback questions</a></div>
 </div>

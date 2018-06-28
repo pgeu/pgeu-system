@@ -17,6 +17,7 @@ from postgresqleu.util.random import generate_random_token
 
 from postgresqleu.accountinfo.lookups import UserLookup
 from postgresqleu.confreg.lookups import RegistrationLookup
+import postgresqleu.accounting.models
 
 from postgresqleu.confreg.models import Conference, ConferenceRegistration, ConferenceAdditionalOption
 from postgresqleu.confreg.models import RegistrationClass, RegistrationType, RegistrationDay
@@ -134,6 +135,28 @@ class BackendConferenceForm(BackendForm):
 		self.fields['volunteers'].label_from_instance = lambda x: u'{0} <{1}>'.format(x.fullname, x.email)
 		self.fields['volunteers'].queryset = ConferenceRegistration.objects.filter(conference=self.conference)
 
+
+class BackendSuperConferenceForm(BackendForm):
+	class Meta:
+		model = Conference
+		fields = ['conferencename', 'urlname', 'series', 'startdate', 'enddate', 'location',
+				  'timediff', 'contactaddr', 'sponsoraddr', 'confurl', 'administrators',
+				  'jinjadir', 'accounting_object', 'vat_registrations', 'vat_sponsorship', ]
+	selectize_multiple_fields = ['administrators', ]
+	accounting_object = django.forms.ChoiceField(choices=[], required=False)
+	exclude_date_validators = ['startdate', 'enddate']
+
+	def fix_fields(self):
+		self.fields['administrators'].label_from_instance = lambda x: u'{0} {1} ({2})'.format(x.first_name, x.last_name, x.username)
+		self.fields['accounting_object'].choices = [('', '----'),] + [(o.name, o.name) for o in postgresqleu.accounting.models.Object.objects.filter(active=True)]
+		if not self.instance.id:
+			del self.fields['accounting_object']
+
+	def pre_create_item(self):
+		# Create a new accounting object automatically if one does not exist already
+		(obj, created) = postgresqleu.accounting.models.Object.objects.get_or_create(name=self.instance.urlname,
+																					 defaults={'active': True})
+		self.instance.accounting_object = obj
 
 class BackendRegistrationForm(BackendForm):
 	class Meta:

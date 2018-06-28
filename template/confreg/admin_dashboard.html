@@ -46,6 +46,15 @@
 {%endif%}
 
 {%if user.is_superuser%}
+<h3>New conference</h3>
+<div class="row">
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow">
+    <a class="btn btn-default btn-block" href="/events/admin/newconference/">Create new conference</a>
+  </div>
+</div>
+{%endif%}
+
+{%if user.is_superuser%}
 <p>
 Everything should normally be edited through interfaces above. For exceptional cases,
 there is still <a href="/admin/confreg/">main admin interface</a>.
