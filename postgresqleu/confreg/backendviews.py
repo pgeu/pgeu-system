@@ -44,7 +44,7 @@ def get_authenticated_conference(request, urlname):
 		return get_object_or_404(Conference, urlname=urlname, administrators=request.user)
 
 def backend_process_form(request, urlname, formclass, id, cancel_url='../', saved_url='../', allow_new=True, allow_delete=True, breadcrumbs=None, permissions_already_checked=False, conference=None, bypass_conference_filter=False, instancemaker=None):
-	if not conference:
+	if not conference and not bypass_conference_filter:
 		conference = get_authenticated_conference(request, urlname)
 
 	if not formclass.Meta.fields:
@@ -261,15 +261,18 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
 		})
 
 
-def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, allow_delete=True, conference=None, breadcrumbs=[]):
-	if not conference:
+def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, allow_delete=True, conference=None, breadcrumbs=[], bypass_conference_filter=False, return_url='../'):
+	if not conference and not bypass_conference_filter:
 		conference = get_authenticated_conference(request, urlname)
 
 	if resturl:
 		resturl = resturl.rstrip('/')
 	if resturl == '' or resturl == None:
 		# Render the list of objects
-		objects = formclass.Meta.model.objects.filter(conference=conference)
+		if bypass_conference_filter:
+			objects = formclass.Meta.model.objects.all()
+		else:
+			objects = formclass.Meta.model.objects.filter(conference=conference)
 		values = [{'id': o.id, 'vals': [getattr(o, '_display_{0}'.format(f), getattr(o, f)) for f in formclass.list_fields]} for o in objects]
 		return render(request, 'confreg/admin_backend_list.html', {
 			'conference': conference,
@@ -279,7 +282,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
 			'plural_name': formclass.Meta.model._meta.verbose_name_plural,
 			'headers': [formclass.get_field_verbose_name(f) for f in formclass.list_fields],
 			'coltypes': formclass.coltypes,
-			'return_url': '../',
+			'return_url': return_url,
 			'allow_new': allow_new,
 			'allow_delete': allow_delete,
 			'allow_copy_previous': formclass.allow_copy_previous,
@@ -295,7 +298,9 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
 									allow_new=True,
 									allow_delete=allow_delete,
 									breadcrumbs=breadcrumbs + [('../', formclass.Meta.model._meta.verbose_name_plural.capitalize()), ],
-									conference=conference)
+									conference=conference,
+									bypass_conference_filter=bypass_conference_filter,
+		)
 
 	restpieces = resturl.split('/')
 	if formclass.allow_copy_previous and restpieces[0] == 'copy':
@@ -350,7 +355,9 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
 								id,
 								allow_delete=allow_delete,
 								breadcrumbs=breadcrumbs + [('../', formclass.Meta.model._meta.verbose_name_plural.capitalize()), ],
-								conference=conference)
+								conference=conference,
+								bypass_conference_filter=bypass_conference_filter,
+	)
 
 
 #######################
