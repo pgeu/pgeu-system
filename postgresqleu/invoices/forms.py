@@ -115,7 +115,7 @@ class RefundForm(forms.Form):
 		try:
 			amount = Decimal(self.cleaned_data['amount'])
 			if amount < 1 or amount > self.invoice.total_amount-self.invoice.total_vat:
-				raise ValidatonError(errstr)
+				raise ValidationError(errstr)
 			if amount.as_tuple().exponent > 0 or amount.as_tuple().exponent < -2:
 				raise ValidationError("Maximum two decimal digits supported")
 			return self.cleaned_data['amount']
@@ -130,8 +130,9 @@ class RefundForm(forms.Form):
 		try:
 			amount = Decimal(self.cleaned_data['vatamount'])
 			if amount < 1 or amount > self.invoice.total_vat:
-				raise ValidatonError(errstr)
-			if amount.as_tuple().exponent > 0 or amount.as_tuple().exponent < -2:				raise ValidationError("Maximum two decimal digits supported")
+				raise ValidationError(errstr)
+			if amount.as_tuple().exponent > 0 or amount.as_tuple().exponent < -2:
+				raise ValidationError("Maximum two decimal digits supported")
 			return self.cleaned_data['vatamount']
 		except ValidationError:
 			raise

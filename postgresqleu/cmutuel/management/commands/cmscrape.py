@@ -161,7 +161,7 @@ class Command(BaseCommand):
 			'data_formats_options_csv_show':'True',
 		})
 		if c.getinfo(pycurl.RESPONSE_CODE) != 200:
-			raise CommandException("Supposed to receive 200, got %s" % c.getinfo(c.RESPONSE_CODE))
+			raise CommandError("Supposed to receive 200, got %s" % c.getinfo(c.RESPONSE_CODE))
 
 		reader = csv.reader(s.getvalue().splitlines(), delimiter=';')
 
