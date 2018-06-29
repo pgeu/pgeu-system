@@ -680,7 +680,7 @@ def sponsor_admin_imageview(request, benefitid):
 
 @superuser_required
 def sponsor_admin_test_vat(request, confurlname):
-	conference = get_object_or_404(Conference, urlname=confurlname)
+	get_object_or_404(Conference, urlname=confurlname)
 
 	vn = request.POST.get('vatnumber', '')
 	if not vn:

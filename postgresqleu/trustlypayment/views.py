@@ -60,12 +60,12 @@ def invoicepayment_secret(request, invoiceid, secret):
 		# Trustly request was successful, so we have an url to send the user to. Let's set up
 		# the transaction on our end.
 
-		trans = TrustlyTransaction(createdat=datetime.now(),
-								   invoiceid=invoice.id,
-								   amount=invoice.total_amount,
-								   orderid=r['data']['orderid'],
-								   redirecturl=r['data']['url'],
-								   ).save()
+		TrustlyTransaction(createdat=datetime.now(),
+						   invoiceid=invoice.id,
+						   amount=invoice.total_amount,
+						   orderid=r['data']['orderid'],
+						redirecturl=r['data']['url'],
+		).save()
 
 		# With the transaction saved, redirect the user to Trustly
 		return HttpResponseRedirect(r['data']['url'])
@@ -75,7 +75,7 @@ def invoicepayment_secret(request, invoiceid, secret):
 
 def success(request, invoiceid, secret):
 	# Get the invoice so we can be sure that we have the secret
-	invoice = get_object_or_404(Invoice, id=invoiceid, recipient_secret=secret)
+	get_object_or_404(Invoice, id=invoiceid, recipient_secret=secret)
 	trans = get_object_or_404(TrustlyTransaction, invoiceid=invoiceid)
 
 	if trans.completedat:
