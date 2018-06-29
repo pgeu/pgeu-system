@@ -69,7 +69,6 @@ lower fees.
 			raise Exception(reason)
 
 		api = PaypalAPI()
-		from datetime import datetime
 		invoice.refund.payment_reference = api.refund_transaction(
 			trans.paypaltransid,
 			invoice.refund.fullamount,

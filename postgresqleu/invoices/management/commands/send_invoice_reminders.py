@@ -3,7 +3,7 @@
 # Copyright (C) 2015, PostgreSQL Europe
 #
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from datetime import datetime, timedelta

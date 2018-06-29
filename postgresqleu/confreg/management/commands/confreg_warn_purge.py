@@ -5,8 +5,7 @@
 # Intended to run on a weekly basis or so, as it will keep repeating
 # the reminders every time.
 #
-from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
+from django.core.management.base import BaseCommand
 from django.conf import settings
 
 from datetime import datetime, timedelta

@@ -6,8 +6,8 @@
 # Copyright (C) 2010-2018, PostgreSQL Europe
 #
 
-from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction, connection
+from django.core.management.base import BaseCommand
+from django.db import transaction
 from django.conf import settings
 
 from postgresqleu.paypal.models import ErrorLog, TransactionInfo

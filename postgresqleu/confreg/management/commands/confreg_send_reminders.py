@@ -5,9 +5,8 @@
 # Intended to run on a daily basis, as each reminder has it's
 # own check for when the user was last notified.
 #
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.conf import settings
 
 from StringIO import StringIO
 from datetime import datetime, timedelta

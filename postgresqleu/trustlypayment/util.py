@@ -10,7 +10,7 @@ from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 
 from api import TrustlyWrapper, TrustlyException
 from models import TrustlyTransaction, TrustlyLog
-from models import TrustlyNotification, TrustlyRawNotification
+from models import TrustlyNotification
 
 # Django intgrated wrapper for the trustly API
 

@@ -14,7 +14,6 @@ import urllib
 import datetime
 import csv
 import sys
-import os
 from decimal import Decimal
 from HTMLParser import HTMLParser
 

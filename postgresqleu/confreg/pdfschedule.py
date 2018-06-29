@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django import forms
 from django.http import HttpResponse
@@ -20,7 +19,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import cm, mm
 
-from models import Conference, Room, Track, RegistrationDay, ConferenceSession
+from models import Room, Track, RegistrationDay, ConferenceSession
 from backendviews import get_authenticated_conference
 
 def _get_pagesize(size, orient):

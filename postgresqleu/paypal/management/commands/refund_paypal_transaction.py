@@ -6,12 +6,10 @@
 # Copyright (C) 2018, PostgreSQL Europe
 #
 from django.core.management.base import BaseCommand, CommandError
-from django.conf import settings
 
-from datetime import datetime
 import time
 
-from postgresqleu.paypal.models import TransactionInfo, ErrorLog
+from postgresqleu.paypal.models import TransactionInfo
 from postgresqleu.paypal.util import PaypalAPI
 
 class Command(BaseCommand):

@@ -3,7 +3,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import User
 from django.conf import settings
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from decimal import Decimal
 
 from payment import PaymentMethodWrapper
@@ -206,9 +206,6 @@ class InvoiceRow(models.Model):
 	rowcount = models.IntegerField(null=False, default=1, verbose_name="Count")
 	rowamount = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0, verbose_name="Amount per item (ex VAT)")
 	vatrate = models.ForeignKey(VatRate, null=True)
-
-	def __unicode__(self):
-		return self.rowtext
 
 	def __unicode__(self):
 		return self.rowtext

@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User
 from django.db.models import Q

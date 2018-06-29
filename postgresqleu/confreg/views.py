@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect, HttpResponse, Http404
-from django.template.loader import get_template
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
@@ -15,11 +14,10 @@ from django.forms import formsets
 from django.forms import ValidationError
 
 from models import Conference, ConferenceRegistration, ConferenceSession
-from models import ConferenceSessionSlides, ConferenceSeries
-from models import ConferenceSeriesOptOut, GlobalOptOut
+from models import ConferenceSessionSlides, GlobalOptOut
 from models import ConferenceSessionFeedback, Speaker, Speaker_Photo
 from models import ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
-from models import RegistrationType, PrepaidVoucher, PrepaidBatch, DiscountCode
+from models import RegistrationType, PrepaidVoucher, PrepaidBatch
 from models import BulkPayment, Room, Track, ConferenceSessionScheduleSlot
 from models import AttendeeMail, ConferenceAdditionalOption
 from models import PendingAdditionalOrder
@@ -27,7 +25,7 @@ from models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
 from models import STATUS_CHOICES
 from forms import ConferenceRegistrationForm, RegistrationChangeForm, ConferenceSessionFeedbackForm
 from forms import ConferenceFeedbackForm, SpeakerProfileForm
-from forms import CallForPapersForm, CallForPapersSpeakerForm, CallForPapersSubmissionForm
+from forms import CallForPapersForm, CallForPapersSpeakerForm
 from forms import CallForPapersCopyForm, PrepaidCreateForm, BulkRegistrationForm
 from forms import EmailSendForm, EmailSessionForm, CrossConferenceMailForm
 from forms import AttendeeMailForm, WaitlistOfferForm, TransferRegForm
@@ -58,8 +56,6 @@ from datetime import datetime, timedelta, date
 import base64
 import re
 import os
-import sys
-import imp
 from email.mime.text import MIMEText
 from Crypto.Hash import SHA256
 from StringIO import StringIO

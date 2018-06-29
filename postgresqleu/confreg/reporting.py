@@ -4,8 +4,6 @@ from django.db import connection
 
 from postgresqleu.util.decorators import superuser_required
 
-from datetime import datetime
-
 class ReportException(Exception):
 	pass
 

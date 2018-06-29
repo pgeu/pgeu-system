@@ -1,11 +1,8 @@
-from django.conf import settings
 from django.contrib.auth.models import User
 
 from datetime import datetime, date, timedelta
-from decimal import Decimal
 
 from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
-from postgresqleu.util.random import generate_random_token
 
 from models import PrepaidVoucher, DiscountCode, RegistrationWaitlistHistory
 from models import ConferenceRegistration

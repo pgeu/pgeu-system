@@ -6,7 +6,6 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib.admin.utils import NestedObjects
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.conf import settings
 
 import urllib
@@ -18,8 +17,7 @@ from postgresqleu.util.db import exec_to_list, exec_to_dict, exec_no_result
 from postgresqleu.util.lists import flatten_list
 from postgresqleu.util.decorators import superuser_required
 
-from models import Conference, ConferenceRegistration
-from models import RegistrationType, RegistrationClass
+from models import Conference
 from models import AccessToken
 
 from postgresqleu.invoices.models import Invoice

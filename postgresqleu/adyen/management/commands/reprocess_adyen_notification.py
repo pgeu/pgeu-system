@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from django.http import QueryDict
 
 from postgresqleu.adyen.models import Notification, AdyenLog
 from postgresqleu.adyen.util import process_one_notification

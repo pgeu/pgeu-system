@@ -5,7 +5,6 @@ from datetime import datetime
 import base64
 import cStringIO as StringIO
 import csv
-import json
 
 from base import BaseBenefit, BaseBenefitForm
 

@@ -21,7 +21,6 @@ from models import SponsorClaimedBenefit, SponsorMail, SponsorshipContract
 from models import PurchasedVoucher
 from forms import SponsorSignupForm, SponsorSendEmailForm
 from forms import PurchaseVouchersForm, PurchaseDiscountForm
-from forms import AdminCopySponsorshipLevelForm
 from benefits import get_benefit_class
 from invoicehandler import create_sponsor_invoice, confirm_sponsor
 from invoicehandler import create_voucher_invoice

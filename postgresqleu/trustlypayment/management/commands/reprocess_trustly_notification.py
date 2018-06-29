@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from django.http import QueryDict
 
 from postgresqleu.trustlypayment.models import TrustlyNotification, TrustlyLog
 from postgresqleu.trustlypayment.util import Trustly

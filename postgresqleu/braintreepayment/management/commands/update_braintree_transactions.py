@@ -6,12 +6,10 @@
 # Copyright (C) 2015-2016, PostgreSQL Europe
 #
 
-import os
-import sys
 import logging
 from datetime import date, datetime, timedelta
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import Q
 from django.conf import settings

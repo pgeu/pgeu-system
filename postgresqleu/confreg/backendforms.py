@@ -9,9 +9,6 @@ from django.utils.safestring import mark_safe
 import datetime
 from psycopg2.extras import DateTimeTZRange
 
-from selectable.forms.widgets import AutoCompleteSelectWidget, AutoCompleteSelectMultipleWidget
-
-from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 from postgresqleu.util.random import generate_random_token
 
@@ -19,7 +16,7 @@ import postgresqleu.accounting.models
 
 from postgresqleu.confreg.models import Conference, ConferenceRegistration, ConferenceAdditionalOption
 from postgresqleu.confreg.models import RegistrationClass, RegistrationType, RegistrationDay
-from postgresqleu.confreg.models import ConferenceAdditionalOption, ConferenceFeedbackQuestion
+from postgresqleu.confreg.models import ConferenceFeedbackQuestion
 from postgresqleu.confreg.models import ConferenceSession, Track, Room
 from postgresqleu.confreg.models import ConferenceSessionScheduleSlot, VolunteerSlot
 from postgresqleu.confreg.models import DiscountCode, AccessToken, AccessTokenPermissions

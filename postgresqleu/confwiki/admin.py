@@ -1,7 +1,6 @@
 from django.contrib import admin
-from django import forms
 
-from selectable.forms.widgets import AutoCompleteSelectWidget, AutoCompleteSelectMultipleWidget
+from selectable.forms.widgets import AutoCompleteSelectMultipleWidget
 from postgresqleu.confreg.lookups import RegistrationLookup
 from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
 from postgresqleu.util.forms import ConcurrentProtectedModelForm

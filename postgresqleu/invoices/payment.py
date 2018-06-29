@@ -1,8 +1,6 @@
 # The PaymentMethodWrapper needs to be in it's own file, so we don't
 # create a circular dependency between models and util.
 
-from datetime import datetime
-
 class PaymentMethodWrapper(object):
 	def __init__(self, method, invoice, returnurl=None):
 		self.method = method

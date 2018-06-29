@@ -5,6 +5,7 @@ from postgresqleu.invoices.models import Invoice
 from postgresqleu.trustlypayment.models import TrustlyTransaction, TrustlyLog
 
 from postgresqleu.trustlypayment.util import Trustly
+from postgresqleu.trustlypayment.api import TrustlyException
 
 
 class TrustlyPayment(object):

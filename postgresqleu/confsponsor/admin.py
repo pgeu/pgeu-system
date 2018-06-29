@@ -2,7 +2,6 @@ from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.forms.models import BaseInlineFormSet
 from django.forms.utils import ErrorList
-from django import forms
 from django.core import urlresolvers
 from django.utils.safestring import mark_safe
 
