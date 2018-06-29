@@ -219,6 +219,7 @@ class Conference(models.Model):
 		cc = super(Conference, self).clean()
 		if self.sendwelcomemail and not self.welcomemail:
 			raise ValidationError("Must specify an actual welcome mail if it's enabled!")
+		return cc
 
 class RegistrationClass(models.Model):
 	conference = models.ForeignKey(Conference, null=False)
