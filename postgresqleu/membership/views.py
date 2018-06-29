@@ -275,7 +275,7 @@ def meetingcode(request):
 	try:
 		key = MemberMeetingKey.objects.get(key=secret, meeting__pk=meetingid)
 		if key.meeting.dateandtime + timedelta(hours=4) < datetime.now():
-			return HttpResponse(jsuon.dumps({'err': 'This meeting is not open for signing in yet.'}),
+			return HttpResponse(json.dumps({'err': 'This meeting is not open for signing in yet.'}),
 								content_type='application/json')
 		member = key.member
 	except MemberMeetingKey.DoesNotExist:

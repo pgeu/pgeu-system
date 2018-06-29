@@ -64,7 +64,7 @@ class Command(BaseCommand):
 			sio.write("The following payments have been authorized, but not finished for more than %s days.\nThese probably need to be verified manually.\n\n\n" % UNFINISHED_THRESHOLD)
 
 			for l in lines:
-				sio.write("%s at %s: %s (%s%s)\n" % (orderid, l.pendingat, l.amount, settings.SITEBASE, urlresolvers.reverse('admin:trustlypayment_trustlytransactionstatus_change', args=(l.id,))))
+				sio.write("%s at %s: %s (%s%s)\n" % (l.orderid, l.pendingat, l.amount, settings.SITEBASE, urlresolvers.reverse('admin:trustlypayment_trustlytransactionstatus_change', args=(l.id,))))
 
 			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 							 settings.TRUSTLY_NOTIFICATION_RECEIVER,
