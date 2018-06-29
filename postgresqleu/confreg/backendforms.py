@@ -15,8 +15,6 @@ from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 from postgresqleu.util.random import generate_random_token
 
-from postgresqleu.accountinfo.lookups import UserLookup
-from postgresqleu.confreg.lookups import RegistrationLookup
 import postgresqleu.accounting.models
 
 from postgresqleu.confreg.models import Conference, ConferenceRegistration, ConferenceAdditionalOption
@@ -28,6 +26,8 @@ from postgresqleu.confreg.models import DiscountCode, AccessToken, AccessTokenPe
 from postgresqleu.confreg.models import ConferenceSeries
 
 from postgresqleu.confreg.models import valid_status_transitions, get_status_string
+
+from backendlookups import GeneralAccountLookup, RegisteredUsersLookup, SpeakerLookup
 
 class BackendDateInput(TextInput):
 	def __init__(self, *args, **kwargs):
@@ -71,6 +71,7 @@ class BackendForm(ConcurrentProtectedModelForm):
 
 
 		self.fix_fields()
+		self.fix_selectize_fields(**kwargs)
 
 		for k,v in self.fields.items():
 			# Adjust widgets
@@ -95,6 +96,18 @@ class BackendForm(ConcurrentProtectedModelForm):
 
 		for field in self.readonly_fields:
 			self.fields[field].widget.attrs['readonly'] = 'true'
+
+	def fix_selectize_fields(self, **kwargs):
+		for field, lookup in self.selectize_multiple_fields.items():
+			# If this is a postback of a selectize field, it may contain ids that are not currently
+			# stored in the field. They must still be among the *allowed* values of course, which
+			# are handled by the existing queryset on the field.
+			vals = [o.pk for o in getattr(self.instance, field).all()]
+			if 'data' in kwargs and unicode(field) in kwargs['data']:
+				vals.extend([int(x) for x in kwargs['data'].getlist(field)])
+			self.fields[field].widget.attrs['data-selecturl'] = lookup.url
+			self.fields[field].queryset = self.fields[field].queryset.filter(pk__in=set(vals))
+			self.fields[field].label_from_instance = lookup.label_from_instance
 
 	def fix_fields(self):
 		pass
@@ -126,15 +139,15 @@ class BackendConferenceForm(BackendForm):
 				  'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'askphotoconsent',
 				  'skill_levels', 'additionalintro', 'callforpapersintro', 'sendwelcomemail', 'welcomemail',
 				  'invoice_autocancel_hours', 'attendees_before_waitlist']
-	selectize_multiple_fields = ['testers', 'talkvoters', 'staff', 'volunteers']
-
+	selectize_multiple_fields = {
+		'testers': GeneralAccountLookup(),
+		'talkvoters': GeneralAccountLookup(),
+		'staff': GeneralAccountLookup(),
+		'volunteers': RegisteredUsersLookup(None),
+	}
 
 	def fix_fields(self):
-		self.fields['testers'].label_from_instance = lambda x: u'{0} {1} ({2})'.format(x.first_name, x.last_name, x.username)
-		self.fields['talkvoters'].label_from_instance = lambda x: u'{0} {1} ({2})'.format(x.first_name, x.last_name, x.username)
-		self.fields['staff'].label_from_instance = lambda x: u'{0} {1} ({2})'.format(x.first_name, x.last_name, x.username)
-		self.fields['volunteers'].label_from_instance = lambda x: u'{0} <{1}>'.format(x.fullname, x.email)
-		self.fields['volunteers'].queryset = ConferenceRegistration.objects.filter(conference=self.conference)
+		self.selectize_multiple_fields['volunteers'] = RegisteredUsersLookup(self.conference)
 
 
 class BackendSuperConferenceForm(BackendForm):
@@ -143,12 +156,13 @@ class BackendSuperConferenceForm(BackendForm):
 		fields = ['conferencename', 'urlname', 'series', 'startdate', 'enddate', 'location',
 				  'timediff', 'contactaddr', 'sponsoraddr', 'confurl', 'administrators',
 				  'jinjadir', 'accounting_object', 'vat_registrations', 'vat_sponsorship', ]
-	selectize_multiple_fields = ['administrators', ]
+	selectize_multiple_fields = {
+		'administrators': GeneralAccountLookup(),
+	}
 	accounting_object = django.forms.ChoiceField(choices=[], required=False)
 	exclude_date_validators = ['startdate', 'enddate']
 
 	def fix_fields(self):
-		self.fields['administrators'].label_from_instance = lambda x: u'{0} {1} ({2})'.format(x.first_name, x.last_name, x.username)
 		self.fields['accounting_object'].choices = [('', '----'),] + [(o.name, o.name) for o in postgresqleu.accounting.models.Object.objects.filter(active=True)]
 		if not self.instance.id:
 			del self.fields['accounting_object']
@@ -344,7 +358,9 @@ class BackendConferenceSessionForm(BackendForm):
 		'speaker_list': 'Speakers',
 		'status_string': 'Status',
 	}
-	selectize_multiple_fields = ['speaker']
+	selectize_multiple_fields = {
+		'speaker': SpeakerLookup(),
+	}
 	allow_copy_previous = True
 	copy_transform_form = BackendTransformConferenceDateTimeForm
 	auto_cascade_delete_to = ['conferencesession_speaker', ]

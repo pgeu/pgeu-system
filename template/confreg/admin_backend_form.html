@@ -8,8 +8,26 @@
 
 <script language="javascript">
 $(function() {
-{%for f in form.selectize_multiple_fields%}
-   $('#id_{{f}}').selectize({plugins: ['remove_button']});
+{%for f,lookup in form.selectize_multiple_fields.items%}
+   $('#id_{{f}}').selectize({
+      plugins: ['remove_button'],
+      valueField: 'id',
+      labelField: 'value',
+      searchField: 'value',
+      load: function(query, callback) {
+         if (!query.length) return callback();
+         $.ajax({
+            'url': '{{lookup.url}}',
+            'type': 'GET',
+            'dataType': 'json',
+            'data': {
+               'query': query,
+            },
+            'error': function() { callback();},
+            'success': function(res) { callback(res.values);},
+         });
+      }
+   });
 {%endfor%}
 
 {%for f in form.json_fields%}

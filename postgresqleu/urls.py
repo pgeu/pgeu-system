@@ -8,6 +8,7 @@ import postgresqleu.newsevents.views
 import postgresqleu.views
 import postgresqleu.confreg.views
 import postgresqleu.confreg.backendviews
+import postgresqleu.confreg.backendlookups
 import postgresqleu.confreg.reporting
 import postgresqleu.confreg.mobileviews
 import postgresqleu.confreg.feedback
@@ -115,9 +116,12 @@ urlpatterns = [
 	url(r'^events/admin/([^/]+)/reports/schedule/$', postgresqleu.confreg.pdfschedule.pdfschedule),
 	url(r'^events/admin/newconference/$', postgresqleu.confreg.backendviews.new_conference),
 	url(r'^events/admin/meta/series/(.*/)?$', postgresqleu.confreg.backendviews.edit_series),
+	url(r'^events/admin/lookups/accounts/$', postgresqleu.confreg.backendlookups.GeneralAccountLookup.lookup),
+	url(r'^events/admin/lookups/speakers/$', postgresqleu.confreg.backendlookups.SpeakerLookup.lookup),
 	url(r'^events/admin/(\w+)/$', postgresqleu.confreg.views.admin_dashboard_single),
 	url(r'^events/admin/(\w+)/edit/$', postgresqleu.confreg.backendviews.edit_conference),
 	url(r'^events/admin/(\w+)/superedit/$', postgresqleu.confreg.backendviews.superedit_conference),
+	url(r'^events/admin/(\w+)/lookups/regs/$', postgresqleu.confreg.backendlookups.RegisteredUsersLookup.lookup),
 	url(r'^events/admin/(\w+)/mail/$', postgresqleu.confreg.views.admin_attendeemail),
 	url(r'^events/admin/(\w+)/mail/(\d+)/$', postgresqleu.confreg.views.admin_attendeemail_view),
 	url(r'^events/admin/(\w+)/regdashboard/$', postgresqleu.confreg.views.admin_registration_dashboard),
