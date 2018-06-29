@@ -1285,8 +1285,6 @@ def callforpapers_edit(request, confname, sessionid):
 	else:
 		speaker_initialdata = None
 
-	savedok = False
-
 	if request.method == 'POST':
 		# Save it!
 		form = CallForPapersForm(data=request.POST, instance=session)
