@@ -1,33 +1,25 @@
-{%load formutil%}
+{%load dictutil%}
 {%if form.non_field_errors%}
  <div class="alert alert-danger">{{form.non_field_errors}}</div>
 {%endif%}
 {%if note%}
 <div class="alert alert-info">{{note|safe}}</div>
 {%endif%}
- {%for field in form%}
- {%if not field.is_hidden%}
-<div class="form-group">
-   {{field|label_class:"control-label col-lg-3"}}
-<div class="col-lg-9 controls">
-{%if field|ischeckbox%}<div class="row"><div class="col-lg-8 backendform_checkbox">{%else%}{%endif%}
-  {%if field.errors %}
-   {%for e in field.errors%}
- <div class="alert alert-danger">{{e}}</div>
-   {%endfor%}
-  {%endif%}
-{%if not field.name in form.selectize_multiple_fields and not field|ischeckbox%}
-{{field|field_class:"form-control"}}
-{%else%}
-{{field}}
-{%endif%}
-{%if field|ischeckbox%}</div></div>{%endif%}
-{%if field.help_text%}<div>{{field.help_text|safe}}</div>{%endif%}</div>
- </div>
- {%else%}{# field.is_hidden #}
-{{field}}
- {%endif%}
+{%if form.fieldsets%}
+{{form.validator_field}}
+{%for fieldset in form.fieldsets%}
+<fieldset id="{{fieldset.id}}">
+  <legend>{{fieldset.legend}}</legend>
+{%for field in fieldset.fields%}
+  {%include "confreg/admin_backend_form_field.html" with field=form|dictlookup:field %}
 {%endfor%}
+</fieldset>
+{%endfor%}
+{%else%}{%comment%} No fieldsets, so render the full form{%endcomment%}
+{%for field in form%}
+{%include "confreg/admin_backend_form_field.html"%}
+{%endfor%}
+{%endif%}
 
 {%for url, handler, entries in linked %}
 <div class="form-group">

@@ -1,0 +1,22 @@
+{%load formutil%}
+ {%if not field.is_hidden%}
+<div class="form-group">
+   {{field|label_class:"control-label col-lg-3"}}
+<div class="col-lg-9 controls">
+{%if field|ischeckbox%}<div class="row"><div class="col-lg-8 backendform_checkbox">{%else%}{%endif%}
+  {%if field.errors %}
+   {%for e in field.errors%}
+ <div class="alert alert-danger">{{e}}</div>
+   {%endfor%}
+  {%endif%}
+{%if not field.name in form.selectize_multiple_fields and not field|ischeckbox%}
+{{field|field_class:"form-control"}}
+{%else%}
+{{field}}
+{%endif%}
+{%if field|ischeckbox%}</div></div>{%endif%}
+{%if field.help_text%}<div>{{field.help_text|safe}}</div>{%endif%}</div>
+ </div>
+ {%else%}{# field.is_hidden #}
+{{field}}
+ {%endif%}

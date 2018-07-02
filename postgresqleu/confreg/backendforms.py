@@ -51,6 +51,7 @@ class BackendForm(ConcurrentProtectedModelForm):
 	file_fields = []
 	linked_objects = {}
 	auto_cascade_delete_to = []
+	fieldsets = []
 
 	def __init__(self, conference, *args, **kwargs):
 		self.conference = conference
@@ -69,6 +70,15 @@ class BackendForm(ConcurrentProtectedModelForm):
 
 		self.fix_fields()
 		self.fix_selectize_fields(**kwargs)
+
+		# Runtime validate fieldsets. It's ugly as fsck to do this at runtime,
+		# but meh, this isn't used that often so...
+		if self.fieldsets:
+			all_fields = set([f for f in self.fields if not f == '_validator'])
+			all_fieldsetted_fields = set(reduce(lambda x,y: x+y, [v['fields'] for v in self.fieldsets]))
+			missing = all_fields.difference(all_fieldsetted_fields)
+			if missing:
+				raise Exception("ERROR: fields %s are not in a fieldset" % ", ".join(missing))
 
 		for k,v in self.fields.items():
 			# Adjust widgets
@@ -125,6 +135,15 @@ class BackendForm(ConcurrentProtectedModelForm):
 		if f in self.verbose_field_names:
 			return self.verbose_field_names[f]
 		return self.Meta.model._meta.get_field(f).verbose_name.capitalize()
+
+	@property
+	def validator_field(self):
+		return self['_validator']
+
+
+	def get(self, name, default=None):
+		# Implement the get operator, for template functions to get a field
+		return self[name]
 
 class BackendConferenceForm(BackendForm):
 	class Meta:
