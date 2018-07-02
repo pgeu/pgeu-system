@@ -105,6 +105,9 @@ class BackendForm(ConcurrentProtectedModelForm):
 			self.fields[field].widget.attrs['readonly'] = 'true'
 
 	def fix_selectize_fields(self, **kwargs):
+		if not self.selectize_multiple_fields:
+			return
+
 		for field, lookup in self.selectize_multiple_fields.items():
 			# If this is a postback of a selectize field, it may contain ids that are not currently
 			# stored in the field. They must still be among the *allowed* values of course, which
