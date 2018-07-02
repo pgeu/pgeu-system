@@ -165,6 +165,14 @@ class BackendConferenceForm(BackendForm):
 	def fix_fields(self):
 		self.selectize_multiple_fields['volunteers'] = RegisteredUsersLookup(self.conference)
 
+	fieldsets = [
+		{'id': 'base_info', 'legend': 'Basic information', 'fields': ['attendees_before_waitlist', 'invoice_autocancel_hours', 'sendwelcomemail', 'welcomemail', 'additionalintro']},
+		{'id': 'fields', 'legend': 'Registration fields', 'fields': [ 'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'askphotoconsent']},
+		{'id': 'steps', 'legend': 'Steps', 'fields': ['active', 'allowedit', 'callforpapersopen', 'callforsponsorsopen', 'scheduleactive', 'sessionsactive', 'conferencefeedbackopen', 'feedbackopen']},
+		{'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpapersintro']},
+		{'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers']},
+		{'id': 'legacy', 'legend': 'Legacy', 'fields': ['schedulewidth', 'pixelsperminute']},
+	]
 
 class BackendSuperConferenceForm(BackendForm):
 	class Meta:
