@@ -117,10 +117,10 @@ class BackendForm(ConcurrentProtectedModelForm):
 				# objects, so just bypass the collection of values since it will cause
 				# errors.
 				vals = [o.pk for o in getattr(self.instance, field).all()]
-				if 'data' in kwargs and unicode(field) in kwargs['data']:
-					vals.extend([int(x) for x in kwargs['data'].getlist(field)])
 			else:
 				vals = []
+			if 'data' in kwargs and unicode(field) in kwargs['data']:
+				vals.extend([int(x) for x in kwargs['data'].getlist(field)])
 			self.fields[field].widget.attrs['data-selecturl'] = lookup.url
 			self.fields[field].queryset = self.fields[field].queryset.filter(pk__in=set(vals))
 			self.fields[field].label_from_instance = lookup.label_from_instance
