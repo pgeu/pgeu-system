@@ -112,9 +112,15 @@ class BackendForm(ConcurrentProtectedModelForm):
 			# If this is a postback of a selectize field, it may contain ids that are not currently
 			# stored in the field. They must still be among the *allowed* values of course, which
 			# are handled by the existing queryset on the field.
-			vals = [o.pk for o in getattr(self.instance, field).all()]
-			if 'data' in kwargs and unicode(field) in kwargs['data']:
-				vals.extend([int(x) for x in kwargs['data'].getlist(field)])
+			if self.instance.pk:
+				# If this object isn't created yet, then it by definition has no related
+				# objects, so just bypass the collection of values since it will cause
+				# errors.
+				vals = [o.pk for o in getattr(self.instance, field).all()]
+				if 'data' in kwargs and unicode(field) in kwargs['data']:
+					vals.extend([int(x) for x in kwargs['data'].getlist(field)])
+			else:
+				vals = []
 			self.fields[field].widget.attrs['data-selecturl'] = lookup.url
 			self.fields[field].queryset = self.fields[field].queryset.filter(pk__in=set(vals))
 			self.fields[field].label_from_instance = lookup.label_from_instance
