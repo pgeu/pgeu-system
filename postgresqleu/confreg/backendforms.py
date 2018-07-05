@@ -579,6 +579,13 @@ class BackendFeedbackQuestionForm(BackendForm):
 		'Sortkey': ['nosearch' ],
 	}
 
+	def clean(self):
+		cleaned_data = super(BackendFeedbackQuestionForm, self).clean()
+		if not self.cleaned_data.get('isfreetext', 'False'):
+			if self.cleaned_data.get('textchoices', ''):
+				self.add_error('textchoices', 'Textchoices can only be specified for freetext fields')
+		return cleaned_data
+
 	@classmethod
 	def copy_from_conference(self, targetconf, sourceconf, idlist):
 		# Conference feedback questions are copied straight over, but we disallow duplicates
