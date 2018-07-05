@@ -24,7 +24,7 @@ $(function() {
 {% endif %}
 
 <h2>Schedule</h2>
-{%if reg.regtoken%}
+{%if reg.regtoken and not admin %}
 <p>
   You can also get the <a href="ical/{{reg.regtoken}}/">ical</a> version.
 </p>
