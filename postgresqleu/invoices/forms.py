@@ -8,6 +8,7 @@ from decimal import Decimal
 
 from selectable.forms.widgets import AutoCompleteSelectWidget
 from postgresqleu.accountinfo.lookups import UserLookup
+from postgresqleu.util.widgets import HtmlDateInput
 
 from models import Invoice, InvoiceRow, InvoicePaymentMethod
 from postgresqleu.accounting.models import Account, Object
@@ -29,8 +30,6 @@ class InvoiceForm(forms.ModelForm):
 		if not settings.EU_VAT:
 			del self.fields['reverse_vat']
 
-		self.fields['invoicedate'].widget = widgets.DateInput()
-		self.fields['duedate'].widget = widgets.DateInput()
 		self.fields['canceltime'].widget = widgets.DateTimeInput()
 		self.fields['allowedmethods'].widget = forms.CheckboxSelectMultiple()
 		self.fields['allowedmethods'].queryset = InvoicePaymentMethod.objects.filter(active=True)
@@ -53,6 +52,8 @@ class InvoiceForm(forms.ModelForm):
 		exclude = ['finalized', 'pdf_invoice', 'pdf_receipt', 'paidat', 'paymentdetails', 'paidusing', 'processor', 'processorid', 'deleted', 'deletion_reason', 'refund', 'recipient_secret']
 		widgets = {
 			'recipient_user': AutoCompleteSelectWidget(lookup_class=UserLookup),
+			'invoicedate': HtmlDateInput(),
+			'duedate': HtmlDateInput(),
 		}
 
 	def clean(self):
