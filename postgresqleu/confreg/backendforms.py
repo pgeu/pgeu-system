@@ -3,7 +3,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Q
 import django.forms
 import django.forms.widgets
-from django.forms.widgets import TextInput
 from django.utils.safestring import mark_safe
 
 import datetime
@@ -11,6 +10,7 @@ from psycopg2.extras import DateTimeTZRange
 
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 from postgresqleu.util.random import generate_random_token
+from postgresqleu.util.widgets import HtmlDateInput
 
 import postgresqleu.accounting.models
 
@@ -25,11 +25,6 @@ from postgresqleu.confreg.models import ConferenceSeries
 from postgresqleu.confreg.models import valid_status_transitions, get_status_string
 
 from backendlookups import GeneralAccountLookup, RegisteredUsersLookup, SpeakerLookup
-
-class BackendDateInput(TextInput):
-	def __init__(self, *args, **kwargs):
-		kwargs.update({'attrs': {'type': 'date', 'required-pattern': '[0-9]{4}-[0-9]{2}-[0-9]{2}'}})
-		super(BackendDateInput, self).__init__(*args, **kwargs)
 
 class _NewFormDataField(django.forms.Field):
 	required=True
@@ -83,7 +78,7 @@ class BackendForm(ConcurrentProtectedModelForm):
 		for k,v in self.fields.items():
 			# Adjust widgets
 			if isinstance(v, django.forms.fields.DateField):
-				v.widget = BackendDateInput()
+				v.widget = HtmlDateInput()
 
 			# Any datetime or date fields that are not explicitly excluded will be forced to be within
 			# the conference dates.

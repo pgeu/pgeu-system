@@ -1,7 +1,19 @@
 from django import forms
+from django.forms.widgets import TextInput
 from django.utils.safestring import mark_safe
 
+import datetime
 import json
+
+class HtmlDateInput(TextInput):
+	def __init__(self, *args, **kwargs):
+		kwargs.update({'attrs': {'type': 'date', 'required-pattern': '[0-9]{4}-[0-9]{2}-[0-9]{2}'}})
+		super(HtmlDateInput, self).__init__(*args, **kwargs)
+
+	def format_value(self, val):
+		if isinstance(val, datetime.datetime):
+			val = val.date()
+		return super(HtmlDateInput, self).format_value(val)
 
 class RequiredFileUploadWidget(forms.FileInput):
 	def __init__(self, filename=None, attrs=None):
