@@ -7,19 +7,31 @@
 
 <script type="text/javascript">
 $(function() {
-  $('.dlg').each(function(idx, el) {
-    $(el).dialog({
-      autoOpen: false,
-      minWidth: 400,
-      minHeight: 250,
-      height: 600,
-    });
+  $('.talkaccd').accordion({
+     'collapsible': true,
+     'active': false,
+     'heightStyle': 'content',
+     'animate': {
+        duration: 100,
+     },
   });
 
   $('#dlgStatus').dialog({
      autoOpen: false,
      modal: true,
      resizable: false,
+  });
+
+  $('#dlgComment').dialog({
+     autoOpen: false,
+     modal: true,
+     resizable: false,
+     minWidth: 350,
+  });
+  $('#dlgComment').live('keyup', function(e){
+     if (e.keyCode == 13) {
+        $(':button:contains("Save")').click();
+     }
   });
 
   $('#ajaxStatus').hide();
@@ -86,6 +98,66 @@ function changeStatus(id) {
      buttons: buttons,
    }).dialog('open');
 }
+
+function castVote(sessionid) {
+   var s = $('#sv_' + sessionid);
+   var p = s.parent('td');
+   var val = s.val();
+   var avgbox = p.siblings('td.avgbox');
+
+   p.css('background-color', 'gray');
+   $.post('vote/',
+      {
+         'csrfmiddlewaretoken': '{{csrf_token}}',
+         'sessionid': sessionid,
+         'vote': val,
+      },
+      function(data) {
+           p.css('background-color', (val==0)?'red':'white');
+           avgbox.html(data);
+      }
+   ).fail(function() {
+      alert('AJAX call failed');
+   });
+}
+
+function editComment(sessionid) {
+   var old = $('#owncomment_' + sessionid).text();
+   $('#dlgCommentText').val(old);
+
+   $('#dlgComment').dialog('option', {
+      'title': 'Edit comment',
+      'modal': true,
+   }).dialog('option', {
+     buttons: [{
+        id: 'dlgCommentSaveButton',
+        text: 'Save',
+        click: function() {
+           var dlg = $(this);
+           var txt = $('#dlgCommentText').val();
+           $('#dlgCommentSaveButton').button("disable");
+           if (txt != old) {
+              $.post('comment/', {
+                 'csrfmiddlewaretoken': '{{csrf_token}}',
+                 'sessionid': sessionid,
+                 'comment': txt,
+              },
+              function (data) {
+                 dlg.dialog("close");
+                 $('#owncomment_' + sessionid).text(data);
+                 $('#owncommentwrap_' + sessionid).css('display', (data=='')?'none':'block');
+              }
+              ).fail(function() {
+                 alert('AJAX call failed');
+              });
+           }
+           else {
+              dlg.dialog("close");
+           }
+        },
+     }],
+   }).dialog('open');
+}
 </script>
 <style>
 td.dlgClickable {
@@ -106,40 +178,42 @@ width: 100%;
 
 <div id="ajaxStatus" class="alert alert-success" style="position: fixed; width: 100%;opacity: .8; text-align: center; font-weight: bold; font-size: 1.2em;">Nothing Yet</div>
 
-<form method="post" action=".">{% csrf_token %}
 <table class="table table-bordered table-condensed">
  <tr>
-  <th><a href="?sort=session">Session</a> | <a href="?sort=speakers">Speakers</a></th>
+  <th class="col-md-6"><a href="?sort=session">Session</a> | <a href="?sort=speakers">Speakers</a></th>
   <th>Status</th>
   {%for u in users%}
   <th>{{u}}</th>
   {%endfor%}
   <th><a href="?sort=avg">Average</a></th>
-  <th>Your comments</th>
-  <th>Other comments</th>
+  <th>Comments</th>
  </tr>
 {%for s in sessionvotes%}
  <tr>
-   <td onClick="showDialog({{s.id}}, '{{s.title|escape|escapejs|escape}}')" class="dlgClickable">{{s.title}} ({{s.speakers}})
-    <div id="popup_{{s.id}}" class="dlg">
-    <div><strong>Speakers:</strong> {{s.speakers_full}}</div>
-    <div><strong>Track:</strong> {{s.track}}</div>
-    <p>
+   <td>
+     <div class="talkaccd">
+       <h3>{{s.title}} ({{s.speakers}})</h3>
+       <div>
+	 <div><strong>Speakers:</strong> {{s.speakers_full}}</div>
+	 <div><strong>Track:</strong> {{s.track}}</div>
+	 <br/>
+	 <p>
 {{s.abstract}}
-    </p>
+	 </p>
 {%if s.submissionnote%}
-    <hr/>
-    <h3>Submission notes</h3>
-    <p>
+	 <hr/>
+	 <h3>Submission notes</h3>
+	 <p>
 {{s.submissionnote}}
-    </p>
+	 </p>
 {%endif%}
-    <hr/>
-    <h3>Speaker profile</h3>
-    <p>
+	 <hr/>
+	 <h3>Speaker profile</h3>
+	 <p>
 {{s.speakers_long|markdown}}
-    </p>
-    </div>
+	 </p>
+       </div>
+     </div>
    </td>
    {%if isadmin%}
    <td{%if not s.statusid == s.laststatusid %} bgcolor="yellow"{%endif%} onClick="changeStatus({{s.id}})" class="dlgClickable" id="statusstr{{s.id}}">{{s.status}}</td>
@@ -148,7 +222,7 @@ width: 100%;
 {%endif%}
    {%for u in s.users%}
    <td{%if u|default_if_none:0 == 0%} style="background-color:red"{%endif%}>{%if forloop.first %}
-     <select name="sv_{{s.id}}">
+     <select id="sv_{{s.id}}" onChange="castVote({{s.id}})">
        {%for opt in "0123456789"|make_list%}
        <option value="{{opt}}"{%if opt|add:0 == u|add:0%} SELECTED{%endif%}>{{opt}}</option>
        {%endfor%}
@@ -158,14 +232,19 @@ width: 100%;
      {%endif%}
    </td>
    {%endfor%}
-   <td>{{s.avg|default_if_none:''}}</td>
-   <td><input type="text" name="tc_{{s.id}}" maxlength="200" value="{{s.owncomment}}"/></td>
-   <td>{{s.comments|safe}}</td>
+   <td class="avgbox">{{s.avg|default_if_none:''}}</td>
+   <td>
+     <div style="margin-right: 0.5em; float:left;">
+       <a class="btn btn-default btn-xs" href="javascript:editComment({{s.id}})"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a>
+     </div>
+     <div style="display:inline-block;">
+       <span id="owncommentwrap_{{s.id}}" style="display:{%if s.owncomment%}block{%else%}none{%endif%}">{{user.username}}: <span id="owncomment_{{s.id}}">{{s.owncomment}}</span></span>{{s.comments|safe}}
+     </div>
+   </td>
  </tr>
 {%endfor%}
 </table>
-<input type="submit" value="Save">
-</form>
+
 {%if isadmin and conference.pending_session_notifications%}
 <h2>Notifications</h2>
 <p>
@@ -176,6 +255,10 @@ width: 100%;
 {%endif%}
 
 <div id="dlgStatus">
+</div>
+
+<div id="dlgComment">
+  <input type="text" id="dlgCommentText" style="width: 300px;">
 </div>
 
 {%endblock%}

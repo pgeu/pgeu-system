@@ -8,13 +8,13 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.conf import settings
 from django.db import transaction, connection
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Avg
 from django.db.models.expressions import F
 from django.forms import formsets
 from django.forms import ValidationError
 
 from models import Conference, ConferenceRegistration, ConferenceSession
-from models import ConferenceSessionSlides, GlobalOptOut
+from models import ConferenceSessionSlides, ConferenceSessionVote, GlobalOptOut
 from models import ConferenceSessionFeedback, Speaker, Speaker_Photo
 from models import ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
 from models import RegistrationType, PrepaidVoucher, PrepaidBatch
@@ -2088,28 +2088,6 @@ def talkvote(request, confname):
 
 	curs = connection.cursor()
 
-	if request.method=='POST':
-		# Record votes
-		# We could probably do this with some fancy writable CTEs, but
-		# this code won't run often, so we don't really care about being
-		# fast, and this is easier...
-		# Thus, remove existing entries and replace them with current ones.
-		curs.execute("DELETE FROM confreg_conferencesessionvote WHERE voter_id=%(userid)s AND session_id IN (SELECT id FROM confreg_conferencesession WHERE conference_id=%(confid)s)", {
-				'confid': conference.id,
-				'userid': request.user.id,
-				})
-		curs.executemany("INSERT INTO confreg_conferencesessionvote (session_id, voter_id, vote, comment) VALUES (%(sid)s, %(vid)s, %(vote)s, %(comment)s)", [
-				{
-					'sid': k[3:],
-					'vid': request.user.id,
-					'vote': int(v) > 0 and int(v) or None,
-					'comment': request.POST['tc_%s' % k[3:]],
-					}
-				for k,v in request.POST.items() if k.startswith("sv_") and (int(v)>0 or request.POST['tc_%s' % k[3:]])
-				])
-
-		return HttpResponseRedirect(".")
-
 	order = ""
 	if request.GET.has_key("sort"):
 		if request.GET["sort"] == "avg":
@@ -2201,6 +2179,46 @@ def talkvote_status(request, confname):
 	return HttpResponse("{0};{1}".format(get_status_string(session.status),
 										 session.status!=session.lastnotifiedstatus and 1 or 0,
 									 ),	content_type='text/plain')
+
+@login_required
+@transaction.atomic
+def talkvote_vote(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+	if not conference.talkvoters.filter(pk=request.user.id):
+		return HttpResponse('You are not a talk voter for this conference!')
+	if request.method!='POST':
+		return HttpResponse('Can only use POST')
+
+	session = get_object_or_404(ConferenceSession, conference=conference, id=request.POST['sessionid'])
+	v = int(request.POST['vote'])
+	if v > 0:
+		vote,created = ConferenceSessionVote.objects.get_or_create(session=session, voter=request.user)
+		vote.vote = v
+		vote.save()
+	else:
+		ConferenceSessionVote.objects.filter(session=session, voter=request.user).delete()
+
+	# Re-calculate the average
+	avg = session.conferencesessionvote_set.all().aggregate(Avg('vote'))['vote__avg']
+	if avg is None:
+		avg = 0
+	return HttpResponse("{0:.2f}".format(avg), content_type='text/plain')
+
+@login_required
+@transaction.atomic
+def talkvote_comment(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+	if not conference.talkvoters.filter(pk=request.user.id):
+		return HttpResponse('You are not a talk voter for this conference!')
+	if request.method!='POST':
+		return HttpResponse('Can only use POST')
+
+	session = get_object_or_404(ConferenceSession, conference=conference, id=request.POST['sessionid'])
+	vote,created = ConferenceSessionVote.objects.get_or_create(session=session, voter=request.user)
+	vote.comment = request.POST['comment']
+	vote.save()
+
+	return HttpResponse(vote.comment, content_type='text/plain')
 
 @login_required
 @csrf_exempt

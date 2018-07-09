@@ -77,6 +77,8 @@ urlpatterns = [
 	url(r'^events/(?P<urlname>[^/]+)/volunteer/', include(postgresqleu.confreg.volsched)),
 	url(r'^events/([^/]+)/talkvote/$', postgresqleu.confreg.views.talkvote),
 	url(r'^events/([^/]+)/talkvote/changestatus/$', postgresqleu.confreg.views.talkvote_status),
+	url(r'^events/([^/]+)/talkvote/vote/$', postgresqleu.confreg.views.talkvote_vote),
+	url(r'^events/([^/]+)/talkvote/comment/$', postgresqleu.confreg.views.talkvote_comment),
 	url(r'^events/([^/]+)/sessions/$', postgresqleu.confreg.views.sessionlist),
 	url(r'^events/speaker/(\d+)/photo/$', postgresqleu.confreg.views.speakerphoto),
 	url(r'^events/([^/]+)/speakerprofile/$', postgresqleu.confreg.views.speakerprofile),
