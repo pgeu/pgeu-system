@@ -25,10 +25,11 @@ table#formtbl tr th {
 {{form}}
 </table>
 <br/>
-<input type="submit" name="submit" value="Generate PDF"/>
+<input type="submit" name="submit" value="Generate PDF" class="btn btn-default"/>
 </form>
 
 <p>
-  <a href="/events/admin/{{conference.urlname}}/">Back</a> to dashboard.
 </p>
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/">Back to dashboard</a>
+
 {%endblock%}

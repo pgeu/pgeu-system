@@ -171,9 +171,11 @@ the talk slot, if your schedule supports multiple different lengths.
 </div>
 
 {%endfor%}
-<button onClick="saveDraft()">Save draft</button>
+<button onClick="saveDraft()" class="btn btn-default">Save draft</button>
 <p>
-When you are ready to publish, click <a href="publish/">here</a>. (you must
+When you are ready to publish, click <a href="publish/" class="btn btn-default btn-xs">here</a>. (you must
 save using the standard save button first, of course)
 </p>
+
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/">Back to dashboard</a>
 {%endblock%}

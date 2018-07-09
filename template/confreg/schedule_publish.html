@@ -3,7 +3,11 @@
 {%block layoutblock%}
 <h1>Changes</h1>
 {%if done%}
-Changes published. <a href="../">Go back</a>.
+<p>
+Changes published.
+</p>
+<a class="btn btn-default btn-block" href="../">Back</a>
+
 {%else%}
 <ul>
   {%for c in changes%}
@@ -12,10 +16,15 @@ Changes published. <a href="../">Go back</a>.
 </ul>
 
 <p>
-If all looks ok, confirm by clicking <a href="?doit=1">here</a>.
+Verify the changes above before proceeding!
 </p>
+
 <p>
-  If it doesn't, <a href="../">go back</a>.
+  <a class="btn btn-default" href="?doit=1">Publish</a>
 </p>
+
+<a class="btn btn-default btn-block" href="../">Back</a>
+
+
 {%endif%}
 {%endblock%}

@@ -48,7 +48,10 @@ the customer, <i>and</i> verified that payment is completed!
 {%endif%}
 {%endfor%}
 </table>
-<input type="submit" value="Save">
+<input type="submit" value="Save" class="btn btn-default">
 </form>
+<br/>
+
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/prepaid/list/">Back to list</a>
 
 {%endblock%}

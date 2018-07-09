@@ -71,6 +71,10 @@ the details for how to actually use them.
 {{vouchermailtext}}
 </textarea>
 </p>
-<button onclick="sendEmail()">Send with email</button><br/>
+<p>
+  <button onclick="sendEmail()" class="btn btn-default">Send with email</button><br/>
+</p>
+
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/prepaid/list/">Back to list</a>
 
 {%endblock%}
