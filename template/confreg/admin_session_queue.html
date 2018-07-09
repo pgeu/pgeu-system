@@ -22,9 +22,10 @@ one of them off, click the session and change the field for
 <h2>Send notifications</h2>
 <form method="post" action=".">{% csrf_token %}
 <input type="checkbox" name="confirm_sending" value="1"> Check this box to confirm you want to send email to all attendees<br/>
-<input type="submit" value="Send notifications">
+<input type="submit" value="Send notifications" class="btn btn-default">
 </form>
-<p>
-<a href="/events/admin/{{conference.urlname}}/">Return</a> to the dashboard.
-</p>
+
+<br/>
+
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/">Back to dashboard</a>
 {%endblock%}
