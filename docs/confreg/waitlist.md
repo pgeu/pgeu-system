@@ -13,11 +13,15 @@ administrators.
 
 One or more attendees can be given an *offer* from the waitlist. This
 offer is given an expiry time, giving the chance to sign up before
-that time. The length of the offer is usually adapted to how much time
-is left until the conference -- to make sure that if the attendee
-doesn't take the offer, there is enough time to give it to somebody
-else. The system does *not* take things like office hours into account
-when calculating the offer time, that has to be done manually.
+that time. The expiry time can either be given as number of hours from
+the current time or as an explicit point in time, depending on which
+field/button combination is used. The length of the offer is usually
+adapted to how much time is left until the conference -- to make sure
+that if the attendee doesn't take the offer, there is enough time to
+give it to somebody else. The system does *not* take things like
+office hours into account when calculating the offer time, that has to
+be done manually (and usually using the make offer until specific
+point in time button).
 
 Offers should always be given from the top of the waitlist. This will
 make sure that those who signed up early gets a chance first. The

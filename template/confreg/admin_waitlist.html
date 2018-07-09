@@ -87,10 +87,49 @@ The current entries on the waitlist are:
 {%include "confreg/admin_waitlist_list.inc.html"%}
 {%endwith%}
 
-<table>
-{{form}}
+<table class="table borderless">
+  <tr>
+{%if form.hours%}
+    <td class="col-md-3">{{form.hours.label}}</td>
+    <td class="col-md-3">{{form.hours}}</td>
+{%else%}
+    <td colspan="2" class="col-md-6"></td>
+{%endif%}
+{%if form.until%}
+    <td class="col-md-3">{{form.until.label}}</td>
+    <td class="col-md-3">{{form.until}}</td>
+{%else%}
+    <td colspan="2" class="col-md-6"></td>
+{%endif%}
+  </tr>
+{%if form.confirm%}
+  <tr>
+    <td colspan="4" class="col-md-12 warning">{{form.confirm}} {{form.confirm.help_text}}</td>
+  </tr>
+{%endif%}
+  <tr>
+    <td colspan="2" class="col-md-6">
+{%if form.hours%}
+      <input type="submit" name="submit" value="Make offer for hours" class="btn btn-default">
+{%else%}
+    </td>
+{%endif%}
+    <td colspan="2" class="col-md-6">
+{%if form.until%}
+      <input type="submit" name="submit" value="Make offer until" class="btn btn-default"></td>
+{%else%}
+    </td>
+{%endif%}
+  </tr>
+{%if form.confirm%}
+  <tr>
+    <td colspan="4" class="col-md-12">
+      <a href="." class="btn btn-default btn-block">Cancel</a>
+    </td>
+  </tr>
+{%endif%}
+
 </table>
-<input type="submit" value="Make offer">
 </form>
 
 <h3>Processed waitlist</h3>

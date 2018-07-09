@@ -2605,10 +2605,15 @@ def admin_waitlist(request, urlname):
 				if wl.offeredon:
 					raise Exception("One or more already offered!")
 				wl.offeredon = datetime.now()
-				wl.offerexpires = datetime.now() + timedelta(hours=form.cleaned_data['hours'])
+				if request.POST.get('submit') == 'Make offer for hours':
+					wl.offerexpires = datetime.now() + timedelta(hours=form.cleaned_data['hours'])
+					RegistrationWaitlistHistory(waitlist=wl,
+												text="Made offer valid for {0} hours by {1}".format(form.cleaned_data['hours'], request.user.username)).save()
+				else:
+					wl.offerexpires = form.cleaned_data['until']
+					RegistrationWaitlistHistory(waitlist=wl,
+												text="Made offer valid until {0} by {1}".format(form.cleaned_data['until'], request.user.username)).save()
 				wl.save()
-				RegistrationWaitlistHistory(waitlist=wl,
-											text="Made offer valid for {0} hours by {1}".format(form.cleaned_data['hours'], request.user.username)).save()
 				send_template_mail(conference.contactaddr,
 								   r.email,
 								   "Your waitlisted registration for {0}".format(conference.conferencename),

@@ -9,3 +9,8 @@ div.backendform_checkbox ul {
 div.backenddocs dd {
     margin-left: 2em;
 }
+
+table.borderless tr td,
+table.borderless tr th {
+    border: none;
+}

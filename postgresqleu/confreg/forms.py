@@ -18,7 +18,7 @@ from postgresqleu.util.magic import magicdb
 
 from postgresqleu.countries.models import Country
 
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import requests
 
 
@@ -615,13 +615,18 @@ class AttendeeMailForm(forms.ModelForm):
 
 class WaitlistOfferForm(forms.Form):
 	hours = forms.IntegerField(min_value=1, max_value=240, label='Offer valid for (hours)', initial=48)
+	until = forms.DateTimeField(label='Offer valid until', initial=(datetime.now() + timedelta(hours=48)).strftime('%Y-%m-%d %H:%M'))
 	confirm = forms.BooleanField(help_text='Confirm')
 
 	def __init__(self, *args, **kwargs):
 		super(WaitlistOfferForm, self).__init__(*args, **kwargs)
-		if self.data and self.data.has_key('hours'):
+		if self.data:
 			self.reg_list = self._get_id_list_from_data()
 			self.fields['confirm'].help_text = "Confirm that you want to send an offer to {0} attendees on the waitlist".format(len(self.reg_list))
+			if self.data.get('submit') == 'Make offer for hours':
+				del self.fields['until']
+			else:
+				del self.fields['hours']
 		else:
 			del self.fields['confirm']
 
