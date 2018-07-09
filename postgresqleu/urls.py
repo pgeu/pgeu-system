@@ -75,10 +75,6 @@ urlpatterns = [
 	url(r'^events/([^/]+)/schedule/speaker/(\d+)(-.*)?/$', postgresqleu.confreg.views.speaker),
 	url(r'^events/([^/]+)/sessions/speaker/(\d+)(-.*)?/$', postgresqleu.confreg.views.speaker),
 	url(r'^events/(?P<urlname>[^/]+)/volunteer/', include(postgresqleu.confreg.volsched)),
-	url(r'^events/([^/]+)/talkvote/$', postgresqleu.confreg.views.talkvote),
-	url(r'^events/([^/]+)/talkvote/changestatus/$', postgresqleu.confreg.views.talkvote_status),
-	url(r'^events/([^/]+)/talkvote/vote/$', postgresqleu.confreg.views.talkvote_vote),
-	url(r'^events/([^/]+)/talkvote/comment/$', postgresqleu.confreg.views.talkvote_comment),
 	url(r'^events/([^/]+)/sessions/$', postgresqleu.confreg.views.sessionlist),
 	url(r'^events/speaker/(\d+)/photo/$', postgresqleu.confreg.views.speakerphoto),
 	url(r'^events/([^/]+)/speakerprofile/$', postgresqleu.confreg.views.speakerprofile),
@@ -165,6 +161,10 @@ urlpatterns = [
 	url(r'^events/admin/(\w+)/accesstokens/(.*/)?$', postgresqleu.confreg.backendviews.edit_accesstokens),
 	url(r'^events/admin/(\w+)/pendinginvoices/$', postgresqleu.confreg.backendviews.pendinginvoices),
 	url(r'^events/admin/(\w+)/purgedata/$', postgresqleu.confreg.backendviews.purge_personal_data),
+	url(r'^events/admin/([^/]+)/talkvote/$', postgresqleu.confreg.views.talkvote),
+	url(r'^events/admin/([^/]+)/talkvote/changestatus/$', postgresqleu.confreg.views.talkvote_status),
+	url(r'^events/admin/([^/]+)/talkvote/vote/$', postgresqleu.confreg.views.talkvote_vote),
+	url(r'^events/admin/([^/]+)/talkvote/comment/$', postgresqleu.confreg.views.talkvote_comment),
 
 	url(r'^events/admin/(\w+)/tokendata/([a-z0-9]{64})/(\w+)\.(tsv|csv)$', postgresqleu.confreg.backendviews.tokendata),
 
