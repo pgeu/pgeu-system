@@ -95,9 +95,13 @@ $(function() {
   <td>{{r.name}}</td>
   <td>{{r.choice}}</td>
   <td>{{r.when}}</td>
+  <td><a class="btn btn-xs btn-default" href="edit/{{r.id}}/">edit</a></td>
  </tr>
 {%endfor%}
 </table>
+{%if not signup.public%}
+<a class="btn btn-xs btn-default" href="edit/new/">Add new</a>
+{%endif%}
 
 {%if results.awaiting%}
 <h3>Awaiting response</h3>

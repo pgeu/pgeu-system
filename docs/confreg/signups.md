@@ -83,3 +83,22 @@ The results will have a summary with how many attendees have picked
 each specific option, as well as the total value calculated from
 weighted values. Below it there will also be a complete list of every
 individual response.
+
+## Editing attendee signups
+
+Normally, the attendees should handle their own signups, and they
+should never be edited.
+
+However, it is sometimes required that the administrator edit them,
+for example if the deadline has passed, and an attendee needs to
+change their response.
+
+All responses that have been recorded can be edited. In a signup that
+only has yes/no as the answer, the no responses are not recorded, so
+changing a record to no will remove it. For both types of signups it
+is always possible to remove an entry.
+
+If the signup is *not public*, it is also possible to add a new
+response (for example if an attendee never signed up, but reported
+their attendance via email or phone or other means). Duplicate
+responses are of course not allowed.

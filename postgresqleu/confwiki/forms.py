@@ -1,8 +1,9 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 
 from postgresqleu.confreg.models import RegistrationType, ConferenceRegistration
-from models import Wikipage, Signup
+from models import Wikipage, Signup, AttendeeSignup
 
 class WikipageEditForm(forms.ModelForm):
 	class Meta:
@@ -83,6 +84,31 @@ class SignupAdminEditForm(forms.ModelForm):
 		model = Signup
 		exclude = ['conference', ]
 
+class SignupAdminEditSignupForm(forms.ModelForm):
+	choice = forms.ChoiceField(required=True)
+	class Meta:
+		model = AttendeeSignup
+		fields = ['attendee', 'choice', ]
+
+	def __init__(self, signup, *args, **kwargs):
+		self.signup = signup
+		self.isnew = kwargs.pop('isnew')
+		super(SignupAdminEditSignupForm, self).__init__(*args, **kwargs)
+
+		if self.isnew:
+			self.fields['attendee'].queryset = ConferenceRegistration.objects.filter(conference=signup.conference).filter(
+				Q(user_attendees=signup) | Q(regtype__user_regtypes=signup)).exclude(attendeesignup__signup=signup).distinct()
+		else:
+			del self.fields['attendee']
+
+		if signup.options:
+			choices = signup.options.split(',')
+			self.fields['choice'].choices = [(k,k) for k in choices]
+			self.fields['choice'].choices.insert(0, ('', ''))
+		else:
+			# This one is boolean only
+			self.fields['choice'].choices = (('', ''), ('yes','Yes'), ('', 'No'), )
+			self.fields['choice'].required = False
 
 class SignupSendmailForm(forms.Form):
 	_recipient_choices = [

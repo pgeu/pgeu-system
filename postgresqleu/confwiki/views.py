@@ -23,6 +23,7 @@ from forms import WikipageEditForm, WikipageAdminEditForm
 
 from models import Signup, AttendeeSignup
 from forms import SignupSubmitForm, SignupAdminEditForm, SignupSendmailForm
+from forms import SignupAdminEditSignupForm
 
 @login_required
 def wikipage(request, confurl, wikiurl):
@@ -345,10 +346,10 @@ def signup_admin_edit(request, urlname, signupid):
 		})
 		sumresults = cursor.fetchall()
 		results['summary'] = [dict(zip(['choice', 'num', 'percentwidth'], r)) for r in sumresults]
-		cursor.execute("SELECT firstname || ' ' || lastname,choice,saved FROM confreg_conferenceregistration r INNER JOIN confwiki_attendeesignup s ON r.id=s.attendee_id WHERE s.signup_id=%(signup)s ORDER BY saved", {
+		cursor.execute("SELECT s.id, firstname || ' ' || lastname,choice,saved FROM confreg_conferenceregistration r INNER JOIN confwiki_attendeesignup s ON r.id=s.attendee_id WHERE s.signup_id=%(signup)s ORDER BY saved", {
 			'signup': signup.id,
 		})
-		results['details'] = [dict(zip(['name', 'choice', 'when'], r)) for r in cursor.fetchall()]
+		results['details'] = [dict(zip(['id', 'name', 'choice', 'when'], r)) for r in cursor.fetchall()]
 		if signup.optionvalues:
 			optionstrings = signup.options.split(',')
 			optionvalues = [int(x) for x in signup.optionvalues.split(',')]
@@ -388,6 +389,44 @@ def signup_admin_edit(request, urlname, signupid):
 		'helplink': 'signups',
 	})
 
+@transaction.atomic
+def signup_admin_editsignup(request, urlname, signupid, id):
+	conference = get_authenticated_conference(request, urlname)
+	signup = get_object_or_404(Signup, conference=conference, pk=signupid)
+
+	if id == 'new':
+		attendeesignup = AttendeeSignup(signup=signup)
+	else:
+		attendeesignup = get_object_or_404(AttendeeSignup, signup=signup, pk=id)
+
+	if request.method == 'POST' and request.POST['submit'] == 'Delete':
+		attendeesignup.delete()
+		return HttpResponseRedirect('../../')
+	elif request.method == 'POST':
+		form = SignupAdminEditSignupForm(signup, isnew=(id == 'new'), instance=attendeesignup, data=request.POST)
+		if form.is_valid():
+			if (not signup.options) and (not form.cleaned_data['choice']):
+				# Yes/no signup changed to no means we actually delete the
+				# record completeliy.
+				attendeesignup.delete()
+			else:
+				form.save()
+			return HttpResponseRedirect('../../')
+	else:
+		form = SignupAdminEditSignupForm(signup, isnew=(id == 'new'), instance=attendeesignup)
+
+	return render(request, 'confreg/admin_backend_form.html', {
+		'conference': conference,
+		'form': form,
+		'what': 'attendee signup',
+		'cancelurl': '../../',
+		'allow_delete': (id != 'new'),
+		'breadcrumbs': (
+			('/events/admin/{0}/signups/'.format(conference.urlname), 'Signups'),
+			('/events/admin/{0}/signups/{1}/'.format(conference.urlname, signup.id), signup.title),
+		),
+		'helplink': 'signups',
+	})
 
 @transaction.atomic
 def signup_admin_sendmail(request, urlname, signupid):
