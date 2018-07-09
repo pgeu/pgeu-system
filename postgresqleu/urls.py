@@ -13,6 +13,7 @@ import postgresqleu.confreg.mobileviews
 import postgresqleu.confreg.feedback
 import postgresqleu.confreg.pdfschedule
 import postgresqleu.confreg.volsched
+import postgresqleu.confreg.docsviews
 import postgresqleu.confwiki.views
 import postgresqleu.membership.views
 import postgresqleu.elections.views
@@ -107,6 +108,7 @@ urlpatterns = [
 	url(r'^events/admin/crossmail/$', postgresqleu.confreg.views.crossmail),
 	url(r'^events/admin/crossmail/options/$', postgresqleu.confreg.views.crossmailoptions),
 	url(r'^events/admin/reports/time/$', postgresqleu.confreg.reporting.timereport),
+	url(r'^events/admin/(?P<urlname>[^/]+/)?docs/(?P<page>\w+/)?$', postgresqleu.confreg.docsviews.docspage),
 	url(r'^events/admin/([^/]+)/reports/$', postgresqleu.confreg.views.reports),
 	url(r'^events/admin/([^/]+)/reports/simple/$', postgresqleu.confreg.views.simple_report),
 	url(r'^events/admin/([^/]+)/reports/advanced/$', postgresqleu.confreg.views.advanced_report),

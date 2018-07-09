@@ -77,6 +77,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 						'form': newform,
 						'what': 'New {0}'.format(formclass.Meta.model._meta.verbose_name),
 						'cancelurl': cancel_url,
+						'helplink': newform.helplink,
 						'breadcrumbs': breadcrumbs,
 					})
 				instance = instancemaker()
@@ -163,6 +164,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 		'what': formclass.Meta.model._meta.verbose_name,
 		'cancelurl': cancel_url,
 		'breadcrumbs': breadcrumbs,
+		'helplink': form.helplink,
 		'allow_delete': allow_delete and instance.pk,
 		'adminurl': adminurl,
 		'linked': [(url, handler, handler.get_list(form.instance)) for url, handler in form.linked_objects.items() if form.instance],
@@ -184,6 +186,7 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
 			'savebutton': 'Copy',
 			'cancelurl': '../',
 			'breadcrumbs': [('../', formclass.Meta.model._meta.verbose_name_plural.capitalize()), ],
+			'helplink': formclass.helplink,
 		})
 	elif len(restpieces) == 2:
 		idlist = None
@@ -257,6 +260,7 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
 				('../../', formclass.Meta.model._meta.verbose_name_plural.capitalize()),
 				('../', 'Copy {0}'.format(formclass.Meta.model._meta.verbose_name_plural.capitalize())),
 			],
+			'helplink': formclass.helplink,
 		})
 
 
@@ -286,6 +290,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
 			'allow_delete': allow_delete,
 			'allow_copy_previous': formclass.allow_copy_previous,
 			'breadcrumbs': breadcrumbs,
+			'helplink': formclass.helplink,
 		})
 
 	if allow_new and resturl=='new':
@@ -528,6 +533,7 @@ def purge_personal_data(request, urlname):
 
 	return render(request, 'confreg/admin_purge_personal_data.html', {
 		'conference': conference,
+		'helplink': 'personaldata',
 		'counts': exec_to_dict("""SELECT
   count(1) FILTER (WHERE shirtsize_id IS NOT NULL) AS "T-shirt size registrations",
   count(1) FILTER (WHERE dietary IS NOT NULL AND dietary != '') AS "Dietary needs",

@@ -1,4 +1,4 @@
-all: talk_states.svg
+all: talk_states.svg regular_reg.svg waitlist.svg
 
-talk_states.svg: talk_states.dot
-	dot -Tsvg talk_states.dot > talk_states.svg
+%.svg: %.dot
+	dot -Tsvg $< > $@

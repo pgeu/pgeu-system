@@ -1,0 +1,30 @@
+digraph waitlist {
+	subgraph legend {
+		key[shape=box, label=<
+		    <font color="blue">Actions by admin</font><br/>
+		    <font color="green">Actions by attendee</font><br/>
+		>, labeljust="l"]
+	}
+
+	start[shape=circle label="Registration"];
+
+	waitlist[shape=box label="On waitlist"];
+	offer[shape=box label="Offer made"];
+	invoice[shape=box label="Invoice generated"];
+	completed[shape=box label="Registration completed"];
+	deleted[shape=triangle label="Waitlist canceled"];
+
+	start -> waitlist [label = "&#9993; Sign up on WL", color=green];
+	start -> deleted [label = "No interest in WL", color=green];
+
+	waitlist -> offer [label = "&#9993; Offer extended", color=blue];
+
+	offer -> waitlist [label = "&#9993; Offer expired"];
+	offer -> waitlist [label = "&#9993; Offer canceled", color=blue];
+	offer -> deleted [label = "Declined spot", color=green];
+	offer -> invoice [label = "Accepted spot", color=green];
+
+	invoice -> completed [label = "&#9993; Paid invoice", color=green];
+	invoice -> waitlist [label = "&#9993; Invoice expired"];
+
+}

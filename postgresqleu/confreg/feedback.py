@@ -50,6 +50,7 @@ def feedback_report(request, confname):
 	return render(request, 'confreg/admin_conference_feedback.html', {
 		'conference': conference,
 		'feedback': sections,
+		'helplink': 'feedback',
 	})
 
 
@@ -89,4 +90,5 @@ def feedback_sessions(request, confname):
 		'minvotes': minvotes,
 		'commented_sessions': commented_sessions,
 		'breadcrumbs': (('/events/admin/{0}/reports/feedback/'.format(conference.urlname), 'Feedback'), ),
+		'helplink': 'feedback',
 	})

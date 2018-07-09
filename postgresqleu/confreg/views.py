@@ -1871,6 +1871,7 @@ def listvouchers(request, confname):
 	return render(request, 'confreg/prepaid_list.html', {
 		'conference': conference,
 		'batches': batches,
+		'helplink': 'vouchers',
 	})
 
 def viewvouchers(request, confname, batchid):
@@ -1891,6 +1892,7 @@ def viewvouchers(request, confname, batchid):
 		'vouchers': vouchers,
 		'vouchermailtext': vouchermailtext,
 		'breadcrumbs': (('/events/admin/{0}/prepaid/list/'.format(conference.urlname), 'Prepaid vouchers'),),
+		'helplink': 'vouchers',
 	})
 
 @transaction.atomic
@@ -2176,6 +2178,7 @@ def talkvote(request, confname):
 			'conference': conference,
 			'isadmin': isadmin,
 		    'status_choices': STATUS_CHOICES,
+			'helplink': 'callforpapers',
 			})
 
 @login_required
@@ -2291,6 +2294,7 @@ def createschedule(request, confname):
 			'tracks': tracks,
 			'sesswidth': min(600 / len(allrooms), 150),
 			'availableheight': len(sessions)*75,
+			'helplink': 'schedule',
 			})
 
 @login_required
@@ -2352,6 +2356,7 @@ def reports(request, confname):
 			'additionaloptions': conference.conferenceadditionaloption_set.all(),
 			'adv_fields': attendee_report_fields,
 			'adv_filters': attendee_report_filters(conference),
+			'helplink': 'reports#attendee',
 		    })
 
 
@@ -2398,6 +2403,7 @@ def simple_report(request, confname):
 		'conference': conference,
 		'columns': [dd for dd in collist if not dd.startswith('_')],
 		'data': d,
+		'helplink': 'reports',
 	})
 
 @login_required
@@ -2493,6 +2499,7 @@ def admin_registration_dashboard(request, urlname):
 	return render(request, 'confreg/admin_registration_dashboard.html', {
 		'conference': conference,
 		'tables': tables,
+		'helplink': 'registrations',
 	})
 
 def admin_registration_list(request, urlname):
@@ -2522,6 +2529,7 @@ def admin_registration_list(request, urlname):
 		'regs': ConferenceRegistration.objects.select_related('regtype').select_related('registrationwaitlistentry').filter(conference=conference).order_by((revsort and '-' or '') + sortmap[skey], '-created'),
 		'regsummary': exec_to_dict("SELECT count(1) FILTER (WHERE payconfirmedat IS NOT NULL) AS confirmed, count(1) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed FROM confreg_conferenceregistration WHERE conference_id=%(confid)s", {'confid': conference.id})[0],
 		'breadcrumbs': (('/events/admin/{0}/regdashboard/'.format(urlname), 'Registration dashboard'),),
+		'helplink': 'registrations',
 	})
 
 def admin_registration_single(request, urlname, regid):
@@ -2542,6 +2550,7 @@ def admin_registration_single(request, urlname, regid):
 			('/events/admin/{0}/regdashboard/'.format(urlname), 'Registration dashboard'),
 			('/events/admin/{0}/regdashboard/list/'.format(urlname), 'Registration list'),
 		),
+		'helplink': 'registrations',
 	})
 
 @transaction.atomic
@@ -2561,6 +2570,7 @@ def admin_registration_cancel(request, urlname, regid):
 		return render(request, 'confreg/admin_registration_cancel.html', {
 			'conference': conference,
 			'reg': reg,
+			'helplink': 'waitlist',
 		})
 
 @transaction.atomic
@@ -2570,6 +2580,7 @@ def admin_waitlist(request, urlname):
 	if conference.attendees_before_waitlist <= 0:
 		return render(request, 'confreg/admin_waitlist_inactive.html', {
 			'conference': conference,
+			'helplink': 'waitlist',
 			})
 
 	num_confirmedregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False).count()
@@ -2625,6 +2636,7 @@ def admin_waitlist(request, urlname):
 		'waitlist': waitlist,
 		'waitlist_cleared': waitlist_cleared,
 		'form': form,
+		'helplink': 'waitlist',
 		})
 
 @transaction.atomic
@@ -2694,6 +2706,7 @@ def admin_attendeemail(request, urlname):
 		'conference': conference,
 		'mails': mails,
 		'form': form,
+		'helplink': 'emails',
 	})
 
 def admin_attendeemail_view(request, urlname, mailid):
@@ -2705,6 +2718,7 @@ def admin_attendeemail_view(request, urlname, mailid):
 		'conference': conference,
 		'mail': mail,
 		'breadcrumbs': (('/events/admin/{0}/mail/'.format(conference.urlname), 'Attendee emails'), ),
+		'helplink': 'emails',
 		})
 
 @transaction.atomic
@@ -2900,6 +2914,7 @@ def transfer_reg(request, urlname):
 		'form': form,
 		'steps': steps,
 		'stephash': stephash,
+		'helplink': 'registrations#transfer',
 	})
 
 
@@ -2984,6 +2999,7 @@ def crossmail(request):
 		'form': form,
 		'recipients': recipients,
 		'conferences': Conference.objects.all(),
+		'helplink': 'emails#crossconference',
 		})
 
 

@@ -37,6 +37,7 @@ def timereport(request):
 					'maxpred': report.maxpred,
 					'trendlines': report.does_trendlines and trendlines or '',
 					'trendlines_supported': report.does_trendlines,
+					'helplink': 'reports#time',
 					})
 			except ReportException, e:
 				messages.error(request, e)
@@ -48,6 +49,7 @@ def timereport(request):
 
 	return render(request, 'confreg/timereport.html', {
 		'form': form,
+		'helplink': 'reports#time',
 		})
 
 

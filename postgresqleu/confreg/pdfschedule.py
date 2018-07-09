@@ -362,4 +362,5 @@ def pdfschedule(request, confname):
 	return render(request, 'confreg/pdfschedule.html', {
 		'conference': conference,
 		'form': form,
+		'helplink': 'schedule#pdf',
 	})

@@ -1,4 +1,5 @@
 {%load alertmap%}
+{%load docslink%}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" dir="ltr">
@@ -33,6 +34,9 @@
 	   {%for k,v in breadcrumbs %}
 	   <li><a href="{{k}}">{{v}}</a></li>
 	   {%endfor%}
+	 </ul>
+	 <ul class="nav navbar-nav navbar-right">
+	   <li><a href="/events/admin/{%if conference and conference.urlname%}{{conference.urlname}}/{%endif%}docs/{%if helplink%}{{helplink|docslink}}{%endif%}">Help</a></li>
 	 </ul>
        </div>
      </div>

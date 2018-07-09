@@ -191,6 +191,7 @@ def admin(request, urlname):
 	return render(request, 'confwiki/admin.html', {
 		'conference': conference,
 		'pages': pages,
+		'helplink': 'wiki',
 	})
 
 @transaction.atomic
@@ -245,6 +246,7 @@ def admin_edit_page(request, urlname, pageid):
 		'form': form,
 		'page': page,
 		'breadcrumbs': (('/events/admin/{0}/wiki/'.format(conference.urlname), 'Wiki'),),
+		'helplink': 'wiki',
 	})
 
 
@@ -325,6 +327,7 @@ def signup_admin(request, urlname):
 	return render(request, 'confwiki/signup_admin.html', {
 		'conference': conference,
 		'signups': signups,
+		'helplink': 'signups',
 	})
 
 @transaction.atomic
@@ -382,6 +385,7 @@ def signup_admin_edit(request, urlname, signupid):
 		'signup': signup,
 		'results': results,
 		'breadcrumbs': (('/events/admin/{0}/signups/'.format(conference.urlname), 'Signups'),),
+		'helplink': 'signups',
 	})
 
 
@@ -458,4 +462,5 @@ def signup_admin_sendmail(request, urlname, signupid):
 			('/events/admin/{0}/signups/'.format(conference.urlname), 'Signups'),
 			('/events/admin/{0}/signups/{1}/'.format(conference.urlname, signup.id), signup.title),
 		),
+		'helplink': 'signups',
 	})

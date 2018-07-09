@@ -47,6 +47,7 @@ class BackendForm(ConcurrentProtectedModelForm):
 	linked_objects = {}
 	auto_cascade_delete_to = []
 	fieldsets = []
+	helplink = None
 
 	def __init__(self, conference, *args, **kwargs):
 		self.conference = conference
@@ -150,6 +151,7 @@ class BackendForm(ConcurrentProtectedModelForm):
 		return self[name]
 
 class BackendConferenceForm(BackendForm):
+	helplink = 'configuring#conferenceform'
 	class Meta:
 		model = Conference
 		fields = ['active', 'callforpapersopen', 'callforsponsorsopen', 'feedbackopen',
@@ -179,6 +181,7 @@ class BackendConferenceForm(BackendForm):
 	]
 
 class BackendSuperConferenceForm(BackendForm):
+	helplink = 'super_conference#conferenceform'
 	class Meta:
 		model = Conference
 		fields = ['conferencename', 'urlname', 'series', 'startdate', 'enddate', 'location',
@@ -203,12 +206,14 @@ class BackendSuperConferenceForm(BackendForm):
 
 
 class BackendConferenceSeriesForm(BackendForm):
+	helplink = "series"
 	list_fields = ['name', ]
 	class Meta:
 		model = ConferenceSeries
 		fields = ['name', ]
 
 class BackendRegistrationForm(BackendForm):
+	helplink = "registrations"
 	class Meta:
 		model = ConferenceRegistration
 		fields = ['firstname', 'lastname', 'company', 'address', 'country', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'shareemail']
@@ -223,6 +228,7 @@ class BackendRegistrationForm(BackendForm):
 		self.update_protected_fields()
 
 class BackendRegistrationClassForm(BackendForm):
+	helplink = 'registrations#regclasses'
 	list_fields = ['regclass', 'badgecolor', 'badgeforegroundcolor']
 	allow_copy_previous = True
 	class Meta:
@@ -243,6 +249,7 @@ class BackendRegistrationClassForm(BackendForm):
 								  badgeforegroundcolor=source.badgeforegroundcolor).save()
 
 class BackendRegistrationTypeForm(BackendForm):
+	helplink = 'registrations#regtypes'
 	list_fields = ['regtype', 'regclass', 'cost', 'active', 'sortkey']
 	vat_fields = {'cost': 'reg'}
 	allow_copy_previous = True
@@ -311,12 +318,14 @@ class BackendRegistrationTypeForm(BackendForm):
 						source.regclass.regclass, source.regtype)
 
 class BackendRegistrationDayForm(BackendForm):
+	helplink = 'registrations#days'
 	list_fields = [ 'day', ]
 	class Meta:
 		model = RegistrationDay
 		fields = ['day', ]
 
 class BackendAdditionalOptionForm(BackendForm):
+	helplink = 'registrations#additionaloptions'
 	list_fields = ['name', 'cost', 'maxcount', ]
 	vat_fields = {'cost': 'reg'}
 	auto_cascade_delete_to = ['registrationtype_requires_option', 'conferenceadditionaloption_requires_regtype',
@@ -334,6 +343,7 @@ class BackendAdditionalOptionForm(BackendForm):
 		self.fields['mutually_exclusive'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference).exclude(pk=self.instance.pk)
 
 class BackendTrackForm(BackendForm):
+	helplink = 'schedule#tracks'
 	list_fields = ['trackname', 'sortkey']
 	allow_copy_previous = True
 	class Meta:
@@ -359,6 +369,7 @@ class BackendTrackForm(BackendForm):
 				).save()
 
 class BackendRoomForm(BackendForm):
+	helplink = 'schedule#rooms'
 	list_fields = ['roomname', 'sortkey']
 	class Meta:
 		model = Room
@@ -381,6 +392,7 @@ class BackendTransformConferenceDateTimeForm(django.forms.Form):
 
 
 class BackendConferenceSessionForm(BackendForm):
+	helplink = 'schedule#sessions'
 	list_fields = [ 'title', 'speaker_list', 'status_string', 'starttime', 'track', 'room']
 	verbose_field_names = {
 		'speaker_list': 'Speakers',
@@ -489,6 +501,7 @@ class BackendConferenceSessionForm(BackendForm):
 		return None
 
 class BackendConferenceSessionSlotForm(BackendForm):
+	helplink = 'schedule#slots'
 	list_fields = [ 'starttime', 'endtime', ]
 	allow_copy_previous = True
 	copy_transform_form = BackendTransformConferenceDateTimeForm
@@ -518,6 +531,7 @@ class BackendConferenceSessionSlotForm(BackendForm):
 
 
 class BackendVolunteerSlotForm(BackendForm):
+	helplink = 'volunteers#slots'
 	list_fields = [ 'timerange', 'title', 'min_staff', 'max_staff' ]
 	allow_copy_previous = True
 	copy_transform_form = BackendTransformConferenceDateTimeForm
@@ -564,6 +578,7 @@ class BackendVolunteerSlotForm(BackendForm):
 		)
 
 class BackendFeedbackQuestionForm(BackendForm):
+	helplink = 'feedback#conference'
 	list_fields = ['newfieldset', 'question', 'sortkey',]
 	allow_copy_previous = True
 
@@ -599,12 +614,14 @@ class BackendFeedbackQuestionForm(BackendForm):
 
 
 class BackendNewDiscountCodeForm(django.forms.Form):
+	helplink='vouchers#discountcodes'
 	codetype = django.forms.ChoiceField(choices=((1, 'Fixed amount discount'), (2, 'Percentage discount')))
 
 	def get_newform_data(self):
 		return self.cleaned_data['codetype']
 
 class BackendDiscountCodeForm(BackendForm):
+	helplink='vouchers#discountcodes'
 	list_fields = ['code', 'validuntil', 'maxuses']
 
 	form_before_new = BackendNewDiscountCodeForm
@@ -643,6 +660,7 @@ class BackendDiscountCodeForm(BackendForm):
 
 
 class BackendAccessTokenForm(BackendForm):
+	helplink = 'tokens'
 	list_fields = ['token', 'description', 'permissions', ]
 	readonly_fields = ['token', ]
 

@@ -1,0 +1,19 @@
+digraph registration {
+	rankdir="LR";
+
+	start[shape=circle label=Start];
+
+	saved[shape=box label=Saved];
+	invoice[shape=box label="Invoice generated"];
+	paid[shape=box label="Invoice paid"];
+	done[shape=box label=Completed];
+
+	start -> saved [label = "Details saved"];
+	saved -> invoice [label = "Invoice generated"];
+	invoice -> paid [label = "Payment"];
+	paid -> done;
+
+	saved -> saved [label = "Edit" ];
+	invoice -> saved [label = "Invoice expired or canceled"];
+	saved -> done [label = "No payment required"];
+}
