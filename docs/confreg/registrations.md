@@ -12,7 +12,7 @@ succeeds can always be discussed..):
    a community account, or one can be created as part of the signup
    process.
 1. The exact fields to be filled out can be
-   [configured](configuring) configured at the conference level, for
+   [configured](configuring) at the conference level, for
    example if there should be a field about t-shirt size or not.
 1. The attendee can incrementally fill out and save in between if
    necessary. If they do that, they will at regular intervals receive
@@ -92,7 +92,7 @@ The system for bulk payments is automatically disabled once the
 ## Registration types and classes <a name="typesandclasses"></a>
 
 When making a registration, the attendee picks the appropriate
-[registration type}(#regtypes). There always has to be at least one registration
+[registration type](#regtypes). There always has to be at least one registration
 type, even for the most simple conference.
 
 A registration type contains the different kinds of parameters that are per-type

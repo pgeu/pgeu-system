@@ -13,7 +13,7 @@ introductory text (if you want one), and decide if you want to ask for
 skill levels.
 
 If you want to ask for Tracks in the call for papers, make sure you
-[create them](schedule#tracks) create them first, and flag them as "in
+[create them](schedule#tracks) first, and flag them as "in
 cfp". If no tracks with "in cfp" set exists, the track field will
 automatically be excluded from the call for papers form.
 
@@ -36,7 +36,7 @@ colleagues. However, those rules are not in any way enforced in the
 system, but are handled manually by the people on the committee.
 
 Each voter can leave a comment for each talk in the text field, and
-view each others comment. All voting is open to all members of the
+view each others comments. All voting is open to all members of the
 committee.
 
 Click the talk title to view full details about the talk.
