@@ -18,6 +18,7 @@ digraph waitlist {
 	start -> deleted [label = "No interest in WL", color=green];
 
 	waitlist -> offer [label = "&#9993; Offer extended", color=blue];
+	waitlist -> deleted [label ="&#9993; Waitlist canceled", color=blue];
 
 	offer -> waitlist [label = "&#9993; Offer expired"];
 	offer -> waitlist [label = "&#9993; Offer canceled", color=blue];

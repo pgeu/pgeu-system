@@ -26,6 +26,12 @@ function cancelWaitlist(id) {
       document.location.href = 'cancel/' + id + '/';
    }
 }
+
+function cancelOffer(id) {
+   if (confirm('Are you really sure you want to cancel this waitlist offer?\nRegistration will return to regular waitlist, and a notification sent.')) {
+      document.location.href = 'cancel/' + id + '/';
+   }
+}
 </script>
 {%endblock%}
 

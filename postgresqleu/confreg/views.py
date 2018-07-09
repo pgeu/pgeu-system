@@ -2645,27 +2645,57 @@ def admin_waitlist_cancel(request, urlname, wlid):
 
 	wl = get_object_or_404(RegistrationWaitlistEntry, pk=wlid, registration__conference=conference)
 	reg = wl.registration
-	wl.delete()
+	if wl.offeredon:
+		# Active offer means we are moving this entry back onto the waitlist
+		RegistrationWaitlistHistory(waitlist=wl,
+									text="Offer canceled by {0}".format(request.user.username)).save()
+		wl.offeredon = None
+		wl.offerexpires = None
+		wl.enteredon = datetime.now()
+		wl.save()
 
-	send_simple_mail(reg.conference.contactaddr,
-					 reg.conference.contactaddr,
-					 'Waitlist cancel',
-					 u'User {0} {1} <{2}> removed from the waitlist by {3}.'.format(reg.firstname, reg.lastname, reg.email, request.user),
-					 sendername=reg.conference.conferencename)
+		send_simple_mail(reg.conference.contactaddr,
+						 reg.conference.contactaddr,
+						 'Waitlist offer cancel',
+						 u'Waitlist offer for user {0} {1} <{2}> canceled by {3}. User remains on waitlist.'.format(reg.firstname, reg.lastname, reg.email, request.user),
+						 sendername=reg.conference.conferencename)
 
-	send_template_mail(reg.conference.contactaddr,
-					   reg.email,
-					   'Waitlist canceled',
-					   'confreg/mail/waitlist_admin_cancel.txt',
-					   {
-						   'conference': conference,
-						   'reg': reg,
-					   },
-					   sendername=reg.conference.conferencename,
-					   receivername=reg.fullname,
-					   )
+		send_template_mail(reg.conference.contactaddr,
+						   reg.email,
+						   'Waitlist offer canceled',
+						   'confreg/mail/waitlist_admin_offer_cancel.txt',
+						   {
+							   'conference': conference,
+							   'reg': reg,
+						   },
+						   sendername=reg.conference.conferencename,
+						   receivername=reg.fullname,
+		)
+		messages.info(request, "Waitlist offer canceled.")
 
-	messages.info(request, "Waitlist entry removed.")
+	else:
+		# No active offer means we are canceling the entry completely
+		wl.delete()
+
+		send_simple_mail(reg.conference.contactaddr,
+						 reg.conference.contactaddr,
+						 'Waitlist cancel',
+						 u'User {0} {1} <{2}> removed from the waitlist by {3}.'.format(reg.firstname, reg.lastname, reg.email, request.user),
+						 sendername=reg.conference.conferencename)
+
+		send_template_mail(reg.conference.contactaddr,
+						   reg.email,
+						   'Waitlist canceled',
+						   'confreg/mail/waitlist_admin_cancel.txt',
+						   {
+							   'conference': conference,
+							   'reg': reg,
+						   },
+						   sendername=reg.conference.conferencename,
+						   receivername=reg.fullname,
+		)
+
+		messages.info(request, "Waitlist entry removed.")
 	return HttpResponseRedirect("../../")
 
 
