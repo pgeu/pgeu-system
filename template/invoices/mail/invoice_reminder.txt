@@ -9,7 +9,8 @@ we have not yet registered a payment from you.
 {%if invoice.canceltime%}
 If payment for this invoice has not been received by
 {{invoice.canceltime|date:"Y-m-d H:i"}}, this invoice will automatically be
-canceled.
+canceled. Please note that this cancellation is an automatic process
+and cannot be reversed.
 {%endif%}
 If you have recently paid this invoice with a bank transfer then
 we haven't received the payment yet due to processing delays at
@@ -17,6 +18,11 @@ the banks which is outside of our control. Once the payment is
 received you will get a receipt via email. Please contact your
 bank and us at {{treasurer_email}} in case this is taking
 too long.
+{%if invoice.canceltime%}
+If the time of cancellation is approaching and you paid using IBAN and
+have not received a receipt, we strongly suggest you check your
+sending account to see if your payment have been returned
+automatically by our payment provider due to incorrect details.{%endif%}
 
 If you feel this invoice was sent in error, or if there there is
 any other reason you have not been able to pay this invoice, please
