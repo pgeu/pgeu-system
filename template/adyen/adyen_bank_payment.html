@@ -4,6 +4,12 @@
 <h1>Invoice payment</h1>
 {%if available%}
 <p>
+  <b>Note that use of this method for payment is discouraged</b>. Due to
+  the unreliable nature and slow processing, this method should only be
+  used if no other methods are available. If possible, a bank transfer
+  using Trustly or a payment using creditcard should be used instead.
+</p>
+<p>
 Our IBAN payment management is handled by our payment processing company,
 Adyen. The payment should be made to their account, using the reference
 and instructions received after following the link below.
@@ -27,6 +33,10 @@ following special rules apply to these payments:
    is automatically canceled, the payment will be automatically
    returned to the sending account, minus transaction fees.  We
    do <i>not</i> have the ability to override this behaviour.
+ </li>
+ <li>Payments done using IBAN transfer are completely invisible to our systems
+   until they are fully completed, so we have no ability to help figure out what
+   went wrong if something did. We see no information at all about failed payments.
  </li>
 </ul>
 

@@ -122,8 +122,10 @@ Pay using your credit card, including Mastercard, VISA and American Express.
 
 class AdyenBanktransfer(_AdyenBase):
 	description="""
-Pay using a direct IBAN bank transfer. Note that this method is slow and should
-only be used if others are not possible.
+Pay using a direct IBAN bank transfer. Due to the unreliable and slow processing
+of these payments, this method is <b>not recommended</b> unless it is the only
+option possible. In particular, we strongly advice not using this method if
+making a payment from outside the Euro-zone.
 """
 
 	def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl=None):
