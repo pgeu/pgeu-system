@@ -1,5 +1,6 @@
 # The PaymentMethodWrapper needs to be in it's own file, so we don't
 # create a circular dependency between models and util.
+from django.utils.safestring import mark_safe
 
 class PaymentMethodWrapper(object):
 	def __init__(self, method, invoice, returnurl=None):
@@ -29,7 +30,7 @@ class PaymentMethodWrapper(object):
 
 	@property
 	def description(self):
-		return self.implementation.description
+		return mark_safe(self.implementation.description)
 
 	@property
 	def available(self):
