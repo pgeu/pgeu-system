@@ -9,9 +9,9 @@ tr.error {
 {%endblock%}
 {%block layoutblock%}
 <h1>Conference Sponsor Email - {{conference}}</h1>
-<table>
+<table class="table">
  <tr>
-  <th>From:</th>
+  <th class="col-md-1">From:</th>
   <td>{{conference.sponsoraddr}}</td>
  </tr>
  <tr>
@@ -34,8 +34,6 @@ tr.error {
 {{mail.message}}
 </pre>
 
-<p>
-<a href="../../">Return</a> to sponsorship overview.
-</p>
+<a href="/events/sponsor/admin/{{conference.urlname}}/" class="btn btn-default btn-block">Back to sponsors</a>
 
 {%endblock%}

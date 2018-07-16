@@ -15,7 +15,6 @@
       active: false,
       animate: false,
     });
-    $(".btn").button();
   });
 </script>
 <style>
@@ -27,9 +26,9 @@ div.benefit_list div {
 {%block layoutblock%}
 <h1>Conference Sponsorship - {{sponsor}}</h1>
 
-<table border="0" cellspacing="4" cellpadding="0">
+<table class="table table-condensed">
   <tr>
-    <th>Conference:</th>
+    <th class="col-md-2">Conference:</th>
     <td>{{conference}}</td>
   </tr>
   <tr>
@@ -70,11 +69,11 @@ div.benefit_list div {
   </tr>
   <tr>
     <th>Edit:</th>
-    <td>in <a href="/admin/confsponsor/sponsor/{{sponsor.id}}/">admin</a> interface</td>
+    <td><a class="btn btn-default btn-sm" href="/admin/confsponsor/sponsor/{{sponsor.id}}/">Edit in admin interface</a></td>
   </tr>
   <tr>
     <th>View:</th>
-    <td>in <a href="/events/sponsor/{{sponsor.id}}/">user</a> interface, to for example claim benefits on the users behalf</td>
+    <td><a class="btn btn-default btn-sm" href="/events/sponsor/{{sponsor.id}}/">View as end user</a></td>
   </tr>
   <tr>
     <th>Managers:</th>
@@ -103,7 +102,7 @@ div.benefit_list div {
 <form method="post" action=".">{% csrf_token %}
 <input type="hidden" name="confirm" value="1">
 <input type="hidden" name="claimid" value="{{b.id}}">
-<input type="submit" class="btn" value="Confirm this benefit">
+<input type="submit" class="btn btn-default" value="Confirm this benefit">
 </form>
 {%else%}
 <span class="label label-success">Confirmed</span>
@@ -152,7 +151,7 @@ This sponsorship is awaiting an <a href="/invoiceadmin/{{sponsor.invoice.pk}}/">
 for this sponsor, it can be confirmed before the invoice is paid.
 </p>
 <p>
-<a class="btn" href="confirm/" onClick="return confirmConfirm()">Confirm sponsor</a>
+<a class="btn btn-default" href="confirm/" onClick="return confirmConfirm()">Confirm sponsor</a>
 </p>
 {%else%}
 <p>
@@ -161,10 +160,10 @@ has been received, go ahead and generate the invoice. It will automatically
 be emailed to the sponsor, as well as show up on their dashboard. Once
 the invoice is paid, the sponsorship will automatically become confirmed.
 </p>
-<a class="btn" href="generateinvoice/">Generate invoice</a>
+<a class="btn btn-default" href="generateinvoice/">Generate invoice</a>
 {%endif%}
 {%endif%}
 
-<p>
-<a href="../">Return</a> to sponsor list.
-</p>{%endblock%}
+<br/>
+<a class="btn btn-default btn-block" href="../">Return to sponsor list</a>
+{%endblock%}

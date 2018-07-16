@@ -24,11 +24,20 @@ up as a sponsor at that level later.
 
 {%if mails%}
 <h2>Previous emails</h2>
-<ul>
+<table class="table table-condensed">
+  <tr>
+    <th>Sent at</th>
+    <th>Subject</th>
+    <th>Sent to level(s)</th>
+  </tr>
 {%for m in mails%}
- <li>{{m.sentat|date:"Y-m-d H:i"}} <a href="../viewmail/{{m.id}}/">{{m.subject}}</a> ({{m.levels.all|join:", "}})</li>
+  <tr>
+    <td>{{m.sentat|date:"Y-m-d H:i"}}</td>
+    <td><a href="../viewmail/{{m.id}}/">{{m.subject}}</a></td>
+    <td>{{m.levels.all|join:", "}}</td>
+  </tr>
 {%endfor%}
-</ul>
+</table>
 {%endif%}
 
 <h2>New email</h2>
@@ -44,10 +53,10 @@ up as a sponsor at that level later.
 {%endfor%}
 </table>
 
-<input type="submit" value="Send email!">
+<br/>
+<input type="submit" value="Send email!" class="btn btn-default">
 </form>
+<br/>
 
-<p>
-  <a href="/events/sponsor/admin/{{conference.urlname}}/">Back</a> to sponsors.
-</p>
+<a href="/events/sponsor/admin/{{conference.urlname}}/" class="btn btn-default btn-block">Back to sponsors</a>
 {%endblock%}

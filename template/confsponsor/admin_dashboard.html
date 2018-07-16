@@ -10,11 +10,20 @@ The following benefits have been claimed by sponsors, that have not yet been
 confirmed. You should try to do this ASAP - this may include things like copying
 an image to the website, or making sure there is space for a desk..
 </p>
-<ul>
-{%for b in unconfirmed_benefits%}
- <li>{{b.sponsor}}: <a href="benefit/{{b.id}}/">{{b.benefit}}</a></li>
+{%regroup unconfirmed_benefits by sponsor as unconf%}
+<table class="table table-condensed">
+{%for s in unconf%}
+  <tr>
+    <th colspan="2">{{s.grouper}}</th>
+  </tr>
+{%for b in s.list%}
+  <tr>
+    <td class="col-md-1"></td>
+    <td><a href="benefit/{{b.id}}/">{{b.benefit}}</a></td>
+  </tr>
 {%endfor%}
-</ul>
+{%endfor%}
+</table>
 {%endif%}
 
 {%if confirmed_sponsors%}
@@ -24,14 +33,19 @@ The following sponsors are confirmed:
 </p>
 
 {%regroup confirmed_sponsors by level as regrouped_sponsors%}
+<table class="table table-condensed">
 {%for level in regrouped_sponsors%}
-<h3>{{level.grouper}}</h3>
-<ul>
+  <tr>
+    <th colspan="2" class="text-center active">{{level.grouper}}</th>
+  </tr>
 {%for s in level.list%}
- <li><a href="{{s.id}}/">{{s}}</a>{%if s.invoice%}{%if not s.invoice.paidat%} (not paid){%endif%}{%else%} (not invoiced){%endif%}</li>
+  <tr>
+    <td class="col-md-5"><a href="{{s.id}}/">{{s}}</a></td>
+    <td>{%if s.invoice%}{%if not s.invoice.paidat%}<span class="label label-danger">Not paid</span>{%else%}<span class="label label-success">Paid</span>{%endif%}{%else%}<span class="label label-warning">Not invoiced</span>{%endif%}
+    </td>
 {%endfor%}
-</ul>
 {%endfor%}
+</table>
 {%endif%}
 
 {%if unconfirmed_sponsors%}
@@ -40,23 +54,45 @@ The following sponsors are confirmed:
 The following sponsors have signed up, but are not yet confirmed. If you have handled the
 sponsor manually, you may want to confirm them manually as well...
 </p>
-<ul>
-{%for s in unconfirmed_sponsors%}
- <li><a href="{{s.id}}/">{{s}}</a> ({{s.level}}, signed up {{s.signupat}})</li>
+{%regroup unconfirmed_sponsors by level as regrouped_unconfirmed %}
+<table class="table table-condensed">
+{%for level in regrouped_unconfirmed%}
+  <tr>
+    <th colspan="2" class="text-center active">{{level.grouper}}</th>
+  </tr>
+  <tr>
+    <th class="col-md-5">Sponsor</th>
+    <th>Signed up</th>
+  </tr>
+{%for s in level.list%}
+  <tr>
+    <td><a href="{{s.id}}/">{{s}}</a></td>
+    <td>{{s.signupat}}</td>
+  </tr>
 {%endfor%}
-</ul>
+{%endfor%}
+</table>
 {%endif%}
 
-<h2>Sponsor communications</h2>
+<h2>Sponsor email</h2>
 {%if mails%}
 <p>
 The following emails have been sent to sponsors so far:
 </p>
-<ul>
+<table class="table table-condensed">
+  <tr>
+    <th>Sent at</th>
+    <th>Subject</th>
+    <th>Sent to level(s)</th>
+  </tr>
 {%for m in mails%}
- <li>{{m.sentat|date:"Y-m-d H:i"}} <a href="viewmail/{{m.id}}/">{{m.subject}}</a> ({{m.levels.all|join:", "}})</li>
+  <tr>
+    <td>{{m.sentat|date:"Y-m-d H:i"}}</td>
+    <td><a href="viewmail/{{m.id}}/">{{m.subject}}</a></td>
+    <td>{{m.levels.all|join:", "}}</td>
+  </tr>
 {%endfor%}
-</ul>
+</table>
 {%else%}
 <p>
 No sponsor emails have been sent yet.
@@ -64,7 +100,7 @@ No sponsor emails have been sent yet.
 {%endif%}
 
 <p>
-Send a new <a href="sendmail/">sponsor email</a>.
+  <a href="sendmail/" class="btn btn-default">Send sponsor email</a>
 </p>
 
 <h2>Benefit matrix</h2>
