@@ -1,7 +1,7 @@
 {%extends "confreg/confadmin_base.html" %}
 {%block title%}Prepaid vouchers{%endblock%}
 {%block extrahead%}
-<script type="text/javascript" src="/media/jq/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" src="/media/jq/jquery-1.9.1.min.js"></script>
 <script type="text/javascript">
 function sendEmail() {
    if (confirm('Are you sure you want to send an email with these vouchers to {{batch.buyer.email|escapejs}}?')) {
