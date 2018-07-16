@@ -1,0 +1,21 @@
+digraph sponsorsignup {
+	subgraph legend {
+		key[shape=box, label=<
+		    <font color="blue">Actions by admin</font><br/>
+		    <font color="green">Actions by sponsor</font><br/>
+		>, labeljust="l"]
+	}
+
+	start[shape=circle label="Sign up"];
+	type[shape=diamond label="Req contract?"]
+	invoice[shape=box label="Invoice generated"];
+	contract[shape=box label="Wait for contract"];
+	confirmed[shape=box label="Sponsorship confirmed"];
+
+	start -> type [label="Sponsor sign up", color=green];
+	type -> contract [label="Yes"];
+	type -> invoice [label="No"];
+	contract -> invoice [label="Contract received", color=blue];
+	contract -> confirmed [label="Contract received", color=blue];
+	invoice -> confirmed [label="Invoice paid", color=green];
+}

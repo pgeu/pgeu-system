@@ -16,6 +16,7 @@ from benefitclasses import all_benefits
 import json
 
 class BackendSponsorForm(BackendForm):
+	helplink='sponsors#sponsor'
 	class Meta:
 		model = Sponsor
 		fields = ['name', 'displayname', 'url', 'twittername',
@@ -35,6 +36,7 @@ class BackendSponsorForm(BackendForm):
 
 
 class BackendSponsorshipLevelBenefitForm(BackendForm):
+	helplink='sponsors#benefit'
 	json_fields = ['class_parameters', ]
 	class Meta:
 		model = SponsorshipBenefit
@@ -94,6 +96,7 @@ class BackendSponsorshipLevelBenefitManager(object):
 		return lambda: SponsorshipBenefit(level=masterobj)
 
 class BackendSponsorshipLevelForm(BackendForm):
+	helplink='sponsors#level'
 	list_fields = ['levelname', 'levelcost', 'available', ]
 	linked_objects = OrderedDict({
 		'benefit': BackendSponsorshipLevelBenefitManager(),
@@ -135,6 +138,7 @@ class BackendSponsorshipLevelForm(BackendForm):
 				b.save()
 
 class BackendSponsorshipContractForm(BackendForm):
+	helplink='sponsors#contract'
 	list_fields = ['contractname', ]
 	file_fields = ['contractpdf', ]
 	class Meta:
