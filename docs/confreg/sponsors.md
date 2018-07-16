@@ -41,6 +41,11 @@ To set up sponsorship for a conference, in order:
 1. Create one or more [sponsorship levels](#level).
 1. Open sponsorship on [the conference](configuring).
 
+Note that the *benefits* should **never** be changed after sponsors
+have started to sign up, but there is nothing in the system actually
+preventing it (things like fixing spelling and wording is of course
+always allowed...)
+
 ## Sign-up process
 
 The sign-up process looks slightly different depending on if the
