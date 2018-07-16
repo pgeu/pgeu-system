@@ -5,13 +5,34 @@ from collections import OrderedDict
 from postgresqleu.util.magic import magicdb
 from postgresqleu.util.widgets import RequiredFileUploadWidget, PrettyPrintJsonWidget
 from postgresqleu.confreg.backendforms import BackendForm
+from postgresqleu.confreg.backendlookups import GeneralAccountLookup
 
+from models import Sponsor
 from models import SponsorshipLevel, SponsorshipContract, SponsorshipBenefit
 
 from benefits import get_benefit_class
 from benefitclasses import all_benefits
 
 import json
+
+class BackendSponsorForm(BackendForm):
+	class Meta:
+		model = Sponsor
+		fields = ['name', 'displayname', 'url', 'twittername',
+				  'invoiceaddr', 'vatstatus', 'vatnumber',
+				  'managers', ]
+	fieldsets = [
+		{'id': 'base_info', 'legend': 'Basic information', 'fields': ['name', 'displayname', 'url', 'twittername']},
+		{'id': 'financial', 'legend': 'Financial information', 'fields': ['invoiceaddr', 'vatstatus', 'vatnumber']},
+		{'id': 'management', 'legend': 'Management', 'fields': ['managers']},
+	]
+
+	selectize_multiple_fields = {
+		'managers': GeneralAccountLookup(),
+	}
+
+	auto_cascade_delete_to = ['sponsor_managers', ]
+
 
 class BackendSponsorshipLevelBenefitForm(BackendForm):
 	json_fields = ['class_parameters', ]

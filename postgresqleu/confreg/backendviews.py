@@ -42,7 +42,7 @@ def get_authenticated_conference(request, urlname):
 	else:
 		return get_object_or_404(Conference, urlname=urlname, administrators=request.user)
 
-def backend_process_form(request, urlname, formclass, id, cancel_url='../', saved_url='../', allow_new=True, allow_delete=True, breadcrumbs=None, permissions_already_checked=False, conference=None, bypass_conference_filter=False, instancemaker=None):
+def backend_process_form(request, urlname, formclass, id, cancel_url='../', saved_url='../', allow_new=True, allow_delete=True, breadcrumbs=None, permissions_already_checked=False, conference=None, bypass_conference_filter=False, instancemaker=None, deleted_url=None):
 	if not conference and not bypass_conference_filter:
 		conference = get_authenticated_conference(request, urlname)
 
@@ -51,6 +51,9 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 
 	nopostprocess = False
 	newformdata = None
+
+	if not deleted_url:
+		deleted_url = cancel_url
 
 	if not instancemaker:
 		instancemaker = lambda: formclass.Meta.model(conference=conference)
@@ -113,7 +116,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 				else:
 					messages.info(request, "{0} {1} deleted.".format(formclass.Meta.model._meta.verbose_name.capitalize(), instance))
 					instance.delete()
-					return HttpResponseRedirect(cancel_url)
+					return HttpResponseRedirect(deleted_url)
 			else:
 				messages.warning(request, "New {0} not deleted, object was never saved.".format(formclass.Meta.model._meta.verbose_name.capitalize()))
 				return HttpResponseRedirect(cancel_url)
