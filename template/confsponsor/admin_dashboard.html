@@ -63,11 +63,22 @@ sponsor manually, you may want to confirm them manually as well...
   <tr>
     <th class="col-md-5">Sponsor</th>
     <th>Signed up</th>
+    <th>Status</th>
   </tr>
 {%for s in level.list%}
   <tr>
     <td><a href="{{s.id}}/">{{s}}</a></td>
     <td>{{s.signupat}}</td>
+    <td>
+      {%if s.invoice%}
+        {%if s.invoice.isexpired%}
+      <span class="label label-danger">Overdue invoice</span>
+        {%else%}
+      <span class="label label-success">Invoice</span>
+        {%endif%}
+      {%else%}
+      <span class="label label-info">Pending</span>
+      {%endif%}</
   </tr>
 {%endfor%}
 {%endfor%}
