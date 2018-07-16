@@ -10,18 +10,12 @@ The following benefits have been claimed by sponsors, that have not yet been
 confirmed. You should try to do this ASAP - this may include things like copying
 an image to the website, or making sure there is space for a desk..
 </p>
-{%regroup unconfirmed_benefits by sponsor as unconf%}
 <table class="table table-condensed">
-{%for s in unconf%}
+{%for b in unconfirmed_benefits%}
   <tr>
-    <th colspan="2">{{s.grouper}}</th>
-  </tr>
-{%for b in s.list%}
-  <tr>
-    <td class="col-md-1"></td>
+    <th class="col-md-3">{%ifchanged b.sponsor%}{{b.sponsor}}{%endifchanged%}</th>
     <td><a href="benefit/{{b.id}}/">{{b.benefit}}</a></td>
   </tr>
-{%endfor%}
 {%endfor%}
 </table>
 {%endif%}
