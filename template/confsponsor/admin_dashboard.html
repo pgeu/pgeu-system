@@ -35,7 +35,15 @@ The following sponsors are confirmed:
 {%for s in level.list%}
   <tr>
     <td class="col-md-5"><a href="{{s.id}}/">{{s}}</a></td>
-    <td>{%if s.invoice%}{%if not s.invoice.paidat%}<span class="label label-danger">Not paid</span>{%else%}<span class="label label-success">Paid</span>{%endif%}{%else%}<span class="label label-warning">Not invoiced</span>{%endif%}
+    <td>
+      {%if s.invoice%}
+       {%if s.invoice.paidat%}<span class="label label-success">Paid</span>
+       {%elif s.invoice.isexpired%}<span class="label label-danger">Overdue invoice</span>
+       {%else%}<span class="label label-info">Invoiced</span>
+       {%endif%}
+       {%else%}
+      <span class="label label-warning">Not invoiced</span>
+     {%endif%}
     </td>
 {%endfor%}
 {%endfor%}
