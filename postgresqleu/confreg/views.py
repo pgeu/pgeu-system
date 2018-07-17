@@ -2606,6 +2606,19 @@ def admin_registration_cancel(request, urlname, regid):
 		})
 
 @transaction.atomic
+def admin_registration_clearcode(request, urlname, regid):
+	conference = get_authenticated_conference(request, urlname)
+
+	reg = get_object_or_404(ConferenceRegistration, id=regid, conference=conference)
+	if reg.has_invoice():
+		messages.warning(request, "Cannot clear the code from a registration with an invoice")
+	else:
+		messages.info(request, "Removed voucher code '{0}'".format(reg.vouchercode))
+		reg.vouchercode = ""
+		reg.save()
+	return HttpResponseRedirect("../")
+
+@transaction.atomic
 def admin_waitlist(request, urlname):
 	conference = get_authenticated_conference(request, urlname)
 

@@ -128,6 +128,7 @@ urlpatterns = [
 	url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/$', postgresqleu.confreg.views.admin_registration_single),
 	url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/edit/$', postgresqleu.confreg.backendviews.edit_registration),
 	url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/cancel/$', postgresqleu.confreg.views.admin_registration_cancel),
+	url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/clearcode/$', postgresqleu.confreg.views.admin_registration_clearcode),
 	url(r'^events/admin/(\w+)/prepaid/$', postgresqleu.confreg.views.createvouchers),
 	url(r'^events/admin/(\w+)/prepaid/list/$', postgresqleu.confreg.views.listvouchers),
 	url(r'^events/admin/(\w+)/prepaid/(\d+)/$', postgresqleu.confreg.views.viewvouchers),
