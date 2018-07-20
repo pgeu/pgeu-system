@@ -285,7 +285,7 @@ purchased in total.
 
 Public
 : If this option is available on the public registration form. If this
-box is not checked ,the option can only be added by administrators.
+box is not checked, the option can only be added by administrators.
 
 Upsellable
 : If this option can be added to a registration after it has been

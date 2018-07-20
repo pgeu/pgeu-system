@@ -29,7 +29,7 @@ Emails can (obviously) not be edited after they've been sent.
 
 ## Cross conference email <a name="crossconference"></a>
 
-Cross conference emails are currently only available to superusers,m
+Cross conference emails are currently only available to superusers,
 due to the inability to limit sender address.
 
 Cross conference emails are different from attendee emails in that
