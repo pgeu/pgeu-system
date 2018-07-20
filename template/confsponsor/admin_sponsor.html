@@ -57,6 +57,12 @@ div.panelwrap {
     <th>Status:</th>
     <td>{%if sponsor.confirmed%}Confirmed ({{sponsor.confirmedat}}){%else%}<i>Awaiting confirmation (signed up {{sponsor.signupat}})</i>{%endif%}</td>
   </tr>
+{%if sponsor.invoice%}
+  <tr>
+    <th>Payment status:</th>
+    <td>{%if sponsor.invoice.paidat%}Paid {{sponsor.invoice.paidat}}{%elif sponsor.invoice.isexpired%}Overdue{%else%}Invoiced{%endif%}</td>
+  </tr>
+{%endif%}
   <tr>
     <th>Edit:</th>
     <td><a class="btn btn-default btn-sm" href="edit/">Edit sponsor</a></td>
