@@ -30,7 +30,7 @@ $(function() {
      resizable: false,
      minWidth: 350,
   });
-  $('#dlgComment').live('keyup', function(e){
+  $(document).on('keyup', '#dlgComment', function(e){
      if (e.keyCode == 13) {
         $(':button:contains("Save")').click();
      }
