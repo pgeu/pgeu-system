@@ -739,7 +739,7 @@ class ConferenceSessionVote(models.Model):
 	session = models.ForeignKey(ConferenceSession, null=False, blank=False)
 	voter = models.ForeignKey(User, null=False, blank=False)
 	vote = models.IntegerField(null=True, blank=False)
-	comment = models.CharField(max_length=200, null=True, blank=True)
+	comment = models.TextField(null=True, blank=True)
 
 	class Meta:
 		unique_together = ( ('session', 'voter',), )
