@@ -2081,9 +2081,10 @@ def bulkpay_view(request, confname, bulkpayid):
 @transaction.atomic
 def talkvote(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
-	if not conference.talkvoters.filter(pk=request.user.id):
+	if not conference.talkvoters.filter(pk=request.user.id) and not conference.administrators.filter(pk=request.user.id):
 		return HttpResponse('You are not a talk voter for this conference!')
 
+	isvoter = conference.talkvoters.filter(pk=request.user.id).exists()
 	isadmin = conference.administrators.filter(pk=request.user.id).exists()
 
 	alltracks = [{'id': t.id, 'trackname': t.trackname} for t in Track.objects.filter(conference=conference)]
@@ -2165,6 +2166,7 @@ def talkvote(request, confname):
 			'users': getusernames(all),
 			'sessionvotes': transform(all),
 			'conference': conference,
+			'isvoter': isvoter,
 			'isadmin': isadmin,
 		    'status_choices': STATUS_CHOICES,
 		    'tracks': alltracks,
