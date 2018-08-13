@@ -83,7 +83,7 @@ class SpeakerLookup(LookupBase):
 
 	@classmethod
 	def get_values(self, query):
-		return [{'id': s.id, 'value': u"%s (%s)" % (s.fullname, s.user.username)}
+		return [{'id': s.id, 'value': u"%s (%s)" % (s.fullname, s.user.username if s.user else '')}
 				for s in Speaker.objects.filter(
 						Q(fullname__icontains=query) | Q(twittername__icontains=query) | Q(user__username__icontains=query)
 				)[:30]]
