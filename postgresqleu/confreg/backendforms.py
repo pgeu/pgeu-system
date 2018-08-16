@@ -403,7 +403,7 @@ class BackendConferenceSessionForm(BackendForm):
 	}
 	allow_copy_previous = True
 	copy_transform_form = BackendTransformConferenceDateTimeForm
-	auto_cascade_delete_to = ['conferencesession_speaker', ]
+	auto_cascade_delete_to = ['conferencesession_speaker', 'conferencesessionvote']
 
 	class Meta:
 		model = ConferenceSession
