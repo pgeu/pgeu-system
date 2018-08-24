@@ -225,7 +225,7 @@ width: 100%;
    <td class="text-center">{{forloop.counter}}</td>
    <td>
      <div class="talkaccd">
-       <h3>{{s.title}} ({{s.speakers}})</h3>
+       <h3>{{s.title}} ({{s.speakers}}) [id: {{s.id}}]</h3>
        <div>
 {%if isadmin%}
 	 <a class="btn btn-default" style="float:right" href="/events/admin/{{conference.urlname}}/sessions/{{s.id}}/" target="_blank">Edit submission</a>
