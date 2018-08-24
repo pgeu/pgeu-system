@@ -211,6 +211,7 @@ width: 100%;
 
 <table id="votetable" class="table table-bordered table-condensed" style="display:none">
  <tr>
+  <th style="width: 1%">Seq</th>
   <th class="col-md-6"><a href="?{{urlfilter}}sort=session">Session</a> | <a href="?{{urlfilter}}sort=speakers">Speakers</a></th>
   <th>Status</th>
   {%for u in users%}
@@ -221,6 +222,7 @@ width: 100%;
  </tr>
 {%for s in sessionvotes%}
  <tr>
+   <td class="text-center">{{forloop.counter}}</td>
    <td>
      <div class="talkaccd">
        <h3>{{s.title}} ({{s.speakers}})</h3>
