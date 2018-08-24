@@ -2179,7 +2179,7 @@ def talkvote(request, confname):
 @transaction.atomic
 def talkvote_status(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
-	if not conference.talkvoters.filter(pk=request.user.id):
+	if not conference.talkvoters.filter(pk=request.user.id) and not conference.administrators.filter(pk=request.user.id):
 		return HttpResponse('You are not a talk voter for this conference!')
 
 	isadmin = conference.administrators.filter(pk=request.user.id).exists()
