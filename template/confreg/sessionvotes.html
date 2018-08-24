@@ -39,6 +39,9 @@ $(function() {
   $('#selectTracks').selectize({
       plugins: ['remove_button'],
   });
+  $('#selectStatuses').selectize({
+      plugins: ['remove_button'],
+  });
 
   $('#ajaxStatus').hide();
 
@@ -193,6 +196,13 @@ width: 100%;
 {%endfor%}
     </select>
   </div>
+  <div>
+    <select id="selectStatuses" name="statuses" multiple="multiple" style="inline-block; width=80%;">
+{%for sid,s in status_choices %}
+      <option value="{{sid}}"{%if sid in selectedstatuses%} SELECTED{%endif%}>{{s}}</option>
+{%endfor%}
+    </select>
+  </div>
   <input type="submit" class="btn btn-default" value="Update">
   <a href="." class="btn btn-default">Reset</a>
 </form>
@@ -201,12 +211,12 @@ width: 100%;
 
 <table id="votetable" class="table table-bordered table-condensed" style="display:none">
  <tr>
-  <th class="col-md-6"><a href="?{{urltrackfilter}}sort=session">Session</a> | <a href="?{{urltrackfilter}}sort=speakers">Speakers</a></th>
+  <th class="col-md-6"><a href="?{{urlfilter}}sort=session">Session</a> | <a href="?{{urlfilter}}sort=speakers">Speakers</a></th>
   <th>Status</th>
   {%for u in users%}
   <th>{{u}}</th>
   {%endfor%}
-  <th><a href="?{{urltrackfilter}}sort=avg">Average</a></th>
+  <th><a href="?{{urlfilter}}sort=avg">Average</a></th>
   <th>Comments</th>
  </tr>
 {%for s in sessionvotes%}
