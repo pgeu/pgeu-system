@@ -11,7 +11,7 @@ You can find the full conference information at the
 </p>
 
 {%for track,sessionlist in sessions|groupby_sort('track', 'sortkey')%}
-<h2>{{track|default_if_none:'General'}}</h2>
+<h2>{{track|default:'General'}}</h2>
 <ul>
 {%for session in sessionlist %}
  <li><a href="session/{{session.id}}-{{session.title|slugify}}/">{{session.title}}</a> ({{session.speaker_list}})</li>
