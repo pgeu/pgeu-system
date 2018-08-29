@@ -326,7 +326,7 @@ class BackendRegistrationDayForm(BackendForm):
 
 class BackendAdditionalOptionForm(BackendForm):
 	helplink = 'registrations#additionaloptions'
-	list_fields = ['name', 'cost', 'maxcount', ]
+	list_fields = ['name', 'cost', 'maxcount', 'invoice_autocancel_hours']
 	vat_fields = {'cost': 'reg'}
 	auto_cascade_delete_to = ['registrationtype_requires_option', 'conferenceadditionaloption_requires_regtype',
 							  'conferenceadditionaloption_mutually_exclusive',]
