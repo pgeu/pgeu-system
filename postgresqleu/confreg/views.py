@@ -2251,8 +2251,8 @@ def talkvote_comment(request, confname):
 @transaction.atomic
 def createschedule(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
-	if not (request.user.is_superuser or
-			conference.administrators.filter(pk=request.user.id).exists() or
+	is_admin = conference.administrators.filter(pk=request.user.id).exists()
+	if not (request.user.is_superuser or is_admin or
 			conference.talkvoters.filter(pk=request.user.id).exists()
 			):
 		raise Http404('You are not an administrator or talk voter for this conference!')
@@ -2267,9 +2267,10 @@ def createschedule(request, confname):
 					s['slot%s' % ((sess.tentativeroom.id * 1000000) + sess.tentativescheduleslot.id)] = 'sess%s' % sess.id
 			return HttpResponse(json.dumps(s), content_type="application/json")
 
-		# Else we are saving
-		if not request.user.is_superuser:
-			raise Http404('Only superusers can save!')
+		# Else we are saving. This is only allowed by superusers and administrators,
+		# not all talk voters (as it potentially changes the website).
+		if not request.user.is_superuser and not is_admin:
+			raise Http404('Only administrators can save!')
 
 		# Remove all the existing mappings, and add new ones
 		# Yes, we do this horribly inefficiently, but it doesn't run very
