@@ -2299,6 +2299,12 @@ def createschedule(request, confname):
 
 	# Not post - so generate the page
 
+	allrooms = exec_to_keyed_dict("SELECT id, sortkey, roomname FROM confreg_room r WHERE conference_id=%(confid)s ORDER BY sortkey, roomname", {
+		'confid': conference.id,
+	})
+	if len(allrooms) == 0:
+		return HttpResponse('No rooms defined for this conference, cannot create schedule yet.')
+
 	# Complete list of all available sessions
 	sessions = exec_to_dict("SELECT s.id, track_id, (status = 3) AS ispending, (row_number() over() +1)*75 AS top, title, string_agg(spk.fullname, ', ') AS speaker_list FROM confreg_conferencesession s LEFT JOIN confreg_conferencesession_speaker csp ON csp.conferencesession_id=s.id LEFT JOIN confreg_speaker spk ON spk.id=csp.speaker_id WHERE conference_id=%(confid)s AND status IN (1,3) AND NOT cross_schedule GROUP BY s.id ORDER BY starttime, id", {
 		'confid': conference.id,
@@ -2314,12 +2320,6 @@ def createschedule(request, confname):
 		return HttpResponse('No schedule slots defined for this conference, cannot create schedule yet.')
 
 	tracks = Track.objects.filter(conference=conference).order_by('sortkey')
-
-	allrooms = exec_to_keyed_dict("SELECT id, sortkey, roomname FROM confreg_room r WHERE conference_id=%(confid)s ORDER BY sortkey, roomname", {
-		'confid': conference.id,
-	})
-	if len(allrooms) == 0:
-		return HttpResponse('No rooms defined for this conference, cannot create schedule yet.')
 
 	days = []
 
