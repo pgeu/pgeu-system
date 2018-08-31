@@ -1,6 +1,10 @@
 from django.core.exceptions import ValidationError
+from django.utils.deconstruct import deconstructible
+
+from StringIO import StringIO
 
 import requests
+from PIL import Image
 
 def validate_lowercase(value):
 	if value != value.lower():
@@ -72,3 +76,35 @@ def validate_json_structure(config, structure):
 				_validate_json_level(v, structure[k], path+[k])
 
 	_validate_json_level(config, structure, [])
+
+
+@deconstructible
+class PictureUrlValidator(object):
+	def __init__(self, aspect=None):
+		self.aspect = aspect
+
+	def __call__(self, value):
+		try:
+			r = requests.get(value,
+							 headers={'User-agent': 'Firefox/60'},
+							 timeout=5)
+		except:
+			raise ValidationError("Could not download promotion picture")
+
+		if r.status_code != 200:
+			raise ValidationError("Downloading promo picture returned status %s" % r.status_code)
+		try:
+			img = Image.open(StringIO(r.content))
+			w,h = img.size
+			if self.aspect:
+				newaspect = round(float(w)/float(h), 2)
+				if newaspect != self.aspect:
+					raise ValidationError("Image has aspect ratio %s, must have %s" % (newaspect, self.aspect))
+
+		except ValidationError:
+			raise
+		except Exception, e:
+			raise ValidationError("Failed to parse image: %s" % e)
+
+	def __eq__(self, other):
+		return self.aspect == other.aspect
