@@ -239,6 +239,7 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
 		email = None
 	c.update({
 		'pgeu_hosted': True,
+		'now': datetime.now(),
 		'conference': conference,
 		'pagemagic': pagemagic,
 		'username': request.user and request.user.username or None,
