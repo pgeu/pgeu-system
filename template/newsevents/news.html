@@ -1,0 +1,16 @@
+{%extends "navbase.html"%}
+{%load markup%}
+{%block title%}{{item.title}}{%endblock%}
+{%block navsection%}News{%endblock%}
+{%block content%}
+<h1>{{item.title}}</h1>
+<i class="fa fa-clock-o"></i> {{item.datetime|date:"Y-m-d"}}
+<p></p>
+{{item.summary|markdown}}
+{%endblock%}
+
+{%block navblock%}
+{%for n in news %}
+ <li><a href="/news/{{n.title|slugify}}-{{n.id}}/">{{n.title}}</a></li>
+{%endfor%}
+{%endblock%}

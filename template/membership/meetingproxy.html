@@ -1,4 +1,4 @@
-{%extends "nav_membership.html"%}
+{%extends "nav_account.html"%}
 {%block title%}Proxy voting{%endblock%}
 {%block content%}
 <h1>Proxy voting</h1>
@@ -34,8 +34,9 @@
 {{form}}
 </table>
 
-<input type="submit" value="Save">
+<input type="submit" value="Save" class="btn btn-primary">
 </form>
 
-<p><a href="../../">Return</a> to list of meetings</p>
+<br/>
+<a href="../../" class="btn btn-outline-dark">Return to list of meetings</a>
 {%endblock%}

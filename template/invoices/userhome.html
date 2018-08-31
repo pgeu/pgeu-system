@@ -1,4 +1,4 @@
-{%extends "nav_membership.html"%}
+{%extends "nav_financial.html"%}
 {%block title%}Your invoices{%endblock%}
 {%block content%}
 <h1>Your invoices</h1>
@@ -7,7 +7,7 @@
 We have the following invoices registered to your account:
 </p>
 
-<table border="1" cellspacing="0" cellpadding="3">
+<table class="table table-sm table-striped">
 <tr>
  <th>Number</th>
  <th>Title</th>
@@ -19,9 +19,18 @@ We have the following invoices registered to your account:
 <tr>
  <td>#{{invoice.id}}</td>
  <td><a href="{{invoice.id}}/">{{invoice.title}}</td>
- <td>{%if invoice.refund%}{%if invoice.refund.completed%}Refunded{%else%}Refund pending{%endif%}{%elif invoice.ispaid%}Paid{%else%}Pending{%endif%}</td>
+ <td>{%if invoice.refund%}
+  {%if invoice.refund.completed%}<span class="badge badge-info">Refunded</span>
+  {%else%}<span class="badge badge-warning">Refund pending</span>
+  {%endif%}
+{%elif invoice.ispaid%}<span class="badge badge-success">Paid</span>
+{%else%}<span class="badge badge-primary">Awaiting payment</span>{%endif%}
+</td>
  <td>{{invoice.duedate|date:"Y-m-d"}}</td>
- <td>{%if invoice.ispaid and not invoice.refunded%}<a href="{{invoice.id}}/receipt/">Download</a>{%endif%}</td>
+ <td>
+   <a class="btn btn-sm btn-outline-dark" href="{{invoice.id}}/pdf/">Download invoice</a>
+{%if invoice.ispaid and not invoice.refunded%}<a class="btn btn-sm btn-outline-dark" href="{{invoice.id}}/receipt/">Download receipt</a>{%endif%}
+</td>
 </tr>
 {%endfor%}
 </table>

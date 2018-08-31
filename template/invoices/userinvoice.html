@@ -1,9 +1,10 @@
-{%extends "nav_membership.html"%}
+{%extends "nav_financial.html"%}
 {%block title%}Invoice #{{invoice.pk}}{%endblock%}
 {%block content%}
 <h1>Invoice #{{invoice.pk}}</h1>
 
 {%include "invoices/userinvoice_spec.html"%}
 
-<p><a href="../">Return</a> to the list of all your invoices.</a></p>
+<br/>
+<a class="btn btn-sm btn-outline-dark" href="/invoices/">Return to list of invoices</a>
 {%endblock%}

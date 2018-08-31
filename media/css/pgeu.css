@@ -1,0 +1,181 @@
+/** CUSTOM FONTS */
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+@import url('https://fonts.googleapis.com/css?family=Maven+Pro');
+
+body {
+  padding-top: 4rem;
+
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
+  color: #515151;
+  font-size: 11.5pt;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Maven Pro', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #515151;
+    margin-top: 0.5em;
+}
+
+a {
+    color: #336791;
+    font-weight: 600;
+    text-decoration: none;
+    -moz-transition: color .2s ease-in-out;
+    -webkit-transition: color .2s ease-in-out;
+    -ms-transition: color .2s ease-in-out;
+    transition: color .2s ease-in-out;
+}
+
+.navbar {
+  box-shadow: 0px 3px 15px rgba(0,0,0,0.2);
+}
+
+.navbar img.logo {
+    height: 2rem;
+    margin-left: 0;
+    margin-bottom: 0;
+}
+
+#footer {
+  text-align: center;
+  padding: 5em 0 2em 0;
+  display: block;
+}
+
+#sidenav {
+  padding: 1em;
+}
+
+#sidenav h2 {
+  font-size: 2em;
+  display: flex;
+  flex-direction: row;
+}
+
+#sidenav h2:after {
+    background-color: #e7eae8;
+    content: '\a0';
+    flex-grow: 1;
+    height: 2px;
+    position: relative;
+    margin: .5em 0 .5em .75em;
+}
+
+div.contentwrap h2 {
+  font-size: 2em;
+  display: flex;
+  flex-direction: row;
+}
+div.contentwrap h2:after {
+    background-color: #e7eae8;
+    content: '\a0';
+    flex-grow: 1;
+    height: 2px;
+    position: relative;
+    margin: .5em 0 .5em .75em;
+}
+
+
+/* Elections */
+div.electionResultRow {
+    padding: 2px 2px 2px 2px;
+}
+div.electionHeaderRow {
+    font-weight: bold;
+    padding: 2px 2px 2px 2px;
+}
+div.electionResultCol1 {
+    display: inline-block;
+    width: 150px;
+}
+div.electionResultCol2 {
+    display: inline-block;
+    width: 50px;
+    text-align: right;
+}
+div.electionResultCol3 {
+    display: inline-block;
+    background-color: #0091c1;
+}
+div.electionResultCol3Hdr {
+    display: inline-block;
+    width: 300px;
+}
+div.electionSeparator {
+    display: inline-block;
+    background-color: red;
+    height: 2px;
+    width: 510px;
+}
+tr.electionError {
+    background-color: #ffb6b6;
+}
+
+div#eventCarousel div.carousel-inner div.carousel-item img {
+   border-radius: 15px;
+}
+div.eventCarouselCaption {
+    top: 20px;
+    color: red;
+}
+div.eventCarouselCaption div.info {
+    background: rgba(255,255,255,0.8);
+    border-radius: 15px;
+    padding: 0.5rem;
+}
+div.eventCarouselBadge {
+    background: rgba(0,0,255,0.4);
+    display: block;
+    right: 30%;
+    left: 30%;
+    padding: 2px 2px 2px 2px;
+    border-radius: 5px;
+}
+div.eventCarouselRegBadge {
+    bottom: 7rem;
+}
+div.eventCarouselCfpBadge {
+    bottom: 5rem;
+}
+div.eventCarouselCfsBadge {
+    bottom: 3rem;
+}
+
+.eventCarouselBadge a  {
+    text-decoration: none;
+    color: white;
+}
+
+h2 a, h3 a {
+    text-decoration: none;
+    color: #515151;
+}
+
+span.nobr {
+  white-space:nowrap;
+}
+
+small {
+  font-size: 0.85em;
+}
+
+div.newscontent h1,
+div.newscontent h2,
+div.newscontent h3,
+div.newscontent h4,
+div.newscontent h5,
+div.newscontent h6
+{
+  font-size: small;
+}
+
+dl.eventlist {
+   padding-left: 1em;
+}
+dl.eventlist dd {
+   padding-left: 1em;
+   margin-bottom: 1em;
+}

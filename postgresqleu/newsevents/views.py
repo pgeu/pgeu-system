@@ -8,3 +8,7 @@ def newsitem(request, itemid):
 	item = get_object_or_404(News, pk=itemid, datetime__lte=datetime.datetime.today())
 	news = News.objects.filter(datetime__lte=datetime.datetime.today())[:5]
 
+	return render(request, 'newsevents/news.html', {
+		'item': item,
+		'news': news,
+	})

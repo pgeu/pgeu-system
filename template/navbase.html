@@ -1,13 +1,15 @@
 {%extends "base.html"%}
-{%block layoutblock%}
-<div id="pgSideWrap">
- <div id="pgSideNav">
-  <ul>
+{%block maincontent%}
+      <div class="row">
+	<div class="col-md-2" id="sidenav">
+	  <h2>{%block navsection%}{%endblock%}</h2>
+	  <ul>
 {%block navblock%}{%endblock%}
-  </ul>
- </div>
-</div> <!-- pgSideWrap -->
-<div id="pgContentWrap">
- {%block content%}{%endblock%}
-</div> <!-- pgContentWrap -->
+	  </ul>
+	</div>
+{%block fullcontent%}
+	<div class="col-md-10 contentwrap">
+{%block content%}{%endblock%}
+	</div>
+{%endblock%}
 {%endblock%}

@@ -1,4 +1,4 @@
-{%extends "base.html" %}
+{%extends "nav_events.html" %}
 {%load markup%}
 {%block title%}Conference Benefit Claim - {{conference}}{%endblock%}
 {%block extrahead%}
@@ -12,7 +12,7 @@ div.benefitClaimPrompt {
 }
 </style>
 {%endblock%}
-{%block layoutblock%}
+{%block content%}
 <h1>Conference Benefit Claim - {{conference}}</h1>
 
 <h2>{{benefit}}</h2>
@@ -46,11 +46,10 @@ Please fill out this form to claim the benefit.
  </tr>
 {%endfor%}
 </table>
-<input type="submit" value="Claim!">
+<input type="submit" value="Claim!" class="btn btn-primary">
 </form>
 
-<p>
-<a href="../../">Back</a> to your list of sponsorship benefits.
-</p>
+<br/>
+<a href="../../" class="btn btn-outline-dark">Back to your list of sponsorship benefits</a>
 
 {%endblock%}

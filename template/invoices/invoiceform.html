@@ -1,6 +1,6 @@
-{%extends "base.html"%}
+{%extends "nav_financial.html"%}
 {%load util %}
-{%block title%}Invoice{%endblock%}
+{%block title%}Invoice administration{%endblock%}
 {%block extrahead%}
 <style>
 input[readonly="readonly"], textarea[readonly="readonly"] {
@@ -110,14 +110,14 @@ var vatmap = {
 };
 </script>
 {%endblock%}
-{%block layoutblock%}
+{%block content %}
 {%if invoice.id%}
 <h1>Invoice #{{invoice.id}}</h1>
 {%else%}
 <h1>New invoice</h1>
 {%endif%}
 
-<a href="/invoiceadmin/">Back</a>
+<a href="/invoiceadmin/" class="btn btn-outline-dark">Back</a>
 
 {% if messages %}
     <ul class="messages">
@@ -131,10 +131,7 @@ var vatmap = {
 <p>
 This invoice has been finalized and can no longer be edited.
 </p>
-<p>
-<a href="/invoices/{{invoice.id}}/">View</a> what it looks like to the
-recipient.
-</p>
+<a href="/invoices/{{invoice.id}}/" class="btn btn-outline-dark">View as recipient</a>
 {%endif%}
 
 {%if invoice.deleted%}
@@ -172,7 +169,7 @@ This invoice has been <b>paid</b>.
 {%else%}
 <p>This invoice was manually flagged as paid.</p>
 {%endif%}
-<p>This invoice can be <a href="refund/">refunded</a>.</p>
+<a href="refund/" class="btn btn-outline-dark">Refund invoice</a>
 {%else%}{# paid#}
 {%if invoice.finalized%}
 <p>
@@ -185,7 +182,7 @@ also be tagged with your userid <i>{{user.username}}</i>.
 </p>
 <form method="post" action="flag/">{% csrf_token %}
  Reason: <input type="text" name="reason" />
- <input type="submit" name="submit" value="Flag invoice as paid"/>
+ <input type="submit" name="submit" value="Flag invoice as paid" class="btn btn-outline-dark"/>
 </form>
 {%endif%}
 {%endif%}
@@ -241,15 +238,15 @@ also be tagged with your userid <i>{{user.username}}</i>.
 {%endfor%}
 </table>
 {%if not invoice.deleted and not invoice.ispaid%}
-<input type="submit" name="submit" value="Save" />
+<input type="submit" name="submit" value="Save" class="btn btn-primary" />
 <br/>
 {%if invoice.pk%}
 {%if not invoice.finalized%}
-<input type="submit" name="submit" value="Finalize" /> (Note! Finalizing will lock this invoice from further editing!)
+<input type="submit" name="submit" value="Finalize" class="btn btn-outline-dark" /> (Note! Finalizing will lock this invoice from further editing!)
 <br/>
-<input type="submit" name="submit" value="Preview" /> (Note! Saves before preview!)
+<input type="submit" name="submit" value="Preview" class="btn btn-outline-dark" /> (Note! Saves before preview!)
 <br/>
-<input type="submit" name="submit" value="Delete" onclick="return confirm_reallydelete()"/> (Note! Actually deletets. To flag-as-deleted, first finalize the invoice)
+<input type="submit" name="submit" value="Delete" onclick="return confirm_reallydelete()" class="btn btn-outline-dark"/> (Note! Actually deletets. To flag-as-deleted, first finalize the invoice)
 {%endif%}
 {%endif%}
 {%endif%}
@@ -261,7 +258,7 @@ also be tagged with your userid <i>{{user.username}}</i>.
 {%if invoice.isexpired%}
  <option value="reminder">Reminder</optino>
 {%endif%}
-</select> <button onclick="sendEmail()">Send email</button><br/>
+</select> <button onclick="sendEmail()" class="btn btn-outline-dark">Send email</button><br/>
 {%endif%}
 
 {%if invoice.finalized and not invoice.ispaid %}
@@ -269,7 +266,7 @@ also be tagged with your userid <i>{{user.username}}</i>.
 <h2>Invoice cancellation</h2>
 <form method="post" action="cancel/">{% csrf_token %}
  Reason: <input type="text" name="reason" />
- <input type="submit" name="submit" value="Cancel invoice" onclick="return confirm_delete()" />
+ <input type="submit" name="submit" value="Cancel invoice" onclick="return confirm_delete()" class="btn btn-outline-dark"/>
  <br/>
  <p><b>Note!</b> The reason given is included in the cancellation notice to the end user!</p>
 </form>
@@ -278,7 +275,7 @@ also be tagged with your userid <i>{{user.username}}</i>.
 <p>
 This invoice will be automatically canceled at {{invoice.canceltime}}.
 </p>
-<button onclick="extendCancel()">Extend by 5 days</button><br/>
+<button onclick="extendCancel()" class="btn btn-outline-dark">Extend by 5 days</button><br/>
 {%endif%}
 {%endif%}
 
@@ -300,6 +297,6 @@ The following events have occured throughout the life of this invoice:
 </table>
 
 <br/>
-<a href="/invoiceadmin/">Back</a>
+<a href="/invoiceadmin/" class="btn btn-outline-dark">Back</a>
 
 {%endblock%}

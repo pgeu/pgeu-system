@@ -1,4 +1,4 @@
-{%extends "base.html" %}
+{%extends "nav_events.html" %}
 {%load markup%}
 {%block title%}Purchase discount code - {{conference}}{%endblock%}
 {%block extrahead%}
@@ -14,7 +14,7 @@ input#id_code {
 }
 </style>
 {%endblock%}
-{%block layoutblock%}
+{%block content%}
 <h1>Purchase discount code - {{conference}}</h1>
 <p>
 On this page you can purchase a discount code for {{conference}}.
@@ -63,7 +63,7 @@ the code only to attendees of a specific training session.
  </tr>
 {%endfor%}
 </table>
-<input type="submit" value="Purchase!">
+<input type="submit" value="Purchase!" class="btn btn-primary">
 </form>
 
 

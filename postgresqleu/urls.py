@@ -16,6 +16,7 @@ import postgresqleu.confreg.volsched
 import postgresqleu.confreg.docsviews
 import postgresqleu.confwiki.views
 import postgresqleu.membership.views
+import postgresqleu.account.views
 import postgresqleu.elections.views
 import postgresqleu.invoicemgr.views
 import postgresqleu.invoices.views
@@ -25,6 +26,7 @@ import postgresqleu.adyen.views
 import postgresqleu.accountinfo.views
 
 from postgresqleu.newsevents.feeds import LatestNews
+from postgresqleu.confreg.feeds import LatestEvents
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
@@ -32,8 +34,13 @@ admin.autodiscover()
 
 
 urlpatterns = [
-	# Frontpage
+	# Frontpage and section headers
 	url(r'^$', postgresqleu.views.index),
+	url(r'^events/$', postgresqleu.views.eventsindex),
+	url(r'^events/past/$', postgresqleu.views.pastevents),
+	url(r'^(events/services)/$', postgresqleu.static.views.static_fallback),
+	url(r'^events/series/[^/]+-(\d+)/$', postgresqleu.views.eventseries),
+	url(r'news/[^/]+-(\d+)/$', postgresqleu.newsevents.views.newsitem),
 
 	# Log in/log out
 	url(r'^login/?$', postgresqleu.auth.login),
@@ -45,8 +52,8 @@ urlpatterns = [
 	# Feeds
 	url(r'^feeds/news/$', LatestNews()),
 
-	# Conference registration
-	url(r'^events/(?P<confname>[^/]+)/register/(?P<whatfor>(self)/)?$', postgresqleu.confreg.views.home),
+	# Conference management
+	url(r'^events/(?P<confname>[^/]+)/register/(?P<whatfor>(self)/)?$', postgresqleu.confreg.views.register),
 	url(r'^events/(?P<confname>[^/]+)/register/other/(?P<regid>(\d+)/)?$', postgresqleu.confreg.views.multireg),
 	url(r'^events/(?P<confname>[^/]+)/register/other/newinvoice/$', postgresqleu.confreg.views.multireg_newinvoice),
 	url(r'^events/(?P<confname>[^/]+)/register/other/b(?P<bulkid>(\d+))/$', postgresqleu.confreg.views.multireg_bulkview),
@@ -192,6 +199,9 @@ urlpatterns = [
 	url(r'^membership/meetingcode/$', postgresqleu.membership.views.meetingcode),
 	url(r'^community/members/$', postgresqleu.membership.views.userlist),
 	url(r'^admin/membership/_email/$', postgresqleu.membership.views.admin_email),
+
+	# Accounts
+	url(r'^account/$', postgresqleu.account.views.home),
 
 	# Elections
 	url(r'^elections/$', postgresqleu.elections.views.home),

@@ -1,0 +1,31 @@
+{%extends "nav_account.html"%}
+{%block title%}Your account{%endblock%}
+{%block content%}
+<h1>Your Account</h1>
+<p>
+  This page collects important information about your account on this website.
+</p>
+<h3>Your invoices and receipts</h3>
+<p>
+  If you have ever had any financial interactions with us, you can
+  view all your <a href="/invoices/">past invoices</a> and their
+  receipts.
+</p>
+
+{%if member%}
+<h3>Your membership</h3>
+<p>
+  Since you are a member of PostgreSQL Europe, you can view the details of your
+  <a href="/membership/">your membership</a>, including participating
+  in meetings and elections.
+</p>
+{%else%}
+<h3>Become a member</h3>
+<p>
+  You are not currently a member of PostgreSQL Europe. Membership is
+  completely voluntary, but if you want to participate in the
+  organisation of advocacy around Europe, we encourage you
+  to <a href="/membership/">join</a>.
+</p>
+{%endif%}
+{%endblock%}

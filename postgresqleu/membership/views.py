@@ -41,7 +41,7 @@ def home(request):
 	except Member.DoesNotExist:
 		# No record yet, so we create one. Base the information on whatever we
 		# have already.
-		member = Member(user=request.user, fullname=request.user.first_name)
+		member = Member(user=request.user, fullname=u"{0} {1}".format(request.user.first_name, request.user.last_name))
 		registration_complete = False
 
 	if request.method == "POST":

@@ -1,51 +1,60 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" dir="ltr">
- <head>
-  <title>{%block title%}{%endblock%} - PostgreSQL Europe</title>
-  <meta http-equiv="Content-Type" content="text/xhtml; charset=utf-8" />
-  <link rel="shortcut icon" href="/favicon.ico" />
-  <style type="text/css" media="screen" title="Normal Text">@import url("/media/css/base.css");</style>
-  <style type="text/css" media="screen" title="Normal Text">@import url("/media/css/geckofixes.css");</style>
-{%block extrahead%}{%endblock%}
- </head>
- <body>
-  <div id="pgContainerWrap">
-   <div id="pgContainer">
-    <div id="pgHeaderContainer">
-	 <div id="pgHeader">
-	  <div id="pgHeaderLogoLeft">
-	   <a href="https://www.postgresql.eu/"><img alt="PostgreSQL Europe" height="80" width="230" src="/media/img/layout/hdr_left.png" /></a>
-	  </div>
-	  <div id="pgHeaderLogoRight">
-	   <a href="/"><img width="210" height="80" alt="PostgreSQL Europe" src="/media/img/layout/hdr_right.png" /></a>
-	  </div>
-	 </div> <!-- pgHeader -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-	 <div id="pgTopNav">
-	  <div id="pgTopNavLeft"><img width="7" height="23" alt="" src="/media/img/layout/nav_lft.png" /></div>
-	  <div id="pgTopNavRight"><img width="7" height="23" alt="" src="/media/img/layout/nav_rgt.png" /></div>
-	  <ul id="pgTopNavList">
-	   <li><a href="/" title="Home">Home</a></li>
-	   <li><a href="/about" title="About">About</a></li>
-	   <li><a href="/events" title="Events">Events</a></li>
-	   <li><a href="/community" title="Community">Community</a></li>
-	   <li><a href="/donate" title="Donate">Donate</a></li>
-	   <li><a href="/merchandise" title="Merchandise">Merchandise</a></li>
-	   <li><a href="/membership" title="Your membership">Your membership</a></li>
-	  </ul>
-	 </div> <!-- pgTopNav -->
-	</div> <!-- pgHeaderContainer -->
-	<div id="pgContent">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="/media/css/font-awesome.css">
+
+    <link rel="stylesheet" href="/media/css/pgeu.css">
+
+    <title>{%block title%}{%endblock%} - PostgreSQL Europe</title>
+{%block extrahead%}{%endblock%}
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row justify-content-md-center">
+         <div class="col">
+           <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light">
+             <a class="navbar-brand p-0" href="/">
+               <img class="logo" src="/media/img/pgeu_logo_small.png" alt="PostgreSQL Elephant Logo">
+             </a>
+             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#pgNavbar" aria-controls="pgNavbar" aria-expanded="false" aria-label="Toggle navigation">
+               <span class="navbar-toggler-icon"></span>
+             </button>
+             <div class="collapse navbar-collapse" id="pgNavbar">
+               <ul class="navbar-nav mr-auto">
+                 <li class="nav-item p-2"><a href="/" title="Home">Home</a></li>
+                 <li class="nav-item p-2"><a href="/about/" title="About">About</a></li>
+                 <li class="nav-item p-2"><a href="/events/" title="Events">Events</a></li>
+                 <li class="nav-item p-2"><a href="/community/" title="Community">Community</a></li>
+		 <li class="nav-item p-2"><a href="/financial/" title="Financial">Financial</a></li>
+		 <li class="nav-item p-2"><a href="/membership/" title="Your membership">Your membership</a></li>
+                 <li class="nav-item p-2"><a href="/account/" title="Your account">Your account</a></li>
+               </ul>
+             </div> <!-- pgNavBar -->
+	   </nav>
+         </div> <!-- col -->
+      </div> <!-- row -->
+      <div class="row">
+	<div class="col-lg-7 offset-2 contentwrap">
 {%block content%}{%endblock%}
-     <br class="pgClearBoth" />
-    </div> <!-- pgContent -->
-	<div id="pgFooter">
-         <a class="navFooter" href="/about/privacypolicy">Privacy Policy</a> |
-         <a class="navFooter" href="/about/website">About the website</a><br/>
-	 Copyright &copy; 2008-2017 PostgreSQL Europe
-	</div> <!-- pgFooter -->
-   </div>
-  </div> <!-- pgContainerWrap -->
- </body>
+	</div>
+      </div>
+    </div> <!-- container-fluid -->
+
+    <footer id="footer">
+      <div class="container">
+	<a href="/about/privacypolicy/">Privacy policy</a> | <a href="/about/contact/">Contact Us</a> | <a href="/about/trademarks/">Trademarks</a>
+	<br/>
+	Copyright © 2008-{{ now|datetimeformat("%Y") }} PostgreSQL Europe
+      </div>
+    </footer>
+
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  </body>
 </html>

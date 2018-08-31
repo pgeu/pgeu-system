@@ -1,0 +1,20 @@
+{%extends "nav_events.html"%}
+{%block title%}Past Events{%endblock%}
+{%block fullcontent%}
+<div class="col-md-7 contentwrap">
+<h1>Past Events</h1>
+{%include "events/compacteventlist.inc" with events=past%}
+</div>
+
+<div class="col-md-3" id="rightbar">
+    <h3>Upcoming events</h3>
+{%include "events/compacteventlist.inc"%}
+    <h3>Our Event series</h3>
+    <ul>
+{%for s in series%}
+<li><a href="/events/series/{{s.name|slugify}}-{{s.id}}/">{{s.name}}</a></li>
+{%endfor%}
+    </ul>
+  </div>
+</div>
+{%endblock%}

@@ -1,14 +1,13 @@
-{%extends "nav_membership.html"%}
+{%extends "nav_account.html"%}
 {%block title%}Meeting{%endblock%}
 {%block content%}
-<h1>Meeting</h1>
-
 <h2>{{meeting.name}}</h2>
-<p>
-<b>Date and time:</b> {{meeting.dateandtime|date:"Y-m-d H:i"}}<br/>
-<b>Your personal authentication key: </b><code>{{key.key}}</code><br/>
-<b>IRC network:</b> irc.freenode.net<br/>
-<b>Bot name:</b> {{meeting.botname}}<br/>
+<table class="table table-small">
+  <tr><th>Date and time:</th><td>{{meeting.dateandtime|date:"Y-m-d H:i"}}</td></tr>
+  <tr><th>Your personal authentication key:</th><td><code>{{key.key}}</code></td></tr>
+  <tr><th>IRC network:</th><td> irc.freenode.net</td></tr>
+  <tr><th>Bot name:</th><td> {{meeting.botname}}</td></tr>
+</table>
 </p>
 
 <h3>Joining this meeting</h3>
@@ -42,5 +41,7 @@ invite to the channel.
 Note that you will not be allowed to join the meeting unless you
 perform the knock step <i>before</i> the meeting begins!
 </p>
+
+<a href="../" class="btn btn-outline-dark">Return to list of meetings</a>
 
 {%endblock%}

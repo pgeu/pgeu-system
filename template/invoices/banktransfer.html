@@ -47,6 +47,6 @@ payment is nedeed repidly in order to confirm something, this is not a good
 choice of payment method.
 </p>
 
-<a href="{{returnurl}}">Return</a> to payment options.
+{%if returnurl%}<a href="{{returnurl}}" class="btn btn-outline-dark">Return to payment options</a>{%endif%}
 
 {%endblock%}

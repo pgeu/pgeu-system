@@ -1,6 +1,6 @@
-{%extends "base.html"%}
+{%extends "nav_financial.html"%}
 {%load humanize%}
-{%block title%}Invoices{%endblock%}
+{%block title%}Invoice administration{%endblock%}
 {%block extrahead%}
 <style>
 tr.invoice-deleted {
@@ -18,8 +18,8 @@ ul.messages {
 }
 </style>
 {%endblock%}
-{%block layoutblock%}
-<h1>Invoices</h1>
+{%block content%}
+<h1>Invoice administration</h1>
 
 {% if messages %}
     <ul class="messages">
@@ -45,7 +45,7 @@ ul.messages {
 <input type="text" name="term" value="{{searchterm|default:""}}"><input type="submit" value="Search"/>
 </form>
 
-<table border="1" cellspacing="0" cellpadding="3">
+<table class="table table-sm">
 <tr>
  <th>Num</th>
  <th>Title</th>

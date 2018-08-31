@@ -1,8 +1,6 @@
-{%extends "nav_membership.html"%}
+{%extends "nav_account.html"%}
 {%block title%}Elections{%endblock%}
 {%block content%}
-<h1>Elections</h1>
-
 <h2>Your votes - {{election.name}}</h2>
 <p>
 This is a list of the candidates you voted for in {{election.name}}, and what score
@@ -22,6 +20,6 @@ you gave them.
 {%endfor%}
 </table>
 
-<p><a href="../">Back</a></p>
+<a href="../" class="btn btn-outline-dark">Back</a>
 
 {%endblock%}

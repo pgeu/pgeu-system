@@ -1,0 +1,55 @@
+{%extends "nav_events.html"%}
+{%block title%}Events{%endblock%}
+{%block fullcontent%}
+<div class="col-md-7 contentwrap">
+<h1>Events</h1>
+    <p>
+      PostgreSQL Europe hosts and supports a large number of events
+      around Europe. Some of these are arranged by the core PostgreSQL
+      Europe team, and others are run by other teams around the area,
+      supported by PostgreSQL Europe in different ways.
+    </p>
+    <p>
+      If you are interested in hosting an event in Europe and would
+      like some help, please check out our section
+      on <a href="/event/services/">Event servies</a> to see in which
+      ways we can help you out!
+    </p>
+    <p>
+      As a PostgreSQL community organisation, <strong>all</strong>
+      PostgreSQL Europe hosted and supported events follow the PostgreSQL
+      <a href="https://www.postgresql.org/community/recognition/#conferences">Community
+	Conference Guidelines</a>, aimed at making sure there is a
+	fair treatment of all attendees, speakers and sponsors of the events.
+    </p>
+    <h2>Upcoming events</h2>
+    <p>
+      The following events are currently planned to be held in the
+      near future.
+    </p>
+    <h3>open for registration</h3>
+{%include "events/wideeventlist.inc" with events=regopen%}
+
+    <h3>open call for papers</h3>
+{%include "events/wideeventlist.inc" with events=cfpopen%}
+
+    <h3>open call for sponsors</h3>
+{%include "events/wideeventlist.inc" with exvents=cfsopen%}
+
+  <h2>Past events</h2>
+{%include "events/compacteventlist.inc" with events=past%}
+  <a class="btn btn-outline-dark" href="past/">More past events</a>
+</div>
+
+<div class="col-md-3" id="rightbar">
+    <h3>Upcoming events</h3>
+{%include "events/compacteventlist.inc"%}
+    <h3>Our Event series</h3>
+    <ul>
+{%for s in series%}
+<li><a href="/events/series/{{s.name|slugify}}-{{s.id}}/">{{s.name}}</a></li>
+{%endfor%}
+    </ul>
+  </div>
+</div>
+{%endblock%}

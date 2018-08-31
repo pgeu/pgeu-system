@@ -1,80 +1,103 @@
 {%extends "base.html" %}
 {%load markup%}
 {%block title%}Welcome{%endblock%}
-{%block layoutblock%}
-<div id="pgFrontRight">
- <div class="pgFrontBox">
-  <h1>Help us out!</h1>
-  <p>Help PostgreSQL Europe by <a href="/donate">donating</a>,
-  <a href="/events">organizing or sponsoring events</a> or just helping out
-  in the <a href="/community">community</a>.
-  </p>
- </div>
+{%block maincontent%}
+<div class="row">
+  <div class="col-md-7 offset-md-2">
+    <h1 class="text-center">PostgreSQL Europe</h1>
+    <p>
+      Welcome to PostgreSQL Europe, the "umbrella group" for PostgreSQL
+      User Groups in Europe and for users in regions that don't have a
+      local user group. Our goal is to promote the use of PostgreSQL
+      in Europe. We do this primarily by assisting local user groups
+      to promote the product locally through conferences and other
+      advocacy, as well as running European-wide conferences and other
+      activities.
+    </p>
 
- <div class="pgFrontBox">
-  <h1>Need help?</h1>
-  <p>Are you a local usergroup, and need help with something?
-  <a href="/about/contact">Contact us!</a></p>
- </div>
+{%if events%}
+    <h2 class="text-center">Upcoming events</h2>
+    <div id="eventCarousel" class="carousel slide col-md-10 offset-md-1" data-ride="carousel">
+      <ol class="carousel-indicators">
+{%for e in events%}
+	<li data-target="#eventCarousel" data-slide-to="{{forloop.counter0}}"{%if forloop.first%} class="active"{%endif%}></li>
+{%endfor%}
+      </ol>
+      <div class="carousel-inner">
+{%for event in events%}
+	<div class="carousel-item{%if forloop.first%} active{%endif%}">
+	  <img class="d-block w-100" src="{{event.promopicurl|default:"/media/img/default_event.jpg"}}" alt="{{event}}">
+	  <div class="carousel-caption eventCarouselCaption">
+	    <div class="info">
+	      <h3>{{event.conferencename}}</h3>
+	      <h4>{{event.conferencedatestr}}</h4>
+	      <h5>{{event.location}}</h5>
+	    </div>
+	  </div>
+{%if event.active%}
+	  <div class="carousel-caption eventCarouselBadge eventCarouselRegBadge d-none d-xl-block">
+	    <a href="/events/{{event.urlname}}/register/">Open for registration</a>
+	  </div>
+{%endif%}
+{%if event.callforpapersopen%}
+	  <div class="carousel-caption eventCarouselBadge eventCarouselCfpBadge d-none d-xl-block">
+	    <a href="/events/{{event.urlname}}/callforpapers/">Call for papers is open</a>
+	  </div>
+{%endif%}
+{%if event.callforsponsorsopen%}
+	  <div class="carousel-caption eventCarouselBadge eventCarouselCfsBadge d-none d-xl-block">
+	    <a href="/events/sponsor/signup/{{event.urlname}}/">Call for sponsors is open</a>
+	  </div>
+{%endif%}
+	</div>
+{%endfor%}
+      </div>
+      <a class="carousel-control-prev" href="#eventCarousel" role="button" data-slide="prev">
+	<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+	<span class="sr-only">Previous</span>
+      </a>
+      <a class="carousel-control-next" href="#eventCarousel" role="button" data-slide="next">
+	<span class="carousel-control-next-icon" aria-hidden="true"></span>
+	<span class="sr-only">Next</span>
+      </a>
+    </div> <!-- carousel -->
+{%endif%}
 
-{%comment%}
- <div class="pgFrontBox">
-  <h1>Upcoming events</h1>
-  <ul>
-  {%for event in events %}
-   <li><a href="/events/{{event.id}}">{{event.title}}</a></li>
-  {%endfor%}
-  </ul>
- </div>
-{%endcomment%}
-
- <div class="pgFrontBox">
-  <h1>Associated usergroups</h1>
-  <ul>
-   <li><a href="http://www.postgresql.fr">PostgreSQL FR</a></li>
-   <li><a href="http://www.pgug.de">PGUG.DE</a></li>
-   <li><a href="http://www.itpug.org">ITPUG</a></li>
-   <li><a href="http://www.postgrespaña.es">PostgreSQL ES</a></li>
-   <li><a href="http://www.meetup.com/PostgreSQL-User-Group-Paris/">Paris PUG</a></li>
-   <li><a href="http://www.swisspug.org/">Swiss PUG</a></li>
-  </ul>
- </div>
-
- <div class="pgFrontBox">
-  <h1>Related organisations</h1>
-  <ul>
-   <li><a href="https://www.postgresql.org">PostgreSQL.Org</a></li>
-   <li><a href="http://www.postgresql.us">PostgreSQL US</a></li>
-  </ul>
- </div>
-</div>
-
-<div id="pgFrontLeft">
- <div id="pgFrontWelcome" class="pgFrontBox">
-  <h1>Welcome to PostgreSQL Europe</h1>
-  <p>
-Welcome to PostgreSQL Europe, an "umbrella group" for PostgreSQL User Groups
-in Europe and for users in regions that don't have a local user group.
-Our goal is to promote the use of <a href="https://www.postgresql.org/">PostgreSQL</a>
-in Europe. We do this primarily by assisting local user groups to promote the
-product locally through conferences and other advocacy, as well as running
-European-wide conferences and other activities.
-  </p>
- </div>
-
- <div id="pgFrontNews" class="pgFrontBox">
-  <h1>Latest news</h1>
-  {%for newsitem in news %}
-  <div class="pgFrontNewsItem">
-   <h2>{{newsitem.title}}</h2>
-   <h3>{{newsitem.pretty_date}}</h3>
-    {%autoescape off%}
-    {{newsitem.summary|markdown}}
-    {%endautoescape%}
+    <div class="row" style="margin-top: 3em">
+      <div class="col-md-5 offset-md-1">
+	<h2 class="text-center">Latest news &nbsp;<a href="/feeds/news/"><i class="fa fa-rss"></i></a></h2>
+{%for n in news%}
+	<div class="{%if forloop.counter > 2%}d-none d-lg-block{%endif%}">
+	<h4 class="text-center">{{n.title}}</h4>
+	<div class="text-center small"><i class="fa fa-clock-o"></i> {{n.datetime|date:"Y-m-d"}}</div>
+	<div class="newscontent">
+	  {{n.summary|markdown|truncatewords_html:100}}
+	</div>
+	<a href="/news/{{n.title|slugify}}-{{n.id}}/" class="btn btn-primary btn-sm">Read more</a>
+	</div>
+{%endfor%}
+      </div>
+      <div class="col-md-5 d-none d-lg-block">
+	<h2 class="text-center">Latest tweets</h2>
+<a class="twitter-timeline" href="https://twitter.com/postgresqleu?ref_src=twsrc%5Etfw">Tweets by postgresqleu</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+      </div>
+    </div>
   </div>
-  {%endfor%}
- </div> <!-- pgFrontNews -->
 
-</div> <!-- pgFrontLeft -->
+  <div class="col-md-3" id="rightbar">
+    <h3>Upcoming events &nbsp; <a href="/feeds/events/"><i class="fa fa-rss"></i></a></h3>
+{%if events%}
+{%include "events/compacteventlist.inc"%}
+{%else%}
+    <p>There are currently no scheduled upcoming events.</p>
+{%endif%}
+    <h3>Our Event series</h3>
+    <ul>
+{%for s in series%}
+<li><a href="/events/series/{{s.name|slugify}}-{{s.id}}/">{{s.name}}</a></li>
+{%endfor%}
+    </ul>
+  </div>
+</div>
 {%endblock%}
 

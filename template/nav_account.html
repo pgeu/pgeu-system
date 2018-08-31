@@ -1,0 +1,13 @@
+{%extends "navbase.html"%}
+{%block navsection%}Your account{%endblock%}
+{%block navblock%}
+<li><a href="/invoices">Invoices</a></li>
+{%if member%}
+</ul>
+<h2>Membership</h2>
+<ul>
+<li><a href="/membership/">Membership</a></li>
+<li><a href="/elections/">Elections</a></li>
+<li><a href="/membership/meetings/">Meetings</a></li>
+{%endif%}
+{%endblock%}

@@ -1,4 +1,4 @@
-{%extends "base.html" %}
+{%extends "nav_events.html" %}
 {%block title%}Conference Sponsorship Signup - {{conference}}{%endblock%}
 {%block extrahead%}
 <style>
@@ -7,7 +7,7 @@ tr.error {
 }
 </style>
 {%endblock%}
-{%block layoutblock%}
+{%block content%}
 <h1>Conference Sponsorship Signup - {{conference}}</h1>
 <p>
 Thank you for your interest in sponsoring {{conference}}! Please fill out the
@@ -56,7 +56,11 @@ instructions.
 </p>
 {%endif%}
 
-<input type="submit" value="Sign up!">
+<input type="submit" value="Sign up!" class="btn btn-primary">
 </form>
+
+<br/>
+
+<a href="../" class="btn btn-outline-dark">Back to level list</a>
 
 {%endblock%}

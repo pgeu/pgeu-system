@@ -1,4 +1,4 @@
-{%extends "base.html" %}
+{%extends "nav_events.html" %}
 {%load markup%}
 {%block title%}Purchase attendee vouchers - {{conference}}{%endblock%}
 {%block extrahead%}
@@ -8,7 +8,7 @@ tr.error {
 }
 </style>
 {%endblock%}
-{%block layoutblock%}
+{%block content%}
 <h1>Purchase attendee vouchers - {{conference}}</h1>
 <p>
 On this page you can purchase a number of attendee vouchers.
@@ -39,7 +39,7 @@ has been paid.
 <p>
 Note that unused vouchers are <i>not</i> refunded!
 </p>
-<input type="submit" value="Purchase!">
+<input type="submit" value="Purchase!" class="btn btn-primary">
 </form>
 
 

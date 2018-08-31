@@ -1,4 +1,4 @@
-{%extends "nav_membership.html"%}
+{%extends "nav_account.html"%}
 {%block title%}Membership{%endblock%}
 {%block content%}
 <h1>Your Membership</h1>
@@ -26,7 +26,7 @@ will not be valid even if it is fully paid.
 <p><b>Note! This form contains errors and has not been saved!</b></p>
 {% endif %}
 
- <fieldset id="personal_information">
+ <fieldset id="personal_information" class="form-group">
    <legend>Personal information</legend>
       <div{% if form.fullname.errors %} class="errfld"{% endif %}>
        {{ form.fullname.label_tag }} <br/>
@@ -45,7 +45,7 @@ will not be valid even if it is fully paid.
   </fieldset>
 
 {%if registration_complete%}
-  <fieldset id="membership_status">
+  <fieldset id="membership_status" class="form-group">
    <legend>Membership Status</legend>
 <div id="membershipinfo">
 {%if member.membersince %}
@@ -80,15 +80,15 @@ up in this system.
   </fieldset>
 {%endif%}{%comment%}registration_complete{%endcomment%}
 
- <input type="submit" name="submit" value="Save" />
+ <input type="submit" name="submit" value="Save" class="btn btn-primary"/>
 {%if member.expiressoon and not member.activeinvoice%}
- <input type="submit" name="submit" value="Generate invoice" />
+ <input type="submit" name="submit" value="Generate invoice" class="btn btn-info" />
 {%endif%}
 
 {%if logdata%}
-<fieldset id="logdata">
+<fieldset id="logdata" class="form-group">
  <legend>Membership activity</legend>
- <table border="0" cellspacing="0" cellpadding="1">
+ <table class="table table-sm">
   {%for l in logdata%}
    <tr>
     <td>{{l.timestamp|date:"Y-m-d H:i"}}&nbsp;&nbsp;</td>

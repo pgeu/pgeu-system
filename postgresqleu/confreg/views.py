@@ -170,7 +170,7 @@ def confhome(request, confname):
 
 @login_required
 @transaction.atomic
-def home(request, confname, whatfor=None):
+def register(request, confname, whatfor=None):
 	conference = get_object_or_404(Conference, urlname=confname)
 	if whatfor:
 		whatfor = whatfor.rstrip('/')

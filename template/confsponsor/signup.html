@@ -1,28 +1,9 @@
-{%extends "base.html" %}
+{%extends "nav_events.html" %}
 {%load markup%}
 {%block title%}Conference Sponsorship Signup - {{conference}}{%endblock%}
-{%block extrahead%}
-<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
-<script type="text/javascript" src="/media/jq/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/media/jq/jquery-ui.min.js"></script>
-<script type="text/javascript">
-  $(function() {
-    $(".benefit_list").accordion({
-      collapsible: true,
-      active: false,
-      animate: false,
-    });
-    $(".btn").button();
-  });
-</script>
-<style>
-div.benefit_list div {
-   height: auto !important;
-}
-</style>
-{%endblock%}
-{%block layoutblock%}
-<h1>Conference Sponsorship Signup - {{conference}}</h1>
+{%block content%}
+<h1>{{conference}}</h1>
+<h2>Conference Sponsorship Signup</h2>
 <p>
 On this page you can sign up as a sponsor of {{conference}}. If you have any questions
 or comments at all, please <a href="mailto:{{conference.sponsoraddr}}">contact</a> the
@@ -59,10 +40,20 @@ The following sponsorship levels are available for this conference:
 <p>
 The following benefits are available at this level (click for details):
 </p>
-<div class="benefit_list">
+<div id="levelset_{{level.id}}">
 {%for b in level.sponsorshipbenefit_set.all %}
- <h2>{{b}}</h2>
- <div>{{b.benefitdescription|markdown}}</div>
+ <div class="card">
+   <div class="card-header" id="levelset_h_{{b.id}}">
+     <h5 class="mb-0">
+       <button class="btn btn-link" data-toggle="collapse" data-target="#levelset_b_{{b.id}}" aria-expanded="false" aria-controls="levelset_b_{{b.id}}">{{b}}</a>
+     </h5>
+   </div>
+   <div id="levelset_b_{{b.id}}" class="collapse" aria-labelledby="levelset_h_{{b.id}}" data-parent="levelset_{{level.id}}">
+     <div class="card-body">
+       {{b.benefitdescription|markdown}}
+     </div>
+   </div>
+ </div>
 {%endfor%}
 </div>
 <p>
@@ -76,7 +67,7 @@ If there is a difference, the version listed in the contract takes precedence.
 </p>
 {%endif%}
 {%if level.available%}
-<p><a class="btn" href="{{level.urlname}}/">Sign Up</a></p>
+<p><a class="btn btn-primary" href="{{level.urlname}}/">Sign Up</a></p>
 {%else%}
 <p><i>This level is not currently available for signup.</i></p>
 {%endif%}
@@ -84,4 +75,5 @@ If there is a difference, the version listed in the contract takes precedence.
 <hr/>
 {%endfor%}
 
+<a href="/events/sponsor/" class="btn btn-outline-dark">Back to sponsor event list</a>
 {%endblock%}

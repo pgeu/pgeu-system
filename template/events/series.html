@@ -1,0 +1,16 @@
+{%extends "nav_events.html"%}
+{%load markup%}
+{%block title%}Events - {{series}}{%endblock%}
+{%block content%}
+<h1>{{series}}</h1>
+{{series.intro|markdown}}
+
+{%if upcoming%}
+<h2>Upcoming events in {{series}}</h2>
+{%include "events/wideeventlist.inc" with events=upcoming%}
+{%endif%}
+
+{%if past%}
+{%include "events/series_event.inc" with l=past title="Past"%}
+{%endif%}
+{%endblock%}

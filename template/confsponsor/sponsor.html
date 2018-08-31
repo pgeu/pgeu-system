@@ -1,27 +1,7 @@
-{%extends "base.html" %}
+{%extends "nav_events.html" %}
 {%load markup%}
 {%block title%}Conference Sponsorship - {{sponsor.conference}}{%endblock%}
-{%block extrahead%}
-<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
-<script type="text/javascript" src="/media/jq/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/media/jq/jquery-ui.min.js"></script>
-<script type="text/javascript">
-  $(function() {
-    $(".benefit_list").accordion({
-      collapsible: true,
-      active: false,
-      animate: false,
-    });
-    $(".btn").button();
-  });
-</script>
-<style>
-div.benefit_list div {
-   height: auto !important;
-}
-</style>
-{%endblock%}
-{%block layoutblock%}
+{%block content%}
 <h1>Conference Sponsorship - {{sponsor.conference}}</h1>
 <p></p>
 {% if messages %}
@@ -31,7 +11,7 @@ div.benefit_list div {
     {% endfor %}
 </ul>
 {% endif %}
-<table border="0" cellspacing="4" cellpadding="0">
+<table class="table table-sm">
   <tr>
     <th>Sponsor:</th>
     <td>{{sponsor.name}}</td>
@@ -93,13 +73,21 @@ Some of your sponsorship benefits requires a specific claiming to be used - eith
 we need to know if you want to use it, or because it requires further information from you.
 Click on the benefit in the list below to claim it:
 </p>
-<div class="benefit_list">
+<div id="unclaimedlist">
 {%for b in unclaimedbenefits%}
-<h2>{{b}}</h2>
-<div>
-  <p>{{b.benefitdescription|markdown}}</p>
-  <a class="btn" href="claim/{{b.id}}/">Claim benefit</a>
-</div>
+ <div class="card">
+   <div class="card-header" id="unclaimed_h_{{b.id}}">
+     <h5 class="mb-0">
+       <button class="btn btn-link" data-toggle="collapse" data-target="#unclaimed_b_{{b.id}}" aria-expanded="false" aria-controls="unclaimed_b_{{b.id}}">{{b}}</a>
+     </h5>
+   </div>
+   <div id="unclaimed_b_{{b.id}}" class="collapse" aria-labelledby="unclaimed_h_{{b.id}}" data-parent="unclaimedlist">
+     <div class="card-body">
+       {{b.benefitdescription|markdown}}
+       <a class="btn btn-primary" href="claim/{{b.id}}/">Claim benefit</a>
+     </div>
+   </div>
+ </div>
 {%endfor%}
 </div>
 {%endif%}
@@ -109,22 +97,39 @@ Click on the benefit in the list below to claim it:
 <p>
 The following benefits have already been claimed:
 </p>
-<div class="benefit_list">
+<div id="claimedbenefits">
 {%for b in claimedbenefits%}
-<h2>{{b.benefit}}{%if not b.confirmed%} <i>(Not yet confirmed by the organizers)</i>{%endif%}{%if b.declined%} <b>(This benefit has been declined)</b>{%endif%}</h2>
-<div>
+ <div class="card">
+   <div class="card-header" id="claimed_h_{{b.id}}">
+     <h5 class="mb-0">
+       <button class="btn btn-link" data-toggle="collapse" data-target="#claimed_b_{{b.id}}" aria-expanded="false" aria-controls="claimed_b_{{b.id}}">{{b.benefit}}{%if not b.confirmed%} <i>(Not yet confirmed by the organizers)</i>{%endif%}{%if b.declined%} <b>(This benefit has been declined)</b>{%endif%}</a>
+     </h5>
+   </div>
+   <div id="claimed_b_{{b.id}}" class="collapse" aria-labelledby="claimed_h_{{b.id}}" data-parent="claimedlist">
+     <div class="card-body">
   {{b.declined|yesno:"Declined,Claimed"}} by <i>{{b.claimedby}}</i> on <i>{{b.claimedat}}</i><br/>
   <p>{{b.benefit.benefitdescription|markdown}}</p>
 {%if b.claimhtml%}
   <div style="border: 1px solid black">{{b.claimhtml|safe}}</div>
 {%endif%}
-</div>
+     </div>
+   </div>
+ </div>
 {%endfor%}
+
 {%for b in noclaimbenefits%}
-<h2>{{b}}</h2>
-<div>
-{{b.benefitdescription|markdown}}
-</div>
+ <div class="card">
+   <div class="card-header" id="unclaimed_h_{{b.id}}">
+     <h5 class="mb-0">
+       <button class="btn btn-link" data-toggle="collapse" data-target="#unclaimed_b_{{b.id}}" aria-expanded="false" aria-controls="unclaimed_b_{{b.id}}">{{b}}</button>
+     </h5>
+   </div>
+   <div id="unclaimed_b_{{b.id}}" class="collapse" aria-labelledby="unclaimed_h_{{b.id}}" data-parent="unclaimedlist">
+     <div class="card-body">
+       {{b.benefitdescription|markdown}}
+     </div>
+   </div>
+ </div>
 {%endfor%}
 </div>
 {%endif%}
@@ -153,7 +158,7 @@ will be paid for by the attendee. A single voucher can only be used
 by one attendee.
 </p>
 {%if vouchers%}
-<table>
+<table class="table">
  <tr>
   <th>Code</th>
   <th>Used by</th>
@@ -183,9 +188,7 @@ this page.
 {%endif%}
 {%if sponsor.level.canbuyvoucher%}
 <h3>Purchase vouchers</h3>
-<p>
-<a href="purchase/voucher/">Purchase</a> one or more vouchers.
-</p>
+  <a href="purchase/voucher/" class="btn btn-primary">Purchase one or more vouchers</a>
 <p>
 Note that if your sponsorship includes free entries, you only need to
 purchase vouchers if you want more than those included. To enable the
@@ -210,7 +213,7 @@ be invoiced to you once the code is used.
 </p>
 
 {%if discountcodes%}
-<table>
+<table class="table">
  <tr>
    <th>Code</th>
    <th>Status</th>
@@ -237,9 +240,7 @@ be invoiced to you once the code is used.
 {%endif%}
 
 {%if sponsor.level.canbuydiscountcode%}
-<p>
-<a href="purchase/discountcode/">Purchase</a> a discount code.
-</p>
+  <a href="purchase/discountcode/" class="btn btn-primary">Purchase a discount code</a>
 {%endif%}
 {%endif%}{%comment%}canbuydiscountcode or discountcodes{%endcomment%}
 
@@ -265,15 +266,16 @@ must already have a PostgreSQL community account and have logged in once.
 <p>Add manager:</p>
 <form method="post" action="managers/add/">{% csrf_token %}
 Email: <input type="text" name="email">
-<input type="submit" value="Add manager">
+<input type="submit" value="Add manager" class="btn btn-primary">
 </form>
 {%endif%}{%comment%}confirmed sponsorship{%endcomment%}
 
 <p>
+<br/>
 {%if is_admin%}
-<a href="/events/sponsor/admin/{{sponsor.conference.urlname}}/{{sponsor.id}}/">Return</a> to the sponsorship administration.
+<a href="/events/sponsor/admin/{{sponsor.conference.urlname}}/{{sponsor.id}}/" class="btn btn-outline-dark">Return to the sponsorship administration</a>
 {%else%}
-<a href="../">Return</a> to your sponsorship overview.
+<a href="../" class="btn btn-outline-dark">Return to your sponsorship overview</a>
 {%endif%}
 </p>
 {%endblock%}

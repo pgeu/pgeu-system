@@ -1,4 +1,4 @@
-{%extends "base.html"%}
+{%extends "nav_financial.html"%}
 {%block title%}Invoice Refund{%endblock%}
 {%block extrahead%}
 <style>
@@ -13,7 +13,7 @@ ul.messages {
 }
 </style>
 {%endblock%}
-{%block layoutblock%}
+{%block content%}
 <h1>Refund of invoice #{{invoice.id}}</h1>
 {%if invoice.can_autorefund%}
 <p>
