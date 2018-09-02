@@ -1,16 +1,14 @@
 # Index has a very special view that lives out here
 from django.shortcuts import render
 
-from postgresqleu.newsevents.models import News, Event
+from postgresqleu.newsevents.models import News
 
 import datetime
 
 # Handle the frontpage
 def index(request):
-	events = Event.objects.filter(startdate__gte=datetime.datetime.today())[:5]
 	news = News.objects.filter(datetime__lte=datetime.datetime.today())[:5]
 	return render(request, 'index.html', {
-		'events': events,
 		'news': news,
 	})
 
