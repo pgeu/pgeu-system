@@ -1,24 +1,10 @@
 from django.shortcuts import render, get_object_or_404
 
-from postgresqleu.newsevents.models import Event
-
 import datetime
 
-def eventlist(request):
-	events = Event.objects.filter(startdate__gte=datetime.datetime.today())
-	return render(request, 'pages/events.html', {
-		"events": events,
-	})
-	
-def event(request, eventid):
-	event = get_object_or_404(Event, id=eventid)
-	return render(request, 'pages/singleevent.html', {
-		"obj": event,
-	})
-	
-def eventarchive(request):
-	events = Event.objects.filter(startdate__lte=datetime.datetime.today())
-	return render(request, 'pages/eventarchive.html', {
-		"events": events,
-	})
+from postgresqleu.newsevents.models import News
+
+def newsitem(request, itemid):
+	item = get_object_or_404(News, pk=itemid, datetime__lte=datetime.datetime.today())
+	news = News.objects.filter(datetime__lte=datetime.datetime.today())[:5]
 
