@@ -24,7 +24,7 @@ import postgresqleu.paypal.views
 import postgresqleu.adyen.views
 import postgresqleu.accountinfo.views
 
-from postgresqleu.newsevents.feeds import LatestNews, LatestEvents
+from postgresqleu.newsevents.feeds import LatestNews
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
@@ -42,14 +42,8 @@ urlpatterns = [
 	url(r'^accounts/logout/$', postgresqleu.auth.logout),
 	url(r'^auth_receive/$', postgresqleu.auth.auth_receive),
 
-	# News & Events
-	url(r'^events$', postgresqleu.newsevents.views.eventlist),
-	url(r'^events/(\d+)$', postgresqleu.newsevents.views.event),
-	url(r'^events/archive$', postgresqleu.newsevents.views.eventarchive),
-
 	# Feeds
 	url(r'^feeds/news/$', LatestNews()),
-	url(r'^feeds/events/$', LatestEvents()),
 
 	# Conference registration
 	url(r'^events/(?P<confname>[^/]+)/register/(?P<whatfor>(self)/)?$', postgresqleu.confreg.views.home),
