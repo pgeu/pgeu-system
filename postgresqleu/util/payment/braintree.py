@@ -21,7 +21,7 @@ Mastercard, VISA and American Express.
 		m = self._re_braintree.match(invoice.paymentdetails)
 		if m:
 			try:
-				BraintreeTransaction.objects.get(transid=m.groups(1)[0])
+				return (BraintreeTransaction.objects.get(transid=m.groups(1)[0]), None)
 			except BraintreeTransaction.DoesNotExzist:
 				return (None, "not found")
 		else:
