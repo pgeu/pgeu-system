@@ -156,6 +156,7 @@ class BackendConferenceForm(BackendForm):
 		model = Conference
 		fields = ['active', 'callforpapersopen', 'callforsponsorsopen', 'feedbackopen',
 				  'conferencefeedbackopen', 'scheduleactive', 'sessionsactive', 'allowedit',
+				  'promoactive', 'promotext', 'promopicurl',
 				  'schedulewidth', 'pixelsperminute',
 				  'testers', 'talkvoters', 'staff', 'volunteers',
 				  'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'askphotoconsent',
@@ -173,6 +174,7 @@ class BackendConferenceForm(BackendForm):
 
 	fieldsets = [
 		{'id': 'base_info', 'legend': 'Basic information', 'fields': ['attendees_before_waitlist', 'invoice_autocancel_hours', 'sendwelcomemail', 'welcomemail', 'additionalintro']},
+		{'id': 'promo', 'legend': 'Website promotion', 'fields': ['promoactive', 'promotext', 'promopicurl']},
 		{'id': 'fields', 'legend': 'Registration fields', 'fields': [ 'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'askphotoconsent']},
 		{'id': 'steps', 'legend': 'Steps', 'fields': ['active', 'allowedit', 'callforpapersopen', 'callforsponsorsopen', 'scheduleactive', 'sessionsactive', 'conferencefeedbackopen', 'feedbackopen']},
 		{'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpapersintro']},
@@ -207,10 +209,10 @@ class BackendSuperConferenceForm(BackendForm):
 
 class BackendConferenceSeriesForm(BackendForm):
 	helplink = "series"
-	list_fields = ['name', ]
+	list_fields = ['name', 'sortkey', ]
 	class Meta:
 		model = ConferenceSeries
-		fields = ['name', ]
+		fields = ['name', 'sortkey', 'intro', ]
 
 class BackendRegistrationForm(BackendForm):
 	helplink = "registrations"

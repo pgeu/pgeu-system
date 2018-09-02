@@ -120,6 +120,21 @@ Additionalintro
 additional options. Typically introduces what the additional options
 are. Can contain markdown.
 
+Promotion active
+: Should this conference be listed in promotional parts of the website.
+Without this, the only way to access the conference information is to
+know the URL for it.
+
+Promotion text
+: Short text (supports markdown) with information about the conference,
+which is use din promotional pages on the main website.
+
+URL to promo picture
+: An URL pointing to a picture promoting this event, which will be
+used on the main website. If left blank a default (or random)
+picture will be used. Picture must have an aspect ratio of 2.3, but
+wil lotherwise be reasonably sized to fit the screen of the visitors.
+
 Field t-shirt
 : Should the field asking for t-shirt size be displayed on
 registration form. Only used if t-shirts are given out.

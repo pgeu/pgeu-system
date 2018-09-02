@@ -12,6 +12,7 @@ from django.contrib.postgres.fields import DateTimeRangeField
 
 from postgresqleu.util.validators import validate_lowercase
 from postgresqleu.util.validators import TwitterValidator
+from postgresqleu.util.validators import PictureUrlValidator
 from postgresqleu.util.forms import ChoiceArrayField
 
 from postgresqleu.confreg.dbimage import SpeakerImageStorage
@@ -70,9 +71,14 @@ def color_validator(value):
 
 class ConferenceSeries(models.Model):
 	name = models.CharField(max_length=64, blank=False, null=False)
+	sortkey = models.IntegerField(null=False, default=100)
+	intro = models.TextField(blank=True, null=False)
 
 	def __unicode__(self):
 		return self.name
+
+	class Meta:
+		ordering = ('sortkey', 'name')
 
 class ConferenceSeriesOptOut(models.Model):
 	# Users opting out of communications about a specific conference
@@ -95,6 +101,9 @@ class Conference(models.Model):
 	startdate = models.DateField(blank=False, null=False, verbose_name="Start date")
 	enddate = models.DateField(blank=False, null=False, verbose_name="End date")
 	location = models.CharField(max_length=128, blank=False, null=False)
+	promoactive = models.BooleanField(default=False, verbose_name="Promotion active")
+	promopicurl = models.URLField(blank=True, null=False, verbose_name="URL to promo picture", validators=[PictureUrlValidator(aspect=2.3)])
+	promotext = models.TextField(null=False, blank=True, max_length=1000, verbose_name="Promotion text")
 	timediff = models.IntegerField(null=False, blank=False, default=0)
 	contactaddr = models.EmailField(blank=False,null=False, verbose_name="Contact address")
 	sponsoraddr = models.EmailField(blank=False,null=False, verbose_name="Sponsor address")
