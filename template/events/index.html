@@ -29,17 +29,17 @@
     </p>
 {%if regopen%}
     <h3>open for registration</h3>
-{%include "events/wideeventlist.inc" with events=regopen%}
+{%include "events/wideeventlist.inc" with events=regopen what="reg"%}
 {%endif%}
 
 {%if cfpopen%}
     <h3>open call for papers</h3>
-{%include "events/wideeventlist.inc" with events=cfpopen%}
+{%include "events/wideeventlist.inc" with events=cfpopen what="cfp"%}
 {%endif%}
 
 {%if cfsopen%}
     <h3>open call for sponsors</h3>
-{%include "events/wideeventlist.inc" with events=cfsopen%}
+{%include "events/wideeventlist.inc" with events=cfsopen what="cfs"%}
 {%endif%}
 
   <h2>Past events</h2>
