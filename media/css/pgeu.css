@@ -29,6 +29,41 @@ a {
     transition: color .2s ease-in-out;
 }
 
+#footer {
+  text-align: center;
+  padding: 5em 0 2em 0;
+  display: block;
+}
+
+div.contentwrap h2 {
+  font-size: 2em;
+  display: flex;
+  flex-direction: row;
+}
+
+div.contentwrap h2:after {
+    background-color: #e7eae8;
+    content: '\a0';
+    flex-grow: 1;
+    height: 2px;
+    position: relative;
+    margin: .5em 0 .5em .75em;
+}
+
+h2 a, h3 a {
+    text-decoration: none;
+    color: #515151;
+}
+
+span.nobr {
+  white-space:nowrap;
+}
+
+small {
+  font-size: 0.85em;
+}
+
+/* Navigation */
 .navbar {
   box-shadow: 0px 3px 15px rgba(0,0,0,0.2);
 }
@@ -39,12 +74,7 @@ a {
     margin-bottom: 0;
 }
 
-#footer {
-  text-align: center;
-  padding: 5em 0 2em 0;
-  display: block;
-}
-
+/* Left side navigtion */
 #sidenav {
   padding: 1em;
 }
@@ -64,20 +94,41 @@ a {
     margin: .5em 0 .5em .75em;
 }
 
-div.contentwrap h2 {
-  font-size: 2em;
-  display: flex;
-  flex-direction: row;
+/* Frontpage */
+div#eventCarousel div.carousel-inner div.carousel-item img {
+   border-radius: 15px;
 }
-div.contentwrap h2:after {
-    background-color: #e7eae8;
-    content: '\a0';
-    flex-grow: 1;
-    height: 2px;
-    position: relative;
-    margin: .5em 0 .5em .75em;
+div.eventCarouselCaption {
+    top: 20px;
+    color: red;
+}
+div.eventCarouselCaption div.info {
+    background: rgba(255,255,255,0.8);
+    border-radius: 15px;
+    padding: 0.5rem;
+}
+div.eventCarouselBadge {
+    background: rgba(0,0,255,0.4);
+    display: block;
+    right: 30%;
+    left: 30%;
+    padding: 2px 2px 2px 2px;
+    border-radius: 5px;
+}
+div.eventCarouselRegBadge {
+    bottom: 7rem;
+}
+div.eventCarouselCfpBadge {
+    bottom: 5rem;
+}
+div.eventCarouselCfsBadge {
+    bottom: 3rem;
 }
 
+.eventCarouselBadge a  {
+    text-decoration: none;
+    color: white;
+}
 
 /* Elections */
 div.electionResultRow {
@@ -114,54 +165,8 @@ tr.electionError {
     background-color: #ffb6b6;
 }
 
-div#eventCarousel div.carousel-inner div.carousel-item img {
-   border-radius: 15px;
-}
-div.eventCarouselCaption {
-    top: 20px;
-    color: red;
-}
-div.eventCarouselCaption div.info {
-    background: rgba(255,255,255,0.8);
-    border-radius: 15px;
-    padding: 0.5rem;
-}
-div.eventCarouselBadge {
-    background: rgba(0,0,255,0.4);
-    display: block;
-    right: 30%;
-    left: 30%;
-    padding: 2px 2px 2px 2px;
-    border-radius: 5px;
-}
-div.eventCarouselRegBadge {
-    bottom: 7rem;
-}
-div.eventCarouselCfpBadge {
-    bottom: 5rem;
-}
-div.eventCarouselCfsBadge {
-    bottom: 3rem;
-}
 
-.eventCarouselBadge a  {
-    text-decoration: none;
-    color: white;
-}
-
-h2 a, h3 a {
-    text-decoration: none;
-    color: #515151;
-}
-
-span.nobr {
-  white-space:nowrap;
-}
-
-small {
-  font-size: 0.85em;
-}
-
+/* News content (since we allow markdown) */
 div.newscontent h1,
 div.newscontent h2,
 div.newscontent h3,
@@ -172,6 +177,7 @@ div.newscontent h6
   font-size: small;
 }
 
+/* Event listings */
 dl.eventlist {
    padding-left: 1em;
 }
