@@ -27,14 +27,20 @@
       The following events are currently planned to be held in the
       near future.
     </p>
+{%if regopen%}
     <h3>open for registration</h3>
 {%include "events/wideeventlist.inc" with events=regopen%}
+{%endif%}
 
+{%if cfpopen%}
     <h3>open call for papers</h3>
 {%include "events/wideeventlist.inc" with events=cfpopen%}
+{%endif%}
 
+{%if cfsopen%}
     <h3>open call for sponsors</h3>
 {%include "events/wideeventlist.inc" with exvents=cfsopen%}
+{%endif%}
 
   <h2>Past events</h2>
 {%include "events/compacteventlist.inc" with events=past%}
