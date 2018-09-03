@@ -4,6 +4,9 @@
 #
 
 from django.conf import settings
+from django.utils.functional import SimpleLazyObject
+
+from postgresqleu.membership.models import Member
 
 def settings_context(request=None):
 	return {
@@ -24,3 +27,17 @@ def settings_context_unicode(request=None):
 		if isinstance(v, str):
 			c[k] = v.decode('utf8')
 	return c
+
+def member_context(request=None):
+	def _member():
+		if not request.user.is_authenticated():
+			return None
+
+		try:
+			return Member.objects.get(user=request.user)
+		except Member.DoesNotExist:
+			return None
+
+	return {
+		'member': SimpleLazyObject(_member),
+	}

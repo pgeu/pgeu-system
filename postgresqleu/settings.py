@@ -78,7 +78,7 @@ TEMPLATES = [{
 			'django.contrib.auth.context_processors.auth',
 			'django.contrib.messages.context_processors.messages',
 			'postgresqleu.util.context_processors.settings_context',
-
+			'postgresqleu.util.context_processors.member_context',
 		],
 		'loaders': [
 			'django.template.loaders.filesystem.Loader',
