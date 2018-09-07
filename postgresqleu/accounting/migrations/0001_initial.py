@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=100)),
                 ('foldable', models.BooleanField(default=False)),
-                ('accountclass', models.ForeignKey(default=False, to='accounting.AccountClass')),
+                ('accountclass', models.ForeignKey(default=False, to='accounting.AccountClass', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('name',),
@@ -54,7 +54,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('amount', models.DecimalField(max_digits=10, decimal_places=2, validators=[postgresqleu.accounting.models.nonzero_validator])),
-                ('account', models.ForeignKey(to='accounting.Account', to_field=b'num')),
+                ('account', models.ForeignKey(to='accounting.Account', to_field=b'num', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('year__pk', 'account'),
@@ -75,8 +75,8 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('amount', models.DecimalField(max_digits=10, decimal_places=2, validators=[postgresqleu.accounting.models.nonzero_validator])),
                 ('description', models.CharField(max_length=200)),
-                ('account', models.ForeignKey(to='accounting.Account', to_field=b'num')),
-                ('journal', models.ForeignKey(to='accounting.JournalEntry')),
+                ('account', models.ForeignKey(to='accounting.Account', to_field=b'num', on_delete=models.CASCADE)),
+                ('journal', models.ForeignKey(to='accounting.JournalEntry', on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -84,7 +84,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('url', models.URLField()),
-                ('journal', models.ForeignKey(to='accounting.JournalEntry')),
+                ('journal', models.ForeignKey(to='accounting.JournalEntry', on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -111,22 +111,22 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='journalitem',
             name='object',
-            field=models.ForeignKey(blank=True, to='accounting.Object', null=True),
+            field=models.ForeignKey(blank=True, to='accounting.Object', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='journalentry',
             name='year',
-            field=models.ForeignKey(to='accounting.Year'),
+            field=models.ForeignKey(to='accounting.Year', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='incomingbalance',
             name='year',
-            field=models.ForeignKey(to='accounting.Year'),
+            field=models.ForeignKey(to='accounting.Year', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='account',
             name='group',
-            field=models.ForeignKey(to='accounting.AccountGroup'),
+            field=models.ForeignKey(to='accounting.AccountGroup', on_delete=models.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='journalentry',

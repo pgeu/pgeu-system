@@ -44,17 +44,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='volunteerslot',
             name='conference',
-            field=models.ForeignKey(to='confreg.Conference'),
+            field=models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='volunteerassignment',
             name='reg',
-            field=models.ForeignKey(to='confreg.ConferenceRegistration'),
+            field=models.ForeignKey(to='confreg.ConferenceRegistration', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='volunteerassignment',
             name='slot',
-            field=models.ForeignKey(to='confreg.VolunteerSlot'),
+            field=models.ForeignKey(to='confreg.VolunteerSlot', on_delete=models.CASCADE),
         ),
 		migrations.RunSQL(
 			"CREATE INDEX confreg_volunteerslot_timerange_idx ON confreg_volunteerslot USING gist(timerange)",

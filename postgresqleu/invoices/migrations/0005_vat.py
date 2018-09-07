@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=100)),
                 ('shortname', models.CharField(max_length=16)),
                 ('vatpercent', models.IntegerField(default=0, verbose_name=b'VAT percentage', validators=[django.core.validators.MaxValueValidator(100), django.core.validators.MinValueValidator(0)])),
-                ('vataccount', models.ForeignKey(to='accounting.Account')),
+                ('vataccount', models.ForeignKey(to='accounting.Account', on_delete=models.CASCADE)),
             ],
         ),
         migrations.AddField(
@@ -41,6 +41,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='invoicerow',
             name='vatrate',
-            field=models.ForeignKey(to='invoices.VatRate', null=True),
+            field=models.ForeignKey(to='invoices.VatRate', null=True, on_delete=models.CASCADE),
         ),
     ]

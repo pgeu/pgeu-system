@@ -43,6 +43,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='invoice',
             name='paidusing',
-            field=models.ForeignKey(related_name='paidusing', verbose_name=b'Payment method actually used', blank=True, to='invoices.InvoicePaymentMethod', null=True),
+            field=models.ForeignKey(related_name='paidusing', verbose_name=b'Payment method actually used', blank=True, to='invoices.InvoicePaymentMethod', null=True, on_delete=models.CASCADE),
         ),
     ]

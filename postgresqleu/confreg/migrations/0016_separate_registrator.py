@@ -16,18 +16,18 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conferenceregistration',
             name='registrator',
-            field=models.ForeignKey(related_name='registrator', blank=True, null=True, to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(related_name='registrator', blank=True, null=True, to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
             preserve_default=False,
         ),
         migrations.AlterField(
             model_name='conferenceregistration',
             name='attendee',
-            field=models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True),
+            field=models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE),
         ),
 		migrations.RunSQL("UPDATE confreg_conferenceregistration SET registrator_id=attendee_id"),
 		migrations.AlterField(
             model_name='conferenceregistration',
             name='registrator',
-            field=models.ForeignKey(related_name='registrator', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(related_name='registrator', to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
 		),
     ]

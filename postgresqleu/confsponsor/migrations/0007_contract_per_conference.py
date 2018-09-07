@@ -15,12 +15,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='sponsorshipcontract',
             name='conference',
-            field=models.ForeignKey(to='confreg.Conference', null=True),
+            field=models.ForeignKey(to='confreg.Conference', null=True, on_delete=models.CASCADE),
         ),
         migrations.RunSQL("UPDATE confsponsor_sponsorshipcontract c SET conference_id=(SELECT conference_id FROM confsponsor_sponsorshiplevel l WHERE l.contract_id=c.id LIMIT 1)"),
         migrations.AlterField(
             model_name='sponsorshipcontract',
             name='conference',
-            field=models.ForeignKey(to='confreg.Conference', null=False),
+            field=models.ForeignKey(to='confreg.Conference', null=False, on_delete=models.CASCADE),
         ),
     ]

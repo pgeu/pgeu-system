@@ -22,7 +22,7 @@ class TrustlyRawNotification(models.Model):
 
 class TrustlyNotification(models.Model):
 	receivedat = models.DateTimeField(null=False, blank=False, auto_now_add=True, unique=True)
-	rawnotification = models.ForeignKey(TrustlyRawNotification, null=True, blank=True)
+	rawnotification = models.ForeignKey(TrustlyRawNotification, null=True, blank=True, on_delete=models.CASCADE)
 	notificationid = models.BigIntegerField(null=False, blank=False)
 	orderid = models.BigIntegerField(null=False, blank=False)
 	method = models.CharField(max_length=80, null=False, blank=False)

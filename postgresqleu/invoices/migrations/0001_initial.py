@@ -50,7 +50,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('time', models.DateTimeField(auto_now_add=True)),
                 ('txt', models.CharField(max_length=100)),
-                ('invoice', models.ForeignKey(to='invoices.Invoice')),
+                ('invoice', models.ForeignKey(to='invoices.Invoice', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['time'],
@@ -98,7 +98,7 @@ class Migration(migrations.Migration):
                 ('rowtext', models.CharField(max_length=100, verbose_name=b'Text')),
                 ('rowcount', models.IntegerField(default=1, verbose_name=b'Count')),
                 ('rowamount', models.IntegerField(default=0, verbose_name=b'Amount per item')),
-                ('invoice', models.ForeignKey(to='invoices.Invoice')),
+                ('invoice', models.ForeignKey(to='invoices.Invoice', on_delete=models.CASCADE)),
             ],
         ),
         migrations.AddField(
@@ -109,11 +109,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='invoice',
             name='processor',
-            field=models.ForeignKey(blank=True, to='invoices.InvoiceProcessor', null=True),
+            field=models.ForeignKey(blank=True, to='invoices.InvoiceProcessor', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='invoice',
             name='recipient_user',
-            field=models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True),
+            field=models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE),
         ),
     ]

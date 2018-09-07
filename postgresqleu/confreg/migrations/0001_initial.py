@@ -241,8 +241,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('buyername', models.CharField(max_length=100, null=True, blank=True)),
-                ('buyer', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
-                ('conference', models.ForeignKey(to='confreg.Conference')),
+                ('buyer', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
+                ('conference', models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['conference', 'id'],
@@ -255,8 +255,8 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('vouchervalue', models.CharField(unique=True, max_length=100)),
                 ('usedate', models.DateTimeField(null=True, blank=True)),
-                ('batch', models.ForeignKey(to='confreg.PrepaidBatch')),
-                ('conference', models.ForeignKey(to='confreg.Conference')),
+                ('batch', models.ForeignKey(to='confreg.PrepaidBatch', on_delete=models.CASCADE)),
+                ('conference', models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['batch', 'vouchervalue'],
@@ -269,7 +269,7 @@ class Migration(migrations.Migration):
                 ('regclass', models.CharField(max_length=64, verbose_name="Registration class")),
                 ('badgecolor', models.CharField(blank=True, verbose_name="Badge color", help_text=b'Badge background color in hex format', max_length=20, validators=[postgresqleu.confreg.models.color_validator])),
                 ('badgeforegroundcolor', models.CharField(blank=True, verbose_name="Badge foreground", help_text=b'Badge foreground color in hex format', max_length=20, validators=[postgresqleu.confreg.models.color_validator])),
-                ('conference', models.ForeignKey(to='confreg.Conference')),
+                ('conference', models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name_plural': 'Registration classes',
@@ -280,7 +280,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('day', models.DateField()),
-                ('conference', models.ForeignKey(to='confreg.Conference')),
+                ('conference', models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('day',),
@@ -300,9 +300,9 @@ class Migration(migrations.Migration):
                 ('alertmessage', models.TextField(blank=True)),
                 ('upsell_target', models.BooleanField(default=False, help_text=b'Is target registration type for upselling in order to add additional options')),
                 ('invoice_autocancel_hours', models.IntegerField(blank=True, help_text=b'Automatically cancel invoices after this many hours', null=True, verbose_name=b'Autocancel invoices', validators=[django.core.validators.MinValueValidator(1)])),
-                ('conference', models.ForeignKey(to='confreg.Conference')),
+                ('conference', models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE)),
                 ('days', models.ManyToManyField(to='confreg.RegistrationDay', blank=True)),
-                ('regclass', models.ForeignKey(blank=True, to='confreg.RegistrationClass', null=True)),
+                ('regclass', models.ForeignKey(blank=True, to='confreg.RegistrationClass', null=True, on_delete=models.CASCADE)),
                 ('requires_option', models.ManyToManyField(help_text=b'Requires at least one of the selected additional options to be picked', to='confreg.ConferenceAdditionalOption', blank=True)),
             ],
             options={
@@ -326,7 +326,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('roomname', models.CharField(max_length=20)),
                 ('sortkey', models.IntegerField(default=100)),
-                ('conference', models.ForeignKey(to='confreg.Conference')),
+                ('conference', models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['sortkey', 'roomname'],
@@ -366,13 +366,13 @@ class Migration(migrations.Migration):
                 ('color', models.CharField(blank=True, max_length=20, validators=[postgresqleu.confreg.models.color_validator])),
                 ('sortkey', models.IntegerField(default=100)),
                 ('incfp', models.BooleanField(default=False)),
-                ('conference', models.ForeignKey(to='confreg.Conference')),
+                ('conference', models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
             name='RegistrationWaitlistEntry',
             fields=[
-                ('registration', models.OneToOneField(primary_key=True, serialize=False, to='confreg.ConferenceRegistration')),
+                ('registration', models.OneToOneField(primary_key=True, serialize=False, to='confreg.ConferenceRegistration', on_delete=models.CASCADE)),
                 ('enteredon', models.DateTimeField(auto_now_add=True)),
                 ('offeredon', models.DateTimeField(null=True, blank=True)),
                 ('offerexpires', models.DateTimeField(null=True, blank=True)),
@@ -381,23 +381,23 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Speaker_Photo',
             fields=[
-                ('speaker', models.OneToOneField(primary_key=True, db_column=b'id', serialize=False, to='confreg.Speaker')),
+                ('speaker', models.OneToOneField(primary_key=True, db_column=b'id', serialize=False, to='confreg.Speaker', on_delete=models.CASCADE)),
                 ('photo', models.TextField()),
             ],
         ),
         migrations.AddField(
             model_name='speaker',
             name='user',
-            field=models.OneToOneField(null=True, blank=True, to=settings.AUTH_USER_MODEL),
+            field=models.OneToOneField(null=True, blank=True, to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='prepaidvoucher',
             name='user',
-            field=models.ForeignKey(blank=True, to='confreg.ConferenceRegistration', null=True),
+            field=models.ForeignKey(blank=True, to='confreg.ConferenceRegistration', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='prepaidbatch',
             name='regtype',
-            field=models.ForeignKey(to='confreg.RegistrationType'),
+            field=models.ForeignKey(to='confreg.RegistrationType', on_delete=models.CASCADE),
         ),
     ]

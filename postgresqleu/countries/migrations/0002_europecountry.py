@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='EuropeCountry',
             fields=[
-                ('iso', models.OneToOneField(primary_key=True, serialize=False, to='countries.Country')),
+                ('iso', models.OneToOneField(primary_key=True, serialize=False, to='countries.Country', on_delete=models.CASCADE)),
             ],
         ),
     ]

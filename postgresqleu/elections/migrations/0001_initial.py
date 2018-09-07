@@ -36,8 +36,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('score', models.IntegerField()),
-                ('candidate', models.ForeignKey(to='elections.Candidate')),
-                ('election', models.ForeignKey(to='elections.Election')),
+                ('candidate', models.ForeignKey(to='elections.Candidate', on_delete=models.CASCADE)),
+                ('election', models.ForeignKey(to='elections.Election', on_delete=models.CASCADE)),
             ],
         ),
     ]

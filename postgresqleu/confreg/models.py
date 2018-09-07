@@ -82,8 +82,8 @@ class ConferenceSeries(models.Model):
 
 class ConferenceSeriesOptOut(models.Model):
 	# Users opting out of communications about a specific conference
-	series = models.ForeignKey(ConferenceSeries, null=False, blank=False)
-	user = models.ForeignKey(User, null=False, blank=False)
+	series = models.ForeignKey(ConferenceSeries, null=False, blank=False, on_delete=models.CASCADE)
+	user = models.ForeignKey(User, null=False, blank=False, on_delete=models.CASCADE)
 
 	class Meta:
 		unique_together = (
@@ -92,7 +92,7 @@ class ConferenceSeriesOptOut(models.Model):
 
 class GlobalOptOut(models.Model):
 	# Users who are opting out of *all* future communications
-	user = models.OneToOneField(User, null=False, blank=False, primary_key=True)
+	user = models.OneToOneField(User, null=False, blank=False, primary_key=True, on_delete=models.CASCADE)
 
 
 class Conference(models.Model):
@@ -152,11 +152,11 @@ class Conference(models.Model):
 	lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
 	newsjson = models.CharField(max_length=128, blank=True, null=True, default=None)
 	accounting_object = models.CharField(max_length=30, blank=True, null=True, verbose_name="Accounting object name")
-	vat_registrations = models.ForeignKey(VatRate, null=True, blank=True, verbose_name='VAT rate for registrations', related_name='vat_registrations')
-	vat_sponsorship = models.ForeignKey(VatRate, null=True, blank=True, verbose_name='VAT rate for sponsorships', related_name='vat_sponsorship')
+	vat_registrations = models.ForeignKey(VatRate, null=True, blank=True, verbose_name='VAT rate for registrations', related_name='vat_registrations', on_delete=models.CASCADE)
+	vat_sponsorship = models.ForeignKey(VatRate, null=True, blank=True, verbose_name='VAT rate for sponsorships', related_name='vat_sponsorship', on_delete=models.CASCADE)
 	invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1),], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
 	attendees_before_waitlist = models.IntegerField(blank=False, null=False, default=0, validators=[MinValueValidator(0),], verbose_name="Attendees before waitlist", help_text="Maximum number of attendees before enabling waitlist management. 0 for no waitlist management")
-	series = models.ForeignKey(ConferenceSeries, null=False, blank=False)
+	series = models.ForeignKey(ConferenceSeries, null=False, blank=False, on_delete=models.CASCADE)
 	personal_data_purged = models.DateTimeField(null=True, blank=True, help_text="Personal data for registrations for this conference have been purged")
 
 	# Attributes that are safe to access in jinja templates
@@ -231,7 +231,7 @@ class Conference(models.Model):
 		return cc
 
 class RegistrationClass(models.Model):
-	conference = models.ForeignKey(Conference, null=False)
+	conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
 	regclass = models.CharField(max_length=64, null=False, blank=False, verbose_name="Registration class")
 	badgecolor = models.CharField(max_length=20, null=False, blank=True, verbose_name="Badge color", help_text='Badge background color in hex format', validators=[color_validator, ])
 	badgeforegroundcolor = models.CharField(max_length=20, null=False, blank=True, verbose_name="Badge foreground", help_text='Badge foreground color in hex format', validators=[color_validator, ])
@@ -271,7 +271,7 @@ class RegistrationClass(models.Model):
 		return d
 
 class RegistrationDay(models.Model):
-	conference = models.ForeignKey(Conference, null=False)
+	conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
 	day = models.DateField(null=False, blank=False)
 
 	class Meta:
@@ -288,9 +288,9 @@ class RegistrationDay(models.Model):
 		return df.format('D jS')
 
 class RegistrationType(models.Model):
-	conference = models.ForeignKey(Conference, null=False)
+	conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
 	regtype = models.CharField(max_length=64, null=False, blank=False)
-	regclass = models.ForeignKey(RegistrationClass, null=True, blank=True)
+	regclass = models.ForeignKey(RegistrationClass, null=True, blank=True, on_delete=models.CASCADE)
 	cost = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0, help_text="Cost excluding VAT.")
 	active = models.BooleanField(null=False, blank=False, default=True)
 	activeuntil = models.DateField(null=True, blank=True)
@@ -347,7 +347,7 @@ class ShirtSize(models.Model):
 		ordering = ('sortkey', 'shirtsize',)
 
 class ConferenceAdditionalOption(models.Model):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
 	name = models.CharField(max_length=100, null=False, blank=False)
 	cost = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0, help_text="Cost excluding VAT.")
 	maxcount = models.IntegerField(null=False)
@@ -381,13 +381,13 @@ class ConferenceAdditionalOption(models.Model):
 
 class BulkPayment(models.Model):
 	# User that owns this bulk payment
-	user = models.ForeignKey(User, null=False, blank=False)
+	user = models.ForeignKey(User, null=False, blank=False, on_delete=models.CASCADE)
 
 	# We attach it to a specific conference
-	conference = models.ForeignKey(Conference, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
 
 	# Invoice, once one has been created
-	invoice = models.ForeignKey(Invoice, null=True, blank=True)
+	invoice = models.ForeignKey(Invoice, null=True, blank=True, on_delete=models.CASCADE)
 	numregs = models.IntegerField(null=False, blank=False)
 
 	createdat = models.DateField(null=False, blank=False, auto_now_add=True)
@@ -422,18 +422,18 @@ class BulkPayment(models.Model):
 			self.paidat and 'Paid' or 'Not paid yet')
 
 class ConferenceRegistration(models.Model):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
-	regtype = models.ForeignKey(RegistrationType, null=True, blank=True, verbose_name="Registration type")
-	attendee = models.ForeignKey(User, null=True, blank=True)
-	registrator = models.ForeignKey(User, null=False, blank=False, related_name="registrator")
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
+	regtype = models.ForeignKey(RegistrationType, null=True, blank=True, verbose_name="Registration type", on_delete=models.CASCADE)
+	attendee = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+	registrator = models.ForeignKey(User, null=False, blank=False, related_name="registrator", on_delete=models.CASCADE)
 	firstname = models.CharField(max_length=100, null=False, blank=False, verbose_name="First name")
 	lastname = models.CharField(max_length=100, null=False, blank=False, verbose_name="Last name")
 	email = models.EmailField(null=False, blank=False, verbose_name="E-mail address")
 	company = models.CharField(max_length=100, null=False, blank=True, verbose_name="Company")
 	address = models.TextField(max_length=200, null=False, blank=True, verbose_name="Address")
-	country = models.ForeignKey(Country, null=False, blank=False, verbose_name="Country")
+	country = models.ForeignKey(Country, null=False, blank=False, verbose_name="Country", on_delete=models.CASCADE)
 	phone = models.CharField(max_length=100, null=False, blank=True, verbose_name="Phone number")
-	shirtsize = models.ForeignKey(ShirtSize, null=True, blank=True, verbose_name="Preferred T-shirt size")
+	shirtsize = models.ForeignKey(ShirtSize, null=True, blank=True, verbose_name="Preferred T-shirt size", on_delete=models.CASCADE)
 	dietary = models.CharField(max_length=100, null=False, blank=True, verbose_name="Special dietary needs")
 	additionaloptions = models.ManyToManyField(ConferenceAdditionalOption, blank=True, verbose_name="Additional options")
 	twittername = models.CharField(max_length=100, null=False, blank=True, verbose_name="Twitter account", validators=[TwitterValidator, ])
@@ -449,8 +449,8 @@ class ConferenceRegistration(models.Model):
 
 	# If an invoice is generated, link to it here so we can find our
 	# way back easily.
-	invoice = models.ForeignKey(Invoice, null=True, blank=True)
-	bulkpayment = models.ForeignKey(BulkPayment, null=True, blank=True)
+	invoice = models.ForeignKey(Invoice, null=True, blank=True, on_delete=models.CASCADE)
+	bulkpayment = models.ForeignKey(BulkPayment, null=True, blank=True, on_delete=models.CASCADE)
 
 	# Any voucher codes. This is just used as temporary storage, and as
 	# such we don't try to make it a foreign key. Must be re-validated
@@ -544,7 +544,7 @@ class ConferenceRegistration(models.Model):
 		return d
 
 class RegistrationWaitlistEntry(models.Model):
-	registration = models.OneToOneField(ConferenceRegistration, primary_key=True)
+	registration = models.OneToOneField(ConferenceRegistration, primary_key=True, on_delete=models.CASCADE)
 	enteredon = models.DateTimeField(null=False, blank=False, auto_now_add=True)
 	offeredon = models.DateTimeField(null=True, blank=True)
 	offerexpires = models.DateTimeField(null=True, blank=True)
@@ -554,7 +554,7 @@ class RegistrationWaitlistEntry(models.Model):
 		return self.registrationwaitlisthistory_set.filter(text__startswith='Made offer').count()
 
 class RegistrationWaitlistHistory(models.Model):
-	waitlist = models.ForeignKey(RegistrationWaitlistEntry, null=False, blank=False)
+	waitlist = models.ForeignKey(RegistrationWaitlistEntry, null=False, blank=False, on_delete=models.CASCADE)
 	time = models.DateTimeField(null=False, blank=False, auto_now_add=True)
 	text = models.CharField(max_length=200, null=False, blank=False)
 
@@ -562,7 +562,7 @@ class RegistrationWaitlistHistory(models.Model):
 		ordering = ('-time',)
 
 class Track(models.Model):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
 	trackname = models.CharField(max_length=100, null=False, blank=False)
 	color = models.CharField(max_length=20, null=False, blank=True, validators=[color_validator, ])
 	sortkey = models.IntegerField(null=False, default=100, blank=False)
@@ -574,7 +574,7 @@ class Track(models.Model):
 		return self.trackname
 
 class Room(models.Model):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
 	roomname = models.CharField(max_length=20, null=False, blank=False)
 	sortkey = models.IntegerField(null=False, blank=False, default=100)
 
@@ -591,7 +591,7 @@ def _get_upload_path(instance, filename):
 	return "%s" % instance.id
 
 class Speaker(models.Model):
-	user = models.OneToOneField(User, null=True, blank=True, unique=True)
+	user = models.OneToOneField(User, null=True, blank=True, unique=True, on_delete=models.CASCADE)
 	fullname = models.CharField(max_length=100, null=False, blank=False)
 	twittername = models.CharField(max_length=32, null=False, blank=True)
 	company = models.CharField(max_length=100, null=False, blank=True)
@@ -634,7 +634,7 @@ class DeletedItems(models.Model):
 	deltime = models.DateTimeField(blank=False, null=False)
 
 class Speaker_Photo(models.Model):
-	speaker = models.OneToOneField(Speaker, db_column='id', primary_key=True)
+	speaker = models.OneToOneField(Speaker, db_column='id', primary_key=True, on_delete=models.CASCADE)
 	photo = models.TextField(null=False, blank=False)
 
 	def __unicode__(self):
@@ -647,7 +647,7 @@ class Speaker_Photo(models.Model):
 		super(Speaker_Photo, self).delete()
 
 class ConferenceSessionScheduleSlot(models.Model):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
 	starttime = models.DateTimeField(null=False, blank=False)
 	endtime = models.DateTimeField(null=False, blank=False)
 
@@ -655,13 +655,13 @@ class ConferenceSessionScheduleSlot(models.Model):
 		return "%s - %s" % (self.starttime, self.endtime)
 
 class ConferenceSession(models.Model):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
 	speaker = models.ManyToManyField(Speaker, blank=True)
 	title = models.CharField(max_length=200, null=False, blank=False)
 	starttime = models.DateTimeField(null=True, blank=True)
 	endtime = models.DateTimeField(null=True, blank=True)
-	track = models.ForeignKey(Track, null=True, blank=True)
-	room = models.ForeignKey(Room, null=True, blank=True)
+	track = models.ForeignKey(Track, null=True, blank=True, on_delete=models.CASCADE)
+	room = models.ForeignKey(Room, null=True, blank=True, on_delete=models.CASCADE)
 	cross_schedule = models.BooleanField(null=False, default=False)
 	can_feedback = models.BooleanField(null=False, default=True)
 	abstract = models.TextField(null=False, blank=True)
@@ -671,8 +671,8 @@ class ConferenceSession(models.Model):
 	lastnotifiedtime = models.DateTimeField(null=True, blank=True, verbose_name="Notification last sent")
 	submissionnote = models.TextField(null=False, blank=True, verbose_name="Submission notes")
 	initialsubmit = models.DateTimeField(null=True, blank=True, verbose_name="Submitted")
-	tentativescheduleslot = models.ForeignKey(ConferenceSessionScheduleSlot, null=True, blank=True)
-	tentativeroom = models.ForeignKey(Room, null=True, blank=True, related_name='tentativeroom')
+	tentativescheduleslot = models.ForeignKey(ConferenceSessionScheduleSlot, null=True, blank=True, on_delete=models.CASCADE)
+	tentativeroom = models.ForeignKey(Room, null=True, blank=True, related_name='tentativeroom', on_delete=models.CASCADE)
 	lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
 
 	# NOTE! Any added fields need to be considered for inclusion in
@@ -737,7 +737,7 @@ class ConferenceSession(models.Model):
 		ordering = [ 'starttime', ]
 
 class ConferenceSessionSlides(models.Model):
-	session = models.ForeignKey(ConferenceSession, null=False, blank=False)
+	session = models.ForeignKey(ConferenceSession, null=False, blank=False, on_delete=models.CASCADE)
 	name = models.CharField(max_length=100, null=False, blank=False)
 	url = models.URLField(max_length=1000, null=False, blank=True)
 	content = models.BinaryField(null=True, blank=False)
@@ -745,8 +745,8 @@ class ConferenceSessionSlides(models.Model):
 	_safe_attributes = ('id', 'name', 'url', 'content')
 
 class ConferenceSessionVote(models.Model):
-	session = models.ForeignKey(ConferenceSession, null=False, blank=False)
-	voter = models.ForeignKey(User, null=False, blank=False)
+	session = models.ForeignKey(ConferenceSession, null=False, blank=False, on_delete=models.CASCADE)
+	voter = models.ForeignKey(User, null=False, blank=False, on_delete=models.CASCADE)
 	vote = models.IntegerField(null=True, blank=False)
 	comment = models.TextField(null=True, blank=True)
 
@@ -754,9 +754,9 @@ class ConferenceSessionVote(models.Model):
 		unique_together = ( ('session', 'voter',), )
 
 class ConferenceSessionFeedback(models.Model):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
-	session = models.ForeignKey(ConferenceSession, null=False, blank=False)
-	attendee = models.ForeignKey(User, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
+	session = models.ForeignKey(ConferenceSession, null=False, blank=False, on_delete=models.CASCADE)
+	attendee = models.ForeignKey(User, null=False, blank=False, on_delete=models.CASCADE)
 	topic_importance = models.IntegerField(null=False, blank=False)
 	content_quality = models.IntegerField(null=False, blank=False)
 	speaker_knowledge = models.IntegerField(null=False, blank=False)
@@ -768,7 +768,7 @@ class ConferenceSessionFeedback(models.Model):
 		return unicode("%s - %s (%s)") % (self.conference, self.session, self.attendee)
 
 class ConferenceFeedbackQuestion(models.Model):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
 	question = models.CharField(max_length=100, null=False, blank=False)
 	isfreetext = models.BooleanField(blank=False, null=False, default=False)
 	textchoices = models.CharField(max_length=500, null=False, blank=True)
@@ -782,9 +782,9 @@ class ConferenceFeedbackQuestion(models.Model):
 		ordering = ['conference', 'sortkey', ]
 
 class ConferenceFeedbackAnswer(models.Model):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
-	question = models.ForeignKey(ConferenceFeedbackQuestion, null=False, blank=False)
-	attendee = models.ForeignKey(User, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
+	question = models.ForeignKey(ConferenceFeedbackQuestion, null=False, blank=False, on_delete=models.CASCADE)
+	attendee = models.ForeignKey(User, null=False, blank=False, on_delete=models.CASCADE)
 	rateanswer = models.IntegerField(null=True)
 	textanswer = models.TextField(null=False, blank=True)
 
@@ -795,7 +795,7 @@ class ConferenceFeedbackAnswer(models.Model):
 		ordering = ['conference', 'attendee', 'question', ]
 
 class VolunteerSlot(models.Model):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
 	timerange = DateTimeRangeField(null=False, blank=False)
 	title = models.CharField(max_length=50, null=False, blank=False)
 	min_staff = models.IntegerField(null=False, blank=False, default=1, validators=[MinValueValidator(1)])
@@ -832,19 +832,19 @@ class VolunteerSlot(models.Model):
 		return self._localtz.localize(time).astimezone(pytz.utc)
 
 class VolunteerAssignment(models.Model):
-	slot = models.ForeignKey(VolunteerSlot, null=False, blank=False)
-	reg = models.ForeignKey(ConferenceRegistration, null=False, blank=False)
+	slot = models.ForeignKey(VolunteerSlot, null=False, blank=False, on_delete=models.CASCADE)
+	reg = models.ForeignKey(ConferenceRegistration, null=False, blank=False, on_delete=models.CASCADE)
 	vol_confirmed = models.BooleanField(null=False, blank=False, default=False, verbose_name="Confirmed by volunteer")
 	org_confirmed = models.BooleanField(null=False, blank=False, default=False, verbose_name="Confirmed by organizers")
 
 	_safe_attributes = ('id', 'slot', 'reg', 'vol_confirmed', 'org_confirmed')
 
 class PrepaidBatch(models.Model):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
-	regtype = models.ForeignKey(RegistrationType, null=False, blank=False)
-	buyer = models.ForeignKey(User, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
+	regtype = models.ForeignKey(RegistrationType, null=False, blank=False, on_delete=models.CASCADE)
+	buyer = models.ForeignKey(User, null=False, blank=False, on_delete=models.CASCADE)
 	buyername = models.CharField(max_length=100, null=True, blank=True)
-	sponsor = models.ForeignKey('confsponsor.Sponsor', null=True, blank=True, verbose_name="Optional sponsor")
+	sponsor = models.ForeignKey('confsponsor.Sponsor', null=True, blank=True, verbose_name="Optional sponsor", on_delete=models.CASCADE)
 
 	def __unicode__(self):
 		return "%s: %s for %s" % (self.conference, self.regtype, self.buyer)
@@ -854,10 +854,10 @@ class PrepaidBatch(models.Model):
 		ordering = ['conference', 'id', ]
 
 class PrepaidVoucher(models.Model):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
 	vouchervalue = models.CharField(max_length=100, null=False, blank=False, unique=True)
-	batch = models.ForeignKey(PrepaidBatch, null=False, blank=False)
-	user = models.ForeignKey(ConferenceRegistration, null=True, blank=True)
+	batch = models.ForeignKey(PrepaidBatch, null=False, blank=False, on_delete=models.CASCADE)
+	user = models.ForeignKey(ConferenceRegistration, null=True, blank=True, on_delete=models.CASCADE)
 	usedate = models.DateTimeField(null=True, blank=True)
 
 	def __unicode__(self):
@@ -867,7 +867,7 @@ class PrepaidVoucher(models.Model):
 		ordering = ['batch', 'vouchervalue', ]
 
 class DiscountCode(models.Model):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
 	code = models.CharField(max_length=100, null=False, blank=False)
 	discountamount = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0)
 	discountpercentage = models.IntegerField(null=False, blank=False, default=0)
@@ -880,8 +880,8 @@ class DiscountCode(models.Model):
 	registrations = models.ManyToManyField(ConferenceRegistration, blank=True)
 
 	# If this discount code is purchased by a sponsor, track it here.
-	sponsor = models.ForeignKey('confsponsor.Sponsor', null=True, blank=True, verbose_name="Optional sponsor.", help_text="Note that if a sponsor is picked, an invoice will be generated once the discount code closes!!!")
-	sponsor_rep = models.ForeignKey(User, null=True, blank=True, verbose_name="Optional sponsor representative.", help_text="Must be set if the sponsor field is set!")
+	sponsor = models.ForeignKey('confsponsor.Sponsor', null=True, blank=True, verbose_name="Optional sponsor.", help_text="Note that if a sponsor is picked, an invoice will be generated once the discount code closes!!!", on_delete=models.CASCADE)
+	sponsor_rep = models.ForeignKey(User, null=True, blank=True, verbose_name="Optional sponsor representative.", help_text="Must be set if the sponsor field is set!", on_delete=models.CASCADE)
 	is_invoiced = models.BooleanField(null=False, blank=False, default=False, verbose_name="Has an invoice been sent for this discount code.")
 
 	def __unicode__(self):
@@ -896,7 +896,7 @@ class DiscountCode(models.Model):
 		return self.registrations.count()
 
 class AttendeeMail(models.Model):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
 	regclasses = models.ManyToManyField(RegistrationClass, blank=False)
 	sentat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
 	subject = models.CharField(max_length=100, null=False, blank=False)
@@ -910,11 +910,11 @@ class AttendeeMail(models.Model):
 
 
 class PendingAdditionalOrder(models.Model):
-	reg = models.ForeignKey(ConferenceRegistration, null=False, blank=False)
+	reg = models.ForeignKey(ConferenceRegistration, null=False, blank=False, on_delete=models.CASCADE)
 	options = models.ManyToManyField(ConferenceAdditionalOption, blank=False)
-	newregtype = models.ForeignKey(RegistrationType, null=True, blank=True)
+	newregtype = models.ForeignKey(RegistrationType, null=True, blank=True, on_delete=models.CASCADE)
 	createtime = models.DateTimeField(null=False, blank=False)
-	invoice = models.ForeignKey(Invoice, null=True, blank=True)
+	invoice = models.ForeignKey(Invoice, null=True, blank=True, on_delete=models.CASCADE)
 	payconfirmedat = models.DateTimeField(null=True, blank=True)
 
 	def __unicode__(self):
@@ -923,15 +923,15 @@ class PendingAdditionalOrder(models.Model):
 
 
 class AggregatedTshirtSizes(models.Model):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
-	size = models.ForeignKey(ShirtSize, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
+	size = models.ForeignKey(ShirtSize, null=False, blank=False, on_delete=models.CASCADE)
 	num = models.IntegerField(null=False, blank=False)
 
 	class Meta:
 		unique_together = ( ('conference', 'size'), )
 
 class AggregatedDietary(models.Model):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
 	dietary = models.CharField(max_length=100, null=False, blank=False)
 	num = models.IntegerField(null=False, blank=False)
 
@@ -947,7 +947,7 @@ AccessTokenPermissions = (
 )
 
 class AccessToken(models.Model):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
 	token = models.CharField(max_length=200, null=False, blank=False)
 	description = models.TextField(null=False, blank=False)
 	permissions = ChoiceArrayField(

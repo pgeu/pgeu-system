@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='conference',
             name='series',
-            field=models.ForeignKey(to='confreg.ConferenceSeries'),
+            field=models.ForeignKey(to='confreg.ConferenceSeries', on_delete=models.CASCADE),
         ),
     ]

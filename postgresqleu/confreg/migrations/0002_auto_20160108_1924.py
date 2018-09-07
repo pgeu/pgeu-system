@@ -19,17 +19,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='prepaidbatch',
             name='sponsor',
-            field=models.ForeignKey(verbose_name=b'Optional sponsor', blank=True, to='confsponsor.Sponsor', null=True),
+            field=models.ForeignKey(verbose_name=b'Optional sponsor', blank=True, to='confsponsor.Sponsor', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='pendingadditionalorder',
             name='invoice',
-            field=models.ForeignKey(blank=True, to='invoices.Invoice', null=True),
+            field=models.ForeignKey(blank=True, to='invoices.Invoice', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='pendingadditionalorder',
             name='newregtype',
-            field=models.ForeignKey(blank=True, to='confreg.RegistrationType', null=True),
+            field=models.ForeignKey(blank=True, to='confreg.RegistrationType', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='pendingadditionalorder',
@@ -39,12 +39,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='pendingadditionalorder',
             name='reg',
-            field=models.ForeignKey(to='confreg.ConferenceRegistration'),
+            field=models.ForeignKey(to='confreg.ConferenceRegistration', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='discountcode',
             name='conference',
-            field=models.ForeignKey(to='confreg.Conference'),
+            field=models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='discountcode',
@@ -64,52 +64,52 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='discountcode',
             name='sponsor',
-            field=models.ForeignKey(blank=True, to='confsponsor.Sponsor', help_text=b'Note that if a sponsor is picked, an invoice will be generated once the discount code closes!!!', null=True, verbose_name=b'Optional sponsor.'),
+            field=models.ForeignKey(blank=True, to='confsponsor.Sponsor', help_text=b'Note that if a sponsor is picked, an invoice will be generated once the discount code closes!!!', null=True, verbose_name=b'Optional sponsor.', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='discountcode',
             name='sponsor_rep',
-            field=models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, help_text=b'Must be set if the sponsor field is set!', null=True, verbose_name=b'Optional sponsor representative.'),
+            field=models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, help_text=b'Must be set if the sponsor field is set!', null=True, verbose_name=b'Optional sponsor representative.', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferencesessionvote',
             name='session',
-            field=models.ForeignKey(to='confreg.ConferenceSession'),
+            field=models.ForeignKey(to='confreg.ConferenceSession', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferencesessionvote',
             name='voter',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferencesessionscheduleslot',
             name='conference',
-            field=models.ForeignKey(to='confreg.Conference'),
+            field=models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferencesessionfeedback',
             name='attendee',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferencesessionfeedback',
             name='conference',
-            field=models.ForeignKey(to='confreg.Conference'),
+            field=models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferencesessionfeedback',
             name='session',
-            field=models.ForeignKey(to='confreg.ConferenceSession'),
+            field=models.ForeignKey(to='confreg.ConferenceSession', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferencesession',
             name='conference',
-            field=models.ForeignKey(to='confreg.Conference'),
+            field=models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferencesession',
             name='room',
-            field=models.ForeignKey(blank=True, to='confreg.Room', null=True),
+            field=models.ForeignKey(blank=True, to='confreg.Room', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferencesession',
@@ -119,17 +119,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conferencesession',
             name='tentativeroom',
-            field=models.ForeignKey(related_name='tentativeroom', blank=True, to='confreg.Room', null=True),
+            field=models.ForeignKey(related_name='tentativeroom', blank=True, to='confreg.Room', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferencesession',
             name='tentativescheduleslot',
-            field=models.ForeignKey(blank=True, to='confreg.ConferenceSessionScheduleSlot', null=True),
+            field=models.ForeignKey(blank=True, to='confreg.ConferenceSessionScheduleSlot', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferencesession',
             name='track',
-            field=models.ForeignKey(blank=True, to='confreg.Track', null=True),
+            field=models.ForeignKey(blank=True, to='confreg.Track', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferenceregistration',
@@ -139,62 +139,62 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conferenceregistration',
             name='attendee',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferenceregistration',
             name='bulkpayment',
-            field=models.ForeignKey(blank=True, to='confreg.BulkPayment', null=True),
+            field=models.ForeignKey(blank=True, to='confreg.BulkPayment', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferenceregistration',
             name='conference',
-            field=models.ForeignKey(to='confreg.Conference'),
+            field=models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferenceregistration',
             name='country',
-            field=models.ForeignKey(verbose_name=b'Country', to='countries.Country'),
+            field=models.ForeignKey(verbose_name=b'Country', to='countries.Country', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferenceregistration',
             name='invoice',
-            field=models.ForeignKey(blank=True, to='invoices.Invoice', null=True),
+            field=models.ForeignKey(blank=True, to='invoices.Invoice', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferenceregistration',
             name='regtype',
-            field=models.ForeignKey(verbose_name=b'Registration type', blank=True, to='confreg.RegistrationType', null=True),
+            field=models.ForeignKey(verbose_name=b'Registration type', blank=True, to='confreg.RegistrationType', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferenceregistration',
             name='shirtsize',
-            field=models.ForeignKey(verbose_name=b'Preferred T-shirt size', blank=True, to='confreg.ShirtSize', null=True),
+            field=models.ForeignKey(verbose_name=b'Preferred T-shirt size', blank=True, to='confreg.ShirtSize', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferencefeedbackquestion',
             name='conference',
-            field=models.ForeignKey(to='confreg.Conference'),
+            field=models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferencefeedbackanswer',
             name='attendee',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferencefeedbackanswer',
             name='conference',
-            field=models.ForeignKey(to='confreg.Conference'),
+            field=models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferencefeedbackanswer',
             name='question',
-            field=models.ForeignKey(to='confreg.ConferenceFeedbackQuestion'),
+            field=models.ForeignKey(to='confreg.ConferenceFeedbackQuestion', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferenceadditionaloption',
             name='conference',
-            field=models.ForeignKey(to='confreg.Conference'),
+            field=models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferenceadditionaloption',
@@ -229,22 +229,22 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='bulkpayment',
             name='conference',
-            field=models.ForeignKey(to='confreg.Conference'),
+            field=models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='bulkpayment',
             name='invoice',
-            field=models.ForeignKey(blank=True, to='invoices.Invoice', null=True),
+            field=models.ForeignKey(blank=True, to='invoices.Invoice', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='bulkpayment',
             name='user',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='attendeemail',
             name='conference',
-            field=models.ForeignKey(to='confreg.Conference'),
+            field=models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='attendeemail',
@@ -254,7 +254,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='registrationwaitlisthistory',
             name='waitlist',
-            field=models.ForeignKey(to='confreg.RegistrationWaitlistEntry'),
+            field=models.ForeignKey(to='confreg.RegistrationWaitlistEntry', on_delete=models.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='discountcode',

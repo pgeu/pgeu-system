@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 ('token', models.CharField(max_length=200)),
                 ('description', models.TextField()),
                 ('permissions', postgresqleu.util.forms.ChoiceArrayField(base_field=models.CharField(max_length=32, choices=[(b'regtypes', b'Registration types and counters'), (b'discounts', b'Discount codes'), (b'vouchers', b'Voucher codes'), (b'sponsors', b'Sponsors and counts')]), size=None)),
-                ('conference', models.ForeignKey(to='confreg.Conference')),
+                ('conference', models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE)),
             ],
         ),
         migrations.AlterUniqueTogether(

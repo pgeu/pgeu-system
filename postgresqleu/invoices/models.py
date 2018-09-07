@@ -41,7 +41,7 @@ class InvoiceRefund(models.Model):
 
 	amount = models.DecimalField(max_digits=10, decimal_places=2, null=False)
 	vatamount = models.DecimalField(max_digits=10, decimal_places=2, null=False)
-	vatrate = models.ForeignKey('VatRate', null=True)
+	vatrate = models.ForeignKey('VatRate', null=True, on_delete=models.CASCADE)
 
 	registered = models.DateTimeField(null=False, auto_now_add=True)
 	issued = models.DateTimeField(null=True, blank=True)
@@ -63,7 +63,7 @@ class Invoice(models.Model):
 	# by name. If email is set, we can retro-match it up, but once
 	# a recipient is matched, the recipient_user field "owns" the
 	# recipient information.
-	recipient_user = models.ForeignKey(User, null=True, blank=True)
+	recipient_user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
 	recipient_email = models.EmailField(blank=True, null=False)
 	recipient_name = models.CharField(max_length=100, blank=False, null=False)
 	recipient_address = models.TextField(blank=False, null=False)
@@ -93,7 +93,7 @@ class Invoice(models.Model):
 	# of this invoice. This can typically be to flag a conference
 	# payment as done once the payment is in. processorid is an arbitrary
 	# id value that the processor can use for whatever it wants.
-	processor = models.ForeignKey(InvoiceProcessor, null=True, blank=True)
+	processor = models.ForeignKey(InvoiceProcessor, null=True, blank=True, on_delete=models.CASCADE)
 	processorid = models.IntegerField(null=True, blank=True)
 
 	# Allowed payment methods
@@ -104,7 +104,7 @@ class Invoice(models.Model):
 	# writes the details of the transaction to the paymentdetails field.
 	paidat = models.DateTimeField(null=True, blank=True)
 	paymentdetails = models.CharField(max_length=100, null=False, blank=True)
-	paidusing = models.ForeignKey(InvoicePaymentMethod, null=True, blank=True, related_name="paidusing", verbose_name="Payment method actually used")
+	paidusing = models.ForeignKey(InvoicePaymentMethod, null=True, blank=True, related_name="paidusing", verbose_name="Payment method actually used", on_delete=models.CASCADE)
 
 	# Reminder (if any) sent when?
 	remindersent = models.DateTimeField(null=True, blank=True, verbose_name="Automatic reminder sent at")
@@ -187,7 +187,7 @@ class VatRate(models.Model):
 	shortname = models.CharField(max_length=16, blank=False, null=False)
 	vatpercent = models.IntegerField(null=False, default=0, verbose_name="VAT percentage",
 									 validators=[MaxValueValidator(100), MinValueValidator(0)])
-	vataccount = models.ForeignKey(Account, null=False, blank=False)
+	vataccount = models.ForeignKey(Account, null=False, blank=False, on_delete=models.CASCADE)
 
 	_safe_attributes = ('vatpercent', 'shortstr', 'shortname', 'name', 'org_name', 'treasurer_email')
 
@@ -201,11 +201,11 @@ class VatRate(models.Model):
 class InvoiceRow(models.Model):
 	# Invoice rows are only used up until the invoice is finished,
 	# but allows us to save a half-finished invoice.
-	invoice = models.ForeignKey(Invoice, null=False)
+	invoice = models.ForeignKey(Invoice, null=False, on_delete=models.CASCADE)
 	rowtext = models.CharField(max_length=100, blank=False, null=False, verbose_name="Text")
 	rowcount = models.IntegerField(null=False, default=1, verbose_name="Count")
 	rowamount = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0, verbose_name="Amount per item (ex VAT)")
-	vatrate = models.ForeignKey(VatRate, null=True)
+	vatrate = models.ForeignKey(VatRate, null=True, on_delete=models.CASCADE)
 
 	def __unicode__(self):
 		return self.rowtext
@@ -226,7 +226,7 @@ class InvoiceRow(models.Model):
 		return self.totalrow + self.totalvat
 
 class InvoiceHistory(models.Model):
-	invoice = models.ForeignKey(Invoice, null=False)
+	invoice = models.ForeignKey(Invoice, null=False, on_delete=models.CASCADE)
 	time = models.DateTimeField(null=False, blank=False, auto_now_add=True)
 	txt = models.CharField(max_length=100, null=False, blank=False)
 

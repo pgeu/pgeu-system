@@ -55,7 +55,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('receivedat', models.DateTimeField(auto_now_add=True)),
                 ('refund_amount', models.IntegerField()),
-                ('notification', models.ForeignKey(to='adyen.Notification')),
+                ('notification', models.ForeignKey(to='adyen.Notification', on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -67,7 +67,7 @@ class Migration(migrations.Migration):
                 ('downloadedat', models.DateTimeField(null=True, blank=True)),
                 ('contents', models.TextField(null=True, blank=True)),
                 ('processedat', models.DateTimeField(null=True, blank=True)),
-                ('notification', models.ForeignKey(to='adyen.Notification')),
+                ('notification', models.ForeignKey(to='adyen.Notification', on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -90,7 +90,7 @@ class Migration(migrations.Migration):
                 ('method', models.CharField(max_length=100, null=True, blank=True)),
                 ('notes', models.CharField(max_length=1000, null=True, blank=True)),
                 ('accounting_object', models.CharField(max_length=30, null=True, blank=True)),
-                ('notification', models.ForeignKey(to='adyen.Notification')),
+                ('notification', models.ForeignKey(to='adyen.Notification', on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name_plural': 'Transaction statuses',
@@ -99,12 +99,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='refund',
             name='transaction',
-            field=models.OneToOneField(to='adyen.TransactionStatus'),
+            field=models.OneToOneField(to='adyen.TransactionStatus', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='notification',
             name='rawnotification',
-            field=models.ForeignKey(blank=True, to='adyen.RawNotification', null=True),
+            field=models.ForeignKey(blank=True, to='adyen.RawNotification', null=True, on_delete=models.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='notification',

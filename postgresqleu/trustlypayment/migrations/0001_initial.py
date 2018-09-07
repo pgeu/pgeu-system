@@ -65,6 +65,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='trustlynotification',
             name='rawnotification',
-            field=models.ForeignKey(blank=True, to='trustlypayment.TrustlyRawNotification', null=True),
+            field=models.ForeignKey(blank=True, to='trustlypayment.TrustlyRawNotification', null=True, on_delete=models.CASCADE),
         ),
     ]

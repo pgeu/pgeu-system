@@ -8,12 +8,12 @@ from postgresqleu.confreg.models import RegistrationType
 from postgresqleu.util.diffablemodel import DiffableModel
 
 class Wikipage(models.Model, DiffableModel):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
 	url = models.CharField(max_length=100, null=False, blank=False, validators=[
 		RegexValidator(regex='^[a-zA-Z0-9_-]+$',
 					   message='Invalid character in urlname. Only alphanumerical, underscore and dash are allowed.'),])
 	title = models.CharField(max_length=100, null=False, blank=False)
-	author = models.ForeignKey(ConferenceRegistration, null=False, blank=False)
+	author = models.ForeignKey(ConferenceRegistration, null=False, blank=False, on_delete=models.CASCADE)
 	publishedat = models.DateTimeField(null=False, blank=False, auto_now=True)
 	contents = models.TextField(null=False, blank=False)
 
@@ -71,8 +71,8 @@ class Wikipage(models.Model, DiffableModel):
 # When a page is edited, the old version is copied over to the history. A page that has
 # never been edited has no history entry. Permission changes are not tracked.
 class WikipageHistory(models.Model):
-	page = models.ForeignKey(Wikipage, null=False, blank=False, db_index=True)
-	author = models.ForeignKey(ConferenceRegistration, null=False, blank=False)
+	page = models.ForeignKey(Wikipage, null=False, blank=False, db_index=True, on_delete=models.CASCADE)
+	author = models.ForeignKey(ConferenceRegistration, null=False, blank=False, on_delete=models.CASCADE)
 	publishedat = models.DateTimeField(null=False, blank=False)
 	contents = models.TextField(null=False, blank=False)
 
@@ -86,8 +86,8 @@ class WikipageHistory(models.Model):
 
 # Subscribers to changes of wikipages
 class WikipageSubscriber(models.Model):
-	page = models.ForeignKey(Wikipage, null=False, blank=False, db_index=True)
-	subscriber = models.ForeignKey(ConferenceRegistration, null=False, blank=False)
+	page = models.ForeignKey(Wikipage, null=False, blank=False, db_index=True, on_delete=models.CASCADE)
+	subscriber = models.ForeignKey(ConferenceRegistration, null=False, blank=False, on_delete=models.CASCADE)
 
 
 def validate_options(value):
@@ -113,8 +113,8 @@ def validate_optionvalues(value):
 
 # Signups - attendees can sign up for events
 class Signup(models.Model):
-	conference = models.ForeignKey(Conference, null=False, blank=False)
-	author = models.ForeignKey(ConferenceRegistration, null=False, blank=False)
+	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
+	author = models.ForeignKey(ConferenceRegistration, null=False, blank=False, on_delete=models.CASCADE)
 	title = models.CharField(max_length=100, null=False, blank=False)
 	intro = models.TextField(null=False, blank=False)
 	deadline = models.DateTimeField(null=True, blank=True)
@@ -144,8 +144,8 @@ class Signup(models.Model):
 				raise ValidationError({"optionvalues": "Cannot specify optionvalues if options are not specified!"})
 
 class AttendeeSignup(models.Model):
-	signup = models.ForeignKey(Signup, null=False, blank=False)
-	attendee = models.ForeignKey(ConferenceRegistration, null=False, blank=False)
+	signup = models.ForeignKey(Signup, null=False, blank=False, on_delete=models.CASCADE)
+	attendee = models.ForeignKey(ConferenceRegistration, null=False, blank=False, on_delete=models.CASCADE)
 	choice = models.CharField(max_length=100, null=False, blank=True)
 	saved = models.DateTimeField(null=False, blank=False, auto_now=True)
 

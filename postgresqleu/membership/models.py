@@ -7,10 +7,10 @@ from postgresqleu.invoices.models import Invoice
 from datetime import date, datetime, timedelta
 
 class Member(models.Model):
-	user = models.OneToOneField(User, null=False, blank=False, primary_key=True)
+	user = models.OneToOneField(User, null=False, blank=False, primary_key=True, on_delete=models.CASCADE)
 	fullname = models.CharField(max_length=500, null=False, blank=False,
 								verbose_name='Full name')
-	country = models.ForeignKey(Country, null=False, blank=False)
+	country = models.ForeignKey(Country, null=False, blank=False, on_delete=models.CASCADE)
 	listed = models.BooleanField(null=False, blank=False, default=True,
 								 verbose_name='Listed in the public membership list')
 	paiduntil = models.DateField(null=True, blank=True)
@@ -18,7 +18,7 @@ class Member(models.Model):
 
 	# If there is a currently active invoice, link to it here so we can
 	# easily render the information on the page.
-	activeinvoice = models.ForeignKey(Invoice, null=True, blank=True)
+	activeinvoice = models.ForeignKey(Invoice, null=True, blank=True, on_delete=models.CASCADE)
 
 	# When a membeship expiry warning was last sent, so we don't keep
 	# sending them over and over again
@@ -43,7 +43,7 @@ class Member(models.Model):
 		return "%s (%s)" % (self.fullname, self.user.username)
 
 class MemberLog(models.Model):
-	member = models.ForeignKey(Member, null=False, blank=False)
+	member = models.ForeignKey(Member, null=False, blank=False, on_delete=models.CASCADE)
 	timestamp = models.DateTimeField(null=False)
 	message = models.TextField(null=False, blank=False)
 
@@ -74,8 +74,8 @@ class Meeting(models.Model):
 
 
 class MemberMeetingKey(models.Model):
-	member = models.ForeignKey(Member, null=False, blank=False)
-	meeting = models.ForeignKey(Meeting, null=False, blank=False)
+	member = models.ForeignKey(Member, null=False, blank=False, on_delete=models.CASCADE)
+	meeting = models.ForeignKey(Meeting, null=False, blank=False, on_delete=models.CASCADE)
 	key = models.CharField(max_length=100, null=False, blank=False)
 	proxyname = models.CharField(max_length=200, null=True, blank=False)
 	proxyaccesskey = models.CharField(max_length=100, null=True, blank=False)

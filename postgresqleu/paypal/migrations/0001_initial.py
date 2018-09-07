@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
                 ('transtext', models.CharField(max_length=1000)),
                 ('matched', models.BooleanField()),
                 ('matchinfo', models.CharField(max_length=1000, null=True, blank=True)),
-                ('sourceaccount', models.ForeignKey(to='paypal.SourceAccount')),
+                ('sourceaccount', models.ForeignKey(to='paypal.SourceAccount', on_delete=models.CASCADE)),
             ],
         ),
     ]

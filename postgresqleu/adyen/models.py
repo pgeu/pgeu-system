@@ -13,7 +13,7 @@ class RawNotification(models.Model):
 
 class Notification(models.Model):
 	receivedat = models.DateTimeField(null=False, blank=False, auto_now_add=True, unique=True)
-	rawnotification = models.ForeignKey(RawNotification, null=True, blank=True)
+	rawnotification = models.ForeignKey(RawNotification, null=True, blank=True, on_delete=models.CASCADE)
 	eventDate = models.DateTimeField(null=False, blank=False)
 	eventCode = models.CharField(max_length=100, null=False, blank=False)
 	live = models.BooleanField(null=False)
@@ -37,7 +37,7 @@ class Notification(models.Model):
 
 class Report(models.Model):
 	receivedat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
-	notification = models.ForeignKey(Notification, null=False, blank=False)
+	notification = models.ForeignKey(Notification, null=False, blank=False, on_delete=models.CASCADE)
 	url = models.CharField(max_length=1000, null=False, blank=False)
 	downloadedat = models.DateTimeField(null=True, blank=True)
 	contents = models.TextField(null=True, blank=True)
@@ -45,7 +45,7 @@ class Report(models.Model):
 
 class TransactionStatus(models.Model):
 	pspReference = models.CharField(max_length=100, null=False, blank=False, unique=True)
-	notification = models.ForeignKey(Notification, null=False, blank=False)
+	notification = models.ForeignKey(Notification, null=False, blank=False, on_delete=models.CASCADE)
 	authorizedat = models.DateTimeField(null=False, blank=False)
 	capturedat = models.DateTimeField(null=True, blank=True)
 	settledat = models.DateTimeField(null=True, blank=True)
@@ -63,8 +63,8 @@ class TransactionStatus(models.Model):
 
 class Refund(models.Model):
 	receivedat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
-	notification = models.ForeignKey(Notification, null=False, blank=False)
-	transaction = models.OneToOneField(TransactionStatus)
+	notification = models.ForeignKey(Notification, null=False, blank=False, on_delete=models.CASCADE)
+	transaction = models.OneToOneField(TransactionStatus, on_delete=models.CASCADE)
 	refund_amount = models.DecimalField(decimal_places=2, max_digits=20, null=False)
 
 	def __unicode__(self):

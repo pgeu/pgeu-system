@@ -12,7 +12,7 @@ class SourceAccount(models.Model):
 class TransactionInfo(models.Model):
 	paypaltransid = models.CharField(max_length=20, null=False, blank=False, unique=True)
 	timestamp = models.DateTimeField(null=False, blank=False)
-	sourceaccount = models.ForeignKey(SourceAccount, null=False, blank=False)
+	sourceaccount = models.ForeignKey(SourceAccount, null=False, blank=False, on_delete=models.CASCADE)
 	sender = models.CharField(max_length=200, null=False, blank=False)
 	sendername = models.CharField(max_length=200, null=False, blank=False)
 	amount = models.DecimalField(decimal_places=2, max_digits=10, null=False, blank=False)

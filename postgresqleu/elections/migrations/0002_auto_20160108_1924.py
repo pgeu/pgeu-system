@@ -15,11 +15,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='vote',
             name='voter',
-            field=models.ForeignKey(to='membership.Member'),
+            field=models.ForeignKey(to='membership.Member', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='candidate',
             name='election',
-            field=models.ForeignKey(to='elections.Election'),
+            field=models.ForeignKey(to='elections.Election', on_delete=models.CASCADE),
         ),
     ]

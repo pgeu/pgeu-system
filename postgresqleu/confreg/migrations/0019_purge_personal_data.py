@@ -34,17 +34,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='aggregatedtshirtsizes',
             name='conference',
-            field=models.ForeignKey(to='confreg.Conference'),
+            field=models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='aggregatedtshirtsizes',
             name='size',
-            field=models.ForeignKey(to='confreg.ShirtSize'),
+            field=models.ForeignKey(to='confreg.ShirtSize', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='aggregateddietary',
             name='conference',
-            field=models.ForeignKey(to='confreg.Conference'),
+            field=models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='aggregatedtshirtsizes',

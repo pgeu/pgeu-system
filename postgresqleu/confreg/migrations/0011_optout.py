@@ -25,13 +25,13 @@ class Migration(migrations.Migration):
             name='ConferenceSeriesOptOut',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('series', models.ForeignKey(to='confreg.ConferenceSeries')),
+                ('series', models.ForeignKey(to='confreg.ConferenceSeries', on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
             name='GlobalOptOut',
             fields=[
-                ('user', models.OneToOneField(primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL)),
+                ('user', models.OneToOneField(primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
         ),
         migrations.AddField(
@@ -42,12 +42,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conferenceseriesoptout',
             name='user',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conference',
             name='series',
-            field=models.ForeignKey(blank=True, to='confreg.ConferenceSeries', null=True),
+            field=models.ForeignKey(blank=True, to='confreg.ConferenceSeries', null=True, on_delete=models.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='conferenceseriesoptout',

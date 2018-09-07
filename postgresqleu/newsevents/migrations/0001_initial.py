@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('city', models.CharField(max_length=128)),
                 ('state', models.CharField(max_length=8, blank=True)),
                 ('summary', models.TextField()),
-                ('country', models.ForeignKey(to='countries.Country')),
+                ('country', models.ForeignKey(to='countries.Country', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['startdate', 'title'],

@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=100)),
                 ('url', models.URLField(blank=True)),
                 ('content', models.BinaryField(null=True)),
-                ('session', models.ForeignKey(to='confreg.ConferenceSession')),
+                ('session', models.ForeignKey(to='confreg.ConferenceSession', on_delete=models.CASCADE)),
             ],
         ),
     ]

@@ -15,12 +15,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conference',
             name='vat_registrations',
-            field=models.ForeignKey(related_name='vat_registrations', verbose_name=b'VAT rate for registrations', blank=True, to='invoices.VatRate', null=True),
+            field=models.ForeignKey(related_name='vat_registrations', verbose_name=b'VAT rate for registrations', blank=True, to='invoices.VatRate', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conference',
             name='vat_sponsorship',
-            field=models.ForeignKey(related_name='vat_sponsorship', verbose_name=b'VAT rate for sponsorships', blank=True, to='invoices.VatRate', null=True),
+            field=models.ForeignKey(related_name='vat_sponsorship', verbose_name=b'VAT rate for sponsorships', blank=True, to='invoices.VatRate', null=True, on_delete=models.CASCADE),
         ),
         migrations.AlterField(
             model_name='conferenceadditionaloption',

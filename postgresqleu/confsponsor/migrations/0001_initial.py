@@ -21,9 +21,9 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('num', models.IntegerField()),
-                ('batch', models.ForeignKey(blank=True, to='confreg.PrepaidBatch', null=True)),
-                ('invoice', models.ForeignKey(to='invoices.Invoice')),
-                ('regtype', models.ForeignKey(to='confreg.RegistrationType')),
+                ('batch', models.ForeignKey(blank=True, to='confreg.PrepaidBatch', null=True, on_delete=models.CASCADE)),
+                ('invoice', models.ForeignKey(to='invoices.Invoice', on_delete=models.CASCADE)),
+                ('regtype', models.ForeignKey(to='confreg.RegistrationType', on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -36,8 +36,8 @@ class Migration(migrations.Migration):
                 ('confirmed', models.BooleanField(default=False)),
                 ('confirmedat', models.DateTimeField(null=True, blank=True)),
                 ('confirmedby', models.CharField(max_length=50, blank=True)),
-                ('conference', models.ForeignKey(to='confreg.Conference')),
-                ('invoice', models.ForeignKey(blank=True, to='invoices.Invoice', null=True)),
+                ('conference', models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE)),
+                ('invoice', models.ForeignKey(blank=True, to='invoices.Invoice', null=True, on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -57,7 +57,7 @@ class Migration(migrations.Migration):
                 ('sentat', models.DateTimeField(auto_now_add=True)),
                 ('subject', models.CharField(max_length=100)),
                 ('message', models.TextField(max_length=8000)),
-                ('conference', models.ForeignKey(to='confreg.Conference')),
+                ('conference', models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('-sentat',),
@@ -97,8 +97,8 @@ class Migration(migrations.Migration):
                 ('instantbuy', models.BooleanField(default=False, verbose_name="Instant buy available")),
                 ('canbuyvoucher', models.BooleanField(default=True, verbose_name="Can buy vouchers")),
                 ('canbuydiscountcode', models.BooleanField(default=True, verbose_name="Can buy discount codes")),
-                ('conference', models.ForeignKey(to='confreg.Conference')),
-                ('contract', models.ForeignKey(blank=True, to='confsponsor.SponsorshipContract', null=True)),
+                ('conference', models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE)),
+                ('contract', models.ForeignKey(blank=True, to='confsponsor.SponsorshipContract', null=True, on_delete=models.CASCADE)),
                 ('paymentmethods', models.ManyToManyField(to='invoices.InvoicePaymentMethod', verbose_name=b'Payment methods for generated invoices')),
             ],
             options={
@@ -108,7 +108,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='sponsorshipbenefit',
             name='level',
-            field=models.ForeignKey(to='confsponsor.SponsorshipLevel'),
+            field=models.ForeignKey(to='confsponsor.SponsorshipLevel', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='sponsormail',
@@ -118,22 +118,22 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='sponsorclaimedbenefit',
             name='benefit',
-            field=models.ForeignKey(to='confsponsor.SponsorshipBenefit'),
+            field=models.ForeignKey(to='confsponsor.SponsorshipBenefit', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='sponsorclaimedbenefit',
             name='claimedby',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='sponsorclaimedbenefit',
             name='sponsor',
-            field=models.ForeignKey(to='confsponsor.Sponsor'),
+            field=models.ForeignKey(to='confsponsor.Sponsor', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='sponsor',
             name='level',
-            field=models.ForeignKey(to='confsponsor.SponsorshipLevel'),
+            field=models.ForeignKey(to='confsponsor.SponsorshipLevel', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='sponsor',
@@ -143,12 +143,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='purchasedvoucher',
             name='sponsor',
-            field=models.ForeignKey(to='confsponsor.Sponsor'),
+            field=models.ForeignKey(to='confsponsor.Sponsor', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='purchasedvoucher',
             name='user',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='sponsorshiplevel',

@@ -25,7 +25,7 @@ class AccountClass(models.Model):
 
 class AccountGroup(models.Model):
 	name = models.CharField(max_length=100)
-	accountclass = models.ForeignKey(AccountClass, blank=False, default=False)
+	accountclass = models.ForeignKey(AccountClass, blank=False, default=False, on_delete=models.CASCADE)
 	foldable = models.BooleanField(null=False, blank=False, default=False)
 
 	def __unicode__(self):
@@ -36,7 +36,7 @@ class AccountGroup(models.Model):
 
 class Account(models.Model):
 	num = models.IntegerField(verbose_name="Account number", unique=True)
-	group = models.ForeignKey(AccountGroup, null=False, blank=False)
+	group = models.ForeignKey(AccountGroup, null=False, blank=False, on_delete=models.CASCADE)
 	name = models.CharField(max_length=100)
 	availableforinvoicing = models.BooleanField(null=False, blank=False, default=False)
 	objectrequirement = models.IntegerField(null=False, default=0, choices=ACCOUNT_OBJECT_CHOICES, verbose_name="Object requirements")
@@ -60,8 +60,8 @@ class Year(models.Model):
 		ordering = ('-year',)
 
 class IncomingBalance(models.Model):
-	year = models.ForeignKey(Year, null=False, blank=False)
-	account = models.ForeignKey(Account, to_field='num', null=False, blank=False)
+	year = models.ForeignKey(Year, null=False, blank=False, on_delete=models.CASCADE)
+	account = models.ForeignKey(Account, to_field='num', null=False, blank=False, on_delete=models.CASCADE)
 	amount = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False, validators=[nonzero_validator,])
 
 	def __unicode__(self):
@@ -83,7 +83,7 @@ class Object(models.Model):
 		ordering = ('name', )
 
 class JournalEntry(models.Model):
-	year = models.ForeignKey(Year, null=False, blank=False)
+	year = models.ForeignKey(Year, null=False, blank=False, on_delete=models.CASCADE)
 	seq = models.IntegerField(null=False, blank=False)
 	date = models.DateField(null=False, blank=False)
 	closed = models.BooleanField(blank=False, null=False, default=False)
@@ -96,10 +96,10 @@ class JournalEntry(models.Model):
 
 
 class JournalItem(models.Model):
-	journal = models.ForeignKey(JournalEntry, null=False, blank=False)
-	account = models.ForeignKey(Account, to_field='num', null=False, blank=False)
+	journal = models.ForeignKey(JournalEntry, null=False, blank=False, on_delete=models.CASCADE)
+	account = models.ForeignKey(Account, to_field='num', null=False, blank=False, on_delete=models.CASCADE)
 	amount = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False, validators=[nonzero_validator,])
-	object = models.ForeignKey(Object, null=True, blank=True)
+	object = models.ForeignKey(Object, null=True, blank=True, on_delete=models.CASCADE)
 	description = models.CharField(max_length=200, null=False, blank=False)
 
 	@property
@@ -115,7 +115,7 @@ class JournalItem(models.Model):
 		return ""
 
 class JournalUrl(models.Model):
-	journal = models.ForeignKey(JournalEntry, null=False, blank=False)
+	journal = models.ForeignKey(JournalEntry, null=False, blank=False, on_delete=models.CASCADE)
 	url = models.URLField(null=False, blank=False)
 
 	def __unicode__(self):
