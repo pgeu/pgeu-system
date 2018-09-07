@@ -5,7 +5,7 @@ from django.forms import ValidationError
 from django.forms.utils import ErrorList
 from django.db.models.fields.files import ImageFieldFile
 from django.db.models import Count
-from django.core import urlresolvers
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.contrib.postgres.forms.ranges import RangeWidget
 
@@ -152,7 +152,7 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 
 	def invoice_link(self, inst):
 		if inst.invoice:
-			url = urlresolvers.reverse('admin:invoices_invoice_change', args=(inst.invoice.id,))
+			url = reverse('admin:invoices_invoice_change', args=(inst.invoice.id,))
 			return mark_safe('<a href="%s">%s</a>' % (url, inst.invoice))
 		else:
 			return ""
@@ -160,7 +160,7 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 
 	def bulkpayment_link(self, inst):
 		if inst.bulkpayment:
-			url = urlresolvers.reverse('admin:confreg_bulkpayment_change', args=(inst.bulkpayment.id,))
+			url = reverse('admin:confreg_bulkpayment_change', args=(inst.bulkpayment.id,))
 			return mark_safe('<a href="%s">%s</a>' % (url, inst.bulkpayment))
 		else:
 			return ""
@@ -469,7 +469,7 @@ class PrepaidVoucherAdmin(admin.ModelAdmin):
 	form = PrepaidVoucherAdminForm
 
 	def buyername(self, obj):
-		url = urlresolvers.reverse('admin:confreg_prepaidbatch_change', args=(obj.batch.pk,))
+		url = reverse('admin:confreg_prepaidbatch_change', args=(obj.batch.pk,))
 		return mark_safe('<a href="%s">%s</a>' % (url, obj.batch.buyername))
 	buyername.allow_tags = True
 

@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.db import transaction
 from django import forms
-from django.core import urlresolvers
+from django.urls import reverse
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib.admin.utils import NestedObjects
@@ -155,8 +155,8 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 
 	if instance.id:
 		try:
-			adminurl = urlresolvers.reverse('admin:{0}_{1}_change'.format(instance._meta.app_label, instance._meta.model_name), args=(instance.id,))
-		except urlresolvers.NoReverseMatch:
+			adminurl = reverse('admin:{0}_{1}_change'.format(instance._meta.app_label, instance._meta.model_name), args=(instance.id,))
+		except NoReverseMatch:
 			adminurl = None
 	else:
 		adminurl = None

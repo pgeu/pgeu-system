@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
-from django.core import urlresolvers
+from django.urls import reverse
 
 from models import TrustlyTransaction, TrustlyRawNotification, TrustlyNotification, TrustlyLog
 
@@ -14,7 +14,7 @@ class TrustlyRawNotificationAdmin(admin.ModelAdmin):
 	def notification_link(self, obj):
 		if obj.trustlynotification_set.exists():
 			n = obj.trustlynotification_set.all()[0]
-			url = urlresolvers.reverse('admin:trustlypayment_trustlynotification_change', args=(n.id,))
+			url = reverse('admin:trustlypayment_trustlynotification_change', args=(n.id,))
 			return mark_safe('<a href="{0}">{1}</a>'.format(url, n))
 	notification_link.short_description = 'Notification'
 
@@ -24,7 +24,7 @@ class TrustlyNotificationAdmin(admin.ModelAdmin):
 	exclude = ('rawnotification',)
 
 	def rawnotification_link(self, obj):
-		url = urlresolvers.reverse('admin:trustlypayment_trustlyrawnotification_change', args=(obj.rawnotification.id, ))
+		url = reverse('admin:trustlypayment_trustlyrawnotification_change', args=(obj.rawnotification.id, ))
 		return mark_safe('<a href="{0}">{1}</a>'.format(url, obj))
 	rawnotification_link.short_description='Rawnotification'
 

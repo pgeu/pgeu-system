@@ -5,7 +5,7 @@
 #
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.core import urlresolvers
+from django.urls import reverse
 from django.conf import settings
 
 from datetime import datetime, timedelta
@@ -45,7 +45,7 @@ class Command(BaseCommand):
 			sio = StringIO()
 			sio.write("The following notifications have not been confirmed in the Adyen integration.\nThese need to be manually processed and then flagged as confirmed!\n\nThis list only contains unconfirmed events older than 24 hours.\n\n\n")
 			for l in lines:
-				sio.write("%s: %s (%s%s)\n" % (l.eventDate, l.eventCode, settings.SITEBASE, urlresolvers.reverse('admin:adyen_notification_change', args=(l.id,))))
+				sio.write("%s: %s (%s%s)\n" % (l.eventDate, l.eventCode, settings.SITEBASE, reverse('admin:adyen_notification_change', args=(l.id,))))
 
 			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 							 settings.ADYEN_NOTIFICATION_RECEIVER,
@@ -62,7 +62,7 @@ class Command(BaseCommand):
 			sio.write("The following payments have been authorized, but not captured for more than %s days.\nThese probably need to be verified manually.\n\n\n" % UNSETTLED_THRESHOLD)
 
 			for l in lines:
-				sio.write("%s at %s: %s (%s%s)\n" % (l.pspReference, l.authorizedat, l.amount, settings.SITEBASE, urlresolvers.reverse('admin:adyen_transactionstatus_change', args=(l.id,))))
+				sio.write("%s at %s: %s (%s%s)\n" % (l.pspReference, l.authorizedat, l.amount, settings.SITEBASE, reverse('admin:adyen_transactionstatus_change', args=(l.id,))))
 
 			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
 							 settings.ADYEN_NOTIFICATION_RECEIVER,

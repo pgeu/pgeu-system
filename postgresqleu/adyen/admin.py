@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
-from django.core import urlresolvers
+from django.urls import reverse
 
 from models import RawNotification, Notification
 from models import Report, TransactionStatus, AdyenLog, Refund
@@ -12,7 +12,7 @@ class RawNotificationAdmin(admin.ModelAdmin):
 	def notification_link(self, obj):
 		if obj.notification_set.exists():
 			n = obj.notification_set.all()[0]
-			url = urlresolvers.reverse("admin:adyen_notification_change", args=(n.id,))
+			url = reverse("admin:adyen_notification_change", args=(n.id,))
 			return mark_safe('<a href="%s">%s</a>' % (url, n))
 	notification_link.short_description = 'Notification'
 
@@ -23,7 +23,7 @@ class NotificationAdmin(admin.ModelAdmin):
 	search_fields = ('pspReference', 'merchantReference', 'reason', )
 
 	def rawnotification_link(self, obj):
-		url = urlresolvers.reverse('admin:adyen_rawnotification_change', args=(obj.rawnotification.id,))
+		url = reverse('admin:adyen_rawnotification_change', args=(obj.rawnotification.id,))
 		return mark_safe('<a href="%s">%s</a>' % (url, obj))
 	rawnotification_link.short_description = 'Rawnotification'
 
@@ -38,13 +38,13 @@ class TransactionStatusAdmin(admin.ModelAdmin):
 
 	def notification_link(self, obj):
 		if obj.notification:
-			url = urlresolvers.reverse("admin:adyen_notification_change", args=(obj.notification.id,))
+			url = reverse("admin:adyen_notification_change", args=(obj.notification.id,))
 			return mark_safe('<a href="%s">%s</a>' % (url, obj.notification))
 	notification_link.short_description = 'Notification'
 
 	def refund_link(self, obj):
 		if obj.refund:
-			url = urlresolvers.reverse("admin:adyen_refund_change", args=(obj.refund.id,))
+			url = reverse("admin:adyen_refund_change", args=(obj.refund.id,))
 			return mark_safe('%s at <a href="%s">%s</a>' % (obj.refund.refund_amount, url, obj.refund.receivedat))
 		else:
 			return "Not refunded"
@@ -57,13 +57,13 @@ class RefundAdmin(admin.ModelAdmin):
 
 	def notification_link(self, obj):
 		if obj.notification:
-			url = urlresolvers.reverse("admin:adyen_notification_change", args=(obj.notification.id,))
+			url = reverse("admin:adyen_notification_change", args=(obj.notification.id,))
 			return mark_safe('<a href="%s">%s</a>' % (url, obj.notification))
 	notification_link.short_description = 'Notification'
 
 	def transaction_link(self, obj):
 		if obj.transaction:
-			url = urlresolvers.reverse("admin:adyen_transactionstatus_change", args=(obj.transaction.id,))
+			url = reverse("admin:adyen_transactionstatus_change", args=(obj.transaction.id,))
 			return mark_safe('<a href="%s">%s</a>' % (url, obj.transaction.pspReference))
 	transaction_link.short_description = 'Transaction'
 

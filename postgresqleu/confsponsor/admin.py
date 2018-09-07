@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.forms.models import BaseInlineFormSet
 from django.forms.utils import ErrorList
-from django.core import urlresolvers
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from selectable.forms.widgets import AutoCompleteSelectMultipleWidget
@@ -102,7 +102,7 @@ class SponsorAdmin(admin.ModelAdmin):
 
 	def invoice_link(self, inst):
 		if inst.invoice:
-			url = urlresolvers.reverse('admin:invoices_invoice_change', args=(inst.invoice.id,))
+			url = reverse('admin:invoices_invoice_change', args=(inst.invoice.id,))
 			return mark_safe('<a href="%s">%s</a>' % (url, inst.invoice))
 		else:
 			return ""

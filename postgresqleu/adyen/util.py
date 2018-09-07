@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.core import urlresolvers
+from django.urls import reverse
 from django.db import transaction
 
 from datetime import datetime, date
@@ -292,7 +292,7 @@ def process_one_notification(notification):
 						 'Received unknown Adyen notification of type %s' % notification.eventCode,
 						 "An unknown Adyen notification of type %s has been received.\n\nYou'll need to go process this one manually:\n%s" % (
 							 notification.eventCode,
-							 urlresolvers.reverse('admin:adyen_notification_change', args=(notification.id,)),
+							 reverse('admin:adyen_notification_change', args=(notification.id,)),
 						 )
 		)
 		AdyenLog(pspReference=notification.pspReference, message='Received notification of unknown type %s' % notification.eventCode, error=True).save()
