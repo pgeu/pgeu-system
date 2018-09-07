@@ -223,6 +223,7 @@ class BulkInvoiceProcessor(object):
 
 
 class AddonInvoiceProcessor(object):
+	can_refund=False
 	# Process invoices for additional options added to an existing
 	# registration.
 	#
@@ -258,9 +259,6 @@ class AddonInvoiceProcessor(object):
 		# We just remove the entry completely, as there is no "unlocking"
 		# here.
 		order.delete()
-
-	def process_invoice_refund(self, invoice):
-		raise Exception("Don't know how to process refunds for this!")
 
 	# Return the user to their dashboard
 	def get_return_url(self, invoice):

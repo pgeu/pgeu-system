@@ -463,9 +463,9 @@ class InvoiceManager(object):
 
 		# If this invoice has a processor, we need to start by calling it
 		processor = self.get_invoice_processor(invoice)
-		if processor:
+		if processor and getattr(processor, 'can_refund', True):
 			try:
-				processor.process_invoice_refund(invoice)
+				r = processor.process_invoice_refund(invoice)
 			except Exception, ex:
 				raise Exception("Failed to run invoice processor '%s': %s" % (invoice.processor, ex))
 

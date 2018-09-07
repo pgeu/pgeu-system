@@ -99,6 +99,7 @@ class InvoiceProcessor(object):
 							 msgtxt,
 							 sendername=sponsor.conference.conferencename)
 
+
 	# Return the user to the sponsor page if they have paid.
 	def get_return_url(self, invoice):
 		try:
