@@ -288,7 +288,7 @@ function saveSetting(name, val) {
 /*
  * Initialize events
  */
-$('#index').live('pageinit', function(event) {
+$(document).on('pageinit', '#index', function(event){
    if (!supports_html5_storage()) {
       alert('Sorry, this app only works if your browser supports local storage!');
       return;
@@ -317,15 +317,15 @@ $('#index').live('pageinit', function(event) {
 });
 
 // Settings form
-$('#set_autosync').live('change', function(e) {
+$(document).on('change', '#set_autosync', function(e) {
    saveSetting('autosync', $('#set_autosync').val());
 });
 
-$('#schedule').live('pageinit',function(event){
+$(document).on('pageinit', '#schedule', function(event){
    update_schedule();
 });
 
-$('#news').live('pageinit', function(event) {
+$(document).on('pageinit', '#news', function(even) {
    if (localStorage['{{conf.urlname}}_news_unread']) {
       localStorage['{{conf.urlname}}_news_unread'] = 0;
       $('#newsunreadcount').text('0');
