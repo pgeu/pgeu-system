@@ -291,7 +291,7 @@ urlpatterns.extend([
 	url(r'^admin/selectable/', include('selectable.urls')),
 
 	# Admin site
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
 
 	# Fallback - send everything nonspecific to the static handler
 	url(r'^(.*)/$', postgresqleu.static.views.static_fallback),
