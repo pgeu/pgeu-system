@@ -72,7 +72,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 		return newval
 
 	def clean_email(self):
-		e = self.cleaned_data.get('email')
+		e = self.cleaned_data.get('email').lower()
 		try:
 			r = ConferenceRegistration.objects.get(email=e, conference=self.instance.conference)
 			if r.id != self.instance.id:
@@ -330,7 +330,7 @@ class NewMultiRegForm(forms.Form):
 		super(NewMultiRegForm, self).__init__(*args, **kwargs)
 
 	def clean_email(self):
-		e = self.cleaned_data.get('email')
+		e = self.cleaned_data.get('email').lower()
 
 		if ConferenceRegistration.objects.filter(conference=self.conference, email=e).exists():
 			raise ValidationError("A registration for this email address already exists. For privacy reasons, management of a registration cannot be transferred.")
