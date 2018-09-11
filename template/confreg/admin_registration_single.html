@@ -114,7 +114,11 @@
  </tr>
  <tr>
   <td>Payment method</td>
-  <td>{{reg.payment_method_description|linebreaksbr}}</td>
+  <td>{{reg.payment_method_description|linebreaksbr}}
+{%if reg.invoice %}
+    <a class="pull-right btn btn-default btn-sm" href="/invoiceadmin/{{reg.invoice.id}}/">View invoice</a>
+{%endif%}
+  </td>
  </tr>
 
 {%if sessions%}
