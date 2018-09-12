@@ -6,6 +6,7 @@ import django.forms.widgets
 from django.utils.safestring import mark_safe
 
 import datetime
+from collections import OrderedDict
 from psycopg2.extras import DateTimeTZRange
 
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
@@ -622,9 +623,28 @@ class BackendNewDiscountCodeForm(django.forms.Form):
 	def get_newform_data(self):
 		return self.cleaned_data['codetype']
 
+class DiscountCodeUserManager(object):
+	title = 'Users'
+	singular = 'user'
+
+	def get_list(self, instance):
+		return [(r.id, r.fullname, r.invoice_status) for r in ConferenceRegistration.objects.filter(conference=instance.conference, vouchercode=instance.code)]
+
+	def get_form(self):
+		return None
+
+	def get_object(self, masterobj, subjid):
+		try:
+			return ConferenceRegistration.objects.get(discountcode=blah, pk=subjid)
+		except ConferenceRegistration.DoesNotExist:
+			return None
+
 class BackendDiscountCodeForm(BackendForm):
 	helplink='vouchers#discountcodes'
 	list_fields = ['code', 'validuntil', 'maxuses']
+	linked_objects = OrderedDict({
+		'../../regdashboard/list': DiscountCodeUserManager(),
+	})
 
 	form_before_new = BackendNewDiscountCodeForm
 
