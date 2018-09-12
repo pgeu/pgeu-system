@@ -79,6 +79,7 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
 class BackendSponsorshipLevelBenefitManager(object):
 	title = 'Benefits'
 	singular = 'benefit'
+	can_add = True
 
 	def get_list(self, instance):
 		return [(b.id, b.benefitname, b.benefitdescription) for b in instance.sponsorshipbenefit_set.all()]

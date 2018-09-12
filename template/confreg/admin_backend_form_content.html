@@ -33,7 +33,7 @@
     </tr>
 {%endfor%}
     </table>
-{%if form.instance.id%}
+{%if form.instance.id and handler.can_add%}
     <a href="{{url}}/new/" class="btn btn-default">Add {{handler.singular}}</a>
 {%endif%}
   </div>
