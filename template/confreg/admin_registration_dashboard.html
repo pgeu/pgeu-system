@@ -15,12 +15,16 @@ table tr.lastrow td {
 <table class="table table-bordered table-striped table-hover table-condensed">
  <tr>
 {%for c in table.columns%}
+{%if forloop.counter > table.hidecols%}
 <th>{{c}}</th>
+{%endif%}
 {%endfor%}
-{%for row in table.rows %}
+{%for row,link in table.rows %}
 <tr {%if forloop.last%}class="lastrow"{%endif%}>
 {%for c in row%}
-<td>{{c|date_or_string}}</td>
+{%if forloop.counter > table.hidecols%}
+<td>{%if link and forloop.counter0 == table.hidecols%}<a href="{{link}}">{%endif%}{{c|date_or_string}}{%if link and forloop.counter0 == table.hidecols%}</a>{%endif%}</td>
+{%endif%}
 {%endfor%}
 </tr>
 {%endfor%}

@@ -2516,6 +2516,7 @@ GROUP BY rt.id ORDER BY rt.sortkey""".format(conference.id))
 	tables.append({'title': 'Registration types',
 				   'columns': ['Type', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total'],
 				   'fixedcols': 1,
+				   'hidecols': 0,
 				   'rows': curs.fetchall()},)
 
 	# Copy/paste string to get the reg status
@@ -2527,33 +2528,39 @@ GROUP BY rt.id ORDER BY rt.sortkey""".format(conference.id))
  CASE WHEN {0} > 0 THEN {0}-count(r.id) ELSE NULL END AS remaining"""
 
 	# Additional options
-	curs.execute("""SELECT ao.name, {0}
+	curs.execute("""SELECT ao.id, ao.name, {0}
 FROM confreg_conferenceregistration r
 INNER JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceregistration_id=r.id
 RIGHT JOIN confreg_conferenceadditionaloption ao ON ao.id=rao.conferenceadditionaloption_id
 LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id
-WHERE ao.conference_id={1} GROUP BY ao.name, ao.maxcount ORDER BY ao.name""".format(statusstr.format('ao.maxcount'), conference.id))
+WHERE ao.conference_id={1} GROUP BY ao.id ORDER BY ao.name""".format(statusstr.format('ao.maxcount'), conference.id))
 	tables.append({'title': 'Additional options',
-				   'columns': ['Name', 'Max uses', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total', 'Remaining'],
-				   'fixedcols': 1,
+				   'columns': ['id', 'Name', 'Max uses', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total', 'Remaining'],
+				   'fixedcols': 2,
+				   'hidecols': 1,
+				   'linker': lambda x: '../addopts/{0}/'.format(x[0]),
 				   'rows': curs.fetchall()})
 
 	# Discount codes
-	curs.execute("""SELECT code, validuntil, {0}
+	curs.execute("""SELECT dc.id, code, validuntil, {0}
 FROM confreg_conferenceregistration r
 RIGHT JOIN confreg_discountcode dc ON dc.code=r.vouchercode
 LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id
 WHERE dc.conference_id={1} AND (r.conference_id={1} OR r.conference_id IS NULL) GROUP BY dc.id ORDER BY code""".format(statusstr.format('maxuses'), conference.id))
 	tables.append({'title': 'Discount codes',
-				   'columns': ['Code', 'Expires', 'Max uses', 'Confirmed', 'Invoiced', 'Unconfirmed','Total', 'Remaining'],
-				   'fixedcols': 2,
+				   'columns': ['id', 'Code', 'Expires', 'Max uses', 'Confirmed', 'Invoiced', 'Unconfirmed','Total', 'Remaining'],
+				   'fixedcols': 3,
+				   'hidecols': 1,
+				   'linker': lambda x: '../discountcodes/{0}/'.format(x[0]),
 				   'rows': curs.fetchall()})
 
 	# Voucher batches
-	curs.execute("SELECT b.buyername, s.name as sponsorname, count(v.user_id) AS used, count(*) FILTER (WHERE v.user_id IS NULL) AS unused, count(*) AS total FROM confreg_prepaidbatch b INNER JOIN confreg_prepaidvoucher v ON v.batch_id=b.id LEFT JOIN confreg_conferenceregistration r ON r.id=v.user_id LEFT JOIN confsponsor_sponsor s ON s.id = b.sponsor_id WHERE b.conference_id={0} GROUP BY b.id, s.name ORDER BY buyername".format(conference.id))
+	curs.execute("SELECT b.id, b.buyername, s.name as sponsorname, count(v.user_id) AS used, count(*) FILTER (WHERE v.user_id IS NULL) AS unused, count(*) AS total FROM confreg_prepaidbatch b INNER JOIN confreg_prepaidvoucher v ON v.batch_id=b.id LEFT JOIN confreg_conferenceregistration r ON r.id=v.user_id LEFT JOIN confsponsor_sponsor s ON s.id = b.sponsor_id WHERE b.conference_id={0} GROUP BY b.id, s.name ORDER BY buyername".format(conference.id))
 	tables.append({'title': 'Prepaid vouchers',
-				   'columns': ['Buyer', 'Sponsor', 'Used', 'Unused', 'Total'],
-				   'fixedcols': 2,
+				   'columns': ['id', 'Buyer', 'Sponsor', 'Used', 'Unused', 'Total'],
+				   'fixedcols': 3,
+				   'hidecols': 1,
+				   'linker': lambda x: '../prepaid/{0}/'.format(x[0]),
 				   'rows': curs.fetchall()})
 
 	# Add a sum row for eveything
@@ -2563,7 +2570,8 @@ WHERE dc.conference_id={1} AND (r.conference_id={1} OR r.conference_id IS NULL) 
 			sums.append('')
 		for cn in range(t['fixedcols']-1, len(t['columns'])-1):
 			sums.append(sum((r[cn+1] for r in t['rows'] if r[cn+1] != None)))
-		t['rows'].append(sums)
+		t['rows'] = [(r, t.get('linker', lambda x: None)(r)) for r in t['rows']]
+		t['rows'].append((sums, None))
 	return render(request, 'confreg/admin_registration_dashboard.html', {
 		'conference': conference,
 		'tables': tables,
