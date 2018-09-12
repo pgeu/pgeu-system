@@ -3057,7 +3057,7 @@ def crossmail(request):
 			q.write("\nUNION ALL\n".join(excs))
 			q.write("\n)\n")
 		q.write("SELECT DISTINCT ON (email) email, fullname, token FROM incs\n")
-		q.write(" WHERE userid NOT IN (SELECT user_id FROM confreg_globaloptout)\n")
+		q.write(" WHERE (userid IS NULL OR userid NOT IN (SELECT user_id FROM confreg_globaloptout))\n")
 		if excs:
 			q.write(" and email NOT IN (SELECT email FROM excs)\n")
 		q.write("ORDER BY email")
