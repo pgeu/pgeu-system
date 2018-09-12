@@ -2468,9 +2468,9 @@ def admin_dashboard(request):
 	past = []
 	for c in conferences:
 		if abs((date.today() - c.startdate).days) < 14 or abs((date.today() - c.enddate).days)  < 14:
-			current.append(c)
+			current.insert(0, c)
 		elif c.startdate > date.today():
-			upcoming.append(c)
+			upcoming.insert(0, c)
 		else:
 			past.append(c)
 
