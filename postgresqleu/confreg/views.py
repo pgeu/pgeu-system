@@ -2503,26 +2503,49 @@ def admin_registration_dashboard(request, urlname):
 	tables = []
 
 	# Registrations by reg type
-	curs.execute("SELECT regtype, count(payconfirmedat) AS confirmed, count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed, count(r.id) AS total FROM confreg_conferenceregistration r RIGHT JOIN confreg_registrationtype rt ON rt.id=r.regtype_id WHERE rt.conference_id={0} GROUP BY rt.id ORDER BY rt.sortkey".format(conference.id))
+	curs.execute("""SELECT regtype,
+ count(payconfirmedat) AS confirmed,
+ count(r.id) FILTER (WHERE payconfirmedat IS NULL AND (r.invoice_id IS NOT NULL OR bp.invoice_id IS NOT NULL)) AS invoiced,
+ count(r.id) FILTER (WHERE payconfirmedat IS NULL AND (r.invoice_id IS NULL AND bp.invoice_id IS NULL)) AS unconfirmed,
+ count(r.id) AS total
+FROM confreg_conferenceregistration r
+RIGHT JOIN confreg_registrationtype rt ON rt.id=r.regtype_id
+LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id
+WHERE rt.conference_id={0}
+GROUP BY rt.id ORDER BY rt.sortkey""".format(conference.id))
 	tables.append({'title': 'Registration types',
-				   'columns': ['Type', 'Confirmed', 'Unconfirmed', 'Total'],
+				   'columns': ['Type', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total'],
 				   'fixedcols': 1,
 				   'rows': curs.fetchall()},)
 
 	# Copy/paste string to get the reg status
-	statusstr = "{0}, count(payconfirmedat) AS confirmed, count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed, count(r.id) AS total, CASE WHEN {0} > 0 THEN {0}-count(r.id) ELSE NULL END AS remaining"
+	statusstr = """{0},
+ count(payconfirmedat) AS confirmed,
+ count(r.id) FILTER (WHERE payconfirmedat IS NULL AND (r.invoice_id IS NOT NULL)) AS invoiced,
+ count(r.id) FILTER (WHERE payconfirmedat IS NULL AND (r.invoice_id IS NULL)) AS unconfirmed,
+ count(r.id) AS total,
+ CASE WHEN {0} > 0 THEN {0}-count(r.id) ELSE NULL END AS remaining"""
 
 	# Additional options
-	curs.execute("SELECT ao.name, {0} FROM confreg_conferenceregistration r INNER JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceregistration_id=r.id RIGHT JOIN confreg_conferenceadditionaloption ao ON ao.id=rao.conferenceadditionaloption_id WHERE ao.conference_id={1} GROUP BY ao.name, ao.maxcount ORDER BY ao.name".format(statusstr.format('ao.maxcount'), conference.id))
+	curs.execute("""SELECT ao.name, {0}
+FROM confreg_conferenceregistration r
+INNER JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceregistration_id=r.id
+RIGHT JOIN confreg_conferenceadditionaloption ao ON ao.id=rao.conferenceadditionaloption_id
+LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id
+WHERE ao.conference_id={1} GROUP BY ao.name, ao.maxcount ORDER BY ao.name""".format(statusstr.format('ao.maxcount'), conference.id))
 	tables.append({'title': 'Additional options',
-				   'columns': ['Name', 'Max uses', 'Confirmed', 'Unconfirmed', 'Total', 'Remaining'],
+				   'columns': ['Name', 'Max uses', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total', 'Remaining'],
 				   'fixedcols': 1,
 				   'rows': curs.fetchall()})
 
 	# Discount codes
-	curs.execute("SELECT code, validuntil, {0} FROM confreg_conferenceregistration r RIGHT JOIN confreg_discountcode dc ON dc.code=r.vouchercode WHERE dc.conference_id={1} AND (r.conference_id={1} OR r.conference_id IS NULL) GROUP BY dc.id ORDER BY code".format(statusstr.format('maxuses'), conference.id))
+	curs.execute("""SELECT code, validuntil, {0}
+FROM confreg_conferenceregistration r
+RIGHT JOIN confreg_discountcode dc ON dc.code=r.vouchercode
+LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id
+WHERE dc.conference_id={1} AND (r.conference_id={1} OR r.conference_id IS NULL) GROUP BY dc.id ORDER BY code""".format(statusstr.format('maxuses'), conference.id))
 	tables.append({'title': 'Discount codes',
-				   'columns': ['Code', 'Expires', 'Max uses', 'Confirmed', 'Unconfirmed','Total', 'Remaining'],
+				   'columns': ['Code', 'Expires', 'Max uses', 'Confirmed', 'Invoiced', 'Unconfirmed','Total', 'Remaining'],
 				   'fixedcols': 2,
 				   'rows': curs.fetchall()})
 
