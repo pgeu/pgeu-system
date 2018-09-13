@@ -628,7 +628,9 @@ class DiscountCodeUserManager(object):
 	singular = 'user'
 
 	def get_list(self, instance):
-		return [(r.id, r.fullname, r.invoice_status) for r in ConferenceRegistration.objects.filter(conference=instance.conference, vouchercode=instance.code)]
+		if instance.code:
+			return [(r.id, r.fullname, r.invoice_status) for r in ConferenceRegistration.objects.filter(conference=instance.conference, vouchercode=instance.code)]
+		return []
 
 	def get_form(self):
 		return None
