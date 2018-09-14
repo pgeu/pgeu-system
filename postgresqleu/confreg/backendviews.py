@@ -3,6 +3,7 @@ from django.db import transaction
 from django import forms
 from django.urls import reverse, NoReverseMatch
 from django.core.exceptions import PermissionDenied
+from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib.admin.utils import NestedObjects
 from django.contrib import messages
@@ -11,6 +12,7 @@ from django.conf import settings
 import urllib
 import datetime
 import csv
+import json
 
 from postgresqleu.util.middleware import RedirectException
 from postgresqleu.util.db import exec_to_list, exec_to_dict, exec_no_result
@@ -556,40 +558,88 @@ def _reencode_row(r):
 		return v
 	return [_reencode_value(x) for x in r]
 
+class DelimitedWriter(object):
+	def __init__(self, delimiter):
+		self.delimiter = delimiter
+		self.response = HttpResponse(content_type='text/plain; charset=utf-8')
+		self.writer = csv.writer(self.response, delimiter=delimiter)
+
+	def writeloaded(self):
+		self.writer.writerow(["File loaded", datetime.datetime.now()])
+
+	def columns(self, columns, grouping=False):
+		self.writer.writerow(columns)
+
+	def write_query(self, query, params):
+		self.write_rows(exec_to_list(query, params))
+
+	def write_rows(self, rows, grouping=False):
+		for r in rows:
+			self.writer.writerow(_reencode_row(r))
+
+class JsonWriter(object):
+	def __init__(self):
+		self.d = {}
+
+	def writeloaded(self):
+		self.d['FileLoaded'] = datetime.datetime.now()
+
+	def columns(self, columns, grouping=False):
+		self.grouping = grouping
+		if grouping:
+			self.columns = columns[1:]
+		else:
+			self.columns = columns
+
+	def write_query(self, query, params):
+		self.write_rows(exec_to_list(query, params))
+
+	def write_rows(self, rows):
+		if self.grouping:
+			data = {}
+		else:
+			data = []
+		for r in rows:
+			if self.grouping:
+				data[r[0]] = dict(zip(self.columns, r[1:]))
+			else:
+				data.append(dict(zip(self.columns, r)))
+		self.d['data'] = data
+
+	@property
+	def response(self):
+		return HttpResponse(json.dumps(self.d, cls=DjangoJSONEncoder), content_type='application/json')
+
 def tokendata(request, urlname, token, datatype, dataformat):
 	conference = get_object_or_404(Conference, urlname=urlname)
 	if not AccessToken.objects.filter(conference=conference, token=token, permissions__contains=[datatype,]).exists():
 		raise Http404()
 
 	if dataformat.lower() == 'csv':
-		delimiter = ","
+		writer = DelimitedWriter(delimiter=",")
 	elif dataformat.lower() == 'tsv':
-		delimiter = "\t"
+		writer = DelimitedWriter(delimiter="\t")
+	elif dataformat.lower() == 'json':
+		writer = JsonWriter()
 	else:
 		raise Http404()
 
-	response = HttpResponse(content_type='text/plain; charset=utf-8')
-	writer = csv.writer(response, delimiter=delimiter)
-	writer.writerow(["File loaded", datetime.datetime.now()])
+	writer.writeloaded()
 
 	if datatype == 'regtypes':
-		writer.writerow(['Type', 'Confirmed', 'Unconfirmed'])
-		for r in exec_to_list("SELECT regtype, count(payconfirmedat) AS confirmed, count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed FROM confreg_conferenceregistration r RIGHT JOIN confreg_registrationtype rt ON rt.id=r.regtype_id WHERE rt.conference_id=%(confid)s GROUP BY rt.id ORDER BY rt.sortkey", { 'confid': conference.id, }):
-			writer.writerow(_reencode_row(r))
+		writer.columns(['Type', 'Confirmed', 'Unconfirmed'], True)
+		writer.write_query("SELECT regtype, count(payconfirmedat) AS confirmed, count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed FROM confreg_conferenceregistration r RIGHT JOIN confreg_registrationtype rt ON rt.id=r.regtype_id WHERE rt.conference_id=%(confid)s GROUP BY rt.id ORDER BY rt.sortkey", { 'confid': conference.id, })
 	elif datatype == 'discounts':
-		writer.writerow(['Code', 'Max uses', 'Confirmed', 'Unconfirmed'])
-		for r in exec_to_list("SELECT code, maxuses, count(payconfirmedat) AS confirmed, count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed FROM confreg_conferenceregistration r RIGHT JOIN confreg_discountcode dc ON dc.code=r.vouchercode WHERE dc.conference_id=%(confid)s AND (r.conference_id=%(confid)s OR r.conference_id IS NULL) GROUP BY dc.id ORDER BY code", {'confid': conference.id, }):
-			writer.writerow(_reencode_row(r))
+		writer.columns(['Code', 'Max uses', 'Confirmed', 'Unconfirmed'], True)
+		writer.write_query("SELECT code, maxuses, count(payconfirmedat) AS confirmed, count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed FROM confreg_conferenceregistration r RIGHT JOIN confreg_discountcode dc ON dc.code=r.vouchercode WHERE dc.conference_id=%(confid)s AND (r.conference_id=%(confid)s OR r.conference_id IS NULL) GROUP BY dc.id ORDER BY code", {'confid': conference.id, })
 	elif datatype == 'vouchers':
-		writer.writerow(["Buyer", "Used", "Unused"])
-		for r in exec_to_list("SELECT b.buyername, count(v.user_id) AS used, count(*) FILTER (WHERE v.user_id IS NULL) AS unused FROM confreg_prepaidbatch b INNER JOIN confreg_prepaidvoucher v ON v.batch_id=b.id WHERE b.conference_id=%(confid)s GROUP BY b.id ORDER BY buyername", {'confid': conference.id, }):
-			writer.writerow(_reencode_row(r))
+		writer.columns(["Buyer", "Used", "Unused"])
+		writer.write_query("SELECT b.buyername, count(v.user_id) AS used, count(*) FILTER (WHERE v.user_id IS NULL) AS unused FROM confreg_prepaidbatch b INNER JOIN confreg_prepaidvoucher v ON v.batch_id=b.id WHERE b.conference_id=%(confid)s GROUP BY b.id ORDER BY buyername", {'confid': conference.id, })
 	elif datatype == 'sponsors':
 		(headers, data) = get_sponsor_dashboard_data(conference)
-		writer.writerow(headers)
-		for r in data:
-			writer.writerow(_reencode_row(r))
+		writer.columns(headers, True)
+		writer.write_rows(data)
 	else:
 		raise Http404()
 
-	return response
+	return writer.response

@@ -695,7 +695,8 @@ class BackendAccessTokenForm(BackendForm):
 	def _transformed_accesstoken_permissions(self):
 		for k,v in AccessTokenPermissions:
 			baseurl = '/events/admin/{0}/tokendata/{1}/{2}'.format(self.conference.urlname, self.instance.token, k)
-			yield k, mark_safe('{0} (<a href="{1}.csv">csv</a>, <a href="{1}.tsv">tsv</a>)'.format(v, baseurl))
+			formats = ['csv', 'tsv', 'json']
+			yield k, mark_safe('{0} ({1})'.format(v,", ".join(['<a href="{0}.{1}">{1}</a>'.format(baseurl, f) for f in formats])))
 
 	def fix_fields(self):
 		self.fields['permissions'].widget = django.forms.CheckboxSelectMultiple(
