@@ -219,9 +219,12 @@ class BackendRegistrationForm(BackendForm):
 	helplink = "registrations"
 	class Meta:
 		model = ConferenceRegistration
-		fields = ['firstname', 'lastname', 'company', 'address', 'country', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'shareemail']
+		fields = ['firstname', 'lastname', 'company', 'address', 'country', 'phone',
+				  'shirtsize', 'dietary', 'twittername', 'nick', 'shareemail',
+				  'additionaloptions']
 
 	def fix_fields(self):
+		self.fields['additionaloptions'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference)
 		if not self.conference.askfood:
 			del self.fields['dietary']
 		if not self.conference.asktshirt:
