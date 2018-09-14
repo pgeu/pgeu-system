@@ -944,6 +944,7 @@ AccessTokenPermissions = (
 	('discounts', 'Discount codes'),
 	('vouchers', 'Voucher codes'),
 	('sponsors', 'Sponsors and counts'),
+	('addopts', 'Additional options and counts'),
 )
 
 class AccessToken(models.Model):

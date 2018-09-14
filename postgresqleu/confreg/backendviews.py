@@ -639,6 +639,9 @@ def tokendata(request, urlname, token, datatype, dataformat):
 		(headers, data) = get_sponsor_dashboard_data(conference)
 		writer.columns(headers, True)
 		writer.write_rows(data)
+	elif datatype == 'addopts':
+		writer.columns(['Option', 'Confirmed', 'Unconfirmed'])
+		writer.write_query("SELECT ao.name, count(payconfirmedat) AS confirmed, count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed FROM confreg_conferenceadditionaloption ao LEFT JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceadditionaloption_id=ao.id LEFT JOIN confreg_conferenceregistration r ON r.id=rao.conferenceregistration_id WHERE ao.conference_id=%(confid)s GROUP BY ao.id ORDER BY ao.name", {'confid': conference.id})
 	else:
 		raise Http404()
 
