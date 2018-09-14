@@ -27,6 +27,5 @@ just for administrators to know what is what.
 Permissions
 :  This list the different kinds of access that can be retrieved using
 this token. For each access type it will also have a csv (comma
-separated) and tsv (tab separated) values link that includes the
+separated), tsv (tab separated) and json values link that includes the
 token. (More formats may be added in the future).
-
