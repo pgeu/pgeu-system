@@ -608,7 +608,9 @@ class JsonWriter(object):
 
 	@property
 	def response(self):
-		return HttpResponse(json.dumps(self.d, cls=DjangoJSONEncoder), content_type='application/json')
+		r = HttpResponse(json.dumps(self.d, cls=DjangoJSONEncoder), content_type='application/json')
+		r['Access-Control-Allow-Origin'] = '*'
+		return r
 
 def tokendata(request, urlname, token, datatype, dataformat):
 	conference = get_object_or_404(Conference, urlname=urlname)
