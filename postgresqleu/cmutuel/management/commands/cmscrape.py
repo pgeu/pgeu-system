@@ -191,7 +191,8 @@ class Command(BaseCommand):
 		with transaction.atomic():
 			if CMutuelTransaction.objects.filter(sent=False).exclude(
 					Q(description__startswith='VIR STG ADYEN ') |
-					Q(description__startswith='VIR ADYEN BV ')
+					Q(description__startswith='VIR ADYEN BV ') |
+					Q(description__startswith='VIR ADYEN NV ')
 			).exists():
 				sio = cStringIO.StringIO()
 				sio.write("One or more new transactions have been recorded in the Credit Mutuel account:\n\n")
@@ -202,7 +203,7 @@ class Command(BaseCommand):
 					# Maybe this shouldn't be hardcoded, but for now it is.
 					# Exclude Adyen transactions, since they are already reported separately.
 					# Still flag them as sent though, so they don't queue up forever.
-					if not (cmt.description.startswith('VIR STG ADYEN ') or cmt.description.startswith('VIR ADYEN BV ')):
+					if not (cmt.description.startswith('VIR STG ADYEN ') or cmt.description.startswith('VIR ADYEN BV ') or cmt.description.startswith('VIR ADYEN NV ')):
 						sio.write("%10s  %15s  %s\n" % (cmt.opdate, cmt.amount, cmt.description))
 
 					cmt.sent = True
