@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('token', models.CharField(max_length=200)),
                 ('description', models.TextField()),
-                ('permissions', postgresqleu.util.forms.ChoiceArrayField(base_field=models.CharField(max_length=32, choices=[(b'regtypes', b'Registration types and counters'), (b'discounts', b'Discount codes'), (b'vouchers', b'Voucher codes'), (b'sponsors', b'Sponsors and counts')]), size=None)),
+                ('permissions', postgresqleu.util.forms.ChoiceArrayField(base_field=models.CharField(max_length=32, choices=[(b'regtypes', b'Registration types and counters'), (b'discounts', b'Discount codes'), (b'vouchers', b'Voucher codes'), (b'sponsors', b'Sponsors and counts'), (b'addopts', b'Additional options and counts')]), size=None)),
                 ('conference', models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE)),
             ],
         ),
