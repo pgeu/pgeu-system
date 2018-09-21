@@ -94,7 +94,7 @@ class BackendSponsorshipLevelBenefitManager(object):
 			return None
 
 	def get_instancemaker(self, masterobj):
-		return lambda: SponsorshipBenefit(level=masterobj)
+		return lambda: SponsorshipBenefit(level=masterobj, class_parameters={})
 
 class BackendSponsorshipLevelForm(BackendForm):
 	helplink='sponsors#level'
