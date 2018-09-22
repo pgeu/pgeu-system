@@ -34,6 +34,7 @@ class _NewFormDataField(django.forms.Field):
 class BackendForm(ConcurrentProtectedModelForm):
 	selectize_multiple_fields = None
 	json_fields = None
+	markdown_fields = []
 	vat_fields = {}
 	verbose_field_names = {}
 	exclude_date_validators = []
@@ -163,6 +164,7 @@ class BackendConferenceForm(BackendForm):
 				  'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'askphotoconsent',
 				  'skill_levels', 'additionalintro', 'callforpapersintro', 'sendwelcomemail', 'welcomemail',
 				  'invoice_autocancel_hours', 'attendees_before_waitlist']
+	markdown_fields = ['promotext', ]
 	selectize_multiple_fields = {
 		'testers': GeneralAccountLookup(),
 		'talkvoters': GeneralAccountLookup(),
@@ -211,6 +213,7 @@ class BackendSuperConferenceForm(BackendForm):
 class BackendConferenceSeriesForm(BackendForm):
 	helplink = "series"
 	list_fields = ['name', 'sortkey', ]
+	markdown_fields = ['intro', ]
 	class Meta:
 		model = ConferenceSeries
 		fields = ['name', 'sortkey', 'intro', ]
@@ -407,6 +410,7 @@ class BackendConferenceSessionForm(BackendForm):
 	selectize_multiple_fields = {
 		'speaker': SpeakerLookup(),
 	}
+	markdown_fields = ['abstract', ]
 	allow_copy_previous = True
 	copy_transform_form = BackendTransformConferenceDateTimeForm
 	auto_cascade_delete_to = ['conferencesession_speaker', 'conferencesessionvote']

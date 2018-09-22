@@ -38,6 +38,7 @@ class BackendSponsorForm(BackendForm):
 class BackendSponsorshipLevelBenefitForm(BackendForm):
 	helplink='sponsors#benefit'
 	json_fields = ['class_parameters', ]
+	markdown_fields = ['benefitdescription', 'claimprompt', ]
 	class Meta:
 		model = SponsorshipBenefit
 		fields = ['benefitname', 'benefitdescription', 'sortkey', 'benefit_class',

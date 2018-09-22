@@ -5,8 +5,41 @@
 <script type="text/javascript" src="/media/ace/ace.js"></script>
 <link rel="stylesheet" href="/media/css/selectize.css" />
 <link rel="stylesheet" href="/media/css/selectize.default.css" />
+{%if form.markdown_fields%}
+<script type="text/javascript" src="/media/showdown/showdown.js"></script>
+{%endif%}
+
+<style>
+div.admin_markdownpreview {
+   border: 1px solid lightgrey;
+   padding: 3px;
+   margin-top: 5px;
+   overflow:scroll;
+   height: 250px;
+}
+</style>
 
 <script language="javascript">
+{%if form.markdown_fields%}
+mdconverter = new Showdown.converter();
+function backend_showdown_preview(id) {
+   var e = $('#' + id);
+
+   var w = $('<div class="admin_markdownpreview"><legend>Markdown preview</legend><div class="admin_markdownpreview_contents"></div></div>').insertAfter(e);
+   var p = w.find('div.admin_markdownpreview_contents');
+   console.log(p);
+
+   function update() {
+      p.html(mdconverter.makeHtml(e.val()));
+   }
+
+   update();
+   e.keyup(function() {
+      update();
+   });
+}
+{%endif%}
+
 $(function() {
 {%for f,lookup in form.selectize_multiple_fields.items%}
    $('#id_{{f}}').selectize({
@@ -28,6 +61,10 @@ $(function() {
          });
       }
    });
+{%endfor%}
+
+{%for f in form.markdown_fields%}
+   backend_showdown_preview('id_{{f}}');
 {%endfor%}
 
 {%for f in form.json_fields%}
