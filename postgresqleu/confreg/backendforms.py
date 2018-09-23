@@ -741,7 +741,7 @@ class BackendNewsForm(BackendForm):
 		# Must be administrator on current conference
 		self.fields['author'].queryset = NewsPosterProfile.objects.filter(author__conference=self.conference)
 		# Add help hint dynamically so we can include the conference name
-		self.fields['title'].help_text = 'Note! Title wil be prefixed with "{0} - " on shared frontpage and RSS!'.format(self.conference.conferencename)
+		self.fields['title'].help_text = u'Note! Title will be prefixed with "{0} - " on shared frontpage and RSS!'.format(self.conference.conferencename)
 
 
 #
