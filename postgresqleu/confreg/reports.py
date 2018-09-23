@@ -16,6 +16,7 @@ from jinjabadge import render_jinja_badges
 
 from postgresqleu.countries.models import Country
 from models import ConferenceRegistration, RegistrationType, ConferenceAdditionalOption, ShirtSize
+from models import STATUS_CHOICES
 
 # Fields that are available in an advanced attendee report
 # (id, field title, default, field_user_for_order_by)
@@ -96,6 +97,31 @@ class ReportFilter(object):
 		else:
 			return '<input type="text" class="adv_filter_box" name="adv_%s_filter"><br/>' % self.id
 
+# Filter by speaker state is more complex than the default filter can handle,
+# so it needs a special implementation.
+class ReportSpeakerFilter(object):
+	id='speakerstate'
+
+	def __init__(self, conference):
+		self.conference = conference
+
+	def build_Q(self, POST):
+		return Q(attendee__speaker__conferencesession__conference=self.conference,
+				 attendee__speaker__conferencesession__status=POST.get('adv_speakerstate'))
+
+	@property
+	def html(self):
+		return """<input type="checkbox" class="adv_filter_check" name="adv_%s_on">Speaker with talk state%s""" % (
+			self.id,
+			self._widgetstring(),
+		)
+
+	def _widgetstring(self):
+		field = forms.MultipleChoiceField(choices=STATUS_CHOICES)
+		return "<blockquote class=\"adv_filter_wrap\">%s</blockquote><br/>" % (field.widget.render("adv_speakerstate", None), )
+
+
+
 def attendee_report_filters(conference):
 	yield ReportFilter('regtype', 'Registration type', RegistrationType.objects.filter(conference=conference), 'regtype')
 	yield ReportFilter('lastname', 'Last name')
@@ -110,6 +136,7 @@ def attendee_report_filters(conference):
 	yield ReportFilter('payconfirmedat', 'Payment confirmed', emptyasnull=False)
 	yield ReportFilter('additionaloptions', 'Additional options', ConferenceAdditionalOption.objects.filter(conference=conference), 'name')
 	yield ReportFilter('shirtsize', 'T-Shirt size', ShirtSize.objects.all())
+	yield ReportSpeakerFilter(conference)
 
 
 class ReportWriterBase(object):
