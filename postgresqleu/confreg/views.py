@@ -172,7 +172,6 @@ def confhome(request, confname):
 
 def news_json(request, confname):
 	news = ConferenceNews.objects.select_related('author').filter(conference__urlname=confname,
-																  inrss=True,
 																  datetime__lt=datetime.now(),
 	)[:5]
 
@@ -182,6 +181,7 @@ def news_json(request, confname):
 			'datetime': n.datetime,
 			'authorname': n.author.fullname,
 			'summary': markdown.markdown(n.summary),
+			'inrss': n.inrss,
 		} for n in news],
 		cls=JsonSerializer), content_type='application/json')
 
