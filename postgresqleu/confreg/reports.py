@@ -107,7 +107,7 @@ class ReportSpeakerFilter(object):
 
 	def build_Q(self, POST):
 		return Q(attendee__speaker__conferencesession__conference=self.conference,
-				 attendee__speaker__conferencesession__status=POST.get('adv_speakerstate'))
+				 attendee__speaker__conferencesession__status__in=POST.getlist('adv_speakerstate'))
 
 	@property
 	def html(self):
