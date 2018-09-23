@@ -240,7 +240,6 @@ if __name__ == "__main__":
 	parser.add_argument('destpath', type=str, help='Destination path')
 	parser.add_argument('--branch', type=str, help='Deploy directly from branch')
 	parser.add_argument('--templates', action='store_true', help='Deploy templates (except pages) and static instead of pages')
-	parser.add_argument('--githash', type=str, help='Use hash as githash instead of autodetecting')
 
 	args = parser.parse_args()
 
@@ -265,13 +264,20 @@ if __name__ == "__main__":
 							 cwd=args.sourcepath)
 		source = TarWrapper(s.stdout)
 		s.stdout.close()
+		s = subprocess.Popen(['/usr/bin/git', 'rev-parse', '--short', args.branch],
+							 stdout=subprocess.PIPE,
+							 cwd=args.sourcepath)
+		git_revision = s.stdout.readline().strip()
+		s.stdout.close()
 	else:
 		source = SourceWrapper(args.sourcepath)
+		git_revision = find_git_revision(args.sourcepath)
 
 	for d in ('templates', 'templates/pages', 'static'):
 		if not source.isdir(d):
 			print "'{0}' subdirectory does not exist in source!".format(d)
 			sys.exit(1)
+
 
 	if args.templates:
 		# Just deploy templates. They are simply copied over, for use by backend
@@ -294,10 +300,7 @@ if __name__ == "__main__":
 
 		# Generate a githash file
 		with open(os.path.join(args.destpath, ".deploystatic_githash"), "w") as f:
-			if args.githash:
-				f.write(args.githash)
-			else:
-				f.write(find_git_revision(args.sourcepath))
+			f.write(git_revision)
 
 		sys.exit(0)
 
@@ -312,10 +315,7 @@ if __name__ == "__main__":
 	context = load_context(source.readfile('templates/context.json'))
 
 	# Fetch the current git revision if this is coming out of a git repository
-	if args.githash:
-		context['githash'] = args.githash
-	else:
-		context['githash'] = find_git_revision(args.sourcepath)
+	context['githash'] = git_revision
 
 	# Load a context that can override everything, including static hashes
 	context.update(load_context(source.readfile('templates/context.override.json')))
