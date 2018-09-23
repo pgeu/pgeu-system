@@ -23,6 +23,7 @@ from models import AttendeeMail, ConferenceAdditionalOption
 from models import PendingAdditionalOrder
 from models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
 from models import STATUS_CHOICES
+from models import ConferenceNews
 from forms import ConferenceRegistrationForm, RegistrationChangeForm, ConferenceSessionFeedbackForm
 from forms import ConferenceFeedbackForm, SpeakerProfileForm
 from forms import CallForPapersForm, CallForPapersSpeakerForm
@@ -61,6 +62,7 @@ from Crypto.Hash import SHA256
 from StringIO import StringIO
 
 import json
+import markdown
 
 #
 # Render a conference page. It will load the template using the jinja system
@@ -167,6 +169,25 @@ def confhome(request, confname):
 			return HttpResponseRedirect('register/')
 
 	return HttpResponseRedirect(conference.confurl)
+
+def news_json(request, confname):
+	news = ConferenceNews.objects.select_related('author').filter(conference__urlname=confname,
+																  inrss=True,
+																  datetime__lt=datetime.now(),
+	)[:5]
+
+	r = HttpResponse(json.dumps(
+		[{
+			'title': n.title,
+			'datetime': n.datetime,
+			'authorname': n.author.fullname,
+			'summary': markdown.markdown(n.summary),
+		} for n in news],
+		cls=JsonSerializer), content_type='application/json')
+
+	r['Access-Control-Allow-Origin'] = '*'
+	return r
+
 
 @login_required
 @transaction.atomic

@@ -23,6 +23,8 @@ from decimal import Decimal
 
 from postgresqleu.countries.models import Country
 from postgresqleu.invoices.models import Invoice, VatRate
+from postgresqleu.newsevents.models import NewsPosterProfile
+
 from regtypes import special_reg_types
 
 SKILL_CHOICES = (
@@ -963,3 +965,20 @@ class AccessToken(models.Model):
 
 	def _display_permissions(self):
 		return ", ".join(self.permissions)
+
+
+
+class ConferenceNews(models.Model):
+	conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
+	datetime = models.DateTimeField(blank=False, default=datetime.datetime.now)
+	title = models.CharField(max_length=128, blank=False)
+	summary = models.TextField(blank=False)
+	author = models.ForeignKey(NewsPosterProfile)
+	inrss = models.BooleanField(null=False, default=True, verbose_name="Include in RSS feed")
+
+	def __unicode__(self):
+		return self.title
+
+	class Meta:
+		ordering = ['-datetime', ]
+		verbose_name_plural = 'Conference News'

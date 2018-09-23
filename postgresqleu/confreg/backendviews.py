@@ -34,6 +34,7 @@ from backendforms import BackendConferenceSessionSlotForm, BackendVolunteerSlotF
 from backendforms import BackendFeedbackQuestionForm, BackendDiscountCodeForm
 from backendforms import BackendAccessTokenForm
 from backendforms import BackendConferenceSeriesForm
+from backendforms import BackendNewsForm
 
 def get_authenticated_conference(request, urlname):
 	if not request.user.is_authenticated:
@@ -502,6 +503,12 @@ def edit_accesstokens(request, urlname, rest):
 	return backend_list_editor(request,
 							   urlname,
 							   BackendAccessTokenForm,
+							   rest)
+
+def edit_news(request, urlname, rest):
+	return backend_list_editor(request,
+							   urlname,
+							   BackendNewsForm,
 							   rest)
 
 

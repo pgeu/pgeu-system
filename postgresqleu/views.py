@@ -1,10 +1,14 @@
 # Index has a very special view that lives out here
 from django.shortcuts import render, get_object_or_404
+from django.template.defaultfilters import slugify
 
 from postgresqleu.newsevents.models import News
 from postgresqleu.confreg.models import Conference, ConferenceSeries
 
+from postgresqleu.util.db import exec_to_dict
+
 import datetime
+import markdown
 
 # Handle the frontpage
 def index(request):
@@ -13,7 +17,32 @@ def index(request):
 		where=["EXISTS (SELECT 1 FROM confreg_conference c WHERE c.series_id=confreg_conferenceseries.id AND c.promoactive)"]
 	)
 
-	news = News.objects.filter(datetime__lte=datetime.datetime.today())[:5]
+	# Native query, because django ORM vs UNION...
+	# If a news item has the flag "high priority until" until a date that's still in the future,
+	# make sure it always bubbles to the top of the list. We do this by creating a secondary ordering
+	# field to order by first. To make sure we capture all such things, we need to get at least the
+	# same number of items from each subset and then LIMIT it once again for the total limit.
+	news = exec_to_dict("""WITH main AS (
+  SELECT id, NULL::text AS confurl, CASE WHEN highpriorityuntil > CURRENT_TIMESTAMP THEN 1 ELSE 0 END AS priosort, datetime, title, summary
+  FROM newsevents_news
+  WHERE datetime<CURRENT_TIMESTAMP ORDER BY datetime DESC LIMIT 5),
+conf AS (
+  SELECT n.id, c.confurl, 0 AS priosort, datetime, c.conferencename || ': ' || title AS title, summary
+  FROM confreg_conferencenews n
+  INNER JOIN confreg_conference c ON c.id=conference_id
+  WHERE datetime<CURRENT_TIMESTAMP
+  ORDER BY datetime DESC LIMIT 5)
+SELECT id, confurl, datetime, title, summary, priosort FROM main
+UNION ALL
+SELECT id, confurl, datetime, title, summary, priosort FROM conf
+ORDER BY priosort DESC, datetime DESC LIMIT 5""")
+	for n in news:
+		n['summaryhtml'] = markdown.markdown(n['summary'])
+		if n['confurl']:
+			n['itemlink'] = n['confurl']
+		else:
+			n['itemlink'] = '/news/{0}-{1}/'.format(slugify(n['title']), n['id'])
+
 	return render(request, 'index.html', {
 		'events': events,
 		'series': series,

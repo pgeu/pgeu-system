@@ -68,12 +68,14 @@
 	<h2 class="text-center">Latest news &nbsp;<a href="/feeds/news/"><i class="fa fa-rss"></i></a></h2>
 {%for n in news%}
 	<div class="{%if forloop.counter > 2%}d-none d-lg-block{%endif%}">
-	<h4 class="text-center">{{n.title}}</h4>
+	<h4 class="text-center"><a href="{{n.itemlink}}">{{n.title}}</a></h4>
 	<div class="text-center small"><i class="fa fa-clock-o"></i> {{n.datetime|date:"Y-m-d"}}</div>
 	<div class="newscontent">
-	  {{n.summary|markdown|truncatewords_html:100}}
+	  {{n.summaryhtml|safe|truncatewords_html:100}}
 	</div>
-	<a href="/news/{{n.title|slugify}}-{{n.id}}/" class="btn btn-primary btn-sm">Read more</a>
+{%if n.summaryhtml|truncatewords_html:100 != n.summaryhtml%}
+	<a href="{{n.itemlink}}" class="btn btn-primary btn-sm">Read more</a>
+{%endif%}
 	</div>
 {%endfor%}
       </div>

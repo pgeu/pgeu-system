@@ -22,6 +22,8 @@ from postgresqleu.confreg.models import ConferenceSession, Track, Room
 from postgresqleu.confreg.models import ConferenceSessionScheduleSlot, VolunteerSlot
 from postgresqleu.confreg.models import DiscountCode, AccessToken, AccessTokenPermissions
 from postgresqleu.confreg.models import ConferenceSeries
+from postgresqleu.confreg.models import ConferenceNews
+from postgresqleu.newsevents.models import NewsPosterProfile
 
 from postgresqleu.confreg.models import valid_status_transitions, get_status_string
 
@@ -722,6 +724,25 @@ class BackendAccessTokenForm(BackendForm):
 		return {
 			'token': generate_random_token()
 		}
+
+
+class BackendNewsForm(BackendForm):
+	helplink = 'news'
+	list_fields = ['title', 'datetime', 'author' ]
+	markdown_fields = ['summary', ]
+	exclude_date_validators = ['datetime', ]
+	defaultsort = [[1, "desc"]]
+
+	class Meta:
+		model = ConferenceNews
+		fields = ['author', 'datetime', 'title', 'inrss', 'summary' ]
+
+	def fix_fields(self):
+		# Must be administrator on current conference
+		self.fields['author'].queryset = NewsPosterProfile.objects.filter(author__conference=self.conference)
+		# Add help hint dynamically so we can include the conference name
+		self.fields['title'].help_text = 'Note! Title wil be prefixed with "{0} - " on shared frontpage and RSS!'.format(self.conference.conferencename)
+
 
 #
 # Form to pick a conference to copy from

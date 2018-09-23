@@ -19,6 +19,7 @@ from models import PrepaidVoucher, PrepaidBatch, BulkPayment, DiscountCode
 from models import PendingAdditionalOrder
 from models import VolunteerSlot
 from models import AccessToken
+from models import ConferenceNews
 
 from selectable.forms.widgets import AutoCompleteSelectWidget, AutoCompleteSelectMultipleWidget
 from postgresqleu.accountinfo.lookups import UserLookup
@@ -620,3 +621,4 @@ admin.site.register(AttendeeMail, AttendeeMailAdmin)
 admin.site.register(PendingAdditionalOrder, PendingAdditionalOrderAdmin)
 admin.site.register(VolunteerSlot, VolunteerSlotAdmin)
 admin.site.register(AccessToken)
+admin.site.register(ConferenceNews)

@@ -50,7 +50,7 @@ div.contentwrap h2:after {
     margin: .5em 0 .5em .75em;
 }
 
-h2 a, h3 a {
+h2 a, h3 a, h4 a {
     text-decoration: none;
     color: #515151;
 }

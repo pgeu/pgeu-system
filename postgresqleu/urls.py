@@ -26,7 +26,7 @@ import postgresqleu.adyen.views
 import postgresqleu.accountinfo.views
 
 from postgresqleu.newsevents.feeds import LatestNews
-from postgresqleu.confreg.feeds import LatestEvents
+from postgresqleu.confreg.feeds import LatestEvents, ConferenceNewsFeed
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
@@ -40,6 +40,7 @@ urlpatterns = [
 	url(r'^events/past/$', postgresqleu.views.pastevents),
 	url(r'^(events/services)/$', postgresqleu.static.views.static_fallback),
 	url(r'^events/series/[^/]+-(\d+)/$', postgresqleu.views.eventseries),
+	url(r'^news/archive/$', postgresqleu.newsevents.views.newsarchive),
 	url(r'news/[^/]+-(\d+)/$', postgresqleu.newsevents.views.newsitem),
 
 	# Log in/log out
@@ -50,7 +51,9 @@ urlpatterns = [
 	url(r'^auth_receive/$', postgresqleu.auth.auth_receive),
 
 	# Feeds
-	url(r'^feeds/news/$', LatestNews()),
+	url(r'^feeds/(?P<what>(news|user/[^/]+))/$', LatestNews()),
+	url(r'^feeds/conf/(?P<what>[^/]+)/$', ConferenceNewsFeed()),
+	url(r'^feeds/conf/(?P<confname>[^/]+)/json/$', postgresqleu.confreg.views.news_json),
 
 	# Conference management
 	url(r'^events/(?P<confname>[^/]+)/register/(?P<whatfor>(self)/)?$', postgresqleu.confreg.views.register),
@@ -161,6 +164,7 @@ urlpatterns = [
 	url(r'^events/admin/(\w+)/feedbackquestions/(.*/)?$', postgresqleu.confreg.backendviews.edit_feedbackquestions),
 	url(r'^events/admin/(\w+)/discountcodes/(.*/)?$', postgresqleu.confreg.backendviews.edit_discountcodes),
 	url(r'^events/admin/(\w+)/accesstokens/(.*/)?$', postgresqleu.confreg.backendviews.edit_accesstokens),
+	url(r'^events/admin/(\w+)/news/(.*/)?$', postgresqleu.confreg.backendviews.edit_news),
 	url(r'^events/admin/(\w+)/pendinginvoices/$', postgresqleu.confreg.backendviews.pendinginvoices),
 	url(r'^events/admin/(\w+)/purgedata/$', postgresqleu.confreg.backendviews.purge_personal_data),
 	url(r'^events/admin/([^/]+)/talkvote/$', postgresqleu.confreg.views.talkvote),
