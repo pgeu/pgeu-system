@@ -16,6 +16,9 @@ $(document).ready(function() {
          { targets: 'coltype-nosearch', searchable: false},
 
       ],
+{%if defaultsort%}
+      'order': {{defaultsort|safe}},
+{%endif%}
    });
 
    $('#copyallcheckbox').click(function(e) {

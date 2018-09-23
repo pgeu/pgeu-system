@@ -44,6 +44,7 @@ class BackendForm(ConcurrentProtectedModelForm):
 	allow_copy_previous = False
 	copy_transform_form = None
 	coltypes = {}
+	defaultsort = []
 	readonly_fields = []
 	file_fields = []
 	linked_objects = {}
@@ -265,6 +266,7 @@ class BackendRegistrationTypeForm(BackendForm):
 	coltypes = {
 		'Sortkey': ['nosearch' ],
 	}
+	defaultsort = [[4, 'asc']]
 	auto_cascade_delete_to=['registrationtype_days', 'registrationtype_requires_option']
 
 	class Meta:
@@ -361,6 +363,7 @@ class BackendTrackForm(BackendForm):
 	coltypes = {
 		'Sortkey': ['nosearch' ],
 	}
+	defaultsort = [[1, 'asc']]
 
 	@classmethod
 	def copy_from_conference(self, targetconf, sourceconf, idlist):
@@ -386,6 +389,7 @@ class BackendRoomForm(BackendForm):
 	coltypes = {
 		'Sortkey': ['nosearch' ],
 	}
+	defaultsort = [[1, 'asc']]
 
 class BackendTransformConferenceDateTimeForm(django.forms.Form):
 	timeshift = django.forms.DurationField(required=True, help_text="Shift all times by this much")
@@ -595,9 +599,12 @@ class BackendFeedbackQuestionForm(BackendForm):
 	class Meta:
 		model = ConferenceFeedbackQuestion
 		fields = ['question', 'isfreetext', 'textchoices', 'sortkey', 'newfieldset']
+
 	coltypes = {
 		'Sortkey': ['nosearch' ],
+		'Newfieldset': ['nosort', ],
 	}
+	defaultsort = [[2, 'asc']]
 
 	def clean(self):
 		cleaned_data = super(BackendFeedbackQuestionForm, self).clean()
