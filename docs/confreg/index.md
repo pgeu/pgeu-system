@@ -18,6 +18,7 @@ work from here.
     * [Creating new conference](super_conference#new) (superusers only)
     * [Configuring a conference](configuring)
     * [Conference series](series)
+	* [News](news)
 * Call for papers and schedule
     * [Call for papers](callforpapers)
     * [Schedule](schedule)
