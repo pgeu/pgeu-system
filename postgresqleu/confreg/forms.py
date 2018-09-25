@@ -622,7 +622,10 @@ class WaitlistOfferForm(forms.Form):
 		super(WaitlistOfferForm, self).__init__(*args, **kwargs)
 		if self.data:
 			self.reg_list = self._get_id_list_from_data()
-			self.fields['confirm'].help_text = "Confirm that you want to send an offer to {0} attendees on the waitlist".format(len(self.reg_list))
+			if len(self.reg_list) == 1:
+				self.fields['confirm'].help_text = "Confirm that you want to send an offer to an attendee on the waitlist"
+			else
+				self.fields['confirm'].help_text = "Confirm that you want to send an offer to {0} attendees on the waitlist".format(len(self.reg_list))
 			if self.data.get('submit') == 'Make offer for hours':
 				del self.fields['until']
 			else:
