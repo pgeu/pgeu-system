@@ -4,7 +4,10 @@
 {%block layoutblock%}
 <h1>Conference Sponsorship - {{sponsor}}</h1>
 
-<h2>{{benefit.benefit}}</h2>
+<h3>Sponsor details</h3>
+{%include "confsponsor/admin_sponsor_details.html" %}
+
+<h2>Claimed benefit: {{benefit.benefit}}</h2>
 {%if benefit.confirmed%}
 <p>This benefit has been fully confirmed.</p>
 {%else%}

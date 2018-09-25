@@ -1,0 +1,66 @@
+<table class="table table-condensed">
+  <tr>
+    <th class="col-md-2">Conference:</th>
+    <td>{{conference}}</td>
+  </tr>
+  <tr>
+    <th>Sponsor:</th>
+    <td>{{sponsor.name}}</td>
+  </tr>
+  <tr>
+    <th>Display name:</th>
+    <td>{{sponsor.displayname}}</td>
+  </tr>
+  <tr>
+    <th style="vertical-align:top;">Invoice address:</th>
+    <td>{{sponsor.invoiceaddr|linebreaks}}</td>
+  </tr>
+{%if euvat%}
+  <tr>
+    <th>VAT number:</th>
+    <td>{{sponsor.vatnumber}}</td>
+  </tr>
+{%endif%}
+  <tr>
+    <th>URL:</th>
+    <td>{{sponsor.url}}</td>
+  </tr>
+  <tr>
+    <th>Level:</th>
+    <td>{{sponsor.level}}</td>
+  </tr>
+{%if sponsor.twittername%}
+  <tr>
+    <th>Twittername:</th>
+    <td>{{sponsor.twittername}}</td>
+  </tr>
+{%endif%}
+  <tr>
+    <th>Status:</th>
+    <td>{%if sponsor.confirmed%}Confirmed ({{sponsor.confirmedat}}){%else%}<i>Awaiting confirmation (signed up {{sponsor.signupat}})</i>{%endif%}</td>
+  </tr>
+{%if details%}
+{%if sponsor.invoice%}
+  <tr>
+    <th>Payment status:</th>
+    <td>{%if sponsor.invoice.paidat%}Paid {{sponsor.invoice.paidat}}{%elif sponsor.invoice.isexpired%}Overdue{%else%}Invoiced{%endif%}</td>
+  </tr>
+{%endif%}
+  <tr>
+    <th>Edit:</th>
+    <td><a class="btn btn-default btn-sm" href="edit/">Edit sponsor</a></td>
+  </tr>
+  <tr>
+    <th>View:</th>
+    <td><a class="btn btn-default btn-sm" href="/events/sponsor/{{sponsor.id}}/">View as end user</a></td>
+  </tr>
+  <tr>
+    <th>Managers:</th>
+    <td><ul>
+	{%for m in sponsor.managers.all%}
+	<li>{{m.first_name}} {{m.last_name}} ({{m.email}})</li>
+	{%endfor%}
+    </ul></td>
+  </tr>
+{%endif%}{# if details #}
+</table>
