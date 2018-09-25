@@ -14,9 +14,9 @@ something that is currently created globally in the server (and be an
 administrator for the conference).
 
 The news posts made will all post to the conference RSS feed (at
-/feeds/conf/<confurl>/).
+/feeds/conf/&lt;confurl&gt/).
 
-There is also a per-user RSS feed (at /feeds/user/<userurl>/ where the
+There is also a per-user RSS feed (at /feeds/user/&lt;userurl&gt;/ where the
 userurl is configured in the users News Poster Profile). The per user
 feed is intended to be used with news aggregators that require per
 person feeds.
@@ -24,7 +24,7 @@ person feeds.
 ## JSON feed
 
 There is also a JSON format feed for the conference news (at
-/feeds/conf/<confurl>/json/). This is intended to be used to feed news
+/feeds/conf/&lt;confurl&gt;/json/). This is intended to be used to feed news
 on the front page of the conference website, while the website can
 remain static. This feed will include *all* news, including that which
 has been tagged not to be included in RSS.
