@@ -50,3 +50,6 @@ ORDER BY datetime DESC LIMIT 10""", {
 
 	def item_link(self, news):
 		return '{0}##{1}'.format(news['link'], news['id'])
+
+	def item_pubdate(self, news):
+		return news['datetime']

@@ -71,3 +71,5 @@ ORDER BY datetime DESC LIMIT 10""".format(extrafilter), params)
 				news['id'],
 			)
 
+	def item_pubdate(self, news):
+		return news['datetime']
