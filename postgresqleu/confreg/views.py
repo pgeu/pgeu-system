@@ -280,11 +280,6 @@ def register(request, confname, whatfor=None):
 				# Complete registration!
 				return HttpResponseRedirect("{0}confirm/".format(redir_root))
 
-			# Or did they click cancel?
-			if request.POST['submit'] == 'Cancel registration':
-				reg.delete()
-				return HttpResponseRedirect("{0}canceled/".format(redir_root))
-
 			# Or did they save but we're on the "wrong" url
 			if redir_root:
 				return HttpResponseRedirect(redir_root)
