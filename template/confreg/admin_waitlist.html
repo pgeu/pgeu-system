@@ -79,6 +79,7 @@ function cancelOffer(id) {
 </div>
 
 <h3>Waitlist</h3>
+{%if waitlist%}
 <p>
 The current entries on the waitlist are:
 </p>
@@ -131,6 +132,9 @@ The current entries on the waitlist are:
 
 </table>
 </form>
+{%else%}
+<p>The waitlist is currently empty</p>
+{%endif%}
 
 <h3>Processed waitlist</h3>
 {%with waitlist=waitlist_cleared%}
