@@ -1,0 +1,8 @@
+{%extends "confreg/confadmin_base.html"%}
+{%block title%}Send waitlist email{%endblock%}
+{%block layoutblock%}
+<h1>Send waitlist email</h1>
+<form class="form-horizontal" method="POST" action="." enctype="multipart/form-data">{%csrf_token%}
+{%include "confreg/admin_backend_form_content.html" %}
+</form>
+{%endblock%}

@@ -60,3 +60,17 @@ offers can be given.
 ## Waitlist workflow
 
 ![Waitlist workflow](graphs/waitlist.svg)
+
+## Waitlist emails <a name="emails"></a>
+
+It is also possible to send email to all attendees on the
+waitlist. This can be filtered to be all on waitlist, or just the ones
+with or without offers.
+
+Unlike [attendee emails](emails) these are sent directly but are not
+archived on the registration pages or similar, as these are to
+accounts that have not yet got a registration.
+
+If wanted, the position on the waitlist and/or the size of the
+waitlist can be included. If this is selected, a sentence about it
+will be added as a footer of the email.

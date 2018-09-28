@@ -29,7 +29,7 @@ from forms import ConferenceFeedbackForm, SpeakerProfileForm
 from forms import CallForPapersForm, CallForPapersSpeakerForm
 from forms import CallForPapersCopyForm, PrepaidCreateForm, BulkRegistrationForm
 from forms import EmailSendForm, EmailSessionForm, CrossConferenceMailForm
-from forms import AttendeeMailForm, WaitlistOfferForm, TransferRegForm
+from forms import AttendeeMailForm, WaitlistOfferForm, WaitlistSendmailForm, TransferRegForm
 from forms import NewMultiRegForm, MultiRegInvoiceForm
 from forms import SessionSlidesUrlForm, SessionSlidesFileForm
 from util import invoicerows_for_registration, notify_reg_confirmed, InvoicerowsException
@@ -2809,6 +2809,59 @@ def admin_waitlist_cancel(request, urlname, wlid):
 
 		messages.info(request, "Waitlist entry removed.")
 	return HttpResponseRedirect("../../")
+
+
+def admin_waitlist_sendmail(request, urlname):
+	conference = get_authenticated_conference(request, urlname)
+
+	if request.method == 'POST':
+		form = WaitlistSendmailForm(conference, data=request.POST)
+		if form.is_valid():
+			with transaction.atomic():
+				q = RegistrationWaitlistEntry.objects.filter(registration__conference=conference,
+															 registration__payconfirmedat__isnull=True)
+				tot = q.all().count()
+				if not tot:
+					messages.warning(request, "Waitlist was empty, no email was sent.")
+					return HttpResponseRedirect('../')
+
+				if int(form.cleaned_data['waitlist_target']) == form.TARGET_OFFERS:
+					q = q.filter(offeredon__isnull=False)
+				elif int(form.cleaned_data['waitlist_target']) == form.TARGET_NOOFFERS:
+					q = q.filter(offeredon__isnull=True)
+
+				n = 0
+				for w in q.order_by('enteredon'):
+					n += 1
+
+					msgbody = form.cleaned_data['message']
+					if int(form.cleaned_data['include_position']) == form.POSITION_FULL:
+						msgbody += "\n\nYour position on the waitlist is {0} of {1}.\n".format(n, tot)
+					elif int(form.cleaned_data['include_position']) == form.POSITION_ONLY:
+						msgbody += "\n\nYour position on the waitlist is {0}.\n".format(n)
+					elif int(form.cleaned_data['include_position']) == form.POSITION_SIZE:
+						msgbody += "\n\nThe current size of the waitlist is {0}.\n".format(tot)
+
+					send_simple_mail(conference.contactaddr,
+									 conference.contactaddr,
+									 u"[{0}] {1}".format(conference.conferencename, form.cleaned_data['subject']),
+									 msgbody,
+									 sendername=conference.conferencename,
+									 receivername=w.registration.fullname)
+				if n:
+					messages.info(request, "Sent {0} emails.".format(tot))
+				else:
+					messages.warning(request, "No matching waitlist entries, no email was sent.")
+				return HttpResponseRedirect('../')
+	else:
+		form = WaitlistSendmailForm(conference)
+
+	return render(request, 'confreg/admin_waitlist_sendmail.html', {
+		'conference': conference,
+		'form': form,
+		'helplink': 'waitlist#emails',
+		'breadcrumbs': (('/events/admin/{0}/waitlist/'.format(conference.urlname), 'Waitlist'),),
+	})
 
 
 @transaction.atomic

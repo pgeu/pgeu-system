@@ -144,6 +144,7 @@ urlpatterns = [
 	url(r'^events/admin/([^/]+)/sessionnotifyqueue/$', postgresqleu.confreg.views.session_notify_queue),
 	url(r'^events/admin/(\w+)/waitlist/$', postgresqleu.confreg.views.admin_waitlist),
 	url(r'^events/admin/(\w+)/waitlist/cancel/(\d+)/$', postgresqleu.confreg.views.admin_waitlist_cancel),
+	url(r'^events/admin/(\w+)/waitlist/sendmail/$', postgresqleu.confreg.views.admin_waitlist_sendmail),
 	url(r'^events/admin/(\w+)/wiki/$', postgresqleu.confwiki.views.admin),
 	url(r'^events/admin/(\w+)/wiki/(new|\d+)/$', postgresqleu.confwiki.views.admin_edit_page),
 	url(r'^events/admin/(\w+)/signups/$', postgresqleu.confwiki.views.signup_admin),

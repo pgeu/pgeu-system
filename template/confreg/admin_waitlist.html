@@ -136,6 +136,11 @@ The current entries on the waitlist are:
 <p>The waitlist is currently empty</p>
 {%endif%}
 
+{%if waitlist%}
+<h3>Operations</h3>
+<a class="btn btn-default" href="sendmail/">Send waitlist email</a>
+{%endif%}
+
 <h3>Processed waitlist</h3>
 {%with waitlist=waitlist_cleared%}
 {%include "confreg/admin_waitlist_list.inc.html"%}
