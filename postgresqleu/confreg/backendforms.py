@@ -263,6 +263,7 @@ class BackendRegistrationClassForm(BackendForm):
 class BackendRegistrationTypeForm(BackendForm):
 	helplink = 'registrations#regtypes'
 	list_fields = ['regtype', 'regclass', 'cost', 'active', 'sortkey']
+	exclude_date_validators = ['activeuntil', ]
 	vat_fields = {'cost': 'reg'}
 	allow_copy_previous = True
 	coltypes = {
