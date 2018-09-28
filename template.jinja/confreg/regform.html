@@ -108,6 +108,8 @@ correction.</p>
  </p>
  <input type="submit" name="submit" value="Save and continue editing"><br/>
  <input type="submit" name="submit" value="Save and finish"><br/>
+</form>
+<form action="." method="post" class="pgeuregform">{{ csrf_input }}
  <input type="submit" name="submit" onclick="return confirmCancel()" value="Cancel registration"><br/>
 </form>
 {%endblock%}

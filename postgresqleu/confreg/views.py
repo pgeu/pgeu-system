@@ -259,6 +259,8 @@ def register(request, confname, whatfor=None):
 		# Did the user click cancel? We want to check that before we
 		# check form.is_valid(), to avoid the user getting errors like
 		# "you must specify country in order to cancel".
+		# (This is submitted as a separate form in order to avoid client-side
+		# versions of the same problem)
 		if request.POST['submit'] == 'Cancel registration':
 			if reg.id:
 				reg.delete()
