@@ -207,7 +207,7 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
 		'datetimeformat': filter_datetimeformat,
 		'groupby_sort': filter_groupby_sort,
 		'leadingnbsp': leadingnbsp,
-		'markdown': lambda t: jinja2.Markup(markdown.markdown(t)),
+		'markdown': lambda t: jinja2.Markup(markdown.markdown(t, extensions=['tables',])),
 		'shuffle': filter_shuffle,
 		'slugify': slugify,
 		'yesno': lambda b,v: v.split(',')[not b],
