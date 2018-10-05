@@ -11,7 +11,9 @@
 {% endif %}
 
 <h2>{{page.title}}</h2>
+<div class="wikicontents">
 {{page.contents|markdown}}
+</div>
 
 {%if page.history%}
 <p style="font-size: small">
