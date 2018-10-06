@@ -26,9 +26,11 @@ table.pageform textarea {
 <a href="../"><h2>{{page.title}}</h2></a>
 
 <form method="post" action=".">{{ csrf_input }}
+{{form._validator}}
 <table class="pageform">
-<tr>
+<tr{%if form.non_field_errors()%} class="error"{%endif%}>
   <td>
+{%if form.non_field_errors()%}{{form.non_field_errors()}}{%endif%}
     {{form.contents}}
   </td>
 </tr>

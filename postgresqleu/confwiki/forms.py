@@ -2,15 +2,17 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 
+from postgresqleu.util.forms import ConcurrentProtectedModelForm
+
 from postgresqleu.confreg.models import RegistrationType, ConferenceRegistration
 from models import Wikipage, Signup, AttendeeSignup
 
-class WikipageEditForm(forms.ModelForm):
+class WikipageEditForm(ConcurrentProtectedModelForm):
 	class Meta:
 		model = Wikipage
 		fields = ('contents',)
 
-class WikipageAdminEditForm(forms.ModelForm):
+class WikipageAdminEditForm(ConcurrentProtectedModelForm):
 	def __init__(self, *args, **kwargs):
 		super(WikipageAdminEditForm, self).__init__(*args, **kwargs)
 		self.fields['author'].queryset = ConferenceRegistration.objects.filter(conference=self.instance.conference)
@@ -71,7 +73,7 @@ class SignupSubmitForm(forms.Form):
 
 		return self.cleaned_data['choice']
 
-class SignupAdminEditForm(forms.ModelForm):
+class SignupAdminEditForm(ConcurrentProtectedModelForm):
 	def __init__(self, *args, **kwargs):
 		super(SignupAdminEditForm, self).__init__(*args, **kwargs)
 		self.fields['author'].queryset = ConferenceRegistration.objects.filter(conference=self.instance.conference)
@@ -84,7 +86,7 @@ class SignupAdminEditForm(forms.ModelForm):
 		model = Signup
 		exclude = ['conference', ]
 
-class SignupAdminEditSignupForm(forms.ModelForm):
+class SignupAdminEditSignupForm(ConcurrentProtectedModelForm):
 	choice = forms.ChoiceField(required=True)
 	class Meta:
 		model = AttendeeSignup
