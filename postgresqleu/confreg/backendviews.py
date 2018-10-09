@@ -13,6 +13,7 @@ import urllib
 import datetime
 import csv
 import json
+import requests_oauthlib
 
 from postgresqleu.util.middleware import RedirectException
 from postgresqleu.util.db import exec_to_list, exec_to_dict, exec_no_result
@@ -35,6 +36,7 @@ from backendforms import BackendFeedbackQuestionForm, BackendDiscountCodeForm
 from backendforms import BackendAccessTokenForm
 from backendforms import BackendConferenceSeriesForm
 from backendforms import BackendNewsForm
+from backendforms import TwitterForm
 
 def get_authenticated_conference(request, urlname):
 	if not request.user.is_authenticated:
@@ -559,6 +561,70 @@ FROM confreg_conferenceregistration WHERE conference_id=%(confid)s""", {
 	})
 
 
+@transaction.atomic
+def twitter_integration(request, urlname):
+	conference = get_authenticated_conference(request, urlname)
+
+	if request.method == 'POST':
+		if request.POST.get('activate_twitter', '') == '1':
+			# Fetch the oauth codes and re-render the form
+			try:
+				oauth = requests_oauthlib.OAuth1Session(settings.TWITTER_CLIENT, settings.TWITTER_CLIENTSECRET)
+				fetch_response = oauth.fetch_request_token('https://api.twitter.com/oauth/request_token')
+				auth_url = oauth.authorization_url('https://api.twitter.com/oauth/authorize')
+			except Exception, e:
+				messages.error(request, 'Failed to talk to twitter: %s' % e)
+				return HttpResponseRedirect('.')
+			request.session['ownerkey'] = fetch_response.get('oauth_token')
+			request.session['ownersecret'] = fetch_response.get('oauth_stoken_secret')
+
+			return render(request, 'confreg/admin_integ_twitter.html', {
+				'conference': conference,
+				'twitter_token_url': auth_url,
+				'helplink': 'integrations#twitter',
+			})
+		elif request.POST.get('pincode', ''):
+			if not (request.session.has_key('ownerkey') and request.session.has_key('ownersecret')):
+				messages.error(request, 'Missing data in session, cannot continue')
+				return HttpResponseRedirect('.')
+			try:
+				oauth = requests_oauthlib.OAuth1Session(settings.TWITTER_CLIENT,
+														settings.TWITTER_CLIENTSECRET,
+														resource_owner_key=request.session.pop('ownerkey'),
+														resource_owner_secret=request.session.pop('ownersecret'),
+														verifier=request.POST.get('pincode'))
+				tokens = oauth.fetch_access_token('https://api.twitter.com/oauth/access_token')
+			except:
+				messages.error(request, 'Failed to get tokens from twitter.')
+				return HttpResponseRedirect('.')
+
+			conference.twitter_token = tokens.get('oauth_token')
+			conference.twitter_secret = tokens.get('oauth_token_secret')
+			conference.twittersync_active = False
+			conference.save()
+			messages.info(request, 'Twitter integration enabled')
+			return HttpResponseRedirect('.')
+		elif request.POST.get('deactivate_twitter', '') == '1':
+			conference.twitter_token = ''
+			conference.twitter_secret = ''
+			conference.twittersync_active = False
+			conference.save()
+			messages.info(request, 'Twitter integration disabled')
+			return HttpResponseRedirect('.')
+		else:
+			form = TwitterForm(instance=conference, data=request.POST)
+			if form.is_valid():
+				form.save()
+				return HttpResponseRedirect('.')
+	else:
+		form = TwitterForm(instance=conference)
+
+
+	return render(request, 'confreg/admin_integ_twitter.html', {
+		'conference': conference,
+		'form': form,
+		'helplink': 'integrations#twitter',
+	})
 
 def _reencode_row(r):
 	def _reencode_value(v):

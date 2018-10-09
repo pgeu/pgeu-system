@@ -62,7 +62,7 @@ class Migration(migrations.Migration):
                 ('listadminpwd', models.CharField(max_length=128, blank=True)),
                 ('speakerlistadminurl', models.CharField(max_length=128, blank=True)),
                 ('speakerlistadminpwd', models.CharField(max_length=128, blank=True)),
-                ('twittersync_active', models.BooleanField(default=False)),
+                ('twittersync_active', models.BooleanField(default=False, verbose_name='Twitter posting active')),
                 ('twitter_user', models.CharField(max_length=32, blank=True)),
                 ('twitter_attendeelist', models.CharField(max_length=32, blank=True)),
                 ('twitter_speakerlist', models.CharField(max_length=32, blank=True)),

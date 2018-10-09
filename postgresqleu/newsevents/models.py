@@ -19,6 +19,7 @@ class News(models.Model):
 	highpriorityuntil = models.DateTimeField(null=True, blank=True, verbose_name="High priority until")
 	inrss = models.BooleanField(null=False, default=True, verbose_name="Include in RSS feed")
 	inarchive = models.BooleanField(null=False, default=True, verbose_name="Include in archives")
+	tweeted = models.BooleanField(null=False, blank=False, default=False)
 
 	def __unicode__(self):
 		return self.title

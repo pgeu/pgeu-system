@@ -1,6 +1,0 @@
-[settings]
-db=host=/tmp dbname=postgresqleu user=postgresqleu
-
-[twitter]
-consumer=something
-consumersecret=else

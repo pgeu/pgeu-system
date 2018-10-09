@@ -219,6 +219,14 @@ ORG_NAME="PostgreSQL Europe"
 # Treasurer email address
 TREASURER_EMAIL="treasurer@postgresql.eu"
 
+# Twitter application keys
+TWITTER_CLIENT=""
+TWITTER_CLIENTSECRET=""
+
+# Twitter user keys for the account posting main news
+TWITTER_NEWS_TOKEN=""
+TWITTER_NEWS_TOKENSECRET=""
+
 # If there is a local_settings.py, let it override our settings
 try:
 	from local_settings import *

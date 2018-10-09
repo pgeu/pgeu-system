@@ -756,3 +756,12 @@ class BackendCopySelectConferenceForm(django.forms.Form):
 		self.fields['conference'].queryset = Conference.objects.filter(administrators=request.user).exclude(pk=conference.pk).extra(
 			where=["EXISTS (SELECT 1 FROM {0} WHERE conference_id=confreg_conference.id)".format(model._meta.db_table), ]
 		)
+
+
+#
+# Form for twitter integration
+#
+class TwitterForm(ConcurrentProtectedModelForm):
+	class Meta:
+		model = Conference
+		fields = ['twittersync_active', ]

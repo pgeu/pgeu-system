@@ -120,7 +120,7 @@ class Conference(models.Model):
 	schedulewidth = models.IntegerField(blank=False, default=600, null=False, verbose_name="Width of HTML schedule")
 	pixelsperminute = models.FloatField(blank=False, default=1.5, null=False, verbose_name="Vertical pixels per minute")
 	confurl = models.CharField(max_length=128, blank=False, null=False, validators=[validate_lowercase,], verbose_name="Conference URL")
-	twittersync_active = models.BooleanField(null=False, default=False)
+	twittersync_active = models.BooleanField(null=False, default=False, verbose_name='Twitter posting active')
 	twitter_user = models.CharField(max_length=32, blank=True, null=False)
 	twitter_token = models.CharField(max_length=128, blank=True, null=False)
 	twitter_secret = models.CharField(max_length=128, blank=True, null=False)
@@ -968,6 +968,7 @@ class ConferenceNews(models.Model):
 	summary = models.TextField(blank=False)
 	author = models.ForeignKey(NewsPosterProfile)
 	inrss = models.BooleanField(null=False, default=True, verbose_name="Include in RSS feed")
+	tweeted = models.BooleanField(null=False, blank=False, default=False)
 
 	def __unicode__(self):
 		return self.title

@@ -168,6 +168,7 @@ urlpatterns = [
 	url(r'^events/admin/(\w+)/news/(.*/)?$', postgresqleu.confreg.backendviews.edit_news),
 	url(r'^events/admin/(\w+)/pendinginvoices/$', postgresqleu.confreg.backendviews.pendinginvoices),
 	url(r'^events/admin/(\w+)/purgedata/$', postgresqleu.confreg.backendviews.purge_personal_data),
+	url(r'^events/admin/(\w+)/integ/twitter/$', postgresqleu.confreg.backendviews.twitter_integration),
 	url(r'^events/admin/([^/]+)/talkvote/$', postgresqleu.confreg.views.talkvote),
 	url(r'^events/admin/([^/]+)/talkvote/changestatus/$', postgresqleu.confreg.views.talkvote_status),
 	url(r'^events/admin/([^/]+)/talkvote/vote/$', postgresqleu.confreg.views.talkvote_vote),
