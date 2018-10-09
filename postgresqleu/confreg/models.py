@@ -124,6 +124,8 @@ class Conference(models.Model):
 	twitter_user = models.CharField(max_length=32, blank=True, null=False)
 	twitter_token = models.CharField(max_length=128, blank=True, null=False)
 	twitter_secret = models.CharField(max_length=128, blank=True, null=False)
+	twitter_timewindow_start = models.TimeField(null=False, blank=False, default='00:00', verbose_name="Don't post tweets before")
+	twitter_timewindow_end = models.TimeField(null=False, blank=False, default='24:00', verbose_name="Don't post tweets after")
 
 	administrators = models.ManyToManyField(User, blank=True)
 	testers = models.ManyToManyField(User, blank=True, related_name="testers_set", help_text="Users who can bypass the '<function> is open' check and access pages before they're open, in order to test")
@@ -976,3 +978,8 @@ class ConferenceNews(models.Model):
 	class Meta:
 		ordering = ['-datetime', ]
 		verbose_name_plural = 'Conference News'
+
+class ConferenceTweetQueue(models.Model):
+	conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
+	datetime = models.DateTimeField(blank=False, default=datetime.datetime.now)
+	contents = models.CharField(max_length=250, null=False, blank=False)
