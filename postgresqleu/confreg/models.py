@@ -122,9 +122,6 @@ class Conference(models.Model):
 	confurl = models.CharField(max_length=128, blank=False, null=False, validators=[validate_lowercase,], verbose_name="Conference URL")
 	twittersync_active = models.BooleanField(null=False, default=False)
 	twitter_user = models.CharField(max_length=32, blank=True, null=False)
-	twitter_attendeelist = models.CharField(max_length=32, blank=True, null=False)
-	twitter_speakerlist = models.CharField(max_length=32, blank=True, null=False)
-	twitter_sponsorlist = models.CharField(max_length=32, blank=True, null=False)
 	twitter_token = models.CharField(max_length=128, blank=True, null=False)
 	twitter_secret = models.CharField(max_length=128, blank=True, null=False)
 

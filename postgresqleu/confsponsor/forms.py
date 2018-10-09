@@ -38,9 +38,6 @@ class SponsorSignupForm(forms.Form):
 
 		super(SponsorSignupForm, self).__init__(*args, **kwargs)
 
-		if not self.conference.twitter_sponsorlist:
-			del self.fields['twittername']
-
 		if not settings.EU_VAT:
 			del self.fields['vatstatus']
 			del self.fields['vatnumber']
