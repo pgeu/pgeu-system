@@ -11,6 +11,8 @@ from datetime import datetime, timedelta
 from postgresqleu.auth import user_search, user_import
 
 from postgresqleu.confreg.models import Conference, PrepaidVoucher, DiscountCode
+from postgresqleu.confreg.models import ConferenceTweetQueue
+from postgresqleu.confreg.jinjafunc import render_sandboxed_template
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.decorators import superuser_required
@@ -482,6 +484,16 @@ def _confirm_benefit(request, benefit):
 						 u"Sponsorship benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor),
 						 sendername=conference.conferencename,
 						 )
+
+		# Potentially send tweet
+		if benefit.benefit.tweet_template:
+			ConferenceTweetQueue(conference=conference, datetime=datetime.now(),
+								 contents=render_sandboxed_template(benefit.benefit.tweet_template, {
+									 'benefit': benefit.benefit,
+									 'level': benefit.benefit.level,
+									 'conference': conference,
+									 'sponsor': benefit.sponsor
+								 })).save()
 
 @login_required
 def sponsor_admin_sponsor(request, confurlname, sponsorid):

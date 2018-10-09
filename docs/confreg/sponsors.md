@@ -179,6 +179,11 @@ Class parameters
    JSON format. Will be automatically populated with a default set of
    parameters when created, but their values have to be set.
 
+Tweet template
+:  A template, in jinja2 format, used to generate tweets when this
+benefit is confirmed. If left empty, no tweet is posted. Can reference
+*sponsor*, *level*, *conference* and *benefit* variables that will be
+filled with information about the current conference.
 
 ### Sponsorship contract <a name="contract"></a>
 

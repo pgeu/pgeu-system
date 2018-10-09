@@ -1,6 +1,7 @@
 from django.http import Http404, HttpResponse
 from django.template.backends.utils import csrf_input_lazy, csrf_token_lazy
 from django.template import defaultfilters
+from django.core.exceptions import ValidationError
 from django.contrib.messages.api import get_messages
 from django.utils.text import slugify
 from django.conf import settings
@@ -266,3 +267,25 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
 	c.update(settings_context_unicode())
 
 	return HttpResponse(t.render(**c), content_type='text/html')
+
+
+
+
+
+# Small sandboxed jinja templates that can be configured in system
+def render_sandboxed_template(templatestr, context):
+	env = ConfSandbox(loader=jinja2.DictLoader({'t': templatestr}))
+	t = env.get_template('t')
+	return t.render(context)
+
+class JinjaTemplateValidator(object):
+	def __init__(self, context={}):
+		self.context = context
+
+	def __call__(self, s):
+		try:
+			render_sandboxed_template(s, self.context)
+		except jinja2.TemplateSyntaxError, e:
+			raise ValidationError("Template syntax error: %s" % e)
+		except Exception, e:
+			raise ValidationError("Failed to parse template: %s" % e)

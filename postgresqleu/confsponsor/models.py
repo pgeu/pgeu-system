@@ -67,6 +67,7 @@ class SponsorshipBenefit(models.Model):
 	claimprompt = models.TextField(null=False, blank=True)
 	benefit_class = models.IntegerField(null=True, blank=True, default=None, choices=benefit_choices)
 	class_parameters = JSONField(blank=True, null=False)
+	tweet_template = models.TextField(null=False, blank=True)
 
 	def __unicode__(self):
 		return self.benefitname

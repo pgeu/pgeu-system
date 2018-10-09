@@ -6,6 +6,7 @@ from postgresqleu.util.magic import magicdb
 from postgresqleu.util.widgets import RequiredFileUploadWidget, PrettyPrintJsonWidget
 from postgresqleu.confreg.backendforms import BackendForm
 from postgresqleu.confreg.backendlookups import GeneralAccountLookup
+from postgresqleu.confreg.jinjafunc import JinjaTemplateValidator, render_sandboxed_template
 
 from models import Sponsor
 from models import SponsorshipLevel, SponsorshipContract, SponsorshipBenefit
@@ -39,13 +40,38 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
 	helplink='sponsors#benefit'
 	json_fields = ['class_parameters', ]
 	markdown_fields = ['benefitdescription', 'claimprompt', ]
+	dynamic_preview_fields = ['tweet_template']
+
 	class Meta:
 		model = SponsorshipBenefit
 		fields = ['benefitname', 'benefitdescription', 'sortkey', 'benefit_class',
-				  'claimprompt', 'class_parameters', ]
+				  'claimprompt', 'class_parameters', 'tweet_template']
 		widgets = {
 			'class_parameters': PrettyPrintJsonWidget,
 		}
+
+	def fix_fields(self):
+		self.fields['tweet_template'].validators = [
+			JinjaTemplateValidator({
+				'conference': self.conference,
+				'benefit': self.instance,
+				'level': self.instance.level,
+				'sponsor': Sponsor(name='Test'),
+			}),
+		]
+
+	@classmethod
+	def get_dynamic_preview(self, fieldname, s, objid):
+		if fieldname == 'tweet_template':
+			if objid:
+				o = self.Meta.model.objects.get(pk=objid)
+				return render_sandboxed_template(s, {
+					'benefit': o,
+					'level': o.level,
+					'conference': o.level.conference,
+					'sponsor': Sponsor(name='Test'),
+				})
+			return ''
 
 	def clean(self):
 		cleaned_data = super(BackendSponsorshipLevelBenefitForm, self).clean()
