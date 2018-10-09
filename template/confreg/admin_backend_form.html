@@ -27,7 +27,6 @@ function backend_showdown_preview(id) {
 
    var w = $('<div class="admin_markdownpreview"><legend>Markdown preview</legend><div class="admin_markdownpreview_contents"></div></div>').insertAfter(e);
    var p = w.find('div.admin_markdownpreview_contents');
-   console.log(p);
 
    function update() {
       p.html(mdconverter.makeHtml(e.val()));
@@ -36,6 +35,32 @@ function backend_showdown_preview(id) {
    update();
    e.keyup(function() {
       update();
+   });
+}
+{%endif%}
+{%if form.dynamic_preview_fields%}
+function backend_dynamic_preview(id) {
+   var e = $('#id_' + id);
+
+   var w = $('<div class="admin_dynamicpreview"><legend>Preview</legend><div class="admin_dynamicpreview_contents"></div></div>').insertAfter(e);
+   var p = w.find('div.admin_dynamicpreview_contents');
+
+   function update() {
+      $.get('?fieldpreview=' + id + '&previewval=' + encodeURIComponent(e.val()), function(v) {
+         p.text(v);
+      });
+   }
+
+   update();
+
+   e.keyup(function() {
+      /* Rate-limit the updating to once per second, since it causes a backend call */
+      if (e.current_timeout) {
+         clearTimeout(e.current_timeout);
+      }
+      e.current_timeout = setTimeout(function() {
+         update();
+      }, 1000);
    });
 }
 {%endif%}
@@ -65,6 +90,10 @@ $(function() {
 
 {%for f in form.markdown_fields%}
    backend_showdown_preview('id_{{f}}');
+{%endfor%}
+
+{%for f in form.dynamic_preview_fields%}
+   backend_dynamic_preview('{{f}}');
 {%endfor%}
 
 {%for f in form.json_fields%}

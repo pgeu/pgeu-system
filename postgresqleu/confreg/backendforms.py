@@ -37,6 +37,7 @@ class BackendForm(ConcurrentProtectedModelForm):
 	selectize_multiple_fields = None
 	json_fields = None
 	markdown_fields = []
+	dynamic_preview_fields = []
 	vat_fields = {}
 	verbose_field_names = {}
 	exclude_date_validators = []
