@@ -11,6 +11,7 @@ payment in Euros, and requires you to cover all transfer charges.
 		param = {
 			'title': invoicestr.encode('utf-8'),
 			'amount': invoiceamount,
-			'ret': returnurl,
 			}
+		if returnurl:
+			param['ret'] = returnurl
 		return "/invoices/banktransfer/?%s" % urlencode(param)

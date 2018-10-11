@@ -403,11 +403,14 @@ def userhome(request):
 
 @login_required
 def banktransfer(request):
-	return render(request, 'invoices/banktransfer.html', {
+	param = {
 			'title': request.GET['title'],
 			'amount': request.GET['amount'],
-			'returnurl': request.GET['ret'],
-			})
+	}
+	if request.GET.has_key('ret'):
+		param['returnurl'] = request.GET['ret']
+
+	return render(request, 'invoices/banktransfer.html', param)
 
 @login_required
 @transaction.atomic
