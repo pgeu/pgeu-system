@@ -23,6 +23,7 @@ from postgresqleu.confreg.models import ConferenceSessionScheduleSlot, Volunteer
 from postgresqleu.confreg.models import DiscountCode, AccessToken, AccessTokenPermissions
 from postgresqleu.confreg.models import ConferenceSeries
 from postgresqleu.confreg.models import ConferenceNews
+from postgresqleu.confreg.models import ShirtSize
 from postgresqleu.newsevents.models import NewsPosterProfile
 
 from postgresqleu.confreg.models import valid_status_transitions, get_status_string
@@ -223,6 +224,13 @@ class BackendConferenceSeriesForm(BackendForm):
 	class Meta:
 		model = ConferenceSeries
 		fields = ['name', 'sortkey', 'intro', ]
+
+class BackendTshirtSizeForm(BackendForm):
+	helplink = "meta"
+	list_fields = ['shirtsize', 'sortkey', ]
+	class Meta:
+		model = ShirtSize
+		fields = ['shirtsize', 'sortkey', ]
 
 class BackendRegistrationForm(BackendForm):
 	helplink = "registrations"

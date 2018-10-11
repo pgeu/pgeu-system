@@ -22,6 +22,7 @@ from postgresqleu.util.decorators import superuser_required
 
 from models import Conference, ConferenceSeries
 from models import AccessToken
+from models import ShirtSize
 
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.confsponsor.util import get_sponsor_dashboard_data
@@ -35,6 +36,7 @@ from backendforms import BackendConferenceSessionSlotForm, BackendVolunteerSlotF
 from backendforms import BackendFeedbackQuestionForm, BackendDiscountCodeForm
 from backendforms import BackendAccessTokenForm
 from backendforms import BackendConferenceSeriesForm
+from backendforms import BackendTshirtSizeForm
 from backendforms import BackendNewsForm
 from backendforms import TwitterForm
 
@@ -424,6 +426,19 @@ def edit_series(request, rest):
 							   bypass_conference_filter=True,
 							   return_url='../../',
 							   instancemaker=lambda: ConferenceSeries(),
+	)
+
+@superuser_required
+def edit_tshirts(request, rest):
+	return backend_list_editor(request,
+							   None,
+							   BackendTshirtSizeForm,
+							   rest,
+							   allow_new=True,
+							   allow_delete=True,
+							   bypass_conference_filter=True,
+							   return_url='../../',
+							   instancemaker=lambda: ShirtSize(),
 	)
 
 @superuser_required

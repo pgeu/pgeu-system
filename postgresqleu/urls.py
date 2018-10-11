@@ -119,6 +119,7 @@ urlpatterns = [
 	url(r'^events/admin/([^/]+)/reports/schedule/$', postgresqleu.confreg.pdfschedule.pdfschedule),
 	url(r'^events/admin/newconference/$', postgresqleu.confreg.backendviews.new_conference),
 	url(r'^events/admin/meta/series/(.*/)?$', postgresqleu.confreg.backendviews.edit_series),
+	url(r'^events/admin/meta/tshirts/(.*/)?$', postgresqleu.confreg.backendviews.edit_tshirts),
 	url(r'^events/admin/lookups/accounts/$', postgresqleu.confreg.backendlookups.GeneralAccountLookup.lookup),
 	url(r'^events/admin/lookups/speakers/$', postgresqleu.confreg.backendlookups.SpeakerLookup.lookup),
 	url(r'^events/admin/(\w+)/$', postgresqleu.confreg.views.admin_dashboard_single),
