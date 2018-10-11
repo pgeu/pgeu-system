@@ -35,8 +35,9 @@ work from here.
 * Feedback
     * [Feedback](feedback)
 * Sponsors
-    * Probably several links
+    * [Sponsors](sponsors)
 * Advanced
     * [Access tokens](tokens)
     * [Badges](badges)
+    * [Integrations](integrations)
     * [Copying from another conference](copyfromother)
