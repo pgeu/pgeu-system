@@ -8,6 +8,7 @@ are currently available:
 The twitter integration supports:
 
 * Posting conference news
+* Posting confirmed sponsorship benefits
 
 ### Posting conference news
 
@@ -17,6 +18,15 @@ the RSS system.
 
 Note that this is *separate* from reposting global news. Global news
 is configured in the settings file.
+
+### Posting confirmed sponsorship benefits
+
+For each [sponsorship benefit](sponsors#benefit) it is possible to
+define a value for *tweet template*. If included, this will be treated
+as a jinja template, and whenever the benefit is confirmed a tweet
+will be generated with that template and sent. Normally this is used
+for things like "when the logo benefit is confirmed, post a welcome
+tweet", but it can be used for any defined benefit.
 
 ### Setting up
 
