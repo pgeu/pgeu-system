@@ -20,7 +20,7 @@ from postgresqleu.util.db import exec_to_list, exec_to_dict, exec_no_result
 from postgresqleu.util.lists import flatten_list
 from postgresqleu.util.decorators import superuser_required
 
-from models import Conference
+from models import Conference, ConferenceSeries
 from models import AccessToken
 
 from postgresqleu.invoices.models import Invoice
@@ -283,7 +283,7 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
 		})
 
 
-def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, allow_delete=True, conference=None, breadcrumbs=[], bypass_conference_filter=False, return_url='../'):
+def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, allow_delete=True, conference=None, breadcrumbs=[], bypass_conference_filter=False, instancemaker=None, return_url='../'):
 	if not conference and not bypass_conference_filter:
 		conference = get_authenticated_conference(request, urlname)
 
@@ -324,6 +324,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
 									breadcrumbs=breadcrumbs + [('../', formclass.Meta.model._meta.verbose_name_plural.capitalize()), ],
 									conference=conference,
 									bypass_conference_filter=bypass_conference_filter,
+									instancemaker=instancemaker,
 		)
 
 	restpieces = resturl.split('/')
@@ -422,6 +423,7 @@ def edit_series(request, rest):
 							   allow_delete=True,
 							   bypass_conference_filter=True,
 							   return_url='../../',
+							   instancemaker=lambda: ConferenceSeries(),
 	)
 
 @superuser_required
