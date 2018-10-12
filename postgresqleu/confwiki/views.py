@@ -229,7 +229,7 @@ def admin_edit_page(request, urlname, pageid):
 				form.save_m2m()
 				s = StringIO()
 				for k,v in f.diff.items():
-					s.write("Changed {0} from {1} to {2}\n".format(k, v[0], v[1]))
+					s.write(u"Changed {0} from {1} to {2}\n".format(k, v[0], v[1]))
 				if s.tell() > 0:
 					# Something changed, so generate audit email
 					send_simple_mail(conference.contactaddr,
