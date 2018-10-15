@@ -13,12 +13,12 @@ import urllib
 import datetime
 import csv
 import json
-import requests_oauthlib
 
 from postgresqleu.util.middleware import RedirectException
 from postgresqleu.util.db import exec_to_list, exec_to_dict, exec_no_result
 from postgresqleu.util.lists import flatten_list
 from postgresqleu.util.decorators import superuser_required
+from postgresqleu.util.messaging.twitter import TwitterSetup
 
 from models import Conference, ConferenceSeries
 from models import AccessToken
@@ -596,14 +596,12 @@ def twitter_integration(request, urlname):
 		if request.POST.get('activate_twitter', '') == '1':
 			# Fetch the oauth codes and re-render the form
 			try:
-				oauth = requests_oauthlib.OAuth1Session(settings.TWITTER_CLIENT, settings.TWITTER_CLIENTSECRET)
-				fetch_response = oauth.fetch_request_token('https://api.twitter.com/oauth/request_token')
-				auth_url = oauth.authorization_url('https://api.twitter.com/oauth/authorize')
+				(auth_url, ownerkey, ownersecret) = TwitterSetup.get_authorization_data()
+				request.session['ownerkey'] = ownerkey
+				request.session['ownersecret'] = ownersecret
 			except Exception, e:
 				messages.error(request, 'Failed to talk to twitter: %s' % e)
 				return HttpResponseRedirect('.')
-			request.session['ownerkey'] = fetch_response.get('oauth_token')
-			request.session['ownersecret'] = fetch_response.get('oauth_stoken_secret')
 
 			return render(request, 'confreg/admin_integ_twitter.html', {
 				'conference': conference,
@@ -615,12 +613,10 @@ def twitter_integration(request, urlname):
 				messages.error(request, 'Missing data in session, cannot continue')
 				return HttpResponseRedirect('.')
 			try:
-				oauth = requests_oauthlib.OAuth1Session(settings.TWITTER_CLIENT,
-														settings.TWITTER_CLIENTSECRET,
-														resource_owner_key=request.session.pop('ownerkey'),
-														resource_owner_secret=request.session.pop('ownersecret'),
-														verifier=request.POST.get('pincode'))
-				tokens = oauth.fetch_access_token('https://api.twitter.com/oauth/access_token')
+				tokens = TwitterSetup.authorize(request.session.pop('ownerkey'),
+												request.session.pop('ownersecret'),
+												request.POST.get('pincode'),
+				)
 			except:
 				messages.error(request, 'Failed to get tokens from twitter.')
 				return HttpResponseRedirect('.')

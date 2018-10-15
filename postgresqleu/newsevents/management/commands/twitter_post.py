@@ -14,17 +14,7 @@ import time
 from postgresqleu.newsevents.models import News
 from postgresqleu.confreg.models import Conference, ConferenceNews, ConferenceTweetQueue
 
-import requests_oauthlib
-
-
-def make_twitter_post(tw, statusstr):
-	r = tw.post('https://api.twitter.com/1.1/statuses/update.json', data={
-		'status': statusstr,
-	})
-	if r.status_code != 200:
-		print("Failed to post to twitter: %s " % r)
-		return False
-	return True
+from postgresqleu.util.messaging.twitter import Twitter
 
 class Command(BaseCommand):
 	help = 'Post to twitter'
@@ -41,10 +31,7 @@ class Command(BaseCommand):
 			articles = []
 
 		if articles:
-			tw = requests_oauthlib.OAuth1Session(settings.TWITTER_CLIENT,
-												 settings.TWITTER_CLIENTSECRET,
-												 settings.TWITTER_NEWS_TOKEN,
-												 settings.TWITTER_NEWS_TOKENSECRET)
+			tw = Twitter()
 
 			for a in articles:
 				# We hardcode 30 chars for the URL shortener. And then 10 to cover the intro and spacing.
@@ -52,9 +39,12 @@ class Command(BaseCommand):
 															settings.SITEBASE,
 															slugify(a.title),
 															a.id)
-				if make_twitter_post(tw, statusstr):
+				ok, msg = tw.post_tweet(statusstr)
+				if ok:
 					a.tweeted = True
 					a.save()
+				else:
+					print("Failed to post to twitter: %s" % msg)
 
 				# Don't post more often than once / 10 seconds, to not trigger flooding.
 				time.sleep(10)
@@ -69,11 +59,7 @@ class Command(BaseCommand):
 										   twitter_timewindow_end__gt=n).extra(where=[
 											   "EXISTS (SELECT 1 FROM confreg_conferencenews n WHERE n.conference_id=confreg_conference.id AND (NOT tweeted) AND datetime > now()-'7 days'::interval AND datetime < now()) OR EXISTS (SELECT 1 FROM confreg_conferencetweetqueue q WHERE q.conference_id=confreg_conference.id)"
 										   ]):
-
-			tw = requests_oauthlib.OAuth1Session(settings.TWITTER_CLIENT,
-												 settings.TWITTER_CLIENTSECRET,
-												 c.twitter_token,
-												 c.twitter_secret)
+			tw = Twitter(c)
 
 			al = list(ConferenceNews.objects.filter(conference=c, tweeted=False, datetime__gt=datetime.now()-timedelta(days=7), datetime__lt=datetime.now(), conference__twittersync_active=True).order_by('datetime')[:1])
 			if al:
@@ -81,15 +67,21 @@ class Command(BaseCommand):
 				statusstr = u"{0} {1}##{2}".format(a.title[:250-40],
 												   c.confurl,
 												   a.id)
-				if make_twitter_post(tw, statusstr):
+				ok, msg = tw.post_tweet(statusstr)
+				if ok:
 					a.tweeted = True
 					a.save()
 					continue
+				else:
+					print("Failed to post to twitter: %s" % msg)
 
 			tl = list(ConferenceTweetQueue.objects.filter(conference=c).order_by('datetime')[:1])
 			if tl:
 				t = tl[0]
-				if make_twitter_post(tw, t.contents):
+				ok, msg = tw.post_tweet(statusstr)
+				if ok:
 					t.delete()
 					continue
+				else:
+					print("Failed to post to twitter: %s" % msg)
 
