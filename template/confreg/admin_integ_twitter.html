@@ -8,6 +8,17 @@
 <form class="form-horizontal" method="POST" action="." enctype="multipart/form-data">{%csrf_token%}
 {%include "confreg/admin_backend_form_content.html" %}
 </form>
+
+<h3>Test twitter integration</h3>
+<p>
+The twitter integration can be tested by sending a direct message to a user,
+for example yourself.
+</p>
+<form method="post" action="." class="form-horizontal">{%csrf_token%}
+<input type="hidden" name="test_twitter" value="1">
+{%include "confreg/admin_backend_form_content.html" with form=testform%}
+</form>
+
 <h3>Disable twitter integration</h3>
 <p>
   Disabling twitter integration will remove all OAuth keys.

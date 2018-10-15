@@ -18,7 +18,7 @@ from postgresqleu.util.middleware import RedirectException
 from postgresqleu.util.db import exec_to_list, exec_to_dict, exec_no_result
 from postgresqleu.util.lists import flatten_list
 from postgresqleu.util.decorators import superuser_required
-from postgresqleu.util.messaging.twitter import TwitterSetup
+from postgresqleu.util.messaging.twitter import Twitter, TwitterSetup
 
 from models import Conference, ConferenceSeries
 from models import AccessToken
@@ -38,7 +38,7 @@ from backendforms import BackendAccessTokenForm
 from backendforms import BackendConferenceSeriesForm
 from backendforms import BackendTshirtSizeForm
 from backendforms import BackendNewsForm
-from backendforms import TwitterForm
+from backendforms import TwitterForm, TwitterTestForm
 
 def get_authenticated_conference(request, urlname):
 	if not request.user.is_authenticated:
@@ -634,6 +634,20 @@ def twitter_integration(request, urlname):
 			conference.save()
 			messages.info(request, 'Twitter integration disabled')
 			return HttpResponseRedirect('.')
+		elif request.POST.get('test_twitter', '') == '1':
+			testform = TwitterTestForm(data=request.POST)
+			if testform.is_valid():
+				tw = Twitter(conference)
+				recipient = testform.cleaned_data['recipient']
+				message = testform.cleaned_data['message']
+
+				ok, msg = tw.send_message(recipient, message)
+				if ok:
+					messages.info(request, 'Message successfully sent to {0}'.format(recipient))
+				else:
+					messages.error(request, 'Failed to send to {0}: {1}'.format(recipient, msg))
+				return HttpResponseRedirect('.')
+			form = TwitterForm(instance=conference)
 		else:
 			form = TwitterForm(instance=conference, data=request.POST)
 			if form.is_valid():
@@ -641,11 +655,13 @@ def twitter_integration(request, urlname):
 				return HttpResponseRedirect('.')
 	else:
 		form = TwitterForm(instance=conference)
+		testform = TwitterTestForm()
 
 
 	return render(request, 'confreg/admin_integ_twitter.html', {
 		'conference': conference,
 		'form': form,
+		'testform': testform,
 		'helplink': 'integrations#twitter',
 	})
 

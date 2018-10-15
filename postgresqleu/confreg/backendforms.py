@@ -776,3 +776,7 @@ class TwitterForm(ConcurrentProtectedModelForm):
 	class Meta:
 		model = Conference
 		fields = ['twittersync_active', ]
+
+class TwitterTestForm(django.forms.Form):
+	recipient = django.forms.CharField(max_length=64)
+	message = django.forms.CharField(max_length=200)
