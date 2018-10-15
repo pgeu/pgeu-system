@@ -125,7 +125,7 @@ class Conference(models.Model):
 	twitter_token = models.CharField(max_length=128, blank=True, null=False)
 	twitter_secret = models.CharField(max_length=128, blank=True, null=False)
 	twitter_timewindow_start = models.TimeField(null=False, blank=False, default='00:00', verbose_name="Don't post tweets before")
-	twitter_timewindow_end = models.TimeField(null=False, blank=False, default='24:00', verbose_name="Don't post tweets after")
+	twitter_timewindow_end = models.TimeField(null=False, blank=False, default='23:59:59', verbose_name="Don't post tweets after")
 
 	administrators = models.ManyToManyField(User, blank=True)
 	testers = models.ManyToManyField(User, blank=True, related_name="testers_set", help_text="Users who can bypass the '<function> is open' check and access pages before they're open, in order to test")
