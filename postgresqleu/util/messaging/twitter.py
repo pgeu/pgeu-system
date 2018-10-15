@@ -27,6 +27,40 @@ class Twitter(object):
 			return (False, r.text)
 		return (True, None)
 
+	def send_message(self, tousername, msg):
+		# Nor the username
+		tousername = tousername.lower().replace('@','')
+
+		# DM API calls require us to look up the userid, so do that with a
+		# tiny cache first.
+		if not tousername in _cached_twitter_users:
+			try:
+				r = self.tw.get('https://api.twitter.com/1.1/users/show.json',
+								params={'screen_name': tousername})
+				_cached_twitter_users[tousername] = r.json()['id']
+			except Exception, e:
+				return (False, "Failed to look up user %s: %s" % (tousername, e))
+
+		try:
+			r = self.tw.post('https://api.twitter.com/1.1/direct_messages/events/new.json', json={
+				'event': {
+					'type': 'message_create',
+					'message_create': {
+						'target': {
+							'recipient_id': _cached_twitter_users[tousername],
+						},
+						'message_data': {
+							'text': msg,
+						}
+					}
+				}
+			})
+			if r.status_code != 200:
+				return (False, r.text)
+		except Exception, e:
+			return (False, e)
+		return (True, None)
+
 
 class TwitterSetup(object):
 	@classmethod
