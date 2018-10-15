@@ -9,6 +9,7 @@ The twitter integration supports:
 
 * Posting conference news
 * Posting confirmed sponsorship benefits
+* Sending reminders to speaker just before their presentation
 
 ### Posting conference news
 
@@ -27,6 +28,17 @@ as a jinja template, and whenever the benefit is confirmed a tweet
 will be generated with that template and sent. Normally this is used
 for things like "when the logo benefit is confirmed, post a welcome
 tweet", but it can be used for any defined benefit.
+
+### Sending reminders to speaker just before their presentation
+
+If enabled, each speaker that have given their twitter username during
+registration (regular registration, not call for papers) will get a
+twitter DM sent between 10 and 15 minutes before their presentation
+(depending on cronjob time) reminding them that their presentation
+will begin soon, and which room it's in.
+
+This of course requires that the speaker follows the conference
+account, or that they have public DMs open.
 
 ### Setting up
 

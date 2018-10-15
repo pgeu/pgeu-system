@@ -121,6 +121,7 @@ class Conference(models.Model):
 	pixelsperminute = models.FloatField(blank=False, default=1.5, null=False, verbose_name="Vertical pixels per minute")
 	confurl = models.CharField(max_length=128, blank=False, null=False, validators=[validate_lowercase,], verbose_name="Conference URL")
 	twittersync_active = models.BooleanField(null=False, default=False, verbose_name='Twitter posting active')
+	twitterreminders_active = models.BooleanField(null=False, default=False, verbose_name='Twitter reminder DMs active')
 	twitter_user = models.CharField(max_length=32, blank=True, null=False)
 	twitter_token = models.CharField(max_length=128, blank=True, null=False)
 	twitter_secret = models.CharField(max_length=128, blank=True, null=False)
@@ -671,6 +672,7 @@ class ConferenceSession(models.Model):
 	tentativescheduleslot = models.ForeignKey(ConferenceSessionScheduleSlot, null=True, blank=True, on_delete=models.CASCADE)
 	tentativeroom = models.ForeignKey(Room, null=True, blank=True, related_name='tentativeroom', on_delete=models.CASCADE)
 	lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
+	reminder_sent = models.BooleanField(null=False, default=False, verbose_name='Speaker reminder(s) sent')
 
 	# NOTE! Any added fields need to be considered for inclusion in
 	# forms.CallForPapersForm and in views.callforpapers_copy()!
