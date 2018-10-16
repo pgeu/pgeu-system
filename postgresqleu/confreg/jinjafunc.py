@@ -254,6 +254,9 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
 		c['githash'] = find_git_revision(conference.jinjadir)
 
 
+	if dictionary:
+		c.update(dictionary)
+
 	# For local testing, there may also be a context.override.json
 	if conference and conference.jinjadir and os.path.exists(os.path.join(conference.jinjadir, 'templates/context.override.json')):
 		try:
@@ -262,8 +265,6 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
 		except Exception:
 			pass
 
-	if dictionary:
-		c.update(dictionary)
 	c.update(settings_context_unicode())
 
 	return HttpResponse(t.render(**c), content_type='text/html')
