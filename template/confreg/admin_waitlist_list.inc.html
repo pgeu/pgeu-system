@@ -4,6 +4,7 @@
     <th>Name</th>
     <th>Email</th>
     <th>Type</th>
+    <th>Country</th>
     <th>Added to waitlist</th>
     <th>Offer made</th>
     {%if waitlist_type == "waitlist_active" %}
@@ -22,6 +23,7 @@
     <td>{{w.registration.firstname}} {{w.registration.lastname}}</td>
     <td>{{w.registration.email}}</td>
     <td>{{w.registration.regtype}}</td>
+    <td>{{w.registration.country_id}}</td>
     <td>{{w.enteredon|default:''}}</td>
     <td>{{w.offeredon|default:''}}</td>
     <td>{{w.offerexpires|default:''}}</td>
