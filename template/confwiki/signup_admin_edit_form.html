@@ -1,4 +1,5 @@
 {%extends "confreg/confadmin_base.html"%}
+{%block title%}Signup: {{signup.title}}{%endblock%}
 {%block extrahead%}
 <script type="text/javascript" src="/media/js/selectize.min.js"></script>
 <link rel="stylesheet" href="/media/css/selectize.css" />
@@ -46,7 +47,7 @@ $(function() {
 {%endblock%}
 
 {%block layoutblock%}
-<h1>Signup</h1>
+<h1>Signup: {{signup.title}}</h1>
 
 <p>Current <a href="#results">results</a>.</p>
 

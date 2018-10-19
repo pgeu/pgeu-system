@@ -1,4 +1,5 @@
 {%extends "confreg/confadmin_base.html"%}
+{%block title%}wiki: {{page.title}}{%endblock%}
 {%block extrahead%}
 <script type="text/javascript" src="/media/js/selectize.min.js"></script>
 <link rel="stylesheet" href="/media/css/selectize.css" />
@@ -25,7 +26,7 @@ $(function() {
 {%endblock%}
 
 {%block layoutblock%}
-<h1>Wiki page</h1>
+<h1>Wiki page: {{page.title}}</h1>
 <p>
 <b>Note!</b> Changes made on this page will not be reflected in the wiki page
 history. Instead, they will be emailed to the conference list.
