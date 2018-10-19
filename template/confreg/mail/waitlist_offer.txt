@@ -20,4 +20,9 @@ have to limit it in order to process the waitlist quickly. Should
 you miss this deadline, you will be given a new chance later assuming
 we still have open seats!
 
+We also ask that if you do NOT want to make a registration based on
+this offer, please click the same link above and cancel your waitlist
+registration. This will make it possible for us to process other
+entries on the waitlist quicker!
+
 We hope to see you at {{conference.conferencename}}!

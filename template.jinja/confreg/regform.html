@@ -60,6 +60,17 @@ complete the process! The process must be completed before
 {{reg.registrationwaitlistentry.offerexpires.strftime("%Y-%m-%d %H:%M")}} or
 this offer will expire!
 </p>
+<h4>Cancel waitlist</h4>
+<p>
+  If you do <em>not</em> want to attend the conference, we ask that
+  you cancel your waitlist position as soon as possible, to allow for
+  a faster processing of others!
+</p>
+<form method="post" action="waitlist_cancel/">{{ csrf_input }}
+<input type="hidden" name="confirm" value="1">
+<input type="submit" name="submit" value="Cancel waitlist">
+</form>
+<p></p>
 {%else%}
 <p>
 We will let you know as soon as a seat shows up!
