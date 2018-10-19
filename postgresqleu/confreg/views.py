@@ -2843,7 +2843,7 @@ def admin_waitlist_sendmail(request, urlname):
 						msgbody += "\n\nThe current size of the waitlist is {0}.\n".format(tot)
 
 					send_simple_mail(conference.contactaddr,
-									 conference.contactaddr,
+									 w.registration.email,
 									 u"[{0}] {1}".format(conference.conferencename, form.cleaned_data['subject']),
 									 msgbody,
 									 sendername=conference.conferencename,
