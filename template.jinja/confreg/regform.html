@@ -54,8 +54,8 @@ Your registration is currently on the waitlist.
 </p>
 {%if reg.registrationwaitlistentry.offeredon%}
 <p>
-Good news - you have been offered a seat from the waitlist. Please
-complete the form below and click "Save and finish" to
+<strong>Good news</strong> - you have been offered a seat from the waitlist. Please
+complete the form <a href="#buttons">below</a> and click "Save and finish" to
 complete the process! The process must be completed before
 {{reg.registrationwaitlistentry.offerexpires.strftime("%Y-%m-%d %H:%M")}} or
 this offer will expire!
@@ -106,6 +106,7 @@ correction.</p>
    in the process. Once you are finished, click <i>Save and finish</i>
    to proceed to the payment options.
  </p>
+ <a name="buttons"></a>
  <input type="submit" name="submit" value="Save and continue editing"><br/>
  <input type="submit" name="submit" value="Save and finish"><br/>
 </form>
