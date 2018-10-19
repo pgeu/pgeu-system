@@ -547,6 +547,8 @@ class RegistrationWaitlistEntry(models.Model):
 	offeredon = models.DateTimeField(null=True, blank=True)
 	offerexpires = models.DateTimeField(null=True, blank=True)
 
+	_safe_attributes = ('enteredon', 'offeredon', 'offerexpires')
+
 	@property
 	def offers_made(self):
 		return self.registrationwaitlisthistory_set.filter(text__startswith='Made offer').count()
