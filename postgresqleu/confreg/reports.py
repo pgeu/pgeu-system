@@ -265,7 +265,11 @@ def build_attendee_report(conference, POST):
 			o = [r]
 			o.extend(f.split('.'))
 			try:
-				row.append(unicode(reduce(getattr, o)))
+				t = reduce(getattr, o)
+				if type(t) == bool:
+					row.append(t and 'Yes' or 'No')
+				else:
+					row.append(unicode(t))
 			except AttributeError:
 				# NULL in a field, typically
 				row.append('')
