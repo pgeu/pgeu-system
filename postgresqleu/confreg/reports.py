@@ -32,6 +32,7 @@ attendee_report_fields = [
 		('nick', 'Nickname', False, None),
 		('dietary', 'Dietary needs', False, None),
 		('shirtsize.shirtsize', 'T-Shirt size', False, 'shirtsize__shirtsize'),
+		('photoconsent', 'Photo consent', False, None),
 		('regtype.regtype', 'Registration type', False, 'regtype__sortkey'),
 		('additionaloptionlist', 'Additional options', False, 'id'),
 		('created', 'Registration created', False, None),
@@ -133,6 +134,7 @@ def attendee_report_filters(conference):
 	yield ReportFilter('nick', 'Nickname')
 	yield ReportFilter('dietary', 'Dietary needs')
 	yield ReportFilter('shareemail', 'Share email with sponsors')
+	yield ReportFilter('photoconsent', 'Photo consent')
 	yield ReportFilter('payconfirmedat', 'Payment confirmed', emptyasnull=False)
 	yield ReportFilter('additionaloptions', 'Additional options', ConferenceAdditionalOption.objects.filter(conference=conference), 'name')
 	yield ReportFilter('shirtsize', 'T-Shirt size', ShirtSize.objects.all())
