@@ -126,11 +126,11 @@ class RefundForm(forms.Form):
 			raise ValidationError(errstr)
 
 	def clean_vatamount(self):
-		errstr = "VAT Amount must be a decimal between 1 and {0}".format(self.invoice.total_vat)
+		errstr = "VAT Amount must be a decimal between 0 and {0}".format(self.invoice.total_vat)
 
 		try:
 			amount = Decimal(self.cleaned_data['vatamount'])
-			if amount < 1 or amount > self.invoice.total_vat:
+			if amount < 0 or amount > self.invoice.total_vat:
 				raise ValidationError(errstr)
 			if amount.as_tuple().exponent > 0 or amount.as_tuple().exponent < -2:
 				raise ValidationError("Maximum two decimal digits supported")
