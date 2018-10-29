@@ -50,12 +50,17 @@ class ReportFilter(object):
 		self.emptyasnull = emptyasnull
 
 	def build_Q(self, POST):
-		if self.queryset:
+		if self.queryset and not isinstance(self.queryset, tuple):
 			# Our input is a list of IDs. Return registrations that has
 			# *any* of the given id's. But we need to make sure that
 			# django doesn't evaluate it as a subselect.
 			val = POST.getlist("adv_%s" % self.id, None)
 			return Q(**{"%s__pk__in" % self.id: val})
+		elif self.queryset:
+			# Our input is a list of IDs, but they should be looked up
+			# in a set of tuples rather than as foreign keys.
+			vals = POST.getlist("adv_%s" % self.id, None)
+			return Q(**{"%s__in" % self.id: vals})
 		else:
 			if POST.has_key('adv_%s_filter' % self.id) and POST['adv_%s_filter' % self.id]:
 				# Limit by value
@@ -93,7 +98,11 @@ class ReportFilter(object):
 					else:
 						return super(MultipleChoiceWrapper, self).label_from_instance(obj)
 
-			field = MultipleChoiceWrapper(queryset=self.queryset)
+			if isinstance(self.queryset, tuple):
+				field = forms.MultipleChoiceField(choices=self.queryset)
+			else:
+				field = MultipleChoiceWrapper(queryset=self.queryset)
+
 			return "<blockquote class=\"adv_filter_wrap\">%s</blockquote><br/>" % (field.widget.render("adv_%s" % self.id, None), )
 		else:
 			return '<input type="text" class="adv_filter_box" name="adv_%s_filter"><br/>' % self.id
@@ -134,7 +143,7 @@ def attendee_report_filters(conference):
 	yield ReportFilter('nick', 'Nickname')
 	yield ReportFilter('dietary', 'Dietary needs')
 	yield ReportFilter('shareemail', 'Share email with sponsors')
-	yield ReportFilter('photoconsent', 'Photo consent')
+	yield ReportFilter('photoconsent', 'Photo consent', ((1, 'Yes'),(0, 'No')))
 	yield ReportFilter('payconfirmedat', 'Payment confirmed', emptyasnull=False)
 	yield ReportFilter('additionaloptions', 'Additional options', ConferenceAdditionalOption.objects.filter(conference=conference), 'name')
 	yield ReportFilter('shirtsize', 'T-Shirt size', ShirtSize.objects.all())
