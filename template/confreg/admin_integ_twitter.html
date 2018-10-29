@@ -16,7 +16,7 @@ for example yourself.
 </p>
 <form method="post" action="." class="form-horizontal">{%csrf_token%}
 <input type="hidden" name="test_twitter" value="1">
-{%include "confreg/admin_backend_form_content.html" with form=testform%}
+{%include "confreg/admin_backend_form_content.html" with form=testform savebutton="Send test message" %}
 </form>
 
 <h3>Disable twitter integration</h3>
