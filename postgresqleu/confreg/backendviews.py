@@ -641,9 +641,11 @@ def twitter_integration(request, urlname):
 				recipient = testform.cleaned_data['recipient']
 				message = testform.cleaned_data['message']
 
-				ok, msg = tw.send_message(recipient, message)
+				ok, code, msg = tw.send_message(recipient, message)
 				if ok:
 					messages.info(request, 'Message successfully sent to {0}'.format(recipient))
+				elif code == 150:
+					messages.warning(request, 'Cannot send message to users not being followed')
 				else:
 					messages.error(request, 'Failed to send to {0}: {1}'.format(recipient, msg))
 				return HttpResponseRedirect('.')

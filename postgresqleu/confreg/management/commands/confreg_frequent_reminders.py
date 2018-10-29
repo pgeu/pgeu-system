@@ -60,8 +60,10 @@ class Command(BaseCommand):
 						)
 						if reg.twittername:
 							# Twitter name registered, so send reminder
-							ok, err = tw.send_message(reg.twittername, msg)
-							if not ok:
+							ok, code, err = tw.send_message(reg.twittername, msg)
+							if not ok and code != 150:
+								# Code 150 means trying to send DM to user not following us, so just
+								# ignore that one. Other errors should be shown.
 								print("Failed to send twitter DM to {0}: {1}".format(reg.twittername, err))
 
 					s.reminder_sent=True

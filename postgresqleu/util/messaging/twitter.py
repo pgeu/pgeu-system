@@ -39,7 +39,7 @@ class Twitter(object):
 								params={'screen_name': tousername})
 				_cached_twitter_users[tousername] = r.json()['id']
 			except Exception, e:
-				return (False, "Failed to look up user %s: %s" % (tousername, e))
+				return (False, None, "Failed to look up user %s: %s" % (tousername, e))
 
 		try:
 			r = self.tw.post('https://api.twitter.com/1.1/direct_messages/events/new.json', json={
@@ -56,10 +56,15 @@ class Twitter(object):
 				}
 			})
 			if r.status_code != 200:
-				return (False, r.text)
+				try:
+					# Normally these errors come back as json
+					ej = r.json()['errors'][0]
+					return (False, ej['code'], ej['message'])
+				except:
+					return (False, None, r.text)
 		except Exception, e:
-			return (False, e)
-		return (True, None)
+			return (False, None, e)
+		return (True, None, None)
 
 
 class TwitterSetup(object):
