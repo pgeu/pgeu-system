@@ -13,7 +13,7 @@ import markdown
 # Handle the frontpage
 def index(request):
 	events = Conference.objects.filter(promoactive=True, enddate__gte=datetime.datetime.today()).order_by('startdate')
-	series = ConferenceSeries.objects.extra(
+	series = ConferenceSeries.objects.filter(visible=True).extra(
 		where=["EXISTS (SELECT 1 FROM confreg_conference c WHERE c.series_id=confreg_conferenceseries.id AND c.promoactive)"]
 	)
 
@@ -53,7 +53,7 @@ ORDER BY priosort DESC, datetime DESC LIMIT 5""")
 def eventsindex(request):
 	events = list(Conference.objects.filter(promoactive=True, enddate__gte=datetime.datetime.today()).order_by('startdate'))
 	past = Conference.objects.filter(promoactive=True, enddate__lt=datetime.datetime.today()).order_by('-startdate')[:5]
-	series = ConferenceSeries.objects.extra(
+	series = ConferenceSeries.objects.filter(visible=True).extra(
 		where=["EXISTS (SELECT 1 FROM confreg_conference c WHERE c.series_id=confreg_conferenceseries.id AND c.promoactive)"]
 	)
 
@@ -70,7 +70,7 @@ def eventsindex(request):
 def pastevents(request):
 	events = list(Conference.objects.filter(promoactive=True, enddate__gte=datetime.datetime.today()).order_by('startdate'))
 	past = Conference.objects.filter(promoactive=True, enddate__lt=datetime.datetime.today()).order_by('-startdate')
-	series = ConferenceSeries.objects.extra(
+	series = ConferenceSeries.objects.filter(visible=True).extra(
 		where=["EXISTS (SELECT 1 FROM confreg_conference c WHERE c.series_id=confreg_conferenceseries.id AND c.promoactive)"]
 	)
 

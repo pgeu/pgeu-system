@@ -219,11 +219,11 @@ class BackendSuperConferenceForm(BackendForm):
 
 class BackendConferenceSeriesForm(BackendForm):
 	helplink = "series"
-	list_fields = ['name', 'sortkey', ]
+	list_fields = ['name', 'visible', 'sortkey', ]
 	markdown_fields = ['intro', ]
 	class Meta:
 		model = ConferenceSeries
-		fields = ['name', 'sortkey', 'intro', ]
+		fields = ['name', 'sortkey', 'visible', 'intro', ]
 
 class BackendTshirtSizeForm(BackendForm):
 	helplink = "meta"

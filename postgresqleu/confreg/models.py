@@ -75,6 +75,7 @@ class ConferenceSeries(models.Model):
 	name = models.CharField(max_length=64, blank=False, null=False)
 	sortkey = models.IntegerField(null=False, default=100)
 	intro = models.TextField(blank=True, null=False)
+	visible = models.BooleanField(null=False, default=True)
 
 	def __unicode__(self):
 		return self.name
