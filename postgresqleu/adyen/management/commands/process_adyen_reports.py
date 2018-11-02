@@ -164,7 +164,7 @@ class Command(BaseCommand):
 			elif t == 'MerchantPayout':
 				# Amount directly into our checking account
 				acctrows.append((settings.ACCOUNTING_ADYEN_PAYOUT_ACCOUNT, accstr, -amount, None))
-			elif t == 'DepositCorrection':
+			elif t == 'DepositCorrection' or t == 'Balancetransfer':
 				# Modification of our deposit account - in either direction!
 				acctrows.append((settings.ACCOUNTING_ADYEN_MERCHANT_ACCOUNT, accstr, -amount, None))
 			elif t == 'InvoiceDeduction':
