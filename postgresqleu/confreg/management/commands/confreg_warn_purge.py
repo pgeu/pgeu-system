@@ -23,8 +23,8 @@ class Command(BaseCommand):
 													.extra(where=["EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=confreg_conference.id)"]):
 			send_simple_mail(conference.contactaddr,
 							 conference.contactaddr,
-							 "{0}: time to purge personal data?".format(conference.conferencename),
-							 """Conference {0} finished on {1},
+							 u"{0}: time to purge personal data?".format(conference.conferencename),
+							 u"""Conference {0} finished on {1},
 but personal data has not been purged.
 
 In accordance with the rules, personal data should be purged
