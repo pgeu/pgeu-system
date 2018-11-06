@@ -104,6 +104,8 @@ div.panelwrap {
 <p>
 This sponsorship is awaiting an <a href="/invoiceadmin/{{sponsor.invoice.pk}}/">invoice</a> to be paid.
 </p>
+{%if not sponsor.level.instantbuy%}
+{%comment%}Instant buy sponsorships should never be manually confirmed{%endcomment%}
 <p>
 <b>Iff</b> there is a signed <i>and</i> countersigned contract available
 for this sponsor, it can be confirmed before the invoice is paid.
@@ -111,6 +113,7 @@ for this sponsor, it can be confirmed before the invoice is paid.
 <p>
 <a class="btn btn-default" href="confirm/" onClick="return confirmConfirm()">Confirm sponsor</a>
 </p>
+{%endif%}
 {%else%}
 {%comment%}Sponsor has no invoice{%endcomment%}
 {%if sponsor.level.instantbuy%}
