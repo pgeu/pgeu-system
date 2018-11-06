@@ -475,6 +475,7 @@ ORDER BY l.levelcost, l.levelname, s.name, b.sortkey, b.benefitname""", {'confid
 		'mails': mails,
 		'benefitcols': benefitcols,
 		'benefitmatrix': benefitmatrix,
+		'helplink': 'sponsors',
 		})
 
 def _confirm_benefit(request, benefit):
@@ -543,6 +544,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 		'noclaimbenefits': noclaimbenefits,
 		'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
 		'euvat': settings.EU_VAT,
+		'helplink': 'sponsors',
 		})
 
 @login_required
@@ -613,6 +615,7 @@ def sponsor_admin_benefit(request, confurlname, benefitid):
 		'benefit': benefit,
 		'claimdata': claimdata,
 		'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
+		'helplink': 'sponsors',
 		})
 
 @login_required
@@ -664,6 +667,7 @@ def sponsor_admin_send_mail(request, confurlname):
 		'form': form,
 		'mails': SponsorMail.objects.filter(conference=conference).order_by('sentat'),
 		'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
+		'helplink': 'sponsors',
 	})
 
 @login_required
@@ -679,6 +683,7 @@ def sponsor_admin_view_mail(request, confurlname, mailid):
 		'mail': mail,
 		'admin': True,
 		'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
+		'helplink': 'sponsors',
 		})
 
 @login_required
