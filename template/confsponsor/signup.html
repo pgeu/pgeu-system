@@ -1,8 +1,15 @@
 {%extends "nav_events.html" %}
+{%load alertmap%}
 {%load markup%}
 {%block title%}Conference Sponsorship Signup - {{conference}}{%endblock%}
 {%block content%}
 <h1>{{conference}}</h1>
+{% if messages %}
+{% for message in messages %}
+<div class="alert{% if message.tags %} {{ message.tags|alertmap }}{%endif%}">{{ message }}</div>
+{% endfor %}
+{% endif %}
+
 <h2>Conference Sponsorship Signup</h2>
 <p>
 On this page you can sign up as a sponsor of {{conference}}. If you have any questions
