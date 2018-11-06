@@ -55,7 +55,8 @@ sponsorship level picked requires a signed contract or not.
 
 In particular, the workflow is 100% automated for sponsors that have
 instant signup, and there is nothing that should be done by
-administrators.
+administrators other than to click through the approval of the
+sponsorship details.
 
 In manual sponsors, the order of processing for the administrators
 once the signup is complete becomes:
@@ -63,9 +64,11 @@ once the signup is complete becomes:
 1. Wait for the signed contract. Counstersign and send back.
 1. Generate an invoice by going to the sponsorship and click the
    button for it.
-1. Also confirm the sponsorship, unless this is from a sponsor known
-   to not pay on time etc. But for trusted sponsors, it's normal to
-   trust the signed contract and let them proceed.
+1. Optionally, also confirm the sponsorship, unless this is from a
+   sponsor known to not pay on time etc. For trusted sponsors, it's
+   normal to trust the signed contract and let them proceed, but
+   make sure to double check things like invoice details before doing
+   so, as reverting from this state is complicated.
 
 ## Managing sponsors
 
@@ -128,7 +131,8 @@ Available for signup
 Instant buy available
 :  If this level requires a signed contract. If this box is checked,
    then the sponsor can do a "click-through" accepting of the contract
-   and proceed directly to invoice. If it is not checked, then the
+   and proceed directly to confirmation and invoice, with no explicit
+   contract signing required. If it is not checked, then the
    administrator must manually move the sponsorship forward in the
    process once a signed contract is received.
 

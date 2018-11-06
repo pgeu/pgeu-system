@@ -112,15 +112,29 @@ for this sponsor, it can be confirmed before the invoice is paid.
 <a class="btn btn-default" href="confirm/" onClick="return confirmConfirm()">Confirm sponsor</a>
 </p>
 {%else%}
+{%comment%}Sponsor has no invoice{%endcomment%}
+{%if sponsor.level.instantbuy%}
+<p>
+<p>
+  This sponsorship has not yet been issued an invoice. This is an
+  "instant buy" level sponsorship, so as soon as the sponsorship
+  details above have been verified, an invoice should be generated.
+</p>
+</p>
+{%else%}
 <p>
 This sponsorship has not yet been issued an invoice. Once the contract
-has been received, go ahead and generate the invoice. It will automatically
+has been received, go ahead and generate the invoice.
+</p>
+{%endif%}{%comment%}Instant buy{%endcomment%}
+<p>
+  Once generated, the invoice will automatically
 be emailed to the sponsor, as well as show up on their dashboard. Once
 the invoice is paid, the sponsorship will automatically become confirmed.
 </p>
 <a class="btn btn-default" href="generateinvoice/">Generate invoice</a>
-{%endif%}
-{%endif%}
+{%endif%}{%comment%}Has invoice{%endcomment%}
+{%endif%}{%comment%}Is confirmed{%endcomment%}
 
 <br/><br/>
 <a class="btn btn-default btn-block" href="../">Return to sponsor list</a>

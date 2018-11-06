@@ -53,13 +53,25 @@
 {%endwith%}
 {%else%}
 {%comment%}No invoice generated{%endcomment%}
+{%if sponsor.level.instantbuy%}
+{%comment%}No invoice generated but instantbuy active, so awaiting admin approval{%endcomment%}
 <p>
-  No invoice has been generated for your sponsorship. That means we are awaiting a signed
-  contract. If you have not yet signed and sent in the contract, please
+  Your sponsorship request has been submitted, and is currently awaiting confirmation
+  from the conference organizers. As soon as it has been, an invoice will be automatically
+  generated and sent to {{sponsor.managers.all.0.email}}.
+</p>
+{%else%}
+<p>
+  Your sponsorship request has been submitted, and is currently waiting for you to send in
+  a signed contract. If you have not yet signed and sent in the contract, please
   <a href="/events/sponsor/viewcontract/{{sponsor.level.contract.id}}/">download</a>
   it, sign it, scan it and return to
-  <a href="mailto:{{conference.sponsoraddr}}">{{conference.sponsoraddr}}</a>.
+  <a href="mailto:{{conference.sponsoraddr}}">{{conference.sponsoraddr}}</a>. If you have
+  sent it, please wait a while for the conference organizers to process it. If you have not
+  received a response after a couple of days, please send an email to the above address for
+  a status update.
 </p>
+{%endif%}
 {%endif%}
 {%else%}
 <p>

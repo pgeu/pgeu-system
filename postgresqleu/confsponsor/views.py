@@ -296,11 +296,8 @@ def sponsor_signup(request, confurlname, levelurlname):
 				mailstr = "Sponsor %s signed up for conference\n%s at level %s.\n\n" % (sponsor.name, conference, level.levelname)
 
 				if level.instantbuy:
-					# Create the invoice, so it can be paid right away!
-					sponsor.invoice = create_sponsor_invoice(request.user, sponsor)
-					sponsor.invoice.save()
-					sponsor.save()
-					mailstr += "An invoice (#%s) has automatically been generated\nand is awaiting payment." % sponsor.invoice.pk
+					mailstr += "Level does not require a signed contract. Verify the details and approve\nthe sponsorship using:\n\n{0}/events/sponsor/admin/{1}/{2}/".format(
+						settings.SITEBASE, conference.urlname, sponsor.id)
 				else:
 					mailstr += "No invoice has been generated as for this level\na signed contract is required first. The sponsor\nhas been instructed to sign and send the contract."
 
