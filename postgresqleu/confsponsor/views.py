@@ -255,6 +255,9 @@ def sponsor_signup(request, confurlname, levelurlname):
 			raise Http404()
 
 	level = get_object_or_404(SponsorshipLevel, conference=conference, urlname=levelurlname, available=True)
+	if not level.can_signup:
+		messages.error(request, "This level is not currently available for signup")
+		return HttpResponseRedirect("../")
 
 	user_name = request.user.first_name + ' ' + request.user.last_name
 

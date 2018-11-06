@@ -131,6 +131,13 @@ has been received, go ahead and generate the invoice.
 be emailed to the sponsor, as well as show up on their dashboard. Once
 the invoice is paid, the sponsorship will automatically become confirmed.
 </p>
+{%if sponsor.level.maxnumber > 0%}
+<p{%if sponsor.level.num_total > sponsor.level.maxnumber%} style="color:red;"{%endif%}>
+  This level allows a maximum of {{sponsor.level.maxnumber}} sponsors. There are currently
+  {{sponsor.level.num_confirmed}} confirmed and {{sponsor.level.num_unconfirmed}} unconfirmed
+  sponsors signed up at this level, make sure you don't approve too many!
+</p>
+{%endif%}
 <form method="post" action=".">{%csrf_token%}
 <input type="submit" name="submit" value="Generate invoice" class="btn btn-default">
 </form>

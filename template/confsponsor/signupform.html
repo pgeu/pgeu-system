@@ -77,6 +77,18 @@ instructions.
 </p>
 {%endif%}
 
+{%if level.maxnumber%}
+<p>
+  This level allows a maximum of {{level.maxnumber}} sponsors. There are currently
+  {{level.num_confirmed}} confirmed and {{level.num_unconfirmed}} unconfirmed
+  sponsors signed up at this level.
+{%if level.maxnumber <= level.num_total and level.num_unconfirmed > 0 %}
+At this point, you can sign up on the wait list for this level, and will be granted
+a slot if not all other sponsors complete their signup.
+{%endif%}
+</p>
+{%endif%}
+
 <input type="submit" value="Sign up!" class="btn btn-primary">
 {%if previewaddr%}
 <input type="submit" name="submit" value="Continue editing" class="btn">

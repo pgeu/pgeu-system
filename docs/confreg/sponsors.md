@@ -70,6 +70,24 @@ once the signup is complete becomes:
    make sure to double check things like invoice details before doing
    so, as reverting from this state is complicated.
 
+## Sponsor waitlist
+
+The sponsor waitlist is managed manually. When a maximum number of
+sponsors are set at a level, signup works normally until there are
+that many sponsors signed up.
+
+Once that number of sponsors are signed up *and confirmed*, the
+sign-up button is automatically removed, and the level cannot be used
+anymore.
+
+In the period where there are fewer *confirmed* sponsors than there
+are maximum number of allowed sponsors, a wait list is allowed. The
+waitlist is *manually* managed, so what happens is that these sponsors
+are added as normal, but should not be "clicked through" by the
+adminstrator. Once the limit is exceeded a red warning text is shown
+on the page where invoices are generated, to avoid doing this by
+mistake.
+
 ## Managing sponsors
 
 Once sponsors are confirmed, await them to claim sponsorship
@@ -124,9 +142,15 @@ Levelcost
 :  Price for this level (excluding VAT if VAT is used)
 
 Available for signup
-:  Whether this level is currently enabled for signup (should normally
-   be on unless the level has a maximum number of uses and is sold
-   out).
+:  Whether this level is currently enabled for signup.
+
+Maximum number of sponsors
+:  Maximum number of sponsors that can sign up at this level. If more
+   than this number of *confirmed* sponsors exist, the sign up button
+   will be removed. If there are fewer *confirmed* sponsors, but the
+   total number including *unconfirmed* sponsors exceed exceed the number,
+   sponsors are offered a waitlist. If set to zero then an unlimited
+   number of sponsors are allowed at this level.
 
 Instant buy available
 :  If this level requires a signed contract. If this box is checked,

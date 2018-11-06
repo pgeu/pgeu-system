@@ -60,6 +60,17 @@ The following benefits are available at this level (click for details):
 <p>
 The price for this sponsorship level is {{currency_symbol}}{{level.levelcost}}.
 </p>
+{%if level.maxnumber%}
+<p>
+  This level allows a maximum of {{level.maxnumber}} sponsors. There are currently
+  {{level.num_confirmed}} confirmed and {{level.num_unconfirmed}} unconfirmed
+  sponsors signed up at this level.
+{%if level.maxnumber <= level.num_total and level.num_unconfirmed > 0 %}
+At this point, you can sign up on the wait list for this level, and will be granted
+a slot if not all other sponsors complete their signup.
+{%endif%}
+</p>
+{%endif%}
 {%if level.contract%}
 <p>
 A full specification of all the levels can be found in the
@@ -67,7 +78,7 @@ A full specification of all the levels can be found in the
 If there is a difference, the version listed in the contract takes precedence.
 </p>
 {%endif%}
-{%if level.available%}
+{%if level.can_signup %}
 <p><a class="btn btn-primary" href="{{level.urlname}}/">Sign Up</a></p>
 {%else%}
 <p><i>This level is not currently available for signup.</i></p>

@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.core.exceptions import ValidationError
+from django.utils.functional import cached_property
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
 
@@ -46,6 +47,7 @@ class SponsorshipLevel(models.Model):
 	urlname = models.CharField(max_length=100, null=False, blank=False, validators=[validate_lowercase,])
 	levelcost = models.IntegerField(null=False, blank=False)
 	available = models.BooleanField(null=False, blank=False, default=True, verbose_name="Available for signup")
+	maxnumber = models.IntegerField(null=False, blank=False, default=0, verbose_name="Maximum number of sponsors")
 	instantbuy = models.BooleanField(null=False, blank=False, default=False, verbose_name="Instant buy available")
 	paymentmethods = models.ManyToManyField(InvoicePaymentMethod, blank=False, verbose_name="Payment methods for generated invoices")
 	contract = models.ForeignKey(SponsorshipContract, blank=True, null=True, on_delete=models.CASCADE)
@@ -58,6 +60,27 @@ class SponsorshipLevel(models.Model):
 	class Meta:
 		ordering = ('levelcost', 'levelname',)
 		unique_together = (('conference', 'urlname'), )
+
+	@cached_property
+	def num_confirmed(self):
+		return self.sponsor_set.filter(confirmed=True).count()
+
+	@cached_property
+	def num_unconfirmed(self):
+		return self.sponsor_set.filter(confirmed=False).count()
+
+	@cached_property
+	def num_total(self):
+		return self.num_confirmed + self.num_unconfirmed
+
+	@cached_property
+	def can_signup(self):
+		if self.available:
+			if self.maxnumber > 0:
+				return self.num_confirmed < self.maxnumber
+			else:
+				return True
+		return False
 
 class SponsorshipBenefit(models.Model):
 	level = models.ForeignKey(SponsorshipLevel, null=False, blank=False, on_delete=models.CASCADE)

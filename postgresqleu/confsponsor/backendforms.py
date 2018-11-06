@@ -134,7 +134,7 @@ class BackendSponsorshipLevelForm(BackendForm):
 
 	class Meta:
 		model = SponsorshipLevel
-		fields = ['levelname', 'urlname', 'levelcost', 'available', 'instantbuy',
+		fields = ['levelname', 'urlname', 'levelcost', 'available', 'maxnumber', 'instantbuy',
 				  'paymentmethods', 'contract', 'canbuyvoucher', 'canbuydiscountcode']
 
 	def fix_fields(self):
