@@ -132,7 +132,17 @@ has been received, go ahead and generate the invoice.
 be emailed to the sponsor, as well as show up on their dashboard. Once
 the invoice is paid, the sponsorship will automatically become confirmed.
 </p>
-<a class="btn btn-default" href="generateinvoice/">Generate invoice</a>
+<form method="post" action=".">{%csrf_token%}
+<input type="submit" name="submit" value="Generate invoice" class="btn btn-default">
+</form>
+<br/>
+<form method="post" action="." class="form-inline">{%csrf_token%}
+<div class="form-group">
+  <label for="rejectReason">Reason:</label>
+  <input type="text" name="reason" class="form-control" placeholder="Public reason for rejection">
+  <input type="submit" name="submit" value="Reject sponsorship" class="btn btn-default">
+</div>
+</form>
 {%endif%}{%comment%}Has invoice{%endcomment%}
 {%endif%}{%comment%}Is confirmed{%endcomment%}
 

@@ -12,12 +12,16 @@ digraph sponsorsignup {
 	invoice[shape=box label="Invoice generated"];
 	contract[shape=box label="Wait for contract"];
 	confirmed[shape=box label="Sponsorship confirmed"];
+	rejected[shape=box label="Sponsorship rejected"];
 
 	start -> type [label="Sponsor sign up", color=green];
 	type -> contract [label="Yes"];
 	type -> confirm [label="No"];
-	confirm -> invoice [label="Details confirmed", color=blue];
-	contract -> confirm [label="Contract received", color=blue];
-	contract -> confirmed [label="Early confirmation", color=blue];
-	invoice -> confirmed [label="Invoice paid", color=green];
+	confirm -> invoice [label="Details\nconfirmed", color=blue];
+	contract -> confirm [label="Contract\nreceived", color=blue];
+	contract -> confirmed [label="Early\nconfirmation", color=blue];
+	invoice -> confirmed [label="Invoice\npaid", color=green];
+	invoice -> confirm [label="Invoice\ncanceled", color=blue];
+	confirm -> rejected [label="Reject", color=blue];
+	contract -> rejected [label="Reject", color=blue];
 }

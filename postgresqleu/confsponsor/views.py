@@ -13,7 +13,7 @@ from postgresqleu.auth import user_search, user_import
 from postgresqleu.confreg.models import Conference, PrepaidVoucher, DiscountCode
 from postgresqleu.confreg.models import ConferenceTweetQueue
 from postgresqleu.confreg.jinjafunc import render_sandboxed_template
-from postgresqleu.mailqueue.util import send_simple_mail
+from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.invoices.util import InvoiceWrapper
@@ -518,11 +518,62 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 
 	sponsor = get_object_or_404(Sponsor, id=sponsorid, conference=conference)
 
-	if request.method == 'POST' and request.POST['confirm'] == '1':
+	if request.method == 'POST' and request.POST.get('confirm', '0') == '1':
 		# Confirm one of the benefits, so do this before we load the list
 		benefit = get_object_or_404(SponsorClaimedBenefit, sponsor=sponsor, id=request.POST['claimid'])
 		_confirm_benefit(request, benefit)
 		return HttpResponseRedirect('.')
+
+	if request.method == 'POST':
+		if request.POST.get('submit', '') == 'Generate invoice':
+			if sponsor.invoice:
+				# Existing invoice
+				messages.warning(request, "This sponsor already has an invoice!")
+				return HttpResponseRedirect(".")
+
+			# Actually generate the invoice!
+			manager = sponsor.managers.all()[0]
+			sponsor.invoice = create_sponsor_invoice(manager, sponsor)
+			sponsor.invoice.save()
+			sponsor.save()
+			wrapper = InvoiceWrapper(sponsor.invoice)
+			wrapper.email_invoice()
+			messages.info(request, u"Invoice sent to {0}".format(manager.email))
+			return HttpResponseRedirect(".")
+		if request.POST.get('submit', '') == 'Reject sponsorship':
+			if sponsor.invoice:
+				messages.warning(request, "Cannot reject sponsorship with an invoice!")
+				return HttpResponseRedirect(".")
+			reason = request.POST.get('reason', '')
+			if len(reason) < 5:
+				messages.error(request, "Cannot reject sponsorship without reason!")
+				return HttpResponseRedirect(".")
+			# Else actually reject it
+			send_simple_mail(conference.sponsoraddr,
+							 conference.sponsoraddr,
+							 u"Sponsor %s rejected" % sponsor.name,
+							 u"The sponsor {0} has been rejected by {1}.\nThe reason given was: {2}".format(sponsor.name, request.user, reason),
+							 sendername=conference.conferencename)
+			for manager in sponsor.managers.all():
+				send_template_mail(conference.sponsoraddr,
+								   manager.email,
+								   u"[{0}] Sponsorship removed".format(conference),
+								   'confsponsor/mail/sponsor_rejected.txt',
+								   {
+									   'sponsor': sponsor,
+									   'conference': conference,
+									   'reason': reason,
+								   },
+								   sendername=conference.conferencename,
+								   receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
+
+			messages.info(request, u"Sponsor {0} rejected.".format(sponsor.name))
+			sponsor.delete()
+			return HttpResponseRedirect("../")
+
+		# Any other POST we don't know what it is
+		return HttpResponseRedirect(".")
+
 
 	unclaimedbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=False).exclude(sponsorclaimedbenefit__sponsor=sponsor)
 	claimedbenefits = SponsorClaimedBenefit.objects.filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey')
@@ -543,30 +594,6 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 		'euvat': settings.EU_VAT,
 		'helplink': 'sponsors',
 		})
-
-@login_required
-@transaction.atomic
-def sponsor_admin_generateinvoice(request, confurlname, sponsorid):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confurlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confurlname, administrators=request.user)
-
-	sponsor = get_object_or_404(Sponsor, id=sponsorid, conference=conference)
-
-	if sponsor.invoice:
-	    # Existing invoice
-		messages.warning(request, "This sponsor already has an invoice!")
-		return HttpResponseRedirect("../")
-
-	# Actually generate the invoice!
-	manager = sponsor.managers.all()[0]
-	sponsor.invoice = create_sponsor_invoice(manager, sponsor)
-	sponsor.invoice.save()
-	sponsor.save()
-	wrapper = InvoiceWrapper(sponsor.invoice)
-	wrapper.email_invoice()
-	return HttpResponseRedirect("../")
 
 @login_required
 @transaction.atomic
