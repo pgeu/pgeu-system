@@ -447,10 +447,7 @@ class CallForPapersSubmissionForm(forms.Form):
 class CallForPapersForm(forms.ModelForm):
 	class Meta:
 		model = ConferenceSession
-		exclude = ('conference', 'speaker', 'starttime', 'endtime',
-				   'room', 'cross_schedule', 'can_feedback', 'status',
-				   'initialsubmit', 'tentativescheduleslot', 'tentativeroom',
-				   'lastnotifiedstatus', 'lastnotifiedtime', )
+		fields = ('title', 'abstract', 'skill_level', 'track', 'submissionnote',)
 
 	def __init__(self, *args, **kwargs):
 		super(CallForPapersForm, self).__init__(*args, **kwargs)
