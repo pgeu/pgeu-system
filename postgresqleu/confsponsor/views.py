@@ -24,7 +24,7 @@ from models import PurchasedVoucher
 from forms import SponsorSignupForm, SponsorSendEmailForm
 from forms import PurchaseVouchersForm, PurchaseDiscountForm
 from benefits import get_benefit_class
-from invoicehandler import create_sponsor_invoice, confirm_sponsor
+from invoicehandler import create_sponsor_invoice, confirm_sponsor, get_sponsor_invoice_address
 from invoicehandler import create_voucher_invoice
 from vatutil import validate_eu_vat_number
 
@@ -260,41 +260,57 @@ def sponsor_signup(request, confurlname, levelurlname):
 
 	if request.method == 'POST':
 		form = SponsorSignupForm(conference, data=request.POST)
-		if form.is_valid():
-			# Create a new sponsorship record always
-			sponsor = Sponsor(conference=conference,
-							  signupat=datetime.now(),
-							  name=form.cleaned_data['name'],
-							  displayname=form.cleaned_data['displayname'],
-							  url=form.cleaned_data['url'],
-							  level=level,
-							  twittername = form.cleaned_data.get('twittername', ''),
-							  invoiceaddr = form.cleaned_data['address'])
-			if settings.EU_VAT:
-				sponsor.vatstatus = int(form.cleaned_data['vatstatus'])
-				sponsor.vatnumber = form.cleaned_data['vatnumber']
-			sponsor.save()
-			sponsor.managers.add(request.user)
-			sponsor.save()
-
-			mailstr = "Sponsor %s signed up for conference\n%s at level %s.\n\n" % (sponsor.name, conference, level.levelname)
-
-			if level.instantbuy:
-				# Create the invoice, so it can be paid right away!
-				sponsor.invoice = create_sponsor_invoice(request.user, sponsor)
-				sponsor.invoice.save()
+		if not request.POST.get('confirm', '0') == '1':
+			if form.is_valid():
+				# Confirm not set, but form valid: show the address verification.
+				return render(request, 'confsponsor/signupform.html', {
+					'user_name': user_name,
+					'conference': conference,
+					'level': level,
+					'form': form,
+					'previewaddr': get_sponsor_invoice_address(form.cleaned_data['name'],
+															   form.cleaned_data['address'],
+															   settings.EU_VAT and form.cleaned_data['vatnumber'] or None)
+				})
+				# Else fall through to re-render the full form
+			# If form not valid, fall through to error below
+		elif form.is_valid():
+			# Confirm is set, but if the Continue editing button is selected we should go back
+			# to just rendering the normal form. Otherwise, go ahead and create the record.
+			if request.POST.get('submit', '') != 'Continue editing':
+				sponsor = Sponsor(conference=conference,
+								  signupat=datetime.now(),
+								  name=form.cleaned_data['name'],
+								  displayname=form.cleaned_data['displayname'],
+								  url=form.cleaned_data['url'],
+								  level=level,
+								  twittername = form.cleaned_data.get('twittername', ''),
+								  invoiceaddr = form.cleaned_data['address'])
+				if settings.EU_VAT:
+					sponsor.vatstatus = int(form.cleaned_data['vatstatus'])
+					sponsor.vatnumber = form.cleaned_data['vatnumber']
 				sponsor.save()
-				mailstr += "An invoice (#%s) has automatically been generated\nand is awaiting payment." % sponsor.invoice.pk
-			else:
-				mailstr += "No invoice has been generated as for this level\na signed contract is required first. The sponsor\nhas been instructed to sign and send the contract."
+				sponsor.managers.add(request.user)
+				sponsor.save()
 
-			send_simple_mail(conference.sponsoraddr,
-							 conference.sponsoraddr,
-							 "Sponsor %s signed up for %s" % (sponsor.name, conference),
-							 mailstr,
-							 sendername=conference.conferencename)
-			# Redirect back to edit the actual sponsorship entry
-			return HttpResponseRedirect('/events/sponsor/%s/' % sponsor.id)
+				mailstr = "Sponsor %s signed up for conference\n%s at level %s.\n\n" % (sponsor.name, conference, level.levelname)
+
+				if level.instantbuy:
+					# Create the invoice, so it can be paid right away!
+					sponsor.invoice = create_sponsor_invoice(request.user, sponsor)
+					sponsor.invoice.save()
+					sponsor.save()
+					mailstr += "An invoice (#%s) has automatically been generated\nand is awaiting payment." % sponsor.invoice.pk
+				else:
+					mailstr += "No invoice has been generated as for this level\na signed contract is required first. The sponsor\nhas been instructed to sign and send the contract."
+
+				send_simple_mail(conference.sponsoraddr,
+								 conference.sponsoraddr,
+								 "Sponsor %s signed up for %s" % (sponsor.name, conference),
+								 mailstr,
+								 sendername=conference.conferencename)
+				# Redirect back to edit the actual sponsorship entry
+				return HttpResponseRedirect('/events/sponsor/%s/' % sponsor.id)
 	else:
 		form = SponsorSignupForm(conference)
 

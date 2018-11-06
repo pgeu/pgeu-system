@@ -26,12 +26,11 @@ def _int_with_default(s, default):
 class SponsorSignupForm(forms.Form):
 	name = forms.CharField(label="Company name *", min_length=3, max_length=100, help_text="This name is used on invoices and in internal communication")
 	displayname = forms.CharField(label="Display name *", min_length=3, max_length=100, help_text="This name is displayed on websites and in public communication")
-	address = forms.CharField(label="Company invoice address *", min_length=10, max_length=500, widget=forms.Textarea)
+	address = forms.CharField(label="Company invoice address *", min_length=10, max_length=500, widget=forms.Textarea, help_text="The sponsor name is automatically included at beginning of address. The VAT number is automatically included at end of address.")
 	vatstatus = forms.ChoiceField(label="Company VAT status", choices=vat_status_choices)
 	vatnumber = forms.CharField(label="EU VAT Number", min_length=5, max_length=50, help_text="Enter EU VAT Number to be included on invoices if assigned one. Leave empty if outside the EU or without assigned VAT number.", required=False)
 	url = forms.URLField(label="Company URL *")
 	twittername = forms.CharField(label="Company twitter", min_length=0, max_length=100, required=False, validators=[TwitterValidator, ])
-	confirm = forms.BooleanField(help_text="Check this box to that you have read and agree to the terms in the contract")
 
 	def __init__(self, conference, *args, **kwargs):
 		self.conference = conference

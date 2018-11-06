@@ -109,6 +109,12 @@ class InvoiceProcessor(object):
 		return "%s/events/sponsor/%s/" % (settings.SITEBASE, sponsor.id)
 
 
+def get_sponsor_invoice_address(name, invoiceaddr, vatnumber):
+	if settings.EU_VAT and vatnumber:
+		return u"{0}\n{1}\n\nVAT: {2}".format(name, invoiceaddr, vatnumber)
+	else:
+		return u"{0}\n{1}".format(name, invoiceaddr)
+
 # Generate an invoice for sponsorship
 def create_sponsor_invoice(user, sponsor):
 	conference = sponsor.conference
@@ -163,18 +169,13 @@ def create_sponsor_invoice(user, sponsor):
 		# to 30 days from now.
 		duedate = datetime.now() + timedelta(days=30)
 
-	if settings.EU_VAT and sponsor.vatnumber:
-		addrstr = u"{0}\n{1}\n\nVAT: {2}".format(sponsor.name, sponsor.invoiceaddr, sponsor.vatnumber)
-	else:
-		addrstr = u"{0}\n{1}".format(sponsor.name, sponsor.invoiceaddr)
-
 	manager = InvoiceManager()
 	processor = invoicemodels.InvoiceProcessor.objects.get(processorname="confsponsor processor")
 	i = manager.create_invoice(
 		user,
 		user.email,
 		user.first_name + ' ' + user.last_name,
-		addrstr,
+		get_sponsor_invoice_address(sponsor.name, sponsor.invoiceaddr, sponsor.vatnumber),
 		'%s sponsorship' % conference.conferencename,
 		datetime.now(),
 		duedate,
