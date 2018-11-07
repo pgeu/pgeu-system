@@ -78,7 +78,7 @@ class Command(BaseCommand):
 			tl = list(ConferenceTweetQueue.objects.filter(conference=c).order_by('datetime')[:1])
 			if tl:
 				t = tl[0]
-				ok, msg = tw.post_tweet(statusstr)
+				ok, msg = tw.post_tweet(t.contents)
 				if ok:
 					t.delete()
 					continue
