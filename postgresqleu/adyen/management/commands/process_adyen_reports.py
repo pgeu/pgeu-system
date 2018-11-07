@@ -137,6 +137,12 @@ class Command(BaseCommand):
 		types = {}
 		for l in reader:
 			t = l['Type']
+			if t == 'Balancetransfer':
+				# Balance transfer is special -- we can have two of them that evens out,
+				# but we need to separate in and out
+				if Decimal(l['Net Debit (NC)'] or 0) > 0:
+					t = "Balancetransfer2"
+
 			lamount = Decimal(l['Net Credit (NC)'] or 0) - Decimal(l['Net Debit (NC)'] or 0)
 			if types.has_key(t):
 				types[t] += lamount
@@ -164,7 +170,7 @@ class Command(BaseCommand):
 			elif t == 'MerchantPayout':
 				# Amount directly into our checking account
 				acctrows.append((settings.ACCOUNTING_ADYEN_PAYOUT_ACCOUNT, accstr, -amount, None))
-			elif t == 'DepositCorrection' or t == 'Balancetransfer':
+			elif t == 'DepositCorrection' or t == 'Balancetransfer' or t == 'Balancetransfer2':
 				# Modification of our deposit account - in either direction!
 				acctrows.append((settings.ACCOUNTING_ADYEN_MERCHANT_ACCOUNT, accstr, -amount, None))
 			elif t == 'InvoiceDeduction':
