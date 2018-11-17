@@ -239,15 +239,16 @@ class BackendRegistrationForm(BackendForm):
 	helplink = "registrations"
 	class Meta:
 		model = ConferenceRegistration
-		fields = ['firstname', 'lastname', 'company', 'address', 'country', 'phone',
+		fields = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone',
 				  'shirtsize', 'dietary', 'twittername', 'nick', 'shareemail',
-				  'additionaloptions']
+				  'regtype', 'additionaloptions']
 
 	def fix_fields(self):
 		if self.instance.payconfirmedat:
 			self.warning_text = "WARNING! This registration has already been completed! Edit with caution!"
 
 		self.fields['additionaloptions'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference)
+		self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=self.conference)
 		if not self.conference.askfood:
 			del self.fields['dietary']
 		if not self.conference.asktshirt:
