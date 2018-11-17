@@ -244,6 +244,9 @@ class BackendRegistrationForm(BackendForm):
 				  'additionaloptions']
 
 	def fix_fields(self):
+		if self.instance.payconfirmedat:
+			self.warning_text = "WARNING! This registration has already been completed! Edit with caution!"
+
 		self.fields['additionaloptions'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference)
 		if not self.conference.askfood:
 			del self.fields['dietary']
