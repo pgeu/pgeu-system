@@ -491,6 +491,8 @@ class ConferenceRegistration(models.Model):
 
 	@property
 	def can_edit(self):
+		# Can this registration be edited by the end user (which also implies
+		# it can be deleted)
 		return not (self.payconfirmedat or self.invoice or self.bulkpayment)
 
 	def short_regtype(self):

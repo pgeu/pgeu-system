@@ -144,10 +144,13 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
 	)
 
 
-def cancel_registration(reg):
+def cancel_registration(reg, is_unconfirmed=False):
 	# Verify that we're only canceling a real registration
 	if not reg.payconfirmedat:
-		raise Exception("Registration not paid, data is out of sync!")
+		# If we don't allow canceling an unpaid registration, and the registration
+		# actually is unpaid, then boom.
+		if not is_unconfirmed:
+			raise Exception("Registration not paid, data is out of sync!")
 
 	# If we sent a welcome mail, also send a goodbye mail
 	if reg.conference.sendwelcomemail:
@@ -158,6 +161,7 @@ def cancel_registration(reg):
 						   {
 							   'conference': reg.conference,
 							   'reg': reg,
+							   'unconfirmed': is_unconfirmed,
 						   },
 						   sendername=reg.conference.conferencename,
 						   receivername=reg.fullname,

@@ -2656,7 +2656,8 @@ def admin_registration_cancel(request, urlname, regid):
 
 	if request.method == 'POST' and request.POST.get('docancel') == '1':
 		name = reg.fullname
-		cancel_registration(reg)
+		is_unconfirmed = (reg.payconfirmedat is None)
+		cancel_registration(reg, is_unconfirmed)
 		return render(request, 'confreg/admin_registration_cancel_confirm.html', {
 			'conference': conference,
 			'name': name,

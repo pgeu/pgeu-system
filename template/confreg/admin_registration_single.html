@@ -154,7 +154,9 @@
 {%if reg.payconfirmedat%}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/cancel/">Cancel registration</a>
 {%endif%}
-
+{%if reg.can_edit %}
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/cancel/">Remove unconfirmed registration entry</a>
+{%endif%}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/">Back to list</a>
 
 {%endblock%}
