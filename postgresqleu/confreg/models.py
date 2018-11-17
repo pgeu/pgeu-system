@@ -83,6 +83,7 @@ class ConferenceSeries(models.Model):
 
 	class Meta:
 		ordering = ('sortkey', 'name')
+		verbose_name_plural = "Conference series"
 
 class ConferenceSeriesOptOut(models.Model):
 	# Users opting out of communications about a specific conference

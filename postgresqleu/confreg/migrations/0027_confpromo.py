@@ -15,7 +15,9 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='conferenceseries',
-            options={'ordering': ('sortkey', 'name')},
+            options={'ordering': ('sortkey', 'name'),
+					 'verbose_name_plural': 'Conference series',
+			},
         ),
         migrations.AddField(
             model_name='conference',
