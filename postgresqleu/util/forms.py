@@ -5,7 +5,7 @@ from django.contrib.postgres.fields import ArrayField
 
 import cPickle
 import base64
-
+from itertools import groupby
 
 class _ValidatorField(forms.Field):
 	required=True
@@ -62,3 +62,23 @@ class ChoiceArrayField(ArrayField):
         }
         defaults.update(kwargs)
         return super(ArrayField, self).formfield(**defaults)
+
+
+class GroupedIterator(forms.models.ModelChoiceIterator):
+	def __iter__(self):
+		for group, choices in groupby(self.queryset.all().order_by(self.field.groupfield, *self.field.orderby),
+									  key=lambda x: getattr(x, self.field.groupfield)):
+			yield (group,
+				   [self.choice(c) for c in choices])
+
+class Grouped(object):
+	def __init__(self, groupfield, queryset, *args, **kwargs):
+		self.orderby = queryset.query.order_by
+		super(Grouped, self).__init__(*args, queryset=queryset, **kwargs)
+		self.groupfield = groupfield
+
+	def _get_choices(self):
+		return GroupedIterator(self)
+
+class GroupedModelMultipleChoiceField(Grouped, forms.ModelMultipleChoiceField):
+	choices = property(Grouped._get_choices, forms.ModelMultipleChoiceField._set_choices)
