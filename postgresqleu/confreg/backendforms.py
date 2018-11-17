@@ -128,6 +128,14 @@ class BackendForm(ConcurrentProtectedModelForm):
 			self.fields[field].queryset = self.fields[field].queryset.filter(pk__in=set(vals))
 			self.fields[field].label_from_instance = lookup.label_from_instance
 
+	def remove_field(self, fieldname):
+		# Remove base field
+		del self.fields[fieldname]
+		# And then remove any references in a fieldset
+		for fs in self.fieldsets:
+			if fieldname in fs['fields']:
+				fs['fields'].remove(fieldname)
+
 	def fix_fields(self):
 		pass
 
@@ -208,7 +216,7 @@ class BackendSuperConferenceForm(BackendForm):
 	def fix_fields(self):
 		self.fields['accounting_object'].choices = [('', '----'),] + [(o.name, o.name) for o in postgresqleu.accounting.models.Object.objects.filter(active=True)]
 		if not self.instance.id:
-			del self.fields['accounting_object']
+			self.remove_field('accounting_object')
 
 	def pre_create_item(self):
 		# Create a new accounting object automatically if one does not exist already
@@ -250,11 +258,11 @@ class BackendRegistrationForm(BackendForm):
 		self.fields['additionaloptions'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference)
 		self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=self.conference)
 		if not self.conference.askfood:
-			del self.fields['dietary']
+			self.remove_field('askfood')
 		if not self.conference.asktshirt:
-			del self.fields['shirtsize']
+			self.remove_field('shirtsize')
 		if not self.conference.askshareemail:
-			del self.fields['shareemail']
+			self.remove_field('shareemail')
 		self.update_protected_fields()
 
 class BackendRegistrationClassForm(BackendForm):
@@ -300,12 +308,12 @@ class BackendRegistrationTypeForm(BackendForm):
 		if RegistrationDay.objects.filter(conference=self.conference).exists():
 			self.fields['days'].queryset = RegistrationDay.objects.filter(conference=self.conference)
 		else:
-			del self.fields['days']
+			self.remove_field('days')
 			self.update_protected_fields()
 
 		if not ConferenceAdditionalOption.objects.filter(conference=self.conference).exists():
-			del self.fields['requires_option']
-			del self.fields['upsell_target']
+			self.remove_field('requires_option')
+			self.remove_field('upsell_target')
 			self.update_protected_fields()
 
 	def clean_cost(self):
@@ -453,7 +461,7 @@ class BackendConferenceSessionForm(BackendForm):
 			self.fields['status'].help_text = '<b>Warning!</b> This session has <a href="/events/admin/{0}/sessionnotifyqueue/">pending notifications</a> that have not been sent. You probably want to make sure those are sent before editing the status!'.format(self.conference.urlname)
 
 		if not self.conference.skill_levels:
-			del self.fields['skill_level']
+			self.remove_field('skill_level')
 			self.update_protected_fields()
 
 	def clean(self):
@@ -700,12 +708,12 @@ class BackendDiscountCodeForm(BackendForm):
 
 		if self.instance.discountamount:
 			# Fixed amount discount
-			del self.fields['discountpercentage']
-			del self.fields['regonly']
+			self.remove_field('discountpercentage')
+			self.remove_field('regonly')
 			self.fields['discountamount'].validators.append(MinValueValidator(1))
 		else:
 			# Percentage discount
-			del self.fields['discountamount']
+			self.remove_field('discountamount')
 			self.fields['discountpercentage'].validators.extend([
 				MinValueValidator(1),
 				MaxValueValidator(99),
