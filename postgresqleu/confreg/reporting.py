@@ -1,8 +1,10 @@
 from django.shortcuts import render
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
 from django.db import connection
 
-from postgresqleu.util.decorators import superuser_required
+from postgresqleu.confreg.models import ConferenceSeries
 
 class ReportException(Exception):
 	pass
@@ -14,11 +16,14 @@ class Header(object):
 	def __unicode__(self):
 		return self.hdr
 
-@superuser_required
+@login_required
 def timereport(request):
+	if not (request.user.is_superuser or ConferenceSeries.objects.filter(administrators=request.user).exists()):
+		return HttpResponseForbidden()
+
 	from reportingforms import TimeReportForm
 	if request.method == 'POST':
-		form = TimeReportForm(data=request.POST)
+		form = TimeReportForm(request.user, data=request.POST)
 		if form.is_valid():
 			reporttype = int(form.cleaned_data['reporttype'])
 			conferences = form.cleaned_data['conferences']
@@ -45,7 +50,7 @@ def timereport(request):
 					'form': form,
 					})
 	else:
-		form = TimeReportForm()
+		form = TimeReportForm(request.user)
 
 	return render(request, 'confreg/timereport.html', {
 		'form': form,

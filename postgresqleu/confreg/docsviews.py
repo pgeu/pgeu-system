@@ -6,7 +6,7 @@ import os
 import re
 import markdown
 
-from models import Conference
+from models import Conference, ConferenceSeries
 from backendviews import get_authenticated_conference
 
 reTitle = re.compile('<h1>([^<]+)</h1>')
@@ -29,7 +29,7 @@ def docspage(request, urlname, page):
 		# Allow a person who has *any* permissions on a conference to read the docs,
 		# because, well, they are docs.
 		if not request.user.is_superuser:
-			if not Conference.objects.filter(administrators=request.user).exists():
+			if not Conference.objects.filter(administrators=request.user).exists() and not ConferenceSeries.objects.filter(administrators=request.user).exists():
 				return HttpResponseForbidden("Access denied")
 		conference = None
 

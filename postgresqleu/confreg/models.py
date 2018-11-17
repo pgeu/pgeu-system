@@ -76,6 +76,7 @@ class ConferenceSeries(models.Model):
 	sortkey = models.IntegerField(null=False, default=100)
 	intro = models.TextField(blank=True, null=False)
 	visible = models.BooleanField(null=False, default=True)
+	administrators = models.ManyToManyField(User, blank=True)
 
 	def __unicode__(self):
 		return self.name

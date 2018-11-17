@@ -78,6 +78,17 @@ class AdditionalOptionListFilter(admin.SimpleListFilter):
 #
 # General admin classes
 #
+class ConferenceSeriesAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
+	class Meta:
+		model = ConferenceSeries
+		exclude = []
+		widgets = {
+			'administrators': AutoCompleteSelectMultipleWidget(lookup_class=UserLookup),
+		}
+
+class ConferenceSeriesAdmin(admin.ModelAdmin):
+	form = ConferenceSeriesAdminForm
+
 class ConferenceAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
 	class Meta:
 		model = Conference
@@ -598,7 +609,7 @@ class VolunteerSlotAdmin(admin.ModelAdmin):
 	list_display = ('__unicode__', 'title')
 
 
-admin.site.register(ConferenceSeries)
+admin.site.register(ConferenceSeries, ConferenceSeriesAdmin)
 admin.site.register(Conference, ConferenceAdmin)
 admin.site.register(RegistrationClass, RegistrationClassAdmin)
 admin.site.register(RegistrationDay, RegistrationDayAdmin)

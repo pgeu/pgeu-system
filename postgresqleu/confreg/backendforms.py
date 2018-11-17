@@ -221,9 +221,12 @@ class BackendConferenceSeriesForm(BackendForm):
 	helplink = "series"
 	list_fields = ['name', 'visible', 'sortkey', ]
 	markdown_fields = ['intro', ]
+	selectize_multiple_fields = {
+		'administrators': GeneralAccountLookup(),
+	}
 	class Meta:
 		model = ConferenceSeries
-		fields = ['name', 'sortkey', 'visible', 'intro', ]
+		fields = ['name', 'sortkey', 'visible', 'administrators', 'intro', ]
 
 class BackendTshirtSizeForm(BackendForm):
 	helplink = "meta"
@@ -764,9 +767,9 @@ class BackendCopySelectConferenceForm(django.forms.Form):
 
 	def __init__(self, request, conference, model, *args, **kwargs):
 		super(BackendCopySelectConferenceForm, self).__init__(*args, **kwargs)
-		self.fields['conference'].queryset = Conference.objects.filter(administrators=request.user).exclude(pk=conference.pk).extra(
+		self.fields['conference'].queryset = Conference.objects.filter(Q(administrators=request.user) | Q(series__administrators=request.user)).exclude(pk=conference.pk).extra(
 			where=["EXISTS (SELECT 1 FROM {0} WHERE conference_id=confreg_conference.id)".format(model._meta.db_table), ]
-		)
+		).distinct()
 
 
 #

@@ -8,6 +8,7 @@ from django.utils.html import escape
 
 from django.db.models.fields.files import ImageFieldFile
 
+from models import Conference
 from models import ConferenceRegistration, RegistrationType, Speaker
 from models import ConferenceAdditionalOption, Track, RegistrationClass
 from models import ConferenceSession, ConferenceSessionFeedback
@@ -709,8 +710,15 @@ class CrossConferenceMailForm(forms.Form):
 
 	confirm = forms.BooleanField(label="Confirm", required=False)
 
-	def __init__(self, *args, **kwargs):
+	def __init__(self, user, *args, **kwargs):
+		self.user = user
 		super(CrossConferenceMailForm, self).__init__(*args, **kwargs)
+
+		if not self.user.is_superuser:
+			conferences = list(Conference.objects.filter(series__administrators=self.user))
+			self.fields['senderaddr'] = forms.ChoiceField(choices=set(
+														  [(c.contactaddr, c.contactaddr) for c in conferences] +
+														  [(c.sponsoraddr, c.sponsoraddr) for c in conferences]))
 
 		if not (self.data.get('senderaddr') and self.data.get('sendername') and self.data.get('subject') and self.data.get('text')):
 			self.remove_confirm()

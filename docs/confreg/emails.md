@@ -27,10 +27,10 @@ reasonable linebreaks in, and don't use markdown.
 
 Emails can (obviously) not be edited after they've been sent.
 
-## Cross conference email <a name="crossconference"></a>
+Emails sent using this functionality is *not* subject to opt-out
+settings, so be careful to only use for active or recent events!
 
-Cross conference emails are currently only available to superusers,
-due to the inability to limit sender address.
+## Cross conference email <a name="crossconference"></a>
 
 Cross conference emails are different from attendee emails in that
 they are a one-off sending of email. They are not stored server-side
@@ -53,7 +53,10 @@ Then fill out the actual email fields:
 
 Senderaddr
 :  Email-address used to send the email. Be careful about what is used
-here, should always be one where the sending server sets proper DKIM.
+here, should always be one where the sending server sets proper
+DKIM. For non-superusers only addresses registered as either contact
+or sponsor address for an existing conference can be used. For
+superusers, any address at all can be used, so be careful!
 
 Sendername
 :  Name of the sender (typically the conference series name, if sent

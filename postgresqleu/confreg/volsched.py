@@ -15,7 +15,7 @@ def _check_admin(request, conference):
 	if request.user.is_superuser:
 		return True
 	else:
-		return conference.administrators.filter(pk=request.user.id).exists()
+		return conference.administrators.filter(pk=request.user.id).exists() or conference.series.administrators.filter(pk=request.user.id).exists()
 
 def _get_conference_and_reg(request, urlname):
 	conference = get_object_or_404(Conference, urlname=urlname)

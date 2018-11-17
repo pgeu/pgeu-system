@@ -18,8 +18,8 @@ class LookupBase(object):
 		# User must be admin of some conference in the past 3 months (just to add some overlap)
 		# or at some point in the future.
 		if not (request.user.is_superuser or
-				Conference.objects.filter(administrators=request.user,
-										  startdate__gt=datetime.datetime.now()-datetime.timedelta(days=90))):
+				Conference.objects.filter(Q(administrators=request.user) | Q(series__administrators=request.user),
+										  startdate__gt=datetime.datetime.now()-datetime.timedelta(days=90)).exists()):
 			raise PermissionDenied("Access denied.")
 
 	@classmethod

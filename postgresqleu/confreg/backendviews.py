@@ -40,14 +40,23 @@ from backendforms import BackendTshirtSizeForm
 from backendforms import BackendNewsForm
 from backendforms import TwitterForm, TwitterTestForm
 
-def get_authenticated_conference(request, urlname):
+def get_authenticated_conference(request, urlname=None, confid=None):
 	if not request.user.is_authenticated:
 		raise RedirectException("{0}?{1}".format(settings.LOGIN_URL, urllib.urlencode({'next': request.build_absolute_uri()})))
 
-	if request.user.is_superuser:
-		return get_object_or_404(Conference, urlname=urlname)
+	if confid:
+		c = get_object_or_404(Conference, pk=confid)
 	else:
-		return get_object_or_404(Conference, urlname=urlname, administrators=request.user)
+		c = get_object_or_404(Conference, urlname=urlname)
+
+	if request.user.is_superuser:
+		return c
+	else:
+		if c.administrators.filter(pk=request.user.id).exists():
+			return c
+		if c.series.administrators.filter(pk=request.user.id).exists():
+			return c
+		raise Http404()
 
 def backend_process_form(request, urlname, formclass, id, cancel_url='../', saved_url='../', allow_new=True, allow_delete=True, breadcrumbs=None, permissions_already_checked=False, conference=None, bypass_conference_filter=False, instancemaker=None, deleted_url=None):
 	if not conference and not bypass_conference_filter:
@@ -213,7 +222,7 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
 		confirmed_transform_value = None
 		confirmed_transform_example = None
 		sourceconfid = int(restpieces[1])
-		sourceconf = get_object_or_404(Conference, pk=sourceconfid, administrators=request.user)
+		sourceconf = get_authenticated_conference(request, confid=sourceconfid)
 
 		if request.method == "POST":
 			idlist = sorted([int(k[2:]) for k,v in request.POST.items() if k.startswith('c_') and v == '1'])

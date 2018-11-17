@@ -48,7 +48,7 @@ def _get_sponsor_and_admin(sponsorid, request, onlyconfirmed=True):
 	else:
 		sponsor = get_object_or_404(Sponsor, id=sponsorid, confirmed=True)
 	if not sponsor.managers.filter(pk=request.user.id).exists():
-		if not sponsor.conference.administrators.filter(pk=request.user.id):
+		if not sponsor.conference.administrators.filter(pk=request.user.id).exists() and not sponsor.conference.series.administrators.filter(pk=request.user.id).exists():
 			# XXX: Can only raise 404 for now, should have custom middleware to make this nicer
 			raise Http404("Access denied")
 		return sponsor, True
@@ -701,7 +701,7 @@ def sponsor_admin_imageview(request, benefitid):
 	benefit = get_object_or_404(SponsorClaimedBenefit, id=benefitid)
 	if not request.user.is_superuser:
 		# Check permissions for non superusers
-		if not benefit.sponsor.conference.administrators.filter(pk=request.user.id).exists():
+		if not benefit.sponsor.conference.administrators.filter(pk=request.user.id).exists() and not benefit.sponsor.conference.series.administrators.filter(pk=request.user.id).exists():
 			# Finally, can actually be viewed by the managers of the
 			# sponsor itself.
 			if not benefit.sponsor.managers.filter(pk=request.user.id).exists():

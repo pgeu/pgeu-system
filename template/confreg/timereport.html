@@ -1,6 +1,8 @@
 {%extends "confreg/confadmin_base.html" %}
 {%block title%}Time based Reports{%endblock%}
 {%block extrahead%}
+<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
+<script type="text/javascript" src="/media/jq/jquery-ui.min.js"></script>
 {%if graphdata%}
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript">
@@ -45,26 +47,16 @@
     };
     var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
     chart.draw(dataTable, options);
+
+    // Make chart resizable
+    $('#chart_div').resizable({
+      stop: function(event, ui) {
+        chart.draw(dataTable, options);
+      },
+    });
   }
 </script>
     {%endif%}
-<script type="text/javascript">
-$(function() {
-  /* Set up the filtering box for conferences */
-  $('#id_conferences').after('<div style="display: inline; vertical-align: top; margin-left: 20px;">Filter: <input type="text" id="conffilter"></div>');
-  $('#conffilter').keyup(function() {
-     var val = $('#conffilter').val().toLowerCase();
-     $('#id_conferences option').each(function() {
-        if ($(this).text().toLowerCase().indexOf(val) > -1) {
-           $(this).show();
-        } else {
-           $(this).hide();
-        }
-     });
-  });
-});
-</script>
-
     <style>
 ul.errorlist {
   color:red;
@@ -81,19 +73,17 @@ select#id_conferences {
 {%endblock%}
 
 {%block layoutblock%}
-    <p>
-      This is a very trivial interface to some time based reports for
-      the conferences. For some reports, multiple conferences can be
-      selected, to get a comparison over time.
-      Right now, reporting is only available to superusers.
-    </p>
-    <form method="POST" action=".">{% csrf_token %}
-      <table>
-      {{form.as_table}}
-      </table>
-{%if not trendlines_supported%}<p>Trendlines are not supported for this graph type.</p>{%endif%}
-      <input type="submit" value="Generate report">
-    </form>
-    <div id="chart_div" style="width: 100%; height: 500px;"></div>
+    <h1>Time reports</h1>
+    <div class="row">
+      <form class="form-horizontal" method="POST" action=".">{% csrf_token %}
+{%include "confreg/admin_backend_form_content.html" with savebutton="Generate report"%}
+      </form>
+    </div>
+    <div class="row">
+      <div id="chart_div" style="width: 100%; height: 500px;"></div>
+    </div>
+    <div class="row">
+      Drag lower right corner to resize graph.
+    </div>
 
 {%endblock%}

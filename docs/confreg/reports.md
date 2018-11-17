@@ -37,8 +37,6 @@ The time reports can be used to draw graphs relative to the time of
 conference for a number of things. In particular, they can be used to
 compare rates between different instances of conferences.
 
-The filter field will apply a client-side filter on the list, to limit
-the options. Note than when this is used, you probably have to select
-each conference manually (with ctrl-click) rather than select a range
-(with shift-click) as a range will usually include the values that
-have been filtered out.
+Time reports are only available to superuser and conference series
+administrators. For series administrators, all conferences in the
+series will always be available.

@@ -13,7 +13,7 @@ from django.db.models.expressions import F
 from django.forms import formsets
 from django.forms import ValidationError
 
-from models import Conference, ConferenceRegistration, ConferenceSession
+from models import Conference, ConferenceRegistration, ConferenceSession, ConferenceSeries
 from models import ConferenceSessionSlides, ConferenceSessionVote, GlobalOptOut
 from models import ConferenceSessionFeedback, Speaker, Speaker_Photo
 from models import ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
@@ -2099,11 +2099,11 @@ def bulkpay_view(request, confname, bulkpayid):
 @transaction.atomic
 def talkvote(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
-	if not conference.talkvoters.filter(pk=request.user.id) and not conference.administrators.filter(pk=request.user.id):
-		return HttpResponse('You are not a talk voter for this conference!')
+	if not conference.talkvoters.filter(pk=request.user.id).exists() and not conference.administrators.filter(pk=request.user.id).exists() and not conference.series.administrators.filter(pk=request.user.id).exists():
+		return HttpResponse('You are not a talk voter or administrator for this conference!')
 
 	isvoter = conference.talkvoters.filter(pk=request.user.id).exists()
-	isadmin = conference.administrators.filter(pk=request.user.id).exists()
+	isadmin = conference.administrators.filter(pk=request.user.id).exists() or conference.series.administrators.filter(pk=request.user.id).exists()
 
 	alltracks = [{'id': t.id, 'trackname': t.trackname} for t in Track.objects.filter(conference=conference)]
 	alltracks.insert(0, {'id': 0, 'trackname': 'No track'})
@@ -2207,10 +2207,10 @@ def talkvote(request, confname):
 @transaction.atomic
 def talkvote_status(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
-	if not conference.talkvoters.filter(pk=request.user.id) and not conference.administrators.filter(pk=request.user.id):
-		return HttpResponse('You are not a talk voter for this conference!')
+	if not conference.talkvoters.filter(pk=request.user.id).exists() and not conference.administrators.filter(pk=request.user.id).exists() and not conference.series.administrators.filter(pk=request.user.id).exists():
+		return HttpResponse('You are not a talk voter or administrator for this conference!')
 
-	isadmin = conference.administrators.filter(pk=request.user.id).exists()
+	isadmin = conference.administrators.filter(pk=request.user.id).exists() or conference.series.administrators.filter(pk=request.user.id).exists()
 	if not isadmin:
 		return HttpResponse('Only admins can change the status')
 
@@ -2269,7 +2269,7 @@ def talkvote_comment(request, confname):
 @transaction.atomic
 def createschedule(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
-	is_admin = conference.administrators.filter(pk=request.user.id).exists()
+	is_admin = conference.administrators.filter(pk=request.user.id).exists() or conference.series.administrators.filter(pk=request.user.id).exists()
 	if not (request.user.is_superuser or is_admin or
 			conference.talkvoters.filter(pk=request.user.id).exists()
 			):
@@ -2474,7 +2474,7 @@ def admin_dashboard(request):
 	if request.user.is_superuser:
 		conferences = Conference.objects.filter(startdate__gt=datetime.now()-timedelta(days=3*365)).order_by('-startdate')
 	else:
-		conferences = Conference.objects.filter(administrators=request.user, startdate__gt=datetime.now()-timedelta(days=3*365)).order_by('-startdate')
+		conferences = Conference.objects.filter(Q(administrators=request.user) | Q(series__administrators=request.user), startdate__gt=datetime.now()-timedelta(days=3*365)).distinct().order_by('-startdate')
 
 	# Split conferences in three buckets:
 	#  Current: anything that starts or finishes within two weeks
@@ -2496,6 +2496,7 @@ def admin_dashboard(request):
 		'current': current,
 		'upcoming': upcoming,
 		'past': past,
+		'cross_conference': request.user.is_superuser or ConferenceSeries.objects.filter(administrators=request.user).exists(),
 	})
 
 def admin_dashboard_single(request, urlname):
@@ -3114,15 +3115,28 @@ def transfer_reg(request, urlname):
 
 
 # Send email to attendees of mixed conferences
-@superuser_required
+@login_required
 @transaction.atomic
 def crossmail(request):
+	if not (request.user.is_superuser or ConferenceSeries.objects.filter(administrators=request.user).exists()):
+		return HttpResponseForbidden()
+
+	if request.user.is_superuser:
+		conferences = list(Conference.objects.all())
+	else:
+		conferences = list(Conference.objects.filter(series__administrators=request.user))
+	conferenceids = set((c.id for c in conferences))
+
 	def _get_recipients_for_crossmail(postdict):
 		def _get_one_filter(conf, filt, optout_filter=False):
+			conf = int(conf)
+			if not conf in conferenceids:
+				raise ValidationError("Invalid conference selected")
+
 			(t,v) = filt.split(':')
 			if t == 'rt':
 				# Regtype
-				q = "SELECT attendee_id, email, firstname || ' ' || lastname, regtoken FROM confreg_conferenceregistration WHERE conference_id={0} AND payconfirmedat IS NOT NULL".format(int(conf))
+				q = "SELECT attendee_id, email, firstname || ' ' || lastname, regtoken FROM confreg_conferenceregistration WHERE conference_id={0} AND payconfirmedat IS NOT NULL".format(conf)
 				if v != '*':
 					q += ' AND regtype_id={0}'.format(int(v))
 				if optout_filter:
@@ -3136,7 +3150,7 @@ def crossmail(request):
 				else:
 					sf = " AND status = {0}".format(int(v))
 
-				q = "SELECT user_id, email, fullname, speakertoken FROM confreg_speaker INNER JOIN auth_user ON auth_user.id=confreg_speaker.user_id WHERE EXISTS (SELECT 1 FROM confreg_conferencesession_speaker INNER JOIN confreg_conferencesession ON confreg_conferencesession.id=conferencesession_id WHERE speaker_id=confreg_speaker.id AND conference_id={0}{1})".format(int(conf), sf)
+				q = "SELECT user_id, email, fullname, speakertoken FROM confreg_speaker INNER JOIN auth_user ON auth_user.id=confreg_speaker.user_id WHERE EXISTS (SELECT 1 FROM confreg_conferencesession_speaker INNER JOIN confreg_conferencesession ON confreg_conferencesession.id=conferencesession_id WHERE speaker_id=confreg_speaker.id AND conference_id={0}{1})".format(conf, sf)
 				if optout_filter:
 					q += " AND NOT EXISTS (SELECT 1 FROM confreg_conferenceseriesoptout INNER JOIN confreg_conference ON confreg_conference.series_id=confreg_conferenceseriesoptout.series_id WHERE confreg_conferenceseriesoptout.user_id=confreg_speaker.user_id AND confreg_conference.id={0})".format(int(conf))
 			else:
@@ -3167,9 +3181,14 @@ def crossmail(request):
 		return exec_to_dict(q.getvalue())
 
 	if request.method == 'POST':
-		form = CrossConferenceMailForm(data=request.POST)
+		form = CrossConferenceMailForm(request.user, data=request.POST)
 
-		recipients = _get_recipients_for_crossmail(request.POST)
+		try:
+			recipients = _get_recipients_for_crossmail(request.POST)
+		except ValidationError as e:
+			form.add_error(None, e)
+			form.remove_confirm()
+			recipients = None
 
 		if form.is_valid() and recipients:
 			for r in recipients:
@@ -3184,23 +3203,26 @@ def crossmail(request):
 			messages.info(request, "Sent {0} emails.".format(len(recipients)))
 			return HttpResponseRedirect("../")
 		if not recipients:
-			form.add_error(None, "No recipients matched")
+			if recipients != None:
+				form.add_error(None, "No recipients matched")
 			form.remove_confirm()
 	else:
-		form = CrossConferenceMailForm()
+		form = CrossConferenceMailForm(request.user)
 		recipients = None
 
 	return render(request, 'confreg/admin_cross_conference_mail.html', {
 		'form': form,
 		'recipients': recipients,
-		'conferences': Conference.objects.all(),
+		'conferences': conferences,
 		'helplink': 'emails#crossconference',
 		})
 
 
-@superuser_required
+@login_required
 @transaction.atomic
 def crossmailoptions(request):
+	if not (request.user.is_superuser or ConferenceSeries.objects.filter(administrators=request.user).exists()):
+		return HttpResponseForbidden()
 	conf = get_object_or_404(Conference, id=request.GET['conf'])
 
 	# Get a list of different crossmail options for this conference. Note that
