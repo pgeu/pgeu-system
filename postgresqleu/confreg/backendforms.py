@@ -250,6 +250,11 @@ class BackendRegistrationForm(BackendForm):
 		fields = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone',
 				  'shirtsize', 'dietary', 'twittername', 'nick', 'shareemail',
 				  'regtype', 'additionaloptions']
+	fieldsets = [
+		{'id': 'personal_info', 'legend': 'Personal information', 'fields': ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'twittername', 'nick']},
+		{'id': 'reg_info', 'legend': 'Registration information', 'fields': ['regtype', 'additionaloptions', 'shareemail']},
+		{'id': 'attendee_specifics', 'legend': 'Attendee specifics', 'fields': ['shirtsize', 'dietary']},
+	]
 
 	def fix_fields(self):
 		if self.instance.payconfirmedat:
