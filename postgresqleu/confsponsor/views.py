@@ -12,6 +12,7 @@ from postgresqleu.auth import user_search, user_import
 
 from postgresqleu.confreg.models import Conference, PrepaidVoucher, DiscountCode
 from postgresqleu.confreg.models import ConferenceTweetQueue
+from postgresqleu.confreg.backendviews import get_authenticated_conference
 from postgresqleu.confreg.jinjafunc import render_sandboxed_template
 from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 from postgresqleu.util.storage import InlineEncodedStorage
@@ -233,8 +234,7 @@ def sponsor_signup_dashboard(request, confurlname):
 	conference = get_object_or_404(Conference, urlname=confurlname)
 	if not conference.callforsponsorsopen:
 		# This one is not open. But if we're an admin, we may bypass
-		if not conference.administrators.filter(pk=request.user.id).exists():
-			raise Http404()
+		get_authenticated_conference(request, confurlname)
 
 	current_signups = Sponsor.objects.filter(managers=request.user, conference=conference)
 	levels = SponsorshipLevel.objects.filter(conference=conference)
@@ -251,8 +251,7 @@ def sponsor_signup(request, confurlname, levelurlname):
 	conference = get_object_or_404(Conference, urlname=confurlname)
 	if not conference.callforsponsorsopen:
 		# This one is not open. But if we're an admin, we may bypass
-		if not conference.administrators.filter(pk=request.user.id).exists():
-			raise Http404()
+		get_authenticated_conference(request, confurlname)
 
 	level = get_object_or_404(SponsorshipLevel, conference=conference, urlname=levelurlname, available=True)
 	if not level.can_signup:
@@ -406,10 +405,7 @@ def sponsor_contract(request, contractid):
 
 @login_required
 def sponsor_admin_dashboard(request, confurlname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confurlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confurlname, administrators=request.user)
+	conference = get_authenticated_conference(request, confurlname)
 
 	confirmed_sponsors = Sponsor.objects.filter(conference=conference, confirmed=True).order_by('-level__levelcost', 'confirmedat')
 	unconfirmed_sponsors = Sponsor.objects.filter(conference=conference, confirmed=False).order_by('level__levelcost', 'name')
@@ -514,10 +510,7 @@ def _confirm_benefit(request, benefit):
 
 @login_required
 def sponsor_admin_sponsor(request, confurlname, sponsorid):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confurlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confurlname, administrators=request.user)
+	conference = get_authenticated_conference(request, confurlname)
 
 	sponsor = get_object_or_404(Sponsor, id=sponsorid, conference=conference)
 
@@ -601,10 +594,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 @login_required
 @transaction.atomic
 def sponsor_admin_confirm(request, confurlname, sponsorid):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confurlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confurlname, administrators=request.user)
+	conference = get_authenticated_conference(request, confurlname)
 
 	sponsor = get_object_or_404(Sponsor, id=sponsorid, conference=conference)
 
@@ -614,10 +604,7 @@ def sponsor_admin_confirm(request, confurlname, sponsorid):
 
 @login_required
 def sponsor_admin_benefit(request, confurlname, benefitid):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confurlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confurlname, administrators=request.user)
+	conference = get_authenticated_conference(request, confurlname)
 
 	benefit = get_object_or_404(SponsorClaimedBenefit, id=benefitid, sponsor__conference=conference)
 	if benefit.benefit.benefit_class:
@@ -648,10 +635,7 @@ def sponsor_admin_benefit(request, confurlname, benefitid):
 @login_required
 @transaction.atomic
 def sponsor_admin_send_mail(request, confurlname):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confurlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confurlname, administrators=request.user)
+	conference = get_authenticated_conference(request, confurlname)
 
 	if request.method == 'POST':
 		form = SponsorSendEmailForm(conference, data=request.POST)
@@ -699,10 +683,7 @@ def sponsor_admin_send_mail(request, confurlname):
 
 @login_required
 def sponsor_admin_view_mail(request, confurlname, mailid):
-	if request.user.is_superuser:
-		conference = get_object_or_404(Conference, urlname=confurlname)
-	else:
-		conference = get_object_or_404(Conference, urlname=confurlname, administrators=request.user)
+	conference = get_authenticated_conference(request, confurlname)
 
 	mail = get_object_or_404(SponsorMail, conference=conference, id=mailid)
 	return render(request, 'confsponsor/sent_mail.html', {
