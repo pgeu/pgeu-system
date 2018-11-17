@@ -81,6 +81,7 @@ urlpatterns = [
 	url(r'^events/(?P<urlname>[^/]+)/volunteer/', include(postgresqleu.confreg.volsched)),
 	url(r'^events/([^/]+)/sessions/$', postgresqleu.confreg.views.sessionlist),
 	url(r'^events/speaker/(\d+)/photo/$', postgresqleu.confreg.views.speakerphoto),
+	url(r'^events/speakerprofile/$', postgresqleu.confreg.views.speakerprofile),
 	url(r'^events/([^/]+)/speakerprofile/$', postgresqleu.confreg.views.speakerprofile),
 	url(r'^events/([^/]+)/callforpapers/$', postgresqleu.confreg.views.callforpapers),
 	url(r'^events/([^/]+)/callforpapers/(\d+|new)/$', postgresqleu.confreg.views.callforpapers_edit),
