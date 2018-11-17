@@ -5,11 +5,9 @@
 <link rel="stylesheet" href="/media/css/selectize.css" />
 <link rel="stylesheet" href="/media/css/selectize.default.css" />
 <style>
-table.mailform tr {
-   vertical-align: top;
-}
-table.mailform input[type=text],textarea,select {
-   width: 500px;
+div.inclexclwrapper div.selectize-control {
+   margin-right: 10px;
+   margin-bottom: 3px;
 }
 .selectize-control { display: inline-block; }
 </style>
@@ -24,7 +22,7 @@ function add_conference_picker(type, default_conf, default_filt) {
 
    var sel = $('<select style="width: 200px" class="noexpand" id="' + type + '_' + num + '">');
    var sel2 = $('<select class="noexpand" style="width: 300px" id="' + type + 't_' + num +'">');
-   var el = $('<div id="' + type + 'wrap_' + num + '">').append(
+   var el = $('<div id="' + type + 'wrap_' + num + '" class="inclexclwrapper">').append(
       sel,
       sel2,
       $('<button class="btn btn-xs" style="float:right" onclick="return removeFilter(\'' + type + '\',' + num + ')"><span class="glyphicon glyphicon-remove-sign"></span></button>'),
@@ -120,25 +118,29 @@ $(function() {
 </script>
 {%endblock%}
 {%block layoutblock%}
-<h1>Conference Emails</h1>
-<form method="post" action=".">{%csrf_token%}
-<table class="mailform">
-<tr>
-  <th>Include</th>
-  <td id="include_td">
+<h1>Send conference email</h1>
+<form class="form-horizontal" method="post" action=".">{%csrf_token%}
+<div class="form-group">
+  <label class="control-label col-lg-3">Include:</label>
+  <div class="col-lg-9 controls" id="include_div">
     <button id="include_btn" class="btn btn-xs" style="float:left" onclick="return addNewFilter('include')"><span class="glyphicon glyphicon-plus-sign"></span></button>
-  </td>
-</tr>
-<tr>
-  <th>Exclude</th>
-  <td id="exclude_td">
+  </div>
+</div>
+
+<div class="form-group">
+  <label class="control-label col-lg-3">Exclude:</label>
+  <div class="col-lg-9 controls" id="exclude_div">
     <button id="exclude_btn" class="btn btn-xs" style="float:left" onclick="return addNewFilter('exclude')"><span class="glyphicon glyphicon-plus-sign"></span></button>
-  </td>
-</tr>
-{{form.as_table}}
-</table>
-<input type="submit" value="Send mail" onClick="return submit_form()">
+  </div>
+</div>
+
+{%for field in form%}
+{%include "confreg/admin_backend_form_field.html"%}
+{%endfor%}
+
+<input class="btn btn-default" type="submit" value="Send mail" onClick="return submit_form()">
 </form>
+
 {%if recipients%}
 <p>
 Mail will be sent to the following {{recipients.all.count}} recipients:

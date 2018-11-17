@@ -51,14 +51,14 @@ button. To remove an existing filter, click the *-* button.
 
 Then fill out the actual email fields:
 
-Senderaddr
+Sender address
 :  Email-address used to send the email. Be careful about what is used
 here, should always be one where the sending server sets proper
 DKIM. For non-superusers only addresses registered as either contact
 or sponsor address for an existing conference can be used. For
 superusers, any address at all can be used, so be careful!
 
-Sendername
+Sender name
 :  Name of the sender (typically the conference series name, if sent
 to a complete conference series).
 

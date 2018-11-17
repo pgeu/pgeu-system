@@ -701,8 +701,8 @@ class TransferRegForm(forms.Form):
 
 
 class CrossConferenceMailForm(forms.Form):
-	senderaddr = forms.EmailField(min_length=5, required=True)
-	sendername = forms.CharField(min_length=5, required=True)
+	senderaddr = forms.EmailField(min_length=5, required=True, label="Sender address")
+	sendername = forms.CharField(min_length=5, required=True, label="Sender name")
 	include = forms.CharField(widget=forms.widgets.HiddenInput(), required=False)
 	exclude = forms.CharField(widget=forms.widgets.HiddenInput(), required=False)
 	subject = forms.CharField(min_length=10, max_length=80, required=True)
@@ -716,7 +716,7 @@ class CrossConferenceMailForm(forms.Form):
 
 		if not self.user.is_superuser:
 			conferences = list(Conference.objects.filter(series__administrators=self.user))
-			self.fields['senderaddr'] = forms.ChoiceField(choices=set(
+			self.fields['senderaddr'] = forms.ChoiceField(label="Sender address", choices=set(
 														  [(c.contactaddr, c.contactaddr) for c in conferences] +
 														  [(c.sponsoraddr, c.sponsoraddr) for c in conferences]))
 
