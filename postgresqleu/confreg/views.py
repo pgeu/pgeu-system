@@ -3210,14 +3210,14 @@ def crossmailoptions(request):
 		{'id': 'rt:*', 'title': 'Reg: all'},
 	]
 	r.extend([
-		{'id': 'rt:{0}'.format(rt.id), 'title': 'Reg: {0}'.format(rt.regtype)}
+		{'id': 'rt:{0}'.format(rt.id), 'title': u'Reg: {0}'.format(rt.regtype)}
 		for rt in RegistrationType.objects.filter(conference=conf)])
 	r.extend([
 		{'id': 'sp:*', 'title': 'Speaker: all'},
 		{'id': 'sp:?', 'title': 'Speaker: accept+reserve'},
 	])
 	r.extend([
-		{'id': 'sp:{0}'.format(k), 'title': 'Speaker: {0}'.format(v)}
+		{'id': 'sp:{0}'.format(k), 'title': u'Speaker: {0}'.format(v)}
 		for k,v in STATUS_CHOICES
 	])
 	return HttpResponse(json.dumps(r), content_type="application/json")
