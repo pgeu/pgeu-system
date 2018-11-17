@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='discountcode',
             name='discountamount',
-            field=models.DecimalField(max_digits=10, decimal_places=2, default=0),
+            field=models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Discount amount"),
         ),
         migrations.AlterField(
             model_name='registrationtype',

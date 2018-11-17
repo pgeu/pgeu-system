@@ -138,7 +138,7 @@ Urlname
 :  Name-part used in URLs for this sponsorship level (typically a
    slug-style lowercase version of the name)
 
-Levelcost
+Cost
 :  Price for this level (excluding VAT if VAT is used)
 
 Available for signup

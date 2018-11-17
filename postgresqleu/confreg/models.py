@@ -142,9 +142,9 @@ class Conference(models.Model):
 	askshareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: share email", help_text="Include field for sharing email with sponsors")
 	askphotoconsent = models.BooleanField(null=False, blank=False, default=True, verbose_name="Field: photo consent", help_text="Include field for getting photo consent")
 	skill_levels = models.BooleanField(blank=False, null=False, default=True)
-	additionalintro = models.TextField(blank=True, null=False, help_text="Additional text shown just before the list of available additional options")
+	additionalintro = models.TextField(blank=True, null=False, verbose_name="Additional options intro", help_text="Additional text shown just before the list of available additional options")
 	jinjadir = models.CharField(max_length=200, blank=True, null=True, default=None, help_text="Full path to new style jinja repository root", verbose_name="Jinja directory")
-	callforpapersintro = models.TextField(blank=True, null=False)
+	callforpapersintro = models.TextField(blank=True, null=False, verbose_name="Call for papers intro")
 
 	sendwelcomemail = models.BooleanField(blank=False, null=False, default=False, verbose_name="Send welcome email", help_text="Send an email to attendees once their registration is completed.")
 	welcomemail = models.TextField(blank=True, null=False, verbose_name="Welcome email contents")
@@ -289,17 +289,17 @@ class RegistrationDay(models.Model):
 
 class RegistrationType(models.Model):
 	conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
-	regtype = models.CharField(max_length=64, null=False, blank=False)
-	regclass = models.ForeignKey(RegistrationClass, null=True, blank=True, on_delete=models.CASCADE)
+	regtype = models.CharField(max_length=64, null=False, blank=False, verbose_name="Registration type")
+	regclass = models.ForeignKey(RegistrationClass, null=True, blank=True, on_delete=models.CASCADE, verbose_name="Registration class")
 	cost = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0, help_text="Cost excluding VAT.")
 	active = models.BooleanField(null=False, blank=False, default=True)
-	activeuntil = models.DateField(null=True, blank=True)
+	activeuntil = models.DateField(null=True, blank=True, verbose_name="Active until")
 	inlist = models.BooleanField(null=False, blank=False, default=True)
 	sortkey = models.IntegerField(null=False, blank=False, default=10)
-	specialtype = models.CharField(max_length=5, blank=True, null=True, choices=special_reg_types)
+	specialtype = models.CharField(max_length=5, blank=True, null=True, choices=special_reg_types, verbose_name="Special type")
 	require_phone = models.BooleanField(null=False, blank=False, default=False, help_text="Require phone number to be entered")
 	days = models.ManyToManyField(RegistrationDay, blank=True)
-	alertmessage =models.TextField(null=False, blank=True)
+	alertmessage =models.TextField(null=False, blank=True, verbose_name="Alert message", help_text="Message shown in popup to user when completing the registration")
 	upsell_target = models.BooleanField(null=False, blank=False, default=False, help_text='Is target registration type for upselling in order to add additional options')
 	invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1),], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
 	requires_option = models.ManyToManyField('ConferenceAdditionalOption', blank=True, help_text='Requires at least one of the selected additional options to be picked')
@@ -350,11 +350,11 @@ class ConferenceAdditionalOption(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
 	name = models.CharField(max_length=100, null=False, blank=False)
 	cost = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0, help_text="Cost excluding VAT.")
-	maxcount = models.IntegerField(null=False)
+	maxcount = models.IntegerField(null=False, verbose_name="Maximum number of uses")
 	public = models.BooleanField(null=False, blank=False, default=True, help_text='Visible on public forms (opposite of admin only)')
 	upsellable = models.BooleanField(null=False, blank=False, default=True, help_text='Can this option be purchased after the registration is completed')
 	invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1),], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
-	requires_regtype = models.ManyToManyField(RegistrationType, blank=True, help_text='Can only be picked with selected registration types')
+	requires_regtype = models.ManyToManyField(RegistrationType, blank=True, verbose_name="Requires registration type", help_text='Can only be picked with selected registration types')
 	mutually_exclusive = models.ManyToManyField('self', blank=True, help_text='Mutually exlusive with these additional options', symmetrical=True)
 
 	class Meta:
@@ -565,10 +565,10 @@ class RegistrationWaitlistHistory(models.Model):
 
 class Track(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
-	trackname = models.CharField(max_length=100, null=False, blank=False)
+	trackname = models.CharField(max_length=100, null=False, blank=False, verbose_name="Track name")
 	color = models.CharField(max_length=20, null=False, blank=True, validators=[color_validator, ])
 	sortkey = models.IntegerField(null=False, default=100, blank=False)
-	incfp = models.BooleanField(null=False, default=False, blank=False)
+	incfp = models.BooleanField(null=False, default=False, blank=False, verbose_name="In call for papers")
 
 	json_included_attributes = ['trackname', 'color', 'sortkey', 'incfp']
 
@@ -577,7 +577,7 @@ class Track(models.Model):
 
 class Room(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
-	roomname = models.CharField(max_length=20, null=False, blank=False)
+	roomname = models.CharField(max_length=20, null=False, blank=False, verbose_name="Room name")
 	sortkey = models.IntegerField(null=False, blank=False, default=100)
 
 	json_included_attributes = ['roomname', 'sortkey']
@@ -650,8 +650,8 @@ class Speaker_Photo(models.Model):
 
 class ConferenceSessionScheduleSlot(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
-	starttime = models.DateTimeField(null=False, blank=False)
-	endtime = models.DateTimeField(null=False, blank=False)
+	starttime = models.DateTimeField(null=False, blank=False, verbose_name="Start time")
+	endtime = models.DateTimeField(null=False, blank=False, verbose_name="End time")
 
 	def __unicode__(self):
 		return "%s - %s" % (self.starttime, self.endtime)
@@ -872,13 +872,13 @@ class PrepaidVoucher(models.Model):
 class DiscountCode(models.Model):
 	conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
 	code = models.CharField(max_length=100, null=False, blank=False)
-	discountamount = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0)
-	discountpercentage = models.IntegerField(null=False, blank=False, default=0)
-	regonly = models.BooleanField(null=False, blank=False, default=False, help_text="Apply percentage discount only to the registration cost, not additional options. By default, it's applied to both.")
-	validuntil = models.DateField(blank=True, null=True)
-	maxuses = models.IntegerField(null=False, blank=False, default=0)
-	requiresoption = models.ManyToManyField(ConferenceAdditionalOption, blank=True, help_text='Requires this option to be set in order to be valid')
-	requiresregtype = models.ManyToManyField(RegistrationType, blank=True, help_text='Require a specific registration type to be valid')
+	discountamount = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0, verbose_name="Discount amount")
+	discountpercentage = models.IntegerField(null=False, blank=False, default=0, verbose_name="Discount percentage")
+	regonly = models.BooleanField(null=False, blank=False, default=False, verbose_name="Registration only", help_text="Apply percentage discount only to the registration cost, not additional options. By default, it's applied to both.")
+	validuntil = models.DateField(blank=True, null=True, verbose_name="Valid until")
+	maxuses = models.IntegerField(null=False, blank=False, default=0, verbose_name="Max uses")
+	requiresoption = models.ManyToManyField(ConferenceAdditionalOption, blank=True, verbose_name="Requires option", help_text='Requires this option to be set in order to be valid')
+	requiresregtype = models.ManyToManyField(RegistrationType, blank=True, verbose_name="Requires registration type", help_text='Require a specific registration type to be valid')
 
 	registrations = models.ManyToManyField(ConferenceRegistration, blank=True)
 

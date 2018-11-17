@@ -88,7 +88,7 @@ earlier.
 Color
 :   Color to use on schedule (and other places) for this track
 
-Incfp
+In call for papers
 :   Whether this track should be available to choose in the
 [call for papers](callforpapers) submission form.
 
@@ -125,10 +125,10 @@ profile can be used across multiple conferences.
 Status
 :	The [state](callforpapers#states) state of this session.
 
-Starttime
+Start time
 :	If the session is scheduled, the starting date and time.
 
-Endtime
+End time
 :	If the session is scheduled, the ending date and time.
 
 Cross schedule

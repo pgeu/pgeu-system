@@ -204,10 +204,10 @@ what's in the registration, but they are both traceable to each other.
 
 ### Registration types <a name="regtypes"></a>
 
-Regtype
+Registration type
 : Name of the registration type as shown to the user
 
-Regclass
+Registration class
 : Registration class that this registration belongs to. This can be left
 unspecified, but that is likely to cause issues with things like badge generation.
 
@@ -218,7 +218,7 @@ VAT is used, the cost is specified without VAT.
 Active
 : Whether this registration class can be used at this point.
 
-Activeuntil
+Active until
 : The use-before-date for this registration type. If left empty, the registration type
 can be used as long as it's active and registration is open.
 
@@ -230,14 +230,14 @@ Sortkey
 : An integer specifying how this registration type should be sorted. Lower numbers are
 sorted first.
 
-Specialtype
+Special type
 : If this registration type has special rules on it
 
 Require phone
 : If attendees registering with this registration type should be required to enter
 their phone number (typically for speakers and/or staff)
 
-Alertmessage
+Alert message
 : This message is shown in a pop-up window when the user tries to complete the
 registration. This is typically used for things like informing people of special
 requirements such as a student ID to access student discounts.
@@ -279,7 +279,7 @@ Cost
 : Cost of this option, if any. If VAT is used, the cost is specified
 without VAT.
 
-Maxcount
+Maximum number of uses
 : Maximum number of instances of this additional option that can be
 purchased in total.
 

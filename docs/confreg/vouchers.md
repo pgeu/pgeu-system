@@ -48,30 +48,30 @@ they can be used (e.g. the typical EARLYBIRD use).
 Code
 : This is the actual code that should be entered.
 
-Discountpercentage
+Discount percentage
 : The percent discount that this code gives. Can't be specified at
-the same time as discountamount.
+the same time as discount amount.
 
-Regonly
+Registation only
 : The percent applies only to the registration, not the full cost
 including additional options (only available if the type of
 discount code is percentage)
 
-Discountamount
+Discount amount
 : The amount of discount this code gives. Can't be specified at the
-same time as discountpercentage.
+same time as discount percentage.
 
-Validuntil
+Valid until
 : The date until which this code can be used.
 
-Maxuses
+Max uses
 : Maximum number of uses of this code.
 
-Requiresregtype
+Requires registration type
 : In order to use this discount code, one of the selected registration
 types must be used.
 
-Requiresoption
+Requires option
 : In order to use this discount code, one of the selected additional
 options have to be added to the registration.
 

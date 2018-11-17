@@ -115,7 +115,7 @@ completed their registration.
 Welcome email contents
 : Contents of said welcome email
 
-Additionalintro
+Additional intro
 : Text shown on the registration page just above the list of
 additional options. Typically introduces what the additional options
 are. Can contain markdown.
@@ -202,7 +202,7 @@ Skill levels
 all sessions, and should they be displayed on the schedule and session
 lists.
 
-Callforpapersintro
+Call for papers intro
 : Text shown on the [call for papers](callforpapers) page, above the
 actual call for papers. Can contain HTML.
 

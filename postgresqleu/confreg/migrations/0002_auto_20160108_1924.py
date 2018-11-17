@@ -54,7 +54,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='discountcode',
             name='requiresoption',
-            field=models.ManyToManyField(help_text=b'Requires this option to be set in order to be valid', to='confreg.ConferenceAdditionalOption', blank=True),
+            field=models.ManyToManyField(help_text=b'Requires this option to be set in order to be valid', to='confreg.ConferenceAdditionalOption', blank=True, verbose_name="Requires option"),
         ),
         migrations.AddField(
             model_name='discountcode',
@@ -204,7 +204,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conferenceadditionaloption',
             name='requires_regtype',
-            field=models.ManyToManyField(help_text=b'Can only be picked with selected registration types', to='confreg.RegistrationType', blank=True),
+            field=models.ManyToManyField(help_text=b'Can only be picked with selected registration types', to='confreg.RegistrationType', blank=True, verbose_name="Requires registration type"),
         ),
         migrations.AddField(
             model_name='conference',

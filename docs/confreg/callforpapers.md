@@ -13,9 +13,9 @@ introductory text (if you want one), and decide if you want to ask for
 skill levels.
 
 If you want to ask for Tracks in the call for papers, make sure you
-[create them](schedule#tracks) first, and flag them as "in
-cfp". If no tracks with "in cfp" set exists, the track field will
-automatically be excluded from the call for papers form.
+[create them](schedule#tracks) first, and flag them as "in call for
+papers". If no tracks with "in call for papers" set exists, the track
+field will automatically be excluded from the call for papers form.
 
 Each speaker has to set up a speaker profile. This profile is shared
 between all the conferences on the system, so if they have already set
