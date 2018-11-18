@@ -455,7 +455,7 @@ class BackendConferenceSessionForm(BackendForm):
 
 	class Meta:
 		model = ConferenceSession
-		fields = ['title', 'speaker', 'status', 'starttime', 'endtime', 'cross_schedule',
+		fields = ['title', 'htmlicon', 'speaker', 'status', 'starttime', 'endtime', 'cross_schedule',
 				  'track', 'room', 'can_feedback', 'skill_level', 'abstract', 'submissionnote']
 
 	def fix_fields(self):

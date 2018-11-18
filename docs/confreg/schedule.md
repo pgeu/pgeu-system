@@ -122,6 +122,11 @@ Speakers
 profile before it can be used here, but it the same speaker
 profile can be used across multiple conferences.
 
+HTML Icon
+:   HTML code to be inserted into schedule (and possibly other places)
+representing this session. Can be used to include icons like coffee
+mugs for coffee breaks etc. Should be pure HTML.
+
 Status
 :	The [state](callforpapers#states) state of this session.
 

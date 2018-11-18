@@ -671,6 +671,7 @@ class ConferenceSession(models.Model):
 	can_feedback = models.BooleanField(null=False, default=True)
 	abstract = models.TextField(null=False, blank=True)
 	skill_level = models.IntegerField(null=False, default=1, choices=SKILL_CHOICES)
+	htmlicon = models.CharField(max_length=100, null=False, blank=True, verbose_name="HTML Icon", help_text="HTML representing an icon used for this session on the schedule (and optionally elsewhere)")
 	status = models.IntegerField(null=False, default=0, choices=STATUS_CHOICES)
 	lastnotifiedstatus = models.IntegerField(null=False, default=0, choices=STATUS_CHOICES)
 	lastnotifiedtime = models.DateTimeField(null=True, blank=True, verbose_name="Notification last sent")
