@@ -114,7 +114,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conferencesession',
             name='speaker',
-            field=models.ManyToManyField(to='confreg.Speaker', blank=True),
+            field=models.ManyToManyField(to='confreg.Speaker', blank=True, verbose_name="Speakers"),
         ),
         migrations.AddField(
             model_name='conferencesession',

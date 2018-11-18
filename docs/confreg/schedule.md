@@ -117,7 +117,7 @@ The form to edit session has the following fields:
 Title
 :	The title of the session
 
-Speaker
+Speakers
 :	One or more speakers. A speaker must have created a speaker
 profile before it can be used here, but it the same speaker
 profile can be used across multiple conferences.
