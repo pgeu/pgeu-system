@@ -3,38 +3,6 @@
 {%block content%}
 <h1>Speaker Profile</h1>
 
-{%if not speaker %}
-<h2>New speaker</h2>
-<p>
-Please fill out the form below to register your speaker profile. Once
-this is done, you will be presented with a list of open call for papers.
-</p>
-{%endif%}
-
-{%if callforpapers%}
-<h2>Call for papers</h2>
-<p>
-The following conferences currently have open call for papers:
-<ul>
-  {%for c in callforpapers%}
-  <li><a href="/events/{{c.urlname}}/callforpapers/">{{c}}</a></li>
-  {%endfor%}
-</ul>
-</p>
-{%endif%}
-
-{%if conferences%}
-<h2>Conferences</h2>
-<p>
-You have submitted talks to the following conferences:
-<ul>
-{%for c in conferences %}
-  <li><a href="/events/{{c.urlname}}/callforpapers/">{{c}}</a></li>
-{%endfor%}
-</ul>
-</p>
-{%endif%}
-
 <h2>Speaker profile</h2>
 <p>
 You can edit the contents of your speaker profile here. Please note that
@@ -71,5 +39,38 @@ you are a speaker.
 </table>
 <input type="submit" value="Save">
 </form>
+
+{%if not speaker %}
+<h2>New speaker</h2>
+<p>
+Please fill out the form below to register your speaker profile. Once
+this is done, you will be presented with a list of open call for papers.
+</p>
+{%endif%}
+
+{%if callforpapers%}
+<h2>Call for papers</h2>
+<p>
+The following conferences currently have open call for papers:
+<ul>
+  {%for c in callforpapers%}
+  <li><a href="/events/{{c.urlname}}/callforpapers/">{{c}}</a></li>
+  {%endfor%}
+</ul>
+</p>
+{%endif%}
+
+{%if conferences%}
+<h2>Previous conferences</h2>
+<p>
+You have submitted talks to the following conferences:
+<ul>
+{%for c in conferences %}
+  <li><a href="/events/{{c.urlname}}/callforpapers/">{{c}}</a></li>
+{%endfor%}
+</ul>
+</p>
+{%endif%}
+
 
 {%endblock%}
