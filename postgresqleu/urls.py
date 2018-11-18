@@ -40,6 +40,7 @@ urlpatterns = [
 	url(r'^events/past/$', postgresqleu.views.pastevents),
 	url(r'^(events/services)/$', postgresqleu.static.views.static_fallback),
 	url(r'^events/series/[^/]+-(\d+)/$', postgresqleu.views.eventseries),
+	url(r'^events/attendee/$', postgresqleu.views.attendee_events),
 	url(r'^news/archive/$', postgresqleu.newsevents.views.newsarchive),
 	url(r'news/[^/]+-(\d+)/$', postgresqleu.newsevents.views.newsitem),
 

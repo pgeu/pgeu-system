@@ -1,6 +1,7 @@
 # Index has a very special view that lives out here
 from django.shortcuts import render, get_object_or_404
 from django.template.defaultfilters import slugify
+from django.contrib.auth.decorators import login_required
 
 from postgresqleu.newsevents.models import News
 from postgresqleu.confreg.models import Conference, ConferenceSeries
@@ -89,6 +90,20 @@ def eventseries(request, id):
 		'series': series,
 		'upcoming': [e for e in events if e.enddate >= datetime.datetime.today().date()],
 		'past': [e for e in events if e.enddate < datetime.datetime.today().date()],
+	})
+
+# Handle a users list of previous events
+@login_required
+def attendee_events(request):
+	events = list(Conference.objects.filter(promoactive=True, enddate__gte=datetime.datetime.today()).order_by('startdate'))
+	series = ConferenceSeries.objects.filter(visible=True).extra(
+		where=["EXISTS (SELECT 1 FROM confreg_conference c WHERE c.series_id=confreg_conferenceseries.id AND c.promoactive)"]
+	)
+	attended = Conference.objects.only('urlname', 'conferencename', 'location').filter(conferenceregistration__attendee=request.user, conferenceregistration__payconfirmedat__isnull=False).distinct().order_by('-startdate')
+	return render(request, 'events/attendee.html', {
+		'attended': attended,
+		'events': events,
+		'series': series,
 	})
 
 # Handle CSRF failures

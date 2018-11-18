@@ -1,0 +1,33 @@
+{%extends "nav_events.html"%}
+{%load markup%}
+{%block title%}Past events{%endblock%}
+{%block fullcontent%}
+<div class="col-md-7 contentwrap">
+<h1>Past events</h1>
+<p>
+You have attended the following events:
+</p>
+
+<ul>
+{%for event in attended%}
+<li><h5><a href="/events/{{event.urlname}}/register/">{{event.conferencename}}</a></h5>
+  <span class="nobr"><i class="fa fa-calendar-o"></i> {{event.conferencedatestr}}</span>
+  <span class="nobr"><i class="fa fa-map-pin"></i> {{event.location}}</span>
+</li>
+{%endfor%}
+</ul>
+
+</div>
+
+<div class="col-md-3" id="rightbar">
+    <h3>Upcoming events</h3>
+{%include "events/compacteventlist.inc"%}
+    <h3>Our Event series</h3>
+    <ul>
+{%for s in series%}
+<li><a href="/events/series/{{s.name|slugify}}-{{s.id}}/">{{s.name}}</a></li>
+{%endfor%}
+    </ul>
+</div>
+
+{%endblock%}
