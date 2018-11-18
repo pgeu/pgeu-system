@@ -41,8 +41,11 @@ subdirectory.
 Base template
 -------------
 
-In the base template, the entire HTML structure should be defined, and
-also the blocks:
+In the base template, the entire HTML structure should be defined. The
+skin can do anything it wants with HTML, css and javascript. Note that
+some pages rely on JQuery being present, so it should always be included.
+
+The following blocks should be defined in the base template:
 
 title
   This block gets the page title. Normally just defined as the
@@ -50,7 +53,11 @@ title
   title, such as the name of the conference.
 extrahead
   This block must be declared inside <head>, so the other templates
-  can insert javascript and css. By default it should be empty.
+  can insert e.g. css. By default it should be empty.
+pagescript
+  This block must be declared either inside the <head> or the <body>,
+  but must be *after* jquery is loaded. This is where the pages will
+  insert local javascript. By default it should be empty.
 content
   This block gets the main content of the page. It should be declared
   inside whatever container elements are used. By default it should be

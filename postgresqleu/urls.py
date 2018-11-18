@@ -88,6 +88,7 @@ urlpatterns = [
 	url(r'^events/([^/]+)/callforpapers/copy/$', postgresqleu.confreg.views.callforpapers_copy),
 	url(r'^events/([^/]+)/callforpapers/(\d+)/delslides/(\d+)/$', postgresqleu.confreg.views.callforpapers_delslides),
 	url(r'^events/([^/]+)/callforpapers/(\d+)/speakerconfirm/$', postgresqleu.confreg.views.callforpapers_confirm),
+	url(r'^events/([^/]+)/callforpapers/lookups/speakers/$', postgresqleu.confreg.views.public_speaker_lookup),
 	url(r'^events/([^/]+)/register/confirm/$', postgresqleu.confreg.views.confirmreg),
 	url(r'^events/([^/]+)/register/waitlist_signup/$', postgresqleu.confreg.views.waitlist_signup),
 	url(r'^events/([^/]+)/register/waitlist_cancel/$', postgresqleu.confreg.views.waitlist_cancel),

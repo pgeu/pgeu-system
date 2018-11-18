@@ -434,26 +434,37 @@ class SpeakerProfileForm(forms.ModelForm):
 		return self.cleaned_data['fullname']
 
 
-class CallForPapersSpeakerForm(forms.Form):
-	email = forms.EmailField()
-
-	def clean_email(self):
-		if not Speaker.objects.filter(user__email=self.cleaned_data['email']).exists():
-			raise ValidationError("No speaker profile for user with email %s exists." % self.cleaned_data['email'])
-		return self.cleaned_data['email']
-
-class CallForPapersSubmissionForm(forms.Form):
-	title = forms.CharField(required=True, max_length=200, min_length=10)
-
 class CallForPapersForm(forms.ModelForm):
 	class Meta:
 		model = ConferenceSession
-		fields = ('title', 'abstract', 'skill_level', 'track', 'submissionnote',)
+		fields = ('title', 'abstract', 'skill_level', 'track', 'speaker', 'submissionnote')
 
-	def __init__(self, *args, **kwargs):
+	def __init__(self, currentspeaker, *args, **kwargs):
+		self.currentspeaker = currentspeaker
+
 		super(CallForPapersForm, self).__init__(*args, **kwargs)
+
+		# Extra speakers should at this point only contain the ones that are already
+		# there. More are added by the javascript code, but we don't want to populate
+		# with a list of everything (too easy to scrape as well).
+		if self.instance.id:
+			vals = [s.pk for s in self.instance.speaker.all()]
+		else:
+			vals = [s.pk for s in self.initial['speaker']]
+		# We may also have received a POST that contains new speakers not already on this
+		# record. In this case, we have to add them as possible values, so the validation
+		# doesn't fail.
+		if 'data' in kwargs and u'speaker' in kwargs['data']:
+			vals.extend([int(x) for x in kwargs['data'].getlist('speaker')])
+
+		self.fields['speaker'].queryset = Speaker.objects.filter(pk__in=vals)
+		self.fields['speaker'].label_from_instance = lambda x: u"{0} <{1}>".format(x.fullname, x.email)
+		self.fields['speaker'].required = True
+		self.fields['speaker'].help_text = "Type the beginning of a speakers email address to add more speakers"
+
 		if not self.instance.conference.skill_levels:
 			del self.fields['skill_level']
+
 		if not self.instance.conference.track_set.filter(incfp=True).count() > 0:
 			del self.fields['track']
 		else:
@@ -469,6 +480,12 @@ class CallForPapersForm(forms.ModelForm):
 		if not self.cleaned_data.get('track'):
 			raise ValidationError("Please choose the track that is the closest match to your talk")
 		return self.cleaned_data.get('track')
+
+	def clean_speaker(self):
+		if not self.currentspeaker in self.cleaned_data.get('speaker'):
+			raise ValidationError("You cannot remove yourself as a speaker!")
+		return self.cleaned_data.get('speaker')
+
 
 class SessionCopyField(forms.ModelMultipleChoiceField):
 	def label_from_instance(self, obj):

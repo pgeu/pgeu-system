@@ -1,5 +1,50 @@
 {%extends "base.html" %}
 {%block title%}Call for Papers - {{conference}}{%endblock%}
+{%block pagescript%}
+<script type="text/javascript" src="/media/js/selectize.min.js"></script>
+<link rel="stylesheet" href="/media/css/selectize.css" />
+<link rel="stylesheet" href="/media/css/selectize.default.css" />
+
+<script language="javascript">
+$(function() {
+  /* Re-enable the speaker field, and turn it into selectize */
+  $('tr#tr_speaker').css({'display': 'table-row'});
+  $('#id_speaker').selectize({
+    plugins: ['remove_button'],
+    valueField: 'id',
+    labelField: 'value',
+    searchField: 'value',
+    load: function(query, callback) {
+       if (!query.length) return callback();
+       $.ajax({
+         'url': '/events/{{conference.urlname}}/callforpapers/lookups/speakers/',
+         'type': 'GET',
+         'dataType': 'json',
+         'data': {
+           'query': query,
+         },
+         'error': function() { callback(); },
+         'success': function(res) { callback(res.values);},
+       });
+    },
+  });
+});
+</script>
+{%endblock%}
+
+{%block extrahead%}
+<style>
+tr.err {
+   background-color: #ffb6b6;
+}
+
+/* Hide the speaker field for non-javascript sessions */
+tr#tr_speaker {
+   display:none;
+}
+</style>
+{%endblock%}
+
 {%block content%}
 <h1>Call for Papers - {{conference}}</h1>
 
@@ -20,43 +65,12 @@ Please complete the following fields. You may use markdown in the abstract.
 {% endif %}
 <form class="pgeucfpform" method="post" action=".">{{ csrf_input }}
 <table id="cfp_table">
-{{form.as_table()}}
-<tr>
-  <th><label for="id_not_real">Additional speakers:</label></th>
-  <td>
-    <p>
-    If there will be more than one speaker of this session, please add them below by
-    entering their email addresses. Note that all speakers must set up their
-    own speaker profile before they can be added.
-    </p>
-    {{ speaker_formset.non_form_errors().as_ul() }}
-    {{ speaker_formset.management_form }}
-    <table id="cfp_form_speakers_list">
-      {%for f in speaker_formset.forms%}
-      {%if loop.first%}
-      <tr>
-	{%for field in f.visible_fields()%}
-	<th>{{field.label}}</th>
-	{%endfor%}
-      </tr>
-      {%endif%}
-      <tr>
-	{%for field in f.visible_fields()%}
-	<td>
-	  {%if loop.first%}
-	   {%for hidden in form.hidden_fields()%}
-	   {{hidden}}
-	   {%endfor%}
-	  {%endif%}
-	  {{field.errors.as_ul()}}
-	  {{field}}
-	</td>
-	{%endfor%}
-      </tr>
-      {%endfor%}
-    </table>
-  </td>
-</tr>
+{%for f in form%}
+ <tr{%if f.errors%} class="err"{%endif%} id="tr_{{f.name}}">
+  <th>{{f.label_tag()}}</th>
+  <td>{{f}}{%if f.errors%}{{f.errors}}{%endif%}</td>
+ </tr>
+{%endfor%}
 </table>
 <input type="submit" value="Save">
 <input class="button" type="button" onclick="window.location.href = '../'" value="Cancel" />

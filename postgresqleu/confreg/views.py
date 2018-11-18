@@ -26,7 +26,7 @@ from models import STATUS_CHOICES
 from models import ConferenceNews
 from forms import ConferenceRegistrationForm, RegistrationChangeForm, ConferenceSessionFeedbackForm
 from forms import ConferenceFeedbackForm, SpeakerProfileForm
-from forms import CallForPapersForm, CallForPapersSpeakerForm
+from forms import CallForPapersForm
 from forms import CallForPapersCopyForm, PrepaidCreateForm, BulkRegistrationForm
 from forms import EmailSendForm, EmailSessionForm, CrossConferenceMailForm
 from forms import AttendeeMailForm, WaitlistOfferForm, WaitlistSendmailForm, TransferRegForm
@@ -1296,52 +1296,49 @@ def callforpapers_edit(request, confname, sessionid):
 			'slides': ConferenceSessionSlides.objects.filter(session=session),
 			})
 
-	SpeakerFormset = formsets.formset_factory(CallForPapersSpeakerForm, can_delete=True, extra=1)
-
-	if sessionid != 'new':
-		# Get all additional speakers (that means all speakers who isn't the current one)
-		speaker_initialdata = [{'email': s.user.email} for s in session.speaker.exclude(user=request.user)]
+	if session.id:
+		initial = {}
 	else:
-		speaker_initialdata = None
+		initial = {
+			'speaker': [speaker, ],
+		}
 
 	if request.method == 'POST':
 		# Save it!
-		form = CallForPapersForm(data=request.POST, instance=session)
-		speaker_formset = SpeakerFormset(data=request.POST, initial=speaker_initialdata, prefix="extra_speakers")
-		if form.is_valid() and speaker_formset.is_valid():
+		form = CallForPapersForm(speaker, data=request.POST, instance=session, initial=initial)
+		if form.is_valid():
 			form.save()
-			# Explicitly add the submitter as a speaker
-			session.speaker.add(speaker)
 
-			if speaker_formset.has_changed():
-				# Additional speaker either added or removed
-				for f in speaker_formset:
-					# There is at least one empty form at the end, so skip it
-					if not getattr(f, 'cleaned_data', False): continue
-
-					# Somehow we can end up with an unspecified email. Not sure how it can happen,
-					# since the field is mandatory, but if it does just ignore it.
-					if not 'email' in f.cleaned_data: continue
-
-					# Speaker always exist, since the form has validated
-					spk = Speaker.objects.get(user__email=f.cleaned_data['email'])
-
-					if f.cleaned_data['DELETE']:
-						session.speaker.remove(spk)
-					else:
-						session.speaker.add(spk)
 			messages.info(request, "Your session '%s' has been saved!" % session.title)
 			return HttpResponseRedirect("../")
 	else:
 		# GET --> render empty form
-		form = CallForPapersForm(instance=session)
-		speaker_formset = SpeakerFormset(initial=speaker_initialdata, prefix="extra_speakers")
+		form = CallForPapersForm(speaker, instance=session, initial=initial)
 
 	return render_conference_response(request, conference, 'cfp', 'confreg/callforpapersform.html', {
 			'form': form,
-			'speaker_formset': speaker_formset,
 			'session': session,
 	})
+
+@login_required
+def public_speaker_lookup(request, confname):
+	conference = get_object_or_404(Conference, urlname=confname)
+	speaker = get_object_or_404(Speaker, user=request.user)
+
+	# This is a lookup for speakers that's public. To avoid harvesting, we allow
+	# only *prefix* matching of email addresses, and you have to type at least 6 characters
+	# before you get anything.
+	prefix = request.GET['query']
+	if len(prefix) > 5:
+		vals = [{
+			'id': s.id,
+			'value': u"{0} <{1}>".format(s.fullname, s.email),
+		} for s in Speaker.objects.filter(user__email__startswith=prefix).exclude(fullname='')]
+	else:
+		vals = []
+	return HttpResponse(json.dumps({
+		'values': vals,
+	}), content_type='application/json')
 
 @login_required
 @transaction.atomic
