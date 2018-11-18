@@ -690,7 +690,10 @@ class ConferenceSession(models.Model):
 
 	@property
 	def speaker_list(self):
-		return ", ".join([s.name for s in self.speaker.all()])
+		if self.id:
+			return ", ".join([s.name for s in self.speaker.all()])
+		else:
+			return "<none>"
 
 	@property
 	def skill_level_string(self):
