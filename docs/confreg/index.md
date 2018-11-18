@@ -41,3 +41,4 @@ work from here.
     * [Badges](badges)
     * [Integrations](integrations)
     * [Copying from another conference](copyfromother)
+    * [Skinning the site](skinning)

@@ -1,6 +1,6 @@
 # Badges
 
-Other than skinning the website itself, creation of "skinned badges"
+Other than skinning the website itself, creation of [skinned badges](skinning#badges)
 is also possible. Unlike the website, if there is no skin created, no
 badges can be created (it is of course still possible to download a
 CSV list of all registrations and create them separately).
