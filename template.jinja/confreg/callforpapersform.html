@@ -68,7 +68,7 @@ Please complete the following fields. You may use markdown in the abstract.
 {%for f in form%}
  <tr{%if f.errors%} class="err"{%endif%} id="tr_{{f.name}}">
   <th>{{f.label_tag()}}</th>
-  <td>{{f}}{%if f.errors%}{{f.errors}}{%endif%}</td>
+  <td>{{f}}{%if f.errors%}{{f.errors}}{%endif%}{%if f.help_text%}<br/>{{f.help_text}}{%endif%}</td>
  </tr>
 {%endfor%}
 </table>
