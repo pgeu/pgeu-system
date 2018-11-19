@@ -1058,7 +1058,10 @@ def sessionlist(request, confname):
 		if not conference.testers.filter(pk=request.user.id):
 			return render_conference_response(request, conference, 'sessions', 'confreg/sessionsclosed.html')
 
-	sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).order_by('track__sortkey', 'track', 'title')
+	sessions = ConferenceSession.objects.filter(conference=conference).extra(select={
+		'has_slides': 'EXISTS (SELECT 1 FROM confreg_conferencesessionslides WHERE session_id=confreg_conferencesession.id)',
+	}).filter(cross_schedule=False).filter(status=1).order_by('track__sortkey', 'track', 'title')
+
 	return render_conference_response(request, conference, 'sessions', 'confreg/sessionlist.html', {
 		'sessions': sessions,
 	})
