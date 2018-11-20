@@ -39,7 +39,8 @@ Public view
 non-registered attendees not supported).
 
 Public edit
-: If all *registered* attendees can edit this page.
+: If all *registered* attendees can edit this page. Permission to edit
+implies permission to view.
 
 History
 : If attendees that have permissions to view the page (through it
@@ -52,7 +53,8 @@ Viewer registration types
 for example if a page should be restricted to speakers.
 
 Editor registration types
-: Registration types that can *edit* this page (if it is not public).
+: Registration types that can *edit* this page (if it is not
+public). Permission to edit implies permission to view.
 
 Viewer attendees
 : Specific attendees that can view this page (if it is not public
@@ -60,7 +62,8 @@ Viewer attendees
 access)
 
 Editor attendees
-: Specific attendees that can *edit* this page.
+: Specific attendees that can *edit* this page. Permission to edit
+implies permission to view.
 
 ## Wiki page subscriptions
 

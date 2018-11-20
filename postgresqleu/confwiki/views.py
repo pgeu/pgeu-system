@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, Http404
+from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
 from django.db import transaction, connection
 from django.db.models import Q
@@ -25,15 +26,34 @@ from models import Signup, AttendeeSignup
 from forms import SignupSubmitForm, SignupAdminEditForm, SignupSendmailForm
 from forms import SignupAdminEditSignupForm
 
+def _check_wiki_permissions(page, reg, readwrite=False):
+	# Edit access implies both read and write
+	if page.publicedit:
+		return
+	if page.editor_attendee.filter(id=reg.id).exists() or page.editor_regtype.filter(id=reg.regtype.id).exists():
+		return
+	if readwrite:
+		raise PermissionDenied("Edit permission denied")
+	# Now check read only
+	if page.publicview:
+		return
+	if page.viewer_attendee.filter(id=reg.id).exists() or page.viewer_regtype.filter(id=reg.regtype.id).exists():
+		return
+	raise PermissionDenied("View permission denied")
+
+def _check_signup_permissions(signup, reg):
+	if signup.public:
+		return
+	if signup.attendees.filter(id=reg.id).exists() or signup.regtypes.filter(id=reg.regtype.id).exists():
+		return
+	raise PermissionDenied("Signup permission denied")
+
 @login_required
 def wikipage(request, confurl, wikiurl):
 	conference = get_object_or_404(Conference, urlname=confurl)
 	reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user, payconfirmedat__isnull=False)
-	pageQ = Q(publicview=True) | Q(viewer_attendee=reg) | Q(viewer_regtype=reg.regtype)
-	pages = Wikipage.objects.filter(Q(conference=conference, url=wikiurl) & pageQ).distinct()
-	if len(pages) != 1:
-		raise Http404("Page not found")
-	page = pages[0]
+	page = get_object_or_404(Wikipage, conference=conference, url=wikiurl)
+	_check_wiki_permissions(page, reg)
 
 	is_subscribed = WikipageSubscriber.objects.filter(page=page, subscriber=reg).exists()
 
@@ -52,11 +72,8 @@ def wikipage(request, confurl, wikiurl):
 def wikipage_subscribe(request, confurl, wikiurl):
 	conference = get_object_or_404(Conference, urlname=confurl)
 	reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user, payconfirmedat__isnull=False)
-	pageQ = Q(publicview=True) | Q(viewer_attendee=reg) | Q(viewer_regtype=reg.regtype)
-	pages = Wikipage.objects.filter(Q(conference=conference, url=wikiurl) & pageQ).distinct()
-	if len(pages) != 1:
-		raise Http404("Page not found")
-	page = pages[0]
+	page = get_object_or_404(Wikipage, conference=conference, url=wikiurl)
+	_check_wiki_permissions(page, reg)
 
 	subs = WikipageSubscriber.objects.filter(page=page, subscriber=reg)
 	if subs:
@@ -72,11 +89,10 @@ def wikipage_subscribe(request, confurl, wikiurl):
 def wikipage_history(request, confurl, wikiurl):
 	conference = get_object_or_404(Conference, urlname=confurl)
 	reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user, payconfirmedat__isnull=False)
-	pageQ = Q(publicview=True) | Q(viewer_attendee=reg) | Q(viewer_regtype=reg.regtype)
-	pages = Wikipage.objects.filter(Q(conference=conference, url=wikiurl) & pageQ).distinct()
-	if len(pages) != 1:
-		raise Http404("Page not found")
-	page = pages[0]
+	page = get_object_or_404(Wikipage, conference=conference, url=wikiurl)
+	_check_wiki_permissions(page, reg)
+	if not page.history:
+		raise PermissionDenied()
 
 	fromid=toid=None
 
@@ -117,11 +133,8 @@ def wikipage_history(request, confurl, wikiurl):
 def wikipage_edit(request, confurl, wikiurl):
 	conference = get_object_or_404(Conference, urlname=confurl)
 	reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user, payconfirmedat__isnull=False)
-	pageQ = Q(publicedit=True) | Q(editor_attendee=reg) | Q(editor_regtype=reg.regtype)
-	pages = Wikipage.objects.filter(Q(conference=conference, url=wikiurl) & pageQ).distinct()
-	if len(pages) != 1:
-		raise Http404("Page not found")
-	page = pages[0]
+	page = get_object_or_404(Wikipage, conference=conference, url=wikiurl)
+	_check_wiki_permissions(page, reg, True)
 
 	baseform = True
 	preview = ''
@@ -264,12 +277,9 @@ def admin_edit_page(request, urlname, pageid):
 def signup(request, urlname, signupid):
 	conference = get_object_or_404(Conference, urlname=urlname)
 	reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user, payconfirmedat__isnull=False)
-	signupQ = Q(public=True) | Q(attendees=reg) | Q(regtypes=reg.regtype)
-	signups = Signup.objects.filter(Q(conference=conference, id=signupid) & signupQ).distinct()
+	signup = get_object_or_404(Signup, conference=conference, id=signupid)
+	_check_signup_permissions(signup, reg)
 
-	if len(signups) != 1:
-		raise Http404("Page not found")
-	signup = signups[0]
 	attendee_signup = AttendeeSignup.objects.filter(signup=signup, attendee=reg)
 	if len(attendee_signup) == 1:
 		attendee_signup = attendee_signup[0]
