@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from django.shortcuts import render, get_object_or_404
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect, HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -1940,7 +1941,7 @@ def viewvouchers_user(request, confname, batchid):
 	conference = get_object_or_404(Conference, urlname=confname)
 	batch = get_object_or_404(PrepaidBatch, conference=conference, pk=batchid)
 	if batch.buyer != request.user:
-		raise Http404()
+		raise PermissionDenied()
 	vouchers = batch.prepaidvoucher_set.all()
 
 	return render_conference_response(request, conference, 'reg', 'confreg/prepaid_list.html', {
@@ -2101,7 +2102,7 @@ def bulkpay_view(request, confname, bulkpayid):
 def talkvote(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.talkvoters.filter(pk=request.user.id).exists() and not conference.administrators.filter(pk=request.user.id).exists() and not conference.series.administrators.filter(pk=request.user.id).exists():
-		return HttpResponse('You are not a talk voter or administrator for this conference!')
+		raise PermissionDenied('You are not a talk voter or administrator for this conference!')
 
 	isvoter = conference.talkvoters.filter(pk=request.user.id).exists()
 	isadmin = conference.administrators.filter(pk=request.user.id).exists() or conference.series.administrators.filter(pk=request.user.id).exists()
@@ -2209,7 +2210,7 @@ def talkvote(request, confname):
 def talkvote_status(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.talkvoters.filter(pk=request.user.id).exists() and not conference.administrators.filter(pk=request.user.id).exists() and not conference.series.administrators.filter(pk=request.user.id).exists():
-		return HttpResponse('You are not a talk voter or administrator for this conference!')
+		raise PermissionDenied('You are not a talk voter or administrator for this conference!')
 
 	isadmin = conference.administrators.filter(pk=request.user.id).exists() or conference.series.administrators.filter(pk=request.user.id).exists()
 	if not isadmin:
@@ -2230,7 +2231,7 @@ def talkvote_status(request, confname):
 def talkvote_vote(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.talkvoters.filter(pk=request.user.id):
-		return HttpResponse('You are not a talk voter for this conference!')
+		raise PermissionDenied('You are not a talk voter for this conference!')
 	if request.method!='POST':
 		return HttpResponse('Can only use POST')
 
@@ -2254,7 +2255,7 @@ def talkvote_vote(request, confname):
 def talkvote_comment(request, confname):
 	conference = get_object_or_404(Conference, urlname=confname)
 	if not conference.talkvoters.filter(pk=request.user.id):
-		return HttpResponse('You are not a talk voter for this conference!')
+		raise PermissionDenied('You are not a talk voter for this conference!')
 	if request.method!='POST':
 		return HttpResponse('Can only use POST')
 
@@ -2274,7 +2275,7 @@ def createschedule(request, confname):
 	if not (request.user.is_superuser or is_admin or
 			conference.talkvoters.filter(pk=request.user.id).exists()
 			):
-		raise Http404('You are not an administrator or talk voter for this conference!')
+		raise PermissionDenied('You are not an administrator or talk voter for this conference!')
 
 
 	if request.method=="POST":
@@ -2289,7 +2290,7 @@ def createschedule(request, confname):
 		# Else we are saving. This is only allowed by superusers and administrators,
 		# not all talk voters (as it potentially changes the website).
 		if not request.user.is_superuser and not is_admin:
-			raise Http404('Only administrators can save!')
+			raise PermissionDenied('Only administrators can save!')
 
 		# Remove all the existing mappings, and add new ones
 		# Yes, we do this horribly inefficiently, but it doesn't run very

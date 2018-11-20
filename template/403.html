@@ -1,0 +1,11 @@
+{%extends "navbase.html" %}
+{%block title%}Access denied{%endblock%}
+{%block content%}
+<h1>Access denied</h1>
+{%if exception%}
+{{exception}}
+{%else%}
+Access denied.
+{%endif%}
+{%endblock%}
+

@@ -56,7 +56,7 @@ def get_authenticated_conference(request, urlname=None, confid=None):
 			return c
 		if c.series.administrators.filter(pk=request.user.id).exists():
 			return c
-		raise Http404()
+		raise PermissionDenied()
 
 def backend_process_form(request, urlname, formclass, id, cancel_url='../', saved_url='../', allow_new=True, allow_delete=True, breadcrumbs=None, permissions_already_checked=False, conference=None, bypass_conference_filter=False, instancemaker=None, deleted_url=None):
 	if not conference and not bypass_conference_filter:
