@@ -110,7 +110,6 @@ INSTALLED_APPS = [
 	'postgresqleu.membership',
 	'postgresqleu.elections',
 	'postgresqleu.mailqueue',
-	'postgresqleu.invoicemgr',
 	'postgresqleu.invoices',
 	'postgresqleu.accounting',
 	'postgresqleu.cmutuel',

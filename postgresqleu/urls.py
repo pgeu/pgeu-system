@@ -18,7 +18,6 @@ import postgresqleu.confwiki.views
 import postgresqleu.membership.views
 import postgresqleu.account.views
 import postgresqleu.elections.views
-import postgresqleu.invoicemgr.views
 import postgresqleu.invoices.views
 import postgresqleu.accounting.views
 import postgresqleu.paypal.views
@@ -218,11 +217,6 @@ urlpatterns = [
 	url(r'^elections/(\d+)/$', postgresqleu.elections.views.election),
 	url(r'^elections/(\d+)/candidate/(\d+)/$', postgresqleu.elections.views.candidate),
 	url(r'^elections/(\d+)/ownvotes/$', postgresqleu.elections.views.ownvotes),
-
-	# Invoice manager (admins only!)
-	url(r'invoicemgr/$', postgresqleu.invoicemgr.views.home),
-	url(r'invoicemgr/(\d+)/$', postgresqleu.invoicemgr.views.invoice),
-	url(r'invoicemgr/(\d+)/pdf/$', postgresqleu.invoicemgr.views.invoicepdf),
 
 	# Second generation invoice management system
 	url(r'^invoiceadmin/$', postgresqleu.invoices.views.unpaid),
