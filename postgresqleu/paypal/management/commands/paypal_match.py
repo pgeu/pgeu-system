@@ -77,7 +77,7 @@ class Command(BaseCommand):
 					]
 				create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
 				continue
-			if trans.amount < 0 and trans.transtext.startswith('Refund of Paypal payment: PGEU refund '):
+			if trans.amount < 0 and trans.transtext.startswith('Refund of Paypal payment: {0} refund '.format(settings.ORG_SHORTNAME)):
 				trans.setmatched('Matched API initiated refund')
 				# API initiated refund, so we should be able to match it
 				invoicemanager.complete_refund(

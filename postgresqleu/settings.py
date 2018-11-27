@@ -172,6 +172,7 @@ ADYEN_REPORT_PASSWORD='topsecret'
 ADYEN_WS_USER='someone'
 ADYEN_WS_PASSWORD='topsecret'
 ADYEN_MERCHANTREF_PREFIX='PGEU'
+ADYEN_MERCHANTREF_REFUND_PREFIX='PGEUREFUND'
 
 # Account numbers used for auto-accounting
 ENABLE_AUTO_ACCOUNTING=True
@@ -214,6 +215,7 @@ ENABLE_TRUSTLY=False
 
 # Organization name
 ORG_NAME="PostgreSQL Europe"
+ORG_SHORTNAME="PGEU"
 
 # Treasurer email address
 TREASURER_EMAIL="treasurer@postgresql.eu"

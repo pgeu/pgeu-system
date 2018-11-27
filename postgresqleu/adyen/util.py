@@ -194,7 +194,7 @@ def process_refund(notification):
 			]
 
 			# API generated refund?
-			if notification.merchantReference.startswith('PGEUREFUND'):
+			if notification.merchantReference.startswith(settings.ADYEN_MERCHANTREF_REFUND_PREFIX):
 				# API generated
 				invoicerefundid = int(notification.merchantReference[10:])
 
@@ -398,7 +398,7 @@ class AdyenAPI(object):
 				'currency': settings.CURRENCY_ISO,
 			},
 			'originalReference': transreference,
-			'reference': 'PGEUREFUND{0}'.format(refundid),
+			'reference': '{0}{1}'.format(settings.ADYEN_MERCHANTREF_REFUND_PREFIX, refundid),
 		}
 
 		try:

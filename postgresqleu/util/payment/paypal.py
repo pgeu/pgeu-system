@@ -73,7 +73,7 @@ lower fees.
 			trans.paypaltransid,
 			invoice.refund.fullamount,
 			invoice.refund.fullamount == invoice.total_amount,
-			'PGEU refund {0}'.format(invoice.refund.id),
+			'{0} refund {1}'.format(settings.ORG_SHORTNAME, invoice.refund.id),
 		)
 		# At this point, we succeeded. Anything that failed will bubble
 		# up as an exception.

@@ -11,6 +11,7 @@ from postgresqleu.membership.models import Member
 def settings_context(request=None):
 	return {
 		'org_name': settings.ORG_NAME,
+		'org_short_name': settings.ORG_SHORTNAME,
 		'treasurer_email': settings.TREASURER_EMAIL,
 		'sitebase': settings.SITEBASE,
 		'currency_abbrev': settings.CURRENCY_ABBREV,

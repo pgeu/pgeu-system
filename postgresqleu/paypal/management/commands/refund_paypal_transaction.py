@@ -16,7 +16,7 @@ class Command(BaseCommand):
 	help = 'Refund paypal transactions'
 
 	def add_arguments(self, parser):
-		parser.add_argument('-i', '--ids', help='PGEU transaction id from database', nargs='+', required=True)
+		parser.add_argument('-i', '--ids', help='Transaction id from database', nargs='+', required=True)
 		parser.add_argument('-m', '--message', help='Message', required=True)
 
 	def handle(self, *args, **options):
