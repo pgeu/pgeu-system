@@ -59,7 +59,7 @@ $(function() {
   <tr class="danger"><td colspan="4">Error: {{rowerror.1}}</td></tr>
 {%endif%}
   <tr{%if rowerror[0] == s.id%} class="danger"{%elif assigned_slot%} class="success"{%endif%}>
-    <td>{{s.timerange.lower.strftime("%H:%M")}} - {{s.timerange.upper.strftime("%H: %M")}}</td>
+    <td>{{s.timerange.lower.strftime("%H:%M")}} - {{s.timerange.upper.strftime("%H:%M")}}</td>
     <td>{{s.title}}</td>
     <td{%if s.countvols < s.min_staff%} class="danger"{%endif%}>{{s.countvols}} / {{s.max_staff}}{%if s.max_staff != s.min_staff%} (min {{s.min_staff}}){%endif%}</td>
     <td>
