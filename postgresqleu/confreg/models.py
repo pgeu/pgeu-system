@@ -33,6 +33,9 @@ SKILL_CHOICES = (
 	(2, "Advanced"),
 )
 
+# NOTE! The contents of these arrays must also be matched with the
+# database table confreg_status_strings. This one is managed by
+# manually creating a separate migration in case the contents change.
 STATUS_CHOICES = (
 	(0, "Submitted"),
 	(1, "Approved"),
