@@ -282,6 +282,14 @@ if ENABLE_ELECTIONS:
 	INSTALLED_APPS.append('postgresqleu.elections')
 
 
+if ENABLE_PG_COMMUNITY_AUTH:
+    AUTHENTICATION_BACKENDS = (
+        'postgresqleu.auth.AuthBackend',
+    )
+    LOGIN_URL="http://localhost:8002/accounts/login/"
+
+
+
 if ENABLE_BRAINTREE:
 	INSTALLED_APPS.append('postgresqleu.braintreepayment')
 	BRAINTREE_SANDBOX=False

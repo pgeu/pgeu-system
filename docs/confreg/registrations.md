@@ -9,7 +9,7 @@ intended to be as simple as possible for the attendee (whether it
 succeeds can always be discussed..):
 
 1. The attendee signs in to the registration form. This step requires
-   a community account, or one can be created as part of the signup
+   an account, or one can be created as part of the signup
    process.
 1. The exact fields to be filled out can be
    [configured](configuring) at the conference level, for
@@ -56,13 +56,13 @@ registration for somebody else, the process is the same.
    same rules as all other invoices.
 1. Once this invoice is paid, all registrations are confirmed at the
    same time. Each attendee receives the confirmation email.
-    * If a community account exists for a user registered this way,
+    * If an account exists for a user registered this way,
       this account is automatically connected by matching the email
       address, and this user can access their registration page as
       normal.
     * If no account exists, the user is sent an email with a
       token-link that allows them to connect it to a different
-      community account, regardless of email address matching. The
+      account, regardless of email address matching. The
       attendee can also create a new account at this point.
 
 The system for multiple payments is automatically disabled once the
@@ -120,13 +120,13 @@ Manually confirmed
 attendee. It requires the administrator to confirm it manually.
 
 Confirmed speaker
-: The attendee registering must, with the same community account, have
+: The attendee registering must, with the same account, have
 a speaker profile, and have at least one talk by this speaker profile
 be in a [state](callforpapers#states) of *Accepted*. Most of the time,
 the "Confirmed or reserve speaker" should probably be used instead.
 
 Confirmed or reserve speaker
-: The attendee registering must, with the same community account, have
+: The attendee registering must, with the same account, have
 a speaker profile, and have at least one talk by this speaker profile
 be in a [state](callforpapers#states) of *Accepted* or the state
 *Reserve*.. This means that speakers on the reserve list can also use
@@ -134,7 +134,7 @@ this registration type, which is usually the choice wanted since they
 should be able to be substituted at the last moment.
 
 Confirmed staff
-: The attendee registering must use one of the community accounts that
+: The attendee registering must use one of the accounts that
 are listed as staff in the [conference configuration](configuring).
 
 ### Registration days <a name="days"></a>

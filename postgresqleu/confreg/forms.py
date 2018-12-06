@@ -45,7 +45,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 		self.fields['country'].queryset = Country.objects.order_by('printable_name')
 
 		if not self.regforother:
-			self.intro_html = mark_safe(u'<p>You are currently making a registration for community account<br/><i>{0} ({1} {2} &lt;{3}&gt;).</i></p>'.format(escape(self.user.username), escape(self.user.first_name), escape(self.user.last_name), escape(self.user.email)))
+			self.intro_html = mark_safe(u'<p>You are currently making a registration for account<br/><i>{0} ({1} {2} &lt;{3}&gt;).</i></p>'.format(escape(self.user.username), escape(self.user.first_name), escape(self.user.last_name), escape(self.user.email)))
 		else:
 			self.intro_html = mark_safe(u'<p>You are currently editing a registration for somebody other than yourself.</p>')
 

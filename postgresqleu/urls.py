@@ -38,19 +38,27 @@ if settings.HAS_SKIN:
 	from skin_urls import PRELOAD_URLS
 	urlpatterns.extend(PRELOAD_URLS)
 
+if settings.ENABLE_PG_COMMUNITY_AUTH:
+    urlpatterns.extend([
+	    url(r'^login/?$', postgresqleu.auth.login),
+	    url(r'^logout/?$', postgresqleu.auth.logout),
+	    url(r'^accounts/login/$', postgresqleu.auth.login),
+	    url(r'^accounts/logout/$', postgresqleu.auth.logout),
+	    url(r'^auth_receive/$', postgresqleu.auth.auth_receive),
+    ])
+else:
+    from django.contrib.auth import views as auth_views
+    urlpatterns.extend([
+	    url(r'^accounts/login/$', auth_views.LoginView.as_view(template_name='djangologin/login.html')),
+	    url(r'^accounts/logout/$', auth_views.LogoutView.as_view()),
+    ])
+
 urlpatterns.extend([
 	# Frontpage and section headers
 	url(r'^$', postgresqleu.views.index),
 	url(r'^events/$', postgresqleu.views.eventsindex),
 	url(r'^events/past/$', postgresqleu.views.pastevents),
 	url(r'^events/series/[^/]+-(\d+)/$', postgresqleu.views.eventseries),
-
-	# Log in/log out
-	url(r'^login/?$', postgresqleu.auth.login),
-	url(r'^logout/?$', postgresqleu.auth.logout),
-	url(r'^accounts/login/$', postgresqleu.auth.login),
-	url(r'^accounts/logout/$', postgresqleu.auth.logout),
-	url(r'^auth_receive/$', postgresqleu.auth.auth_receive),
 
 	# Conference management
 	url(r'^events/(?P<confname>[^/]+)/register/(?P<whatfor>(self)/)?$', postgresqleu.confreg.views.register),

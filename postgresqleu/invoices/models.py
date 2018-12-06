@@ -58,8 +58,8 @@ class InvoiceRefund(models.Model):
 class Invoice(models.Model):
 	# pk = invoice number, which is fully exposed.
 
-	# The recipient. We set the user if we have matched it to a
-	# community account, but support invoices that are just listed
+	# The recipient. We set the user if we have matched it to an
+	# account, but support invoices that are just listed
 	# by name. If email is set, we can retro-match it up, but once
 	# a recipient is matched, the recipient_user field "owns" the
 	# recipient information.
