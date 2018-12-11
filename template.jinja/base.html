@@ -10,7 +10,7 @@
 
     <link rel="stylesheet" href="/media/css/pgeu.css">
 
-    <title>{%block title%}{%endblock%} - PostgreSQL Europe</title>
+    <title>{%block title%}{%endblock%}</title>
 {%block extrahead%}{%endblock%}
   </head>
   <body>
@@ -18,20 +18,13 @@
       <div class="row justify-content-md-center">
          <div class="col">
            <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light">
-             <a class="navbar-brand p-0" href="/">
-               <img class="logo" src="/media/img/elephant.png" alt="PostgreSQL Elephant Logo">
-             </a>
              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#pgNavbar" aria-controls="pgNavbar" aria-expanded="false" aria-label="Toggle navigation">
                <span class="navbar-toggler-icon"></span>
              </button>
              <div class="collapse navbar-collapse" id="pgNavbar">
                <ul class="navbar-nav mr-auto">
                  <li class="nav-item p-2"><a href="/" title="Home">Home</a></li>
-                 <li class="nav-item p-2"><a href="/about/" title="About">About</a></li>
                  <li class="nav-item p-2"><a href="/events/" title="Events">Events</a></li>
-                 <li class="nav-item p-2"><a href="/community/" title="Community">Community</a></li>
-		 <li class="nav-item p-2"><a href="/financial/" title="Financial">Financial</a></li>
-		 <li class="nav-item p-2"><a href="/membership/" title="Your membership">Your membership</a></li>
                  <li class="nav-item p-2"><a href="/account/" title="Your account">Your account</a></li>
                </ul>
              </div> <!-- pgNavBar -->
@@ -47,9 +40,8 @@
 
     <footer id="footer">
       <div class="container">
-	<a href="/about/privacypolicy/">Privacy policy</a> | <a href="/about/contact/">Contact Us</a> | <a href="/about/trademarks/">Trademarks</a>
 	<br/>
-	Copyright © 2008-{{ now|datetimeformat("%Y") }} PostgreSQL Europe
+	Copyright © 2008-{{ now|datetimeformat("%Y") }} {{ org_name }}
       </div>
     </footer>
 

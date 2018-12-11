@@ -49,7 +49,7 @@ def invoicepayment_secret(request, invoiceid, secret):
 		r = t.deposit(enduserid,
 					  "{0}".format(invoice.id),
 					  invoice.total_amount,
-					  'PGEU#{0}'.format(invoice.id),
+					  '{0}#{1}'.format(settings.ORG_SHORTNAME, invoice.id),
 					  '{0}/trustly_success/{1}/{2}/'.format(settings.SITEBASE, invoice.id, invoice.recipient_secret),
 					  '{0}/trustly_failure/{1}/{2}/'.format(settings.SITEBASE, invoice.id, invoice.recipient_secret),
 					  first,

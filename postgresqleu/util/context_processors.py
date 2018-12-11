@@ -6,8 +6,6 @@
 from django.conf import settings
 from django.utils.functional import SimpleLazyObject
 
-from postgresqleu.membership.models import Member
-
 def settings_context(request=None):
 	return {
 		'org_name': settings.ORG_NAME,
@@ -18,6 +16,11 @@ def settings_context(request=None):
 		'currency_symbol': settings.CURRENCY_SYMBOL,
 		'is_debugging': settings.DEBUG,
 		'eu_vat': settings.EU_VAT,
+        'modules': {
+            'news': settings.ENABLE_NEWS,
+            'membership': settings.ENABLE_MEMBERSHIP,
+            'elections': settings.ENABLE_ELECTIONS,
+        }
 	}
 
 def settings_context_unicode(request=None):
@@ -28,6 +31,9 @@ def settings_context_unicode(request=None):
 		if isinstance(v, str):
 			c[k] = v.decode('utf8')
 	return c
+
+if settings.ENABLE_MEMBERSHIP:
+	from postgresqleu.membership.models import Member
 
 def member_context(request=None):
 	def _member():

@@ -2,13 +2,17 @@
 {%block navsection%}Your account{%endblock%}
 {%block navblock%}
 <li><a href="/invoices">Invoices</a></li>
+{%if modules.membership%}
 {%if member%}
 </ul>
 <h2>Membership</h2>
 <ul>
 <li><a href="/membership/">Membership</a></li>
+{%if modules.elections%}
 <li><a href="/elections/">Elections</a></li>
+{%endif%}
 <li><a href="/membership/meetings/">Meetings</a></li>
+{%endif%}
 {%endif%}
 </ul>
 <h2>Events</h2>

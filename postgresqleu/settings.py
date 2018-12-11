@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import os
+import sys
 
 from exceptions import ImportError
 from django.conf import global_settings
@@ -8,11 +10,11 @@ from django.conf import global_settings
 
 DEBUG = False
 
-ADMINS = (
-		  ('postgresql.eu webmaster', 'webmaster@postgresql.eu'),
-)
+DEFAULT_EMAIL = 'webmaster@localhost'
 
-MANAGERS = ADMINS
+ADMINS = (
+		  ('webmaster', DEFAULT_EMAIL),
+)
 
 DATABASES = {
 	'default': {
@@ -39,21 +41,15 @@ SITE_ID = 1
 # to load the internationalization machinery.
 USE_I18N = False
 
-# Absolute path to the directory that holds media.
-# Example: "/home/media/media.lawrence.com/"
-#MEDIA_ROOT = '/home/mha/djangolab/postgresqleu/media'
-
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
-# Examples: "http://media.lawrence.com", "http://example.com/media/"
-#MEDIA_URL = '/media/'
 STATIC_URL = '/media/'
 STATICFILES_DIRS = (
 	'media/',
 )
 
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = 'zya5w8sfr)i(7q^p3s50-3hk5&4=k(&z6+*1x!#lt#8h%!sizu'
+# Must always be overridden in local_settings!
+SECRET_KEY = ''
 
 MIDDLEWARE_CLASSES = [
     'django.middleware.common.CommonMiddleware',
@@ -78,7 +74,6 @@ TEMPLATES = [{
 			'django.contrib.auth.context_processors.auth',
 			'django.contrib.messages.context_processors.messages',
 			'postgresqleu.util.context_processors.settings_context',
-			'postgresqleu.util.context_processors.member_context',
 		],
 		'loaders': [
 			'django.template.loaders.filesystem.Loader',
@@ -101,42 +96,25 @@ INSTALLED_APPS = [
 	'postgresqleu.countries',
 	'postgresqleu.paypal',
 	'postgresqleu.adyen',
-	'postgresqleu.braintreepayment',
-	'postgresqleu.trustlypayment',
 	'postgresqleu.newsevents',
 	'postgresqleu.confreg',
 	'postgresqleu.confsponsor',
 	'postgresqleu.confwiki',
-	'postgresqleu.membership',
-	'postgresqleu.elections',
 	'postgresqleu.mailqueue',
 	'postgresqleu.invoices',
 	'postgresqleu.accounting',
-	'postgresqleu.cmutuel',
 	'postgresqleu.util',
 ]
 
-INVOICE_SENDER_EMAIL="treasurer@postgresql.eu"
-MEMBERSHIP_SENDER_EMAIL="webmaster@postgresql.eu"
+# Emails
+INVOICE_SENDER_EMAIL = DEFAULT_EMAIL
+MEMBERSHIP_SENDER_EMAIL = DEFAULT_EMAIL
 
-# Years of membership per payment
-MEMBERSHIP_LENGTH=2
-# Cost for membership
-MEMBERSHIP_COST=10
-# Function called to valide that country is acceptable for membership
-MEMBERSHIP_COUNTRY_VALIDATOR=None
 
 # Currency parameter
 CURRENCY_ABBREV='EUR'
 CURRENCY_SYMBOL='€'
 CURRENCY_ISO='EUR'
-
-# Module to build PDF invoices
-INVOICE_PDF_BUILDER='postgresqleu.util.misc.pgeuinvoice'
-
-# Will be suffixed by " #nnn - <title>"
-INVOICE_TITLE_PREFIX='PostgreSQL Europe Invoice'
-INVOICE_FILENAME_PREFIX='pgeu'
 
 # Process EU-specific VAT rules
 EU_VAT=False
@@ -145,26 +123,37 @@ EU_VAT_HOME_COUNTRY="FR"
 # On-line validate EU vat numbers
 EU_VAT_VALIDATE=False
 
-# Change these when using sandbox!
+##### Membership module #####
+# Years of membership per payment
+MEMBERSHIP_LENGTH=2
+# Cost for membership
+MEMBERSHIP_COST=10
+# Function called to valide that country is acceptable for membership
+MEMBERSHIP_COUNTRY_VALIDATOR=None
+
+##### Invoice module #####
+INVOICE_PDF_BUILDER='postgresqleu.util.misc.pgeuinvoice'
+
+# Paypal sandbox configuration
 PAYPAL_BASEURL='https://www.paypal.com/cgi-bin/webscr'
-PAYPAL_EMAIL='paypal@postgresql.eu'
+PAYPAL_EMAIL=DEFAULT_EMAIL
 PAYPAL_PDT_TOKEN='abc123'
 PAYPAL_DEFAULT_SOURCEACCOUNT=1
 PAYPAL_API_USER='someuser'
 PAYPAL_API_PASSWORD='secret'
 PAYPAL_API_SIGNATURE='secret'
 PAYPAL_SANDBOX=True
-PAYPAL_REPORT_RECEIVER='paypal@postgresql.eu'
-PAYPAL_DONATION_TEXT="PostgreSQL Europe"
+PAYPAL_REPORT_RECEIVER=DEFAULT_EMAIL
+PAYPAL_DONATION_TEXT="Paypal Donation"
 
-# Change whether using sandbox or not
+# Adyen configuration
 ADYEN_BASEURL='https://test.adyen.com/'
 ADYEN_CABASEURL='https://test-ca.adyen.com/'
 ADYEN_APIBASEURL='https://pal-test.adyen.com/'
 ADYEN_MERCHANTACCOUNT='whatever'
 ADYEN_SIGNKEY='foobar'
 ADYEN_SKINCODE='abc123'
-ADYEN_NOTIFICATION_RECEIVER='somebody@somewhere.com'
+ADYEN_NOTIFICATION_RECEIVER=DEFAULT_EMAIL
 ADYEN_NOTIFY_USER='adyennot'
 ADYEN_NOTIFY_PASSWORD='topsecret'
 ADYEN_REPORT_USER='someone'
@@ -175,7 +164,7 @@ ADYEN_MERCHANTREF_PREFIX='PGEU'
 ADYEN_MERCHANTREF_REFUND_PREFIX='PGEUREFUND'
 
 # Account numbers used for auto-accounting
-ENABLE_AUTO_ACCOUNTING=True
+ENABLE_AUTO_ACCOUNTING=False
 ACCOUNTING_PAYPAL_INCOME_ACCOUNT=1932
 ACCOUNTING_PAYPAL_FEE_ACCOUNT=6041
 ACCOUNTING_PAYPAL_TRANSFER_ACCOUNT=1930
@@ -192,33 +181,32 @@ ACCOUNTING_MEMBERSHIP_ACCOUNT=3001
 ACCOUNTING_DONATIONS_ACCOUNT=3601
 ACCOUNTING_INVOICE_VAT_ACCOUNT=2610
 
-# CM balance fetching account
-CM_USER_ACCOUNT=None
-CM_USER_PASSWORD=None
 
+##### Organisation configuration #####
+ORG_NAME="Not Configured Organisation"
+ORG_SHORTNAME="NOTCONF"
 # Base URLs for generating absolute URLs
-SITEBASE="https://www.postgresql.eu"
+SITEBASE="http://localhost:8000"
+# Set cookies to secure to explicitly force off in the local settings
 SESSION_COOKIE_SECURE=True
+CSRF_COOKIE_SECURE=True
 
 DATETIME_FORMAT="Y-m-d H:i:s"
 
-# Set to true in local_settings.py to enable braintree integrations
+##### Enable/disable modules #####
+ENABLE_PG_COMMUNITY_AUTH=False
+ENABLE_NEWS=True
+ENABLE_MEMBERSHIP=False
+ENABLE_ELECTIONS=False
 ENABLE_BRAINTREE=False
-BRAINTREE_SANDBOX=False
+ENABLE_TRUSTLY=False
 
 # Set to a username and password in local_settings.py to enable global http auth
 GLOBAL_LOGIN_USER=''
 GLOBAL_LOGIN_PASSWORD=''
 
-# Set to true in local_settings.py to enable trustly integrations
-ENABLE_TRUSTLY=False
-
-# Organization name
-ORG_NAME="PostgreSQL Europe"
-ORG_SHORTNAME="PGEU"
-
 # Treasurer email address
-TREASURER_EMAIL="treasurer@postgresql.eu"
+TREASURER_EMAIL=DEFAULT_EMAIL
 
 # Twitter application keys
 TWITTER_CLIENT=""
@@ -234,11 +222,69 @@ try:
 except ImportError, e:
 	pass
 
+PRELOAD_URLS=[]
+if 'SYSTEM_SKIN_DIRECTORY' in globals():
+    # A skin directory is configured!
+    # First, add it to templates
+    HAS_SKIN=True
+
+    TEMPLATES[0]['DIRS'].insert(0, os.path.join(SYSTEM_SKIN_DIRECTORY, 'template/'))
+
+    # Then, load a local settings file from there
+    sys.path.insert(0, os.path.join(SYSTEM_SKIN_DIRECTORY, 'code/'))
+    try:
+        from local_settings import *
+    except ImportError, e:
+        pass
+    # Then also load a skin settings file (URLs etc)
+    try:
+        from skin_settings import *
+    except ImportError, e:
+        pass
+
+    if 'SKIN_APPS' in globals():
+        INSTALLED_APPS.extend(SKIN_APPS)
+else:
+    HAS_SKIN=False
+
+
+if not SECRET_KEY:
+    raise Exception("SECRET_KEY must be configured!")
+
+# Reset admins based on confir params from skins and local
+ADMINS = (
+		  (u'{0} webmaster'.format(ORG_NAME), DEFAULT_EMAIL),
+)
+MANAGERS = ADMINS
+
+##### Invoice module #####
+INVOICE_TITLE_PREFIX=u'{0} Invoice'.format(ORG_NAME)
+INVOICE_FILENAME_PREFIX=ORG_SHORTNAME.lower()
+
+
 if GLOBAL_LOGIN_USER:
 	MIDDLEWARE_CLASSES.append('postgresqleu.util.middleware.GlobalLoginMiddleware')
 
+if ENABLE_PG_COMMUNITY_AUTH:
+    AUTHENTICATION_BACKENDS = (
+        'postgresqleu.auth.AuthBackend',
+    )
+    LOGIN_URL="http://localhost:8002/accounts/login/"
+4
+if ENABLE_ELECTIONS and not ENABLE_MEMBERSHIP:
+	raise Exception("Elections module requires membership module!")
+
+if ENABLE_MEMBERSHIP:
+	INSTALLED_APPS.append('postgresqleu.membership')
+	MIDDLEWARE_CLASSES.append('postgresqleu.util.context_processors.member_context')
+
+if ENABLE_ELECTIONS:
+	INSTALLED_APPS.append('postgresqleu.elections')
+
 
 if ENABLE_BRAINTREE:
+	INSTALLED_APPS.append('postgresqleu.braintreepayment')
+	BRAINTREE_SANDBOX=False
 	# Accounts to use for braintree transactions
 	# Override in local_settings.py, and also configure
 	# the public and secret keys there.
@@ -248,11 +294,7 @@ if ENABLE_BRAINTREE:
 	ACCOUNTING_BRAINTREE_FEE_ACCOUNT=6040
 
 if ENABLE_TRUSTLY:
+	INSTALLED_APPS.append('postgresqleu.trustlypayment')
+
 	# Accounts to use for trustly transactions
 	ACCOUNTING_TRUSTLY_ACCOUNT=1972
-
-	# Load the keys
-	with open('postgresqleu/trustly_public.pem', 'r') as f:
-		TRUSTLY_PUBLIC_KEY=f.read()
-	with open('postgresqleu/trustly_private.pem', 'r') as f:
-		TRUSTLY_PRIVATE_KEY=f.read()

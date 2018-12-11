@@ -2,6 +2,8 @@ from django.conf.urls import include, url
 from django.conf import settings
 from django.contrib import admin
 
+import sys
+
 import postgresqleu.static.views
 import postgresqleu.newsevents.views
 import postgresqleu.views
@@ -15,9 +17,7 @@ import postgresqleu.confreg.pdfschedule
 import postgresqleu.confreg.volsched
 import postgresqleu.confreg.docsviews
 import postgresqleu.confwiki.views
-import postgresqleu.membership.views
 import postgresqleu.account.views
-import postgresqleu.elections.views
 import postgresqleu.invoices.views
 import postgresqleu.accounting.views
 import postgresqleu.paypal.views
@@ -31,17 +31,19 @@ from postgresqleu.confreg.feeds import LatestEvents, ConferenceNewsFeed
 # from django.contrib import admin
 admin.autodiscover()
 
-
 urlpatterns = [
+]
+
+if settings.HAS_SKIN:
+	from skin_urls import PRELOAD_URLS
+	urlpatterns.extend(PRELOAD_URLS)
+
+urlpatterns.extend([
 	# Frontpage and section headers
 	url(r'^$', postgresqleu.views.index),
 	url(r'^events/$', postgresqleu.views.eventsindex),
 	url(r'^events/past/$', postgresqleu.views.pastevents),
-	url(r'^(events/services)/$', postgresqleu.static.views.static_fallback),
 	url(r'^events/series/[^/]+-(\d+)/$', postgresqleu.views.eventseries),
-	url(r'^events/attendee/$', postgresqleu.views.attendee_events),
-	url(r'^news/archive/$', postgresqleu.newsevents.views.newsarchive),
-	url(r'news/[^/]+-(\d+)/$', postgresqleu.newsevents.views.newsitem),
 
 	# Log in/log out
 	url(r'^login/?$', postgresqleu.auth.login),
@@ -49,11 +51,6 @@ urlpatterns = [
 	url(r'^accounts/login/$', postgresqleu.auth.login),
 	url(r'^accounts/logout/$', postgresqleu.auth.logout),
 	url(r'^auth_receive/$', postgresqleu.auth.auth_receive),
-
-	# Feeds
-	url(r'^feeds/(?P<what>(news|user/[^/]+))/$', LatestNews()),
-	url(r'^feeds/conf/(?P<what>[^/]+)/$', ConferenceNewsFeed()),
-	url(r'^feeds/conf/(?P<confname>[^/]+)/json/$', postgresqleu.confreg.views.news_json),
 
 	# Conference management
 	url(r'^events/(?P<confname>[^/]+)/register/(?P<whatfor>(self)/)?$', postgresqleu.confreg.views.register),
@@ -199,24 +196,8 @@ urlpatterns = [
 	url(r'^events/(register|bulkpay|feedback|schedule|sessions|talkvote|speakerprofile|callforpapers|reports)/([^/]+)/(.*)?$', postgresqleu.confreg.views.legacy_redirect),
 
 
-	# Membership management
-	url(r'^membership/$', postgresqleu.membership.views.home),
-	url(r'^membership/meetings/$', postgresqleu.membership.views.meetings),
-	url(r'^membership/meetings/(\d+)/$', postgresqleu.membership.views.meeting),
-	url(r'^membership/meetings/(\d+)/([a-z0-9]{64})/$', postgresqleu.membership.views.meeting_by_key),
-	url(r'^membership/meetings/(\d+)/proxy/$', postgresqleu.membership.views.meeting_proxy),
-	url(r'^membership/meetingcode/$', postgresqleu.membership.views.meetingcode),
-	url(r'^community/members/$', postgresqleu.membership.views.userlist),
-	url(r'^admin/membership/_email/$', postgresqleu.membership.views.admin_email),
-
 	# Accounts
 	url(r'^account/$', postgresqleu.account.views.home),
-
-	# Elections
-	url(r'^elections/$', postgresqleu.elections.views.home),
-	url(r'^elections/(\d+)/$', postgresqleu.elections.views.election),
-	url(r'^elections/(\d+)/candidate/(\d+)/$', postgresqleu.elections.views.candidate),
-	url(r'^elections/(\d+)/ownvotes/$', postgresqleu.elections.views.ownvotes),
 
 	# Second generation invoice management system
 	url(r'^invoiceadmin/$', postgresqleu.invoices.views.unpaid),
@@ -266,7 +247,42 @@ urlpatterns = [
 	# Account info callbacks
 	url(r'^accountinfo/search/$', postgresqleu.accountinfo.views.search),
 	url(r'^accountinfo/import/$', postgresqleu.accountinfo.views.importuser),
-]
+])
+
+if settings.ENABLE_NEWS:
+	urlpatterns.extend([
+	url(r'^events/attendee/$', postgresqleu.views.attendee_events),
+	url(r'^news/archive/$', postgresqleu.newsevents.views.newsarchive),
+	url(r'news/[^/]+-(\d+)/$', postgresqleu.newsevents.views.newsitem),
+	# Feeds
+	url(r'^feeds/(?P<what>(news|user/[^/]+))/$', LatestNews()),
+	url(r'^feeds/conf/(?P<what>[^/]+)/$', ConferenceNewsFeed()),
+	url(r'^feeds/conf/(?P<confname>[^/]+)/json/$', postgresqleu.confreg.views.news_json),
+])
+
+if settings.ENABLE_MEMBERSHIP:
+	import postgresqleu.membership.views
+	urlpatterns.extend([
+	# Membership management
+	url(r'^membership/$', postgresqleu.membership.views.home),
+	url(r'^membership/meetings/$', postgresqleu.membership.views.meetings),
+	url(r'^membership/meetings/(\d+)/$', postgresqleu.membership.views.meeting),
+	url(r'^membership/meetings/(\d+)/([a-z0-9]{64})/$', postgresqleu.membership.views.meeting_by_key),
+	url(r'^membership/meetings/(\d+)/proxy/$', postgresqleu.membership.views.meeting_proxy),
+	url(r'^membership/meetingcode/$', postgresqleu.membership.views.meetingcode),
+	url(r'^membership/members/$', postgresqleu.membership.views.userlist),
+	url(r'^admin/membership/_email/$', postgresqleu.membership.views.admin_email),
+])
+
+if settings.ENABLE_ELECTIONS:
+	import postgresqleu.elections.views
+	urlpatterns.extend([
+	# Elections
+	url(r'^elections/$', postgresqleu.elections.views.home),
+	url(r'^elections/(\d+)/$', postgresqleu.elections.views.election),
+	url(r'^elections/(\d+)/candidate/(\d+)/$', postgresqleu.elections.views.candidate),
+	url(r'^elections/(\d+)/ownvotes/$', postgresqleu.elections.views.ownvotes),
+])
 
 if settings.ENABLE_TRUSTLY:
 	import postgresqleu.trustlypayment.views
@@ -295,7 +311,7 @@ urlpatterns.extend([
 	url(r'^admin/selectable/', include('selectable.urls')),
 
 	# Admin site
-    url(r'^admin/', admin.site.urls),
+	url(r'^admin/', admin.site.urls),
 
 	# Fallback - send everything nonspecific to the static handler
 	url(r'^(.*)/$', postgresqleu.static.views.static_fallback),

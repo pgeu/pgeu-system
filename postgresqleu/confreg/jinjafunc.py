@@ -70,10 +70,12 @@ class ConfTemplateLoader(jinja2.FileSystemLoader):
 	def __init__(self, conference, roottemplate):
 		self.conference = conference
 		self.roottemplate = roottemplate
+		pathlist = []
 		if conference and conference.jinjadir:
-			pathlist = [os.path.join(conference.jinjadir, 'templates'), JINJA_TEMPLATE_ROOT]
-		else:
-			pathlist = [JINJA_TEMPLATE_ROOT,]
+			pathlist.append(os.path.join(conference.jinjadir, 'templates'))
+		if getattr(settings, 'SYSTEM_SKIN_DIRECTORY', False):
+			pathlist.append(os.path.join(settings.SYSTEM_SKIN_DIRECTORY, 'template.jinja'))
+		pathlist.append(JINJA_TEMPLATE_ROOT)
 
 		super(ConfTemplateLoader, self).__init__(pathlist)
 

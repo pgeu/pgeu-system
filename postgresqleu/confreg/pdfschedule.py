@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django import forms
 from django.http import HttpResponse
 from django.db.models import Q
+from django.conf import settings
 
 from datetime import timedelta
 from collections import defaultdict
@@ -40,8 +41,8 @@ def _setup_canvas(pagesize, orientation):
 	ps = _get_pagesize(pagesize, orientation)
 	(width, height) = ps
 	canvas = Canvas(resp, pagesize=ps)
-	canvas.setAuthor("PostgreSQL Europe")
-	canvas._doc.info.producer = "PostgreSQL Europe Confreg System"
+	canvas.setAuthor(settings.ORG_NAME)
+	canvas._doc.info.producer = "{0} Confreg System".format(settings.ORG_SHORTNAME)
 
 	return (width, height, canvas, resp)
 

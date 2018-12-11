@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponseForbidden, Http404
+from django.conf import settings
 
 import codecs
 import os
@@ -57,7 +58,7 @@ def docspage(request, urlname, page):
 	if m:
 		title = m.group(1)
 	else:
-		title = 'PostgreSQL Europe Conference Administration'
+		title = '{0} Conference Administration'.format(settings.ORG_SHORTNAME)
 
 	return render(request, 'confreg/admin_backend_docpage.html', {
 		'conference': conference,
