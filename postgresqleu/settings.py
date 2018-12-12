@@ -269,7 +269,7 @@ if ENABLE_PG_COMMUNITY_AUTH:
     AUTHENTICATION_BACKENDS = (
         'postgresqleu.auth.AuthBackend',
     )
-    LOGIN_URL="http://localhost:8002/accounts/login/"
+    LOGIN_URL="{0}/accounts/login/".format(SITEBASE)
 4
 if ENABLE_ELECTIONS and not ENABLE_MEMBERSHIP:
 	raise Exception("Elections module requires membership module!")
@@ -280,14 +280,6 @@ if ENABLE_MEMBERSHIP:
 
 if ENABLE_ELECTIONS:
 	INSTALLED_APPS.append('postgresqleu.elections')
-
-
-if ENABLE_PG_COMMUNITY_AUTH:
-    AUTHENTICATION_BACKENDS = (
-        'postgresqleu.auth.AuthBackend',
-    )
-    LOGIN_URL="http://localhost:8002/accounts/login/"
-
 
 
 if ENABLE_BRAINTREE:
