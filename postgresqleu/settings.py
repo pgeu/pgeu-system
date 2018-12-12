@@ -276,7 +276,7 @@ if ENABLE_ELECTIONS and not ENABLE_MEMBERSHIP:
 
 if ENABLE_MEMBERSHIP:
 	INSTALLED_APPS.append('postgresqleu.membership')
-	MIDDLEWARE_CLASSES.append('postgresqleu.util.context_processors.member_context')
+	TEMPLATES[0]['OPTIONS']['context_processors'].append('postgresqleu.util.context_processors.member_context')
 
 if ENABLE_ELECTIONS:
 	INSTALLED_APPS.append('postgresqleu.elections')
