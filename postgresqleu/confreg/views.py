@@ -704,11 +704,11 @@ def reg_add_options(request, confname):
             # New regtype is required. Figure out if there is an upsellable
             # one available.
             upsellable = o.requires_regtype.filter(Q(upsell_target=True, active=True, specialtype__isnull=True) & (Q(activeuntil__isnull=True) | Q(activeuntil__lt=datetime.today().date())))
-            l = len(upsellable)
-            if l == 0:
+            num = len(upsellable)
+            if num == 0:
                 messages.warning(request, "Option {0} requires a registration type that's not available.".format(o.name))
                 return HttpResponseRedirect('../')
-            elif l > 1:
+            elif num > 1:
                 messages.warning(request, "Option {0} requires a registration type that cannot be automaticalliy selected. Please email the organizers to make your registration.".format(o.name))
                 return HttpResponseRedirect('../')
             if new_regtype:

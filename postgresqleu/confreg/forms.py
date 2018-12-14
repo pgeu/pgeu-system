@@ -667,11 +667,11 @@ class WaitlistOfferForm(forms.Form):
     def _get_id_list_from_data(self):
         if not self.data:
             return []
-        l = []
+        idlist = []
         for k, v in self.data.items():
             if v == '1' and k.startswith('reg_'):
-                l.append(int(k[4:]))
-        return l
+                idlist.append(int(k[4:]))
+        return idlist
 
     def clean(self):
         if len(self.reg_list) == 0:
