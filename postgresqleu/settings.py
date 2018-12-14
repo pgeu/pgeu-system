@@ -239,7 +239,7 @@ if 'SYSTEM_SKIN_DIRECTORY' in globals():
         pass
     # Then, load a local settings file from there
     try:
-        from local_settings import *
+        from skin_local_settings import *
     except ImportError, e:
         pass
     if 'SKIN_APPS' in globals():
