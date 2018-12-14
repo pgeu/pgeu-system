@@ -98,7 +98,7 @@ def build_linear_pdf_schedule(conference, room, tracks, day, colored, pagesize, 
 
     for s in sessions:
         if s.starttime.date() != lastdate:
-            if lastdate != None:
+            if lastdate is not None:
                 # New page for a new day!
                 _finalize_page()
             lastdate = s.starttime.date()

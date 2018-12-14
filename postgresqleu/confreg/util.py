@@ -195,7 +195,7 @@ def cancel_registration(reg, is_unconfirmed=False):
 def get_invoice_autocancel(*args):
     # Each argument is expected to be an integer with number of hours,
     # or None if there is no limit
-    hours = [a for a in args if not a is None]
+    hours = [a for a in args if a is not None]
     if hours:
         return datetime.now() + timedelta(hours=min(hours))
     else:

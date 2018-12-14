@@ -93,7 +93,7 @@ class Command(BaseCommand):
                         if self.verbose:
                             self.stdout.write("Sent for settle on {0}".format(pspref))
                 elif l['Record Type'] in ('Settled', 'SettledBulk'):
-                    if trans.settledat != None:
+                    if trans.settledat is not None:
                         # Transaction already settled. But we might be reprocessing
                         # the report, so verify if the previously settled one is
                         # *identical*.

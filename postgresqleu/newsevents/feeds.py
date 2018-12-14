@@ -34,7 +34,7 @@ class LatestNews(Feed):
     def items(self, obj):
         # Front page news is a mix of global and conference news, possibly
         # filtered by NewsPosterProfile.
-        if obj == None:
+        if obj is None:
             extrafilter = ""
             params = {}
         else:

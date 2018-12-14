@@ -303,7 +303,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
 
     if resturl:
         resturl = resturl.rstrip('/')
-    if resturl == '' or resturl == None:
+    if resturl == '' or resturl is None:
         # Render the list of objects
         if bypass_conference_filter:
             objects = formclass.Meta.model.objects.all()

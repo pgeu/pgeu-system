@@ -215,7 +215,7 @@ def register(request, confname, whatfor=None):
         # No previous registration exists. Let the user choose what to
         # do. If already under "self" suburl, copy the data from the
         # user profile and move on.
-        if whatfor == None:
+        if whatfor is None:
             return render_conference_response(request, conference, 'reg', 'confreg/prompt_regfor.html')
 
         # No previous registration, grab some data from the user profile
@@ -2322,7 +2322,7 @@ def createschedule(request, confname):
             # Get the current list of tentatively scheduled talks
             s = {}
             for sess in conference.conferencesession_set.all():
-                if sess.tentativeroom != None and sess.tentativescheduleslot != None:
+                if sess.tentativeroom is not None and sess.tentativescheduleslot is not None:
                     s['slot%s' % ((sess.tentativeroom.id * 1000000) + sess.tentativescheduleslot.id)] = 'sess%s' % sess.id
             return HttpResponse(json.dumps(s), content_type="application/json")
 
@@ -2344,7 +2344,7 @@ def createschedule(request, confname):
                         raise Exception("Could not find slot, invalid data in POST")
                     roomid = int(int(sm.group(1)) / 1000000)
                     slotid = int(sm.group(1)) % 1000000
-                    if sess.tentativeroom == None or sess.tentativeroom.id != roomid or sess.tentativescheduleslot == None or sess.tentativescheduleslot.id != slotid:
+                    if sess.tentativeroom is None or sess.tentativeroom.id != roomid or sess.tentativescheduleslot is None or sess.tentativescheduleslot.id != slotid:
                         sess.tentativeroom = Room.objects.get(pk=roomid)
                         sess.tentativescheduleslot = ConferenceSessionScheduleSlot.objects.get(pk=slotid)
                         sess.save()
@@ -2634,7 +2634,7 @@ WHERE dc.conference_id={1} AND (r.conference_id={1} OR r.conference_id IS NULL) 
         for cn in range(1, t['fixedcols']):
             sums.append('')
         for cn in range(t['fixedcols'] - 1, len(t['columns']) - 1):
-            sums.append(sum((r[cn + 1] for r in t['rows'] if r[cn + 1] != None)))
+            sums.append(sum((r[cn + 1] for r in t['rows'] if r[cn + 1] is not None)))
         t['rows'] = [(r, t.get('linker', lambda x: None)(r)) for r in t['rows']]
         t['rows'].append((sums, None))
     return render(request, 'confreg/admin_registration_dashboard.html', {
@@ -3258,7 +3258,7 @@ def crossmail(request):
             messages.info(request, "Sent {0} emails.".format(len(recipients)))
             return HttpResponseRedirect("../")
         if not recipients:
-            if recipients != None:
+            if recipients is not None:
                 form.add_error(None, "No recipients matched")
             form.remove_confirm()
     else:

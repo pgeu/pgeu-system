@@ -490,9 +490,9 @@ class ConferenceRegistration(models.Model):
     def has_invoice(self):
         # Return if this registration has an invoice, whether through
         # a direct invoice or a bulk payment.
-        if not self.invoice is None:
+        if self.invoice is not None:
             return True
-        if not self.bulkpayment is None:
+        if self.bulkpayment is not None:
             return True
         return False
     has_invoice.boolean = True
@@ -648,7 +648,7 @@ class Speaker(models.Model):
     has_abstract.boolean = True
 
     def has_photo(self):
-        return (self.photofile != None and self.photofile != "")
+        return (self.photofile is not None and self.photofile != "")
     has_photo.boolean = True
 
     def __unicode__(self):
