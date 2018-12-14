@@ -228,8 +228,8 @@ def expire_additional_options(reg):
                                    'options': expireset,
                                    'optionscount': len(expireset),
                                },
-                               sendername = reg.conference.conferencename,
-                               receivername = reg.fullname,
+                               sendername=reg.conference.conferencename,
+                               receivername=reg.fullname,
             )
 
         for ao in expireset:

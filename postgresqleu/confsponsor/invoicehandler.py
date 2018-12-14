@@ -180,13 +180,13 @@ def create_sponsor_invoice(user, sponsor):
         datetime.now(),
         duedate,
         invoicerows,
-        processor = processor,
-        processorid = sponsor.pk,
-        bankinfo = True,
-        accounting_account = settings.ACCOUNTING_CONFSPONSOR_ACCOUNT,
-        accounting_object = conference.accounting_object,
-        autopaymentoptions = False,
-        reverse_vat = reverse_vat,
+        processor=processor,
+        processorid=sponsor.pk,
+        bankinfo=True,
+        accounting_account=settings.ACCOUNTING_CONFSPONSOR_ACCOUNT,
+        accounting_object=conference.accounting_object,
+        autopaymentoptions=False,
+        reverse_vat=reverse_vat,
     )
     i.allowedmethods = level.paymentmethods.all()
     return i
@@ -266,10 +266,10 @@ def create_voucher_invoice(sponsor, user, rt, num):
         datetime.now(),
         date.today(),
         invoicerows,
-        processor = processor,
-        bankinfo = False,
-        accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT,
-        accounting_object = sponsor.conference.accounting_object,
-        autopaymentoptions = True
+        processor=processor,
+        bankinfo=False,
+        accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
+        accounting_object=sponsor.conference.accounting_object,
+        autopaymentoptions=True
     )
     return i

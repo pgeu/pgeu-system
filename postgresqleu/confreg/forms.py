@@ -552,7 +552,7 @@ class PrepaidCreateForm(forms.Form):
     def __init__(self, conference, *args, **kwargs):
         self.conference = conference
         super(PrepaidCreateForm, self).__init__(*args, **kwargs)
-        self.fields['regtype'].queryset = RegistrationType.objects.filter(conference = conference)
+        self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=conference)
         self.fields['buyer'].label_from_instance = lambda x: u'{0} {1} <{2}> ({3})'.format(x.first_name, x.last_name, x.email, x.username)
         if not (self.data.has_key('regtype') and
                 self.data.has_key('count') and

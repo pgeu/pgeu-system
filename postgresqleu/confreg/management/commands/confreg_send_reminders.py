@@ -42,8 +42,8 @@ class Command(BaseCommand):
                                      conference.contactaddr,
                                      "Reminders sent",
                                      whatstr.getvalue(),
-                                     sendername = conference.conferencename,
-                                     receivername = conference.conferencename,
+                                     sendername=conference.conferencename,
+                                     receivername=conference.conferencename,
                                      )
 
         for conference in Conference.objects.filter(callforpapersopen=True):
@@ -59,8 +59,8 @@ class Command(BaseCommand):
                                      conference.contactaddr,
                                      "CfP reminders sent",
                                      whatstr.getvalue(),
-                                     sendername = conference.conferencename,
-                                     receivername = conference.conferencename,
+                                     sendername=conference.conferencename,
+                                     receivername=conference.conferencename,
                                  )
 
     def remind_pending_speakers(self, whatstr, conference):
@@ -88,8 +88,8 @@ class Command(BaseCommand):
                                        'conference': conference,
                                        'sessions': sessions,
                                    },
-                                   sendername = conference.conferencename,
-                                   receivername = speaker.fullname,
+                                   sendername=conference.conferencename,
+                                   receivername=speaker.fullname,
                                )
 
                 whatstr.write(u"Reminded speaker {0} to confirm {1} talks\n".format(speaker, len(sessions)))
@@ -121,8 +121,8 @@ class Command(BaseCommand):
                                    {
                                        'conference': conference,
                                    },
-                                   sendername = conference.conferencename,
-                                   receivername = speaker.fullname,
+                                   sendername=conference.conferencename,
+                                   receivername=speaker.fullname,
                                )
 
                 whatstr.write(u"Reminded speaker {0} to register\n".format(speaker))
@@ -159,8 +159,8 @@ class Command(BaseCommand):
                                        'conference': conference,
                                        'reg': reg,
                                    },
-                                   sendername = conference.conferencename,
-                                   receivername = reg.fullname,
+                                   sendername=conference.conferencename,
+                                   receivername=reg.fullname,
                                )
                 reg.lastmodified = datetime.now()
                 reg.save()
@@ -199,8 +199,8 @@ class Command(BaseCommand):
                                        'conference': conference,
                                        'registrator': r,
                                    },
-                                   sendername = conference.conferencename,
-                                   receivername = u"{0} {1}".format(r.first_name, r.last_name),
+                                   sendername=conference.conferencename,
+                                   receivername=u"{0} {1}".format(r.first_name, r.last_name),
                                )
 
                 whatstr.write(u"Reminded user {0} ({1}) that their multi-registration is not confirmed\n".format(r.username, r.email))
@@ -230,8 +230,8 @@ class Command(BaseCommand):
                                        'conference': conference,
                                        'session': sess,
                                    },
-                                   sendername = conference.conferencename,
-                                   receivername = spk.name,
+                                   sendername=conference.conferencename,
+                                   receivername=spk.name,
                                )
                 whatstr.write(u"Reminded speaker {0} that they have made an empty submission\n".format(spk.name))
             sess.lastmodified = datetime.now()
@@ -256,8 +256,8 @@ class Command(BaseCommand):
                                    'conference': conference,
                                    'speaker': spk,
                                },
-                               sendername = conference.conferencename,
-                               receivername = spk.name,
+                               sendername=conference.conferencename,
+                               receivername=spk.name,
                            )
             spk.lastmodified = datetime.now()
             spk.save()

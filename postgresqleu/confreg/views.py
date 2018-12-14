@@ -457,8 +457,8 @@ def _create_and_assign_bulk_payment(user, conference, regs, invoicerows, recipie
                                    'reg': r,
                                    'bulk': bp,
                                },
-                               sendername = conference.conferencename,
-                               receivername = r.fullname,
+                               sendername=conference.conferencename,
+                               receivername=r.fullname,
             )
 
     # Now that our bulkpayment is complete, create an invoice for it
@@ -479,11 +479,11 @@ def _create_and_assign_bulk_payment(user, conference, regs, invoicerows, recipie
         datetime.now(),
         invoicerows,
         processor=processor,
-        processorid = bp.pk,
-        bankinfo = False,
-        accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT,
-        accounting_object = conference.accounting_object,
-        canceltime = get_invoice_autocancel(*autocancel_hours),
+        processorid=bp.pk,
+        bankinfo=False,
+        accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
+        accounting_object=conference.accounting_object,
+        canceltime=get_invoice_autocancel(*autocancel_hours),
     )
     bp.invoice.save()
     bp.save()
@@ -782,12 +782,12 @@ def reg_add_options(request, confname):
             datetime.now(),
             datetime.now(),
             invoicerows,
-            processor = processor,
-            processorid = order.pk,
-            bankinfo = False,
-            accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT,
-            accounting_object = conference.accounting_object,
-            canceltime = get_invoice_autocancel(*autocancel_hours),
+            processor=processor,
+            processorid=order.pk,
+            bankinfo=False,
+            accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
+            accounting_object=conference.accounting_object,
+            canceltime=get_invoice_autocancel(*autocancel_hours),
         )
         order.invoice.save()
         order.save()
@@ -1426,8 +1426,8 @@ def callforpapers_confirm(request, confname, sessionid):
                                        'conference': conference,
                                        'session': session,
                                    },
-                                   sendername = conference.conferencename,
-                                   receivername = spk.fullname,
+                                   sendername=conference.conferencename,
+                                   receivername=spk.fullname,
                                )
             session.lastnotifiedstatus = 1 # Now also approved
             session.lastnotifiedtime = datetime.now()
@@ -1574,12 +1574,12 @@ def confirmreg(request, confname):
                 datetime.now(),
                 datetime.now(),
                 invoicerows,
-                processor = processor,
-                processorid = reg.pk,
-                bankinfo = False,
-                accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT,
-                accounting_object = conference.accounting_object,
-                canceltime = autocancel,
+                processor=processor,
+                processorid=reg.pk,
+                bankinfo=False,
+                accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
+                accounting_object=conference.accounting_object,
+                canceltime=autocancel,
             )
 
             reg.invoice.save()
@@ -1859,7 +1859,7 @@ def createvouchers(request, confname):
                                   total_amount=-1,
                                   bankinfo=False,
                                   accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
-                                  accounting_object = conference.accounting_object,
+                                  accounting_object=conference.accounting_object,
                               )
                 invoice.save()
                 invoice.invoicerow_set.add(InvoiceRow(invoice=invoice,
@@ -2734,8 +2734,8 @@ def admin_waitlist(request, urlname):
                                        'reg': r,
                                        'offerexpires': wl.offerexpires,
                                    },
-                                   sendername = conference.conferencename,
-                                   receivername = r.fullname,
+                                   sendername=conference.conferencename,
+                                   receivername=r.fullname,
                                )
                 messages.info(request, "Sent offer to {0}".format(r.email))
             return HttpResponseRedirect(".")

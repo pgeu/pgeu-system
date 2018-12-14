@@ -206,7 +206,7 @@ class Command(BaseCommand):
     def process_reports(self):
         # Process all downloaded but unprocessed reports
 
-        for report in Report.objects.filter(downloadedat__isnull = False, processedat=None).order_by('downloadedat'):
+        for report in Report.objects.filter(downloadedat__isnull=False, processedat=None).order_by('downloadedat'):
             try:
                 with transaction.atomic():
                     if self.verbose: self.stdout.write("Processing {0}".format(report.url))

@@ -33,8 +33,8 @@ from the conference dashboard:
 
 {2}/events/admin/{3}/
 """.format(conference.conferencename, conference.enddate, settings.SITEBASE, conference.urlname),
-                             sendername = conference.conferencename,
-                             receivername = conference.conferencename,
-                             bcc = settings.ADMINS[0][1],
+                             sendername=conference.conferencename,
+                             receivername=conference.conferencename,
+                             bcc=settings.ADMINS[0][1],
             )
 

@@ -588,14 +588,14 @@ class InvoiceManager(object):
                        invoicedate,
                        duedate,
                        invoicerows,
-                       processor = None,
-                       processorid = None,
-                       autopaymentoptions = True,
-                       bankinfo = True,
-                       accounting_account = None,
-                       accounting_object = None,
-                       canceltime = None,
-                       reverse_vat = False):
+                       processor=None,
+                       processorid=None,
+                       autopaymentoptions=True,
+                       bankinfo=True,
+                       accounting_account=None,
+                       accounting_object=None,
+                       canceltime=None,
+                       reverse_vat=False):
         invoice = Invoice(
             recipient_email=recipient_email,
             recipient_name=recipient_name,
@@ -620,10 +620,10 @@ class InvoiceManager(object):
         invoice.save()
         for r in invoicerows:
             invoice.invoicerow_set.add(InvoiceRow(invoice=invoice,
-                                                  rowtext = _trunc_string(r[0], 100),
-                                                  rowcount = r[1],
-                                                  rowamount = r[2],
-                                                  vatrate = r[3],
+                                                  rowtext=_trunc_string(r[0], 100),
+                                                  rowcount=r[1],
+                                                  rowamount=r[2],
+                                                  vatrate=r[3],
             ), bulk=False)
 
         if autopaymentoptions:

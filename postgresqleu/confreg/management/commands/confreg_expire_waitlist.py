@@ -48,8 +48,8 @@ class Command(BaseCommand):
                                    'reg': reg,
                                    'offerexpires': w.offerexpires,
                                },
-                               sendername = reg.conference.conferencename,
-                               receivername = reg.fullname,
+                               sendername=reg.conference.conferencename,
+                               receivername=reg.fullname,
                            )
 
             # Now actually expire the offer

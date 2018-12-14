@@ -78,8 +78,8 @@ class Command(BaseCommand):
                     date.today() + timedelta(days=1),
                     invoicerows,
                     bankinfo=True,
-                    accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT,
-                    accounting_object = code.conference.accounting_object,
+                    accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
+                    accounting_object=code.conference.accounting_object,
                     autopaymentoptions=True,
                 )
                 code.invoice.save()

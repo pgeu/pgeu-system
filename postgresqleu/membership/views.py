@@ -77,11 +77,11 @@ def home(request):
                     datetime.now(),
                     datetime.now(),
                     invoicerows,
-                    processor = processor,
-                    processorid = member.pk,
-                    bankinfo = False,
-                    canceltime = datetime.now() + timedelta(days=7),
-                    accounting_account = settings.ACCOUNTING_MEMBERSHIP_ACCOUNT
+                    processor=processor,
+                    processorid=member.pk,
+                    bankinfo=False,
+                    canceltime=datetime.now() + timedelta(days=7),
+                    accounting_account=settings.ACCOUNTING_MEMBERSHIP_ACCOUNT
                     )
                 member.activeinvoice.save()
                 member.save()

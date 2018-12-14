@@ -286,8 +286,8 @@ def sponsor_signup(request, confurlname, levelurlname):
                                   displayname=form.cleaned_data['displayname'],
                                   url=form.cleaned_data['url'],
                                   level=level,
-                                  twittername = form.cleaned_data.get('twittername', ''),
-                                  invoiceaddr = form.cleaned_data['address'])
+                                  twittername=form.cleaned_data.get('twittername', ''),
+                                  invoiceaddr=form.cleaned_data['address'])
                 if settings.EU_VAT:
                     sponsor.vatstatus = int(form.cleaned_data['vatstatus'])
                     sponsor.vatnumber = form.cleaned_data['vatnumber']

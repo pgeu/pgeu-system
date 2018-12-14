@@ -114,15 +114,15 @@ def paypal_return_handler(request):
             transtext = d['transaction_subject']
         else:
             transtext = d['item_name']
-        ti = TransactionInfo(paypaltransid = tx,
-                             timestamp = datetime.now(),
-                             sourceaccount = SourceAccount.objects.get(pk=settings.PAYPAL_DEFAULT_SOURCEACCOUNT),
-                             sender = d['payer_email'],
-                             sendername = d['first_name'] + ' ' + d['last_name'],
-                             amount = Decimal(d['mc_gross']),
-                             fee = Decimal(d['mc_fee']),
-                             transtext = transtext,
-                             matched = False)
+        ti = TransactionInfo(paypaltransid=tx,
+                             timestamp=datetime.now(),
+                             sourceaccount=SourceAccount.objects.get(pk=settings.PAYPAL_DEFAULT_SOURCEACCOUNT),
+                             sender=d['payer_email'],
+                             sendername=d['first_name'] + ' ' + d['last_name'],
+                             amount=Decimal(d['mc_gross']),
+                             fee=Decimal(d['mc_fee']),
+                             transtext=transtext,
+                             matched=False)
         ti.save()
 
         # Generate URLs that link back to paypal in a way that we can use

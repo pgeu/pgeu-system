@@ -130,7 +130,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
         if allow_delete and request.POST['submit'] == 'Delete':
             if instance.pk:
                 # Are there any associated objects here, by any chance?
-                collector = NestedObjects(using = 'default')
+                collector = NestedObjects(using='default')
                 collector.collect([instance,])
                 to_delete = collector.nested()
                 to_delete.remove(instance)

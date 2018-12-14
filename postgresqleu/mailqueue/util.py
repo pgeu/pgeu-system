@@ -11,7 +11,7 @@ from django.template.loader import get_template
 
 from models import QueuedMail
 
-def template_to_string(templatename, attrs = {}):
+def template_to_string(templatename, attrs={}):
     context = {}
     context.update(attrs)
     context.update(settings_context())

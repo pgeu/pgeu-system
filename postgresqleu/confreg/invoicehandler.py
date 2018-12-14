@@ -160,8 +160,8 @@ class BulkInvoiceProcessor(object):
                                        'reg': r,
                                        'bulk': bp,
                                    },
-                                   sendername = bp.conference.conferencename,
-                                   receivername = r.fullname,
+                                   sendername=bp.conference.conferencename,
+                                   receivername=r.fullname,
                 )
 
             # If this registration holds any additional options that are about to expire, release
