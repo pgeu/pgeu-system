@@ -18,14 +18,14 @@ class DiffableModel(object):
         d2 = self._dict
         diffs = dict([(k, (v, d2[k])) for k, v in d1.items() if v != d2[k]])
         # Foreign key lookups
-        for k,v in diffs.items():
+        for k, v in diffs.items():
             if type(self._meta.get_field(k)) is django.db.models.fields.related.ForeignKey:
                 # If it's a foreign key, look up the name again on ourselves.
                 # Since we only care about the *new* value, it's easy enough.
                 diffs[k] = (v[0], getattr(self, k))
         # Many to many lookups
         if hasattr(self, 'map_manytomany_for_diff'):
-            for k,v in diffs.items():
+            for k, v in diffs.items():
                 if k in manytomanyfieldnames and self.map_manytomany_for_diff.has_key(k):
                     # Try to show the display name instead here
                     newvalue = getattr(self, self.map_manytomany_for_diff[k])

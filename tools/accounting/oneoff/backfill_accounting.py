@@ -114,13 +114,13 @@ if __name__ == "__main__":
             allentries.append(thisentry)
 
         # Find all other paypal transactions
-        for ptrans in PaypalTrans.objects.filter(timestamp__gt=datetime(2013,01,01,0,0,0)).exclude(id__in=paypal_handled):
+        for ptrans in PaypalTrans.objects.filter(timestamp__gt=datetime(2013, 01, 01, 0, 0, 0)).exclude(id__in=paypal_handled):
             if not ptrans.fee:
                 print "Paypal %s has no paypal fee, that can't be right!" % ptrans.id
                 continue
             allentries.append({
                 'date': ptrans.timestamp.date(),
-                'text': 'Paypal %s - %s - update manually' % (ptrans.paypaltransid,ptrans.transtext),
+                'text': 'Paypal %s - %s - update manually' % (ptrans.paypaltransid, ptrans.transtext),
                 'rows': [
                     (settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, ptrans.fee, None),
                     (settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, ptrans.amount - ptrans.fee, None),
@@ -129,7 +129,7 @@ if __name__ == "__main__":
                 })
 
         # Find all other adyen transactoins
-        for atrans in AdyenTrans.objects.filter(authorizedat__gt=datetime(2013,01,01,0,0,0), settledat__isnull=False).exclude(id__in=adyen_handled):
+        for atrans in AdyenTrans.objects.filter(authorizedat__gt=datetime(2013, 01, 01, 0, 0, 0), settledat__isnull=False).exclude(id__in=adyen_handled):
             if atrans.amount == 0:
                 print "Adyen transaction %s rounded off to 0, deal with manually!" % atrans.pspReference
                 continue

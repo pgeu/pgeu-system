@@ -100,7 +100,7 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
         return json.dumps([{
             'source': 'id_benefit_class',
             'target': 'id_class_parameters',
-            'map': {k:v['class'].default_params for k,v in all_benefits.items()}
+            'map': {k: v['class'].default_params for k, v in all_benefits.items()}
         }])
 
 class BackendSponsorshipLevelBenefitManager(object):

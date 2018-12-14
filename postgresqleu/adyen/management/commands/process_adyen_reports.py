@@ -156,7 +156,7 @@ class Command(BaseCommand):
                 return 'AAA'
             return a[0]
 
-        msg = "\n".join(["%-20s: %s" % (k,v) for k,v in sorted(types.iteritems(), key=sort_types)])
+        msg = "\n".join(["%-20s: %s" % (k, v) for k, v in sorted(types.iteritems(), key=sort_types)])
         acct = report.notification.merchantAccountCode
 
         # Generate an accounting record, iff we know what every row on the

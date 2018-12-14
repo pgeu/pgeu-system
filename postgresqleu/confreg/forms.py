@@ -250,7 +250,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
     class Meta:
         model = ConferenceRegistration
-        exclude = ('conference','attendee','registrator','payconfirmedat','payconfirmedby','created', 'regtoken', )
+        exclude = ('conference', 'attendee', 'registrator', 'payconfirmedat', 'payconfirmedby', 'created', 'regtoken', )
         widgets = {
             'photoconsent': forms.Select(choices=((None, ''), (True, 'I consent to having my photo taken'), (False, "I don't want my photo taken"))),
         }
@@ -290,13 +290,13 @@ class ConferenceRegistrationForm(forms.ModelForm):
             yield {'id': 'additional_options',
                    'legend': 'Additional options',
                    'intro': conf.additionalintro,
-                   'fields': [self['additionaloptions'],],
+                   'fields': [self['additionaloptions'], ],
                    }
 
         yield {'id': 'voucher_codes',
                'legend': 'Voucher codes',
                'intro': 'If you have a voucher or discount code, enter it in this field. If you do not have one, just leave the field empty.',
-               'fields': [self['vouchercode'],],
+               'fields': [self['vouchercode'], ],
         }
 
 class RegistrationChangeForm(forms.ModelForm):
@@ -342,14 +342,14 @@ class MultiRegInvoiceForm(forms.Form):
     address = forms.CharField(widget=forms.widgets.Textarea, required=True)
 
 class ConferenceSessionFeedbackForm(forms.ModelForm):
-    topic_importance = forms.ChoiceField(widget=RadioSelect,choices=rating_choices, label='Importance of the topic')
-    content_quality = forms.ChoiceField(widget=RadioSelect,choices=rating_choices, label='Quality of the content')
-    speaker_knowledge = forms.ChoiceField(widget=RadioSelect,choices=rating_choices, label='Speakers knowledge of the subject')
-    speaker_quality = forms.ChoiceField(widget=RadioSelect,choices=rating_choices, label='Speakers presentation skills')
+    topic_importance = forms.ChoiceField(widget=RadioSelect, choices=rating_choices, label='Importance of the topic')
+    content_quality = forms.ChoiceField(widget=RadioSelect, choices=rating_choices, label='Quality of the content')
+    speaker_knowledge = forms.ChoiceField(widget=RadioSelect, choices=rating_choices, label='Speakers knowledge of the subject')
+    speaker_quality = forms.ChoiceField(widget=RadioSelect, choices=rating_choices, label='Speakers presentation skills')
 
     class Meta:
         model = ConferenceSessionFeedback
-        exclude = ('conference','attendee','session')
+        exclude = ('conference', 'attendee', 'session', )
 
 
 class ConferenceFeedbackForm(forms.Form):
@@ -365,7 +365,7 @@ class ConferenceFeedbackForm(forms.Form):
             if q.isfreetext:
                 if q.textchoices:
                     self.fields['question_%s' % q.id] = forms.ChoiceField(widget=RadioSelect,
-                                                                          choices=[(x,x) for x in q.textchoices.split(";")],
+                                                                          choices=[(x, x) for x in q.textchoices.split(";")],
                                                                           label=q.question,
                                                                           initial=self.get_answer_text(responses, q.id))
                 else:
@@ -596,7 +596,7 @@ class EmailSessionForm(forms.Form):
 
 
 class BulkRegistrationForm(forms.Form):
-    recipient_name = forms.CharField(required=True, max_length=100,label='Invoice recipient name')
+    recipient_name = forms.CharField(required=True, max_length=100, label='Invoice recipient name')
     recipient_address = forms.CharField(required=True, max_length=100, label='Invoice recipient address', widget=forms.Textarea)
     email_list = forms.CharField(required=True, label='Emails to pay for', widget=forms.Textarea)
 
@@ -651,7 +651,7 @@ class WaitlistOfferForm(forms.Form):
     def _get_id_list_from_data(self):
         if not self.data: return []
         l = []
-        for k,v in self.data.items():
+        for k, v in self.data.items():
             if v == '1' and k.startswith('reg_'):
                 l.append(int(k[4:]))
         return l

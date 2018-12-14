@@ -75,7 +75,7 @@ class MultiConferenceReport(object):
         self.curs = connection.cursor()
 
     def run(self):
-        (maxday,minday) = self.maxmin()
+        (maxday, minday) = self.maxmin()
         if not maxday:
             raise ReportException("There are no %s at this conference." % self.title.lower())
         allvals = [range(maxday, minday - 1, -1), ]
@@ -111,10 +111,10 @@ class SingleConferenceReport(object):
         self.curs.execute("SELECT max(startdate-payconfirmedat::date), min(startdate-payconfirmedat::date),max(startdate) FROM confreg_conferenceregistration r INNER JOIN confreg_conference c ON r.conference_id=c.id WHERE r.conference_id=%(id)s AND r.payconfirmedat IS NOT NULL", {
             'id': self.conference.id
         })
-        (maxday,minday,startdate) = self.curs.fetchone()
+        (maxday, minday, startdate) = self.curs.fetchone()
         if not maxday:
             raise ReportException("There are no %s at this conference." % self.title.lower())
-        allvals = [range(maxday,minday - 1, -1), ]
+        allvals = [range(maxday, minday - 1, -1), ]
         self.headers = ['Days']
         for header, rows in self.fetch_all_data(minday, maxday, startdate):
             allvals.append([r[0] for r in rows])
@@ -128,7 +128,7 @@ class SingleConferenceReport(object):
 ###########################################################3
 class ConfirmedRegistrationsReport(MultiConferenceReport):
     def __init__(self, title, conferences):
-        super(ConfirmedRegistrationsReport, self).__init__(title,'Number of registrations',conferences)
+        super(ConfirmedRegistrationsReport, self).__init__(title, 'Number of registrations', conferences)
 
     def maxmin(self):
         self.curs.execute("SELECT max(startdate-payconfirmedat::date), min(startdate-payconfirmedat::date) FROM confreg_conference c INNER JOIN confreg_conferenceregistration r ON c.id=r.conference_id WHERE c.id=ANY(%(idlist)s) AND r.payconfirmedat IS NOT NULL", {'idlist': [c.id for c in self.conferences]})
@@ -145,7 +145,7 @@ reporttypes.append(('Confirmed registrations', ConfirmedRegistrationsReport))
 
 class SubmittedSessionsReport(MultiConferenceReport):
     def __init__(self, title, conferences):
-        super(SubmittedSessionsReport, self).__init__(title,'Number of sessions',conferences)
+        super(SubmittedSessionsReport, self).__init__(title, 'Number of sessions', conferences)
 
     def maxmin(self):
         self.curs.execute("SELECT max(extract(days from startdate-initialsubmit)::integer), min(extract(days from startdate-initialsubmit)::integer) FROM confreg_conference c INNER JOIN confreg_conferencesession s ON c.id=s.conference_id WHERE c.id=ANY(%(idlist)s) AND s.initialsubmit IS NOT NULL AND NOT s.cross_schedule", {'idlist': [c.id for c in self.conferences]})
@@ -162,7 +162,7 @@ reporttypes.append(('Submitted sessions', SubmittedSessionsReport))
 
 class SubmittingSpeakersReport(MultiConferenceReport):
     def __init__(self, title, conferences):
-        super(SubmittingSpeakersReport, self).__init__(title,'Number of speakers',conferences)
+        super(SubmittingSpeakersReport, self).__init__(title, 'Number of speakers', conferences)
 
     def maxmin(self):
         self.curs.execute("SELECT max(extract(days from startdate-initialsubmit)::integer), min(extract(days from startdate-initialsubmit)::integer) FROM confreg_conference c INNER JOIN confreg_conferencesession s ON c.id=s.conference_id WHERE c.id=ANY(%(idlist)s) AND s.initialsubmit IS NOT NULL AND NOT s.cross_schedule", {'idlist': [c.id for c in self.conferences]})

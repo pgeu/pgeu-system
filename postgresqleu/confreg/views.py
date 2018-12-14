@@ -119,7 +119,7 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
     # Any invoices that should be linked need to be added
     invoices = []
     if reg.invoice:
-        invoices.append(('Registration invoice and receipt', InvoicePresentationWrapper(reg.invoice,'.')))
+        invoices.append(('Registration invoice and receipt', InvoicePresentationWrapper(reg.invoice, '.')))
     for pao in PendingAdditionalOrder.objects.filter(reg=reg, invoice__isnull=False):
         invoices.append(('Additional options invoice and receipt', InvoicePresentationWrapper(pao.invoice, '.')))
 
@@ -659,7 +659,7 @@ def reg_add_options(request, confname):
         return HttpResponseRedirect('../')
 
     options = []
-    for k,v in request.POST.items():
+    for k, v in request.POST.items():
         if k.startswith('ao_') and v == "1":
             options.append(int(k[3:]))
 
@@ -906,7 +906,7 @@ def feedback_conference(request, confname):
         if form.is_valid():
             # We've got the data, now write it to the database.
             for q in questions:
-                a,created = ConferenceFeedbackAnswer.objects.get_or_create(conference=conference, question=q, attendee=request.user)
+                a, created = ConferenceFeedbackAnswer.objects.get_or_create(conference=conference, question=q, attendee=request.user)
                 if q.isfreetext:
                     a.textanswer = form.cleaned_data['question_%s' % q.id]
                 else:
@@ -1227,7 +1227,7 @@ def callforpapers_edit(request, confname, sessionid):
         # on the same page. If feedback is  still open, we show nothing
         feedback_fields = ('topic_importance', 'content_quality', 'speaker_knowledge', 'speaker_quality')
         if is_tester or not conference.feedbackopen:
-            feedbackdata = [{'key': k, 'title': k.replace('_',' ').title(), 'num': [0] * 5} for k in feedback_fields]
+            feedbackdata = [{'key': k, 'title': k.replace('_', ' ').title(), 'num': [0] * 5} for k in feedback_fields]
             feedbacktext = []
             fb = list(ConferenceSessionFeedback.objects.filter(conference=conference, session=session))
             feedbackcount = len(fb)
@@ -1252,7 +1252,7 @@ def callforpapers_edit(request, confname, sessionid):
                 })
                 feedbackcomparisons.append({
                     'key': measurement,
-                    'title': measurement.replace('_',' ').title(),
+                    'title': measurement.replace('_', ' ').title(),
                     'vals': curs.fetchall(),
                 })
         else:
@@ -1276,7 +1276,7 @@ def callforpapers_edit(request, confname, sessionid):
                 elif request.FILES:
                     if len(request.FILES) != 1:
                         raise Exception("Only one file at a time, sorry!")
-                    for k,v in request.FILES.items():
+                    for k, v in request.FILES.items():
                         ConferenceSessionSlides(session=session,
                                                 name=v.name,
                                                 content=v.read()).save()
@@ -1294,7 +1294,7 @@ def callforpapers_edit(request, confname, sessionid):
             'feedbackdata': feedbackdata,
             'feedbacktext': feedbacktext,
             'feedbackcomparisons': feedbackcomparisons,
-            'feedbackfields': [f.replace('_',' ').title() for f in feedback_fields],
+            'feedbackfields': [f.replace('_', ' ').title() for f in feedback_fields],
             'slidesurlform': slidesurlform,
             'slidesfileform': slidesfileform,
             'slides': ConferenceSessionSlides.objects.filter(session=session),
@@ -1800,7 +1800,7 @@ def optout(request, token=None):
         else:
             exec_no_result('DELETE FROM confreg_globaloptout WHERE user_id=%(u)s', {'u': userid})
 
-        exec_no_result('DELETE FROM confreg_conferenceseriesoptout WHERE user_id=%(u)s AND NOT series_id=ANY(%(series)s)',{
+        exec_no_result('DELETE FROM confreg_conferenceseriesoptout WHERE user_id=%(u)s AND NOT series_id=ANY(%(series)s)', {
             'u': userid,
             'series': optout_ids,
         })
@@ -1900,7 +1900,7 @@ def viewvouchers(request, confname, batchid):
     batch = get_object_or_404(PrepaidBatch, conference=conference, pk=batchid)
     vouchers = batch.prepaidvoucher_set.all()
 
-    vouchermailtext = template_to_string('confreg/mail/prepaid_vouchers.txt',{
+    vouchermailtext = template_to_string('confreg/mail/prepaid_vouchers.txt', {
         'batch': batch,
         'vouchers': vouchers,
         'conference': conference,
@@ -2037,7 +2037,7 @@ def bulkpay(request, confname):
                         errors = 1
                     else:
                         # All content is valid, so just append it
-                        state.append({'email': regs[0].email, 'found': 1, 'pay': 1, 'total': s, 'rows':[u'%s (%s%s)' % (r[0], settings.CURRENCY_SYMBOL.decode('utf8'), r[2]) for r in regrows]})
+                        state.append({'email': regs[0].email, 'found': 1, 'pay': 1, 'total': s, 'rows': [u'%s (%s%s)' % (r[0], settings.CURRENCY_SYMBOL.decode('utf8'), r[2]) for r in regrows]})
                         totalcost += s
                         invoicerows.extend(regrows)
 
@@ -2111,7 +2111,7 @@ def talkvote(request, confname):
     alltracks.insert(0, {'id': 0, 'trackname': 'No track'})
     alltrackids = [t['id'] for t in alltracks]
     selectedtracks = [int(id) for id in request.GET.getlist('tracks') if int(id) in alltrackids]
-    allstatusids = [id for id,status in STATUS_CHOICES]
+    allstatusids = [id for id, status in STATUS_CHOICES]
     selectedstatuses = [int(id) for id in request.GET.getlist('statuses') if int(id) in allstatusids]
     if selectedtracks:
         urltrackfilter = "{0}&".format("&".join(["tracks={0}".format(t) for t in selectedtracks]))
@@ -2238,7 +2238,7 @@ def talkvote_vote(request, confname):
     session = get_object_or_404(ConferenceSession, conference=conference, id=request.POST['sessionid'])
     v = int(request.POST['vote'])
     if v > 0:
-        vote,created = ConferenceSessionVote.objects.get_or_create(session=session, voter=request.user)
+        vote, created = ConferenceSessionVote.objects.get_or_create(session=session, voter=request.user)
         vote.vote = v
         vote.save()
     else:
@@ -2260,7 +2260,7 @@ def talkvote_comment(request, confname):
         return HttpResponse('Can only use POST')
 
     session = get_object_or_404(ConferenceSession, conference=conference, id=request.POST['sessionid'])
-    vote,created = ConferenceSessionVote.objects.get_or_create(session=session, voter=request.user)
+    vote, created = ConferenceSessionVote.objects.get_or_create(session=session, voter=request.user)
     vote.comment = request.POST['comment']
     vote.save()
 
@@ -2298,7 +2298,7 @@ def createschedule(request, confname):
         re_slot = re.compile('^slot(\d+)$')
         for sess in conference.conferencesession_set.all():
             found = False
-            for k,v in request.POST.items():
+            for k, v in request.POST.items():
                 if v == "sess%s" % sess.id:
                     sm = re_slot.match(k)
                     if not sm:
@@ -2343,7 +2343,7 @@ def createschedule(request, confname):
 
     days = []
 
-    for d,d_sessions in raw.items():
+    for d, d_sessions in raw.items():
         sessionset = SessionSet(allrooms, allrooms, conference.schedulewidth, conference.pixelsperminute, d_sessions)
         days.append({
             'day': d,
@@ -2459,7 +2459,7 @@ def simple_report(request, confname):
     d = curs.fetchall()
     collist = [dd[0] for dd in curs.description]
     # Get offsets of all columns that don't start with _
-    colofs = [n for x,n in zip(collist, range(len(collist))) if not x.startswith('_')]
+    colofs = [n for x, n in zip(collist, range(len(collist))) if not x.startswith('_')]
     if len(colofs) != len(collist):
         # One or more columns filtered - so filter the data
         d = map(itemgetter(*colofs), d)
@@ -2569,7 +2569,7 @@ RIGHT JOIN confreg_discountcode dc ON dc.code=r.vouchercode
 LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id
 WHERE dc.conference_id={1} AND (r.conference_id={1} OR r.conference_id IS NULL) GROUP BY dc.id ORDER BY code""".format(statusstr.format('maxuses'), conference.id))
     tables.append({'title': 'Discount codes',
-                   'columns': ['id', 'Code', 'Expires', 'Max uses', 'Confirmed', 'Invoiced', 'Unconfirmed','Total', 'Remaining'],
+                   'columns': ['id', 'Code', 'Expires', 'Max uses', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total', 'Remaining', ],
                    'fixedcols': 3,
                    'hidecols': 1,
                    'linker': lambda x: '../discountcodes/{0}/'.format(x[0]),
@@ -2610,7 +2610,7 @@ def admin_registration_list(request, urlname):
         revsort = False
 
     sortmap = {
-        'last':'lastname',
+        'last': 'lastname',
         'first': 'firstname',
         'company': 'company',
         'type': 'regtype__sortkey',
@@ -3099,7 +3099,7 @@ def transfer_reg(request, urlname):
                     transaction.set_rollback(True)
                     return HttpResponseRedirect('.')
                 transaction.savepoint_commit(savepoint)
-                messages.info(request,"Registration transfer completed.")
+                messages.info(request, "Registration transfer completed.")
                 return HttpResponseRedirect('../')
             else:
                 transaction.savepoint_rollback(savepoint)
@@ -3136,7 +3136,7 @@ def crossmail(request):
             if not conf in conferenceids:
                 raise ValidationError("Invalid conference selected")
 
-            (t,v) = filt.split(':')
+            (t, v) = filt.split(':')
             if t == 'rt':
                 # Regtype
                 q = "SELECT attendee_id, email, firstname || ' ' || lastname, regtoken FROM confreg_conferenceregistration WHERE conference_id={0} AND payconfirmedat IS NOT NULL".format(conf)
@@ -3243,7 +3243,7 @@ def crossmailoptions(request):
     ])
     r.extend([
         {'id': 'sp:{0}'.format(k), 'title': u'Speaker: {0}'.format(v)}
-        for k,v in STATUS_CHOICES
+        for k, v in STATUS_CHOICES
     ])
     return HttpResponse(json.dumps(r), content_type="application/json")
 

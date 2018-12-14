@@ -129,7 +129,7 @@ def paypal_return_handler(request):
         # from the accounting system. Note that this is an undocumented
         # URL format for paypal, so it may stop working at some point in
         # the future.
-        urls = ["https://www.paypal.com/cgi-bin/webscr?cmd=_view-a-trans&id=%s" % ti.paypaltransid,]
+        urls = ["https://www.paypal.com/cgi-bin/webscr?cmd=_view-a-trans&id=%s" % ti.paypaltransid, ]
 
         # Separate out donations made through our website
         if ti.transtext == settings.PAYPAL_DONATION_TEXT:
@@ -151,16 +151,16 @@ def paypal_return_handler(request):
             })
 
         invoicemanager = InvoiceManager()
-        (r,i,p) = invoicemanager.process_incoming_payment(ti.transtext,
-                                                          ti.amount,
-                                                          "Paypal id %s, from %s <%s>, auto" % (ti.paypaltransid, ti.sendername, ti.sender),
-                                                          ti.fee,
-                                                          settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT,
-                                                          settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT,
-                                                          urls,
-                                                          payment_logger,
-                                                          InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.paypal.Paypal'),
-                                                      )
+        (r, i, p) = invoicemanager.process_incoming_payment(ti.transtext,
+                                                            ti.amount,
+                                                            "Paypal id %s, from %s <%s>, auto" % (ti.paypaltransid, ti.sendername, ti.sender),
+                                                            ti.fee,
+                                                            settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT,
+                                                            settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT,
+                                                            urls,
+                                                            payment_logger,
+                                                            InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.paypal.Paypal'),
+        )
         if r == invoicemanager.RESULT_OK:
             # Matched it!
             ti.matched = True

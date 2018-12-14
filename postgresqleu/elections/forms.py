@@ -23,7 +23,7 @@ class VoteForm(forms.Form):
         for vote in self.votes:
             votemap[vote.candidate_id] = vote.score
 
-        dropdown = [(x,self._votestring(x)) for x in range(1,len(self.candidates) + 1)]
+        dropdown = [(x, self._votestring(x)) for x in range(1, len(self.candidates) + 1)]
         dropdown.insert(0, (-1, '** Please rate this candidate'))
 
         # Dynamically add a dropdown field for each candidate
@@ -43,7 +43,7 @@ class VoteForm(forms.Form):
 
     def clean(self):
         # First, make sure all existing fields are actually filled out
-        for (k,v) in self.cleaned_data.items():
+        for (k, v) in self.cleaned_data.items():
             if k.startswith('cand'):
                 if v == "-1":
                     self._errors[k] = ErrorList(["You need to select a score for this candidate!"])
@@ -63,7 +63,7 @@ class VoteForm(forms.Form):
 
         # Finally, verify that all options have been found, and none have been duplicated
         options = range(1, len(self.candidates) + 1)
-        for k,v in self.cleaned_data.items():
+        for k, v in self.cleaned_data.items():
             if int(v) in options:
                 # First use is ok. Take it out of the list, so next attempt generates error
                 del options[options.index(int(v))]
@@ -83,7 +83,7 @@ class VoteForm(forms.Form):
         # Let's see if the old votes are here
         if len(self.votes) == 0:
             # This is completely new, let's create votes for him
-            for k,v in self.cleaned_data.items():
+            for k, v in self.cleaned_data.items():
                 id = int(k[4:])
                 Vote(election=self.election, voter=self.member, candidate_id=id, score=v).save()
             self.votes = Vote.objects.filter(election=self.election, voter=self.member)

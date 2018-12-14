@@ -18,14 +18,14 @@ lower fees.
 """
 
     PAYPAL_COMMON = {
-        'business':settings.PAYPAL_EMAIL,
-        'lc':'GB',
+        'business': settings.PAYPAL_EMAIL,
+        'lc': 'GB',
         'currency_code': settings.CURRENCY_ABBREV,
-        'button_subtype':'services',
-        'no_note':'1',
-        'no_shipping':'1',
-        'bn':'PP-BuyNowBF:btn_buynowCC_LG.gif-NonHosted',
-        'charset':'utf-8',
+        'button_subtype': 'services',
+        'no_note': '1',
+        'no_shipping': '1',
+        'bn': 'PP-BuyNowBF:btn_buynowCC_LG.gif-NonHosted',
+        'charset': 'utf-8',
         }
 
     def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl=None):

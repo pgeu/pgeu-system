@@ -67,7 +67,7 @@ def home(request):
                     raise Exception("This should not happen - generating invoice when one already exists!")
                 manager = InvoiceManager()
                 processor = InvoiceProcessor.objects.get(processorname="membership processor")
-                invoicerows = [('%s - %s years membership - %s' % (settings.ORG_NAME, settings.MEMBERSHIP_LENGTH, request.user.email), 1, settings.MEMBERSHIP_COST, None),]
+                invoicerows = [('%s - %s years membership - %s' % (settings.ORG_NAME, settings.MEMBERSHIP_LENGTH, request.user.email), 1, settings.MEMBERSHIP_COST, None), ]
                 member.activeinvoice = manager.create_invoice(
                     request.user,
                     request.user.email,

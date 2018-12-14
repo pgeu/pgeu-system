@@ -41,7 +41,7 @@ def process_authorization(notification):
 
         # Generate urls pointing back to this entry in the Adyen online
         # system, for inclusion in accounting records.
-        urls = ["https://ca-live.adyen.com/ca/ca/accounts/showTx.shtml?pspReference=%s&txType=Payment&accountKey=MerchantAccount.%s" % (notification.pspReference, notification.merchantAccountCode),]
+        urls = ["https://ca-live.adyen.com/ca/ca/accounts/showTx.shtml?pspReference=%s&txType=Payment&accountKey=MerchantAccount.%s" % (notification.pspReference, notification.merchantAccountCode), ]
 
         # We can receive authorizations on non-primary Adyen merchant
         # accounts. This happens for example with payments from POS

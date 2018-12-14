@@ -62,7 +62,7 @@ class Year(models.Model):
 class IncomingBalance(models.Model):
     year = models.ForeignKey(Year, null=False, blank=False, on_delete=models.CASCADE)
     account = models.ForeignKey(Account, to_field='num', null=False, blank=False, on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False, validators=[nonzero_validator,])
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False, validators=[nonzero_validator, ])
 
     def __unicode__(self):
         return "%s / %s" % (self.year_id, self.account)
@@ -98,7 +98,7 @@ class JournalEntry(models.Model):
 class JournalItem(models.Model):
     journal = models.ForeignKey(JournalEntry, null=False, blank=False, on_delete=models.CASCADE)
     account = models.ForeignKey(Account, to_field='num', null=False, blank=False, on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False, validators=[nonzero_validator,])
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False, validators=[nonzero_validator, ])
     object = models.ForeignKey(Object, null=True, blank=True, on_delete=models.CASCADE)
     description = models.CharField(max_length=200, null=False, blank=False)
 

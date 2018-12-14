@@ -34,7 +34,7 @@ class InvoicePaymentMethod(models.Model):
         return self.name
 
     class Meta:
-        ordering = ['sortkey',]
+        ordering = ['sortkey', ]
 
 class InvoiceRefund(models.Model):
     reason = models.CharField(max_length=500, null=False, blank=True, default='', help_text="Reason for refunding of invoice")
@@ -231,7 +231,7 @@ class InvoiceHistory(models.Model):
     txt = models.CharField(max_length=100, null=False, blank=False)
 
     class Meta:
-        ordering = ['time',]
+        ordering = ['time', ]
 
     def __unicode__(self):
         return self.txt

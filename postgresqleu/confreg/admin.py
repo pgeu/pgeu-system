@@ -105,7 +105,7 @@ class ConferenceAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedMod
     def __init__(self, *args, **kwargs):
         super(ConferenceAdminForm, self).__init__(*args, **kwargs)
         self.fields['volunteers'].widget.widget.update_query_parameters({'conference': self.instance.id})
-        self.fields['accounting_object'].choices = [('', '----'),] + [(o.name, o.name) for o in Object.objects.filter(active=True)]
+        self.fields['accounting_object'].choices = [('', '----'), ] + [(o.name, o.name) for o in Object.objects.filter(active=True)]
 
     def clean(self):
         data = super(ConferenceAdminForm, self).clean()
@@ -142,8 +142,8 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
     ordering = ['-payconfirmedat', '-created', 'lastname', 'firstname', ]
     actions = ['approve_conferenceregistration', 'email_recipients']
     filter_horizontal = ('additionaloptions',)
-    exclude = ('invoice','bulkpayment',)
-    readonly_fields = ('invoice_link','bulkpayment_link', 'lastmodified', )
+    exclude = ('invoice', 'bulkpayment', )
+    readonly_fields = ('invoice_link', 'bulkpayment_link', 'lastmodified', )
 
     def get_queryset(self, request):
         qs = super(ConferenceRegistrationAdmin, self).get_queryset(request)
@@ -283,8 +283,8 @@ class ConferenceSessionScheduleSlotAdmin(admin.ModelAdmin):
 
 class RegistrationClassAdmin(admin.ModelAdmin):
     list_display = ['regclass', 'conference', ]
-    list_filter = ['conference',]
-    ordering = ['conference','regclass']
+    list_filter = ['conference', ]
+    ordering = ['conference', 'regclass', ]
 
 class RegistrationDayAdmin(admin.ModelAdmin):
     list_display = ['day', 'conference', ]
@@ -311,9 +311,9 @@ class RegistrationTypeAdminForm(ConcurrentProtectedModelForm):
 
 class RegistrationTypeAdmin(admin.ModelAdmin):
     list_display = ['conference', 'regtype', 'cost', 'sortkey', 'active', 'activeuntil', ]
-    list_filter = ['conference',]
-    ordering = ['conference','regtype']
-    filter_horizontal = ('requires_option',)
+    list_filter = ['conference', ]
+    ordering = ['conference', 'regtype', ]
+    filter_horizontal = ('requires_option', )
     form = RegistrationTypeAdminForm
 
 class ShirtsizeAdmin(admin.ModelAdmin):
@@ -396,7 +396,7 @@ class SpeakerPhotoAdmin(admin.ModelAdmin):
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name == 'photo':
             kwargs['widget'] = InlinePhotoWidget
-        return super(SpeakerPhotoAdmin,self).formfield_for_dbfield(db_field,**kwargs)
+        return super(SpeakerPhotoAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
 class TrackAdmin(admin.ModelAdmin):
     list_filter = ['conference', ]
@@ -412,7 +412,7 @@ class RoomAdmin(admin.ModelAdmin):
         model = Room
 
 class ConferenceFeedbackQuestionAdmin(admin.ModelAdmin):
-    list_display = ['conference', 'sortkey', 'newfieldset', 'question',]
+    list_display = ['conference', 'sortkey', 'newfieldset', 'question', ]
     list_filter = ['conference', ]
 
 class PrepaidVoucherInline(admin.TabularInline):
@@ -555,7 +555,7 @@ class BulkPaymentAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedMo
 
 class BulkPaymentAdmin(admin.ModelAdmin):
     form = BulkPaymentAdminForm
-    list_display = ['adminstring', 'conference', 'user', 'numregs', 'paidat', 'ispaid',]
+    list_display = ['adminstring', 'conference', 'user', 'numregs', 'paidat', 'ispaid', ]
     list_filter = ['conference', ]
 
 class AttendeeMailAdminForm(ConcurrentProtectedModelForm):

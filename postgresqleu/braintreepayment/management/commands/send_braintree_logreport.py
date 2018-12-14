@@ -17,7 +17,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         with transaction.atomic():
-            lines = list(BraintreeLog.objects.filter(error=True,sent=False).order_by('timestamp'))
+            lines = list(BraintreeLog.objects.filter(error=True, sent=False).order_by('timestamp'))
 
         if len(lines):
             sio = StringIO()

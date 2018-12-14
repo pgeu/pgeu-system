@@ -241,7 +241,7 @@ def admin_edit_page(request, urlname, pageid):
                 f = form.save(commit=False)
                 form.save_m2m()
                 s = StringIO()
-                for k,v in f.diff.items():
+                for k, v in f.diff.items():
                     if type(v[0]) == list:
                         fr = u", ".join([unicode(o) for o in v[0]])
                     else:
@@ -477,9 +477,9 @@ def signup_admin_sendmail(request, urlname, signupid):
 
         form = SignupSendmailForm(additional_choices, data=request.POST, num=numtosend)
         if form.is_valid():
-            towhat = next(v for k,v in form.recipient_choices if k == rr)
+            towhat = next(v for k, v in form.recipient_choices if k == rr)
             recipients = exec_to_list("SELECT firstname || ' ' || lastname, email {0}".format(qq), params)
-            for n,e in recipients:
+            for n, e in recipients:
                 send_simple_mail(conference.contactaddr,
                                  e,
                                  form.cleaned_data['subject'],

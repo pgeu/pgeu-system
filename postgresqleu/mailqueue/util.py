@@ -42,8 +42,8 @@ def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=No
 
     if attachments:
         for filename, contenttype, content in attachments:
-            main,sub = contenttype.split('/')
-            part = MIMENonMultipart(main,sub)
+            main, sub = contenttype.split('/')
+            part = MIMENonMultipart(main, sub)
             part.set_payload(content)
             part.add_header('Content-Disposition', 'attachment; filename="%s"' % filename)
             encoders.encode_base64(part)

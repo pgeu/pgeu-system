@@ -86,7 +86,7 @@ def conferencedata(request, confname, since):
         curs.execute("SELECT itemid, type FROM confreg_deleteditems WHERE deltime>%(lastmod)s ORDER BY type", {
             'lastmod': datefilter,
         })
-        deldata = dict([(k, [i for i,t in v]) for k,v in itertools.groupby(curs.fetchall(), lambda t: t[1])])
+        deldata = dict([(k, [i for i, t in v]) for k, v in itertools.groupby(curs.fetchall(), lambda t: t[1])])
     else:
         deldata = {}
 

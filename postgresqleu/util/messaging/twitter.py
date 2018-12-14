@@ -29,7 +29,7 @@ class Twitter(object):
 
     def send_message(self, tousername, msg):
         # Nor the username
-        tousername = tousername.lower().replace('@','')
+        tousername = tousername.lower().replace('@', '')
 
         # DM API calls require us to look up the userid, so do that with a
         # tiny cache first.

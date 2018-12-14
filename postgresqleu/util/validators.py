@@ -59,7 +59,7 @@ def validate_json_structure(config, structure):
             raise ValidationError("Keys {0} are not allowed".format(", ".join(["->".join(path + [m]) for m in extra])))
 
         # Keys are correct, validate datatypes
-        for k,v in config.items():
+        for k, v in config.items():
             fullkey = "->".join(path + [k])
             # Dicts don't have __name__
             if type(structure[k]) == dict:
@@ -95,7 +95,7 @@ class PictureUrlValidator(object):
             raise ValidationError("Downloading promo picture returned status %s" % r.status_code)
         try:
             img = Image.open(StringIO(r.content))
-            w,h = img.size
+            w, h = img.size
             if self.aspect:
                 newaspect = round(float(w) / float(h), 2)
                 if newaspect != self.aspect:

@@ -11,7 +11,7 @@ class Wikipage(models.Model, DiffableModel):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     url = models.CharField(max_length=100, null=False, blank=False, validators=[
         RegexValidator(regex='^[a-zA-Z0-9_-]+$',
-                       message='Invalid character in urlname. Only alphanumerical, underscore and dash are allowed.'),])
+                       message='Invalid character in urlname. Only alphanumerical, underscore and dash are allowed.'), ])
     title = models.CharField(max_length=100, null=False, blank=False)
     author = models.ForeignKey(ConferenceRegistration, null=False, blank=False, on_delete=models.CASCADE)
     publishedat = models.DateTimeField(null=False, blank=False, auto_now=True)
@@ -119,8 +119,8 @@ class Signup(models.Model):
     intro = models.TextField(null=False, blank=False)
     deadline = models.DateTimeField(null=True, blank=True)
     maxsignups = models.IntegerField(null=False, blank=False, default=-1)
-    options = models.CharField(max_length=1000, null=False, blank=True, help_text="Comma separated list of options to choose.", validators=[validate_options,])
-    optionvalues = models.CharField(max_length=1000, null=False, blank=True, help_text="Optional comma separated list of how much each choice counts towards the max value", validators=[validate_optionvalues,])
+    options = models.CharField(max_length=1000, null=False, blank=True, help_text="Comma separated list of options to choose.", validators=[validate_options, ])
+    optionvalues = models.CharField(max_length=1000, null=False, blank=True, help_text="Optional comma separated list of how much each choice counts towards the max value", validators=[validate_optionvalues, ])
 
     public = models.BooleanField(null=False, blank=False, default=False, help_text="All attendees can sign up")
     visible = models.BooleanField(null=False, blank=False, default=False, help_text="Show who have signed up to all invited attendees")

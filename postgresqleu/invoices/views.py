@@ -199,13 +199,13 @@ def flaginvoice(request, invoicenum):
     str = StringIO.StringIO()
     def payment_logger(msg):
         str.write(msg)
-    (r,i,p) = mgr.process_incoming_payment(invoice.invoicestr,
-                                           invoice.total_amount,
-                                           request.POST['reason'],
-                                           0, # We assume this was a bank payment without cost
-                                           settings.ACCOUNTING_MANUAL_INCOME_ACCOUNT,
-                                           0, # costaccount
-                                           logger=payment_logger)
+    (r, i, p) = mgr.process_incoming_payment(invoice.invoicestr,
+                                             invoice.total_amount,
+                                             request.POST['reason'],
+                                             0, # We assume this was a bank payment without cost
+                                             settings.ACCOUNTING_MANUAL_INCOME_ACCOUNT,
+                                             0, # costaccount
+                                             logger=payment_logger)
 
     if r != InvoiceManager.RESULT_OK:
         return HttpResponse("Failed to process payment flagging:\n%s" % str.getvalue(),

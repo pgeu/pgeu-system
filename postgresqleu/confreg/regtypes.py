@@ -28,7 +28,7 @@ def validate_speaker_or_reserve_registration(reg):
         raise ValidationError('Speaker registrations have to be done by the speaker directly')
     if not ConferenceSession.objects.filter(conference=reg.conference,
                                             speaker__user=reg.attendee,
-                                            status__in=(1,4), # approved/reserve
+                                            status__in=(1, 4), # approved/reserve
                                         ).exists():
         raise ValidationError('This registration type is only available if you are a confirmed speaker at this conference')
 
@@ -62,7 +62,7 @@ _specialregtypes['man'] = {
     'confirmfunc': confirm_manual_registration,
     }
 
-special_reg_types = [(k,v['name']) for k,v in _specialregtypes.items()]
+special_reg_types = [(k, v['name']) for k, v in _specialregtypes.items()]
 
 def validate_special_reg_type(regtypename, reg):
     if not _specialregtypes.has_key(regtypename):

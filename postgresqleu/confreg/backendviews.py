@@ -117,7 +117,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
             instance = instancemaker()
 
         # Set initial values on newly created instance, if any are set
-        for k,v in formclass.get_initial().items():
+        for k, v in formclass.get_initial().items():
             setattr(instance, k, v)
     else:
         if bypass_conference_filter:
@@ -131,14 +131,14 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
             if instance.pk:
                 # Are there any associated objects here, by any chance?
                 collector = NestedObjects(using='default')
-                collector.collect([instance,])
+                collector.collect([instance, ])
                 to_delete = collector.nested()
                 to_delete.remove(instance)
                 if to_delete:
                     to_delete = [d for d in flatten_list(to_delete[0]) if not d._meta.model_name in formclass.auto_cascade_delete_to]
                 if to_delete:
                     pieces = [unicode(to_delete[n]) for n in range(0, min(5, len(to_delete))) if not isinstance(to_delete[n], list)]
-                    extra_error = u"This {0} cannot be deleted. It would have resulted in the following other objects also being deleted: {1}".format(formclass.Meta.model._meta.verbose_name,u', '.join(pieces))
+                    extra_error = u"This {0} cannot be deleted. It would have resulted in the following other objects also being deleted: {1}".format(formclass.Meta.model._meta.verbose_name, u', '.join(pieces))
                 else:
                     messages.info(request, "{0} {1} deleted.".format(formclass.Meta.model._meta.verbose_name.capitalize(), instance))
                     instance.delete()
@@ -225,7 +225,7 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
         sourceconf = get_authenticated_conference(request, confid=sourceconfid)
 
         if request.method == "POST":
-            idlist = sorted([int(k[2:]) for k,v in request.POST.items() if k.startswith('c_') and v == '1'])
+            idlist = sorted([int(k[2:]) for k, v in request.POST.items() if k.startswith('c_') and v == '1'])
             if formclass.copy_transform_form:
                 # First validate the transform form
                 transform_form = formclass.copy_transform_form(conference, sourceconf, data=request.POST)
@@ -739,7 +739,7 @@ class JsonWriter(object):
 
 def tokendata(request, urlname, token, datatype, dataformat):
     conference = get_object_or_404(Conference, urlname=urlname)
-    if not AccessToken.objects.filter(conference=conference, token=token, permissions__contains=[datatype,]).exists():
+    if not AccessToken.objects.filter(conference=conference, token=token, permissions__contains=[datatype, ]).exists():
         raise Http404()
 
     if dataformat.lower() == 'csv':

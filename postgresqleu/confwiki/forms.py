@@ -39,11 +39,11 @@ class SignupSubmitForm(forms.Form):
 
         if signup.options:
             choices = signup.options.split(',')
-            self.fields['choice'].choices = [(k,k) for k in choices]
+            self.fields['choice'].choices = [(k, k) for k in choices]
             self.fields['choice'].choices.insert(0, ('', ''))
         else:
             # This one is boolean only
-            self.fields['choice'].choices = (('', ''), ('yes','Yes'), ('', 'No'), )
+            self.fields['choice'].choices = (('', ''), ('yes', 'Yes'), ('', 'No'), )
 
         if attendee_signup:
             self.fields['choice'].initial = attendee_signup.choice
@@ -105,11 +105,11 @@ class SignupAdminEditSignupForm(ConcurrentProtectedModelForm):
 
         if signup.options:
             choices = signup.options.split(',')
-            self.fields['choice'].choices = [(k,k) for k in choices]
+            self.fields['choice'].choices = [(k, k) for k in choices]
             self.fields['choice'].choices.insert(0, ('', ''))
         else:
             # This one is boolean only
-            self.fields['choice'].choices = (('', ''), ('yes','Yes'), ('', 'No'), )
+            self.fields['choice'].choices = (('', ''), ('yes', 'Yes'), ('', 'No'), )
             self.fields['choice'].required = False
 
 class SignupSendmailForm(forms.Form):

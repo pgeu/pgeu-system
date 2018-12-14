@@ -46,7 +46,7 @@ class PaypalAPI(object):
                     continue
                 break
 
-            yield dict([(k,r.get('L_{0}{1}'.format(k, i),[''])[0])
+            yield dict([(k, r.get('L_{0}{1}'.format(k, i), [''])[0])
                         for k in
                         ('TRANSACTIONID', 'TIMESTAMP', 'EMAIL', 'TYPE', 'AMT', 'FEEAMT', 'NAME')])
 

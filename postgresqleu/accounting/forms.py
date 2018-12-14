@@ -21,8 +21,8 @@ def PositiveValidator(v):
         raise ValidationError("Value must be a positive integer")
 
 class JournalItemForm(forms.ModelForm):
-    debit = forms.DecimalField(max_digits=10, decimal_places=2, validators=[PositiveValidator,], required=False)
-    credit = forms.DecimalField(max_digits=10, decimal_places=2, validators=[PositiveValidator,], required=False)
+    debit = forms.DecimalField(max_digits=10, decimal_places=2, validators=[PositiveValidator, ], required=False)
+    credit = forms.DecimalField(max_digits=10, decimal_places=2, validators=[PositiveValidator, ], required=False)
 
     def __init__(self, *args, **kwargs):
         super(JournalItemForm, self).__init__(*args, **kwargs)

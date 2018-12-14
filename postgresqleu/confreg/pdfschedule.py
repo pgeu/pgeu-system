@@ -72,10 +72,10 @@ def build_linear_pdf_schedule(conference, room, tracks, day, colored, pagesize, 
     table_horiz_margin = 2*cm
 
     default_tbl_style = [
-        ('VALIGN', (0,0), (-1, -1), 'TOP'),
-        ('BOX', (0,0), (-1, -1), 0.5, colors.black),
-        ('INNERGRID', (0,0), (-1, -1), 0.5, colors.black),
-        ('BOTTOMPADDING', (0,0), (-1, -1), 15),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('BOX', (0, 0), (-1, -1), 0.5, colors.black),
+        ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.black),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 15),
     ]
 
     # Loop over days, creating one page for each day
@@ -89,7 +89,7 @@ def build_linear_pdf_schedule(conference, room, tracks, day, colored, pagesize, 
 
         t = Table(tbldata, colWidths=[3*cm, width - 3*cm - 2 * table_horiz_margin])
         t.setStyle(TableStyle(tblstyle))
-        w,h = t.wrapOn(canvas, width, height)
+        w, h = t.wrapOn(canvas, width, height)
         t.drawOn(canvas, table_horiz_margin, height - 4*cm - h)
         canvas.showPage()
 
@@ -108,7 +108,7 @@ def build_linear_pdf_schedule(conference, room, tracks, day, colored, pagesize, 
         else:
             tbldata.extend([(tstr, (Paragraph(s.title, st_title), Paragraph("<i>%s</i>" % s.speaker_list, st_speakers)))])
             if colored and s.track and s.track.color:
-                tblstyle.append(('BACKGROUND', (1,len(tbldata) - 1), (1,len(tbldata) - 1), s.track.color),)
+                tblstyle.append(('BACKGROUND', (1, len(tbldata) - 1), (1, len(tbldata) - 1), s.track.color), )
 
     _finalize_page()
     canvas.save()
@@ -146,7 +146,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
             lastday = d
         groupedbyday[d]['last'] = s.endtime
         groupedbyday[d]['sessions'].append(s)
-    for k,v in groupedbyday.items():
+    for k, v in groupedbyday.items():
         v['length'] = v['last']-v['first']
         v['rooms'] = set([s.room for s in v['sessions'] if s.room])
 
@@ -173,7 +173,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
 
             breakpoints = []
             # For each breakpoint, find the closest one
-            for p in range(1,pagesperday):
+            for p in range(1, pagesperday):
                 breaktime = dd['first'] + timedelta(seconds=p * secondsperpage)
                 breaksession = cross_sessions[min(range(len(cross_sessions)), key=lambda i: abs(cross_sessions[i].starttime-breaktime))]
                 if not breaksession in breakpoints:
@@ -184,7 +184,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
                 if s in breakpoints:
                     pagesessions.append(currentpagesessions)
                     # Make sure the breaking sessions itself is on both pages
-                    currentpagesessions = [s,]
+                    currentpagesessions = [s, ]
             pagesessions.append(currentpagesessions)
         else:
             # For a single page schedule, just add all sessions to the first page.
@@ -210,7 +210,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
         # fit within the boxes.
         roomtitlefontsize = 20
         for r in dd['rooms']:
-            for fs in 16,14,12,10,8:
+            for fs in 16, 14, 12, 10, 8:
                 fwidth = canvas.stringWidth(r.roomname, "DejaVu Serif", fs)
                 if fwidth < roomwidth-4*mm:
                     # Width at this size is small enough to work, so use it
@@ -231,7 +231,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
             pagelength = (ps[-1].endtime-ps[0].starttime).seconds
             first = ps[0].starttime
 
-            canvas.rect(2*cm, height-pagelength*unitspersecond-4*cm, roomcount*roomwidth, pagelength*unitspersecond,stroke=1)
+            canvas.rect(2*cm, height-pagelength*unitspersecond-4*cm, roomcount*roomwidth, pagelength*unitspersecond, stroke=1)
             for s in ps:
                 if s.cross_schedule:
                     # Cross schedule rooms are very special...
@@ -247,7 +247,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
                         canvas.setFillColor(s.track.color)
                     else:
                         canvas.setFillColor(colors.white)
-                canvas.rect(s_left,s_top,thisroomwidth,s_height,stroke=1,fill=colored)
+                canvas.rect(s_left, s_top, thisroomwidth, s_height, stroke=1, fill=colored)
 
                 timestampstr = "%s-%s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M"))
                 ts = Paragraph(timestampstr, timestampstyle)
@@ -279,7 +279,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
                     for includespeaker in (True, False):
                         title = s.title
                         while title:
-                            for fs in (12,10,9,8):
+                            for fs in (12, 10, 9, 8):
                                 sessionstyle = ParagraphStyle('sessionstyle')
                                 sessionstyle.fontName = "DejaVu Serif"
                                 sessionstyle.fontSize = fs
@@ -314,9 +314,9 @@ class PdfScheduleForm(forms.Form):
     day = forms.ModelChoiceField(label='Days to include', queryset=None, empty_label='(all days)', required=False)
     tracks = forms.ModelMultipleChoiceField(label='Tracks to include', queryset=None, required=True, help_text="Filter for some tracks. By default, all tracks are included.")
     colored = forms.BooleanField(label='Colored tracks', required=False)
-    pagesize = forms.ChoiceField(label='Page size', choices=(('a4', 'A4'),('a3','A3')))
-    orientation = forms.ChoiceField(label='Orientation', choices=(('p', 'Portrait'),('l', 'Landscape')))
-    pagesperday = forms.ChoiceField(label='Pages per day', choices=((1,1),(2,2),(3,3)), help_text="Not used for per-room schedules. Page breaks happen only at cross-schedule sessions.")
+    pagesize = forms.ChoiceField(label='Page size', choices=(('a4', 'A4'), ('a3', 'A3')))
+    orientation = forms.ChoiceField(label='Orientation', choices=(('p', 'Portrait'), ('l', 'Landscape')))
+    pagesperday = forms.ChoiceField(label='Pages per day', choices=((1, 1), (2, 2), (3, 3)), help_text="Not used for per-room schedules. Page breaks happen only at cross-schedule sessions.")
     titledatefmt = forms.CharField(label='Title date format', help_text="strftime format specification used to print the date in the title of the first page for each day")
 
     def __init__(self, conference, *args, **kwargs):

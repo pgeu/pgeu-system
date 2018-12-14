@@ -35,12 +35,12 @@ class InvoiceForm(forms.ModelForm):
         self.fields['allowedmethods'].queryset = InvoicePaymentMethod.objects.filter(active=True)
         self.fields['allowedmethods'].label_from_instance = lambda m: "{0} ({1})".format(m.name, m.internaldescription)
 
-        self.fields['accounting_account'].choices = [(0, '----'),] + [(a.num, "%s: %s" % (a.num, a.name)) for a in Account.objects.filter(availableforinvoicing=True)]
-        self.fields['accounting_object'].choices = [('', '----'),] + [(o.name, o.name) for o in Object.objects.filter(active=True)]
+        self.fields['accounting_account'].choices = [(0, '----'), ] + [(a.num, "%s: %s" % (a.num, a.name)) for a in Account.objects.filter(availableforinvoicing=True)]
+        self.fields['accounting_object'].choices = [('', '----'), ] + [(o.name, o.name) for o in Object.objects.filter(active=True)]
 
         if self.instance.finalized:
             # All fields should be read-only for finalized invoices
-            for fn,f in self.fields.items():
+            for fn, f in self.fields.items():
                 if self.instance.ispaid or not fn in self.available_in_finalized:
                     if type(f.widget).__name__ in ('TextInput', 'Textarea', 'DateInput', 'DateTimeInput'):
                         f.widget.attrs['readonly'] = "readonly"

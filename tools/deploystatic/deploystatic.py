@@ -47,7 +47,7 @@ def filter_shuffle(l):
 # Format a datetime. If it's a datetime, call strftime. If it's a
 # string, assume it's iso format and convert it to a date first.
 def filter_datetimeformat(value, fmt):
-    if isinstance(value, date) or isinstance(value, datetime) or isinstance(value,time):
+    if isinstance(value, date) or isinstance(value, datetime) or isinstance(value, time):
         return value.strftime(fmt)
     else:
         return dateutil.parser.parse(value).strftime(fmt)
@@ -308,7 +308,7 @@ if __name__ == "__main__":
     if args.branch:
         env = jinja2.sandbox.SandboxedEnvironment(loader=JinjaTarLoader(source))
     else:
-        env = jinja2.sandbox.SandboxedEnvironment(loader=jinja2.FileSystemLoader([os.path.join(args.sourcepath, 'templates/'),]))
+        env = jinja2.sandbox.SandboxedEnvironment(loader=jinja2.FileSystemLoader([os.path.join(args.sourcepath, 'templates/'), ]))
     env.filters.update(global_filters)
 
     # If there is a context json, load it as well

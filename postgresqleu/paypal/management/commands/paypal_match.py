@@ -32,7 +32,7 @@ class Command(BaseCommand):
 
         for trans in translist:
             # URLs for linkback to paypal
-            urls = ["https://www.paypal.com/cgi-bin/webscr?cmd=_view-a-trans&id=%s" % trans.paypaltransid,]
+            urls = ["https://www.paypal.com/cgi-bin/webscr?cmd=_view-a-trans&id=%s" % trans.paypaltransid, ]
 
             # Manual handling of some record types
 
@@ -123,16 +123,16 @@ class Command(BaseCommand):
                          ),
                 ).save()
 
-            (r,i,p) = invoicemanager.process_incoming_payment(trans.transtext,
-                                                              trans.amount,
-                                                              "Paypal id %s, from %s <%s>" % (trans.paypaltransid, trans.sendername, trans.sender),
-                                                              trans.fee,
-                                                              settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT,
-                                                              settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT,
-                                                              urls,
-                                                              payment_logger,
-                                                              InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.paypal.Paypal'),
-                                                          )
+            (r, i, p) = invoicemanager.process_incoming_payment(trans.transtext,
+                                                                trans.amount,
+                                                                "Paypal id %s, from %s <%s>" % (trans.paypaltransid, trans.sendername, trans.sender),
+                                                                trans.fee,
+                                                                settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT,
+                                                                settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT,
+                                                                urls,
+                                                                payment_logger,
+                                                                InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.paypal.Paypal'),
+            )
 
             if r == invoicemanager.RESULT_OK:
                 trans.setmatched('Matched standard invoice')

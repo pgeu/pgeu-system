@@ -25,7 +25,7 @@ def build_feedback_response(question):
             r['textanswers'] = [a.textanswer for a in ConferenceFeedbackAnswer.objects.only('textanswer').filter(conference_id=confid, question_id=questionid).exclude(textanswer='')]
     else:
         # Numeric choices from 1-5
-        r['graphdata'] = build_graphdata(question, 'rateanswer', range(0,6))
+        r['graphdata'] = build_graphdata(question, 'rateanswer', range(0, 6))
     return r
 
 def feedback_report(request, confname):
@@ -57,7 +57,7 @@ def feedback_report(request, confname):
 def build_toplists(what, query):
     cursor = connection.cursor()
     for k in ('topic_importance', 'content_quality', 'speaker_knowledge', 'speaker_quality'):
-        tl = {'title': '%s by %s' % (what, k.replace('_',' ').title())}
+        tl = {'title': '%s by %s' % (what, k.replace('_', ' ').title())}
         cursor.execute(query.replace('{{key}}', k))
         tl['list'] = cursor.fetchall()
         yield tl

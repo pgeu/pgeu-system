@@ -39,7 +39,7 @@ attendee_report_fields = [
     ('payconfirmedat', 'Payment confirmed', False, None),
 ]
 
-_attendee_report_field_map = dict([(a,(b,c,d)) for a,b,c,d in attendee_report_fields])
+_attendee_report_field_map = dict([(a, (b, c, d)) for a, b, c, d in attendee_report_fields])
 
 class ReportFilter(object):
     def __init__(self, id, name, queryset=None, querysetcol=None, emptyasnull=True):
@@ -74,9 +74,9 @@ class ReportFilter(object):
             else:
                 # Just make sure it exists
                 if self.emptyasnull:
-                    return Q(**{"%s__isnull" % self.id:False, "%s__gt" % self.id: ''})
+                    return Q(**{"%s__isnull" % self.id: False, "%s__gt" % self.id: ''})
                 else:
-                    return Q(**{"%s__isnull" % self.id:False})
+                    return Q(**{"%s__isnull" % self.id: False})
 
     @property
     def html(self):
@@ -143,7 +143,7 @@ def attendee_report_filters(conference):
     yield ReportFilter('nick', 'Nickname')
     yield ReportFilter('dietary', 'Dietary needs')
     yield ReportFilter('shareemail', 'Share email with sponsors')
-    yield ReportFilter('photoconsent', 'Photo consent', ((1, 'Yes'),(0, 'No')))
+    yield ReportFilter('photoconsent', 'Photo consent', ((1, 'Yes'), (0, 'No')))
     yield ReportFilter('payconfirmedat', 'Payment confirmed', emptyasnull=False)
     yield ReportFilter('additionaloptions', 'Additional options', ConferenceAdditionalOption.objects.filter(conference=conference), 'name')
     yield ReportFilter('shirtsize', 'T-Shirt size', ShirtSize.objects.all())
@@ -206,8 +206,8 @@ class ReportWriterPdf(ReportWriterBase):
             ]
         if self.borders:
             style.extend([
-                ('GRID', (0,0), (-1, -1), 1, colors.black),
-                ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
             ])
         t.setStyle(TableStyle(style))
         story.append(t)
@@ -233,7 +233,7 @@ def build_attendee_report(conference, POST):
             q = q & f.build_Q(POST)
 
     # Figure out our order by
-    orderby = map(lambda x: _attendee_report_field_map[x][2] and _attendee_report_field_map[x][2] or x, [POST['orderby1'],POST['orderby2']])
+    orderby = map(lambda x: _attendee_report_field_map[x][2] and _attendee_report_field_map[x][2] or x, [POST['orderby1'], POST['orderby2']])
 
     # Run the query!
     result = ConferenceRegistration.objects.select_related('shirtsize', 'regtype', 'country', 'conference').filter(q).distinct().order_by(*orderby)

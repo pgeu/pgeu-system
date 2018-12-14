@@ -394,7 +394,7 @@ class InvoiceManager(object):
             leaveopen = False
         else:
             leaveopen = True
-        urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk),]
+        urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk), ]
         if extraurls:
             urls.extend(extraurls)
 
@@ -511,7 +511,7 @@ class InvoiceManager(object):
                         (invoice.refund.vatrate.vataccount.num, accountingtxt, vatamount, None),
                     )
 
-                urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk),]
+                urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk), ]
                 create_accounting_entry(date.today(), accrows, True, urls)
 
             InvoiceHistory(invoice=invoice,
@@ -563,7 +563,7 @@ class InvoiceManager(object):
             leaveopen = False
         else:
             leaveopen = True
-        urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk),]
+        urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk), ]
         if extraurls:
             urls.extend(extraurls)
 

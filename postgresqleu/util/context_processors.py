@@ -27,7 +27,7 @@ def settings_context_unicode(request=None):
     # Same as settings_context, except convert all strings to unicode assuming
     # utf-8.
     c = settings_context(request)
-    for k,v in c.items():
+    for k, v in c.items():
         if isinstance(v, str):
             c[k] = v.decode('utf8')
     return c

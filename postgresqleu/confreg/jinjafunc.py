@@ -187,7 +187,7 @@ def filter_float_str(f, n):
 # Format a datetime. If it'sa datetime, call strftime. If it's a
 # string, assume it's iso format and convert it to a date first.
 def filter_datetimeformat(value, fmt):
-    if isinstance(value, date) or isinstance(value, datetime) or isinstance(value,time):
+    if isinstance(value, date) or isinstance(value, datetime) or isinstance(value, time):
         return value.strftime(fmt)
     else:
         return dateutil.parser.parse(value).strftime(fmt)
@@ -210,10 +210,10 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
         'datetimeformat': filter_datetimeformat,
         'groupby_sort': filter_groupby_sort,
         'leadingnbsp': leadingnbsp,
-        'markdown': lambda t: jinja2.Markup(markdown.markdown(t, extensions=['tables',])),
+        'markdown': lambda t: jinja2.Markup(markdown.markdown(t, extensions=['tables', ])),
         'shuffle': filter_shuffle,
         'slugify': slugify,
-        'yesno': lambda b,v: v.split(',')[not b],
+        'yesno': lambda b, v: v.split(',')[not b],
     })
 
     # If ?test=1 is specified, try to load a template with .test in the

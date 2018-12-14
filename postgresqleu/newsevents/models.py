@@ -29,5 +29,5 @@ class News(models.Model):
         return self.datetime.strftime("%d %B %Y")
 
     class Meta:
-        ordering = ['-datetime','title']
+        ordering = ['-datetime', 'title', ]
         verbose_name_plural = 'News'

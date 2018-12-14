@@ -36,7 +36,7 @@ class WikipageAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModel
 class WikipageHistoryInline(admin.TabularInline):
     model = WikipageHistory
     readonly_fields = ['author', 'publishedat']
-    exclude = ['contents',]
+    exclude = ['contents', ]
     can_delete = False
     max_num = 0
     extra = 0
@@ -56,7 +56,7 @@ class AttendeeSignupAdminForm(ConcurrentProtectedModelForm):
     class Meta:
         model = AttendeeSignup
         exclude = []
-        readonly_fields = ['signup',]
+        readonly_fields = ['signup', ]
 
     def __init__(self, *args, **kwargs):
         super(AttendeeSignupAdminForm, self).__init__(*args, **kwargs)
@@ -67,7 +67,7 @@ class AttendeeSignupAdminForm(ConcurrentProtectedModelForm):
 
 class AttendeeSignupAdmin(admin.ModelAdmin):
     form = AttendeeSignupAdminForm
-    list_display = ['signup', 'attendee',]
+    list_display = ['signup', 'attendee', ]
     list_filter = ['signup__conference', ]
 
 admin.site.register(Wikipage, WikipageAdmin)

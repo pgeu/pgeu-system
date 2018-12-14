@@ -44,7 +44,7 @@ pre_delete.connect(delete_inline_storage, sender=SponsorshipContract)
 class SponsorshipLevel(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     levelname = models.CharField(max_length=100, null=False, blank=False)
-    urlname = models.CharField(max_length=100, null=False, blank=False, validators=[validate_lowercase,])
+    urlname = models.CharField(max_length=100, null=False, blank=False, validators=[validate_lowercase, ])
     levelcost = models.IntegerField(null=False, blank=False, verbose_name="Cost")
     available = models.BooleanField(null=False, blank=False, default=True, verbose_name="Available for signup")
     maxnumber = models.IntegerField(null=False, blank=False, default=0, verbose_name="Maximum number of sponsors")

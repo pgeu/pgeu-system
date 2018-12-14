@@ -13,7 +13,7 @@ _trendlines = (
 )
 
 class TimeReportForm(forms.Form):
-    reporttype = forms.ChoiceField(required=True, choices=enumerate([r[0] for r in reporttypes],1), label="Report type")
+    reporttype = forms.ChoiceField(required=True, choices=enumerate([r[0] for r in reporttypes], 1), label="Report type")
     conferences = GroupedModelMultipleChoiceField('series', required=True, queryset=Conference.objects.all().order_by('-startdate'))
     trendline = forms.ChoiceField(required=False, choices=_trendlines)
 

@@ -51,9 +51,9 @@ STATUS_CHOICES_LONG = (
     (4, "Reserve-listed in case of cancels/changes"), # Reserve list
 )
 def get_status_string(val):
-    return (t for v,t in STATUS_CHOICES if v == val).next()
+    return (t for v, t in STATUS_CHOICES if v == val).next()
 def get_status_string_long(val):
-    return (t for v,t in STATUS_CHOICES_LONG if v == val).next()
+    return (t for v, t in STATUS_CHOICES_LONG if v == val).next()
 
 valid_status_transitions = {
     0: {3: 'Talk approved', 2: 'Talk is rejected', 4: 'Talk added to reserve list'},
@@ -68,7 +68,7 @@ def color_validator(value):
         raise ValidationError('Color values must start with #')
     if len(value) != 7:
         raise ValidationError('Color values must be # + 7 characters')
-    for n in range(0,3):
+    for n in range(0, 3):
         try:
             int(value[n * 2 + 1:n * 2 + 2 + 1], 16)
         except ValueError:
@@ -104,7 +104,7 @@ class GlobalOptOut(models.Model):
 
 
 class Conference(models.Model):
-    urlname = models.CharField(max_length=32, blank=False, null=False, unique=True, validators=[validate_lowercase,], verbose_name="URL name")
+    urlname = models.CharField(max_length=32, blank=False, null=False, unique=True, validators=[validate_lowercase, ], verbose_name="URL name")
     conferencename = models.CharField(max_length=64, blank=False, null=False, verbose_name="Conference name")
     startdate = models.DateField(blank=False, null=False, verbose_name="Start date")
     enddate = models.DateField(blank=False, null=False, verbose_name="End date")
@@ -113,19 +113,19 @@ class Conference(models.Model):
     promopicurl = models.URLField(blank=True, null=False, verbose_name="URL to promo picture", validators=[PictureUrlValidator(aspect=2.3)])
     promotext = models.TextField(null=False, blank=True, max_length=1000, verbose_name="Promotion text")
     timediff = models.IntegerField(null=False, blank=False, default=0)
-    contactaddr = models.EmailField(blank=False,null=False, verbose_name="Contact address")
-    sponsoraddr = models.EmailField(blank=False,null=False, verbose_name="Sponsor address")
-    active = models.BooleanField(blank=False,null=False,default=False, verbose_name="Registration open")
-    callforpapersopen = models.BooleanField(blank=False,null=False,default=False, verbose_name="Call for papers open")
-    callforsponsorsopen = models.BooleanField(blank=False,null=False,default=False, verbose_name="Call for sponsors open")
-    feedbackopen = models.BooleanField(blank=False,null=False,default=False, verbose_name="Session feedback open")
-    conferencefeedbackopen = models.BooleanField(blank=False,null=False,default=False, verbose_name="Conference feedback open")
-    allowedit = models.BooleanField(blank=False,null=False,default=True, verbose_name="Allow editing registrations")
-    scheduleactive = models.BooleanField(blank=False,null=False,default=False,verbose_name="Schedule publishing active")
-    sessionsactive = models.BooleanField(blank=False,null=False,default=False,verbose_name="Session list publishing active")
+    contactaddr = models.EmailField(blank=False, null=False, verbose_name="Contact address")
+    sponsoraddr = models.EmailField(blank=False, null=False, verbose_name="Sponsor address")
+    active = models.BooleanField(blank=False, null=False, default=False, verbose_name="Registration open")
+    callforpapersopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Call for papers open")
+    callforsponsorsopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Call for sponsors open")
+    feedbackopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Session feedback open")
+    conferencefeedbackopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Conference feedback open")
+    allowedit = models.BooleanField(blank=False, null=False, default=True, verbose_name="Allow editing registrations")
+    scheduleactive = models.BooleanField(blank=False, null=False, default=False, verbose_name="Schedule publishing active")
+    sessionsactive = models.BooleanField(blank=False, null=False, default=False, verbose_name="Session list publishing active")
     schedulewidth = models.IntegerField(blank=False, default=600, null=False, verbose_name="Width of HTML schedule")
     pixelsperminute = models.FloatField(blank=False, default=1.5, null=False, verbose_name="Vertical pixels per minute")
-    confurl = models.CharField(max_length=128, blank=False, null=False, validators=[validate_lowercase,], verbose_name="Conference URL")
+    confurl = models.CharField(max_length=128, blank=False, null=False, validators=[validate_lowercase, ], verbose_name="Conference URL")
     twittersync_active = models.BooleanField(null=False, default=False, verbose_name='Twitter posting active')
     twitterreminders_active = models.BooleanField(null=False, default=False, verbose_name='Twitter reminder DMs active')
     twitter_user = models.CharField(max_length=32, blank=True, null=False)
@@ -158,8 +158,8 @@ class Conference(models.Model):
     accounting_object = models.CharField(max_length=30, blank=True, null=True, verbose_name="Accounting object name")
     vat_registrations = models.ForeignKey(VatRate, null=True, blank=True, verbose_name='VAT rate for registrations', related_name='vat_registrations', on_delete=models.CASCADE)
     vat_sponsorship = models.ForeignKey(VatRate, null=True, blank=True, verbose_name='VAT rate for sponsorships', related_name='vat_sponsorship', on_delete=models.CASCADE)
-    invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1),], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
-    attendees_before_waitlist = models.IntegerField(blank=False, null=False, default=0, validators=[MinValueValidator(0),], verbose_name="Attendees before waitlist", help_text="Maximum number of attendees before enabling waitlist management. 0 for no waitlist management")
+    invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), ], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
+    attendees_before_waitlist = models.IntegerField(blank=False, null=False, default=0, validators=[MinValueValidator(0), ], verbose_name="Attendees before waitlist", help_text="Maximum number of attendees before enabling waitlist management. 0 for no waitlist management")
     series = models.ForeignKey(ConferenceSeries, null=False, blank=False, on_delete=models.CASCADE)
     personal_data_purged = models.DateTimeField(null=True, blank=True, help_text="Personal data for registrations for this conference have been purged")
 
@@ -244,7 +244,7 @@ class RegistrationClass(models.Model):
         return self.regclass
 
     def colortuple(self):
-        return tuple([int(self.badgecolor[n * 2 + 1:n * 2 + 2 + 1], 16) for n in range(0,3)])
+        return tuple([int(self.badgecolor[n * 2 + 1:n * 2 + 2 + 1], 16) for n in range(0, 3)])
 
     @property
     def bgcolortuplestr(self):
@@ -255,7 +255,7 @@ class RegistrationClass(models.Model):
 
     def foregroundcolortuple(self):
         if len(self.badgeforegroundcolor):
-            return tuple([int(self.badgeforegroundcolor[n * 2 + 1:n * 2 + 2 + 1], 16) for n in range(0,3)])
+            return tuple([int(self.badgeforegroundcolor[n * 2 + 1:n * 2 + 2 + 1], 16) for n in range(0, 3)])
         else:
             return None
 
@@ -305,7 +305,7 @@ class RegistrationType(models.Model):
     days = models.ManyToManyField(RegistrationDay, blank=True)
     alertmessage = models.TextField(null=False, blank=True, verbose_name="Alert message", help_text="Message shown in popup to user when completing the registration")
     upsell_target = models.BooleanField(null=False, blank=False, default=False, help_text='Is target registration type for upselling in order to add additional options')
-    invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1),], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
+    invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), ], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
     requires_option = models.ManyToManyField('ConferenceAdditionalOption', blank=True, help_text='Requires at least one of the selected additional options to be picked')
 
     class Meta:
@@ -357,7 +357,7 @@ class ConferenceAdditionalOption(models.Model):
     maxcount = models.IntegerField(null=False, verbose_name="Maximum number of uses")
     public = models.BooleanField(null=False, blank=False, default=True, help_text='Visible on public forms (opposite of admin only)')
     upsellable = models.BooleanField(null=False, blank=False, default=True, help_text='Can this option be purchased after the registration is completed')
-    invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1),], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
+    invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), ], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
     requires_regtype = models.ManyToManyField(RegistrationType, blank=True, verbose_name="Requires registration type", help_text='Can only be picked with selected registration types')
     mutually_exclusive = models.ManyToManyField('self', blank=True, help_text='Mutually exlusive with these additional options', symmetrical=True)
 
@@ -540,7 +540,7 @@ class ConferenceRegistration(models.Model):
 
     # For exporting "safe attributes" to external systems
     def safe_export(self):
-        attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'shareemail',]
+        attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'shareemail', ]
         d = dict((a, getattr(self, a) and unicode(getattr(self, a))) for a in attribs)
         if self.regtype:
             d['regtype'] = self.regtype.safe_export()
@@ -701,7 +701,7 @@ class ConferenceSession(models.Model):
 
     @property
     def skill_level_string(self):
-        return (t for v,t in SKILL_CHOICES if v == self.skill_level).next()
+        return (t for v, t in SKILL_CHOICES if v == self.skill_level).next()
 
     @property
     def status_string(self):

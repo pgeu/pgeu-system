@@ -24,7 +24,7 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def report_loglines(self):
-        lines = list(TrustlyLog.objects.filter(error=True,sent=False).order_by('timestamp'))
+        lines = list(TrustlyLog.objects.filter(error=True, sent=False).order_by('timestamp'))
         if len(lines):
             sio = StringIO()
             sio.write("The following error events have been logged by the Trustly integration:\n\n")

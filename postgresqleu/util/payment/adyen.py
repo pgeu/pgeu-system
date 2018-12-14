@@ -19,7 +19,7 @@ from postgresqleu.adyen.models import TransactionStatus
 from postgresqleu.adyen.util import AdyenAPI
 
 def _escapeVal(val):
-    return val.replace('\\','\\\\').replace(':','\\:')
+    return val.replace('\\', '\\\\').replace(':', '\\:')
 
 def calculate_signature(param):
     param = OrderedDict(sorted(param.items(), key=lambda t: t[0]))
@@ -53,7 +53,7 @@ class _AdyenBase(object):
         param.update({
             'merchantReference': '%s%s' % (settings.ADYEN_MERCHANTREF_PREFIX, invoiceid),
             'paymentAmount': '%s' % (int(invoiceamount * Decimal(100.0)),),
-            'orderData': base64.encodestring(_gzip_string(orderdata.encode('utf-8'))).strip().replace("\n",''),
+            'orderData': base64.encodestring(_gzip_string(orderdata.encode('utf-8'))).strip().replace("\n", ''),
             'merchantReturnData': '%s%s' % (settings.ADYEN_MERCHANTREF_PREFIX, invoiceid),
             'sessionValidity': (datetime.utcnow() + timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%M:%SZ'),
             'allowedMethods': allowedMethods,

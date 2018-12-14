@@ -86,7 +86,7 @@ class Command(BaseCommand):
                                 continue
 
                             BraintreeLog(transid=t.transid,
-                                         message='Transaction has been disbursed, amount {0}, settled amount {1}'.format(btrans.amount,btrans.disbursement_details.settlement_amount)).save()
+                                         message='Transaction has been disbursed, amount {0}, settled amount {1}'.format(btrans.amount, btrans.disbursement_details.settlement_amount)).save()
 
                             t.disbursedat = btrans.disbursement_details.disbursement_date
                             t.disbursedamount = btrans.disbursement_details.settlement_amount

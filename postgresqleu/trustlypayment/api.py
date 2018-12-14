@@ -73,7 +73,7 @@ class TrustlyWrapper(object):
             else:
                 # Different currency, so ensure it's zero
                 if Decimal(b['balance']) != 0:
-                    raise TrustlyException('Found non-zero balance {0} for non-standard currency {1}'.format(b['balance'],b['currency']))
+                    raise TrustlyException('Found non-zero balance {0} for non-standard currency {1}'.format(b['balance'], b['currency']))
         if balance is None:
             raise TrustlyException('Found no balance for {0}'.format(self.currency))
         return balance

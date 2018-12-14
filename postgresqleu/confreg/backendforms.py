@@ -78,12 +78,12 @@ class BackendForm(ConcurrentProtectedModelForm):
         # but meh, this isn't used that often so...
         if self.fieldsets:
             all_fields = set([f for f in self.fields if not f == '_validator'])
-            all_fieldsetted_fields = set(reduce(lambda x,y: x + y, [v['fields'] for v in self.fieldsets]))
+            all_fieldsetted_fields = set(reduce(lambda x, y: x + y, [v['fields'] for v in self.fieldsets]))
             missing = all_fields.difference(all_fieldsetted_fields)
             if missing:
                 raise Exception("ERROR: fields %s are not in a fieldset" % ", ".join(missing))
 
-        for k,v in self.fields.items():
+        for k, v in self.fields.items():
             # Adjust widgets
             if isinstance(v, django.forms.fields.DateField):
                 v.widget = HtmlDateInput()
@@ -92,8 +92,8 @@ class BackendForm(ConcurrentProtectedModelForm):
             # the conference dates.
             if isinstance(v, django.forms.fields.DateTimeField) and not k in self.exclude_date_validators:
                 v.validators.extend([
-                    MinValueValidator(datetime.datetime.combine(self.conference.startdate, datetime.time(0,0,0))),
-                    MaxValueValidator(datetime.datetime.combine(self.conference.enddate + datetime.timedelta(days=1), datetime.time(0,0,0))),
+                    MinValueValidator(datetime.datetime.combine(self.conference.startdate, datetime.time(0, 0, 0))),
+                    MaxValueValidator(datetime.datetime.combine(self.conference.enddate + datetime.timedelta(days=1), datetime.time(0, 0, 0))),
                 ])
             elif isinstance(v, django.forms.fields.DateField) and not k in self.exclude_date_validators:
                 v.validators.extend([
@@ -214,7 +214,7 @@ class BackendSuperConferenceForm(BackendForm):
     exclude_date_validators = ['startdate', 'enddate']
 
     def fix_fields(self):
-        self.fields['accounting_object'].choices = [('', '----'),] + [(o.name, o.name) for o in postgresqleu.accounting.models.Object.objects.filter(active=True)]
+        self.fields['accounting_object'].choices = [('', '----'), ] + [(o.name, o.name) for o in postgresqleu.accounting.models.Object.objects.filter(active=True)]
         if not self.instance.id:
             self.remove_field('accounting_object')
 
@@ -374,7 +374,7 @@ class BackendAdditionalOptionForm(BackendForm):
     list_fields = ['name', 'cost', 'maxcount', 'invoice_autocancel_hours']
     vat_fields = {'cost': 'reg'}
     auto_cascade_delete_to = ['registrationtype_requires_option', 'conferenceadditionaloption_requires_regtype',
-                              'conferenceadditionaloption_mutually_exclusive',]
+                              'conferenceadditionaloption_mutually_exclusive', ]
     class Meta:
         model = ConferenceAdditionalOption
         fields = ['name', 'cost', 'maxcount', 'public', 'upsellable', 'invoice_autocancel_hours',
@@ -499,7 +499,7 @@ class BackendConferenceSessionForm(BackendForm):
             raise ValidationError("Sessions with speaker cannot change from {0} to {1}. Only one of {2} is allowed.".format(
                 get_status_string(self.instance.status),
                 get_status_string(newstatus),
-                ", ".join(["{0} ({1})".format(get_status_string(s), v) for s,v in valid_status_transitions[self.instance.status].items()]),
+                ", ".join(["{0} ({1})".format(get_status_string(s), v) for s, v in valid_status_transitions[self.instance.status].items()]),
             ))
 
         return newstatus
@@ -627,7 +627,7 @@ class BackendVolunteerSlotForm(BackendForm):
 
 class BackendFeedbackQuestionForm(BackendForm):
     helplink = 'feedback#conference'
-    list_fields = ['newfieldset', 'question', 'sortkey',]
+    list_fields = ['newfieldset', 'question', 'sortkey', ]
     allow_copy_previous = True
 
     class Meta:
@@ -741,10 +741,10 @@ class BackendAccessTokenForm(BackendForm):
         fields = ['token', 'description', 'permissions', ]
 
     def _transformed_accesstoken_permissions(self):
-        for k,v in AccessTokenPermissions:
+        for k, v in AccessTokenPermissions:
             baseurl = '/events/admin/{0}/tokendata/{1}/{2}'.format(self.conference.urlname, self.instance.token, k)
-            formats = ['csv', 'tsv', 'json']
-            yield k, mark_safe('{0} ({1})'.format(v,", ".join(['<a href="{0}.{1}">{1}</a>'.format(baseurl, f) for f in formats])))
+            formats = ['csv', 'tsv', 'json', ]
+            yield k, mark_safe('{0} ({1})'.format(v, ", ".join(['<a href="{0}.{1}">{1}</a>'.format(baseurl, f) for f in formats])))
 
     def fix_fields(self):
         self.fields['permissions'].widget = django.forms.CheckboxSelectMultiple(

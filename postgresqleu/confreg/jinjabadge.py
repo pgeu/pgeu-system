@@ -46,7 +46,7 @@ class JinjaBadge(Flowable):
 
     def draw(self):
         if self.js.get('border', False):
-            self.canv.rect(0,0,self.width,self.height)
+            self.canv.rect(0, 0, self.width, self.height)
 
         for e in self.js['elements']:
             if e == {}:
@@ -146,7 +146,7 @@ def escapejson_filter(v):
     # those, but only one if there is more than one.
     return re.sub(r'^"|"$', '', json.dumps(v))
 
-def test_inlist(v,l):
+def test_inlist(v, l):
     return v in l
 
 class JinjaRenderer(object):
@@ -166,7 +166,7 @@ class JinjaRenderer(object):
             env = jinja2.sandbox.SandboxedEnvironment()
             env.filters.update({
                 'escapejson': escapejson_filter,
-                'yesno': lambda b,v: v.split(',')[not b],
+                'yesno': lambda b, v: v.split(',')[not b],
             })
             env.tests.update({
                 'inlist': test_inlist,

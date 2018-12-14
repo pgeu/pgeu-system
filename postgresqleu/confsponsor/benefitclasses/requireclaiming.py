@@ -7,7 +7,7 @@ class RequireClaimingForm(BaseBenefitForm):
     confirm = forms.ChoiceField(label="Claim benefit", choices=((0, '* Choose'), (1, 'Claim this benefit'), (2, 'Decline this benefit')))
 
     def clean_confirm(self):
-        if not int(self.cleaned_data['confirm']) in (1,2):
+        if not int(self.cleaned_data['confirm']) in (1, 2):
             raise ValidationError('You must decide if you want to claim this benefit')
         return self.cleaned_data['confirm']
 

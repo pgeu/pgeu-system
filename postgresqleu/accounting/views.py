@@ -96,7 +96,7 @@ def new(request, year):
         lastentry = JournalEntry.objects.filter(year=year).order_by('-date')[0]
         d = lastentry.date
     except IndexError:
-        d = date(year,1,1)
+        d = date(year, 1, 1)
 
     year = get_object_or_404(Year, year=year)
     highseq = JournalEntry.objects.filter(year=year).aggregate(Max('seq'))['seq__max']
@@ -327,7 +327,7 @@ SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
         else:
             # Ok, let's do this :)
             # Create a new year if we have to
-            (nextyear, created) = Year.objects.get_or_create(year=year.year + 1, defaults={'isopen':True})
+            (nextyear, created) = Year.objects.get_or_create(year=year.year + 1, defaults={'isopen': True})
 
             # Start by transferring this years result
             IncomingBalance(year=nextyear,
@@ -406,7 +406,7 @@ def report(request, year, reporttype):
             enddate = date(year.year, 12, 31)
     else:
         # Yes, this is ugly indeed :)
-        enddate = date(9999,12,31)
+        enddate = date(9999, 12, 31)
 
     if request.GET.has_key('io') and request.GET['io'] == '1':
         includeopen = True

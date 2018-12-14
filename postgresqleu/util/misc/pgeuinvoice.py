@@ -63,7 +63,7 @@ class PDFBase(object):
             t = self.canvas.beginText()
             t.setTextOrigin(6*cm, 4*cm)
             t.setFont("DejaVu Serif Italic", 70)
-            t.setFillColorRGB(0.9,0.9,0.9)
+            t.setFillColorRGB(0.9, 0.9, 0.9)
             t.textLine("PREVIEW PREVIEW")
             self.canvas.rotate(45)
             self.canvas.drawText(t)
@@ -75,7 +75,7 @@ class PDFBase(object):
         t.setFillColor(colors.black)
         t.setFont("DejaVu Serif", 9)
         t.setTextOrigin(6*cm, 27.5*cm)
-        self.textlines(t,"""PostgreSQL Europe
+        self.textlines(t, """PostgreSQL Europe
 Carpeaux Diem
 13, rue du Square Carpeaux
 75018 PARIS
@@ -144,16 +144,16 @@ class PDFInvoice(PDFBase):
 
             if self.invoicenum:
                 if self.receipt:
-                    self.canvas.drawCentredString(10.5*cm,18.5*cm, "Receipt for invoice number %s%s" % (self.invoicenum, suffix))
+                    self.canvas.drawCentredString(10.5*cm, 18.5*cm, "Receipt for invoice number %s%s" % (self.invoicenum, suffix))
                 else:
-                    self.canvas.drawCentredString(10.5*cm,18.5*cm, "Invoice number %s - %s%s" % (self.invoicenum, self.invoicedate.strftime("%B %d, %Y"),suffix))
+                    self.canvas.drawCentredString(10.5*cm, 18.5*cm, "Invoice number %s - %s%s" % (self.invoicenum, self.invoicedate.strftime("%B %d, %Y"), suffix))
                 self.canvas.setFont('DejaVu Serif Bold', 10)
                 if self.receipt:
                     self.canvas.drawCentredString(17*cm, 28*cm, "Receipt #%s" % self.invoicenum)
                 else:
                     self.canvas.drawCentredString(17*cm, 28*cm, "Invoice #%s" % self.invoicenum)
             else:
-                self.canvas.drawCentredString(10.5*cm,18.5*cm, "Receipt - %s%s" % (self.invoicedate.strftime("%B %d, %Y"), suffix))
+                self.canvas.drawCentredString(10.5*cm, 18.5*cm, "Receipt - %s%s" % (self.invoicedate.strftime("%B %d, %Y"), suffix))
 
             if pagenum == 0:
                 firstcol = "Item"
@@ -167,18 +167,18 @@ class PDFInvoice(PDFBase):
                              "%.2f %s" % (cost, self.currency),
                              vatrate and vatrate.shortstr or "No VAT",
                              "%.2f %s" % ((cost * count) * (1+(vatpercent/Decimal(100))), self.currency))
-                            for title,cost, count, vatrate, vatpercent in self.rows[pagenum*self.ROWS_PER_PAGE:(pagenum+1)*self.ROWS_PER_PAGE]])
+                            for title, cost, count, vatrate, vatpercent in self.rows[pagenum*self.ROWS_PER_PAGE:(pagenum+1)*self.ROWS_PER_PAGE]])
             style = [
                 ('FONTSIZE', (0, 0), (-1, -1), 8),
-                ('BACKGROUND',(0,0),(tblcols-1,0),colors.lightgrey),
-                ('ALIGN',(1,0),(tblcols-1,-1),'RIGHT'),
-                ('LINEBELOW',(0,0),(-1,0), 2, colors.black),
-                ('OUTLINE', (0,0), (-1, -1), 1, colors.black),
+                ('BACKGROUND', (0, 0), (tblcols-1, 0), colors.lightgrey),
+                ('ALIGN', (1, 0), (tblcols-1, -1), 'RIGHT'),
+                ('LINEBELOW', (0, 0), (-1, 0), 2, colors.black),
+                ('OUTLINE', (0, 0), (-1, -1), 1, colors.black),
             ]
             if islastpage:
-                totalexcl = sum([cost*count for title,cost,count,vatrate,vatpercent in self.rows])
-                totalvat = sum([(cost*count*(vatpercent/Decimal(100))).quantize(Decimal('0.01')) for title,cost,count,vatrate,vatpercent in self.rows])
-                totalincl = sum([(cost*count*(1+vatpercent/Decimal(100))).quantize(Decimal('0.01')) for title,cost,count,vatrate,vatpercent in self.rows])
+                totalexcl = sum([cost*count for title, cost, count, vatrate, vatpercent in self.rows])
+                totalvat = sum([(cost*count*(vatpercent/Decimal(100))).quantize(Decimal('0.01')) for title, cost, count, vatrate, vatpercent in self.rows])
+                totalincl = sum([(cost*count*(1+vatpercent/Decimal(100))).quantize(Decimal('0.01')) for title, cost, count, vatrate, vatpercent in self.rows])
                 if self.totalvat > 0 and totalvat != self.totalvat:
                     raise Exception("Specified total VAT {0} does not match calculated VAT {1}".format(self.totalvat, totalvat))
 
@@ -201,7 +201,7 @@ class PDFInvoice(PDFBase):
                     ('SPAN', (0, -2), (3, -2)),
                     ('SPAN', (0, -1), (3, -1)),
                     ('ALIGN', (0, -3), (0, -1), 'RIGHT'),
-                    ('LINEABOVE', (-4,-3), (-1, -3), 2, colors.black),
+                    ('LINEABOVE', (-4, -3), (-1, -3), 2, colors.black),
                 ])
             else:
                 tbldata.append(['          Continued on page %s' % (pagenum + 2), '', '', ''])
@@ -210,13 +210,13 @@ class PDFInvoice(PDFBase):
 
             t = Table(tbldata, [9.5*cm, 1.5*cm, 2.5*cm, 2*cm, 2.5*cm])
             t.setStyle(TableStyle(style))
-            w,h = t.wrapOn(self.canvas,10*cm,10*cm)
+            w, h = t.wrapOn(self.canvas, 10*cm, 10*cm)
             t.drawOn(self.canvas, 2*cm, 18*cm-h)
 
             if self.receipt:
-                self.canvas.drawCentredString(10.5*cm,17.3*cm-h, "This invoice was paid %s" % self.duedate.strftime("%B %d, %Y"))
+                self.canvas.drawCentredString(10.5*cm, 17.3*cm-h, "This invoice was paid %s" % self.duedate.strftime("%B %d, %Y"))
             else:
-                self.canvas.drawCentredString(10.5*cm,17.3*cm-h, "This invoice is due: %s" % self.duedate.strftime("%B %d, %Y"))
+                self.canvas.drawCentredString(10.5*cm, 17.3*cm-h, "This invoice is due: %s" % self.duedate.strftime("%B %d, %Y"))
 
 
             if islastpage:
@@ -294,7 +294,7 @@ class PDFRefund(PDFBase):
     def save(self):
         self._pageheader()
 
-        self.canvas.drawCentredString(10.5*cm,19*cm, "REFUND NOTE FOR INVOICE NUMBER {0}".format(self.invoicenum))
+        self.canvas.drawCentredString(10.5*cm, 19*cm, "REFUND NOTE FOR INVOICE NUMBER {0}".format(self.invoicenum))
 
         tblpaid = [
             ["Amount paid"],
@@ -317,26 +317,26 @@ class PDFRefund(PDFBase):
             ])
 
         style = [
-            ('SPAN', (0,0), (1,0)),
-            ('BACKGROUND',(0,0),(-1,0),colors.lightgrey),
-            ('ALIGN',(0,0),(0,0),'CENTER'),
-            ('ALIGN',(1,1),(1,-1),'RIGHT'),
-            ('LINEBELOW',(0,1),(-1,1), 1, colors.black),
-            ('OUTLINE', (0,0), (-1, -1), 1, colors.black),
+            ('SPAN', (0, 0), (1, 0)),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+            ('ALIGN', (0, 0), (0, 0), 'CENTER'),
+            ('ALIGN', (1, 1), (1, -1), 'RIGHT'),
+            ('LINEBELOW', (0, 1), (-1, 1), 1, colors.black),
+            ('OUTLINE', (0, 0), (-1, -1), 1, colors.black),
         ]
         if self.invoicevat:
             style.append(
-                ('LINEABOVE', (-1,-1), (-1,-1), 2, colors.black),
+                ('LINEABOVE', (-1, -1), (-1, -1), 2, colors.black),
             )
 
         t = Table(tblpaid, [10.5*cm, 2.5*cm, 1.5*cm, 2.5*cm])
         t.setStyle(TableStyle(style))
-        w,h = t.wrapOn(self.canvas,10*cm,10*cm)
+        w, h = t.wrapOn(self.canvas, 10*cm, 10*cm)
         t.drawOn(self.canvas, (self.canvas._pagesize[0]-w)/2, 18*cm-h)
 
         t = Table(tblrefunded, [10.5*cm, 2.5*cm, 1.5*cm, 2.5*cm])
         t.setStyle(TableStyle(style))
-        w,h = t.wrapOn(self.canvas,10*cm,10*cm)
+        w, h = t.wrapOn(self.canvas, 10*cm, 10*cm)
         t.drawOn(self.canvas, (self.canvas._pagesize[0]-w)/2, 18*cm-h*2-1*cm)
 
         self.canvas.drawCentredString(10.5*cm, 17.3*cm-h*2 - 2*cm, "This refund was issued {0}".format(self.refunddate.strftime("%B %d, %Y")))
