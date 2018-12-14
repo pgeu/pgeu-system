@@ -40,15 +40,15 @@ STATUS_CHOICES = (
     (0, "Submitted"),
     (1, "Approved"),
     (2, "Not Accepted"),
-    (3, "Pending"), # Approved, but not confirmed
-    (4, "Reserve"), # Reserve list
+    (3, "Pending"),      # Approved, but not confirmed
+    (4, "Reserve"),      # Reserve list
 )
 STATUS_CHOICES_LONG = (
     (0, "Submitted, not processed yet"),
     (1, "Approved and confirmed"),
     (2, "Not Accepted"),
-    (3, "Pending speaker confirmation"), # Approved, but not confirmed
-    (4, "Reserve-listed in case of cancels/changes"), # Reserve list
+    (3, "Pending speaker confirmation"),               # Approved, but not confirmed
+    (4, "Reserve-listed in case of cancels/changes"),  # Reserve list
 )
 def get_status_string(val):
     return (t for v, t in STATUS_CHOICES if v == val).next()

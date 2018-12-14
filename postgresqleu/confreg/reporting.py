@@ -61,9 +61,9 @@ def timereport(request):
 # Dynamically built list of all available report types
 reporttypes = []
 
-###########################################################3
+# ##########################################################3
 # Base classes for reports
-###########################################################3
+# ##########################################################3
 class MultiConferenceReport(object):
     def __init__(self, title, ylabel, conferences):
         self.title = title
@@ -123,9 +123,9 @@ class SingleConferenceReport(object):
 
 
 
-###########################################################3
+# ##########################################################3
 # Actually report classes
-###########################################################3
+# ##########################################################3
 class ConfirmedRegistrationsReport(MultiConferenceReport):
     def __init__(self, title, conferences):
         super(ConfirmedRegistrationsReport, self).__init__(title, 'Number of registrations', conferences)

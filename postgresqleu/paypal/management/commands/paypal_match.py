@@ -81,7 +81,7 @@ class Command(BaseCommand):
                 trans.setmatched('Matched API initiated refund')
                 # API initiated refund, so we should be able to match it
                 invoicemanager.complete_refund(
-                    trans.transtext[38:], # 38 is the length of the string above
+                    trans.transtext[38:],  # 38 is the length of the string above
                     -trans.amount,
                     -trans.fee,
                     settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT,

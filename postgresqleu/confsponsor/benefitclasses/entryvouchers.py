@@ -71,7 +71,7 @@ class EntryVouchers(BaseBenefit):
 
             # Finally, finish the claim
             claim.claimdata = batch.id
-            claim.confirmed = True # Always confirmed, they're generated after all
+            claim.confirmed = True  # Always confirmed, they're generated after all
         return True
 
     def render_claimdata(self, claimedbenefit):

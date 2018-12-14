@@ -208,7 +208,7 @@ def process_refund(notification):
                 manager.complete_refund(
                     invoicerefundid,
                     refund.refund_amount,
-                    0, # we don't know the fee, it'll be generically booked
+                    0,  # we don't know the fee, it'll be generically booked
                     settings.ACCOUNTING_ADYEN_REFUNDS_ACCOUNT,
                     settings.ACCOUNTING_ADYEN_FEE_ACCOUNT,
                     urls,
@@ -394,7 +394,7 @@ class AdyenAPI(object):
         apiparam = {
             'merchantAccount': settings.ADYEN_MERCHANTACCOUNT,
             'modificationAmount': {
-                'value': int(amount * 100), # "minor units", so cents!
+                'value': int(amount * 100),  # "minor units", so cents!
                 'currency': settings.CURRENCY_ISO,
             },
             'originalReference': transreference,

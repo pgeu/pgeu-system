@@ -79,7 +79,7 @@ class SponsorClaimedBenefitInline(admin.TabularInline):
     model = SponsorClaimedBenefit
     extra = 0
     can_delete = False
-    max_num = 0 # Hackish way to say "can't add more"
+    max_num = 0
 
 class LevelListFilter(admin.SimpleListFilter):
     title = 'Level'

@@ -54,7 +54,7 @@ def home(request):
                 MemberLog(member=member,
                           timestamp=datetime.now(),
                           message="Registration received, awaiting payment").save()
-                registration_complete = True # So we show the payment info!
+                registration_complete = True  # So we show the payment info!
             elif form.has_changed():
                 # Figure out what changed
                 MemberLog(member=member,
@@ -72,7 +72,7 @@ def home(request):
                     request.user,
                     request.user.email,
                     request.user.first_name + ' ' + request.user.last_name,
-                    '', # We don't have an address
+                    '',  # We don't have an address
                     '%s membership for %s' % (settings.ORG_NAME, request.user.email),
                     datetime.now(),
                     datetime.now(),
@@ -101,7 +101,7 @@ def home(request):
         'invoice': InvoicePresentationWrapper(member.activeinvoice, "%s/membership/" % settings.SITEBASE),
         'registration_complete': registration_complete,
         'logdata': logdata,
-        'amount': settings.MEMBERSHIP_COST, # price for settings.MEMBERSHIP_LENGTH years
+        'amount': settings.MEMBERSHIP_COST,  # price for settings.MEMBERSHIP_LENGTH years
     })
 
 

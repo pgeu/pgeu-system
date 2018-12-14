@@ -156,9 +156,9 @@ class Trustly(TrustlyWrapper):
         manager.process_incoming_payment_for_invoice(invoice,
                                                      trans.amount,
                                                      'Trustly id {0}'.format(trans.id),
-                                                     0, #XXX: we pay zero now, but should perhaps support fees?
+                                                     0,  # XXX: we pay zero now, but should perhaps support fees?
                                                      settings.ACCOUNTING_TRUSTLY_ACCOUNT,
-                                                     0, #XXX: if supporting fees, support fee account
+                                                     0,  # XXX: if supporting fees, support fee account
                                                      [],
                                                      invoice_logger,
                                                      method)

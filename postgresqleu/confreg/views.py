@@ -767,7 +767,7 @@ def reg_add_options(request, confname):
         if new_regtype:
             order.newregtype = new_regtype
 
-        order.save() # So we get a PK and can add m2m values
+        order.save()  # So we get a PK and can add m2m values
         for o in options:
             order.options.add(o)
 
@@ -1414,7 +1414,7 @@ def callforpapers_confirm(request, confname, sessionid):
 
     if request.method == 'POST':
         if request.POST.has_key('is_confirmed') and request.POST['is_confirmed'] == '1':
-            session.status = 1 # Now approved!
+            session.status = 1
             session.save()
             # We can generate the email for this right away, so let's do that
             for spk in session.speaker.all():
@@ -1429,7 +1429,7 @@ def callforpapers_confirm(request, confname, sessionid):
                                    sendername=conference.conferencename,
                                    receivername=spk.fullname,
                                )
-            session.lastnotifiedstatus = 1 # Now also approved
+            session.lastnotifiedstatus = 1
             session.lastnotifiedtime = datetime.now()
             session.save()
             return HttpResponseRedirect(".")

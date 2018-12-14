@@ -11,7 +11,7 @@ from datetime import date, datetime, timedelta
 from django.db.models import Q, F, Count
 
 from postgresqleu.confreg.models import DiscountCode
-from postgresqleu.confsponsor.models import Sponsor # Required for text based resolving in DiscountCode
+from postgresqleu.confsponsor.models import Sponsor
 from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 from postgresqleu.invoices.util import InvoiceManager, InvoiceWrapper
 

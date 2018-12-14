@@ -129,7 +129,7 @@ def oneinvoice(request, invoicenum):
             # that the invoice is really not finalized.
             if invoice.finalized:
                 raise Exception("Cannot delete a finalized invoice!")
-            invoiceid = invoice.id # Need to save this away since we delete it
+            invoiceid = invoice.id  # Need to save this away since we delete it
             invoice.delete()
             messages.info(request, "Invoice %s deleted." % invoiceid)
             return HttpResponseRedirect('/invoiceadmin/')
@@ -202,9 +202,9 @@ def flaginvoice(request, invoicenum):
     (r, i, p) = mgr.process_incoming_payment(invoice.invoicestr,
                                              invoice.total_amount,
                                              request.POST['reason'],
-                                             0, # We assume this was a bank payment without cost
+                                             0,  # We assume this was a bank payment without cost
                                              settings.ACCOUNTING_MANUAL_INCOME_ACCOUNT,
-                                             0, # costaccount
+                                             0,  # costaccount
                                              logger=payment_logger)
 
     if r != InvoiceManager.RESULT_OK:
@@ -321,12 +321,12 @@ def emailinvoice(request, invoicenum):
 
     return HttpResponse("OK")
 
-#--------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 #
 # Views that are viewable both by admins and end users
 # (if they have permissions)
 #
-#--------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 
 
 @login_required

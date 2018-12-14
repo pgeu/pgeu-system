@@ -568,7 +568,7 @@ class BackendConferenceSessionSlotForm(BackendForm):
                                           endtime=source.endtime + xform,
                                           ).save()
         return
-        yield None # Turn this into a generator
+        yield None  # Turn this into a generator
 
     @classmethod
     def get_transform_example(self, targetconf, sourceconf, idlist, transformform):
@@ -612,7 +612,7 @@ class BackendVolunteerSlotForm(BackendForm):
                           max_staff=source.max_staff,
             ).save()
         return
-        yield None # Turn this into a generator
+        yield None  # Turn this into a generator
 
     @classmethod
     def get_transform_example(self, targetconf, sourceconf, idlist, transformform):

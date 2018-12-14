@@ -56,6 +56,6 @@ class Command(BaseCommand):
                 Decimal(w['amount']),
                 0,
                 settings.ACCOUNTING_TRUSTLY_ACCOUNT,
-                0, # We don't support fees on Trustly at this point
+                0,  # We don't support fees on Trustly at this point
                 [],
                 method)

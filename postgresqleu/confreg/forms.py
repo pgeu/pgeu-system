@@ -402,9 +402,9 @@ class SpeakerProfileForm(forms.ModelForm):
 
     def clean_photofile(self):
         if not self.cleaned_data['photofile']:
-            return self.cleaned_data['photofile'] # If it's None...
+            return self.cleaned_data['photofile']
         if isinstance(self.cleaned_data['photofile'], ImageFieldFile):
-            return self.cleaned_data['photofile'] # If it's unchanged...
+            return self.cleaned_data['photofile']  # If it's unchanged...
 
         img = None
         try:

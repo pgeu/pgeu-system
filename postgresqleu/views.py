@@ -111,5 +111,5 @@ def csrf_failure(request, reason=''):
     resp = render(request, 'csrf_failure.html', {
         'reason': reason,
         })
-    resp.status_code = 403 # Forbidden
+    resp.status_code = 403  # Forbidden
     return resp

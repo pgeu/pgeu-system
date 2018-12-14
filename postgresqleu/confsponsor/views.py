@@ -351,11 +351,11 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
             # Always create a new claim here - we might support editing an existing one
             # sometime in the future, but not yet...
             claim = SponsorClaimedBenefit(sponsor=sponsor, benefit=benefit, claimedat=datetime.now(), claimedby=request.user)
-            claim.save() # generate an id
+            claim.save()  # generate an id
 
             send_mail = benefitclass.save_form(form, claim, request)
 
-            claim.save() # Just in case the claimdata field was modified
+            claim.save()  # Just in case the claimdata field was modified
 
             if send_mail:
                 if claim.declined:

@@ -11,7 +11,7 @@ def validate_speaker_registration(reg):
         raise ValidationError('Speaker registrations have to be done by the speaker directly')
     if not ConferenceSession.objects.filter(conference=reg.conference,
                                             speaker__user=reg.attendee,
-                                            status=1, # approved
+                                            status=1,  # approved
                                         ).exists():
         raise ValidationError('This registration type is only available if you are a confirmed speaker at this conference')
 
@@ -28,7 +28,7 @@ def validate_speaker_or_reserve_registration(reg):
         raise ValidationError('Speaker registrations have to be done by the speaker directly')
     if not ConferenceSession.objects.filter(conference=reg.conference,
                                             speaker__user=reg.attendee,
-                                            status__in=(1, 4), # approved/reserve
+                                            status__in=(1, 4),  # approved/reserve
                                         ).exists():
         raise ValidationError('This registration type is only available if you are a confirmed speaker at this conference')
 

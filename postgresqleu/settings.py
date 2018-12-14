@@ -123,7 +123,8 @@ EU_VAT_HOME_COUNTRY = "FR"
 # On-line validate EU vat numbers
 EU_VAT_VALIDATE = False
 
-##### Membership module #####
+# Membership module
+# -----------------
 # Years of membership per payment
 MEMBERSHIP_LENGTH = 2
 # Cost for membership
@@ -131,7 +132,8 @@ MEMBERSHIP_COST = 10
 # Function called to valide that country is acceptable for membership
 MEMBERSHIP_COUNTRY_VALIDATOR = None
 
-##### Invoice module #####
+# Invoice module
+# --------------
 INVOICE_PDF_BUILDER = 'postgresqleu.util.misc.pgeuinvoice'
 
 # Paypal sandbox configuration
@@ -182,7 +184,8 @@ ACCOUNTING_DONATIONS_ACCOUNT = 3601
 ACCOUNTING_INVOICE_VAT_ACCOUNT = 2610
 
 
-##### Organisation configuration #####
+# Organisation configuration
+# --------------------------
 ORG_NAME = "Not Configured Organisation"
 ORG_SHORTNAME = "NOTCONF"
 # Base URLs for generating absolute URLs
@@ -193,7 +196,8 @@ CSRF_COOKIE_SECURE = True
 
 DATETIME_FORMAT = "Y-m-d H:i:s"
 
-##### Enable/disable modules #####
+# Enable/disable modules
+# ----------------------
 ENABLE_PG_COMMUNITY_AUTH = False
 ENABLE_NEWS = True
 ENABLE_MEMBERSHIP = False
@@ -257,7 +261,8 @@ ADMINS = (
 )
 MANAGERS = ADMINS
 
-##### Invoice module #####
+# Invoice module
+# --------------
 INVOICE_TITLE_PREFIX = u'{0} Invoice'.format(ORG_NAME)
 INVOICE_FILENAME_PREFIX = ORG_SHORTNAME.lower()
 

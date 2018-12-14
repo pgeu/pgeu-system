@@ -67,7 +67,7 @@ class PaypalBaseTransaction(object):
         if r['L_CURRENCYCODE0'][0] != settings.CURRENCY_ISO:
             self.message = "Invalid currency %s" % r['L_CURRENCYCODE0'][0]
             self.transinfo.transtext += ' (currency %s, manually adjust amount!)' % r['L_CURRENCYCODE0'][0]
-            self.transinfo.amount = -1 # just to be on the safe side
+            self.transinfo.amount = -1  # just to be on the safe side
 
     def store(self):
         self.transinfo.matched = False
@@ -100,7 +100,7 @@ class PaypalTransfer(PaypalBaseTransaction):
         if apistruct.has_key('CURRENCYCODE') and apistruct['CURRENCYCODE'] != settings.CURRENCY_ISO:
             self.message = "Invalid currency %s" % apistruct['CURRENCYCODE']
             self.transinfo.transtext += ' (currency %s, manually adjust amount!)' % apistruct['CURRENCYCODE']
-            self.transinfo.amount = -1 # To be on the safe side
+            self.transinfo.amount = -1  # To be on the safe side
 
     def fetch_details(self, api):
         # We cannot fetch more details, but we also don't need more details..

@@ -57,7 +57,7 @@ class InvoiceWrapper(object):
         for r in self.invoice.invoicerow_set.all():
             total += r.rowamount * r.rowcount
             totalvat += r.totalvat
-        totalvat = totalvat.quantize(Decimal('.01')) # Round off to two digits
+        totalvat = totalvat.quantize(Decimal('.01'))  # Round off to two digits
         self.invoice.total_amount = total + totalvat
         self.invoice.total_vat = totalvat
 

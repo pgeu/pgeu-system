@@ -199,7 +199,7 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         if not obj:
-            return True # So they can see the change list page
+            return True  # So they can see the change list page
         if request.user.is_superuser:
             return True
         else:
@@ -258,7 +258,7 @@ class ConferenceSessionAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         if not obj:
-            return True # So they can see the change list page
+            return True  # So they can see the change list page
         if request.user.is_superuser:
             return True
         else:
@@ -367,7 +367,7 @@ class SpeakerAdminForm(ConcurrentProtectedModelForm):
 
     def clean_photofile(self):
         if not self.cleaned_data['photofile']:
-            return self.cleaned_data['photofile'] # If it's None...
+            return self.cleaned_data['photofile']
         if isinstance(self.cleaned_data['photofile'], ImageFieldFile):
             # Non-modified one
             return self.cleaned_data['photofile']
