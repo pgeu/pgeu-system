@@ -230,18 +230,18 @@ if 'SYSTEM_SKIN_DIRECTORY' in globals():
 
     TEMPLATES[0]['DIRS'].insert(0, os.path.join(SYSTEM_SKIN_DIRECTORY, 'template/'))
 
-    # Then, load a local settings file from there
     sys.path.insert(0, os.path.join(SYSTEM_SKIN_DIRECTORY, 'code/'))
-    try:
-        from local_settings import *
-    except ImportError, e:
-        pass
-    # Then also load a skin settings file (URLs etc)
+
+    # Load a skin settings file (URLs etc)
     try:
         from skin_settings import *
     except ImportError, e:
         pass
-
+    # Then, load a local settings file from there
+    try:
+        from local_settings import *
+    except ImportError, e:
+        pass
     if 'SKIN_APPS' in globals():
         INSTALLED_APPS.extend(SKIN_APPS)
 else:
