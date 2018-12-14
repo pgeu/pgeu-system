@@ -176,7 +176,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
             for p in range(1, pagesperday):
                 breaktime = dd['first'] + timedelta(seconds=p * secondsperpage)
                 breaksession = cross_sessions[min(range(len(cross_sessions)), key=lambda i: abs(cross_sessions[i].starttime-breaktime))]
-                if not breaksession in breakpoints:
+                if breaksession not in breakpoints:
                     breakpoints.append(breaksession)
 
             for s in dd['sessions']:

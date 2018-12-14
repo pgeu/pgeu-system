@@ -89,7 +89,7 @@ class ConfTemplateLoader(jinja2.FileSystemLoader):
             if not os.path.exists(os.path.join(self.conference.jinjadir, 'templates', template)):
                 # This template may exist in pgeu, so reject it unless it's specifically
                 # whitelisted as something we want to load.
-                if not template in self.WHITELISTED_TEMPLATES:
+                if template not in self.WHITELISTED_TEMPLATES:
                     raise jinja2.TemplateNotFound(template, "Rejecting attempt to load from incorrect location")
         return super(ConfTemplateLoader, self).get_source(environment, template)
 
@@ -130,7 +130,7 @@ class ConfSandbox(jinja2.sandbox.SandboxedEnvironment):
                 # If the object lists a number of safe attributes,
                 # then allow them and nothing else.
                 if hasattr(obj, '_safe_attributes'):
-                    if not attr in getattr(obj, '_safe_attributes'):
+                    if attr not in getattr(obj, '_safe_attributes'):
                         return False
                 else:
                     # No safe attributes specified, so assume none
@@ -144,7 +144,7 @@ class ConfSandbox(jinja2.sandbox.SandboxedEnvironment):
                 if hasattr(obj, '_safe_attributes'):
                     # If the object lists a number of safe attributes,
                     # then allow them and nothing else.
-                    if not attr in getattr(obj, '_safe_attributes'):
+                    if attr not in getattr(obj, '_safe_attributes'):
                         return False
                 else:
                     return False

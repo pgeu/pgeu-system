@@ -124,7 +124,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
                 selected = self.cleaned_data.get('additionaloptions') or ()
                 for o in c.requiresoption.all():
-                    if not o in selected:
+                    if o not in selected:
                         raise forms.ValidationError("This discount code requires the option '%s' to be picked." % o)
 
             except DiscountCode.DoesNotExist:
@@ -240,7 +240,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
             errs = []
             for ao in cleaned_data['additionaloptions']:
                 if ao.requires_regtype.exists():
-                    if not regtype in ao.requires_regtype.all():
+                    if regtype not in ao.requires_regtype.all():
                         errs.append('Additional option "%s" requires one of the following registration types: %s.' % (ao.name, ", ".join(x.regtype for x in ao.requires_regtype.all())))
             if len(errs):
                 self._errors['additionaloptions'] = self.error_class(errs)
@@ -489,7 +489,7 @@ class CallForPapersForm(forms.ModelForm):
         return self.cleaned_data.get('track')
 
     def clean_speaker(self):
-        if not self.currentspeaker in self.cleaned_data.get('speaker'):
+        if self.currentspeaker not in self.cleaned_data.get('speaker'):
             raise ValidationError("You cannot remove yourself as a speaker!")
         return self.cleaned_data.get('speaker')
 

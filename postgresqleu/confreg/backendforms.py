@@ -91,12 +91,12 @@ class BackendForm(ConcurrentProtectedModelForm):
 
             # Any datetime or date fields that are not explicitly excluded will be forced to be within
             # the conference dates.
-            if isinstance(v, django.forms.fields.DateTimeField) and not k in self.exclude_date_validators:
+            if isinstance(v, django.forms.fields.DateTimeField) and k not in self.exclude_date_validators:
                 v.validators.extend([
                     MinValueValidator(datetime.datetime.combine(self.conference.startdate, datetime.time(0, 0, 0))),
                     MaxValueValidator(datetime.datetime.combine(self.conference.enddate + datetime.timedelta(days=1), datetime.time(0, 0, 0))),
                 ])
-            elif isinstance(v, django.forms.fields.DateField) and not k in self.exclude_date_validators:
+            elif isinstance(v, django.forms.fields.DateField) and k not in self.exclude_date_validators:
                 v.validators.extend([
                     MinValueValidator(self.conference.startdate),
                     MaxValueValidator(self.conference.enddate),
@@ -516,7 +516,7 @@ class BackendConferenceSessionForm(BackendForm):
         if not self.cleaned_data.get('speaker').exists():
             return newstatus
 
-        if not newstatus in valid_status_transitions[self.instance.status]:
+        if newstatus not in valid_status_transitions[self.instance.status]:
             raise ValidationError("Sessions with speaker cannot change from {0} to {1}. Only one of {2} is allowed.".format(
                 get_status_string(self.instance.status),
                 get_status_string(newstatus),

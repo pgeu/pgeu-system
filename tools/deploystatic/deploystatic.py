@@ -234,11 +234,11 @@ def remove_unknown(knownfiles, destpath):
             relpath = ''
         for fn in filenames:
             f = os.path.join(relpath, fn)
-            if not f in knownfiles:
+            if f not in knownfiles:
                 os.unlink(os.path.join(destpath, f))
         for dn in subdirs:
             d = os.path.join(relpath, dn)
-            if not d in knowndirs:
+            if d not in knowndirs:
                 # Remove directory recursively, since there can be nothing left
                 # in it.
                 shutil.rmtree(os.path.join(destpath, d))

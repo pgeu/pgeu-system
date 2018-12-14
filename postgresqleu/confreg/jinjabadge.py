@@ -216,11 +216,11 @@ class JinjaRenderer(object):
             else:
                 raise Exception("JSON parse failed.")
 
-        if not 'border' in js:
+        if 'border' not in js:
             js['border'] = self.border
         self.story.append(JinjaBadge(js, self.staticdir))
 
-        if not 'forcebreaks' in js:
+        if 'forcebreaks' not in js:
             js['forcebreaks'] = self.pagebreaks
         if js.get('forcebreaks', False):
             self.story.append(PageBreak())

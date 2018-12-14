@@ -69,7 +69,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 
     if request.GET.get('fieldpreview', ''):
         f = request.GET.get('fieldpreview')
-        if not f in formclass.dynamic_preview_fields:
+        if f not in formclass.dynamic_preview_fields:
             raise Http404()
 
         try:
@@ -137,7 +137,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                 to_delete = collector.nested()
                 to_delete.remove(instance)
                 if to_delete:
-                    to_delete = [d for d in flatten_list(to_delete[0]) if not d._meta.model_name in formclass.auto_cascade_delete_to]
+                    to_delete = [d for d in flatten_list(to_delete[0]) if d._meta.model_name not in formclass.auto_cascade_delete_to]
                 if to_delete:
                     pieces = [unicode(to_delete[n]) for n in range(0, min(5, len(to_delete))) if not isinstance(to_delete[n], list)]
                     extra_error = u"This {0} cannot be deleted. It would have resulted in the following other objects also being deleted: {1}".format(formclass.Meta.model._meta.verbose_name, u', '.join(pieces))
@@ -176,7 +176,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                     for f in form.file_fields:
                         if f in request.FILES:
                             setattr(form.instance, f, request.FILES[f])
-                    form.instance.save(update_fields=[f for f in form.fields.keys() if not f in ('_validator', '_newformdata') and not isinstance(form[f].field, forms.ModelMultipleChoiceField)])
+                    form.instance.save(update_fields=[f for f in form.fields.keys() if f not in ('_validator', '_newformdata') and not isinstance(form[f].field, forms.ModelMultipleChoiceField)])
                     return HttpResponseRedirect(saved_url)
     else:
         form = formclass(conference, instance=instance, newformdata=newformdata)

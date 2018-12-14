@@ -33,7 +33,7 @@ class Twitter(object):
 
         # DM API calls require us to look up the userid, so do that with a
         # tiny cache first.
-        if not tousername in _cached_twitter_users:
+        if tousername not in _cached_twitter_users:
             try:
                 r = self.tw.get('https://api.twitter.com/1.1/users/show.json',
                                 params={'screen_name': tousername})

@@ -700,7 +700,7 @@ def reg_add_options(request, confname):
     new_regtype = None
     for o in options:
         a = o.requires_regtype.all()
-        if a and not reg.regtype in a:
+        if a and reg.regtype not in a:
             # New regtype is required. Figure out if there is an upsellable
             # one available.
             upsellable = o.requires_regtype.filter(Q(upsell_target=True, active=True, specialtype__isnull=True) & (Q(activeuntil__isnull=True) | Q(activeuntil__lt=datetime.today().date())))
@@ -2661,7 +2661,7 @@ def admin_registration_list(request, urlname):
         'type': 'regtype__sortkey',
         'date': 'payconfirmedat',
     }
-    if not skey in sortmap:
+    if skey not in sortmap:
         return HttpResponse("Bad sort key.")
 
     return render(request, 'confreg/admin_registration_list.html', {
@@ -3185,7 +3185,7 @@ def crossmail(request):
     def _get_recipients_for_crossmail(postdict):
         def _get_one_filter(conf, filt, optout_filter=False):
             conf = int(conf)
-            if not conf in conferenceids:
+            if conf not in conferenceids:
                 raise ValidationError("Invalid conference selected")
 
             (t, v) = filt.split(':')

@@ -98,7 +98,7 @@ def adyen_notify_handler(request):
     # Handle asynchronous notifications from the Adyen payment platform
 
     # Authenticate with HTTP BASIC
-    if not 'HTTP_AUTHORIZATION' in request.META:
+    if 'HTTP_AUTHORIZATION' not in request.META:
         # Sometimes Adyen sends notifications without authorization headers.
         # In this case, we request authrorization and they will try again
         r = HttpResponse('Unauthorized', status=401)
