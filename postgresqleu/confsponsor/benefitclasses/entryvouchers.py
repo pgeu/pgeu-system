@@ -63,9 +63,9 @@ class EntryVouchers(BaseBenefit):
                                "Entry vouchers for {0}".format(self.level.conference),
                                'confreg/mail/prepaid_vouchers.txt',
                                {
-                                 'batch': batch,
-                                 'vouchers': vouchers,
-                                 'conference': self.level.conference,
+                                   'batch': batch,
+                                   'vouchers': vouchers,
+                                   'conference': self.level.conference,
                                }
                            )
 

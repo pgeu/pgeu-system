@@ -28,12 +28,12 @@ class Command(BaseCommand):
             # Generate an email to the user
             send_template_mail(settings.MEMBERSHIP_SENDER_EMAIL,
                                m.user.email,
-                             "Your {0} membership has expired".format(settings.ORG_NAME),
+                               "Your {0} membership has expired".format(settings.ORG_NAME),
                                'membership/mail/expired.txt',
                                {
                                    'member': m,
                                },
-                           )
+            )
             self.stdout.write(u"Expired member {0} (paid until {1})".format(m, m.paiduntil))
             # An expired member has no membersince and no paiduntil.
             m.membersince = None
@@ -58,7 +58,7 @@ class Command(BaseCommand):
             # Generate an email to the user
             send_template_mail(settings.MEMBERSHIP_SENDER_EMAIL,
                                m.user.email,
-                             "Your {0} membership will expire soon".format(settings.ORG_NAME),
+                               "Your {0} membership will expire soon".format(settings.ORG_NAME),
                                'membership/mail/warning.txt',
                                {
                                    'member': m,

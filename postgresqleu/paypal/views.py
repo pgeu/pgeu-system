@@ -21,8 +21,8 @@ def paypal_return_handler(request):
     # Custom error return that can get to the request context
     def paypal_error(reason):
         return render(request, 'paypal/error.html', {
-                'reason': reason,
-                })
+            'reason': reason,
+        })
 
     # Logger for the invoice processing - we store it in the genereal
     # paypal logs
@@ -148,7 +148,7 @@ def paypal_return_handler(request):
             create_accounting_entry(date.today(), accrows, True, urls)
 
             return render(request, 'paypal/noinvoice.html', {
-                    })
+            })
 
         invoicemanager = InvoiceManager()
         (r,i,p) = invoicemanager.process_incoming_payment(ti.transtext,
@@ -184,15 +184,15 @@ def paypal_return_handler(request):
                     url = "%s/invoices/%s/%s/" % (settings.SITEBASE, i.pk, i.recipient_secret)
 
             return render(request, 'paypal/complete.html', {
-                    'invoice': i,
-                    'url': url,
-                    })
+                'invoice': i,
+                'url': url,
+            })
         else:
             # Did not match an invoice anywhere!
             # We'll leave the transaction in the paypal transaction
             # list, where it will generate an alert in the nightly mail.
             return render(request, 'paypal/noinvoice.html', {
-                    })
+            })
 
     # For a pending payment, we set ourselves up with a redirect loop
     if d['payment_status'] == 'Pending':
@@ -201,6 +201,6 @@ def paypal_return_handler(request):
         except:
             pending_reason = 'no reason given'
         return render(request, 'paypal/pending.html', {
-                'reason': pending_reason,
-                })
+            'reason': pending_reason,
+        })
     return paypal_error('Unknown payment status %s.' % d['payment_status'])

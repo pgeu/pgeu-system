@@ -18,7 +18,7 @@ class PaymentMethodWrapper(object):
             modname = '.'.join(pieces[:-1])
             classname = pieces[-1]
             mod = __import__(modname, fromlist=[classname, ])
-            self.implementation = getattr(mod, classname) ()
+            self.implementation = getattr(mod, classname)()
             self.ok = True
         except Exception:
             self.ok = False

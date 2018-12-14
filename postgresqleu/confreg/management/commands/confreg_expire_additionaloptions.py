@@ -38,9 +38,9 @@ class Command(BaseCommand):
                                                      invoice__isnull=True,
                                                      bulkpayment__isnull=True,
                                                      additionaloptions__invoice_autocancel_hours__isnull=False,
-                                                 ).extra(
-                                                     where=["lastmodified < CURRENT_TIMESTAMP - confreg_conferenceadditionaloption.invoice_autocancel_hours * '1 hour'::interval",]
-                                                 )
+        ).extra(
+            where=["lastmodified < CURRENT_TIMESTAMP - confreg_conferenceadditionaloption.invoice_autocancel_hours * '1 hour'::interval",]
+        )
 
         expired = defaultdict(list)
         num = 0

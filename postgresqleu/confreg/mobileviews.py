@@ -28,14 +28,15 @@ def index(request, confname):
     conference = get_object_or_404(Conference, urlname=confname)
 
     return render(request, 'confreg/mobile/index.html', {
-            'conf': conference,
-            'html5manifestversion': MANIFESTVERSION,
-            })
+        'conf': conference,
+        'html5manifestversion': MANIFESTVERSION,
+    })
 
 def cachemanifest(request, confname):
     # We'll just serve this up whenever, no need to check that the
     # conference exists. We'll break later :)
-    return HttpResponse("""CACHE MANIFEST
+    return HttpResponse(
+        """CACHE MANIFEST
 # revision:%s
 /media/jq/jquery.mobile-1.2.0.min.css
 /media/jq/jquery-1.8.2.min.js
@@ -49,7 +50,7 @@ def cachemanifest(request, confname):
 NETWORK:
 *
 """ % (MANIFESTVERSION,),
-                        content_type='text/cache-manifest')
+        content_type='text/cache-manifest')
 
 
 def conferencedata(request, confname, since):
@@ -64,9 +65,9 @@ def conferencedata(request, confname, since):
     # Yeah, the django ORM is uncapable of doing this in a smart way...
     curs = connection.cursor()
     curs.execute("SELECT s.id, s.title, s.abstract, s.starttime, s.endtime, r.roomname, array_agg(csp.speaker_id) AS speakers FROM confreg_conferencesession s INNER JOIN confreg_conferencesession_speaker csp ON csp.conferencesession_id=s.id LEFT JOIN confreg_room r ON r.id=s.room_id WHERE s.conference_id=%(confid)s AND status=1 AND NOT starttime IS NULL AND lastmodified > %(lastmod)s GROUP BY s.id, s.title, s.abstract, s.starttime, s.endtime, r.roomname ORDER BY s.starttime", {
-            'confid': conference.id,
-            'lastmod': datefilter,
-            })
+        'confid': conference.id,
+        'lastmod': datefilter,
+    })
 
     sessiondata = [{'i': r[0], 't': r[1], 'a': markdown.markdown(r[2], safe_mode=True), 'st': r[3].isoformat() + 'Z', 'et': r[4].isoformat() + 'Z', 'r': r[5] and r[5] or '', 's': r[6]} for r in curs.fetchall()]
 #    sessions = ConferenceSession.objects.select_related('speaker').filter(conference=conference, starttime__isnull=False).order_by('starttime')
@@ -74,17 +75,17 @@ def conferencedata(request, confname, since):
 
     # Now get all speaker info
     curs.execute("SELECT spk.id, spk.fullname, spk.abstract FROM confreg_speaker spk WHERE EXISTS (SELECT 1 FROM confreg_conferencesession_speaker csp INNER JOIN confreg_conferencesession s ON s.id=csp.conferencesession_id WHERE s.conference_id=%(confid)s AND status=1 AND NOT starttime IS NULL AND csp.speaker_id=spk.id) AND spk.lastmodified > %(lastmod)s", {
-            'confid': conference.id,
-            'lastmod': datefilter,
-            })
+        'confid': conference.id,
+        'lastmod': datefilter,
+    })
 
     speakerdata = [{'i': r[0], 'n': r[1], 'a': markdown.markdown(r[2], safe_mode=True)} for r in curs.fetchall()]
 
     # Get all deleted items
     if since:
         curs.execute("SELECT itemid, type FROM confreg_deleteditems WHERE deltime>%(lastmod)s ORDER BY type", {
-                'lastmod': datefilter,
-                })
+            'lastmod': datefilter,
+        })
         deldata = dict([(k, [i for i,t in v]) for k,v in itertools.groupby(curs.fetchall(), lambda t: t[1])])
     else:
         deldata = {}

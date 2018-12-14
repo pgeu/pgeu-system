@@ -33,8 +33,8 @@ class MemberAdmin(admin.ModelAdmin):
     def change_view(self, request, object_id, extra_context=None):
         member = Member(pk=object_id)
         return super(MemberAdmin, self).change_view(request, object_id, extra_context={
-                'logentries': member.memberlog_set.all().order_by('-timestamp')[:10],
-                })
+            'logentries': member.memberlog_set.all().order_by('-timestamp')[:10],
+        })
 
     def email_members(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)

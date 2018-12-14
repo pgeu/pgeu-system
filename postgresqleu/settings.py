@@ -13,7 +13,7 @@ DEBUG = False
 DEFAULT_EMAIL = 'webmaster@localhost'
 
 ADMINS = (
-          ('webmaster', DEFAULT_EMAIL),
+    ('webmaster', DEFAULT_EMAIL),
 )
 
 DATABASES = {
@@ -253,7 +253,7 @@ if not SECRET_KEY:
 
 # Reset admins based on confir params from skins and local
 ADMINS = (
-          (u'{0} webmaster'.format(ORG_NAME), DEFAULT_EMAIL),
+    (u'{0} webmaster'.format(ORG_NAME), DEFAULT_EMAIL),
 )
 MANAGERS = ADMINS
 

@@ -115,12 +115,13 @@ class Command(BaseCommand):
                 ErrorLog(timestamp=datetime.now(),
                          sent=False,
                          message='Paypal %s by %s (%s) on %s: %s' % (
-                        trans.paypaltransid,
-                        trans.sender,
-                        trans.sendername,
-                        trans.timestamp,
-                        msg
-                        )).save()
+                             trans.paypaltransid,
+                             trans.sender,
+                             trans.sendername,
+                             trans.timestamp,
+                             msg
+                         ),
+                ).save()
 
             (r,i,p) = invoicemanager.process_incoming_payment(trans.transtext,
                                                               trans.amount,

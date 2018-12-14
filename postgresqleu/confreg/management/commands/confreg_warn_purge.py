@@ -20,7 +20,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         for conference in Conference.objects.filter(personal_data_purged__isnull=True,
                                                     enddate__lt=datetime.now() - timedelta(days=30)) \
-                                                    .extra(where=["EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=confreg_conference.id)"]):
+                                            .extra(where=["EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=confreg_conference.id)"]):
             send_simple_mail(conference.contactaddr,
                              conference.contactaddr,
                              u"{0}: time to purge personal data?".format(conference.conferencename),

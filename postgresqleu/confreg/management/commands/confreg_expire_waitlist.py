@@ -34,9 +34,9 @@ class Command(BaseCommand):
             # Notify conference organizers
             send_simple_mail(reg.conference.contactaddr,
                              reg.conference.contactaddr,
-                                 'Waitlist expired',
-                                 u'User {0} {1} <{2}> did not complete the registration before the waitlist offer expired.'.format(reg.firstname, reg.lastname, reg.email),
-                                 sendername=reg.conference.conferencename)
+                             'Waitlist expired',
+                             u'User {0} {1} <{2}> did not complete the registration before the waitlist offer expired.'.format(reg.firstname, reg.lastname, reg.email),
+                             sendername=reg.conference.conferencename)
 
             # Also send an email to the user
             send_template_mail(reg.conference.contactaddr,

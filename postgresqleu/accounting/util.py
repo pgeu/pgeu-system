@@ -109,8 +109,9 @@ def get_latest_account_balance(accountid):
 SELECT sum(amount)+COALESCE((SELECT incoming_amount FROM incoming_balance),0)
  FROM accounting_journalitem ji INNER JOIN accounting_journalentry je ON ji.journal_id=je.id
   WHERE account_id=%(account)s
-   AND  je.year_id >= (SELECT incoming_year FROM incoming_balance)""", {
-       'account': accountid,
-   })
+   AND  je.year_id >= (SELECT incoming_year FROM incoming_balance)""",
+                   {
+                       'account': accountid,
+                   })
 
     return cursor.fetchall()[0][0]

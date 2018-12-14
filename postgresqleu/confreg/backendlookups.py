@@ -47,10 +47,15 @@ class GeneralAccountLookup(LookupBase):
 
     @classmethod
     def get_values(self, query):
-        return [{'id': u.id, 'value': u'{0} {1} ({2})'.format(u.first_name, u.last_name, u.username)}
-                for u in User.objects.filter(
-                        Q(username__icontains=query) | Q(first_name__icontains=query) | Q(last_name__icontains=query)
-                )[:30]]
+        return [
+            {
+                'id': u.id,
+                'value': u'{0} {1} ({2})'.format(u.first_name, u.last_name, u.username)
+            }
+            for u in User.objects.filter(
+                Q(username__icontains=query) | Q(first_name__icontains=query) | Q(last_name__icontains=query)
+            )[:30]
+        ]
 
 
 class RegisteredUsersLookup(LookupBase):
@@ -66,10 +71,10 @@ class RegisteredUsersLookup(LookupBase):
     def get_values(self, query, conference):
         return [{'id': r.id, 'value': r.fullname}
                 for r in ConferenceRegistration.objects.filter(
-                        conference=conference,
-                        payconfirmedat__isnull=False).filter(
-                            Q(firstname__icontains=query) | Q(lastname__icontains=query) | Q(email__icontains=query)
-                        )[:30]]
+                    conference=conference,
+                    payconfirmedat__isnull=False).filter(
+                        Q(firstname__icontains=query) | Q(lastname__icontains=query) | Q(email__icontains=query)
+                    )[:30]]
 
 
 class SpeakerLookup(LookupBase):
@@ -83,7 +88,11 @@ class SpeakerLookup(LookupBase):
 
     @classmethod
     def get_values(self, query):
-        return [{'id': s.id, 'value': u"%s (%s)" % (s.fullname, s.user.username if s.user else '')}
-                for s in Speaker.objects.filter(
-                        Q(fullname__icontains=query) | Q(twittername__icontains=query) | Q(user__username__icontains=query)
-                )[:30]]
+        return [
+            {'id': s.id,
+             'value': u"%s (%s)" % (s.fullname, s.user.username if s.user else '')
+            }
+            for s in Speaker.objects.filter(
+                Q(fullname__icontains=query) | Q(twittername__icontains=query) | Q(user__username__icontains=query)
+            )[:30]
+        ]

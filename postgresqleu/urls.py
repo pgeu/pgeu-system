@@ -259,38 +259,38 @@ urlpatterns.extend([
 
 if settings.ENABLE_NEWS:
     urlpatterns.extend([
-    url(r'^events/attendee/$', postgresqleu.views.attendee_events),
-    url(r'^news/archive/$', postgresqleu.newsevents.views.newsarchive),
-    url(r'news/[^/]+-(\d+)/$', postgresqleu.newsevents.views.newsitem),
-    # Feeds
-    url(r'^feeds/(?P<what>(news|user/[^/]+))/$', LatestNews()),
-    url(r'^feeds/conf/(?P<what>[^/]+)/$', ConferenceNewsFeed()),
-    url(r'^feeds/conf/(?P<confname>[^/]+)/json/$', postgresqleu.confreg.views.news_json),
-])
+        url(r'^events/attendee/$', postgresqleu.views.attendee_events),
+        url(r'^news/archive/$', postgresqleu.newsevents.views.newsarchive),
+        url(r'news/[^/]+-(\d+)/$', postgresqleu.newsevents.views.newsitem),
+        # Feeds
+        url(r'^feeds/(?P<what>(news|user/[^/]+))/$', LatestNews()),
+        url(r'^feeds/conf/(?P<what>[^/]+)/$', ConferenceNewsFeed()),
+        url(r'^feeds/conf/(?P<confname>[^/]+)/json/$', postgresqleu.confreg.views.news_json),
+    ])
 
 if settings.ENABLE_MEMBERSHIP:
     import postgresqleu.membership.views
     urlpatterns.extend([
-    # Membership management
-    url(r'^membership/$', postgresqleu.membership.views.home),
-    url(r'^membership/meetings/$', postgresqleu.membership.views.meetings),
-    url(r'^membership/meetings/(\d+)/$', postgresqleu.membership.views.meeting),
-    url(r'^membership/meetings/(\d+)/([a-z0-9]{64})/$', postgresqleu.membership.views.meeting_by_key),
-    url(r'^membership/meetings/(\d+)/proxy/$', postgresqleu.membership.views.meeting_proxy),
-    url(r'^membership/meetingcode/$', postgresqleu.membership.views.meetingcode),
-    url(r'^membership/members/$', postgresqleu.membership.views.userlist),
-    url(r'^admin/membership/_email/$', postgresqleu.membership.views.admin_email),
-])
+        # Membership management
+        url(r'^membership/$', postgresqleu.membership.views.home),
+        url(r'^membership/meetings/$', postgresqleu.membership.views.meetings),
+        url(r'^membership/meetings/(\d+)/$', postgresqleu.membership.views.meeting),
+        url(r'^membership/meetings/(\d+)/([a-z0-9]{64})/$', postgresqleu.membership.views.meeting_by_key),
+        url(r'^membership/meetings/(\d+)/proxy/$', postgresqleu.membership.views.meeting_proxy),
+        url(r'^membership/meetingcode/$', postgresqleu.membership.views.meetingcode),
+        url(r'^membership/members/$', postgresqleu.membership.views.userlist),
+        url(r'^admin/membership/_email/$', postgresqleu.membership.views.admin_email),
+    ])
 
 if settings.ENABLE_ELECTIONS:
     import postgresqleu.elections.views
     urlpatterns.extend([
-    # Elections
-    url(r'^elections/$', postgresqleu.elections.views.home),
-    url(r'^elections/(\d+)/$', postgresqleu.elections.views.election),
-    url(r'^elections/(\d+)/candidate/(\d+)/$', postgresqleu.elections.views.candidate),
-    url(r'^elections/(\d+)/ownvotes/$', postgresqleu.elections.views.ownvotes),
-])
+        # Elections
+        url(r'^elections/$', postgresqleu.elections.views.home),
+        url(r'^elections/(\d+)/$', postgresqleu.elections.views.election),
+        url(r'^elections/(\d+)/candidate/(\d+)/$', postgresqleu.elections.views.candidate),
+        url(r'^elections/(\d+)/ownvotes/$', postgresqleu.elections.views.ownvotes),
+    ])
 
 if settings.ENABLE_TRUSTLY:
     import postgresqleu.trustlypayment.views

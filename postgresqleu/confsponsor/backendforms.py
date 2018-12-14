@@ -171,7 +171,7 @@ class BackendSponsorshipContractForm(BackendForm):
     file_fields = ['contractpdf', ]
     class Meta:
         model = SponsorshipContract
-        fields = ['contractname', 'contractpdf' ]
+        fields = ['contractname', 'contractpdf', ]
 
     def fix_fields(self):
         self.fields['contractpdf'].widget = RequiredFileUploadWidget(filename='{0}.pdf'.format(self.instance.contractname))

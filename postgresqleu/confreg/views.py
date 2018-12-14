@@ -1163,10 +1163,10 @@ def speakerprofile(request, confurlname=None):
         form = SpeakerProfileForm(instance=speaker)
 
     return render_conference_response(request, conf, 'cfp', 'confreg/speakerprofile.html', {
-            'speaker': speaker,
-            'conferences': conferences,
-            'callforpapers': callforpapers,
-            'form': form,
+        'speaker': speaker,
+        'conferences': conferences,
+        'callforpapers': callforpapers,
+        'form': form,
     })
 
 @login_required
@@ -1187,9 +1187,9 @@ def callforpapers(request, confname):
         sessions = []
 
     return render_conference_response(request, conference, 'cfp', 'confreg/callforpapers.html', {
-            'other_submissions': other_submissions,
-            'sessions': sessions,
-            'is_tester': is_tester,
+        'other_submissions': other_submissions,
+        'sessions': sessions,
+        'is_tester': is_tester,
     })
 
 
@@ -1320,8 +1320,8 @@ def callforpapers_edit(request, confname, sessionid):
         form = CallForPapersForm(speaker, instance=session, initial=initial)
 
     return render_conference_response(request, conference, 'cfp', 'confreg/callforpapersform.html', {
-            'form': form,
-            'session': session,
+        'form': form,
+        'session': session,
     })
 
 @login_required
@@ -1409,8 +1409,8 @@ def callforpapers_confirm(request, confname, sessionid):
     if session.status == 1:
         # Confirmed
         return render_conference_response(request, conference, 'cfp', 'confreg/callforpapersconfirmed.html', {
-        'session': session,
-    })
+            'session': session,
+        })
 
     if request.method == 'POST':
         if request.POST.has_key('is_confirmed') and request.POST['is_confirmed'] == '1':
@@ -1423,8 +1423,8 @@ def callforpapers_confirm(request, confname, sessionid):
                                    "Your session '%s' submitted to %s" % (session.title, conference),
                                    'confreg/mail/session_notify.txt',
                                    {
-                                     'conference': conference,
-                                     'session': session,
+                                       'conference': conference,
+                                       'session': session,
                                    },
                                    sendername = conference.conferencename,
                                    receivername = spk.fullname,
@@ -1725,9 +1725,9 @@ def invoice(request, confname, regid):
         return HttpResponseRedirect('../../')
 
     return render_conference_response(request, conference, 'reg', 'confreg/invoice.html', {
-            'reg': reg,
-            'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/%s/register/" % (settings.SITEBASE, conference.urlname)),
-            })
+        'reg': reg,
+        'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/%s/register/" % (settings.SITEBASE, conference.urlname)),
+    })
 
 @login_required
 @transaction.atomic
@@ -2137,11 +2137,11 @@ def talkvote(request, confname):
     # Render the form. Need to do this with a manual query, can't figure
     # out the right way to do it with the django ORM.
     curs.execute("SELECT s.id, s.title, s.status, s.lastnotifiedstatus, s.abstract, s.submissionnote, (SELECT string_agg(spk.fullname, ',') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers, (SELECT string_agg(spk.fullname || '(' || spk.company || ')', ',') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers_full, (SELECT string_agg('####' ||spk.fullname || '\n' || spk.abstract, '\n\n') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers_long, u.username, v.vote, v.comment, avg(v.vote) OVER (PARTITION BY s.id)::numeric(3,2) AS avg, trackname FROM (confreg_conferencesession s CROSS JOIN auth_user u) LEFT JOIN confreg_track track ON track.id=s.track_id LEFT JOIN confreg_conferencesessionvote v ON v.session_id=s.id AND v.voter_id=u.id WHERE s.conference_id=%(confid)s AND u.id IN (SELECT user_id FROM confreg_conference_talkvoters tv WHERE tv.conference_id=%(confid)s) AND (COALESCE(s.track_id,0)=ANY(%(tracks)s)) AND status=ANY(%(statuses)s) ORDER BY " + order + "s.title,s.id, u.id=%(userid)s DESC, u.username", {
-            'confid': conference.id,
-            'userid': request.user.id,
-            'tracks': selectedtracks,
-            'statuses': selectedstatuses,
-            })
+        'confid': conference.id,
+        'userid': request.user.id,
+        'tracks': selectedtracks,
+        'statuses': selectedstatuses,
+    })
 
     def getusernames(all):
         if not all:
@@ -2192,18 +2192,18 @@ def talkvote(request, confname):
 
     all = curs.fetchall()
     return render(request, 'confreg/sessionvotes.html', {
-            'users': getusernames(all),
-            'sessionvotes': transform(all),
-            'conference': conference,
-            'isvoter': isvoter,
-            'isadmin': isadmin,
-            'status_choices': STATUS_CHOICES,
-            'tracks': alltracks,
-            'selectedtracks': selectedtracks,
-            'selectedstatuses': selectedstatuses,
-            'urlfilter': urltrackfilter + urlstatusfilter,
-            'helplink': 'callforpapers',
-            })
+        'users': getusernames(all),
+        'sessionvotes': transform(all),
+        'conference': conference,
+        'isvoter': isvoter,
+        'isadmin': isadmin,
+        'status_choices': STATUS_CHOICES,
+        'tracks': alltracks,
+        'selectedtracks': selectedtracks,
+        'selectedstatuses': selectedstatuses,
+        'urlfilter': urltrackfilter + urlstatusfilter,
+        'helplink': 'callforpapers',
+    })
 
 @login_required
 @transaction.atomic
@@ -2224,7 +2224,7 @@ def talkvote_status(request, confname):
     session.save()
     return HttpResponse("{0};{1}".format(get_status_string(session.status),
                                          session.status!=session.lastnotifiedstatus and 1 or 0,
-                                     ),    content_type='text/plain')
+                                     ), content_type='text/plain')
 
 @login_required
 @transaction.atomic
@@ -2346,21 +2346,21 @@ def createschedule(request, confname):
     for d,d_sessions in raw.items():
         sessionset = SessionSet(allrooms, allrooms, conference.schedulewidth, conference.pixelsperminute, d_sessions)
         days.append({
-                'day': d,
-                'sessions': sessionset.all(),
-                'rooms': sessionset.allrooms(),
-                'schedule_height': sessionset.schedule_height(),
-                'schedule_width': sessionset.schedule_width(),
-                })
+            'day': d,
+            'sessions': sessionset.all(),
+            'rooms': sessionset.allrooms(),
+            'schedule_height': sessionset.schedule_height(),
+            'schedule_width': sessionset.schedule_width(),
+        })
     return render(request, 'confreg/schedule_create.html', {
-            'conference': conference,
-            'days': days,
-            'sessions': sessions,
-            'tracks': tracks,
-            'sesswidth': min(600 / len(allrooms), 150),
-            'availableheight': len(sessions)*75,
-            'helplink': 'schedule',
-            })
+        'conference': conference,
+        'days': days,
+        'sessions': sessions,
+        'tracks': tracks,
+        'sesswidth': min(600 / len(allrooms), 150),
+        'availableheight': len(sessions)*75,
+        'helplink': 'schedule',
+    })
 
 @login_required
 def publishschedule(request, confname):
@@ -2402,13 +2402,13 @@ def publishschedule(request, confname):
     if request.GET.has_key('doit') and request.GET['doit'] == '1':
         transaction.commit()
         return render(request, 'confreg/schedule_publish.html', {
-                'done': 1,
-            })
+            'done': 1,
+        })
     else:
         transaction.rollback()
         return render(request, 'confreg/schedule_publish.html', {
-                'changes': changes,
-            })
+            'changes': changes,
+        })
 
 def reports(request, confname):
     conference = get_authenticated_conference(request, confname)
@@ -2416,13 +2416,13 @@ def reports(request, confname):
     # Include information for the advanced reports
     from reports import attendee_report_fields, attendee_report_filters
     return render(request, 'confreg/reports.html', {
-            'conference': conference,
-            'list': True,
-            'additionaloptions': conference.conferenceadditionaloption_set.all(),
-            'adv_fields': attendee_report_fields,
-            'adv_filters': attendee_report_filters(conference),
-            'helplink': 'reports#attendee',
-            })
+        'conference': conference,
+        'list': True,
+        'additionaloptions': conference.conferenceadditionaloption_set.all(),
+        'adv_fields': attendee_report_fields,
+        'adv_filters': attendee_report_filters(conference),
+        'helplink': 'reports#attendee',
+    })
 
 
 def advanced_report(request, confname):
@@ -2433,7 +2433,7 @@ def advanced_report(request, confname):
 
     from reports import build_attendee_report
 
-    return build_attendee_report(conference, request.POST )
+    return build_attendee_report(conference, request.POST)
 
 
 def simple_report(request, confname):
@@ -2487,7 +2487,7 @@ def admin_dashboard(request):
     upcoming = []
     past = []
     for c in conferences:
-        if abs((date.today() - c.startdate).days) < 14 or abs((date.today() - c.enddate).days)  < 14:
+        if abs((date.today() - c.startdate).days) < 14 or abs((date.today() - c.enddate).days) < 14:
             current.insert(0, c)
         elif c.startdate > date.today():
             upcoming.insert(0, c)
@@ -2509,7 +2509,7 @@ def admin_dashboard_single(request, urlname):
         'pending_session_notifications': conference.pending_session_notifications,
         'pending_waitlist': RegistrationWaitlistEntry.objects.filter(registration__conference=conference, offeredon__isnull=True).exists(),
         'unregistered_staff': exec_to_scalar("SELECT EXISTS (SELECT user_id FROM confreg_conference_staff s WHERE s.conference_id=%(confid)s AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND attendee_id=s.user_id))", {'confid': conference.id}),
-        'unregistered_speakers': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id WHERE s.conference_id=%(confid)s AND s.status=1 AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.attendee_id=spk.user_id))", { 'confid': conference.id}),
+        'unregistered_speakers': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id WHERE s.conference_id=%(confid)s AND s.status=1 AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.attendee_id=spk.user_id))", {'confid': conference.id}),
         'unconfirmed_speakers': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession_speaker css INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id WHERE s.conference_id=%(confid)s AND s.status=3)", {'confid': conference.id}),
         'sessions_noroom': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=1 AND s.room_id IS NULL AND NOT cross_schedule)", {'confid': conference.id}),
         'sessions_notrack': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=1 AND s.track_id IS NULL)", {'confid': conference.id}),
@@ -3063,12 +3063,12 @@ def transfer_reg(request, urlname):
                            receivername=fromreg.fullname)
 
         send_simple_mail(fromreg.conference.contactaddr,
-                           fromreg.conference.contactaddr,
-                           "Transferred registration",
-                           "Registration for {0} transferred to {1}.\n".format(fromreg.email, toreg.email),
-                           sendername=fromreg.conference.conferencename,
-                           receivername=fromreg.conference.conferencename,
-                           )
+                         fromreg.conference.contactaddr,
+                         "Transferred registration",
+                         "Registration for {0} transferred to {1}.\n".format(fromreg.email, toreg.email),
+                         sendername=fromreg.conference.conferencename,
+                         receivername=fromreg.conference.conferencename,
+        )
 
         yield u"Deleting old registration"
         fromreg.delete()

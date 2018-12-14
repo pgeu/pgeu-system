@@ -64,7 +64,7 @@ def invoicepayment_secret(request, invoiceid, secret):
                            invoiceid=invoice.id,
                            amount=invoice.total_amount,
                            orderid=r['data']['orderid'],
-                        redirecturl=r['data']['url'],
+                           redirecturl=r['data']['url'],
         ).save()
 
         # With the transaction saved, redirect the user to Trustly

@@ -417,7 +417,7 @@ class ConferenceFeedbackQuestionAdmin(admin.ModelAdmin):
 
 class PrepaidVoucherInline(admin.TabularInline):
     model = PrepaidVoucher
-    readonly_fields = ['user', 'usedate' ]
+    readonly_fields = ['user', 'usedate', ]
     exclude = ['vouchervalue', 'conference', ]
     extra = 0
     can_delete = False
@@ -439,7 +439,7 @@ class PrepaidBatchAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedM
 
 
 class PrepaidBatchAdmin(admin.ModelAdmin):
-    list_display = ['id', 'conference', 'buyer', 'buyername', 'total_num', 'used_num' ]
+    list_display = ['id', 'conference', 'buyer', 'buyername', 'total_num', 'used_num', ]
     list_filter = ['conference', ]
     inlines = [PrepaidVoucherInline, ]
     form = PrepaidBatchAdminForm

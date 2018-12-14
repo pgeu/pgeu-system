@@ -67,11 +67,11 @@ class JinjaBadge(Flowable):
         else:
             fill = 0
         self.canv.rect(getmm(o, 'x'),
-                            self.calc_y(o),
-                            getmm(o, 'width'),
-                            getmm(o, 'height'),
-                            stroke=o['stroke'] and 1 or 0,
-                            fill=fill)
+                       self.calc_y(o),
+                       getmm(o, 'width'),
+                       getmm(o, 'height'),
+                       stroke=o['stroke'] and 1 or 0,
+                       fill=fill)
 
     def draw_line(self, o):
         self.canv.line(getmm(o, 'x'),
@@ -92,13 +92,13 @@ class JinjaBadge(Flowable):
     def draw_image(self, o):
         p = self.resolve_image_path(o['src'])
         self.canv.drawImage(p,
-                                 getmm(o, 'x'),
-                                 self.calc_y(o),
-                                 getmm(o, 'width'),
-                                 getmm(o, 'height'),
-                                 o.get('mask', 'auto'),
-                                 preserveAspectRatio=o.get('preserveAspect', False),
-                                 )
+                            getmm(o, 'x'),
+                            self.calc_y(o),
+                            getmm(o, 'width'),
+                            getmm(o, 'height'),
+                            o.get('mask', 'auto'),
+                            preserveAspectRatio=o.get('preserveAspect', False),
+        )
 
     def draw_paragraph(self, o):
         # Attempt to draw a paragraph that can dynamically change the font size

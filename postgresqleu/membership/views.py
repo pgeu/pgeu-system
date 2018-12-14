@@ -289,6 +289,6 @@ def meetingcode(request):
 
     # Return a JSON object with information about the member
     return HttpResponse(json.dumps({'username': member.user.username,
-                                          'email': member.user.email,
-                                          'name': name,
-                                      }), content_type='application/json')
+                                    'email': member.user.email,
+                                    'name': name,
+    }), content_type='application/json')

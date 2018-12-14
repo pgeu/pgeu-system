@@ -592,7 +592,7 @@ def purge_personal_data(request, urlname):
   count(1) FILTER (WHERE phone IS NOT NULL AND phone != '') AS "Phone numbers",
   count(1) FILTER (WHERE address IS NOT NULL AND address != '') AS "Addresses"
 FROM confreg_conferenceregistration WHERE conference_id=%(confid)s""", {
-    'confid': conference.id,
+            'confid': conference.id,
         })[0],
     })
 
@@ -755,7 +755,7 @@ def tokendata(request, urlname, token, datatype, dataformat):
 
     if datatype == 'regtypes':
         writer.columns(['Type', 'Confirmed', 'Unconfirmed'], True)
-        writer.write_query("SELECT regtype, count(payconfirmedat) AS confirmed, count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed FROM confreg_conferenceregistration r RIGHT JOIN confreg_registrationtype rt ON rt.id=r.regtype_id WHERE rt.conference_id=%(confid)s GROUP BY rt.id ORDER BY rt.sortkey", { 'confid': conference.id, })
+        writer.write_query("SELECT regtype, count(payconfirmedat) AS confirmed, count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed FROM confreg_conferenceregistration r RIGHT JOIN confreg_registrationtype rt ON rt.id=r.regtype_id WHERE rt.conference_id=%(confid)s GROUP BY rt.id ORDER BY rt.sortkey", {'confid': conference.id, })
     elif datatype == 'discounts':
         writer.columns(['Code', 'Max uses', 'Confirmed', 'Unconfirmed'], True)
         writer.write_query("SELECT code, maxuses, count(payconfirmedat) AS confirmed, count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed FROM confreg_conferenceregistration r RIGHT JOIN confreg_discountcode dc ON dc.code=r.vouchercode WHERE dc.conference_id=%(confid)s AND (r.conference_id=%(confid)s OR r.conference_id IS NULL) GROUP BY dc.id ORDER BY code", {'confid': conference.id, })

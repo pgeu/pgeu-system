@@ -21,22 +21,22 @@ from models import STATUS_CHOICES
 # Fields that are available in an advanced attendee report
 # (id, field title, default, field_user_for_order_by)
 attendee_report_fields = [
-        ('lastname', 'Last name', True, None),
-        ('firstname', 'First name', True, None),
-        ('email', 'E-mail', True, None),
-        ('company', 'Company', False, None),
-        ('address', 'Address', False, None),
-        ('country', 'Country', False, None),
-        ('phone', 'Phone', False, None),
-        ('twittername', 'Twitter', False, None),
-        ('nick', 'Nickname', False, None),
-        ('dietary', 'Dietary needs', False, None),
-        ('shirtsize.shirtsize', 'T-Shirt size', False, 'shirtsize__shirtsize'),
-        ('photoconsent', 'Photo consent', False, None),
-        ('regtype.regtype', 'Registration type', False, 'regtype__sortkey'),
-        ('additionaloptionlist', 'Additional options', False, 'id'),
-        ('created', 'Registration created', False, None),
-        ('payconfirmedat', 'Payment confirmed', False, None),
+    ('lastname', 'Last name', True, None),
+    ('firstname', 'First name', True, None),
+    ('email', 'E-mail', True, None),
+    ('company', 'Company', False, None),
+    ('address', 'Address', False, None),
+    ('country', 'Country', False, None),
+    ('phone', 'Phone', False, None),
+    ('twittername', 'Twitter', False, None),
+    ('nick', 'Nickname', False, None),
+    ('dietary', 'Dietary needs', False, None),
+    ('shirtsize.shirtsize', 'T-Shirt size', False, 'shirtsize__shirtsize'),
+    ('photoconsent', 'Photo consent', False, None),
+    ('regtype.regtype', 'Registration type', False, 'regtype__sortkey'),
+    ('additionaloptionlist', 'Additional options', False, 'id'),
+    ('created', 'Registration created', False, None),
+    ('payconfirmedat', 'Payment confirmed', False, None),
 ]
 
 _attendee_report_field_map = dict([(a,(b,c,d)) for a,b,c,d in attendee_report_fields])
@@ -206,8 +206,8 @@ class ReportWriterPdf(ReportWriterBase):
             ]
         if self.borders:
             style.extend([
-            ('GRID', (0,0), (-1, -1), 1, colors.black),
-            ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+                ('GRID', (0,0), (-1, -1), 1, colors.black),
+                ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
             ])
         t.setStyle(TableStyle(style))
         story.append(t)

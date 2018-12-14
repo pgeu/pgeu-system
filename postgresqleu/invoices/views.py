@@ -59,13 +59,13 @@ def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=Fal
         invoices = paginator.page(paginator.num_pages)
 
     return render(request, 'invoices/home.html', {
-            'invoices': invoices,
-            'unpaid': unpaid,
-            'pending': pending,
-            'deleted': deleted,
-            'refunded': refunded,
-            'searchterm': searchterm,
-            })
+        'invoices': invoices,
+        'unpaid': unpaid,
+        'pending': pending,
+        'deleted': deleted,
+        'refunded': refunded,
+        'searchterm': searchterm,
+    })
 
 
 @login_required
@@ -169,18 +169,18 @@ def oneinvoice(request, invoicenum):
             form = InvoiceForm(instance=invoice)
         else:
             form = InvoiceForm(initial={
-            'invoicedate': datetime.now(),
-            'duedate': datetime.now()+timedelta(days=31)}
+                'invoicedate': datetime.now(),
+                'duedate': datetime.now()+timedelta(days=31)}
             )
         formset = InvoiceRowInlineFormset(instance=invoice)
 
     return render(request, 'invoices/invoiceform.html', {
-            'form': form,
-            'formset': formset,
-            'invoice': invoice,
-            'currency_symbol': settings.CURRENCY_SYMBOL,
-            'vatrates': VatRate.objects.all(),
-            })
+        'form': form,
+        'formset': formset,
+        'invoice': invoice,
+        'currency_symbol': settings.CURRENCY_SYMBOL,
+        'vatrates': VatRate.objects.all(),
+    })
 
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
@@ -208,8 +208,8 @@ def flaginvoice(request, invoicenum):
                                            logger=payment_logger)
 
     if r != InvoiceManager.RESULT_OK:
-        return HttpResponse("Failed to process payment flagging:\n%s" % str.getvalue()
-                            , content_type="text/plain")
+        return HttpResponse("Failed to process payment flagging:\n%s" % str.getvalue(),
+                            content_type="text/plain")
 
     # The invoice manager will have flagged the invoice properly as well,
     # so we can just return the user right back
@@ -336,15 +336,15 @@ def viewinvoice(request, invoiceid):
         return HttpResponseForbidden("Access denied")
 
     return render(request, 'invoices/userinvoice.html', {
-            'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/" % (settings.SITEBASE, invoice.pk)),
-            })
+        'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/" % (settings.SITEBASE, invoice.pk)),
+    })
 
 def viewinvoice_secret(request, invoiceid, invoicesecret):
     invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True, recipient_secret=invoicesecret)
     return render(request, 'invoices/userinvoice.html', {
-            'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/%s/" % (settings.SITEBASE, invoice.pk, invoice.recipient_secret)),
-            'fromsecret': True,
-            })
+        'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/%s/" % (settings.SITEBASE, invoice.pk, invoice.recipient_secret)),
+        'fromsecret': True,
+    })
 
 @login_required
 def viewinvoicepdf(request, invoiceid):
@@ -398,14 +398,14 @@ def viewrefundnote_secret(request, invoiceid, invoicesecret):
 def userhome(request):
     invoices = Invoice.objects.filter(recipient_user=request.user, deleted=False, finalized=True)
     return render(request, 'invoices/userhome.html', {
-            'invoices': invoices,
-            })
+        'invoices': invoices,
+    })
 
 @login_required
 def banktransfer(request):
     param = {
-            'title': request.GET['title'],
-            'amount': request.GET['amount'],
+        'title': request.GET['title'],
+        'amount': request.GET['amount'],
     }
     if request.GET.has_key('ret'):
         param['returnurl'] = request.GET['ret']

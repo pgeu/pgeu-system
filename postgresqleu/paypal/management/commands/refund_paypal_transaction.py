@@ -23,8 +23,8 @@ class Command(BaseCommand):
         ids = [int(i) for i in options['ids']]
         translist = list(TransactionInfo.objects.filter(id__in=ids))
         if len(ids) != len(translist):
-               foundids = set([t.id for t in translist])
-               raise CommandError("Could not find ids %s" % ",".join([str(i) for i in set(ids).difference(foundids)]))
+            foundids = set([t.id for t in translist])
+            raise CommandError("Could not find ids %s" % ",".join([str(i) for i in set(ids).difference(foundids)]))
 
         for t in translist:
             if t.amount == 0:

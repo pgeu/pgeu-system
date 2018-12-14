@@ -25,9 +25,9 @@ import requests
 
 class ConferenceRegistrationForm(forms.ModelForm):
     additionaloptions = forms.ModelMultipleChoiceField(widget=forms.CheckboxSelectMultiple,
-        required=False,
-        queryset=ConferenceAdditionalOption.objects.all(),
-        label='Additional options')
+                                                       required=False,
+                                                       queryset=ConferenceAdditionalOption.objects.all(),
+                                                       label='Additional options')
 
     def __init__(self, user, *args, **kwargs):
         self.regforother = kwargs.pop('regforother', None)
@@ -40,7 +40,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
         if self.regforother:
             self.fields['email'].widget.attrs['readonly'] = True
-        self.fields['additionaloptions'].queryset =    ConferenceAdditionalOption.objects.filter(
+        self.fields['additionaloptions'].queryset = ConferenceAdditionalOption.objects.filter(
             conference=self.instance.conference, public=True)
         self.fields['country'].queryset = Country.objects.order_by('printable_name')
 
@@ -293,11 +293,11 @@ class ConferenceRegistrationForm(forms.ModelForm):
                    'fields': [self['additionaloptions'],],
                    }
 
-        yield { 'id': 'voucher_codes',
-                'legend': 'Voucher codes',
-                'intro': 'If you have a voucher or discount code, enter it in this field. If you do not have one, just leave the field empty.',
-                'fields': [self['vouchercode'],],
-                }
+        yield {'id': 'voucher_codes',
+               'legend': 'Voucher codes',
+               'intro': 'If you have a voucher or discount code, enter it in this field. If you do not have one, just leave the field empty.',
+               'fields': [self['vouchercode'],],
+        }
 
 class RegistrationChangeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -554,10 +554,10 @@ class PrepaidCreateForm(forms.Form):
         super(PrepaidCreateForm, self).__init__(*args, **kwargs)
         self.fields['regtype'].queryset=RegistrationType.objects.filter(conference=conference)
         self.fields['buyer'].label_from_instance=lambda x: u'{0} {1} <{2}> ({3})'.format(x.first_name, x.last_name, x.email, x.username)
-        if not (self.data.has_key('regtype')
-                and self.data.has_key('count')
-                and self.data.get('regtype')
-                and self.data.get('count')):
+        if not (self.data.has_key('regtype') and
+                self.data.has_key('count') and
+                self.data.get('regtype') and
+                self.data.get('count')):
             del self.fields['confirm']
 
 class EmailSendForm(forms.Form):

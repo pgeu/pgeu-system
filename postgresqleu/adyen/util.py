@@ -221,7 +221,7 @@ def process_refund(notification):
 
                 accrows = [
                     (settings.ACCOUNTING_ADYEN_REFUNDS_ACCOUNT,
-                     "Refund of %s (transaction %s) "  % (ts.notes, ts.pspReference),
+                     "Refund of %s (transaction %s) " % (ts.notes, ts.pspReference),
                      -refund.refund_amount,
                      None),
                 ]
@@ -265,7 +265,7 @@ def process_one_notification(notification):
                          settings.ADYEN_NOTIFICATION_RECEIVER,
                          'Received adyen notification type %s from the test system!' % notification.eventCode,
                          "An Adyen notification with live set to false has been received.\nYou probably want to check that out manually - it's in the database, but has received no further processing.\n",
-            AdyenLog(pspReference=notification.pspReference, message='Received notification of type %s from the test system!' % notification.eventCode, error=True).save()
+                         AdyenLog(pspReference=notification.pspReference, message='Received notification of type %s from the test system!' % notification.eventCode, error=True).save()
         )
         notification.confirmed = True
         notification.save()
@@ -333,7 +333,7 @@ def process_raw_adyen_notification(raw, POST):
                 send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                                  settings.ADYEN_NOTIFICATION_RECEIVER,
                                  'Received adyen notification type %s that went from failure to success!' % notification.eventCode,
-                             "An Adyen notification that went from failure to success has been received.\nThe system doesn't know how to handle this yet, so you'll need to go take a manual look!\n",
+                                 "An Adyen notification that went from failure to success has been received.\nThe system doesn't know how to handle this yet, so you'll need to go take a manual look!\n",
                              )
                 AdyenLog(pspReference=notification.pspReference, message='Received success->fail notification of type %s, unhandled' % notification.eventCode, error=True).save()
             else:

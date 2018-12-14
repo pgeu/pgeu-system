@@ -169,12 +169,12 @@ class PDFInvoice(PDFBase):
                              "%.2f %s" % ((cost * count) * (1+(vatpercent/Decimal(100))), self.currency))
                             for title,cost, count, vatrate, vatpercent in self.rows[pagenum*self.ROWS_PER_PAGE:(pagenum+1)*self.ROWS_PER_PAGE]])
             style = [
-                    ('FONTSIZE', (0, 0), (-1, -1), 8),
-                    ('BACKGROUND',(0,0),(tblcols-1,0),colors.lightgrey),
-                    ('ALIGN',(1,0),(tblcols-1,-1),'RIGHT'),
-                    ('LINEBELOW',(0,0),(-1,0), 2, colors.black),
-                    ('OUTLINE', (0,0), (-1, -1), 1, colors.black),
-                ]
+                ('FONTSIZE', (0, 0), (-1, -1), 8),
+                ('BACKGROUND',(0,0),(tblcols-1,0),colors.lightgrey),
+                ('ALIGN',(1,0),(tblcols-1,-1),'RIGHT'),
+                ('LINEBELOW',(0,0),(-1,0), 2, colors.black),
+                ('OUTLINE', (0,0), (-1, -1), 1, colors.black),
+            ]
             if islastpage:
                 totalexcl = sum([cost*count for title,cost,count,vatrate,vatpercent in self.rows])
                 totalvat = sum([(cost*count*(vatpercent/Decimal(100))).quantize(Decimal('0.01')) for title,cost,count,vatrate,vatpercent in self.rows])
@@ -192,7 +192,7 @@ class PDFInvoice(PDFBase):
                     vatstr = '%.2f %s' % (totalvat, self.currency)
 
                 tbldata.extend([
-                    ('Total excl VAT', '', '','' , '%.2f %s' % (totalexcl, self.currency)),
+                    ('Total excl VAT', '', '', '', '%.2f %s' % (totalexcl, self.currency)),
                     (vathdr, '', '', '', vatstr),
                     ('Total incl VAT', '', '', '', '%.2f %s' % (totalincl, self.currency)),
                 ])

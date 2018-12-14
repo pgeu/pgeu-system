@@ -481,12 +481,15 @@ def report(request, year, reporttype):
         # is at this point set to None.
         # We only show accounts that have had some transactions on them.
         yearrestrict = year and "je.year_id=%(year)s AND" or ""
-        (results, totalresult) = _collate_results("WITH t AS (SELECT ac.name as acname, ag.name as agname, ag.foldable, a.num as anum, a.name, sum(-ji.amount) as amount FROM accounting_accountclass ac INNER JOIN accounting_accountgroup ag ON ac.id=ag.accountclass_id INNER JOIN accounting_account a ON ag.id=a.group_id INNER JOIN accounting_journalitem ji ON ji.account_id=a.num INNER JOIN accounting_journalentry je ON je.id=ji.journal_id WHERE {0} je.date <= %(enddate)s AND (je.closed or %(includeopen)s) AND NOT ac.inbalance {1} GROUP BY ac.name, ag.name, ag.foldable, a.id, a.name) SELECT acname, agname, anum, name, count(*) over (partition by agname) = 1 and foldable as agfold, sum(amount) over (partition by acname) as acamount, sum(amount) over (partition by agname) as agamount, amount, sum(amount) over () FROM t ORDER BY anum".format(yearrestrict, objstr), {
-            'year': year and year.year,
-            'enddate': enddate,
-            'includeopen': includeopen,
+        (results, totalresult) = _collate_results(
+            "WITH t AS (SELECT ac.name as acname, ag.name as agname, ag.foldable, a.num as anum, a.name, sum(-ji.amount) as amount FROM accounting_accountclass ac INNER JOIN accounting_accountgroup ag ON ac.id=ag.accountclass_id INNER JOIN accounting_account a ON ag.id=a.group_id INNER JOIN accounting_journalitem ji ON ji.account_id=a.num INNER JOIN accounting_journalentry je ON je.id=ji.journal_id WHERE {0} je.date <= %(enddate)s AND (je.closed or %(includeopen)s) AND NOT ac.inbalance {1} GROUP BY ac.name, ag.name, ag.foldable, a.id, a.name) SELECT acname, agname, anum, name, count(*) over (partition by agname) = 1 and foldable as agfold, sum(amount) over (partition by acname) as acamount, sum(amount) over (partition by agname) as agamount, amount, sum(amount) over () FROM t ORDER BY anum".format(yearrestrict, objstr),
+            {
+                'year': year and year.year,
+                'enddate': enddate,
+                'includeopen': includeopen,
             },
-                                                  1)
+            1
+        )
         title = 'Results report'
         totalname = 'Final result'
         valheaders = ['Amount']
@@ -506,11 +509,13 @@ def report(request, year, reporttype):
             valheaders = ['Incoming', 'Period', 'Open', 'Period+Open', 'Outgoing']
         else:
             valheaders = ['Incoming', 'Period', 'Outgoing']
-        (results, totalresult) = _collate_results(_get_balance_query(objstr, includeopen), {
-            'year': year.year,
-            'enddate': enddate,
-        },
-                                                  len(valheaders))
+        (results, totalresult) = _collate_results(
+            _get_balance_query(objstr, includeopen), {
+                'year': year.year,
+                'enddate': enddate,
+            },
+            len(valheaders)
+        )
         title = 'Balance report'
         totalname = 'Final balance'
     else:

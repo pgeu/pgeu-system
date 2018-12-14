@@ -60,7 +60,7 @@ valid_status_transitions = {
     1: {2: 'Talk withdrawn', },
     2: {0: 'Talk processing reset', },
     3: {0: 'Talk unapproved', 1: 'Speaker confirms', 2: 'Speaker declines'},
-    4: {1: 'Last-minute reservelist', 3: 'Activated from reservelist' },
+    4: {1: 'Last-minute reservelist', 3: 'Activated from reservelist'},
 }
 
 def color_validator(value):
@@ -173,7 +173,7 @@ class Conference(models.Model):
         return self.conferencename
 
     class Meta:
-        ordering = [ '-startdate', ]
+        ordering = ['-startdate', ]
 
     @property
     def conferencedatestr(self):
@@ -592,7 +592,7 @@ class Room(models.Model):
         return self.roomname
 
     class Meta:
-        ordering = [ 'sortkey', 'roomname', ]
+        ordering = ['sortkey', 'roomname', ]
 
 
 def _get_upload_path(instance, filename):
@@ -608,7 +608,7 @@ class Speaker(models.Model):
     lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
     speakertoken = models.TextField(null=False, blank=False, unique=True)
 
-    _safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract' ,'photofile', 'lastmodified', 'org_name', 'treasurer_email')
+    _safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract', 'photofile', 'lastmodified', 'org_name', 'treasurer_email')
     json_included_attributes = ['fullname', 'twittername', 'company', 'abstract', 'lastmodified']
 
     @property
@@ -747,7 +747,7 @@ class ConferenceSession(models.Model):
         return self._localtz.localize(time).astimezone(pytz.utc)
 
     class Meta:
-        ordering = [ 'starttime', ]
+        ordering = ['starttime', ]
 
 class ConferenceSessionSlides(models.Model):
     session = models.ForeignKey(ConferenceSession, null=False, blank=False, on_delete=models.CASCADE)
@@ -764,7 +764,7 @@ class ConferenceSessionVote(models.Model):
     comment = models.TextField(null=True, blank=True)
 
     class Meta:
-        unique_together = ( ('session', 'voter',), )
+        unique_together = (('session', 'voter',), )
 
 class ConferenceSessionFeedback(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
@@ -815,7 +815,7 @@ class VolunteerSlot(models.Model):
     max_staff = models.IntegerField(null=False, blank=False, default=1, validators=[MinValueValidator(1)])
 
     class Meta:
-        ordering = [ 'timerange', ]
+        ordering = ['timerange', ]
 
     def __unicode__(self):
         return self._display_timerange()
@@ -901,7 +901,7 @@ class DiscountCode(models.Model):
         return self.code
 
     class Meta:
-        unique_together = ( ('conference', 'code',), )
+        unique_together = (('conference', 'code',), )
         ordering = ('conference', 'code',)
 
     @property
@@ -941,7 +941,7 @@ class AggregatedTshirtSizes(models.Model):
     num = models.IntegerField(null=False, blank=False)
 
     class Meta:
-        unique_together = ( ('conference', 'size'), )
+        unique_together = (('conference', 'size'), )
 
 class AggregatedDietary(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
@@ -949,7 +949,7 @@ class AggregatedDietary(models.Model):
     num = models.IntegerField(null=False, blank=False)
 
     class Meta:
-        unique_together = ( ('conference', 'dietary'), )
+        unique_together = (('conference', 'dietary'), )
 
 
 AccessTokenPermissions = (
@@ -969,7 +969,7 @@ class AccessToken(models.Model):
     )
 
     class Meta:
-        unique_together = ( ('conference', 'token'), )
+        unique_together = (('conference', 'token'), )
 
     def __unicode__(self):
         return self.token

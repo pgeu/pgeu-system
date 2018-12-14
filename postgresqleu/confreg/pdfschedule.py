@@ -72,11 +72,11 @@ def build_linear_pdf_schedule(conference, room, tracks, day, colored, pagesize, 
     table_horiz_margin = 2*cm
 
     default_tbl_style = [
-            ('VALIGN', (0,0), (-1, -1), 'TOP'),
-            ('BOX', (0,0), (-1, -1), 0.5, colors.black),
-            ('INNERGRID', (0,0), (-1, -1), 0.5, colors.black),
-            ('BOTTOMPADDING', (0,0), (-1, -1), 15),
-        ]
+        ('VALIGN', (0,0), (-1, -1), 'TOP'),
+        ('BOX', (0,0), (-1, -1), 0.5, colors.black),
+        ('INNERGRID', (0,0), (-1, -1), 0.5, colors.black),
+        ('BOTTOMPADDING', (0,0), (-1, -1), 15),
+    ]
 
     # Loop over days, creating one page for each day
     lastdate = None

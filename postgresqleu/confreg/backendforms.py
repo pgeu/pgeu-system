@@ -193,7 +193,7 @@ class BackendConferenceForm(BackendForm):
         {'id': 'base_info', 'legend': 'Basic information', 'fields': ['attendees_before_waitlist', 'invoice_autocancel_hours', 'sendwelcomemail', 'welcomemail', 'additionalintro']},
         {'id': 'promo', 'legend': 'Website promotion', 'fields': ['promoactive', 'promotext', 'promopicurl']},
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', ]},
-        {'id': 'fields', 'legend': 'Registration fields', 'fields': [ 'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'askphotoconsent']},
+        {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'askphotoconsent']},
         {'id': 'steps', 'legend': 'Steps', 'fields': ['active', 'allowedit', 'callforpapersopen', 'callforsponsorsopen', 'scheduleactive', 'sessionsactive', 'conferencefeedbackopen', 'feedbackopen']},
         {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpapersintro']},
         {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers']},
@@ -298,7 +298,7 @@ class BackendRegistrationTypeForm(BackendForm):
     vat_fields = {'cost': 'reg'}
     allow_copy_previous = True
     coltypes = {
-        'Sortkey': ['nosearch' ],
+        'Sortkey': ['nosearch', ],
     }
     defaultsort = [[4, 'asc']]
     auto_cascade_delete_to=['registrationtype_days', 'registrationtype_requires_option']
@@ -364,7 +364,7 @@ class BackendRegistrationTypeForm(BackendForm):
 
 class BackendRegistrationDayForm(BackendForm):
     helplink = 'registrations#days'
-    list_fields = [ 'day', ]
+    list_fields = ['day', ]
     class Meta:
         model = RegistrationDay
         fields = ['day', ]
@@ -380,7 +380,7 @@ class BackendAdditionalOptionForm(BackendForm):
         fields = ['name', 'cost', 'maxcount', 'public', 'upsellable', 'invoice_autocancel_hours',
                   'requires_regtype', 'mutually_exclusive']
     coltypes = {
-        'Maxcount': ['nosearch' ],
+        'Maxcount': ['nosearch', ],
     }
 
     def fix_fields(self):
@@ -395,7 +395,7 @@ class BackendTrackForm(BackendForm):
         model = Track
         fields = ['trackname', 'sortkey', 'color', 'incfp']
     coltypes = {
-        'Sortkey': ['nosearch' ],
+        'Sortkey': ['nosearch', ],
     }
     defaultsort = [[1, 'asc']]
 
@@ -421,7 +421,7 @@ class BackendRoomForm(BackendForm):
         model = Room
         fields = ['roomname', 'sortkey']
     coltypes = {
-        'Sortkey': ['nosearch' ],
+        'Sortkey': ['nosearch', ],
     }
     defaultsort = [[1, 'asc']]
 
@@ -440,7 +440,7 @@ class BackendTransformConferenceDateTimeForm(django.forms.Form):
 
 class BackendConferenceSessionForm(BackendForm):
     helplink = 'schedule#sessions'
-    list_fields = [ 'title', 'speaker_list', 'status_string', 'starttime', 'track', 'room']
+    list_fields = ['title', 'speaker_list', 'status_string', 'starttime', 'track', 'room']
     verbose_field_names = {
         'speaker_list': 'Speakers',
         'status_string': 'Status',
@@ -550,13 +550,13 @@ class BackendConferenceSessionForm(BackendForm):
 
 class BackendConferenceSessionSlotForm(BackendForm):
     helplink = 'schedule#slots'
-    list_fields = [ 'starttime', 'endtime', ]
+    list_fields = ['starttime', 'endtime', ]
     allow_copy_previous = True
     copy_transform_form = BackendTransformConferenceDateTimeForm
 
     class Meta:
         model = ConferenceSessionScheduleSlot
-        fields = ['starttime', 'endtime' ]
+        fields = ['starttime', 'endtime', ]
 
     @classmethod
     def copy_from_conference(self, targetconf, sourceconf, idlist, transformform):
@@ -580,16 +580,16 @@ class BackendConferenceSessionSlotForm(BackendForm):
 
 class BackendVolunteerSlotForm(BackendForm):
     helplink = 'volunteers#slots'
-    list_fields = [ 'timerange', 'title', 'min_staff', 'max_staff' ]
+    list_fields = ['timerange', 'title', 'min_staff', 'max_staff', ]
     allow_copy_previous = True
     copy_transform_form = BackendTransformConferenceDateTimeForm
 
     class Meta:
         model = VolunteerSlot
-        fields = [ 'timerange', 'title', 'min_staff', 'max_staff' ]
+        fields = ['timerange', 'title', 'min_staff', 'max_staff', ]
     coltypes = {
-        'Min staff': ['nosearch' ],
-        'Max staff': ['nosearch' ],
+        'Min staff': ['nosearch', ],
+        'Max staff': ['nosearch', ],
     }
 
     def clean(self):
@@ -635,7 +635,7 @@ class BackendFeedbackQuestionForm(BackendForm):
         fields = ['question', 'isfreetext', 'textchoices', 'sortkey', 'newfieldset']
 
     coltypes = {
-        'Sortkey': ['nosearch' ],
+        'Sortkey': ['nosearch', ],
         'Newfieldset': ['nosort', ],
     }
     defaultsort = [[2, 'asc']]
@@ -760,14 +760,14 @@ class BackendAccessTokenForm(BackendForm):
 
 class BackendNewsForm(BackendForm):
     helplink = 'news'
-    list_fields = ['title', 'datetime', 'author' ]
+    list_fields = ['title', 'datetime', 'author', ]
     markdown_fields = ['summary', ]
     exclude_date_validators = ['datetime', ]
     defaultsort = [[1, "desc"]]
 
     class Meta:
         model = ConferenceNews
-        fields = ['author', 'datetime', 'title', 'inrss', 'summary' ]
+        fields = ['author', 'datetime', 'title', 'inrss', 'summary', ]
 
     def fix_fields(self):
         # Must be administrator on current conference

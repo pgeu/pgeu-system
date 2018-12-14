@@ -39,7 +39,7 @@ class Command(BaseCommand):
                                  code.conference.sponsoraddr,
                                  u"[{0}] Discount code expired".format(code.conference),
                                  u"Discount code {0} has expired without any uses.".format(code.code),
-                                sendername=code.conference.conferencename)
+                                 sendername=code.conference.conferencename)
 
                 for manager in code.sponsor.managers.all():
                     send_template_mail(code.conference.sponsoraddr,

@@ -60,10 +60,10 @@ def login(request):
         cipher = encryptor.encrypt(s + ' ' * (16-(len(s) % 16))) # pad to 16 bytes
 
         return HttpResponseRedirect("%s?d=%s$%s" % (
-                settings.PGAUTH_REDIRECT,
-                base64.b64encode(iv, "-_"),
-                base64.b64encode(cipher, "-_"),
-                ))
+            settings.PGAUTH_REDIRECT,
+            base64.b64encode(iv, "-_"),
+            base64.b64encode(cipher, "-_"),
+        ))
     else:
         return HttpResponseRedirect(settings.PGAUTH_REDIRECT)
 

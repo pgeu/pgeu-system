@@ -85,8 +85,8 @@ class Command(BaseCommand):
                                    "Your submissions to {0}".format(conference),
                                    'confreg/mail/speaker_remind_confirm.txt',
                                    {
-                                     'conference': conference,
-                                     'sessions': sessions,
+                                       'conference': conference,
+                                       'sessions': sessions,
                                    },
                                    sendername = conference.conferencename,
                                    receivername = speaker.fullname,
@@ -119,7 +119,7 @@ class Command(BaseCommand):
                                    "Your registration to {0}".format(conference),
                                    'confreg/mail/speaker_remind_register.txt',
                                    {
-                                     'conference': conference,
+                                       'conference': conference,
                                    },
                                    sendername = conference.conferencename,
                                    receivername = speaker.fullname,
@@ -186,7 +186,7 @@ class Command(BaseCommand):
                                                      lastmodified__lt=datetime.now()-timedelta(days=5))
 
         if regs:
-            multiregs = set([r.registrator for r in  regs])
+            multiregs = set([r.registrator for r in regs])
 
             whatstr.write("Found {0} unconfirmed multiregistrations that are stalled:\n".format(len(multiregs)))
 

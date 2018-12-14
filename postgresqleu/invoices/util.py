@@ -221,17 +221,17 @@ class InvoiceWrapper(object):
             invoiceurl = None
 
         param = {
-                'invoice': self.invoice,
-                'invoiceurl': invoiceurl,
-                'currency_abbrev': settings.CURRENCY_ABBREV,
-                'currency_symbol': settings.CURRENCY_SYMBOL,
+            'invoice': self.invoice,
+            'invoiceurl': invoiceurl,
+            'currency_abbrev': settings.CURRENCY_ABBREV,
+            'currency_symbol': settings.CURRENCY_SYMBOL,
         }
         if extracontext:
             param.update(extracontext)
 
         pdfdata = []
         if pdfname:
-            pdfdata = [(pdfname, 'application/pdf',    base64.b64decode(pdfcontents)), ]
+            pdfdata = [(pdfname, 'application/pdf', base64.b64decode(pdfcontents)), ]
 
         # Queue up in the database for email sending soon
         send_template_mail(settings.INVOICE_SENDER_EMAIL,
@@ -368,8 +368,8 @@ class InvoiceManager(object):
             # If there was a transaction cost known at this point (which
             # it typically is with Paypal), make sure we book a row for it.
             accrows.append(
-            (costaccount, accountingtxt, transcost, invoice.accounting_object),
-        )
+                (costaccount, accountingtxt, transcost, invoice.accounting_object),
+            )
         if invoice.total_vat:
             # If there was VAT on this invoice, create a separate accounting row for this
             # part. As there can in theory (though maybe not in practice?) be multiple different
@@ -406,12 +406,14 @@ class InvoiceManager(object):
 
         # Write a log, because it's always nice..
         InvoiceHistory(invoice=invoice, txt='Processed payment').save()
-        InvoiceLog(message="Processed payment of %s %s for invoice %s (%s)" % (
+        InvoiceLog(
+            message="Processed payment of %s %s for invoice %s (%s)" % (
                 invoice.total_amount,
                 settings.CURRENCY_ABBREV,
                 invoice.pk,
                 invoice.title),
-                   timestamp=datetime.now()).save()
+            timestamp=datetime.now()
+        ).save()
 
         return (self.RESULT_OK, invoice, processor)
 
@@ -422,7 +424,7 @@ class InvoiceManager(object):
                 modname = '.'.join(pieces[:-1])
                 classname = pieces[-1]
                 mod = __import__(modname, fromlist=[classname, ])
-                return getattr(mod, classname) ()
+                return getattr(mod, classname)()
             except Exception, ex:
                 if logger:
                     logger("Failed to instantiate invoice processor '%s': %s" % (invoice.processor, ex))
@@ -550,7 +552,7 @@ class InvoiceManager(object):
             accrows.append(
                 (refund.vatrate.vataccount.num, accountingtxt, refund.vatamount, None),
             )
-        if refundfee  > 0:
+        if refundfee > 0:
             accrows.append(
                 (costaccount, accountingtxt, -refundfee, invoice.accounting_object),
             )
@@ -622,7 +624,7 @@ class InvoiceManager(object):
                                                   rowcount = r[1],
                                                   rowamount = r[2],
                                                   vatrate = r[3],
-                                              ), bulk=False)
+            ), bulk=False)
 
         if autopaymentoptions:
             invoice.allowedmethods = InvoicePaymentMethod.objects.filter(auto=True)

@@ -91,7 +91,7 @@ if __name__ == "__main__":
                     atrans.save()
 
                 thisentry['rows'].append(
-                        (settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, invoice.total_amount, None),)
+                    (settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, invoice.total_amount, None),)
                 allentries.append(thisentry)
 
                 # Add a separate entry for the settlement

@@ -12,12 +12,12 @@ class TrustlyException(Exception):
     pass
 
 class TrustlyWrapper(object):
-    def __init__(self, apibase, username, password, privatekey, publickey, notificationurl,  currency='EUR', hold_notifications=False):
+    def __init__(self, apibase, username, password, privatekey, publickey, notificationurl, currency='EUR', hold_notifications=False):
         self.apibase = apibase
         self.username = username
         self.password = password
         self.signer = PKCS1_v1_5.new(RSA.importKey(privatekey))
-        self.verifier =  PKCS1_v1_5.new(RSA.importKey(publickey))
+        self.verifier = PKCS1_v1_5.new(RSA.importKey(publickey))
         self.notificationurl = notificationurl
         self.currency = currency
         self.hold_notifications = hold_notifications
@@ -87,8 +87,8 @@ class TrustlyWrapper(object):
 
     def apicall(self, method, data):
         params = {
-                'UUID': self.new_uuid(),
-                'Data': data,
+            'UUID': self.new_uuid(),
+            'Data': data,
         }
         params['Data']['Username'] = self.username
         params['Data']['Password'] = self.password
@@ -107,7 +107,7 @@ class TrustlyWrapper(object):
         req.add_header('Content-type', 'application/json')
         u = urllib2.urlopen(req, apijson)
         resp = u.read()
-        if u.getcode () != 200:
+        if u.getcode() != 200:
             raise TrustlyException("bad http response code {0}".format(u.getcode()))
         u.close()
         r = json.loads(resp)

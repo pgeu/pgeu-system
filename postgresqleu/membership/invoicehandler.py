@@ -15,7 +15,7 @@ class InvoiceProcessor(object):
         try:
             member = Member.objects.get(pk=invoice.processorid)
         except member.DoesNotExist:
-            raise Exception ("Could not find member id %s for invoice!" % invoice.processorid)
+            raise Exception("Could not find member id %s for invoice!" % invoice.processorid)
 
         # The invoice is paid, so it's no longer active!
         # It'll still be in the archive, of course, but not linked from the
@@ -47,7 +47,7 @@ class InvoiceProcessor(object):
         try:
             member = Member.objects.get(pk=invoice.processorid)
         except member.DoesNotExist:
-            raise Exception ("Could not find member id %s for invoice!" % invoice.processorid)
+            raise Exception("Could not find member id %s for invoice!" % invoice.processorid)
 
         # Just remove the active invoice
         member.activeinvoice = None
