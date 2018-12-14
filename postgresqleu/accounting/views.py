@@ -257,7 +257,8 @@ def _collate_results(query, queryparam, numvalues):
         row[:numvalues] = []
         avals = row[:numvalues]
         row[:numvalues] = []
-        if not totalresult: totalresult = row[:numvalues]
+        if not totalresult:
+            totalresult = row[:numvalues]
         row[:numvalues] = []
 
         if len(row) != 0:

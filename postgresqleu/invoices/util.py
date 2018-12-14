@@ -670,6 +670,7 @@ def diff_workdays(start, end):
     # We want full days only, so drop one
     weekdays -= 1
 
-    if weekdays < 0: weekdays = 0
+    if weekdays < 0:
+        weekdays = 0
 
     return weekdays

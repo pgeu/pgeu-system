@@ -41,7 +41,8 @@ class Command(BaseCommand):
         for report in Report.objects.filter(downloadedat=None).order_by('receivedat'):
             try:
                 with transaction.atomic():
-                    if self.verbose: self.stdout.write("Downloading {0}".format(report.url))
+                    if self.verbose:
+                        self.stdout.write("Downloading {0}".format(report.url))
                     req = urllib2.Request(report.url)
                     req.add_header('Authorization', 'Basic %s' % (
                         standard_b64encode('%s:%s' % (settings.ADYEN_REPORT_USER, settings.ADYEN_REPORT_PASSWORD)),
@@ -89,7 +90,8 @@ class Command(BaseCommand):
                         trans.method = l['Payment Method']
                         trans.save()
                         AdyenLog(message='Transaction %s captured at %s' % (pspref, bookdate), error=False).save()
-                        if self.verbose: self.stdout.write("Sent for settle on {0}".format(pspref))
+                        if self.verbose:
+                            self.stdout.write("Sent for settle on {0}".format(pspref))
                 elif l['Record Type'] in ('Settled', 'SettledBulk'):
                     if trans.settledat != None:
                         # Transaction already settled. But we might be reprocessing
@@ -106,7 +108,8 @@ class Command(BaseCommand):
                     trans.settledat = bookdate
                     trans.settledamount = Decimal(l['Main Amount'], 2)
                     trans.save()
-                    if self.verbose: self.stdout.write("Settled {0}, total amount {1}".format(pspref, trans.settledamount))
+                    if self.verbose:
+                        self.stdout.write("Settled {0}, total amount {1}".format(pspref, trans.settledamount))
                     AdyenLog(message='Transaction %s settled at %s' % (pspref, bookdate), error=False).save()
 
                     # Settled transactions create a booking entry
@@ -207,7 +210,8 @@ class Command(BaseCommand):
         for report in Report.objects.filter(downloadedat__isnull=False, processedat=None).order_by('downloadedat'):
             try:
                 with transaction.atomic():
-                    if self.verbose: self.stdout.write("Processing {0}".format(report.url))
+                    if self.verbose:
+                        self.stdout.write("Processing {0}".format(report.url))
 
                     # To know what to do, we look at the filename of the report URL
                     filename = report.url.split('/')[-1]

@@ -91,7 +91,8 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
     def clean_vouchercode(self):
         newval = self.cleaned_data.get('vouchercode')
-        if newval == '': return newval
+        if newval == '':
+            return newval
 
         try:
             v = PrepaidVoucher.objects.get(vouchervalue=newval, conference=self.instance.conference)
@@ -271,9 +272,12 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
         if conf.asktshirt or conf.askfood or conf.askshareemail:
             fields = []
-            if conf.asktshirt: fields.append(self['shirtsize'])
-            if conf.askfood: fields.append(self['dietary'])
-            if conf.askshareemail: fields.append(self['shareemail'])
+            if conf.asktshirt:
+                fields.append(self['shirtsize'])
+            if conf.askfood:
+                fields.append(self['dietary'])
+            if conf.askshareemail:
+                fields.append(self['shareemail'])
             yield {'id': 'conference_info',
                    'legend': 'Conference information',
                    'fields': fields}
@@ -661,7 +665,8 @@ class WaitlistOfferForm(forms.Form):
             del self.fields['confirm']
 
     def _get_id_list_from_data(self):
-        if not self.data: return []
+        if not self.data:
+            return []
         l = []
         for k, v in self.data.items():
             if v == '1' and k.startswith('reg_'):

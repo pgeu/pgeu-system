@@ -52,7 +52,8 @@ def create_accounting_entry(date,
         if not year.isopen:
             raise AccountingException("Year %s is not open for new entries!" % date.year)
         seq = JournalEntry.objects.filter(year=year).aggregate(Max('seq'))['seq__max']
-        if seq is None: seq = 0
+        if seq is None:
+            seq = 0
 
         # We assume the rest is correct and start building the db entries,
         # since we'll just roll it back if referenced data is missing.

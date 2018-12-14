@@ -45,7 +45,8 @@ class JournalItemForm(forms.ModelForm):
         exclude = ('amount', )
 
     def clean(self):
-        if not self.cleaned_data: return
+        if not self.cleaned_data:
+            return
         if not self.cleaned_data.has_key('debit') or not self.cleaned_data.has_key('credit'):
             # This means there is an error elsewhere!
             return self.cleaned_data

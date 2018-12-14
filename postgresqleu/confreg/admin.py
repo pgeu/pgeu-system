@@ -241,13 +241,15 @@ class ConferenceSessionForm(ConcurrentProtectedModelForm):
             self.fields['tentativescheduleslot'].queryset = ConferenceSessionScheduleSlot.objects.filter(conference=self.instance.conference)
 
     def clean_track(self):
-        if not self.cleaned_data['track']: return None
+        if not self.cleaned_data['track']:
+            return None
         if self.cleaned_data['track'].conference != self.cleaned_data['conference']:
             raise ValidationError("This track does not belong to this conference!")
         return self.cleaned_data['track']
 
     def clean_room(self):
-        if not self.cleaned_data['room']: return None
+        if not self.cleaned_data['room']:
+            return None
         if self.cleaned_data['room'].conference != self.cleaned_data['conference']:
             raise ValidationError("This room does not belong to this conference!")
         return self.cleaned_data['room']

@@ -293,7 +293,8 @@ if __name__ == "__main__":
         # system.
         knownfiles = []
         for relpath, relname in source.walkfiles('templates'):
-            if relpath.startswith('templates/pages'): continue
+            if relpath.startswith('templates/pages'):
+                continue
 
             if not os.path.isdir(os.path.join(args.destpath, relpath)):
                 os.makedirs(os.path.join(args.destpath, relpath))
