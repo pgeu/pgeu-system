@@ -115,7 +115,7 @@ class Command(BaseCommand):
                     accrows = [
                         (settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, accstr, -trans.amount, None),
                         (settings.ACCOUNTING_ADYEN_PAYABLE_ACCOUNT, accstr, trans.settledamount, None),
-                        (settings.ACCOUNTING_ADYEN_FEE_ACCOUNT, accstr, trans.amount-trans.settledamount, trans.accounting_object),
+                        (settings.ACCOUNTING_ADYEN_FEE_ACCOUNT, accstr, trans.amount - trans.settledamount, trans.accounting_object),
                         ]
                     create_accounting_entry(date.today(), accrows, False)
 

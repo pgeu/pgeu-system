@@ -72,7 +72,7 @@ if __name__ == "__main__":
                     continue
                 thisentry['rows'].extend([
                     (settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, ptrans.fee, invoice.accounting_object),
-                    (settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, invoice.total_amount-ptrans.fee, None),
+                    (settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, invoice.total_amount - ptrans.fee, None),
                     ])
                 allentries.append(thisentry)
                 paypal_handled.append(ptrans.id)
@@ -101,7 +101,7 @@ if __name__ == "__main__":
                     'rows': [
                         (settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, -atrans.amount, None),
                         (settings.ACCOUNTING_ADYEN_PAYABLE_ACCOUNT, atrans.settledamount, None),
-                        (settings.ACCOUNTING_ADYEN_FEE_ACCOUNT, atrans.amount-atrans.settledamount, atrans.accounting_object),
+                        (settings.ACCOUNTING_ADYEN_FEE_ACCOUNT, atrans.amount - atrans.settledamount, atrans.accounting_object),
                         ],
                     'leaveopen': False})
 
@@ -123,7 +123,7 @@ if __name__ == "__main__":
                 'text': 'Paypal %s - %s - update manually' % (ptrans.paypaltransid,ptrans.transtext),
                 'rows': [
                     (settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, ptrans.fee, None),
-                    (settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, ptrans.amount-ptrans.fee, None),
+                    (settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, ptrans.amount - ptrans.fee, None),
                     ],
                 'leaveopen': True,
                 })
@@ -147,7 +147,7 @@ if __name__ == "__main__":
                 'rows': [
                     (settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, -atrans.amount, None),
                     (settings.ACCOUNTING_ADYEN_PAYABLE_ACCOUNT, atrans.settledamount, None),
-                    (settings.ACCOUNTING_ADYEN_FEE_ACCOUNT, atrans.amount-atrans.settledamount, None),
+                    (settings.ACCOUNTING_ADYEN_FEE_ACCOUNT, atrans.amount - atrans.settledamount, None),
                 ],
                 'leaveopen': False,
             })

@@ -55,7 +55,7 @@ class Trustly(TrustlyWrapper):
                 messageid=data['messageid'],
             )
             n.save()
-            raw.confirmed=True
+            raw.confirmed = True
             raw.save()
 
         # Raw is confirmed, but parsed one is still pending. So handle that one.
@@ -97,7 +97,7 @@ class Trustly(TrustlyWrapper):
                 if not trans.pendingat:
                     trans.pendingat = datetime.now()
                     trans.save()
-                notification.confirmed=True
+                notification.confirmed = True
                 notification.save()
 
                 TrustlyLog(message="Pending payment for Trustly id {0} (order {1}) received".format(trans.id, trans.orderid)).save()
@@ -119,7 +119,7 @@ class Trustly(TrustlyWrapper):
                     self.log_and_email(e)
                     return False
                 trans.save()
-                notification.confirmed=True
+                notification.confirmed = True
                 notification.save()
                 return True
         elif notification.method == 'cancel':

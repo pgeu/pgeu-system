@@ -1,7 +1,7 @@
 from urllib import urlencode
 
 class Banktransfer(object):
-    description="""
+    description = """
 Using this payment method, you can pay via a regular bank transfer
 using IBAN. Note that this requires that you are able to make a
 payment in Euros, and requires you to cover all transfer charges.

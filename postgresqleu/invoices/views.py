@@ -170,7 +170,7 @@ def oneinvoice(request, invoicenum):
         else:
             form = InvoiceForm(initial={
                 'invoicedate': datetime.now(),
-                'duedate': datetime.now()+timedelta(days=31)}
+                'duedate': datetime.now() + timedelta(days=31)}
             )
         formset = InvoiceRowInlineFormset(instance=invoice)
 

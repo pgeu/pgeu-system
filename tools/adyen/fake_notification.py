@@ -23,11 +23,11 @@ django.setup()
 from django.conf import settings
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     body = ""
-    if len(sys.argv)==3 and sys.argv[1] == "raw":
+    if len(sys.argv) == 3 and sys.argv[1] == "raw":
         body = raw_input('Enter the http POST data as a single string: ')
-    elif len(sys.argv)==3 and sys.argv[1] == "prompt":
+    elif len(sys.argv) == 3 and sys.argv[1] == "prompt":
         fields = ('merchantAccountCode', 'pspReference', 'merchantReference', 'originalReference', 'eventDate', 'eventCode', 'paymentMethod', 'live', 'success', 'value', 'currency', 'reason', )
         vals = {}
         for f in fields:

@@ -98,8 +98,8 @@ class Command(BaseCommand):
                                 (settings.ACCOUNTING_BRAINTREE_PAYABLE_ACCOUNT, accstr, -t.amount, None),
                                 (settings.ACCOUNTING_BRAINTREE_PAYOUT_ACCOUNT, accstr, t.disbursedamount, None),
                             ]
-                            if t.amount-t.disbursedamount > 0:
-                                accrows.append((settings.ACCOUNTING_BRAINTREE_FEE_ACCOUNT, accstr, t.amount-t.disbursedamount, t.accounting_object))
+                            if t.amount - t.disbursedamount > 0:
+                                accrows.append((settings.ACCOUNTING_BRAINTREE_FEE_ACCOUNT, accstr, t.amount - t.disbursedamount, t.accounting_object))
 
                             create_accounting_entry(date.today(), accrows, False)
                         elif datetime.today() - t.settledat > timedelta(days=10):

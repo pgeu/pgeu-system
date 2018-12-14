@@ -149,9 +149,9 @@ class PurchaseDiscountForm(forms.Form):
         self.conference = conference
         super(PurchaseDiscountForm, self).__init__(*args, **kwargs)
         self.fields['requiredoptions'].queryset = ConferenceAdditionalOption.objects.filter(conference=conference)
-        self.fields['expires'].initial=conference.startdate-timedelta(days=2)
-        self.fields['expires'].validators.append(BeforeValidator(conference.startdate-timedelta(days=1)))
-        self.fields['expires'].validators.append(AfterValidator(date.today()-timedelta(days=1)))
+        self.fields['expires'].initial = conference.startdate - timedelta(days=2)
+        self.fields['expires'].validators.append(BeforeValidator(conference.startdate - timedelta(days=1)))
+        self.fields['expires'].validators.append(AfterValidator(date.today() - timedelta(days=1)))
         if not showconfirm:
             del self.fields['confirm']
 

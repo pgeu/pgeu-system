@@ -1,7 +1,7 @@
 from postgresqleu.invoices.models import Invoice
 
 class DummyPayment(object):
-    description="""
+    description = """
 This is a payment method purely for debugging. If you see this in production,
 please let the administrator know immediately!
 """

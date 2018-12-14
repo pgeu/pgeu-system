@@ -40,7 +40,7 @@ class Command(BaseCommand):
                              sio.getvalue())
 
     def report_unconfirmed_notifications(self):
-        lines = list(TrustlyNotification.objects.filter(confirmed=False, receivedat__lt=datetime.now()-timedelta(days=1)).order_by('receivedat'))
+        lines = list(TrustlyNotification.objects.filter(confirmed=False, receivedat__lt=datetime.now() - timedelta(days=1)).order_by('receivedat'))
         if len(lines):
             sio = StringIO()
             sio.write("The following notifications have not been confirmed in the Trustly integration.\nThese need to be manually processed and then flagged as confirmed!\n\nThis list only contains unconfirmed events older than 24 hours.\n\n\n")
@@ -56,9 +56,9 @@ class Command(BaseCommand):
         # Number of days until we start reporting unfinished transactions
         # Note: we only care about transactions that have actually started, where the user
         # got the first step of confirmation. The ones that were never started are uninteresting.
-        UNFINISHED_THRESHOLD=3
+        UNFINISHED_THRESHOLD = 3
 
-        lines = list(TrustlyTransaction.objects.filter(completedat__isnull=True, pendingat__isnull=False, pendingat__lt=datetime.now()-timedelta(days=UNFINISHED_THRESHOLD)).order_by('pendingat'))
+        lines = list(TrustlyTransaction.objects.filter(completedat__isnull=True, pendingat__isnull=False, pendingat__lt=datetime.now() - timedelta(days=UNFINISHED_THRESHOLD)).order_by('pendingat'))
         if len(lines):
             sio = StringIO()
             sio.write("The following payments have been authorized, but not finished for more than %s days.\nThese probably need to be verified manually.\n\n\n" % UNFINISHED_THRESHOLD)

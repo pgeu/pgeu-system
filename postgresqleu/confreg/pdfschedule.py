@@ -85,12 +85,12 @@ def build_linear_pdf_schedule(conference, room, tracks, day, colored, pagesize, 
 
     def _finalize_page():
         canvas.setFont("DejaVu Serif", 20)
-        canvas.drawCentredString(width/2, height-2*cm, "%s - %s" % (room.roomname, lastdate.strftime(titledatefmt)))
+        canvas.drawCentredString(width / 2, height - 2*cm, "%s - %s" % (room.roomname, lastdate.strftime(titledatefmt)))
 
-        t = Table(tbldata, colWidths=[3*cm, width - 3*cm - 2*table_horiz_margin])
+        t = Table(tbldata, colWidths=[3*cm, width - 3*cm - 2 * table_horiz_margin])
         t.setStyle(TableStyle(tblstyle))
         w,h = t.wrapOn(canvas, width, height)
-        t.drawOn(canvas, table_horiz_margin, height-4*cm-h)
+        t.drawOn(canvas, table_horiz_margin, height - 4*cm - h)
         canvas.showPage()
 
     for s in sessions:
@@ -108,7 +108,7 @@ def build_linear_pdf_schedule(conference, room, tracks, day, colored, pagesize, 
         else:
             tbldata.extend([(tstr, (Paragraph(s.title, st_title), Paragraph("<i>%s</i>" % s.speaker_list, st_speakers)))])
             if colored and s.track and s.track.color:
-                tblstyle.append(('BACKGROUND', (1,len(tbldata)-1), (1,len(tbldata)-1), s.track.color),)
+                tblstyle.append(('BACKGROUND', (1,len(tbldata) - 1), (1,len(tbldata) - 1), s.track.color),)
 
     _finalize_page()
     canvas.save()
@@ -151,18 +151,18 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
         v['rooms'] = set([s.room for s in v['sessions'] if s.room])
 
     timestampstyle = ParagraphStyle('timestampstyle')
-    timestampstyle.fontName="DejaVu Serif"
+    timestampstyle.fontName = "DejaVu Serif"
     timestampstyle.fontSize = 8
 
     # Now build one page for each day
     for d in sorted(groupedbyday.keys()):
         dd = groupedbyday[d]
 
-        usableheight = height - 2*2*cm - 1*cm
-        usablewidth = width - 2*2*cm
+        usableheight = height - 2 * 2*cm - 1*cm
+        usablewidth = width - 2 * 2*cm
 
-        pagesessions=[]
-        currentpagesessions=[]
+        pagesessions = []
+        currentpagesessions = []
         if pagesperday > 1:
             # >1 page per day, so we try to find the breakpoints. We do this by locating
             # cross-schedule sessions at appropriate times, and including those both on
@@ -221,7 +221,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
 
         roompos = {}
         for r in sorted(dd['rooms'], key=lambda x: (x.sortkey, x.roomname)):
-            canvas.rect(2*cm + len(roompos) * roomwidth, height-4*cm, roomwidth, 1*cm, stroke=1)
+            canvas.rect(2*cm + len(roompos) * roomwidth, height - 4*cm, roomwidth, 1*cm, stroke=1)
             canvas.drawCentredString(2*cm + len(roompos) * roomwidth + roomwidth / 2,
                                      height - 4*cm + (1*cm-roomtitlefontsize)/2,
                                      r.roomname)
@@ -281,7 +281,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
                         while title:
                             for fs in (12,10,9,8):
                                 sessionstyle = ParagraphStyle('sessionstyle')
-                                sessionstyle.fontName="DejaVu Serif"
+                                sessionstyle.fontName = "DejaVu Serif"
                                 sessionstyle.fontSize = fs
                                 speakersize = fs > 8 and 8 or fs - 1
                                 if includespeaker:

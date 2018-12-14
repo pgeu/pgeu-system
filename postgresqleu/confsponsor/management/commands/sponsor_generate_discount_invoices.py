@@ -33,7 +33,7 @@ class Command(BaseCommand):
             if code.count == 0:
                 # In case there is not a single user, we just notify the user of this and set it to
                 # invoiced in the system so we don't try again.
-                code.is_invoiced=True
+                code.is_invoiced = True
                 code.save()
                 send_simple_mail(code.conference.sponsoraddr,
                                  code.conference.sponsoraddr,
@@ -64,7 +64,7 @@ class Command(BaseCommand):
                         # Percentage discount, so we need to calculate it. Ordered discount codes will
                         # only support a registration-only style discount code, so only count it
                         # against that.
-                        discountvalue = r.regtype.cost * code.discountpercentage/100
+                        discountvalue = r.regtype.cost * code.discountpercentage / 100
                     invoicerows.append(['Attendee "{0}"'.format(r.fullname), 1, discountvalue, r.conference.vat_registrations])
                 # All invoices are always due immediately
                 manager = InvoiceManager()
@@ -75,7 +75,7 @@ class Command(BaseCommand):
                     '%s\n%s' % (code.sponsor.name, code.sponsor.invoiceaddr),
                     u'{0} discount code {1}'.format(code.conference, code.code),
                     datetime.now(),
-                    date.today()+timedelta(days=1),
+                    date.today() + timedelta(days=1),
                     invoicerows,
                     bankinfo=True,
                     accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT,

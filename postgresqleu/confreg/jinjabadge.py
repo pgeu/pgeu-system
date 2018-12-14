@@ -30,7 +30,7 @@ def get_color(col):
     if isinstance(col, unicode) or isinstance(col, str):
         return colors.getAllNamedColors().get(col)
     elif isinstance(col, list):
-        return colors.Color(*map(lambda x: x/255.0, col))
+        return colors.Color(*map(lambda x: x / 255.0, col))
     else:
         raise Exception("Unknown color defintion type")
 
@@ -138,7 +138,7 @@ class JinjaBadge(Flowable):
         style.alignment = alignments[o.get('align', 'left')]
         p = Paragraph(txt, style)
         (actualwidth, actualheight) = p.wrap(getmm(o, 'width'), getmm(o, 'height'))
-        p.drawOn(self.canv, getmm(o, 'x'), self.calc_y(o)+getmm(o, 'height')-actualheight-yoffset)
+        p.drawOn(self.canv, getmm(o, 'x'), self.calc_y(o) + getmm(o, 'height') - actualheight - yoffset)
 
 
 def escapejson_filter(v):
@@ -221,7 +221,7 @@ class JinjaRenderer(object):
             self.story.append(PageBreak())
 
     def render(self, output):
-        doc = SimpleDocTemplate(output, pagesize=A4, leftMargin=10*mm, topMargin=5*mm, rightMargin=10*mm, bottomMargin=5*mm)
+        doc = SimpleDocTemplate(output, pagesize=A4, leftMargin=10 * mm, topMargin=5 * mm, rightMargin=10 * mm, bottomMargin=5 * mm)
         doc.build(self.story)
 
 

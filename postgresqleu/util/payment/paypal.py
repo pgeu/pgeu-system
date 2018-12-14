@@ -7,7 +7,7 @@ from postgresqleu.paypal.models import TransactionInfo
 from postgresqleu.paypal.util import PaypalAPI
 
 class Paypal(object):
-    description="""
+    description = """
 Pay using Paypal. You can use this both
 to pay from your Paypal balance if you have a Paypal account, or you can
 use it to pay with any credit card supported by Paypal (Visa, Mastercard, American Express).
@@ -17,7 +17,7 @@ with credit card. However, we do recommend using the payment method called
 lower fees.
 """
 
-    PAYPAL_COMMON={
+    PAYPAL_COMMON = {
         'business':settings.PAYPAL_EMAIL,
         'lc':'GB',
         'currency_code': settings.CURRENCY_ABBREV,

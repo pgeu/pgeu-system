@@ -15,8 +15,8 @@ def build_graphdata(question, key, options):
 
 def build_feedback_response(question):
     r = {'question': question.question, 'id': question.id, }
-    confid=question.conference.id
-    questionid=question.id
+    confid = question.conference.id
+    questionid = question.id
     if question.isfreetext:
         # This can actually be either freetext *or* graph!
         if question.textchoices:

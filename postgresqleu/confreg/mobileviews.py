@@ -20,9 +20,9 @@ import json
 # When running in debug mode, turn off the appcache because it can be
 # a real PITA to debug.
 if settings.DEBUG:
-    MANIFESTVERSION=None
+    MANIFESTVERSION = None
 else:
-    MANIFESTVERSION=105
+    MANIFESTVERSION = 105
 
 def index(request, confname):
     conference = get_object_or_404(Conference, urlname=confname)

@@ -88,7 +88,7 @@ def success(request, invoiceid, secret):
     status.seencount += 1
     status.save()
     return render(request, 'trustlypayment/pending.html', {
-        'refresh': 3*status.seencount,
+        'refresh': 3 * status.seencount,
         'url': '/invoices/{0}/{1}/'.format(invoiceid, secret),
         'createdat': trans.createdat,
         'pendingat': trans.pendingat,

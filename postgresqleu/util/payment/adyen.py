@@ -40,7 +40,7 @@ def _gzip_string(str):
     return s.getvalue()
 
 class _AdyenBase(object):
-    ADYEN_COMMON={
+    ADYEN_COMMON = {
         'currencyCode': settings.CURRENCY_ABBREV,
         'skinCode': settings.ADYEN_SKINCODE,
         'merchantAccount': settings.ADYEN_MERCHANTACCOUNT,
@@ -52,7 +52,7 @@ class _AdyenBase(object):
         orderdata = "<p>%s</p>" % invoicestr
         param.update({
             'merchantReference': '%s%s' % (settings.ADYEN_MERCHANTREF_PREFIX, invoiceid),
-            'paymentAmount': '%s' % (int(invoiceamount*Decimal(100.0)),),
+            'paymentAmount': '%s' % (int(invoiceamount * Decimal(100.0)),),
             'orderData': base64.encodestring(_gzip_string(orderdata.encode('utf-8'))).strip().replace("\n",''),
             'merchantReturnData': '%s%s' % (settings.ADYEN_MERCHANTREF_PREFIX, invoiceid),
             'sessionValidity': (datetime.utcnow() + timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%M:%SZ'),
@@ -85,7 +85,7 @@ class _AdyenBase(object):
             return reason
 
         if trans.settledamount:
-            return trans.amount-trans.settledamount
+            return trans.amount - trans.settledamount
         else:
             return "not settled yet"
 
@@ -105,7 +105,7 @@ class _AdyenBase(object):
         return True
 
 class AdyenCreditcard(_AdyenBase):
-    description="""
+    description = """
 Pay using your credit card, including Mastercard, VISA and American Express.
 """
 
@@ -121,7 +121,7 @@ Pay using your credit card, including Mastercard, VISA and American Express.
         return "Credit Card ({0})".format(trans.method)
 
 class AdyenBanktransfer(_AdyenBase):
-    description="""
+    description = """
 Pay using a direct IBAN bank transfer. Due to the unreliable and slow processing
 of these payments, this method is <b>not recommended</b> unless it is the only
 option possible. In particular, we strongly advice not using this method if

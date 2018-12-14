@@ -35,8 +35,8 @@ class Command(BaseCommand):
         # Right now that's only twitter reminders, butin the future there cna be
         # more plugins.
         for conference in Conference.objects.filter(twitterreminders_active=True,
-                                                    startdate__lte=datetime.today()+timedelta(days=1),
-                                                    enddate__gte=datetime.today()-timedelta(days=1)) \
+                                                    startdate__lte=datetime.today() + timedelta(days=1),
+                                                    enddate__gte=datetime.today() - timedelta(days=1)) \
                                             .exclude(twitter_token='') \
                                             .exclude(twitter_secret=''):
             tw = Twitter(conference)
@@ -45,8 +45,8 @@ class Command(BaseCommand):
                 # step here, but that will likely fall apart later with more integrations anyway)
                 for s in ConferenceSession.objects.select_related('room') \
                                                   .filter(conference=conference,
-                                                          starttime__gt=datetime.now()-timedelta(hours=conference.timediff),
-                                                          starttime__lt=datetime.now()-timedelta(hours=conference.timediff)+timedelta(minutes=15),
+                                                          starttime__gt=datetime.now() - timedelta(hours=conference.timediff),
+                                                          starttime__lt=datetime.now() - timedelta(hours=conference.timediff) + timedelta(minutes=15),
                                                           status=1,
                                                           reminder_sent=False):
                     for reg in ConferenceRegistration.objects.filter(
@@ -66,5 +66,5 @@ class Command(BaseCommand):
                                 # ignore that one. Other errors should be shown.
                                 print("Failed to send twitter DM to {0}: {1}".format(reg.twittername, err))
 
-                    s.reminder_sent=True
+                    s.reminder_sent = True
                     s.save()

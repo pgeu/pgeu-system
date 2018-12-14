@@ -31,8 +31,8 @@ from postgresqleu.confreg.models import valid_status_transitions, get_status_str
 from backendlookups import GeneralAccountLookup, RegisteredUsersLookup, SpeakerLookup
 
 class _NewFormDataField(django.forms.Field):
-    required=True
-    widget=django.forms.HiddenInput
+    required = True
+    widget = django.forms.HiddenInput
 
 class BackendForm(ConcurrentProtectedModelForm):
     selectize_multiple_fields = None
@@ -78,7 +78,7 @@ class BackendForm(ConcurrentProtectedModelForm):
         # but meh, this isn't used that often so...
         if self.fieldsets:
             all_fields = set([f for f in self.fields if not f == '_validator'])
-            all_fieldsetted_fields = set(reduce(lambda x,y: x+y, [v['fields'] for v in self.fieldsets]))
+            all_fieldsetted_fields = set(reduce(lambda x,y: x + y, [v['fields'] for v in self.fieldsets]))
             missing = all_fields.difference(all_fieldsetted_fields)
             if missing:
                 raise Exception("ERROR: fields %s are not in a fieldset" % ", ".join(missing))
@@ -93,7 +93,7 @@ class BackendForm(ConcurrentProtectedModelForm):
             if isinstance(v, django.forms.fields.DateTimeField) and not k in self.exclude_date_validators:
                 v.validators.extend([
                     MinValueValidator(datetime.datetime.combine(self.conference.startdate, datetime.time(0,0,0))),
-                    MaxValueValidator(datetime.datetime.combine(self.conference.enddate+datetime.timedelta(days=1), datetime.time(0,0,0))),
+                    MaxValueValidator(datetime.datetime.combine(self.conference.enddate + datetime.timedelta(days=1), datetime.time(0,0,0))),
                 ])
             elif isinstance(v, django.forms.fields.DateField) and not k in self.exclude_date_validators:
                 v.validators.extend([
@@ -301,7 +301,7 @@ class BackendRegistrationTypeForm(BackendForm):
         'Sortkey': ['nosearch', ],
     }
     defaultsort = [[4, 'asc']]
-    auto_cascade_delete_to=['registrationtype_days', 'registrationtype_requires_option']
+    auto_cascade_delete_to = ['registrationtype_days', 'registrationtype_requires_option']
 
     class Meta:
         model = RegistrationType
@@ -323,7 +323,7 @@ class BackendRegistrationTypeForm(BackendForm):
 
     def clean_cost(self):
         if self.instance and self.instance.cost != self.cleaned_data['cost']:
-            if self.instance.conferenceregistration_set.filter(Q(payconfirmedat__isnull=False)|Q(invoice__isnull=False)|Q(bulkpayment__isnull=False)).exists():
+            if self.instance.conferenceregistration_set.filter(Q(payconfirmedat__isnull=False) | Q(invoice__isnull=False) | Q(bulkpayment__isnull=False)).exists():
                 raise ValidationError("This registration type has been used, so the cost can no longer be changed")
 
         return self.cleaned_data['cost']
@@ -432,7 +432,7 @@ class BackendTransformConferenceDateTimeForm(django.forms.Form):
         self.source = source
         self.target = target
         super(BackendTransformConferenceDateTimeForm, self).__init__(*args, **kwargs)
-        self.fields['timeshift'].initial = self.source.startdate-self.target.startdate
+        self.fields['timeshift'].initial = self.source.startdate - self.target.startdate
 
     def confirm_value(self):
         return str(self.cleaned_data['timeshift'])
@@ -665,7 +665,7 @@ class BackendFeedbackQuestionForm(BackendForm):
 
 
 class BackendNewDiscountCodeForm(django.forms.Form):
-    helplink='vouchers#discountcodes'
+    helplink = 'vouchers#discountcodes'
     codetype = django.forms.ChoiceField(choices=((1, 'Fixed amount discount'), (2, 'Percentage discount')))
 
     def get_newform_data(self):
@@ -690,7 +690,7 @@ class DiscountCodeUserManager(object):
             return None
 
 class BackendDiscountCodeForm(BackendForm):
-    helplink='vouchers#discountcodes'
+    helplink = 'vouchers#discountcodes'
     list_fields = ['code', 'validuntil', 'maxuses']
     linked_objects = OrderedDict({
         '../../regdashboard/list': DiscountCodeUserManager(),

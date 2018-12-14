@@ -29,7 +29,7 @@ class JournalItemForm(forms.ModelForm):
         if self.instance.amount:
             if self.instance.amount > 0:
                 self.fields['debit'].initial = self.instance.amount
-            elif self.instance.amount <0:
+            elif self.instance.amount < 0:
                 self.fields['credit'].initial = -self.instance.amount
         self.fields['account'].widget.attrs['class'] = 'dropdownbox'
         self.fields['object'].widget.attrs['class'] = 'dropdownbox'
@@ -84,7 +84,7 @@ class JournalItemForm(forms.ModelForm):
             return 0
         debit = self.cleaned_data.has_key('debit') and self.cleaned_data['debit'] or 0
         credit = self.cleaned_data.has_key('credit') and self.cleaned_data['credit'] or 0
-        return debit-credit
+        return debit - credit
 
 class JournalItemFormset(BaseInlineFormSet):
     def clean(self):

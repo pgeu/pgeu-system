@@ -40,7 +40,7 @@ def _perform_search(request, year):
     return ('', list(JournalEntry.objects.filter(year=year).order_by('closed', '-date', '-id')))
 
 class EntryPaginator(Paginator):
-    ENTRIES_PER_PAGE=50
+    ENTRIES_PER_PAGE = 50
 
     def __init__(self, entries):
         return super(EntryPaginator, self).__init__(entries, self.ENTRIES_PER_PAGE)
@@ -51,10 +51,10 @@ class EntryPaginator(Paginator):
 
             if currentpage < 6:
                 return list(self.page_range)[:10]
-            elif currentpage > self.num_pages-5:
+            elif currentpage > self.num_pages - 5:
                 return list(self.page_range)[-10:]
             else:
-                return list(self.page_range)[currentpage-5:currentpage-5+10]
+                return list(self.page_range)[currentpage - 5:currentpage - 5 + 10]
         else:
             return self.page_range
 
@@ -102,7 +102,7 @@ def new(request, year):
     highseq = JournalEntry.objects.filter(year=year).aggregate(Max('seq'))['seq__max']
     if highseq is None:
         highseq = 0
-    entry = JournalEntry(year=year, seq=highseq+1, date=d, closed=False)
+    entry = JournalEntry(year=year, seq=highseq + 1, date=d, closed=False)
     entry.save()
 
     # Disable any search query to make sure we can actually see
@@ -126,7 +126,7 @@ def entry(request, entryid):
     paginator = EntryPaginator(entries)
     currpage = request.GET.has_key('p') and int(request.GET['p']) or 1
 
-    extra = max(2, 6-entry.journalitem_set.count())
+    extra = max(2, 6 - entry.journalitem_set.count())
     inlineformset = inlineformset_factory(JournalEntry, JournalItem, JournalItemForm, JournalItemFormset, can_delete=True, extra=extra)
     inlineurlformset = inlineformset_factory(JournalEntry, JournalUrl, JournalUrlForm, can_delete=True, extra=2, exclude=[])
 
@@ -157,8 +157,8 @@ def entry(request, entryid):
         urlformset = inlineurlformset(instance=entry)
 
     items = list(entry.journalitem_set.all())
-    totals = (sum([i.amount for i in items if i.amount>0]),
-              -sum([i.amount for i in items if i.amount<0]))
+    totals = (sum([i.amount for i in items if i.amount > 0]),
+              -sum([i.amount for i in items if i.amount < 0]))
     urls = list(entry.journalurl_set.all())
     return render(request, 'accounting/main.html', {
         'entries': paginator.page(currpage),
@@ -284,7 +284,7 @@ def closeyear(request, year):
     year = Year.objects.get(pk=year)
     hasopen = JournalEntry.objects.filter(year=year, closed=False).exists()
     try:
-        nextyear = Year.objects.get(year=year.year+1)
+        nextyear = Year.objects.get(year=year.year + 1)
         hasnext = IncomingBalance.objects.filter(year=nextyear).exists()
     except Year.DoesNotExist:
         hasnext = False
@@ -327,7 +327,7 @@ SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
         else:
             # Ok, let's do this :)
             # Create a new year if we have to
-            (nextyear, created) = Year.objects.get_or_create(year=year.year+1, defaults={'isopen':True})
+            (nextyear, created) = Year.objects.get_or_create(year=year.year + 1, defaults={'isopen':True})
 
             # Start by transferring this years result
             IncomingBalance(year=nextyear,
@@ -493,13 +493,13 @@ def report(request, year, reporttype):
         title = 'Results report'
         totalname = 'Final result'
         valheaders = ['Amount']
-    elif reporttype=='balance':
+    elif reporttype == 'balance':
         # Balance report.
         # We always assume we have an incoming balance and that the previous
         # year has been closed. If it's not closed, we just show a warning
         # about that.
         try:
-            prevyear = Year.objects.get(year=year.year-1)
+            prevyear = Year.objects.get(year=year.year - 1)
             if prevyear and prevyear.isopen:
                 messages.warning(request, 'Previous year (%s) is still open. Incoming balance will be incorrect!' % prevyear.year)
         except Year.DoesNotExist:

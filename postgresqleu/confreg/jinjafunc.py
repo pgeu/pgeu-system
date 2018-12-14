@@ -24,7 +24,7 @@ from postgresqleu.confreg.templatetags.leadingnbsp import leadingnbsp
 
 # We use a separate root directory for jinja2 templates, so find that
 # directory by searching relative to ourselves.
-JINJA_TEMPLATE_ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__), '../../template.jinja'))
+JINJA_TEMPLATE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../template.jinja'))
 
 
 # Locate the git revision for a repository in the given path, including
@@ -65,7 +65,7 @@ def find_git_revision(path):
 # by including or inheriting templates from other parts of the system.
 class ConfTemplateLoader(jinja2.FileSystemLoader):
     # Templates that are whitelisted for inclusion.
-    WHITELISTED_TEMPLATES=('invoices/userinvoice_spec.html',)
+    WHITELISTED_TEMPLATES = ('invoices/userinvoice_spec.html',)
 
     def __init__(self, conference, roottemplate):
         self.conference = conference
@@ -153,7 +153,7 @@ class ConfSandbox(jinja2.sandbox.SandboxedEnvironment):
                 if hasattr(obj, '_unsafe_attributes'):
                     if attr in getattr(obj, '_unsafe_attributes'):
                         return False
-        elif modname=='postgresqleu.invoices.util' and obj.__class__.__name__=='InvoicePresentationWrapper':
+        elif modname == 'postgresqleu.invoices.util' and obj.__class__.__name__ == 'InvoicePresentationWrapper':
             # This is ugly, but we special-case the invoice information
             if attr in obj._unsafe_attributes:
                 return False

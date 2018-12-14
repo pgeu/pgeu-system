@@ -5,7 +5,7 @@ def nonzero_validator(value):
     if value == 0:
         raise ValidationError("Must be non-zero value!")
 
-ACCOUNT_OBJECT_CHOICES= (
+ACCOUNT_OBJECT_CHOICES = (
     (0, "Optional"),
     (1, "Required"),
     (2, "Forbidden"),

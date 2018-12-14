@@ -22,6 +22,6 @@ class Command(BaseCommand):
         for invoice in invoices:
             wrapper = InvoiceWrapper(invoice)
             wrapper.email_reminder()
-            invoice.remindersent=datetime.now()
+            invoice.remindersent = datetime.now()
             invoice.save()
             self.stdout.write("Sent invoice reminder for #{0} - {1}".format(invoice.id, invoice.title))

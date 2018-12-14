@@ -126,19 +126,19 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
             instance = get_object_or_404(formclass.Meta.model, pk=id, conference=conference)
 
     if request.method == 'POST' and not nopostprocess:
-        extra_error=None
+        extra_error = None
         if allow_delete and request.POST['submit'] == 'Delete':
             if instance.pk:
                 # Are there any associated objects here, by any chance?
-                collector=NestedObjects(using='default')
+                collector = NestedObjects(using = 'default')
                 collector.collect([instance,])
                 to_delete = collector.nested()
                 to_delete.remove(instance)
                 if to_delete:
                     to_delete = [d for d in flatten_list(to_delete[0]) if not d._meta.model_name in formclass.auto_cascade_delete_to]
                 if to_delete:
-                    pieces=[unicode(to_delete[n]) for n in range(0, min(5, len(to_delete))) if not isinstance(to_delete[n], list)]
-                    extra_error=u"This {0} cannot be deleted. It would have resulted in the following other objects also being deleted: {1}".format(formclass.Meta.model._meta.verbose_name,u', '.join(pieces))
+                    pieces = [unicode(to_delete[n]) for n in range(0, min(5, len(to_delete))) if not isinstance(to_delete[n], list)]
+                    extra_error = u"This {0} cannot be deleted. It would have resulted in the following other objects also being deleted: {1}".format(formclass.Meta.model._meta.verbose_name,u', '.join(pieces))
                 else:
                     messages.info(request, "{0} {1} deleted.".format(formclass.Meta.model._meta.verbose_name.capitalize(), instance))
                     instance.delete()
@@ -324,7 +324,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
             'helplink': formclass.helplink,
         })
 
-    if allow_new and resturl=='new':
+    if allow_new and resturl == 'new':
         # This one is more interesting...
         return backend_process_form(request,
                                     urlname,

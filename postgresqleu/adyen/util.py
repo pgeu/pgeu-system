@@ -252,7 +252,7 @@ def process_new_report(notification):
     # Just store the fact that this report is available. We'll have an
     # asynchronous cronjob that downloads and processes the reports.
     Report(notification=notification, url=notification.reason, processedat=None).save()
-    notification.confirmed=True
+    notification.confirmed = True
     notification.save()
 
 
@@ -354,7 +354,7 @@ def process_raw_adyen_notification(raw, POST):
             notification.paymentMethod = POST['paymentMethod']
             notification.reason = POST['reason']
             try:
-                notification.amount = Decimal(POST['value'])/100
+                notification.amount = Decimal(POST['value']) / 100
             except:
                 # Invalid amount, set to -1
                 AdyenLog(pspReference=notification.pspReference, message='Received invalid amount %s' % POST['value'], error=True).save()

@@ -94,7 +94,7 @@ def wikipage_history(request, confurl, wikiurl):
     if not page.history:
         raise PermissionDenied()
 
-    fromid=toid=None
+    fromid = toid = None
 
     if request.method == 'POST':
         # View a diff

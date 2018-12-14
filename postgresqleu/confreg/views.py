@@ -354,14 +354,14 @@ def multireg(request, confname, regid=None):
                                 pk=regid,
                                 conference=conference,
                                 registrator=request.user)
-        redir_root='../'
+        redir_root = '../'
     else:
         reg = ConferenceRegistration(conference=conference,
                                      registrator=request.user,
                                      created=datetime.now(),
                                      regtoken=generate_random_token(),
         )
-        redir_root='./'
+        redir_root = './'
 
 
     if request.method == 'POST':
@@ -537,7 +537,7 @@ def multireg_newinvoice(request, confname):
     for r in invoicerows:
         # Calculate the with-vat information for this row
         if r[3]:
-            r.append(r[2]*(100+r[3].vatpercent)/Decimal(100))
+            r.append(r[2] * (100 + r[3].vatpercent) / Decimal(100))
         else:
             r.append(r[2])
     totalcost = sum([r[2] for r in invoicerows])
@@ -733,7 +733,7 @@ def reg_add_options(request, confname):
     for r in invoicerows:
         # Calculate the with-vat information for this row
         if r[3]:
-            r.append(r[2]*(100+r[3].vatpercent)/Decimal(100))
+            r.append(r[2] * (100 + r[3].vatpercent) / Decimal(100))
         else:
             r.append(r[2])
 
@@ -833,7 +833,7 @@ def feedback(request, confname):
     # in code here. The number of sessions is always going to be low, so it won't
     # be too big a performance issue.
     for s in sessions:
-        fb = [f for f in feedback if f.session==s]
+        fb = [f for f in feedback if f.session == s]
         if len(fb):
             s.has_given_feedback = True
 
@@ -867,7 +867,7 @@ def feedback_session(request, confname, sessionid):
     except ConferenceSessionFeedback.DoesNotExist:
         feedback = ConferenceSessionFeedback()
 
-    if request.method=='POST':
+    if request.method == 'POST':
         form = ConferenceSessionFeedbackForm(data=request.POST, instance=feedback)
         if form.is_valid():
             feedback = form.save(commit=False)
@@ -901,7 +901,7 @@ def feedback_conference(request, confname):
     # Get all current responses
     responses = ConferenceFeedbackAnswer.objects.filter(conference=conference, attendee=request.user)
 
-    if request.method=='POST':
+    if request.method == 'POST':
         form = ConferenceFeedbackForm(data=request.POST, questions=questions, responses=responses)
         if form.is_valid():
             # We've got the data, now write it to the database.
@@ -940,17 +940,17 @@ class SessionSet(object):
         # For old-style rendering, update positions
         if not s['cross_schedule']:
             s.update({
-                'leftpos': self.roomwidth()*self.rooms[s['room_id']],
-                'toppos': self.timediff_to_y_pixels(s['starttime'], s['firsttime'])+self.headersize,
-                'widthpos': self.roomwidth()-2,
+                'leftpos': self.roomwidth() * self.rooms[s['room_id']],
+                'toppos': self.timediff_to_y_pixels(s['starttime'], s['firsttime']) + self.headersize,
+                'widthpos': self.roomwidth() - 2,
                 'heightpos': self.timediff_to_y_pixels(s['endtime'], s['starttime']),
             })
         else:
             s.update({
                 'leftpos': 0,
-                'toppos': self.timediff_to_y_pixels(s['starttime'], s['firsttime'])+self.headersize,
+                'toppos': self.timediff_to_y_pixels(s['starttime'], s['firsttime']) + self.headersize,
                 'widthpos': self.roomwidth() * len(self.rooms) - 2,
-                'heightpos': self.timediff_to_y_pixels(s['endtime'], s['starttime'])-2,
+                'heightpos': self.timediff_to_y_pixels(s['endtime'], s['starttime']) - 2,
             })
             if 'id' in s:
                 del s['id']
@@ -960,30 +960,30 @@ class SessionSet(object):
         return self.sessions
 
     def schedule_height(self):
-        return self.timediff_to_y_pixels(self.sessions[0]['lasttime'], self.sessions[0]['firsttime'])+2+self.headersize
+        return self.timediff_to_y_pixels(self.sessions[0]['lasttime'], self.sessions[0]['firsttime']) + 2 + self.headersize
 
     def schedule_width(self):
         if len(self.rooms):
-            return self.roomwidth()*len(self.rooms)
+            return self.roomwidth() * len(self.rooms)
         else:
             return 0
 
     def roomwidth(self):
         if len(self.rooms):
-            return int(self.totalwidth/len(self.rooms))
+            return int(self.totalwidth / len(self.rooms))
         else:
             return 0
 
     def timediff_to_y_pixels(self, t, compareto):
-        return ((t - compareto).seconds/60)*self.pixelsperminute
+        return ((t - compareto).seconds / 60) * self.pixelsperminute
 
     def allrooms(self):
         return [{
             'id': id,
             'name': self.available_rooms[id]['roomname'],
-            'leftpos': self.roomwidth()*self.rooms[id],
-            'widthpos': self.roomwidth()-2,
-            'heightpos': self.headersize-2,
+            'leftpos': self.roomwidth() * self.rooms[id],
+            'widthpos': self.roomwidth() - 2,
+            'heightpos': self.headersize - 2,
             'sessions': list(self.room_sessions(id)),
         } for id, idx in sorted(self.rooms.items(), key=lambda x: x[1])]
 
@@ -993,7 +993,7 @@ class SessionSet(object):
             if s['cross_schedule'] or s['room_id'] == roomid:
                 if roomprevsess and roomprevsess['endtime'] < s['starttime']:
                     yield {'empty': True,
-                           'length': (s['starttime']-roomprevsess['endtime']).total_seconds()/60,
+                           'length': (s['starttime'] - roomprevsess['endtime']).total_seconds() / 60,
                     }
                 roomprevsess = s
                 yield s
@@ -1145,7 +1145,7 @@ def speakerprofile(request, confurlname=None):
     except Exception:
         pass
 
-    if request.method=='POST':
+    if request.method == 'POST':
         # Attempt to save
         # If this is a new speaker, create an instance for it
         if not speaker:
@@ -1227,7 +1227,7 @@ def callforpapers_edit(request, confname, sessionid):
         # on the same page. If feedback is  still open, we show nothing
         feedback_fields = ('topic_importance', 'content_quality', 'speaker_knowledge', 'speaker_quality')
         if is_tester or not conference.feedbackopen:
-            feedbackdata = [{'key': k, 'title': k.replace('_',' ').title(), 'num': [0]*5} for k in feedback_fields]
+            feedbackdata = [{'key': k, 'title': k.replace('_',' ').title(), 'num': [0] * 5} for k in feedback_fields]
             feedbacktext = []
             fb = list(ConferenceSessionFeedback.objects.filter(conference=conference, session=session))
             feedbackcount = len(fb)
@@ -1235,7 +1235,7 @@ def callforpapers_edit(request, confname, sessionid):
                 # Summarize the values
                 for d in feedbackdata:
                     if getattr(f, d['key']) > 0:
-                        d['num'][getattr(f, d['key'])-1] += 1
+                        d['num'][getattr(f, d['key']) - 1] += 1
                 # Add the text if necessary
                 if f.speaker_feedback:
                     feedbacktext.append({
@@ -1534,7 +1534,7 @@ def confirmreg(request, confname):
                 # so just redirect back to the page for retry.
                 return HttpResponseRedirect("../")
 
-            totalcost = sum([r[2]*(1+(r[3] and r[3].vatpercent or 0)/Decimal(100.0)) for r in invoicerows])
+            totalcost = sum([r[2] * (1 + (r[3] and r[3].vatpercent or 0) / Decimal(100.0)) for r in invoicerows])
 
             if len(invoicerows) <= 0:
                 return HttpResponseRedirect("../")
@@ -1601,7 +1601,7 @@ def confirmreg(request, confname):
     for r in invoicerows:
         # Calculate the with-vat information for this row
         if r[3]:
-            r.append(r[2]*(100+r[3].vatpercent)/Decimal(100))
+            r.append(r[2] * (100 + r[3].vatpercent) / Decimal(100))
         else:
             r.append(r[2])
 
@@ -1791,7 +1791,7 @@ def optout(request, token=None):
         email = request.user.email
 
     if request.method == 'POST':
-        global_optout = request.POST.get('global', '0')=='1'
+        global_optout = request.POST.get('global', '0') == '1'
         sids = exec_to_list("SELECT id FROM confreg_conferenceseries")
         optout_ids = [i for i, in sids if request.POST.get('series_{0}'.format(i), '0') == '1']
 
@@ -2007,7 +2007,7 @@ def bulkpay(request, confname):
                 allregs.append(regs[0])
             else:
                 state.append({'email': e, 'found': 0, 'text': 'Email not found or registration already completed.'})
-                errors=1
+                errors = 1
 
         # Validate each entry
         for r in allregs:
@@ -2015,26 +2015,26 @@ def bulkpay(request, confname):
 
             if r.payconfirmedat:
                 state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Email not found or registration already completed.'})
-                errors=1
+                errors = 1
             elif r.invoice:
                 state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'This registration already has an invoice generated for individual payment.'})
-                errors=1
+                errors = 1
             elif r.bulkpayment:
                 state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'This registration is already part of a different bulk registration.'})
-                errors=1
+                errors = 1
             elif not (r.regtype and r.regtype.active):
                 state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration type for this registration is not active!'})
-                errors=1
+                errors = 1
             else:
                 # If this is the confirmation step, we flag vouchers as used.
                 # Else we just get the data and generate a confirmation page
                 try:
                     regrows = invoicerows_for_registration(r, confirmstep)
-                    s = sum([r[1]*r[2] for r in regrows])
+                    s = sum([r[1] * r[2] for r in regrows])
                     if s == 0:
                         # No payment needed
                         state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration does not need payment'})
-                        errors=1
+                        errors = 1
                     else:
                         # All content is valid, so just append it
                         state.append({'email': regs[0].email, 'found': 1, 'pay': 1, 'total': s, 'rows':[u'%s (%s%s)' % (r[0], settings.CURRENCY_SYMBOL.decode('utf8'), r[2]) for r in regrows]})
@@ -2216,14 +2216,14 @@ def talkvote_status(request, confname):
     if not isadmin:
         return HttpResponse('Only admins can change the status')
 
-    if request.method!='POST':
+    if request.method != 'POST':
         return HttpResponse('Can only use POST')
 
     session = get_object_or_404(ConferenceSession, conference=conference, id=request.POST['sessionid'])
     session.status = int(request.POST['newstatus'])
     session.save()
     return HttpResponse("{0};{1}".format(get_status_string(session.status),
-                                         session.status!=session.lastnotifiedstatus and 1 or 0,
+                                         session.status != session.lastnotifiedstatus and 1 or 0,
                                      ), content_type='text/plain')
 
 @login_required
@@ -2232,7 +2232,7 @@ def talkvote_vote(request, confname):
     conference = get_object_or_404(Conference, urlname=confname)
     if not conference.talkvoters.filter(pk=request.user.id):
         raise PermissionDenied('You are not a talk voter for this conference!')
-    if request.method!='POST':
+    if request.method != 'POST':
         return HttpResponse('Can only use POST')
 
     session = get_object_or_404(ConferenceSession, conference=conference, id=request.POST['sessionid'])
@@ -2256,7 +2256,7 @@ def talkvote_comment(request, confname):
     conference = get_object_or_404(Conference, urlname=confname)
     if not conference.talkvoters.filter(pk=request.user.id):
         raise PermissionDenied('You are not a talk voter for this conference!')
-    if request.method!='POST':
+    if request.method != 'POST':
         return HttpResponse('Can only use POST')
 
     session = get_object_or_404(ConferenceSession, conference=conference, id=request.POST['sessionid'])
@@ -2278,7 +2278,7 @@ def createschedule(request, confname):
         raise PermissionDenied('You are not an administrator or talk voter for this conference!')
 
 
-    if request.method=="POST":
+    if request.method == "POST":
         if request.POST.has_key('get'):
             # Get the current list of tentatively scheduled talks
             s = {}
@@ -2309,7 +2309,7 @@ def createschedule(request, confname):
                         sess.tentativeroom = Room.objects.get(pk=roomid)
                         sess.tentativescheduleslot = ConferenceSessionScheduleSlot.objects.get(pk=slotid)
                         sess.save()
-                    found=True
+                    found = True
                     break
             if not found:
                 if sess.tentativescheduleslot:
@@ -2358,7 +2358,7 @@ def createschedule(request, confname):
         'sessions': sessions,
         'tracks': tracks,
         'sesswidth': min(600 / len(allrooms), 150),
-        'availableheight': len(sessions)*75,
+        'availableheight': len(sessions) * 75,
         'helplink': 'schedule',
     })
 
@@ -2474,9 +2474,9 @@ def simple_report(request, confname):
 @login_required
 def admin_dashboard(request):
     if request.user.is_superuser:
-        conferences = Conference.objects.filter(startdate__gt=datetime.now()-timedelta(days=3*365)).order_by('-startdate')
+        conferences = Conference.objects.filter(startdate__gt=datetime.now() - timedelta(days=3 * 365)).order_by('-startdate')
     else:
-        conferences = Conference.objects.filter(Q(administrators=request.user) | Q(series__administrators=request.user), startdate__gt=datetime.now()-timedelta(days=3*365)).distinct().order_by('-startdate')
+        conferences = Conference.objects.filter(Q(administrators=request.user) | Q(series__administrators=request.user), startdate__gt=datetime.now() - timedelta(days=3 * 365)).distinct().order_by('-startdate')
 
     # Split conferences in three buckets:
     #  Current: anything that starts or finishes within two weeks
@@ -2589,8 +2589,8 @@ WHERE dc.conference_id={1} AND (r.conference_id={1} OR r.conference_id IS NULL) 
         sums = ['Total']
         for cn in range(1, t['fixedcols']):
             sums.append('')
-        for cn in range(t['fixedcols']-1, len(t['columns'])-1):
-            sums.append(sum((r[cn+1] for r in t['rows'] if r[cn+1] != None)))
+        for cn in range(t['fixedcols'] - 1, len(t['columns']) - 1):
+            sums.append(sum((r[cn + 1] for r in t['rows'] if r[cn + 1] != None)))
         t['rows'] = [(r, t.get('linker', lambda x: None)(r)) for r in t['rows']]
         t['rows'].append((sums, None))
     return render(request, 'confreg/admin_registration_dashboard.html', {
@@ -2605,7 +2605,7 @@ def admin_registration_list(request, urlname):
     skey = request.GET.get('sort', '-date')
     if skey[0] == '-':
         revsort = True
-        skey=skey[1:]
+        skey = skey[1:]
     else:
         revsort = False
 
@@ -3147,7 +3147,7 @@ def crossmail(request):
             elif t == 'sp':
                 # Speaker
                 if v == '*':
-                    sf=""
+                    sf = ""
                 elif v == '?':
                     sf = " AND status IN (1,3)"
                 else:

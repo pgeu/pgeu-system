@@ -92,7 +92,7 @@ class TrustlyWrapper(object):
         }
         params['Data']['Username'] = self.username
         params['Data']['Password'] = self.password
-        tosign = unicode((method+params['UUID']+self._serializestruct(params['Data'])).decode('utf8'))
+        tosign = unicode((method + params['UUID'] + self._serializestruct(params['Data'])).decode('utf8'))
         sha1hash = SHA.new(tosign.encode('utf-8'))
         signature = self.signer.sign(sha1hash)
         params['Signature'] = base64.b64encode(signature)
@@ -122,7 +122,7 @@ class TrustlyWrapper(object):
 
     def parse_notification(self, notstr):
         struct = json.loads(notstr)
-        tosign = unicode(struct['method']+struct['params']['uuid']+self._serializestruct(struct['params']['data']))
+        tosign = unicode(struct['method'] + struct['params']['uuid'] + self._serializestruct(struct['params']['data']))
         sha1hash = SHA.new(tosign.encode('utf-8'))
 
         if self.verifier.verify(sha1hash, base64.b64decode(struct['params']['signature'])):
@@ -142,7 +142,7 @@ class TrustlyWrapper(object):
             },
             'version': '1.1',
         }
-        tosign = unicode(method+uuid+self._serializestruct(struct['result']['data']))
+        tosign = unicode(method + uuid + self._serializestruct(struct['result']['data']))
         sha1hash = SHA.new(tosign.encode('utf-8'))
         signature = self.signer.sign(sha1hash)
         struct['result']['signature'] = base64.b64encode(signature)

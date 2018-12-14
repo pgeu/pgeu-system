@@ -40,7 +40,7 @@ class Command(BaseCommand):
                              sio.getvalue())
 
     def report_unconfirmed_notifications(self):
-        lines = list(Notification.objects.filter(confirmed=False, receivedat__lt=datetime.now()-timedelta(days=1)).order_by('eventDate'))
+        lines = list(Notification.objects.filter(confirmed=False, receivedat__lt=datetime.now() - timedelta(days=1)).order_by('eventDate'))
         if len(lines):
             sio = StringIO()
             sio.write("The following notifications have not been confirmed in the Adyen integration.\nThese need to be manually processed and then flagged as confirmed!\n\nThis list only contains unconfirmed events older than 24 hours.\n\n\n")
@@ -55,8 +55,8 @@ class Command(BaseCommand):
     def report_unsettled_transactions(self):
         # Number of days until we start reporting unsettled transactions
 
-        UNSETTLED_THRESHOLD=15
-        lines = list(TransactionStatus.objects.filter(settledat__isnull=True, authorizedat__lt=datetime.now()-timedelta(days=UNSETTLED_THRESHOLD)).order_by('authorizedat'))
+        UNSETTLED_THRESHOLD = 15
+        lines = list(TransactionStatus.objects.filter(settledat__isnull=True, authorizedat__lt=datetime.now() - timedelta(days=UNSETTLED_THRESHOLD)).order_by('authorizedat'))
         if len(lines):
             sio = StringIO()
             sio.write("The following payments have been authorized, but not captured for more than %s days.\nThese probably need to be verified manually.\n\n\n" % UNSETTLED_THRESHOLD)

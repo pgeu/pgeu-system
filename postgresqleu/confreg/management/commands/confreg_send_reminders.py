@@ -70,7 +70,7 @@ class Command(BaseCommand):
         speakers = Speaker.objects.filter(conferencesession__conference=conference,
                                           conferencesession__status=3,
                                           conferencesession__lastnotifiedstatus=3,
-                                          conferencesession__lastnotifiedtime__lt=datetime.now()-timedelta(days=7)).distinct()
+                                          conferencesession__lastnotifiedtime__lt=datetime.now() - timedelta(days=7)).distinct()
         if speakers:
             whatstr.write("Found {0} unconfirmed talks:\n".format(len(speakers)))
 
@@ -100,7 +100,7 @@ class Command(BaseCommand):
     def remind_unregistered_speakers(self, whatstr, conference):
         # Get speakers that are approved but not registered
         speakers = list(Speaker.objects.raw("SELECT s.* FROM confreg_speaker s WHERE EXISTS (SELECT 1 FROM confreg_conferencesession sess INNER JOIN confreg_conferencesession_speaker css ON css.conferencesession_id=sess.id WHERE sess.conference_id=%s AND css.speaker_id=s.id AND sess.status=1 AND sess.lastnotifiedtime<%s) AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%s AND r.attendee_id=s.user_id AND r.payconfirmedat IS NOT NULL)",
-                                            [conference.id, datetime.now()-timedelta(days=7), conference.id]))
+                                            [conference.id, datetime.now() - timedelta(days=7), conference.id]))
         if speakers:
             whatstr.write("Found {0} unregistered speakers:\n".format(len(speakers)))
             for speaker in speakers:
@@ -145,8 +145,8 @@ class Command(BaseCommand):
                                                      invoice__isnull=True,
                                                      bulkpayment__isnull=True,
                                                      registrationwaitlistentry__isnull=True,
-                                                     created__lt=datetime.now()-timedelta(days=5),
-                                                     lastmodified__lt=datetime.now()-timedelta(days=5))
+                                                     created__lt=datetime.now() - timedelta(days=5),
+                                                     lastmodified__lt=datetime.now() - timedelta(days=5))
 
         if regs:
             whatstr.write("Found {0} unconfirmed registrations that are stalled:\n".format(len(regs)))
@@ -182,8 +182,8 @@ class Command(BaseCommand):
                                                      invoice__isnull=True,
                                                      bulkpayment__isnull=True,
                                                      registrationwaitlistentry__isnull=True,
-                                                     created__lt=datetime.now()-timedelta(days=5),
-                                                     lastmodified__lt=datetime.now()-timedelta(days=5))
+                                                     created__lt=datetime.now() - timedelta(days=5),
+                                                     lastmodified__lt=datetime.now() - timedelta(days=5))
 
         if regs:
             multiregs = set([r.registrator for r in regs])
@@ -220,7 +220,7 @@ class Command(BaseCommand):
 
         for sess in conference.conferencesession_set.filter(abstract='',
                                                             status=0,
-                                                            lastmodified__lt=datetime.now()-timedelta(days=3)):
+                                                            lastmodified__lt=datetime.now() - timedelta(days=3)):
             for spk in sess.speaker.all():
                 send_template_mail(conference.contactaddr,
                                    spk.email,
@@ -243,7 +243,7 @@ class Command(BaseCommand):
 
         speakers = Speaker.objects.filter(conferencesession__conference=conference,
                                           conferencesession__status=0,
-                                          lastmodified__lt=datetime.now()-timedelta(days=3),
+                                          lastmodified__lt=datetime.now() - timedelta(days=3),
                                           abstract='',
                                       ).distinct()
 

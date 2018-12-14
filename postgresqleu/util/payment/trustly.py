@@ -9,7 +9,7 @@ from postgresqleu.trustlypayment.api import TrustlyException
 
 
 class TrustlyPayment(object):
-    description="""
+    description = """
 Pay directly using online banking. Currently supported with most banks in {0}.
 """.format(', '.join(settings.TRUSTLY_COUNTRIES))
 

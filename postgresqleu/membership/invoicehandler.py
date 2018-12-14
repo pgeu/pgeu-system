@@ -5,7 +5,7 @@ from models import Member, MemberLog
 from datetime import datetime, timedelta, date
 
 class InvoiceProcessor(object):
-    can_refund=False
+    can_refund = False
     # Process invoices once they're getting paid
     #
     # In the case of membership, that simply means extending the
@@ -25,9 +25,9 @@ class InvoiceProcessor(object):
         # Extend the membership. If already paid to a date in the future,
         # extend from that date. Otherwise, from today.
         if member.paiduntil and member.paiduntil > date.today():
-            member.paiduntil = member.paiduntil + timedelta(days=settings.MEMBERSHIP_LENGTH*365)
+            member.paiduntil = member.paiduntil + timedelta(days=settings.MEMBERSHIP_LENGTH * 365)
         else:
-            member.paiduntil = date.today()+timedelta(days=settings.MEMBERSHIP_LENGTH*365)
+            member.paiduntil = date.today() + timedelta(days=settings.MEMBERSHIP_LENGTH * 365)
         member.expiry_warning_sent = None
 
         # If the member isn't already a member, set todays date as the

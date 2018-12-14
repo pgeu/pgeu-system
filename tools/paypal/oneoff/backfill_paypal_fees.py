@@ -40,5 +40,5 @@ if __name__ == "__main__":
                 ti.fee = 0
             else:
                 ti.fee = Decimal(info['FEEAMT'][0])
-                print "%s: Amount %s, fee %s (%.2f%%)" % (ti.paypaltransid, ti.amount, ti.fee, 100*ti.fee/ti.amount)
+                print "%s: Amount %s, fee %s (%.2f%%)" % (ti.paypaltransid, ti.amount, ti.fee, 100 * ti.fee / ti.amount)
             ti.save()

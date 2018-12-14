@@ -62,7 +62,7 @@ class Meeting(models.Model):
 
     @property
     def joining_active(self):
-        if datetime.now() > self.dateandtime-timedelta(hours=4):
+        if datetime.now() > self.dateandtime - timedelta(hours=4):
             return True
         return False
 

@@ -45,7 +45,7 @@ class Command(BaseCommand):
         # Send alerts for any refunds that have been issued but that have not completed within
         # 3 days (completely arbitrary, but normally it happens within seconds/minutes/hours).
         stalledrefunds = InvoiceRefund.objects.filter(issued__isnull=False, completed__isnull=True,
-                                                      issued__lt=datetime.now()-timedelta(days=3))
+                                                      issued__lt=datetime.now() - timedelta(days=3))
         if stalledrefunds:
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                              settings.INVOICE_SENDER_EMAIL,

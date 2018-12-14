@@ -72,11 +72,11 @@ class AdyenLogAdmin(admin.ModelAdmin):
 
     def success(self, obj):
         return not obj.error
-    success.boolean=True
+    success.boolean = True
 
     def sentstr(self, obj):
         return obj.sent and 'Yes' or 'No'
-    sentstr.short_description='Log sent'
+    sentstr.short_description = 'Log sent'
 
 admin.site.register(RawNotification, RawNotificationAdmin)
 admin.site.register(Notification, NotificationAdmin)

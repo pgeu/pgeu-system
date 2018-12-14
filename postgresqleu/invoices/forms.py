@@ -111,11 +111,11 @@ class RefundForm(forms.Form):
             del self.fields['confirm']
 
     def clean_amount(self):
-        errstr = "Amount must be a decimal between 1 and {0}".format(self.invoice.total_amount-self.invoice.total_vat)
+        errstr = "Amount must be a decimal between 1 and {0}".format(self.invoice.total_amount - self.invoice.total_vat)
 
         try:
             amount = Decimal(self.cleaned_data['amount'])
-            if amount < 1 or amount > self.invoice.total_amount-self.invoice.total_vat:
+            if amount < 1 or amount > self.invoice.total_amount - self.invoice.total_vat:
                 raise ValidationError(errstr)
             if amount.as_tuple().exponent > 0 or amount.as_tuple().exponent < -2:
                 raise ValidationError("Maximum two decimal digits supported")

@@ -51,9 +51,9 @@ STATUS_CHOICES_LONG = (
     (4, "Reserve-listed in case of cancels/changes"), # Reserve list
 )
 def get_status_string(val):
-    return (t for v,t in STATUS_CHOICES if v==val).next()
+    return (t for v,t in STATUS_CHOICES if v == val).next()
 def get_status_string_long(val):
-    return (t for v,t in STATUS_CHOICES_LONG if v==val).next()
+    return (t for v,t in STATUS_CHOICES_LONG if v == val).next()
 
 valid_status_transitions = {
     0: {3: 'Talk approved', 2: 'Talk is rejected', 4: 'Talk added to reserve list'},
@@ -70,7 +70,7 @@ def color_validator(value):
         raise ValidationError('Color values must be # + 7 characters')
     for n in range(0,3):
         try:
-            int(value[n*2+1:n*2+2+1], 16)
+            int(value[n * 2 + 1:n * 2 + 2 + 1], 16)
         except ValueError:
             raise ValidationError('Invalid value in color specification')
 
@@ -177,7 +177,7 @@ class Conference(models.Model):
 
     @property
     def conferencedatestr(self):
-        if self.enddate and not self.startdate==self.enddate:
+        if self.enddate and not self.startdate == self.enddate:
             return "%s - %s" % (
                 self.startdate.strftime("%Y-%m-%d"),
                 self.enddate.strftime("%Y-%m-%d")
@@ -244,7 +244,7 @@ class RegistrationClass(models.Model):
         return self.regclass
 
     def colortuple(self):
-        return tuple([int(self.badgecolor[n*2+1:n*2+2+1], 16) for n in range(0,3)])
+        return tuple([int(self.badgecolor[n * 2 + 1:n * 2 + 2 + 1], 16) for n in range(0,3)])
 
     @property
     def bgcolortuplestr(self):
@@ -255,7 +255,7 @@ class RegistrationClass(models.Model):
 
     def foregroundcolortuple(self):
         if len(self.badgeforegroundcolor):
-            return tuple([int(self.badgeforegroundcolor[n*2+1:n*2+2+1], 16) for n in range(0,3)])
+            return tuple([int(self.badgeforegroundcolor[n * 2 + 1:n * 2 + 2 + 1], 16) for n in range(0,3)])
         else:
             return None
 
@@ -303,7 +303,7 @@ class RegistrationType(models.Model):
     specialtype = models.CharField(max_length=5, blank=True, null=True, choices=special_reg_types, verbose_name="Special type")
     require_phone = models.BooleanField(null=False, blank=False, default=False, help_text="Require phone number to be entered")
     days = models.ManyToManyField(RegistrationDay, blank=True)
-    alertmessage =models.TextField(null=False, blank=True, verbose_name="Alert message", help_text="Message shown in popup to user when completing the registration")
+    alertmessage = models.TextField(null=False, blank=True, verbose_name="Alert message", help_text="Message shown in popup to user when completing the registration")
     upsell_target = models.BooleanField(null=False, blank=False, default=False, help_text='Is target registration type for upselling in order to add additional options')
     invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1),], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
     requires_option = models.ManyToManyField('ConferenceAdditionalOption', blank=True, help_text='Requires at least one of the selected additional options to be picked')
@@ -322,7 +322,7 @@ class RegistrationType(models.Model):
     @property
     def total_cost(self):
         if self.conference.vat_registrations:
-            return "%.2f incl VAT" % (self.cost * (1+self.conference.vat_registrations.vatpercent/Decimal(100.0)))
+            return "%.2f incl VAT" % (self.cost * (1 + self.conference.vat_registrations.vatpercent / Decimal(100.0)))
         else:
             return self.cost
 
@@ -369,7 +369,7 @@ class ConferenceAdditionalOption(models.Model):
         # it nice for the end user.
         if self.cost > 0:
             if self.conference.vat_registrations:
-                coststr = " (%s %.2f)" % (settings.CURRENCY_ABBREV, self.cost * (1+self.conference.vat_registrations.vatpercent/Decimal(100.0)))
+                coststr = " (%s %.2f)" % (settings.CURRENCY_ABBREV, self.cost * (1 + self.conference.vat_registrations.vatpercent / Decimal(100.0)))
             else:
                 coststr = " (%s %s)" % (settings.CURRENCY_ABBREV, self.cost)
         else:
@@ -623,12 +623,12 @@ class Speaker(models.Model):
             return None
 
     def has_abstract(self):
-        return len(self.abstract)>0
+        return len(self.abstract) > 0
     has_abstract.boolean = True
 
     def has_photo(self):
         return (self.photofile != None and self.photofile != "")
-    has_photo.boolean= True
+    has_photo.boolean = True
 
     def __unicode__(self):
         return self.name
@@ -701,7 +701,7 @@ class ConferenceSession(models.Model):
 
     @property
     def skill_level_string(self):
-        return (t for v,t in SKILL_CHOICES if v==self.skill_level).next()
+        return (t for v,t in SKILL_CHOICES if v == self.skill_level).next()
 
     @property
     def status_string(self):

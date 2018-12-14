@@ -120,7 +120,7 @@ class Command(BaseCommand):
         })
 
         # Fetch all transactions from last sync, with a 3 day overlap
-        for r in api.get_transaction_list(cursor.fetchall()[0][0]-timedelta(days=3)):
+        for r in api.get_transaction_list(cursor.fetchall()[0][0] - timedelta(days=3)):
             if r['TYPE'] in ('Payment', 'Donation', 'Purchase'):
                 t = PaypalTransaction(r)
             elif r['TYPE'] in ('Transfer'):

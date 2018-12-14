@@ -123,7 +123,7 @@ class PDFInvoice(PDFBase):
         self.rows.append((title, cost, count, vatrate, vatrate and vatrate.vatpercent or 0))
 
 
-    ROWS_PER_PAGE=14
+    ROWS_PER_PAGE = 14
     def save(self):
         # We can fit ROWS_PER_PAGE rows on one page. We might want to do something
         # cute to avoid a single row on it's own page in the future, but
@@ -179,7 +179,7 @@ class PDFInvoice(PDFBase):
                 totalexcl = sum([cost*count for title,cost,count,vatrate,vatpercent in self.rows])
                 totalvat = sum([(cost*count*(vatpercent/Decimal(100))).quantize(Decimal('0.01')) for title,cost,count,vatrate,vatpercent in self.rows])
                 totalincl = sum([(cost*count*(1+vatpercent/Decimal(100))).quantize(Decimal('0.01')) for title,cost,count,vatrate,vatpercent in self.rows])
-                if self.totalvat>0 and totalvat != self.totalvat:
+                if self.totalvat > 0 and totalvat != self.totalvat:
                     raise Exception("Specified total VAT {0} does not match calculated VAT {1}".format(self.totalvat, totalvat))
 
                 if self.reverse_vat:

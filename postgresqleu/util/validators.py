@@ -53,14 +53,14 @@ def validate_json_structure(config, structure):
     def _validate_json_level(config, structure, path):
         missing = set(structure.keys()).difference(set(config.keys()))
         if missing:
-            raise ValidationError("Keys {0} are missing".format(", ".join(["->".join(path+[m]) for m in missing])))
+            raise ValidationError("Keys {0} are missing".format(", ".join(["->".join(path + [m]) for m in missing])))
         extra = set(config.keys()).difference(set(structure.keys()))
         if extra:
-            raise ValidationError("Keys {0} are not allowed".format(", ".join(["->".join(path+[m]) for m in extra])))
+            raise ValidationError("Keys {0} are not allowed".format(", ".join(["->".join(path + [m]) for m in extra])))
 
         # Keys are correct, validate datatypes
         for k,v in config.items():
-            fullkey = "->".join(path+[k])
+            fullkey = "->".join(path + [k])
             # Dicts don't have __name__
             if type(structure[k]) == dict:
                 structtype = dict
@@ -73,7 +73,7 @@ def validate_json_structure(config, structure):
                 raise ValidationError("Value for {0} should be of type {1}, not {2}".format(fullkey, structname, valname))
             if isinstance(v, dict):
                 # Recursively check substructure
-                _validate_json_level(v, structure[k], path+[k])
+                _validate_json_level(v, structure[k], path + [k])
 
     _validate_json_level(config, structure, [])
 
@@ -97,7 +97,7 @@ class PictureUrlValidator(object):
             img = Image.open(StringIO(r.content))
             w,h = img.size
             if self.aspect:
-                newaspect = round(float(w)/float(h), 2)
+                newaspect = round(float(w) / float(h), 2)
                 if newaspect != self.aspect:
                     raise ValidationError("Image has aspect ratio %s, must have %s" % (newaspect, self.aspect))
 

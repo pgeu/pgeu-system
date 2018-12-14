@@ -4,7 +4,7 @@ from postgresqleu.invoices.models import Invoice
 from postgresqleu.braintreepayment.models import BraintreeTransaction
 
 class Braintree(object):
-    description="""
+    description = """
 Using this payment method, you can pay using your credit card, including
 Mastercard, VISA and American Express.
 """
@@ -32,7 +32,7 @@ Mastercard, VISA and American Express.
         if not trans:
             return reason
         if trans.disbursedamount:
-            return trans.amount-trans.disbursedamount
+            return trans.amount - trans.disbursedamount
         else:
             return "not disbursed yet"
 

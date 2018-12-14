@@ -110,7 +110,7 @@ class ReportFilter(object):
 # Filter by speaker state is more complex than the default filter can handle,
 # so it needs a special implementation.
 class ReportSpeakerFilter(object):
-    id='speakerstate'
+    id = 'speakerstate'
 
     def __init__(self, conference):
         self.conference = conference
@@ -191,7 +191,7 @@ class ReportWriterPdf(ReportWriterBase):
         resp = HttpResponse(content_type='application/pdf')
 
         registerFont(TTFont('DejaVu Serif', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf"))
-        pagesize = self.orientation=='portrait' and A4 or landscape(A4)
+        pagesize = self.orientation == 'portrait' and A4 or landscape(A4)
         doc = SimpleDocTemplate(resp, pagesize=pagesize)
 
         story = []
@@ -238,21 +238,21 @@ def build_attendee_report(conference, POST):
     # Run the query!
     result = ConferenceRegistration.objects.select_related('shirtsize', 'regtype', 'country', 'conference').filter(q).distinct().order_by(*orderby)
 
-    if format=='html':
+    if format == 'html':
         writer = ReportWriterHtml(title, borders)
-    elif format=='pdf':
+    elif format == 'pdf':
         writer = ReportWriterPdf(title, borders)
         writer.set_orientation(orientation)
-    elif format=='csv':
+    elif format == 'csv':
         writer = ReportWriterCsv(title, borders)
-    elif format=='json':
+    elif format == 'json':
         # Don't want to use normal renderer here, since we need to pass
         # the filtered full objects into the builder (because it needs to
         # be the same data as the badges get)
         resp = HttpResponse(content_type='application/json')
         json.dump([r.safe_export() for r in result], resp, indent=2)
         return resp
-    elif format=='badge':
+    elif format == 'badge':
         # Can't use a normal renderer here, since we need to actually
         # pass the full objects into the badge builder.
         try:

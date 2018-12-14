@@ -253,7 +253,7 @@ def _trunc_string(s, l):
     if len(s) <= l:
         return s
 
-    return s[:97]+"..."
+    return s[:97] + "..."
 
 class InvoiceManager(object):
     def __init__(self):
@@ -362,7 +362,7 @@ class InvoiceManager(object):
 
         accountingtxt = 'Invoice #%s: %s' % (invoice.id, invoice.title)
         accrows = [
-            (incomeaccount, accountingtxt, invoice.total_amount-transcost, None),
+            (incomeaccount, accountingtxt, invoice.total_amount - transcost, None),
             ]
         if transcost > 0:
             # If there was a transaction cost known at this point (which
@@ -389,7 +389,7 @@ class InvoiceManager(object):
 
         if invoice.accounting_account:
             accrows.append(
-                (invoice.accounting_account, accountingtxt, -(invoice.total_amount-invoice.total_vat), invoice.accounting_object),
+                (invoice.accounting_account, accountingtxt, -(invoice.total_amount - invoice.total_vat), invoice.accounting_object),
             )
             leaveopen = False
         else:
@@ -477,7 +477,7 @@ class InvoiceManager(object):
         invoice.save()
 
         InvoiceHistory(invoice=invoice,
-                       txt='Registered refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount+vatamount)).save()
+                       txt='Registered refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount + vatamount)).save()
 
         wrapper = InvoiceWrapper(invoice)
         if invoice.can_autorefund:
@@ -488,7 +488,7 @@ class InvoiceManager(object):
             # provider.
 
             InvoiceLog(timestamp=datetime.now(),
-                       message="Initiated refund of {0}{1} of invoice {2}: {3}".format(settings.CURRENCY_SYMBOL, amount+vatamount, invoice.id, reason),
+                       message="Initiated refund of {0}{1} of invoice {2}: {3}".format(settings.CURRENCY_SYMBOL, amount + vatamount, invoice.id, reason),
                    ).save()
         else:
             # No automatic refund, so this is flagging something that has
@@ -504,7 +504,7 @@ class InvoiceManager(object):
             if invoice.accounting_account:
                 accountingtxt = 'Refund of invoice #{0}: {1}'.format(invoice.id, invoice.title)
                 accrows = [
-                    (invoice.accounting_account, accountingtxt, invoice.total_amount-vatamount, invoice.accounting_object),
+                    (invoice.accounting_account, accountingtxt, invoice.total_amount - vatamount, invoice.accounting_object),
                 ]
                 if vatamount:
                     accrows.append(
@@ -515,11 +515,11 @@ class InvoiceManager(object):
                 create_accounting_entry(date.today(), accrows, True, urls)
 
             InvoiceHistory(invoice=invoice,
-                           txt='Flagged refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount+vatamount)).save()
+                           txt='Flagged refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount + vatamount)).save()
 
             wrapper.email_refund_sent()
             InvoiceLog(timestamp=datetime.now(),
-                       message=u"Flagged invoice {0} as refunded by {1}{2}: {3}".format(invoice.id, settings.CURRENCY_SYMBOL.decode('utf8'), amount+vatamount, reason),
+                       message=u"Flagged invoice {0} as refunded by {1}{2}: {3}".format(invoice.id, settings.CURRENCY_SYMBOL.decode('utf8'), amount + vatamount, reason),
                        ).save()
 
         return r
@@ -546,7 +546,7 @@ class InvoiceManager(object):
 
         accountingtxt = 'Refund ({0}) of invoice #{1}'.format(refundid, invoice.id)
         accrows = [
-            (incomeaccount, accountingtxt, -(refundamount-refundfee), None),
+            (incomeaccount, accountingtxt, -(refundamount - refundfee), None),
         ]
         if refund.vatamount:
             accrows.append(
@@ -558,7 +558,7 @@ class InvoiceManager(object):
             )
         if invoice.accounting_account:
             accrows.append(
-                (invoice.accounting_account, accountingtxt, refundamount-refund.vatamount, invoice.accounting_object),
+                (invoice.accounting_account, accountingtxt, refundamount - refund.vatamount, invoice.accounting_object),
             )
             leaveopen = False
         else:

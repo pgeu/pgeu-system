@@ -92,7 +92,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
     def clean_vouchercode(self):
         newval = self.cleaned_data.get('vouchercode')
-        if newval=='': return newval
+        if newval == '': return newval
 
         try:
             v = PrepaidVoucher.objects.get(vouchervalue=newval, conference=self.instance.conference)
@@ -552,8 +552,8 @@ class PrepaidCreateForm(forms.Form):
     def __init__(self, conference, *args, **kwargs):
         self.conference = conference
         super(PrepaidCreateForm, self).__init__(*args, **kwargs)
-        self.fields['regtype'].queryset=RegistrationType.objects.filter(conference=conference)
-        self.fields['buyer'].label_from_instance=lambda x: u'{0} {1} <{2}> ({3})'.format(x.first_name, x.last_name, x.email, x.username)
+        self.fields['regtype'].queryset = RegistrationType.objects.filter(conference = conference)
+        self.fields['buyer'].label_from_instance = lambda x: u'{0} {1} <{2}> ({3})'.format(x.first_name, x.last_name, x.email, x.username)
         if not (self.data.has_key('regtype') and
                 self.data.has_key('count') and
                 self.data.get('regtype') and
@@ -657,14 +657,14 @@ class WaitlistOfferForm(forms.Form):
         return l
 
     def clean(self):
-        if len(self.reg_list)==0:
+        if len(self.reg_list) == 0:
             raise ValidationError("At least one registration must be selected to make an offer")
         return self.cleaned_data
 
 class WaitlistSendmailForm(forms.Form):
-    TARGET_ALL=0
-    TARGET_OFFERS=1
-    TARGET_NOOFFERS=2
+    TARGET_ALL = 0
+    TARGET_OFFERS = 1
+    TARGET_NOOFFERS = 2
 
     TARGET_CHOICES = (
         (TARGET_ALL, 'All attendees on waitlist'),
@@ -672,10 +672,10 @@ class WaitlistSendmailForm(forms.Form):
         (TARGET_NOOFFERS, 'Only attendees without active offers'),
     )
 
-    POSITION_NONE=0
-    POSITION_FULL=1
-    POSITION_ONLY=2
-    POSITION_SIZE=3
+    POSITION_NONE = 0
+    POSITION_FULL = 1
+    POSITION_ONLY = 2
+    POSITION_SIZE = 3
     POSITION_CHOICES = (
         (POSITION_NONE, 'No position information'),
         (POSITION_FULL, 'Both position and size of waitlist'),

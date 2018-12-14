@@ -11,11 +11,11 @@ class BraintreeLogAdmin(admin.ModelAdmin):
 
     def success(self, obj):
         return not obj.error
-    success.boolean=True
+    success.boolean = True
 
     def sentstr(self, obj):
         return obj.sent and 'Yes' or 'No'
-    sentstr.short_description='Log sent'
+    sentstr.short_description = 'Log sent'
 
 admin.site.register(BraintreeTransaction, BraintreeTransactionAdmin)
 admin.site.register(BraintreeLog, BraintreeLogAdmin)

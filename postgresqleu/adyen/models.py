@@ -59,7 +59,7 @@ class TransactionStatus(models.Model):
         return self.pspReference
 
     class Meta:
-        verbose_name_plural='Transaction statuses'
+        verbose_name_plural = 'Transaction statuses'
 
 class Refund(models.Model):
     receivedat = models.DateTimeField(null=False, blank=False, auto_now_add=True)

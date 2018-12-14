@@ -140,7 +140,7 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
     list_filter = ['conference', RegtypeListFilter, AdditionalOptionListFilter, ]
     search_fields = ['email', 'firstname', 'lastname', ]
     ordering = ['-payconfirmedat', '-created', 'lastname', 'firstname', ]
-    actions= ['approve_conferenceregistration', 'email_recipients']
+    actions = ['approve_conferenceregistration', 'email_recipients']
     filter_horizontal = ('additionaloptions',)
     exclude = ('invoice','bulkpayment',)
     readonly_fields = ('invoice_link','bulkpayment_link', 'lastmodified', )
@@ -155,12 +155,12 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 
     def payconfirmedat_short(self, inst):
         return inst.payconfirmedat
-    payconfirmedat_short.short_description="Pay conf"
+    payconfirmedat_short.short_description = "Pay conf"
 
     def created_short(self, inst):
         return "<nobr>%s</nobr>" % inst.created.strftime("%Y-%m-%d %H:%M")
-    created_short.allow_tags=True
-    created_short.short_description="Created"
+    created_short.allow_tags = True
+    created_short.short_description = "Created"
 
     def invoice_link(self, inst):
         if inst.invoice:
@@ -247,7 +247,7 @@ class ConferenceSessionAdmin(admin.ModelAdmin):
     list_filter = ['conference', TrackListFilter, 'status', ]
     search_fields = ['title', ]
     filter_horizontal = ('speaker',)
-    actions= ['email_recipients', ]
+    actions = ['email_recipients', ]
 
     def get_queryset(self, request):
         qs = super(ConferenceSessionAdmin, self).get_queryset(request)

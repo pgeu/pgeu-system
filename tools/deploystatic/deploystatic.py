@@ -200,7 +200,7 @@ def deploy_template(env, template, destfile, context):
         f.write(s)
 
 def _deploy_static(source, destpath):
-    knownfiles =[]
+    knownfiles = []
     # We could use copytree(), but we need to know which files are there so we can
     # remove old files, so we might as well do the full processing this way.
     for relpath, relname in source.walkfiles('static'):

@@ -44,7 +44,7 @@ class Command(BaseCommand):
                 # manually completed.
                 accstr = "Paypal donation %s" % trans.paypaltransid
                 accrows = [
-                    (settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, accstr, trans.amount-trans.fee, None),
+                    (settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, accstr, trans.amount - trans.fee, None),
                     (settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, accstr, trans.fee, None),
                     (settings.ACCOUNTING_DONATIONS_ACCOUNT, accstr, -trans.amount, None),
                     ]
@@ -57,7 +57,7 @@ class Command(BaseCommand):
 
                 accstr = "Unlabeled paypal payment from {0}".format(trans.sender)
                 accrows = [
-                    (settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, accstr, trans.amount-trans.fee, None),
+                    (settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, accstr, trans.amount - trans.fee, None),
                 ]
                 if trans.fee:
                     accrows.append(

@@ -8,8 +8,8 @@ import base64
 from itertools import groupby
 
 class _ValidatorField(forms.Field):
-    required=True
-    widget=forms.HiddenInput
+    required = True
+    widget = forms.HiddenInput
 
 class ConcurrentProtectedModelForm(forms.ModelForm):
     _validator = _ValidatorField()

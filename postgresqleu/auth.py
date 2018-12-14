@@ -57,7 +57,7 @@ def login(request):
         r = Random.new()
         iv = r.read(16)
         encryptor = AES.new(SHA.new(settings.SECRET_KEY).digest()[:16], AES.MODE_CBC, iv)
-        cipher = encryptor.encrypt(s + ' ' * (16-(len(s) % 16))) # pad to 16 bytes
+        cipher = encryptor.encrypt(s + ' ' * (16 - (len(s) % 16))) # pad to 16 bytes
 
         return HttpResponseRedirect("%s?d=%s$%s" % (
             settings.PGAUTH_REDIRECT,
@@ -115,7 +115,7 @@ def auth_receive(request):
             changed = True
         if user.email != data['e'][0]:
             user.email = data['e'][0]
-            changed= True
+            changed = True
         if changed:
             user.save()
     except User.DoesNotExist:

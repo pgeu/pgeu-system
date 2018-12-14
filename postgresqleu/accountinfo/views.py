@@ -32,7 +32,7 @@ def search(request):
     users = user_search(term)
     # All users need a negative id so we can differentiate them
     for n in range(0, len(users)):
-        users[n]['i'] = -1-n
+        users[n]['i'] = -1 - n
     return HttpResponse(json.dumps([{'ui': u['i'],
                                      'u': u['u'],
                                      'n': u['f'] + ' ' + u['l'],

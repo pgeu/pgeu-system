@@ -223,7 +223,7 @@ class BulkInvoiceProcessor(object):
 
 
 class AddonInvoiceProcessor(object):
-    can_refund=False
+    can_refund = False
     # Process invoices for additional options added to an existing
     # registration.
     #

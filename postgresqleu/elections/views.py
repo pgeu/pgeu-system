@@ -9,9 +9,9 @@ from datetime import date, timedelta
 
 def home(request):
     elections = Election.objects.filter(isopen=True).order_by('startdate')
-    open_elections = [e for e in elections if e.startdate<=date.today() and e.enddate>=date.today()]
-    past_elections = [e for e in elections if e.startdate<date.today() and e.enddate<date.today()]
-    upcoming_elections = [e for e in elections if e.startdate>date.today()]
+    open_elections = [e for e in elections if e.startdate <= date.today() and e.enddate >= date.today()]
+    past_elections = [e for e in elections if e.startdate < date.today() and e.enddate < date.today()]
+    upcoming_elections = [e for e in elections if e.startdate > date.today()]
 
     return render(request, 'elections/home.html', {
         'open': open_elections,
@@ -47,7 +47,7 @@ def election(request, electionid):
         return render(request, 'elections/results.html', {
             'election': election,
             'topscore': res[0][1],
-            'scores': [{'name': r[0], 'score': r[1], 'width': 300*r[1]/res[0][1]} for r in res],
+            'scores': [{'name': r[0], 'score': r[1], 'width': 300 * r[1] / res[0][1]} for r in res],
         })
 
     if len(election.candidate_set.all()) <= 0:

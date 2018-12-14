@@ -31,7 +31,7 @@ def timereport(request):
 
             report = None
             try:
-                report = reporttypes[reporttype-1][1](reporttypes[reporttype-1][0],conferences)
+                report = reporttypes[reporttype - 1][1](reporttypes[reporttype - 1][0], conferences)
                 report.run()
                 return render(request, 'confreg/timereport.html', {
                     'form': form,
@@ -78,7 +78,7 @@ class MultiConferenceReport(object):
         (maxday,minday) = self.maxmin()
         if not maxday:
             raise ReportException("There are no %s at this conference." % self.title.lower())
-        allvals = [range(maxday, minday-1, -1), ]
+        allvals = [range(maxday, minday - 1, -1), ]
         self.headers = ['Days']
         maxseen = 0
         for c in self.conferences:
@@ -87,8 +87,8 @@ class MultiConferenceReport(object):
             self.headers.append(Header(c.conferencename))
             maxseen = max(max(myvals), maxseen)
 
-        if maxday-minday:
-            maxpred = float(maxseen)*maxday/(maxday-minday)
+        if maxday - minday:
+            maxpred = float(maxseen) * maxday / (maxday - minday)
         else:
             maxpred = 10
         self.graphdata = zip(*allvals)
@@ -114,7 +114,7 @@ class SingleConferenceReport(object):
         (maxday,minday,startdate) = self.curs.fetchone()
         if not maxday:
             raise ReportException("There are no %s at this conference." % self.title.lower())
-        allvals = [range(maxday,minday-1,-1), ]
+        allvals = [range(maxday,minday - 1, -1), ]
         self.headers = ['Days']
         for header, rows in self.fetch_all_data(minday, maxday, startdate):
             allvals.append([r[0] for r in rows])

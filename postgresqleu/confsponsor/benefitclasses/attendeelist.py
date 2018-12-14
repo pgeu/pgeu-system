@@ -40,7 +40,7 @@ class AttendeeList(BaseBenefit):
         if claimedbenefit.confirmed:
             if self.level.conference.enddate < datetime.today().date():
                 data = StringIO.StringIO()
-                c=csv.writer(data, delimiter=';')
+                c = csv.writer(data, delimiter=';')
                 for r in ConferenceRegistration.objects.filter(conference=self.level.conference,
                                                                payconfirmedat__isnull=False,
                                                                shareemail=True).order_by('lastname', 'firstname'):

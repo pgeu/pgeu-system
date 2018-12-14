@@ -56,7 +56,7 @@ def create_accounting_entry(date,
         # We assume the rest is correct and start building the db entries,
         # since we'll just roll it back if referenced data is missing.
 
-        entry = JournalEntry(year=year, seq=seq+1, date=date, closed=False)
+        entry = JournalEntry(year=year, seq=seq + 1, date=date, closed=False)
         entry.save()
 
         for accountnum, description, amount, objectname in items:

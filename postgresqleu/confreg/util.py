@@ -76,9 +76,9 @@ def invoicerows_for_registration(reg, update_used_vouchers):
                     else:
                         # Percentage discount. Can be either off the total or just the reg
                         if d.regonly:
-                            discount = reg.regtype.cost*d.discountpercentage/100
+                            discount = reg.regtype.cost * d.discountpercentage / 100
                         else:
-                            discount = current_total*d.discountpercentage/100
+                            discount = current_total * d.discountpercentage / 100
                     if discount > 0:
                         r.append(['   Discount code %s' % d.code, 1, -discount, reg.conference.vat_registrations])
             except DiscountCode.DoesNotExist:
@@ -207,7 +207,7 @@ def expire_additional_options(reg):
     # being expired (expects to run within a transaction).
     # Returns the list of options expired for this particular user.
 
-    hours = int(round((datetime.now() - reg.lastmodified).total_seconds()/3600))
+    hours = int(round((datetime.now() - reg.lastmodified).total_seconds() / 3600))
     expireset = list(reg.additionaloptions.filter(invoice_autocancel_hours__isnull=False,
                                                   invoice_autocancel_hours__lt=hours))
 
