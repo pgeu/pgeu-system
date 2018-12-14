@@ -56,7 +56,7 @@ class Migration(migrations.Migration):
             name='slot',
             field=models.ForeignKey(to='confreg.VolunteerSlot', on_delete=models.CASCADE),
         ),
-		migrations.RunSQL(
-			"CREATE INDEX confreg_volunteerslot_timerange_idx ON confreg_volunteerslot USING gist(timerange)",
-		),
+        migrations.RunSQL(
+            "CREATE INDEX confreg_volunteerslot_timerange_idx ON confreg_volunteerslot USING gist(timerange)",
+        ),
     ]

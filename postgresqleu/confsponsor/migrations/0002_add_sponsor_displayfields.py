@@ -17,12 +17,12 @@ class Migration(migrations.Migration):
             field=models.CharField(max_length=100, null=True),
             preserve_default=False,
         ),
-		migrations.RunSQL("UPDATE confsponsor_sponsor SET displayname=name"),
-		migrations.AlterField(
-			model_name='sponsor',
-			name='displayname',
-			field=models.CharField(max_length=100),
-		),
+        migrations.RunSQL("UPDATE confsponsor_sponsor SET displayname=name"),
+        migrations.AlterField(
+            model_name='sponsor',
+            name='displayname',
+            field=models.CharField(max_length=100),
+        ),
         migrations.AddField(
             model_name='sponsor',
             name='url',

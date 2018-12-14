@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'ordering': ['-datetime'],
-				'verbose_name_plural': 'Conference News',
+                'verbose_name_plural': 'Conference News',
             },
         ),
     ]

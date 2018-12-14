@@ -5,7 +5,7 @@ import providetext
 import attendeelist
 
 def _make_benefit(n, c):
-	all_benefits[n] = {'name': c.description, 'class': c}
+    all_benefits[n] = {'name': c.description, 'class': c}
 
 all_benefits = {}
 # We hardcode this list to ensure the integer sequence is the same as it's stored

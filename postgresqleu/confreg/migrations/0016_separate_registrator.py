@@ -24,10 +24,10 @@ class Migration(migrations.Migration):
             name='attendee',
             field=models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE),
         ),
-		migrations.RunSQL("UPDATE confreg_conferenceregistration SET registrator_id=attendee_id"),
-		migrations.AlterField(
+        migrations.RunSQL("UPDATE confreg_conferenceregistration SET registrator_id=attendee_id"),
+        migrations.AlterField(
             model_name='conferenceregistration',
             name='registrator',
             field=models.ForeignKey(related_name='registrator', to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
-		),
+        ),
     ]

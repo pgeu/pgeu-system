@@ -13,15 +13,15 @@ DEBUG = False
 DEFAULT_EMAIL = 'webmaster@localhost'
 
 ADMINS = (
-		  ('webmaster', DEFAULT_EMAIL),
+          ('webmaster', DEFAULT_EMAIL),
 )
 
 DATABASES = {
-	'default': {
-		'ENGINE': 'django.db.backends.postgresql_psycopg2',
-		'NAME': 'postgresqleu',
-		'USER': 'postgresqleu',
-	}
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'postgresqleu',
+        'USER': 'postgresqleu',
+    }
 }
 
 # Local time zone for this installation. Choices can be found here:
@@ -45,7 +45,7 @@ USE_I18N = False
 # trailing slash if there is a path component (optional in other cases).
 STATIC_URL = '/media/'
 STATICFILES_DIRS = (
-	'media/',
+    'media/',
 )
 
 # Must always be overridden in local_settings!
@@ -54,8 +54,8 @@ SECRET_KEY = ''
 MIDDLEWARE_CLASSES = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-	'django.contrib.messages.middleware.MessageMiddleware',
-	'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'postgresqleu.util.middleware.FilterPersistMiddleware',
     'postgresqleu.util.middleware.RedirectMiddleware',
@@ -66,44 +66,44 @@ CSRF_FAILURE_VIEW='postgresqleu.views.csrf_failure'
 ROOT_URLCONF = 'postgresqleu.urls'
 
 TEMPLATES = [{
-	'BACKEND': 'django.template.backends.django.DjangoTemplates',
-	'DIRS': ['template', ],
-	'OPTIONS': {
-		'context_processors': [
-			'django.template.context_processors.request',
-			'django.contrib.auth.context_processors.auth',
-			'django.contrib.messages.context_processors.messages',
-			'postgresqleu.util.context_processors.settings_context',
-		],
-		'loaders': [
-			'django.template.loaders.filesystem.Loader',
-			'django.template.loaders.app_directories.Loader',
-		],
-	},
+    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+    'DIRS': ['template', ],
+    'OPTIONS': {
+        'context_processors': [
+            'django.template.context_processors.request',
+            'django.contrib.auth.context_processors.auth',
+            'django.contrib.messages.context_processors.messages',
+            'postgresqleu.util.context_processors.settings_context',
+        ],
+        'loaders': [
+            'django.template.loaders.filesystem.Loader',
+            'django.template.loaders.app_directories.Loader',
+        ],
+    },
 }]
 
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-	'django.contrib.admin',
-	'django_markwhat',
-	'django.contrib.staticfiles',
-	'django.contrib.humanize',
-	'postgresqleu._initial',
-	'postgresqleu.selectable',
-	'postgresqleu.static',
-	'postgresqleu.countries',
-	'postgresqleu.paypal',
-	'postgresqleu.adyen',
-	'postgresqleu.newsevents',
-	'postgresqleu.confreg',
-	'postgresqleu.confsponsor',
-	'postgresqleu.confwiki',
-	'postgresqleu.mailqueue',
-	'postgresqleu.invoices',
-	'postgresqleu.accounting',
-	'postgresqleu.util',
+    'django.contrib.admin',
+    'django_markwhat',
+    'django.contrib.staticfiles',
+    'django.contrib.humanize',
+    'postgresqleu._initial',
+    'postgresqleu.selectable',
+    'postgresqleu.static',
+    'postgresqleu.countries',
+    'postgresqleu.paypal',
+    'postgresqleu.adyen',
+    'postgresqleu.newsevents',
+    'postgresqleu.confreg',
+    'postgresqleu.confsponsor',
+    'postgresqleu.confwiki',
+    'postgresqleu.mailqueue',
+    'postgresqleu.invoices',
+    'postgresqleu.accounting',
+    'postgresqleu.util',
 ]
 
 # Emails
@@ -218,9 +218,9 @@ TWITTER_NEWS_TOKENSECRET=""
 
 # If there is a local_settings.py, let it override our settings
 try:
-	from local_settings import *
+    from local_settings import *
 except ImportError, e:
-	pass
+    pass
 
 PRELOAD_URLS=[]
 if 'SYSTEM_SKIN_DIRECTORY' in globals():
@@ -253,7 +253,7 @@ if not SECRET_KEY:
 
 # Reset admins based on confir params from skins and local
 ADMINS = (
-		  (u'{0} webmaster'.format(ORG_NAME), DEFAULT_EMAIL),
+          (u'{0} webmaster'.format(ORG_NAME), DEFAULT_EMAIL),
 )
 MANAGERS = ADMINS
 
@@ -263,7 +263,7 @@ INVOICE_FILENAME_PREFIX=ORG_SHORTNAME.lower()
 
 
 if GLOBAL_LOGIN_USER:
-	MIDDLEWARE_CLASSES.append('postgresqleu.util.middleware.GlobalLoginMiddleware')
+    MIDDLEWARE_CLASSES.append('postgresqleu.util.middleware.GlobalLoginMiddleware')
 
 if ENABLE_PG_COMMUNITY_AUTH:
     AUTHENTICATION_BACKENDS = (
@@ -272,29 +272,29 @@ if ENABLE_PG_COMMUNITY_AUTH:
     LOGIN_URL="{0}/accounts/login/".format(SITEBASE)
 4
 if ENABLE_ELECTIONS and not ENABLE_MEMBERSHIP:
-	raise Exception("Elections module requires membership module!")
+    raise Exception("Elections module requires membership module!")
 
 if ENABLE_MEMBERSHIP:
-	INSTALLED_APPS.append('postgresqleu.membership')
-	TEMPLATES[0]['OPTIONS']['context_processors'].append('postgresqleu.util.context_processors.member_context')
+    INSTALLED_APPS.append('postgresqleu.membership')
+    TEMPLATES[0]['OPTIONS']['context_processors'].append('postgresqleu.util.context_processors.member_context')
 
 if ENABLE_ELECTIONS:
-	INSTALLED_APPS.append('postgresqleu.elections')
+    INSTALLED_APPS.append('postgresqleu.elections')
 
 
 if ENABLE_BRAINTREE:
-	INSTALLED_APPS.append('postgresqleu.braintreepayment')
-	BRAINTREE_SANDBOX=False
-	# Accounts to use for braintree transactions
-	# Override in local_settings.py, and also configure
-	# the public and secret keys there.
-	ACCOUNTING_BRAINTREE_AUTHORIZED_ACCOUNT=1621
-	ACCOUNTING_BRAINTREE_PAYABLE_ACCOUNT=1623
-	ACCOUNTING_BRAINTREE_PAYOUT_ACCOUNT=1930
-	ACCOUNTING_BRAINTREE_FEE_ACCOUNT=6040
+    INSTALLED_APPS.append('postgresqleu.braintreepayment')
+    BRAINTREE_SANDBOX=False
+    # Accounts to use for braintree transactions
+    # Override in local_settings.py, and also configure
+    # the public and secret keys there.
+    ACCOUNTING_BRAINTREE_AUTHORIZED_ACCOUNT=1621
+    ACCOUNTING_BRAINTREE_PAYABLE_ACCOUNT=1623
+    ACCOUNTING_BRAINTREE_PAYOUT_ACCOUNT=1930
+    ACCOUNTING_BRAINTREE_FEE_ACCOUNT=6040
 
 if ENABLE_TRUSTLY:
-	INSTALLED_APPS.append('postgresqleu.trustlypayment')
+    INSTALLED_APPS.append('postgresqleu.trustlypayment')
 
-	# Accounts to use for trustly transactions
-	ACCOUNTING_TRUSTLY_ACCOUNT=1972
+    # Accounts to use for trustly transactions
+    ACCOUNTING_TRUSTLY_ACCOUNT=1972

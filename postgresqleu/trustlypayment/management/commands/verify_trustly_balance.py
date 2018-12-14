@@ -16,21 +16,21 @@ from postgresqleu.accounting.util import get_latest_account_balance
 from postgresqleu.mailqueue.util import send_simple_mail
 
 class Command(BaseCommand):
-	help = 'Compare trustly balance to the accounting system'
+    help = 'Compare trustly balance to the accounting system'
 
-	@transaction.atomic
-	def handle(self, *args, **options):
-		trustly = Trustly()
+    @transaction.atomic
+    def handle(self, *args, **options):
+        trustly = Trustly()
 
-		trustly_balance = trustly.get_balance()
+        trustly_balance = trustly.get_balance()
 
-		accounting_balance = get_latest_account_balance(settings.ACCOUNTING_TRUSTLY_ACCOUNT)
+        accounting_balance = get_latest_account_balance(settings.ACCOUNTING_TRUSTLY_ACCOUNT)
 
-		if accounting_balance != trustly_balance:
-			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-							 settings.TRUSTLY_NOTIFICATION_RECEIVER,
-							 'Trustly balance mismatch!',
-							 """Trustly balance ({0}) does not match the accounting system ({1})!
+        if accounting_balance != trustly_balance:
+            send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+                             settings.TRUSTLY_NOTIFICATION_RECEIVER,
+                             'Trustly balance mismatch!',
+                             """Trustly balance ({0}) does not match the accounting system ({1})!
 
 This could be because some entry has been missed in the accouting
 (automatic or manual), or because of an ongoing booking of something

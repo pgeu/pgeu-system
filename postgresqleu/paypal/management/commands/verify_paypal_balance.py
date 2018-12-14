@@ -16,22 +16,22 @@ from postgresqleu.accounting.util import get_latest_account_balance
 from postgresqleu.mailqueue.util import send_simple_mail
 
 class Command(BaseCommand):
-	help = 'Compare paypal balance to the accounting system'
+    help = 'Compare paypal balance to the accounting system'
 
-	@transaction.atomic
-	def handle(self, *args, **options):
-		api = PaypalAPI()
+    @transaction.atomic
+    def handle(self, *args, **options):
+        api = PaypalAPI()
 
-		# We only ever care about the primary currency
-		paypal_balance = api.get_primary_balance()
+        # We only ever care about the primary currency
+        paypal_balance = api.get_primary_balance()
 
-		accounting_balance = get_latest_account_balance(settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT)
+        accounting_balance = get_latest_account_balance(settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT)
 
-		if accounting_balance != paypal_balance:
-			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-							 settings.PAYPAL_REPORT_RECEIVER,
-							 'Paypal balance mismatch!',
-							 """Paypal balance ({0}) does not match the accounting system ({1})!
+        if accounting_balance != paypal_balance:
+            send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+                             settings.PAYPAL_REPORT_RECEIVER,
+                             'Paypal balance mismatch!',
+                             """Paypal balance ({0}) does not match the accounting system ({1})!
 
 This could be because some entry has been missed in the accouting
 (automatic or manual), or because of an ongoing booking of something

@@ -11,6 +11,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-		migrations.RunSQL("ALTER TABLE confreg_conferenceregistration ADD CONSTRAINT chk_token_length CHECK (length(regtoken)=64)"),
-		migrations.RunSQL("ALTER TABLE confreg_speaker ADD CONSTRAINT chk_token_length CHECK (length(speakertoken)=64)"),
+        migrations.RunSQL("ALTER TABLE confreg_conferenceregistration ADD CONSTRAINT chk_token_length CHECK (length(regtoken)=64)"),
+        migrations.RunSQL("ALTER TABLE confreg_speaker ADD CONSTRAINT chk_token_length CHECK (length(speakertoken)=64)"),
     ]

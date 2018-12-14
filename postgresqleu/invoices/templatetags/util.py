@@ -4,5 +4,5 @@ register = template.Library()
 
 @register.filter
 def stringreplace(value, pattern):
-	(old,new) = pattern.split(',')
-	return value.replace(old,new)
+    (old,new) = pattern.split(',')
+    return value.replace(old,new)

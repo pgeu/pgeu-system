@@ -23,47 +23,47 @@ from postgresqleu.invoices.models import Invoice, InvoiceProcessor
 from postgresqleu.confreg.models import ConferenceRegistration, BulkPayment
 
 if __name__ == "__main__":
-	logging.disable(logging.WARNING)
-	with transaction.commit_on_success():
-		invoices = Invoice.objects.filter(paidat__isnull=False, accounting_account__isnull=True).order_by('id')
+    logging.disable(logging.WARNING)
+    with transaction.commit_on_success():
+        invoices = Invoice.objects.filter(paidat__isnull=False, accounting_account__isnull=True).order_by('id')
 
-		processor_confreg = InvoiceProcessor.objects.get(processorname='confreg processor')
-		processor_bulkreg = InvoiceProcessor.objects.get(processorname='confreg bulk processor')
-		processor_membership = InvoiceProcessor.objects.get(processorname='membership processor')
+        processor_confreg = InvoiceProcessor.objects.get(processorname='confreg processor')
+        processor_bulkreg = InvoiceProcessor.objects.get(processorname='confreg bulk processor')
+        processor_membership = InvoiceProcessor.objects.get(processorname='membership processor')
 
-		for invoice in invoices:
-			# Try to determine what it is
-			if invoice.processor == processor_confreg:
-				# This is a conference registration
-				invoice.accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT
-				try:
-					invoice.accounting_object = ConferenceRegistration.objects.get(pk=invoice.processorid).conference.accounting_object
-				except ConferenceRegistration.DoesNotExist:
-					print "ERROR: for invoice %s, attached conference registration does not exist!" % invoice.id
-					continue
-			elif invoice.processor == processor_bulkreg:
-				# This is a bulk registration
-				invoice.accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT
-				invoice.accounting_object = BulkPayment.objects.get(pk=invoice.processorid).conference.accounting_object
-			elif invoice.processor == processor_membership:
-				# This is a membership. It has an account, but no object
-				invoice.accounting_account = settings.ACCOUNTING_MEMBERSHIP_ACCOUNT
-				invoice.accounting_object = None
-			else:
-				print "Invoice #%s has unknown processor. Enter info manually, plase!" % invoice.id
-				while True:
-					try:
-						invoice.accounting_account = int(raw_input('Enter account number: '))
-						break
-					except KeyboardInterrupt:
-						raise
-					except:
-						pass
-				invoice.accounting_object = raw_input('Enter object name: ')
-			print "Invoice %s, account %s, object %s" % (invoice.id, invoice.accounting_account, invoice.accounting_object)
-			invoice.save()
+        for invoice in invoices:
+            # Try to determine what it is
+            if invoice.processor == processor_confreg:
+                # This is a conference registration
+                invoice.accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT
+                try:
+                    invoice.accounting_object = ConferenceRegistration.objects.get(pk=invoice.processorid).conference.accounting_object
+                except ConferenceRegistration.DoesNotExist:
+                    print "ERROR: for invoice %s, attached conference registration does not exist!" % invoice.id
+                    continue
+            elif invoice.processor == processor_bulkreg:
+                # This is a bulk registration
+                invoice.accounting_account = settings.ACCOUNTING_CONFREG_ACCOUNT
+                invoice.accounting_object = BulkPayment.objects.get(pk=invoice.processorid).conference.accounting_object
+            elif invoice.processor == processor_membership:
+                # This is a membership. It has an account, but no object
+                invoice.accounting_account = settings.ACCOUNTING_MEMBERSHIP_ACCOUNT
+                invoice.accounting_object = None
+            else:
+                print "Invoice #%s has unknown processor. Enter info manually, plase!" % invoice.id
+                while True:
+                    try:
+                        invoice.accounting_account = int(raw_input('Enter account number: '))
+                        break
+                    except KeyboardInterrupt:
+                        raise
+                    except:
+                        pass
+                invoice.accounting_object = raw_input('Enter object name: ')
+            print "Invoice %s, account %s, object %s" % (invoice.id, invoice.accounting_account, invoice.accounting_object)
+            invoice.save()
 
-		while True:
-			if raw_input("Does this seem reasonable? Type 'yes' to commit, or hit ctrl-c to abort. So? ") == 'yes':
-				break
-	print "All done!"
+        while True:
+            if raw_input("Does this seem reasonable? Type 'yes' to commit, or hit ctrl-c to abort. So? ") == 'yes':
+                break
+    print "All done!"

@@ -30,8 +30,8 @@ class Migration(migrations.Migration):
             name='refund',
             field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.SET_NULL, blank=True, to='invoices.InvoiceRefund'),
         ),
-		migrations.RunSQL("INSERT INTO invoices_invoicerefund (reason, amount, registered, issued, completed, payment_reference, refund_pdf) SELECT refund_reason, total_amount, paidat, paidat, paidat, 'MIGRATED_' || id, '' FROM invoices_invoice WHERE refunded"),
-		migrations.RunSQL("UPDATE invoices_invoice SET refund_id=invoices_invoicerefund.id FROM invoices_invoicerefund WHERE invoices_invoicerefund.payment_reference='MIGRATED_'||invoices_invoice.id"),
+        migrations.RunSQL("INSERT INTO invoices_invoicerefund (reason, amount, registered, issued, completed, payment_reference, refund_pdf) SELECT refund_reason, total_amount, paidat, paidat, paidat, 'MIGRATED_' || id, '' FROM invoices_invoice WHERE refunded"),
+        migrations.RunSQL("UPDATE invoices_invoice SET refund_id=invoices_invoicerefund.id FROM invoices_invoicerefund WHERE invoices_invoicerefund.payment_reference='MIGRATED_'||invoices_invoice.id"),
         migrations.RemoveField(
             model_name='invoice',
             name='refund_reason',

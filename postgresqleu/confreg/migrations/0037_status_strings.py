@@ -12,13 +12,13 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-		migrations.RunSQL("CREATE TABLE IF NOT EXISTS confreg_status_strings(id int not null primary key, statustext text not null, statusgroup text)"),
-		migrations.RunSQL("""WITH t(id, statustext, statusgroup) AS (VALUES
-		(0, 'Submitted', NULL),
-		(1, 'Approved', 'Approved+Pending'),
-		(2, 'Rejected', NULL),
-		(3, 'Pending', 'Approved+Pending'),
-		(4, 'Reserve', NULL))
-		INSERT INTO confreg_status_strings (id, statustext, statusgroup)
-		SELECT id, statustext, statusgroup FROM t ON CONFLICT (id) DO UPDATE SET statustext=excluded.statustext, statusgroup=excluded.statusgroup""")
+        migrations.RunSQL("CREATE TABLE IF NOT EXISTS confreg_status_strings(id int not null primary key, statustext text not null, statusgroup text)"),
+        migrations.RunSQL("""WITH t(id, statustext, statusgroup) AS (VALUES
+        (0, 'Submitted', NULL),
+        (1, 'Approved', 'Approved+Pending'),
+        (2, 'Rejected', NULL),
+        (3, 'Pending', 'Approved+Pending'),
+        (4, 'Reserve', NULL))
+        INSERT INTO confreg_status_strings (id, statustext, statusgroup)
+        SELECT id, statustext, statusgroup FROM t ON CONFLICT (id) DO UPDATE SET statustext=excluded.statustext, statusgroup=excluded.statusgroup""")
     ]

@@ -11,17 +11,17 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-		migrations.RunSQL(
-			"UPDATE confreg_conferenceregistration SET regtoken=encode(pgcrypto.digest(pgcrypto.gen_random_bytes(250), 'sha256'), 'hex') WHERE regtoken IS NULL"
-		),
+        migrations.RunSQL(
+            "UPDATE confreg_conferenceregistration SET regtoken=encode(pgcrypto.digest(pgcrypto.gen_random_bytes(250), 'sha256'), 'hex') WHERE regtoken IS NULL"
+        ),
         migrations.AlterField(
             model_name='conferenceregistration',
             name='regtoken',
             field=models.TextField(unique=True),
         ),
-		migrations.RunSQL(
-			"UPDATE confreg_speaker SET speakertoken=encode(pgcrypto.digest(pgcrypto.gen_random_bytes(250), 'sha256'), 'hex') WHERE speakertoken IS NULL"
-		),
+        migrations.RunSQL(
+            "UPDATE confreg_speaker SET speakertoken=encode(pgcrypto.digest(pgcrypto.gen_random_bytes(250), 'sha256'), 'hex') WHERE speakertoken IS NULL"
+        ),
         migrations.AlterField(
             model_name='speaker',
             name='speakertoken',

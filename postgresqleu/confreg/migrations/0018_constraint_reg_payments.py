@@ -11,5 +11,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-		migrations.RunSQL("ALTER TABLE confreg_conferenceregistration ADD CONSTRAINT chk_payment_ids CHECK (NOT (invoice_id IS NOT NULL AND bulkpayment_id IS NOT NULL))"),
+        migrations.RunSQL("ALTER TABLE confreg_conferenceregistration ADD CONSTRAINT chk_payment_ids CHECK (NOT (invoice_id IS NOT NULL AND bulkpayment_id IS NOT NULL))"),
     ]

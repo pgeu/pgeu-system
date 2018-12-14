@@ -22,645 +22,645 @@ from postgresqleu.accounting.util import create_accounting_entry
 # It also blocks access to unsafe variables that could be used
 # to traverse the object tree outside the invoice.
 class InvoicePresentationWrapper(object):
-	class Meta:
-		proxy = True
+    class Meta:
+        proxy = True
 
-	_unsafe_attributes = ('recipient_user', 'processor', 'allowedmethods', 'paidusing', )
-	def __init__(self, invoice, returnurl):
-		self.__invoice = invoice
-		self.__returnurl = returnurl
-	def __getattr__(self, name):
-		# Most attributes are perfectly safe to return, but there are a couple that needs "sandboxing"
-		if name in self._unsafe_attributes:
-			return None
+    _unsafe_attributes = ('recipient_user', 'processor', 'allowedmethods', 'paidusing', )
+    def __init__(self, invoice, returnurl):
+        self.__invoice = invoice
+        self.__returnurl = returnurl
+    def __getattr__(self, name):
+        # Most attributes are perfectly safe to return, but there are a couple that needs "sandboxing"
+        if name in self._unsafe_attributes:
+            return None
 
-		return getattr(self.__invoice, name)
+        return getattr(self.__invoice, name)
 
-	@property
-	def allowedmethodwrappers(self):
-		return [PaymentMethodWrapper(m, self.__invoice, self.__returnurl) for m in self.allowedmethods.all()]
+    @property
+    def allowedmethodwrappers(self):
+        return [PaymentMethodWrapper(m, self.__invoice, self.__returnurl) for m in self.allowedmethods.all()]
 
 
 # Functionality wrapper around an invoice that allows actions
 # to be performed on it, such as creating PDFs.
 class InvoiceWrapper(object):
-	def __init__(self, invoice):
-		self.invoice = invoice
+    def __init__(self, invoice):
+        self.invoice = invoice
 
-	def finalizeInvoice(self):
-		# This will close out this invoice for editing, and also
-		# generate the actual PDF
+    def finalizeInvoice(self):
+        # This will close out this invoice for editing, and also
+        # generate the actual PDF
 
-		# Calculate the total
-		total = Decimal(0)
-		totalvat = Decimal(0)
-		for r in self.invoice.invoicerow_set.all():
-			total += r.rowamount * r.rowcount
-			totalvat += r.totalvat
-		totalvat = totalvat.quantize(Decimal('.01')) # Round off to two digits
-		self.invoice.total_amount = total + totalvat
-		self.invoice.total_vat = totalvat
+        # Calculate the total
+        total = Decimal(0)
+        totalvat = Decimal(0)
+        for r in self.invoice.invoicerow_set.all():
+            total += r.rowamount * r.rowcount
+            totalvat += r.totalvat
+        totalvat = totalvat.quantize(Decimal('.01')) # Round off to two digits
+        self.invoice.total_amount = total + totalvat
+        self.invoice.total_vat = totalvat
 
-		if self.invoice.reverse_vat and self.invoice.total_vat > 0:
-			raise Exception("Can't have both reverse VAT and a non-zero VAT!")
+        if self.invoice.reverse_vat and self.invoice.total_vat > 0:
+            raise Exception("Can't have both reverse VAT and a non-zero VAT!")
 
-		# Generate a secret key that can be used to view the invoice if
-		# there is no associated account
-		s = SHA256.new()
-		r = Random.new()
-		s.update(self.invoice.pdf_invoice)
-		s.update(r.read(250))
-		self.invoice.recipient_secret = s.hexdigest()
+        # Generate a secret key that can be used to view the invoice if
+        # there is no associated account
+        s = SHA256.new()
+        r = Random.new()
+        s.update(self.invoice.pdf_invoice)
+        s.update(r.read(250))
+        self.invoice.recipient_secret = s.hexdigest()
 
-		# Generate pdf
-		self.invoice.pdf_invoice = base64.b64encode(self.render_pdf_invoice())
+        # Generate pdf
+        self.invoice.pdf_invoice = base64.b64encode(self.render_pdf_invoice())
 
-		# Indicate that we're finalized
-		self.invoice.finalized = True
+        # Indicate that we're finalized
+        self.invoice.finalized = True
 
-		# And we're done!
-		self.invoice.save()
-		InvoiceHistory(invoice=self.invoice, txt='Finalized').save()
+        # And we're done!
+        self.invoice.save()
+        InvoiceHistory(invoice=self.invoice, txt='Finalized').save()
 
-	def render_pdf_invoice(self, preview=False):
-		return self._render_pdf(preview=preview, receipt=False)
+    def render_pdf_invoice(self, preview=False):
+        return self._render_pdf(preview=preview, receipt=False)
 
-	def render_pdf_receipt(self):
-		return self._render_pdf(receipt=True)
+    def render_pdf_receipt(self):
+        return self._render_pdf(receipt=True)
 
-	def _render_pdf(self, preview=False, receipt=False):
-		PDFInvoice = getattr(importlib.import_module(settings.INVOICE_PDF_BUILDER), 'PDFInvoice')
-		if self.invoice.recipient_secret:
-			paymentlink = '{0}/invoices/{1}/{2}/'.format(settings.SITEBASE, self.invoice.pk, self.invoice.recipient_secret)
-		else:
-			paymentlink = None
-		pdfinvoice = PDFInvoice(self.invoice.title,
-								"%s\n%s" % (self.invoice.recipient_name, self.invoice.recipient_address),
-								self.invoice.invoicedate,
-								receipt and self.invoice.paidat or self.invoice.duedate,
-								self.invoice.pk,
-								os.path.realpath('%s/../../media/img/' % os.path.dirname(__file__)),
-								preview=preview,
-								receipt=receipt,
-								bankinfo=self.invoice.bankinfo,
-								totalvat=self.invoice.total_vat,
-								reverse_vat=self.invoice.reverse_vat,
-								paymentlink=paymentlink,
-							)
+    def _render_pdf(self, preview=False, receipt=False):
+        PDFInvoice = getattr(importlib.import_module(settings.INVOICE_PDF_BUILDER), 'PDFInvoice')
+        if self.invoice.recipient_secret:
+            paymentlink = '{0}/invoices/{1}/{2}/'.format(settings.SITEBASE, self.invoice.pk, self.invoice.recipient_secret)
+        else:
+            paymentlink = None
+        pdfinvoice = PDFInvoice(self.invoice.title,
+                                "%s\n%s" % (self.invoice.recipient_name, self.invoice.recipient_address),
+                                self.invoice.invoicedate,
+                                receipt and self.invoice.paidat or self.invoice.duedate,
+                                self.invoice.pk,
+                                os.path.realpath('%s/../../media/img/' % os.path.dirname(__file__)),
+                                preview=preview,
+                                receipt=receipt,
+                                bankinfo=self.invoice.bankinfo,
+                                totalvat=self.invoice.total_vat,
+                                reverse_vat=self.invoice.reverse_vat,
+                                paymentlink=paymentlink,
+                            )
 
-		# Order of rows is important - so preserve whatever order they were created
-		# in. This is also the order that they get rendered by automatically by
-		# djangos inline forms, so it should be consistent with whatever is shown
-		# on the website.
-		for r in self.invoice.invoicerow_set.all().order_by('id'):
-			pdfinvoice.addrow(r.rowtext, r.rowamount, r.rowcount, r.vatrate)
+        # Order of rows is important - so preserve whatever order they were created
+        # in. This is also the order that they get rendered by automatically by
+        # djangos inline forms, so it should be consistent with whatever is shown
+        # on the website.
+        for r in self.invoice.invoicerow_set.all().order_by('id'):
+            pdfinvoice.addrow(r.rowtext, r.rowamount, r.rowcount, r.vatrate)
 
-		return pdfinvoice.save().getvalue()
+        return pdfinvoice.save().getvalue()
 
-	def render_pdf_refund(self):
-		PDFRefund = getattr(importlib.import_module(settings.INVOICE_PDF_BUILDER), 'PDFRefund')
-		pdfnote = PDFRefund("%s\n%s" % (self.invoice.recipient_name, self.invoice.recipient_address),
-							self.invoice.invoicedate,
-							self.invoice.refund.completed,
-							self.invoice.id,
-							self.invoice.total_amount - self.invoice.total_vat,
-							self.invoice.total_vat,
-							self.invoice.refund.amount,
-							self.invoice.refund.vatamount,
-							os.path.realpath('%s/../../media/img/' % os.path.dirname(__file__)),
-							settings.CURRENCY_SYMBOL,
-							self.used_payment_details(),
-		)
+    def render_pdf_refund(self):
+        PDFRefund = getattr(importlib.import_module(settings.INVOICE_PDF_BUILDER), 'PDFRefund')
+        pdfnote = PDFRefund("%s\n%s" % (self.invoice.recipient_name, self.invoice.recipient_address),
+                            self.invoice.invoicedate,
+                            self.invoice.refund.completed,
+                            self.invoice.id,
+                            self.invoice.total_amount - self.invoice.total_vat,
+                            self.invoice.total_vat,
+                            self.invoice.refund.amount,
+                            self.invoice.refund.vatamount,
+                            os.path.realpath('%s/../../media/img/' % os.path.dirname(__file__)),
+                            settings.CURRENCY_SYMBOL,
+                            self.used_payment_details(),
+        )
 
-		return pdfnote.save().getvalue()
+        return pdfnote.save().getvalue()
 
-	def used_payment_details(self):
-		try:
-			pm = PaymentMethodWrapper(self.invoice.paidusing, self.invoice)
-			return pm.used_method_details
-		except:
-			raise
+    def used_payment_details(self):
+        try:
+            pm = PaymentMethodWrapper(self.invoice.paidusing, self.invoice)
+            return pm.used_method_details
+        except:
+            raise
 
-	def email_receipt(self):
-		# If no receipt exists yet, we have to bail too
-		if not self.invoice.pdf_receipt:
-			return
+    def email_receipt(self):
+        # If no receipt exists yet, we have to bail too
+        if not self.invoice.pdf_receipt:
+            return
 
-		self._email_something('paid_receipt.txt',
-							  'Receipt for %s #%s' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
-							  '%s_receipt_%s.pdf' % (settings.INVOICE_FILENAME_PREFIX, self.invoice.id),
-							  self.invoice.pdf_receipt,
-							  bcc=(self.invoice.processor is None))
-		InvoiceHistory(invoice=self.invoice, txt='Sent receipt').save()
+        self._email_something('paid_receipt.txt',
+                              'Receipt for %s #%s' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
+                              '%s_receipt_%s.pdf' % (settings.INVOICE_FILENAME_PREFIX, self.invoice.id),
+                              self.invoice.pdf_receipt,
+                              bcc=(self.invoice.processor is None))
+        InvoiceHistory(invoice=self.invoice, txt='Sent receipt').save()
 
-	def email_invoice(self):
-		if not self.invoice.pdf_invoice:
-			return
+    def email_invoice(self):
+        if not self.invoice.pdf_invoice:
+            return
 
-		self._email_something('invoice.txt',
-							  '%s #%s' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
-							  '%s_invoice_%s.pdf' % (settings.INVOICE_FILENAME_PREFIX, self.invoice.id),
-							  self.invoice.pdf_invoice,
-							  bcc=True)
-		InvoiceHistory(invoice=self.invoice, txt='Sent invoice to %s' % self.invoice.recipient_email).save()
+        self._email_something('invoice.txt',
+                              '%s #%s' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
+                              '%s_invoice_%s.pdf' % (settings.INVOICE_FILENAME_PREFIX, self.invoice.id),
+                              self.invoice.pdf_invoice,
+                              bcc=True)
+        InvoiceHistory(invoice=self.invoice, txt='Sent invoice to %s' % self.invoice.recipient_email).save()
 
-	def email_reminder(self):
-		if not self.invoice.pdf_invoice:
-			return
+    def email_reminder(self):
+        if not self.invoice.pdf_invoice:
+            return
 
-		self._email_something('invoice_reminder.txt',
-							  '%s #%s - reminder' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
-							  '%s_invoice_%s.pdf' % (settings.INVOICE_FILENAME_PREFIX, self.invoice.id),
-							  self.invoice.pdf_invoice,
-							  bcc=True)
-		InvoiceHistory(invoice=self.invoice, txt='Sent reminder to %s' % self.invoice.recipient_email).save()
+        self._email_something('invoice_reminder.txt',
+                              '%s #%s - reminder' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
+                              '%s_invoice_%s.pdf' % (settings.INVOICE_FILENAME_PREFIX, self.invoice.id),
+                              self.invoice.pdf_invoice,
+                              bcc=True)
+        InvoiceHistory(invoice=self.invoice, txt='Sent reminder to %s' % self.invoice.recipient_email).save()
 
-	def email_cancellation(self, reason):
-		self._email_something('invoice_cancel.txt',
-							  '%s #%s - canceled' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
-							  bcc=True,
-							  extracontext={'reason': reason},
-		)
-		InvoiceHistory(invoice=self.invoice, txt='Sent cancellation').save()
+    def email_cancellation(self, reason):
+        self._email_something('invoice_cancel.txt',
+                              '%s #%s - canceled' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
+                              bcc=True,
+                              extracontext={'reason': reason},
+        )
+        InvoiceHistory(invoice=self.invoice, txt='Sent cancellation').save()
 
-	def email_refund_initiated(self):
-		self._email_something('invoice_refund_initiated.txt',
-							  '%s #%s - refund initiated' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
-							  bcc=True)
-		InvoiceHistory(invoice=self.invoice, txt='Sent refund initiated notice').save()
+    def email_refund_initiated(self):
+        self._email_something('invoice_refund_initiated.txt',
+                              '%s #%s - refund initiated' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
+                              bcc=True)
+        InvoiceHistory(invoice=self.invoice, txt='Sent refund initiated notice').save()
 
-	def email_refund_sent(self):
-		# Generate the refund notice so we have something to send
-		self.invoice.refund.refund_pdf = base64.b64encode(self.render_pdf_refund())
-		self.invoice.refund.save()
+    def email_refund_sent(self):
+        # Generate the refund notice so we have something to send
+        self.invoice.refund.refund_pdf = base64.b64encode(self.render_pdf_refund())
+        self.invoice.refund.save()
 
-		self._email_something('invoice_refund.txt',
-							  '%s #%s - refunded' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
-							  '{0}_refund_{1}.pdf'.format(settings.INVOICE_FILENAME_PREFIX, self.invoice.id),
-							  self.invoice.refund.refund_pdf,
-							  bcc=True)
-		InvoiceHistory(invoice=self.invoice, txt='Sent refund notice').save()
+        self._email_something('invoice_refund.txt',
+                              '%s #%s - refunded' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
+                              '{0}_refund_{1}.pdf'.format(settings.INVOICE_FILENAME_PREFIX, self.invoice.id),
+                              self.invoice.refund.refund_pdf,
+                              bcc=True)
+        InvoiceHistory(invoice=self.invoice, txt='Sent refund notice').save()
 
-	def _email_something(self, template_name, mail_subject, pdfname=None, pdfcontents=None, bcc=False, extracontext=None):
-		# Send off the receipt/invoice by email if possible
-		if not self.invoice.recipient_email:
-			return
+    def _email_something(self, template_name, mail_subject, pdfname=None, pdfcontents=None, bcc=False, extracontext=None):
+        # Send off the receipt/invoice by email if possible
+        if not self.invoice.recipient_email:
+            return
 
-		# Build a text email, and attach the PDF if there is one
-		if self.invoice.recipient_secret:
-			# If we have the secret, include it in the email even if we have
-			# a user. This is because users often forward that email, and
-			# then the recipient can access it. As long as the secret is
-			# included, both the logged in and the not logged in user
-			# can see it.
-			invoiceurl = '%s/invoices/%s/%s/' % (settings.SITEBASE, self.invoice.pk, self.invoice.recipient_secret)
-		elif self.invoice.recipient_user:
-			# General URL that shows a normal invoice
-			invoiceurl = '%s/invoices/%s/' % (settings.SITEBASE, self.invoice.pk)
-		else:
-			invoiceurl = None
+        # Build a text email, and attach the PDF if there is one
+        if self.invoice.recipient_secret:
+            # If we have the secret, include it in the email even if we have
+            # a user. This is because users often forward that email, and
+            # then the recipient can access it. As long as the secret is
+            # included, both the logged in and the not logged in user
+            # can see it.
+            invoiceurl = '%s/invoices/%s/%s/' % (settings.SITEBASE, self.invoice.pk, self.invoice.recipient_secret)
+        elif self.invoice.recipient_user:
+            # General URL that shows a normal invoice
+            invoiceurl = '%s/invoices/%s/' % (settings.SITEBASE, self.invoice.pk)
+        else:
+            invoiceurl = None
 
-		param = {
-				'invoice': self.invoice,
-				'invoiceurl': invoiceurl,
-				'currency_abbrev': settings.CURRENCY_ABBREV,
-				'currency_symbol': settings.CURRENCY_SYMBOL,
-		}
-		if extracontext:
-			param.update(extracontext)
+        param = {
+                'invoice': self.invoice,
+                'invoiceurl': invoiceurl,
+                'currency_abbrev': settings.CURRENCY_ABBREV,
+                'currency_symbol': settings.CURRENCY_SYMBOL,
+        }
+        if extracontext:
+            param.update(extracontext)
 
-		pdfdata = []
-		if pdfname:
-			pdfdata = [(pdfname, 'application/pdf',	base64.b64decode(pdfcontents)), ]
+        pdfdata = []
+        if pdfname:
+            pdfdata = [(pdfname, 'application/pdf',    base64.b64decode(pdfcontents)), ]
 
-		# Queue up in the database for email sending soon
-		send_template_mail(settings.INVOICE_SENDER_EMAIL,
-						   self.invoice.recipient_email,
-						   mail_subject,
-						   'invoices/mail/%s' % template_name,
-						   param,
-						   pdfdata,
-						   bcc=bcc and settings.INVOICE_SENDER_EMAIL or None,
-					   )
+        # Queue up in the database for email sending soon
+        send_template_mail(settings.INVOICE_SENDER_EMAIL,
+                           self.invoice.recipient_email,
+                           mail_subject,
+                           'invoices/mail/%s' % template_name,
+                           param,
+                           pdfdata,
+                           bcc=bcc and settings.INVOICE_SENDER_EMAIL or None,
+                       )
 
 
 def _standard_logger(message):
-	print message
+    print message
 
 def _trunc_string(s, l):
-	# Truncate a string to specified length, adding "..." at the end in case
-	# it's truncated.
-	if len(s) <= l:
-		return s
+    # Truncate a string to specified length, adding "..." at the end in case
+    # it's truncated.
+    if len(s) <= l:
+        return s
 
-	return s[:97]+"..."
+    return s[:97]+"..."
 
 class InvoiceManager(object):
-	def __init__(self):
-		pass
+    def __init__(self):
+        pass
 
-	RESULT_OK = 0
-	RESULT_NOTFOUND = 1
-	RESULT_NOTSENT = 2
-	RESULT_ALREADYPAID = 3
-	RESULT_DELETED = 4
-	RESULT_INVALIDAMOUNT = 5
-	RESULT_PROCESSORFAIL = 6
-	def process_incoming_payment(self, transtext, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls=None, logger=None, method=None):
-		# If there is no logger specified, just log with print statement
-		if not logger:
-			logger = _standard_logger
+    RESULT_OK = 0
+    RESULT_NOTFOUND = 1
+    RESULT_NOTSENT = 2
+    RESULT_ALREADYPAID = 3
+    RESULT_DELETED = 4
+    RESULT_INVALIDAMOUNT = 5
+    RESULT_PROCESSORFAIL = 6
+    def process_incoming_payment(self, transtext, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls=None, logger=None, method=None):
+        # If there is no logger specified, just log with print statement
+        if not logger:
+            logger = _standard_logger
 
-		# Look for a matching invoice, by transtext. We assume the
-		# trantext is "PostgreSQL Europe Invoice #nnn - <whatever>"
-		#
-		# Transdetails are the ones written to the record as payment
-		# details for permanent reference. This can be for example the
-		# payment systems transaction id.
-		#
-		# Transcost is the cost of this transaction. If set to 0, no
-		#           accounting row will be written for the cost.
-		# Incomeaccount is the account number to debit the income to
-		# Costaccount is the account number to credit the cost to
-		#
-		# The credit of the actual income is already noted on the,
-		# invoice since it's not dependent on the payment method.
-		#
-		# Returns a tuple of (status,invoice,processor)
-		#
-		m = re.match('^%s #(\d+) .*' % settings.INVOICE_TITLE_PREFIX, transtext)
-		if not m:
-			logger("Could not match transaction text '%s'" % transtext)
-			return (self.RESULT_NOTFOUND, None, None)
+        # Look for a matching invoice, by transtext. We assume the
+        # trantext is "PostgreSQL Europe Invoice #nnn - <whatever>"
+        #
+        # Transdetails are the ones written to the record as payment
+        # details for permanent reference. This can be for example the
+        # payment systems transaction id.
+        #
+        # Transcost is the cost of this transaction. If set to 0, no
+        #           accounting row will be written for the cost.
+        # Incomeaccount is the account number to debit the income to
+        # Costaccount is the account number to credit the cost to
+        #
+        # The credit of the actual income is already noted on the,
+        # invoice since it's not dependent on the payment method.
+        #
+        # Returns a tuple of (status,invoice,processor)
+        #
+        m = re.match('^%s #(\d+) .*' % settings.INVOICE_TITLE_PREFIX, transtext)
+        if not m:
+            logger("Could not match transaction text '%s'" % transtext)
+            return (self.RESULT_NOTFOUND, None, None)
 
-		try:
-			invoiceid = int(m.groups(1)[0])
-		except:
-			logger("Could not match transaction id from '%s'" % transtext)
-			return (self.RESULT_NOTFOUND, None, None)
+        try:
+            invoiceid = int(m.groups(1)[0])
+        except:
+            logger("Could not match transaction id from '%s'" % transtext)
+            return (self.RESULT_NOTFOUND, None, None)
 
-		try:
-			invoice = Invoice.objects.get(pk=invoiceid)
-		except Invoice.DoesNotExist:
-			logger("Could not find invoice with id '%s'" % invoiceid)
-			return (self.RESULT_NOTFOUND, None, None)
+        try:
+            invoice = Invoice.objects.get(pk=invoiceid)
+        except Invoice.DoesNotExist:
+            logger("Could not find invoice with id '%s'" % invoiceid)
+            return (self.RESULT_NOTFOUND, None, None)
 
-		return self.process_incoming_payment_for_invoice(invoice, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls, logger, method)
+        return self.process_incoming_payment_for_invoice(invoice, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls, logger, method)
 
 
-	def process_incoming_payment_for_invoice(self, invoice, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls, logger, method):
-		# Do the same as process_incoming_payment, but assume that the
-		# invoice has already been matched by other means.
-		invoiceid = invoice.pk
+    def process_incoming_payment_for_invoice(self, invoice, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls, logger, method):
+        # Do the same as process_incoming_payment, but assume that the
+        # invoice has already been matched by other means.
+        invoiceid = invoice.pk
 
-		if not invoice.finalized:
-			logger("Invoice %s was never sent!" % invoiceid)
-			return (self.RESULT_NOTSENT, None, None)
+        if not invoice.finalized:
+            logger("Invoice %s was never sent!" % invoiceid)
+            return (self.RESULT_NOTSENT, None, None)
 
-		if invoice.ispaid:
-			logger("Invoice %s already paid!" % invoiceid)
-			return (self.RESULT_ALREADYPAID, None, None)
+        if invoice.ispaid:
+            logger("Invoice %s already paid!" % invoiceid)
+            return (self.RESULT_ALREADYPAID, None, None)
 
-		if invoice.deleted:
-			logger("Invoice %s has been deleted!" % invoiceid)
-			return (self.RESULT_DELETED, None, None)
+        if invoice.deleted:
+            logger("Invoice %s has been deleted!" % invoiceid)
+            return (self.RESULT_DELETED, None, None)
 
-		if invoice.total_amount != transamount:
-			logger("Invoice %s, received payment of %s, expected %s!" % (invoiceid, transamount, invoice.total_amount))
-			return (self.RESULT_INVALIDAMOUNT, None, None)
+        if invoice.total_amount != transamount:
+            logger("Invoice %s, received payment of %s, expected %s!" % (invoiceid, transamount, invoice.total_amount))
+            return (self.RESULT_INVALIDAMOUNT, None, None)
 
-		# Things look good, flag this invoice as paid
-		invoice.paidat = datetime.now()
-		invoice.paymentdetails = transdetails[:100]
-		invoice.paidusing = method
+        # Things look good, flag this invoice as paid
+        invoice.paidat = datetime.now()
+        invoice.paymentdetails = transdetails[:100]
+        invoice.paidusing = method
 
-		# If there is a processor module registered for this invoice,
-		# we need to instantiate it and call it. So, well, let's do
-		# that.
-		processor = None
-		if invoice.processor:
-			processor = self.get_invoice_processor(invoice, logger=logger)
-			if not processor:
-				# get_invoice_processor() has already logged
-				return (self.RESULT_PROCESSORFAIL, None, None)
-			try:
-				processor.process_invoice_payment(invoice)
-			except Exception, ex:
-				logger("Failed to run invoice processor '%s': %s" % (invoice.processor, ex))
-				return (self.RESULT_PROCESSORFAIL, None, None)
+        # If there is a processor module registered for this invoice,
+        # we need to instantiate it and call it. So, well, let's do
+        # that.
+        processor = None
+        if invoice.processor:
+            processor = self.get_invoice_processor(invoice, logger=logger)
+            if not processor:
+                # get_invoice_processor() has already logged
+                return (self.RESULT_PROCESSORFAIL, None, None)
+            try:
+                processor.process_invoice_payment(invoice)
+            except Exception, ex:
+                logger("Failed to run invoice processor '%s': %s" % (invoice.processor, ex))
+                return (self.RESULT_PROCESSORFAIL, None, None)
 
-		# Generate a PDF receipt for this, since it's now paid
-		wrapper = InvoiceWrapper(invoice)
-		invoice.pdf_receipt = base64.b64encode(wrapper.render_pdf_receipt())
+        # Generate a PDF receipt for this, since it's now paid
+        wrapper = InvoiceWrapper(invoice)
+        invoice.pdf_receipt = base64.b64encode(wrapper.render_pdf_receipt())
 
-		# Save and we're done!
-		invoice.save()
+        # Save and we're done!
+        invoice.save()
 
-		# Create an accounting entry for this invoice. If we have the required
-		# information on the invoice, we can finalize it. If not, we will
-		# need to create an open ended one.
+        # Create an accounting entry for this invoice. If we have the required
+        # information on the invoice, we can finalize it. If not, we will
+        # need to create an open ended one.
 
-		accountingtxt = 'Invoice #%s: %s' % (invoice.id, invoice.title)
-		accrows = [
-			(incomeaccount, accountingtxt, invoice.total_amount-transcost, None),
-			]
-		if transcost > 0:
-			# If there was a transaction cost known at this point (which
-			# it typically is with Paypal), make sure we book a row for it.
-			accrows.append(
-			(costaccount, accountingtxt, transcost, invoice.accounting_object),
-		)
-		if invoice.total_vat:
-			# If there was VAT on this invoice, create a separate accounting row for this
-			# part. As there can in theory (though maybe not in practice?) be multiple different
-			# VATs on the invoice, we need to summarize the rows.
-			vatsum = defaultdict(int)
-			for r in invoice.invoicerow_set.all():
-				if r.vatrate_id:
-					vatsum[r.vatrate.vataccount.num] += (r.rowamount * r.rowcount * r.vatrate.vatpercent / Decimal(100)).quantize(Decimal('0.01'))
-			total_vatsum = sum(vatsum.values())
-			if invoice.total_vat != total_vatsum:
-				raise Exception("Stored VAT total %s does not match calculated %s" % (invoice.total_vat, total_vatsum))
+        accountingtxt = 'Invoice #%s: %s' % (invoice.id, invoice.title)
+        accrows = [
+            (incomeaccount, accountingtxt, invoice.total_amount-transcost, None),
+            ]
+        if transcost > 0:
+            # If there was a transaction cost known at this point (which
+            # it typically is with Paypal), make sure we book a row for it.
+            accrows.append(
+            (costaccount, accountingtxt, transcost, invoice.accounting_object),
+        )
+        if invoice.total_vat:
+            # If there was VAT on this invoice, create a separate accounting row for this
+            # part. As there can in theory (though maybe not in practice?) be multiple different
+            # VATs on the invoice, we need to summarize the rows.
+            vatsum = defaultdict(int)
+            for r in invoice.invoicerow_set.all():
+                if r.vatrate_id:
+                    vatsum[r.vatrate.vataccount.num] += (r.rowamount * r.rowcount * r.vatrate.vatpercent / Decimal(100)).quantize(Decimal('0.01'))
+            total_vatsum = sum(vatsum.values())
+            if invoice.total_vat != total_vatsum:
+                raise Exception("Stored VAT total %s does not match calculated %s" % (invoice.total_vat, total_vatsum))
 
-			for accountnum, s in vatsum.items():
-				accrows.append(
-					(accountnum, accountingtxt, -s, None),
-				)
+            for accountnum, s in vatsum.items():
+                accrows.append(
+                    (accountnum, accountingtxt, -s, None),
+                )
 
-		if invoice.accounting_account:
-			accrows.append(
-				(invoice.accounting_account, accountingtxt, -(invoice.total_amount-invoice.total_vat), invoice.accounting_object),
-			)
-			leaveopen = False
-		else:
-			leaveopen = True
-		urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk),]
-		if extraurls:
-			urls.extend(extraurls)
+        if invoice.accounting_account:
+            accrows.append(
+                (invoice.accounting_account, accountingtxt, -(invoice.total_amount-invoice.total_vat), invoice.accounting_object),
+            )
+            leaveopen = False
+        else:
+            leaveopen = True
+        urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk),]
+        if extraurls:
+            urls.extend(extraurls)
 
-		create_accounting_entry(date.today(), accrows, leaveopen, urls)
+        create_accounting_entry(date.today(), accrows, leaveopen, urls)
 
-		# Send the receipt to the user if possible - that should make
-		# them happy :)
-		wrapper.email_receipt()
+        # Send the receipt to the user if possible - that should make
+        # them happy :)
+        wrapper.email_receipt()
 
-		# Write a log, because it's always nice..
-		InvoiceHistory(invoice=invoice, txt='Processed payment').save()
-		InvoiceLog(message="Processed payment of %s %s for invoice %s (%s)" % (
-				invoice.total_amount,
-				settings.CURRENCY_ABBREV,
-				invoice.pk,
-				invoice.title),
-				   timestamp=datetime.now()).save()
+        # Write a log, because it's always nice..
+        InvoiceHistory(invoice=invoice, txt='Processed payment').save()
+        InvoiceLog(message="Processed payment of %s %s for invoice %s (%s)" % (
+                invoice.total_amount,
+                settings.CURRENCY_ABBREV,
+                invoice.pk,
+                invoice.title),
+                   timestamp=datetime.now()).save()
 
-		return (self.RESULT_OK, invoice, processor)
+        return (self.RESULT_OK, invoice, processor)
 
-	def get_invoice_processor(self, invoice, logger=None):
-		if invoice.processor:
-			try:
-				pieces = invoice.processor.classname.split('.')
-				modname = '.'.join(pieces[:-1])
-				classname = pieces[-1]
-				mod = __import__(modname, fromlist=[classname, ])
-				return getattr(mod, classname) ()
-			except Exception, ex:
-				if logger:
-					logger("Failed to instantiate invoice processor '%s': %s" % (invoice.processor, ex))
-					return None
-				else:
-					raise Exception("Failed to instantiate invoice processor '%s': %s" % (invoice.processor, ex))
-		else:
-			return None
+    def get_invoice_processor(self, invoice, logger=None):
+        if invoice.processor:
+            try:
+                pieces = invoice.processor.classname.split('.')
+                modname = '.'.join(pieces[:-1])
+                classname = pieces[-1]
+                mod = __import__(modname, fromlist=[classname, ])
+                return getattr(mod, classname) ()
+            except Exception, ex:
+                if logger:
+                    logger("Failed to instantiate invoice processor '%s': %s" % (invoice.processor, ex))
+                    return None
+                else:
+                    raise Exception("Failed to instantiate invoice processor '%s': %s" % (invoice.processor, ex))
+        else:
+            return None
 
-	# Cancel the specified invoice, calling any processor set on it if necessary
-	def cancel_invoice(self, invoice, reason):
-		# If this invoice has a processor, we need to start by calling it
-		processor = self.get_invoice_processor(invoice)
-		if processor:
-			try:
-				processor.process_invoice_cancellation(invoice)
-			except Exception, ex:
-				raise Exception("Failed to run invoice processor '%s': %s" % (invoice.processor, ex))
+    # Cancel the specified invoice, calling any processor set on it if necessary
+    def cancel_invoice(self, invoice, reason):
+        # If this invoice has a processor, we need to start by calling it
+        processor = self.get_invoice_processor(invoice)
+        if processor:
+            try:
+                processor.process_invoice_cancellation(invoice)
+            except Exception, ex:
+                raise Exception("Failed to run invoice processor '%s': %s" % (invoice.processor, ex))
 
-		invoice.deleted = True
-		invoice.deletion_reason = reason
-		invoice.save()
+        invoice.deleted = True
+        invoice.deletion_reason = reason
+        invoice.save()
 
-		InvoiceHistory(invoice=invoice, txt='Canceled').save()
+        InvoiceHistory(invoice=invoice, txt='Canceled').save()
 
-		# Send the receipt to the user if possible - that should make
-		# them happy :)
-		wrapper = InvoiceWrapper(invoice)
-		wrapper.email_cancellation(reason)
+        # Send the receipt to the user if possible - that should make
+        # them happy :)
+        wrapper = InvoiceWrapper(invoice)
+        wrapper.email_cancellation(reason)
 
-		InvoiceLog(timestamp=datetime.now(), message="Deleted invoice %s: %s" % (invoice.id, invoice.deletion_reason)).save()
+        InvoiceLog(timestamp=datetime.now(), message="Deleted invoice %s: %s" % (invoice.id, invoice.deletion_reason)).save()
 
-	def refund_invoice(self, invoice, reason, amount, vatamount, vatrate):
-		# Initiate a refund of an invoice if there is a payment provider that supports it.
-		# Otherwise, flag the invoice as refunded, and assume the user took care of it manually.
-		if invoice.refund:
-			raise Exception("This invoice has already been refunded")
+    def refund_invoice(self, invoice, reason, amount, vatamount, vatrate):
+        # Initiate a refund of an invoice if there is a payment provider that supports it.
+        # Otherwise, flag the invoice as refunded, and assume the user took care of it manually.
+        if invoice.refund:
+            raise Exception("This invoice has already been refunded")
 
-		# If this invoice has a processor, we need to start by calling it
-		processor = self.get_invoice_processor(invoice)
-		if processor and getattr(processor, 'can_refund', True):
-			try:
-				r = processor.process_invoice_refund(invoice)
-			except Exception, ex:
-				raise Exception("Failed to run invoice processor '%s': %s" % (invoice.processor, ex))
+        # If this invoice has a processor, we need to start by calling it
+        processor = self.get_invoice_processor(invoice)
+        if processor and getattr(processor, 'can_refund', True):
+            try:
+                r = processor.process_invoice_refund(invoice)
+            except Exception, ex:
+                raise Exception("Failed to run invoice processor '%s': %s" % (invoice.processor, ex))
 
-		r = InvoiceRefund(reason=reason, amount=amount, vatamount=vatamount, vatrate=vatrate)
-		r.save()
-		invoice.refund = r
-		invoice.save()
+        r = InvoiceRefund(reason=reason, amount=amount, vatamount=vatamount, vatrate=vatrate)
+        r.save()
+        invoice.refund = r
+        invoice.save()
 
-		InvoiceHistory(invoice=invoice,
-					   txt='Registered refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount+vatamount)).save()
+        InvoiceHistory(invoice=invoice,
+                       txt='Registered refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount+vatamount)).save()
 
-		wrapper = InvoiceWrapper(invoice)
-		if invoice.can_autorefund:
-			# Send an initial notice to the user.
-			wrapper.email_refund_initiated()
+        wrapper = InvoiceWrapper(invoice)
+        if invoice.can_autorefund:
+            # Send an initial notice to the user.
+            wrapper.email_refund_initiated()
 
-			# Accounting record is created when we send the API call to the
-			# provider.
+            # Accounting record is created when we send the API call to the
+            # provider.
 
-			InvoiceLog(timestamp=datetime.now(),
-					   message="Initiated refund of {0}{1} of invoice {2}: {3}".format(settings.CURRENCY_SYMBOL, amount+vatamount, invoice.id, reason),
-				   ).save()
-		else:
-			# No automatic refund, so this is flagging something that has
-			# already been done. Update accordingly.
-			r.issued = r.registered
-			r.completed = r.registered
-			r.payment_reference = "MANUAL"
-			r.save()
+            InvoiceLog(timestamp=datetime.now(),
+                       message="Initiated refund of {0}{1} of invoice {2}: {3}".format(settings.CURRENCY_SYMBOL, amount+vatamount, invoice.id, reason),
+                   ).save()
+        else:
+            # No automatic refund, so this is flagging something that has
+            # already been done. Update accordingly.
+            r.issued = r.registered
+            r.completed = r.registered
+            r.payment_reference = "MANUAL"
+            r.save()
 
-			# Create accounting record, since we flagged it manually. As we
-			# don't know which account it was refunded from, leave that
-			# end open.
-			if invoice.accounting_account:
-				accountingtxt = 'Refund of invoice #{0}: {1}'.format(invoice.id, invoice.title)
-				accrows = [
-					(invoice.accounting_account, accountingtxt, invoice.total_amount-vatamount, invoice.accounting_object),
-				]
-				if vatamount:
-					accrows.append(
-						(invoice.refund.vatrate.vataccount.num, accountingtxt, vatamount, None),
-					)
+            # Create accounting record, since we flagged it manually. As we
+            # don't know which account it was refunded from, leave that
+            # end open.
+            if invoice.accounting_account:
+                accountingtxt = 'Refund of invoice #{0}: {1}'.format(invoice.id, invoice.title)
+                accrows = [
+                    (invoice.accounting_account, accountingtxt, invoice.total_amount-vatamount, invoice.accounting_object),
+                ]
+                if vatamount:
+                    accrows.append(
+                        (invoice.refund.vatrate.vataccount.num, accountingtxt, vatamount, None),
+                    )
 
-				urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk),]
-				create_accounting_entry(date.today(), accrows, True, urls)
+                urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk),]
+                create_accounting_entry(date.today(), accrows, True, urls)
 
-			InvoiceHistory(invoice=invoice,
-						   txt='Flagged refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount+vatamount)).save()
+            InvoiceHistory(invoice=invoice,
+                           txt='Flagged refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount+vatamount)).save()
 
-			wrapper.email_refund_sent()
-			InvoiceLog(timestamp=datetime.now(),
-					   message=u"Flagged invoice {0} as refunded by {1}{2}: {3}".format(invoice.id, settings.CURRENCY_SYMBOL.decode('utf8'), amount+vatamount, reason),
-					   ).save()
+            wrapper.email_refund_sent()
+            InvoiceLog(timestamp=datetime.now(),
+                       message=u"Flagged invoice {0} as refunded by {1}{2}: {3}".format(invoice.id, settings.CURRENCY_SYMBOL.decode('utf8'), amount+vatamount, reason),
+                       ).save()
 
-		return r
+        return r
 
-	def autorefund_invoice(self, invoice):
-		# Send an API call to initiate a refund
-		if invoice.autorefund():
-			invoice.refund.issued = datetime.now()
-			invoice.refund.save()
+    def autorefund_invoice(self, invoice):
+        # Send an API call to initiate a refund
+        if invoice.autorefund():
+            invoice.refund.issued = datetime.now()
+            invoice.refund.save()
 
-			InvoiceHistory(invoice=invoice, txt='Sent refund request to provider').save()
-		else:
-			InvoiceHistory(invoice=invoice, txt='Failed to send refund request to provider').save()
+            InvoiceHistory(invoice=invoice, txt='Sent refund request to provider').save()
+        else:
+            InvoiceHistory(invoice=invoice, txt='Failed to send refund request to provider').save()
 
-	def complete_refund(self, refundid, refundamount, refundfee, incomeaccount, costaccount, extraurls, method):
-		# Process notification from payment provider that refund has completed
-		refund = InvoiceRefund.objects.get(id=refundid)
-		invoice = refund.invoice
+    def complete_refund(self, refundid, refundamount, refundfee, incomeaccount, costaccount, extraurls, method):
+        # Process notification from payment provider that refund has completed
+        refund = InvoiceRefund.objects.get(id=refundid)
+        invoice = refund.invoice
 
-		if refund.completed:
-			raise Exception("Refund {0} has already been completed".format(refundid))
-		if not refund.issued:
-			raise Exception("Refund {0} has not been issued, yet signaled completed!".format(refundid))
+        if refund.completed:
+            raise Exception("Refund {0} has already been completed".format(refundid))
+        if not refund.issued:
+            raise Exception("Refund {0} has not been issued, yet signaled completed!".format(refundid))
 
-		accountingtxt = 'Refund ({0}) of invoice #{1}'.format(refundid, invoice.id)
-		accrows = [
-			(incomeaccount, accountingtxt, -(refundamount-refundfee), None),
-		]
-		if refund.vatamount:
-			accrows.append(
-				(refund.vatrate.vataccount.num, accountingtxt, refund.vatamount, None),
-			)
-		if refundfee  > 0:
-			accrows.append(
-				(costaccount, accountingtxt, -refundfee, invoice.accounting_object),
-			)
-		if invoice.accounting_account:
-			accrows.append(
-				(invoice.accounting_account, accountingtxt, refundamount-refund.vatamount, invoice.accounting_object),
-			)
-			leaveopen = False
-		else:
-			leaveopen = True
-		urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk),]
-		if extraurls:
-			urls.extend(extraurls)
+        accountingtxt = 'Refund ({0}) of invoice #{1}'.format(refundid, invoice.id)
+        accrows = [
+            (incomeaccount, accountingtxt, -(refundamount-refundfee), None),
+        ]
+        if refund.vatamount:
+            accrows.append(
+                (refund.vatrate.vataccount.num, accountingtxt, refund.vatamount, None),
+            )
+        if refundfee  > 0:
+            accrows.append(
+                (costaccount, accountingtxt, -refundfee, invoice.accounting_object),
+            )
+        if invoice.accounting_account:
+            accrows.append(
+                (invoice.accounting_account, accountingtxt, refundamount-refund.vatamount, invoice.accounting_object),
+            )
+            leaveopen = False
+        else:
+            leaveopen = True
+        urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk),]
+        if extraurls:
+            urls.extend(extraurls)
 
-		create_accounting_entry(date.today(), accrows, leaveopen, urls)
+        create_accounting_entry(date.today(), accrows, leaveopen, urls)
 
-		# Also flag the refund as done
-		refund.completed = datetime.now()
-		refund.save()
+        # Also flag the refund as done
+        refund.completed = datetime.now()
+        refund.save()
 
-		wrapper = InvoiceWrapper(invoice)
-		wrapper.email_refund_sent()
+        wrapper = InvoiceWrapper(invoice)
+        wrapper.email_refund_sent()
 
-		InvoiceHistory(invoice=invoice, txt='Completed refund').save()
+        InvoiceHistory(invoice=invoice, txt='Completed refund').save()
 
-	# This creates a complete invoice, and finalizes it
-	def create_invoice(self,
-					   recipient_user,
-					   recipient_email,
-					   recipient_name,
-					   recipient_address,
-					   title,
-					   invoicedate,
-					   duedate,
-					   invoicerows,
-					   processor = None,
-					   processorid = None,
-					   autopaymentoptions = True,
-					   bankinfo = True,
-					   accounting_account = None,
-					   accounting_object = None,
-					   canceltime = None,
-					   reverse_vat = False):
-		invoice = Invoice(
-			recipient_email=recipient_email,
-			recipient_name=recipient_name,
-			recipient_address=recipient_address,
-			title=title,
-			invoicedate=invoicedate,
-			duedate=duedate,
-			total_amount=-1,
-			bankinfo=bankinfo,
-			accounting_account=accounting_account,
-			accounting_object=accounting_object,
-			canceltime=canceltime,
-			reverse_vat=reverse_vat)
-		if recipient_user:
-			invoice.recipient_user = recipient_user
-		if processor:
-			invoice.processor = processor
-		if processorid:
-			invoice.processorid = processorid
-		# Add our rows. Need to save the invoice first so it has an id.
-		# But we expect to be in a transaction anyway.
-		invoice.save()
-		for r in invoicerows:
-			invoice.invoicerow_set.add(InvoiceRow(invoice=invoice,
-												  rowtext = _trunc_string(r[0], 100),
-												  rowcount = r[1],
-												  rowamount = r[2],
-												  vatrate = r[3],
-											  ), bulk=False)
+    # This creates a complete invoice, and finalizes it
+    def create_invoice(self,
+                       recipient_user,
+                       recipient_email,
+                       recipient_name,
+                       recipient_address,
+                       title,
+                       invoicedate,
+                       duedate,
+                       invoicerows,
+                       processor = None,
+                       processorid = None,
+                       autopaymentoptions = True,
+                       bankinfo = True,
+                       accounting_account = None,
+                       accounting_object = None,
+                       canceltime = None,
+                       reverse_vat = False):
+        invoice = Invoice(
+            recipient_email=recipient_email,
+            recipient_name=recipient_name,
+            recipient_address=recipient_address,
+            title=title,
+            invoicedate=invoicedate,
+            duedate=duedate,
+            total_amount=-1,
+            bankinfo=bankinfo,
+            accounting_account=accounting_account,
+            accounting_object=accounting_object,
+            canceltime=canceltime,
+            reverse_vat=reverse_vat)
+        if recipient_user:
+            invoice.recipient_user = recipient_user
+        if processor:
+            invoice.processor = processor
+        if processorid:
+            invoice.processorid = processorid
+        # Add our rows. Need to save the invoice first so it has an id.
+        # But we expect to be in a transaction anyway.
+        invoice.save()
+        for r in invoicerows:
+            invoice.invoicerow_set.add(InvoiceRow(invoice=invoice,
+                                                  rowtext = _trunc_string(r[0], 100),
+                                                  rowcount = r[1],
+                                                  rowamount = r[2],
+                                                  vatrate = r[3],
+                                              ), bulk=False)
 
-		if autopaymentoptions:
-			invoice.allowedmethods = InvoicePaymentMethod.objects.filter(auto=True)
-			invoice.save()
+        if autopaymentoptions:
+            invoice.allowedmethods = InvoicePaymentMethod.objects.filter(auto=True)
+            invoice.save()
 
-		# That should be it. Finalize so we get a PDF, and then
-		# return whatever we have.
-		wrapper = InvoiceWrapper(invoice)
-		wrapper.finalizeInvoice()
-		return invoice
+        # That should be it. Finalize so we get a PDF, and then
+        # return whatever we have.
+        wrapper = InvoiceWrapper(invoice)
+        wrapper.finalizeInvoice()
+        return invoice
 
 
 # This is purely for testing, obviously
 class TestProcessor(object):
-	def process_invoice_payment(self, invoice):
-		print "Callback processing invoice with title '%s', for my own id %s" % (invoice.title, invoice.processorid)
-	def process_invoice_cancellation(self, invoice):
-		raise Exception("This processor can't cancel invoices.")
-	def process_invoice_refund(self, invoice):
-		raise Exception("This processor can't refund invoices.")
+    def process_invoice_payment(self, invoice):
+        print "Callback processing invoice with title '%s', for my own id %s" % (invoice.title, invoice.processorid)
+    def process_invoice_cancellation(self, invoice):
+        raise Exception("This processor can't cancel invoices.")
+    def process_invoice_refund(self, invoice):
+        raise Exception("This processor can't refund invoices.")
 
-	def get_return_url(self, invoice):
-		print "Trying to get the return url, but I can't!"
-		return "http://unknown.postgresql.eu/"
+    def get_return_url(self, invoice):
+        print "Trying to get the return url, but I can't!"
+        return "http://unknown.postgresql.eu/"
 
 
 # Calculate the number of workdays between two datetimes.
 def diff_workdays(start, end):
-	weekdays = len(list(rrule.rrule(rrule.DAILY, byweekday=range(0, 5), dtstart=start, until=end)))
+    weekdays = len(list(rrule.rrule(rrule.DAILY, byweekday=range(0, 5), dtstart=start, until=end)))
 
-	if end.hour < 8:
-		weekdays -= 1
-	if start.hour > 17:
-		weekdays -= 1
+    if end.hour < 8:
+        weekdays -= 1
+    if start.hour > 17:
+        weekdays -= 1
 
-	# We want full days only, so drop one
-	weekdays -= 1
+    # We want full days only, so drop one
+    weekdays -= 1
 
-	if weekdays < 0: weekdays = 0
+    if weekdays < 0: weekdays = 0
 
-	return weekdays
+    return weekdays

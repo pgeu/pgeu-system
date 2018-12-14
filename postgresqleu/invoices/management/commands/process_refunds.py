@@ -19,38 +19,38 @@ from postgresqleu.mailqueue.util import send_simple_mail
 from datetime import datetime, timedelta
 
 class Command(BaseCommand):
-	help = 'Send off API-based refunds'
+    help = 'Send off API-based refunds'
 
-	def handle(self, *args, **options):
-		refunds = InvoiceRefund.objects.filter(issued__isnull=True)
-		for r in refunds:
-			manager = InvoiceManager()
+    def handle(self, *args, **options):
+        refunds = InvoiceRefund.objects.filter(issued__isnull=True)
+        for r in refunds:
+            manager = InvoiceManager()
 
-			# One transaction for each object, and make sure it's properly
-			# locked by using select for update, in case we get a notification
-			# delivered while we are still processing.
-			with transaction.atomic():
-				rr = InvoiceRefund.objects.select_for_update().filter(pk=r.pk)[0]
-				if not rr.invoice.can_autorefund:
-					# How did we end up in the queue?!
-					raise CommandError("Invoice {0} listed for refund, but provider is not capable of refunds!".format(r.invoice.id))
+            # One transaction for each object, and make sure it's properly
+            # locked by using select for update, in case we get a notification
+            # delivered while we are still processing.
+            with transaction.atomic():
+                rr = InvoiceRefund.objects.select_for_update().filter(pk=r.pk)[0]
+                if not rr.invoice.can_autorefund:
+                    # How did we end up in the queue?!
+                    raise CommandError("Invoice {0} listed for refund, but provider is not capable of refunds!".format(r.invoice.id))
 
-				# Calling autorefund will update the InvoiceRefund object
-				# after calling the APIs, so nothing more to do here.
+                # Calling autorefund will update the InvoiceRefund object
+                # after calling the APIs, so nothing more to do here.
 
-				manager.autorefund_invoice(rr.invoice)
+                manager.autorefund_invoice(rr.invoice)
 
-				self.stdout.write("Issued API refund of invoice {0}.".format(rr.invoice.pk))
+                self.stdout.write("Issued API refund of invoice {0}.".format(rr.invoice.pk))
 
-		# Send alerts for any refunds that have been issued but that have not completed within
-		# 3 days (completely arbitrary, but normally it happens within seconds/minutes/hours).
-		stalledrefunds = InvoiceRefund.objects.filter(issued__isnull=False, completed__isnull=True,
-													  issued__lt=datetime.now()-timedelta(days=3))
-		if stalledrefunds:
-			send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-							 settings.INVOICE_SENDER_EMAIL,
-							 "Stalled invoice refunds",
-							 u"""One or more invoice refunds appear to be stalled.
+        # Send alerts for any refunds that have been issued but that have not completed within
+        # 3 days (completely arbitrary, but normally it happens within seconds/minutes/hours).
+        stalledrefunds = InvoiceRefund.objects.filter(issued__isnull=False, completed__isnull=True,
+                                                      issued__lt=datetime.now()-timedelta(days=3))
+        if stalledrefunds:
+            send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+                             settings.INVOICE_SENDER_EMAIL,
+                             "Stalled invoice refunds",
+                             u"""One or more invoice refunds appear to be stalled.
 These refunds have been issued to the provider, but no confirmation has
 shown up. This requires manual investigation.
 
