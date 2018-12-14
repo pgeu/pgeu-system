@@ -40,6 +40,7 @@ from backendforms import BackendTshirtSizeForm
 from backendforms import BackendNewsForm
 from backendforms import TwitterForm, TwitterTestForm
 
+
 def get_authenticated_conference(request, urlname=None, confid=None):
     if not request.user.is_authenticated:
         raise RedirectException("{0}?{1}".format(settings.LOGIN_URL, urllib.urlencode({'next': request.build_absolute_uri()})))
@@ -57,6 +58,7 @@ def get_authenticated_conference(request, urlname=None, confid=None):
         if c.series.administrators.filter(pk=request.user.id).exists():
             return c
         raise PermissionDenied()
+
 
 def backend_process_form(request, urlname, formclass, id, cancel_url='../', saved_url='../', allow_new=True, allow_delete=True, breadcrumbs=None, permissions_already_checked=False, conference=None, bypass_conference_filter=False, instancemaker=None, deleted_url=None):
     if not conference and not bypass_conference_filter:
@@ -198,6 +200,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
         'adminurl': adminurl,
         'linked': [(url, handler, handler.get_list(form.instance)) for url, handler in form.linked_objects.items() if form.instance],
     })
+
 
 def backend_handle_copy_previous(request, formclass, restpieces, conference):
     if len(restpieces) == 1:
@@ -411,6 +414,7 @@ def edit_conference(request, urlname):
                                 allow_new=False,
                                 allow_delete=False)
 
+
 @superuser_required
 def superedit_conference(request, urlname):
     if not request.user.is_superuser:
@@ -423,6 +427,7 @@ def superedit_conference(request, urlname):
                                 bypass_conference_filter=True,
                                 allow_new=False,
                                 allow_delete=False)
+
 
 @superuser_required
 def edit_series(request, rest):
@@ -437,6 +442,7 @@ def edit_series(request, rest):
                                instancemaker=lambda: ConferenceSeries(),
     )
 
+
 @superuser_required
 def edit_tshirts(request, rest):
     return backend_list_editor(request,
@@ -449,6 +455,7 @@ def edit_tshirts(request, rest):
                                return_url='../../',
                                instancemaker=lambda: ShirtSize(),
     )
+
 
 @superuser_required
 def new_conference(request):
@@ -463,6 +470,7 @@ def new_conference(request):
                                 instancemaker=lambda: Conference(),
     )
 
+
 def edit_registration(request, urlname, regid):
     return backend_process_form(request,
                                 urlname,
@@ -471,11 +479,13 @@ def edit_registration(request, urlname, regid):
                                 allow_new=False,
                                 allow_delete=False)
 
+
 def edit_regclasses(request, urlname, rest):
     return backend_list_editor(request,
                                urlname,
                                BackendRegistrationClassForm,
                                rest)
+
 
 def edit_regtypes(request, urlname, rest):
     return backend_list_editor(request,
@@ -483,11 +493,13 @@ def edit_regtypes(request, urlname, rest):
                                BackendRegistrationTypeForm,
                                rest)
 
+
 def edit_regdays(request, urlname, rest):
     return backend_list_editor(request,
                                urlname,
                                BackendRegistrationDayForm,
                                rest)
+
 
 def edit_additionaloptions(request, urlname, rest):
     return backend_list_editor(request,
@@ -495,11 +507,13 @@ def edit_additionaloptions(request, urlname, rest):
                                BackendAdditionalOptionForm,
                                rest)
 
+
 def edit_tracks(request, urlname, rest):
     return backend_list_editor(request,
                                urlname,
                                BackendTrackForm,
                                rest)
+
 
 def edit_rooms(request, urlname, rest):
     return backend_list_editor(request,
@@ -507,11 +521,13 @@ def edit_rooms(request, urlname, rest):
                                BackendRoomForm,
                                rest)
 
+
 def edit_sessions(request, urlname, rest):
     return backend_list_editor(request,
                                urlname,
                                BackendConferenceSessionForm,
                                rest)
+
 
 def edit_scheduleslots(request, urlname, rest):
     return backend_list_editor(request,
@@ -519,11 +535,13 @@ def edit_scheduleslots(request, urlname, rest):
                                BackendConferenceSessionSlotForm,
                                rest)
 
+
 def edit_volunteerslots(request, urlname, rest):
     return backend_list_editor(request,
                                urlname,
                                BackendVolunteerSlotForm,
                                rest)
+
 
 def edit_feedbackquestions(request, urlname, rest):
     return backend_list_editor(request,
@@ -531,17 +549,20 @@ def edit_feedbackquestions(request, urlname, rest):
                                BackendFeedbackQuestionForm,
                                rest)
 
+
 def edit_discountcodes(request, urlname, rest):
     return backend_list_editor(request,
                                urlname,
                                BackendDiscountCodeForm,
                                rest)
 
+
 def edit_accesstokens(request, urlname, rest):
     return backend_list_editor(request,
                                urlname,
                                BackendAccessTokenForm,
                                rest)
+
 
 def edit_news(request, urlname, rest):
     return backend_list_editor(request,
@@ -668,7 +689,6 @@ def twitter_integration(request, urlname):
         form = TwitterForm(instance=conference)
         testform = TwitterTestForm()
 
-
     return render(request, 'confreg/admin_integ_twitter.html', {
         'conference': conference,
         'form': form,
@@ -676,12 +696,14 @@ def twitter_integration(request, urlname):
         'helplink': 'integrations#twitter',
     })
 
+
 def _reencode_row(r):
     def _reencode_value(v):
         if isinstance(v, unicode):
             return v.encode('utf-8')
         return v
     return [_reencode_value(x) for x in r]
+
 
 class DelimitedWriter(object):
     def __init__(self, delimiter):
@@ -701,6 +723,7 @@ class DelimitedWriter(object):
     def write_rows(self, rows, grouping=False):
         for r in rows:
             self.writer.writerow(_reencode_row(r))
+
 
 class JsonWriter(object):
     def __init__(self):
@@ -736,6 +759,7 @@ class JsonWriter(object):
         r = HttpResponse(json.dumps(self.d, cls=DjangoJSONEncoder), content_type='application/json')
         r['Access-Control-Allow-Origin'] = '*'
         return r
+
 
 def tokendata(request, urlname, token, datatype, dataformat):
     conference = get_object_or_404(Conference, urlname=urlname)

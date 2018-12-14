@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 
+
 def create_invoice_processors(apps, schema_editor):
     InvoiceProcessor = apps.get_model('invoices', 'InvoiceProcessor')
 

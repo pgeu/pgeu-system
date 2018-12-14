@@ -17,6 +17,7 @@ from postgresqleu.confreg.models import ConferenceRegistration
 
 from postgresqleu.util.messaging.twitter import Twitter
 
+
 class Command(BaseCommand):
     help = 'Send confreg frequent reminders'
 

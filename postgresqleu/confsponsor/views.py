@@ -29,6 +29,7 @@ from invoicehandler import create_sponsor_invoice, confirm_sponsor, get_sponsor_
 from invoicehandler import create_voucher_invoice
 from vatutil import validate_eu_vat_number
 
+
 @login_required
 def sponsor_dashboard(request):
     # We define "past sponsors" as those older than a month - because we have to pick something.
@@ -42,6 +43,7 @@ def sponsor_dashboard(request):
         "conferences": conferences,
         })
 
+
 def _get_sponsor_and_admin(sponsorid, request, onlyconfirmed=True):
     if not onlyconfirmed:
         sponsor = get_object_or_404(Sponsor, id=sponsorid)
@@ -54,6 +56,7 @@ def _get_sponsor_and_admin(sponsorid, request, onlyconfirmed=True):
         return sponsor, True
     else:
         return sponsor, False
+
 
 @login_required
 def sponsor_conference(request, sponsorid):
@@ -84,6 +87,7 @@ def sponsor_conference(request, sponsorid):
         'is_admin': is_admin,
         })
 
+
 @login_required
 def sponsor_manager_delete(request, sponsorid):
     sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
@@ -97,6 +101,7 @@ def sponsor_manager_delete(request, sponsorid):
     sponsor.save()
     messages.info(request, "User %s removed as manager." % user.username)
     return HttpResponseRedirect('../../')
+
 
 @login_required
 @transaction.atomic
@@ -132,6 +137,7 @@ def sponsor_manager_add(request, sponsorid):
             messages.warning(request, "Could not find user with email address %s" % request.POST['email'])
         return HttpResponseRedirect('../../')
 
+
 @login_required
 def sponsor_view_mail(request, sponsorid, mailid):
     sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
@@ -142,6 +148,7 @@ def sponsor_view_mail(request, sponsorid, mailid):
         'conference': sponsor.conference,
         'mail': mail,
         })
+
 
 @login_required
 @transaction.atomic
@@ -182,6 +189,7 @@ def sponsor_purchase_voucher(request, sponsorid):
         'sponsor': sponsor,
         'form': form,
         })
+
 
 @login_required
 @transaction.atomic
@@ -229,6 +237,7 @@ def sponsor_purchase_discount(request, sponsorid):
         'form': form,
         })
 
+
 @login_required
 def sponsor_signup_dashboard(request, confurlname):
     conference = get_object_or_404(Conference, urlname=confurlname)
@@ -244,6 +253,7 @@ def sponsor_signup_dashboard(request, confurlname):
         'levels': levels,
         'current': current_signups,
         })
+
 
 @login_required
 @transaction.atomic
@@ -320,6 +330,7 @@ def sponsor_signup(request, confurlname, levelurlname):
         'form': form,
         })
 
+
 @login_required
 @transaction.atomic
 def sponsor_claim_benefit(request, sponsorid, benefitid):
@@ -377,7 +388,6 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
                                  sendername=sponsor.conference.conferencename,
                                  )
 
-
             messages.info(request, "Benefit \"%s\" has been %s." % (benefit, claim.declined and 'declined' or 'claimed'))
             return HttpResponseRedirect("/events/sponsor/%s/" % sponsor.id)
     else:
@@ -402,6 +412,7 @@ def sponsor_contract(request, contractid):
     resp['Content-disposition'] = 'attachment; filename="%s.pdf"' % contract.contractname
     resp.write(contract.contractpdf.read())
     return resp
+
 
 @login_required
 def sponsor_admin_dashboard(request, confurlname):
@@ -474,6 +485,7 @@ ORDER BY l.levelcost, l.levelname, s.name, b.sortkey, b.benefitname""", {'confid
         'helplink': 'sponsors',
         })
 
+
 def _confirm_benefit(request, benefit):
     with transaction.atomic():
         benefit.confirmed = True
@@ -507,6 +519,7 @@ def _confirm_benefit(request, benefit):
                                      'conference': conference,
                                      'sponsor': benefit.sponsor
                                  })).save()
+
 
 @login_required
 def sponsor_admin_sponsor(request, confurlname, sponsorid):
@@ -570,7 +583,6 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
         # Any other POST we don't know what it is
         return HttpResponseRedirect(".")
 
-
     unclaimedbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=False).exclude(sponsorclaimedbenefit__sponsor=sponsor)
     claimedbenefits = SponsorClaimedBenefit.objects.filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey')
     noclaimbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=True)
@@ -578,7 +590,6 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
     for b in claimedbenefits:
         if b.benefit.benefit_class:
             b.claimhtml = get_benefit_class(b.benefit.benefit_class)(sponsor.level, b.benefit.class_parameters).render_claimdata(b)
-
 
     return render(request, 'confsponsor/admin_sponsor.html', {
         'conference': conference,
@@ -591,6 +602,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
         'helplink': 'sponsors',
         })
 
+
 @login_required
 @transaction.atomic
 def sponsor_admin_confirm(request, confurlname, sponsorid):
@@ -601,6 +613,7 @@ def sponsor_admin_confirm(request, confurlname, sponsorid):
     confirm_sponsor(sponsor, request.user.username)
 
     return HttpResponseRedirect('../')
+
 
 @login_required
 def sponsor_admin_benefit(request, confurlname, benefitid):
@@ -631,6 +644,7 @@ def sponsor_admin_benefit(request, confurlname, benefitid):
         'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
         'helplink': 'sponsors',
         })
+
 
 @login_required
 @transaction.atomic
@@ -681,6 +695,7 @@ def sponsor_admin_send_mail(request, confurlname):
         'helplink': 'sponsors',
     })
 
+
 @login_required
 def sponsor_admin_view_mail(request, confurlname, mailid):
     conference = get_authenticated_conference(request, confurlname)
@@ -693,6 +708,7 @@ def sponsor_admin_view_mail(request, confurlname, mailid):
         'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
         'helplink': 'sponsors',
         })
+
 
 @login_required
 def sponsor_admin_imageview(request, benefitid):
@@ -719,6 +735,7 @@ def sponsor_admin_imageview(request, benefitid):
     resp.write(f.read())
     return resp
 
+
 @superuser_required
 def sponsor_admin_test_vat(request, confurlname):
     get_object_or_404(Conference, urlname=confurlname)
@@ -731,4 +748,3 @@ def sponsor_admin_test_vat(request, confurlname):
     if r:
         return HttpResponse("VAT validation error: %s" % r)
     return HttpResponse("VAT number is valid")
-

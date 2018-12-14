@@ -3,6 +3,7 @@ from django import template
 
 register = template.Library()
 
+
 @register.filter(name='alertmap')
 @stringfilter
 def alertmap(value):

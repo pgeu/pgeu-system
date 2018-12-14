@@ -2,6 +2,7 @@ import braintree
 
 from django.conf import settings
 
+
 def initialize_braintree():
     # Set up braintree APIs
     braintree.Configuration.configure(

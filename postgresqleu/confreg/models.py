@@ -50,10 +50,15 @@ STATUS_CHOICES_LONG = (
     (3, "Pending speaker confirmation"),               # Approved, but not confirmed
     (4, "Reserve-listed in case of cancels/changes"),  # Reserve list
 )
+
+
 def get_status_string(val):
     return (t for v, t in STATUS_CHOICES if v == val).next()
+
+
 def get_status_string_long(val):
     return (t for v, t in STATUS_CHOICES_LONG if v == val).next()
+
 
 valid_status_transitions = {
     0: {3: 'Talk approved', 2: 'Talk is rejected', 4: 'Talk added to reserve list'},
@@ -62,6 +67,7 @@ valid_status_transitions = {
     3: {0: 'Talk unapproved', 1: 'Speaker confirms', 2: 'Speaker declines'},
     4: {1: 'Last-minute reservelist', 3: 'Activated from reservelist'},
 }
+
 
 def color_validator(value):
     if not value.startswith('#'):
@@ -73,6 +79,7 @@ def color_validator(value):
             int(value[n * 2 + 1:n * 2 + 2 + 1], 16)
         except ValueError:
             raise ValidationError('Invalid value in color specification')
+
 
 class ConferenceSeries(models.Model):
     name = models.CharField(max_length=64, blank=False, null=False)
@@ -88,6 +95,7 @@ class ConferenceSeries(models.Model):
         ordering = ('sortkey', 'name')
         verbose_name_plural = "Conference series"
 
+
 class ConferenceSeriesOptOut(models.Model):
     # Users opting out of communications about a specific conference
     series = models.ForeignKey(ConferenceSeries, null=False, blank=False, on_delete=models.CASCADE)
@@ -97,6 +105,7 @@ class ConferenceSeriesOptOut(models.Model):
         unique_together = (
             ('user', 'series'),
         )
+
 
 class GlobalOptOut(models.Model):
     # Users who are opting out of *all* future communications
@@ -234,6 +243,7 @@ class Conference(models.Model):
             raise ValidationError("Must specify an actual welcome mail if it's enabled!")
         return cc
 
+
 class RegistrationClass(models.Model):
     conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
     regclass = models.CharField(max_length=64, null=False, blank=False, verbose_name="Registration class")
@@ -274,6 +284,7 @@ class RegistrationClass(models.Model):
         d = dict((a, getattr(self, a) and unicode(getattr(self, a))) for a in attribs)
         return d
 
+
 class RegistrationDay(models.Model):
     conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
     day = models.DateField(null=False, blank=False)
@@ -290,6 +301,7 @@ class RegistrationDay(models.Model):
     def shortday(self):
         df = DateFormat(self.day)
         return df.format('D jS')
+
 
 class RegistrationType(models.Model):
     conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
@@ -340,6 +352,7 @@ class RegistrationType(models.Model):
         d['days'] = [dd.day.strftime('%Y-%m-%d') for dd in self.days.all()]
         return d
 
+
 class ShirtSize(models.Model):
     shirtsize = models.CharField(max_length=32)
     sortkey = models.IntegerField(default=100, null=False, blank=False)
@@ -349,6 +362,7 @@ class ShirtSize(models.Model):
 
     class Meta:
         ordering = ('sortkey', 'shirtsize',)
+
 
 class ConferenceAdditionalOption(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
@@ -382,6 +396,7 @@ class ConferenceAdditionalOption(models.Model):
                                                   self.maxcount - usedcount,
                                                   self.maxcount)
         return "%s%s" % (self.name, coststr)
+
 
 class BulkPayment(models.Model):
     # User that owns this bulk payment
@@ -424,6 +439,7 @@ class BulkPayment(models.Model):
             settings.CURRENCY_SYMBOL.decode('utf8'),
             self.invoice.total_amount,
             self.paidat and 'Paid' or 'Not paid yet')
+
 
 class ConferenceRegistration(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
@@ -549,6 +565,7 @@ class ConferenceRegistration(models.Model):
         d['additionaloptions'] = [{'id': ao.id, 'name': ao.name} for ao in self.additionaloptions.all()]
         return d
 
+
 class RegistrationWaitlistEntry(models.Model):
     registration = models.OneToOneField(ConferenceRegistration, primary_key=True, on_delete=models.CASCADE)
     enteredon = models.DateTimeField(null=False, blank=False, auto_now_add=True)
@@ -561,6 +578,7 @@ class RegistrationWaitlistEntry(models.Model):
     def offers_made(self):
         return self.registrationwaitlisthistory_set.filter(text__startswith='Made offer').count()
 
+
 class RegistrationWaitlistHistory(models.Model):
     waitlist = models.ForeignKey(RegistrationWaitlistEntry, null=False, blank=False, on_delete=models.CASCADE)
     time = models.DateTimeField(null=False, blank=False, auto_now_add=True)
@@ -568,6 +586,7 @@ class RegistrationWaitlistHistory(models.Model):
 
     class Meta:
         ordering = ('-time',)
+
 
 class Track(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
@@ -580,6 +599,7 @@ class Track(models.Model):
 
     def __unicode__(self):
         return self.trackname
+
 
 class Room(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
@@ -597,6 +617,7 @@ class Room(models.Model):
 
 def _get_upload_path(instance, filename):
     return "%s" % instance.id
+
 
 class Speaker(models.Model):
     user = models.OneToOneField(User, null=True, blank=True, unique=True, on_delete=models.CASCADE)
@@ -636,10 +657,12 @@ class Speaker(models.Model):
     class Meta:
         ordering = ['fullname', ]
 
+
 class DeletedItems(models.Model):
     itemid = models.IntegerField(null=False, blank=False)
     type = models.CharField(max_length=16, blank=False, null=False)
     deltime = models.DateTimeField(blank=False, null=False)
+
 
 class Speaker_Photo(models.Model):
     speaker = models.OneToOneField(Speaker, db_column='id', primary_key=True, on_delete=models.CASCADE)
@@ -654,6 +677,7 @@ class Speaker_Photo(models.Model):
         self.speaker.save()
         super(Speaker_Photo, self).delete()
 
+
 class ConferenceSessionScheduleSlot(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     starttime = models.DateTimeField(null=False, blank=False, verbose_name="Start time")
@@ -661,6 +685,7 @@ class ConferenceSessionScheduleSlot(models.Model):
 
     def __unicode__(self):
         return "%s - %s" % (self.starttime, self.endtime)
+
 
 class ConferenceSession(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
@@ -749,6 +774,7 @@ class ConferenceSession(models.Model):
     class Meta:
         ordering = ['starttime', ]
 
+
 class ConferenceSessionSlides(models.Model):
     session = models.ForeignKey(ConferenceSession, null=False, blank=False, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, null=False, blank=False)
@@ -756,6 +782,7 @@ class ConferenceSessionSlides(models.Model):
     content = models.BinaryField(null=True, blank=False)
 
     _safe_attributes = ('id', 'name', 'url', 'content')
+
 
 class ConferenceSessionVote(models.Model):
     session = models.ForeignKey(ConferenceSession, null=False, blank=False, on_delete=models.CASCADE)
@@ -765,6 +792,7 @@ class ConferenceSessionVote(models.Model):
 
     class Meta:
         unique_together = (('session', 'voter',), )
+
 
 class ConferenceSessionFeedback(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
@@ -780,6 +808,7 @@ class ConferenceSessionFeedback(models.Model):
     def __unicode__(self):
         return unicode("%s - %s (%s)") % (self.conference, self.session, self.attendee)
 
+
 class ConferenceFeedbackQuestion(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     question = models.CharField(max_length=100, null=False, blank=False)
@@ -794,6 +823,7 @@ class ConferenceFeedbackQuestion(models.Model):
     class Meta:
         ordering = ['conference', 'sortkey', ]
 
+
 class ConferenceFeedbackAnswer(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     question = models.ForeignKey(ConferenceFeedbackQuestion, null=False, blank=False, on_delete=models.CASCADE)
@@ -806,6 +836,7 @@ class ConferenceFeedbackAnswer(models.Model):
 
     class Meta:
         ordering = ['conference', 'attendee', 'question', ]
+
 
 class VolunteerSlot(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
@@ -844,6 +875,7 @@ class VolunteerSlot(models.Model):
             self._localtz = pytz.timezone(settings.TIME_ZONE)
         return self._localtz.localize(time).astimezone(pytz.utc)
 
+
 class VolunteerAssignment(models.Model):
     slot = models.ForeignKey(VolunteerSlot, null=False, blank=False, on_delete=models.CASCADE)
     reg = models.ForeignKey(ConferenceRegistration, null=False, blank=False, on_delete=models.CASCADE)
@@ -851,6 +883,7 @@ class VolunteerAssignment(models.Model):
     org_confirmed = models.BooleanField(null=False, blank=False, default=False, verbose_name="Confirmed by organizers")
 
     _safe_attributes = ('id', 'slot', 'reg', 'vol_confirmed', 'org_confirmed')
+
 
 class PrepaidBatch(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
@@ -866,6 +899,7 @@ class PrepaidBatch(models.Model):
         verbose_name_plural = "Prepaid batches"
         ordering = ['conference', 'id', ]
 
+
 class PrepaidVoucher(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     vouchervalue = models.CharField(max_length=100, null=False, blank=False, unique=True)
@@ -878,6 +912,7 @@ class PrepaidVoucher(models.Model):
 
     class Meta:
         ordering = ['batch', 'vouchervalue', ]
+
 
 class DiscountCode(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
@@ -908,6 +943,7 @@ class DiscountCode(models.Model):
     def count(self):
         return self.registrations.count()
 
+
 class AttendeeMail(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     regclasses = models.ManyToManyField(RegistrationClass, blank=False)
@@ -934,7 +970,6 @@ class PendingAdditionalOrder(models.Model):
         return u"%s" % (self.reg, )
 
 
-
 class AggregatedTshirtSizes(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     size = models.ForeignKey(ShirtSize, null=False, blank=False, on_delete=models.CASCADE)
@@ -942,6 +977,7 @@ class AggregatedTshirtSizes(models.Model):
 
     class Meta:
         unique_together = (('conference', 'size'), )
+
 
 class AggregatedDietary(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
@@ -959,6 +995,7 @@ AccessTokenPermissions = (
     ('sponsors', 'Sponsors and counts'),
     ('addopts', 'Additional options and counts'),
 )
+
 
 class AccessToken(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
@@ -978,7 +1015,6 @@ class AccessToken(models.Model):
         return ", ".join(self.permissions)
 
 
-
 class ConferenceNews(models.Model):
     conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
     datetime = models.DateTimeField(blank=False, default=datetime.datetime.now)
@@ -994,6 +1030,7 @@ class ConferenceNews(models.Model):
     class Meta:
         ordering = ['-datetime', ]
         verbose_name_plural = 'Conference News'
+
 
 class ConferenceTweetQueue(models.Model):
     conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)

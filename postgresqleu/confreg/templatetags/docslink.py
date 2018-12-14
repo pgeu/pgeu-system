@@ -3,6 +3,7 @@ from django import template
 
 register = template.Library()
 
+
 @register.filter(name='docslink')
 @stringfilter
 def docslink(value):

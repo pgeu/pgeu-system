@@ -61,4 +61,3 @@ if __name__ == "__main__":
         with open('/tmp/fake_notify_error.txt', 'w') as f:
             f.write(e.read())
         print "Content written to /tmp/fake_notify_error.txt"
-

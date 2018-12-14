@@ -23,6 +23,7 @@ from reportlab.lib.units import cm, mm
 from models import Room, Track, RegistrationDay, ConferenceSession
 from backendviews import get_authenticated_conference
 
+
 def _get_pagesize(size, orient):
     so = (size, orient)
     if so == ('a4', 'p'):
@@ -35,6 +36,7 @@ def _get_pagesize(size, orient):
         return landscape(A3)
     raise Exception("Unknown papersize")
 
+
 def _setup_canvas(pagesize, orientation):
     resp = HttpResponse(content_type='application/pdf')
     registerFont(TTFont('DejaVu Serif', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf"))
@@ -45,6 +47,7 @@ def _setup_canvas(pagesize, orientation):
     canvas._doc.info.producer = "{0} Confreg System".format(settings.ORG_SHORTNAME)
 
     return (width, height, canvas, resp)
+
 
 # Build a linear PDF schedule for a single room only. Can do muptiple days, in which
 # case each new day will cause a pagebreak.
@@ -114,9 +117,6 @@ def build_linear_pdf_schedule(conference, room, tracks, day, colored, pagesize, 
     canvas.save()
 
     return resp
-
-
-
 
 
 def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orientation, pagesperday, titledatefmt):
@@ -254,7 +254,6 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
                 (tsaw, tsah) = ts.wrap(thisroomwidth-2*mm, timestampstyle.fontSize)
                 ts.drawOn(canvas, s_left+1*mm, s_top+s_height-tsah-1*mm)
 
-
                 if s_height - tsah*1.2 - 2*mm < tsah:
                     # This can never fit, since it's smaller than our font size!
                     # Instead, print as much as possible on the same row as the time
@@ -308,6 +307,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
     canvas.save()
     return resp
 
+
 class PdfScheduleForm(forms.Form):
     room = forms.ModelChoiceField(label='Rooms to include', queryset=None, empty_label='(all rooms)', required=False,
                                   help_text="Selecting all rooms will print a full schedule with each session sized to it's length. Selecting a single room will print that rooms schedule in adaptive sized rows in a table.")
@@ -328,6 +328,7 @@ class PdfScheduleForm(forms.Form):
         self.fields['room'].queryset = Room.objects.filter(conference=conference)
         self.fields['day'].queryset = RegistrationDay.objects.filter(conference=conference)
         self.fields['tracks'].queryset = alltracks
+
 
 def pdfschedule(request, confname):
     conference = get_authenticated_conference(request, confname)

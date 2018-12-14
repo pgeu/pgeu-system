@@ -5,6 +5,7 @@ from django.utils.safestring import mark_safe
 import datetime
 import json
 
+
 class HtmlDateInput(TextInput):
     def __init__(self, *args, **kwargs):
         kwargs.update({'attrs': {'type': 'date', 'required-pattern': '[0-9]{4}-[0-9]{2}-[0-9]{2}'}})
@@ -14,6 +15,7 @@ class HtmlDateInput(TextInput):
         if isinstance(val, datetime.datetime):
             val = val.date()
         return super(HtmlDateInput, self).format_value(val)
+
 
 class RequiredFileUploadWidget(forms.FileInput):
     def __init__(self, filename=None, attrs=None):
@@ -33,6 +35,7 @@ class RequiredFileUploadWidget(forms.FileInput):
         output.append(super(RequiredFileUploadWidget, self).render(name, value, attrs))
         return mark_safe(u''.join(output))
 
+
 class PrettyPrintJsonWidget(forms.Textarea):
     def render(self, name, value, attrs=None, renderer=None):
         # This is mighty ugly -- we parse the json and then turn it back into json.
@@ -44,6 +47,7 @@ class PrettyPrintJsonWidget(forms.Textarea):
             pass
         t = super(PrettyPrintJsonWidget, self).render(name, value, attrs, renderer)
         return t
+
 
 class AdminJsonWidget(PrettyPrintJsonWidget):
     def render(self, name, value, attrs=None, renderer=None):

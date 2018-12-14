@@ -16,6 +16,7 @@ from postgresqleu.invoices.util import InvoiceManager
 from models import RawNotification, AdyenLog, ReturnAuthorizationStatus
 from util import process_raw_adyen_notification
 
+
 @transaction.atomic
 def adyen_return_handler(request):
     sig = calculate_signature(request.GET)
@@ -90,6 +91,7 @@ def adyen_return_handler(request):
             'result': request.GET['authResult'],
             })
 
+
 @global_login_exempt
 @csrf_exempt
 def adyen_notify_handler(request):
@@ -126,7 +128,6 @@ def adyen_notify_handler(request):
         return HttpResponse('[internal error]', content_type='text/plain')
 
 
-
 # Rendered views to do bank payment
 def _invoice_payment(request, invoice):
     method = AdyenBanktransfer()
@@ -137,6 +138,7 @@ def _invoice_payment(request, invoice):
         'paymenturl': paymenturl,
     })
 
+
 @login_required
 def invoicepayment(request, invoiceid):
     invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True)
@@ -144,6 +146,7 @@ def invoicepayment(request, invoiceid):
         return HttpResponseForbidden("Access denied")
 
     return _invoice_payment(request, invoice)
+
 
 def invoicepayment_secret(request, invoiceid, secret):
     invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True, recipient_secret=secret)

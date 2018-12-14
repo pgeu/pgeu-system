@@ -12,6 +12,7 @@ from StringIO import StringIO
 from postgresqleu.braintreepayment.models import BraintreeLog
 from postgresqleu.mailqueue.util import send_simple_mail
 
+
 class Command(BaseCommand):
     help = 'Send log information about Braintree events'
 

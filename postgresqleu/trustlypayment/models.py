@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class TrustlyTransaction(models.Model):
     createdat = models.DateTimeField(null=False, blank=False)
     pendingat = models.DateTimeField(null=True, blank=True)
@@ -12,6 +13,7 @@ class TrustlyTransaction(models.Model):
     def __unicode__(self):
         return "%s" % self.orderid
 
+
 class TrustlyRawNotification(models.Model):
     dat = models.DateTimeField(null=False, blank=False, auto_now_add=True, unique=True)
     contents = models.TextField(null=False, blank=False)
@@ -19,6 +21,7 @@ class TrustlyRawNotification(models.Model):
 
     def __unicode__(self):
         return "%s" % self.dat
+
 
 class TrustlyNotification(models.Model):
     receivedat = models.DateTimeField(null=False, blank=False, auto_now_add=True, unique=True)
@@ -34,11 +37,13 @@ class TrustlyNotification(models.Model):
     def __unicode__(self):
         return "%s" % self.receivedat
 
+
 class TrustlyLog(models.Model):
     timestamp = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     message = models.TextField(null=False, blank=False)
     error = models.BooleanField(null=False, blank=False, default=False)
     sent = models.BooleanField(null=False, blank=False, default=False)
+
 
 class ReturnAuthorizationStatus(models.Model):
     orderid = models.BigIntegerField(null=False, blank=False, primary_key=True)

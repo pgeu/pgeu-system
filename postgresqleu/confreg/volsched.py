@@ -11,11 +11,13 @@ from views import render_conference_response
 from models import Conference, ConferenceRegistration
 from models import VolunteerSlot, VolunteerAssignment
 
+
 def _check_admin(request, conference):
     if request.user.is_superuser:
         return True
     else:
         return conference.administrators.filter(pk=request.user.id).exists() or conference.series.administrators.filter(pk=request.user.id).exists()
+
 
 def _get_conference_and_reg(request, urlname):
     conference = get_object_or_404(Conference, urlname=urlname)
@@ -29,6 +31,7 @@ def _get_conference_and_reg(request, urlname):
             raise Http404("Volunteer entry not found")
 
     return (conference, is_admin, reg)
+
 
 @login_required
 def volunteerschedule(request, urlname, adm=False):
@@ -61,6 +64,7 @@ def volunteerschedule(request, urlname, adm=False):
         'rowerror': request.session.pop('rowerror', None),
     })
 
+
 @login_required
 @transaction.atomic
 def signup(request, urlname, slotid, adm=False):
@@ -76,6 +80,7 @@ def signup(request, urlname, slotid, adm=False):
     else:
         VolunteerAssignment(slot=slot, reg=reg, vol_confirmed=True, org_confirmed=False).save()
     return HttpResponseRedirect('../..')
+
 
 @login_required
 @transaction.atomic
@@ -95,6 +100,7 @@ def add(request, urlname, slotid, regid, adm=False):
     else:
         VolunteerAssignment(slot=slot, reg=addreg, vol_confirmed=False, org_confirmed=True).save()
     return HttpResponseRedirect('../..')
+
 
 @login_required
 @transaction.atomic

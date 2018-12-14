@@ -15,6 +15,7 @@ from postgresqleu.util.validators import BeforeValidator, AfterValidator, Twitte
 
 from datetime import date, timedelta
 
+
 def _int_with_default(s, default):
     try:
         return int(s)
@@ -22,6 +23,7 @@ def _int_with_default(s, default):
         return default
     except TypeError:
         return default
+
 
 class SponsorSignupForm(forms.Form):
     name = forms.CharField(label="Company name *", min_length=3, max_length=100, help_text="This name is used on invoices and in internal communication")
@@ -88,8 +90,10 @@ class SponsorSignupForm(forms.Form):
 
         return cleaned_data
 
+
 class SponsorSendEmailForm(forms.ModelForm):
     confirm = forms.BooleanField(label="Confirm", required=False)
+
     class Meta:
         model = SponsorMail
         exclude = ('conference', )
@@ -106,6 +110,7 @@ class SponsorSendEmailForm(forms.ModelForm):
     def clean_confirm(self):
         if not self.cleaned_data['confirm']:
             raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")
+
 
 class PurchaseVouchersForm(forms.Form):
     regtype = forms.ModelChoiceField(queryset=None, required=True, label="Registration type")
@@ -126,6 +131,7 @@ class PurchaseVouchersForm(forms.Form):
         else:
             self.fields['regtype'].queryset = RegistrationType.objects.filter(Q(conference=self.conference, active=True, specialtype__isnull=True, cost__gt=0) & activeQ)
             del self.fields['confirm']
+
 
 class PurchaseDiscountForm(forms.Form):
     code = forms.CharField(required=True, max_length=100, min_length=4,

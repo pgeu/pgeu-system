@@ -15,6 +15,7 @@ from models import SponsorshipBenefit, SponsorClaimedBenefit
 
 from benefits import get_benefit_class
 
+
 class SponsorshipBenefitInlineFormset(BaseInlineFormSet):
     def clean(self):
         for f in self.forms:
@@ -29,10 +30,12 @@ class SponsorshipBenefitInlineFormset(BaseInlineFormSet):
                 if s:
                     f._errors['class_parameters'] = ErrorList([s])
 
+
 class SponsorshipBenefitInline(admin.TabularInline):
     model = SponsorshipBenefit
     extra = 1
     formset = SponsorshipBenefitInlineFormset
+
 
 class SponsorshipLevelForm(ConcurrentProtectedModelForm):
     class Meta:
@@ -42,6 +45,7 @@ class SponsorshipLevelForm(ConcurrentProtectedModelForm):
     def __init__(self, *args, **kwargs):
         super(SponsorshipLevelForm, self).__init__(*args, **kwargs)
         self.fields['paymentmethods'].label_from_instance = lambda x: x.internaldescription
+
 
 class SponsorshipLevelAdmin(admin.ModelAdmin):
     list_filter = ['conference', ]
@@ -57,6 +61,7 @@ class SponsorshipLevelAdmin(admin.ModelAdmin):
 
         return HttpResponseRedirect("/admin/confsponsor/sponsorshiplevel/{0}/copy".format(source_level[0].id))
     copy_sponsorshiplevel.short_description = "Copy sponsorship level"
+
 
 class SponsorAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
     class Meta:
@@ -81,16 +86,20 @@ class SponsorClaimedBenefitInline(admin.TabularInline):
     can_delete = False
     max_num = 0
 
+
 class LevelListFilter(admin.SimpleListFilter):
     title = 'Level'
     parameter_name = 'level'
+
     def lookups(self, request, model_admin):
         cid = request.GET.get('conference__id__exact', -1)
         if cid >= 0:
             return ((l.id, l.levelname) for l in SponsorshipLevel.objects.filter(conference__id=cid))
+
     def queryset(self, request, queryset):
         if self.value():
             return queryset.filter(level__id=self.value())
+
 
 class SponsorAdmin(admin.ModelAdmin):
     exclude = ('invoice', )
@@ -107,6 +116,7 @@ class SponsorAdmin(admin.ModelAdmin):
         else:
             return ""
     invoice_link.short_description = 'Invoice'
+
 
 admin.site.register(SponsorshipContract)
 admin.site.register(SponsorshipLevel, SponsorshipLevelAdmin)

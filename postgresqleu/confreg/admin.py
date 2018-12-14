@@ -36,12 +36,14 @@ from postgresqleu.confsponsor.models import Sponsor
 from datetime import datetime
 import urllib
 
+
 #
 # List filters
 #
 class TrackListFilter(admin.SimpleListFilter):
     title = 'Track'
     parameter_name = 'track'
+
     def lookups(self, request, model_admin):
         cid = request.GET.get('conference__id__exact', -1)
         if cid >= 0:
@@ -51,9 +53,11 @@ class TrackListFilter(admin.SimpleListFilter):
         if self.value():
             return queryset.filter(track_id=self.value())
 
+
 class RegtypeListFilter(admin.SimpleListFilter):
     title = 'Registration type'
     parameter_name = 'regtype'
+
     def lookups(self, request, model_admin):
         cid = request.GET.get('conference__id__exact', -1)
         if cid >= 0:
@@ -63,9 +67,11 @@ class RegtypeListFilter(admin.SimpleListFilter):
         if self.value():
             return queryset.filter(regtype_id=self.value())
 
+
 class AdditionalOptionListFilter(admin.SimpleListFilter):
     title = 'Additional option'
     parameter_name = 'addoption'
+
     def lookups(self, request, model_admin):
         cid = request.GET.get('conference__id__exact', -1)
         if cid >= 0:
@@ -74,6 +80,7 @@ class AdditionalOptionListFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         if self.value():
             return queryset.filter(additionaloptions__id=self.value())
+
 
 #
 # General admin classes
@@ -86,8 +93,10 @@ class ConferenceSeriesAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtec
             'administrators': AutoCompleteSelectMultipleWidget(lookup_class=UserLookup),
         }
 
+
 class ConferenceSeriesAdmin(admin.ModelAdmin):
     form = ConferenceSeriesAdminForm
+
 
 class ConferenceAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
     class Meta:
@@ -112,10 +121,12 @@ class ConferenceAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedMod
 
         return data
 
+
 class ConferenceAdmin(admin.ModelAdmin):
     form = ConferenceAdminForm
     list_display = ('conferencename', 'active', 'callforpapersopen', 'callforsponsorsopen', 'feedbackopen', 'startdate', 'enddate')
     ordering = ('-startdate', )
+
 
 class ConferenceRegistrationForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
     class Meta:
@@ -215,6 +226,7 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
         else:
             return False
 
+
 class ConferenceSessionForm(ConcurrentProtectedModelForm):
     class Meta:
         model = ConferenceSession
@@ -276,20 +288,24 @@ class ConferenceSessionAdmin(admin.ModelAdmin):
         return HttpResponseRedirect('/admin/confreg/_email_session_speaker/%s/?orig=%s' % (','.join(selected), urllib.quote(urllib.urlencode(request.GET))))
     email_recipients.short_description = "Send email to speakers of selected sessions"
 
+
 class ConferenceSessionScheduleSlotAdmin(admin.ModelAdmin):
     list_display = ['conference', 'starttime', 'endtime', ]
     list_filter = ['conference']
     ordering = ['starttime', ]
+
 
 class RegistrationClassAdmin(admin.ModelAdmin):
     list_display = ['regclass', 'conference', ]
     list_filter = ['conference', ]
     ordering = ['conference', 'regclass', ]
 
+
 class RegistrationDayAdmin(admin.ModelAdmin):
     list_display = ['day', 'conference', ]
     list_filter = ['conference', ]
     ordering = ['conference', 'day', ]
+
 
 class RegistrationTypeAdminForm(ConcurrentProtectedModelForm):
     class Meta:
@@ -309,6 +325,7 @@ class RegistrationTypeAdminForm(ConcurrentProtectedModelForm):
             # that we couldn't list it.
             pass
 
+
 class RegistrationTypeAdmin(admin.ModelAdmin):
     list_display = ['conference', 'regtype', 'cost', 'sortkey', 'active', 'activeuntil', ]
     list_filter = ['conference', ]
@@ -316,8 +333,10 @@ class RegistrationTypeAdmin(admin.ModelAdmin):
     filter_horizontal = ('requires_option', )
     form = RegistrationTypeAdminForm
 
+
 class ShirtsizeAdmin(admin.ModelAdmin):
     list_display = ['shirtsize', 'sortkey', ]
+
 
 class ConferenceAdditionalOptionAdminForm(ConcurrentProtectedModelForm):
     class Meta:
@@ -333,6 +352,7 @@ class ConferenceAdditionalOptionAdminForm(ConcurrentProtectedModelForm):
             # If we don't have a conference yet, we can just ignore the fact
             # that we couldn't list it.
             pass
+
 
 class ConferenceAdditionalOptionAdmin(admin.ModelAdmin):
     list_display = ['conference', 'name', 'maxcount', 'cost', 'used_count', 'confirmed_count', 'unconfirmed_count']
@@ -360,6 +380,7 @@ class ConferenceAdditionalOptionAdmin(admin.ModelAdmin):
         return inst.confirmed_count + inst.unconfirmed_count
     used_count.short_description = 'Total used'
 
+
 class SpeakerAdminForm(ConcurrentProtectedModelForm):
     class Meta:
         model = Speaker
@@ -386,17 +407,20 @@ class SpeakerAdminForm(ConcurrentProtectedModelForm):
             raise ValidationError("Maximum image size is 128x128")
         return self.cleaned_data['photofile']
 
+
 class SpeakerAdmin(admin.ModelAdmin):
     list_display = ['user', 'email', 'fullname', 'has_abstract', 'has_photo']
     search_fields = ['fullname', 'user__email']
     ordering = ['fullname']
     form = SpeakerAdminForm
 
+
 class SpeakerPhotoAdmin(admin.ModelAdmin):
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name == 'photo':
             kwargs['widget'] = InlinePhotoWidget
         return super(SpeakerPhotoAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+
 
 class TrackAdmin(admin.ModelAdmin):
     list_filter = ['conference', ]
@@ -405,15 +429,18 @@ class TrackAdmin(admin.ModelAdmin):
     class Meta:
         model = Track
 
+
 class RoomAdmin(admin.ModelAdmin):
     list_filter = ['conference', ]
 
     class Meta:
         model = Room
 
+
 class ConferenceFeedbackQuestionAdmin(admin.ModelAdmin):
     list_display = ['conference', 'sortkey', 'newfieldset', 'question', ]
     list_filter = ['conference', ]
+
 
 class PrepaidVoucherInline(admin.TabularInline):
     model = PrepaidVoucher
@@ -421,6 +448,7 @@ class PrepaidVoucherInline(admin.TabularInline):
     exclude = ['vouchervalue', 'conference', ]
     extra = 0
     can_delete = False
+
 
 class PrepaidBatchAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
     class Meta:
@@ -458,6 +486,7 @@ class PrepaidBatchAdmin(admin.ModelAdmin):
         return inst.used
     used_num.short_description = 'Used vouchers'
 
+
 class PrepaidVoucherAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
     class Meta:
         model = PrepaidVoucher
@@ -475,6 +504,7 @@ class PrepaidVoucherAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtecte
         except Conference.DoesNotExist:
             pass
 
+
 class PrepaidVoucherAdmin(admin.ModelAdmin):
     list_display = ['vouchervalue', 'conference', 'buyername', 'usedby', 'usedate', ]
     list_filter = ['conference', ]
@@ -489,6 +519,7 @@ class PrepaidVoucherAdmin(admin.ModelAdmin):
         if obj.user:
             return "%s %s" % (obj.user.firstname, obj.user.lastname)
         return None
+
 
 class DiscountCodeAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
     class Meta:
@@ -540,10 +571,12 @@ class DiscountCodeAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedM
 
         return cleaned_data
 
+
 class DiscountCodeAdmin(admin.ModelAdmin):
     list_display = ['code', 'conference', 'maxuses', 'count', ]
     list_filter = ['conference', ]
     form = DiscountCodeAdminForm
+
 
 class BulkPaymentAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
     class Meta:
@@ -553,10 +586,12 @@ class BulkPaymentAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedMo
             'user': AutoCompleteSelectWidget(lookup_class=UserLookup),
         }
 
+
 class BulkPaymentAdmin(admin.ModelAdmin):
     form = BulkPaymentAdminForm
     list_display = ['adminstring', 'conference', 'user', 'numregs', 'paidat', 'ispaid', ]
     list_filter = ['conference', ]
+
 
 class AttendeeMailAdminForm(ConcurrentProtectedModelForm):
     class Meta:
@@ -568,9 +603,11 @@ class AttendeeMailAdminForm(ConcurrentProtectedModelForm):
         if 'instance' in kwargs:
             self.fields['regclasses'].queryset = RegistrationClass.objects.filter(conference=self.instance.conference)
 
+
 class AttendeeMailAdmin(admin.ModelAdmin):
     form = AttendeeMailAdminForm
     filter_horizontal = ('regclasses', )
+
 
 class PendingAdditionalOrderAdminForm(ConcurrentProtectedModelForm):
     class Meta:
@@ -584,9 +621,11 @@ class PendingAdditionalOrderAdminForm(ConcurrentProtectedModelForm):
             self.fields['options'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.instance.reg.conference)
             self.fields['newregtype'].queryset = RegistrationType.objects.filter(conference=self.instance.reg.conference)
 
+
 class PendingAdditionalOrderAdmin(admin.ModelAdmin):
     form = PendingAdditionalOrderAdminForm
     list_display = ('reg', 'createtime', 'payconfirmedat')
+
 
 class VolunteerSlotAdminForm(ConcurrentProtectedModelForm):
     class Meta:
@@ -602,6 +641,7 @@ class VolunteerSlotAdminForm(ConcurrentProtectedModelForm):
         if data['max_staff'] < data['min_staff']:
             raise ValidationError("Max staff can't be less than min staff!")
         return data
+
 
 class VolunteerSlotAdmin(admin.ModelAdmin):
     form = VolunteerSlotAdminForm

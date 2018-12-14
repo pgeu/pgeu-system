@@ -4,6 +4,7 @@ from django.contrib import admin
 
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
+
 #
 # Inject the ConcurrentProjectedModelForm into all ModelAdmins that don't
 # explicitly specify override it. Do this by patching out the meaning
@@ -12,8 +13,8 @@ from postgresqleu.util.forms import ConcurrentProtectedModelForm
 class ConcurrentInjectedAdmin(admin.ModelAdmin):
     form = ConcurrentProtectedModelForm
 
-admin.ModelAdmin = ConcurrentInjectedAdmin
 
+admin.ModelAdmin = ConcurrentInjectedAdmin
 
 
 #
@@ -23,10 +24,12 @@ admin.ModelAdmin = ConcurrentInjectedAdmin
 # own injected model from above.
 #
 _oldreg = admin.site.register
+
+
 def _concurrent_injected_register(self, model_or_iterable, admin_class=None, **options):
     if admin_class is None:
         admin_class = ConcurrentInjectedAdmin
     return _oldreg(model_or_iterable, admin_class, **options)
 
-admin.site.register = types.MethodType(_concurrent_injected_register, admin.AdminSite)
 
+admin.site.register = types.MethodType(_concurrent_injected_register, admin.AdminSite)

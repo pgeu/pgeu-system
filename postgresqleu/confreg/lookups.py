@@ -4,6 +4,7 @@ from selectable.decorators import staff_member_required
 
 from postgresqleu.confreg.models import ConferenceRegistration
 
+
 @staff_member_required
 class RegistrationLookup(ModelLookup):
     model = ConferenceRegistration
@@ -29,5 +30,6 @@ class RegistrationLookup(ModelLookup):
     def get_item_label(self, item):
         # Display for choice listings
         return u"%s (%s %s)" % (item.attendee and item.attendee.username or '(no account)', item.firstname, item.lastname)
+
 
 registry.register(RegistrationLookup)

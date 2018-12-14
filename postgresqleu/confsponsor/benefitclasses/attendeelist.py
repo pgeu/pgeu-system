@@ -10,6 +10,7 @@ from base import BaseBenefit, BaseBenefitForm
 
 from postgresqleu.confreg.models import ConferenceRegistration
 
+
 class AttendeeListForm(BaseBenefitForm):
     confirm = forms.ChoiceField(label="Claim benefit", choices=((0, '* Choose'), (1, 'Claim this benefit'), (2, 'Decline this benefit')))
 
@@ -17,6 +18,7 @@ class AttendeeListForm(BaseBenefitForm):
         if not int(self.cleaned_data['confirm']) in (1, 2):
             raise ValidationError('You must decide if you want to claim this benefit')
         return self.cleaned_data['confirm']
+
 
 class AttendeeList(BaseBenefit):
     description = "List of attendee email addresses"
@@ -59,4 +61,3 @@ class AttendeeList(BaseBenefit):
                 return "List of attendees will be made available here once the conference is over."
         else:
             return ""
-

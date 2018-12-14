@@ -16,6 +16,7 @@ from postgresqleu.accounting.util import create_accounting_entry
 
 from models import TransactionStatus, Report, AdyenLog, Notification, Refund
 
+
 # Internal exception class
 class AdyenProcessingException(Exception):
     pass
@@ -116,7 +117,6 @@ def process_authorization(notification):
                 notification.save()
                 return
 
-
             if invoice.accounting_object:
                 # Store the accounting object so we can properly tag the
                 # fee for it when we process the settlement (since we don't
@@ -158,6 +158,7 @@ def process_authorization(notification):
     notification.confirmed = True
     notification.save()
 
+
 def process_capture(notification):
     if notification.success:
         # Successful capture, so we just set when the capture happened
@@ -180,6 +181,7 @@ def process_capture(notification):
     # We confirm the notification even if we sent it, since there is not much more we can do
     notification.confirmed = True
     notification.save()
+
 
 def process_refund(notification):
     # Store the refund, and send an email!
@@ -248,6 +250,7 @@ def process_refund(notification):
     notification.confirmed = True
     notification.save()
 
+
 def process_new_report(notification):
     # Just store the fact that this report is available. We'll have an
     # asynchronous cronjob that downloads and processes the reports.
@@ -300,9 +303,6 @@ def process_one_notification(notification):
         # We specifically do *not* set the confirmed flag on this,
         # so that the cronjob will constantly bug the user about
         # unverified notifications.
-
-
-
 
 
 def process_raw_adyen_notification(raw, POST):
@@ -381,14 +381,12 @@ def process_raw_adyen_notification(raw, POST):
     return True
 
 
-
 #
 # Accesspoints into the Adyen API
 #
 # Most of the API is off limits to us due to lack of PCI, but we can do a couple
 # of important things like refunding.
 #
-
 class AdyenAPI(object):
     def refund_transaction(self, refundid, transreference, amount):
         apiparam = {
@@ -409,7 +407,6 @@ class AdyenAPI(object):
                 transreference,
                 refundid,
                 e))
-
 
     def _api_call(self, apiurl, apiparam, okresponse):
         apijson = json.dumps(apiparam)

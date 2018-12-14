@@ -21,6 +21,7 @@ vat_status_choices = (
     (2, 'Company is from outside EU'),
 )
 
+
 class SponsorshipContract(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     contractname = models.CharField(max_length=100, null=False, blank=False, verbose_name='Contract name')
@@ -37,9 +38,13 @@ class SponsorshipContract(models.Model):
         if not self.contractpdf:
             self.contractpdf.storage._delete(self.id)
         return super(SponsorshipContract, self).save(update_fields=update_fields)
+
     def delete_inline_storage(self):
         self.contractpdf.storage._delete(self.id)
+
+
 pre_delete.connect(delete_inline_storage, sender=SponsorshipContract)
+
 
 class SponsorshipLevel(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
@@ -82,6 +87,7 @@ class SponsorshipLevel(models.Model):
                 return True
         return False
 
+
 class SponsorshipBenefit(models.Model):
     level = models.ForeignKey(SponsorshipLevel, null=False, blank=False, on_delete=models.CASCADE)
     benefitname = models.CharField(max_length=100, null=False, blank=False)
@@ -97,6 +103,7 @@ class SponsorshipBenefit(models.Model):
 
     class Meta:
         ordering = ('sortkey', 'benefitname', )
+
 
 class Sponsor(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
@@ -118,6 +125,7 @@ class Sponsor(models.Model):
     def __unicode__(self):
         return self.name
 
+
 class SponsorClaimedBenefit(models.Model):
     sponsor = models.ForeignKey(Sponsor, null=False, blank=False, on_delete=models.CASCADE)
     benefit = models.ForeignKey(SponsorshipBenefit, null=False, blank=False, on_delete=models.CASCADE)
@@ -129,6 +137,7 @@ class SponsorClaimedBenefit(models.Model):
 
     class Meta:
         unique_together = (('sponsor', 'benefit'),)
+
 
 class SponsorMail(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
@@ -142,6 +151,7 @@ class SponsorMail(models.Model):
 
     class Meta:
         ordering = ('-sentat',)
+
 
 class PurchasedVoucher(models.Model):
     sponsor = models.ForeignKey(Sponsor, null=False, blank=False, on_delete=models.CASCADE)

@@ -1,5 +1,6 @@
 from urllib import urlencode
 
+
 class Banktransfer(object):
     description = """
 Using this payment method, you can pay via a regular bank transfer

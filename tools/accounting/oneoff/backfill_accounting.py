@@ -62,7 +62,6 @@ if __name__ == "__main__":
                 # Can't complete this entry
                 thisentry['leaveopen'] = True
 
-
             # Try to figure out how this invoice is paid
             m = re_paypal.match(invoice.paymentdetails)
             if m:

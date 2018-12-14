@@ -14,6 +14,7 @@ from StringIO import StringIO
 from postgresqleu.adyen.models import AdyenLog, Notification, TransactionStatus
 from postgresqleu.mailqueue.util import send_simple_mail
 
+
 class Command(BaseCommand):
     help = 'Send log information about Adyen events'
 
@@ -68,4 +69,3 @@ class Command(BaseCommand):
                              settings.ADYEN_NOTIFICATION_RECEIVER,
                              'Adyen integration unconfirmed notifications',
                              sio.getvalue())
-

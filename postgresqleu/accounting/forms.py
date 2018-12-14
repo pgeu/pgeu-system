@@ -5,6 +5,7 @@ from django.forms.models import BaseInlineFormSet
 
 from models import JournalEntry, JournalItem, Object, JournalUrl
 
+
 class JournalEntryForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(JournalEntryForm, self).__init__(*args, **kwargs)
@@ -19,6 +20,7 @@ class JournalEntryForm(forms.ModelForm):
 def PositiveValidator(v):
     if v <= 0:
         raise ValidationError("Value must be a positive integer")
+
 
 class JournalItemForm(forms.ModelForm):
     debit = forms.DecimalField(max_digits=10, decimal_places=2, validators=[PositiveValidator, ], required=False)
@@ -86,6 +88,7 @@ class JournalItemForm(forms.ModelForm):
         credit = self.cleaned_data.has_key('credit') and self.cleaned_data['credit'] or 0
         return debit - credit
 
+
 class JournalItemFormset(BaseInlineFormSet):
     def clean(self):
         super(JournalItemFormset, self).clean()
@@ -97,6 +100,7 @@ class JournalItemFormset(BaseInlineFormSet):
         n = sum([1 for f in self.forms if f.get_amount() != 0])
         if n == 0:
             raise ValidationError("Journal entry must have at least one item!")
+
 
 class JournalUrlForm(forms.ModelForm):
     class Meta:

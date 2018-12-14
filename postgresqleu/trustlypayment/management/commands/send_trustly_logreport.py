@@ -14,6 +14,7 @@ from StringIO import StringIO
 from postgresqleu.trustlypayment.models import TrustlyLog, TrustlyNotification, TrustlyTransaction
 from postgresqleu.mailqueue.util import send_simple_mail
 
+
 class Command(BaseCommand):
     help = 'Send log information about Trustly events'
 
@@ -70,4 +71,3 @@ class Command(BaseCommand):
                              settings.TRUSTLY_NOTIFICATION_RECEIVER,
                              'Trustly integration unconfirmed notifications',
                              sio.getvalue())
-

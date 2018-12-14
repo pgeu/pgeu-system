@@ -15,6 +15,7 @@ from postgresqleu.confsponsor.models import Sponsor
 from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 from postgresqleu.invoices.util import InvoiceManager, InvoiceWrapper
 
+
 class Command(BaseCommand):
     help = 'Generate invoices for discount codes'
 

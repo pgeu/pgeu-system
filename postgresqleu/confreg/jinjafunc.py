@@ -169,6 +169,7 @@ def filter_groupby_sort(objects, keyfield, sortkey):
     group = [(key, list(group)) for key, group in groupby(objects, lambda x: getattr(x, keyfield))]
     return sorted(group, key=lambda y: y[0] and getattr(y[0], sortkey) or None)
 
+
 # Shuffle the order in a list, for example to randomize the order of sponsors
 def filter_shuffle(l):
     try:
@@ -178,11 +179,14 @@ def filter_shuffle(l):
     except:
         return l
 
+
 def filter_currency_format(v):
     return u"{0} {1:,.2f}".format(unicode(settings.CURRENCY_SYMBOL, 'utf8'), v)
 
+
 def filter_float_str(f, n):
     return '{{0:.{0}f}}'.format(int(n)).format(f)
+
 
 # Format a datetime. If it'sa datetime, call strftime. If it's a
 # string, assume it's iso format and convert it to a date first.
@@ -255,7 +259,6 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
     if conference and conference.jinjadir:
         c['githash'] = find_git_revision(conference.jinjadir)
 
-
     if dictionary:
         c.update(dictionary)
 
@@ -272,14 +275,12 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
     return HttpResponse(t.render(**c), content_type='text/html')
 
 
-
-
-
 # Small sandboxed jinja templates that can be configured in system
 def render_sandboxed_template(templatestr, context):
     env = ConfSandbox(loader=jinja2.DictLoader({'t': templatestr}))
     t = env.get_template('t')
     return t.render(context)
+
 
 class JinjaTemplateValidator(object):
     def __init__(self, context={}):

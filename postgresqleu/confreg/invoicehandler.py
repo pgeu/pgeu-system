@@ -7,6 +7,7 @@ from util import notify_reg_confirmed, expire_additional_options, cancel_registr
 
 from datetime import datetime
 
+
 class InvoiceProcessor(object):
     # Process invoices once they're getting paid
     #
@@ -95,8 +96,6 @@ class InvoiceProcessor(object):
         except ConferenceRegistration.DoesNotExist:
             raise Exception("Could not find conference registration %s" % invoice.processorid)
         return "%s/events/%s/register/" % (settings.SITEBASE, reg.conference.urlname)
-
-
 
 
 class BulkInvoiceProcessor(object):
@@ -221,7 +220,6 @@ class BulkInvoiceProcessor(object):
         return "%s/events/%s/bulkpay/%s/" % (settings.SITEBASE, bp.conference.urlname, invoice.processorid)
 
 
-
 class AddonInvoiceProcessor(object):
     can_refund = False
     # Process invoices for additional options added to an existing
@@ -231,6 +229,7 @@ class AddonInvoiceProcessor(object):
     # we don't actually need to verify that nothing has changed.
     #
     # All modifications are already wrapped in a django transaction
+
     def process_invoice_payment(self, invoice):
         try:
             order = PendingAdditionalOrder.objects.get(pk=invoice.processorid)

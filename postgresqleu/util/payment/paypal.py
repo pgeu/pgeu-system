@@ -6,6 +6,7 @@ import re
 from postgresqleu.paypal.models import TransactionInfo
 from postgresqleu.paypal.util import PaypalAPI
 
+
 class Paypal(object):
     description = """
 Pay using Paypal. You can use this both
@@ -46,6 +47,7 @@ lower fees.
             urlencode(param))
 
     _re_paypal = re.compile('^Paypal id ([A-Z0-9]+), ')
+
     def _find_invoice_transaction(self, invoice):
         m = self._re_paypal.match(invoice.paymentdetails)
         if m:

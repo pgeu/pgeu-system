@@ -26,6 +26,7 @@ alignments = {
     'right': TA_RIGHT,
 }
 
+
 def get_color(col):
     if isinstance(col, unicode) or isinstance(col, str):
         return colors.getAllNamedColors().get(col)
@@ -34,8 +35,10 @@ def get_color(col):
     else:
         raise Exception("Unknown color defintion type")
 
+
 def getmm(struct, key):
     return struct[key] * mm
+
 
 class JinjaBadge(Flowable):
     def __init__(self, js, imgpath):
@@ -146,8 +149,10 @@ def escapejson_filter(v):
     # those, but only one if there is more than one.
     return re.sub(r'^"|"$', '', json.dumps(v))
 
+
 def test_inlist(v, l):
     return v in l
+
 
 class JinjaRenderer(object):
     def __init__(self, rootdir, debug=False, border=False, pagebreaks=False):

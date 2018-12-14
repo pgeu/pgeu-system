@@ -7,6 +7,7 @@ from postgresqleu.util.storage import InlineEncodedStorage
 
 from base import BaseBenefit, BaseBenefitForm
 
+
 class ImageUploadForm(BaseBenefitForm):
     decline = forms.BooleanField(label='Decline this benefit', required=False)
     image = forms.FileField(label='Image file', required=False)
@@ -62,6 +63,7 @@ class ImageUploadForm(BaseBenefitForm):
 
         return self.cleaned_data['image']
 
+
 class ImageUpload(BaseBenefit):
     description = 'Require uploaded image'
     default_params = {"format": "png", "xres": 0, "yres": 0, "transparent": 0}
@@ -87,4 +89,3 @@ class ImageUpload(BaseBenefit):
     def render_claimdata(self, claimedbenefit):
         # We don't use the datafield, just the id
         return 'Uploaded image: <img src="/events/sponsor/admin/imageview/%s/" />' % claimedbenefit.id
-

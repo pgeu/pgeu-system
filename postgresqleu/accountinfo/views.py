@@ -10,6 +10,7 @@ import json
 from postgresqleu.util.decorators import user_passes_test_or_error
 from postgresqleu.auth import user_search, user_import
 
+
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def search(request):
@@ -38,6 +39,7 @@ def search(request):
                                      'n': u['f'] + ' ' + u['l'],
                                      'e': u['e'],
                                      } for u in users]), content_type='application/json')
+
 
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))

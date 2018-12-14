@@ -24,6 +24,7 @@ if settings.DEBUG:
 else:
     MANIFESTVERSION = 105
 
+
 def index(request, confname):
     conference = get_object_or_404(Conference, urlname=confname)
 
@@ -31,6 +32,7 @@ def index(request, confname):
         'conf': conference,
         'html5manifestversion': MANIFESTVERSION,
     })
+
 
 def cachemanifest(request, confname):
     # We'll just serve this up whenever, no need to check that the
@@ -72,7 +74,6 @@ def conferencedata(request, confname, since):
     sessiondata = [{'i': r[0], 't': r[1], 'a': markdown.markdown(r[2], safe_mode=True), 'st': r[3].isoformat() + 'Z', 'et': r[4].isoformat() + 'Z', 'r': r[5] and r[5] or '', 's': r[6]} for r in curs.fetchall()]
 #    sessions = ConferenceSession.objects.select_related('speaker').filter(conference=conference, starttime__isnull=False).order_by('starttime')
 
-
     # Now get all speaker info
     curs.execute("SELECT spk.id, spk.fullname, spk.abstract FROM confreg_speaker spk WHERE EXISTS (SELECT 1 FROM confreg_conferencesession_speaker csp INNER JOIN confreg_conferencesession s ON s.id=csp.conferencesession_id WHERE s.conference_id=%(confid)s AND status=1 AND NOT starttime IS NULL AND csp.speaker_id=spk.id) AND spk.lastmodified > %(lastmod)s", {
         'confid': conference.id,
@@ -101,6 +102,7 @@ def conferencedata(request, confname, since):
         'status': 'OK',
         }, resp)
     return resp
+
 
 def newsproxy(request, confname):
     conference = get_object_or_404(Conference, urlname=confname)

@@ -8,8 +8,10 @@ from Crypto.PublicKey import RSA
 import base64
 import urllib2
 
+
 class TrustlyException(Exception):
     pass
+
 
 class TrustlyWrapper(object):
     def __init__(self, apibase, username, password, privatekey, publickey, notificationurl, currency='EUR', hold_notifications=False):
@@ -60,7 +62,6 @@ class TrustlyWrapper(object):
             return True
         else:
             raise TrustlyException('Failed to refund orderid {0}'.format(orderid))
-
 
     def get_balance(self):
         r = self.apicall('Balance', {})

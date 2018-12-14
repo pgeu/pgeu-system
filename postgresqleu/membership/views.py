@@ -21,6 +21,7 @@ import json
 import base64
 import os
 
+
 @login_required
 @transaction.atomic
 def home(request):
@@ -141,6 +142,7 @@ def admin_email(request):
         'recipientlist': ', '.join(recipients),
         })
 
+
 @login_required
 def meetings(request):
     # Only available for actual members
@@ -161,6 +163,7 @@ def meetings(request):
         'member': member,
         'meetings': meetinginfo,
         })
+
 
 @transaction.atomic
 def _meeting(request, member, meeting, isproxy):
@@ -197,6 +200,7 @@ def _meeting(request, member, meeting, isproxy):
         'key': key,
         })
 
+
 @login_required
 def meeting(request, meetingid):
     # View a single meeting
@@ -204,9 +208,11 @@ def meeting(request, meetingid):
     member = get_object_or_404(Member, user=request.user)
     return _meeting(request, member, meeting, False)
 
+
 def meeting_by_key(request, meetingid, token):
     key = get_object_or_404(MemberMeetingKey, proxyaccesskey=token)
     return _meeting(request, key.member, key.meeting, True)
+
 
 @login_required
 @transaction.atomic
@@ -266,6 +272,7 @@ def meeting_proxy(request, meetingid):
         'key': key,
         'form': form,
         })
+
 
 # API calls from meeting bot
 def meetingcode(request):

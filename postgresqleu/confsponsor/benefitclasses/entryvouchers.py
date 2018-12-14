@@ -11,6 +11,7 @@ from postgresqleu.mailqueue.util import send_template_mail
 
 from postgresqleu.confreg.models import RegistrationType, PrepaidBatch, PrepaidVoucher
 
+
 class EntryVouchersForm(BaseBenefitForm):
     vouchercount = forms.IntegerField(label='Number of vouchers', min_value=0)
 
@@ -19,6 +20,7 @@ class EntryVouchersForm(BaseBenefitForm):
 
         self.fields['vouchercount'].validators.append(MaxValueValidator(int(self.params['num'])))
         self.fields['vouchercount'].help_text = "Enter the number of vouchers to generate (up to %s). Please note that you cannot generate more vouchers at a later date, so please generate all the ones you want at once. If you do not want any sponsor vouchers, we ask you to please claim the number 0, so we have it for our records." % int(self.params['num'])
+
 
 class EntryVouchers(BaseBenefit):
     description = "Claim entry vouchers"

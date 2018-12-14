@@ -7,6 +7,7 @@ from models import Election, Member, Candidate, Vote
 from forms import VoteForm
 from datetime import date, timedelta
 
+
 def home(request):
     elections = Election.objects.filter(isopen=True).order_by('startdate')
     open_elections = [e for e in elections if e.startdate <= date.today() and e.enddate >= date.today()]
@@ -18,6 +19,7 @@ def home(request):
         'past': past_elections,
         'upcoming': upcoming_elections,
     })
+
 
 def election(request, electionid):
     election = get_object_or_404(Election, pk=electionid)
@@ -88,11 +90,11 @@ def election(request, electionid):
         # Not a POST, so generate an empty form
         form = VoteForm(election, member)
 
-
     return render(request, 'elections/form.html', {
         'form': form,
         'election': election,
     })
+
 
 def candidate(request, election, candidate):
     candidate = get_object_or_404(Candidate, election=election, pk=candidate)
@@ -100,6 +102,7 @@ def candidate(request, election, candidate):
     return render(request, 'elections/candidate.html', {
         'candidate': candidate,
     })
+
 
 @login_required
 def ownvotes(request, electionid):

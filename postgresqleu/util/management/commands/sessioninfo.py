@@ -7,6 +7,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
 
+
 class Command(BaseCommand):
     help = 'Dump interesting information about a session'
 
@@ -37,4 +38,3 @@ class Command(BaseCommand):
             raise CommandError('Session not found')
         except User.DoesNotExist:
             raise CommandError('Associated user not found')
-

@@ -8,6 +8,7 @@ from django.db import transaction, connection
 
 from postgresqleu.invoices.models import InvoicePaymentMethod
 
+
 class Command(BaseCommand):
     help = 'Set up payment providers'
 

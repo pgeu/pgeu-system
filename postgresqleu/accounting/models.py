@@ -1,15 +1,18 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
+
 def nonzero_validator(value):
     if value == 0:
         raise ValidationError("Must be non-zero value!")
+
 
 ACCOUNT_OBJECT_CHOICES = (
     (0, "Optional"),
     (1, "Required"),
     (2, "Forbidden"),
 )
+
 
 class AccountClass(models.Model):
     name = models.CharField(max_length=100)
@@ -23,6 +26,7 @@ class AccountClass(models.Model):
         verbose_name = 'Account classes'
         ordering = ('name', )
 
+
 class AccountGroup(models.Model):
     name = models.CharField(max_length=100)
     accountclass = models.ForeignKey(AccountClass, blank=False, default=False, on_delete=models.CASCADE)
@@ -33,6 +37,7 @@ class AccountGroup(models.Model):
 
     class Meta:
         ordering = ('name', )
+
 
 class Account(models.Model):
     num = models.IntegerField(verbose_name="Account number", unique=True)
@@ -47,6 +52,7 @@ class Account(models.Model):
     class Meta:
         ordering = ('num', )
 
+
 class Year(models.Model):
     year = models.IntegerField(primary_key=True)
     isopen = models.BooleanField(null=False, blank=False)
@@ -58,6 +64,7 @@ class Year(models.Model):
 
     class Meta:
         ordering = ('-year',)
+
 
 class IncomingBalance(models.Model):
     year = models.ForeignKey(Year, null=False, blank=False, on_delete=models.CASCADE)
@@ -81,6 +88,7 @@ class Object(models.Model):
 
     class Meta:
         ordering = ('name', )
+
 
 class JournalEntry(models.Model):
     year = models.ForeignKey(Year, null=False, blank=False, on_delete=models.CASCADE)
@@ -113,6 +121,7 @@ class JournalItem(models.Model):
         if self.amount < 0:
             return -self.amount
         return ""
+
 
 class JournalUrl(models.Model):
     journal = models.ForeignKey(JournalEntry, null=False, blank=False, on_delete=models.CASCADE)

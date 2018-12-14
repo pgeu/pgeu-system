@@ -65,6 +65,7 @@ from StringIO import StringIO
 import json
 import markdown
 
+
 #
 # Render a conference page. It will load the template using the jinja system
 # if the conference is configured for jinja templates.
@@ -81,6 +82,7 @@ def render_conference_response(request, conference, pagemagic, templatename, dic
 
     raise Http404("Template not found")
 
+
 def _get_registration_signups(conference, reg):
     # Left join is hard to do efficiently with the django ORM, so let's do a query instead
     cursor = connection.cursor()
@@ -90,6 +92,7 @@ def _get_registration_signups(conference, reg):
         'regtypeid': reg.regtype_id,
         })
     return [dict(zip(['id', 'title', 'deadline', 'closed', 'savedat'], r)) for r in cursor.fetchall()]
+
 
 # Not a view in itself, only called from other views
 def _registration_dashboard(request, conference, reg, has_other_multiregs, redir_root):
@@ -157,6 +160,7 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
         'displayfields': displayfields,
     })
 
+
 def confhome(request, confname):
     conference = get_object_or_404(Conference, urlname=confname)
 
@@ -167,6 +171,7 @@ def confhome(request, confname):
             return HttpResponseRedirect('register/')
 
     return HttpResponseRedirect(conference.confurl)
+
 
 def news_json(request, confname):
     news = ConferenceNews.objects.select_related('author').filter(conference__urlname=confname,
@@ -264,7 +269,6 @@ def register(request, confname, whatfor=None):
                 reg.delete()
             return HttpResponseRedirect("{0}canceled/".format(redir_root))
 
-
         form = ConferenceRegistrationForm(request.user, data=request.POST, instance=reg)
         if form.is_valid():
             reg = form.save(commit=False)
@@ -318,6 +322,7 @@ def register(request, confname, whatfor=None):
         'costamount': reg.regtype and reg.regtype.cost or 0,
     })
 
+
 @login_required
 @transaction.atomic
 def changereg(request, confname):
@@ -329,6 +334,7 @@ def changereg(request, confname):
         return HttpResponseRedirect('../')
 
     return _registration_dashboard(request, conference, reg, False, '../')
+
 
 @login_required
 @transaction.atomic
@@ -362,7 +368,6 @@ def multireg(request, confname, regid=None):
                                      regtoken=generate_random_token(),
         )
         redir_root = './'
-
 
     if request.method == 'POST':
         if request.POST['submit'] == 'New registration':
@@ -490,6 +495,7 @@ def _create_and_assign_bulk_payment(user, conference, regs, invoicerows, recipie
 
     return bp
 
+
 @login_required
 @transaction.atomic
 def multireg_newinvoice(request, confname):
@@ -588,7 +594,6 @@ def multireg_newinvoice(request, confname):
 
         form = MultiRegInvoiceForm()
 
-
     return render_conference_response(request, conference, 'reg', 'confreg/regmulti_invoice.html', {
         'form': form,
         'invoicerows': invoicerows,
@@ -596,11 +601,13 @@ def multireg_newinvoice(request, confname):
         'totalwithvat': totalwithvat,
     })
 
+
 @login_required
 def multireg_zeropay(request, confname):
     conference = get_object_or_404(Conference, urlname=confname)
     return render_conference_response(request, conference, 'reg', 'confreg/regmulti_zeropay.html', {
     })
+
 
 @login_required
 @transaction.atomic
@@ -617,6 +624,7 @@ def multireg_bulkview(request, confname, bulkid):
         'bulkpayment': bp,
         'invoice': InvoicePresentationWrapper(bp.invoice, '.'),
     })
+
 
 @login_required
 @transaction.atomic
@@ -639,11 +647,13 @@ def multireg_attach(request, token):
             'reg': reg,
         })
 
+
 def feedback_available(request):
     conferences = Conference.objects.filter(feedbackopen=True).order_by('startdate')
     return render(request, 'confreg/feedback_available.html', {
         'conferences': conferences,
     })
+
 
 @login_required
 @transaction.atomic
@@ -842,6 +852,7 @@ def feedback(request, confname):
         'is_tester': is_conf_tester,
     })
 
+
 @login_required
 def feedback_session(request, confname, sessionid):
     # Room for optimization: don't get these as separate steps
@@ -1034,6 +1045,7 @@ def _scheduledata(request, conference):
         'tracks': tracks,
     }
 
+
 def schedule(request, confname):
     conference = get_object_or_404(Conference, urlname=confname)
 
@@ -1041,8 +1053,8 @@ def schedule(request, confname):
         if not conference.testers.filter(pk=request.user.id):
             return render_conference_response(request, conference, 'schedule', 'confreg/scheduleclosed.html')
 
-
     return render_conference_response(request, conference, 'schedule', 'confreg/schedule.html', _scheduledata(request, conference))
+
 
 def schedulejson(request, confname):
     conference = get_authenticated_conference(request, confname)
@@ -1051,6 +1063,7 @@ def schedulejson(request, confname):
                                    cls=JsonSerializer,
                                    indent=2),
                         content_type='application/json')
+
 
 def sessionlist(request, confname):
     conference = get_object_or_404(Conference, urlname=confname)
@@ -1067,6 +1080,7 @@ def sessionlist(request, confname):
         'sessions': sessions,
     })
 
+
 def schedule_ical(request, confname):
     conference = get_object_or_404(Conference, urlname=confname)
 
@@ -1082,6 +1096,7 @@ def schedule_ical(request, confname):
         'servername': request.META['SERVER_NAME'],
     }, content_type='text/calendar')
 
+
 def session(request, confname, sessionid, junk=None):
     conference = get_object_or_404(Conference, urlname=confname)
 
@@ -1095,6 +1110,7 @@ def session(request, confname, sessionid, junk=None):
         'slides': ConferenceSessionSlides.objects.filter(session=session),
     })
 
+
 def session_slides(request, confname, sessionid, slideid):
     conference = get_object_or_404(Conference, urlname=confname)
 
@@ -1106,6 +1122,7 @@ def session_slides(request, confname, sessionid, slideid):
     slides = get_object_or_404(ConferenceSessionSlides, session=session, id=slideid)
     return HttpResponse(slides.content,
                         content_type='application/pdf')
+
 
 def speaker(request, confname, speakerid, junk=None):
     conference = get_object_or_404(Conference, urlname=confname)
@@ -1122,9 +1139,11 @@ def speaker(request, confname, speakerid, junk=None):
         'sessions': sessions,
     })
 
+
 def speakerphoto(request, speakerid):
     speakerphoto = get_object_or_404(Speaker_Photo, pk=speakerid)
     return HttpResponse(base64.b64decode(speakerphoto.photo), content_type='image/jpg')
+
 
 @login_required
 def speakerprofile(request, confurlname=None):
@@ -1168,6 +1187,7 @@ def speakerprofile(request, confurlname=None):
         'callforpapers': callforpapers,
         'form': form,
     })
+
 
 @login_required
 @transaction.atomic
@@ -1324,6 +1344,7 @@ def callforpapers_edit(request, confname, sessionid):
         'session': session,
     })
 
+
 @login_required
 def public_speaker_lookup(request, confname):
     conference = get_object_or_404(Conference, urlname=confname)
@@ -1343,6 +1364,7 @@ def public_speaker_lookup(request, confname):
     return HttpResponse(json.dumps({
         'values': vals,
     }), content_type='application/json')
+
 
 @login_required
 @transaction.atomic
@@ -1378,6 +1400,7 @@ def callforpapers_copy(request, confname):
         'form': form,
     })
 
+
 @login_required
 def callforpapers_delslides(request, confname, sessionid, slideid):
     conference = get_object_or_404(Conference, urlname=confname)
@@ -1387,6 +1410,7 @@ def callforpapers_delslides(request, confname, sessionid, slideid):
     slide = get_object_or_404(ConferenceSessionSlides, session=session, id=slideid)
     slide.delete()
     return HttpResponseRedirect('../../')
+
 
 @login_required
 @transaction.atomic
@@ -1438,6 +1462,7 @@ def callforpapers_confirm(request, confname, sessionid):
         'session': session,
     })
 
+
 @login_required
 @transaction.atomic
 def confirmreg(request, confname):
@@ -1466,7 +1491,6 @@ def confirmreg(request, confname):
         return render_conference_response(request, conference, 'reg', 'confreg/specialregtypeconfirm.html', {
             'reason': s,
             })
-
 
     # Is this registration already on the waitlist?
     if hasattr(reg, 'registrationwaitlistentry'):
@@ -1617,7 +1641,6 @@ def confirmreg(request, confname):
     if reg.firstname != request.user.first_name or reg.lastname != request.user.last_name:
         registration_warnings.append(u"Registration name ({0} {1}) does not match account name ({2} {3}). Please make sure that this is correct, and that you are <strong>not</strong> registering using a different account than your own, as access to the account may be needed during the event!".format(reg.firstname, reg.lastname, request.user.first_name, request.user.last_name))
 
-
     return render_conference_response(request, conference, 'reg', 'confreg/regform_confirm.html', {
         'reg': reg,
         'invoicerows': invoicerows,
@@ -1663,6 +1686,7 @@ def waitlist_signup(request, confname):
     # which will show the waitlist information.
     return HttpResponseRedirect("../confirm/")
 
+
 @login_required
 @transaction.atomic
 def waitlist_cancel(request, confname):
@@ -1694,10 +1718,12 @@ def waitlist_cancel(request, confname):
     # which will show the waitlist information.
     return HttpResponseRedirect("../confirm/")
 
+
 @login_required
 def cancelreg(request, confname):
     conference = get_object_or_404(Conference, urlname=confname)
     return render_conference_response(request, conference, 'reg', 'confreg/canceled.html')
+
 
 @login_required
 @transaction.atomic
@@ -1729,6 +1755,7 @@ def invoice(request, confname, regid):
         'invoice': InvoicePresentationWrapper(reg.invoice, "%s/events/%s/register/" % (settings.SITEBASE, conference.urlname)),
     })
 
+
 @login_required
 @transaction.atomic
 def invoice_cancel(request, confname, regid):
@@ -1757,6 +1784,7 @@ def invoice_cancel(request, confname, regid):
         'reg': reg,
     })
 
+
 @login_required
 def attendee_mail(request, confname, mailid):
     conference = get_object_or_404(Conference, urlname=confname)
@@ -1768,6 +1796,7 @@ def attendee_mail(request, confname, mailid):
         'conference': conference,
         'mail': mail,
         })
+
 
 @transaction.atomic
 def optout(request, token=None):
@@ -1819,6 +1848,7 @@ def optout(request, token=None):
         'globaloptout': GlobalOptOut.objects.filter(user=userid).exists(),
         'series': series,
     })
+
 
 @transaction.atomic
 def createvouchers(request, confname):
@@ -1883,6 +1913,7 @@ def createvouchers(request, confname):
         'breadcrumbs': (('/events/admin/{0}/prepaid/list/'.format(conference.urlname), 'Prepaid vouchers'),),
     })
 
+
 def listvouchers(request, confname):
     conference = get_authenticated_conference(request, confname)
 
@@ -1893,6 +1924,7 @@ def listvouchers(request, confname):
         'batches': batches,
         'helplink': 'vouchers',
     })
+
 
 def viewvouchers(request, confname, batchid):
     conference = get_authenticated_conference(request, confname)
@@ -1915,6 +1947,7 @@ def viewvouchers(request, confname, batchid):
         'helplink': 'vouchers',
     })
 
+
 @transaction.atomic
 def delvouchers(request, confname, batchid, voucherid):
     conference = get_authenticated_conference(request, confname)
@@ -1936,6 +1969,7 @@ def delvouchers(request, confname, batchid, voucherid):
 
     return HttpResponseRedirect('/events/admin/{0}/prepaid/list/'.format(confname))
 
+
 @login_required
 def viewvouchers_user(request, confname, batchid):
     conference = get_object_or_404(Conference, urlname=confname)
@@ -1948,6 +1982,7 @@ def viewvouchers_user(request, confname, batchid):
         'batch': batch,
         'vouchers': vouchers,
     })
+
 
 def emailvouchers(request, confname, batchid):
     conference = get_authenticated_conference(request, confname)
@@ -1968,6 +2003,7 @@ def emailvouchers(request, confname, batchid):
                        receivername=u"{0} {1}".format(batch.buyer.first_name, batch.buyer.last_name),
                    )
     return HttpResponse('OK')
+
 
 @login_required
 @transaction.atomic
@@ -2205,6 +2241,7 @@ def talkvote(request, confname):
         'helplink': 'callforpapers',
     })
 
+
 @login_required
 @transaction.atomic
 def talkvote_status(request, confname):
@@ -2225,6 +2262,7 @@ def talkvote_status(request, confname):
     return HttpResponse("{0};{1}".format(get_status_string(session.status),
                                          session.status != session.lastnotifiedstatus and 1 or 0,
                                      ), content_type='text/plain')
+
 
 @login_required
 @transaction.atomic
@@ -2250,6 +2288,7 @@ def talkvote_vote(request, confname):
         avg = 0
     return HttpResponse("{0:.2f}".format(avg), content_type='text/plain')
 
+
 @login_required
 @transaction.atomic
 def talkvote_comment(request, confname):
@@ -2266,6 +2305,7 @@ def talkvote_comment(request, confname):
 
     return HttpResponse(vote.comment, content_type='text/plain')
 
+
 @login_required
 @csrf_exempt
 @transaction.atomic
@@ -2276,7 +2316,6 @@ def createschedule(request, confname):
             conference.talkvoters.filter(pk=request.user.id).exists()
             ):
         raise PermissionDenied('You are not an administrator or talk voter for this conference!')
-
 
     if request.method == "POST":
         if request.POST.has_key('get'):
@@ -2362,6 +2401,7 @@ def createschedule(request, confname):
         'helplink': 'schedule',
     })
 
+
 @login_required
 def publishschedule(request, confname):
     conference = get_authenticated_conference(request, confname)
@@ -2409,6 +2449,7 @@ def publishschedule(request, confname):
         return render(request, 'confreg/schedule_publish.html', {
             'changes': changes,
         })
+
 
 def reports(request, confname):
     conference = get_authenticated_conference(request, confname)
@@ -2471,6 +2512,7 @@ def simple_report(request, confname):
         'helplink': 'reports',
     })
 
+
 @login_required
 def admin_dashboard(request):
     if request.user.is_superuser:
@@ -2501,6 +2543,7 @@ def admin_dashboard(request):
         'cross_conference': request.user.is_superuser or ConferenceSeries.objects.filter(administrators=request.user).exists(),
     })
 
+
 def admin_dashboard_single(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
@@ -2515,6 +2558,7 @@ def admin_dashboard_single(request, urlname):
         'sessions_notrack': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=1 AND s.track_id IS NULL)", {'confid': conference.id}),
         'pending_sessions': conditional_exec_to_scalar(conference.scheduleactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=0)", {'confid': conference.id}),
     })
+
 
 def admin_registration_dashboard(request, urlname):
     conference = get_authenticated_conference(request, urlname)
@@ -2599,6 +2643,7 @@ WHERE dc.conference_id={1} AND (r.conference_id={1} OR r.conference_id IS NULL) 
         'helplink': 'registrations',
     })
 
+
 def admin_registration_list(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
@@ -2629,6 +2674,7 @@ def admin_registration_list(request, urlname):
         'helplink': 'registrations',
     })
 
+
 def admin_registration_single(request, urlname, regid):
     conference = get_authenticated_conference(request, urlname)
 
@@ -2649,6 +2695,7 @@ def admin_registration_single(request, urlname, regid):
         ),
         'helplink': 'registrations',
     })
+
 
 @transaction.atomic
 def admin_registration_cancel(request, urlname, regid):
@@ -2671,6 +2718,7 @@ def admin_registration_cancel(request, urlname, regid):
             'helplink': 'waitlist',
         })
 
+
 @transaction.atomic
 def admin_registration_clearcode(request, urlname, regid):
     conference = get_authenticated_conference(request, urlname)
@@ -2683,6 +2731,7 @@ def admin_registration_clearcode(request, urlname, regid):
         reg.vouchercode = ""
         reg.save()
     return HttpResponseRedirect("../")
+
 
 @transaction.atomic
 def admin_waitlist(request, urlname):
@@ -2754,6 +2803,7 @@ def admin_waitlist(request, urlname):
         'form': form,
         'helplink': 'waitlist',
         })
+
 
 @transaction.atomic
 def admin_waitlist_cancel(request, urlname, wlid):
@@ -2908,6 +2958,7 @@ def admin_attendeemail(request, urlname):
         'helplink': 'emails',
     })
 
+
 def admin_attendeemail_view(request, urlname, mailid):
     conference = get_authenticated_conference(request, urlname)
 
@@ -2919,6 +2970,7 @@ def admin_attendeemail_view(request, urlname, mailid):
         'breadcrumbs': (('/events/admin/{0}/mail/'.format(conference.urlname), 'Attendee emails'), ),
         'helplink': 'emails',
         })
+
 
 @transaction.atomic
 def session_notify_queue(request, urlname):
@@ -2953,6 +3005,7 @@ def session_notify_queue(request, urlname):
         'conference': conference,
         'notifysessions': notifysessions,
         })
+
 
 @transaction.atomic
 def transfer_reg(request, urlname):
@@ -3026,7 +3079,6 @@ def transfer_reg(request, urlname):
             InvoiceHistory(invoice=toreg.invoice,
                            txt="Transferred from {0} to {1}".format(fromreg.email, toreg.email)
                            ).save()
-
 
         # Additional options
         if fromreg.additionaloptions.exists():
@@ -3247,6 +3299,7 @@ def crossmailoptions(request):
     ])
     return HttpResponse(json.dumps(r), content_type="application/json")
 
+
 # Admin view that's used to send email to multiple users
 @superuser_required
 @transaction.atomic
@@ -3308,7 +3361,6 @@ def admin_email_session(request, sessionids):
                 return HttpResponseRedirect('/admin/confreg/conferencesession/%s/' % sessionids)
     else:
         form = EmailSessionForm(initial={'sender': sessions[0].conference.contactaddr, 'returnurl': request.GET.has_key('orig') and request.GET['orig'] or ''})
-
 
     return render(request, 'confreg/admin_email.html', {
         'form': form,

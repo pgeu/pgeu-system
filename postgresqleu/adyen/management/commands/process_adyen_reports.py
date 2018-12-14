@@ -19,6 +19,7 @@ from postgresqleu.adyen.models import AdyenLog, Report, TransactionStatus
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.accounting.util import create_accounting_entry
 
+
 class Command(BaseCommand):
     help = 'Download and/or process reports from Adyen'
 
@@ -60,8 +61,6 @@ class Command(BaseCommand):
                 # This might fail again if we had a db problem, but it should be OK as long as it
                 # was just a download issue which is most likely.
                 AdyenLog(message='Failed to download report %s: %s' % (report.url, ex), error=True).save()
-
-
 
     def process_payment_accounting_report(self, report):
         sio = StringIO.StringIO(report.contents)
@@ -201,7 +200,6 @@ class Command(BaseCommand):
                          'Adyen settlement batch %s completed' % batchnum,
                          msg
                          )
-
 
     def process_reports(self):
         # Process all downloaded but unprocessed reports

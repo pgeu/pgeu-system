@@ -311,8 +311,6 @@ if settings.ENABLE_BRAINTREE:
         url(r'^p/braintree/$', postgresqleu.braintreepayment.views.payment_post),
     ])
 
-
-
 # Now extend with some fallback URLs as well
 urlpatterns.extend([
     # Selectable, only used on admin site for now

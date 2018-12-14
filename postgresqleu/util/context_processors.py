@@ -6,6 +6,7 @@
 from django.conf import settings
 from django.utils.functional import SimpleLazyObject
 
+
 def settings_context(request=None):
     return {
         'org_name': settings.ORG_NAME,
@@ -23,6 +24,7 @@ def settings_context(request=None):
         }
     }
 
+
 def settings_context_unicode(request=None):
     # Same as settings_context, except convert all strings to unicode assuming
     # utf-8.
@@ -32,8 +34,10 @@ def settings_context_unicode(request=None):
             c[k] = v.decode('utf8')
     return c
 
+
 if settings.ENABLE_MEMBERSHIP:
     from postgresqleu.membership.models import Member
+
 
 def member_context(request=None):
     def _member():

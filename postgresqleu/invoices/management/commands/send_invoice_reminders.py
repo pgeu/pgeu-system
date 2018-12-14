@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.util import InvoiceWrapper
 
+
 class Command(BaseCommand):
     help = 'Send invoice reminders'
 

@@ -6,6 +6,7 @@ from urlparse import parse_qs
 from decimal import Decimal
 import itertools
 
+
 class PaypalAPI(object):
     def __init__(self):
         self.accessparam = {
@@ -18,7 +19,6 @@ class PaypalAPI(object):
             self.API_ENDPOINT = 'https://api-3t.sandbox.paypal.com/nvp'
         else:
             self.API_ENDPOINT = 'https://api-3t.paypal.com/nvp'
-
 
     def _api_call(self, command, params):
         params.update(self.accessparam)
@@ -49,7 +49,6 @@ class PaypalAPI(object):
             yield dict([(k, r.get('L_{0}{1}'.format(k, i), [''])[0])
                         for k in
                         ('TRANSACTIONID', 'TIMESTAMP', 'EMAIL', 'TYPE', 'AMT', 'FEEAMT', 'NAME')])
-
 
     def get_transaction_details(self, transactionid):
         return self._api_call('GetTransactionDetails', {

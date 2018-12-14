@@ -49,7 +49,6 @@ class ConferenceRegistrationForm(forms.ModelForm):
         else:
             self.intro_html = mark_safe(u'<p>You are currently editing a registration for somebody other than yourself.</p>')
 
-
     def clean_regtype(self):
         newval = self.cleaned_data.get('regtype')
         if self.instance and newval == self.instance.regtype:
@@ -131,7 +130,6 @@ class ConferenceRegistrationForm(forms.ModelForm):
                 raise forms.ValidationError('This voucher or discount code was not found')
 
         return newval
-
 
     def compare_options(self, a, b):
         # First check if the sizes are the same
@@ -299,6 +297,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
                'fields': [self['vouchercode'], ],
         }
 
+
 class RegistrationChangeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(RegistrationChangeForm, self).__init__(*args, **kwargs)
@@ -323,6 +322,7 @@ rating_choices = (
     (0, 'N/A'),
 )
 
+
 class NewMultiRegForm(forms.Form):
     email = forms.EmailField(required=True)
 
@@ -337,9 +337,11 @@ class NewMultiRegForm(forms.Form):
             raise ValidationError("A registration for this email address already exists. For privacy reasons, management of a registration cannot be transferred.")
         return e
 
+
 class MultiRegInvoiceForm(forms.Form):
     recipient = forms.CharField(max_length=100, required=True)
     address = forms.CharField(widget=forms.widgets.Textarea, required=True)
+
 
 class ConferenceSessionFeedbackForm(forms.ModelForm):
     topic_importance = forms.ChoiceField(widget=RadioSelect, choices=rating_choices, label='Importance of the topic')
@@ -394,6 +396,7 @@ class ConferenceFeedbackForm(forms.Form):
             if r.question_id == id:
                 return r.rateanswer
         return -1
+
 
 class SpeakerProfileForm(forms.ModelForm):
     class Meta:
@@ -491,16 +494,19 @@ class SessionCopyField(forms.ModelMultipleChoiceField):
     def label_from_instance(self, obj):
         return u"{0}: {1} ({2})".format(obj.conference, obj.title, obj.status_string)
 
+
 class CallForPapersCopyForm(forms.Form):
     sessions = SessionCopyField(widget=forms.CheckboxSelectMultiple,
                                 required=True,
                                 queryset=ConferenceSession.objects.filter(id=-1),
                                 label='Select sessions')
+
     def __init__(self, conference, speaker, *args, **kwargs):
         self.conference = conference
         self.speaker = speaker
         super(CallForPapersCopyForm, self).__init__(*args, **kwargs)
         self.fields['sessions'].queryset = ConferenceSession.objects.select_related('conference').filter(speaker=speaker).exclude(conference=conference).order_by('-conference__startdate', 'title')
+
 
 class SessionSlidesUrlForm(forms.Form):
     url = forms.URLField(label='URL', required=False, max_length=1000)
@@ -519,6 +525,7 @@ class SessionSlidesUrlForm(forms.Form):
         except:
             raise ValidationError("URL does not validate")
         return u
+
 
 class SessionSlidesFileForm(forms.Form):
     f = forms.FileField(label='Upload', required=False)
@@ -542,6 +549,7 @@ class SessionSlidesFileForm(forms.Form):
             self.add_error('license', 'You must accept the license')
         return cleaned_data
 
+
 class PrepaidCreateForm(forms.Form):
     regtype = forms.ModelChoiceField(queryset=RegistrationType.objects.filter(id=-1))
     count = forms.IntegerField(min_value=1, max_value=100)
@@ -560,6 +568,7 @@ class PrepaidCreateForm(forms.Form):
                 self.data.get('count')):
             del self.fields['confirm']
 
+
 class EmailSendForm(forms.Form):
     ids = forms.CharField(label="List of id's", widget=forms.widgets.HiddenInput())
     returnurl = forms.CharField(label="Return url", widget=forms.widgets.HiddenInput())
@@ -577,6 +586,7 @@ class EmailSendForm(forms.Form):
                 readytogo = True
         if not readytogo:
             del self.fields['confirm']
+
 
 class EmailSessionForm(forms.Form):
     sender = forms.EmailField(label="Sending email")
@@ -607,8 +617,10 @@ class BulkRegistrationForm(forms.Form):
             raise ValidationError('Bulk payments can only be done for 2 or more emails')
         return email_list
 
+
 class AttendeeMailForm(forms.ModelForm):
     confirm = forms.BooleanField(label="Confirm", required=False)
+
     class Meta:
         model = AttendeeMail
         exclude = ('conference', )
@@ -661,6 +673,7 @@ class WaitlistOfferForm(forms.Form):
             raise ValidationError("At least one registration must be selected to make an offer")
         return self.cleaned_data
 
+
 class WaitlistSendmailForm(forms.Form):
     TARGET_ALL = 0
     TARGET_OFFERS = 1
@@ -701,6 +714,7 @@ class WaitlistSendmailForm(forms.Form):
         if not self.cleaned_data['confirm']:
             raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")
 
+
 class TransferRegForm(forms.Form):
     transfer_from = forms.ModelChoiceField(ConferenceRegistration.objects.filter(id=-1))
     transfer_to = forms.ModelChoiceField(ConferenceRegistration.objects.filter(id=-1))
@@ -713,6 +727,7 @@ class TransferRegForm(forms.Form):
         self.fields['transfer_to'].queryset = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True)
         if not (self.data.has_key('transfer_from') and self.data.has_key('transfer_to')):
             del self.fields['confirm']
+
     def remove_confirm(self):
         del self.fields['confirm']
 

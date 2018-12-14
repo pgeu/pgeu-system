@@ -4,6 +4,7 @@ import requests_oauthlib
 
 _cached_twitter_users = {}
 
+
 class Twitter(object):
     def __init__(self, conference=None):
         if conference:
@@ -17,7 +18,6 @@ class Twitter(object):
                                                   settings.TWITTER_CLIENTSECRET,
                                                   token,
                                                   secret)
-
 
     def post_tweet(self, tweet):
         r = self.tw.post('https://api.twitter.com/1.1/statuses/update.json', data={
@@ -89,4 +89,3 @@ class TwitterSetup(object):
         tokens = oauth.fetch_access_token('https://api.twitter.com/oauth/access_token')
 
         return tokens
-

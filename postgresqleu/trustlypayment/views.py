@@ -12,6 +12,7 @@ from util import Trustly, TrustlyException
 from models import TrustlyTransaction, TrustlyRawNotification, TrustlyLog
 from models import ReturnAuthorizationStatus
 
+
 @transaction.atomic
 def invoicepayment_secret(request, invoiceid, secret):
     invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True, recipient_secret=secret)
@@ -94,10 +95,12 @@ def success(request, invoiceid, secret):
         'pendingat': trans.pendingat,
     })
 
+
 def failure(request, invoiceid, secret):
     return render(request, 'trustlypayment/error.html', {
         'url': '/invoices/{0}/{1}/'.format(invoiceid, secret),
     })
+
 
 @csrf_exempt
 def notification(request):

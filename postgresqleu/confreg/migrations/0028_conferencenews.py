@@ -7,6 +7,7 @@ import django.db.models.deletion
 
 import datetime
 
+
 class Migration(migrations.Migration):
 
     dependencies = [

@@ -2,6 +2,7 @@ from django import template
 
 register = template.Library()
 
+
 @register.filter
 def join_days(value):
     # Value is a list of RegistrationDay:s

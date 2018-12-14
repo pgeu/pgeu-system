@@ -12,6 +12,7 @@ _trendlines = (
     ('polynomial', 'Polynomial'),
 )
 
+
 class TimeReportForm(forms.Form):
     reporttype = forms.ChoiceField(required=True, choices=enumerate([r[0] for r in reporttypes], 1), label="Report type")
     conferences = GroupedModelMultipleChoiceField('series', required=True, queryset=Conference.objects.all().order_by('-startdate'))
@@ -23,4 +24,3 @@ class TimeReportForm(forms.Form):
 
         if not self.user.is_superuser:
             self.fields['conferences'].queryset = Conference.objects.filter(series__administrators=self.user)
-

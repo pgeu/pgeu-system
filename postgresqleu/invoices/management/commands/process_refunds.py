@@ -18,6 +18,7 @@ from postgresqleu.mailqueue.util import send_simple_mail
 
 from datetime import datetime, timedelta
 
+
 class Command(BaseCommand):
     help = 'Send off API-based refunds'
 

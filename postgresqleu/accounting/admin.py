@@ -5,11 +5,14 @@ from django.forms.models import BaseInlineFormSet
 from models import AccountClass, AccountGroup, Account, IncomingBalance
 from models import JournalEntry, JournalItem, JournalUrl, Object, Year
 
+
 class AccountClassAdmin(admin.ModelAdmin):
     list_display = ('name', 'inbalance', 'balancenegative')
 
+
 class AccountAdmin(admin.ModelAdmin):
     list_display = ('num', 'name')
+
 
 class JournalItemFormset(BaseInlineFormSet):
     def clean(self):
@@ -20,25 +23,32 @@ class JournalItemFormset(BaseInlineFormSet):
         if s != 0:
             raise ValidationError("Journal entry does not balance!")
 
+
 class JournalItemInline(admin.TabularInline):
     model = JournalItem
     formset = JournalItemFormset
 
+
 class JournalUrlInline(admin.TabularInline):
     model = JournalUrl
+
 
 class JournalEntryAdmin(admin.ModelAdmin):
     inlines = [JournalItemInline, JournalUrlInline]
     list_display = ('__unicode__', 'year', 'seq', 'date', 'closed')
 
+
 class IncomingBalanceAdmin(admin.ModelAdmin):
     list_display = ('__unicode__', 'year', 'account', 'amount')
+
 
 class ObjectAdmin(admin.ModelAdmin):
     list_display = ('name', 'active')
 
+
 class YearAdmin(admin.ModelAdmin):
     readonly_fields = ('year',)
+
 
 admin.site.register(AccountClass, AccountClassAdmin)
 admin.site.register(AccountGroup)

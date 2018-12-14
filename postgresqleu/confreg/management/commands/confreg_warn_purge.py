@@ -14,6 +14,7 @@ from postgresqleu.mailqueue.util import send_simple_mail
 
 from postgresqleu.confreg.models import Conference
 
+
 class Command(BaseCommand):
     help = 'Send warnings about purging personal data'
 
@@ -37,4 +38,3 @@ from the conference dashboard:
                              receivername=conference.conferencename,
                              bcc=settings.ADMINS[0][1],
             )
-

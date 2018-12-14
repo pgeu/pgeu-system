@@ -3,6 +3,7 @@ from django import forms
 
 from base import BaseBenefit, BaseBenefitForm
 
+
 class ProvideTextForm(BaseBenefitForm):
     decline = forms.BooleanField(label='Decline this benefit', required=False)
     text = forms.CharField(label='Text', required=False, widget=forms.Textarea)
@@ -33,6 +34,7 @@ class ProvideTextForm(BaseBenefitForm):
         if self.params.get('maxwords', 0) and words > self.params['maxwords']:
             raise ValidationError('Must be less than %s words.' % self.params['maxwords'])
         return d
+
 
 class ProvideText(BaseBenefit):
     description = "Provide text string"

@@ -2,8 +2,10 @@ from django import forms
 
 from postgresqleu.util.validators import validate_json_structure
 
+
 class BaseBenefit(object):
     default_params = {}
+
     def __init__(self, level, params):
         self.level = level
         self.params = params
@@ -20,6 +22,7 @@ class BaseBenefit(object):
 
     def save_form(self, form, claim, request):
         raise Exception("Form saving not implemented!")
+
 
 class BaseBenefitForm(forms.Form):
     def __init__(self, benefit, *args, **kwargs):

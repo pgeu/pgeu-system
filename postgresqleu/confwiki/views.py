@@ -26,6 +26,7 @@ from models import Signup, AttendeeSignup
 from forms import SignupSubmitForm, SignupAdminEditForm, SignupSendmailForm
 from forms import SignupAdminEditSignupForm
 
+
 def _check_wiki_permissions(page, reg, readwrite=False):
     # Edit access implies both read and write
     if page.publicedit:
@@ -41,12 +42,14 @@ def _check_wiki_permissions(page, reg, readwrite=False):
         return
     raise PermissionDenied("View permission denied")
 
+
 def _check_signup_permissions(signup, reg):
     if signup.public:
         return
     if signup.attendees.filter(id=reg.id).exists() or signup.regtypes.filter(id=reg.regtype.id).exists():
         return
     raise PermissionDenied("Signup permission denied")
+
 
 @login_required
 def wikipage(request, confurl, wikiurl):
@@ -67,6 +70,7 @@ def wikipage(request, confurl, wikiurl):
         'is_subscribed': is_subscribed,
     })
 
+
 @login_required
 @transaction.atomic
 def wikipage_subscribe(request, confurl, wikiurl):
@@ -84,6 +88,7 @@ def wikipage_subscribe(request, confurl, wikiurl):
         messages.info(request, "{0} will now receive notifications whenever wiki page '{1}' changes.".format(reg.email, page.title))
 
     return HttpResponseRedirect('../')
+
 
 @login_required
 def wikipage_history(request, confurl, wikiurl):
@@ -197,6 +202,7 @@ def wikipage_edit(request, confurl, wikiurl):
         'diff': diff,
     })
 
+
 def admin(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
@@ -207,6 +213,7 @@ def admin(request, urlname):
         'pages': pages,
         'helplink': 'wiki',
     })
+
 
 @transaction.atomic
 def admin_edit_page(request, urlname, pageid):
@@ -338,6 +345,7 @@ def signup(request, urlname, signupid):
         'form': form,
     })
 
+
 def signup_admin(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
@@ -348,6 +356,7 @@ def signup_admin(request, urlname):
         'signups': signups,
         'helplink': 'signups',
     })
+
 
 @transaction.atomic
 def signup_admin_edit(request, urlname, signupid):
@@ -407,6 +416,7 @@ def signup_admin_edit(request, urlname, signupid):
         'helplink': 'signups',
     })
 
+
 @transaction.atomic
 def signup_admin_editsignup(request, urlname, signupid, id):
     conference = get_authenticated_conference(request, urlname)
@@ -445,6 +455,7 @@ def signup_admin_editsignup(request, urlname, signupid, id):
         ),
         'helplink': 'signups',
     })
+
 
 @transaction.atomic
 def signup_admin_sendmail(request, urlname, signupid):
@@ -508,7 +519,6 @@ def signup_admin_sendmail(request, urlname, signupid):
     else:
         form = SignupSendmailForm(additional_choices)
         numtosend = None
-
 
     return render(request, 'confwiki/signup_sendmail_form.html', {
         'conference': conference,

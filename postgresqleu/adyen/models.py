@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class RawNotification(models.Model):
     # This class contains the raw http POSTs of all notifications received
     # from Adyen. They will only end up unconfirmed here if sometihng
@@ -10,6 +11,7 @@ class RawNotification(models.Model):
 
     def __unicode__(self):
         return "%s" % self.dat
+
 
 class Notification(models.Model):
     receivedat = models.DateTimeField(null=False, blank=False, auto_now_add=True, unique=True)
@@ -35,6 +37,7 @@ class Notification(models.Model):
     def __unicode__(self):
         return "%s" % self.receivedat
 
+
 class Report(models.Model):
     receivedat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     notification = models.ForeignKey(Notification, null=False, blank=False, on_delete=models.CASCADE)
@@ -42,6 +45,7 @@ class Report(models.Model):
     downloadedat = models.DateTimeField(null=True, blank=True)
     contents = models.TextField(null=True, blank=True)
     processedat = models.DateTimeField(null=True, blank=True)
+
 
 class TransactionStatus(models.Model):
     pspReference = models.CharField(max_length=100, null=False, blank=False, unique=True)
@@ -61,6 +65,7 @@ class TransactionStatus(models.Model):
     class Meta:
         verbose_name_plural = 'Transaction statuses'
 
+
 class Refund(models.Model):
     receivedat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     notification = models.ForeignKey(Notification, null=False, blank=False, on_delete=models.CASCADE)
@@ -69,6 +74,7 @@ class Refund(models.Model):
 
     def __unicode__(self):
         return unicode(self.refund_amount)
+
 
 class ReturnAuthorizationStatus(models.Model):
     pspReference = models.CharField(max_length=100, null=False, blank=False, primary_key=True)

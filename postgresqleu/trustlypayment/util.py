@@ -12,8 +12,8 @@ from api import TrustlyWrapper, TrustlyException
 from models import TrustlyTransaction, TrustlyLog
 from models import TrustlyNotification
 
-# Django intgrated wrapper for the trustly API
 
+# Django intgrated wrapper for the trustly API
 class Trustly(TrustlyWrapper):
     def __init__(self):
         super(Trustly, self).__init__(settings.TRUSTLY_APIBASE,

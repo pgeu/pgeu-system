@@ -20,6 +20,7 @@ from postgresqleu.braintreepayment.models import BraintreeTransaction, Braintree
 from postgresqleu.braintreepayment.util import initialize_braintree
 from postgresqleu.accounting.util import create_accounting_entry
 
+
 # We need to filter the log messages since libraries used by the
 # braintree integration spit out debugging information as INFO.
 class LogFilter(object):

@@ -11,6 +11,7 @@ from models import Sponsor, PurchasedVoucher
 from postgresqleu.confreg.models import PrepaidBatch, PrepaidVoucher
 import postgresqleu.invoices.models as invoicemodels
 
+
 def confirm_sponsor(sponsor, who):
     # Confirm a sponsor, including sending the confirmation email.
     # This will save the specified sponsor model as well, but the function
@@ -99,7 +100,6 @@ class InvoiceProcessor(object):
                              msgtxt,
                              sendername=sponsor.conference.conferencename)
 
-
     # Return the user to the sponsor page if they have paid.
     def get_return_url(self, invoice):
         try:
@@ -114,6 +114,7 @@ def get_sponsor_invoice_address(name, invoiceaddr, vatnumber):
         return u"{0}\n{1}\n\nVAT: {2}".format(name, invoiceaddr, vatnumber)
     else:
         return u"{0}\n{1}".format(name, invoiceaddr)
+
 
 # Generate an invoice for sponsorship
 def create_sponsor_invoice(user, sponsor):

@@ -8,6 +8,7 @@ import datetime
 
 from postgresqleu.util.db import exec_to_dict
 
+
 class LatestEvents(Feed):
     title = "Events - %s" % settings.ORG_NAME
     link = "/"

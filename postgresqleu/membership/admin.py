@@ -7,6 +7,7 @@ import urllib
 
 from models import Member, MemberLog, Meeting
 
+
 class ActiveMemberFilter(admin.SimpleListFilter):
     title = 'Active'
     parameter_name = 'isactive'
@@ -23,6 +24,7 @@ class ActiveMemberFilter(admin.SimpleListFilter):
         if self.value() == 'No':
             return queryset.filter(Q(paiduntil__lt=datetime.now()) | Q(paiduntil__isnull=True))
         return queryset
+
 
 class MemberAdmin(admin.ModelAdmin):
     list_display = ('user', 'fullname', 'country', 'membersince', 'paiduntil', )
@@ -41,13 +43,16 @@ class MemberAdmin(admin.ModelAdmin):
         return HttpResponseRedirect('/admin/membership/_email/?ids=%s&orig=%s' % (','.join(selected), urllib.quote(urllib.urlencode(request.GET))))
     email_members.short_description = 'Send email to selected members'
 
+
 class MemberLogAdmin(admin.ModelAdmin):
     list_display = ('member', 'timestamp', 'message', )
     ordering = ('-timestamp', )
 
+
 class MeetingAdmin(admin.ModelAdmin):
     list_display = ('name', 'dateandtime', )
     filter_horizontal = ('members', )
+
 
 admin.site.register(Member, MemberAdmin)
 admin.site.register(MemberLog, MemberLogAdmin)

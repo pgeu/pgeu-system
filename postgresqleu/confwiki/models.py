@@ -7,6 +7,7 @@ from postgresqleu.confreg.models import RegistrationType
 
 from postgresqleu.util.diffablemodel import DiffableModel
 
+
 class Wikipage(models.Model, DiffableModel):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     url = models.CharField(max_length=100, null=False, blank=False, validators=[
@@ -36,6 +37,7 @@ class Wikipage(models.Model, DiffableModel):
     editor_attendee = models.ManyToManyField(ConferenceRegistration, blank=True, related_name='editor_attendees', verbose_name="Editor attendees")
 
     _unsafe_attributes = ('viewer_regtype', 'editor_regtype', 'viewer_attendee', 'editor_attendee')
+
     class Meta:
         unique_together = [
             ('conference', 'url', )
@@ -68,6 +70,7 @@ class Wikipage(models.Model, DiffableModel):
     def editor_attendees(self):
         return ", ".join([r.fullname for r in self.editor_attendee.all()])
 
+
 # When a page is edited, the old version is copied over to the history. A page that has
 # never been edited has no history entry. Permission changes are not tracked.
 class WikipageHistory(models.Model):
@@ -83,6 +86,7 @@ class WikipageHistory(models.Model):
         unique_together = (
             ('page', 'publishedat',)
         )
+
 
 # Subscribers to changes of wikipages
 class WikipageSubscriber(models.Model):
@@ -100,6 +104,7 @@ def validate_options(value):
         if len(v) > 100:
             raise ValidationError("Options must be less than 100 characters each")
 
+
 def validate_optionvalues(value):
     if value == '':
         return
@@ -110,6 +115,7 @@ def validate_optionvalues(value):
             raise ValidationError("All option values must be numbers!")
         if int(v) < 0:
             raise ValidationError("All option values must be positive numbers!")
+
 
 # Signups - attendees can sign up for events
 class Signup(models.Model):
@@ -142,6 +148,7 @@ class Signup(models.Model):
             # No options, so there must be no optionvalues
             if self.optionvalues:
                 raise ValidationError({"optionvalues": "Cannot specify optionvalues if options are not specified!"})
+
 
 class AttendeeSignup(models.Model):
     signup = models.ForeignKey(Signup, null=False, blank=False, on_delete=models.CASCADE)

@@ -14,6 +14,7 @@ from postgresqleu.accounting.util import create_accounting_entry
 
 from models import TransactionInfo, ErrorLog, SourceAccount
 
+
 @transaction.atomic
 def paypal_return_handler(request):
     tx = 'UNKNOWN'

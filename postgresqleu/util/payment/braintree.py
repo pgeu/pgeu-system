@@ -3,6 +3,7 @@ import re
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.braintreepayment.models import BraintreeTransaction
 
+
 class Braintree(object):
     description = """
 Using this payment method, you can pay using your credit card, including
@@ -17,6 +18,7 @@ Mastercard, VISA and American Express.
             return "/invoices/braintree/{0}/".format(invoiceid)
 
     _re_braintree = re.compile('^Braintree id ([a-z0-9]+)$')
+
     def _find_invoice_transaction(self, invoice):
         m = self._re_braintree.match(invoice.paymentdetails)
         if m:

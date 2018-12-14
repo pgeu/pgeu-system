@@ -15,8 +15,10 @@ from postgresqleu.mailqueue.util import send_simple_mail
 from models import BraintreeTransaction, BraintreeLog
 from util import initialize_braintree
 
+
 class BraintreeProcessingException(Exception):
     pass
+
 
 def payment_post(request):
     nonce = request.POST['payment_method_nonce']
@@ -67,7 +69,6 @@ def payment_post(request):
             return render(request, 'braintreepayment/processing_error.html', {
                 'contact': settings.INVOICE_SENDER_EMAIL,
             })
-
 
         with transaction.atomic():
             # Flag the invoice as paid
@@ -128,6 +129,7 @@ def payment_post(request):
             'url': returnurl,
         })
 
+
 def _invoice_payment(request, invoice):
     initialize_braintree()
     token = braintree.ClientToken.generate({})
@@ -137,6 +139,7 @@ def _invoice_payment(request, invoice):
         'token': token,
     })
 
+
 @login_required
 def invoicepayment(request, invoiceid):
     invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True)
@@ -144,6 +147,7 @@ def invoicepayment(request, invoiceid):
         return HttpResponseForbidden("Access denied")
 
     return _invoice_payment(request, invoice)
+
 
 def invoicepayment_secret(request, invoiceid, secret):
     invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True, recipient_secret=secret)

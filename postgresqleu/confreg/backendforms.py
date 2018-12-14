@@ -30,9 +30,11 @@ from postgresqleu.confreg.models import valid_status_transitions, get_status_str
 
 from backendlookups import GeneralAccountLookup, RegisteredUsersLookup, SpeakerLookup
 
+
 class _NewFormDataField(django.forms.Field):
     required = True
     widget = django.forms.HiddenInput
+
 
 class BackendForm(ConcurrentProtectedModelForm):
     selectize_multiple_fields = None
@@ -69,7 +71,6 @@ class BackendForm(ConcurrentProtectedModelForm):
             self.fields['_newformdata'].initial = self.newformdata
         else:
             del self.fields['_newformdata']
-
 
         self.fix_fields()
         self.fix_selectize_fields(**kwargs)
@@ -160,13 +161,21 @@ class BackendForm(ConcurrentProtectedModelForm):
     def validator_field(self):
         return self['_validator']
 
-
     def get(self, name, default=None):
         # Implement the get operator, for template functions to get a field
         return self[name]
 
+
 class BackendConferenceForm(BackendForm):
     helplink = 'configuring#conferenceform'
+    markdown_fields = ['promotext', ]
+    selectize_multiple_fields = {
+        'testers': GeneralAccountLookup(),
+        'talkvoters': GeneralAccountLookup(),
+        'staff': GeneralAccountLookup(),
+        'volunteers': RegisteredUsersLookup(None),
+    }
+
     class Meta:
         model = Conference
         fields = ['active', 'callforpapersopen', 'callforsponsorsopen', 'feedbackopen',
@@ -178,13 +187,6 @@ class BackendConferenceForm(BackendForm):
                   'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'askphotoconsent',
                   'skill_levels', 'additionalintro', 'callforpapersintro', 'sendwelcomemail', 'welcomemail',
                   'invoice_autocancel_hours', 'attendees_before_waitlist']
-    markdown_fields = ['promotext', ]
-    selectize_multiple_fields = {
-        'testers': GeneralAccountLookup(),
-        'talkvoters': GeneralAccountLookup(),
-        'staff': GeneralAccountLookup(),
-        'volunteers': RegisteredUsersLookup(None),
-    }
 
     def fix_fields(self):
         self.selectize_multiple_fields['volunteers'] = RegisteredUsersLookup(self.conference)
@@ -200,18 +202,20 @@ class BackendConferenceForm(BackendForm):
         {'id': 'legacy', 'legend': 'Legacy', 'fields': ['schedulewidth', 'pixelsperminute']},
     ]
 
+
 class BackendSuperConferenceForm(BackendForm):
     helplink = 'super_conference#conferenceform'
-    class Meta:
-        model = Conference
-        fields = ['conferencename', 'urlname', 'series', 'startdate', 'enddate', 'location',
-                  'timediff', 'contactaddr', 'sponsoraddr', 'confurl', 'administrators',
-                  'jinjadir', 'accounting_object', 'vat_registrations', 'vat_sponsorship', ]
     selectize_multiple_fields = {
         'administrators': GeneralAccountLookup(),
     }
     accounting_object = django.forms.ChoiceField(choices=[], required=False)
     exclude_date_validators = ['startdate', 'enddate']
+
+    class Meta:
+        model = Conference
+        fields = ['conferencename', 'urlname', 'series', 'startdate', 'enddate', 'location',
+                  'timediff', 'contactaddr', 'sponsoraddr', 'confurl', 'administrators',
+                  'jinjadir', 'accounting_object', 'vat_registrations', 'vat_sponsorship', ]
 
     def fix_fields(self):
         self.fields['accounting_object'].choices = [('', '----'), ] + [(o.name, o.name) for o in postgresqleu.accounting.models.Object.objects.filter(active=True)]
@@ -232,29 +236,34 @@ class BackendConferenceSeriesForm(BackendForm):
     selectize_multiple_fields = {
         'administrators': GeneralAccountLookup(),
     }
+
     class Meta:
         model = ConferenceSeries
         fields = ['name', 'sortkey', 'visible', 'administrators', 'intro', ]
 
+
 class BackendTshirtSizeForm(BackendForm):
     helplink = "meta"
     list_fields = ['shirtsize', 'sortkey', ]
+
     class Meta:
         model = ShirtSize
         fields = ['shirtsize', 'sortkey', ]
 
+
 class BackendRegistrationForm(BackendForm):
     helplink = "registrations"
-    class Meta:
-        model = ConferenceRegistration
-        fields = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone',
-                  'shirtsize', 'dietary', 'twittername', 'nick', 'shareemail',
-                  'regtype', 'additionaloptions']
     fieldsets = [
         {'id': 'personal_info', 'legend': 'Personal information', 'fields': ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'twittername', 'nick']},
         {'id': 'reg_info', 'legend': 'Registration information', 'fields': ['regtype', 'additionaloptions', 'shareemail']},
         {'id': 'attendee_specifics', 'legend': 'Attendee specifics', 'fields': ['shirtsize', 'dietary']},
     ]
+
+    class Meta:
+        model = ConferenceRegistration
+        fields = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone',
+                  'shirtsize', 'dietary', 'twittername', 'nick', 'shareemail',
+                  'regtype', 'additionaloptions']
 
     def fix_fields(self):
         if self.instance.payconfirmedat:
@@ -270,10 +279,12 @@ class BackendRegistrationForm(BackendForm):
             self.remove_field('shareemail')
         self.update_protected_fields()
 
+
 class BackendRegistrationClassForm(BackendForm):
     helplink = 'registrations#regclasses'
     list_fields = ['regclass', 'badgecolor', 'badgeforegroundcolor']
     allow_copy_previous = True
+
     class Meta:
         model = RegistrationClass
         fields = ['regclass', 'badgecolor', 'badgeforegroundcolor']
@@ -290,6 +301,7 @@ class BackendRegistrationClassForm(BackendForm):
                                   regclass=source.regclass,
                                   badgecolor=source.badgecolor,
                                   badgeforegroundcolor=source.badgeforegroundcolor).save()
+
 
 class BackendRegistrationTypeForm(BackendForm):
     helplink = 'registrations#regtypes'
@@ -362,12 +374,15 @@ class BackendRegistrationTypeForm(BackendForm):
                     yield 'Could not find registration class {0} for registration type {1}'.format(
                         source.regclass.regclass, source.regtype)
 
+
 class BackendRegistrationDayForm(BackendForm):
     helplink = 'registrations#days'
     list_fields = ['day', ]
+
     class Meta:
         model = RegistrationDay
         fields = ['day', ]
+
 
 class BackendAdditionalOptionForm(BackendForm):
     helplink = 'registrations#additionaloptions'
@@ -375,29 +390,32 @@ class BackendAdditionalOptionForm(BackendForm):
     vat_fields = {'cost': 'reg'}
     auto_cascade_delete_to = ['registrationtype_requires_option', 'conferenceadditionaloption_requires_regtype',
                               'conferenceadditionaloption_mutually_exclusive', ]
+    coltypes = {
+        'Maxcount': ['nosearch', ],
+    }
+
     class Meta:
         model = ConferenceAdditionalOption
         fields = ['name', 'cost', 'maxcount', 'public', 'upsellable', 'invoice_autocancel_hours',
                   'requires_regtype', 'mutually_exclusive']
-    coltypes = {
-        'Maxcount': ['nosearch', ],
-    }
 
     def fix_fields(self):
         self.fields['requires_regtype'].queryset = RegistrationType.objects.filter(conference=self.conference)
         self.fields['mutually_exclusive'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference).exclude(pk=self.instance.pk)
 
+
 class BackendTrackForm(BackendForm):
     helplink = 'schedule#tracks'
     list_fields = ['trackname', 'sortkey']
     allow_copy_previous = True
-    class Meta:
-        model = Track
-        fields = ['trackname', 'sortkey', 'color', 'incfp']
     coltypes = {
         'Sortkey': ['nosearch', ],
     }
     defaultsort = [[1, 'asc']]
+
+    class Meta:
+        model = Track
+        fields = ['trackname', 'sortkey', 'color', 'incfp']
 
     @classmethod
     def copy_from_conference(self, targetconf, sourceconf, idlist):
@@ -414,16 +432,19 @@ class BackendTrackForm(BackendForm):
                       incfp=source.incfp,
                 ).save()
 
+
 class BackendRoomForm(BackendForm):
     helplink = 'schedule#rooms'
     list_fields = ['roomname', 'sortkey']
-    class Meta:
-        model = Room
-        fields = ['roomname', 'sortkey']
     coltypes = {
         'Sortkey': ['nosearch', ],
     }
     defaultsort = [[1, 'asc']]
+
+    class Meta:
+        model = Room
+        fields = ['roomname', 'sortkey']
+
 
 class BackendTransformConferenceDateTimeForm(django.forms.Form):
     timeshift = django.forms.DurationField(required=True, help_text="Shift all times by this much")
@@ -548,6 +569,7 @@ class BackendConferenceSessionForm(BackendForm):
             return "no scheduled sessions picked, so no transformation will happen"
         return None
 
+
 class BackendConferenceSessionSlotForm(BackendForm):
     helplink = 'schedule#slots'
     list_fields = ['starttime', 'endtime', ]
@@ -625,6 +647,7 @@ class BackendVolunteerSlotForm(BackendForm):
             s.timerange.lower + xform, s.timerange.upper + xform,
         )
 
+
 class BackendFeedbackQuestionForm(BackendForm):
     helplink = 'feedback#conference'
     list_fields = ['newfieldset', 'question', 'sortkey', ]
@@ -671,6 +694,7 @@ class BackendNewDiscountCodeForm(django.forms.Form):
     def get_newform_data(self):
         return self.cleaned_data['codetype']
 
+
 class DiscountCodeUserManager(object):
     title = 'Users'
     singular = 'user'
@@ -688,6 +712,7 @@ class DiscountCodeUserManager(object):
             return ConferenceRegistration.objects.get(discountcode=blah, pk=subjid)
         except ConferenceRegistration.DoesNotExist:
             return None
+
 
 class BackendDiscountCodeForm(BackendForm):
     helplink = 'vouchers#discountcodes'
@@ -796,6 +821,7 @@ class TwitterForm(ConcurrentProtectedModelForm):
     class Meta:
         model = Conference
         fields = ['twittersync_active', 'twitterreminders_active']
+
 
 class TwitterTestForm(django.forms.Form):
     recipient = django.forms.CharField(max_length=64)

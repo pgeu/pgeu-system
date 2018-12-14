@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 class NewsPosterProfile(models.Model):
     author = models.OneToOneField(User, primary_key=True)
     urlname = models.CharField(max_length=50, null=False, blank=False, unique=True)

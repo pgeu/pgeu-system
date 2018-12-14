@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class BraintreeTransaction(models.Model):
     transid = models.CharField(max_length=100, null=False, blank=False, unique=True)
     authorizedat = models.DateTimeField(null=False, blank=False)
@@ -12,6 +13,7 @@ class BraintreeTransaction(models.Model):
 
     def __unicode__(self):
         return self.transid
+
 
 class BraintreeLog(models.Model):
     timestamp = models.DateTimeField(null=False, blank=False, auto_now_add=True)

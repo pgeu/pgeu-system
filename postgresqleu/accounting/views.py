@@ -15,6 +15,7 @@ from models import JournalEntry, JournalItem, JournalUrl, Year, Object
 from models import IncomingBalance, Account
 from forms import JournalEntryForm, JournalItemForm, JournalItemFormset, JournalUrlForm
 
+
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
 def index(request):
@@ -29,6 +30,7 @@ def _setup_search(request, term):
         if request.session.has_key('searchterm'):
             del request.session['searchterm']
 
+
 def _perform_search(request, year):
     if request.session.has_key('searchterm'):
         searchterm = request.session['searchterm']
@@ -38,6 +40,7 @@ def _perform_search(request, year):
                     .distinct().order_by('closed', '-date', '-id')))
 
     return ('', list(JournalEntry.objects.filter(year=year).order_by('closed', '-date', '-id')))
+
 
 class EntryPaginator(Paginator):
     ENTRIES_PER_PAGE = 50
@@ -58,6 +61,7 @@ class EntryPaginator(Paginator):
         else:
             return self.page_range
 
+
 @login_required
 @transaction.atomic
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
@@ -66,7 +70,6 @@ def year(request, year):
     if request.GET.has_key('search'):
         _setup_search(request, request.GET['search'])
         return HttpResponseRedirect('/accounting/%s/' % year.year)
-
 
     (searchterm, entries) = _perform_search(request, year)
 
@@ -83,6 +86,7 @@ def year(request, year):
         'years': Year.objects.all(),
         'searchterm': searchterm,
         })
+
 
 @login_required
 @transaction.atomic
@@ -110,6 +114,7 @@ def new(request, year):
     _setup_search(request, '')
 
     return HttpResponseRedirect('/accounting/e/%s/' % entry.pk)
+
 
 @login_required
 @transaction.atomic
@@ -178,6 +183,7 @@ def entry(request, entryid):
         'searchterm': searchterm,
         })
 
+
 def _get_balance_query(objstr='', includeopen=False):
     q = """WITH currentyear AS (
  SELECT account_id AS accountnum, sum(amount) FILTER (WHERE je.closed) as closedamount, sum(amount) FILTER (WHERE NOT je.closed) as openamount FROM accounting_journalitem ji INNER JOIN accounting_journalentry je ON ji.journal_id=je.id WHERE je.year_id=%(year)s AND je.date <= %(enddate)s """ + objstr + """ GROUP BY account_id
@@ -192,8 +198,10 @@ SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
 
     def _get_sumcol(sourcecol, partition):
         return "sum(%s*case when balancenegative then -1 else 1 end) over (partition by %s)" % (sourcecol, partition)
+
     def _get_negcol(sourcecol):
         return "%s*case when balancenegative then -1 else 1 end" % sourcecol
+
     def _get_totalcol(sourcecol):
         return "sum(%s) over ()" % sourcecol
 
@@ -219,6 +227,7 @@ SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
  ORDER BY anum
         """
     return q
+
 
 def _collate_results(query, queryparam, numvalues):
     results = []
@@ -276,6 +285,7 @@ def _collate_results(query, queryparam, numvalues):
         results.append([lastac, currentac, lastacvals])
 
     return (results, totalresult)
+
 
 @login_required
 @transaction.atomic
@@ -356,6 +366,7 @@ SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
         'yearresult': yearresult,
         'accounts': Account.objects.filter(group__accountclass__inbalance=True),
     })
+
 
 @login_required
 @transaction.atomic

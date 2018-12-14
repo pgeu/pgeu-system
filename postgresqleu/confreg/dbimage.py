@@ -5,6 +5,7 @@ from django.core.files.storage import Storage
 from django.core.files import File
 from django.utils.deconstruct import deconstructible
 
+
 @deconstructible
 class SpeakerImageStorage(Storage):
     def __init__(self):
@@ -57,10 +58,10 @@ class SpeakerImageStorage(Storage):
 from django.forms.widgets import Widget
 from django.utils.safestring import mark_safe
 
+
 class InlinePhotoWidget(Widget):
     def render(self, name, value, attrs=None):
         return mark_safe(u'<img src="data:image/png;base64,%s"/>' % value)
 
     def value_from_datadict(self, data, files, name):
         return self.original_value
-

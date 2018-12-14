@@ -15,6 +15,7 @@ from postgresqleu.trustlypayment.util import Trustly
 from postgresqleu.accounting.util import get_latest_account_balance
 from postgresqleu.mailqueue.util import send_simple_mail
 
+
 class Command(BaseCommand):
     help = 'Compare trustly balance to the accounting system'
 

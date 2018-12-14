@@ -25,6 +25,7 @@ import markdown
 from datetime import datetime, date, time
 import dateutil.parser
 
+
 #
 # Some useful filters. We include them inline in this file to make it
 # standalone useful.
@@ -35,6 +36,7 @@ def filter_groupby_sort(objects, keyfield, sortkey):
     group = [(key, list(group)) for key, group in groupby(objects, lambda x: getattr(x, keyfield))]
     return sorted(group, key=lambda y: y[0] and getattr(y[0], sortkey) or None)
 
+
 # Shuffle the order in a list, for example to randomize the order of sponsors
 def filter_shuffle(l):
     try:
@@ -44,6 +46,7 @@ def filter_shuffle(l):
     except:
         return l
 
+
 # Format a datetime. If it's a datetime, call strftime. If it's a
 # string, assume it's iso format and convert it to a date first.
 def filter_datetimeformat(value, fmt):
@@ -51,6 +54,7 @@ def filter_datetimeformat(value, fmt):
         return value.strftime(fmt)
     else:
         return dateutil.parser.parse(value).strftime(fmt)
+
 
 # Slugify a text
 def filter_slugify(value):
@@ -60,6 +64,7 @@ def filter_slugify(value):
     value = re.sub(r'[^\w\s-]', '', value).strip().lower()
     return re.sub(r'[-\s]+', '-', value)
 
+
 global_filters = {
     'groupby_sort': filter_groupby_sort,
     'shuffle': filter_shuffle,
@@ -67,7 +72,6 @@ global_filters = {
     'datetimeformat': filter_datetimeformat,
     'markdown': lambda t: jinja2.Markup(markdown.markdown(t)),
 }
-
 
 
 # Wrap operations on a generic directory
@@ -99,6 +103,7 @@ class SourceWrapper(object):
                 return f.read()
         else:
             return None
+
 
 # Wrap operations on a tarfile
 class TarWrapper(object):
@@ -157,12 +162,14 @@ class JinjaTarLoader(jinja2.BaseLoader):
             return (self.tarwrapper.readfile(t).decode('utf8'), None, None)
         raise jinja2.TemplateNotFound(template)
 
+
 # Optionally load a JSON context
 def load_context(jsondata):
     if jsondata:
         return json.loads(jsondata)
     else:
         return {}
+
 
 # Locate which git revision we're on
 def find_git_revision(path):
@@ -185,6 +192,7 @@ def find_git_revision(path):
         path = os.path.dirname(path)
     return None
 
+
 # Actual deployment function
 def deploy_template(env, template, destfile, context):
     t = env.get_template(template)
@@ -198,6 +206,7 @@ def deploy_template(env, template, destfile, context):
 
     with open(destfile, 'w') as f:
         f.write(s)
+
 
 def _deploy_static(source, destpath):
     knownfiles = []
@@ -233,6 +242,7 @@ def remove_unknown(knownfiles, destpath):
                 # Remove directory recursively, since there can be nothing left
                 # in it.
                 shutil.rmtree(os.path.join(destpath, d))
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Deploy jinja based static site')
@@ -278,7 +288,6 @@ if __name__ == "__main__":
             print "'{0}' subdirectory does not exist in source!".format(d)
             sys.exit(1)
 
-
     if args.templates:
         # Just deploy templates. They are simply copied over, for use by backend
         # system.
@@ -319,7 +328,6 @@ if __name__ == "__main__":
 
     # Load a context that can override everything, including static hashes
     context.update(load_context(source.readfile('templates/context.override.json')))
-
 
     knownfiles = []
     knownfiles = _deploy_static(source, args.destpath)

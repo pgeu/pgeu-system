@@ -13,6 +13,8 @@ from backendviews import get_authenticated_conference
 reTitle = re.compile('<h1>([^<]+)</h1>')
 
 _reSvgInline = re.compile('<img alt="([^"]+)" src="([^"]+)\.svg" />')
+
+
 def _replaceSvgInline(m):
     # Group 1 = alt text
     # Group 2 = filename excluding svg
@@ -22,6 +24,7 @@ def _replaceSvgInline(m):
 
     with codecs.open(filename, 'r', 'utf8') as f:
         return f.read()
+
 
 def docspage(request, urlname, page):
     if urlname:

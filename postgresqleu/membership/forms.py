@@ -4,6 +4,7 @@ from django.conf import settings
 
 from models import Member
 
+
 class MemberForm(forms.ModelForm):
     class Meta:
         model = Member
@@ -19,6 +20,7 @@ class MemberForm(forms.ModelForm):
             if isinstance(msg, str):
                 raise ValidationError(msg)
         return self.cleaned_data['country']
+
 
 class ProxyVoterForm(forms.Form):
     name = forms.CharField(min_length=5, max_length=100, help_text="Name of proxy voter. Leave empty to cancel proxy voting.", required=False)

@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from postgresqleu.mailqueue.util import send_template_mail
 from postgresqleu.membership.models import Member, MemberLog
 
+
 class Command(BaseCommand):
     help = 'Expire members and other nightly tasks'
 
@@ -39,7 +40,6 @@ class Command(BaseCommand):
             m.membersince = None
             m.paiduntil = None
             m.save()
-
 
         # Send warnings to members about to expire. We explicitly avoid sending
         # a warning in the last 24 hours before expire, so we don't end up sending

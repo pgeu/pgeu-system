@@ -16,6 +16,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 import qrencode
 import cStringIO as StringIO
 
+
 class PDFBase(object):
     def __init__(self, recipient, invoicenum, imagedir, currency):
         self.pdfdata = StringIO.StringIO()
@@ -118,12 +119,11 @@ class PDFInvoice(PDFBase):
             # Never include bank info on receipts
             self.bankinfo = False
 
-
     def addrow(self, title, cost, count, vatrate):
         self.rows.append((title, cost, count, vatrate, vatrate and vatrate.vatpercent or 0))
 
-
     ROWS_PER_PAGE = 14
+
     def save(self):
         # We can fit ROWS_PER_PAGE rows on one page. We might want to do something
         # cute to avoid a single row on it's own page in the future, but
@@ -218,7 +218,6 @@ class PDFInvoice(PDFBase):
             else:
                 self.canvas.drawCentredString(10.5*cm, 17.3*cm-h, "This invoice is due: %s" % self.duedate.strftime("%B %d, %Y"))
 
-
             if islastpage:
                 if not self.receipt:
                     t = self.canvas.beginText()
@@ -275,7 +274,6 @@ BIC: CMCIFR2A
         self.canvas.save()
 
         return self.pdfdata
-
 
 
 class PDFRefund(PDFBase):

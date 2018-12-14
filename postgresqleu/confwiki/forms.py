@@ -7,10 +7,12 @@ from postgresqleu.util.forms import ConcurrentProtectedModelForm
 from postgresqleu.confreg.models import RegistrationType, ConferenceRegistration
 from models import Wikipage, Signup, AttendeeSignup
 
+
 class WikipageEditForm(ConcurrentProtectedModelForm):
     class Meta:
         model = Wikipage
         fields = ('contents',)
+
 
 class WikipageAdminEditForm(ConcurrentProtectedModelForm):
     def __init__(self, *args, **kwargs):
@@ -73,6 +75,7 @@ class SignupSubmitForm(forms.Form):
 
         return self.cleaned_data['choice']
 
+
 class SignupAdminEditForm(ConcurrentProtectedModelForm):
     def __init__(self, *args, **kwargs):
         super(SignupAdminEditForm, self).__init__(*args, **kwargs)
@@ -86,8 +89,10 @@ class SignupAdminEditForm(ConcurrentProtectedModelForm):
         model = Signup
         exclude = ['conference', ]
 
+
 class SignupAdminEditSignupForm(ConcurrentProtectedModelForm):
     choice = forms.ChoiceField(required=True)
+
     class Meta:
         model = AttendeeSignup
         fields = ['attendee', 'choice', ]
@@ -111,6 +116,7 @@ class SignupAdminEditSignupForm(ConcurrentProtectedModelForm):
             # This one is boolean only
             self.fields['choice'].choices = (('', ''), ('yes', 'Yes'), ('', 'No'), )
             self.fields['choice'].required = False
+
 
 class SignupSendmailForm(forms.Form):
     _recipient_choices = [

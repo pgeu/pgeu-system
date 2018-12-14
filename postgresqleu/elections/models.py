@@ -1,6 +1,7 @@
 from django.db import models
 from postgresqleu.membership.models import Member
 
+
 class Election(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)
     startdate = models.DateField(null=False, blank=False)
@@ -12,6 +13,7 @@ class Election(models.Model):
     def __unicode__(self):
         return self.name
 
+
 class Candidate(models.Model):
     election = models.ForeignKey(Election, null=False, blank=False, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, null=False, blank=False)
@@ -20,6 +22,7 @@ class Candidate(models.Model):
 
     def __unicode__(self):
         return "%s (%s)" % (self.name, self.election)
+
 
 class Vote(models.Model):
     election = models.ForeignKey(Election, null=False, blank=False, on_delete=models.CASCADE)

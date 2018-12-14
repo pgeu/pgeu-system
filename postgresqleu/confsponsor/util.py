@@ -1,5 +1,6 @@
 from postgresqleu.util.db import exec_to_list
 
+
 def get_sponsor_dashboard_data(conference):
     return (
         ["Level", "Confirmed", "Unconfirmed"],

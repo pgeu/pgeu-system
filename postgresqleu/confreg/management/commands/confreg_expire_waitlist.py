@@ -14,6 +14,7 @@ from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 
 from postgresqleu.confreg.models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
 
+
 class Command(BaseCommand):
     help = 'Expire conference waitlist offers'
 

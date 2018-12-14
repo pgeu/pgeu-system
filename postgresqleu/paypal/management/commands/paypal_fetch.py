@@ -18,6 +18,7 @@ from decimal import Decimal
 from postgresqleu.paypal.models import TransactionInfo
 from postgresqleu.paypal.util import PaypalAPI
 
+
 class PaypalBaseTransaction(object):
     def __init__(self, apistruct):
         self.message = None
@@ -83,6 +84,7 @@ class PaypalTransaction(PaypalBaseTransaction):
         except Exception, e:
             self.message = "Unable to parse: %s" % e
 
+
 class PaypalRefund(PaypalTransaction):
     def fetch_details(self, api):
         super(PaypalRefund, self).fetch_details(api)
@@ -90,6 +92,7 @@ class PaypalRefund(PaypalTransaction):
             self.transinfo.transtext = "Refund of %s" % self.transinfo.transtext
         else:
             self.transinfo.transtext = "Refund of unknown transaction"
+
 
 class PaypalTransfer(PaypalBaseTransaction):
     def __init__(self, apistruct):
@@ -105,6 +108,7 @@ class PaypalTransfer(PaypalBaseTransaction):
     def fetch_details(self, api):
         # We cannot fetch more details, but we also don't need more details..
         pass
+
 
 class Command(BaseCommand):
     help = 'Fetch updated list of transactions from paypal'

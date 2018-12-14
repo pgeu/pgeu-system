@@ -13,6 +13,7 @@ from django.conf import settings
 from postgresqleu.paypal.models import ErrorLog, TransactionInfo
 from postgresqleu.mailqueue.util import send_simple_mail
 
+
 class Command(BaseCommand):
     help = 'Send paypal report emails'
 

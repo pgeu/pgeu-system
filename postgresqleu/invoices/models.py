@@ -10,6 +10,7 @@ from payment import PaymentMethodWrapper
 
 from postgresqleu.accounting.models import Account
 
+
 class InvoiceProcessor(models.Model):
     # The processor name is purely cosmetic
     processorname = models.CharField(max_length=50, null=False, blank=False, unique=True)
@@ -19,6 +20,7 @@ class InvoiceProcessor(models.Model):
 
     def __unicode__(self):
         return self.processorname
+
 
 class InvoicePaymentMethod(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)
@@ -35,6 +37,7 @@ class InvoicePaymentMethod(models.Model):
 
     class Meta:
         ordering = ['sortkey', ]
+
 
 class InvoiceRefund(models.Model):
     reason = models.CharField(max_length=500, null=False, blank=True, default='', help_text="Reason for refunding of invoice")
@@ -54,6 +57,7 @@ class InvoiceRefund(models.Model):
     @property
     def fullamount(self):
         return self.amount + self.vatamount
+
 
 class Invoice(models.Model):
     # pk = invoice number, which is fully exposed.
@@ -198,6 +202,7 @@ class VatRate(models.Model):
     def shortstr(self):
         return "%s%% (%s)" % (self.vatpercent, self.shortname)
 
+
 class InvoiceRow(models.Model):
     # Invoice rows are only used up until the invoice is finished,
     # but allows us to save a half-finished invoice.
@@ -225,6 +230,7 @@ class InvoiceRow(models.Model):
     def totalwithvat(self):
         return self.totalrow + self.totalvat
 
+
 class InvoiceHistory(models.Model):
     invoice = models.ForeignKey(Invoice, null=False, on_delete=models.CASCADE)
     time = models.DateTimeField(null=False, blank=False, auto_now_add=True)
@@ -235,6 +241,7 @@ class InvoiceHistory(models.Model):
 
     def __unicode__(self):
         return self.txt
+
 
 class InvoiceLog(models.Model):
     timestamp = models.DateTimeField(null=False, blank=False, auto_now_add=True)

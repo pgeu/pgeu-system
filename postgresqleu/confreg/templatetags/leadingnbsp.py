@@ -6,6 +6,7 @@ register = template.Library()
 
 re_leadingspace = re.compile('^ +')
 
+
 @register.filter
 def leadingnbsp(value):
     if value.startswith(' '):

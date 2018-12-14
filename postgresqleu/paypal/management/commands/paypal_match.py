@@ -21,6 +21,7 @@ from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.accounting.util import create_accounting_entry
 from postgresqleu.paypal.models import TransactionInfo, ErrorLog
 
+
 class Command(BaseCommand):
     help = 'Match pending paypal payments'
 

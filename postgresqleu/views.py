@@ -11,6 +11,7 @@ from postgresqleu.util.db import exec_to_dict
 import datetime
 import markdown
 
+
 # Handle the frontpage
 def index(request):
     events = Conference.objects.filter(promoactive=True, enddate__gte=datetime.datetime.today()).order_by('startdate')
@@ -50,6 +51,7 @@ ORDER BY priosort DESC, datetime DESC LIMIT 5""")
         'news': news,
     })
 
+
 # Handle the events frontpage
 def eventsindex(request):
     events = list(Conference.objects.filter(promoactive=True, enddate__gte=datetime.datetime.today()).order_by('startdate'))
@@ -67,6 +69,7 @@ def eventsindex(request):
         'cfsopen': [e for e in events if e.callforsponsorsopen],
     })
 
+
 # Handle past events list
 def pastevents(request):
     events = list(Conference.objects.filter(promoactive=True, enddate__gte=datetime.datetime.today()).order_by('startdate'))
@@ -81,6 +84,7 @@ def pastevents(request):
         'series': series,
     })
 
+
 # Handle event series listing
 def eventseries(request, id):
     series = get_object_or_404(ConferenceSeries, pk=id)
@@ -91,6 +95,7 @@ def eventseries(request, id):
         'upcoming': [e for e in events if e.enddate >= datetime.datetime.today().date()],
         'past': [e for e in events if e.enddate < datetime.datetime.today().date()],
     })
+
 
 # Handle a users list of previous events
 @login_required
@@ -105,6 +110,7 @@ def attendee_events(request):
         'events': events,
         'series': series,
     })
+
 
 # Handle CSRF failures
 def csrf_failure(request, reason=''):

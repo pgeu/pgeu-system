@@ -4,12 +4,14 @@ from models import Member, MemberLog
 
 from datetime import datetime, timedelta, date
 
+
 class InvoiceProcessor(object):
     can_refund = False
     # Process invoices once they're getting paid
     #
     # In the case of membership, that simply means extending the
     # membership.
+
     def process_invoice_payment(self, invoice):
         # We'll get the member from the processorid
         try:

@@ -5,6 +5,7 @@ from django.urls import reverse
 from models import RawNotification, Notification
 from models import Report, TransactionStatus, AdyenLog, Refund
 
+
 class RawNotificationAdmin(admin.ModelAdmin):
     list_display = ('dat', 'confirmed',)
     readonly_fields = ('notification_link', )
@@ -15,6 +16,7 @@ class RawNotificationAdmin(admin.ModelAdmin):
             url = reverse("admin:adyen_notification_change", args=(n.id,))
             return mark_safe('<a href="%s">%s</a>' % (url, n))
     notification_link.short_description = 'Notification'
+
 
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ('receivedat', 'eventDate', 'merchantAccountCode', 'eventCode', 'live', 'success', 'confirmed', 'pspReference', )
@@ -27,8 +29,10 @@ class NotificationAdmin(admin.ModelAdmin):
         return mark_safe('<a href="%s">%s</a>' % (url, obj))
     rawnotification_link.short_description = 'Rawnotification'
 
+
 class ReportAdmin(admin.ModelAdmin):
     list_display = ('receivedat', 'downloadedat', 'processedat', 'url',)
+
 
 class TransactionStatusAdmin(admin.ModelAdmin):
     list_display = ('pspReference', 'amount', 'settledamount', 'authorizedat', 'capturedat', 'settledat', 'method', 'refund')
@@ -50,6 +54,7 @@ class TransactionStatusAdmin(admin.ModelAdmin):
             return "Not refunded"
     refund_link.short_description = 'Refund'
 
+
 class RefundAdmin(admin.ModelAdmin):
     list_display = ('notification', 'receivedat', 'transaction', 'refund_amount')
     readonly_fields = ('notification_link', 'transaction_link', )
@@ -67,6 +72,7 @@ class RefundAdmin(admin.ModelAdmin):
             return mark_safe('<a href="%s">%s</a>' % (url, obj.transaction.pspReference))
     transaction_link.short_description = 'Transaction'
 
+
 class AdyenLogAdmin(admin.ModelAdmin):
     list_display = ('timestamp', 'success', 'sentstr', 'pspReference', 'message', )
 
@@ -77,6 +83,7 @@ class AdyenLogAdmin(admin.ModelAdmin):
     def sentstr(self, obj):
         return obj.sent and 'Yes' or 'No'
     sentstr.short_description = 'Log sent'
+
 
 admin.site.register(RawNotification, RawNotificationAdmin)
 admin.site.register(Notification, NotificationAdmin)

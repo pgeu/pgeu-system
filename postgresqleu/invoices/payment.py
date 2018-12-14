@@ -2,6 +2,7 @@
 # create a circular dependency between models and util.
 from django.utils.safestring import mark_safe
 
+
 class PaymentMethodWrapper(object):
     def __init__(self, method, invoice, returnurl=None):
         self.method = method
@@ -22,7 +23,6 @@ class PaymentMethodWrapper(object):
             self.ok = True
         except Exception:
             self.ok = False
-
 
     @property
     def name(self):

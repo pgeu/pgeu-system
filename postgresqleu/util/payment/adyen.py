@@ -18,8 +18,10 @@ from postgresqleu.invoices.util import diff_workdays
 from postgresqleu.adyen.models import TransactionStatus
 from postgresqleu.adyen.util import AdyenAPI
 
+
 def _escapeVal(val):
     return val.replace('\\', '\\\\').replace(':', '\\:')
+
 
 def calculate_signature(param):
     param = OrderedDict(sorted(param.items(), key=lambda t: t[0]))
@@ -31,6 +33,7 @@ def calculate_signature(param):
                   hashlib.sha256)
     return base64.b64encode(hm.digest())
 
+
 def _gzip_string(str):
     # Compress a string using gzip including header data
     s = StringIO.StringIO()
@@ -38,6 +41,7 @@ def _gzip_string(str):
     g.write(str)
     g.close()
     return s.getvalue()
+
 
 class _AdyenBase(object):
     ADYEN_COMMON = {
@@ -69,6 +73,7 @@ class _AdyenBase(object):
             )
 
     _re_adyen = re.compile('^Adyen id ([A-Z0-9]+)$')
+
     def _find_invoice_transaction(self, invoice):
         m = self._re_adyen.match(invoice.paymentdetails)
         if m:
@@ -104,6 +109,7 @@ class _AdyenBase(object):
         # up as an exception.
         return True
 
+
 class AdyenCreditcard(_AdyenBase):
     description = """
 Pay using your credit card, including Mastercard, VISA and American Express.
@@ -119,6 +125,7 @@ Pay using your credit card, including Mastercard, VISA and American Express.
         if not trans:
             raise Exception(reason)
         return "Credit Card ({0})".format(trans.method)
+
 
 class AdyenBanktransfer(_AdyenBase):
     description = """

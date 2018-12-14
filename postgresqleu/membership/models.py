@@ -6,6 +6,7 @@ from postgresqleu.invoices.models import Invoice
 
 from datetime import date, datetime, timedelta
 
+
 class Member(models.Model):
     user = models.OneToOneField(User, null=False, blank=False, primary_key=True, on_delete=models.CASCADE)
     fullname = models.CharField(max_length=500, null=False, blank=False,
@@ -42,6 +43,7 @@ class Member(models.Model):
     def __unicode__(self):
         return "%s (%s)" % (self.fullname, self.user.username)
 
+
 class MemberLog(models.Model):
     member = models.ForeignKey(Member, null=False, blank=False, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(null=False)
@@ -49,6 +51,7 @@ class MemberLog(models.Model):
 
     def __unicode__(self):
         return "%s: %s" % (self.timestamp, self.message)
+
 
 class Meeting(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)

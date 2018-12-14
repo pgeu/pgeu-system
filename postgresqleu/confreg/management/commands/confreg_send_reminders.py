@@ -16,6 +16,7 @@ from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 from postgresqleu.confreg.models import Conference, Speaker, ConferenceSession
 from postgresqleu.confreg.models import ConferenceRegistration
 
+
 class Command(BaseCommand):
     help = 'Send confreg reminders'
 
@@ -96,7 +97,6 @@ class Command(BaseCommand):
 
             whatstr.write("\n\n")
 
-
     def remind_unregistered_speakers(self, whatstr, conference):
         # Get speakers that are approved but not registered
         speakers = list(Speaker.objects.raw("SELECT s.* FROM confreg_speaker s WHERE EXISTS (SELECT 1 FROM confreg_conferencesession sess INNER JOIN confreg_conferencesession_speaker css ON css.conferencesession_id=sess.id WHERE sess.conference_id=%s AND css.speaker_id=s.id AND sess.status=1 AND sess.lastnotifiedtime<%s) AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%s AND r.attendee_id=s.user_id AND r.payconfirmedat IS NOT NULL)",
@@ -128,7 +128,6 @@ class Command(BaseCommand):
                 whatstr.write(u"Reminded speaker {0} to register\n".format(speaker))
 
             whatstr.write("\n\n")
-
 
     def remind_pending_registrations(self, whatstr, conference):
         # Get registrations made which have no invoice, no bulk registration,
@@ -211,7 +210,6 @@ class Command(BaseCommand):
             for reg in regs:
                 reg.lastmodified = datetime.now()
                 reg.save()
-
 
     def remind_empty_submissions(self, whatstr, conference):
         # Get all sessions with empty abstract (they forgot to hit save), if they have not been touched in

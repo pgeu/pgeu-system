@@ -5,6 +5,7 @@ import datetime
 
 from postgresqleu.newsevents.models import News
 
+
 def newsitem(request, itemid):
     item = get_object_or_404(News.objects.select_related('author'),
                              pk=itemid, datetime__lte=datetime.datetime.today())
@@ -14,6 +15,7 @@ def newsitem(request, itemid):
         'item': item,
         'news': news,
     })
+
 
 def newsarchive(request):
     news = News.objects.filter(datetime__lte=datetime.datetime.today(), inarchive=True)[:10]

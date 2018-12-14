@@ -5,6 +5,7 @@ from django.core.files import File
 from django.db import connection
 from django.utils.deconstruct import deconstructible
 
+
 @deconstructible
 class InlineEncodedStorage(Storage):
     def __init__(self, key):
@@ -55,8 +56,10 @@ class InlineEncodedStorage(Storage):
     def path(self):
         return None
 
+
 def inlineencoded_upload_path(instance, filename):
     return "%s" % instance.id
+
 
 def delete_inline_storage(sender, **kwargs):
     kwargs['instance'].delete_inline_storage()

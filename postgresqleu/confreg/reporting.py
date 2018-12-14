@@ -6,8 +6,10 @@ from django.db import connection
 
 from postgresqleu.confreg.models import ConferenceSeries
 
+
 class ReportException(Exception):
     pass
+
 
 class Header(object):
     def __init__(self, hdr):
@@ -15,6 +17,7 @@ class Header(object):
 
     def __unicode__(self):
         return self.hdr
+
 
 @login_required
 def timereport(request):
@@ -61,6 +64,7 @@ def timereport(request):
 # Dynamically built list of all available report types
 reporttypes = []
 
+
 # ##########################################################3
 # Base classes for reports
 # ##########################################################3
@@ -94,6 +98,7 @@ class MultiConferenceReport(object):
         self.graphdata = zip(*allvals)
         self.maxpred = maxpred
 
+
 class SingleConferenceReport(object):
     def __init__(self, title, conferences):
         self.title = title
@@ -122,7 +127,6 @@ class SingleConferenceReport(object):
         self.graphdata = zip(*allvals)
 
 
-
 # ##########################################################3
 # Actually report classes
 # ##########################################################3
@@ -141,7 +145,10 @@ class ConfirmedRegistrationsReport(MultiConferenceReport):
             'max': max,
         })
         return self.curs.fetchall()
+
+
 reporttypes.append(('Confirmed registrations', ConfirmedRegistrationsReport))
+
 
 class SubmittedSessionsReport(MultiConferenceReport):
     def __init__(self, title, conferences):
@@ -158,7 +165,10 @@ class SubmittedSessionsReport(MultiConferenceReport):
             'max': max,
         })
         return self.curs.fetchall()
+
+
 reporttypes.append(('Submitted sessions', SubmittedSessionsReport))
+
 
 class SubmittingSpeakersReport(MultiConferenceReport):
     def __init__(self, title, conferences):
@@ -175,7 +185,10 @@ class SubmittingSpeakersReport(MultiConferenceReport):
             'max': max,
         })
         return self.curs.fetchall()
+
+
 reporttypes.append(('Submitting speakers', SubmittingSpeakersReport))
+
 
 class RegistrationTypesReport(SingleConferenceReport):
     def fetch_all_data(self, min, max, startdate):
@@ -191,7 +204,10 @@ class RegistrationTypesReport(SingleConferenceReport):
                 'startdate': startdate,
             })
             yield (regtype, self.curs.fetchall())
+
+
 reporttypes.append(('Registration types', RegistrationTypesReport))
+
 
 class CountryReport(SingleConferenceReport):
     def fetch_all_data(self, min, max, startdate):
@@ -207,7 +223,10 @@ class CountryReport(SingleConferenceReport):
                 'startdate': startdate,
             })
             yield (countryid, self.curs.fetchall())
+
+
 reporttypes.append(('Countries', CountryReport))
+
 
 class AdditionalOptionsReport(SingleConferenceReport):
     def fetch_all_data(self, min, max, startdate):
@@ -223,4 +242,6 @@ class AdditionalOptionsReport(SingleConferenceReport):
                 'startdate': startdate,
             })
             yield (optionname, self.curs.fetchall())
+
+
 reporttypes.append(('Additional options', AdditionalOptionsReport))

@@ -6,6 +6,7 @@ from StringIO import StringIO
 import requests
 from PIL import Image
 
+
 def validate_lowercase(value):
     if value != value.lower():
         raise ValidationError("This field must be lowercase only")
@@ -18,6 +19,7 @@ class BeforeValidator(object):
     def __call__(self, value):
         if value >= self.beforedate:
             raise ValidationError("Ensure this date is before {0}".format(self.beforedate))
+
 
 class AfterValidator(object):
     def __init__(self, afterdate):

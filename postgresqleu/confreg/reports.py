@@ -41,6 +41,7 @@ attendee_report_fields = [
 
 _attendee_report_field_map = dict([(a, (b, c, d)) for a, b, c, d in attendee_report_fields])
 
+
 class ReportFilter(object):
     def __init__(self, id, name, queryset=None, querysetcol=None, emptyasnull=True):
         self.id = id
@@ -107,6 +108,7 @@ class ReportFilter(object):
         else:
             return '<input type="text" class="adv_filter_box" name="adv_%s_filter"><br/>' % self.id
 
+
 # Filter by speaker state is more complex than the default filter can handle,
 # so it needs a special implementation.
 class ReportSpeakerFilter(object):
@@ -129,7 +131,6 @@ class ReportSpeakerFilter(object):
     def _widgetstring(self):
         field = forms.MultipleChoiceField(choices=STATUS_CHOICES)
         return "<blockquote class=\"adv_filter_wrap\">%s</blockquote><br/>" % (field.widget.render("adv_speakerstate", None), )
-
 
 
 def attendee_report_filters(conference):
@@ -162,6 +163,7 @@ class ReportWriterBase(object):
     def add_row(self, row):
         self.rows.append(row)
 
+
 class ReportWriterHtml(ReportWriterBase):
     def render(self):
         resp = HttpResponse()
@@ -174,6 +176,7 @@ class ReportWriterHtml(ReportWriterBase):
 
         return resp
 
+
 class ReportWriterCsv(ReportWriterBase):
     def render(self):
         resp = HttpResponse(content_type='text/plain; charset=utf-8')
@@ -182,6 +185,7 @@ class ReportWriterCsv(ReportWriterBase):
             c.writerow([x.encode('utf-8') for x in r])
 
         return resp
+
 
 class ReportWriterPdf(ReportWriterBase):
     def set_orientation(self, orientation):
@@ -215,6 +219,7 @@ class ReportWriterPdf(ReportWriterBase):
         doc.build(story)
 
         return resp
+
 
 def build_attendee_report(conference, POST):
     title = POST['title']

@@ -18,30 +18,36 @@ from models import Invoice, InvoiceRow, InvoiceHistory, InvoicePaymentMethod, Va
 from forms import InvoiceForm, InvoiceRowForm, RefundForm
 from util import InvoiceWrapper, InvoiceManager, InvoicePresentationWrapper
 
+
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def all(request):
     return _homeview(request, Invoice.objects.all())
+
 
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def unpaid(request):
     return _homeview(request, Invoice.objects.filter(paidat=None, deleted=False, finalized=True), unpaid=True)
 
+
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def pending(request):
     return _homeview(request, Invoice.objects.filter(finalized=False, deleted=False), pending=True)
+
 
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def deleted(request):
     return _homeview(request, Invoice.objects.filter(deleted=True), deleted=True)
 
+
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def refunded(request):
     return _homeview(request, Invoice.objects.filter(refund__isnull=False), refunded=True)
+
 
 # Not a view, just a utility function, thus no separate permissions check
 def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=False, refunded=False, searchterm=None):
@@ -99,6 +105,7 @@ def search(request):
 
     messages.info(request, "Showing %s search hits for %s" % (len(invoices), term))
     return _homeview(request, invoices, searchterm=term)
+
 
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
@@ -182,6 +189,7 @@ def oneinvoice(request, invoicenum):
         'vatrates': VatRate.objects.all(),
     })
 
+
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @transaction.atomic
@@ -197,8 +205,10 @@ def flaginvoice(request, invoicenum):
     # whatever submodule generated the invoice.
     mgr = InvoiceManager()
     str = StringIO.StringIO()
+
     def payment_logger(msg):
         str.write(msg)
+
     (r, i, p) = mgr.process_incoming_payment(invoice.invoicestr,
                                              invoice.total_amount,
                                              request.POST['reason'],
@@ -214,6 +224,7 @@ def flaginvoice(request, invoicenum):
     # The invoice manager will have flagged the invoice properly as well,
     # so we can just return the user right back
     return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
+
 
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
@@ -233,6 +244,7 @@ def cancelinvoice(request, invoicenum):
 
     return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
+
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @transaction.atomic
@@ -245,6 +257,7 @@ def extend_cancel(request, invoicenum):
     InvoiceHistory(invoice=invoice, txt='Extended autocancel by 5 days to {0}'.format(invoice.canceltime)).save()
 
     return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
+
 
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
@@ -282,6 +295,7 @@ def refundinvoice(request, invoicenum):
         'globalvat': vinfo['v'],
         })
 
+
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def previewinvoice(request, invoicenum):
@@ -292,6 +306,7 @@ def previewinvoice(request, invoicenum):
     r = HttpResponse(content_type='application/pdf')
     r.write(wrapper.render_pdf_invoice(True))
     return r
+
 
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
@@ -339,12 +354,14 @@ def viewinvoice(request, invoiceid):
         'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/" % (settings.SITEBASE, invoice.pk)),
     })
 
+
 def viewinvoice_secret(request, invoiceid, invoicesecret):
     invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True, recipient_secret=invoicesecret)
     return render(request, 'invoices/userinvoice.html', {
         'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/%s/" % (settings.SITEBASE, invoice.pk, invoice.recipient_secret)),
         'fromsecret': True,
     })
+
 
 @login_required
 def viewinvoicepdf(request, invoiceid):
@@ -356,11 +373,13 @@ def viewinvoicepdf(request, invoiceid):
     r.write(base64.b64decode(invoice.pdf_invoice))
     return r
 
+
 def viewinvoicepdf_secret(request, invoiceid, invoicesecret):
     invoice = get_object_or_404(Invoice, pk=invoiceid, recipient_secret=invoicesecret)
     r = HttpResponse(content_type='application/pdf')
     r.write(base64.b64decode(invoice.pdf_invoice))
     return r
+
 
 @login_required
 def viewreceipt(request, invoiceid):
@@ -372,11 +391,13 @@ def viewreceipt(request, invoiceid):
     r.write(base64.b64decode(invoice.pdf_receipt))
     return r
 
+
 def viewreceipt_secret(request, invoiceid, invoicesecret):
     invoice = get_object_or_404(Invoice, pk=invoiceid, recipient_secret=invoicesecret)
     r = HttpResponse(content_type='application/pdf')
     r.write(base64.b64decode(invoice.pdf_receipt))
     return r
+
 
 @login_required
 def viewrefundnote(request, invoiceid):
@@ -388,11 +409,13 @@ def viewrefundnote(request, invoiceid):
     r.write(base64.b64decode(invoice.refund.refund_pdf))
     return r
 
+
 def viewrefundnote_secret(request, invoiceid, invoicesecret):
     invoice = get_object_or_404(Invoice, pk=invoiceid, recipient_secret=invoicesecret)
     r = HttpResponse(content_type='application/pdf')
     r.write(base64.b64decode(invoice.refund.refund_pdf))
     return r
+
 
 @login_required
 def userhome(request):
@@ -400,6 +423,7 @@ def userhome(request):
     return render(request, 'invoices/userhome.html', {
         'invoices': invoices,
     })
+
 
 @login_required
 def banktransfer(request):
@@ -411,6 +435,7 @@ def banktransfer(request):
         param['returnurl'] = request.GET['ret']
 
     return render(request, 'invoices/banktransfer.html', param)
+
 
 @login_required
 @transaction.atomic

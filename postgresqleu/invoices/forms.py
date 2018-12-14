@@ -14,6 +14,7 @@ from models import Invoice, InvoiceRow, InvoicePaymentMethod
 from postgresqleu.accounting.models import Account, Object
 from postgresqleu.invoices.models import VatRate
 
+
 class InvoiceForm(forms.ModelForm):
     hidden_until_finalized = ('total_amount', 'total_vat', 'remindersent', )
     available_in_finalized = ('recipient_user', 'recipient_email', 'allowedmethods',)
@@ -70,6 +71,7 @@ class InvoiceForm(forms.ModelForm):
             self.cleaned_data['accounting_account'] = None
         return self.cleaned_data
 
+
 class InvoiceRowForm(forms.ModelForm):
     class Meta:
         model = InvoiceRow
@@ -86,10 +88,12 @@ class InvoiceRowForm(forms.ModelForm):
         if self.cleaned_data['rowamount'] == 0:
             raise ValidationError("Must specify an amount!")
         return self.cleaned_data['rowamount']
+
     def clean_rowcount(self):
         if self.cleaned_data['rowcount'] <= 0:
             raise ValidationError("Must specify a count!")
         return self.cleaned_data['rowcount']
+
 
 class RefundForm(forms.Form):
     amount = forms.DecimalField(required=True)

@@ -16,6 +16,7 @@ from postgresqleu.confreg.models import Conference, ConferenceNews, ConferenceTw
 
 from postgresqleu.util.messaging.twitter import Twitter
 
+
 class Command(BaseCommand):
     help = 'Post to twitter'
 
@@ -48,7 +49,6 @@ class Command(BaseCommand):
 
                 # Don't post more often than once / 10 seconds, to not trigger flooding.
                 time.sleep(10)
-
 
         # Find which conferences to tweet from. We will only put out one tweet for each
         # conference, expecting to be called again in 5 minutes or so to put out the
@@ -84,4 +84,3 @@ class Command(BaseCommand):
                     continue
                 else:
                     print("Failed to post to twitter: %s" % msg)
-

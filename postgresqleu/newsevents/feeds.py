@@ -10,6 +10,7 @@ import datetime
 
 from postgresqleu.util.db import exec_to_dict
 
+
 class LatestNews(Feed):
     title = "News - %s" % settings.ORG_NAME
     link = "/"

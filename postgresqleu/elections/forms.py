@@ -7,6 +7,7 @@ from postgresqleu.membership.models import MemberLog
 
 from datetime import datetime
 
+
 class VoteForm(forms.Form):
     def __init__(self, election, member, *args, **kwargs):
         super(VoteForm, self).__init__(*args, **kwargs)

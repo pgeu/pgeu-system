@@ -33,6 +33,7 @@ class WikipageAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModel
         except Conference.DoesNotExist:
             pass
 
+
 class WikipageHistoryInline(admin.TabularInline):
     model = WikipageHistory
     readonly_fields = ['author', 'publishedat']
@@ -41,6 +42,7 @@ class WikipageHistoryInline(admin.TabularInline):
     max_num = 0
     extra = 0
 
+
 class WikipageSubscriberInline(admin.TabularInline):
     model = WikipageSubscriber
     readonly_fields = ['subscriber', ]
@@ -48,9 +50,11 @@ class WikipageSubscriberInline(admin.TabularInline):
     max_num = 0
     extra = 0
 
+
 class WikipageAdmin(admin.ModelAdmin):
     form = WikipageAdminForm
     inlines = [WikipageHistoryInline, WikipageSubscriberInline]
+
 
 class AttendeeSignupAdminForm(ConcurrentProtectedModelForm):
     class Meta:
@@ -65,10 +69,12 @@ class AttendeeSignupAdminForm(ConcurrentProtectedModelForm):
         except:
             pass
 
+
 class AttendeeSignupAdmin(admin.ModelAdmin):
     form = AttendeeSignupAdminForm
     list_display = ['signup', 'attendee', ]
     list_filter = ['signup__conference', ]
+
 
 admin.site.register(Wikipage, WikipageAdmin)
 admin.site.register(AttendeeSignup, AttendeeSignupAdmin)

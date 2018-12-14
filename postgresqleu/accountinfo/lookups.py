@@ -23,4 +23,5 @@ class UserLookup(ModelLookup):
         # Display for choice listings
         return u"%s (%s <%s>)" % (item.username, item.get_full_name(), item.email)
 
+
 registry.register(UserLookup)

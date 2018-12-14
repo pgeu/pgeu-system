@@ -7,9 +7,11 @@ import cPickle
 import base64
 from itertools import groupby
 
+
 class _ValidatorField(forms.Field):
     required = True
     widget = forms.HiddenInput
+
 
 class ConcurrentProtectedModelForm(forms.ModelForm):
     _validator = _ValidatorField()
@@ -21,6 +23,7 @@ class ConcurrentProtectedModelForm(forms.ModelForm):
 
     def update_protected_fields(self):
         self.fields['_validator'].initial = Signer().sign(base64.urlsafe_b64encode(cPickle.dumps(self._filter_initial(), -1)))
+
     def __init__(self, *args, **kwargs):
         r = super(ConcurrentProtectedModelForm, self).__init__(*args, **kwargs)
         self.update_protected_fields()
@@ -71,6 +74,7 @@ class GroupedIterator(forms.models.ModelChoiceIterator):
             yield (group,
                    [self.choice(c) for c in choices])
 
+
 class Grouped(object):
     def __init__(self, groupfield, queryset, *args, **kwargs):
         self.orderby = queryset.query.order_by
@@ -79,6 +83,7 @@ class Grouped(object):
 
     def _get_choices(self):
         return GroupedIterator(self)
+
 
 class GroupedModelMultipleChoiceField(Grouped, forms.ModelMultipleChoiceField):
     choices = property(Grouped._get_choices, forms.ModelMultipleChoiceField._set_choices)

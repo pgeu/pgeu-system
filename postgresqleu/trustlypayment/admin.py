@@ -4,8 +4,10 @@ from django.urls import reverse
 
 from models import TrustlyTransaction, TrustlyRawNotification, TrustlyNotification, TrustlyLog
 
+
 class TrustlyTransactionAdmin(admin.ModelAdmin):
     list_display = ('orderid', 'invoiceid', 'amount', 'createdat', 'pendingat', 'completedat',)
+
 
 class TrustlyRawNotificationAdmin(admin.ModelAdmin):
     list_display = ('dat', 'confirmed')
@@ -18,6 +20,7 @@ class TrustlyRawNotificationAdmin(admin.ModelAdmin):
             return mark_safe('<a href="{0}">{1}</a>'.format(url, n))
     notification_link.short_description = 'Notification'
 
+
 class TrustlyNotificationAdmin(admin.ModelAdmin):
     list_display = ('receivedat', 'notificationid', 'orderid', 'method', 'amount', 'confirmed')
     readonly_fields = ('rawnotification_link',)
@@ -27,6 +30,7 @@ class TrustlyNotificationAdmin(admin.ModelAdmin):
         url = reverse('admin:trustlypayment_trustlyrawnotification_change', args=(obj.rawnotification.id, ))
         return mark_safe('<a href="{0}">{1}</a>'.format(url, obj))
     rawnotification_link.short_description = 'Rawnotification'
+
 
 class TrustlyLogAdmin(admin.ModelAdmin):
     list_display = ('timestamp', 'success', 'sentstr', 'message', )
@@ -38,6 +42,7 @@ class TrustlyLogAdmin(admin.ModelAdmin):
     def sentstr(self, obj):
         return obj.sent and 'Yes' or 'No'
     sentstr.short_description = 'Log sent'
+
 
 admin.site.register(TrustlyTransaction, TrustlyTransactionAdmin)
 admin.site.register(TrustlyRawNotification, TrustlyRawNotificationAdmin)

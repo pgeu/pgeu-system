@@ -1,5 +1,6 @@
 import requests
 
+
 def validate_eu_vat_number(number):
     country = number[:2]
     number = number[2:]

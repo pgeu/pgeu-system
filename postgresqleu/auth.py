@@ -35,6 +35,7 @@ from Crypto.Hash import SHA
 from Crypto import Random
 import time
 
+
 class AuthBackend(ModelBackend):
     # We declare a fake backend that always fails direct authentication -
     # since we should never be using direct authentication in the first place!
@@ -67,12 +68,14 @@ def login(request):
     else:
         return HttpResponseRedirect(settings.PGAUTH_REDIRECT)
 
+
 # Handle logout requests by logging out of this site and then
 # redirecting to log out from the main site as well.
 def logout(request):
     if request.user.is_authenticated():
         django_logout(request)
     return HttpResponseRedirect("%slogout/" % settings.PGAUTH_REDIRECT)
+
 
 # Receive an authentication response from the main website and try
 # to log the user in.
@@ -203,6 +206,7 @@ def user_search(searchterm=None, userid=None):
     j = json.loads(s)
 
     return j
+
 
 # Import a user into the local authentication system. Will initially
 # make a search for it, and if anything other than one entry is returned

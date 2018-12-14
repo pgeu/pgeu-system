@@ -17,6 +17,7 @@ from Crypto import Random
 from postgresqleu.mailqueue.util import send_template_mail
 from postgresqleu.accounting.util import create_accounting_entry
 
+
 # Proxy around an invoice that adds presentation information,
 # such as the ability to render a return URL for the invoice.
 # It also blocks access to unsafe variables that could be used
@@ -26,9 +27,11 @@ class InvoicePresentationWrapper(object):
         proxy = True
 
     _unsafe_attributes = ('recipient_user', 'processor', 'allowedmethods', 'paidusing', )
+
     def __init__(self, invoice, returnurl):
         self.__invoice = invoice
         self.__returnurl = returnurl
+
     def __getattr__(self, name):
         # Most attributes are perfectly safe to return, but there are a couple that needs "sandboxing"
         if name in self._unsafe_attributes:
@@ -247,6 +250,7 @@ class InvoiceWrapper(object):
 def _standard_logger(message):
     print message
 
+
 def _trunc_string(s, l):
     # Truncate a string to specified length, adding "..." at the end in case
     # it's truncated.
@@ -254,6 +258,7 @@ def _trunc_string(s, l):
         return s
 
     return s[:97] + "..."
+
 
 class InvoiceManager(object):
     def __init__(self):
@@ -266,6 +271,7 @@ class InvoiceManager(object):
     RESULT_DELETED = 4
     RESULT_INVALIDAMOUNT = 5
     RESULT_PROCESSORFAIL = 6
+
     def process_incoming_payment(self, transtext, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls=None, logger=None, method=None):
         # If there is no logger specified, just log with print statement
         if not logger:
@@ -306,7 +312,6 @@ class InvoiceManager(object):
             return (self.RESULT_NOTFOUND, None, None)
 
         return self.process_incoming_payment_for_invoice(invoice, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls, logger, method)
-
 
     def process_incoming_payment_for_invoice(self, invoice, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls, logger, method):
         # Do the same as process_incoming_payment, but assume that the
@@ -641,8 +646,10 @@ class InvoiceManager(object):
 class TestProcessor(object):
     def process_invoice_payment(self, invoice):
         print "Callback processing invoice with title '%s', for my own id %s" % (invoice.title, invoice.processorid)
+
     def process_invoice_cancellation(self, invoice):
         raise Exception("This processor can't cancel invoices.")
+
     def process_invoice_refund(self, invoice):
         raise Exception("This processor can't refund invoices.")
 

@@ -9,6 +9,7 @@ from models import Conference, ConferenceRegistration, Speaker
 import datetime
 import json
 
+
 class LookupBase(object):
     def __init__(self, conference=None):
         self.conference = conference
@@ -35,6 +36,7 @@ class LookupBase(object):
             'values': vals,
         }), content_type='application/json')
 
+
 class GeneralAccountLookup(LookupBase):
     @property
     def url(self):
@@ -43,7 +45,6 @@ class GeneralAccountLookup(LookupBase):
     @property
     def label_from_instance(self):
         return lambda x: u'{0} {1} ({2})'.format(x.first_name, x.last_name, x.username)
-
 
     @classmethod
     def get_values(self, query):

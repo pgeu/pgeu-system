@@ -7,11 +7,13 @@ from backendviews import get_authenticated_conference
 
 from collections import OrderedDict
 
+
 def build_graphdata(question, key, options):
     optionhash = OrderedDict(zip(options, [0] * len(options)))
     for answer in ConferenceFeedbackAnswer.objects.filter(conference=question.conference, question=question).order_by(key).values(key).annotate(Count(key)):
         optionhash[answer[key]] = answer['%s__count' % key]
     return optionhash.iteritems()
+
 
 def build_feedback_response(question):
     r = {'question': question.question, 'id': question.id, }
@@ -27,6 +29,7 @@ def build_feedback_response(question):
         # Numeric choices from 1-5
         r['graphdata'] = build_graphdata(question, 'rateanswer', range(0, 6))
     return r
+
 
 def feedback_report(request, confname):
     conference = get_authenticated_conference(request, confname)
@@ -61,6 +64,7 @@ def build_toplists(what, query):
         cursor.execute(query.replace('{{key}}', k))
         tl['list'] = cursor.fetchall()
         yield tl
+
 
 def feedback_sessions(request, confname):
     conference = get_authenticated_conference(request, confname)

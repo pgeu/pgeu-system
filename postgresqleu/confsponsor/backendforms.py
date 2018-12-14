@@ -16,24 +16,25 @@ from benefitclasses import all_benefits
 
 import json
 
+
 class BackendSponsorForm(BackendForm):
     helplink = 'sponsors#sponsor'
-    class Meta:
-        model = Sponsor
-        fields = ['name', 'displayname', 'url', 'twittername',
-                  'invoiceaddr', 'vatstatus', 'vatnumber',
-                  'managers', ]
     fieldsets = [
         {'id': 'base_info', 'legend': 'Basic information', 'fields': ['name', 'displayname', 'url', 'twittername']},
         {'id': 'financial', 'legend': 'Financial information', 'fields': ['invoiceaddr', 'vatstatus', 'vatnumber']},
         {'id': 'management', 'legend': 'Management', 'fields': ['managers']},
     ]
-
     selectize_multiple_fields = {
         'managers': GeneralAccountLookup(),
     }
 
     auto_cascade_delete_to = ['sponsor_managers', ]
+
+    class Meta:
+        model = Sponsor
+        fields = ['name', 'displayname', 'url', 'twittername',
+                  'invoiceaddr', 'vatstatus', 'vatnumber',
+                  'managers', ]
 
 
 class BackendSponsorshipLevelBenefitForm(BackendForm):
@@ -103,6 +104,7 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
             'map': {k: v['class'].default_params for k, v in all_benefits.items()}
         }])
 
+
 class BackendSponsorshipLevelBenefitManager(object):
     title = 'Benefits'
     singular = 'benefit'
@@ -123,6 +125,7 @@ class BackendSponsorshipLevelBenefitManager(object):
     def get_instancemaker(self, masterobj):
         return lambda: SponsorshipBenefit(level=masterobj, class_parameters={})
 
+
 class BackendSponsorshipLevelForm(BackendForm):
     helplink = 'sponsors#level'
     list_fields = ['levelname', 'levelcost', 'available', ]
@@ -140,7 +143,6 @@ class BackendSponsorshipLevelForm(BackendForm):
     def fix_fields(self):
         self.fields['contract'].queryset = SponsorshipContract.objects.filter(conference=self.conference)
         self.fields['paymentmethods'].label_from_instance = lambda x: x.internaldescription
-
 
     @classmethod
     def copy_from_conference(self, targetconf, sourceconf, idlist):
@@ -165,10 +167,12 @@ class BackendSponsorshipLevelForm(BackendForm):
                 b.level = newlevel
                 b.save()
 
+
 class BackendSponsorshipContractForm(BackendForm):
     helplink = 'sponsors#contract'
     list_fields = ['contractname', ]
     file_fields = ['contractpdf', ]
+
     class Meta:
         model = SponsorshipContract
         fields = ['contractname', 'contractpdf', ]

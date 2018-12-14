@@ -4,6 +4,7 @@ from django.conf import settings
 
 import base64
 
+
 class FilterPersistMiddleware(object):
     def process_request(self, request):
 
@@ -45,7 +46,6 @@ class FilterPersistMiddleware(object):
             return None
 
 
-
 class GlobalLoginMiddleware(object):
     def process_view(self, request, callback, callback_args, callback_kwargs):
         if not settings.GLOBAL_LOGIN_USER or not settings.GLOBAL_LOGIN_PASSWORD:
@@ -71,10 +71,12 @@ class GlobalLoginMiddleware(object):
         response['WWW-Authenticate'] = 'Basic realm={0}'.format(settings.SITEBASE)
         return response
 
+
 # Ability to redirect using raise()
 class RedirectException(Exception):
     def __init__(self, url):
         self.url = url
+
 
 class RedirectMiddleware(object):
     def process_exception(self, request, exception):

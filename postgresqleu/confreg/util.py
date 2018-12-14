@@ -7,8 +7,10 @@ from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 from models import PrepaidVoucher, DiscountCode, RegistrationWaitlistHistory
 from models import ConferenceRegistration
 
+
 class InvoicerowsException(Exception):
     pass
+
 
 def invoicerows_for_registration(reg, update_used_vouchers):
     # Return the rows that would be used to build an invoice for this
@@ -188,7 +190,6 @@ def cancel_registration(reg, is_unconfirmed=False):
     # complete their registration in the future, and that will be
     # confusing.
     reg.delete()
-
 
 
 def get_invoice_autocancel(*args):

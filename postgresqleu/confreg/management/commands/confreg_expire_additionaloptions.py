@@ -16,6 +16,7 @@ from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.confreg.util import expire_additional_options
 from postgresqleu.confreg.models import ConferenceRegistration
 
+
 class Command(BaseCommand):
     help = 'Expire additional options on pending registrations'
 

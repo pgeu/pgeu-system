@@ -29,4 +29,3 @@ class Command(BaseCommand):
 
             process_raw_adyen_notification(rawnotification, POST)
             self.stdout.write("Completed reprocessing raw notification {0}".format(rawnotification.id))
-
