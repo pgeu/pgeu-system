@@ -4,6 +4,8 @@ from django.db import connection
 from django.core.files.storage import Storage
 from django.core.files import File
 from django.utils.deconstruct import deconstructible
+from django.forms.widgets import Widget
+from django.utils.safestring import mark_safe
 
 
 @deconstructible
@@ -53,10 +55,6 @@ class SpeakerImageStorage(Storage):
 
     def path(self):
         return None
-
-
-from django.forms.widgets import Widget
-from django.utils.safestring import mark_safe
 
 
 class InlinePhotoWidget(Widget):

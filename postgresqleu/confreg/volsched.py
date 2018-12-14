@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.db import transaction
 from django.db.models import Count, Sum, F, Func
+from django.conf.urls import url
 
 from datetime import datetime
 
@@ -154,8 +155,6 @@ def ical(request, urlname, token):
         'now': datetime.utcnow(),
     }, content_type='text/calendar')
 
-
-from django.conf.urls import url
 
 urlpatterns = [
     url(r'^$', volunteerschedule),
