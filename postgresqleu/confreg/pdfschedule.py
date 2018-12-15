@@ -21,8 +21,8 @@ from reportlab.lib.styles import getSampleStyleSheet
 
 from postgresqleu.util.reporttools import cm, mm
 
-from models import Room, Track, RegistrationDay, ConferenceSession
-from backendviews import get_authenticated_conference
+from postgresqleu.confreg.models import Room, Track, RegistrationDay, ConferenceSession
+from postgresqleu.confreg.util import get_authenticated_conference
 
 
 def _get_pagesize(size, orient):

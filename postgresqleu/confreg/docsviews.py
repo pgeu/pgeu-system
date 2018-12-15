@@ -8,7 +8,7 @@ import re
 import markdown
 
 from models import Conference, ConferenceSeries
-from backendviews import get_authenticated_conference
+from postgresqleu.confreg.util import get_authenticated_conference
 
 reTitle = re.compile('<h1>([^<]+)</h1>')
 

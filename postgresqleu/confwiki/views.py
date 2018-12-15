@@ -15,7 +15,7 @@ from postgresqleu.mailqueue.util import send_simple_mail
 
 from postgresqleu.confreg.models import Conference, ConferenceRegistration
 from postgresqleu.confreg.views import render_conference_response
-from postgresqleu.confreg.backendviews import get_authenticated_conference
+from postgresqleu.confreg.util import get_authenticated_conference
 
 from postgresqleu.util.db import exec_to_scalar, exec_to_list
 

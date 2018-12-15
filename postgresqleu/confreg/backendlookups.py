@@ -3,8 +3,8 @@ from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User
 from django.db.models import Q
 
-import backendviews
-from models import Conference, ConferenceRegistration, Speaker
+from postgresqleu.confreg.util import get_authenticated_conference
+from postgresqleu.confreg.models import Conference, ConferenceRegistration, Speaker
 
 import datetime
 import json

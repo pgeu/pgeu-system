@@ -3,7 +3,7 @@ from django.db.models import Count
 from django.db import connection
 
 from models import ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
-from backendviews import get_authenticated_conference
+from postgresqleu.confreg.util import get_authenticated_conference
 
 from collections import OrderedDict
 

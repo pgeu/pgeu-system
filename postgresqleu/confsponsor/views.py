@@ -12,7 +12,7 @@ from postgresqleu.auth import user_search, user_import
 
 from postgresqleu.confreg.models import Conference, PrepaidVoucher, DiscountCode
 from postgresqleu.confreg.models import ConferenceTweetQueue
-from postgresqleu.confreg.backendviews import get_authenticated_conference
+from postgresqleu.confreg.util import get_authenticated_conference
 from postgresqleu.confreg.jinjafunc import render_sandboxed_template
 from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 from postgresqleu.util.storage import InlineEncodedStorage

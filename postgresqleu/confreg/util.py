@@ -1,11 +1,12 @@
 from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 
 from datetime import datetime, date, timedelta
 
 from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 
 from models import PrepaidVoucher, DiscountCode, RegistrationWaitlistHistory
-from models import ConferenceRegistration
+from models import ConferenceRegistration, Conference
 
 
 class InvoicerowsException(Exception):
@@ -243,3 +244,22 @@ def expire_additional_options(reg):
         reg.save()
 
     return expired_names
+
+
+def get_authenticated_conference(request, urlname=None, confid=None):
+    if not request.user.is_authenticated:
+        raise RedirectException("{0}?{1}".format(settings.LOGIN_URL, urllib.urlencode({'next': request.build_absolute_uri()})))
+
+    if confid:
+        c = get_object_or_404(Conference, pk=confid)
+    else:
+        c = get_object_or_404(Conference, urlname=urlname)
+
+    if request.user.is_superuser:
+        return c
+    else:
+        if c.administrators.filter(pk=request.user.id).exists():
+            return c
+        if c.series.administrators.filter(pk=request.user.id).exists():
+            return c
+        raise PermissionDenied()

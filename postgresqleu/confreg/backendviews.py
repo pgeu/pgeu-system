@@ -19,6 +19,7 @@ from postgresqleu.util.db import exec_to_list, exec_to_dict, exec_no_result
 from postgresqleu.util.lists import flatten_list
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.messaging.twitter import Twitter, TwitterSetup
+from postgresqleu.confreg.util import get_authenticated_conference
 
 from models import Conference, ConferenceSeries
 from models import AccessToken
@@ -39,25 +40,6 @@ from backendforms import BackendConferenceSeriesForm
 from backendforms import BackendTshirtSizeForm
 from backendforms import BackendNewsForm
 from backendforms import TwitterForm, TwitterTestForm
-
-
-def get_authenticated_conference(request, urlname=None, confid=None):
-    if not request.user.is_authenticated:
-        raise RedirectException("{0}?{1}".format(settings.LOGIN_URL, urllib.urlencode({'next': request.build_absolute_uri()})))
-
-    if confid:
-        c = get_object_or_404(Conference, pk=confid)
-    else:
-        c = get_object_or_404(Conference, urlname=urlname)
-
-    if request.user.is_superuser:
-        return c
-    else:
-        if c.administrators.filter(pk=request.user.id).exists():
-            return c
-        if c.series.administrators.filter(pk=request.user.id).exists():
-            return c
-        raise PermissionDenied()
 
 
 def backend_process_form(request, urlname, formclass, id, cancel_url='../', saved_url='../', allow_new=True, allow_delete=True, breadcrumbs=None, permissions_already_checked=False, conference=None, bypass_conference_filter=False, instancemaker=None, deleted_url=None):
