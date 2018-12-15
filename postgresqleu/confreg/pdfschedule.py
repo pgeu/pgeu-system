@@ -336,25 +336,25 @@ def pdfschedule(request, confname):
     if request.method == "POST":
         form = PdfScheduleForm(conference, data=request.POST)
         if form.is_valid():
-            if form.cleaned_data.has_key('room') and form.cleaned_data['room']:
+            if form.cleaned_data.get('room', None):
                 return build_linear_pdf_schedule(conference,
                                                  form.cleaned_data['room'],
                                                  form.cleaned_data['tracks'],
-                                                 form.cleaned_data.has_key('day') and form.cleaned_data['day'],
-                                                 form.cleaned_data.has_key('colored') and form.cleaned_data['colored'],
-                                                 form.cleaned_data.has_key('pagesize') and form.cleaned_data['pagesize'],
-                                                 form.cleaned_data.has_key('orientation') and form.cleaned_data['orientation'],
-                                                 form.cleaned_data.has_key('titledatefmt') and form.cleaned_data['titledatefmt'],
+                                                 form.cleaned_data.get('day', None),
+                                                 form.cleaned_data.get('colored', None),
+                                                 form.cleaned_data.get('pagesize', None),
+                                                 form.cleaned_data.get('orientation', None),
+                                                 form.cleaned_data.get('titledatefmt', None),
                 )
             else:
                 return build_complete_pdf_schedule(conference,
                                                    form.cleaned_data['tracks'],
-                                                   form.cleaned_data.has_key('day') and form.cleaned_data['day'],
-                                                   form.cleaned_data.has_key('colored') and form.cleaned_data['colored'],
-                                                   form.cleaned_data.has_key('pagesize') and form.cleaned_data['pagesize'],
-                                                   form.cleaned_data.has_key('orientation') and form.cleaned_data['orientation'],
-                                                   form.cleaned_data.has_key('pagesperday') and form.cleaned_data['pagesperday'],
-                                                   form.cleaned_data.has_key('titledatefmt') and form.cleaned_data['titledatefmt'],
+                                                   form.cleaned_data.get('day', None),
+                                                   form.cleaned_data.get('colored', None),
+                                                   form.cleaned_data.get('pagesize', None),
+                                                   form.cleaned_data.get('orientation', None),
+                                                   form.cleaned_data.get('pagesperday', None),
+                                                   form.cleaned_data.get('titledatefmt', None),
                 )
 
         # Fall through and render the form again if it's not valid

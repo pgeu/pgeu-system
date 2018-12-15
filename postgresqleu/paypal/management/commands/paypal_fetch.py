@@ -53,14 +53,14 @@ class PaypalBaseTransaction(object):
         elif r['TRANSACTIONTYPE'][0] == 'sendmoney':
             # This is sending of money, and not receiving. The transaction
             # text (naturally) goes in a completely different field.
-            if r.has_key('NOTE'):
+            if 'NOTE' in r:
                 self.transinfo.transtext = 'Paypal payment: %s' % r['NOTE'][0]
             else:
                 self.transinfo.transtext = 'Paypal payment with empty note'
         else:
-            if r.has_key('SUBJECT'):
+            if 'SUBJECT' in r:
                 self.transinfo.transtext = r['SUBJECT'][0]
-            elif r.has_key('L_NAME0'):
+            elif 'L_NAME0' in r:
                 self.transinfo.transtext = r['L_NAME0'][0]
             else:
                 self.transinfo.transtext = ""
@@ -100,7 +100,7 @@ class PaypalTransfer(PaypalBaseTransaction):
         self.transinfo.transtext = "Transfer from Paypal to bank"
         self.transinfo.fee = 0
         self.transinfo.sender = 'treasurer@postgresql.eu'
-        if apistruct.has_key('CURRENCYCODE') and apistruct['CURRENCYCODE'] != settings.CURRENCY_ISO:
+        if apistruct.get('CURRENCYCODE', None) != settings.CURRENCY_ISO:
             self.message = "Invalid currency %s" % apistruct['CURRENCYCODE']
             self.transinfo.transtext += ' (currency %s, manually adjust amount!)' % apistruct['CURRENCYCODE']
             self.transinfo.amount = -1  # To be on the safe side

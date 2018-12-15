@@ -64,7 +64,7 @@ class JinjaBadge(Flowable):
         return self.height - getmm(o, 'y') - getmm(o, 'height')
 
     def draw_box(self, o):
-        if o.has_key('fill'):
+        if 'fill' in o:
             self.canv.setFillColor(get_color(o['fill']))
             fill = 1
         else:

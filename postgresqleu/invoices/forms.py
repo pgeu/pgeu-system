@@ -58,7 +58,7 @@ class InvoiceForm(forms.ModelForm):
         }
 
     def clean(self):
-        if not self.cleaned_data['recipient_user'] and self.cleaned_data.has_key('recipient_email') and self.cleaned_data['recipient_email']:
+        if not self.cleaned_data['recipient_user'] and self.cleaned_data.get('recipient_email', None):
             # User not specified. If we can find one by email, auto-populate
             # the field.
             matches = User.objects.filter(email=self.cleaned_data['recipient_email'])
@@ -106,7 +106,7 @@ class RefundForm(forms.Form):
         super(RefundForm, self).__init__(*args, **kwargs)
         self.invoice = invoice
 
-        if self.data and self.data.has_key('amount') and self.data.has_key('reason'):
+        if self.data and 'amount' in self.data and 'reason' in self.data:
             if invoice.can_autorefund:
                 self.fields['confirm'].help_text = "Check this box to confirm that you want to generate an <b>automatic</b> refund of this invoice."
             else:
@@ -147,7 +147,7 @@ class RefundForm(forms.Form):
     def clean(self):
         data = super(RefundForm, self).clean()
 
-        if data.has_key('vatamount') and Decimal(data['vatamount']) > 0:
-            if not data.has_key('vatrate') or not data['vatrate']:
+        if 'vatamount' in data and Decimal(data['vatamount']) > 0:
+            if not data.get('vatrate', 0):
                 raise ValidationError({'vatrate': ['When VAT amount is specified, at VAT rate must be selected']})
         return data

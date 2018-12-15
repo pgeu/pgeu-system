@@ -27,12 +27,12 @@ def _setup_search(request, term):
     if term:
         request.session['searchterm'] = term
     else:
-        if request.session.has_key('searchterm'):
+        if 'searchterm' in request.session:
             del request.session['searchterm']
 
 
 def _perform_search(request, year):
-    if request.session.has_key('searchterm'):
+    if 'searchterm' in request.session:
         searchterm = request.session['searchterm']
         return (searchterm,
                 list(
@@ -67,14 +67,14 @@ class EntryPaginator(Paginator):
 @user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
 def year(request, year):
     year = get_object_or_404(Year, year=int(year))
-    if request.GET.has_key('search'):
+    if 'search' in request.GET:
         _setup_search(request, request.GET['search'])
         return HttpResponseRedirect('/accounting/%s/' % year.year)
 
     (searchterm, entries) = _perform_search(request, year)
 
     paginator = EntryPaginator(entries)
-    currpage = request.GET.has_key('p') and int(request.GET['p']) or 1
+    currpage = int(request.GET.get('p', 1))
 
     return render(request, 'accounting/main.html', {
         'entries': paginator.page(currpage),
@@ -122,14 +122,14 @@ def new(request, year):
 def entry(request, entryid):
     entry = get_object_or_404(JournalEntry, pk=entryid)
 
-    if request.GET.has_key('search'):
+    if 'search' in request.GET:
         _setup_search(request, request.GET['search'])
         return HttpResponseRedirect('/accounting/e/%s/' % entryid)
 
     (searchterm, entries) = _perform_search(request, entry.year)
 
     paginator = EntryPaginator(entries)
-    currpage = request.GET.has_key('p') and int(request.GET['p']) or 1
+    currpage = int(request.GET.get('p', 1))
 
     extra = max(2, 6 - entry.journalitem_set.count())
     inlineformset = inlineformset_factory(JournalEntry, JournalItem, JournalItemForm, JournalItemFormset, can_delete=True, extra=extra)
@@ -331,7 +331,7 @@ SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
     yearresult = curs.fetchall()[0][0]
 
     if request.method == 'POST':
-        if not request.POST.has_key('confirm') or not request.POST['confirm']:
+        if not request.POST.get('confirm', None):
             messages.warning(request, "You must check the box for confirming!")
         elif not request.POST['resultaccount']:
             messages.warning(request, "You must pick which account to post the results to!")
@@ -385,7 +385,7 @@ def report(request, year, reporttype):
     else:
         year = get_object_or_404(Year, year=year)
 
-    if request.GET.has_key('obj') and request.GET['obj']:
+    if request.GET.get('obj', None):
         object = get_object_or_404(Object, pk=request.GET['obj'])
         objstr = "AND ji.object_id=%s" % object.id
     else:
@@ -404,13 +404,13 @@ def report(request, year, reporttype):
     if year and year.isopen:
         messages.info(request, "This year is still open!")
 
-    if request.GET.has_key('acc') and request.GET['acc']:
+    if request.GET.get('acc', None):
         account = get_object_or_404(Account, num=request.GET['acc'])
     else:
         account = None
 
     if year:
-        if request.GET.has_key('ed') and request.GET['ed'] and request.GET['ed'] != 'undefined':
+        if request.GET.get('ed', None) and request.GET['ed'] != 'undefined':
             enddate = datetime.strptime(request.GET['ed'], '%Y-%m-%d').date()
             if year and enddate.year != year.year:
                 enddate = date(year.year, 12, 31)
@@ -420,7 +420,7 @@ def report(request, year, reporttype):
         # Yes, this is ugly indeed :)
         enddate = date(9999, 12, 31)
 
-    if request.GET.has_key('io') and request.GET['io'] == '1':
+    if request.GET.get('io', 0) == '1':
         includeopen = True
     else:
         includeopen = False
@@ -447,10 +447,10 @@ def report(request, year, reporttype):
             'enddate': enddate,
             'includeopen': includeopen,
             }
-        if request.GET.has_key('obj') and request.GET['obj']:
+        if request.GET.get('obj', None):
             sql += " AND o.id=%(objectid)s"
             params['objectid'] = int(request.GET['obj'])
-        if request.GET.has_key('acc') and request.GET['acc']:
+        if request.GET.get('acc', None):
             sql += " AND a.num=%(account)s"
             params['account'] = int(request.GET['acc'])
         sql += " WINDOW w1 AS (PARTITION BY a.num) ORDER BY a.num, e.date, e.seq"

@@ -21,7 +21,7 @@ class ImageUploadForm(BaseBenefitForm):
         declined = self.cleaned_data.get('decline', False)
         if not declined:
             if not self.cleaned_data.get('image', None):
-                if not self._errors.has_key('image'):
+                if 'image' not in self._errors:
                     # Unless there is an error already flagged in the clean_image method
                     self._errors['image'] = self.error_class(['This field is required'])
         return self.cleaned_data

@@ -118,13 +118,13 @@ class TarWrapper(object):
             self.tarstruct[m.name] = m
 
     def isdir(self, d):
-        return self.tarstruct.has_key(d) and self.tarstruct[d].isdir()
+        return d in self.tarstruct and self.tarstruct[d].isdir()
 
     def isfile(self, f):
-        return self.tarstruct.has_key(f) and self.tarstruct[f].isfile()
+        return f in self.tarstruct and self.tarstruct[f].isfile()
 
     def readfile(self, src):
-        if self.tarstruct.has_key(src) and self.tarstruct[src].isfile():
+        if src in self.tarstruct and self.tarstruct[src].isfile():
             return self.tarfile.extractfile(src).read()
         else:
             return None

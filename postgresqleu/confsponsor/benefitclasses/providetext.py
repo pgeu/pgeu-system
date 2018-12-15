@@ -13,7 +13,7 @@ class ProvideTextForm(BaseBenefitForm):
         if not declined:
             # If not declined, we will require the text
             if not self.cleaned_data.get('text', None):
-                if not self._errors.has_key('text'):
+                if 'text' not in self._errors:
                     self._errors['text'] = self.error_class(['This field is required'])
         return self.cleaned_data
 

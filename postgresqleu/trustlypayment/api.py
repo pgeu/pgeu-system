@@ -112,7 +112,7 @@ class TrustlyWrapper(object):
             raise TrustlyException("bad http response code {0}".format(u.getcode()))
         u.close()
         r = json.loads(resp)
-        if r.has_key('error'):
+        if 'error' in r:
             # XXX log and raise generic exception!
             raise TrustlyException(r['error']['message'])
         if r['result']['method'] != method:

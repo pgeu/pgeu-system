@@ -639,7 +639,7 @@ def twitter_integration(request, urlname):
                 'helplink': 'integrations#twitter',
             })
         elif request.POST.get('pincode', ''):
-            if not (request.session.has_key('ownerkey') and request.session.has_key('ownersecret')):
+            if not ('ownerkey' in request.session and 'ownersecret' in request.session):
                 messages.error(request, 'Missing data in session, cannot continue')
                 return HttpResponseRedirect('.')
             try:

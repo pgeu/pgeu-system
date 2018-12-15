@@ -198,14 +198,14 @@ class ConferenceRegistrationForm(forms.ModelForm):
         # own, they will not be present in cleaned_data.
         cleaned_data = super(ConferenceRegistrationForm, self).clean()
 
-        if cleaned_data.has_key('vouchercode') and cleaned_data['vouchercode']:
+        if cleaned_data.get('vouchercode', None):
             # We know it's there, and that it exists - but is it for the
             # correct type of registration?
             errs = []
             try:
                 v = PrepaidVoucher.objects.get(vouchervalue=cleaned_data['vouchercode'],
                                                conference=self.instance.conference)
-                if not cleaned_data.has_key('regtype'):
+                if 'regtype' not in cleaned_data:
                     errs.append('Invalid registration type specified')
                     raise ValidationError('An invalid registration type has been selected')
                 if v.batch.regtype != cleaned_data['regtype']:
@@ -223,11 +223,11 @@ class ConferenceRegistrationForm(forms.ModelForm):
             if errs:
                 self._errors['vouchercode'] = ErrorList(errs)
 
-        if cleaned_data.has_key('regtype') and cleaned_data['regtype']:
+        if cleaned_data.get('regtype', None):
             if cleaned_data['regtype'].requires_option.exists():
                 regtype = cleaned_data['regtype']
                 found = False
-                if cleaned_data.has_key('additionaloptions') and cleaned_data['additionaloptions']:
+                if cleaned_data.get('additionaloptions', None):
                     for x in regtype.requires_option.all():
                         if x in cleaned_data['additionaloptions']:
                             found = True
@@ -235,7 +235,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
                 if not found:
                     self._errors['regtype'] = 'Registration type "%s" requires at least one of the following additional options to be picked: %s' % (regtype, ", ".join([x.name for x in regtype.requires_option.all()]))
 
-        if cleaned_data.has_key('additionaloptions') and cleaned_data['additionaloptions'] and cleaned_data.has_key('regtype'):
+        if cleaned_data.get('additionaloptions', None) and 'regtype' in cleaned_data:
             regtype = cleaned_data['regtype']
             errs = []
             for ao in cleaned_data['additionaloptions']:
@@ -536,7 +536,7 @@ class SessionSlidesFileForm(forms.Form):
     license = forms.BooleanField(label='License', required=False, help_text='I confirm that this this file may be redistributed by the conference website')
 
     def clean_f(self):
-        if not self.cleaned_data.has_key('f') or not self.cleaned_data['f']:
+        if not self.cleaned_data.get('f', None):
             return
         f = self.cleaned_data['f']
         mtype = magicdb.buffer(f.read())
@@ -566,9 +566,9 @@ class PrepaidCreateForm(forms.Form):
         super(PrepaidCreateForm, self).__init__(*args, **kwargs)
         self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=conference)
         self.fields['buyer'].label_from_instance = lambda x: u'{0} {1} <{2}> ({3})'.format(x.first_name, x.last_name, x.email, x.username)
-        if not (self.data.has_key('regtype') and
-                self.data.has_key('count') and
-                self.data.get('regtype') and
+        if not ('regtype' in self.data and
+                'count' in self.data and
+                'regtype' in self.data and
                 self.data.get('count')):
             del self.fields['confirm']
 
@@ -585,7 +585,7 @@ class EmailSendForm(forms.Form):
         super(EmailSendForm, self).__init__(*args, **kwargs)
         self.fields['ids'].widget.attrs['readonly'] = True
         readytogo = False
-        if self.data and self.data.has_key('ids') and self.data.has_key('sender') and self.data.has_key('subject') and self.data.has_key('text'):
+        if self.data and 'ids' in self.data and 'sender' in self.data and 'subject' in self.data and 'text' in self.data:
             if len(self.data['ids']) > 1 and len(self.data['sender']) > 5 and len(self.data['subject']) > 10 and len(self.data['text']) > 50:
                 readytogo = True
         if not readytogo:
@@ -602,7 +602,7 @@ class EmailSessionForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(EmailSessionForm, self).__init__(*args, **kwargs)
         readytogo = False
-        if self.data and self.data.has_key('sender') and self.data.has_key('subject') and self.data.has_key('text'):
+        if self.data and 'sender' in self.data and 'subject' in self.data and 'text' in self.data:
             if len(self.data['sender']) > 5 and len(self.data['subject']) > 10 and len(self.data['text']) > 50:
                 readytogo = True
         if not readytogo:
@@ -730,7 +730,7 @@ class TransferRegForm(forms.Form):
         super(TransferRegForm, self).__init__(*args, **kwargs)
         self.fields['transfer_from'].queryset = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False)
         self.fields['transfer_to'].queryset = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True)
-        if not (self.data.has_key('transfer_from') and self.data.has_key('transfer_to')):
+        if not ('transfer_from' in self.data and 'transfer_to' in self.data):
             del self.fields['confirm']
 
     def remove_confirm(self):

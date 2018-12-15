@@ -19,32 +19,32 @@ class InvoiceAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelF
         }
 
     def clean_recipient_email(self):
-        if self.cleaned_data.has_key('finalized'):
+        if 'finalized' in self.cleaned_data:
             raise ValidationError("Can't edit email field on a finalized invoice!")
         return self.cleaned_data['recipient_email']
 
     def clean_recipient_name(self):
-        if self.cleaned_data.has_key('finalized'):
+        if 'finalized' in self.cleaned_data:
             raise ValidationError("Can't edit name field on a finalized invoice!")
         return self.cleaned_data['recipient_name']
 
     def clean_recipient_address(self):
-        if self.cleaned_data.has_key('finalized'):
+        if 'finalized' in self.cleaned_data:
             raise ValidationError("Can't edit address field on a finalized invoice!")
         return self.cleaned_data['recipient_address']
 
     def clean_title(self):
-        if self.cleaned_data.has_key('finalized'):
+        if 'finalized' in self.cleaned_data:
             raise ValidationError("Can't edit title field on a finalized invoice!")
         return self.cleaned_data['title']
 
     def clean_total_amount(self):
-        if self.cleaned_data.has_key('finalized'):
+        if 'finalized' in self.cleaned_data:
             raise ValidationError("Can't edit total amount field on a finalized invoice!")
         return self.cleaned_data['total_amount']
 
     def clean_total_vat(self):
-        if self.cleaned_data.has_key('finalized'):
+        if 'finalized' in self.cleaned_data:
             raise ValidationError("Can't edit total vat field on a finalized invoice!")
         return self.cleaned_data['total_vat']
 

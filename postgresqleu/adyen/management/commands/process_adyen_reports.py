@@ -146,7 +146,7 @@ class Command(BaseCommand):
                     t = "Balancetransfer2"
 
             lamount = Decimal(l['Net Credit (NC)'] or 0) - Decimal(l['Net Debit (NC)'] or 0)
-            if types.has_key(t):
+            if t in types:
                 types[t] += lamount
             else:
                 types[t] = lamount

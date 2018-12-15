@@ -63,7 +63,7 @@ class ReportFilter(object):
             vals = POST.getlist("adv_%s" % self.id, None)
             return Q(**{"%s__in" % self.id: vals})
         else:
-            if POST.has_key('adv_%s_filter' % self.id) and POST['adv_%s_filter' % self.id]:
+            if POST.get('adv_%s_filter' % self.id, None):
                 # Limit by value
                 v = POST['adv_%s_filter' % self.id]
                 if v.startswith('>'):
@@ -225,15 +225,16 @@ def build_attendee_report(conference, POST):
     title = POST['title']
     format = POST['format']
     orientation = POST['orientation']
-    borders = POST.has_key('border')
-    pagebreaks = POST.has_key('pagebreaks')
+    borders = 'border' in POST
+    pagebreaks = 'pagebreaks' in POST
     fields = POST.getlist('fields')
     extracols = filter(None, map(lambda x: x.strip(), POST['additionalcols'].split(',')))
 
     # Build the filters
     q = Q(conference=conference)
     for f in attendee_report_filters(conference):
-        if POST.has_key("adv_%s_on" % f.id):
+        k = "adv_%s_on" % f.id
+        if k in POST:
             # This filter is checked
             q = q & f.build_Q(POST)
 

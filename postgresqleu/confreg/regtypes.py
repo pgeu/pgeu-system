@@ -77,16 +77,16 @@ special_reg_types = [(k, v['name']) for k, v in _specialregtypes.items()]
 
 
 def validate_special_reg_type(regtypename, reg):
-    if not _specialregtypes.has_key(regtypename):
+    if regtypename not in _specialregtypes:
         raise ValidationError('Invalid registration type record. Internal error.')
 
     _specialregtypes[regtypename]['func'](reg)
 
 
 def confirm_special_reg_type(regtypename, reg):
-    if not _specialregtypes.has_key(regtypename):
+    if regtypename not in _specialregtypes:
         return
-    if _specialregtypes[regtypename].has_key('confirmfunc'):
+    if 'confirmfunc' in _specialregtypes[regtypename]:
         return _specialregtypes[regtypename]['confirmfunc'](reg)
     else:
         return None

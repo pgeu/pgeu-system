@@ -123,7 +123,7 @@ class PurchaseVouchersForm(forms.Form):
         self.conference = conference
         super(PurchaseVouchersForm, self).__init__(*args, **kwargs)
         activeQ = Q(activeuntil__isnull=True) | Q(activeuntil__gt=date.today())
-        if self.data and self.data.has_key('regtype') and self.data['regtype'] and self.data.has_key('num') and self.data['num'] and _int_with_default(self.data['num'], 0) > 0:
+        if self.data and self.data.get('regtype', None) and self.data.get('num', None) and _int_with_default(self.data['num'], 0) > 0:
             RegistrationType.objects.get(pk=self.data['regtype'])
             self.fields['confirm'].help_text = 'Check this box to confirm that you will pay the generated invoice'
             self.fields['num'].widget.attrs['readonly'] = True
@@ -172,7 +172,7 @@ class PurchaseDiscountForm(forms.Form):
     def clean(self):
         cleaned_data = super(PurchaseDiscountForm, self).clean()
 
-        if cleaned_data.has_key('amount') and cleaned_data.has_key('percent'):
+        if 'amount' in cleaned_data and 'percent' in cleaned_data:
             # Only one can be specified
             if _int_with_default(cleaned_data['amount'], 0) > 0 and _int_with_default(cleaned_data['percent'], 0) > 0:
                 self._errors['amount'] = ErrorList(['Cannot specify both amount and percent!'])

@@ -198,12 +198,12 @@ def sponsor_purchase_discount(request, sponsorid):
     conference = sponsor.conference
 
     if request.method == 'POST':
-        if request.POST.has_key('confirm'):
+        if 'confirm' in request.POST:
             form = PurchaseDiscountForm(conference, showconfirm=True, data=request.POST)
         else:
             form = PurchaseDiscountForm(conference, data=request.POST)
         if form.is_valid():
-            if not form.cleaned_data.has_key('confirm'):
+            if 'confirm' not in form.cleaned_data:
                 form = PurchaseDiscountForm(conference, showconfirm=True, data=request.POST)
             else:
                 # Generate the code. We can't generate the invoice at this point, as it

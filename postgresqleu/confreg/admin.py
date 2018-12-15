@@ -558,11 +558,11 @@ class DiscountCodeAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedM
     def clean(self):
         cleaned_data = super(DiscountCodeAdminForm, self).clean()
 
-        if cleaned_data.has_key('discountamount') and cleaned_data.has_key('discountpercentage'):
+        if 'discountamount' in cleaned_data and 'discountpercentage' in cleaned_data:
             if cleaned_data['discountamount'] > 0 and cleaned_data['discountpercentage'] > 0:
                 raise ValidationError('Cannot specify both discount amount and discount percentage at the same time!')
 
-        if cleaned_data.has_key('discountamount') and cleaned_data.has_key('regonly'):
+        if 'discountamount' in cleaned_data and 'regonly' in cleaned_data:
             if cleaned_data['discountamount'] > 0 and cleaned_data['regonly']:
                 raise ValidationError('Regonly field can only be set for percentage discounts!')
 

@@ -77,9 +77,9 @@ def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=Fal
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def search(request):
-    if request.POST.has_key('term'):
+    if 'term' in request.POST:
         term = request.POST['term']
-    elif request.GET.has_key('term'):
+    elif 'term' in request.GET:
         term = request.GET['term']
     else:
         raise Exception("Sorry, need a search term!")
@@ -146,7 +146,7 @@ def oneinvoice(request, invoicenum):
         postcopy = request.POST.copy()
         if not invoicenum == 'new':
             for fld in ('accounting_account', 'accounting_object', ):
-                if not postcopy.has_key(fld):
+                if fld not in postcopy:
                     postcopy[fld] = getattr(invoice, fld)
 
         form = InvoiceForm(data=postcopy, instance=invoice)
@@ -312,10 +312,10 @@ def previewinvoice(request, invoicenum):
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @transaction.atomic
 def emailinvoice(request, invoicenum):
-    if not (request.GET.has_key('really') and request.GET['really'] == 'yes'):
+    if request.GET('really', None) != 'yes':
         return HttpResponse('Secret key is missing!', status=401)
 
-    if not request.GET.has_key('reason'):
+    if 'reason' not in request.GET:
         return HttpResponse('Reason is missing!', status=401)
     if not request.GET['reason'] in ('initial', 'reminder'):
         return HttpResponse('Invalid reason given!', status=401)
@@ -431,7 +431,7 @@ def banktransfer(request):
         'title': request.GET['title'],
         'amount': request.GET['amount'],
     }
-    if request.GET.has_key('ret'):
+    if 'ret' in request.GET:
         param['returnurl'] = request.GET['ret']
 
     return render(request, 'invoices/banktransfer.html', param)

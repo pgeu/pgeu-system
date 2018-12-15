@@ -36,7 +36,7 @@ def paypal_return_handler(request):
     # Now for the main handler
 
     # Handle a paypal PDT return
-    if not request.GET.has_key('tx'):
+    if 'tx' not in request.GET:
         return paypal_error('Transaction id not received from paypal')
 
     tx = request.GET['tx']
@@ -95,7 +95,7 @@ def paypal_return_handler(request):
         return paypal_error('Mandatory field %s is missing from paypal data!', k)
 
     # Now let's find the state of the payment
-    if not d.has_key('payment_status'):
+    if 'payment_status' not in d:
         return paypal_error('Payment status not received from paypal!')
 
     if d['payment_status'] == 'Completed':
@@ -111,7 +111,7 @@ def paypal_return_handler(request):
 
         # Paypal seems to randomly change which field actually contains
         # the transaction title.
-        if d.has_key('transaction_subject') and d['transaction_subject'] != '':
+        if d.get('transaction_subject', ''):
             transtext = d['transaction_subject']
         else:
             transtext = d['item_name']

@@ -1174,7 +1174,7 @@ def speakerprofile(request, confurlname=None):
 
         form = SpeakerProfileForm(data=request.POST, files=request.FILES, instance=speaker)
         if form.is_valid():
-            if request.FILES.has_key('photo'):
+            if 'photo' in request.FILES:
                 raise Exception("Deal with the file!")
             form.save()
             return HttpResponseRedirect('.')
@@ -1437,7 +1437,7 @@ def callforpapers_confirm(request, confname, sessionid):
         })
 
     if request.method == 'POST':
-        if request.POST.has_key('is_confirmed') and request.POST['is_confirmed'] == '1':
+        if request.POST.get('is_confirmed', 0) == '1':
             session.status = 1
             session.save()
             # We can generate the email for this right away, so let's do that
@@ -1662,7 +1662,7 @@ def waitlist_signup(request, confname):
     # CSRF ensures that this post comes from us.
     if request.POST['submit'] != 'Sign up on waitlist':
         raise Exception("Invalid post button")
-    if not request.POST.has_key('confirm') or request.POST['confirm'] != '1':
+    if request.POST.get('confirm', 0) != '1':
         messages.warning(request, "You must check the box to confirm signing up on the waitlist")
         return HttpResponseRedirect("../confirm/")
 
@@ -1696,7 +1696,7 @@ def waitlist_cancel(request, confname):
     # CSRF ensures that this post comes from us.
     if request.POST['submit'] != 'Cancel waitlist':
         raise Exception("Invalid post button")
-    if not request.POST.has_key('confirm') or request.POST['confirm'] != '1':
+    if request.POST.get('confirm', 0) != '1':
         messages.warning(request, "You must check the box to confirm canceling your position on the waitlist.")
         return HttpResponseRedirect("../confirm/")
 
@@ -1878,7 +1878,7 @@ def createvouchers(request, confname):
                                    batch=batch)
                 v.save()
 
-            if form.data.has_key('invoice') and form.data['invoice']:
+            if form.data.get('invoice', None):
                 invoice = Invoice(recipient_user=buyer,
                                   recipient_email=buyer.email,
                                   recipient_name=buyername,
@@ -2164,7 +2164,7 @@ def talkvote(request, confname):
     curs = connection.cursor()
 
     order = ""
-    if request.GET.has_key("sort"):
+    if 'sort' in request.GET:
         if request.GET["sort"] == "avg":
             order = "avg DESC NULLS LAST,"
         elif request.GET["sort"] == "speakers":
@@ -2318,7 +2318,7 @@ def createschedule(request, confname):
         raise PermissionDenied('You are not an administrator or talk voter for this conference!')
 
     if request.method == "POST":
-        if request.POST.has_key('get'):
+        if 'get' in request.POST:
             # Get the current list of tentatively scheduled talks
             s = {}
             for sess in conference.conferencesession_set.all():
@@ -2439,7 +2439,7 @@ def publishschedule(request, confname):
         if dirty:
             s.save()
 
-    if request.GET.has_key('doit') and request.GET['doit'] == '1':
+    if request.GET.get('doit', 0) == '1':
         transaction.commit()
         return render(request, 'confreg/schedule_publish.html', {
             'done': 1,
@@ -2485,10 +2485,10 @@ def simple_report(request, confname):
     if "__" in request.GET['report']:
         raise Http404("Invalid character in report name")
 
-    if not simple_reports.has_key(request.GET['report']):
+    if not request.GET['report'] in simple_reports:
         raise Http404("Report not found")
 
-    if conference.personal_data_purged and simple_reports.has_key('{0}__anon'.format(request.GET['report'])):
+    if conference.personal_data_purged and '{0}__anon'.format(request.GET['report']) in simple_reports:
         query = simple_reports['{0}__anon'.format(request.GET['report'])]
     else:
         query = simple_reports[request.GET['report']]
@@ -2978,7 +2978,7 @@ def session_notify_queue(request, urlname):
 
     notifysessions = ConferenceSession.objects.filter(conference=conference).exclude(status=F('lastnotifiedstatus'))
 
-    if request.method == 'POST' and request.POST.has_key('confirm_sending') and request.POST['confirm_sending'] == '1':
+    if request.method == 'POST' and request.POST.get('confirm_sending', 0) == '1':
         # Ok, it would appear we should actually send them...
         num = 0
         for s in notifysessions:
@@ -3360,7 +3360,7 @@ def admin_email_session(request, sessionids):
             else:
                 return HttpResponseRedirect('/admin/confreg/conferencesession/%s/' % sessionids)
     else:
-        form = EmailSessionForm(initial={'sender': sessions[0].conference.contactaddr, 'returnurl': request.GET.has_key('orig') and request.GET['orig'] or ''})
+        form = EmailSessionForm(initial={'sender': sessions[0].conference.contactaddr, 'returnurl': request.GET.get('orig', '')})
 
     return render(request, 'confreg/admin_email.html', {
         'form': form,

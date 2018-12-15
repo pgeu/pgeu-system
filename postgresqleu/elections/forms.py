@@ -33,7 +33,7 @@ class VoteForm(forms.Form):
                                                                      label=candidate.name,
                                                                      required=True,
                                                                      help_text=candidate.id,
-                                                                     initial=votemap.has_key(candidate.id) and votemap[candidate.id] or -1)
+                                                                     initial=votemap.get(candidate.id, -1))
 
     def _votestring(self, x):
         if x == 1:
@@ -54,8 +54,9 @@ class VoteForm(forms.Form):
         # Second, make sure the fields match the candidates
         fields = self.cleaned_data.copy()
         for candidate in self.candidates:
-            if fields.has_key("cand%i" % candidate.id):
-                del fields["cand%i" % candidate.id]
+            k = "cand%i" % candidate.id
+            if k in fields:
+                del fields[k]
             else:
                 raise Exception("Data for candidate %i is missing" % candidate.id)
 
@@ -70,7 +71,7 @@ class VoteForm(forms.Form):
                 del options[options.index(int(v))]
             else:
                 # Not in the list means it was already used! Bad user!
-                if not self._errors.has_key(k):
+                if k not in self._errors:
                     # Only add this error in case the other error hasn't already fired
                     self._errors[k] = ErrorList(["This score has already been given to another candidate"])
 

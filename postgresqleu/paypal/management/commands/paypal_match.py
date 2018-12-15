@@ -102,7 +102,7 @@ class Command(BaseCommand):
                 accrows = [
                     (settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, trans.transtext[:200], trans.amount - trans.fee, None),
                 ]
-                if trans.fee <> 0:
+                if trans.fee != 0:
                     accrows.append((settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, trans.transtext[:200], trans.fee, None),)
                 create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
                 continue

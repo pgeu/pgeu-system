@@ -49,7 +49,7 @@ class AuthBackend(ModelBackend):
 
 # Handle login requests by sending them off to the main site
 def login(request):
-    if request.GET.has_key('next'):
+    if 'next' in request.GET:
         # Put together an url-encoded dict of parameters we're getting back,
         # including a small nonce at the beginning to make sure it doesn't
         # encrypt the same way every time.
@@ -80,13 +80,13 @@ def logout(request):
 # Receive an authentication response from the main website and try
 # to log the user in.
 def auth_receive(request):
-    if request.GET.has_key('s') and request.GET['s'] == "logout":
+    if request.GET.get('s', None) == "logout":
         # This was a logout request
         return HttpResponseRedirect('/')
 
-    if not request.GET.has_key('i'):
+    if 'i' not in request.GET:
         return HttpResponse("Missing IV in url!", status=400)
-    if not request.GET.has_key('d'):
+    if 'd' not in request.GET:
         return HttpResponse("Missing data in url!", status=400)
 
     # Set up an AES object and decrypt the data we received
@@ -156,7 +156,7 @@ We apologize for the inconvenience.
 
     # Finally, check of we have a data package that tells us where to
     # redirect the user.
-    if data.has_key('d'):
+    if 'd' in data:
         (ivs, datas) = data['d'][0].split('$')
         decryptor = AES.new(SHA.new(settings.SECRET_KEY).digest()[:16],
                             AES.MODE_CBC,
@@ -166,7 +166,7 @@ We apologize for the inconvenience.
             rdata = urlparse.parse_qs(s, strict_parsing=True)
         except ValueError:
             return HttpResponse("Invalid encrypted data received.", status=400)
-        if rdata.has_key('r'):
+        if 'r' in rdata:
             # Redirect address
             return HttpResponseRedirect(rdata['r'][0])
     # No redirect specified, see if we have it in our settings

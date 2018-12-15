@@ -25,7 +25,7 @@ def _escapeVal(val):
 
 def calculate_signature(param):
     param = OrderedDict(sorted(param.items(), key=lambda t: t[0]))
-    if param.has_key('merchantSig'):
+    if 'merchantSig' in param:
         del param['merchantSig']
     str = ':'.join(map(_escapeVal, param.keys() + param.values()))
     hm = hmac.new(binascii.a2b_hex(settings.ADYEN_SIGNKEY),

@@ -47,7 +47,7 @@ class JournalItemForm(forms.ModelForm):
     def clean(self):
         if not self.cleaned_data:
             return
-        if not self.cleaned_data.has_key('debit') or not self.cleaned_data.has_key('credit'):
+        if 'debit' not in self.cleaned_data or 'credit' not in self.cleaned_data:
             # This means there is an error elsewhere!
             return self.cleaned_data
         if self.cleaned_data['debit'] and self.cleaned_data['credit']:
@@ -57,7 +57,7 @@ class JournalItemForm(forms.ModelForm):
         return self.cleaned_data
 
     def clean_object(self):
-        if self.cleaned_data.has_key('account'):
+        if 'account' in self.cleaned_data:
             if self.cleaned_data['account'].objectrequirement == 1:
                 # object is required
                 if not self.cleaned_data['object']:
@@ -85,8 +85,8 @@ class JournalItemForm(forms.ModelForm):
             return 0
         if self.cleaned_data['DELETE']:
             return 0
-        debit = self.cleaned_data.has_key('debit') and self.cleaned_data['debit'] or 0
-        credit = self.cleaned_data.has_key('credit') and self.cleaned_data['credit'] or 0
+        debit = self.cleaned_data.get('debit', 0) or 0
+        credit = self.cleaned_data.get('credit', 0) or 0
         return debit - credit
 
 

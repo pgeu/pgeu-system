@@ -35,7 +35,7 @@ if __name__ == "__main__":
                 sys.exit(1)
             # Amounts match, get the fee
             # For donations, there is no fee and a different xtype
-            if info['TRANSACTIONTYPE'][0] == 'sendmoney' and not info.has_key('FEEAMT'):
+            if info['TRANSACTIONTYPE'][0] == 'sendmoney' and 'FEEAMT' not in info:
                 print "%s: Amount %s, donation, no fee" % (ti.paypaltransid, ti.amount)
                 ti.fee = 0
             else:

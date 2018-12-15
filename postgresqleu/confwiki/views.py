@@ -103,7 +103,7 @@ def wikipage_history(request, confurl, wikiurl):
 
     if request.method == 'POST':
         # View a diff
-        if not (request.POST.has_key('from') and request.POST.has_key('to')):
+        if not ('from' in request.POST and 'to' in request.POST):
             messages.warning(request, "Must specify both source and target version")
             return HttpResponseRedirect('.')
 
