@@ -18,7 +18,8 @@ from reportlab.lib.pagesizes import A3, A4, landscape
 from reportlab.pdfbase.pdfmetrics import registerFont
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib.units import cm, mm
+
+from postgresqleu.util.reporttools import cm, mm
 
 from models import Room, Track, RegistrationDay, ConferenceSession
 from backendviews import get_authenticated_conference
@@ -72,7 +73,7 @@ def build_linear_pdf_schedule(conference, room, tracks, day, colored, pagesize, 
     st_speakers.fontSize = 10
     st_speakers.spaceAfter = 8
 
-    table_horiz_margin = 2*cm
+    table_horiz_margin = cm(2)
 
     default_tbl_style = [
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
@@ -88,12 +89,12 @@ def build_linear_pdf_schedule(conference, room, tracks, day, colored, pagesize, 
 
     def _finalize_page():
         canvas.setFont("DejaVu Serif", 20)
-        canvas.drawCentredString(width / 2, height - 2*cm, "%s - %s" % (room.roomname, lastdate.strftime(titledatefmt)))
+        canvas.drawCentredString(width / 2, height - cm(2), "%s - %s" % (room.roomname, lastdate.strftime(titledatefmt)))
 
-        t = Table(tbldata, colWidths=[3*cm, width - 3*cm - 2 * table_horiz_margin])
+        t = Table(tbldata, colWidths=[cm(3), width - cm(3) - 2 * table_horiz_margin])
         t.setStyle(TableStyle(tblstyle))
         w, h = t.wrapOn(canvas, width, height)
-        t.drawOn(canvas, table_horiz_margin, height - 4*cm - h)
+        t.drawOn(canvas, table_horiz_margin, height - cm(4) - h)
         canvas.showPage()
 
     for s in sessions:
@@ -147,7 +148,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
         groupedbyday[d]['last'] = s.endtime
         groupedbyday[d]['sessions'].append(s)
     for k, v in groupedbyday.items():
-        v['length'] = v['last']-v['first']
+        v['length'] = v['last'] - v['first']
         v['rooms'] = set([s.room for s in v['sessions'] if s.room])
 
     timestampstyle = ParagraphStyle('timestampstyle')
@@ -158,8 +159,8 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
     for d in sorted(groupedbyday.keys()):
         dd = groupedbyday[d]
 
-        usableheight = height - 2 * 2*cm - 1*cm
-        usablewidth = width - 2 * 2*cm
+        usableheight = height - 2 * cm(2) - cm(1)
+        usablewidth = width - 2 * cm(2)
 
         pagesessions = []
         currentpagesessions = []
@@ -175,7 +176,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
             # For each breakpoint, find the closest one
             for p in range(1, pagesperday):
                 breaktime = dd['first'] + timedelta(seconds=p * secondsperpage)
-                breaksession = cross_sessions[min(range(len(cross_sessions)), key=lambda i: abs(cross_sessions[i].starttime-breaktime))]
+                breaksession = cross_sessions[min(range(len(cross_sessions)), key=lambda i: abs(cross_sessions[i].starttime - breaktime))]
                 if breaksession not in breakpoints:
                     breakpoints.append(breaksession)
 
@@ -195,13 +196,13 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
         # required for any page (start at usableheight just to be sure it will always get replaced)
         unitspersecond = usableheight
         for p in pagesessions:
-            u = usableheight / (p[-1].endtime-p[0].starttime).seconds
+            u = usableheight / (p[-1].endtime - p[0].starttime).seconds
             if u < unitspersecond:
                 unitspersecond = u
 
         # Only on the first page in multipage schedules
         canvas.setFont("DejaVu Serif", 20)
-        canvas.drawCentredString(width/2, height-2*cm, d.strftime(titledatefmt))
+        canvas.drawCentredString(width / 2, height - cm(2), d.strftime(titledatefmt))
 
         roomcount = len(dd['rooms'])
         roomwidth = usablewidth / roomcount
@@ -212,7 +213,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
         for r in dd['rooms']:
             for fs in 16, 14, 12, 10, 8:
                 fwidth = canvas.stringWidth(r.roomname, "DejaVu Serif", fs)
-                if fwidth < roomwidth-4*mm:
+                if fwidth < roomwidth - mm(4):
                     # Width at this size is small enough to work, so use it
                     if fs < roomtitlefontsize:
                         roomtitlefontsize = fs
@@ -221,27 +222,27 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
 
         roompos = {}
         for r in sorted(dd['rooms'], key=lambda x: (x.sortkey, x.roomname)):
-            canvas.rect(2*cm + len(roompos) * roomwidth, height - 4*cm, roomwidth, 1*cm, stroke=1)
-            canvas.drawCentredString(2*cm + len(roompos) * roomwidth + roomwidth / 2,
-                                     height - 4*cm + (1*cm-roomtitlefontsize)/2,
+            canvas.rect(cm(2) + len(roompos) * roomwidth, height - cm(4), roomwidth, cm(1), stroke=1)
+            canvas.drawCentredString(cm(2) + len(roompos) * roomwidth + roomwidth / 2,
+                                     height - cm(4) + (cm(1) - roomtitlefontsize) / 2,
                                      r.roomname)
             roompos[r] = len(roompos)
 
         for ps in pagesessions:
-            pagelength = (ps[-1].endtime-ps[0].starttime).seconds
+            pagelength = (ps[-1].endtime - ps[0].starttime).seconds
             first = ps[0].starttime
 
-            canvas.rect(2*cm, height-pagelength*unitspersecond-4*cm, roomcount*roomwidth, pagelength*unitspersecond, stroke=1)
+            canvas.rect(cm(2), height - pagelength * unitspersecond - cm(4), roomcount * roomwidth, pagelength * unitspersecond, stroke=1)
             for s in ps:
                 if s.cross_schedule:
                     # Cross schedule rooms are very special...
-                    s_left = 2*cm
+                    s_left = cm(2)
                     thisroomwidth = roomcount * roomwidth
                 else:
-                    s_left = 2*cm + roompos[s.room] * roomwidth
+                    s_left = cm(2) + roompos[s.room] * roomwidth
                     thisroomwidth = roomwidth
-                s_height = (s.endtime-s.starttime).seconds * unitspersecond
-                s_top = height - (s.starttime-first).seconds * unitspersecond - s_height - 4*cm
+                s_height = (s.endtime - s.starttime).seconds * unitspersecond
+                s_top = height - (s.starttime - first).seconds * unitspersecond - s_height - cm(4)
                 if colored:
                     if s.track and s.track.color:
                         canvas.setFillColor(s.track.color)
@@ -251,10 +252,10 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
 
                 timestampstr = "%s-%s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M"))
                 ts = Paragraph(timestampstr, timestampstyle)
-                (tsaw, tsah) = ts.wrap(thisroomwidth-2*mm, timestampstyle.fontSize)
-                ts.drawOn(canvas, s_left+1*mm, s_top+s_height-tsah-1*mm)
+                (tsaw, tsah) = ts.wrap(thisroomwidth - mm(2), timestampstyle.fontSize)
+                ts.drawOn(canvas, s_left + mm(1), s_top + s_height - tsah - mm(1))
 
-                if s_height - tsah*1.2 - 2*mm < tsah:
+                if s_height - tsah * 1.2 - mm(2) < tsah:
                     # This can never fit, since it's smaller than our font size!
                     # Instead, print as much as possible on the same row as the time
                     tswidth = canvas.stringWidth(timestampstr, "DejaVu Serif", 8)
@@ -263,12 +264,12 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
                     while title:
                         t = title + trunc
                         fwidth = canvas.stringWidth(t, "DejaVu Serif", 8)
-                        if fwidth < thisroomwidth - tswidth - 2*mm:
+                        if fwidth < thisroomwidth - tswidth - mm(2):
                             # Fits now!
                             canvas.setFont("DejaVu Serif", 8)
                             p = Paragraph(t, timestampstyle)
-                            (paw, pah) = p.wrap(thisroomwidth-tswidth-2*mm, timestampstyle.fontSize)
-                            p.drawOn(canvas, s_left+1*mm+tswidth+1*mm, s_top+s_height-tsah-1*mm)
+                            (paw, pah) = p.wrap(thisroomwidth - tswidth - mm(2), timestampstyle.fontSize)
+                            p.drawOn(canvas, s_left + mm(1) + tswidth + mm(1), s_top + s_height - tsah - mm(1))
                             break
                         else:
                             title = title.rpartition(' ')[0]
@@ -288,10 +289,10 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
                                 else:
                                     p = Paragraph(title, sessionstyle)
 
-                                (aw, ah) = p.wrap(thisroomwidth-2*mm, s_height-tsah*1.2-2*mm)
-                                if ah <= s_height-tsah*1.2-2*mm:
+                                (aw, ah) = p.wrap(thisroomwidth - mm(2), s_height - tsah * 1.2 - mm(2))
+                                if ah <= s_height - tsah * 1.2 - mm(2):
                                     # FIT!
-                                    p.drawOn(canvas, s_left+1*mm, s_top+s_height-ah-tsah*1.2-1*mm)
+                                    p.drawOn(canvas, s_left + mm(1), s_top + s_height - ah - tsah * 1.2 - mm(1))
                                     raise StopIteration
                             # Too big, so try to chop down the title and run again
                             # (this is assuming our titles are reasonable length, or we could be
@@ -316,7 +317,7 @@ class PdfScheduleForm(forms.Form):
     colored = forms.BooleanField(label='Colored tracks', required=False)
     pagesize = forms.ChoiceField(label='Page size', choices=(('a4', 'A4'), ('a3', 'A3')))
     orientation = forms.ChoiceField(label='Orientation', choices=(('p', 'Portrait'), ('l', 'Landscape')))
-    pagesperday = forms.ChoiceField(label='Pages per day', choices=((1, 1), (2, 2), (3, 3)), help_text="Not used for per-room schedules. Page breaks happen only at cross-schedule sessions.")
+    pagesperday = forms.ChoiceField(label='Pages per day', choices=((1, 1), (2, 2), (3, 3)), help_text="Not used for per-room schedules. Page breaks happen only at cross - schedule sessions.")
     titledatefmt = forms.CharField(label='Title date format', help_text="strftime format specification used to print the date in the title of the first page for each day")
 
     def __init__(self, conference, *args, **kwargs):
