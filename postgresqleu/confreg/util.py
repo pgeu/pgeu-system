@@ -1,9 +1,13 @@
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
+from django.conf import settings
+from django.core.exceptions import PermissionDenied
 
 from datetime import datetime, date, timedelta
+import urllib
 
 from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
+from postgresqleu.util.middleware import RedirectException
 
 from models import PrepaidVoucher, DiscountCode, RegistrationWaitlistHistory
 from models import ConferenceRegistration, Conference

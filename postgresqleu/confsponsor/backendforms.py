@@ -4,8 +4,8 @@ from collections import OrderedDict
 
 from postgresqleu.util.magic import magicdb
 from postgresqleu.util.widgets import RequiredFileUploadWidget, PrettyPrintJsonWidget
-from postgresqleu.confreg.backendforms import BackendForm
-from postgresqleu.confreg.backendlookups import GeneralAccountLookup
+from postgresqleu.util.backendforms import BackendForm
+from postgresqleu.util.backendlookups import GeneralAccountLookup
 from postgresqleu.confreg.jinjafunc import JinjaTemplateValidator, render_sandboxed_template
 
 from models import Sponsor
