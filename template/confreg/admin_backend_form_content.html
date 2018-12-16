@@ -31,7 +31,7 @@
     <table class="table table-bordered table-striped table-hover table-condensed">
 {%for id,title,description in entries%}
     <tr>
-      <td><a href="{{url}}/{{id}}/">{{title}}</a></td>
+      <td>{%if id%}<a href="{{url}}/{{id}}/">{{title}}</a>{%else%}{{title}}{%endif%}</td>
       <td>{{description}}</td>
     </tr>
 {%endfor%}
