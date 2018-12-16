@@ -205,7 +205,7 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
 
     def email_recipients(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-        return HttpResponseRedirect('/admin/confreg/_email/?ids=%s&orig=%s' % (','.join(selected), urllib.quote(urllib.urlencode(request.GET))))
+        return HttpResponseRedirect('/admin/django/confreg/_email/?ids=%s&orig=%s' % (','.join(selected), urllib.quote(urllib.urlencode(request.GET))))
     email_recipients.short_description = "Send email to selected users"
 
     def has_change_permission(self, request, obj=None):
@@ -287,7 +287,7 @@ class ConferenceSessionAdmin(admin.ModelAdmin):
 
     def email_recipients(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-        return HttpResponseRedirect('/admin/confreg/_email_session_speaker/%s/?orig=%s' % (','.join(selected), urllib.quote(urllib.urlencode(request.GET))))
+        return HttpResponseRedirect('/admin/django/confreg/_email_session_speaker/%s/?orig=%s' % (','.join(selected), urllib.quote(urllib.urlencode(request.GET))))
     email_recipients.short_description = "Send email to speakers of selected sessions"
 
 

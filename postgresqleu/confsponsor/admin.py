@@ -59,7 +59,7 @@ class SponsorshipLevelAdmin(admin.ModelAdmin):
         if len(source_level) != 1:
             raise Exception("Must copy exactly one level at a time!")
 
-        return HttpResponseRedirect("/admin/confsponsor/sponsorshiplevel/{0}/copy".format(source_level[0].id))
+        return HttpResponseRedirect("/admin/django/confsponsor/sponsorshiplevel/{0}/copy".format(source_level[0].id))
     copy_sponsorshiplevel.short_description = "Copy sponsorship level"
 
 

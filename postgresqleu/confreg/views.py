@@ -3319,7 +3319,7 @@ def admin_email(request):
                 send_mail(form.data['sender'], e, msg.as_string())
 
             messages.info(request, 'Sent email to %s recipients' % len(emails))
-            return HttpResponseRedirect('/admin/confreg/conferenceregistration/?' + form.data['returnurl'])
+            return HttpResponseRedirect('/admin/django/confreg/conferenceregistration/?' + form.data['returnurl'])
         else:
             ids = form.data['ids'].split(',')
     else:
@@ -3356,9 +3356,9 @@ def admin_email_session(request, sessionids):
             if ',' in sessionids:
                 # We always get the original URL as a query parameter in this
                 # case.
-                return HttpResponseRedirect('/admin/confreg/conferencesession/?' + form.data['returnurl'])
+                return HttpResponseRedirect('/admin/django/confreg/conferencesession/?' + form.data['returnurl'])
             else:
-                return HttpResponseRedirect('/admin/confreg/conferencesession/%s/' % sessionids)
+                return HttpResponseRedirect('/admin/django/confreg/conferencesession/%s/' % sessionids)
     else:
         form = EmailSessionForm(initial={'sender': sessions[0].conference.contactaddr, 'returnurl': request.GET.get('orig', '')})
 

@@ -69,7 +69,7 @@ $(document).ready(function() {
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/">Back to registration dashboard</a>
 
 {%if user.is_superuser%}
-<a class="btn btn-default btn-block" href="/admin/confreg/conferenceregistration/?conference__id__exact={{conference.id}}&_directlink=1">View all registrations through admin view</a>
+<a class="btn btn-default btn-block" href="/admin/django/confreg/conferenceregistration/?conference__id__exact={{conference.id}}&_directlink=1">View all registrations through admin view</a>
 {%endif%}
 
 {%endblock%}

@@ -128,7 +128,7 @@ def admin_email(request):
                 send_simple_mail(form.data['sender'], e, form.data['subject'], form.data['text'])
 
             messages.info(request, 'Sent email to %s recipients' % len(emails))
-            return HttpResponseRedirect('/admin/membership/member/?' + form.data['returnurl'])
+            return HttpResponseRedirect('/admin/django/membership/member/?' + form.data['returnurl'])
         else:
             ids = form.data['ids'].split(',')
     else:

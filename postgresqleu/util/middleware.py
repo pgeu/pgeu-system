@@ -9,7 +9,7 @@ class FilterPersistMiddleware(object):
     def process_request(self, request):
 
         path = request.path
-        if path.find('/admin/') != -1:  # Dont waste time if we are not in admin
+        if path.find('/admin/django/') != -1:  # Dont waste time if we are not in admin
             query_string = request.META['QUERY_STRING']
             if 'HTTP_REFERER' not in request.META:
                 return None
@@ -20,7 +20,7 @@ class FilterPersistMiddleware(object):
                 return None
 
             referrer = request.META['HTTP_REFERER'].split('?')[0]
-            referrer = referrer[referrer.find('/admin'):len(referrer)]
+            referrer = referrer[referrer.find('/admin/django'):len(referrer)]
             key = 'key' + path.replace('/', '_')
 
             if path == referrer:  # We are in same page as before

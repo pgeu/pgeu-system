@@ -197,8 +197,8 @@ urlpatterns.extend([
 
 
     # Conference admin
-    url(r'^admin/confreg/_email/$', postgresqleu.confreg.views.admin_email),
-    url(r'^admin/confreg/_email_session_speaker/([,\d]+)/$', postgresqleu.confreg.views.admin_email_session),
+    url(r'^admin/django/confreg/_email/$', postgresqleu.confreg.views.admin_email),
+    url(r'^admin/django/confreg/_email_session_speaker/([,\d]+)/$', postgresqleu.confreg.views.admin_email_session),
 
     # Legacy event URLs
     url(r'^events/(register|bulkpay|feedback|schedule|sessions|talkvote|speakerprofile|callforpapers|reports)/([^/]+)/(.*)?$', postgresqleu.confreg.views.legacy_redirect),
@@ -317,7 +317,7 @@ urlpatterns.extend([
     url(r'^admin/selectable/', include('selectable.urls')),
 
     # Admin site
-    url(r'^admin/', admin.site.urls),
+    url(r'^admin/django/', admin.site.urls),
 
     # Fallback - send everything nonspecific to the static handler
     url(r'^(.*)/$', postgresqleu.static.views.static_fallback),
