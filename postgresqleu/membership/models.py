@@ -14,8 +14,8 @@ class Member(models.Model):
     country = models.ForeignKey(Country, null=False, blank=False, on_delete=models.CASCADE)
     listed = models.BooleanField(null=False, blank=False, default=True,
                                  verbose_name='Listed in the public membership list')
-    paiduntil = models.DateField(null=True, blank=True)
-    membersince = models.DateField(null=True, blank=True)
+    paiduntil = models.DateField(null=True, blank=True, verbose_name='Paid until')
+    membersince = models.DateField(null=True, blank=True, verbose_name='Member since')
 
     # If there is a currently active invoice, link to it here so we can
     # easily render the information on the page.
@@ -23,7 +23,7 @@ class Member(models.Model):
 
     # When a membeship expiry warning was last sent, so we don't keep
     # sending them over and over again
-    expiry_warning_sent = models.DateTimeField(null=True, blank=True)
+    expiry_warning_sent = models.DateTimeField(null=True, blank=True, verbose_name='Expiry warning sent')
 
     country_exception = models.BooleanField(null=False, blank=False, default=False, help_text="Enable to allow member to bypass country validation")
 
@@ -62,6 +62,9 @@ class Meeting(models.Model):
 
     def __unicode__(self):
         return "%s (%s)" % (self.name, self.dateandtime)
+
+    class Meta:
+        ordering = ['-dateandtime', ]
 
     @property
     def joining_active(self):

@@ -1,0 +1,27 @@
+{%extends "adm/admin_base.html" %}
+{%block title%}Administration{%endblock%}
+{%block layoutblock%}
+<h1>Administration</h1>
+
+{%if permissions.conferences%}
+<h1>Conferences</h1>
+<div class="row">
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/">Conference administration</a></div>
+</div>
+{%endif%}
+
+{%if permissions.membership %}
+<h1>Membership</h1>
+<div class="row">
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/membership/members/">Members</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/membership/meetings/">Meetings</a></div>
+</div>
+{%endif%}
+
+{%if user.is_superuser%}
+<h1>Django admin</h1>
+<div class="row">
+  <a class="btn btn-default btn-block" href="/admin/django/">Superuser: full django admin</a>
+</div>
+{%endif%}
+{%endblock%}

@@ -23,6 +23,9 @@ class Migration(migrations.Migration):
                 ('allmembers', models.BooleanField()),
                 ('botname', models.CharField(max_length=50)),
             ],
+            options={
+                'ordering': ['-dateandtime', ],
+            }
         ),
         migrations.CreateModel(
             name='Member',
@@ -30,9 +33,9 @@ class Migration(migrations.Migration):
                 ('user', models.OneToOneField(primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
                 ('fullname', models.CharField(max_length=500, verbose_name=b'Full name')),
                 ('listed', models.BooleanField(default=True, verbose_name=b'Listed in the public membership list')),
-                ('paiduntil', models.DateField(null=True, blank=True)),
-                ('membersince', models.DateField(null=True, blank=True)),
-                ('expiry_warning_sent', models.DateTimeField(null=True, blank=True)),
+                ('paiduntil', models.DateField(null=True, blank=True, verbose_name=b'Paid until')),
+                ('membersince', models.DateField(null=True, blank=True, verbose_name=b'Member since')),
+                ('expiry_warning_sent', models.DateTimeField(null=True, blank=True, verbose_name=b'Expiry warning sent')),
                 ('activeinvoice', models.ForeignKey(blank=True, to='invoices.Invoice', null=True, on_delete=models.CASCADE)),
                 ('country', models.ForeignKey(to='countries.Country', on_delete=models.CASCADE)),
             ],

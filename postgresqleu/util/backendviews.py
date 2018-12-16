@@ -11,7 +11,7 @@ from postgresqleu.confreg.util import get_authenticated_conference
 from postgresqleu.confreg.backendforms import BackendCopySelectConferenceForm
 
 
-def backend_process_form(request, urlname, formclass, id, cancel_url='../', saved_url='../', allow_new=True, allow_delete=True, breadcrumbs=None, permissions_already_checked=False, conference=None, bypass_conference_filter=False, instancemaker=None, deleted_url=None):
+def backend_process_form(request, urlname, formclass, id, cancel_url='../', saved_url='../', allow_new=True, allow_delete=True, breadcrumbs=None, permissions_already_checked=False, conference=None, bypass_conference_filter=False, instancemaker=None, deleted_url=None, topadmin=None):
     if not conference and not bypass_conference_filter:
         conference = get_authenticated_conference(request, urlname)
 
@@ -35,7 +35,15 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
         deleted_url = cancel_url
 
     if not instancemaker:
-        instancemaker = lambda: formclass.Meta.model(conference=conference)
+        if conference:
+            instancemaker = lambda: formclass.Meta.model(conference=conference)
+        else:
+            instancemaker = lambda: formclass.Meta.model()
+
+    if topadmin:
+        basetemplate = 'adm/admin_base.html'
+    else:
+        basetemplate = 'confreg/confadmin_base.html'
 
     if allow_new and not id:
         if formclass.form_before_new:
@@ -56,6 +64,8 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                 if not newinfo:
                     return render(request, 'confreg/admin_backend_form.html', {
                         'conference': conference,
+                        'basetemplate': basetemplate,
+                        'topadmin': topadmin,
                         'form': newform,
                         'what': 'New {0}'.format(formclass.Meta.model._meta.verbose_name),
                         'cancelurl': cancel_url,
@@ -144,6 +154,8 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 
     return render(request, 'confreg/admin_backend_form.html', {
         'conference': conference,
+        'basetemplate': basetemplate,
+        'topadmin': topadmin,
         'form': form,
         'what': what,
         'cancelurl': cancel_url,
@@ -155,9 +167,14 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
     })
 
 
-def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, allow_delete=True, conference=None, breadcrumbs=[], bypass_conference_filter=False, instancemaker=None, return_url='../'):
+def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, allow_delete=True, conference=None, breadcrumbs=[], bypass_conference_filter=False, instancemaker=None, return_url='../', topadmin=None):
     if not conference and not bypass_conference_filter:
         conference = get_authenticated_conference(request, urlname)
+
+    if topadmin:
+        basetemplate = 'adm/admin_base.html'
+    else:
+        basetemplate = 'confreg/confadmin_base.html'
 
     if resturl:
         resturl = resturl.rstrip('/')
@@ -170,6 +187,8 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
         values = [{'id': o.pk, 'vals': [getattr(o, '_display_{0}'.format(f), getattr(o, f)) for f in formclass.list_fields]} for o in objects]
         return render(request, 'confreg/admin_backend_list.html', {
             'conference': conference,
+            'basetemplate': basetemplate,
+            'topadmin': topadmin,
             'values': values,
             'title': formclass.Meta.model._meta.verbose_name_plural.capitalize(),
             'singular_name': formclass.Meta.model._meta.verbose_name,
@@ -197,6 +216,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
                                     conference=conference,
                                     bypass_conference_filter=bypass_conference_filter,
                                     instancemaker=instancemaker,
+                                    topadmin=topadmin,
         )
 
     restpieces = resturl.split('/')
@@ -241,6 +261,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
                                     conference=conference,
                                     bypass_conference_filter=True,
                                     instancemaker=handler.get_instancemaker(masterobj),
+                                    topadmin=topadmin,
         )
 
     if len(restpieces) > 1:
@@ -254,6 +275,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
                                 breadcrumbs=breadcrumbs + [('../', formclass.Meta.model._meta.verbose_name_plural.capitalize()), ],
                                 conference=conference,
                                 bypass_conference_filter=bypass_conference_filter,
+                                topadmin=topadmin,
     )
 
 
@@ -327,6 +349,7 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
         values = [{'id': o.pk, 'vals': [getattr(o, '_display_{0}'.format(f), getattr(o, f)) for f in formclass.list_fields]} for o in objects]
         return render(request, 'confreg/admin_backend_list.html', {
             'conference': conference,
+            'basetemplate': 'confreg/confadmin_base.html',
             'values': values,
             'title': formclass.Meta.model._meta.verbose_name_plural.capitalize(),
             'singular_name': formclass.Meta.model._meta.verbose_name,

@@ -60,6 +60,9 @@ urlpatterns.extend([
     url(r'^events/past/$', postgresqleu.views.pastevents),
     url(r'^events/series/[^/]+-(\d+)/$', postgresqleu.views.eventseries),
 
+    # Global admin
+    url(r'^admin/$', postgresqleu.views.admin_dashboard),
+
     # Conference management
     url(r'^events/(?P<confname>[^/]+)/register/(?P<whatfor>(self)/)?$', postgresqleu.confreg.views.register),
     url(r'^events/(?P<confname>[^/]+)/register/other/(?P<regid>(\d+)/)?$', postgresqleu.confreg.views.multireg),
@@ -270,6 +273,7 @@ if settings.ENABLE_NEWS:
 
 if settings.ENABLE_MEMBERSHIP:
     import postgresqleu.membership.views
+    import postgresqleu.membership.backendviews
     urlpatterns.extend([
         # Membership management
         url(r'^membership/$', postgresqleu.membership.views.home),
@@ -279,7 +283,10 @@ if settings.ENABLE_MEMBERSHIP:
         url(r'^membership/meetings/(\d+)/proxy/$', postgresqleu.membership.views.meeting_proxy),
         url(r'^membership/meetingcode/$', postgresqleu.membership.views.meetingcode),
         url(r'^membership/members/$', postgresqleu.membership.views.userlist),
-        url(r'^admin/membership/_email/$', postgresqleu.membership.views.admin_email),
+        url(r'^admin/django/membership/_email/$', postgresqleu.membership.views.admin_email),
+        url(r'^admin/membership/members/(.*/)?$', postgresqleu.membership.backendviews.edit_member),
+        url(r'^admin/membership/meetings/(.*/)?$', postgresqleu.membership.backendviews.edit_meeting),
+        url(r'^admin/membership/lookups/member/$', postgresqleu.membership.backendlookups.MemberLookup.lookup),
     ])
 
 if settings.ENABLE_ELECTIONS:

@@ -112,6 +112,27 @@ def attendee_events(request):
     })
 
 
+@login_required
+def admin_dashboard(request):
+    if request.user.is_superuser:
+        permissions = {
+            'conferences': True,
+            'membership': True,
+        }
+    else:
+        groups = [g.name for g in request.user.groups.all()]
+        confperm = ConferenceSeries.objects.filter(administrators=request.user).exists() or Conference.objects.filter(administrators=request.user).exists()
+
+        permissions = {
+            'conferences': confperm,
+            'membership': u'Membership administrators' in groups,
+        }
+
+    return render(request, 'adm/index.html', {
+        'permissions': permissions,
+    })
+
+
 # Handle CSRF failures
 def csrf_failure(request, reason=''):
     resp = render(request, 'csrf_failure.html', {
