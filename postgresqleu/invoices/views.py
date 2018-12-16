@@ -312,7 +312,7 @@ def previewinvoice(request, invoicenum):
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @transaction.atomic
 def emailinvoice(request, invoicenum):
-    if request.GET('really', None) != 'yes':
+    if request.GET.get('really', None) != 'yes':
         return HttpResponse('Secret key is missing!', status=401)
 
     if 'reason' not in request.GET:
