@@ -137,13 +137,15 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
             adminurl = reverse('admin:{0}_{1}_change'.format(instance._meta.app_label, instance._meta.model_name), args=(instance.pk,))
         except NoReverseMatch:
             adminurl = None
+        what = formclass.Meta.model._meta.verbose_name
     else:
         adminurl = None
+        what = 'new {0}'.format(formclass.Meta.model._meta.verbose_name)
 
     return render(request, 'confreg/admin_backend_form.html', {
         'conference': conference,
         'form': form,
-        'what': formclass.Meta.model._meta.verbose_name,
+        'what': what,
         'cancelurl': cancel_url,
         'breadcrumbs': breadcrumbs,
         'helplink': form.helplink,
