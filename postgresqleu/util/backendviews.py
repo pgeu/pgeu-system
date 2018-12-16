@@ -132,9 +132,9 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
     else:
         form = formclass(conference, instance=instance, newformdata=newformdata)
 
-    if instance.id:
+    if instance.pk:
         try:
-            adminurl = reverse('admin:{0}_{1}_change'.format(instance._meta.app_label, instance._meta.model_name), args=(instance.id,))
+            adminurl = reverse('admin:{0}_{1}_change'.format(instance._meta.app_label, instance._meta.model_name), args=(instance.pk,))
         except NoReverseMatch:
             adminurl = None
     else:
@@ -165,7 +165,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
             objects = formclass.Meta.model.objects.all()
         else:
             objects = formclass.Meta.model.objects.filter(conference=conference)
-        values = [{'id': o.id, 'vals': [getattr(o, '_display_{0}'.format(f), getattr(o, f)) for f in formclass.list_fields]} for o in objects]
+        values = [{'id': o.pk, 'vals': [getattr(o, '_display_{0}'.format(f), getattr(o, f)) for f in formclass.list_fields]} for o in objects]
         return render(request, 'confreg/admin_backend_list.html', {
             'conference': conference,
             'values': values,
@@ -261,7 +261,7 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
         if request.method == 'POST':
             form = BackendCopySelectConferenceForm(request, conference, formclass.Meta.model, data=request.POST)
             if form.is_valid():
-                return HttpResponseRedirect("{0}/".format(form.cleaned_data.get('conference').id))
+                return HttpResponseRedirect("{0}/".format(form.cleaned_data.get('conference').pk))
         else:
             form = BackendCopySelectConferenceForm(request, conference, formclass.Meta.model)
         return render(request, 'confreg/admin_backend_copy_select_conf.html', {
@@ -322,7 +322,7 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
                 transform_form = None
 
         objects = formclass.Meta.model.objects.filter(conference=sourceconf)
-        values = [{'id': o.id, 'vals': [getattr(o, '_display_{0}'.format(f), getattr(o, f)) for f in formclass.list_fields]} for o in objects]
+        values = [{'id': o.pk, 'vals': [getattr(o, '_display_{0}'.format(f), getattr(o, f)) for f in formclass.list_fields]} for o in objects]
         return render(request, 'confreg/admin_backend_list.html', {
             'conference': conference,
             'values': values,
