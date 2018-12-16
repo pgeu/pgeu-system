@@ -234,7 +234,10 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
         # We are editing a sub-object!
 
         handler = formclass.linked_objects[restpieces[1]]
-        masterobj = formclass.Meta.model.objects.get(pk=id, conference=conference)
+        if conference:
+            masterobj = formclass.Meta.model.objects.get(pk=id, conference=conference)
+        else:
+            masterobj = formclass.Meta.model.objects.get(pk=id)
 
         if restpieces[2] == 'new':
             subid = None
