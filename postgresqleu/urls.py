@@ -6,6 +6,7 @@ import sys
 
 import postgresqleu.static.views
 import postgresqleu.newsevents.views
+import postgresqleu.newsevents.backendviews
 import postgresqleu.views
 import postgresqleu.confreg.views
 import postgresqleu.confreg.backendviews
@@ -62,6 +63,10 @@ urlpatterns.extend([
 
     # Global admin
     url(r'^admin/$', postgresqleu.views.admin_dashboard),
+
+    # News
+    url(r'^admin/news/news/(.*/)?$', postgresqleu.newsevents.backendviews.edit_news),
+    url(r'^admin/news/authors/(.*/)?$', postgresqleu.newsevents.backendviews.edit_author),
 
     # Conference management
     url(r'^events/(?P<confname>[^/]+)/register/(?P<whatfor>(self)/)?$', postgresqleu.confreg.views.register),

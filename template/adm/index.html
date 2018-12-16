@@ -10,6 +10,16 @@
 </div>
 {%endif%}
 
+{%if permissions.news %}
+<h1>News</h1>
+<div class="row">
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/news/news/">News articles</a></div>
+{%if user.is_superuser %}
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/news/authors/">News author profiles</a></div>
+{%endif%}
+</div>
+{%endif%}
+
 {%if permissions.membership %}
 <h1>Membership</h1>
 <div class="row">

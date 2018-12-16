@@ -33,6 +33,7 @@ class BackendForm(ConcurrentProtectedModelForm):
     linked_objects = {}
     auto_cascade_delete_to = []
     fieldsets = []
+    force_insert = False
     helplink = None
 
     def __init__(self, conference, *args, **kwargs):

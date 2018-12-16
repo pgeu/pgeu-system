@@ -117,6 +117,7 @@ def admin_dashboard(request):
     if request.user.is_superuser:
         permissions = {
             'conferences': True,
+            'news': True,
             'membership': True,
         }
     else:
@@ -125,6 +126,7 @@ def admin_dashboard(request):
 
         permissions = {
             'conferences': confperm,
+            'news': u'News administrators' in groups,
             'membership': u'Membership administrators' in groups,
         }
 
