@@ -18,6 +18,8 @@ $(document).ready(function() {
       ],
 {%if defaultsort%}
       'order': {{defaultsort|safe}},
+{%else%}
+      'order': [],
 {%endif%}
    });
 
