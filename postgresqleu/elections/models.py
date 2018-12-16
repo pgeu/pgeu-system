@@ -7,11 +7,14 @@ class Election(models.Model):
     startdate = models.DateField(null=False, blank=False)
     enddate = models.DateField(null=False, blank=False)
     slots = models.IntegerField(null=False, default=1)
-    isopen = models.BooleanField(null=False, default=False)
-    resultspublic = models.BooleanField(null=False, default=False)
+    isopen = models.BooleanField(null=False, default=False, verbose_name='Voting open')
+    resultspublic = models.BooleanField(null=False, default=False, verbose_name='Results public')
 
     def __unicode__(self):
         return self.name
+
+    class Meta:
+        ordering = ('-startdate', )
 
 
 class Candidate(models.Model):

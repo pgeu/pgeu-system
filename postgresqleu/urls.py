@@ -296,12 +296,14 @@ if settings.ENABLE_MEMBERSHIP:
 
 if settings.ENABLE_ELECTIONS:
     import postgresqleu.elections.views
+    import postgresqleu.elections.backendviews
     urlpatterns.extend([
         # Elections
         url(r'^elections/$', postgresqleu.elections.views.home),
         url(r'^elections/(\d+)/$', postgresqleu.elections.views.election),
         url(r'^elections/(\d+)/candidate/(\d+)/$', postgresqleu.elections.views.candidate),
         url(r'^elections/(\d+)/ownvotes/$', postgresqleu.elections.views.ownvotes),
+        url(r'^admin/elections/election/(.*/)?$', postgresqleu.elections.backendviews.edit_election),
     ])
 
 if settings.ENABLE_TRUSTLY:

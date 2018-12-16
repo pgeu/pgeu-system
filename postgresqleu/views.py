@@ -120,6 +120,7 @@ def admin_dashboard(request):
             'conferences': True,
             'news': True,
             'membership': settings.ENABLE_MEMBERSHIP,
+            'elections': settings.ENABLE_ELECTIONS,
         }
     else:
         groups = [g.name for g in request.user.groups.all()]
@@ -129,6 +130,7 @@ def admin_dashboard(request):
             'conferences': confperm,
             'news': u'News administrators' in groups,
             'membership': settings.ENABLE_MEMBERSHIP and u'Membership administrators' in groups,
+            'elections': settings.ENABLE_ELECTIONS and u'Election administrators' in groups,
         }
 
     return render(request, 'adm/index.html', {
