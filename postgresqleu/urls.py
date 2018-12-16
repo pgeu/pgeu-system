@@ -60,6 +60,7 @@ urlpatterns.extend([
     url(r'^events/$', postgresqleu.views.eventsindex),
     url(r'^events/past/$', postgresqleu.views.pastevents),
     url(r'^events/series/[^/]+-(\d+)/$', postgresqleu.views.eventseries),
+    url(r'^events/attendee/$', postgresqleu.views.attendee_events),
 
     # Global admin
     url(r'^admin/$', postgresqleu.views.admin_dashboard),
@@ -267,7 +268,6 @@ urlpatterns.extend([
 
 if settings.ENABLE_NEWS:
     urlpatterns.extend([
-        url(r'^events/attendee/$', postgresqleu.views.attendee_events),
         url(r'^news/archive/$', postgresqleu.newsevents.views.newsarchive),
         url(r'news/[^/]+-(\d+)/$', postgresqleu.newsevents.views.newsitem),
         # Feeds
