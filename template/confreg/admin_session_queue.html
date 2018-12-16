@@ -14,7 +14,7 @@ one of them off, click the session and change the field for
   </tr>
 {%for s in notifysessions%}
   <tr>
-    <td><a href="/admin/confreg/conferencesession/{{s.id}}/">{{s}}</a></td>
+    <td><a href="/events/admin/{{conference.urlname}}/sessions/{{s.id}}/">{{s}}</a></td>
     <td>{{s.lastnotified_status_string}} -&gt; {{s.status_string}}</td>
   </tr>
 {%endfor%}
