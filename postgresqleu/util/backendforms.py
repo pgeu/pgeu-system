@@ -68,16 +68,17 @@ class BackendForm(ConcurrentProtectedModelForm):
 
             # Any datetime or date fields that are not explicitly excluded will be forced to be within
             # the conference dates.
-            if isinstance(v, django.forms.fields.DateTimeField) and k not in self.exclude_date_validators:
-                v.validators.extend([
-                    MinValueValidator(datetime.datetime.combine(self.conference.startdate, datetime.time(0, 0, 0))),
-                    MaxValueValidator(datetime.datetime.combine(self.conference.enddate + datetime.timedelta(days=1), datetime.time(0, 0, 0))),
-                ])
-            elif isinstance(v, django.forms.fields.DateField) and k not in self.exclude_date_validators:
-                v.validators.extend([
-                    MinValueValidator(self.conference.startdate),
-                    MaxValueValidator(self.conference.enddate),
-                ])
+            if self.conference:
+                if isinstance(v, django.forms.fields.DateTimeField) and k not in self.exclude_date_validators:
+                    v.validators.extend([
+                        MinValueValidator(datetime.datetime.combine(self.conference.startdate, datetime.time(0, 0, 0))),
+                        MaxValueValidator(datetime.datetime.combine(self.conference.enddate + datetime.timedelta(days=1), datetime.time(0, 0, 0))),
+                    ])
+                elif isinstance(v, django.forms.fields.DateField) and k not in self.exclude_date_validators:
+                    v.validators.extend([
+                        MinValueValidator(self.conference.startdate),
+                        MaxValueValidator(self.conference.enddate),
+                    ])
 
         for field, vattype in self.vat_fields.items():
             self.fields[field].widget.attrs['class'] = 'backend-vat-field backend-vat-{0}-field'.format(vattype)
