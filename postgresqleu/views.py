@@ -2,6 +2,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.template.defaultfilters import slugify
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 
 from postgresqleu.newsevents.models import News
 from postgresqleu.confreg.models import Conference, ConferenceSeries
@@ -118,7 +119,7 @@ def admin_dashboard(request):
         permissions = {
             'conferences': True,
             'news': True,
-            'membership': True,
+            'membership': settings.ENABLE_MEMBERSHIP,
         }
     else:
         groups = [g.name for g in request.user.groups.all()]
@@ -127,7 +128,7 @@ def admin_dashboard(request):
         permissions = {
             'conferences': confperm,
             'news': u'News administrators' in groups,
-            'membership': u'Membership administrators' in groups,
+            'membership': settings.ENABLE_MEMBERSHIP and u'Membership administrators' in groups,
         }
 
     return render(request, 'adm/index.html', {
