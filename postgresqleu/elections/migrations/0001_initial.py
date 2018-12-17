@@ -27,9 +27,12 @@ class Migration(migrations.Migration):
                 ('startdate', models.DateField()),
                 ('enddate', models.DateField()),
                 ('slots', models.IntegerField(default=1)),
-                ('isopen', models.BooleanField(default=False)),
-                ('resultspublic', models.BooleanField(default=False)),
+                ('isopen', models.BooleanField(default=False, verbose_name="Voting open")),
+                ('resultspublic', models.BooleanField(default=False, verbose_name="Results public")),
             ],
+            options={
+                'ordering': ('-startdate',),
+            },
         ),
         migrations.CreateModel(
             name='Vote',
