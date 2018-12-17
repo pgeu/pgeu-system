@@ -35,6 +35,14 @@
 </div>
 {%endif%}
 
+{%if permissions.invoices %}
+<h1>Invoices</h1>
+<div class="row">
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/invoiceadmin/">Invoice Administration</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/invoices/vatrates/">VAT rates</a></div>
+</div>
+{%endif%}
+
 {%if user.is_superuser%}
 <h1>Django admin</h1>
 <div class="row">

@@ -20,6 +20,7 @@ import postgresqleu.confreg.docsviews
 import postgresqleu.confwiki.views
 import postgresqleu.account.views
 import postgresqleu.invoices.views
+import postgresqleu.invoices.backendviews
 import postgresqleu.accounting.views
 import postgresqleu.paypal.views
 import postgresqleu.adyen.views
@@ -245,6 +246,7 @@ urlpatterns.extend([
     url(r'^invoices/banktransfer/$', postgresqleu.invoices.views.banktransfer),
     url(r'^invoices/adyen_bank/(\d+)/$', postgresqleu.adyen.views.invoicepayment),
     url(r'^invoices/adyen_bank/(\d+)/(\w+)/$', postgresqleu.adyen.views.invoicepayment_secret),
+    url(r'^admin/invoices/vatrates/(.*/)?$', postgresqleu.invoices.backendviews.edit_vatrate),
 
     # Basic accounting system
     url(r'^accounting/$', postgresqleu.accounting.views.index),

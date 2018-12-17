@@ -121,6 +121,7 @@ def admin_dashboard(request):
             'news': True,
             'membership': settings.ENABLE_MEMBERSHIP,
             'elections': settings.ENABLE_ELECTIONS,
+            'invoices': True,
         }
     else:
         groups = [g.name for g in request.user.groups.all()]
@@ -131,6 +132,7 @@ def admin_dashboard(request):
             'news': u'News administrators' in groups,
             'membership': settings.ENABLE_MEMBERSHIP and u'Membership administrators' in groups,
             'elections': settings.ENABLE_ELECTIONS and u'Election administrators' in groups,
+            'invoices': u"Invoice managers" in groups,
         }
 
     return render(request, 'adm/index.html', {
