@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 
 from postgresqleu.confreg.util import get_authenticated_conference
+from postgresqleu.confreg.models import Conference
 
 import datetime
 import json
