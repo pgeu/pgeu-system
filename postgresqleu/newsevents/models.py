@@ -4,9 +4,9 @@ from django.contrib.auth.models import User
 
 class NewsPosterProfile(models.Model):
     author = models.OneToOneField(User, primary_key=True)
-    urlname = models.CharField(max_length=50, null=False, blank=False, unique=True)
-    fullname = models.CharField(max_length=100, null=False, blank=False)
-    canpostglobal = models.BooleanField(null=False, default=False)
+    urlname = models.CharField(max_length=50, null=False, blank=False, unique=True, verbose_name="URL name")
+    fullname = models.CharField(max_length=100, null=False, blank=False, verbose_name="Full name")
+    canpostglobal = models.BooleanField(null=False, default=False, verbose_name="Can post global news")
 
     def __unicode__(self):
         return u"{0} ({1})".format(self.fullname, self.urlname)
