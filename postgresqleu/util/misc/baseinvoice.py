@@ -31,9 +31,9 @@ class PDFBase(object):
         self.canvas = Canvas(self.pdfdata)
 
         self.recipient = recipient
-
         self.preview = False
 
+    def prepare(self):
         self.canvas.setTitle(self.title)
         self.canvas.setSubject(self.title)
         self.canvas.setAuthor(settings.ORG_NAME)
@@ -106,6 +106,8 @@ class BaseInvoice(PDFBase):
     ROWS_PER_PAGE = 14
 
     def __init__(self, title, recipient, invoicedate, duedate, invoicenum, preview=False, receipt=False, bankinfo=True, totalvat=0, reverse_vat=None, paymentlink=None, **kw):
+        super(BaseInvoice, self).__init__(recipient)
+
         self.title = title
         self.invoicedate = invoicedate
         self.duedate = duedate
@@ -117,13 +119,13 @@ class BaseInvoice(PDFBase):
         self.reverse_vat = reverse_vat
         self.paymentlink = paymentlink
 
-        super(BaseInvoice, self).__init__(recipient)
-
         self.rows = []
 
         if self.receipt:
             # Never include bank info on receipts
             self.bankinfo = False
+
+        self.prepare()
 
     def addrow(self, title, cost, count, vatrate):
         self.rows.append((title, cost, count, vatrate, vatrate and vatrate.vatpercent or 0))
@@ -315,17 +317,19 @@ class BaseInvoice(PDFBase):
 
 class BaseRefund(PDFBase):
     def __init__(self, recipient, invoicedate, refunddate, invoicenum, invoiceamount, invoicevat, refundamount, refundvat, paymentmethod):
+        super(BaseRefund, self).__init__(recipient)
         self.title = "Refund of invoice {0}".format(invoicenum)
         self.recipient = recipient
         self.invoicedate = invoicedate
         self.refunddate = refunddate
+        self.invoicenum = invoicenum
         self.invoiceamount = invoiceamount
         self.invoicevat = invoicevat
         self.refundamount = refundamount
         self.refundvat = refundvat
         self.paymentmethod = paymentmethod
 
-        super(BaseRefund, self).__init__(recipient)
+        self.prepare()
 
     def save(self):
         self.draw_header()
