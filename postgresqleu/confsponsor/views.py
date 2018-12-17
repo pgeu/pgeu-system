@@ -49,6 +49,8 @@ def _get_sponsor_and_admin(sponsorid, request, onlyconfirmed=True):
         sponsor = get_object_or_404(Sponsor, id=sponsorid)
     else:
         sponsor = get_object_or_404(Sponsor, id=sponsorid, confirmed=True)
+    if is_superuser:
+        return sponsor, True
     if not sponsor.managers.filter(pk=request.user.id).exists():
         if not sponsor.conference.administrators.filter(pk=request.user.id).exists() and not sponsor.conference.series.administrators.filter(pk=request.user.id).exists():
             # XXX: Can only raise 404 for now, should have custom middleware to make this nicer
