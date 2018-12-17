@@ -136,8 +136,8 @@ MEMBERSHIP_COUNTRY_VALIDATOR = None
 
 # Invoice module
 # --------------
-INVOICE_PDF_BUILDER = 'postgresqleu.util.misc.pgeuinvoice.BaseInvoice'
-REFUND_PDF_BUILDER = 'postgresqleu.util.misc.pgeuinvoice.BaseRefund'
+INVOICE_PDF_BUILDER = 'postgresqleu.util.misc.baseinvoice.BaseInvoice'
+REFUND_PDF_BUILDER = 'postgresqleu.util.misc.baseinvoice.BaseRefund'
 
 # Paypal sandbox configuration
 PAYPAL_BASEURL = 'https://www.paypal.com/cgi-bin/webscr'
