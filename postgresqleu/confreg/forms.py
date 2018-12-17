@@ -629,12 +629,22 @@ class AttendeeMailForm(forms.ModelForm):
         model = AttendeeMail
         exclude = ('conference', )
 
+    def regclass_label(self, obj):
+        return u"{0} (contains {1}; total {2} registrations".format(
+            obj.regclass,
+            u", ".join([t.regtype for t in obj.registrationtype_set.all()]),
+            ConferenceRegistration.objects.filter(conference=self.conference,
+                                                  payconfirmedat__isnull=False,
+                                                  regtype__regclass=obj).count(),
+        )
+
     def __init__(self, conference, *args, **kwargs):
         self.conference = conference
         super(AttendeeMailForm, self).__init__(*args, **kwargs)
 
         self.fields['regclasses'].widget = forms.CheckboxSelectMultiple()
         self.fields['regclasses'].queryset = RegistrationClass.objects.filter(conference=self.conference)
+        self.fields['regclasses'].label_from_instance = self.regclass_label
 
         if not (self.data.get('regclasses') and self.data.get('subject') and self.data.get('message')):
             del self.fields['confirm']
