@@ -1,18 +1,5 @@
 {%extends "confreg/confadmin_base.html" %}
 {%block title%}Conference Attendee Email - {{conference}}{%endblock%}
-{%block extrahead%}
-<style>
-tr.error {
-   background-color: #ffb6b6;
-}
-table.emailform tr {
-   vertical-align: top;
-}
-table.emailform input[type=text],textarea {
-   width: 500px;
-}
-</style>
-{%endblock%}
 {%block layoutblock%}
 <h1>Conference Attendee Email - {{conference}}</h1>
 
@@ -40,20 +27,12 @@ and will also be made available historically to both those and to anybody
 else who signs up with the selected registration types later.
 </p>
 
-<form method="post" action=".">{% csrf_token %}
-<table class="emailform">
- <tr><th>From</th><td>{{conference.contactaddr}}</td></tr>
-{%for field in form%}
- <tr {%if field.errors%}class="error"{%endif%}>
-  <th>{{field.label}}</th>
-  <td>{{field}}</td>
-  <td>{%if field.errors%}{{field.errors}}{%endif%}</td>
- </tr>
-{%endfor%}
-</table>
-
-<br/>
-<input type="submit" value="Send email!" class="btn btn-default">
+<form class="form-horizontal" method="post" action=".">{% csrf_token %}
+  <div class="form-group">
+    <label class="control-label col-lg-3">From</label>
+    <div class="col-lg-9 controls"><div class="form-control">{{conference.conferencename}} &lt;{{conference.contactaddr}}&gt;</div></div>
+  </div>
+{%include "confreg/admin_backend_form_content.html" with savebutton="Send email!"%}
 </form>
 
 <br/>

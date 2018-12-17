@@ -249,7 +249,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='attendeemail',
             name='regclasses',
-            field=models.ManyToManyField(to='confreg.RegistrationClass'),
+            field=models.ManyToManyField(to='confreg.RegistrationClass', verbose_name="Registration classes"),
         ),
         migrations.AddField(
             model_name='registrationwaitlisthistory',

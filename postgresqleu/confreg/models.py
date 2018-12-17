@@ -946,7 +946,7 @@ class DiscountCode(models.Model):
 
 class AttendeeMail(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
-    regclasses = models.ManyToManyField(RegistrationClass, blank=False)
+    regclasses = models.ManyToManyField(RegistrationClass, blank=False, verbose_name="Registration classes")
     sentat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     subject = models.CharField(max_length=100, null=False, blank=False)
     message = models.TextField(max_length=8000, null=False, blank=False)
