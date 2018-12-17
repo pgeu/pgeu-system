@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden, Http404
+from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
 from django.db import transaction, connection
 from django.conf import settings
@@ -53,10 +54,11 @@ def _get_sponsor_and_admin(sponsorid, request, onlyconfirmed=True):
         return sponsor, True
     if not sponsor.managers.filter(pk=request.user.id).exists():
         if not sponsor.conference.administrators.filter(pk=request.user.id).exists() and not sponsor.conference.series.administrators.filter(pk=request.user.id).exists():
-            # XXX: Can only raise 404 for now, should have custom middleware to make this nicer
-            raise Http404("Access denied")
+            raise PermissionDenied("Access denied")
+        # Else user is admin of conference or conference series
         return sponsor, True
     else:
+        # End user is directly a manager of this sponsorship
         return sponsor, False
 
 
