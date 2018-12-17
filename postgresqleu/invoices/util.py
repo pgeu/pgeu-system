@@ -92,7 +92,8 @@ class InvoiceWrapper(object):
         return self._render_pdf(receipt=True)
 
     def _render_pdf(self, preview=False, receipt=False):
-        PDFInvoice = getattr(importlib.import_module(settings.INVOICE_PDF_BUILDER), 'PDFInvoice')
+        (modname, classname) = settings.INVOICE_PDF_BUILDER.rsplit('.', 1)
+        PDFInvoice = getattr(importlib.import_module(modname), classname)
         if self.invoice.recipient_secret:
             paymentlink = '{0}/invoices/{1}/{2}/'.format(settings.SITEBASE, self.invoice.pk, self.invoice.recipient_secret)
         else:
@@ -102,7 +103,6 @@ class InvoiceWrapper(object):
                                 self.invoice.invoicedate,
                                 receipt and self.invoice.paidat or self.invoice.duedate,
                                 self.invoice.pk,
-                                os.path.realpath('%s/../../media/img/' % os.path.dirname(__file__)),
                                 preview=preview,
                                 receipt=receipt,
                                 bankinfo=self.invoice.bankinfo,
@@ -121,7 +121,8 @@ class InvoiceWrapper(object):
         return pdfinvoice.save().getvalue()
 
     def render_pdf_refund(self):
-        PDFRefund = getattr(importlib.import_module(settings.INVOICE_PDF_BUILDER), 'PDFRefund')
+        (modname, classname) = settings.REFUND_PDF_BUILDER.rsplit('.', 1)
+        PDFRefund = getattr(importlib.import_module(modname), classname)
         pdfnote = PDFRefund("%s\n%s" % (self.invoice.recipient_name, self.invoice.recipient_address),
                             self.invoice.invoicedate,
                             self.invoice.refund.completed,
@@ -130,8 +131,6 @@ class InvoiceWrapper(object):
                             self.invoice.total_vat,
                             self.invoice.refund.amount,
                             self.invoice.refund.vatamount,
-                            os.path.realpath('%s/../../media/img/' % os.path.dirname(__file__)),
-                            settings.CURRENCY_SYMBOL,
                             self.used_payment_details(),
         )
 

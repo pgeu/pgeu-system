@@ -6,6 +6,8 @@ import sys
 from exceptions import ImportError
 from django.conf import global_settings
 
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+
 # Django settings for postgresqleu project.
 
 DEBUG = False
@@ -134,7 +136,8 @@ MEMBERSHIP_COUNTRY_VALIDATOR = None
 
 # Invoice module
 # --------------
-INVOICE_PDF_BUILDER = 'postgresqleu.util.misc.pgeuinvoice'
+INVOICE_PDF_BUILDER = 'postgresqleu.util.misc.pgeuinvoice.BaseInvoice'
+REFUND_PDF_BUILDER = 'postgresqleu.util.misc.pgeuinvoice.BaseRefund'
 
 # Paypal sandbox configuration
 PAYPAL_BASEURL = 'https://www.paypal.com/cgi-bin/webscr'
