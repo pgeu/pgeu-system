@@ -6,6 +6,11 @@ div.backendform_checkbox ul {
     list-style-type: none;
 }
 
+div.backendform_checkbox ul li label {
+    padding-left: 0.5em;
+    text-indent: -1.5em;
+}
+
 div.backenddocs dd {
     margin-left: 2em;
 }
