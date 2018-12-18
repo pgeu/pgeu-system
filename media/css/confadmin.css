@@ -1,3 +1,7 @@
+div.bottom-spaced-row {
+    margin-bottom: 1em;
+}
+
 div.buttonrow .btn {
     margin-bottom: 10px;
 }
