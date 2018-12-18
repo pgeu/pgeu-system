@@ -2745,6 +2745,7 @@ def admin_waitlist(request, urlname):
             })
 
     def _waitlist_paginate(objs, objtype):
+        num = len(objs)
         p = paginator.Paginator(objs, 20)
         p.varsuffix = objtype
         try:
@@ -2752,16 +2753,16 @@ def admin_waitlist(request, urlname):
         except ValueError:
             page = 1
         try:
-            return p.page(page)
+            return p.page(page), num
         except (paginator.EmptyPage, paginstor.InvalidPage):
-            return p.page(paginator.num_pages)
+            return p.page(paginator.num_pages), num
 
     num_confirmedregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False).count()
     num_invoicedregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True, invoice__isnull=False, registrationwaitlistentry__isnull=True).count()
     num_invoicedbulkpayregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True, bulkpayment__isnull=False, bulkpayment__paidat__isnull=True).count()
     num_waitlist_offered = RegistrationWaitlistEntry.objects.filter(registration__conference=conference, offeredon__isnull=False, registration__payconfirmedat__isnull=True).count()
-    waitlist = _waitlist_paginate(RegistrationWaitlistEntry.objects.filter(registration__conference=conference, registration__payconfirmedat__isnull=True).order_by('enteredon'), 'w')
-    waitlist_cleared = _waitlist_paginate(RegistrationWaitlistEntry.objects.filter(registration__conference=conference, registration__payconfirmedat__isnull=False).order_by('-registration__payconfirmedat', 'enteredon'), 'cl')
+    waitlist, num_waitlist = _waitlist_paginate(RegistrationWaitlistEntry.objects.filter(registration__conference=conference, registration__payconfirmedat__isnull=True).order_by('enteredon'), 'w')
+    waitlist_cleared, num_waitlist_cleared = _waitlist_paginate(RegistrationWaitlistEntry.objects.filter(registration__conference=conference, registration__payconfirmedat__isnull=False).order_by('-registration__payconfirmedat', 'enteredon'), 'cl')
 
     if request.method == 'POST':
         # Attempting to make an offer
@@ -2810,6 +2811,8 @@ def admin_waitlist(request, urlname):
         'num_invoicedregs': num_invoicedregs,
         'num_invoicedbulkpayregs': num_invoicedbulkpayregs,
         'num_waitlist_offered': num_waitlist_offered,
+        'num_waitlist': num_waitlist,
+        'num_waitlist_cleared': num_waitlist_cleared,
         'num_total': num_confirmedregs + num_invoicedregs + num_invoicedbulkpayregs + num_waitlist_offered,
         'waitlist': waitlist,
         'waitlist_cleared': waitlist_cleared,
