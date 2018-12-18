@@ -367,7 +367,7 @@ class BackendConferenceSessionForm(BackendForm):
     @classmethod
     def get_column_filters(cls, conference):
         return {
-            'Status': [v for k,v in STATUS_CHOICES],
+            'Status': [v for k, v in STATUS_CHOICES],
             'Track': Track.objects.filter(conference=conference),
             'Room': Room.objects.filter(conference=conference),
         }

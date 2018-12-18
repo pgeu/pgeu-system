@@ -192,7 +192,6 @@ class Invoice(models.Model):
         else:
             return "pending"
 
-
     def __unicode__(self):
         return "Invoice #%s" % self.pk
 

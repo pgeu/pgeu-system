@@ -67,10 +67,10 @@ def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=Fal
 
     if paginator.num_pages > 15:
         if page < paginator.num_pages - 15:
-            firstpage = max(1, page-7)
+            firstpage = max(1, page - 7)
             lastpage = firstpage + 15
         else:
-            lastpage = min(paginator.num_pages+1, page+8)
+            lastpage = min(paginator.num_pages + 1, page + 8)
             firstpage = lastpage - 15
         page_range = range(firstpage, lastpage)
     else:
@@ -183,7 +183,7 @@ def oneinvoice(request, invoicenum):
                     # even bother to save the fieldset.
                     form.instance.save(update_fields=[fn for fn in form.available_in_finalized if not isinstance(form[fn].field, ModelMultipleChoiceField)])
                     for m in form.instance.allowedmethods.all():
-                        if not m in form.cleaned_data['allowedmethods']:
+                        if m not in form.cleaned_data['allowedmethods']:
                             form.instance.allowedmethods.remove(m)
                     for i in form.cleaned_data['allowedmethods']:
                         form.instance.allowedmethods.add(i)
