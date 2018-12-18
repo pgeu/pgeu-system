@@ -1,3 +1,4 @@
+{%load querystring%}
 <table class="table">
   <tr class="info">
     <th>Pos</th>
@@ -19,7 +20,7 @@
   </tr>
 {%for w in waitlist%}
   <tr>
-    <td>{{forloop.counter}}</td>
+    <td>{{forloop.counter0|add:waitlist.start_index}}</td>
     <td>{{w.registration.firstname}} {{w.registration.lastname}}</td>
     <td>{{w.registration.email}}</td>
     <td>{{w.registration.regtype}}</td>
@@ -35,6 +36,29 @@
   </tr>
 {%endfor%}
 </table>
+
+{%if waitlist.paginator.num_pages > 1 %}
+<ul class="pagination pagination-sm">
+{%if not waitlist.has_previous%}
+ <li class="disabled"><span>&laquo;</span></lI>
+{%else%}
+ <li><a href="?{% edit_querystring request "page_"|add:waitlist.paginator.varsuffix waitlist.previous_page_number %}">&laquo;</a></li>
+{%endif%}
+{%for p in waitlist.paginator.page_range %}
+{%if waitlist.number == p%}
+ <li class="active"><span>{{p}}</span>
+{%else%}
+ <li><a href="?{% edit_querystring request "page_"|add:waitlist.paginator.varsuffix p%}">{{p}}</a></li>
+{%endif%}
+{%endfor%}
+{%if not waitlist.has_next %}
+ <li class="disabled"><span>&raquo;</span></lI>
+{%else%}
+ <li><a href="?{% edit_querystring request "page_"|add:waitlist.paginator.varsuffix waitlist.next_page_number %}">&raquo;</a></li>
+{%endif%}
+</ul>
+{%endif%}
+
 
 {%comment%}Render all status popups{%endcomment%}
 {%for w in waitlist%}

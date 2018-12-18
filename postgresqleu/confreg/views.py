@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render, get_object_or_404
 from django.core.exceptions import PermissionDenied
+from django.core import paginator
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect, HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -2743,12 +2744,24 @@ def admin_waitlist(request, urlname):
             'helplink': 'waitlist',
             })
 
+    def _waitlist_paginate(objs, objtype):
+        p = paginator.Paginator(objs, 20)
+        p.varsuffix = objtype
+        try:
+            page = int(request.GET.get("page_{0}".format(objtype), "1"))
+        except ValueError:
+            page = 1
+        try:
+            return p.page(page)
+        except (paginator.EmptyPage, paginstor.InvalidPage):
+            return p.page(paginator.num_pages)
+
     num_confirmedregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False).count()
     num_invoicedregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True, invoice__isnull=False, registrationwaitlistentry__isnull=True).count()
     num_invoicedbulkpayregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True, bulkpayment__isnull=False, bulkpayment__paidat__isnull=True).count()
     num_waitlist_offered = RegistrationWaitlistEntry.objects.filter(registration__conference=conference, offeredon__isnull=False, registration__payconfirmedat__isnull=True).count()
-    waitlist = RegistrationWaitlistEntry.objects.filter(registration__conference=conference, registration__payconfirmedat__isnull=True).order_by('enteredon')
-    waitlist_cleared = RegistrationWaitlistEntry.objects.filter(registration__conference=conference, registration__payconfirmedat__isnull=False).order_by('-registration__payconfirmedat', 'enteredon')
+    waitlist = _waitlist_paginate(RegistrationWaitlistEntry.objects.filter(registration__conference=conference, registration__payconfirmedat__isnull=True).order_by('enteredon'), 'w')
+    waitlist_cleared = _waitlist_paginate(RegistrationWaitlistEntry.objects.filter(registration__conference=conference, registration__payconfirmedat__isnull=False).order_by('-registration__payconfirmedat', 'enteredon'), 'cl')
 
     if request.method == 'POST':
         # Attempting to make an offer
