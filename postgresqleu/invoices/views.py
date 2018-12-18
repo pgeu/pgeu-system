@@ -22,14 +22,14 @@ from util import InvoiceWrapper, InvoiceManager, InvoicePresentationWrapper
 
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
-def all(request):
-    return _homeview(request, Invoice.objects.all())
+def paid(request):
+    return _homeview(request, Invoice.objects.filter(paidat__isnull=False, deleted=False, refund__isnull=True, finalized=True), paid=True)
 
 
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def unpaid(request):
-    return _homeview(request, Invoice.objects.filter(paidat=None, deleted=False, finalized=True), unpaid=True)
+    return _homeview(request, Invoice.objects.filter(paidat=None, deleted=False, finalized=True, refund__isnull=True), unpaid=True)
 
 
 @login_required
@@ -51,7 +51,7 @@ def refunded(request):
 
 
 # Not a view, just a utility function, thus no separate permissions check
-def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=False, refunded=False, searchterm=None):
+def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=False, refunded=False, paid=False, searchterm=None):
     # Render a list of all invoices
     paginator = Paginator(invoice_objects, 50)
 
@@ -65,13 +65,31 @@ def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=Fal
     except (EmptyPage, InvalidPage):
         invoices = paginator.page(paginator.num_pages)
 
+    if paginator.num_pages > 15:
+        if page < paginator.num_pages - 15:
+            firstpage = max(1, page-7)
+            lastpage = firstpage + 15
+        else:
+            lastpage = min(paginator.num_pages+1, page+8)
+            firstpage = lastpage - 15
+        page_range = range(firstpage, lastpage)
+    else:
+        page_range = paginator.page_range
+
+    has_pending = Invoice.objects.filter(finalized=False).exists()
+    has_unpaid = Invoice.objects.filter(finalized=True, paidat__isnull=False).exists()
     return render(request, 'invoices/home.html', {
         'invoices': invoices,
+        'paid': paid,
         'unpaid': unpaid,
         'pending': pending,
         'deleted': deleted,
         'refunded': refunded,
+        'has_pending': has_pending,
+        'has_unpaid': has_unpaid,
         'searchterm': searchterm,
+        'page_range': page_range,
+        'breadcrumbs': [('/invoiceadmin/', 'Invoices'), ],
     })
 
 
@@ -83,7 +101,11 @@ def search(request):
     elif 'term' in request.GET:
         term = request.GET['term']
     else:
-        raise Exception("Sorry, need a search term!")
+        term = ''
+
+    if term.strip() == '':
+        messages.error(request, "No search term specified")
+        return HttpResponseRedirect('/invoiceadmin/')
 
     try:
         invoiceid = int(term)
@@ -199,6 +221,7 @@ def oneinvoice(request, invoicenum):
         'invoice': invoice,
         'currency_symbol': settings.CURRENCY_SYMBOL,
         'vatrates': VatRate.objects.all(),
+        'breadcrumbs': [('/invoiceadmin/', 'Invoices'), ],
     })
 
 
@@ -263,10 +286,15 @@ def cancelinvoice(request, invoicenum):
 def extend_cancel(request, invoicenum):
     invoice = get_object_or_404(Invoice, pk=invoicenum)
 
-    invoice.canceltime += timedelta(days=5)
+    try:
+        days = int(request.GET.get('days', 5))
+    except:
+        days = 5
+
+    invoice.canceltime += timedelta(days=days)
     invoice.save()
 
-    InvoiceHistory(invoice=invoice, txt='Extended autocancel by 5 days to {0}'.format(invoice.canceltime)).save()
+    InvoiceHistory(invoice=invoice, txt='Extended autocancel by {0} days to {1}'.format(days, invoice.canceltime)).save()
 
     return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
@@ -292,6 +320,7 @@ def refundinvoice(request, invoicenum):
             return render(request, 'invoices/refundform_complete.html', {
                 'invoice': invoice,
                 'refund': r,
+                'breadcrumbs': [('/invoiceadmin/', 'Invoices'), ('/invoiceadmin/{0}/'.format(invoice.pk), 'Invoice #{0}'.format(invoice.pk)), ],
                 })
     else:
         form = RefundForm(invoice=invoice)
@@ -305,6 +334,7 @@ def refundinvoice(request, invoicenum):
         'currency_symbol': settings.CURRENCY_SYMBOL,
         'samevat': (vinfo['n'] <= 1),
         'globalvat': vinfo['v'],
+        'breadcrumbs': [('/invoiceadmin/', 'Invoices'), ('/invoiceadmin/{0}/'.format(invoice.pk), 'Invoice #{0}'.format(invoice.pk)), ],
         })
 
 

@@ -51,7 +51,8 @@ class GeneralAccountLookup(LookupBase):
         return [
             {
                 'id': u.id,
-                'value': u'{0} {1} ({2})'.format(u.first_name, u.last_name, u.username)
+                'value': u'{0} {1} ({2})'.format(u.first_name, u.last_name, u.username),
+                'email': u.email,
             }
             for u in User.objects.filter(
                 Q(username__icontains=query) | Q(first_name__icontains=query) | Q(last_name__icontains=query)

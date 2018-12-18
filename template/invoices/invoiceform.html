@@ -1,32 +1,17 @@
-{%extends "nav_financial.html"%}
+{%extends "adm/admin_base.html" %}
+{%load formutil%}
 {%load util %}
 {%block title%}Invoice administration{%endblock%}
 {%block jquery%}
 <script type="text/javascript" src="/media/jq/jquery-1.9.1.min.js"></script>
 {%endblock%}
 {%block extrahead%}
-<style>
-input[readonly="readonly"], textarea[readonly="readonly"] {
-   background-color: lightgray;
-}
-ul.messages {
-  background-color: yellow;
-  list-style-type: none;
-  padding: 2px;
-  padding-left: 20px;
-}
-</style>
-<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
+<script type="text/javascript" src="/media/js/selectize.min.js"></script>
 <link rel="stylesheet" href="/media/css/selectize.css" />
 <link rel="stylesheet" href="/media/css/selectize.default.css" />
-{%endblock%}
-{%block pagescript%}
-<script type="text/javascript" src="/media/jq/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/media/js/selectize.min.js"></script>
-<script type="text/javascript" src="/media/selectable/js/jquery.dj.selectable.js"></script>
+
 <script type="text/javascript">
-function sendEmail() {
-   var reason = $('#emailreason').val();
+function sendEmail(reason) {
    var q = '';
    if (reason == 'initial') {
       q = 'This will send an email to {{invoice.recipient_email}}, with the invoice attached. Are you sure you want to do this?';
@@ -52,9 +37,9 @@ function sendEmail() {
    }
 }
 
-function extendCancel() {
-   if (confirm('Are you sure you want to extend the cancelation date by 5 days?\n(Note that no notification is sent to the user)')) {
-      document.location.href = 'extend_cancel/';
+function extendCancel(days) {
+   if (confirm('Are you sure you want to extend the cancelation date by ' + days + ' days?\n(Note that no notification is sent to the user)')) {
+      document.location.href = 'extend_cancel/?days=' + days;
    }
 }
 
@@ -97,15 +82,37 @@ $(function() {
       }
    });
 
-   $('#id_recipient_user_0').change(function() {
-      var v = $('#id_recipient_user_0').val();
-      var r = new RegExp("^.*\\((.*) \\[(.*)\\]\\)$");
-      var a = r.exec(v);
-      if (a) {
-         $('#id_recipient_name').val(a[1]);
-         $('#id_recipient_email').val(a[2]);
-      }
+   /* Selectize for username */
+   $('#id_recipient_user').selectize({
+      plugins: ['remove_button'],
+      valueField: 'id',
+      labelField: 'value',
+      searchField: 'value',
+      load: function(query, callback) {
+         if (!query.length) return callback();
+         $.ajax({
+            'url': '/events/admin/lookups/accounts/',
+            'type': 'GET',
+            'dataType': 'json',
+            'data': {
+               'query': query,
+            },
+            'error': function() { callback();},
+            'success': function(res) { callback(res.values);},
+         });
+      },
+      onChange: function() {
+         var v = $('#id_recipient_user').val();
+         var o = $('#id_recipient_user').selectize()[0].selectize.options[v];
+         if (o) {
+            var r = new RegExp("^(.*)\\s+\\(");
+            var a = r.exec(o.value);
+            $('#id_recipient_name').val(a[1]);
+            $('#id_recipient_email').val(o.email);
+         }
+      },
    });
+
 });
 
 var vatmap = {
@@ -113,180 +120,185 @@ var vatmap = {
 };
 </script>
 {%endblock%}
-{%block content %}
+{%block layoutblock %}
+<div class="row">
 {%if invoice.id%}
-<h1>Invoice #{{invoice.id}}</h1>
+<h1>Invoice #{{invoice.id}} - {{invoice.statusstring}}</h1>
 {%else%}
 <h1>New invoice</h1>
 {%endif%}
-
-<a href="/invoiceadmin/" class="btn btn-outline-dark">Back</a>
-
-{% if messages %}
-    <ul class="messages">
-    {% for message in messages %}
-      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-    </ul>
-{% endif %}
+</div>
 
 {%if invoice.finalized%}
-<p>
-This invoice has been finalized and can no longer be edited.
-</p>
-<a href="/invoices/{{invoice.id}}/" class="btn btn-outline-dark">View as recipient</a>
+<div class="row">
+  <a href="/invoices/{{invoice.id}}/" class="btn btn-default btn-block">View as recipient</a>
+</div>
 {%endif%}
 
+<div class="row">
 {%if invoice.deleted%}
-<p>
-<br/>
-<h2>This invoice has been <i>deleted</i>!</h2>
-<br/><br/><br/><br/>
-</p>
-<p>
-The reason given was: <i>{{invoice.deletion_reason}}</i>.
-</p>
+<h2>Canceled</h2>
+<div class="alert alert-info">
+  This invoice has been <b>canceled.</b> The reason given was: <i>{{invoice.deletion_reason}}</i>.
+</div>
 {%elif invoice.refund%}
-<p>
-<br/>
-<h2>This invoice has been <i>refunded</i>!</h2>
-<p>
-The reason given was: <i>{{invoice.refund.reason}}</i>.
-</p>
-<p>
+<h2>Refunded</h2>
+<div class="alert alert-info">
+  <p>
+    This invoice has been <b>refunded</b>!
+    The reason given was: <i>{{invoice.refund.reason}}</i>.
+  </p>
+  <p>
   {%if invoice.refund.completed%}The refund process completed at {{invoice.refund.completed}}.
   {%elif invoice.refund.issued%}The refund was sent to the provider at {{invoice.refund.issued}}, and we are currently awaiting the results from there.
   {%else%}The refund was scheduled at {{invoice.refund.registered}} but has not yet been processed.
   {%endif%}
-</p>
+  </p>
+</div>
 {%else%} {%comment%}deleted/refunded{%endcomment%}
 
 {%if invoice.ispaid%}
+<h2>Paid</h2>
 <p>
 This invoice has been <b>paid</b>.
 </p>
 {%if invoice.paidusing%}
 <p>
-  This invoice was paid using {{invoice.paidusing}}. The payment fees were {{currency_symbol}}{{invoice.payment_fees}}.
+ This invoice was paid using {{invoice.paidusing}}. The payment fees were {{currency_symbol}}{{invoice.payment_fees}}.
 </p>
 {%else%}
 <p>This invoice was manually flagged as paid.</p>
 {%endif%}
-<a href="refund/" class="btn btn-outline-dark">Refund invoice</a>
+<div class="row">
+  <div class="col-md-2">
+    <a href="refund/" class="btn btn-default btn-block">Refund invoice</a>
+  </div>
+</div>
 {%else%}{# paid#}
 {%if invoice.finalized%}
+<h2>Payment</h2>
 <p>
 This invoice has not been paid. You can flag it as paid manually if a
 payment has been received that could not be automatically processed. To
-do this, you must give a "reason" for it, that will be entered into the
+do this, you must give a "description" of it, that will be entered into the
 system for permanent record. This reason should include details like a
 transaction id from the payment system or bank. It will, of course,
 also be tagged with your userid <i>{{user.username}}</i>.
 </p>
+
 <form method="post" action="flag/">{% csrf_token %}
- Reason: <input type="text" name="reason" />
- <input type="submit" name="submit" value="Flag invoice as paid" class="btn btn-outline-dark"/>
+<div class="input-group col-md-6">
+  <input type="text" class="form-control" name="reason" placeholder="Description of payment" />
+  <span class="input-group-btn">
+    <input type="submit" name="submit" value="Flag invoice as paid" class="btn btn-default"/>
+  </span>
+</div>
 </form>
+
 {%endif%}
 {%endif%}
 
 {%endif%}{%comment%}deleted/refunded{%endcomment%}
+</div>
 
-<hr/>
+<div class="row">
+<h2>Invoice</h2>
+<form method="post" action="." class="form-horizontal">{% csrf_token %}
+{%include "confreg/admin_backend_form_content.html" with nobuttons=True %}
 
-<form method="post" action=".">{% csrf_token %}
-<table>
-{%if form.errors%}
- <tr class="errorheader">
-  <td colspan="2">Please correct the errors below, and re-submit the form.</td>
- </tr>
-{%endif%}
-{%for field in form%}
- {%if field.errors %}
- <tr class="error">
-  <td colspan="2">{{field.errors.as_ul}}</td>
- </tr>
- {%endif%}
- <tr {%if field.errors%}class="errorinfo"{%endif%}>
-  <th>{{field.label_tag}}</th>
-  <td>{{field}}</td>
- </tr>
-{%endfor%}
-</table>
 <h2>Invoice rows</h2>
-<table>
 
 {{ formset.management_form }}
 {%for form in formset.forms%}
 {%if forloop.first%}
-<tr>
+<div class="row">
   {%for field in form.visible_fields%}
-  {%if forloop.last%}{# ugly hack to get in before the delete key #}<th>Total</th>{%endif%}
-  <th>{{field.label|capfirst}}</th>
+  {%if forloop.last%}{# ugly hack to get in before the delete key #}<div class="col-md-2">Total</div>{%endif%}
+  <div class="col-md-{%if forloop.first%}3{%elif forloop.last%}1{%else%}2{%endif%}">{{field.label|capfirst}}</div>
   {%endfor%}
-</tr>
+</div>
 {%endif%}
-<tr>
+<div class="row form-group">
   {%for field in form.visible_fields%}
+  {%if forloop.first%}{{form.id}}{%endif%}
   {%if forloop.last%}{# ugly hack to get in before the delete key #}
-  <td><input type="text" id="{{field.id_for_label|stringreplace:"DELETE,totalfield"}}" readonly></td>
+  <div class="col-md-2"><input type="text" id="{{field.id_for_label|stringreplace:"DELETE,totalfield"}}" readonly></div>
   {%endif%}
-  <td>
-    {%if forloop.first%}{{form.id}}{%endif%}
+  <div class="col-md-{%if forloop.first%}3{%elif forloop.last%}1{%else%}2{%endif%} controls{%if field.errors%} bg-danger{%endif%}">
     {{field.errors}}
-    {{field}}
-  </td>
+    {%if field|ischeckbox%}{{field}}{%else%}{{field|field_class:"form-control"}}{%endif%}
+  </div>
   {%endfor%}
-</tr>
+</div>
 {%endfor%}
-</table>
+
 {%if not invoice.deleted and not invoice.ispaid%}
-<input type="submit" name="submit" value="Save" class="btn btn-primary" />
-<br/>
+<div class="row buttonrow">
+  <div class="col-md-2"><input type="submit" name="submit" value="Save" class="btn btn-primary btn-block" /></div>
 {%if invoice.pk%}
 {%if not invoice.finalized%}
-<input type="submit" name="submit" value="Finalize" class="btn btn-outline-dark" /> (Note! Finalizing will lock this invoice from further editing!)
-<br/>
-<input type="submit" name="submit" value="Preview" class="btn btn-outline-dark" /> (Note! Saves before preview!)
-<br/>
-<input type="submit" name="submit" value="Delete" onclick="return confirm_reallydelete()" class="btn btn-outline-dark"/> (Note! Actually deletets. To flag-as-deleted, first finalize the invoice)
+  <div class="col-md-2"><input type="submit" name="submit" value="Finalize" class="btn btn-default btn-block" data-toggle="tooltip" data-placement="bottom" title="Note! Finalizing will lock this invoice from further editing!"  /></div>
+  <div class="col-md-2"><input type="submit" name="submit" value="Preview" class="btn btn-default btn-block" data-toggle="tooltip" data-placement="bottom" title="Note! Saves before preview!" /></div>
+  <div class="col-md-2"><input type="submit" name="submit" value="Delete" onclick="return confirm_reallydelete()" class="btn btn-default btn-block" data-toggle="tooltip" data-placement="bottom" title="Note! Actually deletets. To flag-as-deleted, first finalize the invoice" /></div>
+</div>
 {%endif%}
 {%endif%}
 {%endif%}
 </form>
-{%if invoice.finalized and not invoice.deleted and not invoice.ispaid%}
-<select name="emailreason" id="emailreason">
- <option value="*">** Select email type</option>
- <option value="initial">Initial email</option>
+</div><!-- .row -->
+
+{%if invoice.finalized and not invoice.refund%}
+<h2>Operations</h2>
+<div class="row buttonrow">
+{%if not invoice.deleted and not invoice.ispaid and not invoice.refund %}
+ <div class="col-md-2">
+   <div class="dropdown">
+     <button type="button" class="btn btn-default btn-block dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Send mail <span class="caret"></span></button>
+     <ul class="dropdown-menu">
+       <li><a href="javascript:sendEmail('initial');">Initial email</a></li>
 {%if invoice.isexpired%}
- <option value="reminder">Reminder</option>
+       <li><a href="javascript:sendEmail('reminder');">Reminder</a></li>
 {%endif%}
-</select> <button onclick="sendEmail()" class="btn btn-outline-dark">Send email</button><br/>
+     </ul>
+   </div>
+ </div>
 {%endif%}
 
-{%if invoice.finalized and not invoice.ispaid %}
-<br/>
-<h2>Invoice cancellation</h2>
-<form method="post" action="cancel/">{% csrf_token %}
- Reason: <input type="text" name="reason" />
- <input type="submit" name="submit" value="Cancel invoice" onclick="return confirm_delete()" class="btn btn-outline-dark"/>
- <br/>
- <p><b>Note!</b> The reason given is included in the cancellation notice to the end user!</p>
-</form>
+{%if not invoice.ispaid %}
+
 {%if invoice.canceltime%}
-<h3>Auto cancellation</h3>
-<p>
-This invoice will be automatically canceled at {{invoice.canceltime}}.
-</p>
-<button onclick="extendCancel()" class="btn btn-outline-dark">Extend by 5 days</button><br/>
-{%endif%}
-{%endif%}
+ <div class="col-md-4">
+   <div class="dropdown">
+     <button type="button" class="btn btn-default btn-block dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Autocancels in ({{invoice.canceltime|timeuntil}}) <span class="caret"></span></button>
+     <ul class="dropdown-menu">
+       <li><a href="javascript:extendCancel(1)">Extend by 1 day</a></li>
+       <li><a href="javascript:extendCancel(5)">Extend by 5 days</a></li>
+     </ul>
+   </div>
+ </div>
+{%endif%} {# autocancel #}
 
+ <div class="col-md-4">
+   <form method="post" action="cancel/" class="inline-form">{% csrf_token %}
+     <div class="input-group" data-toggle="tooltip" data-placement="bottom" title="Note! The reason given is included in the cancellation notice to the end user!">
+       <input type="text" class="form-control" name="reason" placeholder="Reason for cancellation" />
+       <span class="input-group-btn">
+	 <input type="submit" name="submit" value="Cancel invoice" onclick="return confirm_delete()" class="btn btn-default" />
+       </span>
+     </div>
+   </form>
+ </div>
+
+{%endif%} {# is not paid #}
+</div>{# buttonrow #}
+{%endif%}{# finalized #}
+
+{%if invoice.invoicehistory_set.all%}
 <h2>Invoice history</h2>
 <p>
 The following events have occured throughout the life of this invoice:
 </p>
-<table>
+<table class="table table-bordered table-striped table-hover table-condensed">
  <tr>
    <th>Time</th>
    <th>Event</th>
@@ -298,8 +310,10 @@ The following events have occured throughout the life of this invoice:
  </tr>
  {%endfor%}
 </table>
+{%endif%}
 
-<br/>
-<a href="/invoiceadmin/" class="btn btn-outline-dark">Back</a>
+<div class="row">
+  <a href="/invoiceadmin/" class="btn btn-default btn-block">Back</a>
+</div>
 
 {%endblock%}

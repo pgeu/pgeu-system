@@ -6,7 +6,6 @@ from django.conf import settings
 
 from decimal import Decimal
 
-from selectable.forms.widgets import AutoCompleteSelectWidget
 from postgresqleu.accountinfo.lookups import UserLookup
 from postgresqleu.util.widgets import HtmlDateInput
 
@@ -18,6 +17,8 @@ from postgresqleu.invoices.models import VatRate
 class InvoiceForm(forms.ModelForm):
     hidden_until_finalized = ('total_amount', 'total_vat', 'remindersent', )
     available_in_finalized = ('recipient_user', 'recipient_email', 'allowedmethods',)
+    selectize_multiple_fields = ['recipient_user', ]
+
     accounting_account = forms.ChoiceField(choices=[], required=False)
     accounting_object = forms.ChoiceField(choices=[], required=False)
 
@@ -31,6 +32,15 @@ class InvoiceForm(forms.ModelForm):
         if not settings.EU_VAT:
             del self.fields['reverse_vat']
 
+        if 'data' in kwargs and u'recipient_user' in kwargs['data']:
+            # Postback with this field, so allow this specifi cuser
+            self.fields['recipient_user'].queryset = User.objects.filter(pk=kwargs['data']['recipient_user'])
+        elif self.instance and self.instance.recipient_user:
+            self.fields['recipient_user'].queryset = User.objects.filter(pk=self.instance.recipient_user.pk)
+        else:
+            self.fields['recipient_user'].queryset = User.objects.filter(pk=-1)
+
+        self.fields['recipient_user'].label_from_instance = lambda u: u'{0} {1} ({2})'.format(u.first_name, u.last_name, u.username)
         self.fields['canceltime'].widget = widgets.DateTimeInput()
         self.fields['allowedmethods'].widget = forms.CheckboxSelectMultiple()
         self.fields['allowedmethods'].queryset = InvoicePaymentMethod.objects.filter(active=True)
@@ -53,12 +63,12 @@ class InvoiceForm(forms.ModelForm):
         model = Invoice
         exclude = ['finalized', 'pdf_invoice', 'pdf_receipt', 'paidat', 'paymentdetails', 'paidusing', 'processor', 'processorid', 'deleted', 'deletion_reason', 'refund', 'recipient_secret']
         widgets = {
-            'recipient_user': AutoCompleteSelectWidget(lookup_class=UserLookup),
             'invoicedate': HtmlDateInput(),
             'duedate': HtmlDateInput(),
         }
 
     def clean(self):
+        print(self.cleaned_data)
         if not self.cleaned_data['recipient_user'] and self.cleaned_data.get('recipient_email', None):
             # User not specified. If we can find one by email, auto-populate
             # the field.

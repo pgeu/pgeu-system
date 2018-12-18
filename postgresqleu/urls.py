@@ -220,7 +220,7 @@ urlpatterns.extend([
     # Second generation invoice management system
     url(r'^invoiceadmin/$', postgresqleu.invoices.views.unpaid),
     url(r'^invoiceadmin/unpaid/$', postgresqleu.invoices.views.unpaid),
-    url(r'^invoiceadmin/all/$', postgresqleu.invoices.views.all),
+    url(r'^invoiceadmin/paid/$', postgresqleu.invoices.views.paid),
     url(r'^invoiceadmin/pending/$', postgresqleu.invoices.views.pending),
     url(r'^invoiceadmin/deleted/$', postgresqleu.invoices.views.deleted),
     url(r'^invoiceadmin/refunded/$', postgresqleu.invoices.views.refunded),

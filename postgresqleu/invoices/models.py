@@ -179,6 +179,20 @@ class Invoice(models.Model):
             return "paid using {0}.".format(self.paidusing.name)
         return "manually flagged as paid."
 
+    @property
+    def statusstring(self):
+        if self.deleted:
+            return "canceled"
+        elif self.refund:
+            return "refunded"
+        elif self.paidat:
+            return "paid"
+        if self.finalized:
+            return "finalized"
+        else:
+            return "pending"
+
+
     def __unicode__(self):
         return "Invoice #%s" % self.pk
 

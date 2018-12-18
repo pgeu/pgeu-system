@@ -1,4 +1,4 @@
-{%extends "nav_financial.html"%}
+{%extends "adm/admin_base.html" %}
 {%block title%}Invoice Refund{%endblock%}
 {%block extrahead%}
 <script type="text/javascript" src="/media/jq/jquery-1.8.2.min.js"></script>
@@ -62,10 +62,10 @@ $(function() {
 
 </script>
 {%endblock%}
-{%block content%}
+{%block layoutblock %}
 <h1>Refund of invoice #{{invoice.id}}</h1>
 
-<a href="../" class="btn btn-outline-dark">Back to invoice</a>
+<a href="../" class="btn btn-default">Back to invoice</a>
 
 {% if messages %}
     <ul class="messages">
@@ -174,5 +174,5 @@ $(function() {
 
 <input type="submit" name="submit" value="{{invoice.can_autorefund|yesno:"Issue refund,Flag as refunded"}}" class="btn btn-primary" />
 <br/><br/>
-<a href="../" class="btn btn-outline-dark">Back to invoice</a>
+<a href="../" class="btn btn-default">Back to invoice</a>
 {%endblock%}
