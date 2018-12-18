@@ -43,6 +43,7 @@ class InvoiceForm(forms.ModelForm):
             # All fields should be read-only for finalized invoices
             for fn, f in self.fields.items():
                 if self.instance.ispaid or fn not in self.available_in_finalized:
+                    f.required = False
                     if type(f.widget).__name__ in ('TextInput', 'Textarea', 'DateInput', 'DateTimeInput'):
                         f.widget.attrs['readonly'] = "readonly"
                     else:

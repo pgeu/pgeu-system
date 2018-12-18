@@ -1,6 +1,7 @@
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.shortcuts import render, get_object_or_404
 from django.forms.models import inlineformset_factory
+from django.forms import ModelMultipleChoiceField
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -153,13 +154,24 @@ def oneinvoice(request, invoicenum):
         formset = InvoiceRowInlineFormset(data=postcopy, instance=invoice)
         formset.forms[0].empty_permitted = False
         if form.is_valid():
-            if formset.is_valid():
-                # Need to set totalamount to something here, so it doesn't
-                # cause an exception. It'll get fixed when we finalize!
-                if not form.instance.finalized:
-                    form.instance.total_amount = -1
-                form.save()
-                formset.save()
+            if formset.is_valid() or form.instance.finalized:
+                if form.instance.finalized:
+                    # When finalized, only a very limited set of fields can be
+                    # edited. This doesn't include the invoice rows, so don't
+                    # even bother to save the fieldset.
+                    form.instance.save(update_fields=[fn for fn in form.available_in_finalized if not isinstance(form[fn].field, ModelMultipleChoiceField)])
+                    for m in form.instance.allowedmethods.all():
+                        if not m in form.cleaned_data['allowedmethods']:
+                            form.instance.allowedmethods.remove(m)
+                    for i in form.cleaned_data['allowedmethods']:
+                        form.instance.allowedmethods.add(i)
+                else:
+                    # Need to set totalamount to something here, so it doesn't
+                    # cause an exception. It'll get fixed when we finalize!
+                    if not form.instance.finalized:
+                        form.instance.total_amount = -1
+                    form.save()
+                    formset.save()
 
                 if request.POST['submit'] == 'Finalize':
                     # Finalize this invoice. It's already been saved..
