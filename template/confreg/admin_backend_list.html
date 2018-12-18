@@ -7,9 +7,10 @@
 
 <script language="javascript">
 $(document).ready(function() {
-   $('.datatable-tbl').DataTable({
+   var dtable = $('.datatable-tbl').DataTable({
       'paging': false,
       'info': false,
+      'orderCellsTop': true,
       'columnDefs': [
          { targets: 'coltype-copy', orderable: false, searchable: false},
          { targets: 'coltype-nosort', orderable: false},
@@ -25,6 +26,23 @@ $(document).ready(function() {
 
    $('#copyallcheckbox').click(function(e) {
       $('input.copybox').prop('checked', $(this).is(':checked'));
+   });
+
+   $('select.colfilter').change(function(e) {
+      var v = $(this).val();
+      if (v == '--') {
+         v = ''; /* Reset search */
+      }
+      else if (v == '<Empty>') {
+         v = '^$';
+      }
+      else if (v == '<Any>') {
+         v = '.';
+      }
+      else {
+         v = '^' + $.fn.dataTable.util.escapeRegex(v) + '$';
+      }
+      dtable.columns($(this).data('colnum')).search(v, true, false).draw();
    });
 });
 </script>
@@ -55,6 +73,15 @@ $(document).ready(function() {
    {%for h in headers%}<th{%if coltypes|dictlookup:h%} class="{%for k in coltypes|dictlookup:h%}coltype-{{k}} {%endfor%}"{%endif%}>{{h}}</th>{%endfor%}
 {%if is_copy_previous%}<th class="coltype-copy">Copy <input type="checkbox" id="copyallcheckbox"></th>{%endif%}
  </tr>
+{%if filtercolumns%}
+ <tr>
+   {%for h in headers%}{%with filt=filtercolumns|dictlookup:h %}<th class="colfilter">{%if h in filtercolumns %}<select class="colfilter" id="col_filt_{{h}}" data-colnum="{{forloop.counter0}}"><option>--</option><option>&lt;Empty&gt;</option><option>&lt;Any&gt;</option>
+{%for o in filt %}
+<option>{{o}}</option>
+{%endfor%}
+</select>{%endif%}</th>{%endwith%}{%endfor%}
+ </tr>
+{%endif%}
 </thead>
 <tbody>
 {%for o in values%}

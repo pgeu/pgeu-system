@@ -23,3 +23,12 @@ table.borderless tr td,
 table.borderless tr th {
     border: none;
 }
+
+select.colfilter {
+    font-size: 0.6em;
+    width: 100%;
+}
+
+th.colfilter {
+    padding: 3px !important;
+}

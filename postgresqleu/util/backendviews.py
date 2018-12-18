@@ -185,6 +185,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
         else:
             objects = formclass.Meta.model.objects.filter(conference=conference)
         values = [{'id': o.pk, 'vals': [getattr(o, '_display_{0}'.format(f), getattr(o, f)) for f in formclass.list_fields]} for o in objects]
+
         return render(request, 'confreg/admin_backend_list.html', {
             'conference': conference,
             'basetemplate': basetemplate,
@@ -195,6 +196,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
             'plural_name': formclass.Meta.model._meta.verbose_name_plural,
             'headers': [formclass.get_field_verbose_name(f) for f in formclass.list_fields],
             'coltypes': formclass.coltypes,
+            'filtercolumns': formclass.get_column_filters(conference),
             'defaultsort': formclass.defaultsort,
             'return_url': return_url,
             'allow_new': allow_new,
@@ -359,6 +361,7 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
             'plural_name': formclass.Meta.model._meta.verbose_name_plural,
             'headers': [formclass.get_field_verbose_name(f) for f in formclass.list_fields],
             'coltypes': formclass.coltypes,
+            'filtercolumns': formclass.get_column_filters(conference),
             'defaultsort': formclass.defaultsort,
             'return_url': '../',
             'allow_new': False,

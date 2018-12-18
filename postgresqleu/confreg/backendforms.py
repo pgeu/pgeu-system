@@ -27,6 +27,7 @@ from postgresqleu.confreg.models import ShirtSize
 from postgresqleu.newsevents.models import NewsPosterProfile
 
 from postgresqleu.confreg.models import valid_status_transitions, get_status_string
+from postgresqleu.confreg.models import STATUS_CHOICES
 
 from postgresqleu.util.backendlookups import GeneralAccountLookup
 from postgresqleu.confreg.backendlookups import RegisteredUsersLookup, SpeakerLookup
@@ -184,6 +185,13 @@ class BackendRegistrationTypeForm(BackendForm):
     class Meta:
         model = RegistrationType
         fields = ['regtype', 'regclass', 'cost', 'active', 'activeuntil', 'days', 'sortkey', 'specialtype', 'require_phone', 'alertmessage', 'invoice_autocancel_hours', 'requires_option', 'upsell_target']
+
+    @classmethod
+    def get_column_filters(cls, conference):
+        return {
+            'Registration class': RegistrationClass.objects.filter(conference=conference),
+            'Active': [],
+        }
 
     def fix_fields(self):
         self.fields['regclass'].queryset = RegistrationClass.objects.filter(conference=self.conference)
@@ -355,6 +363,14 @@ class BackendConferenceSessionForm(BackendForm):
         if not self.conference.skill_levels:
             self.remove_field('skill_level')
             self.update_protected_fields()
+
+    @classmethod
+    def get_column_filters(cls, conference):
+        return {
+            'Status': [v for k,v in STATUS_CHOICES],
+            'Track': Track.objects.filter(conference=conference),
+            'Room': Room.objects.filter(conference=conference),
+        }
 
     def clean(self):
         cleaned_data = super(BackendConferenceSessionForm, self).clean()

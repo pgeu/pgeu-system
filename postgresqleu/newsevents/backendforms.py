@@ -14,6 +14,12 @@ class BackendNewsForm(BackendForm):
         fields = ['title', 'datetime', 'author', 'summary', 'highpriorityuntil',
                   'inrss', 'inarchive', ]
 
+    @classmethod
+    def get_column_filters(cls, conference):
+        return {
+            'Author': NewsPosterProfile.objects.all(),
+        }
+
 
 class UserModelChoiceField(django.forms.ModelChoiceField):
     def label_from_instance(self, obj):

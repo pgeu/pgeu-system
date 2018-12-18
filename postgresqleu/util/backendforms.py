@@ -27,6 +27,7 @@ class BackendForm(ConcurrentProtectedModelForm):
     allow_copy_previous = False
     copy_transform_form = None
     coltypes = {}
+    filtercolumns = {}
     defaultsort = []
     readonly_fields = []
     file_fields = []
@@ -118,6 +119,10 @@ class BackendForm(ConcurrentProtectedModelForm):
 
     def fix_fields(self):
         pass
+
+    @classmethod
+    def get_column_filters(cls, conference):
+        return {}
 
     def pre_create_item(self):
         pass
