@@ -184,5 +184,11 @@ class PurchaseDiscountForm(forms.Form):
         return cleaned_data
 
 
+class SponsorDetailsForm(forms.ModelForm):
+    class Meta:
+        model = Sponsor
+        fields = ('extra_cc', )
+
+
 class AdminCopySponsorshipLevelForm(forms.Form):
     targetconference = forms.ModelChoiceField(queryset=Conference.objects.all(), label='Target conference')

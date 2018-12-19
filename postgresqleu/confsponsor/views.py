@@ -23,7 +23,7 @@ from postgresqleu.invoices.util import InvoiceWrapper
 from models import Sponsor, SponsorshipLevel, SponsorshipBenefit
 from models import SponsorClaimedBenefit, SponsorMail, SponsorshipContract
 from models import PurchasedVoucher
-from forms import SponsorSignupForm, SponsorSendEmailForm
+from forms import SponsorSignupForm, SponsorSendEmailForm, SponsorDetailsForm
 from forms import PurchaseVouchersForm, PurchaseDiscountForm
 from benefits import get_benefit_class
 from invoicehandler import create_sponsor_invoice, confirm_sponsor, get_sponsor_invoice_address
@@ -74,6 +74,14 @@ def sponsor_conference(request, sponsorid):
     pendingvouchers = PurchasedVoucher.objects.filter(sponsor=sponsor, batch__isnull=True)
     discountcodes = DiscountCode.objects.filter(sponsor=sponsor)
 
+    if request.method == 'POST':
+        detailsform = SponsorDetailsForm(instance=sponsor, data=request.POST)
+        if detailsform.is_valid():
+            detailsform.save()
+            return HttpResponseRedirect(".")
+    else:
+        detailsform = SponsorDetailsForm(instance=sponsor)
+
     for b in claimedbenefits:
         if b.benefit.benefit_class and not b.declined:
             b.claimhtml = get_benefit_class(b.benefit.benefit_class)(sponsor.level, b.benefit.class_parameters).render_claimdata(b)
@@ -89,6 +97,7 @@ def sponsor_conference(request, sponsorid):
         'pendingvouchers': pendingvouchers,
         'discountcodes': discountcodes,
         'is_admin': is_admin,
+        'detailsform': detailsform,
         })
 
 
@@ -678,6 +687,15 @@ def sponsor_admin_send_mail(request, confurlname):
                                      msgtxt,
                                      sendername=conference.conferencename,
                                      receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
+                # And possibly send it out to the extra address for the sponsor
+                if sponsor.extra_cc:
+                    msgtxt = u"{0}\n\n-- \nThis message was sent to sponsors of {1}.\nThis address was added as an extra CC address by one of the managers.\n".format(msg.message, conference)
+                    send_simple_mail(conference.sponsoraddr,
+                                     sponsor.extra_cc,
+                                     u"[{0}] {1}".format(conference, msg.subject),
+                                     msgtxt,
+                                     sendername=conference.conferencename,
+                    )
 
             send_simple_mail(conference.sponsoraddr,
                              conference.sponsoraddr,

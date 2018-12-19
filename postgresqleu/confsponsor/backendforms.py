@@ -22,7 +22,7 @@ class BackendSponsorForm(BackendForm):
     fieldsets = [
         {'id': 'base_info', 'legend': 'Basic information', 'fields': ['name', 'displayname', 'url', 'twittername']},
         {'id': 'financial', 'legend': 'Financial information', 'fields': ['invoiceaddr', 'vatstatus', 'vatnumber']},
-        {'id': 'management', 'legend': 'Management', 'fields': ['managers']},
+        {'id': 'management', 'legend': 'Management', 'fields': ['extra_cc', 'managers']},
     ]
     selectize_multiple_fields = {
         'managers': GeneralAccountLookup(),
@@ -34,7 +34,7 @@ class BackendSponsorForm(BackendForm):
         model = Sponsor
         fields = ['name', 'displayname', 'url', 'twittername',
                   'invoiceaddr', 'vatstatus', 'vatnumber',
-                  'managers', ]
+                  'extra_cc', 'managers', ]
 
 
 class BackendSponsorshipLevelBenefitForm(BackendForm):

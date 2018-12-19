@@ -50,6 +50,12 @@
     <th>View:</th>
     <td><a class="btn btn-default btn-sm" href="/events/sponsor/{{sponsor.id}}/">View as end user</a></td>
   </tr>
+{%if sponsor.extra_cc%}
+  <tr>
+    <th>Extra CC</th>
+    <td>{{sponsor.extra_cc}}</td>
+  </tr>
+{%endif%}
   <tr>
     <th>Managers:</th>
     <td><ul>

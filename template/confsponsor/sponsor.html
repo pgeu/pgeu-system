@@ -1,5 +1,6 @@
 {%extends "nav_events.html" %}
 {%load markup%}
+{%load formutil%}
 {%block title%}Conference Sponsorship - {{sponsor.conference}}{%endblock%}
 {%block content%}
 <h1>Conference Sponsorship - {{sponsor.conference}}</h1>
@@ -279,6 +280,26 @@ must already have an account and have logged in at least once.
 <form method="post" action="managers/add/">{% csrf_token %}
 Email: <input type="text" name="email">
 <input type="submit" value="Add manager" class="btn btn-primary">
+</form>
+
+<h2>Edit information address</h2>
+<p>
+  All information emails about your sponsorship will be sent with one copy to each of
+  the managers listed above, and will also be available by going back to this page at
+  any time. If you wish to have a copy of the information delivered to another address
+  <em>as well</em> (such as a team address), you can enter it here.
+</p>
+<form method="post" action=".">{% csrf_token %}
+  <table class="table">
+{%for field in detailsform %}
+ <tr {%if field.errors%}class="table-danger"{%endif%}>
+  <th class="col-md-2">{{field.label}}</th>
+  <td class="col-md-4">{{field|field_class:"form-control"}}{%if field.help_text%}<br/>{{field.help_text}}{%endif%}</td>
+  <td>{%if field.errors%}{{field.errors}}{%endif%}</td>
+ </tr>
+{%endfor%}
+  </table>
+  <input type="submit" class="btn btn-primary" value="Save information address">
 </form>
 {%endif%}{%comment%}confirmed sponsorship{%endcomment%}
 

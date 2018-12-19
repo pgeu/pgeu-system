@@ -121,6 +121,7 @@ class Sponsor(models.Model):
     confirmedat = models.DateTimeField(null=True, blank=True)
     confirmedby = models.CharField(max_length=50, null=False, blank=True)
     signupat = models.DateTimeField(null=False, blank=False)
+    extra_cc = models.EmailField(null=False, blank=True, verbose_name="Extra information address")
 
     def __unicode__(self):
         return self.name
