@@ -151,7 +151,6 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
     list_filter = ['conference', RegtypeListFilter, AdditionalOptionListFilter, ]
     search_fields = ['email', 'firstname', 'lastname', ]
     ordering = ['-payconfirmedat', '-created', 'lastname', 'firstname', ]
-    actions = ['approve_conferenceregistration', 'email_recipients']
     filter_horizontal = ('additionaloptions',)
     exclude = ('invoice', 'bulkpayment', )
     readonly_fields = ('invoice_link', 'bulkpayment_link', 'lastmodified', )
@@ -188,25 +187,6 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
         else:
             return ""
     bulkpayment_link.short_description = 'Bulk payment'
-
-    def approve_conferenceregistration(self, request, queryset):
-        # We loop over them and update, so we can send notifications.
-        # Not as efficient, but there are never that many to approve
-        # anyway...
-        num = 0
-        for reg in queryset.filter(payconfirmedat__isnull=True):
-            reg.payconfirmedat = datetime.now()
-            reg.payconfirmedby = request.user.username
-            reg.save()
-            notify_reg_confirmed(reg)
-            num += 1
-        self.message_user(request, '%s registration(s) marked as confirmed.' % num)
-    approve_conferenceregistration.short_description = "Confirm payments for selected users"
-
-    def email_recipients(self, request, queryset):
-        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-        return HttpResponseRedirect('/admin/django/confreg/_email/?ids=%s&orig=%s' % (','.join(selected), urllib.quote(urllib.urlencode(request.GET))))
-    email_recipients.short_description = "Send email to selected users"
 
     def has_change_permission(self, request, obj=None):
         if not obj:
@@ -261,7 +241,6 @@ class ConferenceSessionAdmin(admin.ModelAdmin):
     list_filter = ['conference', TrackListFilter, 'status', ]
     search_fields = ['title', ]
     filter_horizontal = ('speaker',)
-    actions = ['email_recipients', ]
 
     def get_queryset(self, request):
         qs = super(ConferenceSessionAdmin, self).get_queryset(request)
@@ -284,11 +263,6 @@ class ConferenceSessionAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return request.user.is_superuser
-
-    def email_recipients(self, request, queryset):
-        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-        return HttpResponseRedirect('/admin/django/confreg/_email_session_speaker/%s/?orig=%s' % (','.join(selected), urllib.quote(urllib.urlencode(request.GET))))
-    email_recipients.short_description = "Send email to speakers of selected sessions"
 
 
 class ConferenceSessionScheduleSlotAdmin(admin.ModelAdmin):

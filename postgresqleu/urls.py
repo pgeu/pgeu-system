@@ -207,11 +207,6 @@ urlpatterns.extend([
     url(r'^m/(\w+)/cdj/(\d+)?$', postgresqleu.confreg.mobileviews.conferencedata),
     url(r'^m/(\w+)/newsj/$', postgresqleu.confreg.mobileviews.newsproxy),
 
-
-    # Conference admin
-    url(r'^admin/django/confreg/_email/$', postgresqleu.confreg.views.admin_email),
-    url(r'^admin/django/confreg/_email_session_speaker/([,\d]+)/$', postgresqleu.confreg.views.admin_email_session),
-
     # Legacy event URLs
     url(r'^events/(register|bulkpay|feedback|schedule|sessions|talkvote|speakerprofile|callforpapers|reports)/([^/]+)/(.*)?$', postgresqleu.confreg.views.legacy_redirect),
 
