@@ -1,18 +1,5 @@
 {%extends "confreg/confadmin_base.html" %}
 {%block title%}Conference Sponsor Email - {{conference}}{%endblock%}
-{%block extrahead%}
-<style>
-tr.error {
-   background-color: #ffb6b6;
-}
-table.emailform tr {
-   vertical-align: top;
-}
-table.emailform input[type=text],textarea {
-   width: 500px;
-}
-</style>
-{%endblock%}
 {%block layoutblock%}
 <h1>Conference Sponsor Email - {{conference}}</h1>
 <p>
@@ -41,22 +28,8 @@ up as a sponsor at that level later.
 {%endif%}
 
 <h2>New email</h2>
-<form method="post" action=".">{% csrf_token %}
-<table class="emailform">
- <tr><th>From</th><td>{{conference.sponsoraddr}}</td></tr>
-{%for field in form%}
- <tr {%if field.errors%}class="error"{%endif%}>
-  <th>{{field.label}}</th>
-  <td>{{field}}</td>
-  <td>{%if field.errors%}{{field.errors}}{%endif%}</td>
- </tr>
-{%endfor%}
-</table>
-
-<br/>
-<input type="submit" value="Send email!" class="btn btn-default">
-</form>
-<br/>
+<form method="post" action="." class="form-horizontal">{% csrf_token %}
+{%include "confreg/admin_backend_form_content.html" with savebutton="Send mail" cancelurl="../" %}
 
 <a href="/events/sponsor/admin/{{conference.urlname}}/" class="btn btn-default btn-block">Back to sponsors</a>
 {%endblock%}
