@@ -11,6 +11,7 @@ from postgresqleu.util.middleware import RedirectException
 
 from models import PrepaidVoucher, DiscountCode, RegistrationWaitlistHistory
 from models import ConferenceRegistration, Conference
+from models import AttendeeMail
 
 
 class InvoicerowsException(Exception):
@@ -135,6 +136,14 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
                                sendername=reg.conference.conferencename,
                                receivername=reg.fullname,
             )
+
+    # If the registration has a user account, we may have email to connect
+    # to this registration.
+    if reg.attendee:
+        for m in AttendeeMail.objects.filter(conference=reg.conference,
+                                             pending_regs=reg.attendee):
+            m.pending_regs.remove(reg.attendee)
+            m.registrations.add(reg)
 
     # Do we need to send the welcome email?
     if not reg.conference.sendwelcomemail:

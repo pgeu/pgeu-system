@@ -4,6 +4,7 @@
 {%block extrahead%}
 <link rel="stylesheet" type="text/css" href="/media/datatables/datatables.min.css"/>
 <script type="text/javascript" src="/media/datatables/datatables.min.js"></script>
+<script type="text/javascript" src="/media/js/admin.js"></script>
 <style>
 tr.warning {
    font-style: italic;
@@ -15,7 +16,7 @@ a.nocolor {
 
 <script language="javascript">
 $(document).ready(function() {
-   $('.datatable-tbl').DataTable({
+   var dtable = $('#datatable').DataTable({
       'paging': false,
       'info': false,
       'ordering': false,
@@ -25,6 +26,7 @@ $(document).ready(function() {
 
       ],
    });
+   $('#datatable').data('datatable', dtable);
 });
 </script>
 {%endblock%}
@@ -35,7 +37,8 @@ $(document).ready(function() {
  Total {{regsummary.confirmed}} confirmed and {{regsummary.unconfirmed}} unconfirmed registrations.
 </p>
 
-<table class="table table-bordered table-striped table-hover table-condensed datatable-tbl">
+<div class="row">
+<table class="table table-bordered table-striped table-hover table-condensed datatable-tbl" id="datatable">
 <thead>
  <tr>
   <th><a href="?sort={%if sortkey == "last" %}-{%endif%}last">Last name</a></th>
@@ -44,6 +47,7 @@ $(document).ready(function() {
   <th><a href="?sort={%if sortkey == "typ" %}-{%endif%}type">Registration type</a></th>
   <th class="coltype-nosearch"><a href="?sort={%if sortkey == "date" %}-{%endif%}date">Confirmed</a></th>
   {%if waitlist_active%}<th>Waitlist status</th>{%endif%}
+  <th><i id="mailcheckboxtoggler" class="glyphicon glyphicon-envelope"></i></th>
  </tr>
 </thead>
 <tbody>
@@ -61,10 +65,20 @@ $(document).ready(function() {
    {%endif%}
    {%else%}{%if r.payconfirmedat%}Completed pre-waitlist{%endif%}{%endif%}</td>
 {%endif%}
+  <td>
+    <input class="mailcheckbox" type="checkbox" name="em_{{r.id}}" id="em_{{r.id}}">
+    <label for="em_{{r.id}}"><i class="glyphicon glyphicon-envelope"></i></label>
+    </label>
+  </td>
  </tr>
 {%endfor%}
 </tbody>
 </table>
+</div>
+
+<div class="row buttonrow">
+  <div class="col-md-2 col-md-offset-10"><button id="sendmailbutton" class="btn btn-default" disabled data-template="Send mail to {} attendees"></button></div>
+</div>
 
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/">Back to registration dashboard</a>
 

@@ -1,18 +1,40 @@
 {%extends "confreg/confadmin_base.html" %}
-{%block title%}Conference Attendee Email - {{conference}}{%endblock%}
+{%load joinattr%}
+{%block title%}Attendee Emails{%endblock%}
 {%block layoutblock%}
-<h1>Conference Attendee Email - {{conference}}</h1>
+<h1>Attendee Emails</h1>
 
 <h2>Sent email</h2>
 {%if mails%}
 <p>
-The following emails have been sent to attendees of the conference:
+The following emails have been sent to all attendees of the conference:
 </p>
-<ul>
+{%if mails|length > 4 %}
+<div class="partial-collapse" aria-expanded="false" id="collapsedMail">
+{%endif%}
+<table class="table table-condensed table-striped">
+  <tr>
+    <th>Date</th>
+    <th>Subject</th>
+    <th>Regclasses</th>
+    <th>Registrations</th>
+    <th>Pending regs</th>
+  </tr>
 {%for m in mails%}
- <li>{{m.sentat|date:"Y-m-d H:i"}} <a href="{{m.id}}/">{{m.subject}}</a> ({{m.regclasses.all|join:", "}})</li>
+  <tr>
+    <td>{{m.sentat|date:"Y-m-d H:i"}}</td>
+    <td><a href="{{m.id}}/">{{m.subject}}</a></td>
+    <td>{{m.regclasses.all|join:", "}}</td>
+    <td>{%for r in m.registrations.all%}<span class="nobr" title="{{r.email}}">{{r.fullname}}</span>{%if not forloop.last%}, {%endif%}{%endfor%}</td>
+    <td>{%for r in m.pending_regs.all%}<span class="nobr" title="{{r.email}}">{{r.first_name}} {{r.last_name}}</span>{%if not forloop.last%}, {%endif%}{%endfor%}</td>
+  </tr>
 {%endfor%}
-</ul>
+</table>
+{%if mails|length > 4 %}
+</div>
+<a role="button" class="partial-collapse collapsed" data-toggle="collapse" href="#collapsedMail" aria-expanded="false" aria-controls="collapsedMail"></a>
+{%endif%}
+
 {%else%}
 <p>
 No emails have been sent to attendees yet.

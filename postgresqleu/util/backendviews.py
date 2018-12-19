@@ -202,6 +202,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
             'allow_new': allow_new,
             'allow_delete': allow_delete,
             'allow_copy_previous': formclass.allow_copy_previous,
+            'allow_email': formclass.allow_email,
             'breadcrumbs': breadcrumbs,
             'helplink': formclass.helplink,
         })

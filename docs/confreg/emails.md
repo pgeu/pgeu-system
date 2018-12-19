@@ -3,18 +3,36 @@
 ## Attendee emails
 
 Using the *Attendee emails* functionality it is possible to send email
-to all attendees, or those of a specific
-[registration class](registrations#typesandclasses). Emails sent using
-this function will both be sent as an email to the attendee *and*
-listed on the registration dashboard for those that have
-registered. This means that attendees who sign up *after* the email is
-sent will **also** be able to view the emails.
+to attendees of a specific
+[registration class](registrations#typesandclasses), individual
+attendees or speakers of sessions (who may or may not later become
+attendees).. Emails sent using this function will both be sent as an
+email to the attendee *and* optionally listed on the registration
+dashboard for those that have registered. This means that attendees
+who sign up *after* the email is sent will **also** be able to view
+the emails, assuming they are sign up with a registration class that
+received the emails.
+
+If emails are sent to a recipient that has not yet registered
+(typically sent so somebody who has submitted a talk on the call for
+papers but not actually registered yet), it will be stored in a queue
+and listed under *Pending regs*. As soon as this user (based on user
+id) registers it will automatically be transferred to the dashboard of
+the user. The email is of course still delivered to the user, just not
+connected in the database.
+
+### Sending attendee emails to registration class
+
+Sending email to all attendees of a specific registration class is
+done by clicking the *Attendee email* button on the dashboard. Emails
+to registration classes are always stored for future attendees of the
+same class to see.
 
 From
 :  The *from* address of the email will always be the
 [main contact address](super_conference) for the conference.
 
-Regclasses
+Registration classes
 :  Select the registration classes that the email should be delivered to,
 and visible for on the registration dashboard.
 
@@ -24,6 +42,47 @@ Subject
 Message
 :  The message body. No formatting is done, so make sure you put
 reasonable linebreaks in, and don't use markdown.
+
+A link to the registration dashboard will be automatically included at
+the bottom of the email.
+
+Emails can (obviously) not be edited after they've been sent.
+
+Emails sent using this functionality is *not* subject to opt-out
+settings, so be careful to only use for active or recent events!
+
+### Sending email to individual attendees
+
+Emails can also be sent to individual attendees, either based on their
+registration or based on sessions they have submitted on the call for
+papers. If the email is sent based on the session, all speakers of the
+session will get a copy of the email.
+
+These emails are initiated from the list view editing *sessions* or
+from the list of attendees on the *registration dashboard*. The
+rightmost column is used to indicate which recipients to send email to
+by clicking the envelope icon, turning it green. Emails will be sent
+to all recipients that are marked with green.
+
+Once recipients have been selected, click the *Send email to <n>
+attendees* button. This brings up a form with the details:
+
+Subject
+:  The subject of the email
+
+Store on registration page
+:  If enabled, the email will be stored in the system and visible on
+the registration dashboard for all attendees. If disabled, the
+email will be sent one off, and will not be stored locally.
+
+Message
+:  The message body. No formatting is done, so make sure you put
+reasonable linebreaks in, and don't use markdown.
+
+If the email is stored in the database, a link to the registration
+dashboard is included at the bottom of the email. If the email is not
+stored, a sentence explain that it was sent because of the conference
+is added.
 
 Emails can (obviously) not be edited after they've been sent.
 

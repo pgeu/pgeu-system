@@ -347,6 +347,7 @@ class BackendConferenceSessionForm(BackendForm):
     allow_copy_previous = True
     copy_transform_form = BackendTransformConferenceDateTimeForm
     auto_cascade_delete_to = ['conferencesession_speaker', 'conferencesessionvote']
+    allow_email = True
 
     class Meta:
         model = ConferenceSession
@@ -708,3 +709,31 @@ class TwitterForm(ConcurrentProtectedModelForm):
 class TwitterTestForm(django.forms.Form):
     recipient = django.forms.CharField(max_length=64)
     message = django.forms.CharField(max_length=200)
+
+
+#
+# Form for sending email
+#
+class StaticWidget(django.forms.Widget):
+    def render(self, name, value, attrs=None, renderer=None):
+        return value
+
+
+class BackendSendEmailForm(django.forms.Form):
+    _from = django.forms.CharField(max_length=128, disabled=True, label="Form")
+    subject = django.forms.CharField(max_length=128, required=True)
+    recipients = django.forms.Field(widget=StaticWidget, required=False)
+    storeonregpage = django.forms.BooleanField(label="Store on registration page", required=False,
+                                               help_text="If checked, store in db and show to attendees later. If not checked, one-off email is sent.")
+    message = django.forms.CharField(widget=django.forms.Textarea, required=True)
+    idlist = django.forms.CharField(widget=django.forms.HiddenInput, required=True)
+    confirm = django.forms.BooleanField(label="Confirm", required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(BackendSendEmailForm, self).__init__(*args, **kwargs)
+        if not (self.data.get('subject') and self.data.get('message')):
+            del self.fields['confirm']
+
+    def clean_confirm(self):
+        if not self.cleaned_data['confirm']:
+            raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")

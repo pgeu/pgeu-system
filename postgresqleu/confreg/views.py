@@ -97,7 +97,11 @@ def _get_registration_signups(conference, reg):
 
 # Not a view in itself, only called from other views
 def _registration_dashboard(request, conference, reg, has_other_multiregs, redir_root):
-    mails = AttendeeMail.objects.filter(conference=conference, regclasses=reg.regtype.regclass)
+    mails = AttendeeMail.objects.filter(conference=conference).extra(where=["""
+ EXISTS (SELECT 1 FROM confreg_attendeemail_regclasses rc WHERE rc.attendeemail_id=confreg_attendeemail.id AND registrationclass_id=%s)
+OR
+ EXISTS (SELECT 1 FROM confreg_attendeemail_registrations r WHERE r.attendeemail_id=confreg_attendeemail.id AND conferenceregistration_id=%s)""",
+    ], params=[reg.regtype.regclass and reg.regtype.regclass.id or None, reg.id])
 
     wikipagesQ = Q(publicview=True) | Q(viewer_attendee__attendee=request.user) | Q(viewer_regtype__conferenceregistration__attendee=request.user)
     wikipages = Wikipage.objects.filter(Q(conference=conference) & wikipagesQ).distinct()
@@ -1791,7 +1795,14 @@ def attendee_mail(request, confname, mailid):
     conference = get_object_or_404(Conference, urlname=confname)
     reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
 
-    mail = get_object_or_404(AttendeeMail, conference=conference, pk=mailid, regclasses=reg.regtype.regclass)
+    mail = AttendeeMail.objects.filter(conference=conference, pk=mailid).extra(where=["""
+ EXISTS (SELECT 1 FROM confreg_attendeemail_regclasses rc WHERE rc.attendeemail_id=confreg_attendeemail.id AND registrationclass_id=%s)
+OR
+ EXISTS (SELECT 1 FROM confreg_attendeemail_registrations r WHERE r.attendeemail_id=confreg_attendeemail.id AND conferenceregistration_id=%s)""",
+    ], params=[reg.regtype.regclass and reg.regtype.regclass.id or None, reg.id])
+    if len(mail) != 1:
+        raise Http404()
+    mail = mail[0]
 
     return render_conference_response(request, conference, 'reg', 'confreg/attendee_mail_view.html', {
         'conference': conference,

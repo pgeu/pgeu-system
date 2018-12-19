@@ -34,6 +34,7 @@ class BackendForm(ConcurrentProtectedModelForm):
     linked_objects = {}
     auto_cascade_delete_to = []
     fieldsets = []
+    allow_email = False
     force_insert = False
     helplink = None
 

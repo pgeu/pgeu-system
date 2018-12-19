@@ -1,19 +1,34 @@
 {%extends "confreg/confadmin_base.html" %}
-{%block title%}Conference Attendee Email - {{conference}}{%endblock%}
+{%load joinattr%}
+{%block title%}Attendee Email{%endblock%}
 
 {%block layoutblock%}
-<h1>Conference Attendee Email - {{conference}}</h1>
+<h1>Attendee Email</h1>
 
 <h2>{{mail.subject}}</h2>
-<p>
-<div><b>Sent: </b>{{mail.sentat|date:"Y-m-d H:i"}}</div>
-<div><b>Sent to: </b>{{mail.regclasses.all|join:", "}}</div>
-<div>
-{{mail.message|linebreaks}}
+<div class="row">
+  <div class="col-md-2"><b>Sent: </b></div>
+  <div class="col-md-10">{{mail.sentat|date:"Y-m-d H:i"}}</div>
 </div>
-</p>
+<div class="row">
+  <div class="col-md-2"><b>Sent to regclasses: </b></div>
+  <div class="col-md-10">{{mail.regclasses.all|join:", "}}</div>
+</div>
+<div class="row">
+  <div class="col-md-2"><b>Sent to attendees: </b></div>
+  <div class="col-md-10">{{mail.registrations.all|join_on_attr:"fullname"}}</div>
+</div>
+<div class="row">
+  <div class="col-md-2"><b>Sent to nonreg users:</b></div>
+  <div class="col-md-10">{{mail.pending_regs.all|join_on_attr:"fullname"}}</div>
+</div>
+<div class="row">
+  <div class="col-md-10 well">
+{{mail.message|linebreaks}}
+  </div>
+</div>
 
-<p></p>
-<p>Return to <a href="../">list</a>.</p>
+<div class="row buttonrow">
+<a class="btn btn-default btn-block" href="../">Return to list</a>.
 
 {%endblock%}

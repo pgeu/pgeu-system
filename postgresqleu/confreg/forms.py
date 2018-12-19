@@ -627,7 +627,7 @@ class AttendeeMailForm(forms.ModelForm):
 
     class Meta:
         model = AttendeeMail
-        exclude = ('conference', )
+        fields = ('regclasses', 'subject', 'message')
 
     def regclass_label(self, obj):
         return u"{0} (contains {1}; total {2} registrations".format(

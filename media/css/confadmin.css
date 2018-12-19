@@ -32,3 +32,57 @@ select.colfilter {
 th.colfilter {
     padding: 3px !important;
 }
+
+
+/*
+ * Check-boxes that look like mail envelopes, used to toggle
+ * email on and off in lists.
+ */
+input.mailcheckbox[type=checkbox] {
+    display:none;
+}
+
+input.mailcheckbox[type=checkbox] + label
+{
+    height: 16px;
+    width: 16px;
+    display:inline-block;
+    padding: 0 0 0 0px;
+    cursor: pointer;
+}
+
+input.mailcheckbox[type=checkbox]:checked + label
+{
+    color: lightgreen;
+    height: 16px;
+    width: 16px;
+    display:inline-block;
+    padding: 0 0 0 0px;
+}
+
+#mailcheckboxtoggler {
+    cursor: pointer;
+}
+
+/*
+ * Partially collapsing part of a page. Like a bootstrap
+ * collapse (and uses the bootstrap collapse underneath)
+ * but leaves the first 150 pixels visible even when collapsed.
+ */
+div.partial-collapse[aria-expanded="false"] {
+    display: block;
+    height: 150px !important;
+    overflow: hidden;
+}
+
+div.partial-collapsing[aria-expanded="false"] {
+    height: 150px !important;
+}
+
+a.partial-collapse:after  {
+    content: '+ Show more';
+}
+
+a.partial-collapse:not(.collapsed):after {
+    content: 'Show less';
+}
