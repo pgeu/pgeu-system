@@ -218,7 +218,7 @@ class Conference(models.Model):
         else:
             if self.startdate < datetime.datetime.today().date():
                 return 0
-        return self.conferencesession_set.exclude(status=F('lastnotifiedstatus')).count()
+        return self.conferencesession_set.exclude(status=F('lastnotifiedstatus')).exclude(speaker__isnull=True).count()
 
     def waitlist_active(self):
         if self.attendees_before_waitlist == 0:

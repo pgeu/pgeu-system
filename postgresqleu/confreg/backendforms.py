@@ -358,7 +358,7 @@ class BackendConferenceSessionForm(BackendForm):
         self.fields['track'].queryset = Track.objects.filter(conference=self.conference)
         self.fields['room'].queryset = Room.objects.filter(conference=self.conference)
 
-        if self.instance.status != self.instance.lastnotifiedstatus:
+        if self.instance.status != self.instance.lastnotifiedstatus and self.instance.speaker.exists():
             self.fields['status'].help_text = '<b>Warning!</b> This session has <a href="/events/admin/{0}/sessionnotifyqueue/">pending notifications</a> that have not been sent. You probably want to make sure those are sent before editing the status!'.format(self.conference.urlname)
 
         if not self.conference.skill_levels:

@@ -3003,7 +3003,7 @@ def admin_attendeemail_view(request, urlname, mailid):
 def session_notify_queue(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
-    notifysessions = ConferenceSession.objects.filter(conference=conference).exclude(status=F('lastnotifiedstatus'))
+    notifysessions = ConferenceSession.objects.filter(conference=conference).exclude(status=F('lastnotifiedstatus')).exclude(speaker__isnull=True)
 
     if request.method == 'POST' and request.POST.get('confirm_sending', 0) == '1':
         # Ok, it would appear we should actually send them...
