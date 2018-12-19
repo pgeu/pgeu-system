@@ -8,6 +8,7 @@ from decimal import Decimal
 
 from payment import PaymentMethodWrapper
 
+from postgresqleu.util.validators import ListOfEmailAddressValidator
 from postgresqleu.accounting.models import Account
 
 
@@ -72,6 +73,7 @@ class Invoice(models.Model):
     recipient_name = models.CharField(max_length=100, blank=False, null=False)
     recipient_address = models.TextField(blank=False, null=False)
     recipient_secret = models.CharField(max_length=64, blank=True, null=True)
+    extra_bcc_list = models.CharField(max_length=500, blank=True, null=False, validators=[ListOfEmailAddressValidator, ])
 
     # Global invoice info
     title = models.CharField(max_length=100, blank=False, null=False, verbose_name="Invoice title")
@@ -132,7 +134,7 @@ class Invoice(models.Model):
 
     @property
     def isexpired(self):
-        return (self.paidat is None) and (self.duedate < datetime.now())
+        return (self.paidat is None) and self.duedate and (self.duedate < datetime.now())
 
     @property
     def allowedmethodwrappers(self):

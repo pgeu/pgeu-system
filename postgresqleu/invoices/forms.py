@@ -16,7 +16,7 @@ from postgresqleu.invoices.models import VatRate
 
 class InvoiceForm(forms.ModelForm):
     hidden_until_finalized = ('total_amount', 'total_vat', 'remindersent', )
-    available_in_finalized = ('recipient_user', 'recipient_email', 'allowedmethods',)
+    available_in_finalized = ('recipient_user', 'recipient_email', 'allowedmethods', 'extra_bcc_list', )
     selectize_multiple_fields = ['recipient_user', ]
 
     accounting_account = forms.ChoiceField(choices=[], required=False)

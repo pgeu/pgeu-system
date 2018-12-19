@@ -235,6 +235,13 @@ class InvoiceWrapper(object):
         if pdfname:
             pdfdata = [(pdfname, 'application/pdf', base64.b64decode(pdfcontents)), ]
 
+        if bcc:
+            bcclist = [settings.INVOICE_SENDER_EMAIL, ]
+        else:
+            bcclist = []
+        if self.invoice.extra_bcc_list:
+            bcclist.extend([e.strip() for e in self.invoice.extra_bcc_list.split(',')])
+
         # Queue up in the database for email sending soon
         send_template_mail(settings.INVOICE_SENDER_EMAIL,
                            self.invoice.recipient_email,
@@ -242,7 +249,7 @@ class InvoiceWrapper(object):
                            'invoices/mail/%s' % template_name,
                            param,
                            pdfdata,
-                           bcc=bcc and settings.INVOICE_SENDER_EMAIL or None,
+                           bcclist,
                        )
 
 
@@ -599,7 +606,8 @@ class InvoiceManager(object):
                        accounting_account=None,
                        accounting_object=None,
                        canceltime=None,
-                       reverse_vat=False):
+                       reverse_vat=False,
+                       extra_bcc_list=None):
         invoice = Invoice(
             recipient_email=recipient_email,
             recipient_name=recipient_name,
@@ -612,7 +620,8 @@ class InvoiceManager(object):
             accounting_account=accounting_account,
             accounting_object=accounting_object,
             canceltime=canceltime,
-            reverse_vat=reverse_vat)
+            reverse_vat=reverse_vat,
+            extra_bcc_list=extra_bcc_list or '')
         if recipient_user:
             invoice.recipient_user = recipient_user
         if processor:

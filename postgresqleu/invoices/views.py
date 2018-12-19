@@ -173,8 +173,11 @@ def oneinvoice(request, invoicenum):
                     postcopy[fld] = getattr(invoice, fld)
 
         form = InvoiceForm(data=postcopy, instance=invoice)
-        formset = InvoiceRowInlineFormset(data=postcopy, instance=invoice)
-        formset.forms[0].empty_permitted = False
+        if form.instance.finalized:
+            formset = InvoiceRowInlineFormset(instance=invoice)
+        else:
+            formset = InvoiceRowInlineFormset(data=postcopy, instance=invoice)
+            formset.forms[0].empty_permitted = False
         if form.is_valid():
             if formset.is_valid() or form.instance.finalized:
                 if form.instance.finalized:

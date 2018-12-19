@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.core.validators import EmailValidator
 from django.utils.deconstruct import deconstructible
 
 from StringIO import StringIO
@@ -49,6 +50,11 @@ def TwitterValidator(value):
         raise ValidationError("Could not verify twitter name: {0}".format(r.status_code))
 
     # All is well! :)
+
+
+def ListOfEmailAddressValidator(value):
+    for p in value.split(','):
+        EmailValidator("Enter a comma separated list of valid email addresses")(p.strip())
 
 
 def validate_json_structure(config, structure):
