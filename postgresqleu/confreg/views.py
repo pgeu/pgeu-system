@@ -1179,8 +1179,6 @@ def speakerprofile(request, confurlname=None):
 
         form = SpeakerProfileForm(data=request.POST, files=request.FILES, instance=speaker)
         if form.is_valid():
-            if 'photo' in request.FILES:
-                raise Exception("Deal with the file!")
             form.save()
             return HttpResponseRedirect('.')
     else:

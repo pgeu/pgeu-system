@@ -5,6 +5,7 @@ from django.forms.utils import ErrorList
 from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
+from django.template import loader
 
 from django.db.models.fields.files import ImageFieldFile
 
@@ -402,10 +403,21 @@ class ConferenceFeedbackForm(forms.Form):
         return -1
 
 
+class PhotoUploadWidget(forms.ClearableFileInput):
+    clear_checkbox_label = "Remove photo"
+    def render(self, name, value, attrs=None, renderer=None):
+        context = self.get_context(name, value, attrs)
+        return mark_safe(loader.render_to_string('confreg/widgets/photo_upload_widget.html', context))
+
+
 class SpeakerProfileForm(forms.ModelForm):
     class Meta:
         model = Speaker
         exclude = ('user', 'speakertoken')
+
+    def __init__(self, *args, **kwargs):
+        super(SpeakerProfileForm, self).__init__(*args, **kwargs)
+        self.fields['photofile'].widget = PhotoUploadWidget()
 
     def clean_photofile(self):
         if not self.cleaned_data['photofile']:
