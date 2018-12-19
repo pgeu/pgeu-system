@@ -188,6 +188,7 @@ def create_sponsor_invoice(user, sponsor):
         accounting_object=conference.accounting_object,
         autopaymentoptions=False,
         reverse_vat=reverse_vat,
+        extra_bcc_list=conference.sponsoraddr,
     )
     i.allowedmethods = level.paymentmethods.all()
     return i
