@@ -227,8 +227,9 @@ def oneinvoice(request, invoicenum):
 
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
-@transaction.atomic
 def flaginvoice(request, invoicenum):
+    transaction.set_autocommit(False)
+
     invoice = get_object_or_404(Invoice, pk=invoicenum)
 
     reason = request.POST['reason']
@@ -253,11 +254,13 @@ def flaginvoice(request, invoicenum):
                                              logger=payment_logger)
 
     if r != InvoiceManager.RESULT_OK:
+        transaction.rollback()
         return HttpResponse("Failed to process payment flagging:\n%s" % str.getvalue(),
                             content_type="text/plain")
 
     # The invoice manager will have flagged the invoice properly as well,
     # so we can just return the user right back
+    transaction.commit()
     return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
 
