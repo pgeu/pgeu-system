@@ -155,14 +155,6 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
     exclude = ('invoice', 'bulkpayment', )
     readonly_fields = ('invoice_link', 'bulkpayment_link', 'lastmodified', )
 
-    def get_queryset(self, request):
-        qs = super(ConferenceRegistrationAdmin, self).get_queryset(request)
-
-        if request.user.is_superuser:
-            return qs
-        else:
-            return qs.filter(conference__administrators=request.user)
-
     def payconfirmedat_short(self, inst):
         return inst.payconfirmedat
     payconfirmedat_short.short_description = "Pay conf"
@@ -187,24 +179,6 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
         else:
             return ""
     bulkpayment_link.short_description = 'Bulk payment'
-
-    def has_change_permission(self, request, obj=None):
-        if not obj:
-            return True  # So they can see the change list page
-        if request.user.is_superuser:
-            return True
-        else:
-            if obj.conference.administrators.filter(pk=request.user.id):
-                return True
-            else:
-                return False
-    has_delete_permission = has_change_permission
-
-    def has_add_permission(self, request):
-        if request.user.is_superuser:
-            return True
-        else:
-            return False
 
 
 class ConferenceSessionForm(ConcurrentProtectedModelForm):
@@ -241,28 +215,6 @@ class ConferenceSessionAdmin(admin.ModelAdmin):
     list_filter = ['conference', TrackListFilter, 'status', ]
     search_fields = ['title', ]
     filter_horizontal = ('speaker',)
-
-    def get_queryset(self, request):
-        qs = super(ConferenceSessionAdmin, self).get_queryset(request)
-        if request.user.is_superuser:
-            return qs
-        else:
-            return qs.filter(conference__administrators=request.user)
-
-    def has_change_permission(self, request, obj=None):
-        if not obj:
-            return True  # So they can see the change list page
-        if request.user.is_superuser:
-            return True
-        else:
-            if obj.conference.administrators.filter(pk=request.user.id):
-                return True
-            else:
-                return False
-    has_delete_permission = has_change_permission
-
-    def has_add_permission(self, request):
-        return request.user.is_superuser
 
 
 class ConferenceSessionScheduleSlotAdmin(admin.ModelAdmin):
