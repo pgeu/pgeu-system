@@ -125,6 +125,10 @@ class BackendForm(ConcurrentProtectedModelForm):
     def get_column_filters(cls, conference):
         return {}
 
+    @classmethod
+    def get_assignable_columns(cls, conference):
+        return {}
+
     def pre_create_item(self):
         pass
 

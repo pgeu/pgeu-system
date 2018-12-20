@@ -38,11 +38,11 @@ th.colfilter {
  * Check-boxes that look like mail envelopes, used to toggle
  * email on and off in lists.
  */
-input.mailcheckbox[type=checkbox] {
+input.skincheckbox[type=checkbox] {
     display:none;
 }
 
-input.mailcheckbox[type=checkbox] + label
+input.skincheckbox[type=checkbox] + label
 {
     height: 16px;
     width: 16px;
@@ -51,7 +51,7 @@ input.mailcheckbox[type=checkbox] + label
     cursor: pointer;
 }
 
-input.mailcheckbox[type=checkbox]:checked + label
+input.skincheckbox[type=checkbox]:checked + label
 {
     color: lightgreen;
     height: 16px;
@@ -60,7 +60,7 @@ input.mailcheckbox[type=checkbox]:checked + label
     padding: 0 0 0 0px;
 }
 
-#mailcheckboxtoggler {
+#skincheckboxtoggler {
     cursor: pointer;
 }
 
@@ -85,4 +85,17 @@ a.partial-collapse:after  {
 
 a.partial-collapse:not(.collapsed):after {
     content: 'Show less';
+}
+
+/*
+ * Nested dropdown
+ */
+.dropdown-submenu {
+    position: relative;
+}
+
+.dropdown-submenu .dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -1px;
 }

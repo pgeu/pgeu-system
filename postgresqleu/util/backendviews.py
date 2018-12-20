@@ -184,7 +184,30 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
             objects = formclass.Meta.model.objects.all()
         else:
             objects = formclass.Meta.model.objects.filter(conference=conference)
+
+        if request.method == "POST":
+            if request.POST.get('operation') == 'assign':
+                what = request.POST.get('what')
+                related = formclass.Meta.model._meta.get_field(what).related_model
+                setval = request.POST.get('assignid')
+                if setval:
+                    setval = int(setval)
+                if not what in formclass.Meta.fields:
+                    # Trying to update invalid field!
+                    raise PermissionDenied()
+                with transaction.atomic():
+                    for obj in objects.filter(id__in=request.POST.get('idlist').split(',')):
+                        if setval:
+                            setattr(obj, what, related.objects.get(pk=setval))
+                        else:
+                            setattr(obj, what, None)
+                        obj.save()
+                return HttpResponseRedirect('.')
+            else:
+                raise Http404()
+
         values = [{'id': o.pk, 'vals': [getattr(o, '_display_{0}'.format(f), getattr(o, f)) for f in formclass.list_fields]} for o in objects]
+
 
         return render(request, 'confreg/admin_backend_list.html', {
             'conference': conference,
@@ -203,6 +226,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
             'allow_delete': allow_delete,
             'allow_copy_previous': formclass.allow_copy_previous,
             'allow_email': formclass.allow_email,
+            'assignable_columns': formclass.get_assignable_columns(conference),
             'breadcrumbs': breadcrumbs,
             'helplink': formclass.helplink,
         })

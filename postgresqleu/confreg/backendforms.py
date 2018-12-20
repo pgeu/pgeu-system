@@ -193,6 +193,16 @@ class BackendRegistrationTypeForm(BackendForm):
             'Active': [],
         }
 
+    @classmethod
+    def get_assignable_columns(cls, conference):
+        return [
+            {
+                'name': 'regclass',
+                'title': 'Registration class',
+                'options': [(c.id, c.regclass) for c in RegistrationClass.objects.filter(conference=conference)],
+            },
+        ]
+
     def fix_fields(self):
         self.fields['regclass'].queryset = RegistrationClass.objects.filter(conference=self.conference)
         self.fields['requires_option'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference)
@@ -372,6 +382,16 @@ class BackendConferenceSessionForm(BackendForm):
             'Track': Track.objects.filter(conference=conference),
             'Room': Room.objects.filter(conference=conference),
         }
+
+    @classmethod
+    def get_assignable_columns(cls, conference):
+        return [
+            {
+                'name': 'track',
+                'title': 'Track',
+                'options': [(t.id, t.trackname) for t in Track.objects.filter(conference=conference)],
+            },
+        ]
 
     def clean(self):
         cleaned_data = super(BackendConferenceSessionForm, self).clean()
