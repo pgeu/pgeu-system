@@ -405,6 +405,7 @@ class ConferenceFeedbackForm(forms.Form):
 
 class PhotoUploadWidget(forms.ClearableFileInput):
     clear_checkbox_label = "Remove photo"
+
     def render(self, name, value, attrs=None, renderer=None):
         context = self.get_context(name, value, attrs)
         return mark_safe(loader.render_to_string('confreg/widgets/photo_upload_widget.html', context))
