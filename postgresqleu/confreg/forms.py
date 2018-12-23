@@ -250,7 +250,10 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
     class Meta:
         model = ConferenceRegistration
-        exclude = ('conference', 'attendee', 'registrator', 'payconfirmedat', 'payconfirmedby', 'created', 'regtoken', )
+        fields = ('regtype', 'firstname', 'lastname', 'email', 'company', 'address',
+                  'country', 'phone', 'shirtsize', 'dietary', 'additionaloptions',
+                  'twittername', 'nick', 'shareemail', 'photoconsent', 'vouchercode',
+        )
         widgets = {
             'photoconsent': forms.Select(choices=((None, ''), (True, 'I consent to having my photo taken'), (False, "I don't want my photo taken"))),
         }
