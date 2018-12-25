@@ -278,6 +278,10 @@ image
      preserveAspect
 	 : Set to true to preserve aspect ratio
 
+qrimage
+:    qrcontent
+	 : The text string to be turned into a QR code
+
 paragraph
 :    text
      : The actual text to write

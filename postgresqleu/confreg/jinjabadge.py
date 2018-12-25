@@ -16,9 +16,12 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Paragraph, PageBreak
 from reportlab.platypus.flowables import Flowable
 from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.utils import ImageReader
 
 import jinja2
 import jinja2.sandbox
+
+import qrencode
 
 alignments = {
     'left': TA_LEFT,
@@ -101,6 +104,36 @@ class JinjaBadge(Flowable):
                             getmm(o, 'height'),
                             o.get('mask', 'auto'),
                             preserveAspectRatio=o.get('preserveAspect', False),
+        )
+
+    def draw_qrimage(self, o):
+        s = o.get('qrcontent')
+        if not s:
+            return
+        if len(s) < 20:
+            ver = 1
+        elif len(s) < 38:
+            ver = 2
+        elif len(s) < 61:
+            ver = 3
+        elif len(s) < 90:
+            ver = 4
+        elif len(s) < 122:
+            ver = 5
+        elif len(s) < 154:
+            ver = 6
+        else:
+            raise Exception("String too long for QR encode")
+
+        (ver, size, qrimage) = qrencode.encode_scaled(s, version=ver, level=qrencode.QR_ECLEVEL_M, size=500)
+
+        self.canv.drawImage(ImageReader(qrimage),
+                            getmm(o, 'x'),
+                            self.calc_y(o),
+                            getmm(o, 'width'),
+                            getmm(o, 'height'),
+                            o.get('mask', 'auto'),
+                            preserveAspectRatio=True,
         )
 
     def draw_paragraph(self, o):
