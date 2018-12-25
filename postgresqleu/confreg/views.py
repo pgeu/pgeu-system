@@ -12,7 +12,7 @@ from django.conf import settings
 from django.db import transaction, connection
 from django.db.models import Q, Count, Avg
 from django.db.models.expressions import F
-from django.forms import formsets
+from django import forms
 from django.forms import ValidationError
 
 from models import Conference, ConferenceRegistration, ConferenceSession, ConferenceSeries
@@ -2492,21 +2492,45 @@ def simple_report(request, confname):
 
     from reports import simple_reports
 
-    if "__" in request.GET['report']:
+    if request.method == 'GET':
+        rep = request.GET['report']
+    else:
+        rep = request.POST['report']
+
+    if "__" in rep:
         raise Http404("Invalid character in report name")
 
-    if not request.GET['report'] in simple_reports:
+    if rep not in simple_reports:
         raise Http404("Report not found")
 
-    if conference.personal_data_purged and '{0}__anon'.format(request.GET['report']) in simple_reports:
-        query = simple_reports['{0}__anon'.format(request.GET['report'])]
+    if conference.personal_data_purged and '{0}__anon'.format(rep) in simple_reports:
+        query = simple_reports['{0}__anon'.format(rep)]
     else:
-        query = simple_reports[request.GET['report']]
+        query = simple_reports[rep]
+
+    params = {
+        'confid': conference.id,
+    }
+
+    if not isinstance(query, (str, unicode)):
+        if request.method == 'POST':
+            form = query(data=request.POST, initial={'report': rep})
+            if form.is_valid():
+                query = form.build_query(conference)
+                params.update(form.extra_params())
+                form = None
+        else:
+            form = query(initial={'report': rep})
+        if form:
+            return render(request, 'confreg/admin_backend_form.html', {
+                'conference': conference,
+                'basetemplate': 'confreg/confadmin_base.html',
+                'form': form,
+                'savebutton': 'Generate report',
+            })
 
     curs = connection.cursor()
-    curs.execute(query, {
-        'confid': conference.id,
-        })
+    curs.execute(query, params)
     d = curs.fetchall()
     collist = [dd[0] for dd in curs.description]
     # Get offsets of all columns that don't start with _
