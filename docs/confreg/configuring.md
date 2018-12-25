@@ -44,7 +44,7 @@ exists on all attendees.
 ### Workflow steps
 
 You can separately enable each of the different user workflow steps
-for [registration](registration), [call for papers](callforpapers),
+for [registration](registrations), [call for papers](callforpapers),
 [call for sponsors](sponsors), [schedule](schedule) and
 [feedback](feedback). Make sure you don't enable any steps until the
 organisation is ready for it.
