@@ -10,7 +10,7 @@ from io import BytesIO
 from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 from postgresqleu.util.middleware import RedirectException
 from postgresqleu.confreg.jinjafunc import JINJA_TEMPLATE_ROOT
-from postgresqleu.confreg.jinjabadge import render_jinja_ticket
+from postgresqleu.confreg.jinjapdf import render_jinja_ticket
 
 from models import PrepaidVoucher, DiscountCode, RegistrationWaitlistHistory
 from models import ConferenceRegistration, Conference

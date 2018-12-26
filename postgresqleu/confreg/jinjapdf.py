@@ -320,7 +320,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    conference = args.confjson and json.loads(args.confjson) or {}
+    if args.confjson:
+        with open(args.confjson) as f:
+            conference = json.load(f)
+    else:
+        conference = {}
 
     with open(args.attendeelist) as f:
         a = json.load(f)

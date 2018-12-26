@@ -40,7 +40,7 @@ from util import get_invoice_autocancel, cancel_registration
 from models import get_status_string
 from regtypes import confirm_special_reg_type, validate_special_reg_type
 from jinjafunc import render_jinja_conference_response, JINJA_TEMPLATE_ROOT
-from jinjabadge import render_jinja_ticket
+from jinjapdf import render_jinja_ticket
 from backendviews import get_authenticated_conference
 
 from postgresqleu.util.decorators import superuser_required

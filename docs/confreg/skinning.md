@@ -212,15 +212,15 @@ of the destination directory and called `index.html`, and the contents
 of `/templates/pages/other.html` will be deployed into `other/index.html`
 in the destination directory.
 
-# Badges <a name="badges"></a>
+# Tickets and Badges <a name="badges"></a>
 
-The system also has the ability to automatically generate badges based
+Tickets and badges can be generated in PDF format based
 on the templates. This is done in two stages - first a `jinja2` template
 is applied to a source JSON file, generating a complete JSON
 definition of the badge. Then this JSON is parsed and turned into an
-actual PDF format badge.
+actual PDF format.
 
-To use the badge generation system, create a file called `badge.json`
+To use the PDF genereation system, create one or more `json` files in the
 in the `/templates` directory. This is the `jinja2` template, and it will be
 passed the same context as the regular pages (so this can be used to
 add conference-global things) as well as a structure called `reg` that
@@ -232,16 +232,17 @@ At the root of the json structure, two elements have to be defined:
 width and height. All positions and sizes are defined in mm.
 
 If the element `border` is set to *true*, a thin black border will be
-drawn around the outer edges of the badge (for cutting). If the element
+drawn around the outer edges (for cutting). If the element
 is set to *false*, no border will be printed. If the element is not set
 at all, printing will be controlled from the form field when building the
-badges.
+badges, and be off when building tickets.
 
 If the element `forcebreaks` is set to *true*, a pagebreak will be forced
 between each badge, making sure there is only one badge per
 page. If it's set to *false*,  as many badges as possible will be
 added to a page. If the element is not set at all, page breaks will be
-controlled from the form field when building the badges.
+controlled from the form field when building the badges. For tickets,
+only one page is ever printed.
 
 Finally, an element called `elements` must exist, and contain an *array
 of objects*. Each of these objects represents something to be drawn on
@@ -254,6 +255,9 @@ box
 
 image
 :  draws an image (which must be in the /static subdirectory)
+
+qrimage
+:  draws a qr code image
 
 paragraph
 :  draws a dynamically sized paragraph of text
@@ -302,9 +306,25 @@ Color are specified either by name (*white*, *black*) or by RGB value
 in the form of an array containing [r,b,g] color values (0-255).
 
 
-## Testing badges
+## Badges
 
-To test badges, the `postgresqleu/confreg/jinjabadge.py` file can be
+To build the badges, use the Attendee Report feature, and select
+output format as `badge`.
+
+## Tickets
+
+Tickets are automatically generated and emailed to users along with
+the welcome email as [configured](configuring).
+
+They can also be downloaded from the attendee registration dashboard,
+or be previewed from the administration view of an attendee. In both
+these cases the ticket is re-rendered, so in case the template has
+changed, the ticket will also change (but of course existing emailed
+tickets can't be changed).
+
+## Testing
+
+To test badges and tickets, the `postgresqleu/confreg/jinjapdf.py` file can be
 run independently. It does not depend on django (but does require `jinja2`
 and reportlab, of course) or the rest of the repository structure, so
 it's recommended that a new version of this file is simply downloaded
@@ -314,7 +334,26 @@ conference specific repository).
 To get attendee data to test the badges on, use the `json` format
 attendee report and save it to a file. Then run the script:
 
-    jinjabadge.py /path/to/repo /path/to/attendees.json /path/to/badges.pdf
+    jinjapdf.py badge /path/to/repo /path/to/attendees.json /path/to/badges.pdf
 
 The repository path should be the root of the repository, the same one
 used for `deploystatic.py`.
+
+Test test a ticket layout, use the same script, just for tickets:
+
+    jinjapdf.py ticket /path/to/repo /path/to/attendees.json /path/to/badges.pdf
+
+It's easiest to use the same JSON output as for badges, in which case
+the first entry will be used.
+
+To access conference data, a second JSON file can be used, and
+specified with the `--confjson /some/where.json` parameter. The
+contents of this JSON file will be added to the `conference` object
+available from the template. The content of the file should look
+something like:
+
+	{
+		"conferencename": "Test Conference",
+		"conferencedatestr": "2018-12-26",
+		"location": "Somewhere"
+	}

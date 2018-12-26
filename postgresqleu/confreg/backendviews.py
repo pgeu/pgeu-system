@@ -18,7 +18,7 @@ from postgresqleu.confreg.util import get_authenticated_conference
 from postgresqleu.mailqueue.util import send_mail, send_simple_mail
 
 from jinjafunc import JINJA_TEMPLATE_ROOT
-from jinjabadge import render_jinja_ticket
+from jinjapdf import render_jinja_ticket
 
 from models import Conference, ConferenceSeries
 from models import ConferenceRegistration, Speaker

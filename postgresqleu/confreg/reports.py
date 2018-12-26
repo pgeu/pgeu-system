@@ -12,7 +12,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 import csv
 import json
 
-from jinjabadge import render_jinja_badges
+from jinjapdf import render_jinja_badges
 
 from postgresqleu.countries.models import Country
 from models import ConferenceRegistration, RegistrationType, ConferenceAdditionalOption, ShirtSize
