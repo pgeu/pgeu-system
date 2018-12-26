@@ -63,6 +63,7 @@ import os
 from email.mime.text import MIMEText
 from Crypto.Hash import SHA256
 from StringIO import StringIO
+import xml.etree.ElementTree as ET
 
 import json
 import markdown
@@ -1105,6 +1106,34 @@ def schedule_ical(request, confname):
         'sessions': sessions,
         'servername': request.META['SERVER_NAME'],
     }, content_type='text/calendar')
+
+def schedule_xcal(request, confname):
+    conference = get_object_or_404(Conference, urlname=confname)
+
+    if not conference.scheduleactive:
+        raise Http404()
+    x = ET.Element('iCalendar')
+    v = ET.SubElement(x, 'vcalendar')
+    ET.SubElement(v, 'version').text = '2.0'
+    ET.SubElement(v, 'prodid').text = '//pgeusys//Schedule 1.0//EN'
+    ET.SubElement(v, 'x-wr-caldesc')
+    ET.SubElement(v, 'x-wr-calname').text = 'Schedule for {0}'.format(conference.conferencename)
+    for sess in ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).filter(starttime__isnull=False).order_by('starttime'):
+        s = ET.SubElement(v, 'vevent')
+        ET.SubElement(s, 'method').text = 'PUBLISH'
+        ET.SubElement(s, 'uid').text = '{0}@{1}'.format(sess.id, conference.urlname)
+        ET.SubElement(s, 'dtstart').text = sess.utcstarttime.strftime('%Y%m%dT%H%M%SZ')
+        ET.SubElement(s, 'dtend').text = sess.utcendtime.strftime('%Y%m%dT%H%M%SZ')
+        ET.SubElement(s, 'summary').text = sess.title
+        ET.SubElement(s, 'description').text = sess.abstract
+        ET.SubElement(s, 'class').text = 'PUBLIC'
+        ET.SubElement(s, 'status').text = 'CONFIRMED'
+        ET.SubElement(s, 'url').text = '{0}/events/{1}/schedule/session/{2}/'.format(settings.SITEBASE, conference.urlname, sess.id)
+        ET.SubElement(s, 'location').text = sess.room and sess.room.roomname or ''
+        for spk in sess.speaker.all():
+            ET.SubElement(s, 'attendee').text = spk.name
+    return HttpResponse(ET.tostring(x),
+                        content_type='text/xml')
 
 
 def session(request, confname, sessionid, junk=None):
