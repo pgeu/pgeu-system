@@ -1135,6 +1135,48 @@ def schedule_xcal(request, confname):
     return HttpResponse(ET.tostring(x),
                         content_type='text/xml')
 
+def schedule_xml(request, confname):
+    conference = get_object_or_404(Conference, urlname=confname)
+
+    if not conference.scheduleactive:
+        raise Http404()
+    x = ET.Element('schedule')
+    ET.SubElement(x, 'version').text = 'Firefly'
+    c = ET.SubElement(x, 'conference')
+    ET.SubElement(c, 'title').text = conference.conferencename
+    ET.SubElement(c, 'start').text = conference.startdate.strftime("%Y-%m-%d")
+    ET.SubElement(c, 'end').text = conference.enddate.strftime("%Y-%m-%d")
+    ET.SubElement(c, 'days').text = str((conference.enddate - conference.startdate).days+1)
+    ET.SubElement(c, 'baseurl').text = '{0}/events/{1}/schedule/'.format(settings.SITEBASE, conference.urlname)
+
+    lastday = None
+    lastroom = None
+    for sess in ConferenceSession.objects.filter(conference=conference).filter(status=1).filter(starttime__isnull=False).order_by('starttime', 'cross_schedule', 'room__sortkey'):
+        if lastday != sess.starttime.date():
+            lastday = sess.starttime.date()
+            lastroom = None
+            xday = ET.SubElement(x, 'day', date=lastday.strftime("%Y-%m-%d")) # START/END!
+        thisroom = sess.cross_schedule and 'Other' or sess.room.roomname
+        if lastroom != thisroom:
+            lastroom = thisroom
+            xroom = ET.SubElement(xday, 'room', name=lastroom)
+        e = ET.SubElement(xroom, 'event', id=str(sess.id))
+        ET.SubElement(e, 'date').text = sess.utcstarttime.strftime('%Y%m%dT%H%M%S+00:00')
+        ET.SubElement(e, 'start').text = sess.utcstarttime.strftime('%H:%M')
+        ET.SubElement(e, 'duration').text = str(sess.utcendtime-sess.utcstarttime)
+        ET.SubElement(e, 'room').text = lastroom
+        ET.SubElement(e, 'title').text = sess.title
+        ET.SubElement(e, 'abstract').text = sess.abstract
+        ET.SubElement(e, 'url').text = '{0}/events/{1}/schedule/session/{2}/'.format(settings.SITEBASE, conference.urlname, sess.id)
+        if sess.track:
+            ET.SubElement(e, 'track').text = sess.track.trackname
+        p = ET.SubElement(e, 'persons')
+        for spk in sess.speaker.all():
+            ET.SubElement(p, 'person', id=str(spk.id)).text = spk.name
+
+    return HttpResponse(ET.tostring(x),
+                        content_type='text/xml')
+
 
 def session(request, confname, sessionid, junk=None):
     conference = get_object_or_404(Conference, urlname=confname)

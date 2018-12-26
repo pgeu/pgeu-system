@@ -90,6 +90,7 @@ urlpatterns.extend([
     url(r'^events/([^/]+)/schedule/$', postgresqleu.confreg.views.schedule),
     url(r'^events/([^/]+)/schedule/ical/$', postgresqleu.confreg.views.schedule_ical),
     url(r'^events/([^/]+)/schedule.xcs$', postgresqleu.confreg.views.schedule_xcal),
+    url(r'^events/([^/]+)/schedule.xml$', postgresqleu.confreg.views.schedule_xml),
     url(r'^events/([^/]+)/schedule/session/(\d+)(-.*)?/$', postgresqleu.confreg.views.session),
     url(r'^events/([^/]+)/sessions/session/(\d+)(-.*)?/$', postgresqleu.confreg.views.session),
     url(r'^events/([^/]+)/sessions/session/(\d+)(?:-.*)?/slides/(\d+)/.*$', postgresqleu.confreg.views.session_slides),
