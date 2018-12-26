@@ -169,7 +169,7 @@ directory.
 
 The syntax is:
 
-    deploystatic.py &lt;sourcepath&gt; &lt;destpath&gt;
+    deploystatic.py <sourcepath> <destpath>
 
 Where &lt;sourcepath&gt; should point at the root directory as described in
 the first section of this page. The contents of the `/static/`
