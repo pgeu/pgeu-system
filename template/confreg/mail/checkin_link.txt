@@ -1,0 +1,10 @@
+Hello!
+
+You request your checkin administration link for
+{{conference.name}} to be sent.
+
+Click this link to activate the system:
+
+
+{{link}}
+

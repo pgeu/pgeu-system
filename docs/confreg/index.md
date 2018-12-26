@@ -25,6 +25,7 @@ work from here.
     * [Slides](callforpapers#slides)
 * Registrations
     * [Registrations and registration types](registrations)
+    * [Tickets and check-in](tickets)
     * [Vouchers and discount codes](vouchers)
     * [Waitlist](waitlist)
     * [Emails](emails)

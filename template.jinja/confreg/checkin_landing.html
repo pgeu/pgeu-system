@@ -1,0 +1,53 @@
+{%extends "base.html" %}
+{%block title%}Checkin - {{conference}}{%endblock%}
+{%block content%}
+{% if messages %}
+<ul style="background-color: yellow;">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+<h1>Checkin - {{conference}}</h1>
+<p>
+  You are registered as a check in process for {{conference.conferencename}}.
+</p>
+<p>
+  The application to perform check ins is designed for use on a mobile
+  device, to add functions like QR code scanning. To active it, you do
+  not need to be logged in, you just need the secret URL.
+</p>
+<p>
+<h2>Open by link</h2>
+<p>
+  You can open the application by going to this link:
+</p>
+<p>
+  <a href="{{checkinlink}}">{{checkinlink}}/</a>
+</p>
+<p>
+  The same links is available via this QR code:
+</p>
+<p>
+  <img src="data:image/png;base64,{{qrlink}}" />
+</p>
+
+<h2>Email link</h2>
+<p>
+  If you prefer, we can also email you the link.
+</p>
+<form method="post" action=".">{{ csrf_input }}
+  <input type="hidden" name="op" value="sendmail">
+  <input type="submit" value="Send link in email">
+</form>
+
+<h2>Test</h2>
+<p>
+  To test the app, start it up from the link, and then
+  scan the below QR code.
+</p>
+<p>
+  <img src="data:image/png;base64,{{qrtest}}" />
+</p>
+
+{%endblock%}

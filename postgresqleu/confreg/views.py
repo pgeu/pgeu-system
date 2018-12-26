@@ -40,6 +40,7 @@ from util import get_invoice_autocancel, cancel_registration
 from models import get_status_string
 from regtypes import confirm_special_reg_type, validate_special_reg_type
 from jinjafunc import render_jinja_conference_response, JINJA_TEMPLATE_ROOT
+from jinjabadge import render_jinja_ticket
 from backendviews import get_authenticated_conference
 
 from postgresqleu.util.decorators import superuser_required
@@ -230,6 +231,8 @@ def register(request, confname, whatfor=None):
         reg.lastname = request.user.last_name
         reg.created = datetime.now()
         reg.regtoken = generate_random_token()
+        reg.idtoken = generate_random_token()
+        reg.publictoken = generate_random_token()
 
     is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
 
@@ -371,6 +374,8 @@ def multireg(request, confname, regid=None):
                                      registrator=request.user,
                                      created=datetime.now(),
                                      regtoken=generate_random_token(),
+                                     idtoken=generate_random_token(),
+                                     publictoken=generate_random_token(),
         )
         redir_root = './'
 
@@ -1806,6 +1811,16 @@ OR
         'conference': conference,
         'mail': mail,
         })
+
+
+@login_required
+def download_ticket(request, confname):
+    conference = get_object_or_404(Conference, urlname=confname, tickets=True)
+    reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
+
+    resp = HttpResponse(content_type='application/pdf')
+    render_jinja_ticket(reg, resp, systemroot=JINJA_TEMPLATE_ROOT)
+    return resp
 
 
 @transaction.atomic

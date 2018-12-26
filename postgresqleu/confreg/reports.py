@@ -17,12 +17,14 @@ from jinjabadge import render_jinja_badges
 from postgresqleu.countries.models import Country
 from models import ConferenceRegistration, RegistrationType, ConferenceAdditionalOption, ShirtSize
 from models import STATUS_CHOICES
+from reportingforms import QueuePartitionForm
 
 # Fields that are available in an advanced attendee report
 # (id, field title, default, field_user_for_order_by)
 attendee_report_fields = [
     ('lastname', 'Last name', True, None),
     ('firstname', 'First name', True, None),
+    ('queuepartition', 'Queue partition', False, None),
     ('email', 'E-mail', True, None),
     ('company', 'Company', False, None),
     ('address', 'Address', False, None),
@@ -51,7 +53,7 @@ class ReportFilter(object):
         self.emptyasnull = emptyasnull
 
     def build_Q(self, POST):
-        if self.queryset and not isinstance(self.queryset, tuple):
+        if self.queryset and not isinstance(self.queryset, tuple) and not isinstance(self.queryset, list):
             # Our input is a list of IDs. Return registrations that has
             # *any* of the given id's. But we need to make sure that
             # django doesn't evaluate it as a subselect.
@@ -99,7 +101,7 @@ class ReportFilter(object):
                     else:
                         return super(MultipleChoiceWrapper, self).label_from_instance(obj)
 
-            if isinstance(self.queryset, tuple):
+            if isinstance(self.queryset, tuple) or isinstance(self.queryset, list):
                 field = forms.MultipleChoiceField(choices=self.queryset)
             else:
                 field = MultipleChoiceWrapper(queryset=self.queryset)
@@ -107,6 +109,32 @@ class ReportFilter(object):
             return "<blockquote class=\"adv_filter_wrap\">%s</blockquote><br/>" % (field.widget.render("adv_%s" % self.id, None), )
         else:
             return '<input type="text" class="adv_filter_box" name="adv_%s_filter"><br/>' % self.id
+
+
+class ReportQueuePartitionFilter(ReportFilter):
+    def __init__(self, conference):
+        self.conference = conference
+        super(ReportQueuePartitionFilter, self).__init__(
+            'queuepartition',
+            'Queue Partition',
+            [['Other', 'Other']] + [(chr(x), chr(x)) for x in range(ord('A'), ord('Z') + 1)]
+        )
+
+    def build_Q(self, POST):
+        letters = [k for k in POST.getlist('adv_queuepartition') if k != 'Other']
+        other = 'Other' in POST.getlist('adv_queuepartition')
+
+        p = []
+        if letters:
+            p.append("[{0}]".format(''.join(letters)))
+        if other:
+            p.append("[^A-Z]")
+        r = "^({0})".format('|'.join(p))
+
+        if self.conference.queuepartitioning == 1:
+            return Q(lastname__iregex=r)
+        else:
+            return Q(firstname__iregex=r)
 
 
 # Filter by speaker state is more complex than the default filter can handle,
@@ -137,6 +165,7 @@ def attendee_report_filters(conference):
     yield ReportFilter('regtype', 'Registration type', RegistrationType.objects.filter(conference=conference), 'regtype')
     yield ReportFilter('lastname', 'Last name')
     yield ReportFilter('firstname', 'First name')
+    yield ReportQueuePartitionFilter(conference)
     yield ReportFilter('country', 'Country', Country.objects.all())
     yield ReportFilter('company', 'Company')
     yield ReportFilter('phone', 'Phone')
@@ -312,4 +341,5 @@ simple_reports = {
     'regdays': 'SELECT day,count(*) FROM confreg_registrationday d INNER JOIN confreg_registrationtype_days rd ON rd.registrationday_id=d.id INNER JOIN confreg_registrationtype rt ON rt.id=rd.registrationtype_id INNER JOIN confreg_conferenceregistration r ON r.regtype_id=rt.id WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL GROUP BY day ORDER BY day',
     'sessnoroom': "SELECT title AS \"Title\", trackname AS \"Track\", starttime || ' - ' || endtime AS \"Timeslot\" FROM confreg_conferencesession s LEFT JOIN confreg_track t ON t.id=s.track_id WHERE s.conference_id=%(confid)s AND status=1 AND room_id IS NULL AND NOT cross_schedule",
     'sessnotrack': "SELECT title AS \"Title\", roomname AS \"Room\", starttime || ' - ' || endtime AS \"Timeslot\" FROM confreg_conferencesession s LEFT JOIN confreg_room r ON r.id=s.room_id WHERE s.conference_id=%(confid)s AND status=1 AND track_id IS NULL",
+    'queuepartitions': QueuePartitionForm,
 }

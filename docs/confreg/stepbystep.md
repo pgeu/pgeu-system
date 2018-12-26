@@ -19,6 +19,9 @@ off the ground.
        [registration types](registrations#typesandclasses).
     1. If used, add one or more
        [additional options](registrations#additionaloptions).
+    1. Decide if [tickets](tickets) and check-in should be used, and
+       in this case create a template for tickets if a special design
+       is needed.
     1. Registration can now be opened
 1. Set up schedule
     1. Wait for the call for papers to finish.

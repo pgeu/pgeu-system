@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" dir="ltr">
+ <head>
+  <title>{{conference.conferencename}} - attendee checkin</title>
+  <meta http-equiv="Content-Type" content="text/xhtml; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="stylesheet" media="screen" href="/media/css/bootstrap.min.css" />
+  <link rel="stylesheet" media="screen" href="/media/css/checkin.css" />
+  <script type="text/javascript" src="/media/jq/jquery-1.9.1.min.js"></script>
+  <script type="text/javascript" src="/media/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="/media/js/instascan/instascan.min.js"></script>
+  <script type="text/javascript" src="/media/js/checkin.js"></script>
+ </head>
+ <body>
+   <nav class="navbar navbar-default navbar-fixed-top" id="topnavbar">
+     <div id="loading">
+       <div class="spinner-ring"><div></div><div></div><div></div><div></div></div>
+     </div>
+     <div class="container-fluid">
+       <div class="navbar-header">
+         <a class="navbar-brand" href="#">{{conference.conferencename}} - attendee checkin</a>
+       </div>
+     </div>
+   </nav>
+   <div class="container">
+     <div class="row">
+       <div class="col-md-12">
+         <div id="statusdiv" class="alert alert-warning fade">Loading...</div>
+       </div>
+     </div>
+     <div id="buttonrow" class="row approw">
+       <div class="col-md-12 buttonrow">
+         <button id="scanButton" class="btn btn-default btn-block btn-lg">Scan registration</button>
+       </div>
+       <div class="col-md-12 buttonrow">
+         <button id="searchButton" class="btn btn-default btn-block btn-lg">Search registration</button>
+       </div>
+{%if is_admin%}
+       <div class="col-md-12 buttonrow">
+         <button id="statsButton" class="btn btn-default btn-block btn-lg">View statistics</button>
+       </div>
+{%endif%}
+       <div class="col-md-12 buttonrow">
+         <button id="configureCameraButton" class="btn btn-default btn-block btn-lg">Configure camera</button>
+       </div>
+     </div>
+
+     <div id="scanrow" class="row approw">
+       <div class="row">
+         <div class="col-md-12 center-block">
+           <video id="qrpreview" playsinline>
+           </video>
+         </div>
+       </div>
+       <div class="col-md-12 buttonrow">
+         <button class="btn btn-default btn-block btn-lg cancelButton">Cancel</button>
+       </div>
+     </div>
+
+     <div id="searchrow" class="row approw">
+       <div class="col-md-12">
+         <form id="searchForm">
+           <div class="form-group">
+             <label for="searchinput">Search for attendee</label>
+             <input type="text" class="form-control" id="searchinput" placeholder="Part of name"  />
+           </div>
+           <input type="submit" class="btn btn-primary btn-block btn-lg" value="Search attendee">
+         </form>
+       </div>
+       <div class="col-md-12 buttonrow">
+         <button class="btn btn-default btn-block btn-lg cancelButton">Cancel</button>
+       </div>
+     </div>
+
+     <div id="statsrow" class="row approw">
+       <table class="table table-condensed table-striped" id="statsTable">
+       </table>
+       <div class="col-md-12 buttonrow">
+         <button class="btn btn-default btn-block btn-lg cancelButton">Close</button>
+       </div>
+     </div>
+
+   </div>
+
+   <nav class="navbar navbar-default navbar-fixed-bottom">
+     <div class="container-fluid">
+       <div class="navbar-header">
+         <div class="navbar-brand">
+           <ul class="nav small">
+             <li>User: <span id="userName">not logged in</span></li>
+           </ul>
+         </div>
+         <div class="navbar-brand pull-right">
+           <ul class="nav small">
+             <li>Last API: <span id="lastajax">none</span></li>
+           </ul>
+         </div>
+       </div>
+     </div>
+   </nav>
+
+
+   <div class="modal fade" tabindex="-1" role="dialog" id="selectUserModal">
+     <div class="modal-dialog" role="document">
+       <div class="modal-content">
+         <div class="modal-header">
+           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+           <h4 class="modal-title">Select attendee</h4>
+         </div>
+         <div class="modal-body" id="selectUserBody">
+         </div>
+         <div class="modal-footer">
+           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+         </div>
+       </div>
+     </div>
+   </div><!-- selectUserModal -->
+
+   <div class="modal fade" tabindex="-1" role="dialog" id="checkinModal">
+     <div class="modal-dialog" role="document">
+       <div class="modal-content">
+         <div class="modal-header">
+           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+           <h4 class="modal-title">Check in attendee</h4>
+         </div>
+         <div class="modal-body">
+           <dl id="checkin_list">
+             <dt>Name</dt>
+             <dd id="checkin_name"></dd>
+             <dt>Type</dt>
+             <dd id="checkin_type"></dd>
+           </dl>
+         </div>
+         <div class="modal-footer">
+           <button type="button" class="btn btn-default btn-primary" id="checkinbutton">Check in</button>
+           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+         </div>
+       </div>
+     </div>
+   </div><!-- selectUserModal -->
+
+   <div class="modal" tabindex="-1" role="dialog" id="confirmModal">
+     <div class="modal-dialog" role="document">
+       <div class="modal-content">
+         <div class="modal-header">
+           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+           <h4 class="modal-title">Confirm</h4>
+         </div>
+         <div class="modal-body" id="confirmModalBody"></div>
+         <div class="modal-footer">
+           <button type="button" class="btn btn-default btn-primary" id="confirmModalConfirm" data-dismiss="modal">Confirm</button>
+           <button type="button" class="btn btn-default" id="confirmModalCancel" data-dismiss="modal">Cancel</button>
+         </div>
+       </div>
+     </div>
+   </div> <!-- confirmModal -->
+
+   <div class="modal fade" tabindex="-1" role="dialog" id="selectCameraModal">
+     <div class="modal-dialog" role="document">
+       <div class="modal-content">
+         <div class="modal-header">
+           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+           <h4 class="modal-title">Select camera</h4>
+         </div>
+         <div class="modal-body" id="selectCameraBody">
+         </div>
+         <div class="modal-footer">
+           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+         </div>
+       </div>
+     </div>
+   </div><!-- selectCameraModal -->
+
+
+ </body>
+</html>

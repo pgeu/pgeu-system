@@ -87,6 +87,9 @@ news!
 {%if reg.is_volunteer%}
   <li><a href="/events/{{conference.urlname}}/volunteer/">Volunteer schedule</a> &bull;</li>
 {%endif%}
+{%if reg.is_checkinprocessor %}
+  <li><a href="/events/{{conference.urlname}}/checkin/">Checkin processing</a> &bull;</li>
+{%endif%}
  </ul>
 </div>
 
@@ -147,6 +150,12 @@ spamfilters.
 This registration type gives you access to the conference on {{reg.regtype.available_days}}.
 {%endif%}
  </dd>
+{%if conference.tickets %}
+ <dt>Ticket</dt>
+ <dd>You can download <a href="ticket/">your ticket</a> and bring to the conference
+   for quicker processing.
+ </dd>
+{%endif%}
  <dt>Registration details</dt>
  <dd>
    <p>

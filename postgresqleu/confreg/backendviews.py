@@ -17,6 +17,9 @@ from postgresqleu.util.backendviews import backend_list_editor, backend_process_
 from postgresqleu.confreg.util import get_authenticated_conference
 from postgresqleu.mailqueue.util import send_mail, send_simple_mail
 
+from jinjafunc import JINJA_TEMPLATE_ROOT
+from jinjabadge import render_jinja_ticket
+
 from models import Conference, ConferenceSeries
 from models import ConferenceRegistration, Speaker
 from models import AccessToken
@@ -214,6 +217,15 @@ def edit_news(request, urlname, rest):
 ###
 # Non-simple-editor views
 ###
+def view_registration_ticket(request, urlname, regid):
+    conference = get_authenticated_conference(request, urlname)
+    reg = get_object_or_404(ConferenceRegistration, conference=conference, pk=regid)
+
+    resp = HttpResponse(content_type='application/pdf')
+    render_jinja_ticket(reg, resp, systemroot=JINJA_TEMPLATE_ROOT)
+    return resp
+
+
 def pendinginvoices(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 

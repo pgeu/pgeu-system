@@ -5,9 +5,12 @@ from django.core.exceptions import PermissionDenied
 
 from datetime import datetime, date, timedelta
 import urllib
+from io import BytesIO
 
 from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 from postgresqleu.util.middleware import RedirectException
+from postgresqleu.confreg.jinjafunc import JINJA_TEMPLATE_ROOT
+from postgresqleu.confreg.jinjabadge import render_jinja_ticket
 
 from models import PrepaidVoucher, DiscountCode, RegistrationWaitlistHistory
 from models import ConferenceRegistration, Conference
@@ -149,6 +152,15 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
     if not reg.conference.sendwelcomemail:
         return
 
+    if reg.conference.tickets:
+        buf = BytesIO()
+        render_jinja_ticket(reg, buf, systemroot=JINJA_TEMPLATE_ROOT)
+        attachments = [
+            ('{0}_ticket.pdf'.format(reg.conference.urlname), 'application/pdf', buf.getvalue()),
+        ]
+    else:
+        attachments = None
+
     # Ok, this attendee needs a notification. For now we don't support
     # any string replacements in it, maybe in the future.
     send_simple_mail(reg.conference.contactaddr,
@@ -157,6 +169,7 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
                      reg.conference.welcomemail,
                      sendername=reg.conference.conferencename,
                      receivername=reg.fullname,
+                     attachments=attachments,
     )
 
 

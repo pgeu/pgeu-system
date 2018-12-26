@@ -135,6 +135,7 @@ class ConferenceRegistrationForm(SelectableWidgetAdminFormMixin, ConcurrentProte
         widgets = {
             'attendee': AutoCompleteSelectWidget(lookup_class=UserLookup),
             'registrator': AutoCompleteSelectWidget(lookup_class=UserLookup),
+            'checkedinby': AutoCompleteSelectWidget(lookup_class=RegistrationLookup),
         }
 
     def __init__(self, *args, **kwargs):
@@ -143,6 +144,7 @@ class ConferenceRegistrationForm(SelectableWidgetAdminFormMixin, ConcurrentProte
             self.fields['additionaloptions'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.instance.conference)
             self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference)
             self.fields['payconfirmedat'].help_text = self.fields['payconfirmedby'].help_text = "Don't edit this field here - instead, go back to the list of registrations and chose to approve from there!"
+            self.fields['checkedinby'].widget.widget.update_query_parameters({'conference': self.instance.conference.id})
 
 
 class ConferenceRegistrationAdmin(admin.ModelAdmin):

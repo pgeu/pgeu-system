@@ -132,6 +132,7 @@ class Conference(models.Model):
     allowedit = models.BooleanField(blank=False, null=False, default=True, verbose_name="Allow editing registrations")
     scheduleactive = models.BooleanField(blank=False, null=False, default=False, verbose_name="Schedule publishing active")
     sessionsactive = models.BooleanField(blank=False, null=False, default=False, verbose_name="Session list publishing active")
+    checkinactive = models.BooleanField(blank=False, null=False, default=False, verbose_name="Check-in active")
     schedulewidth = models.IntegerField(blank=False, default=600, null=False, verbose_name="Width of HTML schedule")
     pixelsperminute = models.FloatField(blank=False, default=1.5, null=False, verbose_name="Vertical pixels per minute")
     confurl = models.CharField(max_length=128, blank=False, null=False, validators=[validate_lowercase, ], verbose_name="Conference URL")
@@ -148,6 +149,7 @@ class Conference(models.Model):
     talkvoters = models.ManyToManyField(User, blank=True, related_name="talkvoters_set", help_text="Users who can view talks pre-approval, vote on the talks, and leave comments")
     staff = models.ManyToManyField(User, blank=True, related_name="staff_set", help_text="Users who can register as staff")
     volunteers = models.ManyToManyField('ConferenceRegistration', blank=True, related_name="volunteers_set", help_text="Users who volunteer")
+    checkinprocessors = models.ManyToManyField('ConferenceRegistration', blank=True, related_name="checkinprocessors_set", verbose_name="Check-in processors", help_text="Users who process checkins")
     asktshirt = models.BooleanField(blank=False, null=False, default=True, verbose_name="Field: t-shirt", help_text="Include field for T-shirt size")
     askfood = models.BooleanField(blank=False, null=False, default=True, verbose_name="Field: dietary", help_text="Include field for dietary needs")
     asktwitter = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: twitter name", help_text="Include field for twitter name")
@@ -161,6 +163,8 @@ class Conference(models.Model):
 
     sendwelcomemail = models.BooleanField(blank=False, null=False, default=False, verbose_name="Send welcome email", help_text="Send an email to attendees once their registration is completed.")
     welcomemail = models.TextField(blank=True, null=False, verbose_name="Welcome email contents")
+    tickets = models.BooleanField(blank=False, null=False, default=False, verbose_name="Use tickets", help_text="Generate and send tickets to all attendees once their registration is completed.")
+    queuepartitioning = models.IntegerField(blank=True, null=True, choices=((1, 'By last name'), (2, 'By first name'), ), verbose_name="Queue partitioning", help_text="If queue partitioning is used, partition by what?")
 
     lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
     newsjson = models.CharField(max_length=128, blank=True, null=True, default=None)
@@ -175,8 +179,13 @@ class Conference(models.Model):
     # Attributes that are safe to access in jinja templates
     _safe_attributes = ('active', 'askfood', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
                         'callforpapersintro', 'callforpapersopen',
-                        'conferencefeedbackopen', 'confurl', 'contactaddr',
-                        'feedbackopen', 'org_name', 'skill_levels', 'treasurer_email', 'urlname', )
+                        'conferencefeedbackopen', 'confurl', 'contactaddr', 'tickets',
+                        'conferencedatestr', 'location',
+                        'feedbackopen', 'skill_levels', 'urlname', 'conferencename')
+
+    def safe_export(self):
+        d = dict((a, getattr(self, a) and unicode(getattr(self, a))) for a in self._safe_attributes)
+        return d
 
     def __unicode__(self):
         return self.conferencename
@@ -466,6 +475,8 @@ class ConferenceRegistration(models.Model):
     payconfirmedby = models.CharField(max_length=16, null=True, blank=True, verbose_name="Payment confirmed by")
     created = models.DateTimeField(null=False, blank=False, verbose_name="Registration created")
     lastmodified = models.DateTimeField(null=False, blank=False, auto_now=True)
+    checkedinat = models.DateTimeField(null=True, blank=True, verbose_name="Checked in at")
+    checkedinby = models.ForeignKey('ConferenceRegistration', null=True, blank=True, verbose_name="Checked by by")
 
     # If an invoice is generated, link to it here so we can find our
     # way back easily.
@@ -482,6 +493,12 @@ class ConferenceRegistration(models.Model):
     # Token to uniquely identify this registration in case we want to
     # access it without a login.
     regtoken = models.TextField(null=False, blank=False, unique=True)
+    # Token to identify this user. Only exists for confirmed registrations and is
+    # used for example to check in to the conference.
+    idtoken = models.TextField(null=False, blank=False, unique=True)
+    # Token used to identify this user publicly. This can for example be printed
+    # as a QR code on a badge, for others to scan.
+    publictoken = models.TextField(null=False, blank=False, unique=True)
 
     @property
     def fullname(self):
@@ -529,6 +546,23 @@ class ConferenceRegistration(models.Model):
         return self.volunteers_set.exists()
 
     @property
+    def is_checkinprocessor(self):
+        return self.checkinprocessors_set.exists()
+
+    @property
+    def queuepartition(self):
+        if self.conference.queuepartitioning == 1:
+            k = self.lastname[0].upper()
+        elif self.conference.queuepartitioning == 2:
+            k = self.firstname[0].upper()
+        else:
+            return None
+
+        if k >= 'A' and k <= 'Z':
+            return k
+        return "Other"
+
+    @property
     def payment_method_description(self):
         if not self.payconfirmedat:
             return "Not paid."
@@ -550,13 +584,20 @@ class ConferenceRegistration(models.Model):
             return r and 'Yes' or 'No'
         return getattr(self, field)
 
+    # ID token inluding the identifier
+    @property
+    def fullidtoken(self):
+        if self.idtoken:
+            return 'ID${0}$ID'.format(self.idtoken)
+        return ''
+
     # For the admin interface (mainly)
     def __unicode__(self):
         return "%s: %s %s <%s>" % (self.conference, self.firstname, self.lastname, self.email)
 
     # For exporting "safe attributes" to external systems
     def safe_export(self):
-        attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'shareemail', ]
+        attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'shareemail', 'fullidtoken', 'queuepartition', ]
         d = dict((a, getattr(self, a) and unicode(getattr(self, a))) for a in attribs)
         if self.regtype:
             d['regtype'] = self.regtype.safe_export()
@@ -629,7 +670,7 @@ class Speaker(models.Model):
     lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
     speakertoken = models.TextField(null=False, blank=False, unique=True)
 
-    _safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract', 'photofile', 'lastmodified', 'org_name', 'treasurer_email')
+    _safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract', 'photofile', 'lastmodified', )
     json_included_attributes = ['fullname', 'twittername', 'company', 'abstract', 'lastmodified']
 
     @property

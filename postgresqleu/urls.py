@@ -17,6 +17,7 @@ import postgresqleu.confreg.feedback
 import postgresqleu.confreg.pdfschedule
 import postgresqleu.confreg.volsched
 import postgresqleu.confreg.docsviews
+import postgresqleu.confreg.checkin
 import postgresqleu.confwiki.views
 import postgresqleu.account.views
 import postgresqleu.invoices.views
@@ -94,6 +95,9 @@ urlpatterns.extend([
     url(r'^events/([^/]+)/schedule/speaker/(\d+)(-.*)?/$', postgresqleu.confreg.views.speaker),
     url(r'^events/([^/]+)/sessions/speaker/(\d+)(-.*)?/$', postgresqleu.confreg.views.speaker),
     url(r'^events/(?P<urlname>[^/]+)/volunteer/', include(postgresqleu.confreg.volsched)),
+    url(r'^events/([^/]+)/checkin/$', postgresqleu.confreg.checkin.landing),
+    url(r'^events/([^/]+)/checkin/([a-z0-9]{64})/$', postgresqleu.confreg.checkin.checkin),
+    url(r'^events/([^/]+)/checkin/([a-z0-9]{64})/api/(\w+)/$', postgresqleu.confreg.checkin.api),
     url(r'^events/([^/]+)/sessions/$', postgresqleu.confreg.views.sessionlist),
     url(r'^events/speaker/(\d+)/photo/$', postgresqleu.confreg.views.speakerphoto),
     url(r'^events/speakerprofile/$', postgresqleu.confreg.views.speakerprofile),
@@ -117,6 +121,7 @@ urlpatterns.extend([
     url(r'^events/([^/]+)/register/wiki/(.*)/sub/$', postgresqleu.confwiki.views.wikipage_subscribe),
     url(r'^events/([^/]+)/register/wiki/(.*)/$', postgresqleu.confwiki.views.wikipage),
     url(r'^events/([^/]+)/register/signup/(\d+)/$', postgresqleu.confwiki.views.signup),
+    url(r'^events/([^/]+)/register/ticket/$', postgresqleu.confreg.views.download_ticket),
 
     # Opt out of communications
     url(r'^events/optout/$', postgresqleu.confreg.views.optout),
@@ -151,6 +156,7 @@ urlpatterns.extend([
     url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/edit/$', postgresqleu.confreg.backendviews.edit_registration),
     url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/cancel/$', postgresqleu.confreg.views.admin_registration_cancel),
     url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/clearcode/$', postgresqleu.confreg.views.admin_registration_clearcode),
+    url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/ticket/$', postgresqleu.confreg.backendviews.view_registration_ticket),
     url(r'^events/admin/(\w+)/regdashboard/list/sendmail/$', postgresqleu.confreg.backendviews.registration_dashboard_send_email),
     url(r'^events/admin/(\w+)/prepaid/$', postgresqleu.confreg.views.createvouchers),
     url(r'^events/admin/(\w+)/prepaid/list/$', postgresqleu.confreg.views.listvouchers),

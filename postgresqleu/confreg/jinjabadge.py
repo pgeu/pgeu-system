@@ -43,12 +43,14 @@ def getmm(struct, key):
     return struct[key] * mm
 
 
-class JinjaBadge(Flowable):
+class JinjaFlowable(Flowable):
     def __init__(self, js, imgpath):
         self.js = js
         self.imgpath = imgpath
         self.width = getmm(js, 'width')
         self.height = getmm(js, 'height')
+        if self.js.get('center', False):
+            self.hAlign = 'CENTER'
 
     def draw(self):
         if self.js.get('border', False):
@@ -188,19 +190,23 @@ def test_inlist(v, l):
 
 
 class JinjaRenderer(object):
-    def __init__(self, rootdir, debug=False, border=False, pagebreaks=False):
+    def __init__(self, rootdir, templatefile, debug=False, systemroot=None):
         self.templatedir = os.path.join(rootdir, 'templates')
         self.debug = debug
-        self.border = border
-        self.pagebreaks = pagebreaks
+
+        self.border = self.pagebreaks = False
 
         registerFont(TTFont('DejaVu Serif', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf"))
         registerFont(TTFont('DejaVu Serif Bold', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif-Bold.ttf"))
 
-        if not os.path.exists(os.path.join(self.templatedir, 'badge.json')):
-            raise Exception("badge.json not found for conference")
+        if os.path.exists(os.path.join(self.templatedir, templatefile)):
+            template = os.path.join(self.templatedir, templatefile)
+        elif systemroot and os.path.exists(os.path.join(systemroot, 'confreg/', templatefile)):
+            template = os.path.join(systemroot, 'confreg/', templatefile)
+        else:
+            raise Exception("{0} not found for conference".format(templatefile))
 
-        with open(os.path.join(self.templatedir, 'badge.json')) as f:
+        with open(template) as f:
             env = jinja2.sandbox.SandboxedEnvironment()
             env.filters.update({
                 'escapejson': escapejson_filter,
@@ -230,10 +236,7 @@ class JinjaRenderer(object):
         else:
             return {}
 
-    def add_badge(self, reg):
-        ctx = {
-            'reg': reg,
-        }
+    def add_to_story(self, ctx):
         ctx.update(self.context)
         s = self.template.render(**ctx)
         try:
@@ -251,7 +254,7 @@ class JinjaRenderer(object):
 
         if 'border' not in js:
             js['border'] = self.border
-        self.story.append(JinjaBadge(js, self.staticdir))
+        self.story.append(JinjaFlowable(js, self.staticdir))
 
         if 'forcebreaks' not in js:
             js['forcebreaks'] = self.pagebreaks
@@ -263,34 +266,72 @@ class JinjaRenderer(object):
         doc.build(self.story)
 
 
+class JinjaBadgeRenderer(JinjaRenderer):
+    def __init__(self, rootdir, debug=False, border=False, pagebreaks=False, systemroot=None):
+        super(JinjaBadgeRenderer, self).__init__(rootdir, 'badge.json', debug, systemroot=systemroot)
+
+        self.border = border
+        self.pagebreaks = pagebreaks
+
+    def add_badge(self, reg, conference):
+        self.add_to_story({
+            'reg': reg,
+            'conference': conference,
+        })
+
+
+class JinjaTicketRenderer(JinjaRenderer):
+    def __init__(self, rootdir, debug=False, systemroot=None):
+        super(JinjaTicketRenderer, self).__init__(rootdir, 'ticket.json', debug, systemroot=systemroot)
+
+    def add_reg(self, reg, conference):
+        self.add_to_story({
+            'reg': reg,
+            'conference': conference,
+        })
+
+
 # Render badges from within the website scope, meaning we have access to the
 # django objects here.
 def render_jinja_badges(conference, registrations, output, border, pagebreaks):
-    renderer = JinjaRenderer(conference.jinjadir, border=border, pagebreaks=pagebreaks)
+    renderer = JinjaBadgeRenderer(conference.jinjadir, border=border, pagebreaks=pagebreaks)
 
     for reg in registrations:
-        renderer.add_badge(reg.safe_export())
+        renderer.add_badge(reg.safe_export(), conference.safe_export())
 
     renderer.render(output)
 
 
+def render_jinja_ticket(registration, output, systemroot):
+    renderer = JinjaTicketRenderer(registration.conference.jinjadir, systemroot=systemroot)
+    renderer.add_reg(registration.safe_export(), registration.conference.safe_export())
+    renderer.render(output)
+
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Render jinja based badges')
+    parser = argparse.ArgumentParser(description='Render jinja based badges and tickets')
+    parser.add_argument('what', choices=['badge', 'ticket', ], help='What to render')
     parser.add_argument('repopath', type=str, help='Template repository directory')
     parser.add_argument('attendeelist', type=str, help='JSON file with attendee list')
     parser.add_argument('outputfile', type=str, help='Name of output PDF file')
+    parser.add_argument('--confjson', type=str, help='JSON representing conference')
     parser.add_argument('--borders', action='store_true', help='Enable borders on written file')
     parser.add_argument('--pagebreaks', action='store_true', help='Enable pagebreaks on written file')
 
     args = parser.parse_args()
 
-    renderer = JinjaRenderer(args.repopath, debug=True, border=args.borders, pagebreaks=args.pagebreaks)
+    conference = args.confjson and json.loads(args.confjson) or {}
 
     with open(args.attendeelist) as f:
         a = json.load(f)
 
-    for reg in a:
-        renderer.add_badge(reg)
+    if args.what == 'badge':
+        renderer = JinjaBadgeRenderer(args.repopath, debug=True, border=args.borders, pagebreaks=args.pagebreaks)
+        for reg in a:
+            renderer.add_badge(reg, conference)
+    else:
+        renderer = JinjaTicketRenderer(args.repopath, debug=True)
+        renderer.add_reg(a[0], conference)
 
     with open(args.outputfile, 'wb') as output:
         renderer.render(output)

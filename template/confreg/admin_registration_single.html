@@ -120,6 +120,31 @@
 {%endif%}
   </td>
  </tr>
+ <tr>
+  <th colspan="2" class="col-md-12">Check-in process</th>
+ </tr>
+{%if conference.queuepartitioning%}
+ <tr>
+   <td>Queue partition</td>
+   <td>{{reg.queuepartition}}</td>
+ </tr>
+{%endif%}
+{%if conference.tickets%}
+ <tr>
+   <td>Check-in status</td>
+   <td>{%if reg.checkedinat%}Checked in{%else%}Not checked in{%endif%}
+ </tr>
+{%if reg.checkedinat%}
+ <tr>
+   <td>Checked in at</td>
+   <td>{{r.checkedinat}}</td>
+ </tr>
+ <tr>
+   <td>Checked in by</td>
+   <td>{{r.checkedinby}}</td>
+ </tr>
+{%endif%}
+{%endif%}
 
 {%if sessions%}
  <tr>
@@ -156,6 +181,9 @@
 {%endif%}
 {%if reg.can_edit %}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/cancel/">Remove unconfirmed registration entry</a>
+{%endif%}
+{%if conference.tickets%}
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/ticket/">Preview ticket</a>
 {%endif%}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/">Back to list</a>
 

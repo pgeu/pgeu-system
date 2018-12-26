@@ -115,6 +115,20 @@ completed their registration.
 Welcome email contents
 : Contents of said welcome email
 
+Use tickets
+: Enable [tickets](tickets) and check-in. If this is enabled, then for
+each user a ticket is generated and attached to the welcome
+email. This ticket is built from the `ticket.json` file in the
+template directory. Enabling tickets also enables the check-in
+tracking system.
+
+Queue partitioning
+:  Enable queue partitioning. This will generate information for each
+attendee about which queue t stand in based on either first or last
+name (pick wihch one). Information about this partitioning will be
+written on the tickets (if included in the templates), so should
+normally not be changed after the first tickets have been issued.
+
 Additional intro
 : Text shown on the registration page just above the list of
 additional options. Typically introduces what the additional options
@@ -184,10 +198,14 @@ Call for sponsors open
 Schedule publishing active
 : If the schedule is published, including times, and rooms.
 
-Session publishing active
+Session list publishing active
 : If the session publishing is active, which just lists the sessions
 and their details, typically used before the schedule is done but
 talks are being approved.
+
+Check-in active
+: If the [check-in](tickets) system is active and attendees can be
+checked in.
 
 Conference feedback open
 : If registered attendees of the conference can leave
@@ -226,6 +244,10 @@ staff registration to become registered.
 Volunteers
 : List of registered users who participate in the
 [volunteer schedule](volunteers). This must be registered users.
+
+Check-in processors
+: List of registered users who work with [checking in users](tickets)
+on arrival. This must be registered users.
 
 Width of HTML schedule
 : Width in pixels of the built-in HTML schedule. This only controls

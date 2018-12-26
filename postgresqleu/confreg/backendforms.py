@@ -41,33 +41,48 @@ class BackendConferenceForm(BackendForm):
         'talkvoters': GeneralAccountLookup(),
         'staff': GeneralAccountLookup(),
         'volunteers': RegisteredUsersLookup(None),
+        'checkinprocessors': RegisteredUsersLookup(None),
     }
 
     class Meta:
         model = Conference
-        fields = ['active', 'callforpapersopen', 'callforsponsorsopen', 'feedbackopen',
+        fields = ['active', 'callforpapersopen', 'callforsponsorsopen', 'feedbackopen', 'checkinactive',
                   'conferencefeedbackopen', 'scheduleactive', 'sessionsactive', 'allowedit',
                   'promoactive', 'promotext', 'promopicurl',
                   'twitter_timewindow_start', 'twitter_timewindow_end',
                   'schedulewidth', 'pixelsperminute',
-                  'testers', 'talkvoters', 'staff', 'volunteers',
+                  'testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors',
                   'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'askphotoconsent',
                   'skill_levels', 'additionalintro', 'callforpapersintro', 'sendwelcomemail', 'welcomemail',
-                  'invoice_autocancel_hours', 'attendees_before_waitlist']
+                  'tickets', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist']
 
     def fix_fields(self):
         self.selectize_multiple_fields['volunteers'] = RegisteredUsersLookup(self.conference)
+        self.selectize_multiple_fields['checkinprocessors'] = RegisteredUsersLookup(self.conference)
 
     fieldsets = [
-        {'id': 'base_info', 'legend': 'Basic information', 'fields': ['attendees_before_waitlist', 'invoice_autocancel_hours', 'sendwelcomemail', 'welcomemail', 'additionalintro']},
+        {'id': 'base_info', 'legend': 'Basic information', 'fields': ['attendees_before_waitlist', 'invoice_autocancel_hours', 'sendwelcomemail', 'welcomemail', 'tickets', 'queuepartitioning', 'additionalintro', ]},
         {'id': 'promo', 'legend': 'Website promotion', 'fields': ['promoactive', 'promotext', 'promopicurl']},
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', ]},
         {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'askphotoconsent']},
-        {'id': 'steps', 'legend': 'Steps', 'fields': ['active', 'allowedit', 'callforpapersopen', 'callforsponsorsopen', 'scheduleactive', 'sessionsactive', 'conferencefeedbackopen', 'feedbackopen']},
+        {'id': 'steps', 'legend': 'Steps', 'fields': ['active', 'allowedit', 'callforpapersopen', 'callforsponsorsopen', 'scheduleactive', 'sessionsactive', 'checkinactive', 'conferencefeedbackopen', 'feedbackopen']},
         {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpapersintro']},
-        {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers']},
+        {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', ]},
         {'id': 'legacy', 'legend': 'Legacy', 'fields': ['schedulewidth', 'pixelsperminute']},
     ]
+
+    def clean(self):
+        cleaned_data = super(BackendConferenceForm, self).clean()
+        if cleaned_data.get('sendwelcomemail') and not cleaned_data.get('welcomemail'):
+            self.add_error('welcomemail', 'When send welcome mail is specified, welcome mail contents are mandatory!')
+
+        if cleaned_data.get('tickets') and not cleaned_data.get('sendwelcomemail'):
+            self.add_error('tickets', 'If tickets should be generated and sent, welcome emails must be sent!')
+
+        if cleaned_data.get('checkinactive') and not cleaned_data.get('tickets'):
+            self.add_error('checkinactive', 'Check-in cannot be activated if tickets are not used!')
+
+        return cleaned_data
 
 
 class BackendSuperConferenceForm(BackendForm):
