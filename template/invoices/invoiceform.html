@@ -130,7 +130,10 @@ var vatmap = {
 </div>
 
 {%if invoice.finalized%}
-<div class="row">
+<div class="row buttonrow">
+  <a href="/invoices/{{invoice.id}}/pdf/" class="btn btn-default btn-block">View PDF</a>
+</div>
+<div class="row buttonrow">
   <a href="/invoices/{{invoice.id}}/" class="btn btn-default btn-block">View as recipient</a>
 </div>
 {%endif%}
