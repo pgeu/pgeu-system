@@ -14,6 +14,8 @@ class _NewFormDataField(django.forms.Field):
 
 
 class BackendForm(ConcurrentProtectedModelForm):
+    list_fields = None
+    list_order_by = None
     selectize_multiple_fields = None
     json_fields = None
     markdown_fields = []

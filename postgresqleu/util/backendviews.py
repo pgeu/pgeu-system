@@ -184,6 +184,8 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
             objects = formclass.Meta.model.objects.all()
         else:
             objects = formclass.Meta.model.objects.filter(conference=conference)
+        if formclass.list_order_by:
+            objects = objects.order_by(*formclass.list_order_by)
 
         if request.method == "POST":
             if request.POST.get('operation') == 'assign':
