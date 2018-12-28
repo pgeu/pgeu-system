@@ -11,7 +11,10 @@ session for the conference.
 
 Before your session is fully approved, we need you to confirm that you
 can still attend the event. Please go to the website (as linked below)
-and confirm your attendance at the conference as soon as you can.
+and confirm your attendance at the conference as soon as you can. Please
+also verify the contents of your submission, and let us know if there
+are any changes necessary *before* you confirm the talk.
+
 Thank you, and we look forward to seeing you at {{conference}}.
 
 If you have made more than one submission to the conference,

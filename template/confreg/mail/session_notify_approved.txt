@@ -14,6 +14,11 @@ the conference as soon as you get a chance, at
 {{sitebase}}/events/{{conference.urlname}}/register/
 {%endif%}
 
+If you need to make any changes at all to your talk, such as any part
+of the description of the talk or the speaker(s), please contact the
+conference organizers *immediately*, so the changes can be made and
+the submission re-evaluated based on the new information.
+
 If you have made more than one submission to the conference,
 please note that this status only affects this specific session.
 To view the status of all your sessions, please view the website
