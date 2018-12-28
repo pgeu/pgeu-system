@@ -177,9 +177,6 @@
 
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/edit/">Edit registration</a>
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/cancel/">Cancel registration</a>
-{%if reg.can_edit %}
-<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/cancel/">Remove unconfirmed registration entry</a>
-{%endif%}
 {%if conference.tickets%}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/ticket/">Preview ticket</a>
 {%endif%}
