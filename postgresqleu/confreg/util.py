@@ -181,6 +181,18 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
             m.pending_regs.remove(reg.attendee)
             m.registrations.add(reg)
 
+    if reg.conference.notifyregs:
+        send_template_mail(reg.conference.notifyaddr,
+                           reg.conference.notifyaddr,
+                           "[{0}] New registration".format(reg.conference.conferencename),
+                           'confreg/mail/admin_notify_reg.txt',
+                           {
+                               'reg': reg,
+                           },
+                           sendername=reg.conference.conferencename,
+                           receivername=reg.conference.conferencename,
+        )
+
     # Do we need to send the welcome email?
     if not reg.conference.sendwelcomemail:
         return
@@ -206,7 +218,7 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
     )
 
 
-def cancel_registration(reg, is_unconfirmed=False):
+def cancel_registration(reg, is_unconfirmed=False, reason=None):
     # Verify that we're only canceling a real registration
     if not reg.payconfirmedat:
         # If we don't allow canceling an unpaid registration, and the registration
@@ -244,6 +256,19 @@ def cancel_registration(reg, is_unconfirmed=False):
     reg.payconfirmedat = None
     reg.payconfirmedby = None
     reg.save()
+
+    if reg.conference.notifyregs and not is_unconfirmed:
+        send_template_mail(reg.conference.notifyaddr,
+                           reg.conference.notifyaddr,
+                           "[{0}] Canceled registration".format(reg.conference.conferencename),
+                           'confreg/mail/admin_notify_cancel.txt',
+                           {
+                               'reg': reg,
+                               'reason': reason,
+                           },
+                           sendername=reg.conference.conferencename,
+                           receivername=reg.conference.conferencename,
+        )
 
     # Once unlinked, remove the registration as well. If we don't
     # do this, the user will get notifications to remember to

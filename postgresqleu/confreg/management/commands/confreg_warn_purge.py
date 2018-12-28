@@ -22,8 +22,8 @@ class Command(BaseCommand):
         for conference in Conference.objects.filter(personal_data_purged__isnull=True,
                                                     enddate__lt=datetime.now() - timedelta(days=30)) \
                                             .extra(where=["EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=confreg_conference.id)"]):
-            send_simple_mail(conference.contactaddr,
-                             conference.contactaddr,
+            send_simple_mail(conference.notifyaddr,
+                             conference.notifyaddr,
                              u"{0}: time to purge personal data?".format(conference.conferencename),
                              u"""Conference {0} finished on {1},
 but personal data has not been purged.

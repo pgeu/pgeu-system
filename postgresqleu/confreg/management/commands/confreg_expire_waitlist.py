@@ -33,8 +33,8 @@ class Command(BaseCommand):
                                         text="Offer expired at {0}".format(w.offerexpires)).save()
 
             # Notify conference organizers
-            send_simple_mail(reg.conference.contactaddr,
-                             reg.conference.contactaddr,
+            send_simple_mail(reg.conference.notifyaddr,
+                             reg.conference.notifyaddr,
                              'Waitlist expired',
                              u'User {0} {1} <{2}> did not complete the registration before the waitlist offer expired.'.format(reg.firstname, reg.lastname, reg.email),
                              sendername=reg.conference.conferencename)

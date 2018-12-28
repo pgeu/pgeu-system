@@ -68,6 +68,11 @@ Sponsor address
 address is also used to send emails from. The server with the system installed on
 should preferably have DKIM set up for this domain.
 
+Notification address
+: Email address that notifications are sent to and from. This is
+internal notifications such as when registrations are happening. It is
+*not* used as the sender of any emails going to outside addresses.
+
 Conference URL
 :  URL to the conference homepage
 

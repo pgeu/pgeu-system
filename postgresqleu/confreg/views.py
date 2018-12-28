@@ -1592,8 +1592,8 @@ def confirmreg(request, confname):
 
                 messages.warning(request, "We're sorry, but your registration was not completed in time before the offer expired, and has been moved back to the waitlist.")
 
-                send_simple_mail(reg.conference.contactaddr,
-                                 reg.conference.contactaddr,
+                send_simple_mail(reg.conference.notifyaddr,
+                                 reg.conference.notifyaddr,
                                  'Waitlist expired',
                                  u'User {0} {1} <{2}> did not complete the registration before the waitlist offer expired.'.format(reg.firstname, reg.lastname, reg.email),
                                  sendername=reg.conference.conferencename)
@@ -1759,8 +1759,8 @@ def waitlist_signup(request, confname):
     RegistrationWaitlistHistory(waitlist=waitlist, text="Signed up for waitlist").save()
 
     # Notify the conference organizers
-    send_simple_mail(reg.conference.contactaddr,
-                     reg.conference.contactaddr,
+    send_simple_mail(reg.conference.notifyaddr,
+                     reg.conference.notifyaddr,
                      'Waitlist signup',
                      u'User {0} {1} <{2}> signed up for the waitlist.'.format(reg.firstname, reg.lastname, reg.email),
                      sendername=reg.conference.conferencename)
@@ -1789,8 +1789,8 @@ def waitlist_cancel(request, confname):
     reg.registrationwaitlistentry.delete()
 
     # Notify the conference organizers
-    send_simple_mail(reg.conference.contactaddr,
-                     reg.conference.contactaddr,
+    send_simple_mail(reg.conference.notifyaddr,
+                     reg.conference.notifyaddr,
                      'Waitlist cancel',
                      u'User {0} {1} <{2}> canceled from the waitlist.'.format(reg.firstname, reg.lastname, reg.email),
                      sendername=reg.conference.conferencename)
@@ -2849,7 +2849,7 @@ def admin_registration_cancel(request, urlname, regid):
                 # Registration that did not have an invoice.
                 # This is either a confirmed registration with no payment required,
                 # or an unconfirmed registration.
-                cancel_registration(reg, reg.payconfirmedat is not None)
+                cancel_registration(reg, reg.payconfirmedat is None, reason)
             elif method == form.Methods.CANCEL_INVOICE:
                 # An invoice exists and should be canceled. Since it's not paid yet,
                 # this is easy.
@@ -2866,7 +2866,7 @@ def admin_registration_cancel(request, urlname, regid):
                     reg.save()
                 else:
                     raise Exception("Can't cancel this without refund")
-                cancel_registration(reg)
+                cancel_registration(reg, reason=reason)
             elif method >= 0:
                 # Refund using a pattern!
                 try:
@@ -2895,7 +2895,7 @@ def admin_registration_cancel(request, urlname, regid):
                     # OK, looks good. Start by refunding the invoice.
                     manager.refund_invoice(invoice, reason, to_refund, to_refund_vat, conference.vat_registrations)
                     # Then cancel the actual registration
-                    cancel_registration(reg)
+                    cancel_registration(reg, reason=reason)
 
                     messages.info(request, "Invoice refunded and registration canceled.")
                     return HttpResponseRedirect("../../")
@@ -3039,8 +3039,8 @@ def admin_waitlist_cancel(request, urlname, wlid):
         wl.enteredon = datetime.now()
         wl.save()
 
-        send_simple_mail(reg.conference.contactaddr,
-                         reg.conference.contactaddr,
+        send_simple_mail(reg.conference.notifyaddr,
+                         reg.conference.notifyaddr,
                          'Waitlist offer cancel',
                          u'Waitlist offer for user {0} {1} <{2}> canceled by {3}. User remains on waitlist.'.format(reg.firstname, reg.lastname, reg.email, request.user),
                          sendername=reg.conference.conferencename)
@@ -3062,8 +3062,8 @@ def admin_waitlist_cancel(request, urlname, wlid):
         # No active offer means we are canceling the entry completely
         wl.delete()
 
-        send_simple_mail(reg.conference.contactaddr,
-                         reg.conference.contactaddr,
+        send_simple_mail(reg.conference.notifyaddr,
+                         reg.conference.notifyaddr,
                          'Waitlist cancel',
                          u'User {0} {1} <{2}> removed from the waitlist by {3}.'.format(reg.firstname, reg.lastname, reg.email, request.user),
                          sendername=reg.conference.conferencename)
@@ -3333,8 +3333,8 @@ def transfer_reg(request, urlname):
                            sendername=fromreg.conference.conferencename,
                            receivername=fromreg.fullname)
 
-        send_simple_mail(fromreg.conference.contactaddr,
-                         fromreg.conference.contactaddr,
+        send_simple_mail(fromreg.conference.notifyaddr,
+                         fromreg.conference.notifyaddr,
                          "Transferred registration",
                          "Registration for {0} transferred to {1}.\n".format(fromreg.email, toreg.email),
                          sendername=fromreg.conference.conferencename,

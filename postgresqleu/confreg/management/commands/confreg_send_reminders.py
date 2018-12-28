@@ -39,8 +39,8 @@ class Command(BaseCommand):
                 if whatstr.tell():
                     # More than one character, so we have done something. Send
                     # a report to the conference organizers about it.
-                    send_simple_mail(conference.contactaddr,
-                                     conference.contactaddr,
+                    send_simple_mail(conference.notifyaddr,
+                                     conference.notifyaddr,
                                      "Reminders sent",
                                      whatstr.getvalue(),
                                      sendername=conference.conferencename,
@@ -56,8 +56,8 @@ class Command(BaseCommand):
                 self.remind_empty_speakers(whatstr, conference)
 
                 if whatstr.tell():
-                    send_simple_mail(conference.contactaddr,
-                                     conference.contactaddr,
+                    send_simple_mail(conference.notifyaddr,
+                                     conference.notifyaddr,
                                      "CfP reminders sent",
                                      whatstr.getvalue(),
                                      sendername=conference.conferencename,

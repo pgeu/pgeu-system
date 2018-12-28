@@ -135,6 +135,8 @@ class Conference(models.Model):
     timediff = models.IntegerField(null=False, blank=False, default=0)
     contactaddr = models.EmailField(blank=False, null=False, verbose_name="Contact address")
     sponsoraddr = models.EmailField(blank=False, null=False, verbose_name="Sponsor address")
+    notifyaddr = models.EmailField(blank=False, null=False, verbose_name="Notification address")
+    notifyregs = models.BooleanField(blank=False, null=False, default=False, verbose_name="Notify about registrations")
     active = models.BooleanField(blank=False, null=False, default=False, verbose_name="Registration open")
     callforpapersopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Call for papers open")
     callforsponsorsopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Call for sponsors open")

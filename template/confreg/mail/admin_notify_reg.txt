@@ -1,0 +1,8 @@
+A new registration has completed for {{reg.conference.conferencename}}.
+
+Name: {{reg.fullname}}
+
+Type: {{reg.regtype.regtype}}
+
+
+View: {{sitebase}}/events/admin/{{reg.conference.urlname}}/regdashboard/list/{{reg.id}}/

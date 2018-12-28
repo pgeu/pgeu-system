@@ -1,0 +1,7 @@
+A registration has been canceled for {{reg.conference.conferencename}}.
+
+Name: {{reg.fullname}}
+
+Type: {{reg.regtype.regtype}}
+
+Reason: {{reason|default:"not given"}}

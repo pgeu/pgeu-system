@@ -169,8 +169,8 @@ def wikipage_edit(request, confurl, wikiurl):
                 # Send notifications to admin and to any subscribers
                 subject = '[{0}] Wiki page {1} changed'.format(conference.conferencename, page.title)
                 body = u"{0} has modified the page '{1}' with the following changes\n\n\n{2}\n".format(reg.fullname, page.title, diff)
-                send_simple_mail(conference.contactaddr,
-                                 conference.contactaddr,
+                send_simple_mail(conference.notifyaddr,
+                                 conference.notifyaddr,
                                  subject,
                                  body,
                                  sendername=conference.conferencename)
@@ -230,8 +230,8 @@ def admin_edit_page(request, urlname, pageid):
         if form.is_valid():
             if pageid == 'new':
                 form.save()
-                send_simple_mail(conference.contactaddr,
-                                 conference.contactaddr,
+                send_simple_mail(conference.notifyaddr,
+                                 conference.notifyaddr,
                                  "Wiki page '{0}' created by {1}".format(form.cleaned_data['url'], request.user),
                                  u"Title: {0}\nAuthor: {1}\nPublic view: {2}\nPublic edit: {3}\nViewer types: {4}\nEditor types: {5}\nViewer attendees: {6}\nEditor attendees: {7}\n\n".format(
                                      form.cleaned_data['title'],
@@ -260,8 +260,8 @@ def admin_edit_page(request, urlname, pageid):
                     s.write(u"Changed {0} from {1} to {2}\n".format(k, fr, to).encode('utf8'))
                 if s.tell() > 0:
                     # Something changed, so generate audit email
-                    send_simple_mail(conference.contactaddr,
-                                     conference.contactaddr,
+                    send_simple_mail(conference.notifyaddr,
+                                     conference.notifyaddr,
                                      "Wiki page '{0}' edited by {1}".format(form.cleaned_data['url'], request.user),
                                      s.getvalue(),
                                      sendername=conference.conferencename)
@@ -499,8 +499,8 @@ def signup_admin_sendmail(request, urlname, signupid):
                                      settings.SITEBASE, conference.urlname, signup.id),
                                  sendername=conference.conferencename,
                                  receivername=n)
-            send_simple_mail(conference.contactaddr,
-                             conference.contactaddr,
+            send_simple_mail(conference.notifyaddr,
+                             conference.notifyaddr,
                              u'Email sent to signup {0}'.format(signup.id),
                              u"""An email was sent to recipients of the signup "{0}"\nIt was sent to {1}, leading to {2} recipients.\n\nSubject:{3}\nBody:\n{4}\n""".format(
                                  signup.title,

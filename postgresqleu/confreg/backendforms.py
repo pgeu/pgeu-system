@@ -54,7 +54,7 @@ class BackendConferenceForm(BackendForm):
                   'conferencefeedbackopen', 'scheduleactive', 'sessionsactive', 'allowedit',
                   'promoactive', 'promotext', 'promopicurl',
                   'twitter_timewindow_start', 'twitter_timewindow_end',
-                  'schedulewidth', 'pixelsperminute',
+                  'schedulewidth', 'pixelsperminute', 'notifyregs',
                   'testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors',
                   'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'askphotoconsent',
                   'skill_levels', 'additionalintro', 'callforpapersintro', 'sendwelcomemail', 'welcomemail',
@@ -63,12 +63,14 @@ class BackendConferenceForm(BackendForm):
     def fix_fields(self):
         self.selectize_multiple_fields['volunteers'] = RegisteredUsersLookup(self.conference)
         self.selectize_multiple_fields['checkinprocessors'] = RegisteredUsersLookup(self.conference)
+        self.fields['notifyregs'].help_text = 'Notifications will be sent to {} whenever someone registers or cancels.'.format(self.conference.notifyaddr)
 
     fieldsets = [
-        {'id': 'base_info', 'legend': 'Basic information', 'fields': ['attendees_before_waitlist', 'invoice_autocancel_hours', 'sendwelcomemail', 'welcomemail', 'tickets', 'queuepartitioning', 'additionalintro', ]},
+        {'id': 'base_info', 'legend': 'Basic information', 'fields': ['attendees_before_waitlist', 'invoice_autocancel_hours', 'notifyregs', ]},
+        {'id': 'welcomeandreg', 'legend': 'Welcome and registration', 'fields': ['sendwelcomemail', 'welcomemail', 'tickets', 'queuepartitioning', ]},
         {'id': 'promo', 'legend': 'Website promotion', 'fields': ['promoactive', 'promotext', 'promopicurl']},
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', ]},
-        {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'askphotoconsent']},
+        {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'askphotoconsent', 'additionalintro', ]},
         {'id': 'steps', 'legend': 'Steps', 'fields': ['active', 'allowedit', 'callforpapersopen', 'callforsponsorsopen', 'scheduleactive', 'sessionsactive', 'checkinactive', 'conferencefeedbackopen', 'feedbackopen']},
         {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpapersintro']},
         {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', ]},
@@ -100,7 +102,7 @@ class BackendSuperConferenceForm(BackendForm):
     class Meta:
         model = Conference
         fields = ['conferencename', 'urlname', 'series', 'startdate', 'enddate', 'location',
-                  'timediff', 'contactaddr', 'sponsoraddr', 'confurl', 'administrators',
+                  'timediff', 'contactaddr', 'sponsoraddr', 'notifyaddr', 'confurl', 'administrators',
                   'jinjadir', 'accounting_object', 'vat_registrations', 'vat_sponsorship', ]
 
     def fix_fields(self):

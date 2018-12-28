@@ -108,6 +108,10 @@ impossible to know if they will use their seat or not. Typically
 starts out as a high value that is decreased as either the conference
 draws closer or it starts approaching sold out.
 
+Notify about registrations
+: Send an email to the notification address every time somebody
+registers or has their registration canceled.
+
 Send welcome mail
 : Should an email be sent to the attendee confirming that they have
 completed their registration.
@@ -128,11 +132,6 @@ attendee about which queue t stand in based on either first or last
 name (pick wihch one). Information about this partitioning will be
 written on the tickets (if included in the templates), so should
 normally not be changed after the first tickets have been issued.
-
-Additional intro
-: Text shown on the registration page just above the list of
-additional options. Typically introduces what the additional options
-are. Can contain markdown.
 
 Promotion active
 : Should this conference be listed in promotional parts of the website.
@@ -178,6 +177,10 @@ Field photo consent
 : Should the field asking the attendee to give (or not) consent to
 have their photograph taken at the event.
 
+Additional intro
+: Text shown on the registration page just above the list of
+additional options. Typically introduces what the additional options
+are. Can contain markdown.
 
 Registration open
 : If regular registration is open.
