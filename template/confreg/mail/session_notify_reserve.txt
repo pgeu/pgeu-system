@@ -1,0 +1,16 @@
+Hello!
+
+This email is sent to you because the status of your session
+
+{{session.title|safe}}
+
+submitted to {{conference}} has been updated.
+
+The session is currently on the reserve list. If you have any questions
+about what this means, please contact the conference organizers.
+
+If you have made more than one submission to the conference,
+please note that this status only affects this specific session.
+To view the status of all your sessions, please view the website
+
+{{sitebase}}/events/{{conference.urlname}}/callforpapers/

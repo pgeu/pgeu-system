@@ -1526,7 +1526,7 @@ def callforpapers_confirm(request, confname, sessionid):
                 send_template_mail(conference.contactaddr,
                                    spk.user.email,
                                    "Your session '%s' submitted to %s" % (session.title, conference),
-                                   'confreg/mail/session_notify.txt',
+                                   'confreg/mail/session_approved.txt',
                                    {
                                        'conference': conference,
                                        'session': session,
@@ -3203,7 +3203,7 @@ def session_notify_queue(request, urlname):
                 send_template_mail(conference.contactaddr,
                                    spk.user.email,
                                    "Your session '%s' submitted to %s" % (s.title, conference),
-                                   'confreg/mail/session_notify.txt',
+                                   'confreg/mail/session_notify_{0}.txt'.format(s.status_string_short),
                                    {
                                        'conference': conference,
                                        'session': s,

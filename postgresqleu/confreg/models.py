@@ -50,6 +50,13 @@ STATUS_CHOICES_LONG = (
     (3, "Pending speaker confirmation"),               # Approved, but not confirmed
     (4, "Reserve-listed in case of cancels/changes"),  # Reserve list
 )
+STATUS_CHOICES_SHORT = (
+    (0, "submitted"),
+    (1, "approved"),
+    (2, "notaccepted"),
+    (3, "pending"),               # Approved, but not confirmed
+    (4, "reserve"),  # Reserve list
+)
 
 
 def get_status_string(val):
@@ -58,6 +65,9 @@ def get_status_string(val):
 
 def get_status_string_long(val):
     return (t for v, t in STATUS_CHOICES_LONG if v == val).next()
+
+def get_status_string_short(val):
+    return (t for v, t in STATUS_CHOICES_SHORT if v == val).next()
 
 
 valid_status_transitions = {
@@ -776,6 +786,10 @@ class ConferenceSession(models.Model):
     @property
     def status_string_long(self):
         return get_status_string_long(self.status)
+
+    @property
+    def status_string_short(self):
+        return get_status_string_short(self.status)
 
     @property
     def lastnotified_status_string(self):

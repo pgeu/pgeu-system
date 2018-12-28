@@ -1,0 +1,21 @@
+Hello!
+
+This email is sent to you because the status of your session
+
+{{session.title|safe}}
+
+submitted to {{conference}} has been updated.
+
+Your session has now been fully approved, and we look forward to
+seeing you at {{conference}}!{%if conference.active%}
+If you have not already done so, please proceed to register for
+the conference as soon as you get a chance, at
+
+{{sitebase}}/events/{{conference.urlname}}/register/
+{%endif%}
+
+If you have made more than one submission to the conference,
+please note that this status only affects this specific session.
+To view the status of all your sessions, please view the website
+
+{{sitebase}}/events/{{conference.urlname}}/callforpapers/

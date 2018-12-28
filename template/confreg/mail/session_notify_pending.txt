@@ -1,0 +1,21 @@
+Hello!
+
+This email is sent to you because the status of your session
+
+{{session.title|safe}}
+
+submitted to {{conference}} has been updated.
+
+We are happy to let you know that we have decided to accept this
+session for the conference.
+
+Before your session is fully approved, we need you to confirm that you
+can still attend the event. Please go to the website (as linked below)
+and confirm your attendance at the conference as soon as you can.
+Thank you, and we look forward to seeing you at {{conference}}.
+
+If you have made more than one submission to the conference,
+please note that this status only affects this specific session.
+To view the status of all your sessions, please view the website
+
+{{sitebase}}/events/{{conference.urlname}}/callforpapers/
