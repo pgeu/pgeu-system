@@ -18,7 +18,7 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
-        invoices = Invoice.objects.filter(finalized=True, deleted=False, refund__isnull=True, paidat__isnull=True, canceltime__lt=datetime.now())
+        invoices = Invoice.objects.filter(finalized=True, deleted=False, paidat__isnull=True, canceltime__lt=datetime.now())
 
         manager = InvoiceManager()
 
