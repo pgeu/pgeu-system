@@ -40,6 +40,7 @@ from backendforms import BackendTshirtSizeForm
 from backendforms import BackendNewsForm
 from backendforms import TwitterForm, TwitterTestForm
 from backendforms import BackendSendEmailForm
+from backendforms import BackendRefundPatternForm
 
 
 #######################
@@ -134,6 +135,13 @@ def edit_regtypes(request, urlname, rest):
     return backend_list_editor(request,
                                urlname,
                                BackendRegistrationTypeForm,
+                               rest)
+
+
+def edit_refundpatterns(request, urlname, rest):
+    return backend_list_editor(request,
+                               urlname,
+                               BackendRefundPatternForm,
                                rest)
 
 

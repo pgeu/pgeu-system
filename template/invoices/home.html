@@ -16,8 +16,7 @@ tr.invoice-deleted {
     <a type="button" class="btn btn-{%if unpaid%}primary{%elif has_unpaid%}warning{%else%}default{%endif%}" href="/invoiceadmin/">Unpaid</a>
     <a type="button" class="btn btn-{%if pending%}primary{%elif has_pending%}warning{%else%}default{%endif%}" href="/invoiceadmin/pending/">Pending</a>
     <a type="button" class="btn btn-{{paid|yesno:"primary,default"}}" href="/invoiceadmin/paid">Paid</a>
-    <a type="button" class="btn btn-{{deleted|yesno:"primary,default"}}" href="/invoiceadmin/deleted/">Deleted</a>
-    <a type="button" class="btn btn-{{refunded|yesno:"primary,default"}}" href="/invoiceadmin/refunded/">Refunded</a>
+    <a type="button" class="btn btn-{{deleted|yesno:"primary,default"}}" href="/invoiceadmin/deleted/">Canceled</a>
   </div>
   <div class="btn-group" role="group">
     <form method="post" action="/invoiceadmin/search/">{% csrf_token %}
@@ -44,14 +43,14 @@ tr.invoice-deleted {
  <th>Finalized</th>
 </tr>
 {%for invoice in invoices.object_list %}
-<tr class="{%if invoice.deleted%}invoice-deleted {%endif%}{%if invoice.isexpired and not invoice.deleted and not invoice.refund %}danger {%endif%}">
+<tr class="{%if invoice.deleted%}invoice-deleted {%endif%}{%if invoice.isexpired and not invoice.deleted %}danger {%endif%}">
  <td><a href="/invoiceadmin/{{invoice.id}}/">{{invoice.id}}</a></td>
  <td><a href="/invoiceadmin/{{invoice.id}}/">{{invoice.title}}</a></td>
  <td style="white-space: nowrap">{{invoice.recipient_name}}</td>
  <td style="white-space: nowrap; text-align: right;">{%if invoice.total_amount > 0%}{{invoice.total_amount|intcomma}}{%endif%}</td>
  <td style="white-space: nowrap">{{invoice.invoicedate|date:"Y-m-d"}}</td>
  <td style="white-space: nowrap" class="duedate" >{{invoice.duedate|date:"Y-m-d"}}</td>
- <td style="white-space: nowrap">{%if invoice.refund%}Refunded{%elif invoice.ispaid%}{{invoice.paidat|date:"Y-m-d"}}{%else%}No{%endif%}</td>
+ <td style="white-space: nowrap">{%if invoice.ispaid%}{{invoice.paidat|date:"Y-m-d"}}{%else%}No{%endif%}</td>
  <td>{{invoice.finalized|yesno}}</td>
 </tr>
 {%endfor%}

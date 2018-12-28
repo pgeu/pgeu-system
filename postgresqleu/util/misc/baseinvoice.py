@@ -316,7 +316,7 @@ class BaseInvoice(PDFBase):
 
 
 class BaseRefund(PDFBase):
-    def __init__(self, recipient, invoicedate, refunddate, invoicenum, invoiceamount, invoicevat, refundamount, refundvat, paymentmethod):
+    def __init__(self, recipient, invoicedate, refunddate, invoicenum, invoiceamount, invoicevat, refundamount, refundvat, paymentmethod, refundid, reason, previousamount, previousvat):
         super(BaseRefund, self).__init__(recipient)
         self.title = "Refund of invoice {0}".format(invoicenum)
         self.recipient = recipient
@@ -328,13 +328,19 @@ class BaseRefund(PDFBase):
         self.refundamount = refundamount
         self.refundvat = refundvat
         self.paymentmethod = paymentmethod
+        self.refundid = refundid
+        self.reason = reason
+        self.previousamount = previousamount
+        self.previousvat = previousvat
 
         self.prepare()
 
     def save(self):
         self.draw_header()
 
-        self.canvas.drawCentredString(cm(10.5), cm(19), "REFUND NOTE FOR INVOICE NUMBER {0}".format(self.invoicenum))
+        self.canvas.drawCentredString(cm(10.5), cm(19), "REFUND NOTE {0} FOR INVOICE NUMBER {1}".format(self.refundid, self.invoicenum))
+
+        self.canvas.drawString(cm(2), cm(18), "Reason for refund: {0}".format(self.reason))
 
         tblpaid = [
             ["Amount paid"],
@@ -346,6 +352,11 @@ class BaseRefund(PDFBase):
             ["Item", "Amount"],
             ["Amount", "{0:.2f} {1}".format(self.refundamount, settings.CURRENCY_SYMBOL)],
         ]
+        tblprevious = [
+            ["Amount previously refunded"],
+            ["Item", "Amount"],
+            ["Amount", "{0:.2f} {1}".format(self.previousamount, settings.CURRENCY_SYMBOL)],
+        ]
         if self.invoicevat:
             tblpaid.extend([
                 ["VAT", "{0:.2f} {1}".format(self.invoicevat, settings.CURRENCY_SYMBOL)],
@@ -354,6 +365,10 @@ class BaseRefund(PDFBase):
             tblrefunded.extend([
                 ["VAT", "{0:.2f} {1}".format(self.refundvat, settings.CURRENCY_SYMBOL)],
                 ["", "{0:.2f} {1}".format(self.refundamount + self.refundvat, settings.CURRENCY_SYMBOL)],
+            ])
+            tblprevious .extend([
+                ["VAT", "{0:.2f} {1}".format(self.previousvat, settings.CURRENCY_SYMBOL)],
+                ["", "{0:.2f} {1}".format(self.previousamount + self.previousvat, settings.CURRENCY_SYMBOL)],
             ])
 
         style = [
@@ -372,17 +387,26 @@ class BaseRefund(PDFBase):
         t = Table(tblpaid, [cm(10.5), cm(2.5), cm(1.5), cm(2.5)])
         t.setStyle(TableStyle(style))
         w, h = t.wrapOn(self.canvas, cm(10), cm(10))
-        t.drawOn(self.canvas, (self.canvas._pagesize[0] - w) / 2, cm(18) - h)
+        t.drawOn(self.canvas, (self.canvas._pagesize[0] - w) / 2, cm(17) - h)
+
+        if self.previousamount:
+            t = Table(tblprevious, [cm(10.5), cm(2.5), cm(1.5), cm(2.5)])
+            t.setStyle(TableStyle(style))
+            w, h = t.wrapOn(self.canvas, cm(10), cm(10))
+            t.drawOn(self.canvas, (self.canvas._pagesize[0] - w) / 2, cm(17) - h * 2 - cm(1))
+            extraofs = h  + cm(1)
+        else:
+            extraofs = 0
 
         t = Table(tblrefunded, [cm(10.5), cm(2.5), cm(1.5), cm(2.5)])
         t.setStyle(TableStyle(style))
         w, h = t.wrapOn(self.canvas, cm(10), cm(10))
-        t.drawOn(self.canvas, (self.canvas._pagesize[0] - w) / 2, cm(18) - h * 2 - cm(1))
+        t.drawOn(self.canvas, (self.canvas._pagesize[0] - w) / 2, cm(17) - h * 2 - cm(1) - extraofs)
 
-        self.canvas.drawCentredString(cm(10.5), cm(17.3) - h * 2 - cm(2), "This refund was issued {0}".format(self.refunddate.strftime("%B %d, %Y")))
+        self.canvas.drawCentredString(cm(10.5), cm(16.3) - h * 2 - cm(2) - extraofs, "This refund was issued {0}".format(self.refunddate.strftime("%B %d, %Y")))
 
         if self.paymentmethod:
-            self.canvas.drawCentredString(cm(10.5), cm(17.3) - h * 2 - cm(3), "Refunded to the original form of payment: {0}.".format(self.paymentmethod))
+            self.canvas.drawCentredString(cm(10.5), cm(16.3) - h * 2 - cm(3) - extraofs, "Refunded to the original form of payment: {0}.".format(self.paymentmethod))
 
         self.canvas.showPage()
         self.canvas.save()

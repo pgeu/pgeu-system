@@ -6,7 +6,7 @@ from django.db.models.expressions import F
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.dateformat import DateFormat
 from django.contrib.postgres.fields import DateTimeRangeField
 
@@ -1011,6 +1011,14 @@ class PendingAdditionalOrder(models.Model):
 
     def __unicode__(self):
         return u"%s" % (self.reg, )
+
+
+class RefundPattern(models.Model):
+    conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
+    percent = models.IntegerField(null=False, verbose_name="Percent to refund", validators=[MinValueValidator(1), MaxValueValidator(100)])
+    fees = models.IntegerField(null=False, verbose_name="Fees not to refund", help_text="This amount will be deducted from the calculated refund amount")
+    fromdate = models.DateField(null=True, blank=True, verbose_name="From date", help_text="Suggest for refunds starting from this date")
+    todate = models.DateField(null=True, blank=True, verbose_name="To date", help_text="Suggest for refunds until this date")
 
 
 class AggregatedTshirtSizes(models.Model):

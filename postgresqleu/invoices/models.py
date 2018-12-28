@@ -41,6 +41,7 @@ class InvoicePaymentMethod(models.Model):
 
 
 class InvoiceRefund(models.Model):
+    invoice = models.ForeignKey("Invoice", null=False, blank=False)
     reason = models.CharField(max_length=500, null=False, blank=True, default='', help_text="Reason for refunding of invoice")
 
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=False)
@@ -54,6 +55,9 @@ class InvoiceRefund(models.Model):
     payment_reference = models.CharField(max_length=100, null=False, blank=True, help_text="Reference in payment system, depending on system used for invoice.")
 
     refund_pdf = models.TextField(blank=True, null=False)
+
+    class Meta:
+        ordering = ('id', )
 
     @property
     def fullamount(self):
@@ -89,8 +93,6 @@ class Invoice(models.Model):
     finalized = models.BooleanField(null=False, blank=True, default=False, help_text="Invoice is finalized, should not ever be changed again")
     deleted = models.BooleanField(null=False, blank=False, default=False, help_text="This invoice has been deleted")
     deletion_reason = models.CharField(max_length=500, null=False, blank=True, default='', help_text="Reason for deletion of invoice")
-
-    refund = models.OneToOneField(InvoiceRefund, null=True, blank=True, on_delete=models.SET_NULL)
 
     # base64 encoded version of the PDF invoice
     pdf_invoice = models.TextField(blank=True, null=False)
@@ -174,6 +176,18 @@ class Invoice(models.Model):
         return PaymentMethodWrapper(self.paidusing, self).autorefund()
 
     @property
+    def total_refunds(self):
+        agg = self.invoicerefund_set.all().aggregate(models.Sum('amount'), models.Sum('vatamount'))
+        return {
+            'amount': agg['amount__sum'] or 0,
+            'vatamount': agg['vatamount__sum'] or 0,
+            'remaining': {
+                'amount': self.total_amount - self.total_vat - (agg['amount__sum'] or 0),
+                'vatamount': self.total_vat - (agg['vatamount__sum'] or 0),
+            }
+        }
+
+    @property
     def payment_method_description(self):
         if not self.paidat:
             return "not paid"
@@ -185,8 +199,6 @@ class Invoice(models.Model):
     def statusstring(self):
         if self.deleted:
             return "canceled"
-        elif self.refund:
-            return "refunded"
         elif self.paidat:
             return "paid"
         if self.finalized:

@@ -136,6 +136,11 @@ var vatmap = {
 <div class="row buttonrow">
   <a href="/invoices/{{invoice.id}}/" class="btn btn-default btn-block">View as recipient</a>
 </div>
+{%if adminurl%}
+<div class="row buttonrow">
+  <a href="{{adminurl}}" class="btn btn-default btn-block">View related object in source system</a>
+</div>
+{%endif%}
 {%endif%}
 
 <div class="row">
@@ -144,21 +149,7 @@ var vatmap = {
 <div class="alert alert-info">
   This invoice has been <b>canceled.</b> The reason given was: <i>{{invoice.deletion_reason}}</i>.
 </div>
-{%elif invoice.refund%}
-<h2>Refunded</h2>
-<div class="alert alert-info">
-  <p>
-    This invoice has been <b>refunded</b>!
-    The reason given was: <i>{{invoice.refund.reason}}</i>.
-  </p>
-  <p>
-  {%if invoice.refund.completed%}The refund process completed at {{invoice.refund.completed}}.
-  {%elif invoice.refund.issued%}The refund was sent to the provider at {{invoice.refund.issued}}, and we are currently awaiting the results from there.
-  {%else%}The refund was scheduled at {{invoice.refund.registered}} but has not yet been processed.
-  {%endif%}
-  </p>
-</div>
-{%else%} {%comment%}deleted/refunded{%endcomment%}
+{%else%} {%comment%}deleted{%endcomment%}
 
 {%if invoice.ispaid%}
 <h2>Paid</h2>
@@ -172,11 +163,63 @@ This invoice has been <b>paid</b>.
 {%else%}
 <p>This invoice was manually flagged as paid.</p>
 {%endif%}
+<h2>Refunds</h2>
+{%if invoice.invoicerefund_set.all %}
+<table class="table table-bordered table-striped table-hover table-condensed">
+  <tr>
+    <th>Refund id</th>
+    <th>Amount</th>
+    <th>VAT</th>
+    <th>Description</th>
+    <th>Registered</th>
+    <th>Issued</th>
+    <th>Completed</th>
+  </tr>
+{%for refund in invoice.invoicerefund_set.all %}
+  <tr>
+    <td><a href="/invoices/{{invoice.id}}/refundnote/{{refund.id}}/">{{refund.id}}</a></td>
+    <td class="text-right">{{refund.amount}}</td>
+    <td class="text-right">{%if refund.vatamount%}{{refund.vatamount}} ({{refund.vatrate.shortname}}){%endif%}</td>
+    <td>{{refund.reason}}</td>
+    <td>{{refund.registered}}</td>
+    <td>{{refund.issued}}</td>
+    <td>{{refund.completed}}</td>
+  </tr>
+{%endfor%}
+{%if invoice.total_refunds.remaining.amount%}
+  <tr>
+    <th>Remaining</th>
+    <th class="text-right">{{invoice.total_refunds.remaining.amount}}</th>
+    <th class="text-right">{{invoice.total_refunds.remaining.vatamount}}</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+{%endif%}
+</table>
+{%endif%}
+{%if invoice.processor%}
+<div class="row">
+  <div class="col-md-12">
+    This invoice was created using an automated system, and must also be refunded from
+    that system.
+  </div>
+</div>
+{%else%}
+{%if invoice.total_refunds.remaining.amount%}
 <div class="row">
   <div class="col-md-2">
     <a href="refund/" class="btn btn-default btn-block">Refund invoice</a>
   </div>
 </div>
+{%else%}
+<div class="row">
+  <div class="col-md-12">
+    This invoice has been fully refunded.
+  </div>
+</div>
+{%endif%}{# remaining to refund#}
+{%endif%}{# automated or manual#}
 {%else%}{# paid#}
 {%if invoice.finalized%}
 <h2>Payment</h2>
@@ -198,8 +241,22 @@ also be tagged with your userid <i>{{user.username}}</i>.
 </div>
 </form>
 
-{%endif%}
-{%endif%}
+<h2>Cancel</h2>
+<p>
+  As this invoice has not yet been paid, it can be canceled. This will generate a note to the
+  receiver that the invoice has been canceled, including the specified reason.
+</p>
+<form method="post" action="cancel/" class="inline-form">{% csrf_token %}
+  <div class="input-group col-md-6">
+    <input type="text" class="form-control" name="reason" placeholder="Reason for cancellation" />
+    <span class="input-group-btn">
+      <input type="submit" name="submit" value="Cancel invoice" onclick="return confirm_delete()" class="btn btn-default" />
+    </span>
+  </div>
+</form>
+
+{%endif%}{# finalized #}
+{%endif%}{# not paid #}
 
 {%endif%}{%comment%}deleted/refunded{%endcomment%}
 </div>
@@ -250,10 +307,10 @@ also be tagged with your userid <i>{{user.username}}</i>.
 </form>
 </div><!-- .row -->
 
-{%if invoice.finalized and not invoice.refund%}
+{%if invoice.finalized %}
 <h2>Operations</h2>
 <div class="row buttonrow">
-{%if not invoice.deleted and not invoice.ispaid and not invoice.refund %}
+{%if not invoice.deleted and not invoice.ispaid %}
  <div class="col-md-2">
    <div class="dropdown">
      <button type="button" class="btn btn-default btn-block dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Send mail <span class="caret"></span></button>
@@ -280,17 +337,6 @@ also be tagged with your userid <i>{{user.username}}</i>.
    </div>
  </div>
 {%endif%} {# autocancel #}
-
- <div class="col-md-4">
-   <form method="post" action="cancel/" class="inline-form">{% csrf_token %}
-     <div class="input-group" data-toggle="tooltip" data-placement="bottom" title="Note! The reason given is included in the cancellation notice to the end user!">
-       <input type="text" class="form-control" name="reason" placeholder="Reason for cancellation" />
-       <span class="input-group-btn">
-	 <input type="submit" name="submit" value="Cancel invoice" onclick="return confirm_delete()" class="btn btn-default" />
-       </span>
-     </div>
-   </form>
- </div>
 
 {%endif%} {# is not paid #}
 </div>{# buttonrow #}

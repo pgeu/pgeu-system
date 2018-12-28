@@ -6,7 +6,7 @@ Invoice #{{invoice.id}}: {{invoice.title}}
 
 has been refunded.
 
-{{currency_abbrev}} {{invoice.refund.fullamount}} of the total {{currency_abbrev}} {{invoice.total_amount}} has been returned to the
+{{currency_abbrev}} {{refund.fullamount}} of the total {{currency_abbrev}} {{invoice.total_amount}} has been returned to the
 original payment source. Depending on which payment method
 was used, it may take a few days before the funds arrive
 in the account.

@@ -19,7 +19,7 @@ from models import Conference, ConferenceRegistration, ConferenceSession, Confer
 from models import ConferenceSessionSlides, ConferenceSessionVote, GlobalOptOut
 from models import ConferenceSessionFeedback, Speaker, Speaker_Photo
 from models import ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
-from models import RegistrationType, PrepaidVoucher, PrepaidBatch
+from models import RegistrationType, PrepaidVoucher, PrepaidBatch, RefundPattern
 from models import BulkPayment, Room, Track, ConferenceSessionScheduleSlot
 from models import AttendeeMail, ConferenceAdditionalOption
 from models import PendingAdditionalOrder
@@ -36,12 +36,14 @@ from forms import NewMultiRegForm, MultiRegInvoiceForm
 from forms import SessionSlidesUrlForm, SessionSlidesFileForm
 from util import invoicerows_for_registration, notify_reg_confirmed, InvoicerowsException
 from util import get_invoice_autocancel, cancel_registration
+from util import attendee_cost_from_bulk_payment
 
 from models import get_status_string
 from regtypes import confirm_special_reg_type, validate_special_reg_type
 from jinjafunc import render_jinja_conference_response, JINJA_TEMPLATE_ROOT
 from jinjapdf import render_jinja_ticket
 from backendviews import get_authenticated_conference
+from backendforms import CancelRegistrationForm
 
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.random import generate_random_token
@@ -2820,23 +2822,103 @@ def admin_registration_single(request, urlname, regid):
 @transaction.atomic
 def admin_registration_cancel(request, urlname, regid):
     conference = get_authenticated_conference(request, urlname)
-
     reg = get_object_or_404(ConferenceRegistration, id=regid, conference=conference)
 
-    if request.method == 'POST' and request.POST.get('docancel') == '1':
-        name = reg.fullname
-        is_unconfirmed = (reg.payconfirmedat is None)
-        cancel_registration(reg, is_unconfirmed)
-        return render(request, 'confreg/admin_registration_cancel_confirm.html', {
-            'conference': conference,
-            'name': name,
-        })
+    if reg.pendingadditionalorder_set.exists():
+        messages.error(request, "Sorry, can't refund invoices that have post-purchased additional options yet")
+        return HttpResponseRedirect("../")
+
+    # Figure out the total cost paid
+    if reg.invoice:
+        totalnovat = reg.invoice.total_amount - reg.invoice.total_vat
+        totalvat = reg.invoice.total_vat
+    elif reg.bulkpayment:
+        (totalnovat, totalvat) = attendee_cost_from_bulk_payment(reg)
     else:
-        return render(request, 'confreg/admin_registration_cancel.html', {
-            'conference': conference,
-            'reg': reg,
-            'helplink': 'waitlist',
-        })
+        totalnovat = totalvat = 0
+
+    if request.method == 'POST':
+        form = CancelRegistrationForm(reg, totalnovat, totalvat, data=request.POST)
+        if form.is_valid():
+            manager = InvoiceManager()
+            method = int(form.cleaned_data['refund'])
+            reason = form.cleaned_data['reason']
+            if method == form.Methods.NO_INVOICE:
+                # Registration that did not have an invoice.
+                # This is either a confirmed registration with no payment required,
+                # or an unconfirmed registration.
+                cancel_registration(reg, reg.payconfirmedat is not None)
+            elif method == form.Methods.CANCEL_INVOICE:
+                # An invoice exists and should be canceled. Since it's not paid yet,
+                # this is easy.
+                manager.cancel_invoice(reg.invoice, reason)
+            elif method == form.Methods.NO_REFUND:
+                # An invoice may exist, but in this case we don't want to provide
+                # a refund. This can only happen for registrations that are actually
+                # confirmed.
+                if reg.invoice:
+                    reg.invoice = None
+                    reg.save()
+                elif reg.bulkpayment:
+                    reg.bulkpayment = None
+                    reg.save()
+                else:
+                    raise Exception("Can't cancel this without refund")
+                cancel_registration(reg)
+            elif method >= 0:
+                # Refund using a pattern!
+                try:
+                    pattern = RefundPattern.objects.get(conference=conference, pk=method)
+                except RefundPattern.DoesNotExist:
+                    messages.error(request, "Can't re-find registration pattern")
+                    return HttpResponseRedirect(".")
+                # Calculate amount to refund
+                to_refund = (totalnovat * pattern.percent / Decimal(100) - pattern.fees).quantize(Decimal('0.01'))
+                to_refund_vat = (totalvat * pattern.percent / Decimal(100) - pattern.fees * conference.vat_registrations.vatpercent / Decimal(100)).quantize(Decimal('0.01'))
+                if reg.invoice:
+                    invoice = reg.invoice
+                elif reg.bulkpayment:
+                    invoice = reg.bulkpayment.invoice
+                else:
+                    messages.error(request, "Can't find which invoice to refund")
+                    return HttpResponseRedirect(".")
+
+                if to_refund < 0 or to_refund_vat < 0:
+                    messages.error(request, "Selected pattern would lead to negative refunding, can't refund.")
+                elif to_refund > invoice.total_refunds['remaining']['amount']:
+                    messages.error(request, "Attempt to refund {0}, which is more than remaing {1}".format(to_refund, invoice.total_refunds['remaining']['amount']))
+                elif to_refund_vat > invoice.total_refunds['remaining']['vatamount']:
+                    messages.error(request, "Attempt to refund VAT {0}, which is more than remaining {1}".format(to_refund_vat, invoice.total_refunds['remaining']['vatamount']))
+                else:
+                    # OK, looks good. Start by refunding the invoice.
+                    manager.refund_invoice(invoice, reason, to_refund, to_refund_vat, conference.vat_registrations)
+                    # Then cancel the actual registration
+                    cancel_registration(reg)
+
+                    messages.info(request, "Invoice refunded and registration canceled.")
+                    return HttpResponseRedirect("../../")
+                return HttpResponseRedirect(".")
+            else:
+                raise Exception("Don't know how to cancel like that")
+            messages.info(request, "Registration canceled")
+            return HttpResponseRedirect("../../")
+    else:
+        form = CancelRegistrationForm(reg, totalnovat, totalvat)
+
+    return render(request, 'confreg/admin_registration_cancel.html', {
+        'conference': conference,
+        'reg': reg,
+        'form': form,
+        'totalnovat': totalnovat,
+        'totalvat': totalvat,
+        'totalwithvat': totalnovat + totalvat,
+        'helplink': 'registrations',
+        'breadcrumbs': (
+            ('/events/admin/{0}/regdashboard/'.format(urlname), 'Registration dashboard'),
+            ('/events/admin/{0}/regdashboard/list/'.format(urlname), 'Registration list'),
+            ('/events/admin/{0}/regdashboard/list/{1}/'.format(urlname, reg.id), reg.fullname),
+        ),
+    })
 
 
 @transaction.atomic

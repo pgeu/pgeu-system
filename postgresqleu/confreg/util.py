@@ -6,6 +6,7 @@ from django.core.exceptions import PermissionDenied
 from datetime import datetime, date, timedelta
 import urllib
 from io import BytesIO
+import re
 
 from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 from postgresqleu.util.middleware import RedirectException
@@ -96,6 +97,36 @@ def invoicerows_for_registration(reg, update_used_vouchers):
                 raise InvoicerowsException("Invalid voucher code")
     return r
 
+def attendee_cost_from_bulk_payment(reg):
+    re_email_dash = re.compile("^[^\s]+@[^\s]+ - [^\s]")
+    if not reg.bulkpayment:
+        raise Exception("Not called with bulk payment!")
+
+    # We need to find the individual rows and sum it up, since it's possible that we have been
+    # using discount codes for example.
+    # We have no better key to work with than the email address...
+    found = False
+    totalnovat = totalvat = 0
+    for r in reg.bulkpayment.invoice.invoicerow_set.all().order_by('id'):
+        if r.rowtext.startswith(reg.email + ' - '):
+            # Found the beginning!
+            if found:
+                raise Exception("Found the same registration more than once!")
+            found = True
+            totalnovat = r.totalrow
+            totalvat = r.totalvat
+        elif r.rowtext.startswith("  "):
+            # Something to do with this reg
+            if found:
+                totalnovat += r.totalrow
+                totalvat += r.totalvat
+        elif re_email_dash.match(r.rowtext):
+            # Matched a different reg
+            found = False
+        else:
+            raise Exception("Unknown invoice row '%s'" % r.rowtext)
+
+    return (totalnovat, totalvat)
 
 def notify_reg_confirmed(reg, updatewaitlist=True):
     # This one was off the waitlist, so generate a history entry

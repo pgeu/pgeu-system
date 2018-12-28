@@ -16,6 +16,7 @@ from decimal import Decimal
 
 from postgresqleu.util.decorators import user_passes_test_or_error
 from models import Invoice, InvoiceRow, InvoiceHistory, InvoicePaymentMethod, VatRate
+from models import InvoiceRefund
 from forms import InvoiceForm, InvoiceRowForm, RefundForm
 from util import InvoiceWrapper, InvoiceManager, InvoicePresentationWrapper
 
@@ -23,13 +24,13 @@ from util import InvoiceWrapper, InvoiceManager, InvoicePresentationWrapper
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def paid(request):
-    return _homeview(request, Invoice.objects.filter(paidat__isnull=False, deleted=False, refund__isnull=True, finalized=True), paid=True)
+    return _homeview(request, Invoice.objects.filter(paidat__isnull=False, deleted=False, finalized=True), paid=True)
 
 
 @login_required
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def unpaid(request):
-    return _homeview(request, Invoice.objects.filter(paidat=None, deleted=False, finalized=True, refund__isnull=True), unpaid=True)
+    return _homeview(request, Invoice.objects.filter(paidat=None, deleted=False, finalized=True), unpaid=True)
 
 
 @login_required
@@ -44,14 +45,8 @@ def deleted(request):
     return _homeview(request, Invoice.objects.filter(deleted=True), deleted=True)
 
 
-@login_required
-@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
-def refunded(request):
-    return _homeview(request, Invoice.objects.filter(refund__isnull=False), refunded=True)
-
-
 # Not a view, just a utility function, thus no separate permissions check
-def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=False, refunded=False, paid=False, searchterm=None):
+def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=False, paid=False, searchterm=None):
     # Render a list of all invoices
     paginator = Paginator(invoice_objects, 50)
 
@@ -84,7 +79,6 @@ def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=Fal
         'unpaid': unpaid,
         'pending': pending,
         'deleted': deleted,
-        'refunded': refunded,
         'has_pending': has_pending,
         'has_unpaid': has_unpaid,
         'searchterm': searchterm,
@@ -218,10 +212,17 @@ def oneinvoice(request, invoicenum):
             )
         formset = InvoiceRowInlineFormset(instance=invoice)
 
+    if invoice.processor:
+        manager = InvoiceManager()
+        processor = manager.get_invoice_processor(invoice)
+        adminurl = processor.get_admin_url(invoice)
+    else:
+        adminurl = None
     return render(request, 'invoices/invoiceform.html', {
         'form': form,
         'formset': formset,
         'invoice': invoice,
+        'adminurl': adminurl,
         'currency_symbol': settings.CURRENCY_SYMBOL,
         'vatrates': VatRate.objects.all(),
         'breadcrumbs': [('/invoiceadmin/', 'Invoices'), ],
@@ -310,24 +311,32 @@ def extend_cancel(request, invoicenum):
 @transaction.atomic
 def refundinvoice(request, invoicenum):
     invoice = get_object_or_404(Invoice, pk=invoicenum)
-    if invoice.refund:
-        raise Exception('This invoice has already been refunded')
 
     if request.method == 'POST':
         form = RefundForm(data=request.POST, invoice=invoice)
         if form.is_valid():
+            # Do some sanity checking
+            if form.cleaned_data['vatrate']:
+                vatamount = (Decimal(form.cleaned_data['amount']) * form.cleaned_data['vatrate'].vatpercent / Decimal(100)).quantize(Decimal('0.01'))
+                if vatamount > invoice.total_refunds['remaining']['vatamount']:
+                    messages.error(request, "Unable to refund, VAT amount mismatch!")
+                    return HttpResponseRedirect('.')
+            else:
+                vatamount = 0
+
             mgr = InvoiceManager()
             r = mgr.refund_invoice(invoice,
                                    form.cleaned_data['reason'],
                                    Decimal(form.cleaned_data['amount']),
-                                   Decimal(form.cleaned_data['vatamount']),
+                                   vatamount,
                                    form.cleaned_data['vatrate'],
             )
-            return render(request, 'invoices/refundform_complete.html', {
-                'invoice': invoice,
-                'refund': r,
-                'breadcrumbs': [('/invoiceadmin/', 'Invoices'), ('/invoiceadmin/{0}/'.format(invoice.pk), 'Invoice #{0}'.format(invoice.pk)), ],
-                })
+            if invoice.can_autorefund:
+                messages.info(request, "Refund initiated.")
+            else:
+                messages.info(request, "Refund flagged.")
+
+            return HttpResponseRedirect(".")
     else:
         form = RefundForm(invoice=invoice)
 
@@ -337,9 +346,6 @@ def refundinvoice(request, invoicenum):
     return render(request, 'invoices/refundform.html', {
         'form': form,
         'invoice': invoice,
-        'currency_symbol': settings.CURRENCY_SYMBOL,
-        'samevat': (vinfo['n'] <= 1),
-        'globalvat': vinfo['v'],
         'breadcrumbs': [('/invoiceadmin/', 'Invoices'), ('/invoiceadmin/{0}/'.format(invoice.pk), 'Invoice #{0}'.format(invoice.pk)), ],
         })
 
@@ -448,20 +454,22 @@ def viewreceipt_secret(request, invoiceid, invoicesecret):
 
 
 @login_required
-def viewrefundnote(request, invoiceid):
+def viewrefundnote(request, invoiceid, refundid):
     invoice = get_object_or_404(Invoice, pk=invoiceid)
     if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
         return HttpResponseForbidden("Access denied")
+    refund = get_object_or_404(InvoiceRefund, invoice=invoiceid, pk=refundid)
 
     r = HttpResponse(content_type='application/pdf')
-    r.write(base64.b64decode(invoice.refund.refund_pdf))
+    r.write(base64.b64decode(refund.refund_pdf))
     return r
 
 
-def viewrefundnote_secret(request, invoiceid, invoicesecret):
+def viewrefundnote_secret(request, invoiceid, invoicesecret, refundid):
     invoice = get_object_or_404(Invoice, pk=invoiceid, recipient_secret=invoicesecret)
+    refund = get_object_or_404(InvoiceRefund, invoice=invoice, pk=refundid)
     r = HttpResponse(content_type='application/pdf')
-    r.write(base64.b64decode(invoice.refund.refund_pdf))
+    r.write(base64.b64decode(refund.refund_pdf))
     return r
 
 

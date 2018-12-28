@@ -60,3 +60,10 @@ class InvoiceProcessor(object):
     # to the membership page.
     def get_return_url(self, invoice):
         return "%s/membership/" % settings.SITEBASE
+
+    def get_admin_url(self, invoice):
+        try:
+            member = Member.objects.get(pk=invoice.processorid)
+        except Member.DoesNotExist:
+            return None
+        return '/admin/membership/members/{0}/'.format(member.pk)

@@ -1,13 +1,16 @@
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Q
+from django.db.models.expressions import F
 import django.forms
 import django.forms.widgets
 from django.utils.safestring import mark_safe
+from django.conf import settings
 
 import datetime
 from collections import OrderedDict
 from psycopg2.extras import DateTimeTZRange
+from decimal import Decimal
 
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 from postgresqleu.util.random import generate_random_token
@@ -24,6 +27,7 @@ from postgresqleu.confreg.models import DiscountCode, AccessToken, AccessTokenPe
 from postgresqleu.confreg.models import ConferenceSeries
 from postgresqleu.confreg.models import ConferenceNews
 from postgresqleu.confreg.models import ShirtSize
+from postgresqleu.confreg.models import RefundPattern
 from postgresqleu.newsevents.models import NewsPosterProfile
 
 from postgresqleu.confreg.models import valid_status_transitions, get_status_string
@@ -356,6 +360,49 @@ class BackendTransformConferenceDateTimeForm(django.forms.Form):
 
     def confirm_value(self):
         return str(self.cleaned_data['timeshift'])
+
+
+class BackendRefundPatternForm(BackendForm):
+    helplink = 'registration'
+    list_fields = ['fromdate', 'todate', 'percent', 'fees', ]
+    list_order_by = (F('fromdate').asc(nulls_first=True), 'todate', 'percent')
+    exclude_date_validators = ['fromdate', 'todate', ]
+    allow_copy_previous = True
+    copy_transform_form = BackendTransformConferenceDateTimeForm
+
+    class Meta:
+        model = RefundPattern
+        fields = ['percent', 'fees', 'fromdate', 'todate', ]
+
+    def clean(self):
+        cleaned_data = super(BackendRefundPatternForm, self).clean()
+        if cleaned_data['fromdate'] and cleaned_data['todate']:
+            if cleaned_data['todate'] < cleaned_data['fromdate']:
+                self.add_error('todate', 'To date must be after from date!')
+        return cleaned_data
+
+    @classmethod
+    def copy_from_conference(self, targetconf, sourceconf, idlist, transformform):
+        xform = transformform.cleaned_data['timeshift']
+        for id in idlist:
+            source = RefundPattern.objects.get(conference=sourceconf, pk=id)
+            RefundPattern(conference=targetconf,
+                          percent=source.percent,
+                          fees=source.fees,
+                          fromdate=source.fromdate and source.fromdate + xform or None,
+                          todate=source.todate and source.todate + xform or None,
+            ).save()
+        return
+        yield None  # Turn this into a generator
+
+    @classmethod
+    def get_transform_example(self, targetconf, sourceconf, idlist, transformform):
+        xform = transformform.cleaned_data['timeshift']
+        if not idlist:
+            return None
+        s = RefundPattern.objects.filter(conference=sourceconf, todate__isnull=False)[0]
+        return "date {0} becomes {1}".format(
+            s.todate, s.todate + xform)
 
 
 class BackendConferenceSessionForm(BackendForm):
@@ -745,6 +792,75 @@ class TwitterTestForm(django.forms.Form):
     recipient = django.forms.CharField(max_length=64)
     message = django.forms.CharField(max_length=200)
 
+#
+# Form for canceling a registration
+#
+class CancelRegistrationForm(django.forms.Form):
+    refund = django.forms.ChoiceField(required=True, label="Method of refund")
+    reason = django.forms.CharField(required=True, max_length=100, label="Reason for cancel",
+                                    help_text="Copied directly into confirmation emails and refund notices!")
+    confirm = django.forms.BooleanField(help_text="Confirm that you want to cancel this registration!")
+
+    class Methods:
+        NO_INVOICE=-1
+        CANCEL_INVOICE=-2
+        NO_REFUND=-3
+
+    def __init__(self, reg, totalnovat, totalvat, *args, **kwargs):
+        self.reg = reg
+        self.totalnovat = totalnovat
+        self.totalvat = totalvat
+        super(CancelRegistrationForm, self).__init__(*args, **kwargs)
+
+        if reg.payconfirmedat:
+            if reg.payconfirmedby in ("no payment reqd", "Multireg/nopay"):
+                choices = [(self.Methods.NO_INVOICE, 'Registration did not require payment, just cancel'), ]
+            elif reg.payconfirmedby in ("Invoice paid", 'Bulk paid'):
+                choices = [
+                    (pattern.id, self.get_text_for_pattern(pattern))
+                    for pattern in RefundPattern.objects.filter(conference=self.reg.conference).order_by(F('fromdate').asc(nulls_first=True), 'todate', 'percent')
+                ]
+                choices += [(self.Methods.NO_REFUND, 'Cancel without refund'), ]
+            else:
+                choices = [(self.Methods.NO_REFUND, 'Cancel without refund'), ]
+        else:
+            # Registration not paid yet. Does it have an invoice?
+            if reg.invoice:
+                choices = [(self.Methods.CANCEL_INVOICE, 'Cancel unpaid invoice'), ]
+            elif reg.bulkpayment:
+                # Part of unpaid bulk payment, can't deal with that yet
+                choices = []
+            else:
+                choices = [(self.Methods.NO_INVOICE, 'No invoice created, just cancel'), ]
+
+        self.fields['refund'].choices = [(None, '-- Select method'), ] + choices
+
+        if not 'refund' in self.data:
+            del self.fields['confirm']
+
+    def get_text_for_pattern(self, pattern):
+        # First figure out if this pattern is suggested today
+        today = datetime.date.today()
+        if (pattern.fromdate is None or pattern.fromdate <= today) and \
+           (pattern.todate is None or pattern.todate >= today):
+            suggest = "***"
+        else:
+            suggest = ""
+
+        to_refund = (self.totalnovat * pattern.percent / Decimal(100) - pattern.fees).quantize(Decimal('0.01'))
+        to_refund_vat = (self.totalvat * pattern.percent / Decimal(100) - pattern.fees * self.reg.conference.vat_registrations.vatpercent / Decimal(100)).quantize(Decimal('0.01'))
+
+        return u"{} Refund {}%{} ({}{}{}){}{} {}".format(
+            suggest,
+            pattern.percent,
+            pattern.fees and u' minus {0}{1} in fees'.format(settings.CURRENCY_SYMBOL.decode('utf8'), pattern.fees) or u'',
+            settings.CURRENCY_SYMBOL.decode('utf8'),
+            to_refund,
+            to_refund_vat and u' +{}{} VAT'.format(settings.CURRENCY_SYMBOL.decode('utf8'), to_refund_vat) or '',
+            pattern.fromdate and ' from {0}'.format(pattern.fromdate) or '',
+            pattern.todate and ' until {0}'.format(pattern.todate) or '',
+            suggest,
+        )
 
 #
 # Form for sending email

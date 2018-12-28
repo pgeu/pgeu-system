@@ -76,16 +76,6 @@ class InvoiceProcessor(object):
             reg.vouchercode = ''
             reg.save()
 
-    # Process an invoice being refunded. This means we need to unlink
-    # it from the registration, and also unconfirm the registration.
-    def process_invoice_refund(self, invoice):
-        try:
-            reg = ConferenceRegistration.objects.get(pk=invoice.processorid)
-        except ConferenceRegistration.DoesNotExist:
-            raise Exception("Could not find conference registration %s" % invoice.processorid)
-
-        cancel_registration(reg)
-
     # Return the user to a page showing what happened as a result
     # of their payment. In our case, we just return the user directly
     # to the registration page.
@@ -97,6 +87,13 @@ class InvoiceProcessor(object):
             raise Exception("Could not find conference registration %s" % invoice.processorid)
         return "%s/events/%s/register/" % (settings.SITEBASE, reg.conference.urlname)
 
+    # Admin access to the registration
+    def get_admin_url(self, invoice):
+        try:
+            reg = ConferenceRegistration.objects.get(pk=invoice.processorid)
+        except ConferenceRegistration.DoesNotExist:
+            return None
+        return "/events/admin/{0}/regdashboard/list/{1}/".format(reg.conference.urlname, reg.pk)
 
 class BulkInvoiceProcessor(object):
     # Process invoices once they're getting paid
@@ -188,27 +185,6 @@ class BulkInvoiceProcessor(object):
         # since it no longer contains anything interesting.
         bp.delete()
 
-    # Process an invoice being refunded. Since this is often just a part
-    # of a bulk payment, we cannot just cancel all registrations. Instead
-    # we'll just generate a notification...
-    def process_invoice_refund(self, invoice):
-        try:
-            bp = BulkPayment.objects.get(pk=invoice.processorid)
-        except ConferenceRegistration.DoesNotExist:
-            raise Exception("Could not find bulk payment %s" % invoice.processor)
-        if not bp.paidat:
-            raise Exception("Bulk registration not paid - things are out of sync")
-
-        send_simple_mail(bp.conference.contactaddr,
-                         bp.conference.contactaddr,
-                         'Bulk invoice refunded',
-                         u"The bulk payment with id {0} has been refunded.\nNote that the registrations on this bulk invoice has\nNOT been canceled!!!\n\nThis needs to be processed manually since it may be a partial refund.\n\nThe following registrations are attached:\n\n{1}\n".format(
-                             bp.id,
-                             u"\n".join([u'* {0}'.format(r.fullname) for r in bp.conferenceregistration_set.all()]),
-                         ),
-                         sendername=bp.conference.conferencename,
-                         )
-
     # Return the user to a page showing what happened as a result
     # of their payment. In our case, we just return the user directly
     # to the bulk payment page.
@@ -218,6 +194,14 @@ class BulkInvoiceProcessor(object):
         except ConferenceRegistration.DoesNotExist:
             raise Exception("Could not find bulk payment %s" % invoice.processor)
         return "%s/events/%s/bulkpay/%s/" % (settings.SITEBASE, bp.conference.urlname, invoice.processorid)
+
+    # Admin access to the bulk payment we just send to the dashboard
+    def get_admin_url(self, invoice):
+        try:
+            bp = BulkPayment.objects.get(pk=invoice.processorid)
+        except ConferenceRegistration.DoesNotExist:
+            return None
+        return "/events/admin/{0}/regdashboard/".format(bp.conference.urlname)
 
 
 class AddonInvoiceProcessor(object):
@@ -267,3 +251,11 @@ class AddonInvoiceProcessor(object):
             raise Exception("Could not find additional options order %s!" % invoice.processorid)
 
         return "%s/events/%s/register/" % (settings.SITEBASE, order.reg.conference.urlname)
+
+    # Admin access to the registration
+    def get_admin_url(self, invoice):
+        try:
+            order = PendingAdditionalOrder.objects.get(pk=invoice.processorid)
+        except PendingAdditionalOrder.DoesNotExist:
+            return None
+        return "/events/admin/{0}/regdashboard/list/{1}/".format(order.reg.conference.urlname, order.reg.pk)

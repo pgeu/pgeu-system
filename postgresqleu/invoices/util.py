@@ -120,18 +120,22 @@ class InvoiceWrapper(object):
 
         return pdfinvoice.save().getvalue()
 
-    def render_pdf_refund(self):
+    def render_pdf_refund(self, refund):
         (modname, classname) = settings.REFUND_PDF_BUILDER.rsplit('.', 1)
         PDFRefund = getattr(importlib.import_module(modname), classname)
         pdfnote = PDFRefund("%s\n%s" % (self.invoice.recipient_name, self.invoice.recipient_address),
                             self.invoice.invoicedate,
-                            self.invoice.refund.completed,
+                            refund.completed,
                             self.invoice.id,
                             self.invoice.total_amount - self.invoice.total_vat,
                             self.invoice.total_vat,
-                            self.invoice.refund.amount,
-                            self.invoice.refund.vatamount,
+                            refund.amount,
+                            refund.vatamount,
                             self.used_payment_details(),
+                            refund.id,
+                            refund.reason,
+                            self.invoice.total_refunds['amount']-refund.amount,
+                            self.invoice.total_refunds['vatamount']-refund.vatamount,
         )
 
         return pdfnote.save().getvalue()
@@ -185,22 +189,26 @@ class InvoiceWrapper(object):
         )
         InvoiceHistory(invoice=self.invoice, txt='Sent cancellation').save()
 
-    def email_refund_initiated(self):
+    def email_refund_initiated(self, refund):
         self._email_something('invoice_refund_initiated.txt',
                               '%s #%s - refund initiated' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
-                              bcc=True)
+                              bcc=True,
+                              extracontext={'refund': refund}
+        )
         InvoiceHistory(invoice=self.invoice, txt='Sent refund initiated notice').save()
 
-    def email_refund_sent(self):
+    def email_refund_sent(self, refund):
         # Generate the refund notice so we have something to send
-        self.invoice.refund.refund_pdf = base64.b64encode(self.render_pdf_refund())
-        self.invoice.refund.save()
+        refund.refund_pdf = base64.b64encode(self.render_pdf_refund(refund))
+        refund.save()
 
         self._email_something('invoice_refund.txt',
                               '%s #%s - refunded' % (settings.INVOICE_TITLE_PREFIX, self.invoice.id),
                               '{0}_refund_{1}.pdf'.format(settings.INVOICE_FILENAME_PREFIX, self.invoice.id),
-                              self.invoice.refund.refund_pdf,
-                              bcc=True)
+                              refund.refund_pdf,
+                              bcc=True,
+                              extracontext={'refund': refund}
+        )
         InvoiceHistory(invoice=self.invoice, txt='Sent refund notice').save()
 
     def _email_something(self, template_name, mail_subject, pdfname=None, pdfcontents=None, bcc=False, extracontext=None):
@@ -471,21 +479,9 @@ class InvoiceManager(object):
     def refund_invoice(self, invoice, reason, amount, vatamount, vatrate):
         # Initiate a refund of an invoice if there is a payment provider that supports it.
         # Otherwise, flag the invoice as refunded, and assume the user took care of it manually.
-        if invoice.refund:
-            raise Exception("This invoice has already been refunded")
 
-        # If this invoice has a processor, we need to start by calling it
-        processor = self.get_invoice_processor(invoice)
-        if processor and getattr(processor, 'can_refund', True):
-            try:
-                r = processor.process_invoice_refund(invoice)
-            except Exception, ex:
-                raise Exception("Failed to run invoice processor '%s': %s" % (invoice.processor, ex))
-
-        r = InvoiceRefund(reason=reason, amount=amount, vatamount=vatamount, vatrate=vatrate)
+        r = InvoiceRefund(invoice=invoice, reason=reason, amount=amount, vatamount=vatamount, vatrate=vatrate)
         r.save()
-        invoice.refund = r
-        invoice.save()
 
         InvoiceHistory(invoice=invoice,
                        txt='Registered refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount + vatamount)).save()
@@ -493,7 +489,7 @@ class InvoiceManager(object):
         wrapper = InvoiceWrapper(invoice)
         if invoice.can_autorefund:
             # Send an initial notice to the user.
-            wrapper.email_refund_initiated()
+            wrapper.email_refund_initiated(r)
 
             # Accounting record is created when we send the API call to the
             # provider.
@@ -519,7 +515,7 @@ class InvoiceManager(object):
                 ]
                 if vatamount:
                     accrows.append(
-                        (invoice.refund.vatrate.vataccount.num, accountingtxt, vatamount, None),
+                        (r.vatrate.vataccount.num, accountingtxt, vatamount, None),
                     )
 
                 urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk), ]
@@ -528,7 +524,7 @@ class InvoiceManager(object):
             InvoiceHistory(invoice=invoice,
                            txt='Flagged refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount + vatamount)).save()
 
-            wrapper.email_refund_sent()
+            wrapper.email_refund_sent(r)
             InvoiceLog(timestamp=datetime.now(),
                        message=u"Flagged invoice {0} as refunded by {1}{2}: {3}".format(invoice.id, settings.CURRENCY_SYMBOL.decode('utf8'), amount + vatamount, reason),
                        ).save()
@@ -585,9 +581,9 @@ class InvoiceManager(object):
         refund.save()
 
         wrapper = InvoiceWrapper(invoice)
-        wrapper.email_refund_sent()
+        wrapper.email_refund_sent(refund)
 
-        InvoiceHistory(invoice=invoice, txt='Completed refund').save()
+        InvoiceHistory(invoice=invoice, txt='Completed refund {0}'.format(refund.id)).save()
 
     # This creates a complete invoice, and finalizes it
     def create_invoice(self,
@@ -658,12 +654,12 @@ class TestProcessor(object):
     def process_invoice_cancellation(self, invoice):
         raise Exception("This processor can't cancel invoices.")
 
-    def process_invoice_refund(self, invoice):
-        raise Exception("This processor can't refund invoices.")
-
     def get_return_url(self, invoice):
         print "Trying to get the return url, but I can't!"
         return "http://unknown.postgresql.eu/"
+
+    def get_admin_url(self, invoice):
+        return None
 
 
 # Calculate the number of workdays between two datetimes.

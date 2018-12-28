@@ -7,11 +7,7 @@
    <td style="white-space: nowrap">Invoice status:</td>
    <td>
      {%if invoice.ispaid %}
-     {%if invoice.refund %}
-     {%if invoice.refund.completed%}<b>Refunded</b>{%elif invoice.refund.issued%}<b>Refund submitted</b> to payment provider and will complete soon.{%else%}<b>Pending refund</b>{%endif%}
-     {%else%}
      <b>Paid</b>
-     {%endif%}
      {%else%}
      <b>Awaiting payment</b>
      {%endif%}
@@ -75,10 +71,25 @@
    </td>
  </tr>
 {%endif%}
-{%if invoice.refund and invoice.refund.refund_pdf%}
+{%if invoice.invoicerefund_set.all %}
  <tr>
-   <td style="white-space: nowrap">Refund:</td>
-   <td><a href="/invoices/{{invoice.pk}}/{%if fromsecret or not invoice.has_recipient_user%}{{invoice.recipient_secret}}/{%endif%}refundnote/">View refund note</a></td>
+   <td style="white-space: nowrap">Refunds:</td>
+   <td>
+     <table class="table table-sm table-condensed">
+       <tr>
+	 <th>Refund amount</th>
+	 <th>Refund status</th>
+	 <th>Refund note</th>
+       </tr>
+{%for r in invoice.invoicerefund_set.all %}
+       <tr>
+	 <td>{{currency_symbol}}{{r.fullamount}}</td>
+	 <td>{%if r.completed%}Refunded {{r.completed|date:"Y-m-d"}}{%elif r.issued%}Submitted to payment provider {{r.issued|date:"Y-m-d"}}{%else%}Pending since {{r.registered|date:"Y-m-d"}}{%endif%}</td>
+	 <td><a href="/invoices/{{invoice.pk}}/{%if fromsecret or not invoice.has_recipient_user%}{{invoice.recipient_secret}}/{%endif%}refundnote/{{r.id}}/">View refund note</a></td>
+       </tr>
+{%endfor%}
+     </table>
+   </td>
  </tr>
 {%endif%}
 
