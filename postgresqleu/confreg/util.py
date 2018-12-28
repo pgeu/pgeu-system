@@ -97,6 +97,7 @@ def invoicerows_for_registration(reg, update_used_vouchers):
                 raise InvoicerowsException("Invalid voucher code")
     return r
 
+
 def attendee_cost_from_bulk_payment(reg):
     re_email_dash = re.compile("^[^\s]+@[^\s]+ - [^\s]")
     if not reg.bulkpayment:
@@ -127,6 +128,7 @@ def attendee_cost_from_bulk_payment(reg):
             raise Exception("Unknown invoice row '%s'" % r.rowtext)
 
     return (totalnovat, totalvat)
+
 
 def notify_reg_confirmed(reg, updatewaitlist=True):
     # This one was off the waitlist, so generate a history entry

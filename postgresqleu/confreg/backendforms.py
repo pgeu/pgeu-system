@@ -792,6 +792,7 @@ class TwitterTestForm(django.forms.Form):
     recipient = django.forms.CharField(max_length=64)
     message = django.forms.CharField(max_length=200)
 
+
 #
 # Form for canceling a registration
 #
@@ -802,9 +803,9 @@ class CancelRegistrationForm(django.forms.Form):
     confirm = django.forms.BooleanField(help_text="Confirm that you want to cancel this registration!")
 
     class Methods:
-        NO_INVOICE=-1
-        CANCEL_INVOICE=-2
-        NO_REFUND=-3
+        NO_INVOICE = -1
+        CANCEL_INVOICE = -2
+        NO_REFUND = -3
 
     def __init__(self, reg, totalnovat, totalvat, *args, **kwargs):
         self.reg = reg
@@ -835,7 +836,7 @@ class CancelRegistrationForm(django.forms.Form):
 
         self.fields['refund'].choices = [(None, '-- Select method'), ] + choices
 
-        if not 'refund' in self.data:
+        if 'refund' not in self.data:
             del self.fields['confirm']
 
     def get_text_for_pattern(self, pattern):
@@ -861,6 +862,7 @@ class CancelRegistrationForm(django.forms.Form):
             pattern.todate and ' until {0}'.format(pattern.todate) or '',
             suggest,
         )
+
 
 #
 # Form for sending email

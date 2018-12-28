@@ -66,6 +66,7 @@ def get_status_string(val):
 def get_status_string_long(val):
     return (t for v, t in STATUS_CHOICES_LONG if v == val).next()
 
+
 def get_status_string_short(val):
     return (t for v, t in STATUS_CHOICES_SHORT if v == val).next()
 

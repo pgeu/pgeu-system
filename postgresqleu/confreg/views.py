@@ -1109,6 +1109,7 @@ def schedule_ical(request, confname):
         'servername': request.META['SERVER_NAME'],
     }, content_type='text/calendar')
 
+
 def schedule_xcal(request, confname):
     conference = get_object_or_404(Conference, urlname=confname)
 
@@ -1137,6 +1138,7 @@ def schedule_xcal(request, confname):
     return HttpResponse(ET.tostring(x),
                         content_type='text/xml')
 
+
 def schedule_xml(request, confname):
     conference = get_object_or_404(Conference, urlname=confname)
 
@@ -1148,7 +1150,7 @@ def schedule_xml(request, confname):
     ET.SubElement(c, 'title').text = conference.conferencename
     ET.SubElement(c, 'start').text = conference.startdate.strftime("%Y-%m-%d")
     ET.SubElement(c, 'end').text = conference.enddate.strftime("%Y-%m-%d")
-    ET.SubElement(c, 'days').text = str((conference.enddate - conference.startdate).days+1)
+    ET.SubElement(c, 'days').text = str((conference.enddate - conference.startdate).days + 1)
     ET.SubElement(c, 'baseurl').text = '{0}/events/{1}/schedule/'.format(settings.SITEBASE, conference.urlname)
 
     lastday = None
@@ -1157,7 +1159,7 @@ def schedule_xml(request, confname):
         if lastday != sess.starttime.date():
             lastday = sess.starttime.date()
             lastroom = None
-            xday = ET.SubElement(x, 'day', date=lastday.strftime("%Y-%m-%d")) # START/END!
+            xday = ET.SubElement(x, 'day', date=lastday.strftime("%Y-%m-%d"))  # START/END!
         thisroom = sess.cross_schedule and 'Other' or sess.room.roomname
         if lastroom != thisroom:
             lastroom = thisroom
@@ -1165,7 +1167,7 @@ def schedule_xml(request, confname):
         e = ET.SubElement(xroom, 'event', id=str(sess.id))
         ET.SubElement(e, 'date').text = sess.utcstarttime.strftime('%Y%m%dT%H%M%S+00:00')
         ET.SubElement(e, 'start').text = sess.utcstarttime.strftime('%H:%M')
-        ET.SubElement(e, 'duration').text = str(sess.utcendtime-sess.utcstarttime)
+        ET.SubElement(e, 'duration').text = str(sess.utcendtime - sess.utcstarttime)
         ET.SubElement(e, 'room').text = lastroom
         ET.SubElement(e, 'title').text = sess.title
         ET.SubElement(e, 'abstract').text = sess.abstract

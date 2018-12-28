@@ -89,6 +89,7 @@ class InvoiceProcessor(object):
             return None
         return "/events/sponsor/admin/{0}/{1}/".format(sponsor.conference.urlname, sponsor.pk)
 
+
 def get_sponsor_invoice_address(name, invoiceaddr, vatnumber):
     if settings.EU_VAT and vatnumber:
         return u"{0}\n{1}\n\nVAT: {2}".format(name, invoiceaddr, vatnumber)

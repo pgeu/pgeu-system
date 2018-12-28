@@ -394,7 +394,7 @@ class BaseRefund(PDFBase):
             t.setStyle(TableStyle(style))
             w, h = t.wrapOn(self.canvas, cm(10), cm(10))
             t.drawOn(self.canvas, (self.canvas._pagesize[0] - w) / 2, cm(17) - h * 2 - cm(1))
-            extraofs = h  + cm(1)
+            extraofs = h + cm(1)
         else:
             extraofs = 0
 

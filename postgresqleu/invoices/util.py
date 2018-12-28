@@ -134,8 +134,8 @@ class InvoiceWrapper(object):
                             self.used_payment_details(),
                             refund.id,
                             refund.reason,
-                            self.invoice.total_refunds['amount']-refund.amount,
-                            self.invoice.total_refunds['vatamount']-refund.vatamount,
+                            self.invoice.total_refunds['amount'] - refund.amount,
+                            self.invoice.total_refunds['vatamount'] - refund.vatamount,
         )
 
         return pdfnote.save().getvalue()

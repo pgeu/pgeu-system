@@ -95,6 +95,7 @@ class InvoiceProcessor(object):
             return None
         return "/events/admin/{0}/regdashboard/list/{1}/".format(reg.conference.urlname, reg.pk)
 
+
 class BulkInvoiceProcessor(object):
     # Process invoices once they're getting paid
     #
