@@ -144,6 +144,15 @@ class BackendSponsorshipLevelForm(BackendForm):
         self.fields['contract'].queryset = SponsorshipContract.objects.filter(conference=self.conference)
         self.fields['paymentmethods'].label_from_instance = lambda x: x.internaldescription
 
+    def clean(self):
+        cleaned_data = super(BackendSponsorshipLevelForm, self).clean()
+
+        if not (cleaned_data.get('instantbuy', False) or cleaned_data['contract']):
+            self.add_error('instantbuy', 'Sponsorship level must either be instant signup or have a contract')
+            self.add_error('contract', 'Sponsorship level must either be instant signup or have a contract')
+
+        return cleaned_data
+
     @classmethod
     def copy_from_conference(self, targetconf, sourceconf, idlist):
         for id in idlist:
