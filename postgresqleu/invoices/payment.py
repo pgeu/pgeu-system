@@ -71,10 +71,10 @@ class PaymentMethodWrapper(object):
         if hasattr(self, 'implementation') and hasattr(self.implementation, 'used_method_details'):
             return self.implementation.used_method_details(self.invoice)
 
-    def autorefund(self):
+    def autorefund(self, refund):
         if hasattr(self, 'implementation'):
             if hasattr(self.implementation, 'autorefund'):
-                return self.implementation.autorefund(self.invoice)
+                return self.implementation.autorefund(refund)
             else:
                 raise Exception("No support for autorefund in method {0}".format(self.method))
         else:

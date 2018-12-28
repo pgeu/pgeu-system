@@ -94,16 +94,16 @@ class _AdyenBase(object):
         else:
             return "not settled yet"
 
-    def autorefund(self, invoice):
-        (trans, reason) = self._find_invoice_transaction(invoice)
+    def autorefund(self, refund):
+        (trans, reason) = self._find_invoice_transaction(refund.invoice)
         if not trans:
             raise Exception(reason)
 
         api = AdyenAPI()
-        invoice.refund.payment_reference = api.refund_transaction(
-            invoice.refund.id,
+        refund.payment_reference = api.refund_transaction(
+            refund.id,
             trans.pspReference,
-            invoice.refund.fullamount,
+            refund.fullamount,
         )
         # At this point, we succeeded. Anything that failed will bubble
         # up as an exception.

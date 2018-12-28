@@ -65,17 +65,17 @@ lower fees.
 
         return trans.fee
 
-    def autorefund(self, invoice):
-        (trans, reason) = self._find_invoice_transaction(invoice)
+    def autorefund(self, refund):
+        (trans, reason) = self._find_invoice_transaction(refund.invoice)
         if not trans:
             raise Exception(reason)
 
         api = PaypalAPI()
-        invoice.refund.payment_reference = api.refund_transaction(
+        refund.payment_reference = api.refund_transaction(
             trans.paypaltransid,
-            invoice.refund.fullamount,
-            invoice.refund.fullamount == invoice.total_amount,
-            '{0} refund {1}'.format(settings.ORG_SHORTNAME, invoice.refund.id),
+            refund.fullamount,
+            refund.fullamount == refund.invoice.total_amount,
+            '{0} refund {1}'.format(settings.ORG_SHORTNAME, refund.id),
         )
         # At this point, we succeeded. Anything that failed will bubble
         # up as an exception.

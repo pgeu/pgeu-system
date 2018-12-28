@@ -531,15 +531,15 @@ class InvoiceManager(object):
 
         return r
 
-    def autorefund_invoice(self, invoice):
+    def autorefund_invoice(self, refund):
         # Send an API call to initiate a refund
-        if invoice.autorefund():
-            invoice.refund.issued = datetime.now()
-            invoice.refund.save()
+        if refund.invoice.autorefund(refund):
+            refund.issued = datetime.now()
+            refund.save()
 
-            InvoiceHistory(invoice=invoice, txt='Sent refund request to provider').save()
+            InvoiceHistory(invoice=refund.invoice, txt='Sent refund request to provider').save()
         else:
-            InvoiceHistory(invoice=invoice, txt='Failed to send refund request to provider').save()
+            InvoiceHistory(invoice=refund.invoice, txt='Failed to send refund request to provider').save()
 
     def complete_refund(self, refundid, refundamount, refundfee, incomeaccount, costaccount, extraurls, method):
         # Process notification from payment provider that refund has completed

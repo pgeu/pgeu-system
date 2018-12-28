@@ -172,8 +172,8 @@ class Invoice(models.Model):
     def can_autorefund(self):
         return PaymentMethodWrapper(self.paidusing, self).can_autorefund
 
-    def autorefund(self):
-        return PaymentMethodWrapper(self.paidusing, self).autorefund()
+    def autorefund(self, refund):
+        return PaymentMethodWrapper(self.paidusing, self).autorefund(refund)
 
     @property
     def total_refunds(self):

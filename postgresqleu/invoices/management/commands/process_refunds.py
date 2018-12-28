@@ -39,7 +39,7 @@ class Command(BaseCommand):
                 # Calling autorefund will update the InvoiceRefund object
                 # after calling the APIs, so nothing more to do here.
 
-                manager.autorefund_invoice(rr.invoice)
+                manager.autorefund_invoice(rr)
 
                 self.stdout.write("Issued API refund of invoice {0}.".format(rr.invoice.pk))
 
