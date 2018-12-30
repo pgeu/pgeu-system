@@ -19,7 +19,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # We send reminder automatically when an invoice is 1 day overdue.
         # We never send a second reminder, that is done manually.
-        invoices = Invoice.objects.filter(finalized=True, deleted=False, refund__isnull=True, paidat__isnull=True, remindersent__isnull=True, duedate__lt=datetime.now() - timedelta(days=1))
+        invoices = Invoice.objects.filter(finalized=True, deleted=False, paidat__isnull=True, remindersent__isnull=True, duedate__lt=datetime.now() - timedelta(days=1))
         for invoice in invoices:
             wrapper = InvoiceWrapper(invoice)
             wrapper.email_reminder()
