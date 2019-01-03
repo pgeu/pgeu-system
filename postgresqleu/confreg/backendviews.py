@@ -557,7 +557,7 @@ LEFT JOIN confreg_conferenceregistration r ON (r.conference_id=%(conference)s AN
 WHERE EXISTS (
  SELECT 1 FROM confreg_conferencesession sess
  INNER JOIN confreg_conferencesession_speaker ccs ON sess.id=ccs.conferencesession_id
- WHERE conferencesession_id=ANY(%(idlist)s)
+ WHERE conferencesession_id=ANY(%(idlist)s) AND sess.conference_id=%(conference)s
  AND speaker_id=s.id)""",
                                 [('../', 'Conference sessions'), ],
                                 )
