@@ -180,6 +180,7 @@
 {%if conference.tickets%}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/ticket/">Preview ticket</a>
 {%endif%}
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/sendmail/?idlist={{reg.id}}">Send email to attendee</a>
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/">Back to list</a>
 
 {%endblock%}

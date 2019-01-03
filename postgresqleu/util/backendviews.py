@@ -157,6 +157,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
         'basetemplate': basetemplate,
         'topadmin': topadmin,
         'form': form,
+        'id': instance.pk,
         'what': what,
         'cancelurl': cancel_url,
         'breadcrumbs': breadcrumbs,

@@ -57,6 +57,9 @@
 {%if cancelurl%}
      &nbsp;&nbsp;<a class="btn btn-default" href="{{cancelurl}}">{{cancelname|default:"Cancel"}}</a>
 {%endif%}
+{%if form.allow_email and id %}
+     &nbsp;&nbsp;<a class="btn btn-default" href="../sendmail/?idlist={{id}}">Send email</a>
+{%endif%}
    </div>
   </div>
  </div>
