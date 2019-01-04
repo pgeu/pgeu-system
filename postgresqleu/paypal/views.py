@@ -62,10 +62,10 @@ def paypal_return_handler(request):
             'tx': tx,
             'at': settings.PAYPAL_PDT_TOKEN,
             }
-        resp = requests.post(settings.PAYPAL_BASEURL, data=params).decode('utf8')
+        resp = requests.post(settings.PAYPAL_BASEURL, data=params)
         if resp.status_code != 200:
             raise Exception("status code {0}".format(resp.status_code))
-        r = resp.text
+        r = resp.text.decode('utf8')
     except Exception as ex:
         # Failed to talk to paypal somehow. It should be ok to retry.
         return paypal_error('Failed to verify status with paypal: %s' % ex)
