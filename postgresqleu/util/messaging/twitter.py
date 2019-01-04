@@ -38,7 +38,7 @@ class Twitter(object):
                 r = self.tw.get('https://api.twitter.com/1.1/users/show.json',
                                 params={'screen_name': tousername})
                 _cached_twitter_users[tousername] = r.json()['id']
-            except Exception, e:
+            except Exception as e:
                 return (False, None, "Failed to look up user %s: %s" % (tousername, e))
 
         try:
@@ -62,7 +62,7 @@ class Twitter(object):
                     return (False, ej['code'], ej['message'])
                 except:
                     return (False, None, r.text)
-        except Exception, e:
+        except Exception as e:
             return (False, None, e)
         return (True, None, None)
 

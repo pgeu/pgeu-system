@@ -231,7 +231,7 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
         try:
             with open(os.path.join(conference.jinjadir, 'templates/context.json')) as f:
                 c = json.load(f)
-        except ValueError, e:
+        except ValueError as e:
             return HttpResponse("JSON parse failed: {0}".format(e), content_type="text/plain")
         except Exception:
             c = {}
@@ -289,7 +289,7 @@ class JinjaTemplateValidator(object):
     def __call__(self, s):
         try:
             render_sandboxed_template(s, self.context)
-        except jinja2.TemplateSyntaxError, e:
+        except jinja2.TemplateSyntaxError as e:
             raise ValidationError("Template syntax error: %s" % e)
-        except Exception, e:
+        except Exception as e:
             raise ValidationError("Failed to parse template: %s" % e)

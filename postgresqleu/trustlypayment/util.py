@@ -61,7 +61,7 @@ class Trustly(TrustlyWrapper):
         # Raw is confirmed, but parsed one is still pending. So handle that one.
         try:
             self.process_notification(n)
-        except Exception, e:
+        except Exception as e:
             self.log_and_email("Exception processing notification {0}: {1}".format(n.id, e))
 
         # If we somehow failed to handle at this level, we still flag things as ok to
@@ -115,7 +115,7 @@ class Trustly(TrustlyWrapper):
                 trans.completedat = datetime.now()
                 try:
                     self.process_completed_payment(trans)
-                except TrustlyException, e:
+                except TrustlyException as e:
                     self.log_and_email(e)
                     return False
                 trans.save()

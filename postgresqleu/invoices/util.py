@@ -364,7 +364,7 @@ class InvoiceManager(object):
                 return (self.RESULT_PROCESSORFAIL, None, None)
             try:
                 processor.process_invoice_payment(invoice)
-            except Exception, ex:
+            except Exception as ex:
                 logger("Failed to run invoice processor '%s': %s" % (invoice.processor, ex))
                 return (self.RESULT_PROCESSORFAIL, None, None)
 
@@ -444,7 +444,7 @@ class InvoiceManager(object):
                 classname = pieces[-1]
                 mod = __import__(modname, fromlist=[classname, ])
                 return getattr(mod, classname)()
-            except Exception, ex:
+            except Exception as ex:
                 if logger:
                     logger("Failed to instantiate invoice processor '%s': %s" % (invoice.processor, ex))
                     return None
@@ -460,7 +460,7 @@ class InvoiceManager(object):
         if processor:
             try:
                 processor.process_invoice_cancellation(invoice)
-            except Exception, ex:
+            except Exception as ex:
                 raise Exception("Failed to run invoice processor '%s': %s" % (invoice.processor, ex))
 
         invoice.deleted = True

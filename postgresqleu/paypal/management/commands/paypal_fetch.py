@@ -32,7 +32,7 @@ class PaypalBaseTransaction(object):
             self.transinfo.amount = Decimal(apistruct['AMT'])
             self.transinfo.fee = -Decimal(apistruct['FEEAMT'])
             self.transinfo.sendername = apistruct['NAME']
-        except Exception, e:
+        except Exception as e:
             self.message = "Unable to parse: %s" % e
 
     def __str__(self):
@@ -81,7 +81,7 @@ class PaypalTransaction(PaypalBaseTransaction):
         super(PaypalTransaction, self).__init__(apistruct)
         try:
             self.transinfo.sender = apistruct['EMAIL']
-        except Exception, e:
+        except Exception as e:
             self.message = "Unable to parse: %s" % e
 
 

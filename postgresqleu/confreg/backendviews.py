@@ -289,7 +289,7 @@ def twitter_integration(request, urlname):
                 (auth_url, ownerkey, ownersecret) = TwitterSetup.get_authorization_data()
                 request.session['ownerkey'] = ownerkey
                 request.session['ownersecret'] = ownersecret
-            except Exception, e:
+            except Exception as e:
                 messages.error(request, 'Failed to talk to twitter: %s' % e)
                 return HttpResponseRedirect('.')
 

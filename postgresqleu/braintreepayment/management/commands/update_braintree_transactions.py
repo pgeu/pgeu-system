@@ -42,7 +42,7 @@ class Command(BaseCommand):
                 # Process all transactions that are not settled and disbursed
                 try:
                     btrans = braintree.Transaction.find(t.transid)
-                except braintree.exceptions.not_found_error.NotFoundError, ex:
+                except braintree.exceptions.not_found_error.NotFoundError as ex:
                     BraintreeLog(transid=t.transid,
                                  error=True,
                                  message='Could not find transaction {0}: {1}'.format(t.transid, ex)).save()

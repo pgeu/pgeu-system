@@ -550,7 +550,7 @@ def multireg_newinvoice(request, confname):
         else:
             try:
                 invoicerows.extend(invoicerows_for_registration(r, finalize))
-            except InvoicerowsException, ex:
+            except InvoicerowsException as ex:
                 errors.append(u'{0}: {1}'.format(r.email, ex))
 
     for r in invoicerows:
@@ -2177,7 +2177,7 @@ def bulkpay(request, confname):
                         totalcost += s
                         invoicerows.extend(regrows)
 
-                except InvoicerowsException, ex:
+                except InvoicerowsException as ex:
                     state.append({'email': e, 'found': 1, 'pay': 0, 'text': unicode(ex)})
                     errors = 1
 
@@ -3251,7 +3251,7 @@ def transfer_reg(request, urlname):
             if fromreg.regtype.specialtype:
                 try:
                     validate_special_reg_type(fromreg.regtype.specialtype, toreg)
-                except ValidationError, e:
+                except ValidationError as e:
                     raise ValidationError("Registration type cannot be transferred: %s" % e.message)
             toreg.regtype = fromreg.regtype
 
@@ -3354,7 +3354,7 @@ def transfer_reg(request, urlname):
                 steps = list(_make_transfer(form.cleaned_data['transfer_from'],
                                             form.cleaned_data['transfer_to'],
                                             ))
-            except ValidationError, e:
+            except ValidationError as e:
                 form.add_error(None, e)
                 form.remove_confirm()
 

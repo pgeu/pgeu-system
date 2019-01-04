@@ -87,7 +87,7 @@ def payment_post(request):
                                                              invoice_logger,
                                                              InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.braintree.Braintree'),
                                                          )
-            except BraintreeProcessingException, ex:
+            except BraintreeProcessingException as ex:
                 send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                                  settings.BRAINTREE_NOTIFICATION_RECEIVER,
                                  'Exception occurred processing Braintree result',

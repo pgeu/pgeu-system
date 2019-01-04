@@ -57,7 +57,7 @@ class Command(BaseCommand):
                         report.contents = resp
                         report.save()
                         AdyenLog(message='Downloaded report {0}'.format(report.url), error=False).save()
-            except Exception, ex:
+            except Exception as ex:
                 self.stderr.write("Failed to download report {0}: {1}".format(report.url, ex))
                 # This might fail again if we had a db problem, but it should be OK as long as it
                 # was just a download issue which is most likely.
@@ -228,6 +228,6 @@ class Command(BaseCommand):
                     report.processedat = datetime.now()
                     report.save()
                     AdyenLog(message='Processed report %s' % report.url, error=False).save()
-            except Exception, ex:
+            except Exception as ex:
                 self.stderr.write("Failed to process report {0}: {1}".format(report.url, ex))
                 AdyenLog(message='Failed to process report %s: %s' % (report.url, ex), error=True).save()

@@ -65,7 +65,7 @@ def paypal_return_handler(request):
         u = urllib2.urlopen(settings.PAYPAL_BASEURL, urlencode(params))
         r = u.read()
         u.close()
-    except Exception, ex:
+    except Exception as ex:
         # Failed to talk to paypal somehow. It should be ok to retry.
         return paypal_error('Failed to verify status with paypal: %s' % ex)
 
@@ -91,7 +91,7 @@ def paypal_return_handler(request):
             return paypal_error('Received payment for %s which is not the correct recipient!' % d['business'])
         if d['mc_currency'] != settings.CURRENCY_ABBREV:
             return paypal_error('Received payment in %s, not %s. We cannot currently process this automatically.' % (d['mc_currency'], settings.CURRENCY_ABBREV))
-    except KeyError, k:
+    except KeyError as k:
         return paypal_error('Mandatory field %s is missing from paypal data!', k)
 
     # Now let's find the state of the payment

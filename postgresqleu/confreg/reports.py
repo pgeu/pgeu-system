@@ -294,7 +294,7 @@ def build_attendee_report(conference, POST):
             resp = HttpResponse(content_type='application/pdf')
             render_jinja_badges(conference, result, resp, borders, pagebreaks)
             return resp
-        except Exception, e:
+        except Exception as e:
             return HttpResponse("Exception occured: %s" % e, content_type='text/plain')
     else:
         raise Exception("Unknown format")

@@ -48,7 +48,7 @@ def importuser(request):
     uid = request.POST['uid']
     try:
         user_import(uid)
-    except Exception, e:
+    except Exception as e:
         return HttpResponse('%s' % e, content_type='text/plain')
 
     return HttpResponse('OK', content_type='text/plain')

@@ -70,7 +70,7 @@ def invoicepayment_secret(request, invoiceid, secret):
 
         # With the transaction saved, redirect the user to Trustly
         return HttpResponseRedirect(r['data']['url'])
-    except TrustlyException, e:
+    except TrustlyException as e:
         return HttpResponse("Error communicating with Trustly: {0}".format(e))
 
 

@@ -38,7 +38,7 @@ class ImageUploadForm(BaseBenefitForm):
             p.feed(imagedata.read())
             p.close()
             image = p.image
-        except Exception, e:
+        except Exception as e:
             raise ValidationError("Could not parse image: %s" % e)
         if image.format != self.params['format'].upper():
             raise ValidationError("Only %s format images are accepted, not '%s'" % (self.params['format'].upper(), image.format))

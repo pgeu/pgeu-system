@@ -144,7 +144,7 @@ def sponsor_manager_add(request, sponsorid):
                     messages.info(request, "User %s added as manager." % u.username)
                 except User.DoesNotExist:
                     messages.warning(request, "Failed to re-find user %s after import" % users[0]['u'])
-            except Exception, e:
+            except Exception as e:
                 messages.warning(request, "Failed to import user with email %s (userid %s): %s" % (users[0]['e'], users[0]['u'], e))
         else:
             messages.warning(request, "Could not find user with email address %s" % request.POST['email'])

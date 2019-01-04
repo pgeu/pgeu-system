@@ -226,7 +226,7 @@ TWITTER_NEWS_TOKENSECRET = ""
 # If there is a local_settings.py, let it override our settings
 try:
     from local_settings import *
-except ImportError, e:
+except ImportError as e:
     pass
 
 PRELOAD_URLS = []
@@ -242,12 +242,12 @@ if 'SYSTEM_SKIN_DIRECTORY' in globals():
     # Load a skin settings file (URLs etc)
     try:
         from skin_settings import *
-    except ImportError, e:
+    except ImportError as e:
         pass
     # Then, load a local settings file from there
     try:
         from skin_local_settings import *
-    except ImportError, e:
+    except ImportError as e:
         pass
     if 'SKIN_APPS' in globals():
         INSTALLED_APPS.extend(SKIN_APPS)

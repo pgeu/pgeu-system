@@ -329,7 +329,7 @@ class SpeakerAdminForm(ConcurrentProtectedModelForm):
             p.feed(self.cleaned_data['photofile'].read())
             p.close()
             img = p.image
-        except Exception, e:
+        except Exception as e:
             raise ValidationError("Could not parse image: %s" % e)
         if img.format != 'JPEG':
             raise ValidationError("Only JPEG format images are accepted, not '%s'" % img.format)

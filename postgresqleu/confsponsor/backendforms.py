@@ -92,7 +92,7 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
                 benefit.params = dp
             try:
                 benefit.do_validate_params()
-            except ValidationError, e:
+            except ValidationError as e:
                 self.add_error('class_parameters', e)
         return cleaned_data
 

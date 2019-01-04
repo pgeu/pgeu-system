@@ -57,7 +57,7 @@ class Command(BaseCommand):
                 r = api.refund_transaction(t.paypaltransid, t.amount, True, options['message'])
                 print("Successfully refunded {0} (paypal id {1}, refund id {2})".format(t.id, t.paypaltransid, r))
                 time.sleep(1)
-            except Exception, e:
+            except Exception as e:
                 print("FAILED to refund {0} (paypal id {1}): {2}".format(t.id, t.paypaltransid, e))
 
         print("Done.")

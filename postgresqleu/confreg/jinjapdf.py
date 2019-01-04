@@ -241,7 +241,7 @@ class JinjaRenderer(object):
         s = self.template.render(**ctx)
         try:
             js = json.loads(s)
-        except ValueError, e:
+        except ValueError as e:
             if self.debug:
                 print "JSON parse failed. Template output:"
                 print s

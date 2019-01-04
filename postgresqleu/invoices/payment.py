@@ -52,7 +52,7 @@ class PaymentMethodWrapper(object):
     def paymenturl(self):
         try:
             return self.implementation.build_payment_url(self.invoicestr, self.invoiceamount, self.invoiceid, self.returnurl)
-        except Exception, ex:
+        except Exception as ex:
             print ex
 
     @property

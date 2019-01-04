@@ -47,7 +47,7 @@ def timereport(request):
                     'trendlines_supported': report.does_trendlines,
                     'helplink': 'reports#time',
                     })
-            except ReportException, e:
+            except ReportException as e:
                 messages.error(request, e)
                 return render(request, 'confreg/timereport.html', {
                     'form': form,

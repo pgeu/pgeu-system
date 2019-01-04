@@ -30,7 +30,7 @@ Pay directly using online banking. Currently supported with most banks in {0}.
         t = Trustly()
         try:
             t.refund(trans.orderid, refund.fullamount)
-        except TrustlyException, e:
+        except TrustlyException as e:
             TrustlyLog(message='Refund API failed: {0}'.format(e), error=True).save()
             return False
 

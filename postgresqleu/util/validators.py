@@ -111,7 +111,7 @@ class PictureUrlValidator(object):
 
         except ValidationError:
             raise
-        except Exception, e:
+        except Exception as e:
             raise ValidationError("Failed to parse image: %s" % e)
 
     def __eq__(self, other):
