@@ -49,7 +49,7 @@ def election(request, electionid):
         return render(request, 'elections/results.html', {
             'election': election,
             'topscore': res[0][1],
-            'scores': [{'name': r[0], 'score': r[1], 'width': 300 * r[1] / res[0][1]} for r in res],
+            'scores': [{'name': r[0], 'score': r[1], 'width': 300 * r[1] // res[0][1]} for r in res],
         })
 
     if len(election.candidate_set.all()) <= 0:

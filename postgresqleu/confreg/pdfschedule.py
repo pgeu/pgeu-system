@@ -89,7 +89,7 @@ def build_linear_pdf_schedule(conference, room, tracks, day, colored, pagesize, 
 
     def _finalize_page():
         canvas.setFont("DejaVu Serif", 20)
-        canvas.drawCentredString(width / 2, height - cm(2), "%s - %s" % (room.roomname, lastdate.strftime(titledatefmt)))
+        canvas.drawCentredString(width // 2, height - cm(2), "%s - %s" % (room.roomname, lastdate.strftime(titledatefmt)))
 
         t = Table(tbldata, colWidths=[cm(3), width - cm(3) - 2 * table_horiz_margin])
         t.setStyle(TableStyle(tblstyle))
@@ -168,7 +168,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
             # >1 page per day, so we try to find the breakpoints. We do this by locating
             # cross-schedule sessions at appropriate times, and including those both on
             # the previous and the current schedule.
-            secondsperpage = dd['length'].seconds / pagesperday
+            secondsperpage = dd['length'].seconds // pagesperday
 
             cross_sessions = [s for s in dd['sessions'] if s.cross_schedule]
 
@@ -202,10 +202,10 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
 
         # Only on the first page in multipage schedules
         canvas.setFont("DejaVu Serif", 20)
-        canvas.drawCentredString(width / 2, height - cm(2), d.strftime(titledatefmt))
+        canvas.drawCentredString(width // 2, height - cm(2), d.strftime(titledatefmt))
 
         roomcount = len(dd['rooms'])
-        roomwidth = usablewidth / roomcount
+        roomwidth = usablewidth // roomcount
 
         # Figure out font size for the room title. Use the biggest one that will still
         # fit within the boxes.
@@ -223,8 +223,8 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
         roompos = {}
         for r in sorted(dd['rooms'], key=lambda x: (x.sortkey, x.roomname)):
             canvas.rect(cm(2) + len(roompos) * roomwidth, height - cm(4), roomwidth, cm(1), stroke=1)
-            canvas.drawCentredString(cm(2) + len(roompos) * roomwidth + roomwidth / 2,
-                                     height - cm(4) + (cm(1) - roomtitlefontsize) / 2,
+            canvas.drawCentredString(cm(2) + len(roompos) * roomwidth + roomwidth // 2,
+                                     height - cm(4) + (cm(1) - roomtitlefontsize) // 2,
                                      r.roomname)
             roompos[r] = len(roompos)
 

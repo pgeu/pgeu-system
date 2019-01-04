@@ -92,7 +92,7 @@ class MultiConferenceReport(object):
             maxseen = max(max(myvals), maxseen)
 
         if maxday - minday:
-            maxpred = float(maxseen) * maxday / (maxday - minday)
+            maxpred = float(maxseen) * maxday // (maxday - minday)
         else:
             maxpred = 10
         self.graphdata = zip(*allvals)

@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 
+from decimal import Decimal
 from datetime import datetime, date, timedelta
 import urllib
 from io import BytesIO
@@ -88,9 +89,10 @@ def invoicerows_for_registration(reg, update_used_vouchers):
                     else:
                         # Percentage discount. Can be either off the total or just the reg
                         if d.regonly:
+                            # regtype.cost is Decimal
                             discount = reg.regtype.cost * d.discountpercentage / 100
                         else:
-                            discount = current_total * d.discountpercentage / 100
+                            discount = Decimal(current_total) * d.discountpercentage / 100
                     if discount > 0:
                         r.append(['   Discount code %s' % d.code, 1, -discount, reg.conference.vat_registrations])
             except DiscountCode.DoesNotExist:

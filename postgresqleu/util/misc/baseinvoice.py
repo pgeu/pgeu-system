@@ -134,12 +134,12 @@ class BaseInvoice(PDFBase):
         # We can fit ROWS_PER_PAGE rows on one page. We might want to do something
         # cute to avoid a single row on it's own page in the future, but
         # for now, just split it evenly.
-        for pagenum in range(0, (len(self.rows) - 1) / self.ROWS_PER_PAGE + 1):
+        for pagenum in range(0, (len(self.rows) - 1) // self.ROWS_PER_PAGE + 1):
             self.draw_header()
-            islastpage = (pagenum == (len(self.rows) - 1) / self.ROWS_PER_PAGE)
+            islastpage = (pagenum == (len(self.rows) - 1) // self.ROWS_PER_PAGE)
 
             if len(self.rows) > self.ROWS_PER_PAGE:
-                suffix = " (page %s/%s)" % (pagenum + 1, len(self.rows) / self.ROWS_PER_PAGE + 1)
+                suffix = " (page %s/%s)" % (pagenum + 1, len(self.rows) // self.ROWS_PER_PAGE + 1)
             else:
                 suffix = ''
 
@@ -387,13 +387,13 @@ class BaseRefund(PDFBase):
         t = Table(tblpaid, [cm(10.5), cm(2.5), cm(1.5), cm(2.5)])
         t.setStyle(TableStyle(style))
         w, h = t.wrapOn(self.canvas, cm(10), cm(10))
-        t.drawOn(self.canvas, (self.canvas._pagesize[0] - w) / 2, cm(17) - h)
+        t.drawOn(self.canvas, (self.canvas._pagesize[0] - w) // 2, cm(17) - h)
 
         if self.previousamount:
             t = Table(tblprevious, [cm(10.5), cm(2.5), cm(1.5), cm(2.5)])
             t.setStyle(TableStyle(style))
             w, h = t.wrapOn(self.canvas, cm(10), cm(10))
-            t.drawOn(self.canvas, (self.canvas._pagesize[0] - w) / 2, cm(17) - h * 2 - cm(1))
+            t.drawOn(self.canvas, (self.canvas._pagesize[0] - w) // 2, cm(17) - h * 2 - cm(1))
             extraofs = h + cm(1)
         else:
             extraofs = 0
@@ -401,7 +401,7 @@ class BaseRefund(PDFBase):
         t = Table(tblrefunded, [cm(10.5), cm(2.5), cm(1.5), cm(2.5)])
         t.setStyle(TableStyle(style))
         w, h = t.wrapOn(self.canvas, cm(10), cm(10))
-        t.drawOn(self.canvas, (self.canvas._pagesize[0] - w) / 2, cm(17) - h * 2 - cm(1) - extraofs)
+        t.drawOn(self.canvas, (self.canvas._pagesize[0] - w) // 2, cm(17) - h * 2 - cm(1) - extraofs)
 
         self.canvas.drawCentredString(cm(10.5), cm(16.3) - h * 2 - cm(2) - extraofs, "This refund was issued {0}".format(self.refunddate.strftime("%B %d, %Y")))
 

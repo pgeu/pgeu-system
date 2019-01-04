@@ -994,12 +994,12 @@ class SessionSet(object):
 
     def roomwidth(self):
         if len(self.rooms):
-            return int(self.totalwidth / len(self.rooms))
+            return int(self.totalwidth // len(self.rooms))
         else:
             return 0
 
     def timediff_to_y_pixels(self, t, compareto):
-        return ((t - compareto).seconds / 60) * self.pixelsperminute
+        return ((t - compareto).seconds // 60) * self.pixelsperminute
 
     def allrooms(self):
         return [{
@@ -1017,7 +1017,7 @@ class SessionSet(object):
             if s['cross_schedule'] or s['room_id'] == roomid:
                 if roomprevsess and roomprevsess['endtime'] < s['starttime']:
                     yield {'empty': True,
-                           'length': (s['starttime'] - roomprevsess['endtime']).total_seconds() / 60,
+                           'length': (s['starttime'] - roomprevsess['endtime']).total_seconds() // 60,
                     }
                 roomprevsess = s
                 yield s
@@ -2442,7 +2442,7 @@ def createschedule(request, confname):
                     sm = re_slot.match(k)
                     if not sm:
                         raise Exception("Could not find slot, invalid data in POST")
-                    roomid = int(int(sm.group(1)) / 1000000)
+                    roomid = int(int(sm.group(1)) // 1000000)
                     slotid = int(sm.group(1)) % 1000000
                     if sess.tentativeroom is None or sess.tentativeroom.id != roomid or sess.tentativescheduleslot is None or sess.tentativescheduleslot.id != slotid:
                         sess.tentativeroom = Room.objects.get(pk=roomid)
@@ -2496,7 +2496,7 @@ def createschedule(request, confname):
         'days': days,
         'sessions': sessions,
         'tracks': tracks,
-        'sesswidth': min(600 / len(allrooms), 150),
+        'sesswidth': min(600 // len(allrooms), 150),
         'availableheight': len(sessions) * 75,
         'helplink': 'schedule',
     })

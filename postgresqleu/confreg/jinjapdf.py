@@ -151,7 +151,7 @@ class JinjaFlowable(Flowable):
         # Max height is total height divided by lines divided by 1.2 since
         # we multiply the leading value with 1.2 later
         maxsize = o.get('maxsize', None)
-        maxfont_height = int((getmm(o, 'height') / len(lines)) / 1.2)
+        maxfont_height = int((getmm(o, 'height') // len(lines)) / 1.2)
         if maxsize:
             maxfontsize = min(maxsize, maxfont_height)
         else:
@@ -163,7 +163,7 @@ class JinjaFlowable(Flowable):
                 break
 
         if o.get('verticalcenter', False):
-            yoffset = (getmm(o, 'height') - (len(lines) * fontsize)) / 2
+            yoffset = (getmm(o, 'height') - (len(lines) * fontsize)) // 2
         else:
             yoffset = 0
 

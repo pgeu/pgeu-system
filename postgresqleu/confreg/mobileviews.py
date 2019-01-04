@@ -59,7 +59,7 @@ def conferencedata(request, confname, since):
     conference = get_object_or_404(Conference, urlname=confname)
 
     if since:
-        datefilter = datetime.fromtimestamp(int(since) / 1000)
+        datefilter = datetime.fromtimestamp(int(since) // 1000)
     else:
         # Yes this is ugly, but i'm too lazy to rewrite the query
         datefilter = datetime.fromtimestamp(0)
