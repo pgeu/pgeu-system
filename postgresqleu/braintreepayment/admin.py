@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from models import BraintreeTransaction, BraintreeLog
+from .models import BraintreeTransaction, BraintreeLog
 
 
 class BraintreeTransactionAdmin(admin.ModelAdmin):

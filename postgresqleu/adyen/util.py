@@ -14,7 +14,7 @@ from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.accounting.util import create_accounting_entry
 
-from models import TransactionStatus, Report, AdyenLog, Notification, Refund
+from .models import TransactionStatus, Report, AdyenLog, Notification, Refund
 
 
 # Internal exception class

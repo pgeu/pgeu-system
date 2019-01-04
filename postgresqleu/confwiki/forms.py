@@ -5,7 +5,7 @@ from django.db.models import Q
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
 from postgresqleu.confreg.models import RegistrationType, ConferenceRegistration
-from models import Wikipage, Signup, AttendeeSignup
+from .models import Wikipage, Signup, AttendeeSignup
 
 
 class WikipageEditForm(ConcurrentProtectedModelForm):

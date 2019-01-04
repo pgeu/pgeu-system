@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from models import Member, MemberLog
+from .models import Member, MemberLog
 
 from datetime import datetime, timedelta, date
 

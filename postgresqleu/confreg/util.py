@@ -13,9 +13,9 @@ from postgresqleu.util.middleware import RedirectException
 from postgresqleu.confreg.jinjafunc import JINJA_TEMPLATE_ROOT
 from postgresqleu.confreg.jinjapdf import render_jinja_ticket
 
-from models import PrepaidVoucher, DiscountCode, RegistrationWaitlistHistory
-from models import ConferenceRegistration, Conference
-from models import AttendeeMail
+from .models import PrepaidVoucher, DiscountCode, RegistrationWaitlistHistory
+from .models import ConferenceRegistration, Conference
+from .models import AttendeeMail
 
 
 class InvoicerowsException(Exception):

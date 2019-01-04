@@ -5,8 +5,8 @@ from django.db.models import Q
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.conf import settings
 
-from models import Sponsor, SponsorMail, SponsorshipLevel
-from models import vat_status_choices
+from .models import Sponsor, SponsorMail, SponsorshipLevel
+from .models import vat_status_choices
 from postgresqleu.confreg.models import Conference, RegistrationType, DiscountCode
 from postgresqleu.countries.models import EuropeCountry
 
@@ -66,7 +66,7 @@ class SponsorSignupForm(forms.Form):
         if not EuropeCountry.objects.filter(iso=v[:2]).exists():
             raise ValidationError("VAT numbers must begin with the two letter country code")
         if settings.EU_VAT_VALIDATE:
-            import vatutil
+            from . import vatutil
             r = vatutil.validate_eu_vat_number(v)
             if r:
                 raise ValidationError("Invalid VAT number: %s" % r)

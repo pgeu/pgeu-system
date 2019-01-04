@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 from django import forms
 
-from base import BaseBenefit, BaseBenefitForm
+from .base import BaseBenefit, BaseBenefitForm
 
 
 class ProvideTextForm(BaseBenefitForm):

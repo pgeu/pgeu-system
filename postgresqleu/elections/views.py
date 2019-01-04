@@ -3,8 +3,8 @@ from django.http import HttpResponseRedirect, Http404
 from django.contrib.auth.decorators import login_required
 from django.db import connection
 
-from models import Election, Member, Candidate, Vote
-from forms import VoteForm
+from .models import Election, Member, Candidate, Vote
+from .forms import VoteForm
 from datetime import date, timedelta
 
 

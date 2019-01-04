@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect
 from datetime import datetime
 import urllib
 
-from models import Member, MemberLog, Meeting
+from .models import Member, MemberLog, Meeting
 
 
 class ActiveMemberFilter(admin.SimpleListFilter):

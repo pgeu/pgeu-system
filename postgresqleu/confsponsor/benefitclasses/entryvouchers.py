@@ -5,7 +5,7 @@ import base64
 import os
 import cStringIO as StringIO
 
-from base import BaseBenefit, BaseBenefitForm
+from .base import BaseBenefit, BaseBenefitForm
 
 from postgresqleu.mailqueue.util import send_template_mail
 

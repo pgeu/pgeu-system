@@ -9,7 +9,7 @@ from postgresqleu.util.context_processors import settings_context
 
 from django.template.loader import get_template
 
-from models import QueuedMail
+from .models import QueuedMail
 
 
 def template_to_string(templatename, attrs={}):

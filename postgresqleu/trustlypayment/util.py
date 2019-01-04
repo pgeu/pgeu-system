@@ -8,9 +8,9 @@ from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 
-from api import TrustlyWrapper, TrustlyException
-from models import TrustlyTransaction, TrustlyLog
-from models import TrustlyNotification
+from .api import TrustlyWrapper, TrustlyException
+from .models import TrustlyTransaction, TrustlyLog
+from .models import TrustlyNotification
 
 
 # Django intgrated wrapper for the trustly API

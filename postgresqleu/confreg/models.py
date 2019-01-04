@@ -25,7 +25,7 @@ from postgresqleu.countries.models import Country
 from postgresqleu.invoices.models import Invoice, VatRate
 from postgresqleu.newsevents.models import NewsPosterProfile
 
-from regtypes import special_reg_types
+from .regtypes import special_reg_types
 
 SKILL_CHOICES = (
     (0, "Beginner"),

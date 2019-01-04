@@ -12,12 +12,12 @@ from reportlab.lib.styles import getSampleStyleSheet
 import csv
 import json
 
-from jinjapdf import render_jinja_badges
+from .jinjapdf import render_jinja_badges
 
 from postgresqleu.countries.models import Country
-from models import ConferenceRegistration, RegistrationType, ConferenceAdditionalOption, ShirtSize
-from models import STATUS_CHOICES
-from reportingforms import QueuePartitionForm
+from .models import ConferenceRegistration, RegistrationType, ConferenceAdditionalOption, ShirtSize
+from .models import STATUS_CHOICES
+from .reportingforms import QueuePartitionForm
 
 # Fields that are available in an advanced attendee report
 # (id, field title, default, field_user_for_order_by)

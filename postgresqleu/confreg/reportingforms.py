@@ -1,8 +1,8 @@
 from django import forms
 from django.http import Http404
 
-from models import Conference
-from reporting import reporttypes
+from .models import Conference
+from .reporting import reporttypes
 
 from postgresqleu.util.forms import GroupedModelMultipleChoiceField
 

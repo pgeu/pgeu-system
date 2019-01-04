@@ -1,9 +1,9 @@
 from django.conf import settings
 
 from postgresqleu.mailqueue.util import send_template_mail, send_simple_mail
-from models import ConferenceRegistration, BulkPayment, PendingAdditionalOrder
-from models import RegistrationWaitlistHistory, PrepaidVoucher
-from util import notify_reg_confirmed, expire_additional_options
+from .models import ConferenceRegistration, BulkPayment, PendingAdditionalOrder
+from .models import RegistrationWaitlistHistory, PrepaidVoucher
+from .util import notify_reg_confirmed, expire_additional_options
 
 from datetime import datetime
 

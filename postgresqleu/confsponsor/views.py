@@ -20,15 +20,15 @@ from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.invoices.util import InvoiceWrapper
 
-from models import Sponsor, SponsorshipLevel, SponsorshipBenefit
-from models import SponsorClaimedBenefit, SponsorMail, SponsorshipContract
-from models import PurchasedVoucher
-from forms import SponsorSignupForm, SponsorSendEmailForm, SponsorDetailsForm
-from forms import PurchaseVouchersForm, PurchaseDiscountForm
-from benefits import get_benefit_class
-from invoicehandler import create_sponsor_invoice, confirm_sponsor, get_sponsor_invoice_address
-from invoicehandler import create_voucher_invoice
-from vatutil import validate_eu_vat_number
+from .models import Sponsor, SponsorshipLevel, SponsorshipBenefit
+from .models import SponsorClaimedBenefit, SponsorMail, SponsorshipContract
+from .models import PurchasedVoucher
+from .forms import SponsorSignupForm, SponsorSendEmailForm, SponsorDetailsForm
+from .forms import PurchaseVouchersForm, PurchaseDiscountForm
+from .benefits import get_benefit_class
+from .invoicehandler import create_sponsor_invoice, confirm_sponsor, get_sponsor_invoice_address
+from .invoicehandler import create_voucher_invoice
+from .vatutil import validate_eu_vat_number
 
 
 @login_required

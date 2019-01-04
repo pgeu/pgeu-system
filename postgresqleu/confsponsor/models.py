@@ -11,7 +11,7 @@ from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.storage import delete_inline_storage, inlineencoded_upload_path
 from postgresqleu.util.validators import validate_lowercase
 
-from benefits import benefit_choices
+from .benefits import benefit_choices
 
 from django.db.models import FileField
 

@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
-from base import BaseBenefit, BaseBenefitForm
+from .base import BaseBenefit, BaseBenefitForm
 
 
 class RequireClaimingForm(BaseBenefitForm):

@@ -6,8 +6,8 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
 
-from models import Member, MemberLog, Meeting, MemberMeetingKey
-from forms import MemberForm, ProxyVoterForm
+from .models import Member, MemberLog, Meeting, MemberMeetingKey
+from .forms import MemberForm, ProxyVoterForm
 
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.random import generate_random_token

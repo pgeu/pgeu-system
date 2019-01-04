@@ -8,9 +8,9 @@ from datetime import datetime
 
 from postgresqleu.invoices.models import Invoice
 
-from util import Trustly, TrustlyException
-from models import TrustlyTransaction, TrustlyRawNotification, TrustlyLog
-from models import ReturnAuthorizationStatus
+from .util import Trustly, TrustlyException
+from .models import TrustlyTransaction, TrustlyRawNotification, TrustlyLog
+from .models import ReturnAuthorizationStatus
 
 
 @transaction.atomic

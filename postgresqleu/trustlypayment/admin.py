@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.urls import reverse
 
-from models import TrustlyTransaction, TrustlyRawNotification, TrustlyNotification, TrustlyLog
+from .models import TrustlyTransaction, TrustlyRawNotification, TrustlyNotification, TrustlyLog
 
 
 class TrustlyTransactionAdmin(admin.ModelAdmin):

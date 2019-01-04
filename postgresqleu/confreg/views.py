@@ -15,35 +15,35 @@ from django.db.models.expressions import F
 from django import forms
 from django.forms import ValidationError
 
-from models import Conference, ConferenceRegistration, ConferenceSession, ConferenceSeries
-from models import ConferenceSessionSlides, ConferenceSessionVote, GlobalOptOut
-from models import ConferenceSessionFeedback, Speaker, Speaker_Photo
-from models import ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
-from models import RegistrationType, PrepaidVoucher, PrepaidBatch, RefundPattern
-from models import BulkPayment, Room, Track, ConferenceSessionScheduleSlot
-from models import AttendeeMail, ConferenceAdditionalOption
-from models import PendingAdditionalOrder
-from models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
-from models import STATUS_CHOICES
-from models import ConferenceNews
-from forms import ConferenceRegistrationForm, RegistrationChangeForm, ConferenceSessionFeedbackForm
-from forms import ConferenceFeedbackForm, SpeakerProfileForm
-from forms import CallForPapersForm
-from forms import CallForPapersCopyForm, PrepaidCreateForm, BulkRegistrationForm
-from forms import EmailSendForm, EmailSessionForm, CrossConferenceMailForm
-from forms import AttendeeMailForm, WaitlistOfferForm, WaitlistSendmailForm, TransferRegForm
-from forms import NewMultiRegForm, MultiRegInvoiceForm
-from forms import SessionSlidesUrlForm, SessionSlidesFileForm
-from util import invoicerows_for_registration, notify_reg_confirmed, InvoicerowsException
-from util import get_invoice_autocancel, cancel_registration
-from util import attendee_cost_from_bulk_payment
+from .models import Conference, ConferenceRegistration, ConferenceSession, ConferenceSeries
+from .models import ConferenceSessionSlides, ConferenceSessionVote, GlobalOptOut
+from .models import ConferenceSessionFeedback, Speaker, Speaker_Photo
+from .models import ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
+from .models import RegistrationType, PrepaidVoucher, PrepaidBatch, RefundPattern
+from .models import BulkPayment, Room, Track, ConferenceSessionScheduleSlot
+from .models import AttendeeMail, ConferenceAdditionalOption
+from .models import PendingAdditionalOrder
+from .models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
+from .models import STATUS_CHOICES
+from .models import ConferenceNews
+from .forms import ConferenceRegistrationForm, RegistrationChangeForm, ConferenceSessionFeedbackForm
+from .forms import ConferenceFeedbackForm, SpeakerProfileForm
+from .forms import CallForPapersForm
+from .forms import CallForPapersCopyForm, PrepaidCreateForm, BulkRegistrationForm
+from .forms import EmailSendForm, EmailSessionForm, CrossConferenceMailForm
+from .forms import AttendeeMailForm, WaitlistOfferForm, WaitlistSendmailForm, TransferRegForm
+from .forms import NewMultiRegForm, MultiRegInvoiceForm
+from .forms import SessionSlidesUrlForm, SessionSlidesFileForm
+from .util import invoicerows_for_registration, notify_reg_confirmed, InvoicerowsException
+from .util import get_invoice_autocancel, cancel_registration
+from .util import attendee_cost_from_bulk_payment
 
-from models import get_status_string
-from regtypes import confirm_special_reg_type, validate_special_reg_type
-from jinjafunc import render_jinja_conference_response, JINJA_TEMPLATE_ROOT
-from jinjapdf import render_jinja_ticket
-from backendviews import get_authenticated_conference
-from backendforms import CancelRegistrationForm
+from .models import get_status_string
+from .regtypes import confirm_special_reg_type, validate_special_reg_type
+from .jinjafunc import render_jinja_conference_response, JINJA_TEMPLATE_ROOT
+from .jinjapdf import render_jinja_ticket
+from .backendviews import get_authenticated_conference
+from .backendforms import CancelRegistrationForm
 
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.random import generate_random_token
@@ -2555,7 +2555,7 @@ def reports(request, confname):
     conference = get_authenticated_conference(request, confname)
 
     # Include information for the advanced reports
-    from reports import attendee_report_fields, attendee_report_filters
+    from .reports import attendee_report_fields, attendee_report_filters
     return render(request, 'confreg/reports.html', {
         'conference': conference,
         'list': True,
@@ -2572,7 +2572,7 @@ def advanced_report(request, confname):
     if request.method != "POST":
         raise Http404()
 
-    from reports import build_attendee_report
+    from .reports import build_attendee_report
 
     return build_attendee_report(conference, request.POST)
 
@@ -2580,7 +2580,7 @@ def advanced_report(request, confname):
 def simple_report(request, confname):
     conference = get_authenticated_conference(request, confname)
 
-    from reports import simple_reports
+    from .reports import simple_reports
 
     if request.method == 'GET':
         rep = request.GET['report']

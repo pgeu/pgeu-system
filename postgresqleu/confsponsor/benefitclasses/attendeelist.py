@@ -6,7 +6,7 @@ import base64
 import cStringIO as StringIO
 import csv
 
-from base import BaseBenefit, BaseBenefitForm
+from .base import BaseBenefit, BaseBenefitForm
 
 from postgresqleu.confreg.models import ConferenceRegistration
 

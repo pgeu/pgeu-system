@@ -2,7 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.conf import settings
 
-from models import Member
+from .models import Member
 
 
 class MemberForm(forms.ModelForm):

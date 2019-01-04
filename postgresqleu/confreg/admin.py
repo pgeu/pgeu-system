@@ -9,17 +9,17 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.contrib.postgres.forms.ranges import RangeWidget
 
-from models import ConferenceSeries, Conference, ConferenceRegistration
-from models import RegistrationType, Speaker
-from models import ConferenceSession, Track, Room, ConferenceSessionScheduleSlot
-from models import RegistrationClass, RegistrationDay, AttendeeMail
-from models import ShirtSize, ConferenceAdditionalOption
-from models import ConferenceFeedbackQuestion, Speaker_Photo
-from models import PrepaidVoucher, PrepaidBatch, BulkPayment, DiscountCode
-from models import PendingAdditionalOrder
-from models import VolunteerSlot
-from models import AccessToken
-from models import ConferenceNews
+from .models import ConferenceSeries, Conference, ConferenceRegistration
+from .models import RegistrationType, Speaker
+from .models import ConferenceSession, Track, Room, ConferenceSessionScheduleSlot
+from .models import RegistrationClass, RegistrationDay, AttendeeMail
+from .models import ShirtSize, ConferenceAdditionalOption
+from .models import ConferenceFeedbackQuestion, Speaker_Photo
+from .models import PrepaidVoucher, PrepaidBatch, BulkPayment, DiscountCode
+from .models import PendingAdditionalOrder
+from .models import VolunteerSlot
+from .models import AccessToken
+from .models import ConferenceNews
 
 from selectable.forms.widgets import AutoCompleteSelectWidget, AutoCompleteSelectMultipleWidget
 from postgresqleu.accountinfo.lookups import UserLookup
@@ -27,7 +27,7 @@ from postgresqleu.confreg.lookups import RegistrationLookup
 from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
-from util import notify_reg_confirmed
+from .util import notify_reg_confirmed
 
 from postgresqleu.confreg.dbimage import InlinePhotoWidget
 from postgresqleu.accounting.models import Object

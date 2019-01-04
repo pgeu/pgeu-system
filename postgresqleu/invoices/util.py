@@ -1,6 +1,6 @@
-from models import Invoice, InvoiceRow, InvoiceHistory, InvoiceLog
-from models import InvoiceRefund
-from models import InvoicePaymentMethod, PaymentMethodWrapper
+from .models import Invoice, InvoiceRow, InvoiceHistory, InvoiceLog
+from .models import InvoiceRefund
+from .models import InvoicePaymentMethod, PaymentMethodWrapper
 from django.conf import settings
 
 from collections import defaultdict

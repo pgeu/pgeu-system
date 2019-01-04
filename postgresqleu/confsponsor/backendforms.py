@@ -8,11 +8,11 @@ from postgresqleu.util.backendforms import BackendForm
 from postgresqleu.util.backendlookups import GeneralAccountLookup
 from postgresqleu.confreg.jinjafunc import JinjaTemplateValidator, render_sandboxed_template
 
-from models import Sponsor
-from models import SponsorshipLevel, SponsorshipContract, SponsorshipBenefit
+from .models import Sponsor
+from .models import SponsorshipLevel, SponsorshipContract, SponsorshipBenefit
 
-from benefits import get_benefit_class
-from benefitclasses import all_benefits
+from .benefits import get_benefit_class
+from .benefitclasses import all_benefits
 
 import json
 

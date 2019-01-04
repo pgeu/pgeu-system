@@ -6,8 +6,8 @@ from postgresqleu.accountinfo.lookups import UserLookup
 from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
-from models import Invoice, InvoiceLog, InvoiceProcessor, InvoicePaymentMethod
-from models import InvoiceRefund, VatRate
+from .models import Invoice, InvoiceLog, InvoiceProcessor, InvoicePaymentMethod
+from .models import InvoiceRefund, VatRate
 
 
 class InvoiceAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):

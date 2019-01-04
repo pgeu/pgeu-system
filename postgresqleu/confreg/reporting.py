@@ -24,7 +24,7 @@ def timereport(request):
     if not (request.user.is_superuser or ConferenceSeries.objects.filter(administrators=request.user).exists()):
         return HttpResponseForbidden()
 
-    from reportingforms import TimeReportForm
+    from .reportingforms import TimeReportForm
     if request.method == 'POST':
         form = TimeReportForm(request.user, data=request.POST)
         if form.is_valid():

@@ -7,7 +7,7 @@ import markdown
 import urllib2
 from urllib import urlencode
 
-from models import Conference
+from .models import Conference
 
 from datetime import datetime
 

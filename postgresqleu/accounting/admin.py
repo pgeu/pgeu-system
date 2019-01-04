@@ -2,8 +2,8 @@ from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.forms.models import BaseInlineFormSet
 
-from models import AccountClass, AccountGroup, Account, IncomingBalance
-from models import JournalEntry, JournalItem, JournalUrl, Object, Year
+from .models import AccountClass, AccountGroup, Account, IncomingBalance
+from .models import JournalEntry, JournalItem, JournalUrl, Object, Year
 
 
 class AccountClassAdmin(admin.ModelAdmin):

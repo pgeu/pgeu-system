@@ -4,7 +4,7 @@ from django.template.defaultfilters import slugify
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 
-from models import News, NewsPosterProfile
+from .models import News, NewsPosterProfile
 
 import datetime
 

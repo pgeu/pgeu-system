@@ -17,30 +17,30 @@ from postgresqleu.util.backendviews import backend_list_editor, backend_process_
 from postgresqleu.confreg.util import get_authenticated_conference
 from postgresqleu.mailqueue.util import send_mail, send_simple_mail
 
-from jinjafunc import JINJA_TEMPLATE_ROOT
-from jinjapdf import render_jinja_ticket
+from .jinjafunc import JINJA_TEMPLATE_ROOT
+from .jinjapdf import render_jinja_ticket
 
-from models import Conference, ConferenceSeries
-from models import ConferenceRegistration, Speaker
-from models import AccessToken
-from models import ShirtSize
+from .models import Conference, ConferenceSeries
+from .models import ConferenceRegistration, Speaker
+from .models import AccessToken
+from .models import ShirtSize
 
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.confsponsor.util import get_sponsor_dashboard_data
 
-from backendforms import BackendConferenceForm, BackendSuperConferenceForm, BackendRegistrationForm
-from backendforms import BackendRegistrationTypeForm, BackendRegistrationClassForm
-from backendforms import BackendRegistrationDayForm, BackendAdditionalOptionForm
-from backendforms import BackendTrackForm, BackendRoomForm, BackendConferenceSessionForm
-from backendforms import BackendConferenceSessionSlotForm, BackendVolunteerSlotForm
-from backendforms import BackendFeedbackQuestionForm, BackendDiscountCodeForm
-from backendforms import BackendAccessTokenForm
-from backendforms import BackendConferenceSeriesForm
-from backendforms import BackendTshirtSizeForm
-from backendforms import BackendNewsForm
-from backendforms import TwitterForm, TwitterTestForm
-from backendforms import BackendSendEmailForm
-from backendforms import BackendRefundPatternForm
+from .backendforms import BackendConferenceForm, BackendSuperConferenceForm, BackendRegistrationForm
+from .backendforms import BackendRegistrationTypeForm, BackendRegistrationClassForm
+from .backendforms import BackendRegistrationDayForm, BackendAdditionalOptionForm
+from .backendforms import BackendTrackForm, BackendRoomForm, BackendConferenceSessionForm
+from .backendforms import BackendConferenceSessionSlotForm, BackendVolunteerSlotForm
+from .backendforms import BackendFeedbackQuestionForm, BackendDiscountCodeForm
+from .backendforms import BackendAccessTokenForm
+from .backendforms import BackendConferenceSeriesForm
+from .backendforms import BackendTshirtSizeForm
+from .backendforms import BackendNewsForm
+from .backendforms import TwitterForm, TwitterTestForm
+from .backendforms import BackendSendEmailForm
+from .backendforms import BackendRefundPatternForm
 
 
 #######################

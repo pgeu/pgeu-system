@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.forms import ValidationError, ModelForm
 
-from models import Vote, Election, Candidate
+from .models import Vote, Election, Candidate
 
 
 class VoteAdminForm(ModelForm):

@@ -8,8 +8,8 @@ from django.conf import settings
 
 from decimal import Decimal
 
-from models import JournalEntry, JournalItem, JournalUrl
-from models import Object, Account, Year
+from .models import JournalEntry, JournalItem, JournalUrl
+from .models import Object, Account, Year
 
 
 class AccountingException(Exception):

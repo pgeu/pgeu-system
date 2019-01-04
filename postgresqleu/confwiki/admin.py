@@ -6,8 +6,8 @@ from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
 from postgresqleu.confreg.models import Conference, ConferenceRegistration, RegistrationType
-from models import Wikipage, WikipageHistory, WikipageSubscriber
-from models import AttendeeSignup
+from .models import Wikipage, WikipageHistory, WikipageSubscriber
+from .models import AttendeeSignup
 
 
 class WikipageAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):

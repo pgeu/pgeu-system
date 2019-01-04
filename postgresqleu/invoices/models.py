@@ -6,7 +6,7 @@ from django.conf import settings
 from datetime import datetime
 from decimal import Decimal
 
-from payment import PaymentMethodWrapper
+from .payment import PaymentMethodWrapper
 
 from postgresqleu.util.validators import ListOfEmailAddressValidator
 from postgresqleu.accounting.models import Account

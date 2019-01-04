@@ -10,10 +10,10 @@ from postgresqleu.accountinfo.lookups import UserLookup
 from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
-from models import SponsorshipContract, SponsorshipLevel, Sponsor
-from models import SponsorshipBenefit, SponsorClaimedBenefit
+from .models import SponsorshipContract, SponsorshipLevel, Sponsor
+from .models import SponsorshipBenefit, SponsorClaimedBenefit
 
-from benefits import get_benefit_class
+from .benefits import get_benefit_class
 
 
 class SponsorshipBenefitInlineFormset(BaseInlineFormSet):

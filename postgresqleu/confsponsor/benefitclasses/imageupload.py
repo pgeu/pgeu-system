@@ -5,7 +5,7 @@ from PIL import ImageFile
 
 from postgresqleu.util.storage import InlineEncodedStorage
 
-from base import BaseBenefit, BaseBenefitForm
+from .base import BaseBenefit, BaseBenefitForm
 
 
 class ImageUploadForm(BaseBenefitForm):

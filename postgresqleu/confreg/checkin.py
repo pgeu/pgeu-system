@@ -11,8 +11,8 @@ from django.conf import settings
 from postgresqleu.util.db import exec_to_list, exec_to_dict
 from postgresqleu.mailqueue.util import send_template_mail
 
-from models import Conference, ConferenceRegistration
-from views import render_conference_response
+from .models import Conference, ConferenceRegistration
+from .views import render_conference_response
 
 import datetime
 import json

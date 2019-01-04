@@ -1,5 +1,5 @@
 from django.contrib import admin
-from models import SourceAccount, TransactionInfo, ErrorLog
+from .models import SourceAccount, TransactionInfo, ErrorLog
 
 
 class TransactionInfoAdmin(admin.ModelAdmin):

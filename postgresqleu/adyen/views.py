@@ -13,8 +13,8 @@ from postgresqleu.util.payment.adyen import AdyenBanktransfer
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.util import InvoiceManager
 
-from models import RawNotification, AdyenLog, ReturnAuthorizationStatus
-from util import process_raw_adyen_notification
+from .models import RawNotification, AdyenLog, ReturnAuthorizationStatus
+from .util import process_raw_adyen_notification
 
 
 @transaction.atomic

@@ -9,13 +9,13 @@ from django.template import loader
 
 from django.db.models.fields.files import ImageFieldFile
 
-from models import Conference
-from models import ConferenceRegistration, RegistrationType, Speaker
-from models import ConferenceAdditionalOption, Track, RegistrationClass
-from models import ConferenceSession, ConferenceSessionFeedback
-from models import PrepaidVoucher, DiscountCode, AttendeeMail
+from .models import Conference
+from .models import ConferenceRegistration, RegistrationType, Speaker
+from .models import ConferenceAdditionalOption, Track, RegistrationClass
+from .models import ConferenceSession, ConferenceSessionFeedback
+from .models import PrepaidVoucher, DiscountCode, AttendeeMail
 
-from regtypes import validate_special_reg_type
+from .regtypes import validate_special_reg_type
 from postgresqleu.util.magic import magicdb
 
 from postgresqleu.countries.models import Country

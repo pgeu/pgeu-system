@@ -19,12 +19,12 @@ from postgresqleu.confreg.util import get_authenticated_conference
 
 from postgresqleu.util.db import exec_to_scalar, exec_to_list
 
-from models import Wikipage, WikipageHistory, WikipageSubscriber
-from forms import WikipageEditForm, WikipageAdminEditForm
+from .models import Wikipage, WikipageHistory, WikipageSubscriber
+from .forms import WikipageEditForm, WikipageAdminEditForm
 
-from models import Signup, AttendeeSignup
-from forms import SignupSubmitForm, SignupAdminEditForm, SignupSendmailForm
-from forms import SignupAdminEditSignupForm
+from .models import Signup, AttendeeSignup
+from .forms import SignupSubmitForm, SignupAdminEditForm, SignupSendmailForm
+from .forms import SignupAdminEditSignupForm
 
 
 def _check_wiki_permissions(page, reg, readwrite=False):

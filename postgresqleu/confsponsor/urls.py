@@ -1,7 +1,7 @@
 from django.conf.urls import url
 
-import views
-import backendviews
+from . import views
+from . import backendviews
 
 # All urls already start with /events/sponsor/
 urlpatterns = [

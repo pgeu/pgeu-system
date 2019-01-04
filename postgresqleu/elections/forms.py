@@ -2,7 +2,7 @@ from django import forms
 from django.forms.utils import ErrorList
 from django.db import transaction
 
-from models import Vote
+from .models import Vote
 from postgresqleu.membership.models import MemberLog
 
 from datetime import datetime

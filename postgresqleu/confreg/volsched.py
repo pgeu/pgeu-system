@@ -8,9 +8,9 @@ from django.conf.urls import url
 
 from datetime import datetime
 
-from views import render_conference_response
-from models import Conference, ConferenceRegistration
-from models import VolunteerSlot, VolunteerAssignment
+from .views import render_conference_response
+from .models import Conference, ConferenceRegistration
+from .models import VolunteerSlot, VolunteerAssignment
 
 
 def _check_admin(request, conference):

@@ -7,7 +7,7 @@ import os
 from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 from postgresqleu.invoices.util import InvoiceManager
 
-from models import Sponsor, PurchasedVoucher
+from .models import Sponsor, PurchasedVoucher
 from postgresqleu.confreg.models import PrepaidBatch, PrepaidVoucher
 import postgresqleu.invoices.models as invoicemodels
 

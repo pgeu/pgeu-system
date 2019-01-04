@@ -10,7 +10,7 @@ from decimal import Decimal
 from postgresqleu.accountinfo.lookups import UserLookup
 from postgresqleu.util.widgets import HtmlDateInput
 
-from models import Invoice, InvoiceRow, InvoicePaymentMethod
+from .models import Invoice, InvoiceRow, InvoicePaymentMethod
 from postgresqleu.accounting.models import Account, Object
 from postgresqleu.invoices.models import VatRate
 

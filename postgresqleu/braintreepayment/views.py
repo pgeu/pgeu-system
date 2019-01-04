@@ -12,8 +12,8 @@ from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.mailqueue.util import send_simple_mail
 
-from models import BraintreeTransaction, BraintreeLog
-from util import initialize_braintree
+from .models import BraintreeTransaction, BraintreeLog
+from .util import initialize_braintree
 
 
 class BraintreeProcessingException(Exception):

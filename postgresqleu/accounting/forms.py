@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.forms.models import BaseInlineFormSet
 
 
-from models import JournalEntry, JournalItem, Object, JournalUrl
+from .models import JournalEntry, JournalItem, Object, JournalUrl
 
 
 class JournalEntryForm(forms.ModelForm):

@@ -1,4 +1,4 @@
-from benefitclasses import all_benefits
+from .benefitclasses import all_benefits
 
 benefit_choices = [(k, v['name']) for k, v in all_benefits.items()]
 

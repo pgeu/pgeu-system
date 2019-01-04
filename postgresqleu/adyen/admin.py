@@ -2,8 +2,8 @@ from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.urls import reverse
 
-from models import RawNotification, Notification
-from models import Report, TransactionStatus, AdyenLog, Refund
+from .models import RawNotification, Notification
+from .models import Report, TransactionStatus, AdyenLog, Refund
 
 
 class RawNotificationAdmin(admin.ModelAdmin):

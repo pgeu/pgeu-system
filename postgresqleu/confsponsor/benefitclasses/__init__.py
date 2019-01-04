@@ -1,8 +1,8 @@
-import imageupload
-import requireclaiming
-import entryvouchers
-import providetext
-import attendeelist
+from . import imageupload
+from . import requireclaiming
+from . import entryvouchers
+from . import providetext
+from . import attendeelist
 
 
 def _make_benefit(n, c):

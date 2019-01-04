@@ -12,7 +12,7 @@ from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.accounting.util import create_accounting_entry
 
-from models import TransactionInfo, ErrorLog, SourceAccount
+from .models import TransactionInfo, ErrorLog, SourceAccount
 
 
 @transaction.atomic

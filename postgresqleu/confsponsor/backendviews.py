@@ -1,10 +1,10 @@
 from postgresqleu.util.backendviews import backend_list_editor, backend_process_form
 from postgresqleu.confreg.util import get_authenticated_conference
 
-from models import Sponsor
-from backendforms import BackendSponsorForm
-from backendforms import BackendSponsorshipLevelForm
-from backendforms import BackendSponsorshipContractForm
+from .models import Sponsor
+from .backendforms import BackendSponsorForm
+from .backendforms import BackendSponsorshipLevelForm
+from .backendforms import BackendSponsorshipContractForm
 
 
 def edit_sponsor(request, urlname, sponsorid):
