@@ -144,7 +144,7 @@ class BackendRegistrationForm(BackendForm):
     fieldsets = [
         {'id': 'personal_info', 'legend': 'Personal information', 'fields': ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'twittername', 'nick']},
         {'id': 'reg_info', 'legend': 'Registration information', 'fields': ['regtype', 'additionaloptions', 'shareemail']},
-        {'id': 'attendee_specifics', 'legend': 'Attendee specifics', 'fields': ['shirtsize', 'dietary']},
+        {'id': 'attendee_specifics', 'legend': 'Attendee specifics', 'fields': ['shirtsize', 'dietary', 'shareemail']},
     ]
 
     class Meta:
@@ -160,7 +160,7 @@ class BackendRegistrationForm(BackendForm):
         self.fields['additionaloptions'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference)
         self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=self.conference)
         if not self.conference.askfood:
-            self.remove_field('askfood')
+            self.remove_field('dietary')
         if not self.conference.asktshirt:
             self.remove_field('shirtsize')
         if not self.conference.askshareemail:
