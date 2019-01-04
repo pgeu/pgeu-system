@@ -30,6 +30,7 @@ import json
 import socket
 import urlparse
 import urllib
+import requests
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA
 from Crypto import Random
@@ -191,12 +192,13 @@ def user_search(searchterm=None, userid=None):
     else:
         q = {'s': searchterm}
 
-    u = urllib.urlopen('%ssearch/?%s' % (
-        settings.PGAUTH_REDIRECT,
-        urllib.urlencode(q),
-        ))
-    (ivs, datas) = u.read().split('&')
-    u.close()
+    r = requests.get('{0}search/'.format(settings.PGAUTH_REDIRECT),
+                     params=q,
+    )
+    if r.status_code != 200:
+        return []
+
+    (ivs, datas) = r.text.encode('utf8').split('&')
 
     # Decryption time
     decryptor = AES.new(base64.b64decode(settings.PGAUTH_KEY),

@@ -5,7 +5,6 @@ from django.conf import settings
 
 from datetime import datetime, date
 from decimal import Decimal
-import urllib2
 from urllib import urlencode, unquote_plus
 
 from postgresqleu.invoices.util import InvoiceManager
@@ -62,9 +61,10 @@ def paypal_return_handler(request):
             'tx': tx,
             'at': settings.PAYPAL_PDT_TOKEN,
             }
-        u = urllib2.urlopen(settings.PAYPAL_BASEURL, urlencode(params))
-        r = u.read()
-        u.close()
+        resp = requests.post(settings.PAYPAL_BASEURL, data=params).decode('utf8')
+        if resp.status_code != 200:
+            raise Exception("status code {0}".format(resp.status_code))
+        r = resp.text
     except Exception as ex:
         # Failed to talk to paypal somehow. It should be ok to retry.
         return paypal_error('Failed to verify status with paypal: %s' % ex)

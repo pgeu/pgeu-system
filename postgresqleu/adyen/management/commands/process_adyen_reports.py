@@ -9,8 +9,9 @@ from django.conf import settings
 
 import re
 import csv
-import urllib2
 import StringIO
+import requests
+from requests.auth import HTTPBasicAuth
 from base64 import standard_b64encode
 from datetime import datetime, date
 from decimal import Decimal
@@ -43,18 +44,15 @@ class Command(BaseCommand):
                 with transaction.atomic():
                     if self.verbose:
                         self.stdout.write("Downloading {0}".format(report.url))
-                    req = urllib2.Request(report.url)
-                    req.add_header('Authorization', 'Basic %s' % (
-                        standard_b64encode('%s:%s' % (settings.ADYEN_REPORT_USER, settings.ADYEN_REPORT_PASSWORD)),
-                        ))
-                    u = urllib2.urlopen(req)
-                    resp = u.read()
-                    u.close()
-                    if len(resp) == 0:
+                    resp = requests.get(report.url,
+                                        auth=HTTPBasicAuth(settings.ADYEN_REPORT_USER, settings.ADYEN_REPORT_PASSWORD))
+                    if resp.status_code != 200:
+                        self.stderr.write("Downloaded report {0} and got status code {1}. Not storing, will try again.".format(report.url, resp.status_code))
+                    elif len(resp.text) == 0:
                         self.stderr.write("Downloaded report {0} and got zero bytes (no header). Not storing, will try again.".format(report.url))
                     else:
                         report.downloadedat = datetime.now()
-                        report.contents = resp
+                        report.contents = resp.text
                         report.save()
                         AdyenLog(message='Downloaded report {0}'.format(report.url), error=False).save()
             except Exception as ex:

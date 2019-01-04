@@ -5,8 +5,8 @@ from django.db import transaction
 from datetime import datetime, date
 from decimal import Decimal
 
-import json
-import urllib2
+import requests
+from requests.auth import HTTPBasicAuth
 from base64 import standard_b64encode
 
 from postgresqleu.mailqueue.util import send_simple_mail
@@ -409,19 +409,14 @@ class AdyenAPI(object):
                 e))
 
     def _api_call(self, apiurl, apiparam, okresponse):
-        apijson = json.dumps(apiparam)
+        resp = requests.post("{0}{1}".format(settings.ADYEN_APIBASEURL, apiurl),
+                             auth=HTTPBasicAuth(settings.ADYEN_WS_USER, settings.ADYEN_WS_PASSWORD),
+                             json=apiparam,
+        )
+        if resp.status_code != 200:
+            raise Exception("http response code {0}".format(resp.status_code))
 
-        req = urllib2.Request("{0}{1}".format(settings.ADYEN_APIBASEURL, apiurl))
-
-        req.add_header('Authorization', 'Basic {0}'.format(
-            standard_b64encode('{0}:{1}'.format(settings.ADYEN_WS_USER, settings.ADYEN_WS_PASSWORD))))
-        req.add_header('Content-type', 'application/json')
-        u = urllib2.urlopen(req, apijson)
-        resp = u.read()
-        if u.getcode() != 200:
-            raise Exception("http response code {0}".format(u.getcode()))
-        u.close()
-        r = json.loads(resp)
+        r = resp.json()
 
         if r['response'] != okresponse:
             raise Exception("response returned: {0}".format(r['response']))

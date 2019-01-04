@@ -6,7 +6,7 @@ from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA
 from Crypto.PublicKey import RSA
 import base64
-import urllib2
+import requests
 
 
 class TrustlyException(Exception):
@@ -102,16 +102,11 @@ class TrustlyWrapper(object):
             'params': params,
             'version': '1.1',
         }
-        apijson = json.dumps(p)
 
-        req = urllib2.Request(self.apibase)
-        req.add_header('Content-type', 'application/json')
-        u = urllib2.urlopen(req, apijson)
-        resp = u.read()
-        if u.getcode() != 200:
-            raise TrustlyException("bad http response code {0}".format(u.getcode()))
-        u.close()
-        r = json.loads(resp)
+        resp = requests.post(self.apibase, json=p)
+        if resp.status_code != 200:
+            raise TrustlyException("bad http response code {0}".format(resp.status_code))
+        r = resp.json()
         if 'error' in r:
             # XXX log and raise generic exception!
             raise TrustlyException(r['error']['message'])

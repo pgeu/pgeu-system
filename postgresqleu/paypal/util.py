@@ -1,7 +1,6 @@
 from django.conf import settings
 
-import urllib2
-from urllib import urlencode
+import requests
 from urlparse import parse_qs
 from decimal import Decimal
 import itertools
@@ -23,8 +22,12 @@ class PaypalAPI(object):
     def _api_call(self, command, params):
         params.update(self.accessparam)
         params['METHOD'] = command
-        resp = urllib2.urlopen(self.API_ENDPOINT, urlencode(params)).read()
-        q = parse_qs(resp)
+
+        resp = requests.post(self.API_ENDPOINT, data=params)
+        if resp.status_code != 200:
+            raise Exception("API error from paypal, status {0}".format(resp.status_code))
+
+        q = parse_qs(resp.text)
         if q['ACK'][0] != 'Success':
             raise Exception("API error from paypal: {0}/{1}".format(q['L_SHORTMESSAGE0'][0], q['L_LONGMESSAGE0'][0]))
         return q
