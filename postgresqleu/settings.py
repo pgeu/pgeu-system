@@ -152,6 +152,7 @@ PAYPAL_REPORT_RECEIVER = DEFAULT_EMAIL
 PAYPAL_DONATION_TEXT = "Paypal Donation"
 
 # Adyen configuration
+ADYEN_IS_TEST_SYSTEM = True
 ADYEN_BASEURL = 'https://test.adyen.com/'
 ADYEN_CABASEURL = 'https://test-ca.adyen.com/'
 ADYEN_APIBASEURL = 'https://pal-test.adyen.com/'

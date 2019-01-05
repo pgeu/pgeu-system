@@ -261,14 +261,23 @@ def process_new_report(notification):
 
 def process_one_notification(notification):
     # Now do notification specific processing
-    if not notification.live:
-        # This one is in the test system only! So we just send
-        # an email, because we're lazy
+    if (not notification.live) and (not settings.ADYEN_IS_TEST_SYSTEM):
+        # Notification is for test environment, but system is configured as live!
         send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                          settings.ADYEN_NOTIFICATION_RECEIVER,
-                         'Received adyen notification type %s from the test system!' % notification.eventCode,
-                         "An Adyen notification with live set to false has been received.\nYou probably want to check that out manually - it's in the database, but has received no further processing.\n",
-                         AdyenLog(pspReference=notification.pspReference, message='Received notification of type %s from the test system!' % notification.eventCode, error=True).save()
+                         'Received adyen notification type %s from the test environment!' % notification.eventCode,
+                         "An Adyen notification with live set to false has been received,\nbut this system is configured as LIVE.\nYou probably want to check that out manually - it's in the database, but has received no further processing.\n",
+                         AdyenLog(pspReference=notification.pspReference, message='Received notification of type %s from the test environment!' % notification.eventCode, error=True).save()
+        )
+        notification.confirmed = True
+        notification.save()
+    elif notification.live and settings.ADYEN_IS_TEST_SYSTEM:
+        # Notification is for live environment, but system is configured as test!
+        send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+                         settings.ADYEN_NOTIFICATION_RECEIVER,
+                         'Received adyen notification type %s from the test environment!' % notification.eventCode,
+                         "An Adyen notification with live set to true has been received,\nbut this system is \nbut this system is configured as TEST.\nYou probably want to check that out manually - it's in the database, but has received no further processing.\n",
+                         AdyenLog(pspReference=notification.pspReference, message='Received notification of type %s from the live environment!' % notification.eventCode, error=True).save()
         )
         notification.confirmed = True
         notification.save()
