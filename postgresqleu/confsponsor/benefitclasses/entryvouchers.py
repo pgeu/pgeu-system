@@ -59,7 +59,7 @@ class EntryVouchers(BaseBenefit):
             vouchers = []
             for n in range(0, int(form.cleaned_data['vouchercount'])):
                 v = PrepaidVoucher(conference=self.level.conference,
-                                   vouchervalue=base64.b64encode(os.urandom(37)).rstrip('='),
+                                   vouchervalue=base64.b64encode(os.urandom(37)).rstrip(b'=').decode('utf8'),
                                    batch=batch)
                 v.save()
                 vouchers.append(v)

@@ -1,5 +1,5 @@
 import base64
-import io as StringIO
+import io
 from django.core.files.storage import Storage
 from django.core.files import File
 from django.db import connection
@@ -18,7 +18,7 @@ class InlineEncodedStorage(Storage):
         rows = curs.fetchall()
         if len(rows) != 1:
             return None
-        return File(StringIO.StringIO(base64.b64decode(rows[0][0])))
+        return File(io.BytesIO(base64.b64decode(rows[0][0])))
 
     def _save(self, name, content):
         content.seek(0)
@@ -26,7 +26,7 @@ class InlineEncodedStorage(Storage):
         params = {
             'key': self.key,
             'id': name,
-            'data': base64.b64encode(content.read()),
+            'data': base64.b64encode(content.read()).decode('utf8'),
             }
         curs.execute("UPDATE util_storage SET data=%(data)s WHERE key=%(key)s AND storageid=%(id)s", params)
         if curs.rowcount == 0:

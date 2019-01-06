@@ -29,14 +29,14 @@ def calculate_signature(param):
         del param['merchantSig']
     str = ':'.join(map(_escapeVal, list(param.keys()) + list(param.values())))
     hm = hmac.new(binascii.a2b_hex(settings.ADYEN_SIGNKEY),
-                  str,
+                  str.encode('utf8'),
                   hashlib.sha256)
-    return base64.b64encode(hm.digest())
+    return base64.b64encode(hm.digest()).decode('utf8')
 
 
 def _gzip_string(str):
     # Compress a string using gzip including header data
-    s = io.StringIO()
+    s = io.BytesIO()
     g = gzip.GzipFile(fileobj=s, mode='w')
     g.write(str)
     g.close()
@@ -57,7 +57,7 @@ class _AdyenBase(object):
         param.update({
             'merchantReference': '%s%s' % (settings.ADYEN_MERCHANTREF_PREFIX, invoiceid),
             'paymentAmount': '%s' % (int(invoiceamount * Decimal(100.0)),),
-            'orderData': base64.encodestring(_gzip_string(orderdata.encode('utf-8'))).strip().replace("\n", ''),
+            'orderData': base64.encodestring(_gzip_string(orderdata.encode('utf-8'))).strip().replace(b"\n", b'').decode('utf8'),
             'merchantReturnData': '%s%s' % (settings.ADYEN_MERCHANTREF_PREFIX, invoiceid),
             'sessionValidity': (datetime.utcnow() + timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%M:%SZ'),
             'allowedMethods': allowedMethods,

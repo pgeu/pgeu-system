@@ -110,12 +110,12 @@ def adyen_notify_handler(request):
         raise Exception('Adyen notification received with invalid length authentication')
     if auth[0].lower() != 'basic':
         raise Exception('Adyen notification received with invalid authentication type')
-    user, pwd = base64.b64decode(auth[1]).split(':')
+    user, pwd = base64.b64decode(auth[1]).decode('utf8').split(':')
     if user != settings.ADYEN_NOTIFY_USER or pwd != settings.ADYEN_NOTIFY_PASSWORD:
         return HttpResponseForbidden('Invalid username or password')
 
     # Ok, we have authentication. All our data is now available in
-    # request.POST
+    # request.POST and request.body
 
     # Store the raw notification at this point, so we have it around in
     # case something breaks in a way we couldn't handle

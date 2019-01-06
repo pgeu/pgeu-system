@@ -197,7 +197,7 @@ class VoucherInvoiceProcessor(object):
 
         for n in range(0, pv.num):
             v = PrepaidVoucher(conference=pv.sponsor.conference,
-                               vouchervalue=base64.b64encode(os.urandom(37)).rstrip('='),
+                               vouchervalue=base64.b64encode(os.urandom(37)).rstrip(b'=').decode('utf8'),
                                batch=batch)
             v.save()
 

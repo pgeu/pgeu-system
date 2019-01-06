@@ -188,7 +188,7 @@ def _meeting(request, member, meeting, isproxy):
     (key, created) = MemberMeetingKey.objects.get_or_create(member=member, meeting=meeting)
     if created:
         # New key!
-        key.key = base64.urlsafe_b64encode(os.urandom(40)).rstrip('=')
+        key.key = base64.urlsafe_b64encode(os.urandom(40)).rstrip(b'=').decode('utf8')
         key.save()
 
     if key.proxyname and not isproxy:
@@ -249,7 +249,7 @@ def meeting_proxy(request, meetingid):
             if form.cleaned_data['name']:
                 key.proxyname = form.cleaned_data['name']
                 key.proxyaccesskey = generate_random_token()
-                key.key = base64.urlsafe_b64encode(os.urandom(40)).rstrip('=')
+                key.key = base64.urlsafe_b64encode(os.urandom(40)).rstrip(b'=').decode('utf8')
                 key.save()
                 MemberLog(member=member,
                           timestamp=datetime.now(),

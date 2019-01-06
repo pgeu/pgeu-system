@@ -1974,7 +1974,7 @@ def createvouchers(request, confname):
 
             for n in range(0, regcount):
                 v = PrepaidVoucher(conference=conference,
-                                   vouchervalue=base64.b64encode(os.urandom(37)).rstrip('='),
+                                   vouchervalue=base64.b64encode(os.urandom(37)).rstrip(b'=').decode('utf8'),
                                    batch=batch)
                 v.save()
 

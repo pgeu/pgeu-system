@@ -28,7 +28,7 @@ class SpeakerImageStorage(Storage):
         curs = connection.cursor()
         params = {
             'id': name,
-            'photo': base64.b64encode(content.read()),
+            'photo': base64.b64encode(content.read()).decode('utf8'),
         }
         curs.execute("UPDATE confreg_speaker_photo SET photo=%(photo)s WHERE id=%(id)s", params)
         if curs.rowcount == 0:

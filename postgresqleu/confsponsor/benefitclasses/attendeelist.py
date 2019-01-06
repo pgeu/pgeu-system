@@ -56,7 +56,7 @@ class AttendeeList(BaseBenefit):
 
                 ret = StringIO.StringIO()
                 ret.write("<p>This benefit lets you download a list of users who have explicitly opted in to having their information shared. You can download the list by clicking <a href=\"data:text/plain;charset=utf8;base64,")
-                ret.write(base64.b64encode(data.getvalue()))
+                ret.write(base64.b64encode(data.getvalue()).decode('utf8'))
                 ret.write("\">here</a>. Please be careful with how you handle this personal data!</p>")
                 return ret.getvalue()
             else:
