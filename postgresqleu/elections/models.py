@@ -10,7 +10,7 @@ class Election(models.Model):
     isopen = models.BooleanField(null=False, default=False, verbose_name='Voting open')
     resultspublic = models.BooleanField(null=False, default=False, verbose_name='Results public')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     class Meta:
@@ -23,7 +23,7 @@ class Candidate(models.Model):
     email = models.EmailField(max_length=200, null=False, blank=False)
     presentation = models.TextField(null=False, blank=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s (%s)" % (self.name, self.election)
 
 

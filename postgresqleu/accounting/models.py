@@ -19,7 +19,7 @@ class AccountClass(models.Model):
     inbalance = models.BooleanField(null=False, blank=False, default=False)
     balancenegative = models.BooleanField(null=False, blank=False, default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     class Meta:
@@ -32,7 +32,7 @@ class AccountGroup(models.Model):
     accountclass = models.ForeignKey(AccountClass, blank=False, default=False, on_delete=models.CASCADE)
     foldable = models.BooleanField(null=False, blank=False, default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     class Meta:
@@ -46,7 +46,7 @@ class Account(models.Model):
     availableforinvoicing = models.BooleanField(null=False, blank=False, default=False)
     objectrequirement = models.IntegerField(null=False, default=0, choices=ACCOUNT_OBJECT_CHOICES, verbose_name="Object requirements")
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s - %s" % (self.num, self.name)
 
     class Meta:
@@ -57,7 +57,7 @@ class Year(models.Model):
     year = models.IntegerField(primary_key=True)
     isopen = models.BooleanField(null=False, blank=False)
 
-    def __unicode__(self):
+    def __str__(self):
         if self.isopen:
             return "%s *" % self.year
         return "%s" % self.year
@@ -71,7 +71,7 @@ class IncomingBalance(models.Model):
     account = models.ForeignKey(Account, to_field='num', null=False, blank=False, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False, validators=[nonzero_validator, ])
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s / %s" % (self.year_id, self.account)
 
     class Meta:
@@ -83,7 +83,7 @@ class Object(models.Model):
     name = models.CharField(max_length=30, null=False, blank=False)
     active = models.BooleanField(null=False, blank=False, default=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     class Meta:
@@ -96,7 +96,7 @@ class JournalEntry(models.Model):
     date = models.DateField(null=False, blank=False)
     closed = models.BooleanField(blank=False, null=False, default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s-%04d (%s)" % (self.year.year, self.seq, self.date)
 
     class Meta:
@@ -127,5 +127,5 @@ class JournalUrl(models.Model):
     journal = models.ForeignKey(JournalEntry, null=False, blank=False, on_delete=models.CASCADE)
     url = models.URLField(null=False, blank=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.url

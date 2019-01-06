@@ -15,7 +15,7 @@ class Header(object):
     def __init__(self, hdr):
         self.hdr = hdr
 
-    def __unicode__(self):
+    def __str__(self):
         return self.hdr
 
 

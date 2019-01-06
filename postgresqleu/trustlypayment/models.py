@@ -10,7 +10,7 @@ class TrustlyTransaction(models.Model):
     redirecturl = models.CharField(max_length=2000, null=False, blank=False)
     orderid = models.BigIntegerField(null=False, blank=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s" % self.orderid
 
 
@@ -19,7 +19,7 @@ class TrustlyRawNotification(models.Model):
     contents = models.TextField(null=False, blank=False)
     confirmed = models.BooleanField(null=False, default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s" % self.dat
 
 
@@ -34,7 +34,7 @@ class TrustlyNotification(models.Model):
 
     confirmed = models.BooleanField(null=False, default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s" % self.receivedat
 
 

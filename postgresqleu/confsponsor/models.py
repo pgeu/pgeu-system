@@ -27,7 +27,7 @@ class SponsorshipContract(models.Model):
     contractname = models.CharField(max_length=100, null=False, blank=False, verbose_name='Contract name')
     contractpdf = FileField(null=False, blank=True, storage=InlineEncodedStorage('sponsorcontract'), upload_to=inlineencoded_upload_path, verbose_name='Contract PDF')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.contractname
 
     def clean(self):
@@ -59,7 +59,7 @@ class SponsorshipLevel(models.Model):
     canbuyvoucher = models.BooleanField(null=False, blank=False, default=True, verbose_name="Can buy vouchers")
     canbuydiscountcode = models.BooleanField(null=False, blank=False, default=True, verbose_name="Can buy discount codes")
 
-    def __unicode__(self):
+    def __str__(self):
         return self.levelname
 
     class Meta:
@@ -98,7 +98,7 @@ class SponsorshipBenefit(models.Model):
     class_parameters = JSONField(blank=True, null=False)
     tweet_template = models.TextField(null=False, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.benefitname
 
     class Meta:
@@ -123,7 +123,7 @@ class Sponsor(models.Model):
     signupat = models.DateTimeField(null=False, blank=False)
     extra_cc = models.EmailField(null=False, blank=True, verbose_name="Extra information address")
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -147,7 +147,7 @@ class SponsorMail(models.Model):
     subject = models.CharField(max_length=100, null=False, blank=False)
     message = models.TextField(max_length=8000, null=False, blank=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s: %s" % (self.sentat.strftime("%Y-%m-%d %H:%M"), self.subject)
 
     class Meta:

@@ -20,7 +20,7 @@ class NewsPosterProfileForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedM
 
 class NewsPosterProfileAdmin(admin.ModelAdmin):
     form = NewsPosterProfileForm
-    list_display = ('__unicode__', 'rsslink')
+    list_display = ('__str__', 'rsslink')
 
     def rsslink(self, author):
         return "/feeds/user/{0}/".format(author.urlname)

@@ -44,7 +44,7 @@ class Wikipage(models.Model, DiffableModel):
         ]
         ordering = ('title', )
 
-    def __unicode__(self):
+    def __str__(self):
         return "{0} ({1})".format(self.url, self.title)
 
     map_manytomany_for_diff = {
@@ -136,7 +136,7 @@ class Signup(models.Model):
     class Meta:
         ordering = ('deadline', 'title', )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def clean(self):

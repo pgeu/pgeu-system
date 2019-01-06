@@ -40,7 +40,7 @@ class Member(models.Model):
         else:
             return True
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s (%s)" % (self.fullname, self.user.username)
 
 
@@ -49,7 +49,7 @@ class MemberLog(models.Model):
     timestamp = models.DateTimeField(null=False)
     message = models.TextField(null=False, blank=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s: %s" % (self.timestamp, self.message)
 
 
@@ -60,7 +60,7 @@ class Meeting(models.Model):
     members = models.ManyToManyField(Member, blank=True)
     botname = models.CharField(max_length=50, null=False, blank=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s (%s)" % (self.name, self.dateandtime)
 
     class Meta:

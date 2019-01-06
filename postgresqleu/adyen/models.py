@@ -9,7 +9,7 @@ class RawNotification(models.Model):
     contents = models.TextField(null=False, blank=False)
     confirmed = models.BooleanField(null=False, default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s" % self.dat
 
 
@@ -34,7 +34,7 @@ class Notification(models.Model):
     class Meta:
         unique_together = ('pspReference', 'eventCode', 'merchantAccountCode')
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s" % self.receivedat
 
 
@@ -59,7 +59,7 @@ class TransactionStatus(models.Model):
     notes = models.CharField(max_length=1000, null=True, blank=True)
     accounting_object = models.CharField(max_length=30, null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.pspReference
 
     class Meta:
@@ -72,8 +72,8 @@ class Refund(models.Model):
     transaction = models.OneToOneField(TransactionStatus, on_delete=models.CASCADE)
     refund_amount = models.DecimalField(decimal_places=2, max_digits=20, null=False)
 
-    def __unicode__(self):
-        return unicode(self.refund_amount)
+    def __str__(self):
+        return str(self.refund_amount)
 
 
 class ReturnAuthorizationStatus(models.Model):

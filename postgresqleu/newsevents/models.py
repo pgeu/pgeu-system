@@ -8,8 +8,8 @@ class NewsPosterProfile(models.Model):
     fullname = models.CharField(max_length=100, null=False, blank=False, verbose_name="Full name")
     canpostglobal = models.BooleanField(null=False, default=False, verbose_name="Can post global news")
 
-    def __unicode__(self):
-        return u"{0} ({1})".format(self.fullname, self.urlname)
+    def __str__(self):
+        return "{0} ({1})".format(self.fullname, self.urlname)
 
 
 class News(models.Model):
@@ -22,7 +22,7 @@ class News(models.Model):
     inarchive = models.BooleanField(null=False, default=True, verbose_name="Include in archives")
     tweeted = models.BooleanField(null=False, blank=False, default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     @property

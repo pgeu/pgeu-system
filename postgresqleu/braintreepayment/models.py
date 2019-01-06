@@ -11,7 +11,7 @@ class BraintreeTransaction(models.Model):
     method = models.CharField(max_length=100, null=True, blank=True)
     accounting_object = models.CharField(max_length=30, null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.transid
 
 

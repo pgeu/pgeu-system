@@ -8,5 +8,5 @@ class QueuedMail(models.Model):
     # anything, we just push them right in there!
     fullmsg = models.TextField(null=False, blank=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s: %s -> %s" % (self.pk, self.sender, self.receiver)

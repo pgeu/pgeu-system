@@ -34,7 +34,7 @@ class Country(models.Model):
     class Admin:
         list_display = ('printable_name', 'iso',)
         
-    def __unicode__(self):
+    def __str__(self):
         return self.printable_name
 
 
@@ -61,7 +61,7 @@ class UsState(models.Model):
     class Admin:
         list_display = ('name', 'abbrev',)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -69,5 +69,5 @@ class UsState(models.Model):
 class EuropeCountry(models.Model):
     iso = models.OneToOneField(Country, null=False, blank=False, primary_key=True, on_delete=models.CASCADE)
 
-    def __unicode__(self):
+    def __str__(self):
         return iso.name

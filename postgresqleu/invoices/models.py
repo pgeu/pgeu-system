@@ -19,7 +19,7 @@ class InvoiceProcessor(models.Model):
     # notified when an invoice has been processed.
     classname = models.CharField(max_length=200, null=False, blank=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.processorname
 
 
@@ -33,7 +33,7 @@ class InvoicePaymentMethod(models.Model):
     classname = models.CharField(max_length=200, null=False, blank=False, unique=True)
     auto = models.BooleanField(null=False, blank=False, default=True, verbose_name="Used by automatically generated invoices")
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     class Meta:
@@ -206,7 +206,7 @@ class Invoice(models.Model):
         else:
             return "pending"
 
-    def __unicode__(self):
+    def __str__(self):
         return "Invoice #%s" % self.pk
 
     class Meta:
@@ -222,8 +222,8 @@ class VatRate(models.Model):
 
     _safe_attributes = ('vatpercent', 'shortstr', 'shortname', 'name', 'org_name', 'treasurer_email')
 
-    def __unicode__(self):
-        return u"{0} ({1}%)".format(self.name, self.vatpercent)
+    def __str__(self):
+        return "{0} ({1}%)".format(self.name, self.vatpercent)
 
     @property
     def shortstr(self):
@@ -239,7 +239,7 @@ class InvoiceRow(models.Model):
     rowamount = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0, verbose_name="Amount per item (ex VAT)")
     vatrate = models.ForeignKey(VatRate, null=True, on_delete=models.CASCADE)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.rowtext
 
     @property
@@ -266,7 +266,7 @@ class InvoiceHistory(models.Model):
     class Meta:
         ordering = ['time', ]
 
-    def __unicode__(self):
+    def __str__(self):
         return self.txt
 
 

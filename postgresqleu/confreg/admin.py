@@ -576,7 +576,7 @@ class VolunteerSlotAdminForm(ConcurrentProtectedModelForm):
 class VolunteerSlotAdmin(admin.ModelAdmin):
     form = VolunteerSlotAdminForm
     list_filter = ['conference', ]
-    list_display = ('__unicode__', 'title')
+    list_display = ('__str__', 'title')
 
 
 admin.site.register(ConferenceSeries, ConferenceSeriesAdmin)

@@ -99,7 +99,7 @@ class ConferenceSeries(models.Model):
     visible = models.BooleanField(null=False, default=True)
     administrators = models.ManyToManyField(User, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     class Meta:
@@ -200,7 +200,7 @@ class Conference(models.Model):
         d = dict((a, getattr(self, a) and str(getattr(self, a))) for a in self._safe_attributes)
         return d
 
-    def __unicode__(self):
+    def __str__(self):
         return self.conferencename
 
     class Meta:
@@ -272,7 +272,7 @@ class RegistrationClass(models.Model):
     badgecolor = models.CharField(max_length=20, null=False, blank=True, verbose_name="Badge color", help_text='Badge background color in hex format', validators=[color_validator, ])
     badgeforegroundcolor = models.CharField(max_length=20, null=False, blank=True, verbose_name="Badge foreground", help_text='Badge foreground color in hex format', validators=[color_validator, ])
 
-    def __unicode__(self):
+    def __str__(self):
         return self.regclass
 
     def colortuple(self):
@@ -317,7 +317,7 @@ class RegistrationDay(models.Model):
             ('conference', 'day'),
         )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.day.strftime('%a, %d %b')
 
     def shortday(self):
@@ -345,7 +345,7 @@ class RegistrationType(models.Model):
     class Meta:
         ordering = ['conference', 'sortkey', ]
 
-    def __unicode__(self):
+    def __str__(self):
         if self.cost == 0:
             return self.regtype
         else:
@@ -379,7 +379,7 @@ class ShirtSize(models.Model):
     shirtsize = models.CharField(max_length=32)
     sortkey = models.IntegerField(default=100, null=False, blank=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.shirtsize
 
     class Meta:
@@ -400,7 +400,7 @@ class ConferenceAdditionalOption(models.Model):
     class Meta:
         ordering = ['name', ]
 
-    def __unicode__(self):
+    def __str__(self):
         # This is what renders in the multichoice checkboxes, so make
         # it nice for the end user.
         if self.cost > 0:
@@ -453,8 +453,8 @@ class BulkPayment(models.Model):
         else:
             return "no invoice assigned. SOMETHING IS WRONG!"
 
-    def __unicode__(self):
-        return u"Bulk payment for %s created %s (%s registrations, %s%s): %s" % (
+    def __str__(self):
+        return "Bulk payment for %s created %s (%s registrations, %s%s): %s" % (
             self.conference,
             self.createdat,
             self.numregs,
@@ -651,7 +651,7 @@ class Track(models.Model):
 
     json_included_attributes = ['trackname', 'color', 'sortkey', 'incfp']
 
-    def __unicode__(self):
+    def __str__(self):
         return self.trackname
 
 
@@ -662,7 +662,7 @@ class Room(models.Model):
 
     json_included_attributes = ['roomname', 'sortkey']
 
-    def __unicode__(self):
+    def __str__(self):
         return self.roomname
 
     class Meta:
@@ -705,7 +705,7 @@ class Speaker(models.Model):
         return (self.photofile is not None and self.photofile != "")
     has_photo.boolean = True
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     class Meta:
@@ -722,7 +722,7 @@ class Speaker_Photo(models.Model):
     speaker = models.OneToOneField(Speaker, db_column='id', primary_key=True, on_delete=models.CASCADE)
     photo = models.TextField(null=False, blank=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.speaker.name
 
     def delete(self):
@@ -737,7 +737,7 @@ class ConferenceSessionScheduleSlot(models.Model):
     starttime = models.DateTimeField(null=False, blank=False, verbose_name="Start time")
     endtime = models.DateTimeField(null=False, blank=False, verbose_name="End time")
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s - %s" % (self.starttime, self.endtime)
 
 
@@ -802,7 +802,7 @@ class ConferenceSession(models.Model):
     def has_feedback(self):
         return self.conferencesessionfeedback_set.exists()
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s: %s (%s)" % (
             self.speaker_list,
             self.title,
@@ -863,8 +863,8 @@ class ConferenceSessionFeedback(models.Model):
     speaker_feedback = models.TextField(null=False, blank=True, verbose_name='Comments to the speaker')
     conference_feedback = models.TextField(null=False, blank=True, verbose_name='Comments to the conference organizers')
 
-    def __unicode__(self):
-        return unicode("%s - %s (%s)") % (self.conference, self.session, self.attendee)
+    def __str__(self):
+        return str("%s - %s (%s)") % (self.conference, self.session, self.attendee)
 
 
 class ConferenceFeedbackQuestion(models.Model):
@@ -875,7 +875,7 @@ class ConferenceFeedbackQuestion(models.Model):
     sortkey = models.IntegerField(null=False, default=100)
     newfieldset = models.CharField(max_length=100, null=False, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s: %s" % (self.conference, self.question)
 
     class Meta:
@@ -889,7 +889,7 @@ class ConferenceFeedbackAnswer(models.Model):
     rateanswer = models.IntegerField(null=True)
     textanswer = models.TextField(null=False, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s - %s: %s" % (self.conference, self.attendee, self.question.question)
 
     class Meta:
@@ -906,7 +906,7 @@ class VolunteerSlot(models.Model):
     class Meta:
         ordering = ['timerange', ]
 
-    def __unicode__(self):
+    def __str__(self):
         return self._display_timerange()
 
     def _display_timerange(self):
@@ -950,7 +950,7 @@ class PrepaidBatch(models.Model):
     buyername = models.CharField(max_length=100, null=True, blank=True)
     sponsor = models.ForeignKey('confsponsor.Sponsor', null=True, blank=True, verbose_name="Optional sponsor", on_delete=models.CASCADE)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s: %s for %s" % (self.conference, self.regtype, self.buyer)
 
     class Meta:
@@ -965,7 +965,7 @@ class PrepaidVoucher(models.Model):
     user = models.ForeignKey(ConferenceRegistration, null=True, blank=True, on_delete=models.CASCADE)
     usedate = models.DateTimeField(null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.vouchervalue
 
     class Meta:
@@ -990,7 +990,7 @@ class DiscountCode(models.Model):
     sponsor_rep = models.ForeignKey(User, null=True, blank=True, verbose_name="Optional sponsor representative.", help_text="Must be set if the sponsor field is set!", on_delete=models.CASCADE)
     is_invoiced = models.BooleanField(null=False, blank=False, default=False, verbose_name="Has an invoice been sent for this discount code.")
 
-    def __unicode__(self):
+    def __str__(self):
         return self.code
 
     class Meta:
@@ -1011,7 +1011,7 @@ class AttendeeMail(models.Model):
     subject = models.CharField(max_length=100, null=False, blank=False)
     message = models.TextField(max_length=8000, null=False, blank=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s: %s" % (self.sentat.strftime("%Y-%m-%d %H:%M"), self.subject)
 
     class Meta:
@@ -1026,8 +1026,8 @@ class PendingAdditionalOrder(models.Model):
     invoice = models.ForeignKey(Invoice, null=True, blank=True, on_delete=models.CASCADE)
     payconfirmedat = models.DateTimeField(null=True, blank=True)
 
-    def __unicode__(self):
-        return u"%s" % (self.reg, )
+    def __str__(self):
+        return "%s" % (self.reg, )
 
 
 class RefundPattern(models.Model):
@@ -1076,7 +1076,7 @@ class AccessToken(models.Model):
     class Meta:
         unique_together = (('conference', 'token'), )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.token
 
     def _display_permissions(self):
@@ -1092,7 +1092,7 @@ class ConferenceNews(models.Model):
     inrss = models.BooleanField(null=False, default=True, verbose_name="Include in RSS feed")
     tweeted = models.BooleanField(null=False, blank=False, default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     class Meta:

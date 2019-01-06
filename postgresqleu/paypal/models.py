@@ -7,7 +7,7 @@ class SourceAccount(models.Model):
     accountname = models.CharField(max_length=16, null=False, blank=False)
     lastsync = models.DateTimeField(null=False, blank=False, default=datetime(2009, 1, 1))
 
-    def __unicode__(self):
+    def __str__(self):
         return self.accountname
 
 

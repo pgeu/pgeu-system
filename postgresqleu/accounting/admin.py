@@ -35,11 +35,11 @@ class JournalUrlInline(admin.TabularInline):
 
 class JournalEntryAdmin(admin.ModelAdmin):
     inlines = [JournalItemInline, JournalUrlInline]
-    list_display = ('__unicode__', 'year', 'seq', 'date', 'closed')
+    list_display = ('__str__', 'year', 'seq', 'date', 'closed')
 
 
 class IncomingBalanceAdmin(admin.ModelAdmin):
-    list_display = ('__unicode__', 'year', 'account', 'amount')
+    list_display = ('__str__', 'year', 'account', 'amount')
 
 
 class ObjectAdmin(admin.ModelAdmin):
