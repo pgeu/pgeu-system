@@ -11,7 +11,7 @@ class RegisteredUsersLookup(LookupBase):
 
     @property
     def label_from_instance(self):
-        return lambda x: u'{0} <{1}>'.format(x.fullname, x.email)
+        return lambda x: '{0} <{1}>'.format(x.fullname, x.email)
 
     @classmethod
     def get_values(self, query, conference):
@@ -30,13 +30,13 @@ class SpeakerLookup(LookupBase):
 
     @property
     def label_from_instance(self):
-        return lambda x: u"%s (%s)" % (x.fullname, x.user.username)
+        return lambda x: "%s (%s)" % (x.fullname, x.user.username)
 
     @classmethod
     def get_values(self, query):
         return [
             {'id': s.id,
-             'value': u"%s (%s)" % (s.fullname, s.user.username if s.user else '')
+             'value': "%s (%s)" % (s.fullname, s.user.username if s.user else '')
             }
             for s in Speaker.objects.filter(
                 Q(fullname__icontains=query) | Q(twittername__icontains=query) | Q(user__username__icontains=query)

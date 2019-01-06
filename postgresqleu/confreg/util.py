@@ -70,12 +70,12 @@ def invoicerows_for_registration(reg, update_used_vouchers):
                     selected_options = reg.additionaloptions.all()
                     for o in d.requiresoption.all():
                         if o not in selected_options:
-                            raise InvoicerowsException(u"Discount code requires option {0}".format(o.name))
+                            raise InvoicerowsException("Discount code requires option {0}".format(o.name))
 
                     required_regtypes = d.requiresregtype.all()
                     if required_regtypes:
                         if reg.regtype not in required_regtypes:
-                            raise InvoicerowsException(u"Discount code requires registration types {0}".format(u",".join(required_regtypes)))
+                            raise InvoicerowsException("Discount code requires registration types {0}".format(",".join(required_regtypes)))
 
                     if update_used_vouchers:
                         d.registrations.add(reg)

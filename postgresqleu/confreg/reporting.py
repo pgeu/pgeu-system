@@ -82,7 +82,7 @@ class MultiConferenceReport(object):
         (maxday, minday) = self.maxmin()
         if not maxday:
             raise ReportException("There are no %s at this conference." % self.title.lower())
-        allvals = [range(maxday, minday - 1, -1), ]
+        allvals = [list(range(maxday, minday - 1, -1)), ]
         self.headers = ['Days']
         maxseen = 0
         for c in self.conferences:
@@ -95,7 +95,7 @@ class MultiConferenceReport(object):
             maxpred = float(maxseen) * maxday // (maxday - minday)
         else:
             maxpred = 10
-        self.graphdata = zip(*allvals)
+        self.graphdata = list(zip(*allvals))
         self.maxpred = maxpred
 
 
@@ -119,12 +119,12 @@ class SingleConferenceReport(object):
         (maxday, minday, startdate) = self.curs.fetchone()
         if not maxday:
             raise ReportException("There are no %s at this conference." % self.title.lower())
-        allvals = [range(maxday, minday - 1, -1), ]
+        allvals = [list(range(maxday, minday - 1, -1)), ]
         self.headers = ['Days']
         for header, rows in self.fetch_all_data(minday, maxday, startdate):
             allvals.append([r[0] for r in rows])
             self.headers.append(Header(header))
-        self.graphdata = zip(*allvals)
+        self.graphdata = list(zip(*allvals))
 
 
 # ##########################################################3

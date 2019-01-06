@@ -109,7 +109,7 @@ def newsproxy(request, confname):
     if not conference.newsjson:
         raise Http404("Invalid conference")
 
-    for k in request.GET.keys():
+    for k in list(request.GET.keys()):
         if k not in ('since', 'callback', '_'):
             raise Exception("Invalid parameter")
 

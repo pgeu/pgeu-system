@@ -67,7 +67,7 @@ def validate_json_structure(config, structure):
             raise ValidationError("Keys {0} are not allowed".format(", ".join(["->".join(path + [m]) for m in extra])))
 
         # Keys are correct, validate datatypes
-        for k, v in config.items():
+        for k, v in list(config.items()):
             fullkey = "->".join(path + [k])
             # Dicts don't have __name__
             if type(structure[k]) == dict:

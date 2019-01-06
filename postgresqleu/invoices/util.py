@@ -401,7 +401,7 @@ class InvoiceManager(object):
             if invoice.total_vat != total_vatsum:
                 raise Exception("Stored VAT total %s does not match calculated %s" % (invoice.total_vat, total_vatsum))
 
-            for accountnum, s in vatsum.items():
+            for accountnum, s in list(vatsum.items()):
                 accrows.append(
                     (accountnum, accountingtxt, -s, None),
                 )
@@ -526,7 +526,7 @@ class InvoiceManager(object):
 
             wrapper.email_refund_sent(r)
             InvoiceLog(timestamp=datetime.now(),
-                       message=u"Flagged invoice {0} as refunded by {1}{2}: {3}".format(invoice.id, settings.CURRENCY_SYMBOL.decode('utf8'), amount + vatamount, reason),
+                       message="Flagged invoice {0} as refunded by {1}{2}: {3}".format(invoice.id, settings.CURRENCY_SYMBOL.decode('utf8'), amount + vatamount, reason),
                        ).save()
 
         return r
@@ -664,7 +664,7 @@ class TestProcessor(object):
 
 # Calculate the number of workdays between two datetimes.
 def diff_workdays(start, end):
-    weekdays = len(list(rrule.rrule(rrule.DAILY, byweekday=range(0, 5), dtstart=start, until=end)))
+    weekdays = len(list(rrule.rrule(rrule.DAILY, byweekday=list(range(0, 5)), dtstart=start, until=end)))
 
     if end.hour < 8:
         weekdays -= 1

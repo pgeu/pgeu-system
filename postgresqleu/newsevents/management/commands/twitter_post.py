@@ -36,7 +36,7 @@ class Command(BaseCommand):
 
             for a in articles:
                 # We hardcode 30 chars for the URL shortener. And then 10 to cover the intro and spacing.
-                statusstr = u"{0} {1}/news/{2}-{3}/".format(a.title[:140 - 40],
+                statusstr = "{0} {1}/news/{2}-{3}/".format(a.title[:140 - 40],
                                                             settings.SITEBASE,
                                                             slugify(a.title),
                                                             a.id)
@@ -64,7 +64,7 @@ class Command(BaseCommand):
             al = list(ConferenceNews.objects.filter(conference=c, tweeted=False, datetime__gt=datetime.now() - timedelta(days=7), datetime__lt=datetime.now(), conference__twittersync_active=True).order_by('datetime')[:1])
             if al:
                 a = al[0]
-                statusstr = u"{0} {1}##{2}".format(a.title[:250 - 40],
+                statusstr = "{0} {1}##{2}".format(a.title[:250 - 40],
                                                    c.confurl,
                                                    a.id)
                 ok, msg = tw.post_tweet(statusstr)

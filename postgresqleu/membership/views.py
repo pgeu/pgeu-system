@@ -42,7 +42,7 @@ def home(request):
     except Member.DoesNotExist:
         # No record yet, so we create one. Base the information on whatever we
         # have already.
-        member = Member(user=request.user, fullname=u"{0} {1}".format(request.user.first_name, request.user.last_name))
+        member = Member(user=request.user, fullname="{0} {1}".format(request.user.first_name, request.user.last_name))
         registration_complete = False
 
     if request.method == "POST":
@@ -192,7 +192,7 @@ def _meeting(request, member, meeting, isproxy):
         key.save()
 
     if key.proxyname and not isproxy:
-        return HttpResponse(u"You have assigned a proxy attendee for this meeting ({0}). This means you cannot attend the meeting yourself.".format(key.proxyname))
+        return HttpResponse("You have assigned a proxy attendee for this meeting ({0}). This means you cannot attend the meeting yourself.".format(key.proxyname))
 
     return render(request, 'membership/meeting.html', {
         'member': member,
@@ -253,14 +253,14 @@ def meeting_proxy(request, meetingid):
                 key.save()
                 MemberLog(member=member,
                           timestamp=datetime.now(),
-                          message=u"Assigned {0} as proxy voter in {1}".format(key.proxyname, meeting.name)
+                          message="Assigned {0} as proxy voter in {1}".format(key.proxyname, meeting.name)
                 ).save()
                 return HttpResponseRedirect('.')
             else:
                 key.delete()
                 MemberLog(member=member,
                           timestamp=datetime.now(),
-                          message=u"Canceled proxy voting in {0}".format(meeting.name)
+                          message="Canceled proxy voting in {0}".format(meeting.name)
                 ).save()
                 return HttpResponseRedirect("../../")
     else:
@@ -290,7 +290,7 @@ def meetingcode(request):
                             content_type='application/json')
 
     if key.proxyname:
-        name = u"{0} (proxy for {1})".format(key.proxyname, member.fullname)
+        name = "{0} (proxy for {1})".format(key.proxyname, member.fullname)
     else:
         name = member.fullname
 

@@ -4,7 +4,7 @@
 from django.conf import settings
 
 
-def iso_flag(iso, flag_path=u''):
+def iso_flag(iso, flag_path=''):
     """
     Returns a full path to the ISO 3166-1 alpha-2 country code flag image.
     
@@ -18,8 +18,8 @@ def iso_flag(iso, flag_path=u''):
     
     """
     if not settings.MEDIA_URL:
-        return u''
-    deafult = u'-'
+        return ''
+    deafult = '-'
     if not iso:
         iso = deafult
     else:
@@ -27,9 +27,9 @@ def iso_flag(iso, flag_path=u''):
     try:
         flag_name = flag_path % iso
     except (ValueError, TypeError):
-        flag_path = getattr(settings, 'COUNTRIES_FLAG_PATH', u'flags/%s.gif')
+        flag_path = getattr(settings, 'COUNTRIES_FLAG_PATH', 'flags/%s.gif')
         try:
             flag_name = flag_path % iso
         except (ValueError, TypeError):
-            return u''
-    return u''.join((settings.MEDIA_URL, flag_name))
+            return ''
+    return ''.join((settings.MEDIA_URL, flag_name))

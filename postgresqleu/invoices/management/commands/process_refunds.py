@@ -51,7 +51,7 @@ class Command(BaseCommand):
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                              settings.INVOICE_SENDER_EMAIL,
                              "Stalled invoice refunds",
-                             u"""One or more invoice refunds appear to be stalled.
+                             """One or more invoice refunds appear to be stalled.
 These refunds have been issued to the provider, but no confirmation has
 shown up. This requires manual investigation.
 
@@ -60,4 +60,4 @@ The following invoices have stalled refunds:
 {0}
 
 Better go check!
-""".format(u"\n".join([r.invoice.invoicestr for r in stalledrefunds])))
+""".format("\n".join([r.invoice.invoicestr for r in stalledrefunds])))

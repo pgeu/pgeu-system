@@ -10,7 +10,7 @@ class MemberLookup(LookupBase):
 
     @property
     def label_from_instance(self):
-        return lambda x: u'{0} ({1})'.format(x.fullname, x.user.username)
+        return lambda x: '{0} ({1})'.format(x.fullname, x.user.username)
 
     @classmethod
     def get_values(self, query):

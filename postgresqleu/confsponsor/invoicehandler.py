@@ -24,14 +24,14 @@ def confirm_sponsor(sponsor, who):
     for manager in sponsor.managers.all():
         send_template_mail(sponsor.conference.sponsoraddr,
                            manager.email,
-                           u"[{0}] Sponsorship confirmed".format(sponsor.conference),
+                           "[{0}] Sponsorship confirmed".format(sponsor.conference),
                            'confsponsor/mail/sponsor_confirmed.txt',
                            {
                                'sponsor': sponsor,
                                'conference': sponsor.conference,
                            },
                            sendername=sponsor.conference.conferencename,
-                           receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
+                           receivername='{0} {1}'.format(manager.first_name, manager.last_name))
 
 
 class InvoiceProcessor(object):
@@ -92,9 +92,9 @@ class InvoiceProcessor(object):
 
 def get_sponsor_invoice_address(name, invoiceaddr, vatnumber):
     if settings.EU_VAT and vatnumber:
-        return u"{0}\n{1}\n\nVAT: {2}".format(name, invoiceaddr, vatnumber)
+        return "{0}\n{1}\n\nVAT: {2}".format(name, invoiceaddr, vatnumber)
     else:
-        return u"{0}\n{1}".format(name, invoiceaddr)
+        return "{0}\n{1}".format(name, invoiceaddr)
 
 
 # Generate an invoice for sponsorship

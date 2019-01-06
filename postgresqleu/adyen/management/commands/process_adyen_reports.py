@@ -156,14 +156,14 @@ class Command(BaseCommand):
                 return 'AAA'
             return a[0]
 
-        msg = "\n".join(["%-20s: %s" % (k, v) for k, v in sorted(types.iteritems(), key=sort_types)])
+        msg = "\n".join(["%-20s: %s" % (k, v) for k, v in sorted(iter(types.items()), key=sort_types)])
         acct = report.notification.merchantAccountCode
 
         # Generate an accounting record, iff we know what every row on the
         # statement actually is.
         acctrows = []
         accstr = "Adyen settlement batch %s for %s" % (batchnum, acct)
-        for t, amount in types.items():
+        for t, amount in list(types.items()):
             if t == 'Settled' or t == 'SettledBulk':
                 # Settled means we took it out of the payable balance
                 acctrows.append((settings.ACCOUNTING_ADYEN_PAYABLE_ACCOUNT, accstr, -amount, None))

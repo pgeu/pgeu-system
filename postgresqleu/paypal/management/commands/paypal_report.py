@@ -21,11 +21,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         entries = ErrorLog.objects.filter(sent=False).order_by('id')
         if len(entries):
-            msg = u"""
+            msg = """
 Events reported by the paypal integration:
 
 {0}
-""".format("\n".join([u"{0}: {1}".format(e.timestamp, e.message) for e in entries]))
+""".format("\n".join(["{0}: {1}".format(e.timestamp, e.message) for e in entries]))
 
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                              settings.PAYPAL_REPORT_RECEIVER,
@@ -35,7 +35,7 @@ Events reported by the paypal integration:
 
         entries = TransactionInfo.objects.filter(matched=False).order_by('timestamp')
         if len(entries):
-            msg = u"""
+            msg = """
 The following payments have been received but not matched to anything in
 the system:
 
@@ -43,7 +43,7 @@ the system:
 
 These will keep being reported until there is a match found or they are
 manually dealt with in the admin interface!
-""".format("\n".join([u"{0}: {1} ({2}) sent {3} with text '{4}'".format(e.timestamp, e.sender, e.sendername, e.amount, e.transtext) for e in entries]))
+""".format("\n".join(["{0}: {1} ({2}) sent {3} with text '{4}'".format(e.timestamp, e.sender, e.sendername, e.amount, e.transtext) for e in entries]))
 
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                              settings.PAYPAL_REPORT_RECEIVER,

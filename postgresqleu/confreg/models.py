@@ -60,15 +60,15 @@ STATUS_CHOICES_SHORT = (
 
 
 def get_status_string(val):
-    return (t for v, t in STATUS_CHOICES if v == val).next()
+    return next((t for v, t in STATUS_CHOICES if v == val))
 
 
 def get_status_string_long(val):
-    return (t for v, t in STATUS_CHOICES_LONG if v == val).next()
+    return next((t for v, t in STATUS_CHOICES_LONG if v == val))
 
 
 def get_status_string_short(val):
-    return (t for v, t in STATUS_CHOICES_SHORT if v == val).next()
+    return next((t for v, t in STATUS_CHOICES_SHORT if v == val))
 
 
 valid_status_transitions = {
@@ -197,7 +197,7 @@ class Conference(models.Model):
                         'feedbackopen', 'skill_levels', 'urlname', 'conferencename')
 
     def safe_export(self):
-        d = dict((a, getattr(self, a) and unicode(getattr(self, a))) for a in self._safe_attributes)
+        d = dict((a, getattr(self, a) and str(getattr(self, a))) for a in self._safe_attributes)
         return d
 
     def __unicode__(self):
@@ -303,7 +303,7 @@ class RegistrationClass(models.Model):
 
     def safe_export(self):
         attribs = ['regclass', 'badgecolor', 'badgeforegroundcolor', 'bgcolortuplestr', 'fgcolortuplestr']
-        d = dict((a, getattr(self, a) and unicode(getattr(self, a))) for a in attribs)
+        d = dict((a, getattr(self, a) and str(getattr(self, a))) for a in attribs)
         return d
 
 
@@ -369,7 +369,7 @@ class RegistrationType(models.Model):
 
     def safe_export(self):
         attribs = ['regtype', 'specialtype']
-        d = dict((a, getattr(self, a) and unicode(getattr(self, a))) for a in attribs)
+        d = dict((a, getattr(self, a) and str(getattr(self, a))) for a in attribs)
         d['regclass'] = self.regclass and self.regclass.safe_export()
         d['days'] = [dd.day.strftime('%Y-%m-%d') for dd in self.days.all()]
         return d
@@ -605,13 +605,13 @@ class ConferenceRegistration(models.Model):
         return ''
 
     # For the admin interface (mainly)
-    def __unicode__(self):
+    def __str__(self):
         return "%s: %s %s <%s>" % (self.conference, self.firstname, self.lastname, self.email)
 
     # For exporting "safe attributes" to external systems
     def safe_export(self):
         attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'shareemail', 'fullidtoken', 'queuepartition', ]
-        d = dict((a, getattr(self, a) and unicode(getattr(self, a))) for a in attribs)
+        d = dict((a, getattr(self, a) and str(getattr(self, a))) for a in attribs)
         if self.regtype:
             d['regtype'] = self.regtype.safe_export()
         else:
@@ -780,7 +780,7 @@ class ConferenceSession(models.Model):
 
     @property
     def skill_level_string(self):
-        return (t for v, t in SKILL_CHOICES if v == self.skill_level).next()
+        return next((t for v, t in SKILL_CHOICES if v == self.skill_level))
 
     @property
     def status_string(self):

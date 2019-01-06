@@ -46,9 +46,9 @@ class ConferenceRegistrationForm(forms.ModelForm):
         self.fields['country'].queryset = Country.objects.order_by('printable_name')
 
         if not self.regforother:
-            self.intro_html = mark_safe(u'<p>You are currently making a registration for account<br/><i>{0} ({1} {2} &lt;{3}&gt;).</i></p>'.format(escape(self.user.username), escape(self.user.first_name), escape(self.user.last_name), escape(self.user.email)))
+            self.intro_html = mark_safe('<p>You are currently making a registration for account<br/><i>{0} ({1} {2} &lt;{3}&gt;).</i></p>'.format(escape(self.user.username), escape(self.user.first_name), escape(self.user.last_name), escape(self.user.email)))
         else:
-            self.intro_html = mark_safe(u'<p>You are currently editing a registration for somebody other than yourself.</p>')
+            self.intro_html = mark_safe('<p>You are currently editing a registration for somebody other than yourself.</p>')
 
     def clean_regtype(self):
         newval = self.cleaned_data.get('regtype')
@@ -80,7 +80,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
                 # A registration is already made with this email address. If this is made by somebody
                 # else but for us, we can in some cases let them know who it is.
                 if r.registrator != getattr(self.instance, 'registrator', None):
-                    raise ValidationError(u'There is already a registration made with this email address, that is part of a multiple registration entry made by {0} {1} ({2}).'.format(
+                    raise ValidationError('There is already a registration made with this email address, that is part of a multiple registration entry made by {0} {1} ({2}).'.format(
                         r.registrator.first_name,
                         r.registrator.last_name,
                         r.registrator.email))
@@ -477,11 +477,11 @@ class CallForPapersForm(forms.ModelForm):
         # We may also have received a POST that contains new speakers not already on this
         # record. In this case, we have to add them as possible values, so the validation
         # doesn't fail.
-        if 'data' in kwargs and u'speaker' in kwargs['data']:
+        if 'data' in kwargs and 'speaker' in kwargs['data']:
             vals.extend([int(x) for x in kwargs['data'].getlist('speaker')])
 
         self.fields['speaker'].queryset = Speaker.objects.filter(pk__in=vals)
-        self.fields['speaker'].label_from_instance = lambda x: u"{0} <{1}>".format(x.fullname, x.email)
+        self.fields['speaker'].label_from_instance = lambda x: "{0} <{1}>".format(x.fullname, x.email)
         self.fields['speaker'].required = True
         self.fields['speaker'].help_text = "Type the beginning of a speakers email address to add more speakers"
 
@@ -512,7 +512,7 @@ class CallForPapersForm(forms.ModelForm):
 
 class SessionCopyField(forms.ModelMultipleChoiceField):
     def label_from_instance(self, obj):
-        return u"{0}: {1} ({2})".format(obj.conference, obj.title, obj.status_string)
+        return "{0}: {1} ({2})".format(obj.conference, obj.title, obj.status_string)
 
 
 class CallForPapersCopyForm(forms.Form):
@@ -581,7 +581,7 @@ class PrepaidCreateForm(forms.Form):
         self.conference = conference
         super(PrepaidCreateForm, self).__init__(*args, **kwargs)
         self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=conference)
-        self.fields['buyer'].label_from_instance = lambda x: u'{0} {1} <{2}> ({3})'.format(x.first_name, x.last_name, x.email, x.username)
+        self.fields['buyer'].label_from_instance = lambda x: '{0} {1} <{2}> ({3})'.format(x.first_name, x.last_name, x.email, x.username)
         if not ('regtype' in self.data and
                 'count' in self.data and
                 'regtype' in self.data and
@@ -646,9 +646,9 @@ class AttendeeMailForm(forms.ModelForm):
         fields = ('regclasses', 'subject', 'message')
 
     def regclass_label(self, obj):
-        return u"{0} (contains {1}; total {2} registrations".format(
+        return "{0} (contains {1}; total {2} registrations".format(
             obj.regclass,
-            u", ".join([t.regtype for t in obj.registrationtype_set.all()]),
+            ", ".join([t.regtype for t in obj.registrationtype_set.all()]),
             ConferenceRegistration.objects.filter(conference=self.conference,
                                                   payconfirmedat__isnull=False,
                                                   regtype__regclass=obj).count(),
@@ -695,7 +695,7 @@ class WaitlistOfferForm(forms.Form):
         if not self.data:
             return []
         idlist = []
-        for k, v in self.data.items():
+        for k, v in list(self.data.items()):
             if v == '1' and k.startswith('reg_'):
                 idlist.append(int(k[4:]))
         return idlist
@@ -740,7 +740,7 @@ class WaitlistSendmailForm(forms.Form):
         super(WaitlistSendmailForm, self).__init__(*args, **kwargs)
         if not (self.data.get('subject') and self.data.get('message')):
             del self.fields['confirm']
-        self.fields['subject'].help_text = u"Will be prefixed by [{0}]".format(conference.conferencename)
+        self.fields['subject'].help_text = "Will be prefixed by [{0}]".format(conference.conferencename)
 
     def clean_confirm(self):
         if not self.cleaned_data['confirm']:

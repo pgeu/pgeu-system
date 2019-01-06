@@ -261,13 +261,13 @@ if not SECRET_KEY:
 
 # Reset admins based on confir params from skins and local
 ADMINS = (
-    (u'{0} webmaster'.format(ORG_NAME), DEFAULT_EMAIL),
+    ('{0} webmaster'.format(ORG_NAME), DEFAULT_EMAIL),
 )
 MANAGERS = ADMINS
 
 # Invoice module
 # --------------
-INVOICE_TITLE_PREFIX = u'{0} Invoice'.format(ORG_NAME)
+INVOICE_TITLE_PREFIX = '{0} Invoice'.format(ORG_NAME)
 INVOICE_FILENAME_PREFIX = ORG_SHORTNAME.lower()
 
 

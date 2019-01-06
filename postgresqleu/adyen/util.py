@@ -108,7 +108,7 @@ def process_authorization(notification):
                 send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                                  settings.ADYEN_NOTIFICATION_RECEIVER,
                                  'Error processing invoice from Adyen notification',
-                                 u"An error occured processing the notification for invoice #{0}.\n\nThe messages given were:\n{1}\n\nAn incomplete accounting record has been created, and the situation needs to be handled manually.\n".format(
+                                 "An error occured processing the notification for invoice #{0}.\n\nThe messages given were:\n{1}\n\nAn incomplete accounting record has been created, and the situation needs to be handled manually.\n".format(
                                      invoice.id,
                                      invoice_logger.invoice_log),
                 )

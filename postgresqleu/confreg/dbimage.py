@@ -59,7 +59,7 @@ class SpeakerImageStorage(Storage):
 
 class InlinePhotoWidget(Widget):
     def render(self, name, value, attrs=None):
-        return mark_safe(u'<img src="data:image/png;base64,%s"/>' % value)
+        return mark_safe('<img src="data:image/png;base64,%s"/>' % value)
 
     def value_from_datadict(self, data, files, name):
         return self.original_value

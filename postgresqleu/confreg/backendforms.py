@@ -487,7 +487,7 @@ class BackendConferenceSessionForm(BackendForm):
             raise ValidationError("Sessions with speaker cannot change from {0} to {1}. Only one of {2} is allowed.".format(
                 get_status_string(self.instance.status),
                 get_status_string(newstatus),
-                ", ".join(["{0} ({1})".format(get_status_string(s), v) for s, v in valid_status_transitions[self.instance.status].items()]),
+                ", ".join(["{0} ({1})".format(get_status_string(s), v) for s, v in list(valid_status_transitions[self.instance.status].items())]),
             ))
 
         return newstatus
@@ -765,7 +765,7 @@ class BackendNewsForm(BackendForm):
         # Must be administrator on current conference
         self.fields['author'].queryset = NewsPosterProfile.objects.filter(author__conference=self.conference)
         # Add help hint dynamically so we can include the conference name
-        self.fields['title'].help_text = u'Note! Title will be prefixed with "{0} - " on shared frontpage and RSS!'.format(self.conference.conferencename)
+        self.fields['title'].help_text = 'Note! Title will be prefixed with "{0} - " on shared frontpage and RSS!'.format(self.conference.conferencename)
 
 
 #
@@ -856,13 +856,13 @@ class CancelRegistrationForm(django.forms.Form):
         else:
             to_refund_vat = Decimal(0)
 
-        return u"{} Refund {}%{} ({}{}{}){}{} {}".format(
+        return "{} Refund {}%{} ({}{}{}){}{} {}".format(
             suggest,
             pattern.percent,
-            pattern.fees and u' minus {0}{1} in fees'.format(settings.CURRENCY_SYMBOL.decode('utf8'), pattern.fees) or u'',
+            pattern.fees and ' minus {0}{1} in fees'.format(settings.CURRENCY_SYMBOL.decode('utf8'), pattern.fees) or '',
             settings.CURRENCY_SYMBOL.decode('utf8'),
             to_refund,
-            to_refund_vat and u' +{}{} VAT'.format(settings.CURRENCY_SYMBOL.decode('utf8'), to_refund_vat) or '',
+            to_refund_vat and ' +{}{} VAT'.format(settings.CURRENCY_SYMBOL.decode('utf8'), to_refund_vat) or '',
             pattern.fromdate and ' from {0}'.format(pattern.fromdate) or '',
             pattern.todate and ' until {0}'.format(pattern.todate) or '',
             suggest,

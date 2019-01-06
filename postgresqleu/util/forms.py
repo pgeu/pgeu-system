@@ -3,7 +3,7 @@ from django.forms import ValidationError
 from django.core.signing import Signer, BadSignature
 from django.contrib.postgres.fields import ArrayField
 
-import cPickle
+import pickle
 import base64
 from itertools import groupby
 
@@ -19,10 +19,10 @@ class ConcurrentProtectedModelForm(forms.ModelForm):
     def _filter_initial(self):
         # self.initial will include things given in the URL after ?, so filter it to
         # only include items that are actually form fields.
-        return {k: v for k, v in self.initial.items() if k in self.fields.keys()}
+        return {k: v for k, v in list(self.initial.items()) if k in list(self.fields.keys())}
 
     def update_protected_fields(self):
-        self.fields['_validator'].initial = Signer().sign(base64.urlsafe_b64encode(cPickle.dumps(self._filter_initial(), -1)))
+        self.fields['_validator'].initial = Signer().sign(base64.urlsafe_b64encode(pickle.dumps(self._filter_initial(), -1)))
 
     def __init__(self, *args, **kwargs):
         r = super(ConcurrentProtectedModelForm, self).__init__(*args, **kwargs)
@@ -43,15 +43,15 @@ class ConcurrentProtectedModelForm(forms.ModelForm):
         try:
             s = Signer().unsign(self.cleaned_data['_validator'])
             b = base64.urlsafe_b64decode(s.encode('utf8'))
-            d = cPickle.loads(b)
-            for k, v in d.items():
+            d = pickle.loads(b)
+            for k, v in list(d.items()):
                 if i[k] != v:
                     raise ValidationError("Concurrent modification of field {0}. Please reload the form and try again.".format(k))
         except BadSignature:
             raise ValidationError("Form has been tampered with!")
         except TypeError:
             raise ValidationError("Bad serialized form state")
-        except cPickle.UnpicklingError:
+        except pickle.UnpicklingError:
             raise ValidationError("Bad serialized python form state")
 
         return data

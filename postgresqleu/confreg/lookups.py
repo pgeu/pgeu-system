@@ -25,11 +25,11 @@ class RegistrationLookup(ModelLookup):
 
     def get_item_value(self, item):
         # Display for currently selected item
-        return u"%s (%s %s)" % (item.attendee and item.attendee.username or '(no account)', item.firstname, item.lastname)
+        return "%s (%s %s)" % (item.attendee and item.attendee.username or '(no account)', item.firstname, item.lastname)
 
     def get_item_label(self, item):
         # Display for choice listings
-        return u"%s (%s %s)" % (item.attendee and item.attendee.username or '(no account)', item.firstname, item.lastname)
+        return "%s (%s %s)" % (item.attendee and item.attendee.username or '(no account)', item.firstname, item.lastname)
 
 
 registry.register(RegistrationLookup)

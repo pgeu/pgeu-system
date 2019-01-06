@@ -44,14 +44,14 @@ class GeneralAccountLookup(LookupBase):
 
     @property
     def label_from_instance(self):
-        return lambda x: u'{0} {1} ({2})'.format(x.first_name, x.last_name, x.username)
+        return lambda x: '{0} {1} ({2})'.format(x.first_name, x.last_name, x.username)
 
     @classmethod
     def get_values(self, query):
         return [
             {
                 'id': u.id,
-                'value': u'{0} {1} ({2})'.format(u.first_name, u.last_name, u.username),
+                'value': '{0} {1} ({2})'.format(u.first_name, u.last_name, u.username),
                 'email': u.email,
             }
             for u in User.objects.filter(

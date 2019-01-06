@@ -36,7 +36,7 @@ class Command(BaseCommand):
             send_simple_mail(reg.conference.notifyaddr,
                              reg.conference.notifyaddr,
                              'Waitlist expired',
-                             u'User {0} {1} <{2}> did not complete the registration before the waitlist offer expired.'.format(reg.firstname, reg.lastname, reg.email),
+                             'User {0} {1} <{2}> did not complete the registration before the waitlist offer expired.'.format(reg.firstname, reg.lastname, reg.email),
                              sendername=reg.conference.conferencename)
 
             # Also send an email to the user

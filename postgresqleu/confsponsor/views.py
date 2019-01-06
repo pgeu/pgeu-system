@@ -383,12 +383,12 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
 
             if send_mail:
                 if claim.declined:
-                    mailstr = u"Sponsor %s for conference %s has declined benefit %s.\n" % (sponsor, sponsor.conference, benefit)
+                    mailstr = "Sponsor %s for conference %s has declined benefit %s.\n" % (sponsor, sponsor.conference, benefit)
                 elif claim.confirmed:
                     # Auto-confirmed, so nothing to do here
-                    mailstr = u"Sponsor %s for conference %s has claimed benefit %s.\n\nThis has been automatically processed, so there is nothing more to do.\n" % (sponsor, sponsor.conference, benefit)
+                    mailstr = "Sponsor %s for conference %s has claimed benefit %s.\n\nThis has been automatically processed, so there is nothing more to do.\n" % (sponsor, sponsor.conference, benefit)
                 else:
-                    mailstr = u"Sponsor %s for conference %s has claimed benefit %s\n\nThis benefit requires confirmation (and possibly some\nmore actions before that). Please go to\n%s/events/sponsor/admin/%s/\nand approve as necessary!" % (
+                    mailstr = "Sponsor %s for conference %s has claimed benefit %s\n\nThis benefit requires confirmation (and possibly some\nmore actions before that). Please go to\n%s/events/sponsor/admin/%s/\nand approve as necessary!" % (
                         sponsor,
                         sponsor.conference,
                         benefit,
@@ -504,7 +504,7 @@ def _confirm_benefit(request, benefit):
         benefit.confirmed = True
         benefit.save()
 
-        messages.info(request, u"Benefit {0} for {1} confirmed.".format(benefit.benefit, benefit.sponsor))
+        messages.info(request, "Benefit {0} for {1} confirmed.".format(benefit.benefit, benefit.sponsor))
 
         conference = benefit.sponsor.conference
 
@@ -512,14 +512,14 @@ def _confirm_benefit(request, benefit):
         for manager in benefit.sponsor.managers.all():
             send_simple_mail(conference.sponsoraddr,
                              manager.email,
-                             u"[{0}] sponsorship benefit confirmed".format(conference.conferencename, benefit.benefit),
-                             u"Your sponsorship benefit {0} at {1} has been marked as confirmed by the organizers.".format(benefit.benefit, conference.conferencename),
+                             "[{0}] sponsorship benefit confirmed".format(conference.conferencename, benefit.benefit),
+                             "Your sponsorship benefit {0} at {1} has been marked as confirmed by the organizers.".format(benefit.benefit, conference.conferencename),
                              sendername=conference.conferencename,
-                             receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
+                             receivername='{0} {1}'.format(manager.first_name, manager.last_name))
         send_simple_mail(conference.sponsoraddr,
                          conference.sponsoraddr,
-                         u"Sponsorship benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor),
-                         u"Sponsorship benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor),
+                         "Sponsorship benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor),
+                         "Sponsorship benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor),
                          sendername=conference.conferencename,
                          )
 
@@ -560,7 +560,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
             sponsor.save()
             wrapper = InvoiceWrapper(sponsor.invoice)
             wrapper.email_invoice()
-            messages.info(request, u"Invoice sent to {0}".format(manager.email))
+            messages.info(request, "Invoice sent to {0}".format(manager.email))
             return HttpResponseRedirect(".")
         if request.POST.get('submit', '') == 'Reject sponsorship':
             if sponsor.invoice:
@@ -573,13 +573,13 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
             # Else actually reject it
             send_simple_mail(conference.sponsoraddr,
                              conference.sponsoraddr,
-                             u"Sponsor %s rejected" % sponsor.name,
-                             u"The sponsor {0} has been rejected by {1}.\nThe reason given was: {2}".format(sponsor.name, request.user, reason),
+                             "Sponsor %s rejected" % sponsor.name,
+                             "The sponsor {0} has been rejected by {1}.\nThe reason given was: {2}".format(sponsor.name, request.user, reason),
                              sendername=conference.conferencename)
             for manager in sponsor.managers.all():
                 send_template_mail(conference.sponsoraddr,
                                    manager.email,
-                                   u"[{0}] Sponsorship removed".format(conference),
+                                   "[{0}] Sponsorship removed".format(conference),
                                    'confsponsor/mail/sponsor_rejected.txt',
                                    {
                                        'sponsor': sponsor,
@@ -587,9 +587,9 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
                                        'reason': reason,
                                    },
                                    sendername=conference.conferencename,
-                                   receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
+                                   receivername='{0} {1}'.format(manager.first_name, manager.last_name))
 
-            messages.info(request, u"Sponsor {0} rejected.".format(sponsor.name))
+            messages.info(request, "Sponsor {0} rejected.".format(sponsor.name))
             sponsor.delete()
             return HttpResponseRedirect("../")
 
@@ -679,20 +679,20 @@ def sponsor_admin_send_mail(request, confurlname):
             # Now also send the email out to the *current* subscribers
             sponsors = Sponsor.objects.filter(conference=conference, level__in=form.data.getlist('levels'), confirmed=True)
             for sponsor in sponsors:
-                msgtxt = u"{0}\n\n-- \nThis message was sent to sponsors of {1}.\nYou can view all communications for this conference at:\n{2}/events/sponsor/{3}/\n".format(msg.message, conference, settings.SITEBASE, sponsor.pk)
+                msgtxt = "{0}\n\n-- \nThis message was sent to sponsors of {1}.\nYou can view all communications for this conference at:\n{2}/events/sponsor/{3}/\n".format(msg.message, conference, settings.SITEBASE, sponsor.pk)
                 for manager in sponsor.managers.all():
                     send_simple_mail(conference.sponsoraddr,
                                      manager.email,
-                                     u"[{0}] {1}".format(conference, msg.subject),
+                                     "[{0}] {1}".format(conference, msg.subject),
                                      msgtxt,
                                      sendername=conference.conferencename,
-                                     receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
+                                     receivername='{0} {1}'.format(manager.first_name, manager.last_name))
                 # And possibly send it out to the extra address for the sponsor
                 if sponsor.extra_cc:
-                    msgtxt = u"{0}\n\n-- \nThis message was sent to sponsors of {1}.\nThis address was added as an extra CC address by one of the managers.\n".format(msg.message, conference)
+                    msgtxt = "{0}\n\n-- \nThis message was sent to sponsors of {1}.\nThis address was added as an extra CC address by one of the managers.\n".format(msg.message, conference)
                     send_simple_mail(conference.sponsoraddr,
                                      sponsor.extra_cc,
-                                     u"[{0}] {1}".format(conference, msg.subject),
+                                     "[{0}] {1}".format(conference, msg.subject),
                                      msgtxt,
                                      sendername=conference.conferencename,
                     )

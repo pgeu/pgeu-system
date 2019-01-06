@@ -33,7 +33,7 @@ class InvoiceForm(forms.ModelForm):
         if not settings.EU_VAT:
             del self.fields['reverse_vat']
 
-        if 'data' in kwargs and u'recipient_user' in kwargs['data']:
+        if 'data' in kwargs and 'recipient_user' in kwargs['data']:
             # Postback with this field, so allow this specifi cuser
             self.fields['recipient_user'].queryset = User.objects.filter(pk=kwargs['data']['recipient_user'])
         elif self.instance and self.instance.recipient_user:
@@ -41,7 +41,7 @@ class InvoiceForm(forms.ModelForm):
         else:
             self.fields['recipient_user'].queryset = User.objects.filter(pk=-1)
 
-        self.fields['recipient_user'].label_from_instance = lambda u: u'{0} {1} ({2})'.format(u.first_name, u.last_name, u.username)
+        self.fields['recipient_user'].label_from_instance = lambda u: '{0} {1} ({2})'.format(u.first_name, u.last_name, u.username)
         self.fields['canceltime'].widget = widgets.DateTimeInput()
         self.fields['allowedmethods'].widget = forms.CheckboxSelectMultiple()
         self.fields['allowedmethods'].queryset = InvoicePaymentMethod.objects.filter(active=True)
@@ -52,7 +52,7 @@ class InvoiceForm(forms.ModelForm):
 
         if self.instance.finalized:
             # All fields should be read-only for finalized invoices
-            for fn, f in self.fields.items():
+            for fn, f in list(self.fields.items()):
                 if self.instance.ispaid or fn not in self.available_in_finalized:
                     f.required = False
                     if type(f.widget).__name__ in ('TextInput', 'Textarea', 'DateInput', 'DateTimeInput'):

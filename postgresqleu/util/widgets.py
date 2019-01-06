@@ -33,7 +33,7 @@ class RequiredFileUploadWidget(forms.FileInput):
             output.append('</a><br/>')
         output.append("Upload new file: ")
         output.append(super(RequiredFileUploadWidget, self).render(name, value, attrs))
-        return mark_safe(u''.join(output))
+        return mark_safe(''.join(output))
 
 
 class PrettyPrintJsonWidget(forms.Textarea):

@@ -35,7 +35,7 @@ class Command(BaseCommand):
                                    'member': m,
                                },
             )
-            self.stdout.write(u"Expired member {0} (paid until {1})".format(m, m.paiduntil))
+            self.stdout.write("Expired member {0} (paid until {1})".format(m, m.paiduntil))
             # An expired member has no membersince and no paiduntil.
             m.membersince = None
             m.paiduntil = None
@@ -64,6 +64,6 @@ class Command(BaseCommand):
                                    'member': m,
                                },
                            )
-            self.stdout.write(u"Sent warning to member {0} (paid until {1}, last warned {2})".format(m, m.paiduntil, m.expiry_warning_sent))
+            self.stdout.write("Sent warning to member {0} (paid until {1}, last warned {2})".format(m, m.paiduntil, m.expiry_warning_sent))
             m.expiry_warning_sent = datetime.now()
             m.save()

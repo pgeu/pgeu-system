@@ -168,7 +168,7 @@ def wikipage_edit(request, confurl, wikiurl):
 
                 # Send notifications to admin and to any subscribers
                 subject = '[{0}] Wiki page {1} changed'.format(conference.conferencename, page.title)
-                body = u"{0} has modified the page '{1}' with the following changes\n\n\n{2}\n".format(reg.fullname, page.title, diff)
+                body = "{0} has modified the page '{1}' with the following changes\n\n\n{2}\n".format(reg.fullname, page.title, diff)
                 send_simple_mail(conference.notifyaddr,
                                  conference.notifyaddr,
                                  subject,
@@ -233,31 +233,31 @@ def admin_edit_page(request, urlname, pageid):
                 send_simple_mail(conference.notifyaddr,
                                  conference.notifyaddr,
                                  "Wiki page '{0}' created by {1}".format(form.cleaned_data['url'], request.user),
-                                 u"Title: {0}\nAuthor: {1}\nPublic view: {2}\nPublic edit: {3}\nViewer types: {4}\nEditor types: {5}\nViewer attendees: {6}\nEditor attendees: {7}\n\n".format(
+                                 "Title: {0}\nAuthor: {1}\nPublic view: {2}\nPublic edit: {3}\nViewer types: {4}\nEditor types: {5}\nViewer attendees: {6}\nEditor attendees: {7}\n\n".format(
                                      form.cleaned_data['title'],
                                      form.cleaned_data['author'].fullname,
                                      form.cleaned_data['publicview'],
                                      form.cleaned_data['publicedit'],
-                                     u", ".join([r.regtype for r in form.cleaned_data['viewer_regtype']]),
-                                     u", ".join([r.regtype for r in form.cleaned_data['editor_regtype']]),
-                                     u", ".join([r.fullname for r in form.cleaned_data['viewer_attendee']]),
-                                     u", ".join([r.fullname for r in form.cleaned_data['editor_attendee']]),
+                                     ", ".join([r.regtype for r in form.cleaned_data['viewer_regtype']]),
+                                     ", ".join([r.regtype for r in form.cleaned_data['editor_regtype']]),
+                                     ", ".join([r.fullname for r in form.cleaned_data['viewer_attendee']]),
+                                     ", ".join([r.fullname for r in form.cleaned_data['editor_attendee']]),
                                      ),
                                  sendername=conference.conferencename)
             else:
                 f = form.save(commit=False)
                 form.save_m2m()
                 s = StringIO()
-                for k, v in f.diff.items():
+                for k, v in list(f.diff.items()):
                     if type(v[0]) == list:
-                        fr = u", ".join([unicode(o) for o in v[0]])
+                        fr = ", ".join([str(o) for o in v[0]])
                     else:
                         fr = v[0]
                     if type(v[1]) == list:
-                        to = u", ".join([unicode(o) for o in v[1]])
+                        to = ", ".join([str(o) for o in v[1]])
                     else:
                         to = v[1]
-                    s.write(u"Changed {0} from {1} to {2}\n".format(k, fr, to).encode('utf8'))
+                    s.write("Changed {0} from {1} to {2}\n".format(k, fr, to).encode('utf8'))
                 if s.tell() > 0:
                     # Something changed, so generate audit email
                     send_simple_mail(conference.notifyaddr,
@@ -372,11 +372,11 @@ def signup_admin_edit(request, urlname, signupid):
             'signup': signup.id,
         })
         sumresults = cursor.fetchall()
-        results['summary'] = [dict(zip(['choice', 'num', 'percentwidth'], r)) for r in sumresults]
+        results['summary'] = [dict(list(zip(['choice', 'num', 'percentwidth'], r))) for r in sumresults]
         cursor.execute("SELECT s.id, firstname || ' ' || lastname,choice,saved FROM confreg_conferenceregistration r INNER JOIN confwiki_attendeesignup s ON r.id=s.attendee_id WHERE s.signup_id=%(signup)s ORDER BY saved", {
             'signup': signup.id,
         })
-        results['details'] = [dict(zip(['id', 'name', 'choice', 'when'], r)) for r in cursor.fetchall()]
+        results['details'] = [dict(list(zip(['id', 'name', 'choice', 'when'], r))) for r in cursor.fetchall()]
         if signup.optionvalues:
             optionstrings = signup.options.split(',')
             optionvalues = [int(x) for x in signup.optionvalues.split(',')]
@@ -391,7 +391,7 @@ def signup_admin_edit(request, urlname, signupid):
             cursor.execute("SELECT firstname || ' ' || lastname FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND (regtype_id IN (SELECT registrationtype_id FROM confwiki_signup_regtypes srt WHERE srt.signup_id=%(signup)s) OR id IN (SELECT conferenceregistration_id FROM confwiki_signup_attendees WHERE signup_id=%(signup)s)) AND id NOT IN (SELECT attendee_id FROM confwiki_attendeesignup WHERE signup_id=%(signup)s) ORDER BY lastname, firstname", {
                 'signup': signup.id,
             })
-            results['awaiting'] = [dict(zip(['name', ], r)) for r in cursor.fetchall()]
+            results['awaiting'] = [dict(list(zip(['name', ], r))) for r in cursor.fetchall()]
     else:
         author = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
         signup = Signup(conference=conference, author=author)
@@ -494,15 +494,15 @@ def signup_admin_sendmail(request, urlname, signupid):
                 send_simple_mail(conference.contactaddr,
                                  e,
                                  form.cleaned_data['subject'],
-                                 u"{0}\n\nTo view the signup, please see {1}/events/{2}/register/signup/{3}/".format(
+                                 "{0}\n\nTo view the signup, please see {1}/events/{2}/register/signup/{3}/".format(
                                      form.cleaned_data['body'],
                                      settings.SITEBASE, conference.urlname, signup.id),
                                  sendername=conference.conferencename,
                                  receivername=n)
             send_simple_mail(conference.notifyaddr,
                              conference.notifyaddr,
-                             u'Email sent to signup {0}'.format(signup.id),
-                             u"""An email was sent to recipients of the signup "{0}"\nIt was sent to {1}, leading to {2} recipients.\n\nSubject:{3}\nBody:\n{4}\n""".format(
+                             'Email sent to signup {0}'.format(signup.id),
+                             """An email was sent to recipients of the signup "{0}"\nIt was sent to {1}, leading to {2} recipients.\n\nSubject:{3}\nBody:\n{4}\n""".format(
                                  signup.title,
                                  towhat,
                                  numtosend,

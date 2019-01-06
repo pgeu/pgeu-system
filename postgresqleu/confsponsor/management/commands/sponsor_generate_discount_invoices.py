@@ -38,14 +38,14 @@ class Command(BaseCommand):
                 code.save()
                 send_simple_mail(code.conference.sponsoraddr,
                                  code.conference.sponsoraddr,
-                                 u"[{0}] Discount code expired".format(code.conference),
-                                 u"Discount code {0} has expired without any uses.".format(code.code),
+                                 "[{0}] Discount code expired".format(code.conference),
+                                 "Discount code {0} has expired without any uses.".format(code.code),
                                  sendername=code.conference.conferencename)
 
                 for manager in code.sponsor.managers.all():
                     send_template_mail(code.conference.sponsoraddr,
                                        manager.email,
-                                       u"[{0}] Discount code {1} expired".format(code.conference, code.code),
+                                       "[{0}] Discount code {1} expired".format(code.conference, code.code),
                                        'confsponsor/mail/discount_expired.txt',
                                        {
                                            'code': code,
@@ -53,7 +53,7 @@ class Command(BaseCommand):
                                            'conference': code.conference,
                                        },
                                        sendername=code.conference.conferencename,
-                                       receivername=u'{0} {1}'.format(manager.first_name, manager.last_name))
+                                       receivername='{0} {1}'.format(manager.first_name, manager.last_name))
             else:
                 # At least one use, so we generate the invoice
                 invoicerows = []
@@ -72,9 +72,9 @@ class Command(BaseCommand):
                 code.invoice = manager.create_invoice(
                     code.sponsor_rep,
                     code.sponsor_rep.email,
-                    u"{0} {1}".format(code.sponsor_rep.first_name, code.sponsor_rep.last_name),
+                    "{0} {1}".format(code.sponsor_rep.first_name, code.sponsor_rep.last_name),
                     '%s\n%s' % (code.sponsor.name, code.sponsor.invoiceaddr),
-                    u'{0} discount code {1}'.format(code.conference, code.code),
+                    '{0} discount code {1}'.format(code.conference, code.code),
                     datetime.now(),
                     date.today() + timedelta(days=1),
                     invoicerows,
@@ -94,8 +94,8 @@ class Command(BaseCommand):
                 # (so they know where the invoice was sent).
                 send_simple_mail(code.conference.sponsoraddr,
                                  code.conference.sponsoraddr,
-                                 u"[{0}] Discount code {1} has been invoiced".format(code.conference, code.code),
-                                 u"The discount code {0} has been closed,\nand an invoice has been sent to {1}.\n\nA total of {2} registrations used this code, and the total amount was {3}.\n".format(
+                                 "[{0}] Discount code {1} has been invoiced".format(code.conference, code.code),
+                                 "The discount code {0} has been closed,\nand an invoice has been sent to {1}.\n\nA total of {2} registrations used this code, and the total amount was {3}.\n".format(
                                      code.code,
                                      code.sponsor,
                                      len(invoicerows),
@@ -106,7 +106,7 @@ class Command(BaseCommand):
                 for manager in code.sponsor.managers.all():
                     send_template_mail(code.conference.sponsoraddr,
                                        manager.email,
-                                       u"[{0}] Discount code {1} has been invoiced".format(code.conference, code.code),
+                                       "[{0}] Discount code {1} has been invoiced".format(code.conference, code.code),
                                        'confsponsor/mail/discount_invoiced.txt',
                                        {
                                            'code': code,
@@ -117,5 +117,5 @@ class Command(BaseCommand):
                                            'expired_time': code.validuntil < date.today(),
                                        },
                                        sendername=code.conference.conferencename,
-                                       receivername=u'{0} {1}'.format(manager.first_name, manager.last_name)
+                                       receivername='{0} {1}'.format(manager.first_name, manager.last_name)
                                    )

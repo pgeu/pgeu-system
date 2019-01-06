@@ -166,7 +166,7 @@ class Invoice(models.Model):
         return self.total_amount - self.total_vat
 
     def used_vatrates(self):
-        return ", ".join([unicode(r.vatrate) for r in self.invoicerow_set.all() if r.vatrate])
+        return ", ".join([str(r.vatrate) for r in self.invoicerow_set.all() if r.vatrate])
 
     @property
     def can_autorefund(self):

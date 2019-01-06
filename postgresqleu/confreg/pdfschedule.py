@@ -147,7 +147,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
             lastday = d
         groupedbyday[d]['last'] = s.endtime
         groupedbyday[d]['sessions'].append(s)
-    for k, v in groupedbyday.items():
+    for k, v in list(groupedbyday.items()):
         v['length'] = v['last'] - v['first']
         v['rooms'] = set([s.room for s in v['sessions'] if s.room])
 
@@ -176,7 +176,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
             # For each breakpoint, find the closest one
             for p in range(1, pagesperday):
                 breaktime = dd['first'] + timedelta(seconds=p * secondsperpage)
-                breaksession = cross_sessions[min(range(len(cross_sessions)), key=lambda i: abs(cross_sessions[i].starttime - breaktime))]
+                breaksession = cross_sessions[min(list(range(len(cross_sessions))), key=lambda i: abs(cross_sessions[i].starttime - breaktime))]
                 if breaksession not in breakpoints:
                     breakpoints.append(breaksession)
 

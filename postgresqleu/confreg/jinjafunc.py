@@ -181,7 +181,7 @@ def filter_shuffle(l):
 
 
 def filter_currency_format(v):
-    return u"{0} {1:,.2f}".format(unicode(settings.CURRENCY_SYMBOL, 'utf8'), v)
+    return "{0} {1:,.2f}".format(str(settings.CURRENCY_SYMBOL, 'utf8'), v)
 
 
 def filter_float_str(f, n):
@@ -239,7 +239,7 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
         c = {}
 
     if request.user and request.user.is_authenticated():
-        fullname = u'{0} {1}'.format(request.user.first_name, request.user.last_name)
+        fullname = '{0} {1}'.format(request.user.first_name, request.user.last_name)
         email = request.user.email
     else:
         fullname = None

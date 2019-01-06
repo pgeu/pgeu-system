@@ -17,7 +17,7 @@ def exec_to_dict(query, params=None):
     curs = connection.cursor()
     curs.execute(query, params)
     columns = [col[0] for col in curs.description]
-    return [dict(zip(columns, row))for row in curs.fetchall()]
+    return [dict(list(zip(columns, row)))for row in curs.fetchall()]
 
 
 def exec_to_scalar(query, params=None):
@@ -41,7 +41,7 @@ def exec_to_keyed_dict(query, params=None):
     curs = connection.cursor()
     curs.execute(query, params)
     columns = [col[0] for col in curs.description]
-    return {r[columns[0]]: r for r in (dict(zip(columns, row))for row in curs.fetchall())}
+    return {r[columns[0]]: r for r in (dict(list(zip(columns, row)))for row in curs.fetchall())}
 
 
 def exec_to_grouped_dict(query, params=None):
@@ -57,7 +57,7 @@ def exec_to_grouped_dict(query, params=None):
                 full[last] = curr
             curr = []
             last = row[0]
-        curr.append(dict(zip(columns, row[1:])))
+        curr.append(dict(list(zip(columns, row[1:]))))
     if last:
         full[last] = curr
     return full

@@ -67,7 +67,7 @@ def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=Fal
         else:
             lastpage = min(paginator.num_pages + 1, page + 8)
             firstpage = lastpage - 15
-        page_range = range(firstpage, lastpage)
+        page_range = list(range(firstpage, lastpage))
     else:
         page_range = paginator.page_range
 

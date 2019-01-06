@@ -50,7 +50,7 @@ class Command(BaseCommand):
             num += len(expired[r.conference])
 
         if num:
-            for conference, expired in expired.items():
+            for conference, expired in list(expired.items()):
                 s = StringIO()
                 s.write("""The following additional options have been removed from pending
 registrations (without invoice or bulk payment) based on the invoice
@@ -58,7 +58,7 @@ autocancel hours, to make room for other attendees:
 
 """)
                 for name, option in expired:
-                    s.write(u"{0:<40}{1}\n".format(name, option))
+                    s.write("{0:<40}{1}\n".format(name, option))
                 s.write("\n\n")
                 send_simple_mail(conference.notifyaddr,
                                  conference.notifyaddr,

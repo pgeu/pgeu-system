@@ -31,10 +31,10 @@ alignments = {
 
 
 def get_color(col):
-    if isinstance(col, unicode) or isinstance(col, str):
+    if isinstance(col, str):
         return colors.getAllNamedColors().get(col)
     elif isinstance(col, list):
-        return colors.Color(*map(lambda x: x / 255.0, col))
+        return colors.Color(*[x / 255.0 for x in col])
     else:
         raise Exception("Unknown color defintion type")
 

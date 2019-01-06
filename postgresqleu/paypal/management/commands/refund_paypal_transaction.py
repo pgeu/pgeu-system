@@ -45,7 +45,7 @@ class Command(BaseCommand):
         print("-----")
 
         while True:
-            r = raw_input('OK to do this? ')
+            r = input('OK to do this? ')
             if r.lower().startswith('y'):
                 break
             if r.lower().startswith('n'):

@@ -359,7 +359,7 @@ def twitter_integration(request, urlname):
 
 def _reencode_row(r):
     def _reencode_value(v):
-        if isinstance(v, unicode):
+        if isinstance(v, str):
             return v.encode('utf-8')
         return v
     return [_reencode_value(x) for x in r]
@@ -409,9 +409,9 @@ class JsonWriter(object):
             data = []
         for r in rows:
             if self.grouping:
-                data[r[0]] = dict(zip(self.columns, r[1:]))
+                data[r[0]] = dict(list(zip(self.columns, r[1:])))
             else:
-                data.append(dict(zip(self.columns, r)))
+                data.append(dict(list(zip(self.columns, r))))
         self.d['data'] = data
 
     @property
@@ -461,16 +461,16 @@ def tokendata(request, urlname, token, datatype, dataformat):
 
 def _attendee_email_form(request, conference, query, breadcrumbs):
     if request.method == 'POST':
-        idlist = map(int, request.POST['idlist'].split(','))
+        idlist = list(map(int, request.POST['idlist'].split(',')))
     else:
-        idlist = map(int, request.GET['idlist'].split(','))
+        idlist = list(map(int, request.GET['idlist'].split(',')))
 
     queryparams = {'conference': conference.id, 'idlist': idlist}
     recipients = exec_to_dict(query, queryparams)
 
     initial = {
-        '_from': u'{0} <{1}>'.format(conference.conferencename, conference.contactaddr),
-        'recipients': ", ".join(map(lambda x: u'{0} <{1}>'.format(x['fullname'], x['email']), recipients)),
+        '_from': '{0} <{1}>'.format(conference.conferencename, conference.contactaddr),
+        'recipients': ", ".join(['{0} <{1}>'.format(x['fullname'], x['email']) for x in recipients]),
         'idlist': ",".join(map(str, idlist)),
         'storeonregpage': True,
     }
@@ -489,12 +489,12 @@ def _attendee_email_form(request, conference, query, breadcrumbs):
                     })
                 for r in recipients:
                     if form.cleaned_data['storeonregpage']:
-                        msgtxt = u"{0}\n\n-- \nThis message was sent to attendees of {1}.\nYou can view all communications for this conference at:\n{2}/events/{3}/register/\n".format(form.cleaned_data['message'], conference, settings.SITEBASE, conference.urlname)
+                        msgtxt = "{0}\n\n-- \nThis message was sent to attendees of {1}.\nYou can view all communications for this conference at:\n{2}/events/{3}/register/\n".format(form.cleaned_data['message'], conference, settings.SITEBASE, conference.urlname)
                     else:
-                        msgtxt = u"{0}\n\n-- \nThis message was sent to attendees of {1}.\n".format(form.cleaned_data['message'], conference)
+                        msgtxt = "{0}\n\n-- \nThis message was sent to attendees of {1}.\n".format(form.cleaned_data['message'], conference)
                     send_simple_mail(conference.contactaddr,
                                      r['email'],
-                                     u"[{0}] {1}".format(conference, form.cleaned_data['subject']),
+                                     "[{0}] {1}".format(conference, form.cleaned_data['subject']),
                                      msgtxt,
                                      sendername=conference.conferencename,
                                      receivername=r['fullname'],

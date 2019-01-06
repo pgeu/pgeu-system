@@ -9,10 +9,10 @@ from collections import OrderedDict
 
 
 def build_graphdata(question, key, options):
-    optionhash = OrderedDict(zip(options, [0] * len(options)))
+    optionhash = OrderedDict(list(zip(options, [0] * len(options))))
     for answer in ConferenceFeedbackAnswer.objects.filter(conference=question.conference, question=question).order_by(key).values(key).annotate(Count(key)):
         optionhash[answer[key]] = answer['%s__count' % key]
-    return optionhash.iteritems()
+    return iter(optionhash.items())
 
 
 def build_feedback_response(question):
@@ -27,7 +27,7 @@ def build_feedback_response(question):
             r['textanswers'] = [a.textanswer for a in ConferenceFeedbackAnswer.objects.only('textanswer').filter(conference_id=confid, question_id=questionid).exclude(textanswer='')]
     else:
         # Numeric choices from 1-5
-        r['graphdata'] = build_graphdata(question, 'rateanswer', range(0, 6))
+        r['graphdata'] = build_graphdata(question, 'rateanswer', list(range(0, 6)))
     return r
 
 

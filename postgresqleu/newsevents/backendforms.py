@@ -23,7 +23,7 @@ class BackendNewsForm(BackendForm):
 
 class UserModelChoiceField(django.forms.ModelChoiceField):
     def label_from_instance(self, obj):
-        return u"{0} - {1} {2} <{3}>".format(obj.username, obj.first_name, obj.last_name, obj.email)
+        return "{0} - {1} {2} <{3}>".format(obj.username, obj.first_name, obj.last_name, obj.email)
 
 
 class BackendNewAuthorForm(django.forms.Form):

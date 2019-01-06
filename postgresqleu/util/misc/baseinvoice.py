@@ -91,7 +91,7 @@ class PDFBase(object):
             self._draw_multiline_aligned(self.sendertext,
                                          cm(2), cm(23.5), cm(9), cm(4))
 
-        self._draw_multiline_aligned(u"To:\n%s" % self.recipient,
+        self._draw_multiline_aligned("To:\n%s" % self.recipient,
                                      cm(11), cm(23.5), cm(9), cm(4))
 
         p = self.canvas.beginPath()

@@ -18,6 +18,7 @@ from postgresqleu.countries.models import Country
 from .models import ConferenceRegistration, RegistrationType, ConferenceAdditionalOption, ShirtSize
 from .models import STATUS_CHOICES
 from .reportingforms import QueuePartitionForm
+from functools import reduce
 
 # Fields that are available in an advanced attendee report
 # (id, field title, default, field_user_for_order_by)
@@ -257,7 +258,7 @@ def build_attendee_report(conference, POST):
     borders = 'border' in POST
     pagebreaks = 'pagebreaks' in POST
     fields = POST.getlist('fields')
-    extracols = filter(None, map(lambda x: x.strip(), POST['additionalcols'].split(',')))
+    extracols = [_f for _f in [x.strip() for x in POST['additionalcols'].split(',')] if _f]
 
     # Build the filters
     q = Q(conference=conference)
@@ -268,7 +269,7 @@ def build_attendee_report(conference, POST):
             q = q & f.build_Q(POST)
 
     # Figure out our order by
-    orderby = map(lambda x: _attendee_report_field_map[x][2] and _attendee_report_field_map[x][2] or x, [POST['orderby1'], POST['orderby2']])
+    orderby = [_attendee_report_field_map[x][2] and _attendee_report_field_map[x][2] or x for x in [POST['orderby1'], POST['orderby2']]]
 
     # Run the query!
     result = ConferenceRegistration.objects.select_related('shirtsize', 'regtype', 'country', 'conference').filter(q).distinct().order_by(*orderby)
@@ -315,7 +316,7 @@ def build_attendee_report(conference, POST):
                 if type(t) == bool:
                     row.append(t and 'Yes' or 'No')
                 else:
-                    row.append(unicode(t))
+                    row.append(str(t))
             except AttributeError:
                 # NULL in a field, typically
                 row.append('')

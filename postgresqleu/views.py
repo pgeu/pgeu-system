@@ -129,10 +129,10 @@ def admin_dashboard(request):
 
         permissions = {
             'conferences': confperm,
-            'news': u'News administrators' in groups,
-            'membership': settings.ENABLE_MEMBERSHIP and u'Membership administrators' in groups,
-            'elections': settings.ENABLE_ELECTIONS and u'Election administrators' in groups,
-            'invoices': u"Invoice managers" in groups,
+            'news': 'News administrators' in groups,
+            'membership': settings.ENABLE_MEMBERSHIP and 'Membership administrators' in groups,
+            'elections': settings.ENABLE_ELECTIONS and 'Election administrators' in groups,
+            'invoices': "Invoice managers" in groups,
         }
 
     return render(request, 'adm/index.html', {

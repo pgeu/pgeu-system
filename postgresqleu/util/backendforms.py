@@ -6,6 +6,7 @@ from postgresqleu.util.forms import ConcurrentProtectedModelForm
 from postgresqleu.util.widgets import HtmlDateInput
 
 import datetime
+from functools import reduce
 
 
 class _NewFormDataField(django.forms.Field):
@@ -74,7 +75,7 @@ class BackendForm(ConcurrentProtectedModelForm):
             if missing:
                 raise Exception("ERROR: fields %s are not in a fieldset" % ", ".join(missing))
 
-        for k, v in self.fields.items():
+        for k, v in list(self.fields.items()):
             # Adjust widgets
             if isinstance(v, django.forms.fields.DateField):
                 v.widget = HtmlDateInput()
@@ -93,7 +94,7 @@ class BackendForm(ConcurrentProtectedModelForm):
                         MaxValueValidator(self.conference.enddate),
                     ])
 
-        for field, vattype in self.vat_fields.items():
+        for field, vattype in list(self.vat_fields.items()):
             self.fields[field].widget.attrs['class'] = 'backend-vat-field backend-vat-{0}-field'.format(vattype)
 
         for field in self.readonly_fields:
@@ -103,7 +104,7 @@ class BackendForm(ConcurrentProtectedModelForm):
         if not self.selectize_multiple_fields:
             return
 
-        for field, lookup in self.selectize_multiple_fields.items():
+        for field, lookup in list(self.selectize_multiple_fields.items()):
             # If this is a postback of a selectize field, it may contain ids that are not currently
             # stored in the field. They must still be among the *allowed* values of course, which
             # are handled by the existing queryset on the field.
@@ -114,7 +115,7 @@ class BackendForm(ConcurrentProtectedModelForm):
                 vals = [o.pk for o in getattr(self.instance, field).all()]
             else:
                 vals = []
-            if 'data' in kwargs and unicode(field) in kwargs['data']:
+            if 'data' in kwargs and str(field) in kwargs['data']:
                 vals.extend([int(x) for x in kwargs['data'].getlist(field)])
             self.fields[field].widget.attrs['data-selecturl'] = lookup.url
             self.fields[field].queryset = self.fields[field].queryset.filter(pk__in=set(vals))

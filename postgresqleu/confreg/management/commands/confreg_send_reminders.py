@@ -93,7 +93,7 @@ class Command(BaseCommand):
                                    receivername=speaker.fullname,
                                )
 
-                whatstr.write(u"Reminded speaker {0} to confirm {1} talks\n".format(speaker, len(sessions)))
+                whatstr.write("Reminded speaker {0} to confirm {1} talks\n".format(speaker, len(sessions)))
 
             whatstr.write("\n\n")
 
@@ -125,7 +125,7 @@ class Command(BaseCommand):
                                    receivername=speaker.fullname,
                                )
 
-                whatstr.write(u"Reminded speaker {0} to register\n".format(speaker))
+                whatstr.write("Reminded speaker {0} to register\n".format(speaker))
 
             whatstr.write("\n\n")
 
@@ -164,7 +164,7 @@ class Command(BaseCommand):
                 reg.lastmodified = datetime.now()
                 reg.save()
 
-                whatstr.write(u"Reminded attendee {0} that their registration is not confirmed\n".format(reg.fullname))
+                whatstr.write("Reminded attendee {0} that their registration is not confirmed\n".format(reg.fullname))
 
             whatstr.write("\n\n")
 
@@ -199,10 +199,10 @@ class Command(BaseCommand):
                                        'registrator': r,
                                    },
                                    sendername=conference.conferencename,
-                                   receivername=u"{0} {1}".format(r.first_name, r.last_name),
+                                   receivername="{0} {1}".format(r.first_name, r.last_name),
                                )
 
-                whatstr.write(u"Reminded user {0} ({1}) that their multi-registration is not confirmed\n".format(r.username, r.email))
+                whatstr.write("Reminded user {0} ({1}) that their multi-registration is not confirmed\n".format(r.username, r.email))
 
             whatstr.write("\n\n")
 
@@ -231,7 +231,7 @@ class Command(BaseCommand):
                                    sendername=conference.conferencename,
                                    receivername=spk.name,
                                )
-                whatstr.write(u"Reminded speaker {0} that they have made an empty submission\n".format(spk.name))
+                whatstr.write("Reminded speaker {0} that they have made an empty submission\n".format(spk.name))
             sess.lastmodified = datetime.now()
             sess.save()
 
@@ -259,4 +259,4 @@ class Command(BaseCommand):
                            )
             spk.lastmodified = datetime.now()
             spk.save()
-            whatstr.write(u"Reminded speaker {0} that their profile is empty\n".format(spk.name))
+            whatstr.write("Reminded speaker {0} that their profile is empty\n".format(spk.name))

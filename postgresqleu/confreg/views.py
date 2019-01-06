@@ -96,7 +96,7 @@ def _get_registration_signups(conference, reg):
         'regid': reg.id,
         'regtypeid': reg.regtype_id,
         })
-    return [dict(zip(['id', 'title', 'deadline', 'closed', 'savedat'], r)) for r in cursor.fetchall()]
+    return [dict(list(zip(['id', 'title', 'deadline', 'closed', 'savedat'], r))) for r in cursor.fetchall()]
 
 
 # Not a view in itself, only called from other views
@@ -359,7 +359,7 @@ def multireg(request, confname, regid=None):
 
     allregs = ConferenceRegistration.objects.filter(conference=conference, registrator=request.user)
     try:
-        (a for a in allregs if not (a.payconfirmedat or a.bulkpayment)).next()
+        next((a for a in allregs if not (a.payconfirmedat or a.bulkpayment)))
         haspending = True
     except StopIteration:
         haspending = False
@@ -542,16 +542,16 @@ def multireg_newinvoice(request, confname):
     invoicerows = []
     for r in pendingregs:
         if not r.regtype:
-            errors.append(u'{0} has no registration type specified'.format(r.email))
+            errors.append('{0} has no registration type specified'.format(r.email))
         elif not r.regtype.active:
-            errors.append(u'{0} uses registration type {1} which is not active'.format(r.email, r.regtype))
+            errors.append('{0} uses registration type {1} which is not active'.format(r.email, r.regtype))
         elif r.regtype.activeuntil and r.regtype.activeuntil < date.today():
-            errors.append(u'{0} uses registration type {1} which is not active'.format(r.email, r.regtype))
+            errors.append('{0} uses registration type {1} which is not active'.format(r.email, r.regtype))
         else:
             try:
                 invoicerows.extend(invoicerows_for_registration(r, finalize))
             except InvoicerowsException as ex:
-                errors.append(u'{0}: {1}'.format(r.email, ex))
+                errors.append('{0}: {1}'.format(r.email, ex))
 
     for r in invoicerows:
         # Calculate the with-vat information for this row
@@ -682,7 +682,7 @@ def reg_add_options(request, confname):
         return HttpResponseRedirect('../')
 
     options = []
-    for k, v in request.POST.items():
+    for k, v in list(request.POST.items()):
         if k.startswith('ao_') and v == "1":
             options.append(int(k[3:]))
 
@@ -955,7 +955,7 @@ class SessionSet(object):
 
         # Get a dict from each roomid to the 0-based position of the room from left to right,
         # so the position can be calculated.
-        self.rooms = dict(zip(day_rooms, range(len(day_rooms))))
+        self.rooms = dict(list(zip(day_rooms, list(range(len(day_rooms))))))
 
         # Populate the dict for all sessions
         self.sessions = [self._session_template_dict(s) for s in sessions if s['room_id'] or s['cross_schedule']]
@@ -1009,7 +1009,7 @@ class SessionSet(object):
             'widthpos': self.roomwidth() - 2,
             'heightpos': self.headersize - 2,
             'sessions': list(self.room_sessions(id)),
-        } for id, idx in sorted(self.rooms.items(), key=lambda x: x[1])]
+        } for id, idx in sorted(list(self.rooms.items()), key=lambda x: x[1])]
 
     def room_sessions(self, roomid):
         roomprevsess = None
@@ -1041,7 +1041,7 @@ def _scheduledata(request, conference):
     })
 
     days = []
-    for d, sessions in raw.items():
+    for d, sessions in list(raw.items()):
         sessionset = SessionSet(allrooms, day_rooms[d]['rooms'],
                                 conference.schedulewidth, conference.pixelsperminute,
                                 sessions)
@@ -1379,7 +1379,7 @@ def callforpapers_edit(request, confname, sessionid):
                 elif request.FILES:
                     if len(request.FILES) != 1:
                         raise Exception("Only one file at a time, sorry!")
-                    for k, v in request.FILES.items():
+                    for k, v in list(request.FILES.items()):
                         ConferenceSessionSlides(session=session,
                                                 name=v.name,
                                                 content=v.read()).save()
@@ -1440,7 +1440,7 @@ def public_speaker_lookup(request, confname):
     if len(prefix) > 5:
         vals = [{
             'id': s.id,
-            'value': u"{0} <{1}>".format(s.fullname, s.email),
+            'value': "{0} <{1}>".format(s.fullname, s.email),
         } for s in Speaker.objects.filter(user__email__startswith=prefix).exclude(fullname='')]
     else:
         vals = []
@@ -1461,7 +1461,7 @@ def callforpapers_copy(request, confname):
             for s in form.cleaned_data['sessions']:
                 # The majority of all fields should just be blank in the new submission, so create
                 # a new session object instead of trying to copy the old one.
-                submissionnote = u"Submission copied from {0}.".format(s.conference)
+                submissionnote = "Submission copied from {0}.".format(s.conference)
                 if s.submissionnote:
                     submissionnote += " Original note:\n\n" + s.submissionnote
 
@@ -1595,7 +1595,7 @@ def confirmreg(request, confname):
                 send_simple_mail(reg.conference.notifyaddr,
                                  reg.conference.notifyaddr,
                                  'Waitlist expired',
-                                 u'User {0} {1} <{2}> did not complete the registration before the waitlist offer expired.'.format(reg.firstname, reg.lastname, reg.email),
+                                 'User {0} {1} <{2}> did not complete the registration before the waitlist offer expired.'.format(reg.firstname, reg.lastname, reg.email),
                                  sendername=reg.conference.conferencename)
 
                 return render_conference_response(request, conference, 'reg', 'confreg/waitlist_status.html', {
@@ -1722,7 +1722,7 @@ def confirmreg(request, confname):
 
     # Add warnings for mismatching name
     if reg.firstname != request.user.first_name or reg.lastname != request.user.last_name:
-        registration_warnings.append(u"Registration name ({0} {1}) does not match account name ({2} {3}). Please make sure that this is correct, and that you are <strong>not</strong> registering using a different account than your own, as access to the account may be needed during the event!".format(reg.firstname, reg.lastname, request.user.first_name, request.user.last_name))
+        registration_warnings.append("Registration name ({0} {1}) does not match account name ({2} {3}). Please make sure that this is correct, and that you are <strong>not</strong> registering using a different account than your own, as access to the account may be needed during the event!".format(reg.firstname, reg.lastname, request.user.first_name, request.user.last_name))
 
     return render_conference_response(request, conference, 'reg', 'confreg/regform_confirm.html', {
         'reg': reg,
@@ -1762,7 +1762,7 @@ def waitlist_signup(request, confname):
     send_simple_mail(reg.conference.notifyaddr,
                      reg.conference.notifyaddr,
                      'Waitlist signup',
-                     u'User {0} {1} <{2}> signed up for the waitlist.'.format(reg.firstname, reg.lastname, reg.email),
+                     'User {0} {1} <{2}> signed up for the waitlist.'.format(reg.firstname, reg.lastname, reg.email),
                      sendername=reg.conference.conferencename)
 
     # Once on the waitlist, redirect back to the registration form page
@@ -1792,7 +1792,7 @@ def waitlist_cancel(request, confname):
     send_simple_mail(reg.conference.notifyaddr,
                      reg.conference.notifyaddr,
                      'Waitlist cancel',
-                     u'User {0} {1} <{2}> canceled from the waitlist.'.format(reg.firstname, reg.lastname, reg.email),
+                     'User {0} {1} <{2}> canceled from the waitlist.'.format(reg.firstname, reg.lastname, reg.email),
                      sendername=reg.conference.conferencename)
 
     messages.info(request, "Your registration has been removed from the waitlist. You may re-enter it if you change your mind.")
@@ -1858,7 +1858,7 @@ def invoice_cancel(request, confname, regid):
     if request.method == 'POST':
         if request.POST['submit'].find('Cancel invoice') >= 0:
             manager = InvoiceManager()
-            manager.cancel_invoice(reg.invoice, u"User {0} requested cancellation".format(request.user))
+            manager.cancel_invoice(reg.invoice, "User {0} requested cancellation".format(request.user))
             return HttpResponseRedirect('../../../')
         else:
             return HttpResponseRedirect('../')
@@ -1964,7 +1964,7 @@ def createvouchers(request, confname):
             regtype = RegistrationType.objects.get(pk=form.data['regtype'], conference=conference)
             regcount = int(form.data['count'])
             buyer = User.objects.get(pk=form.data['buyer'])
-            buyername = u'{0} {1}'.format(buyer.first_name, buyer.last_name)
+            buyername = '{0} {1}'.format(buyer.first_name, buyer.last_name)
 
             batch = PrepaidBatch(conference=conference,
                                  regtype=regtype,
@@ -2100,7 +2100,7 @@ def emailvouchers(request, confname, batchid):
                            'conference': conference,
                        },
                        sendername=batch.conference.conferencename,
-                       receivername=u"{0} {1}".format(batch.buyer.first_name, batch.buyer.last_name),
+                       receivername="{0} {1}".format(batch.buyer.first_name, batch.buyer.last_name),
                    )
     return HttpResponse('OK')
 
@@ -2173,12 +2173,12 @@ def bulkpay(request, confname):
                         errors = 1
                     else:
                         # All content is valid, so just append it
-                        state.append({'email': regs[0].email, 'found': 1, 'pay': 1, 'total': s, 'rows': [u'%s (%s%s)' % (r[0], settings.CURRENCY_SYMBOL.decode('utf8'), r[2]) for r in regrows]})
+                        state.append({'email': regs[0].email, 'found': 1, 'pay': 1, 'total': s, 'rows': ['%s (%s%s)' % (r[0], settings.CURRENCY_SYMBOL.decode('utf8'), r[2]) for r in regrows]})
                         totalcost += s
                         invoicerows.extend(regrows)
 
                 except InvoicerowsException as ex:
-                    state.append({'email': e, 'found': 1, 'pay': 0, 'text': unicode(ex)})
+                    state.append({'email': e, 'found': 1, 'pay': 0, 'text': str(ex)})
                     errors = 1
 
         if confirmstep:
@@ -2437,7 +2437,7 @@ def createschedule(request, confname):
         re_slot = re.compile('^slot(\d+)$')
         for sess in conference.conferencesession_set.all():
             found = False
-            for k, v in request.POST.items():
+            for k, v in list(request.POST.items()):
                 if v == "sess%s" % sess.id:
                     sm = re_slot.match(k)
                     if not sm:
@@ -2482,7 +2482,7 @@ def createschedule(request, confname):
 
     days = []
 
-    for d, d_sessions in raw.items():
+    for d, d_sessions in list(raw.items()):
         sessionset = SessionSet(allrooms, allrooms, conference.schedulewidth, conference.pixelsperminute, d_sessions)
         days.append({
             'day': d,
@@ -2602,7 +2602,7 @@ def simple_report(request, confname):
         'confid': conference.id,
     }
 
-    if not isinstance(query, (str, unicode)):
+    if not isinstance(query, str):
         if request.method == 'POST':
             form = query(data=request.POST, initial={'report': rep})
             if form.is_valid():
@@ -2624,10 +2624,10 @@ def simple_report(request, confname):
     d = curs.fetchall()
     collist = [dd[0] for dd in curs.description]
     # Get offsets of all columns that don't start with _
-    colofs = [n for x, n in zip(collist, range(len(collist))) if not x.startswith('_')]
+    colofs = [n for x, n in zip(collist, list(range(len(collist)))) if not x.startswith('_')]
     if len(colofs) != len(collist):
         # One or more columns filtered - so filter the data
-        d = map(itemgetter(*colofs), d)
+        d = list(map(itemgetter(*colofs), d))
 
     return render(request, 'confreg/simple_report.html', {
         'conference': conference,
@@ -3046,7 +3046,7 @@ def admin_waitlist_cancel(request, urlname, wlid):
         send_simple_mail(reg.conference.notifyaddr,
                          reg.conference.notifyaddr,
                          'Waitlist offer cancel',
-                         u'Waitlist offer for user {0} {1} <{2}> canceled by {3}. User remains on waitlist.'.format(reg.firstname, reg.lastname, reg.email, request.user),
+                         'Waitlist offer for user {0} {1} <{2}> canceled by {3}. User remains on waitlist.'.format(reg.firstname, reg.lastname, reg.email, request.user),
                          sendername=reg.conference.conferencename)
 
         send_template_mail(reg.conference.contactaddr,
@@ -3069,7 +3069,7 @@ def admin_waitlist_cancel(request, urlname, wlid):
         send_simple_mail(reg.conference.notifyaddr,
                          reg.conference.notifyaddr,
                          'Waitlist cancel',
-                         u'User {0} {1} <{2}> removed from the waitlist by {3}.'.format(reg.firstname, reg.lastname, reg.email, request.user),
+                         'User {0} {1} <{2}> removed from the waitlist by {3}.'.format(reg.firstname, reg.lastname, reg.email, request.user),
                          sendername=reg.conference.conferencename)
 
         send_template_mail(reg.conference.contactaddr,
@@ -3121,7 +3121,7 @@ def admin_waitlist_sendmail(request, urlname):
 
                     send_simple_mail(conference.contactaddr,
                                      w.registration.email,
-                                     u"[{0}] {1}".format(conference.conferencename, form.cleaned_data['subject']),
+                                     "[{0}] {1}".format(conference.conferencename, form.cleaned_data['subject']),
                                      msgbody,
                                      sendername=conference.conferencename,
                                      receivername=w.registration.fullname)
@@ -3161,10 +3161,10 @@ def admin_attendeemail(request, urlname):
             # Now also send the email out to the currently registered attendees
             attendees = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, regtype__regclass__in=form.data.getlist('regclasses'))
             for a in attendees:
-                msgtxt = u"{0}\n\n-- \nThis message was sent to attendees of {1}.\nYou can view all communications for this conference at:\n{2}/events/{3}/register/\n".format(msg.message, conference, settings.SITEBASE, conference.urlname)
+                msgtxt = "{0}\n\n-- \nThis message was sent to attendees of {1}.\nYou can view all communications for this conference at:\n{2}/events/{3}/register/\n".format(msg.message, conference, settings.SITEBASE, conference.urlname)
                 send_simple_mail(conference.contactaddr,
                                  a.email,
-                                 u"[{0}] {1}".format(conference, msg.subject),
+                                 "[{0}] {1}".format(conference, msg.subject),
                                  msgtxt,
                                  sendername=conference.conferencename,
                                  receivername=a.fullname,
@@ -3235,7 +3235,7 @@ def transfer_reg(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
     def _make_transfer(fromreg, toreg):
-        yield u"Initiating transfer from %s to %s" % (fromreg.fullname, toreg.fullname)
+        yield "Initiating transfer from %s to %s" % (fromreg.fullname, toreg.fullname)
         if toreg.payconfirmedat:
             raise ValidationError("Destination registration is already confirmed!")
         if toreg.bulkpayment:
@@ -3251,7 +3251,7 @@ def transfer_reg(request, urlname):
 
         # Transfer registration type
         if toreg.regtype != fromreg.regtype:
-            yield u"Change registration type from %s to %s" % (toreg.regtype, fromreg.regtype)
+            yield "Change registration type from %s to %s" % (toreg.regtype, fromreg.regtype)
             if fromreg.regtype.specialtype:
                 try:
                     validate_special_reg_type(fromreg.regtype.specialtype, toreg)
@@ -3261,7 +3261,7 @@ def transfer_reg(request, urlname):
 
         # Transfer any vouchers
         if fromreg.vouchercode != toreg.vouchercode:
-            yield u"Change discount code to %s" % fromreg.vouchercode
+            yield "Change discount code to %s" % fromreg.vouchercode
             if toreg.vouchercode:
                 # There's already a code set. Remove it.
                 toreg.vouchercode = None
@@ -3280,7 +3280,7 @@ def transfer_reg(request, urlname):
                     d.registrations.remove(fromreg)
                     d.registrations.add(toreg)
                     d.save()
-                    yield u"Transferred discount code %s" % d
+                    yield "Transferred discount code %s" % d
                 vcs = fromreg.prepaidvoucher_set.all()
                 if vcs:
                     # It's a voucher code. Same here, only one.
@@ -3290,13 +3290,13 @@ def transfer_reg(request, urlname):
 
         # Bulk payment?
         if fromreg.bulkpayment:
-            yield u"Transfer bulk payment %s" % fromreg.bulkpayment.id
+            yield "Transfer bulk payment %s" % fromreg.bulkpayment.id
             toreg.bulkpayment = fromreg.bulkpayment
             fromreg.bulkpayment = None
 
         # Invoice?
         if fromreg.invoice:
-            yield u"Transferring invoice %s" % fromreg.invoice.id
+            yield "Transferring invoice %s" % fromreg.invoice.id
             toreg.invoice = fromreg.invoice
             fromreg.invoice = None
             InvoiceHistory(invoice=toreg.invoice,
@@ -3306,7 +3306,7 @@ def transfer_reg(request, urlname):
         # Additional options
         if fromreg.additionaloptions.exists():
             for o in fromreg.additionaloptions.all():
-                yield u"Transferring additional option {0}".format(o)
+                yield "Transferring additional option {0}".format(o)
                 o.conferenceregistration_set.remove(fromreg)
                 o.conferenceregistration_set.add(toreg)
                 o.save()
@@ -3314,11 +3314,11 @@ def transfer_reg(request, urlname):
         # Waitlist entries
         if hasattr(fromreg, 'registrationwaitlistentry'):
             wle = fromreg.registrationwaitlistentry
-            yield u"Transferring registration waitlist entry"
+            yield "Transferring registration waitlist entry"
             wle.registration = toreg
             wle.save()
 
-        yield u"Copying payment confirmation"
+        yield "Copying payment confirmation"
         toreg.payconfirmedat = fromreg.payconfirmedat
         toreg.payconfirmedby = "{0}(x)".format(fromreg.payconfirmedby)[:16]
         toreg.save()
@@ -3345,7 +3345,7 @@ def transfer_reg(request, urlname):
                          receivername=fromreg.conference.conferencename,
         )
 
-        yield u"Deleting old registration"
+        yield "Deleting old registration"
         fromreg.delete()
 
     steps = None
@@ -3473,7 +3473,7 @@ def crossmail(request):
                 send_simple_mail(form.data['senderaddr'],
                                  r['email'],
                                  form.data['subject'],
-                                 u"{0}\n\n\nThis email was sent to you from {1}.\nTo opt-out from further communications about our events, please fill out the form at:\n{2}/events/optout/{3}/".format(form.data['text'], settings.ORG_NAME, settings.SITEBASE, r['token']),
+                                 "{0}\n\n\nThis email was sent to you from {1}.\nTo opt-out from further communications about our events, please fill out the form at:\n{2}/events/optout/{3}/".format(form.data['text'], settings.ORG_NAME, settings.SITEBASE, r['token']),
                                  sendername=form.data['sendername'],
                                  receivername=r['fullname'],
                 )
@@ -3510,14 +3510,14 @@ def crossmailoptions(request):
         {'id': 'rt:*', 'title': 'Reg: all'},
     ]
     r.extend([
-        {'id': 'rt:{0}'.format(rt.id), 'title': u'Reg: {0}'.format(rt.regtype)}
+        {'id': 'rt:{0}'.format(rt.id), 'title': 'Reg: {0}'.format(rt.regtype)}
         for rt in RegistrationType.objects.filter(conference=conf)])
     r.extend([
         {'id': 'sp:*', 'title': 'Speaker: all'},
         {'id': 'sp:?', 'title': 'Speaker: accept+reserve'},
     ])
     r.extend([
-        {'id': 'sp:{0}'.format(k), 'title': u'Speaker: {0}'.format(v)}
+        {'id': 'sp:{0}'.format(k), 'title': 'Speaker: {0}'.format(v)}
         for k, v in STATUS_CHOICES
     ])
     return HttpResponse(json.dumps(r), content_type="application/json")
