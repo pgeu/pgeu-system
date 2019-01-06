@@ -28,8 +28,7 @@ from django.conf import settings
 import base64
 import json
 import socket
-import urllib.parse
-import urllib.request, urllib.parse, urllib.error
+from urllib.parse import urlparse, urlencode, parse_qs
 import requests
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA
@@ -54,17 +53,17 @@ def login(request):
         # Put together an url-encoded dict of parameters we're getting back,
         # including a small nonce at the beginning to make sure it doesn't
         # encrypt the same way every time.
-        s = "t=%s&%s" % (int(time.time()), urllib.parse.urlencode({'r': request.GET['next']}))
+        s = "t=%s&%s" % (int(time.time()), urlencode({'r': request.GET['next']}))
         # Now encrypt it
         r = Random.new()
         iv = r.read(16)
-        encryptor = AES.new(SHA.new(settings.SECRET_KEY).digest()[:16], AES.MODE_CBC, iv)
+        encryptor = AES.new(SHA.new(settings.SECRET_KEY.encode('ascii')).digest()[:16], AES.MODE_CBC, iv)
         cipher = encryptor.encrypt(s + ' ' * (16 - (len(s) % 16)))  # pad to 16 bytes
 
         return HttpResponseRedirect("%s?d=%s$%s" % (
             settings.PGAUTH_REDIRECT,
-            base64.b64encode(iv, "-_"),
-            base64.b64encode(cipher, "-_"),
+            base64.b64encode(iv, b"-_").decode('utf8'),
+            base64.b64encode(cipher, b"-_").decode('utf8'),
         ))
     else:
         return HttpResponseRedirect(settings.PGAUTH_REDIRECT)
@@ -81,7 +80,7 @@ def logout(request):
 # Receive an authentication response from the main website and try
 # to log the user in.
 def auth_receive(request):
-    if request.GET.get('s', None) == "logout":
+    if 's' in request.GET and request.GET['s'] == "logout":
         # This was a logout request
         return HttpResponseRedirect('/')
 
@@ -94,11 +93,11 @@ def auth_receive(request):
     decryptor = AES.new(base64.b64decode(settings.PGAUTH_KEY),
                         AES.MODE_CBC,
                         base64.b64decode(str(request.GET['i']), "-_"))
-    s = decryptor.decrypt(base64.b64decode(str(request.GET['d']), "-_")).rstrip(' ')
+    s = decryptor.decrypt(base64.b64decode(str(request.GET['d']), "-_")).rstrip(b' ').decode('utf8')
 
     # Now un-urlencode it
     try:
-        data = urllib.parse.parse_qs(s, strict_parsing=True)
+        data = parse_qs(s, strict_parsing=True)
     except ValueError:
         return HttpResponse("Invalid encrypted data received.", status=400)
 
@@ -159,12 +158,12 @@ We apologize for the inconvenience.
     # redirect the user.
     if 'd' in data:
         (ivs, datas) = data['d'][0].split('$')
-        decryptor = AES.new(SHA.new(settings.SECRET_KEY).digest()[:16],
+        decryptor = AES.new(SHA.new(settings.SECRET_KEY.encode('ascii')).digest()[:16],
                             AES.MODE_CBC,
-                            base64.b64decode(ivs, "-_"))
-        s = decryptor.decrypt(base64.b64decode(datas, "-_")).rstrip(' ')
+                            base64.b64decode(ivs, b"-_"))
+        s = decryptor.decrypt(base64.b64decode(datas, "-_")).rstrip(b' ').decode('utf8')
         try:
-            rdata = urllib.parse.parse_qs(s, strict_parsing=True)
+            rdata = parse_qs(s, strict_parsing=True)
         except ValueError:
             return HttpResponse("Invalid encrypted data received.", status=400)
         if 'r' in rdata:
@@ -198,13 +197,13 @@ def user_search(searchterm=None, userid=None):
     if r.status_code != 200:
         return []
 
-    (ivs, datas) = r.text.encode('utf8').split('&')
+    (ivs, datas) = r.text.encode('utf8').split(b'&')
 
     # Decryption time
     decryptor = AES.new(base64.b64decode(settings.PGAUTH_KEY),
                         AES.MODE_CBC,
                         base64.b64decode(ivs, "-_"))
-    s = decryptor.decrypt(base64.b64decode(datas, "-_")).rstrip(' ')
+    s = decryptor.decrypt(base64.b64decode(datas, "-_")).rstrip(b' ').decode('utf8')
     j = json.loads(s)
 
     return j
