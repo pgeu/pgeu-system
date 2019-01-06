@@ -3,7 +3,6 @@
 import os
 import sys
 
-from exceptions import ImportError
 from django.conf import global_settings
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
