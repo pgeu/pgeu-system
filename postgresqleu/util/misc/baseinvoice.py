@@ -14,7 +14,7 @@ from reportlab.platypus.flowables import Image
 from reportlab.pdfbase.pdfmetrics import registerFont
 from reportlab.pdfbase.ttfonts import TTFont
 import qrencode
-import cStringIO as StringIO
+from io import BytesIO
 
 from django.conf import settings
 
@@ -27,7 +27,7 @@ class PDFBase(object):
     sendertext = settings.ORG_NAME
 
     def __init__(self, recipient):
-        self.pdfdata = StringIO.StringIO()
+        self.pdfdata = BytesIO()
         self.canvas = Canvas(self.pdfdata)
 
         self.recipient = recipient

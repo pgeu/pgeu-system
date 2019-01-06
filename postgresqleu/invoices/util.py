@@ -71,7 +71,7 @@ class InvoiceWrapper(object):
         # there is no associated account
         s = SHA256.new()
         r = Random.new()
-        s.update(self.invoice.pdf_invoice)
+        s.update(self.invoice.pdf_invoice.encode('ascii'))
         s.update(r.read(250))
         self.invoice.recipient_secret = s.hexdigest()
 
