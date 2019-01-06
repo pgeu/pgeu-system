@@ -262,7 +262,7 @@ class InvoiceWrapper(object):
 
 
 def _standard_logger(message):
-    print message
+    print(message)
 
 
 def _trunc_string(s, l):
@@ -649,13 +649,13 @@ class InvoiceManager(object):
 # This is purely for testing, obviously
 class TestProcessor(object):
     def process_invoice_payment(self, invoice):
-        print "Callback processing invoice with title '%s', for my own id %s" % (invoice.title, invoice.processorid)
+        print("Callback processing invoice with title '%s', for my own id %s" % (invoice.title, invoice.processorid))
 
     def process_invoice_cancellation(self, invoice):
         raise Exception("This processor can't cancel invoices.")
 
     def get_return_url(self, invoice):
-        print "Trying to get the return url, but I can't!"
+        print("Trying to get the return url, but I can't!")
         return "http://unknown.postgresql.eu/"
 
     def get_admin_url(self, invoice):

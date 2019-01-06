@@ -224,7 +224,7 @@ class JinjaRenderer(object):
         self.staticdir = os.path.join(rootdir, 'static')
         if not os.path.isdir(self.staticdir):
             if debug:
-                print "Static directory {0} does not exist, ignoring.".format(self.staticdir)
+                print("Static directory {0} does not exist, ignoring.".format(self.staticdir))
             self.staticdir = None
 
         self.story = []
@@ -243,11 +243,11 @@ class JinjaRenderer(object):
             js = json.loads(s)
         except ValueError as e:
             if self.debug:
-                print "JSON parse failed. Template output:"
-                print s
-                print "------------------------"
-                print "JSON parse failed: %s" % e
-                print "see template output above."
+                print("JSON parse failed. Template output:")
+                print(s)
+                print("------------------------")
+                print("JSON parse failed: %s" % e)
+                print("see template output above.")
                 sys.exit(1)
             else:
                 raise Exception("JSON parse failed.")
