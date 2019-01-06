@@ -212,7 +212,7 @@ class ReportWriterCsv(ReportWriterBase):
         resp = HttpResponse(content_type='text/plain; charset=utf-8')
         c = csv.writer(resp, delimiter=';')
         for r in self.rows:
-            c.writerow([x.encode('utf-8') for x in r])
+            c.writerow(r)
 
         return resp
 

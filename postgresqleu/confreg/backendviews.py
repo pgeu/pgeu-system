@@ -357,14 +357,6 @@ def twitter_integration(request, urlname):
     })
 
 
-def _reencode_row(r):
-    def _reencode_value(v):
-        if isinstance(v, str):
-            return v.encode('utf-8')
-        return v
-    return [_reencode_value(x) for x in r]
-
-
 class DelimitedWriter(object):
     def __init__(self, delimiter):
         self.delimiter = delimiter
@@ -382,7 +374,7 @@ class DelimitedWriter(object):
 
     def write_rows(self, rows, grouping=False):
         for r in rows:
-            self.writer.writerow(_reencode_row(r))
+            self.writer.writerow(r)
 
 
 class JsonWriter(object):
