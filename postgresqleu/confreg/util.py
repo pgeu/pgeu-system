@@ -5,7 +5,7 @@ from django.core.exceptions import PermissionDenied
 
 from decimal import Decimal
 from datetime import datetime, date, timedelta
-import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 from io import BytesIO
 import re
 

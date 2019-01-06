@@ -37,9 +37,9 @@ class Command(BaseCommand):
             for a in articles:
                 # We hardcode 30 chars for the URL shortener. And then 10 to cover the intro and spacing.
                 statusstr = "{0} {1}/news/{2}-{3}/".format(a.title[:140 - 40],
-                                                            settings.SITEBASE,
-                                                            slugify(a.title),
-                                                            a.id)
+                                                           settings.SITEBASE,
+                                                           slugify(a.title),
+                                                           a.id)
                 ok, msg = tw.post_tweet(statusstr)
                 if ok:
                     a.tweeted = True
@@ -65,8 +65,8 @@ class Command(BaseCommand):
             if al:
                 a = al[0]
                 statusstr = "{0} {1}##{2}".format(a.title[:250 - 40],
-                                                   c.confurl,
-                                                   a.id)
+                                                  c.confurl,
+                                                  a.id)
                 ok, msg = tw.post_tweet(statusstr)
                 if ok:
                     a.tweeted = True

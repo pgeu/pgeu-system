@@ -3,7 +3,7 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 
 from datetime import datetime
-import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 
 from .models import Member, MemberLog, Meeting
 

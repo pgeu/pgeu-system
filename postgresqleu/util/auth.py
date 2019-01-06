@@ -2,7 +2,7 @@ from django.core.exceptions import PermissionDenied
 from postgresqleu.util.middleware import RedirectException
 from django.conf import settings
 
-import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 
 
 def authenticate_backend_group(request, groupname):

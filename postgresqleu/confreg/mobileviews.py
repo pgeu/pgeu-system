@@ -4,7 +4,7 @@ from django.db import connection
 from django.conf import settings
 
 import markdown
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
 from urllib.parse import urlencode
 
 from .models import Conference
