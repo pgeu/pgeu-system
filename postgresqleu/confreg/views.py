@@ -1135,8 +1135,9 @@ def schedule_xcal(request, confname):
         ET.SubElement(s, 'location').text = sess.room and sess.room.roomname or ''
         for spk in sess.speaker.all():
             ET.SubElement(s, 'attendee').text = spk.name
-    return HttpResponse(ET.tostring(x),
-                        content_type='text/xml')
+    resp = HttpResponse(content_type='text/xml; charset=utf-8')
+    ET.ElementTree(x).write(resp, encoding='utf-8', xml_declaration=True)
+    return resp
 
 
 def schedule_xml(request, confname):
@@ -1178,8 +1179,9 @@ def schedule_xml(request, confname):
         for spk in sess.speaker.all():
             ET.SubElement(p, 'person', id=str(spk.id)).text = spk.name
 
-    return HttpResponse(ET.tostring(x),
-                        content_type='text/xml')
+    resp = HttpResponse(content_type='text/xml; charset=utf-8')
+    ET.ElementTree(x).write(resp, encoding='utf-8', xml_declaration=True)
+    return resp
 
 
 def session(request, confname, sessionid, junk=None):
