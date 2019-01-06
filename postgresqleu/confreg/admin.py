@@ -58,7 +58,7 @@ class RegtypeListFilter(admin.SimpleListFilter):
     parameter_name = 'regtype'
 
     def lookups(self, request, model_admin):
-        cid = request.GET.get('conference__id__exact', -1)
+        cid = int(request.GET.get('conference__id__exact', -1))
         if cid >= 0:
             return ((r.id, r.regtype) for r in RegistrationType.objects.filter(conference__id=cid))
 
@@ -72,7 +72,7 @@ class AdditionalOptionListFilter(admin.SimpleListFilter):
     parameter_name = 'addoption'
 
     def lookups(self, request, model_admin):
-        cid = request.GET.get('conference__id__exact', -1)
+        cid = int(request.GET.get('conference__id__exact', -1))
         if cid >= 0:
             return ((ao.id, ao.name) for ao in ConferenceAdditionalOption.objects.filter(conference__id=cid))
 
