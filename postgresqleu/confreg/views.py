@@ -2876,7 +2876,11 @@ def admin_registration_cancel(request, urlname, regid):
                     return HttpResponseRedirect(".")
                 # Calculate amount to refund
                 to_refund = (totalnovat * pattern.percent / Decimal(100) - pattern.fees).quantize(Decimal('0.01'))
-                to_refund_vat = (totalvat * pattern.percent / Decimal(100) - pattern.fees * conference.vat_registrations.vatpercent / Decimal(100)).quantize(Decimal('0.01'))
+                if conference.vat_registrations:
+                    to_refund_vat = (totalvat * pattern.percent / Decimal(100) - pattern.fees * conference.vat_registrations.vatpercent / Decimal(100)).quantize(Decimal('0.01'))
+                else:
+                    to_refund_vat = Decimal(0)
+
                 if reg.invoice:
                     invoice = reg.invoice
                 elif reg.bulkpayment:
