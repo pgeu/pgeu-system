@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import EmailValidator
 from django.utils.deconstruct import deconstructible
 
-from io import StringIO
+from io import BytesIO
 
 import requests
 from PIL import Image
@@ -102,7 +102,7 @@ class PictureUrlValidator(object):
         if r.status_code != 200:
             raise ValidationError("Downloading promo picture returned status %s" % r.status_code)
         try:
-            img = Image.open(StringIO(r.content))
+            img = Image.open(BytesIO(r.content))
             w, h = img.size
             if self.aspect:
                 newaspect = round(float(w) / float(h), 2)
