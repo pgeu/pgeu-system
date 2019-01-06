@@ -141,7 +141,7 @@ class TrustlyWrapper(object):
         tosign = method + uuid + self._serializestruct(struct['result']['data'])
         sha1hash = SHA.new(tosign.encode('utf-8'))
         signature = self.signer.sign(sha1hash)
-        struct['result']['signature'] = base64.b64encode(signature)
+        struct['result']['signature'] = base64.b64encode(signature).decode('utf8')
         return json.dumps(struct)
 
     def _serializestruct(self, struct):

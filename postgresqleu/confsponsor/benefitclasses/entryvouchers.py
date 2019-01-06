@@ -93,6 +93,6 @@ class EntryVouchers(BaseBenefit):
         s.write("<p>%s vouchers were generated, %s have been used.</p>" % (generated, used))
         s.write("<table><tr><th>Voucher code</th><th>Used by</th><th>Used at</th></tr>")
         for v in vouchers:
-            s.write("<tr><td><code>{0}</code></td><td>{1}</td><td>{2}</td></tr>".format(v.vouchervalue, v.user and v.user.fullname.encode('utf8') or '', v.usedate and v.usedate or ''))
+            s.write("<tr><td><code>{0}</code></td><td>{1}</td><td>{2}</td></tr>".format(v.vouchervalue, v.user and v.user.fullname or '', v.usedate and v.usedate or ''))
         s.write("</table>")
         return s.getvalue()

@@ -104,7 +104,7 @@ def failure(request, invoiceid, secret):
 
 @csrf_exempt
 def notification(request):
-    raw = TrustlyRawNotification(contents=request.body)
+    raw = TrustlyRawNotification(contents=request.body.decode('utf8'))
     raw.save()
 
     t = Trustly()

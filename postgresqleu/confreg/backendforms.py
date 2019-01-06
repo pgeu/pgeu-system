@@ -859,10 +859,10 @@ class CancelRegistrationForm(django.forms.Form):
         return "{} Refund {}%{} ({}{}{}){}{} {}".format(
             suggest,
             pattern.percent,
-            pattern.fees and ' minus {0}{1} in fees'.format(settings.CURRENCY_SYMBOL.decode('utf8'), pattern.fees) or '',
-            settings.CURRENCY_SYMBOL.decode('utf8'),
+            pattern.fees and ' minus {0}{1} in fees'.format(settings.CURRENCY_SYMBOL, pattern.fees) or '',
+            settings.CURRENCY_SYMBOL,
             to_refund,
-            to_refund_vat and ' +{}{} VAT'.format(settings.CURRENCY_SYMBOL.decode('utf8'), to_refund_vat) or '',
+            to_refund_vat and ' +{}{} VAT'.format(settings.CURRENCY_SYMBOL, to_refund_vat) or '',
             pattern.fromdate and ' from {0}'.format(pattern.fromdate) or '',
             pattern.todate and ' until {0}'.format(pattern.todate) or '',
             suggest,

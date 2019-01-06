@@ -181,7 +181,7 @@ def filter_shuffle(l):
 
 
 def filter_currency_format(v):
-    return "{0} {1:,.2f}".format(str(settings.CURRENCY_SYMBOL, 'utf8'), v)
+    return "{0} {1:,.2f}".format(settings.CURRENCY_SYMBOL, v)
 
 
 def filter_float_str(f, n):

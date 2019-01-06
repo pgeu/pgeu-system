@@ -48,15 +48,15 @@ class AttendeeList(BaseBenefit):
                 for r in ConferenceRegistration.objects.filter(conference=self.level.conference,
                                                                payconfirmedat__isnull=False,
                                                                shareemail=True).order_by('lastname', 'firstname'):
-                    c.writerow([r.lastname.encode('utf8'),
-                                r.firstname.encode('utf8'),
-                                r.email.encode('utf8'),
-                                r.company.encode('utf8'),
-                                r.country.name.encode('utf8')])
+                    c.writerow([r.lastname,
+                                r.firstname,
+                                r.email,
+                                r.company,
+                                r.country])
 
                 ret = StringIO.StringIO()
                 ret.write("<p>This benefit lets you download a list of users who have explicitly opted in to having their information shared. You can download the list by clicking <a href=\"data:text/plain;charset=utf8;base64,")
-                ret.write(base64.b64encode(data.getvalue()).decode('utf8'))
+                ret.write(base64.b64encode(data.getvalue().encode('utf8')).decode('utf8'))
                 ret.write("\">here</a>. Please be careful with how you handle this personal data!</p>")
                 return ret.getvalue()
             else:

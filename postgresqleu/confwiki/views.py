@@ -257,7 +257,7 @@ def admin_edit_page(request, urlname, pageid):
                         to = ", ".join([str(o) for o in v[1]])
                     else:
                         to = v[1]
-                    s.write("Changed {0} from {1} to {2}\n".format(k, fr, to).encode('utf8'))
+                    s.write("Changed {0} from {1} to {2}\n".format(k, fr, to))
                 if s.tell() > 0:
                     # Something changed, so generate audit email
                     send_simple_mail(conference.notifyaddr,

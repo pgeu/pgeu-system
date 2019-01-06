@@ -65,7 +65,7 @@ def paypal_return_handler(request):
         resp = requests.post(settings.PAYPAL_BASEURL, data=params)
         if resp.status_code != 200:
             raise Exception("status code {0}".format(resp.status_code))
-        r = resp.text.decode('utf8')
+        r = resp.text
     except Exception as ex:
         # Failed to talk to paypal somehow. It should be ok to retry.
         return paypal_error('Failed to verify status with paypal: %s' % ex)
@@ -80,7 +80,7 @@ def paypal_return_handler(request):
     lines = lines[1:]
 
     # The rest of the response is urlencoded key/value pairs
-    d = dict([unquote_plus(line).decode('latin1').split('=') for line in lines if line != ''])
+    d = dict([unquote_plus(line).split('=') for line in lines if line != ''])
 
     # Validate things that should never be wrong
     try:

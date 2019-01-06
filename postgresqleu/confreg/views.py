@@ -2118,7 +2118,7 @@ def bulkpay(request, confname):
         return render_conference_response(request, conference, 'reg', 'confreg/bulkpay_list.html', {
             'activewaitlist': True,
             'bulkpayments': bulkpayments,
-            'currency_symbol': settings.CURRENCY_SYMBOL.decode('utf8'),
+            'currency_symbol': settings.CURRENCY_SYMBOL,
         })
 
     if request.method == 'POST':
@@ -2175,7 +2175,7 @@ def bulkpay(request, confname):
                         errors = 1
                     else:
                         # All content is valid, so just append it
-                        state.append({'email': regs[0].email, 'found': 1, 'pay': 1, 'total': s, 'rows': ['%s (%s%s)' % (r[0], settings.CURRENCY_SYMBOL.decode('utf8'), r[2]) for r in regrows]})
+                        state.append({'email': regs[0].email, 'found': 1, 'pay': 1, 'total': s, 'rows': ['%s (%s%s)' % (r[0], settings.CURRENCY_SYMBOL, r[2]) for r in regrows]})
                         totalcost += s
                         invoicerows.extend(regrows)
 
@@ -2212,14 +2212,14 @@ def bulkpay(request, confname):
             'totalcost': errors and -1 or totalcost,
             'state': state,
             'bulkpayments': bulkpayments,
-            'currency_symbol': settings.CURRENCY_SYMBOL.decode('utf8'),
+            'currency_symbol': settings.CURRENCY_SYMBOL,
         })
     else:
         form = BulkRegistrationForm()
         return render_conference_response(request, conference, 'reg', 'confreg/bulkpay_list.html', {
             'form': form,
             'bulkpayments': bulkpayments,
-            'currency_symbol': settings.CURRENCY_SYMBOL.decode('utf8'),
+            'currency_symbol': settings.CURRENCY_SYMBOL,
         })
 
 
