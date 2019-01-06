@@ -33,7 +33,8 @@ as soon as it's no longer needed. So please consider doing so,
 from the conference dashboard:
 
 {2}/events/admin/{3}/
-""".format(conference.conferencename, conference.enddate, settings.SITEBASE, conference.urlname),
+"""
+                             .format(conference.conferencename, conference.enddate, settings.SITEBASE, conference.urlname),
                              sendername=conference.conferencename,
                              receivername=conference.conferencename,
                              bcc=settings.ADMINS[0][1],

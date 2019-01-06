@@ -121,7 +121,7 @@ class Command(BaseCommand):
                              trans.sendername,
                              trans.timestamp,
                              msg
-                         ),
+                             ),
                 ).save()
 
             (r, i, p) = invoicemanager.process_incoming_payment(trans.transtext,
