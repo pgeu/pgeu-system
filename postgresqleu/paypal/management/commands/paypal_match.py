@@ -78,11 +78,12 @@ class Command(BaseCommand):
                     ]
                 create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
                 continue
-            if trans.amount < 0 and trans.transtext.startswith('Refund of Paypal payment: {0} refund '.format(settings.ORG_SHORTNAME)):
+            textstart = 'Refund of Paypal payment: {0} refund '.format(settings.ORG_SHORTNAME)
+            if trans.amount < 0 and trans.transtext.startswith(textstart):
                 trans.setmatched('Matched API initiated refund')
                 # API initiated refund, so we should be able to match it
                 invoicemanager.complete_refund(
-                    trans.transtext[38:],  # 38 is the length of the string above
+                    trans.transtext[len(textstart):],
                     -trans.amount,
                     -trans.fee,
                     settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT,
