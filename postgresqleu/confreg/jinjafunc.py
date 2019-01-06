@@ -13,7 +13,7 @@ from itertools import groupby
 from datetime import datetime, date, time
 import dateutil.parser
 
-from postgresqleu.util.context_processors import settings_context_unicode
+from postgresqleu.util.context_processors import settings_context
 
 import jinja2
 import jinja2.sandbox
@@ -270,7 +270,7 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
         except Exception:
             pass
 
-    c.update(settings_context_unicode())
+    c.update(settings_context())
 
     return HttpResponse(t.render(**c), content_type='text/html')
 
