@@ -69,7 +69,6 @@ class InvoiceForm(forms.ModelForm):
         }
 
     def clean(self):
-        print(self.cleaned_data)
         if not self.cleaned_data['recipient_user'] and self.cleaned_data.get('recipient_email', None):
             # User not specified. If we can find one by email, auto-populate
             # the field.
