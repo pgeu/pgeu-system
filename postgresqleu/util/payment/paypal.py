@@ -1,5 +1,5 @@
 from django.conf import settings
-from urllib import urlencode
+from urllib.parse import urlencode
 
 import re
 

@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.conf import settings
 
 from datetime import datetime, timedelta
-from StringIO import StringIO
+from io import StringIO
 
 from postgresqleu.trustlypayment.models import TrustlyLog, TrustlyNotification, TrustlyTransaction
 from postgresqleu.mailqueue.util import send_simple_mail

@@ -1,5 +1,5 @@
 import base64
-import cStringIO as StringIO
+import io as StringIO
 from django.core.files.storage import Storage
 from django.core.files import File
 from django.db import connection

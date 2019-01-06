@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import EmailValidator
 from django.utils.deconstruct import deconstructible
 
-from StringIO import StringIO
+from io import StringIO
 
 import requests
 from PIL import Image

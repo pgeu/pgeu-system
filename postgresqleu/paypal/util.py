@@ -1,7 +1,7 @@
 from django.conf import settings
 
 import requests
-from urlparse import parse_qs
+from urllib.parse import parse_qs
 from decimal import Decimal
 import itertools
 

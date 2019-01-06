@@ -5,7 +5,7 @@ from django.core.exceptions import PermissionDenied
 
 from decimal import Decimal
 from datetime import datetime, date, timedelta
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from io import BytesIO
 import re
 
@@ -334,7 +334,7 @@ def expire_additional_options(reg):
 
 def get_authenticated_conference(request, urlname=None, confid=None):
     if not request.user.is_authenticated:
-        raise RedirectException("{0}?{1}".format(settings.LOGIN_URL, urllib.urlencode({'next': request.build_absolute_uri()})))
+        raise RedirectException("{0}?{1}".format(settings.LOGIN_URL, urllib.parse.urlencode({'next': request.build_absolute_uri()})))
 
     if confid:
         c = get_object_or_404(Conference, pk=confid)

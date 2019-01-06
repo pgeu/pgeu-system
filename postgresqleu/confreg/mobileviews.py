@@ -4,8 +4,8 @@ from django.db import connection
 from django.conf import settings
 
 import markdown
-import urllib2
-from urllib import urlencode
+import urllib.request, urllib.error, urllib.parse
+from urllib.parse import urlencode
 
 from .models import Conference
 
@@ -115,7 +115,7 @@ def newsproxy(request, confname):
 
     # Proxy request
     try:
-        u = urllib2.urlopen("%s?%s" % (conference.newsjson, urlencode(request.GET)))
+        u = urllib.request.urlopen("%s?%s" % (conference.newsjson, urlencode(request.GET)))
         r = u.read()
         u.close()
     except:

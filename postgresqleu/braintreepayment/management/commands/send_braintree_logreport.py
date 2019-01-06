@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.conf import settings
 
-from StringIO import StringIO
+from io import StringIO
 
 from postgresqleu.braintreepayment.models import BraintreeLog
 from postgresqleu.mailqueue.util import send_simple_mail

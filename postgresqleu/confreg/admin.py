@@ -34,7 +34,7 @@ from postgresqleu.accounting.models import Object
 from postgresqleu.confsponsor.models import Sponsor
 
 from datetime import datetime
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 
 #

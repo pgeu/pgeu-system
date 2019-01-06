@@ -64,7 +64,7 @@ import re
 import os
 from email.mime.text import MIMEText
 from Crypto.Hash import SHA256
-from StringIO import StringIO
+from io import StringIO
 import xml.etree.ElementTree as ET
 
 import json

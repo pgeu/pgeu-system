@@ -9,7 +9,7 @@ from django.conf import settings
 
 import re
 import csv
-import StringIO
+import io
 import requests
 from requests.auth import HTTPBasicAuth
 from base64 import standard_b64encode
@@ -62,7 +62,7 @@ class Command(BaseCommand):
                 AdyenLog(message='Failed to download report %s: %s' % (report.url, ex), error=True).save()
 
     def process_payment_accounting_report(self, report):
-        sio = StringIO.StringIO(report.contents)
+        sio = io.StringIO(report.contents)
         reader = csv.DictReader(sio, delimiter=',')
         for l in reader:
             # SentForSettle is what we call capture, so we track that
@@ -132,7 +132,7 @@ class Command(BaseCommand):
         batchnum = re.search('settlement_detail_report_batch_(\d+).csv$', report.url).groups(1)[0]
 
         # Now summarize the contents
-        sio = StringIO.StringIO(report.contents)
+        sio = io.StringIO(report.contents)
         reader = csv.DictReader(sio, delimiter=',')
         types = {}
         for l in reader:

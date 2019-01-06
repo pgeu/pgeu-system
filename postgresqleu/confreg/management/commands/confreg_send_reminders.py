@@ -8,7 +8,7 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from StringIO import StringIO
+from io import StringIO
 from datetime import datetime, timedelta
 
 from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail

@@ -4,7 +4,7 @@ from postgresqleu.confsponsor.backendforms import BackendSponsorshipLevelBenefit
 
 from datetime import datetime
 import base64
-import cStringIO as StringIO
+import io as StringIO
 import csv
 
 from .base import BaseBenefit, BaseBenefitForm

@@ -3,7 +3,7 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 
 from datetime import datetime
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from .models import Member, MemberLog, Meeting
 
@@ -40,7 +40,7 @@ class MemberAdmin(admin.ModelAdmin):
 
     def email_members(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-        return HttpResponseRedirect('/admin/django/membership/_email/?ids=%s&orig=%s' % (','.join(selected), urllib.quote(urllib.urlencode(request.GET))))
+        return HttpResponseRedirect('/admin/django/membership/_email/?ids=%s&orig=%s' % (','.join(selected), urllib.parse.quote(urllib.parse.urlencode(request.GET))))
     email_members.short_description = 'Send email to selected members'
 
 

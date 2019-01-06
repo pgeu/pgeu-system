@@ -28,8 +28,8 @@ from django.conf import settings
 import base64
 import json
 import socket
-import urlparse
-import urllib
+import urllib.parse
+import urllib.request, urllib.parse, urllib.error
 import requests
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA
@@ -54,7 +54,7 @@ def login(request):
         # Put together an url-encoded dict of parameters we're getting back,
         # including a small nonce at the beginning to make sure it doesn't
         # encrypt the same way every time.
-        s = "t=%s&%s" % (int(time.time()), urllib.urlencode({'r': request.GET['next']}))
+        s = "t=%s&%s" % (int(time.time()), urllib.parse.urlencode({'r': request.GET['next']}))
         # Now encrypt it
         r = Random.new()
         iv = r.read(16)
@@ -98,7 +98,7 @@ def auth_receive(request):
 
     # Now un-urlencode it
     try:
-        data = urlparse.parse_qs(s, strict_parsing=True)
+        data = urllib.parse.parse_qs(s, strict_parsing=True)
     except ValueError:
         return HttpResponse("Invalid encrypted data received.", status=400)
 
@@ -164,7 +164,7 @@ We apologize for the inconvenience.
                             base64.b64decode(ivs, "-_"))
         s = decryptor.decrypt(base64.b64decode(datas, "-_")).rstrip(' ')
         try:
-            rdata = urlparse.parse_qs(s, strict_parsing=True)
+            rdata = urllib.parse.parse_qs(s, strict_parsing=True)
         except ValueError:
             return HttpResponse("Invalid encrypted data received.", status=400)
         if 'r' in rdata:

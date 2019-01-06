@@ -1,13 +1,13 @@
 from django.conf import settings
 
-from urllib import urlencode
+from urllib.parse import urlencode
 from datetime import datetime, timedelta
 from decimal import Decimal
 import hmac
 import hashlib
 import base64
 import gzip
-import StringIO
+import io
 import binascii
 from collections import OrderedDict
 
@@ -36,7 +36,7 @@ def calculate_signature(param):
 
 def _gzip_string(str):
     # Compress a string using gzip including header data
-    s = StringIO.StringIO()
+    s = io.StringIO()
     g = gzip.GzipFile(fileobj=s, mode='w')
     g.write(str)
     g.close()

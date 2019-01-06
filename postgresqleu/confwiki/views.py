@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.conf import settings
 
 from datetime import datetime
-from cStringIO import StringIO
+from io import StringIO
 import difflib
 
 from postgresqleu.mailqueue.util import send_simple_mail

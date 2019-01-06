@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.conf import settings
 
 from datetime import datetime, timedelta
-from StringIO import StringIO
+from io import StringIO
 
 from postgresqleu.adyen.models import AdyenLog, Notification, TransactionStatus
 from postgresqleu.mailqueue.util import send_simple_mail

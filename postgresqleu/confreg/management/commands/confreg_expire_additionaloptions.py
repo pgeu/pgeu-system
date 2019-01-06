@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from collections import defaultdict
-from StringIO import StringIO
+from io import StringIO
 
 
 from postgresqleu.mailqueue.util import send_simple_mail

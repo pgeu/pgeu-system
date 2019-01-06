@@ -10,7 +10,7 @@ from django.contrib import messages
 from django.conf import settings
 
 import base64
-import StringIO
+import io
 from datetime import datetime, timedelta
 from decimal import Decimal
 
@@ -244,7 +244,7 @@ def flaginvoice(request, invoicenum):
     # with a fake transaction info. The invoice manager will know to call
     # whatever submodule generated the invoice.
     mgr = InvoiceManager()
-    str = StringIO.StringIO()
+    str = io.StringIO()
 
     def payment_logger(msg):
         str.write(msg)

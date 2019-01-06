@@ -3,7 +3,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 import base64
 import os
-import cStringIO as StringIO
+import io as StringIO
 
 from .base import BaseBenefit, BaseBenefitForm
 
