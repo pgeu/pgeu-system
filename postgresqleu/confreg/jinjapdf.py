@@ -17,6 +17,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, PageBreak
 from reportlab.platypus.flowables import Flowable
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.utils import ImageReader
+from PIL import Image
 
 import jinja2
 import jinja2.sandbox
@@ -127,7 +128,10 @@ class JinjaFlowable(Flowable):
         else:
             raise Exception("String too long for QR encode")
 
-        (ver, size, qrimage) = qrencode.encode_scaled(s, version=ver, level=qrencode.QR_ECLEVEL_M, size=500)
+        (ver, size, qrimage) = qrencode.encode(s, version=ver, level=qrencode.QR_ECLEVEL_M)
+        if size < 500:
+            size = (500 // size) * size
+            qrimage = qrimage.resize((size, size), Image.NEAREST)
 
         self.canv.drawImage(ImageReader(qrimage),
                             getmm(o, 'x'),
