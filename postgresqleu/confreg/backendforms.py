@@ -851,7 +851,10 @@ class CancelRegistrationForm(django.forms.Form):
             suggest = ""
 
         to_refund = (self.totalnovat * pattern.percent / Decimal(100) - pattern.fees).quantize(Decimal('0.01'))
-        to_refund_vat = (self.totalvat * pattern.percent / Decimal(100) - pattern.fees * self.reg.conference.vat_registrations.vatpercent / Decimal(100)).quantize(Decimal('0.01'))
+        if self.reg.conference.vat_registrations:
+            to_refund_vat = (self.totalvat * pattern.percent / Decimal(100) - pattern.fees * self.reg.conference.vat_registrations.vatpercent / Decimal(100)).quantize(Decimal('0.01'))
+        else:
+            to_refund_vat = Decimal(0)
 
         return u"{} Refund {}%{} ({}{}{}){}{} {}".format(
             suggest,
