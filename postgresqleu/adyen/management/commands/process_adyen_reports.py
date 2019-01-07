@@ -95,7 +95,7 @@ class Command(BaseCommand):
                         # Transaction already settled. But we might be reprocessing
                         # the report, so verify if the previously settled one is
                         # *identical*.
-                        if trans.settledamount == Decimal(l['Main Amount'], 2):
+                        if trans.settledamount == Decimal(l['Main Amount']).quantize(Decimal('0.01')):
                             self.stderr.write("Transaction {0} already settled at {2}, ignoring (NOT creating accounting record)!".format(pspref, trans.settledat))
                             continue
                         else:
@@ -104,7 +104,7 @@ class Command(BaseCommand):
                         trans.capturedat = bookdate
 
                     trans.settledat = bookdate
-                    trans.settledamount = Decimal(l['Main Amount'], 2)
+                    trans.settledamount = Decimal(l['Main Amount']).quantize(Decimal('0.01'))
                     trans.save()
                     if self.verbose:
                         self.stdout.write("Settled {0}, total amount {1}".format(pspref, trans.settledamount))
