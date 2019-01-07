@@ -661,6 +661,7 @@ class AttendeeMailForm(forms.ModelForm):
         self.fields['regclasses'].widget = forms.CheckboxSelectMultiple()
         self.fields['regclasses'].queryset = RegistrationClass.objects.filter(conference=self.conference)
         self.fields['regclasses'].label_from_instance = self.regclass_label
+        self.fields['subject'].help_text = 'Subject will be prefixed with <strong>[{}]</strong>'.format(conference)
 
         if not (self.data.get('regclasses') and self.data.get('subject') and self.data.get('message')):
             del self.fields['confirm']
