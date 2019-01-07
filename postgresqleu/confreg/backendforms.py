@@ -887,10 +887,12 @@ class BackendSendEmailForm(django.forms.Form):
     idlist = django.forms.CharField(widget=django.forms.HiddenInput, required=True)
     confirm = django.forms.BooleanField(label="Confirm", required=False)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, conference, *args, **kwargs):
         super(BackendSendEmailForm, self).__init__(*args, **kwargs)
         if not (self.data.get('subject') and self.data.get('message')):
             del self.fields['confirm']
+
+        self.fields['subject'].help_text = 'Subject will be prefixed with <strong>[{}]</strong>'.format(conference)
 
     def clean_confirm(self):
         if not self.cleaned_data['confirm']:

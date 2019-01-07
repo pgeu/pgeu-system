@@ -478,7 +478,7 @@ def _attendee_email_form(request, conference, query, breadcrumbs):
     if request.method == 'POST':
         p = request.POST.copy()
         p['recipients'] = initial['recipients']
-        form = BackendSendEmailForm(data=p, initial=initial)
+        form = BackendSendEmailForm(conference, data=p, initial=initial)
         if form.is_valid():
             with transaction.atomic():
                 if form.cleaned_data['storeonregpage']:
@@ -521,7 +521,7 @@ def _attendee_email_form(request, conference, query, breadcrumbs):
 
             return HttpResponseRedirect('../')
     else:
-        form = BackendSendEmailForm(initial=initial)
+        form = BackendSendEmailForm(conference, initial=initial)
 
     return render(request, 'confreg/admin_backend_form.html', {
         'conference': conference,
