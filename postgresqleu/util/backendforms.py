@@ -60,7 +60,7 @@ class BackendForm(ConcurrentProtectedModelForm):
         # Runtime validate fieldsets. It's ugly as fsck to do this at runtime,
         # but meh, this isn't used that often so...
         if self.fieldsets:
-            all_fields = set([f for f in self.fields if not f == '_validator'])
+            all_fields = set([f for f in self.fields if f not in ('_validator', '_newformdata')])
             all_fieldsetted_fields = set(reduce(lambda x, y: x + y, [v['fields'] for v in self.fieldsets]))
             missing = all_fields.difference(all_fieldsetted_fields)
             if missing:
@@ -151,6 +151,11 @@ class BackendForm(ConcurrentProtectedModelForm):
     @property
     def validator_field(self):
         return self['_validator']
+
+    @property
+    def newformdata_field(self):
+        if '_newformdata' in self.fields:
+            return self['_newformdata']
 
     def get(self, name, default=None):
         # Implement the get operator, for template functions to get a field

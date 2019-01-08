@@ -10,6 +10,7 @@
 {%endif%}
 {%if form.fieldsets%}
 {{form.validator_field}}
+{%if form.newformdata_field%}{{form.newformdata_field}}{%endif%}
 {%for fieldset in form.fieldsets%}
 <fieldset id="{{fieldset.id}}">
   <legend>{{fieldset.legend}}</legend>
