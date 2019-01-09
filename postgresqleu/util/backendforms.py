@@ -18,6 +18,7 @@ class BackendForm(ConcurrentProtectedModelForm):
     list_order_by = None
     selectize_multiple_fields = None
     json_fields = None
+    json_form_fields = None
     markdown_fields = []
     dynamic_preview_fields = []
     vat_fields = {}
@@ -53,6 +54,13 @@ class BackendForm(ConcurrentProtectedModelForm):
             self.fields['_newformdata'].initial = self.newformdata
         else:
             del self.fields['_newformdata']
+
+        if self.json_form_fields:
+            for fn, ffields in self.json_form_fields.items():
+                if getattr(self.instance, fn):
+                    for fld in ffields:
+                        self.initial[fld] = getattr(self.instance, fn).get(fld, None)
+            self.update_protected_fields()
 
         self.fix_fields()
         self.fix_selectize_fields(**kwargs)

@@ -137,7 +137,19 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                     for f in form.file_fields:
                         if f in request.FILES:
                             setattr(form.instance, f, request.FILES[f])
-                    form.instance.save(update_fields=[f for f in form.fields.keys() if f not in ('_validator', '_newformdata') and not isinstance(form[f].field, forms.ModelMultipleChoiceField)])
+                    all_excludes = ['_validator', '_newformdata']
+                    if form.json_form_fields:
+                        for fn, ffields in form.json_form_fields.items():
+                            all_excludes.extend(ffields)
+
+                    form.instance.save(update_fields=[f for f in form.fields.keys() if f not in all_excludes and not isinstance(form[f].field, forms.ModelMultipleChoiceField)])
+
+                    # Merge fields stored in json
+                    if form.json_form_fields:
+                        for fn, ffields in form.json_form_fields.items():
+                            setattr(form.instance, fn, {fld: form.cleaned_data[fld] for fld in ffields})
+                        form.instance.save(update_fields=form.json_form_fields.keys())
+
                     return HttpResponseRedirect(saved_url)
     else:
         form = formclass(conference, instance=instance, newformdata=newformdata)
