@@ -107,7 +107,7 @@ class BackendSponsorshipLevelBenefitManager(object):
         return [(b.id, b.benefitname, b.benefitdescription) for b in instance.sponsorshipbenefit_set.all()]
 
     def get_form(self, obj, POST):
-        if obj:
+        if obj and obj.benefit_class:
             return get_benefit_class(obj.benefit_class).get_backend_form()
         elif POST.get('_newformdata'):
             return get_benefit_class(int(POST.get('_newformdata'))).get_backend_form()
