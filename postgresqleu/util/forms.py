@@ -87,3 +87,11 @@ class Grouped(object):
 
 class GroupedModelMultipleChoiceField(Grouped, forms.ModelMultipleChoiceField):
     choices = property(Grouped._get_choices, forms.ModelMultipleChoiceField._set_choices)
+
+
+class IntegerBooleanField(forms.BooleanField):
+    def to_python(self, value):
+        return value and 1 or 0
+
+    def prepare_value(self, value):
+        return value and True or False
