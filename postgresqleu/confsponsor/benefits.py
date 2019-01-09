@@ -1,7 +1,9 @@
 from .benefitclasses import all_benefits
 
-benefit_choices = [(k, v['name']) for k, v in all_benefits.items()]
+benefit_choices = [(k, v['description']) for k, v in all_benefits.items()]
 
 
 def get_benefit_class(benefitid):
-    return all_benefits[benefitid]['class']
+    (mod, cl) = all_benefits[benefitid]['class'].split('.')
+    mod = __import__("postgresqleu.confsponsor.benefitclasses.{}".format(mod), fromlist=[cl, ])
+    return getattr(mod, cl)

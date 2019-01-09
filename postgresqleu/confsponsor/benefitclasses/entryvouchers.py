@@ -1,5 +1,5 @@
 from django import forms
-from django.core.validators import MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 import base64
 import os
@@ -8,6 +8,7 @@ import cStringIO as StringIO
 from .base import BaseBenefit, BaseBenefitForm
 
 from postgresqleu.mailqueue.util import send_template_mail
+from postgresqleu.confsponsor.backendforms import BackendSponsorshipLevelBenefitForm
 
 from postgresqleu.confreg.models import RegistrationType, PrepaidBatch, PrepaidVoucher
 
@@ -22,17 +23,21 @@ class EntryVouchersForm(BaseBenefitForm):
         self.fields['vouchercount'].help_text = "Enter the number of vouchers to generate (up to %s). Please note that you cannot generate more vouchers at a later date, so please generate all the ones you want at once. If you do not want any sponsor vouchers, we ask you to please claim the number 0, so we have it for our records." % int(self.params['num'])
 
 
-class EntryVouchers(BaseBenefit):
-    description = "Claim entry vouchers"
-    default_params = {"num": 1, "type": ""}
-    param_struct = {
-        'num': int,
-        'type': unicode,
-    }
+class EntryVouchersBackendForm(BackendSponsorshipLevelBenefitForm):
+    type = forms.ChoiceField(label="Registration type", choices=[])
+    num = forms.IntegerField(label="Max number of vouchers", validators=[MinValueValidator(1)])
 
-    def validate_params(self):
-        if not RegistrationType.objects.filter(conference=self.level.conference, regtype=self.params['type']).exists():
-            raise forms.ValidationError("Registration type '%s' does not exist" % self.params['type'])
+    class_param_fields = ['type', 'num']
+
+    def __init__(self, *args, **kwargs):
+        super(EntryVouchersBackendForm, self).__init__(*args, **kwargs)
+        self.fields['type'].choices = [(r.regtype, r) for r in RegistrationType.objects.filter(conference=self.conference)]
+
+
+class EntryVouchers(BaseBenefit):
+    @classmethod
+    def get_backend_form(self):
+        return EntryVouchersBackendForm
 
     def generate_form(self):
         return EntryVouchersForm

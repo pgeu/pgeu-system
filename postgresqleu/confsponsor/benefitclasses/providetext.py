@@ -1,5 +1,8 @@
 from django.core.exceptions import ValidationError
 from django import forms
+from django.core.validators import MaxValueValidator, MinValueValidator
+
+from postgresqleu.confsponsor.backendforms import BackendSponsorshipLevelBenefitForm
 
 from .base import BaseBenefit, BaseBenefitForm
 
@@ -36,15 +39,31 @@ class ProvideTextForm(BaseBenefitForm):
         return d
 
 
+class ProvideTextBackendForm(BackendSponsorshipLevelBenefitForm):
+    minwords = forms.IntegerField(label="Minimum words", validators=[MinValueValidator(0)], initial=0)
+    maxwords = forms.IntegerField(label="Maximum words", validators=[MinValueValidator(0)], initial=0)
+    minchars = forms.IntegerField(label="Minimum characters", validators=[MinValueValidator(0)], initial=0)
+    maxchars = forms.IntegerField(label="Maximum characters", validators=[MinValueValidator(0)], initial=0)
+
+    class_param_fields = ['minwords', 'maxwords', 'minchars', 'maxchars']
+
+    def clean(self):
+        d = super(ProvideTextBackendForm, self).clean()
+        if d.get('minwords', 0) and d.get('maxwords', 0):
+            if d.get('minwords', 0) >= d.get('maxwords', 0):
+                self.add_error('maxwords', 'Maximum words must be higher than minimum words')
+
+        if d.get('minchars', 0) and d.get('maxchars', 0):
+            if d.get('minchars', 0) >= d.get('maxchars', 0):
+                self.add_error('maxchars', 'Maximum characters must be higher than minimum characters')
+
+        return d
+
+
 class ProvideText(BaseBenefit):
-    description = "Provide text string"
-    default_params = {"minwords": 0, "maxwords": 0, "minchars": 0, "maxchars": 0}
-    param_struct = {
-        'minwords': int,
-        'maxwords': int,
-        'minchars': int,
-        'maxchars': int,
-    }
+    @classmethod
+    def get_backend_form(self):
+        return ProvideTextBackendForm
 
     def generate_form(self):
         return ProvideTextForm

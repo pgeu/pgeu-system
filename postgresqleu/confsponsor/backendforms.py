@@ -1,9 +1,10 @@
 from django.forms import ValidationError
+import django.forms
 
 from collections import OrderedDict
 
 from postgresqleu.util.magic import magicdb
-from postgresqleu.util.widgets import RequiredFileUploadWidget, PrettyPrintJsonWidget
+from postgresqleu.util.widgets import RequiredFileUploadWidget
 from postgresqleu.util.backendforms import BackendForm
 from postgresqleu.util.backendlookups import GeneralAccountLookup
 from postgresqleu.confreg.jinjafunc import JinjaTemplateValidator, render_sandboxed_template
@@ -11,10 +12,8 @@ from postgresqleu.confreg.jinjafunc import JinjaTemplateValidator, render_sandbo
 from .models import Sponsor
 from .models import SponsorshipLevel, SponsorshipContract, SponsorshipBenefit
 
-from .benefits import get_benefit_class
+from .benefits import get_benefit_class, benefit_choices
 from .benefitclasses import all_benefits
-
-import json
 
 
 class BackendSponsorForm(BackendForm):
@@ -37,21 +36,45 @@ class BackendSponsorForm(BackendForm):
                   'extra_cc', 'managers', ]
 
 
+class BackendSponsorshipNewBenefitForm(django.forms.Form):
+    helplink = 'sponsors#benefit'
+    benefitclass = django.forms.ChoiceField(choices=benefit_choices)
+
+    def get_newform_data(self):
+        return self.cleaned_data['benefitclass']
+
+
 class BackendSponsorshipLevelBenefitForm(BackendForm):
     helplink = 'sponsors#benefit'
-    json_fields = ['class_parameters', ]
     markdown_fields = ['benefitdescription', 'claimprompt', ]
     dynamic_preview_fields = ['tweet_template']
+    form_before_new = BackendSponsorshipNewBenefitForm
+
+    class_param_fields = []  # Overridden in subclass!
+
+    @property
+    def fieldsets(self):
+        return [
+            {'id': 'base', 'legend': 'Base', 'fields': ['benefitname', 'benefitdescription', 'sortkey', 'claimprompt']},
+            {'id': 'marketing', 'legend': 'Marketing', 'fields': ['tweet_template', ]},
+            {'id': 'params', 'legend': 'Parameters', 'fields': self.class_param_fields},
+        ]
+
+    @property
+    def json_form_fields(self):
+        return {
+            'class_parameters': self.class_param_fields,
+        }
 
     class Meta:
         model = SponsorshipBenefit
-        fields = ['benefitname', 'benefitdescription', 'sortkey', 'benefit_class',
-                  'claimprompt', 'class_parameters', 'tweet_template']
-        widgets = {
-            'class_parameters': PrettyPrintJsonWidget,
-        }
+        fields = ['benefitname', 'benefitdescription', 'sortkey',
+                  'claimprompt', 'tweet_template']
 
     def fix_fields(self):
+        if self.newformdata:
+            self.instance.benefit_class = int(self.newformdata)
+
         self.fields['tweet_template'].validators = [
             JinjaTemplateValidator({
                 'conference': self.conference,
@@ -74,36 +97,6 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
                 })
             return ''
 
-    def clean(self):
-        cleaned_data = super(BackendSponsorshipLevelBenefitForm, self).clean()
-        if cleaned_data.get('benefit_class') >= 0:
-            params = cleaned_data.get('class_parameters')
-            benefit = get_benefit_class(cleaned_data.get('benefit_class'))(self.instance.level, params)
-            if not params:
-                # Need a copy of the local data to make it mutable and change our default
-                self.data = self.data.copy()
-                if benefit.default_params:
-                    dp = benefit.default_params
-                else:
-                    dp = {}
-                self.data['class_parameters'] = json.dumps(dp)
-                self.instance.class_parameters = dp
-                cleaned_data['class_parameters'] = dp
-                benefit.params = dp
-            try:
-                benefit.do_validate_params()
-            except ValidationError as e:
-                self.add_error('class_parameters', e)
-        return cleaned_data
-
-    @property
-    def json_merge_data(self):
-        return json.dumps([{
-            'source': 'id_benefit_class',
-            'target': 'id_class_parameters',
-            'map': {k: v['class'].default_params for k, v in all_benefits.items()}
-        }])
-
 
 class BackendSponsorshipLevelBenefitManager(object):
     title = 'Benefits'
@@ -113,8 +106,15 @@ class BackendSponsorshipLevelBenefitManager(object):
     def get_list(self, instance):
         return [(b.id, b.benefitname, b.benefitdescription) for b in instance.sponsorshipbenefit_set.all()]
 
-    def get_form(self):
-        return BackendSponsorshipLevelBenefitForm
+    def get_form(self, obj, POST):
+        if obj:
+            return get_benefit_class(obj.benefit_class).get_backend_form()
+        elif POST.get('_newformdata'):
+            return get_benefit_class(int(POST.get('_newformdata'))).get_backend_form()
+        elif POST.get('benefitclass', None):
+            return get_benefit_class(int(POST.get('benefitclass'))).get_backend_form()
+        else:
+            return BackendSponsorshipLevelBenefitForm
 
     def get_object(self, masterobj, subjid):
         try:

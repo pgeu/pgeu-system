@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from postgresqleu.confsponsor.backendforms import BackendSponsorshipLevelBenefitForm
 
 from .base import BaseBenefit, BaseBenefitForm
 
@@ -14,8 +15,9 @@ class RequireClaimingForm(BaseBenefitForm):
 
 
 class RequireClaiming(BaseBenefit):
-    description = "Requires explicit claiming"
-    param_struct = {}
+    @classmethod
+    def get_backend_form(self):
+        return BackendSponsorshipLevelBenefitForm
 
     def generate_form(self):
         return RequireClaimingForm

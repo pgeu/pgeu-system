@@ -282,6 +282,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
 
         if restpieces[2] == 'new':
             subid = None
+            subobj = None
         else:
             try:
                 subid = int(restpieces[2])
@@ -294,7 +295,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
 
         return backend_process_form(request,
                                     urlname,
-                                    handler.get_form(),
+                                    handler.get_form(subobj, request.POST),
                                     subid,
                                     breadcrumbs=breadcrumbs + [
                                         ('../../../', formclass.Meta.model._meta.verbose_name_plural.capitalize()),

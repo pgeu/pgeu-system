@@ -118,7 +118,8 @@ Claim entry vouchers
 
 Provide text string
 :  This benefit class requires the sponsor to submit a specific text,
-   within the set minimum and maximum number of words and characters.
+   within the set minimum and maximum number of words or characters.
+   Set either limit to 0 to allow any number.
 
 List of attendee email addresses
 :  This benefit class allows the sponsor to download a list of attendee
@@ -193,25 +194,19 @@ Sortkey
 :  Integer indicating the sort order for this benefit, with lower
    numbers sorting first in the list.
 
-Benefit class
-:  The [benefit class](classes) for this benefit. If no class is
-   specified, the benefit will be automatically claimed when the
-   sponsor has signed up.
-
 Claimprompt
 :  A n optional popup prompt that will be shown to the user when
    claiming the benefit.
-
-Class parameters
-:  [Benefit class](classes) specific parameters for this benefit, in
-   JSON format. Will be automatically populated with a default set of
-   parameters when created, but their values have to be set.
 
 Tweet template
 :  A template, in jinja2 format, used to generate tweets when this
 benefit is confirmed. If left empty, no tweet is posted. Can reference
 *sponsor*, *level*, *conference* and *benefit* variables that will be
 filled with information about the current conference.
+
+Parameters
+:  [Benefit class](#classes) specific parameters for this benefit.
+
 
 ### Sponsorship contract <a name="contract"></a>
 

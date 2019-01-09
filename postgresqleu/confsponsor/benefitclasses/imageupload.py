@@ -4,6 +4,8 @@ from django.core.exceptions import ValidationError
 from PIL import ImageFile
 
 from postgresqleu.util.storage import InlineEncodedStorage
+from postgresqleu.util.forms import IntegerBooleanField
+from postgresqleu.confsponsor.backendforms import BackendSponsorshipLevelBenefitForm
 
 from .base import BaseBenefit, BaseBenefitForm
 
@@ -64,15 +66,19 @@ class ImageUploadForm(BaseBenefitForm):
         return self.cleaned_data['image']
 
 
+class ImageUploadBackendForm(BackendSponsorshipLevelBenefitForm):
+    format = forms.ChoiceField(label="Image format", choices=(('PNG', 'PNG'), ))
+    xres = forms.IntegerField(label="X resolution")
+    yres = forms.IntegerField(label="Y resolution")
+    transparent = IntegerBooleanField(label="Require transparent", required=False)
+
+    class_param_fields = ['format', 'xres', 'yres', 'transparent']
+
+
 class ImageUpload(BaseBenefit):
-    description = 'Require uploaded image'
-    default_params = {"format": "png", "xres": 0, "yres": 0, "transparent": 0}
-    param_struct = {
-        'format': unicode,
-        'xres': int,
-        'yres': int,
-        'transparent': int,
-    }
+    @classmethod
+    def get_backend_form(self):
+        return ImageUploadBackendForm
 
     def generate_form(self):
         return ImageUploadForm

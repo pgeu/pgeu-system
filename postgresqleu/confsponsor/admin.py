@@ -22,13 +22,10 @@ class SponsorshipBenefitInlineFormset(BaseInlineFormSet):
             if f.cleaned_data.get('benefit_class') >= 0:
                 params = f.cleaned_data.get('class_parameters')
                 benefit = get_benefit_class(f.cleaned_data.get('benefit_class'))(self.instance, params)
-                if benefit.default_params and not params:
-                    f.cleaned_data['class_parameters'] = benefit.default_params
-                    f.instance.class_parameters = benefit.default_params
-                    params = benefit.default_params
-                s = benefit.validate_params()
-                if s:
-                    f._errors['class_parameters'] = ErrorList([s])
+                if not params:
+                    f.cleaned_data['class_parameters'] = {}
+                    f.instance.class_parameters = {}
+                    params = {}
 
 
 class SponsorshipBenefitInline(admin.TabularInline):

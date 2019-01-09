@@ -1,19 +1,8 @@
-from . import imageupload
-from . import requireclaiming
-from . import entryvouchers
-from . import providetext
-from . import attendeelist
-
-
-def _make_benefit(n, c):
-    all_benefits[n] = {'name': c.description, 'class': c}
-
-
-all_benefits = {}
-# We hardcode this list to ensure the integer sequence is the same as it's stored
-# in a db. Yes, it's kinda ugly...
-_make_benefit(1, imageupload.ImageUpload)
-_make_benefit(2, requireclaiming.RequireClaiming)
-_make_benefit(3, entryvouchers.EntryVouchers)
-_make_benefit(4, providetext.ProvideText)
-_make_benefit(5, attendeelist.AttendeeList)
+# NOTE! id fields are stored in database!
+all_benefits = {
+    1: {"class": "imageupload.ImageUpload", "description": 'Require uploaded image'},
+    2: {"class": "requireclaiming.RequireClaiming", "description": "Requires explicit claiming"},
+    3: {"class": "entryvouchers.EntryVouchers", "description": "Claim entry vouchers"},
+    4: {"class": "providetext.ProvideText", "description": "Provide text string"},
+    5: {"class": "attendeelist.AttendeeList", "description": "List of attendee email addresses"},
+}

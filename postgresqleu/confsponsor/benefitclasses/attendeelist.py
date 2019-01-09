@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from postgresqleu.confsponsor.backendforms import BackendSponsorshipLevelBenefitForm
 
 from datetime import datetime
 import base64
@@ -21,8 +22,9 @@ class AttendeeListForm(BaseBenefitForm):
 
 
 class AttendeeList(BaseBenefit):
-    description = "List of attendee email addresses"
-    param_struct = {}
+    @classmethod
+    def get_backend_form(self):
+        return BackendSponsorshipLevelBenefitForm
 
     def generate_form(self):
         return AttendeeListForm
