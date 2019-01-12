@@ -646,7 +646,7 @@ class AttendeeMailForm(forms.ModelForm):
         fields = ('regclasses', 'subject', 'message')
 
     def regclass_label(self, obj):
-        return "{0} (contains {1}; total {2} registrations".format(
+        return "{0} (contains {1}; total {2} registrations)".format(
             obj.regclass,
             ", ".join([t.regtype for t in obj.registrationtype_set.all()]),
             ConferenceRegistration.objects.filter(conference=self.conference,
