@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='registrationtype',
             name='require_phone',
-            field=models.BooleanField(default=False, help_text=b'Require phone number to be entered'),
+            field=models.BooleanField(default=False, help_text='Require phone number to be entered'),
         ),
     ]

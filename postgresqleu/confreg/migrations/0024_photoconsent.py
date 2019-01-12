@@ -14,11 +14,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conference',
             name='askphotoconsent',
-            field=models.BooleanField(default=True, help_text=b'Include field for getting photo consent', verbose_name=b'Field: photo consent'),
+            field=models.BooleanField(default=True, help_text='Include field for getting photo consent', verbose_name='Field: photo consent'),
         ),
         migrations.AddField(
             model_name='conferenceregistration',
             name='photoconsent',
-            field=models.NullBooleanField(verbose_name=b'Consent to having your photo taken at the event by the organisers'),
+            field=models.NullBooleanField(verbose_name='Consent to having your photo taken at the event by the organisers'),
         ),
     ]

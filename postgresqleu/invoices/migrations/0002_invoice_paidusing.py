@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='invoice',
             name='paidusing',
-            field=models.ForeignKey(related_name='paidusing', verbose_name=b'Payment method actually used', to='invoices.InvoicePaymentMethod', null=True, on_delete=models.CASCADE),
+            field=models.ForeignKey(related_name='paidusing', verbose_name='Payment method actually used', to='invoices.InvoicePaymentMethod', null=True, on_delete=models.CASCADE),
         ),
         migrations.RunSQL("UPDATE invoices_invoice SET paidusing_id=(SELECT id FROM invoices_invoicepaymentmethod WHERE classname='postgresqleu.util.payment.adyen.AdyenCreditcard') WHERE EXISTS (SELECT 1 FROM adyen_transactionstatus WHERE notes='PGEU' || invoices_invoice.id AND method != 'bankTransfer_IBAN')"),
         migrations.RunSQL("UPDATE invoices_invoice SET paidusing_id=(SELECT id FROM invoices_invoicepaymentmethod WHERE classname='postgresqleu.util.payment.adyen.AdyenBanktransfer') WHERE EXISTS (SELECT 1 FROM adyen_transactionstatus WHERE notes='PGEU' || invoices_invoice.id AND method = 'bankTransfer_IBAN')"),

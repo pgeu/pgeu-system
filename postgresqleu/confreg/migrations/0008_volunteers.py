@@ -17,8 +17,8 @@ class Migration(migrations.Migration):
             name='VolunteerAssignment',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('vol_confirmed', models.BooleanField(default=False, verbose_name=b'Confirmed by volunteer')),
-                ('org_confirmed', models.BooleanField(default=False, verbose_name=b'Confirmed by organizers')),
+                ('vol_confirmed', models.BooleanField(default=False, verbose_name='Confirmed by volunteer')),
+                ('org_confirmed', models.BooleanField(default=False, verbose_name='Confirmed by organizers')),
             ],
         ),
         migrations.CreateModel(
@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conference',
             name='volunteers',
-            field=models.ManyToManyField(help_text=b'Users who volunteer', related_name='volunteers_set', to='confreg.ConferenceRegistration', blank=True),
+            field=models.ManyToManyField(help_text='Users who volunteer', related_name='volunteers_set', to='confreg.ConferenceRegistration', blank=True),
         ),
         migrations.AddField(
             model_name='conferenceregistration',

@@ -14,21 +14,21 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conference',
             name='asknick',
-            field=models.BooleanField(default=True, help_text=b'Include field for nick', verbose_name=b'Field: nick'),
+            field=models.BooleanField(default=True, help_text='Include field for nick', verbose_name='Field: nick'),
         ),
         migrations.AddField(
             model_name='conference',
             name='asktwitter',
-            field=models.BooleanField(default=True, help_text=b'Include field for twitter name', verbose_name=b'Field: twitter name'),
+            field=models.BooleanField(default=True, help_text='Include field for twitter name', verbose_name='Field: twitter name'),
         ),
         migrations.AlterField(
             model_name='conference',
             name='asknick',
-            field=models.BooleanField(default=False, help_text=b'Include field for nick', verbose_name=b'Field: nick'),
+            field=models.BooleanField(default=False, help_text='Include field for nick', verbose_name='Field: nick'),
         ),
         migrations.AlterField(
             model_name='conference',
             name='asktwitter',
-            field=models.BooleanField(default=False, help_text=b'Include field for twitter name', verbose_name=b'Field: twitter name'),
+            field=models.BooleanField(default=False, help_text='Include field for twitter name', verbose_name='Field: twitter name'),
         ),
     ]

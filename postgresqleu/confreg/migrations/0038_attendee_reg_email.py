@@ -17,16 +17,16 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='attendeemail',
             name='pending_regs',
-            field=models.ManyToManyField(blank=True, to=settings.AUTH_USER_MODEL, verbose_name=b'Pending registrations'),
+            field=models.ManyToManyField(blank=True, to=settings.AUTH_USER_MODEL, verbose_name='Pending registrations'),
         ),
         migrations.AddField(
             model_name='attendeemail',
             name='registrations',
-            field=models.ManyToManyField(blank=True, to='confreg.ConferenceRegistration', verbose_name=b'Registrations'),
+            field=models.ManyToManyField(blank=True, to='confreg.ConferenceRegistration', verbose_name='Registrations'),
         ),
         migrations.AlterField(
             model_name='attendeemail',
             name='regclasses',
-            field=models.ManyToManyField(blank=True, to='confreg.RegistrationClass', verbose_name=b'Registration classes'),
+            field=models.ManyToManyField(blank=True, to='confreg.RegistrationClass', verbose_name='Registration classes'),
         ),
     ]

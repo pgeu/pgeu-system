@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='sponsor',
             name='extra_cc',
-            field=models.EmailField(blank=True, max_length=254, verbose_name=b'Extra information address'),
+            field=models.EmailField(blank=True, max_length=254, verbose_name='Extra information address'),
         ),
     ]

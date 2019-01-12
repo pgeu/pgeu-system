@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conference',
             name='personal_data_purged',
-            field=models.DateTimeField(help_text=b'Personal data for registrations for this conference have been purged', null=True, blank=True),
+            field=models.DateTimeField(help_text='Personal data for registrations for this conference have been purged', null=True, blank=True),
         ),
         migrations.AddField(
             model_name='aggregatedtshirtsizes',

@@ -71,7 +71,7 @@ class Migration(migrations.Migration):
                 ('sortkey', models.PositiveIntegerField(default=100)),
                 ('benefitdescription', models.TextField(blank=True)),
                 ('claimprompt', models.TextField(blank=True)),
-                ('benefit_class', models.IntegerField(default=None, null=True, blank=True, choices=[(1, b'Require uploaded image'), (2, b'Requires explicit claiming'), (3, b'Claim entry vouchers'), (4, b'Provide text string'), (5, b'List of attendee email addresses')])),
+                ('benefit_class', models.IntegerField(default=None, null=True, blank=True, choices=[(1, 'Require uploaded image'), (2, 'Requires explicit claiming'), (3, 'Claim entry vouchers'), (4, 'Provide text string'), (5, 'List of attendee email addresses')])),
                 ('class_parameters', models.TextField(max_length=500, blank=True, default='{}')),
             ],
             options={
@@ -83,7 +83,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('contractname', models.CharField(max_length=100, verbose_name='Contract name')),
-                ('contractpdf', models.FileField(storage=postgresqleu.util.storage.InlineEncodedStorage(b'sponsorcontract'), upload_to=postgresqleu.util.storage.inlineencoded_upload_path, blank=True, verbose_name='Contract PDF')),
+                ('contractpdf', models.FileField(storage=postgresqleu.util.storage.InlineEncodedStorage('sponsorcontract'), upload_to=postgresqleu.util.storage.inlineencoded_upload_path, blank=True, verbose_name='Contract PDF')),
             ],
         ),
         migrations.CreateModel(
@@ -93,13 +93,13 @@ class Migration(migrations.Migration):
                 ('levelname', models.CharField(max_length=100)),
                 ('urlname', models.CharField(max_length=100, validators=[postgresqleu.util.validators.validate_lowercase])),
                 ('levelcost', models.IntegerField(verbose_name="Cost")),
-                ('available', models.BooleanField(default=True, verbose_name=b'Available for signup')),
+                ('available', models.BooleanField(default=True, verbose_name='Available for signup')),
                 ('instantbuy', models.BooleanField(default=False, verbose_name="Instant buy available")),
                 ('canbuyvoucher', models.BooleanField(default=True, verbose_name="Can buy vouchers")),
                 ('canbuydiscountcode', models.BooleanField(default=True, verbose_name="Can buy discount codes")),
                 ('conference', models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE)),
                 ('contract', models.ForeignKey(blank=True, to='confsponsor.SponsorshipContract', null=True, on_delete=models.CASCADE)),
-                ('paymentmethods', models.ManyToManyField(to='invoices.InvoicePaymentMethod', verbose_name=b'Payment methods for generated invoices')),
+                ('paymentmethods', models.ManyToManyField(to='invoices.InvoicePaymentMethod', verbose_name='Payment methods for generated invoices')),
             ],
             options={
                 'ordering': ('levelcost', 'levelname'),

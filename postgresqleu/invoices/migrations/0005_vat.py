@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=100)),
                 ('shortname', models.CharField(max_length=16)),
-                ('vatpercent', models.IntegerField(default=0, verbose_name=b'VAT percentage', validators=[django.core.validators.MaxValueValidator(100), django.core.validators.MinValueValidator(0)])),
+                ('vatpercent', models.IntegerField(default=0, verbose_name='VAT percentage', validators=[django.core.validators.MaxValueValidator(100), django.core.validators.MinValueValidator(0)])),
                 ('vataccount', models.ForeignKey(to='accounting.Account', on_delete=models.CASCADE)),
             ],
         ),
@@ -36,7 +36,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='invoicerow',
             name='rowamount',
-            field=models.DecimalField(default=0, verbose_name=b'Amount per item (ex VAT)', max_digits=10, decimal_places=2),
+            field=models.DecimalField(default=0, verbose_name='Amount per item (ex VAT)', max_digits=10, decimal_places=2),
         ),
         migrations.AddField(
             model_name='invoicerow',

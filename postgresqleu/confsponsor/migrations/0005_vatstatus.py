@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='sponsor',
             name='vatstatus',
-            field=models.IntegerField(default=-1, choices=[(0, b'Company is from inside EU and has VAT number'), (1, b'Company is from inside EU, but does not have VAT number'), (2, b'Company is from outside EU')]),
+            field=models.IntegerField(default=-1, choices=[(0, 'Company is from inside EU and has VAT number'), (1, 'Company is from inside EU, but does not have VAT number'), (2, 'Company is from outside EU')]),
             preserve_default=False,
         ),
     ]

@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='conferenceregistration',
             name='payconfirmedat',
-            field=models.DateTimeField(null=True, verbose_name=b'Payment confirmed', blank=True),
+            field=models.DateTimeField(null=True, verbose_name='Payment confirmed', blank=True),
         ),
     ]

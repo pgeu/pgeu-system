@@ -15,10 +15,10 @@ class Migration(migrations.Migration):
             name='Account',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('num', models.IntegerField(unique=True, verbose_name=b'Account number')),
+                ('num', models.IntegerField(unique=True, verbose_name='Account number')),
                 ('name', models.CharField(max_length=100)),
                 ('availableforinvoicing', models.BooleanField(default=False)),
-                ('objectrequirement', models.IntegerField(default=0, verbose_name=b'Object requirements', choices=[(0, b'Optional'), (1, b'Required'), (2, b'Forbidden')])),
+                ('objectrequirement', models.IntegerField(default=0, verbose_name='Object requirements', choices=[(0, 'Optional'), (1, 'Required'), (2, 'Forbidden')])),
             ],
             options={
                 'ordering': ('num',),
@@ -54,7 +54,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('amount', models.DecimalField(max_digits=10, decimal_places=2, validators=[postgresqleu.accounting.models.nonzero_validator])),
-                ('account', models.ForeignKey(to='accounting.Account', to_field=b'num', on_delete=models.CASCADE)),
+                ('account', models.ForeignKey(to='accounting.Account', to_field='num', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('year__pk', 'account'),
@@ -75,7 +75,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('amount', models.DecimalField(max_digits=10, decimal_places=2, validators=[postgresqleu.accounting.models.nonzero_validator])),
                 ('description', models.CharField(max_length=200)),
-                ('account', models.ForeignKey(to='accounting.Account', to_field=b'num', on_delete=models.CASCADE)),
+                ('account', models.ForeignKey(to='accounting.Account', to_field='num', on_delete=models.CASCADE)),
                 ('journal', models.ForeignKey(to='accounting.JournalEntry', on_delete=models.CASCADE)),
             ],
         ),

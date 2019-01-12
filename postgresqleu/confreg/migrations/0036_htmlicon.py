@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conferencesession',
             name='htmlicon',
-            field=models.CharField(blank=True, help_text=b'HTML representing an icon used for this session on the schedule (and optionally elsewhere)', max_length=100, verbose_name=b'HTML Icon'),
+            field=models.CharField(blank=True, help_text='HTML representing an icon used for this session on the schedule (and optionally elsewhere)', max_length=100, verbose_name='HTML Icon'),
         ),
     ]

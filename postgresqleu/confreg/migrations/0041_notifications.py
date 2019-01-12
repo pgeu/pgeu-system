@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conference',
             name='notifyaddr',
-            field=models.EmailField(null=True, max_length=254, verbose_name=b'Notification address'),
+            field=models.EmailField(null=True, max_length=254, verbose_name='Notification address'),
         ),
 
         migrations.RunSQL("UPDATE confreg_conference SET notifyaddr=contactaddr WHERE notifyaddr IS NULL"),
@@ -23,12 +23,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='conference',
             name='notifyaddr',
-            field=models.EmailField(null=False, max_length=254, verbose_name=b'Notification address'),
+            field=models.EmailField(null=False, max_length=254, verbose_name='Notification address'),
         ),
 
         migrations.AddField(
             model_name='conference',
             name='notifyregs',
-            field=models.BooleanField(default=False, verbose_name=b'Notify about registrations'),
+            field=models.BooleanField(default=False, verbose_name='Notify about registrations'),
         ),
     ]

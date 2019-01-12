@@ -25,12 +25,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conference',
             name='twitter_timewindow_end',
-            field=models.TimeField(default=b'23:59:59', verbose_name=b"Don't post tweets after"),
+            field=models.TimeField(default='23:59:59', verbose_name="Don't post tweets after"),
         ),
         migrations.AddField(
             model_name='conference',
             name='twitter_timewindow_start',
-            field=models.TimeField(default=b'00:00', verbose_name=b"Don't post tweets before"),
+            field=models.TimeField(default='00:00', verbose_name="Don't post tweets before"),
         ),
         migrations.AddField(
             model_name='conferencetweetqueue',

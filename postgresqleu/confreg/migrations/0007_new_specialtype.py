@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='registrationtype',
             name='specialtype',
-            field=models.CharField(blank=True, max_length=5, null=True, choices=[(b'man', b'Manually confirmed'), (b'spk', b'Confirmed speaker'), (b'spkr', b'Confirmed or reserve speaker'), (b'staff', b'Confirmed staff')], verbose_name="Special type"),
+            field=models.CharField(blank=True, choices=[('man', 'Manually confirmed'), ('spk', 'Confirmed speaker'), ('spkr', 'Confirmed or reserve speaker'), ('staff', 'Confirmed staff')], max_length=5, null=True, verbose_name='Special type'),
         ),
     ]

@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='discountcode',
             name='requiresregtype',
-            field=models.ManyToManyField(help_text=b'Require a specific registration type to be valid', to='confreg.RegistrationType', blank=True, verbose_name="Requires registration type"),
+            field=models.ManyToManyField(help_text='Require a specific registration type to be valid', to='confreg.RegistrationType', blank=True, verbose_name="Requires registration type"),
         ),
     ]

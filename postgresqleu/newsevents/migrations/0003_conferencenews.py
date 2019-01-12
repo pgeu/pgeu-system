@@ -27,17 +27,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='news',
             name='highpriorityuntil',
-            field=models.DateTimeField(null=True, blank=True, verbose_name=b'High priority until'),
+            field=models.DateTimeField(null=True, blank=True, verbose_name='High priority until'),
         ),
         migrations.AddField(
             model_name='news',
             name='inarchive',
-            field=models.BooleanField(default=True, verbose_name=b'Include in archives'),
+            field=models.BooleanField(default=True, verbose_name='Include in archives'),
         ),
         migrations.AddField(
             model_name='news',
             name='inrss',
-            field=models.BooleanField(default=True, verbose_name=b'Include in RSS feed'),
+            field=models.BooleanField(default=True, verbose_name='Include in RSS feed'),
         ),
         migrations.AddField(
             model_name='news',

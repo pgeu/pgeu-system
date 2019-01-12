@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='invoice',
             name='reverse_vat',
-            field=models.BooleanField(default=False, help_text=b'Invoice is subject to EU reverse VAT'),
+            field=models.BooleanField(default=False, help_text='Invoice is subject to EU reverse VAT'),
         ),
     ]

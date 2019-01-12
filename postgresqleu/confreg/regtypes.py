@@ -73,7 +73,7 @@ _specialregtypes['man'] = {
     }
 
 
-special_reg_types = [(k, v['name']) for k, v in list(_specialregtypes.items())]
+special_reg_types = [(k, v['name']) for k, v in sorted(list(_specialregtypes.items()))]
 
 
 def validate_special_reg_type(regtypename, reg):

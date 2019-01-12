@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='prepaidbatch',
             name='sponsor',
-            field=models.ForeignKey(verbose_name=b'Optional sponsor', blank=True, to='confsponsor.Sponsor', null=True, on_delete=models.CASCADE),
+            field=models.ForeignKey(verbose_name='Optional sponsor', blank=True, to='confsponsor.Sponsor', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='pendingadditionalorder',
@@ -54,22 +54,22 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='discountcode',
             name='requiresoption',
-            field=models.ManyToManyField(help_text=b'Requires this option to be set in order to be valid', to='confreg.ConferenceAdditionalOption', blank=True, verbose_name="Requires option"),
+            field=models.ManyToManyField(help_text='Requires this option to be set in order to be valid', to='confreg.ConferenceAdditionalOption', blank=True, verbose_name="Requires option"),
         ),
         migrations.AddField(
             model_name='discountcode',
             name='requiresregtype',
-            field=models.ManyToManyField(help_text=b'Rrequire a specific registration type to be valid', to='confreg.RegistrationType', blank=True),
+            field=models.ManyToManyField(help_text='Rrequire a specific registration type to be valid', to='confreg.RegistrationType', blank=True),
         ),
         migrations.AddField(
             model_name='discountcode',
             name='sponsor',
-            field=models.ForeignKey(blank=True, to='confsponsor.Sponsor', help_text=b'Note that if a sponsor is picked, an invoice will be generated once the discount code closes!!!', null=True, verbose_name=b'Optional sponsor.', on_delete=models.CASCADE),
+            field=models.ForeignKey(blank=True, to='confsponsor.Sponsor', help_text='Note that if a sponsor is picked, an invoice will be generated once the discount code closes!!!', null=True, verbose_name='Optional sponsor.', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='discountcode',
             name='sponsor_rep',
-            field=models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, help_text=b'Must be set if the sponsor field is set!', null=True, verbose_name=b'Optional sponsor representative.', on_delete=models.CASCADE),
+            field=models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, help_text='Must be set if the sponsor field is set!', null=True, verbose_name='Optional sponsor representative.', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferencesessionvote',
@@ -134,7 +134,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conferenceregistration',
             name='additionaloptions',
-            field=models.ManyToManyField(to='confreg.ConferenceAdditionalOption', verbose_name=b'Additional options', blank=True),
+            field=models.ManyToManyField(to='confreg.ConferenceAdditionalOption', verbose_name='Additional options', blank=True),
         ),
         migrations.AddField(
             model_name='conferenceregistration',
@@ -154,7 +154,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conferenceregistration',
             name='country',
-            field=models.ForeignKey(verbose_name=b'Country', to='countries.Country', on_delete=models.CASCADE),
+            field=models.ForeignKey(verbose_name='Country', to='countries.Country', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferenceregistration',
@@ -164,12 +164,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conferenceregistration',
             name='regtype',
-            field=models.ForeignKey(verbose_name=b'Registration type', blank=True, to='confreg.RegistrationType', null=True, on_delete=models.CASCADE),
+            field=models.ForeignKey(verbose_name='Registration type', blank=True, to='confreg.RegistrationType', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferenceregistration',
             name='shirtsize',
-            field=models.ForeignKey(verbose_name=b'Preferred T-shirt size', blank=True, to='confreg.ShirtSize', null=True, on_delete=models.CASCADE),
+            field=models.ForeignKey(verbose_name='Preferred T-shirt size', blank=True, to='confreg.ShirtSize', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='conferencefeedbackquestion',
@@ -199,12 +199,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conferenceadditionaloption',
             name='mutually_exclusive',
-            field=models.ManyToManyField(help_text=b'Mutually exlusive with these additional options', related_name='_conferenceadditionaloption_mutually_exclusive_+', to='confreg.ConferenceAdditionalOption', blank=True),
+            field=models.ManyToManyField(help_text='Mutually exlusive with these additional options', related_name='_conferenceadditionaloption_mutually_exclusive_+', to='confreg.ConferenceAdditionalOption', blank=True),
         ),
         migrations.AddField(
             model_name='conferenceadditionaloption',
             name='requires_regtype',
-            field=models.ManyToManyField(help_text=b'Can only be picked with selected registration types', to='confreg.RegistrationType', blank=True, verbose_name="Requires registration type"),
+            field=models.ManyToManyField(help_text='Can only be picked with selected registration types', to='confreg.RegistrationType', blank=True, verbose_name="Requires registration type"),
         ),
         migrations.AddField(
             model_name='conference',
@@ -214,7 +214,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conference',
             name='staff',
-            field=models.ManyToManyField(help_text=b'Users who can register as staff', related_name='staff_set', to=settings.AUTH_USER_MODEL, blank=True),
+            field=models.ManyToManyField(help_text='Users who can register as staff', related_name='staff_set', to=settings.AUTH_USER_MODEL, blank=True),
         ),
         migrations.AddField(
             model_name='conference',

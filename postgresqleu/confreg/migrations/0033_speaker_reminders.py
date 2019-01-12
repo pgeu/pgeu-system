@@ -15,11 +15,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conference',
             name='twitterreminders_active',
-            field=models.BooleanField(default=False, verbose_name=b'Twitter reminder DMs active'),
+            field=models.BooleanField(default=False, verbose_name='Twitter reminder DMs active'),
         ),
         migrations.AddField(
             model_name='conferencesession',
             name='reminder_sent',
-            field=models.BooleanField(default=False, verbose_name=b'Speaker reminder(s) sent'),
+            field=models.BooleanField(default=False, verbose_name='Speaker reminder(s) sent'),
         ),
     ]

@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='member',
             name='country_exception',
-            field=models.BooleanField(default=False, help_text=b'Enable to allow member to bypass country validation'),
+            field=models.BooleanField(default=False, help_text='Enable to allow member to bypass country validation'),
         ),
     ]

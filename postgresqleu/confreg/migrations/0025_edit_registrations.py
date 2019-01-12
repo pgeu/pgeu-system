@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conference',
             name='allowedit',
-            field=models.BooleanField(default=True, verbose_name=b'Allow editing registrations'),
+            field=models.BooleanField(default=True, verbose_name='Allow editing registrations'),
         ),
     ]

@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='signup',
             name='optionvalues',
-            field=models.CharField(blank=True, help_text=b'Optional comma separated list of how much each choice counts towards the max value', max_length=1000, validators=[postgresqleu.confwiki.models.validate_optionvalues]),
+            field=models.CharField(blank=True, help_text='Optional comma separated list of how much each choice counts towards the max value', max_length=1000, validators=[postgresqleu.confwiki.models.validate_optionvalues]),
         ),
     ]

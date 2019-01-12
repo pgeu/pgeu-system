@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('datetime', models.DateTimeField(default=datetime.datetime.now)),
                 ('title', models.CharField(max_length=128)),
                 ('summary', models.TextField()),
-                ('inrss', models.BooleanField(default=True, verbose_name=b'Include in RSS feed')),
+                ('inrss', models.BooleanField(default=True, verbose_name='Include in RSS feed')),
                 ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='newsevents.NewsPosterProfile')),
                 ('conference', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='confreg.Conference')),
             ],

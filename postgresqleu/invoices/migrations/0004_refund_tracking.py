@@ -16,12 +16,12 @@ class Migration(migrations.Migration):
             name='InvoiceRefund',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('reason', models.CharField(default=b'', help_text=b'Reason for refunding of invoice', max_length=500, blank=True)),
+                ('reason', models.CharField(default='', help_text='Reason for refunding of invoice', max_length=500, blank=True)),
                 ('amount', models.IntegerField()),
                 ('registered', models.DateTimeField(auto_now_add=True)),
                 ('issued', models.DateTimeField(null=True, blank=True)),
                 ('completed', models.DateTimeField(null=True, blank=True)),
-                ('payment_reference', models.CharField(help_text=b'Reference in payment system, depending on system used for invoice.', max_length=100, blank=True)),
+                ('payment_reference', models.CharField(help_text='Reference in payment system, depending on system used for invoice.', max_length=100, blank=True)),
                 ('refund_pdf', models.TextField(blank=True)),
             ],
         ),
@@ -43,6 +43,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='invoice',
             name='paidusing',
-            field=models.ForeignKey(related_name='paidusing', verbose_name=b'Payment method actually used', blank=True, to='invoices.InvoicePaymentMethod', null=True, on_delete=models.CASCADE),
+            field=models.ForeignKey(related_name='paidusing', verbose_name='Payment method actually used', blank=True, to='invoices.InvoicePaymentMethod', null=True, on_delete=models.CASCADE),
         ),
     ]

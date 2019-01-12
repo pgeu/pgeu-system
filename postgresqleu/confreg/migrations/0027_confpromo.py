@@ -22,17 +22,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conference',
             name='promoactive',
-            field=models.BooleanField(default=False, verbose_name=b'Promotion active'),
+            field=models.BooleanField(default=False, verbose_name='Promotion active'),
         ),
         migrations.AddField(
             model_name='conference',
             name='promopicurl',
-            field=models.URLField(blank=True, validators=[postgresqleu.util.validators.PictureUrlValidator(aspect=2.3)], verbose_name=b'URL to promo picture'),
+            field=models.URLField(blank=True, validators=[postgresqleu.util.validators.PictureUrlValidator(aspect=2.3)], verbose_name='URL to promo picture'),
         ),
         migrations.AddField(
             model_name='conference',
             name='promotext',
-            field=models.TextField(blank=True, max_length=1000, verbose_name=b'Promotion text'),
+            field=models.TextField(blank=True, max_length=1000, verbose_name='Promotion text'),
         ),
         migrations.AddField(
             model_name='conferenceseries',

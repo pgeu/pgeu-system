@@ -17,32 +17,32 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conference',
             name='checkinactive',
-            field=models.BooleanField(default=False, verbose_name=b'Check-in active'),
+            field=models.BooleanField(default=False, verbose_name='Check-in active'),
         ),
         migrations.AddField(
             model_name='conference',
             name='checkinprocessors',
-            field=models.ManyToManyField(blank=True, help_text=b'Users who process checkins', related_name='checkinprocessors_set', to='confreg.ConferenceRegistration', verbose_name=b'Check-in processors'),
+            field=models.ManyToManyField(blank=True, help_text='Users who process checkins', related_name='checkinprocessors_set', to='confreg.ConferenceRegistration', verbose_name='Check-in processors'),
         ),
         migrations.AddField(
             model_name='conference',
             name='queuepartitioning',
-            field=models.IntegerField(blank=True, choices=[(1, b'By last name'), (2, b'By first name')], help_text=b'If queue partitioning is used, partition by what?', null=True, verbose_name=b'Queue partitioning'),
+            field=models.IntegerField(blank=True, choices=[(1, 'By last name'), (2, 'By first name')], help_text='If queue partitioning is used, partition by what?', null=True, verbose_name='Queue partitioning'),
         ),
         migrations.AddField(
             model_name='conference',
             name='tickets',
-            field=models.BooleanField(default=False, help_text=b'Generate and send tickets to all attendees once their registration is completed.', verbose_name=b'Use tickets'),
+            field=models.BooleanField(default=False, help_text='Generate and send tickets to all attendees once their registration is completed.', verbose_name='Use tickets'),
         ),
         migrations.AddField(
             model_name='conferenceregistration',
             name='checkedinat',
-            field=models.DateTimeField(blank=True, null=True, verbose_name=b'Checked in at'),
+            field=models.DateTimeField(blank=True, null=True, verbose_name='Checked in at'),
         ),
         migrations.AddField(
             model_name='conferenceregistration',
             name='checkedinby',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='confreg.ConferenceRegistration', verbose_name=b'Checked by by'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='confreg.ConferenceRegistration', verbose_name='Checked by by'),
         ),
         migrations.AddField(
             model_name='conferenceregistration',
