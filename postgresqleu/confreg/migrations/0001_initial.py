@@ -150,7 +150,7 @@ class Migration(migrations.Migration):
                 ('payconfirmedby', models.CharField(max_length=16, null=True, verbose_name='Payment confirmed by', blank=True)),
                 ('created', models.DateTimeField(verbose_name='Registration created')),
                 ('lastmodified', models.DateTimeField(auto_now=True)),
-                ('vouchercode', models.CharField(max_length=100, verbose_name='Voucher code', blank=True)),
+                ('vouchercode', models.CharField(max_length=100, verbose_name='Voucher or discount code', blank=True)),
             ],
         ),
         migrations.CreateModel(

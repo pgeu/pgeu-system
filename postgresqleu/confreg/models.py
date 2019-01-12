@@ -501,7 +501,7 @@ class ConferenceRegistration(models.Model):
     # everytime it's used.
     # It's also used for discount codes - another reason to not use a
     # foreign key :)
-    vouchercode = models.CharField(max_length=100, null=False, blank=True, verbose_name='Voucher code')
+    vouchercode = models.CharField(max_length=100, null=False, blank=True, verbose_name='Voucher or discount code')
 
     # Token to uniquely identify this registration in case we want to
     # access it without a login.
