@@ -40,7 +40,7 @@ tr.invoice-deleted {
  <th>Sent</th>
  <th>Due</th>
  <th>Paid</th>
- <th>Finalized</th>
+ <th>Status</th>
 </tr>
 {%for invoice in invoices.object_list %}
 <tr class="{%if invoice.deleted%}invoice-deleted {%endif%}{%if invoice.isexpired and not invoice.deleted %}danger {%endif%}">
@@ -51,7 +51,22 @@ tr.invoice-deleted {
  <td style="white-space: nowrap">{{invoice.invoicedate|date:"Y-m-d"}}</td>
  <td style="white-space: nowrap" class="duedate" >{{invoice.duedate|date:"Y-m-d"}}</td>
  <td style="white-space: nowrap">{%if invoice.ispaid%}{{invoice.paidat|date:"Y-m-d"}}{%else%}No{%endif%}</td>
- <td>{{invoice.finalized|yesno}}</td>
+ <td>
+{%if not invoice.finalized %}
+Not finalized
+{%elif invoice.ispaid%}
+Paid
+{%if invoice.has_refund%}
+(refunds issued)
+{%endif%}
+{%elif invoice.deleted %}
+Canceled
+{%elif invoice.isexpired %}
+Overdue
+{%else%}
+Awaiting payment
+{%endif%}
+ </td>
 </tr>
 {%endfor%}
 </table>

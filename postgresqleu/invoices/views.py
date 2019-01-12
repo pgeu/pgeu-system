@@ -47,6 +47,11 @@ def deleted(request):
 
 # Not a view, just a utility function, thus no separate permissions check
 def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=False, paid=False, searchterm=None):
+    # Add info about refunds to all invoices
+    invoice_objects = invoice_objects.extra(select={
+        'has_refund': 'EXISTS (SELECT 1 FROM invoices_invoicerefund r WHERE r.invoice_id=invoices_invoice.id)',
+    })
+
     # Render a list of all invoices
     paginator = Paginator(invoice_objects, 50)
 
@@ -113,7 +118,7 @@ def search(request):
         # Not an integer, so perform an actual search...
         pass
 
-    invoices = list(Invoice.objects.filter(Q(recipient_name__icontains=term) | Q(recipient_address__icontains=term) | Q(title__icontains=term)))
+    invoices = Invoice.objects.filter(Q(recipient_name__icontains=term) | Q(recipient_address__icontains=term) | Q(title__icontains=term))
     if len(invoices) == 0:
         messages.warning(request, "No invoice matching '%s' found." % term)
         return HttpResponseRedirect("/invoiceadmin/")
