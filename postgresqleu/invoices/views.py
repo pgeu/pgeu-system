@@ -136,7 +136,10 @@ def oneinvoice(request, invoicenum):
     # Called to view an invoice, to edit one, and to create a new one,
     # since they're all based on the same model and form.
     if invoicenum == 'new':
-        invoice = Invoice()
+        invoice = Invoice(
+            invoicedate=datetime.today(),
+            duedate=datetime.today() + timedelta(days=30),
+        )
     else:
         invoice = get_object_or_404(Invoice, pk=invoicenum)
 
@@ -207,14 +210,7 @@ def oneinvoice(request, invoicenum):
                 return HttpResponseRedirect("/invoiceadmin/%s/" % form.instance.pk)
         # Else fall through
     else:
-        # GET request, but it might be for an existing invoice
-        if invoice:
-            form = InvoiceForm(instance=invoice)
-        else:
-            form = InvoiceForm(initial={
-                'invoicedate': datetime.now(),
-                'duedate': datetime.now() + timedelta(days=31)}
-            )
+        form = InvoiceForm(instance=invoice)
         formset = InvoiceRowInlineFormset(instance=invoice)
 
     if invoice.processor:
