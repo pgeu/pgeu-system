@@ -24,6 +24,11 @@ def ischeckbox(obj):
 
 
 @register.filter(is_safe=True)
+def fieldtype(obj):
+    return obj.field.widget.__class__.__name__
+
+
+@register.filter(is_safe=True)
 def isrequired_error(obj):
     if obj.errors and obj.errors[0] == "This field is required.":
         return True

@@ -141,6 +141,21 @@ $('#id_{{f}}').addClass('jsoneditor');
 
 {%endif%}
 
+   $('div.input-group-password').each(function(i, e) {
+      $(e).find('div.input-group-addon').click(function() {
+         input = $($(e).find('input'));
+         btn =$($(this).find('i'));
+         if (input.attr("type") == "password") {
+            input.attr("type", "text");
+            btn.removeClass('glyphicon-eye-close').addClass('glyphicon-eye-open');
+         }
+         else {
+            input.attr("type", "password");
+            btn.removeClass('glyphicon-eye-open').addClass('glyphicon-eye-close');
+         }
+      });
+   });
+
    $('.backend-vat-field').each(function(i, e) {
       $(e).change(function(e) {
          if ($(this).hasClass('backend-vat-reg-field')) { vatrate = 1.{{conference.vat_registrations.vatpercent|default:0}};}

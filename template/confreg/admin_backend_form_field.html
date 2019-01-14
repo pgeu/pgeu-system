@@ -9,10 +9,19 @@
  <div class="alert alert-danger">{{e}}</div>
    {%endfor%}
   {%endif%}
+{%if field|fieldtype == "PasswordInput"%}
+<div class="input-group input-group-password">
+{%endif%}
 {%if not field.name in form.selectize_multiple_fields and not field|ischeckbox%}
 {{field|field_class:"form-control"}}
 {%else%}
 {{field}}
+{%endif%}
+{%if field|fieldtype == "PasswordInput"%}
+<div class="input-group-addon">
+<i class="glyphicon glyphicon-eye-close"></i>
+</div>
+</div>
 {%endif%}
 {%if field|ischeckbox%}</div></div>{%endif%}
 {%if field.help_text%}<div>{{field.help_text|safe}}</div>{%endif%}</div>
