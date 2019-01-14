@@ -1,5 +1,5 @@
 {%extends basetemplate %}
-{%block title%}Edit {{what}}{%endblock%}
+{%block title%}{{whatverb|default:"Edit"}} {{what}}{%endblock%}
 {%block extrahead%}
 <script type="text/javascript" src="/media/js/selectize.min.js"></script>
 <script type="text/javascript" src="/media/ace/ace.js"></script>
@@ -182,7 +182,7 @@ function confirm_delete(what) {
 {%endblock%}
 
 {%block layoutblock%}
-<h1>Edit {{what}}</h1>
+<h1>{{whatverb|default:"Edit"}} {{what}}</h1>
 <form class="form-horizontal" method="POST" action="." enctype="multipart/form-data">{%csrf_token%}
 {%include "confreg/admin_backend_form_content.html" %}
 </form>
