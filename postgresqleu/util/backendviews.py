@@ -139,7 +139,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                     for f in form.file_fields:
                         if f in request.FILES:
                             setattr(form.instance, f, request.FILES[f])
-                    all_excludes = ['_validator', '_newformdata']
+                    all_excludes = ['_validator', '_newformdata'] + form.readonly_fields
                     if form.json_form_fields:
                         for fn, ffields in form.json_form_fields.items():
                             all_excludes.extend(ffields)
