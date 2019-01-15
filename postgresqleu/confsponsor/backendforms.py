@@ -49,13 +49,16 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
     markdown_fields = ['benefitdescription', 'claimprompt', ]
     dynamic_preview_fields = ['tweet_template']
     form_before_new = BackendSponsorshipNewBenefitForm
+    readonly_fields = ['benefit_class_name', ]
 
     class_param_fields = []  # Overridden in subclass!
+
+    benefit_class_name = django.forms.CharField()
 
     @property
     def fieldsets(self):
         return [
-            {'id': 'base', 'legend': 'Base', 'fields': ['benefitname', 'benefitdescription', 'sortkey', 'claimprompt']},
+            {'id': 'base', 'legend': 'Base', 'fields': ['benefitname', 'benefit_class_name', 'benefitdescription', 'sortkey', 'claimprompt']},
             {'id': 'marketing', 'legend': 'Marketing', 'fields': ['tweet_template', ]},
             {'id': 'params', 'legend': 'Parameters', 'fields': self.class_param_fields},
         ]
@@ -69,11 +72,12 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
     class Meta:
         model = SponsorshipBenefit
         fields = ['benefitname', 'benefitdescription', 'sortkey',
-                  'claimprompt', 'tweet_template']
+                  'claimprompt', 'tweet_template', 'benefit_class_name']
 
     def fix_fields(self):
         if self.newformdata:
             self.instance.benefit_class = int(self.newformdata)
+        self.initial['benefit_class_name'] = self.instance.benefit_class and all_benefits[self.instance.benefit_class]['description'] or ''
 
         self.fields['tweet_template'].validators = [
             JinjaTemplateValidator({
