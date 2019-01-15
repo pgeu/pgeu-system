@@ -132,10 +132,10 @@ List of attendee email addresses
 
 ### Sponsorship level <a name="level"></a>
 
-Levelname
+Level name
 :  Name of the sponsorship level (shown to the user)
 
-Urlname
+URL name
 :  Name-part used in URLs for this sponsorship level (typically a
    slug-style lowercase version of the name)
 
@@ -184,17 +184,17 @@ Benefits
 
 ### Sponsorship benefit <a name="benefit"></a>
 
-Benefitname
+Benefit name
 :  Name of the benefit as shown to the sponsor.
 
-Benefitdescription
+Benefit description
 :  Free-text description of the benefit as shown to the sponsor.
 
-Sortkey
+Sort key
 :  Integer indicating the sort order for this benefit, with lower
    numbers sorting first in the list.
 
-Claimprompt
+Claim prompt
 :  A n optional popup prompt that will be shown to the user when
    claiming the benefit.
 

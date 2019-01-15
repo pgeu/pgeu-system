@@ -18,9 +18,9 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=100)),
-                ('shortname', models.CharField(max_length=16)),
+                ('shortname', models.CharField(max_length=16, verbose_name='Short name')),
                 ('vatpercent', models.IntegerField(default=0, verbose_name='VAT percentage', validators=[django.core.validators.MaxValueValidator(100), django.core.validators.MinValueValidator(0)])),
-                ('vataccount', models.ForeignKey(to='accounting.Account', on_delete=models.CASCADE)),
+                ('vataccount', models.ForeignKey(to='accounting.Account', on_delete=models.CASCADE, verbose_name='VAT account')),
             ],
         ),
         migrations.AddField(
