@@ -16,6 +16,7 @@ if [ "$FILES" != "" ]; then
     for F in ${FILES}; do
 	P=$(git show ":$F" | python3 -c "import sys; compile(sys.stdin.read(), '/dev/null', 'exec')")
 	if [ "$?" != "0" ]; then
+	    echo "Errors in $F"
 	    echo $P
 	    E=1
 	    continue
