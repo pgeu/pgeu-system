@@ -1,25 +1,27 @@
 {%extends "confreg/confadmin_base.html" %}
+{%load formutil%}
 {%block title%}Conference waitlist{%endblock%}
 {%block extrahead%}
-<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
-<script type="text/javascript" src="/media/jq/jquery-ui.min.js"></script>
+<style>
+.history_content {
+  display: none;
+}
+.popover {
+  max-width: 80%;
+}
+</style>
 
 <script type="text/javascript">
 $(function() {
-  $('.dlg').each(function(idx, el) {
-    $(el).dialog({
-      autoOpen: false,
-      minWidth: 600,
-      minHeight: 250,
-    });
-  });
+  $('.history_popover').popover({
+    container: 'body',
+    html: true,
+    content: function () {
+         return $(this).find('.history_content').html();
+    },
+    title: 'Waitlist history',
+   });
 });
-
-function showDialog(id) {
-   $('#popup_' + id).dialog('option', {
-      'title': 'Status history',
-   }).dialog('open');
-}
 
 function cancelWaitlist(id) {
    if (confirm('Are you really sure you want to cancel this waitlist entry?\nAll history will be lost, and a notification sent.')) {
@@ -83,54 +85,43 @@ function cancelOffer(id) {
 <p>
 The current entries on the waitlist are:
 </p>
-<form method="post" action=".">{%csrf_token%}
+<a name="form"></a>
+<form method="post" action=".#form" class="form-horizontal">{%csrf_token%}
 {%with waitlist_type="waitlist_active"%}
 {%include "confreg/admin_waitlist_list.inc.html"%}
 {%endwith%}
 
-<table class="table borderless">
-  <tr>
+{%if form.confirm%}
+<div class="row bg-warning">
+  <div class="col-xs-12 col-md-6">{{form.confirm}} {{form.confirm.help_text}}</div>
+</div>
+{%endif%}
+<div class="row waitlistoffers{%if form.confirm%} bg-warning{%endif%}">
 {%if form.hours%}
-    <td class="col-md-3">{{form.hours.label}}</td>
-    <td class="col-md-3">{{form.hours}}</td>
-{%else%}
-    <td colspan="2" class="col-md-6"></td>
+  <div class="form-group col-xs-12 col-md-4">
+    {{form.hours|label_class:"control-label col-xs-6"}}
+    <div class="controls col-xs-6">{{form.hours|field_class:"form-control"}}</div>
+  </div>
+  <div class="form-group col-xs-12 col-md-2">
+    <input type="submit" name="submit" value="Make offer for hours" class="btn btn-default btn-block {%if form.confirm%} btn-primary{%endif%}">
+  </div>
 {%endif%}
 {%if form.until%}
-    <td class="col-md-3">{{form.until.label}}</td>
-    <td class="col-md-3">{{form.until}}</td>
-{%else%}
-    <td colspan="2" class="col-md-6"></td>
+  <div class="form-group col-xs-12 col-md-4">
+    {{form.until|label_class:"control-label col-xs-6"}}
+    <div class="controls col-xs-6">{{form.until|field_class:"form-control"}}</div>
+  </div>
+  <div class="form-group col-xs-12 col-md-2">
+    <input type="submit" name="submit" value="Make offer until" class="btn btn-default btn-block{%if form.confirm%} btn-primary{%endif%}">
+  </div>
 {%endif%}
-  </tr>
+</div>
 {%if form.confirm%}
-  <tr>
-    <td colspan="4" class="col-md-12 warning">{{form.confirm}} {{form.confirm.help_text}}</td>
-  </tr>
-{%endif%}
-  <tr>
-    <td colspan="2" class="col-md-6">
-{%if form.hours%}
-      <input type="submit" name="submit" value="Make offer for hours" class="btn btn-default">
-{%else%}
-    </td>
-{%endif%}
-    <td colspan="2" class="col-md-6">
-{%if form.until%}
-      <input type="submit" name="submit" value="Make offer until" class="btn btn-default"></td>
-{%else%}
-    </td>
-{%endif%}
-  </tr>
-{%if form.confirm%}
-  <tr>
-    <td colspan="4" class="col-md-12">
-      <a href="." class="btn btn-default btn-block">Cancel</a>
-    </td>
-  </tr>
+<div class="row">
+  <a href="." class="btn btn-default btn-block">Cancel</a>
+</div>
 {%endif%}
 
-</table>
 </form>
 {%else%}
 <p>The waitlist is currently empty</p>
@@ -138,7 +129,11 @@ The current entries on the waitlist are:
 
 {%if waitlist%}
 <h3>Operations</h3>
-<a class="btn btn-default" href="sendmail/">Send waitlist email</a>
+<div class="row">
+  <div class="col-xs-12 col-sm-3">
+    <a class="btn btn-default btn-block" href="sendmail/">Send waitlist email</a>
+  </div>
+</div>
 {%endif%}
 
 <h3>Processed waitlist</h3>

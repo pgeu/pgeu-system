@@ -2,6 +2,10 @@
   white-space:nowrap;
 }
 
+.overflow-clip {
+    overflow: hidden;
+}
+
 div.bottom-spaced-row {
     margin-bottom: 1em;
 }
@@ -102,4 +106,39 @@ a.partial-collapse:not(.collapsed):after {
     top: 0;
     left: 100%;
     margin-top: -1px;
+}
+
+/*
+ * Waitlist table
+ */
+div.waitlisttbl div.row {
+    border-top: 2px solid #ccc;
+}
+
+div.waitlisttbl div.row div {
+    border-top: 1px solid #ccc;
+}
+
+div.waitlistoffers divx {
+    margin-top: 10px;
+}
+
+div.waitlisttbl div.row {
+    padding-bottom: 7px;
+}
+
+div.waitlisttbl div.header-row div {
+    font-weight: bold;
+}
+
+@media (max-width: 970px) {
+    div.waitlisttbl {
+        margin-bottom: 20px;
+    }
+}
+
+@media (min-width: 970px) {
+    div.waitlisttbl div.row div {
+        border-top: none;
+    }
 }
