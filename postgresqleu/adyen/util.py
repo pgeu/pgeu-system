@@ -162,8 +162,8 @@ def process_authorization(notification):
                              'Adyen payment authorized',
                              "An Adyen payment of %s%s with reference %s was authorized on the Adyen platform for %s.\nInvoice: %s\nRecipient name: %s\nRecipient user: %s\nPayment method: %s\nAdyen reference: %s\n" % (
                                  settings.CURRENCY_ABBREV, notification.amount,
-                                 method.internaldescription,
                                  notification.merchantReference,
+                                 method.internaldescription,
                                  invoice.title,
                                  invoice.recipient_name,
                                  invoice.recipient_email,
