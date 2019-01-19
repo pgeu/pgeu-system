@@ -42,7 +42,6 @@ def payment_post(request):
             'submit_for_settlement': True,
         }
     })
-    print(result)
 
     trans = result.transaction
     if result.is_success:

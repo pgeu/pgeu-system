@@ -201,7 +201,6 @@ class _AdyenBase(BasePayment):
                     )
                 else:
                     methods = (self.id, )
-                print(methods)
 
                 return (TransactionStatus.objects.get(pspReference=m.groups(1)[0], paymentmethod__in=methods), None)
             except TransactionStatus.DoesNotExist:
