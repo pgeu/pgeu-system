@@ -15,7 +15,7 @@
       <div class="col-xs-6">Offer made</div>
     </div>
     <div class="col-xs-11 col-xs-offset-1 col-md-2 col-md-offset-0">
-      <div class="col-xs-6">Expire{%if waitlist_type == "waitlist_active" %}s{%else%}d{%endif%}</div>
+      <div class="col-xs-6">{%if waitlist_type == "waitlist_active" %}Expires{%else%}Registered{%endif%}</div>
       <div class="col-xs-6">Status</div>
     </div>
   </div>
@@ -35,7 +35,7 @@
       <div class="col-xs-6">{{w.offeredon|date:"M j, H:i"|default:''}}</div>
     </div>
     <div class="col-xs-11 col-xs-offset-1 col-md-2 col-md-offset-0">
-      <div class="col-xs-6">{{w.offerexpires|date:"M j, H:i"|default:''}}</div>
+      <div class="col-xs-6">{%if waitlist_type == "waitlist_active" %}{{w.offerexpires|date:"M j, H:i"|default:''}}{%else%}{{w.registration.payconfirmedat|date:"M j, H:i"|default:''}}{%endif%}</div>
       <div class="col-xs-6 nobr history_popover" data-toggle="popover" data-container="body" data-placement="bottom">
 	<span class="glyphicon glyphicon-plus-sign"></span>
       {%if w.registration.payconfirmedat%}Registered{%elif w.offeredon%}Offered{%if w.registration.invoice%} (with invoice){%endif%}{%else%}Pending ({{w.offers_made}} offers){%endif%}
