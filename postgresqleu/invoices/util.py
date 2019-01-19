@@ -538,8 +538,10 @@ class InvoiceManager(object):
             refund.save()
 
             InvoiceHistory(invoice=refund.invoice, txt='Sent refund request to provider').save()
+            return True
         else:
             InvoiceHistory(invoice=refund.invoice, txt='Failed to send refund request to provider').save()
+            return False
 
     def complete_refund(self, refundid, refundamount, refundfee, incomeaccount, costaccount, extraurls, method):
         # Process notification from payment provider that refund has completed

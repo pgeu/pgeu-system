@@ -39,9 +39,10 @@ class Command(BaseCommand):
                 # Calling autorefund will update the InvoiceRefund object
                 # after calling the APIs, so nothing more to do here.
 
-                manager.autorefund_invoice(rr)
-
-                self.stdout.write("Issued API refund of invoice {0}.".format(rr.invoice.pk))
+                if manager.autorefund_invoice(rr):
+                    self.stdout.write("Issued API refund of invoice {0}.".format(rr.invoice.pk))
+                else:
+                    self.stdout.write("Failed to issue API refund for invoice {0}, will keep trying.".format(rr.invoice.pk))
 
         # Send alerts for any refunds that have been issued but that have not completed within
         # 3 days (completely arbitrary, but normally it happens within seconds/minutes/hours).
