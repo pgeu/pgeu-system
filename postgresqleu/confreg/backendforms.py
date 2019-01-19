@@ -13,6 +13,7 @@ from psycopg2.extras import DateTimeTZRange
 from decimal import Decimal
 
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
+from postgresqleu.util.widgets import StaticTextWidget
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.backendforms import BackendForm
 
@@ -877,15 +878,10 @@ class CancelRegistrationForm(django.forms.Form):
 #
 # Form for sending email
 #
-class StaticWidget(django.forms.Widget):
-    def render(self, name, value, attrs=None, renderer=None):
-        return value
-
-
 class BackendSendEmailForm(django.forms.Form):
     _from = django.forms.CharField(max_length=128, disabled=True, label="Form")
     subject = django.forms.CharField(max_length=128, required=True)
-    recipients = django.forms.Field(widget=StaticWidget, required=False)
+    recipients = django.forms.Field(widget=StaticTextWidget, required=False)
     storeonregpage = django.forms.BooleanField(label="Store on registration page", required=False,
                                                help_text="If checked, store in db and show to attendees later. If not checked, one-off email is sent.")
     message = django.forms.CharField(widget=django.forms.Textarea, required=True)

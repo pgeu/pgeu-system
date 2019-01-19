@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404
+from django.utils.html import escape
 from django.db import transaction
 from django.core.exceptions import PermissionDenied
 from django.core.serializers.json import DjangoJSONEncoder
@@ -462,7 +463,7 @@ def _attendee_email_form(request, conference, query, breadcrumbs):
 
     initial = {
         '_from': '{0} <{1}>'.format(conference.conferencename, conference.contactaddr),
-        'recipients': ", ".join(['{0} <{1}>'.format(x['fullname'], x['email']) for x in recipients]),
+        'recipients': escape(", ".join(['{0} <{1}>'.format(x['fullname'], x['email']) for x in recipients])),
         'idlist': ",".join(map(str, idlist)),
         'storeonregpage': True,
     }
