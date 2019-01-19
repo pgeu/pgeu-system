@@ -121,6 +121,8 @@ def _get_reg_json(r):
         'tshirt': r.shirtsize and r.shirtsize.shirtsize,
         'additional': [a.name for a in r.additionaloptions.all()]
     }
+    if r.conference.askphotoconsent:
+        d['photoconsent'] = r.photoconsent and "Photos OK" or "Photos NOT OK"
     if r.checkedinat:
         d['checkedin'] = {
             'at': r.checkedinat,

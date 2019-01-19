@@ -69,6 +69,7 @@ function show_checkin_dialog(reg) {
             cl.append($('<dd/>').text(val).addClass('checkin_dyn'));;
         }
     }
+    _add_dyn(reg.photoconsent, 'Photo consent');
     _add_dyn(reg.company, 'Company');
     _add_dyn(reg.tshirt, 'T-Shirt size');
     _add_dyn(reg.partition, 'Queue partition');
