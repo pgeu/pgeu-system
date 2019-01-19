@@ -106,7 +106,7 @@ Pay directly using online banking. Currently supported with most banks in {0}.
 """.format(', '.join(self.config('countries')))
 
     def get_apibase(self):
-        return self.config('test') and 'https://test.trustly.com/api/1' or 'https://api.trustly.com/api/1'
+        return self.config('test') and 'https://test.trustly.com/api/1' or 'https://api.trustly.com/1'
 
     def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl=None):
         i = Invoice.objects.get(pk=invoiceid)
