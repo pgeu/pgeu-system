@@ -61,7 +61,7 @@
   </tr>
 {%for refund in invoice.invoicerefund_set.all %}
   <tr>
-    <td><a href="/invoices/{{invoice.id}}/refundnote/{{refund.id}}/">{{refund.id}}</a></td>
+    <td>{%if refund.completed%}<a href="/invoices/{{invoice.id}}/refundnote/{{refund.id}}/">{{refund.id}}</a>{%else%}{{refund.id}}{%endif%}</td>
     <td class="text-right">{{refund.amount}}</td>
     <td class="text-right">{%if refund.vatamount%}{{refund.vatamount}} ({{refund.vatrate.shortname}}){%endif%}</td>
     <td>{{refund.reason}}</td>
