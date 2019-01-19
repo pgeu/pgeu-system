@@ -3,7 +3,7 @@
 # Process transaction statuses from Braintree. They don't send notifications when a
 # transaction is settled, but they do have a poll-based API.
 #
-# Copyright (C) 2015-2016, PostgreSQL Europe
+# Copyright (C) 2015-2019, PostgreSQL Europe
 #
 
 import logging
@@ -14,10 +14,8 @@ from django.db import transaction
 from django.db.models import Q
 from django.conf import settings
 
-import braintree
-
+from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.braintreepayment.models import BraintreeTransaction, BraintreeLog
-from postgresqleu.braintreepayment.util import initialize_braintree
 from postgresqleu.accounting.util import create_accounting_entry
 
 
@@ -34,18 +32,22 @@ class Command(BaseCommand):
     help = 'Process Braintree transaction statuses'
 
     def handle(self, *args, **options):
+        # Workaround the braintree API
         logging.getLogger('urllib3.connectionpool').addFilter(LogFilter())
-        initialize_braintree()
+        for method in InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.braintree.Braintree'):
+            self.handle_method(method)
 
+    def handle_method(self, method):
+        pm = method.get_implementation()
         with transaction.atomic():
-            for t in BraintreeTransaction.objects.filter(Q(settledat__isnull=True) | Q(disbursedat__isnull=True)):
+            for t in BraintreeTransaction.objects.filter(Q(settledat__isnull=True) | Q(disbursedat__isnull=True), paymentmethod=method):
                 # Process all transactions that are not settled and disbursed
-                try:
-                    btrans = braintree.Transaction.find(t.transid)
-                except braintree.exceptions.not_found_error.NotFoundError as ex:
+                (ok, btrans) = pm.braintree_find(t.transid)
+                if not ok:
                     BraintreeLog(transid=t.transid,
                                  error=True,
-                                 message='Could not find transaction {0}: {1}'.format(t.transid, ex)).save()
+                                 message='Could not find transaction {0}: {1}'.format(t.transid, btrans),
+                                 paymentmethod=method).save()
                     continue
 
                 if btrans.status == 'settled':
@@ -61,7 +63,7 @@ class Command(BaseCommand):
                         # so just use whenever we noticed it.
                         t.settledat = datetime.now()
                         t.save()
-                        BraintreeLog(transid=t.transid,
+                        BraintreeLog(transid=t.transid, paymentmethod=method,
                                      message='Transaction has been settled').save()
 
                         # Create an accounting row. Braintree won't tell us the
@@ -70,8 +72,8 @@ class Command(BaseCommand):
                         # for now.
                         accstr = "Braintree settlement {0}".format(t.transid)
                         accrows = [
-                            (settings.ACCOUNTING_BRAINTREE_AUTHORIZED_ACCOUNT, accstr, -t.amount, None),
-                            (settings.ACCOUNTING_BRAINTREE_PAYABLE_ACCOUNT, accstr, t.amount, None),
+                            (pm.config('accounting_authorized'), accstr, -t.amount, None),
+                            (pm.config('accounting_payable'), accstr, t.amount, None),
                         ]
                         create_accounting_entry(date.today(), accrows, False)
 
@@ -81,12 +83,13 @@ class Command(BaseCommand):
                             if btrans.disbursement_details.settlement_currency_iso_code != settings.CURRENCY_ISO:
                                 BraintreeLog(transid=t.transid,
                                              error=True,
+                                             paymentmethod=method,
                                              message='Transaction was disbursed in {0}, should be {1}!'.format(btrans.disbursement_details.settlement_currency_iso_code, settings.CURRENCY_ISO)).save()
                                 # No need to send an immediate email on this, we
                                 # can deal with it in the nightly batch.
                                 continue
 
-                            BraintreeLog(transid=t.transid,
+                            BraintreeLog(transid=t.transid, paymentmethod=method,
                                          message='Transaction has been disbursed, amount {0}, settled amount {1}'.format(btrans.amount, btrans.disbursement_details.settlement_amount)).save()
 
                             t.disbursedat = btrans.disbursement_details.disbursement_date
@@ -96,21 +99,23 @@ class Command(BaseCommand):
                             # Create an accounting row
                             accstr = "Braintree disbursement {0}".format(t.transid)
                             accrows = [
-                                (settings.ACCOUNTING_BRAINTREE_PAYABLE_ACCOUNT, accstr, -t.amount, None),
-                                (settings.ACCOUNTING_BRAINTREE_PAYOUT_ACCOUNT, accstr, t.disbursedamount, None),
+                                (pm.config('accounting_payable'), accstr, -t.amount, None),
+                                (pm.config('accounting_payout'), accstr, t.disbursedamount, None),
                             ]
                             if t.amount - t.disbursedamount > 0:
-                                accrows.append((settings.ACCOUNTING_BRAINTREE_FEE_ACCOUNT, accstr, t.amount - t.disbursedamount, t.accounting_object))
+                                accrows.append((pm.config('accounting_fee'), accstr, t.amount - t.disbursedamount, t.accounting_object))
 
                             create_accounting_entry(date.today(), accrows, False)
                         elif datetime.today() - t.settledat > timedelta(days=10):
                             BraintreeLog(transid=t.transid,
                                          error=True,
+                                         paymentmethod=method,
                                          messagE='Transaction {0} was authorized on {1} and settled on {2}, but has not been disbursed yet!'.format(t.transid, t.authorizedat, t.settledat)).save()
 
                 elif datetime.today() - t.authorizedat > timedelta(days=10):
                     BraintreeLog(transid=t.transid,
                                  error=True,
+                                 paymentmethod=method,
                                  message='Transaction {0} was authorized on {1}, more than 10 days ago, and has not been settled yet!'.format(t.transid, t.authorizedat)).save()
 
                     # Else just not settled yet, so we'll wait

@@ -1,13 +1,66 @@
 from django.conf import settings
+from django import forms
+
 from urllib.parse import urlencode
 
 import re
 
 from postgresqleu.paypal.models import TransactionInfo
 from postgresqleu.paypal.util import PaypalAPI
+from postgresqleu.invoices.backendforms import BackendInvoicePaymentMethodForm
+from postgresqleu.accounting.util import get_account_choices
+
+from . import BasePayment
 
 
-class Paypal(object):
+class BackendPaypalForm(BackendInvoicePaymentMethodForm):
+    sandbox = forms.BooleanField(required=False, help_text="Use testing sandbox")
+    email = forms.EmailField(required=True, label="Paypal account email")
+    apiuser = forms.CharField(required=True, label="API user",
+                              help_text="Settings -> My Selling Tools -> API access -> Manage NVP API Credentials")
+    apipassword = forms.CharField(required=True, label="API user password", widget=forms.widgets.PasswordInput(render_value=True),
+                                  help_text="Settings -> My Selling Tools -> API access -> Manage NVP API Credentials")
+    pdt_token = forms.CharField(required=True, label="PDT token", widget=forms.widgets.PasswordInput(render_value=True),
+                                help_text="Settings -> My Selling Tools -> Website preferences -> Payment data transfer")
+    signature = forms.CharField(required=True, label="API User signature", widget=forms.widgets.PasswordInput(render_value=True),
+                                help_text="Settings -> My Selling Tools -> API access -> Manage NVP API Credentials")
+
+    donation_text = forms.CharField(required=True,
+                                    help_text="Payments with this text will be auto-matched as donations")
+    report_receiver = forms.EmailField(required=True)
+    accounting_income = forms.ChoiceField(required=True, choices=get_account_choices,
+                                          label="Income account")
+    accounting_fee = forms.ChoiceField(required=True, choices=get_account_choices,
+                                       label="Fee account")
+    accounting_transfer = forms.ChoiceField(required=True, choices=get_account_choices,
+                                            label="Transfer account",
+                                            help_text="Account that transfers from paypal are made to")
+
+    config_fields = ['sandbox', 'email', 'apiuser', 'apipassword', 'pdt_token',
+                     'signature', 'donation_text', 'report_receiver',
+                     'accounting_income', 'accounting_fee', 'accounting_transfer']
+    config_fieldsets = [
+        {
+            'id': 'paypal',
+            'legend': 'Paypal',
+            'fields': ['email', 'sandbox', 'apiuser', 'apipassword', 'signature',
+                       'pdt_token'],
+        },
+        {
+            'id': 'integration',
+            'legend': 'Integration',
+            'fields': ['report_receiver', 'donation_text', ],
+        },
+        {
+            'id': 'accounting',
+            'legend': 'Accounting',
+            'fields': ['accounting_income', 'accounting_fee', 'accounting_transfer'],
+        }
+    ]
+
+
+class Paypal(BasePayment):
+    backend_form_class = BackendPaypalForm
     description = """
 Pay using Paypal. You can use this both
 to pay from your Paypal balance if you have a Paypal account, or you can
@@ -19,7 +72,6 @@ lower fees.
 """
 
     PAYPAL_COMMON = {
-        'business': settings.PAYPAL_EMAIL,
         'lc': 'GB',
         'currency_code': settings.CURRENCY_ABBREV,
         'button_subtype': 'services',
@@ -29,21 +81,27 @@ lower fees.
         'charset': 'utf-8',
         }
 
+    def get_baseurl(self):
+        if self.config('sandbox'):
+            return 'https://www.sandbox.paypal.com/cgi-bin/webscr'
+        return 'https://www.paypal.com/cgi-bin/webscr'
+
     def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl=None):
         param = self.PAYPAL_COMMON
         param.update({
+            'business': self.config('email'),
             'cmd': '_xclick',
             'item_name': invoicestr.encode('utf-8'),
             'amount': '%.2f' % invoiceamount,
             'invoice': invoiceid,
-            'return': '%s/p/paypal_return/' % settings.SITEBASE,
+            'return': '%s/p/paypal_return/%s/' % (settings.SITEBASE, self.id),
             })
         if returnurl:
             # If the user cancels, send back to specific URL, instead of
             # the invoice url.
             param['cancel_return'] = returnurl
         return "%s?%s" % (
-            settings.PAYPAL_BASEURL,
+            self.get_baseurl(),
             urlencode(param))
 
     _re_paypal = re.compile('^Paypal id ([A-Z0-9]+), ')
@@ -70,7 +128,7 @@ lower fees.
         if not trans:
             raise Exception(reason)
 
-        api = PaypalAPI()
+        api = PaypalAPI(self)
         refund.payment_reference = api.refund_transaction(
             trans.paypaltransid,
             refund.fullamount,

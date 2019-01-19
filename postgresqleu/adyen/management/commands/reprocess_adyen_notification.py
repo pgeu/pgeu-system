@@ -20,7 +20,8 @@ class Command(BaseCommand):
 
             AdyenLog(pspReference=notification.pspReference,
                      message='Reprocessing notification id {0}'.format(notification.id),
-                     error=False).save()
+                     error=False,
+                     paymentmethod=notification.rawnotification.paymentmethod).save()
 
             process_one_notification(notification)
             self.stdout.write("Completed reprocessing notification {0}.".format(notification.pspReference))

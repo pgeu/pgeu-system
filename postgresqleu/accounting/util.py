@@ -117,3 +117,7 @@ SELECT sum(amount)+COALESCE((SELECT incoming_amount FROM incoming_balance),0)
                    })
 
     return cursor.fetchall()[0][0]
+
+
+def get_account_choices():
+    return [(a.num, str(a)) for a in Account.objects.all()]

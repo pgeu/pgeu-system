@@ -5,7 +5,7 @@
 # to match the payment to something elsewhere in the system - that is handled
 # by separate scripts.
 #
-# Copyright (C) 2010-2016, PostgreSQL Europe
+# Copyright (C) 2010-2019, PostgreSQL Europe
 #
 
 from django.core.management.base import BaseCommand
@@ -13,10 +13,12 @@ from django.db import transaction, connection
 from django.conf import settings
 
 from datetime import datetime, timedelta
+import dateutil.parser
 from decimal import Decimal
 
 from postgresqleu.paypal.models import TransactionInfo
 from postgresqleu.paypal.util import PaypalAPI
+from postgresqleu.invoices.models import InvoicePaymentMethod
 
 
 class PaypalBaseTransaction(object):
@@ -25,7 +27,6 @@ class PaypalBaseTransaction(object):
 
         self.transinfo = TransactionInfo(
             paypaltransid=apistruct['TRANSACTIONID'],
-            sourceaccount_id=settings.PAYPAL_DEFAULT_SOURCEACCOUNT,
         )
         try:
             self.transinfo.timestamp = datetime.strptime(apistruct['TIMESTAMP'], '%Y-%m-%dT%H:%M:%SZ')
@@ -70,9 +71,10 @@ class PaypalBaseTransaction(object):
             self.transinfo.transtext += ' (currency %s, manually adjust amount!)' % r['L_CURRENCYCODE0'][0]
             self.transinfo.amount = -1  # just to be on the safe side
 
-    def store(self):
+    def store(self, method):
         self.transinfo.matched = False
         self.transinfo.matachinfo = self.message
+        self.transinfo.paymentmethod = method
         self.transinfo.save()
 
 
@@ -116,44 +118,48 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         synctime = datetime.now()
-        api = PaypalAPI()
 
-        cursor = connection.cursor()
-        cursor.execute("SELECT lastsync FROM paypal_sourceaccount WHERE id=%(id)s", {
-            'id': settings.PAYPAL_DEFAULT_SOURCEACCOUNT,
-        })
+        # There may be multiple accounts, so loop over them
+        for method in InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.paypal.Paypal'):
+            try:
+                lastsync = method.status['lastsync']
+                if isinstance(lastsync, str):
+                    lastsync = dateutil.parser.parse(lastsync)
+            except KeyError:
+                # Status not set yet, so just assumed we synced a month ago (silly, I know..)
+                lastsync = datetime.now() - timedelta(days=31)
 
-        # Fetch all transactions from last sync, with a 3 day overlap
-        for r in api.get_transaction_list(cursor.fetchall()[0][0] - timedelta(days=3)):
-            if r['TYPE'] in ('Payment', 'Donation', 'Purchase'):
-                t = PaypalTransaction(r)
-            elif r['TYPE'] in ('Transfer'):
-                t = PaypalTransfer(r)
-            elif r['TYPE'] in ('Refund'):
-                t = PaypalRefund(r)
-            elif r['TYPE'] in ('Fee Reversal'):
-                # These can be ignored since they also show up on the
-                # actual refund notice.
-                continue
-            elif r['TYPE'] in ('Currency Conversion (credit)', 'Currency Conversion (debit)'):
-                # Cross-currency payments generates multiple entries, but
-                # we're only interested in the main one.
-                continue
-            elif r['TYPE'] in ('Temporary Hold', 'Authorization'):
-                # Temporary holds and authorizations are ignored, they will
-                # get re-reported once the actual payment clears.
-                continue
-            else:
-                self.stderr.write("Don't know what to do with paypal transaction of type {0}".format(r['TYPE']))
-                continue
+            api = PaypalAPI(method.get_implementation())
 
-            if t.already_processed():
-                continue
-            t.fetch_details(api)
-            t.store()
+            # Fetch all transactions from last sync, with a 3 day overlap
+            for r in api.get_transaction_list(lastsync - timedelta(days=3)):
+                if r['TYPE'] in ('Payment', 'Donation', 'Purchase'):
+                    t = PaypalTransaction(r)
+                elif r['TYPE'] in ('Transfer'):
+                    t = PaypalTransfer(r)
+                elif r['TYPE'] in ('Refund'):
+                    t = PaypalRefund(r)
+                elif r['TYPE'] in ('Fee Reversal'):
+                    # These can be ignored since they also show up on the
+                    # actual refund notice.
+                    continue
+                elif r['TYPE'] in ('Currency Conversion (credit)', 'Currency Conversion (debit)'):
+                    # Cross-currency payments generates multiple entries, but
+                    # we're only interested in the main one.
+                    continue
+                elif r['TYPE'] in ('Temporary Hold', 'Authorization'):
+                    # Temporary holds and authorizations are ignored, they will
+                    # get re-reported once the actual payment clears.
+                    continue
+                else:
+                    self.stderr.write("Don't know what to do with paypal transaction of type {0}".format(r['TYPE']))
+                    continue
 
-        # Update the sync timestamp
-        cursor.execute("UPDATE paypal_sourceaccount SET lastsync=%(st)s WHERE id=%(id)s", {
-            'st': synctime,
-            'id': settings.PAYPAL_DEFAULT_SOURCEACCOUNT,
-        })
+                if t.already_processed():
+                    continue
+                t.fetch_details(api)
+                t.store(method)
+
+            # Update the sync timestamp
+            method.status['lastsync'] = synctime
+            method.save()

@@ -15,21 +15,24 @@ from .models import TrustlyNotification
 
 # Django intgrated wrapper for the trustly API
 class Trustly(TrustlyWrapper):
-    def __init__(self):
-        super(Trustly, self).__init__(settings.TRUSTLY_APIBASE,
-                                      settings.TRUSTLY_USER,
-                                      settings.TRUSTLY_PASSWORD,
-                                      settings.TRUSTLY_PRIVATE_KEY,
-                                      settings.TRUSTLY_PUBLIC_KEY,
-                                      '{0}/trustly_notification/'.format(settings.SITEBASE),
+    def __init__(self, pm):
+        self.pm = pm
+        super(Trustly, self).__init__(pm.get_apibase(),
+                                      pm.config('user'),
+                                      pm.config('password'),
+                                      pm.config('private_key'),
+                                      pm.config('public_key'),
+                                      '{0}/trustly_notification/{1}/'.format(settings.SITEBASE, pm.id),
                                       settings.CURRENCY_ABBREV,
-                                      getattr(settings, 'TRUSTLY_HOLD_NOTIFICATIONS', False),
+                                      pm.config('hold_notifications', False),
                                       )
 
     def process_raw_trustly_notification(self, raw):
         (uuid, method, data) = self.parse_notification(raw.contents)
         if not data:
-            TrustlyLog(message="Failed to parse trustly raw notification {0}".format(raw.id), error=True).save()
+            TrustlyLog(message="Failed to parse trustly raw notification {0}".format(raw.id),
+                       error=True,
+                       paymentmethod=raw.paymentmethod).save()
             return (False, uuid, method)
 
         n = None
@@ -62,33 +65,34 @@ class Trustly(TrustlyWrapper):
         try:
             self.process_notification(n)
         except Exception as e:
-            self.log_and_email("Exception processing notification {0}: {1}".format(n.id, e))
+            self.log_and_email("Exception processing notification {0}: {1}".format(n.id, e), raw.paymentmethod)
 
         # If we somehow failed to handle at this level, we still flag things as ok to
         # Trustly, and deal with it ourselves.
         # Notifications can always be re-parsed
         return (True, uuid, method)
 
-    def log_and_email(self, message):
-        TrustlyLog(message=message, error=True).save()
+    def log_and_email(self, message, paymentmethod):
+        TrustlyLog(message=message, error=True, paymentmethod=paymentmethod).save()
 
         send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-                         settings.TRUSTLY_NOTIFICATION_RECEIVER,
+                         self.pm.config('notification_receiver'),
                          "Trustly payment error",
-                         "A trustly payment failed with the error:\n\n{0}".format(message),
+                         "A trustly payment for {0} failed with the error:\n\n{1}".format(paymentmethod.internaldescription, message),
                          )
 
     @transaction.atomic
     def process_notification(self, notification):
+        method = notification.rawnotification.paymentmethod
         if notification.method in ('pending', 'credit'):
             # Find the appropriate transaction
             try:
-                trans = TrustlyTransaction.objects.get(orderid=notification.orderid)
+                trans = TrustlyTransaction.objects.get(orderid=notification.orderid, paymentmethod=method)
             except TrustlyTransaction.DoesNotExist:
-                self.log_and_email("Transaction {0} for notification {1} not found!".format(notification.orderid, notification.id))
+                self.log_and_email("Transaction {0} for notification {1} not found!".format(notification.orderid, notification.id), method)
                 return False
             if trans.amount != notification.amount:
-                self.log_and_email("Notification {0} for transaction {1} has invalid amount ({2} should be {3})!".format(notification.id, notification.orderid, notification.amount, trans.amount))
+                self.log_and_email("Notification {0} for transaction {1} has invalid amount ({2} should be {3})!".format(notification.id, notification.orderid, notification.amount, trans.amount), method)
                 return False
 
             if notification.method == 'pending':
@@ -100,7 +104,7 @@ class Trustly(TrustlyWrapper):
                 notification.confirmed = True
                 notification.save()
 
-                TrustlyLog(message="Pending payment for Trustly id {0} (order {1}) received".format(trans.id, trans.orderid)).save()
+                TrustlyLog(message="Pending payment for Trustly id {0} (order {1}) received".format(trans.id, trans.orderid), paymentmethod=method).save()
 
                 return True
             else:
@@ -109,7 +113,7 @@ class Trustly(TrustlyWrapper):
                     # We set pending in case it never showed up
                     trans.pendingat = datetime.now()
                 if trans.completedat:
-                    self.log_and_email("Duplicate completed notification ({0}) received for transaction {1}!".format(notification.id, notification.orderid))
+                    self.log_and_email("Duplicate completed notification ({0}) received for transaction {1}!".format(notification.id, notification.orderid), method)
                     return False
 
                 trans.completedat = datetime.now()
@@ -124,19 +128,19 @@ class Trustly(TrustlyWrapper):
                 return True
         elif notification.method == 'cancel':
             try:
-                trans = TrustlyTransaction.objects.get(orderid=notification.orderid)
+                trans = TrustlyTransaction.objects.get(orderid=notification.orderid, paymentmethod=method)
                 if trans.pendingat:
-                    self.log_and_email("Transaction {0} canceled by notification {1} but already in progress. Ignoring cancel!".format(notification.orderid, notification.id))
+                    self.log_and_email("Transaction {0} canceled by notification {1} but already in progress. Ignoring cancel!".format(notification.orderid, notification.id), method)
                     return False
-                TrustlyLog(message='Transaction {0} canceled from notification'.format(notification.orderid)).save()
+                TrustlyLog(message='Transaction {0} canceled from notification'.format(notification.orderid), paymentmethod=method).save()
                 trans.delete()
             except TrustlyTransaction.DoesNotExist:
-                TrustlyLog("Abandoned transaction {0} canceled from notification".format(notification.orderid))
+                TrustlyLog("Abandoned transaction {0} canceled from notification".format(notification.orderid), paymentmethod=method)
             notification.confirmed = True
             notification.save()
             return True
         else:
-            self.log_and_email("Unknown notification type '{0}' in notification {1}".format(notification.method, notification.id))
+            self.log_and_email("Unknown notification type '{0}' in notification {1}".format(notification.method, notification.id), method)
             return False
 
         # Can't reach here
@@ -152,21 +156,30 @@ class Trustly(TrustlyWrapper):
         def invoice_logger(msg):
             raise TrustlyException("Trustly invoice processing failed: {0}".format(msg))
 
-        method = InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.trustly.TrustlyPayment')
+        method = trans.paymentmethod
+        pm = method.get_implementation()
+
         manager.process_incoming_payment_for_invoice(invoice,
                                                      trans.amount,
                                                      'Trustly id {0}'.format(trans.id),
                                                      0,  # XXX: we pay zero now, but should perhaps support fees?
-                                                     settings.ACCOUNTING_TRUSTLY_ACCOUNT,
+                                                     pm.config('accounting_income'),
                                                      0,  # XXX: if supporting fees, support fee account
                                                      [],
                                                      invoice_logger,
                                                      method)
 
-        TrustlyLog(message="Completed payment for Trustly id {0} (order {1}), {2}{3}, invoice {4}".format(trans.id, trans.orderid, settings.CURRENCY_ABBREV, trans.amount, invoice.id)).save()
+        TrustlyLog(message="Completed payment for Trustly id {0} (order {1}), {2}{3}, invoice {4}".format(trans.id, trans.orderid, settings.CURRENCY_ABBREV, trans.amount, invoice.id), paymentmethod=method).save()
 
         send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-                         settings.TRUSTLY_NOTIFICATION_RECEIVER,
+                         pm.config('notification_receiver'),
                          "Trustly payment completed",
-                         "A Trustly payment of {0}{1} for invoice {2} was completed on the Trustly platform.\n\nInvoice: {3}\nRecipient name: {4}\nRecipient email: {5}\n".format(settings.CURRENCY_ABBREV, trans.amount, invoice.id, invoice.title, invoice.recipient_name, invoice.recipient_email),
+                         "A Trustly payment for {0} of {1}{2} for invoice {3} was completed on the Trustly platform.\n\nInvoice: {4}\nRecipient name: {5}\nRecipient email: {6}\n".format(
+                             method.internaldescription,
+                             settings.CURRENCY_ABBREV,
+                             trans.amount,
+                             invoice.id,
+                             invoice.title,
+                             invoice.recipient_name,
+                             invoice.recipient_email),
                          )

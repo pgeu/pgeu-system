@@ -8,7 +8,7 @@
 #
 # We still maintain paypal-specific state in the database though.
 #
-# Copyright (C) 2010-2013, PostgreSQL Europe
+# Copyright (C) 2010-2019, PostgreSQL Europe
 #
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -29,115 +29,120 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         invoicemanager = InvoiceManager()
 
-        translist = TransactionInfo.objects.filter(matched=False).order_by('timestamp')
+        # There may be multiple accounts, so loop over them
+        for method in InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.paypal.Paypal'):
+            pm = method.get_implementation()
 
-        for trans in translist:
-            # URLs for linkback to paypal
-            urls = ["https://www.paypal.com/cgi-bin/webscr?cmd=_view-a-trans&id=%s" % trans.paypaltransid, ]
+            translist = TransactionInfo.objects.filter(matched=False, paymentmethod=method).order_by('timestamp')
 
-            # Manual handling of some record types
+            for trans in translist:
+                # URLs for linkback to paypal
+                urls = ["%s?cmd=_view-a-trans&id=%s" % (pm.get_baseurl(), trans.paypaltransid, ), ]
 
-            # Record type: donation
-            if trans.transtext == settings.PAYPAL_DONATION_TEXT:
-                trans.setmatched('Donation, automatically matched by script')
+                # Manual handling of some record types
 
-                # Generate a simple accounting record, that will have to be
-                # manually completed.
-                accstr = "Paypal donation %s" % trans.paypaltransid
-                accrows = [
-                    (settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, accstr, trans.amount - trans.fee, None),
-                    (settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, accstr, trans.fee, None),
-                    (settings.ACCOUNTING_DONATIONS_ACCOUNT, accstr, -trans.amount, None),
+                # Record type: donation
+                if trans.transtext == pm.config('donation_text'):
+                    trans.setmatched('Donation, automatically matched by script')
+
+                    # Generate a simple accounting record, that will have to be
+                    # manually completed.
+                    accstr = "Paypal donation %s" % trans.paypaltransid
+                    accrows = [
+                        (pm.config('accounting_income'), accstr, trans.amount - trans.fee, None),
+                        (pm.config('accounting_fee'), accstr, trans.fee, None),
+                        (settings.ACCOUNTING_DONATIONS_ACCOUNT, accstr, -trans.amount, None),
+                        ]
+                    create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
+                    continue
+                # Record type: payment, but with no notice (auto-generated elsewhere, the text is
+                # hard-coded in paypal_fetch.py
+                if trans.transtext == "Paypal payment with empty note":
+                    trans.setmatched('Empty payment description, leaving for operator')
+
+                    accstr = "Unlabeled paypal payment from {0}".format(trans.sender)
+                    accrows = [
+                        (pm.config('accounting_income'), accstr, trans.amount - trans.fee, None),
                     ]
-                create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
-                continue
-            # Record type: payment, but with no notice (auto-generated elsewhere, the text is
-            # hard-coded in paypal_fetch.py
-            if trans.transtext == "Paypal payment with empty note":
-                trans.setmatched('Empty payment description, leaving for operator')
-
-                accstr = "Unlabeled paypal payment from {0}".format(trans.sender)
-                accrows = [
-                    (settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, accstr, trans.amount - trans.fee, None),
-                ]
-                if trans.fee:
-                    accrows.append(
-                        (settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, accstr, trans.fee, None),
+                    if trans.fee:
+                        accrows.append(
+                            (pm.config('accounting_fee'), accstr, trans.fee, None),
+                        )
+                    create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
+                    continue
+                # Record type: transfer
+                if trans.amount < 0 and trans.transtext == 'Transfer from Paypal to bank':
+                    trans.setmatched('Bank transfer, automatically matched by script')
+                    # There are no fees on the transfer, and the amount is already
+                    # "reversed" and will automatically become a credit entry.
+                    accstr = 'Transfer from Paypal to bank'
+                    accrows = [
+                        (pm.config('accounting_income'), accstr, trans.amount, None),
+                        (pm.config('accounting_transfer'), accstr, -trans.amount, None),
+                        ]
+                    create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
+                    continue
+                textstart = 'Refund of Paypal payment: {0} refund '.format(settings.ORG_SHORTNAME)
+                if trans.amount < 0 and trans.transtext.startswith(textstart):
+                    trans.setmatched('Matched API initiated refund')
+                    # API initiated refund, so we should be able to match it
+                    invoicemanager.complete_refund(
+                        trans.transtext[len(textstart):],
+                        -trans.amount,
+                        -trans.fee,
+                        pm.config('accounting_income'),
+                        pm.config('accounting_fee'),
+                        urls,
+                        method,
                     )
-                create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
-                continue
-            # Record type: transfer
-            if trans.amount < 0 and trans.transtext == 'Transfer from Paypal to bank':
-                trans.setmatched('Bank transfer, automatically matched by script')
-                # There are no fees on the transfer, and the amount is already
-                # "reversed" and will automatically become a credit entry.
-                accstr = 'Transfer from Paypal to bank'
-                accrows = [
-                    (settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, accstr, trans.amount, None),
-                    (settings.ACCOUNTING_PAYPAL_TRANSFER_ACCOUNT, accstr, -trans.amount, None),
+
+                    # Accounting record is created by invoice manager
+                    continue
+                # Record type: outgoing payment (or manual refund)
+                if trans.amount < 0:
+                    trans.setmatched('Outgoing payment or manual refund, automatically matched by script')
+                    # Refunds typically have a fee (a reversed fee), whereas pure
+                    # payments don't have one. We don't make a difference of them
+                    # though - we leave the record open for manual verification
+                    accrows = [
+                        (pm.config('accounting_income'), trans.transtext[:200], trans.amount - trans.fee, None),
                     ]
-                create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
-                continue
-            textstart = 'Refund of Paypal payment: {0} refund '.format(settings.ORG_SHORTNAME)
-            if trans.amount < 0 and trans.transtext.startswith(textstart):
-                trans.setmatched('Matched API initiated refund')
-                # API initiated refund, so we should be able to match it
-                invoicemanager.complete_refund(
-                    trans.transtext[len(textstart):],
-                    -trans.amount,
-                    -trans.fee,
-                    settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT,
-                    settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT,
-                    urls,
-                    InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.paypal.Paypal'),
+                    if trans.fee != 0:
+                        accrows.append((pm.config('accounting_fee'), trans.transtext[:200], trans.fee, None),)
+                    create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
+                    continue
+
+                # Otherwise, it's an incoming payment. In this case, we try to
+                # match it to an invoice.
+
+                # Log things to the db
+                def payment_logger(msg):
+                    # Write the log output to somewhere interesting!
+                    ErrorLog(timestamp=datetime.now(),
+                             sent=False,
+                             message='Paypal %s by %s (%s) on %s: %s' % (
+                                 trans.paypaltransid,
+                                 trans.sender,
+                                 trans.sendername,
+                                 trans.timestamp,
+                                 msg
+                                 ),
+                             paymentmethod=method,
+                    ).save()
+
+                (r, i, p) = invoicemanager.process_incoming_payment(trans.transtext,
+                                                                    trans.amount,
+                                                                    "Paypal id %s, from %s <%s>" % (trans.paypaltransid, trans.sendername, trans.sender),
+                                                                    trans.fee,
+                                                                    pm.config('accounting_income'),
+                                                                    pm.config('accounting_fee'),
+                                                                    urls,
+                                                                    payment_logger,
+                                                                    method,
                 )
 
-                # Accounting record is created by invoice manager
-                continue
-            # Record type: outgoing payment (or manual refund)
-            if trans.amount < 0:
-                trans.setmatched('Outgoing payment or manual refund, automatically matched by script')
-                # Refunds typically have a fee (a reversed fee), whereas pure
-                # payments don't have one. We don't make a difference of them
-                # though - we leave the record open for manual verification
-                accrows = [
-                    (settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, trans.transtext[:200], trans.amount - trans.fee, None),
-                ]
-                if trans.fee != 0:
-                    accrows.append((settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, trans.transtext[:200], trans.fee, None),)
-                create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
-                continue
-
-            # Otherwise, it's an incoming payment. In this case, we try to
-            # match it to an invoice.
-
-            # Log things to the db
-            def payment_logger(msg):
-                # Write the log output to somewhere interesting!
-                ErrorLog(timestamp=datetime.now(),
-                         sent=False,
-                         message='Paypal %s by %s (%s) on %s: %s' % (
-                             trans.paypaltransid,
-                             trans.sender,
-                             trans.sendername,
-                             trans.timestamp,
-                             msg
-                             ),
-                ).save()
-
-            (r, i, p) = invoicemanager.process_incoming_payment(trans.transtext,
-                                                                trans.amount,
-                                                                "Paypal id %s, from %s <%s>" % (trans.paypaltransid, trans.sendername, trans.sender),
-                                                                trans.fee,
-                                                                settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT,
-                                                                settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT,
-                                                                urls,
-                                                                payment_logger,
-                                                                InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.paypal.Paypal'),
-            )
-
-            if r == invoicemanager.RESULT_OK:
-                trans.setmatched('Matched standard invoice')
-            else:
-                # Logging is done by the invoice manager callback
-                pass
+                if r == invoicemanager.RESULT_OK:
+                    trans.setmatched('Matched standard invoice')
+                else:
+                    # Logging is done by the invoice manager callback
+                    pass

@@ -15,13 +15,9 @@ class PaymentMethodWrapper(object):
         self.returnurl = returnurl
 
         try:
-            pieces = method.classname.split('.')
-            modname = '.'.join(pieces[:-1])
-            classname = pieces[-1]
-            mod = __import__(modname, fromlist=[classname, ])
-            self.implementation = getattr(mod, classname)()
+            self.implementation = method.get_implementation()
             self.ok = True
-        except Exception:
+        except Exception as e:
             self.ok = False
 
     @property

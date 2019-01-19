@@ -11,6 +11,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.conf import settings
 
+from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.paypal.util import PaypalAPI
 from postgresqleu.accounting.util import get_latest_account_balance
 from postgresqleu.mailqueue.util import send_simple_mail
@@ -21,22 +22,25 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
-        api = PaypalAPI()
+        for method in InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.paypal.Paypal'):
+            pm = method.get_implementation()
 
-        # We only ever care about the primary currency
-        paypal_balance = api.get_primary_balance()
+            api = PaypalAPI(pm)
 
-        accounting_balance = get_latest_account_balance(settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT)
+            # We only ever care about the primary currency
+            paypal_balance = api.get_primary_balance()
 
-        if accounting_balance != paypal_balance:
-            send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-                             settings.PAYPAL_REPORT_RECEIVER,
-                             'Paypal balance mismatch!',
-                             """Paypal balance ({0}) does not match the accounting system ({1})!
+            accounting_balance = get_latest_account_balance(pm.config('accounting_income'))
 
-This could be because some entry has been missed in the accouting
-(automatic or manual), or because of an ongoing booking of something
-that the system deosn't know about.
+            if accounting_balance != paypal_balance:
+                send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+                                 pm.config('report_receiver'),
+                                 'Paypal balance mismatch!',
+                                 """Paypal balance ({0}) does not match the accounting system ({1}) for payment method {2}!
 
-Better go check manually!
-""".format(paypal_balance, accounting_balance))
+    This could be because some entry has been missed in the accouting
+    (automatic or manual), or because of an ongoing booking of something
+    that the system deosn't know about.
+
+    Better go check manually!
+    """.format(paypal_balance, accounting_balance, method.internaldescription))

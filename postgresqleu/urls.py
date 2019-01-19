@@ -25,6 +25,8 @@ import postgresqleu.invoices.backendviews
 import postgresqleu.accounting.views
 import postgresqleu.paypal.views
 import postgresqleu.adyen.views
+import postgresqleu.trustlypayment.views
+import postgresqleu.braintreepayment.views
 import postgresqleu.accountinfo.views
 
 from postgresqleu.newsevents.feeds import LatestNews
@@ -249,9 +251,17 @@ urlpatterns.extend([
     url(r'^invoices/dummy/(\d+)/([a-z0-9]{64})/$', postgresqleu.invoices.views.dummy_payment),
     url(r'^invoices/$', postgresqleu.invoices.views.userhome),
     url(r'^invoices/banktransfer/$', postgresqleu.invoices.views.banktransfer),
-    url(r'^invoices/adyen_bank/(\d+)/$', postgresqleu.adyen.views.invoicepayment),
-    url(r'^invoices/adyen_bank/(\d+)/(\w+)/$', postgresqleu.adyen.views.invoicepayment_secret),
+    url(r'^invoices/adyen_bank/(\d+)/(\d+)/$', postgresqleu.adyen.views.invoicepayment),
+    url(r'^invoices/adyen_bank/(\d+)/(\d+)/(\w+)/$', postgresqleu.adyen.views.invoicepayment_secret),
     url(r'^admin/invoices/vatrates/(.*/)?$', postgresqleu.invoices.backendviews.edit_vatrate),
+    url(r'^admin/invoices/paymentmethods/(.*/)?$', postgresqleu.invoices.backendviews.edit_paymentmethod),
+    url(r'^invoices/trustlypay/(\d+)/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.invoicepayment_secret),
+    url(r'^trustly_notification/(\d+)/$', postgresqleu.trustlypayment.views.notification),
+    url(r'^trustly_success/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.success),
+    url(r'^trustly_failure/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.failure),
+    url(r'^invoices/braintree/(\d+)/(\d+)/$', postgresqleu.braintreepayment.views.invoicepayment),
+    url(r'^invoices/braintree/(\d+)/(\d+)/(\w+)/$', postgresqleu.braintreepayment.views.invoicepayment_secret),
+    url(r'^p/braintree/$', postgresqleu.braintreepayment.views.payment_post),
 
     # Basic accounting system
     url(r'^accounting/$', postgresqleu.accounting.views.index),
@@ -262,11 +272,11 @@ urlpatterns.extend([
     url(r'^accounting/([\d-]+)/report/(\w+)/$', postgresqleu.accounting.views.report),
 
     # Handle paypal data returns
-    url(r'^p/paypal_return/$', postgresqleu.paypal.views.paypal_return_handler),
+    url(r'^p/paypal_return/(\d+)/$', postgresqleu.paypal.views.paypal_return_handler),
 
     # Handle adyen data returns
-    url(r'^p/adyen_return/$', postgresqleu.adyen.views.adyen_return_handler),
-    url(r'^p/adyen_notify/$', postgresqleu.adyen.views.adyen_notify_handler),
+    url(r'^p/adyen_return/(\d+)/$', postgresqleu.adyen.views.adyen_return_handler),
+    url(r'^p/adyen_notify/(\d+)/$', postgresqleu.adyen.views.adyen_notify_handler),
 
     # Account info callbacks
     url(r'^accountinfo/search/$', postgresqleu.accountinfo.views.search),
@@ -311,25 +321,6 @@ if settings.ENABLE_ELECTIONS:
         url(r'^elections/(\d+)/candidate/(\d+)/$', postgresqleu.elections.views.candidate),
         url(r'^elections/(\d+)/ownvotes/$', postgresqleu.elections.views.ownvotes),
         url(r'^admin/elections/election/(.*/)?$', postgresqleu.elections.backendviews.edit_election),
-    ])
-
-if settings.ENABLE_TRUSTLY:
-    import postgresqleu.trustlypayment.views
-
-    urlpatterns.extend([
-        url(r'^invoices/trustlypay/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.invoicepayment_secret),
-        url(r'^trustly_notification/$', postgresqleu.trustlypayment.views.notification),
-        url(r'^trustly_success/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.success),
-        url(r'^trustly_failure/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.failure),
-    ])
-
-if settings.ENABLE_BRAINTREE:
-    import postgresqleu.braintreepayment.views
-
-    urlpatterns.extend([
-        url(r'^invoices/braintree/(\d+)/$', postgresqleu.braintreepayment.views.invoicepayment),
-        url(r'^invoices/braintree/(\d+)/(\w+)/$', postgresqleu.braintreepayment.views.invoicepayment_secret),
-        url(r'^p/braintree/$', postgresqleu.braintreepayment.views.payment_post),
     ])
 
 # Now extend with some fallback URLs as well

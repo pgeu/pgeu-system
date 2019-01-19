@@ -19,6 +19,7 @@ from .models import Invoice, InvoiceRow, InvoiceHistory, InvoicePaymentMethod, V
 from .models import InvoiceRefund
 from .forms import InvoiceForm, InvoiceRowForm, RefundForm
 from .util import InvoiceWrapper, InvoiceManager, InvoicePresentationWrapper
+from .payment import PaymentMethodWrapper
 
 
 @login_required
@@ -484,14 +485,11 @@ def userhome(request):
 
 @login_required
 def banktransfer(request):
-    param = {
-        'title': request.GET['title'],
-        'amount': request.GET['amount'],
-    }
-    if 'ret' in request.GET:
-        param['returnurl'] = request.GET['ret']
+    invoice = get_object_or_404(Invoice, pk=request.GET['invoice'], recipient_secret=request.GET['key'])
+    method = get_object_or_404(InvoicePaymentMethod, pk=request.GET['prv'])
+    wrapper = PaymentMethodWrapper(method, invoice)
 
-    return render(request, 'invoices/banktransfer.html', param)
+    return HttpResponse(wrapper.implementation.render_page(request, invoice))
 
 
 @login_required

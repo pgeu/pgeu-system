@@ -1,7 +1,7 @@
 # This script sends out reports fo errors in the Braintree integration
 # as a summary email.
 #
-# Copyright (C) 2015, PostgreSQL Europe
+# Copyright (C) 2015-2019, PostgreSQL Europe
 #
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -9,6 +9,7 @@ from django.conf import settings
 
 from io import StringIO
 
+from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.braintreepayment.models import BraintreeLog
 from postgresqleu.mailqueue.util import send_simple_mail
 
@@ -17,8 +18,13 @@ class Command(BaseCommand):
     help = 'Send log information about Braintree events'
 
     def handle(self, *args, **options):
-        with transaction.atomic():
-            lines = list(BraintreeLog.objects.filter(error=True, sent=False).order_by('timestamp'))
+        for method in InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.braintree.Braintree'):
+            self.send_for_method(method)
+
+    @transaction.atomic
+    def send_for_method(self, method):
+        pm = method.get_implementation()
+        lines = list(BraintreeLog.objects.filter(error=True, sent=False, paymentmethod=method).order_by('timestamp'))
 
         if len(lines):
             sio = StringIO()
@@ -30,6 +36,6 @@ class Command(BaseCommand):
             sio.write("\n\n\nAll these events have now been tagged as sent, and will no longer be\nprocessed by the system in any way.\n")
 
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-                             settings.BRAINTREE_NOTIFICATION_RECEIVER,
+                             pm.config('notification_receiver'),
                              'Braintree integration error report',
                              sio.getvalue())

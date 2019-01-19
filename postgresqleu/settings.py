@@ -105,6 +105,8 @@ INSTALLED_APPS = [
     'postgresqleu.invoices',
     'postgresqleu.accounting',
     'postgresqleu.util',
+    'postgresqleu.trustlypayment',
+    'postgresqleu.braintreepayment',
 ]
 
 # Emails
@@ -138,47 +140,8 @@ MEMBERSHIP_COUNTRY_VALIDATOR = None
 INVOICE_PDF_BUILDER = 'postgresqleu.util.misc.baseinvoice.BaseInvoice'
 REFUND_PDF_BUILDER = 'postgresqleu.util.misc.baseinvoice.BaseRefund'
 
-# Paypal sandbox configuration
-PAYPAL_BASEURL = 'https://www.paypal.com/cgi-bin/webscr'
-PAYPAL_EMAIL = DEFAULT_EMAIL
-PAYPAL_PDT_TOKEN = 'abc123'
-PAYPAL_DEFAULT_SOURCEACCOUNT = 1
-PAYPAL_API_USER = 'someuser'
-PAYPAL_API_PASSWORD = 'secret'
-PAYPAL_API_SIGNATURE = 'secret'
-PAYPAL_SANDBOX = True
-PAYPAL_REPORT_RECEIVER = DEFAULT_EMAIL
-PAYPAL_DONATION_TEXT = "Paypal Donation"
-
-# Adyen configuration
-ADYEN_IS_TEST_SYSTEM = True
-ADYEN_BASEURL = 'https://test.adyen.com/'
-ADYEN_CABASEURL = 'https://test-ca.adyen.com/'
-ADYEN_APIBASEURL = 'https://pal-test.adyen.com/'
-ADYEN_MERCHANTACCOUNT = 'whatever'
-ADYEN_SIGNKEY = 'foobar'
-ADYEN_SKINCODE = 'abc123'
-ADYEN_NOTIFICATION_RECEIVER = DEFAULT_EMAIL
-ADYEN_NOTIFY_USER = 'adyennot'
-ADYEN_NOTIFY_PASSWORD = 'topsecret'
-ADYEN_REPORT_USER = 'someone'
-ADYEN_REPORT_PASSWORD = 'topsecret'
-ADYEN_WS_USER = 'someone'
-ADYEN_WS_PASSWORD = 'topsecret'
-ADYEN_MERCHANTREF_PREFIX = 'PGEU'
-ADYEN_MERCHANTREF_REFUND_PREFIX = 'PGEUREFUND'
-
 # Account numbers used for auto-accounting
 ENABLE_AUTO_ACCOUNTING = False
-ACCOUNTING_PAYPAL_INCOME_ACCOUNT = 1932
-ACCOUNTING_PAYPAL_FEE_ACCOUNT = 6041
-ACCOUNTING_PAYPAL_TRANSFER_ACCOUNT = 1930
-ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT = 1621
-ACCOUNTING_ADYEN_PAYABLE_ACCOUNT = 1622
-ACCOUNTING_ADYEN_FEE_ACCOUNT = 6040
-ACCOUNTING_ADYEN_PAYOUT_ACCOUNT = 1930
-ACCOUNTING_ADYEN_MERCHANT_ACCOUNT = 1971
-ACCOUNTING_ADYEN_REFUNDS_ACCOUNT = 2498
 ACCOUNTING_MANUAL_INCOME_ACCOUNT = 1930
 ACCOUNTING_CONFREG_ACCOUNT = 3003
 ACCOUNTING_CONFSPONSOR_ACCOUNT = 3004
@@ -205,8 +168,6 @@ ENABLE_PG_COMMUNITY_AUTH = False
 ENABLE_NEWS = True
 ENABLE_MEMBERSHIP = False
 ENABLE_ELECTIONS = False
-ENABLE_BRAINTREE = False
-ENABLE_TRUSTLY = False
 
 # Set to a username and password in local_settings.py to enable global http auth
 GLOBAL_LOGIN_USER = ''
@@ -288,21 +249,3 @@ if ENABLE_MEMBERSHIP:
 
 if ENABLE_ELECTIONS:
     INSTALLED_APPS.append('postgresqleu.elections')
-
-
-if ENABLE_BRAINTREE:
-    INSTALLED_APPS.append('postgresqleu.braintreepayment')
-    BRAINTREE_SANDBOX = False
-    # Accounts to use for braintree transactions
-    # Override in local_settings.py, and also configure
-    # the public and secret keys there.
-    ACCOUNTING_BRAINTREE_AUTHORIZED_ACCOUNT = 1621
-    ACCOUNTING_BRAINTREE_PAYABLE_ACCOUNT = 1623
-    ACCOUNTING_BRAINTREE_PAYOUT_ACCOUNT = 1930
-    ACCOUNTING_BRAINTREE_FEE_ACCOUNT = 6040
-
-if ENABLE_TRUSTLY:
-    INSTALLED_APPS.append('postgresqleu.trustlypayment')
-
-    # Accounts to use for trustly transactions
-    ACCOUNTING_TRUSTLY_ACCOUNT = 1972

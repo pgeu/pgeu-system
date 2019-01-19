@@ -17,6 +17,7 @@ braintree.setup('{{token}}', "dropin", {
 
 <form id="checkout" method="post" action="/p/braintree/">{%csrf_token%}
   <input type="hidden" name="invoice" value="{{invoice.id}}">
+  <input type="hidden" name="method" value="{{paymentmethodid}}">
   <div id="pre-payment-info">
     Please wait as the payment processor loads.<br/>
     If it takes a long time, make sure you have javascript enabled!

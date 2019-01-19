@@ -24,15 +24,20 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
-        trustly = Trustly()
+        for method in InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.trustly.TrustlyPayment'):
+            self.process_one_account(method)
+
+    def process_one_account(self, method):
+        pm = method.get_implementation()
+
+        trustly = Trustly(pm)
         manager = InvoiceManager()
-        method = InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.trustly.TrustlyPayment')
 
         refunds = InvoiceRefund.objects.filter(completed__isnull=True, invoice__paidusing=method)
 
         for r in refunds:
             # Find the matching Trustly transaction
-            trustlytransactionlist = list(TrustlyTransaction.objects.filter(invoiceid=r.invoice.pk))
+            trustlytransactionlist = list(TrustlyTransaction.objects.filter(invoiceid=r.invoice.pk, paymentmethod=method))
             if len(trustlytransactionlist) == 0:
                 raise CommandError("Could not find trustly transaction for invoice {0}".format(r.invoice.pk))
             elif len(trustlytransactionlist) != 1:
@@ -48,15 +53,15 @@ class Command(BaseCommand):
                 continue
 
             if Decimal(w['amount']) != r.fullamount:
-                raise CommandError("Mismatch in amount on Trustly refund for invoice {0}".format(r.invoice.pk))
+                raise CommandError("Mismatch in amount on Trustly refund for invoice {0} ({1} vs {2})".format(r.invoice.pk, Decimal(w['amount']), r.fullamount))
 
             # Ok, things look good!
-            TrustlyLog(message="Refund for order {0}, invoice {1}, completed".format(trustlytrans.orderid, r.invoice.pk), error=False).save()
+            TrustlyLog(message="Refund for order {0}, invoice {1}, completed".format(trustlytrans.orderid, r.invoice.pk), error=False, paymentmethod=method).save()
             manager.complete_refund(
                 r.id,
                 Decimal(w['amount']),
                 0,
-                settings.ACCOUNTING_TRUSTLY_ACCOUNT,
+                pm.config('accounting_income'),
                 0,  # We don't support fees on Trustly at this point
                 [],
                 method)

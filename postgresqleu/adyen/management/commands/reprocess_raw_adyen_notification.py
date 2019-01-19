@@ -25,7 +25,7 @@ class Command(BaseCommand):
             # Rebuild a POST dictionary with the contents of this request
             POST = QueryDict(rawnotification.contents, "utf8")
 
-            AdyenLog(pspReference=rawnotification.id, message='Reprocessing RAW notification id %s' % rawnotification.id, error=False).save()
+            AdyenLog(pspReference=rawnotification.id, message='Reprocessing RAW notification id %s' % rawnotification.id, error=False, paymentmethod=rawnotification.paymentmethod).save()
 
             process_raw_adyen_notification(rawnotification, POST)
             self.stdout.write("Completed reprocessing raw notification {0}".format(rawnotification.id))

@@ -5,6 +5,7 @@ from django.db.models import Q
 
 from postgresqleu.confreg.util import get_authenticated_conference
 from postgresqleu.confreg.models import Conference
+from postgresqleu.countries.models import Country
 
 import datetime
 import json

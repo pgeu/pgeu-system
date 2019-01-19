@@ -1,10 +1,10 @@
 from django.contrib import admin
-from .models import SourceAccount, TransactionInfo, ErrorLog
+from .models import TransactionInfo, ErrorLog
 
 
 class TransactionInfoAdmin(admin.ModelAdmin):
-    list_display = ('timestamp', 'sourceaccount', 'sender', 'amount', 'fee', 'transtext', 'matched', )
-    list_filter = ('sourceaccount', 'matched', )
+    list_display = ('timestamp', 'sender', 'amount', 'fee', 'transtext', 'matched', )
+    list_filter = ('matched', )
     ordering = ('-timestamp', )
     search_fields = ('paypaltransid', 'sender', 'sendername', 'transtext',)
 
@@ -15,6 +15,5 @@ class ErrorLogAdmin(admin.ModelAdmin):
     ordering = ('-timestamp', )
 
 
-admin.site.register(SourceAccount)
 admin.site.register(TransactionInfo, TransactionInfoAdmin)
 admin.site.register(ErrorLog, ErrorLogAdmin)

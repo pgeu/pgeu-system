@@ -6,7 +6,7 @@ from django.conf import settings
 
 from datetime import datetime
 
-from postgresqleu.invoices.models import Invoice
+from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 
 from .util import Trustly, TrustlyException
 from .models import TrustlyTransaction, TrustlyRawNotification, TrustlyLog
@@ -14,8 +14,11 @@ from .models import ReturnAuthorizationStatus
 
 
 @transaction.atomic
-def invoicepayment_secret(request, invoiceid, secret):
+def invoicepayment_secret(request, paymentmethod, invoiceid, secret):
+    method = get_object_or_404(InvoicePaymentMethod, pk=paymentmethod, active=True)
     invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True, recipient_secret=secret)
+
+    pm = method.get_implementation()
 
     # If this payment has already been initiated, redirect back to existing URL
     try:
@@ -24,7 +27,7 @@ def invoicepayment_secret(request, invoiceid, secret):
             # This transaction is already started, so we need to redirect back to our own return URL
             return HttpResponseRedirect('{0}/trustly_success/{1}/{2}/'.format(settings.SITEBASE, invoice.id, invoice.recipient_secret))
         # Else it's not started, so we're going to abandon this one and create a new one
-        TrustlyLog(message='Abandoning order {0} and starting over.'.format(t.orderid)).save()
+        TrustlyLog(message='Abandoning order {0} and starting over.'.format(t.orderid), paymentmethod=method).save()
         t.delete()
     except TrustlyTransaction.DoesNotExist:
         # Not processed, so get a new one
@@ -34,7 +37,7 @@ def invoicepayment_secret(request, invoiceid, secret):
     # XXX: should we have a verify step here? As in "hey, we're about to send you to Trustly"
     # XXX: should we use an iframe? For now just send everything there because it's easier..
 
-    t = Trustly()
+    t = Trustly(pm)
 
     try:
         if request.user and not request.user.is_anonymous():
@@ -66,6 +69,7 @@ def invoicepayment_secret(request, invoiceid, secret):
                            amount=invoice.total_amount,
                            orderid=r['data']['orderid'],
                            redirecturl=r['data']['url'],
+                           paymentmethod=method,
         ).save()
 
         # With the transaction saved, redirect the user to Trustly
@@ -103,11 +107,13 @@ def failure(request, invoiceid, secret):
 
 
 @csrf_exempt
-def notification(request):
-    raw = TrustlyRawNotification(contents=request.body.decode('utf8'))
+def notification(request, methodid):
+    method = get_object_or_404(InvoicePaymentMethod, active=True, pk=methodid)
+
+    raw = TrustlyRawNotification(contents=request.body.decode('utf8'), paymentmethod=method)
     raw.save()
 
-    t = Trustly()
+    t = Trustly(method.get_implementation())
 
     (ok, uuid, method) = t.process_raw_trustly_notification(raw)
     return HttpResponse(t.create_notification_response(uuid, method, ok and "OK" or "FAILED"),

@@ -72,10 +72,10 @@ class Migration(migrations.Migration):
             name='InvoicePaymentMethod',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(max_length=100)),
+                ('name', models.CharField(max_length=100, help_text="Name used on public site")),
                 ('active', models.BooleanField(default=True)),
-                ('sortkey', models.IntegerField(default=100)),
-                ('internaldescription', models.CharField(max_length=100, blank=True)),
+                ('sortkey', models.IntegerField(default=100, verbose_name="Sort key")),
+                ('internaldescription', models.CharField(max_length=100, blank=True, verbose_name="Internal name", help_text="Name used in admin pages and configuration")),
                 ('classname', models.CharField(unique=True, max_length=200)),
                 ('auto', models.BooleanField(default=True, verbose_name='Used by automatically generated invoices')),
             ],

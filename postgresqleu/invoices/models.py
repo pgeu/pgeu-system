@@ -1,7 +1,9 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.contrib.postgres.fields import JSONField
 
 from datetime import datetime
 from decimal import Decimal
@@ -24,20 +26,35 @@ class InvoiceProcessor(models.Model):
 
 
 class InvoicePaymentMethod(models.Model):
-    name = models.CharField(max_length=100, null=False, blank=False)
-    active = models.BooleanField(null=False, blank=False, default=True)
-    sortkey = models.IntegerField(null=False, blank=False, default=100)
-    internaldescription = models.CharField(max_length=100, null=False, blank=True)
+    name = models.CharField(max_length=100, null=False, blank=False, help_text="Name used on public site")
+    active = models.BooleanField(null=False, blank=False, default=False)
+    sortkey = models.IntegerField(null=False, blank=False, default=100, verbose_name="Sort key")
+    internaldescription = models.CharField(max_length=100, null=False, blank=True,
+                                           verbose_name="Internal name",
+                                           help_text="Name used in admin pages and configuration")
     # Python class name (full path) to the class that implements
     # this payment method.
-    classname = models.CharField(max_length=200, null=False, blank=False, unique=True)
+    classname = models.CharField(max_length=200, null=False, blank=False, verbose_name="Implementation class")
     auto = models.BooleanField(null=False, blank=False, default=True, verbose_name="Used by automatically generated invoices")
+    config = JSONField(blank=False, null=False, default={})
+    status = JSONField(blank=False, null=False, default={}, encoder=DjangoJSONEncoder)
 
     def __str__(self):
         return self.name
 
     class Meta:
         ordering = ['sortkey', ]
+
+    def get_implementation(self):
+        pieces = self.classname.split('.')
+        modname = '.'.join(pieces[:-1])
+        classname = pieces[-1]
+        mod = __import__(modname, fromlist=[classname, ])
+        return getattr(mod, classname)(self.id, self)
+
+    @property
+    def classname_short(self):
+        return ".".join(self.classname.split('.')[-2:])
 
 
 class InvoiceRefund(models.Model):

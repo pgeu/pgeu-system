@@ -18,9 +18,10 @@ class Command(BaseCommand):
             except TrustlyNotification.DoesNotExist:
                 raise CommandError("Notification {0} does not exist.".format(options['id']))
 
-            TrustlyLog(message="Reprocessing notification {0}".format(notification.id)).save()
+            TrustlyLog(message="Reprocessing notification {0}".format(notification.id),
+                       paymentmethod=notification.rawnotification.paymentmethod).save()
 
-            t = Trustly()
+            t = Trustly(notification.rawnotification.paymentmethod.get_implementation())
             result = t.process_notification(notification)
         if not result:
             raise CommandError("Reprocessing failed, see log!")

@@ -5,12 +5,12 @@
 #
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.urls import reverse
 from django.conf import settings
 
 from datetime import datetime, timedelta
 from io import StringIO
 
+from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.trustlypayment.models import TrustlyLog, TrustlyNotification, TrustlyTransaction
 from postgresqleu.mailqueue.util import send_simple_mail
 
@@ -19,16 +19,18 @@ class Command(BaseCommand):
     help = 'Send log information about Trustly events'
 
     def handle(self, *args, **options):
-        self.report_loglines()
-        self.report_unconfirmed_notifications()
-        self.report_unfinished_transactions()
+        for method in InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.trustly.TrustlyPayment'):
+            pm = method.get_implementation()
+            self.report_loglines(method, pm)
+            self.report_unconfirmed_notifications(method, pm)
+            self.report_unfinished_transactions(method, pm)
 
     @transaction.atomic
-    def report_loglines(self):
-        lines = list(TrustlyLog.objects.filter(error=True, sent=False).order_by('timestamp'))
+    def report_loglines(self, method, pm):
+        lines = list(TrustlyLog.objects.filter(error=True, sent=False, paymentmethod=method).order_by('timestamp'))
         if len(lines):
             sio = StringIO()
-            sio.write("The following error events have been logged by the Trustly integration:\n\n")
+            sio.write("The following error events have been logged by the Trustly integration for {0}:\n\n".format(method.internaldescription))
             for l in lines:
                 sio.write("%s: %s\n" % (l.timestamp, l.message))
                 l.sent = True
@@ -36,38 +38,38 @@ class Command(BaseCommand):
             sio.write("\n\n\nAll these events have now been tagged as sent, and will no longer be\nprocessed by the system in any way.\n")
 
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-                             settings.TRUSTLY_NOTIFICATION_RECEIVER,
+                             pm.config('notification_receiver'),
                              'Trustly integration error report',
                              sio.getvalue())
 
-    def report_unconfirmed_notifications(self):
-        lines = list(TrustlyNotification.objects.filter(confirmed=False, receivedat__lt=datetime.now() - timedelta(days=1)).order_by('receivedat'))
+    def report_unconfirmed_notifications(self, method, pm):
+        lines = list(TrustlyNotification.objects.filter(confirmed=False, receivedat__lt=datetime.now() - timedelta(days=1), rawnotification__paymentmethod=method).order_by('receivedat'))
         if len(lines):
             sio = StringIO()
-            sio.write("The following notifications have not been confirmed in the Trustly integration.\nThese need to be manually processed and then flagged as confirmed!\n\nThis list only contains unconfirmed events older than 24 hours.\n\n\n")
+            sio.write("The following notifications have not been confirmed in the Trustly integration for {0}.\nThese need to be manually processed and then flagged as confirmed!\n\nThis list only contains unconfirmed events older than 24 hours.\n\n\n".format(method.internaldescription))
             for l in lines:
-                sio.write("%s: %s (%s%s)\n" % (l.receivedat, l.method, settings.SITEBASE, reverse('admin:trustlypayment_trustlynotification_change', args=(l.id,))))
+                sio.write("%s: %s\n" % (l.receivedat, l.method, ))
 
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-                             settings.TRUSTLY_NOTIFICATION_RECEIVER,
+                             pm.config('notification_receiver'),
                              'Trustly integration unconfirmed notifications',
                              sio.getvalue())
 
-    def report_unfinished_transactions(self):
+    def report_unfinished_transactions(self, method, pm):
         # Number of days until we start reporting unfinished transactions
         # Note: we only care about transactions that have actually started, where the user
         # got the first step of confirmation. The ones that were never started are uninteresting.
         UNFINISHED_THRESHOLD = 3
 
-        lines = list(TrustlyTransaction.objects.filter(completedat__isnull=True, pendingat__isnull=False, pendingat__lt=datetime.now() - timedelta(days=UNFINISHED_THRESHOLD)).order_by('pendingat'))
+        lines = list(TrustlyTransaction.objects.filter(completedat__isnull=True, pendingat__isnull=False, pendingat__lt=datetime.now() - timedelta(days=UNFINISHED_THRESHOLD), paymentmethod=method).order_by('pendingat'))
         if len(lines):
             sio = StringIO()
-            sio.write("The following payments have been authorized, but not finished for more than %s days.\nThese probably need to be verified manually.\n\n\n" % UNFINISHED_THRESHOLD)
+            sio.write("The following payments have been authorized for %s, but not finished for more than %s days.\nThese probably need to be verified manually.\n\n\n" % (method.internaldescription, UNFINISHED_THRESHOLD))
 
             for l in lines:
-                sio.write("%s at %s: %s (%s%s)\n" % (l.orderid, l.pendingat, l.amount, settings.SITEBASE, reverse('admin:trustlypayment_trustlytransactionstatus_change', args=(l.id,))))
+                sio.write("%s at %s: %s\n" % (l.orderid, l.pendingat, l.amount))
 
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-                             settings.TRUSTLY_NOTIFICATION_RECEIVER,
+                             pm.config('notification_receiver'),
                              'Trustly integration unconfirmed notifications',
                              sio.getvalue())

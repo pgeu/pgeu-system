@@ -7,14 +7,15 @@ import itertools
 
 
 class PaypalAPI(object):
-    def __init__(self):
+    def __init__(self, pm):
+        self.pm = pm
         self.accessparam = {
-            'USER': settings.PAYPAL_API_USER,
-            'PWD': settings.PAYPAL_API_PASSWORD,
-            'SIGNATURE': settings.PAYPAL_API_SIGNATURE,
+            'USER': pm.config('apiuser'),
+            'PWD': pm.config('apipassword'),
+            'SIGNATURE': pm.config('signature'),
             'VERSION': 95,
         }
-        if settings.PAYPAL_SANDBOX:
+        if pm.config('sandbox'):
             self.API_ENDPOINT = 'https://api-3t.sandbox.paypal.com/nvp'
         else:
             self.API_ENDPOINT = 'https://api-3t.paypal.com/nvp'

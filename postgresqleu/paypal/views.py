@@ -1,6 +1,6 @@
 from django.http import HttpResponseForbidden, HttpResponse
 from django.db import transaction
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 
 from datetime import datetime, date
@@ -12,12 +12,15 @@ from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.accounting.util import create_accounting_entry
 
-from .models import TransactionInfo, ErrorLog, SourceAccount
+from .models import TransactionInfo, ErrorLog
 
 
 @transaction.atomic
-def paypal_return_handler(request):
+def paypal_return_handler(request, methodid):
     tx = 'UNKNOWN'
+
+    method = get_object_or_404(InvoicePaymentMethod, pk=int(methodid), active=True)
+    pm = method.get_implementation()
 
     # Custom error return that can get to the request context
     def paypal_error(reason):
@@ -30,7 +33,8 @@ def paypal_return_handler(request):
     def payment_logger(msg):
         ErrorLog(timestamp=datetime.now(),
                  sent=False,
-                 message='Paypal automatch for %s: %s' % (tx, msg)
+                 message='Paypal automatch for %s: %s' % (tx, msg),
+                 paymentmethod=method,
                  ).save()
 
     # Now for the main handler
@@ -60,9 +64,9 @@ def paypal_return_handler(request):
         params = {
             'cmd': '_notify-synch',
             'tx': tx,
-            'at': settings.PAYPAL_PDT_TOKEN,
+            'at': pm.config('pdt_token'),
             }
-        resp = requests.post(settings.PAYPAL_BASEURL, data=params)
+        resp = requests.post(pm.get_baseurl(), data=params)
         if resp.status_code != 200:
             raise Exception("status code {0}".format(resp.status_code))
         r = resp.text
@@ -88,7 +92,7 @@ def paypal_return_handler(request):
             return paypal_error('Received invalid transaction id from paypal')
         if d['txn_type'] != 'web_accept':
             return paypal_error('Received transaction type %s which is unknown by this system!' % d['txn_type'])
-        if d['business'] != settings.PAYPAL_EMAIL:
+        if d['business'] != pm.config('email'):
             return paypal_error('Received payment for %s which is not the correct recipient!' % d['business'])
         if d['mc_currency'] != settings.CURRENCY_ABBREV:
             return paypal_error('Received payment in %s, not %s. We cannot currently process this automatically.' % (d['mc_currency'], settings.CURRENCY_ABBREV))
@@ -118,7 +122,7 @@ def paypal_return_handler(request):
             transtext = d['item_name']
         ti = TransactionInfo(paypaltransid=tx,
                              timestamp=datetime.now(),
-                             sourceaccount=SourceAccount.objects.get(pk=settings.PAYPAL_DEFAULT_SOURCEACCOUNT),
+                             paymentmethod=method,
                              sender=d['payer_email'],
                              sendername=d['first_name'] + ' ' + d['last_name'],
                              amount=Decimal(d['mc_gross']),
@@ -131,10 +135,10 @@ def paypal_return_handler(request):
         # from the accounting system. Note that this is an undocumented
         # URL format for paypal, so it may stop working at some point in
         # the future.
-        urls = ["https://www.paypal.com/cgi-bin/webscr?cmd=_view-a-trans&id=%s" % ti.paypaltransid, ]
+        urls = ["%s?cmd=_view-a-trans&id=%s" % (pm.get_baseurl(), ti.paypaltransid, ), ]
 
         # Separate out donations made through our website
-        if ti.transtext == settings.PAYPAL_DONATION_TEXT:
+        if ti.transtext == pm.config('donation_text'):
             ti.matched = True
             ti.matchinfo = 'Donation, automatically matched'
             ti.save()
@@ -143,8 +147,8 @@ def paypal_return_handler(request):
             # manually completed.
             accstr = "Paypal donation %s" % ti.paypaltransid
             accrows = [
-                (settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT, accstr, ti.amount - ti.fee, None),
-                (settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT, accstr, ti.fee, None),
+                (pm.config('accounting_income'), accstr, ti.amount - ti.fee, None),
+                (pm.config('accounting_fee'), accstr, ti.fee, None),
                 (settings.ACCOUNTING_DONATIONS_ACCOUNT, accstr, -ti.amount, None),
                 ]
             create_accounting_entry(date.today(), accrows, True, urls)
@@ -157,11 +161,11 @@ def paypal_return_handler(request):
                                                             ti.amount,
                                                             "Paypal id %s, from %s <%s>, auto" % (ti.paypaltransid, ti.sendername, ti.sender),
                                                             ti.fee,
-                                                            settings.ACCOUNTING_PAYPAL_INCOME_ACCOUNT,
-                                                            settings.ACCOUNTING_PAYPAL_FEE_ACCOUNT,
+                                                            pm.config('accounting_income'),
+                                                            pm.config('accounting_fee'),
                                                             urls,
                                                             payment_logger,
-                                                            InvoicePaymentMethod.objects.get(classname='postgresqleu.util.payment.paypal.Paypal'),
+                                                            method,
         )
         if r == invoicemanager.RESULT_OK:
             # Matched it!

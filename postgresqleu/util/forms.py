@@ -95,3 +95,14 @@ class IntegerBooleanField(forms.BooleanField):
 
     def prepare_value(self, value):
         return value and True or False
+
+
+class CharToArrayField(forms.CharField):
+    def to_python(self, value):
+        return [x.strip() for x in value.split(',') if x.strip()]
+
+    def prepare_value(self, value):
+        if isinstance(value, list):
+            return ", ".join(value)
+        else:
+            return value

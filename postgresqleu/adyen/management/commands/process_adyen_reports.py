@@ -40,12 +40,13 @@ class Command(BaseCommand):
     def download_reports(self):
         # Download all currently pending reports (that we can)
         for report in Report.objects.filter(downloadedat=None).order_by('receivedat'):
+            pm = report.paymentmethod.get_implementation()
             try:
                 with transaction.atomic():
                     if self.verbose:
                         self.stdout.write("Downloading {0}".format(report.url))
                     resp = requests.get(report.url,
-                                        auth=HTTPBasicAuth(settings.ADYEN_REPORT_USER, settings.ADYEN_REPORT_PASSWORD))
+                                        auth=HTTPBasicAuth(pm.config('report_user'), pm.config('report_password')))
                     if resp.status_code != 200:
                         self.stderr.write("Downloaded report {0} and got status code {1}. Not storing, will try again.".format(report.url, resp.status_code))
                     elif len(resp.text) == 0:
@@ -54,14 +55,17 @@ class Command(BaseCommand):
                         report.downloadedat = datetime.now()
                         report.contents = resp.text
                         report.save()
-                        AdyenLog(message='Downloaded report {0}'.format(report.url), error=False).save()
+                        AdyenLog(message='Downloaded report {0}'.format(report.url), error=False, paymentmethod=report.paymentmethod).save()
             except Exception as ex:
                 self.stderr.write("Failed to download report {0}: {1}".format(report.url, ex))
                 # This might fail again if we had a db problem, but it should be OK as long as it
                 # was just a download issue which is most likely.
-                AdyenLog(message='Failed to download report %s: %s' % (report.url, ex), error=True).save()
+                AdyenLog(message='Failed to download report %s: %s' % (report.url, ex), error=True, paymentmethod=report.paymentmethod).save()
 
     def process_payment_accounting_report(self, report):
+        method = report.paymentmethod
+        pm = method.get_implementation()
+
         sio = io.StringIO(report.contents)
         reader = csv.DictReader(sio, delimiter=',')
         for l in reader:
@@ -74,7 +78,7 @@ class Command(BaseCommand):
                 pspref = l['Psp Reference']
                 bookdate = l['Booking Date']
                 try:
-                    trans = TransactionStatus.objects.get(pspReference=pspref)
+                    trans = TransactionStatus.objects.get(pspReference=pspref, paymentmethod=method)
                 except TransactionStatus.DoesNotExist:
                     # Yes, for now we rollback the whole processing of this one
                     raise Exception('Transaction %s not found!' % pspref)
@@ -87,7 +91,7 @@ class Command(BaseCommand):
                         trans.capturedat = bookdate
                         trans.method = l['Payment Method']
                         trans.save()
-                        AdyenLog(message='Transaction %s captured at %s' % (pspref, bookdate), error=False).save()
+                        AdyenLog(message='Transaction %s captured at %s' % (pspref, bookdate), error=False, paymentmethod=method).save()
                         if self.verbose:
                             self.stdout.write("Sent for settle on {0}".format(pspref))
                 elif l['Record Type'] in ('Settled', 'SettledBulk'):
@@ -108,14 +112,14 @@ class Command(BaseCommand):
                     trans.save()
                     if self.verbose:
                         self.stdout.write("Settled {0}, total amount {1}".format(pspref, trans.settledamount))
-                    AdyenLog(message='Transaction %s settled at %s' % (pspref, bookdate), error=False).save()
+                    AdyenLog(message='Transaction %s settled at %s' % (pspref, bookdate), error=False, paymentmethod=method).save()
 
                     # Settled transactions create a booking entry
                     accstr = "Adyen settlement %s" % pspref
                     accrows = [
-                        (settings.ACCOUNTING_ADYEN_AUTHORIZED_ACCOUNT, accstr, -trans.amount, None),
-                        (settings.ACCOUNTING_ADYEN_PAYABLE_ACCOUNT, accstr, trans.settledamount, None),
-                        (settings.ACCOUNTING_ADYEN_FEE_ACCOUNT, accstr, trans.amount - trans.settledamount, trans.accounting_object),
+                        (pm.config('accounting_authorized'), accstr, -trans.amount, None),
+                        (pm.config('accounting_payable'), accstr, trans.settledamount, None),
+                        (pm.config('accounting_fee'), accstr, trans.amount - trans.settledamount, trans.accounting_object),
                         ]
                     create_accounting_entry(date.today(), accrows, False)
 
@@ -127,6 +131,8 @@ class Command(BaseCommand):
     def process_settlement_detail_report_batch(self, report):
         # Summarize the settlement detail report in an email to to treasurer@, so they
         # can keep track of what's going on.
+        method = report.paymentmethod
+        pm = method.get_implementation()
 
         # Get the batch number from the url
         batchnum = re.search('settlement_detail_report_batch_(\d+).csv$', report.url).groups(1)[0]
@@ -166,19 +172,19 @@ class Command(BaseCommand):
         for t, amount in list(types.items()):
             if t == 'Settled' or t == 'SettledBulk':
                 # Settled means we took it out of the payable balance
-                acctrows.append((settings.ACCOUNTING_ADYEN_PAYABLE_ACCOUNT, accstr, -amount, None))
+                acctrows.append((pm.config('accounting_payable'), accstr, -amount, None))
             elif t == 'MerchantPayout':
                 # Amount directly into our checking account
-                acctrows.append((settings.ACCOUNTING_ADYEN_PAYOUT_ACCOUNT, accstr, -amount, None))
+                acctrows.append((pm.config('accounting_payout'), accstr, -amount, None))
             elif t == 'DepositCorrection' or t == 'Balancetransfer' or t == 'Balancetransfer2':
                 # Modification of our deposit account - in either direction!
-                acctrows.append((settings.ACCOUNTING_ADYEN_MERCHANT_ACCOUNT, accstr, -amount, None))
+                acctrows.append((pm.config('accounting_merchant'), accstr, -amount, None))
             elif t == 'InvoiceDeduction':
                 # Adjustment of the invoiced costs. So adjust the payment fees!
-                acctrows.append((settings.ACCOUNTING_ADYEN_FEE_ACCOUNT, accstr, -amount, None))
+                acctrows.append((pm.config('accounting_fee'), accstr, -amount, None))
             elif t == 'Refunded' or t == 'RefundedBulk':
                 # Refunded - should already be booked against the refunding account
-                acctrows.append((settings.ACCOUNTING_ADYEN_REFUNDS_ACCOUNT, accstr, -amount, None))
+                acctrows.append((pm.config('accounting_refunds'), accstr, -amount, None))
             else:
                 # Other rows that we don't know about will generate an open accounting entry
                 # for manual fixing.
@@ -197,7 +203,7 @@ class Command(BaseCommand):
             msg = "A settlement batch with Adyen has completed for merchant account %s. At least one entry in this was UNKNOWN, and therefor the accounting record has been left open, and needs to be adjusted manually!\nA summary of the entries are:\n\n%s\n\n" % (acct, msg)
 
         send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-                         settings.ADYEN_NOTIFICATION_RECEIVER,
+                         pm.config('notification_receiver'),
                          'Adyen settlement batch %s completed' % batchnum,
                          msg
                          )
@@ -225,7 +231,7 @@ class Command(BaseCommand):
                     # If successful, flag as processed and add the log
                     report.processedat = datetime.now()
                     report.save()
-                    AdyenLog(message='Processed report %s' % report.url, error=False).save()
+                    AdyenLog(message='Processed report %s' % report.url, error=False, paymentmethod=report.paymentmethod).save()
             except Exception as ex:
                 self.stderr.write("Failed to process report {0}: {1}".format(report.url, ex))
-                AdyenLog(message='Failed to process report %s: %s' % (report.url, ex), error=True).save()
+                AdyenLog(message='Failed to process report %s: %s' % (report.url, ex), error=True, paymentmethod=report.paymentmethod).save()
