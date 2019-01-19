@@ -117,36 +117,6 @@ def userlist(request):
     })
 
 
-# Admin view that's used to send email to multiple users
-@superuser_required
-@transaction.atomic
-def admin_email(request):
-    if request.method == 'POST':
-        form = EmailSendForm(data=request.POST)
-        if form.is_valid():
-            # Ok, actually send the email. This is the scary part!
-            ids = form.data['ids'].split(',')
-            members = Member.objects.filter(pk__in=ids)
-            emails = [r.user.email for r in members]
-            for e in emails:
-                send_simple_mail(form.data['sender'], e, form.data['subject'], form.data['text'])
-
-            messages.info(request, 'Sent email to %s recipients' % len(emails))
-            return HttpResponseRedirect('/admin/django/membership/member/?' + form.data['returnurl'])
-        else:
-            ids = form.data['ids'].split(',')
-    else:
-        ids = request.GET['ids']
-        form = EmailSendForm(initial={'ids': ids, 'returnurl': request.GET['orig']})
-        ids = ids.split(',')
-
-    recipients = [m.user.email for m in Member.objects.filter(pk__in=ids)]
-    return render(request, 'membership/admin_email.html', {
-        'form': form,
-        'recipientlist': ', '.join(recipients),
-        })
-
-
 @login_required
 def meetings(request):
     # Only available for actual members

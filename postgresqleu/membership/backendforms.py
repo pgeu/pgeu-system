@@ -1,8 +1,10 @@
 import django.forms
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 from collections import OrderedDict
 
+from postgresqleu.util.widgets import StaticTextWidget
 from postgresqleu.util.backendforms import BackendForm
 from postgresqleu.util.backendlookups import GeneralAccountLookup
 from postgresqleu.membership.models import Member, MemberLog, Meeting, MembershipConfiguration
@@ -35,6 +37,7 @@ class MemberLogManager(object):
 class BackendMemberForm(BackendForm):
     list_fields = ['fullname', 'user', 'paiduntil']
     defaultsort = [[2, 'desc']]
+    allow_email = True
 
     class Meta:
         model = Member
@@ -52,6 +55,12 @@ class BackendMemberForm(BackendForm):
         'log': MemberLogManager(),
     })
 
+    @classmethod
+    def get_column_filters(cls, conference):
+        return {
+            'Paid until': [],  # Empty list triggers the option to choose empty/not empty
+        }
+
 
 class BackendMeetingForm(BackendForm):
     list_fields = ['name', 'dateandtime', ]
@@ -63,3 +72,21 @@ class BackendMeetingForm(BackendForm):
     selectize_multiple_fields = {
         'members': MemberLookup(),
     }
+
+
+class BackendMemberSendEmailForm(django.forms.Form):
+    _from = django.forms.CharField(max_length=128, disabled=True, label="Form")
+    subject = django.forms.CharField(max_length=128, required=True)
+    recipients = django.forms.Field(widget=StaticTextWidget, required=False)
+    message = django.forms.CharField(widget=django.forms.Textarea, required=True)
+    idlist = django.forms.CharField(widget=django.forms.HiddenInput, required=True)
+    confirm = django.forms.BooleanField(label="Confirm", required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(BackendMemberSendEmailForm, self).__init__(*args, **kwargs)
+        if not (self.data.get('subject') and self.data.get('message')):
+            del self.fields['confirm']
+
+    def clean_confirm(self):
+        if not self.cleaned_data['confirm']:
+            raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")
