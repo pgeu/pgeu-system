@@ -82,7 +82,10 @@ class TrustlyWrapper(object):
     def getwithdrawal(self, orderid):
         r = self.apicall('GetWithdrawals', {'OrderID': orderid})
         w = r['data']
-        if len(w) != 1:
+        if len(w) == 0:
+            # No withdrawal found, so nothing to match yet
+            return None
+        elif len(w) != 1:
             raise TrustlyException('Received more than one withdrawal for order {0}'.format(orderid))
         return w[0]
 
