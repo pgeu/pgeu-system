@@ -14,7 +14,7 @@ from django.conf import settings
 from datetime import datetime, timedelta
 
 from postgresqleu.mailqueue.util import send_template_mail
-from postgresqleu.membership.models import Member, MemberLog
+from postgresqleu.membership.models import Member, MemberLog, get_config
 
 
 class Command(BaseCommand):
@@ -22,12 +22,14 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
+        cfg = get_config()
+
         # Expire members (and let them know it happened)
         expired = Member.objects.filter(paiduntil__lt=datetime.now())
         for m in expired:
             MemberLog(member=m, timestamp=datetime.now(), message='Membership expired').save()
             # Generate an email to the user
-            send_template_mail(settings.MEMBERSHIP_SENDER_EMAIL,
+            send_template_mail(cfg.sender_email,
                                m.user.email,
                                "Your {0} membership has expired".format(settings.ORG_NAME),
                                'membership/mail/expired.txt',
@@ -56,7 +58,7 @@ class Command(BaseCommand):
         for m in warning:
             MemberLog(member=m, timestamp=datetime.now(), message='Membership expiry warning sent to %s' % m.user.email).save()
             # Generate an email to the user
-            send_template_mail(settings.MEMBERSHIP_SENDER_EMAIL,
+            send_template_mail(cfg.sender_email,
                                m.user.email,
                                "Your {0} membership will expire soon".format(settings.ORG_NAME),
                                'membership/mail/warning.txt',

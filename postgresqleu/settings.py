@@ -107,11 +107,11 @@ INSTALLED_APPS = [
     'postgresqleu.util',
     'postgresqleu.trustlypayment',
     'postgresqleu.braintreepayment',
+    'postgresqleu.membership',
 ]
 
 # Emails
 INVOICE_SENDER_EMAIL = DEFAULT_EMAIL
-MEMBERSHIP_SENDER_EMAIL = DEFAULT_EMAIL
 
 
 # Currency parameter
@@ -125,15 +125,6 @@ EU_VAT = False
 EU_VAT_HOME_COUNTRY = "FR"
 # On-line validate EU vat numbers
 EU_VAT_VALIDATE = False
-
-# Membership module
-# -----------------
-# Years of membership per payment
-MEMBERSHIP_LENGTH = 2
-# Cost for membership
-MEMBERSHIP_COST = 10
-# Function called to valide that country is acceptable for membership
-MEMBERSHIP_COUNTRY_VALIDATOR = None
 
 # Invoice module
 # --------------
@@ -244,7 +235,6 @@ if ENABLE_ELECTIONS and not ENABLE_MEMBERSHIP:
     raise Exception("Elections module requires membership module!")
 
 if ENABLE_MEMBERSHIP:
-    INSTALLED_APPS.append('postgresqleu.membership')
     TEMPLATES[0]['OPTIONS']['context_processors'].append('postgresqleu.util.context_processors.member_context')
 
 if ENABLE_ELECTIONS:

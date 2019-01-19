@@ -1,11 +1,26 @@
 import django.forms
+from django.conf import settings
 
 from collections import OrderedDict
 
 from postgresqleu.util.backendforms import BackendForm
 from postgresqleu.util.backendlookups import GeneralAccountLookup
-from postgresqleu.membership.models import Member, MemberLog, Meeting
+from postgresqleu.membership.models import Member, MemberLog, Meeting, MembershipConfiguration
 from postgresqleu.membership.backendlookups import MemberLookup
+
+
+class BackendConfigForm(BackendForm):
+    class Meta:
+        model = MembershipConfiguration
+        fields = ['sender_email', 'membership_years', 'membership_cost', 'country_validator',
+                  'paymentmethods', ]
+        widgets = {
+            'paymentmethods': django.forms.CheckboxSelectMultiple,
+        }
+
+    def fix_fields(self):
+        self.fields['paymentmethods'].label_from_instance = lambda x: "{0}{1}".format(x.internaldescription, x.active and " " or " (INACTIVE)")
+        self.fields['membership_cost'].help_text = "Membership cost in {0}".format(settings.CURRENCY_SYMBOL)
 
 
 class MemberLogManager(object):

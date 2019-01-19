@@ -2,7 +2,8 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.conf import settings
 
-from .models import Member
+from .models import Member, get_config
+from .util import validate_country
 
 
 class MemberForm(forms.ModelForm):
@@ -15,10 +16,8 @@ class MemberForm(forms.ModelForm):
             # No country checking for this member
             return self.cleaned_data['country']
 
-        if settings.MEMBERSHIP_COUNTRY_VALIDATOR:
-            msg = settings.MEMBERSHIP_COUNTRY_VALIDATOR(self.cleaned_data['country'])
-            if isinstance(msg, str):
-                raise ValidationError(msg)
+        validate_country(get_config().country_validator, self.cleaned_data['country'])
+
         return self.cleaned_data['country']
 
 

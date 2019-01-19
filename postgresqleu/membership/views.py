@@ -6,7 +6,7 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
 
-from .models import Member, MemberLog, Meeting, MemberMeetingKey
+from .models import Member, MemberLog, Meeting, MemberMeetingKey, get_config
 from .forms import MemberForm, ProxyVoterForm
 
 from postgresqleu.util.decorators import superuser_required
@@ -45,6 +45,8 @@ def home(request):
         member = Member(user=request.user, fullname="{0} {1}".format(request.user.first_name, request.user.last_name))
         registration_complete = False
 
+    cfg = get_config()
+
     if request.method == "POST":
         form = MemberForm(data=request.POST, instance=member)
         if form.is_valid():
@@ -66,9 +68,10 @@ def home(request):
                 # Generate an invoice for the user
                 if member.activeinvoice:
                     raise Exception("This should not happen - generating invoice when one already exists!")
+
                 manager = InvoiceManager()
                 processor = InvoiceProcessor.objects.get(processorname="membership processor")
-                invoicerows = [('%s - %s years membership - %s' % (settings.ORG_NAME, settings.MEMBERSHIP_LENGTH, request.user.email), 1, settings.MEMBERSHIP_COST, None), ]
+                invoicerows = [('%s - %s years membership - %s' % (settings.ORG_NAME, cfg.membership_years, request.user.email), 1, cfg.membership_cost, None), ]
                 member.activeinvoice = manager.create_invoice(
                     request.user,
                     request.user.email,
@@ -82,7 +85,8 @@ def home(request):
                     processorid=member.pk,
                     bankinfo=False,
                     canceltime=datetime.now() + timedelta(days=7),
-                    accounting_account=settings.ACCOUNTING_MEMBERSHIP_ACCOUNT
+                    accounting_account=settings.ACCOUNTING_MEMBERSHIP_ACCOUNT,
+                    paymentmethods=cfg.paymentmethods.all(),
                     )
                 member.activeinvoice.save()
                 member.save()
@@ -102,7 +106,7 @@ def home(request):
         'invoice': InvoicePresentationWrapper(member.activeinvoice, "%s/membership/" % settings.SITEBASE),
         'registration_complete': registration_complete,
         'logdata': logdata,
-        'amount': settings.MEMBERSHIP_COST,  # price for settings.MEMBERSHIP_LENGTH years
+        'amount': cfg.membership_cost,
     })
 
 

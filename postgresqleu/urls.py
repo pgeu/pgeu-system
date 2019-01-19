@@ -306,6 +306,7 @@ if settings.ENABLE_MEMBERSHIP:
         url(r'^membership/meetingcode/$', postgresqleu.membership.views.meetingcode),
         url(r'^membership/members/$', postgresqleu.membership.views.userlist),
         url(r'^admin/django/membership/_email/$', postgresqleu.membership.views.admin_email),
+        url(r'^admin/membership/config/$', postgresqleu.membership.backendviews.edit_config),
         url(r'^admin/membership/members/(.*/)?$', postgresqleu.membership.backendviews.edit_member),
         url(r'^admin/membership/meetings/(.*/)?$', postgresqleu.membership.backendviews.edit_meeting),
         url(r'^admin/membership/lookups/member/$', postgresqleu.membership.backendlookups.MemberLookup.lookup),

@@ -1,10 +1,34 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import User
+from django.conf import settings
 
 from postgresqleu.countries.models import Country
-from postgresqleu.invoices.models import Invoice
+from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
+from postgresqleu.membership.util import country_validator_choices
 
 from datetime import date, datetime, timedelta
+
+
+class MembershipConfiguration(models.Model):
+    id = models.IntegerField(null=False, blank=False, primary_key=True)
+    sender_email = models.EmailField(null=False, blank=False)
+    membership_years = models.IntegerField(null=False, blank=False, default=1,
+                                           validators=[MinValueValidator(1), MaxValueValidator(10)],
+                                           verbose_name="Membership length",
+                                           help_text="Membership length in years")
+    membership_cost = models.IntegerField(null=False, blank=False, default=10,
+                                          validators=[MinValueValidator(1), ],
+                                          verbose_name="Membership cost")
+    country_validator = models.CharField(max_length=100, null=False, blank=True,
+                                         verbose_name="Country validator",
+                                         help_text="Validate member countries against this rule",
+                                         choices=country_validator_choices)
+    paymentmethods = models.ManyToManyField(InvoicePaymentMethod, blank=False, verbose_name='Invoice payment methods')
+
+
+def get_config():
+    return MembershipConfiguration.objects.get(id=1)
 
 
 class Member(models.Model):

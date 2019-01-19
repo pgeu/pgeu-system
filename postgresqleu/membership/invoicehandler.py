@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from .models import Member, MemberLog
+from .models import Member, MemberLog, get_config
 
 from datetime import datetime, timedelta, date
 
@@ -19,6 +19,8 @@ class InvoiceProcessor(object):
         except member.DoesNotExist:
             raise Exception("Could not find member id %s for invoice!" % invoice.processorid)
 
+        cfg = get_config()
+
         # The invoice is paid, so it's no longer active!
         # It'll still be in the archive, of course, but not linked from the
         # membership record.
@@ -27,9 +29,9 @@ class InvoiceProcessor(object):
         # Extend the membership. If already paid to a date in the future,
         # extend from that date. Otherwise, from today.
         if member.paiduntil and member.paiduntil > date.today():
-            member.paiduntil = member.paiduntil + timedelta(days=settings.MEMBERSHIP_LENGTH * 365)
+            member.paiduntil = member.paiduntil + timedelta(days=cfg.membership_years * 365)
         else:
-            member.paiduntil = date.today() + timedelta(days=settings.MEMBERSHIP_LENGTH * 365)
+            member.paiduntil = date.today() + timedelta(days=cfg.membership_years * 365)
         member.expiry_warning_sent = None
 
         # If the member isn't already a member, set todays date as the
@@ -40,7 +42,7 @@ class InvoiceProcessor(object):
         member.save()
 
         # Create a log record too, and save it
-        MemberLog(member=member, timestamp=datetime.now(), message="Payment for %s years received, membership extended to %s" % (settings.MEMBERSHIP_LENGTH, member.paiduntil)).save()
+        MemberLog(member=member, timestamp=datetime.now(), message="Payment for %s years received, membership extended to %s" % (cfg.membership_years, member.paiduntil)).save()
 
     # Process an invoice being canceled. This means we need to unlink
     # it from the membership.
