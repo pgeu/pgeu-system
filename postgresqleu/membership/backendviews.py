@@ -28,6 +28,7 @@ def edit_config(request):
                                 bypass_conference_filter=True,
                                 cancel_url='/admin/',
                                 saved_url='/admin/',
+                                topadmin='Membership',
     )
 
 
