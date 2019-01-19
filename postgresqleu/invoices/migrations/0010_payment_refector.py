@@ -77,7 +77,7 @@ def migrate_payment_settings(apps, schema_editor):
                     'private_key': settings.TRUSTLY_PRIVATE_KEY,
                     'countries': settings.TRUSTLY_COUNTRIES,
                     'notification_receiver': settings. TRUSTLY_NOTIFICATION_RECEIVER,
-                    'hold_notifications': settings.TRUSTLY_HOLD_NOTIFICATIONS,
+                    'hold_notifications': getattr(settings, 'TRUSTLY_HOLD_NOTIFICATIONS', False),
                     'accounting_income': getattr(settings, 'ACCOUNTING_TRUSTLY_ACCOUNT', 1972),
                 }
             else:
