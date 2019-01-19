@@ -467,7 +467,7 @@ class AdyenAPI(object):
 
     def _api_call(self, apiurl, apiparam, okresponse):
         resp = requests.post("{0}{1}".format(self.pm.config('apibaseurl'), apiurl),
-                             auth=HTTPBasicAuth(pm.config('ws_user'), pm.config('ws_password')),
+                             auth=HTTPBasicAuth(self.pm.config('ws_user'), self.pm.config('ws_password')),
                              json=apiparam,
         )
         if resp.status_code != 200:
