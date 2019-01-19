@@ -53,3 +53,8 @@ class AdminJsonWidget(PrettyPrintJsonWidget):
     def render(self, name, value, attrs=None, renderer=None):
         attrs['cols'] = 100
         return super(AdminJsonWidget, self).render(name, value, attrs, renderer)
+
+
+class StaticTextWidget(TextInput):
+    def render(self, name, value, attrs=None, renderer=None):
+        return mark_safe(value)

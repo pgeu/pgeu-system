@@ -27,7 +27,6 @@ class BackendInvoicePaymentMethodForm(BackendForm):
     helplink = 'payment'
     list_fields = ['name', 'internaldescription', 'classname_short', 'active', 'sortkey', ]
     form_before_new = BackendInvoicePaymentMethodNewForm
-    readonly_fields = ['classname', ]
     verbose_field_names = {
         'classname_short': 'Implementation',
     }
@@ -38,6 +37,7 @@ class BackendInvoicePaymentMethodForm(BackendForm):
 
     config_fields = []
     config_fieldsets = []
+    config_readonly = []
 
     class Meta:
         model = InvoicePaymentMethod
@@ -48,6 +48,10 @@ class BackendInvoicePaymentMethodForm(BackendForm):
         return [
             {'id': 'common', 'legend': 'Common', 'fields': ['name', 'internaldescription', 'active', 'sortkey', 'classname'], }
         ] + self.config_fieldsets
+
+    @property
+    def readonly_fields(self):
+        return ['classname', ] + self.config_readonly
 
     @property
     def json_form_fields(self):

@@ -5,6 +5,7 @@ from urllib.parse import urlencode
 
 import re
 
+from postgresqleu.util.widgets import StaticTextWidget
 from postgresqleu.paypal.models import TransactionInfo
 from postgresqleu.paypal.util import PaypalAPI
 from postgresqleu.invoices.backendforms import BackendInvoicePaymentMethodForm
@@ -36,9 +37,13 @@ class BackendPaypalForm(BackendInvoicePaymentMethodForm):
                                             label="Transfer account",
                                             help_text="Account that transfers from paypal are made to")
 
+    returnurl = forms.CharField(label="Return URL", widget=StaticTextWidget)
+
     config_fields = ['sandbox', 'email', 'apiuser', 'apipassword', 'pdt_token',
                      'signature', 'donation_text', 'report_receiver',
-                     'accounting_income', 'accounting_fee', 'accounting_transfer']
+                     'accounting_income', 'accounting_fee', 'accounting_transfer',
+                     'returnurl', ]
+    config_readonly = ['returnurl', ]
     config_fieldsets = [
         {
             'id': 'paypal',
@@ -55,8 +60,25 @@ class BackendPaypalForm(BackendInvoicePaymentMethodForm):
             'id': 'accounting',
             'legend': 'Accounting',
             'fields': ['accounting_income', 'accounting_fee', 'accounting_transfer'],
+        },
+        {
+            'id': 'paypalconf',
+            'legend': 'Paypal configuration',
+            'fields': ['returnurl', ],
         }
     ]
+
+    def fix_fields(self):
+        if self.instance.id:
+            self.initial.update({
+                'returnurl': """
+On the Paypal account, go into <i>Settings</i>, then <i>My Selling Tools</i>,
+then <i>Website Preferences</i>. Make sure that <i>Auto Return</i>
+is enabled, and enter the url <code>{0}/p/paypal_return/{1}/</code>""".format(
+                    settings.SITEBASE,
+                    self.instance.id,
+                ),
+            })
 
 
 class Paypal(BasePayment):

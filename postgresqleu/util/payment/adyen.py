@@ -16,6 +16,7 @@ from collections import OrderedDict
 import re
 
 from postgresqleu.util.db import exec_to_list, exec_to_scalar
+from postgresqleu.util.widgets import StaticTextWidget
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.invoices.util import diff_workdays
 from postgresqleu.invoices.backendforms import BackendInvoicePaymentMethodForm
@@ -77,12 +78,17 @@ class BackendAdyenCreditCardForm(BackendInvoicePaymentMethodForm):
     accounting_payout = forms.ChoiceField(required=True, choices=get_account_choices,
                                           label="Payout account")
 
+    notifications = forms.CharField(widget=StaticTextWidget)
+    returnurl = forms.CharField(label="Return URL", widget=StaticTextWidget)
+
     config_fields = ['merchantaccount', 'test', 'skincode',
                      'apibaseurl', 'signkey', 'ws_user', 'ws_password', 'report_user', 'report_password',
                      'notify_user', 'notify_password',
                      'notification_receiver', 'merchantref_prefix', 'merchantref_refund_prefix',
                      'accounting_authorized', 'accounting_payable', 'accounting_merchant',
-                     'accounting_fee', 'accounting_refunds', 'accounting_payout', ]
+                     'accounting_fee', 'accounting_refunds', 'accounting_payout',
+                     'notifications', 'returnurl', ]
+    config_readonly = ['notifications', 'returnurl', ]
 
     config_fieldsets = [
         {
@@ -106,8 +112,34 @@ class BackendAdyenCreditCardForm(BackendInvoicePaymentMethodForm):
             'legend': 'Accounting',
             'fields': ['accounting_authorized', 'accounting_payable', 'accounting_merchant',
                        'accounting_fee', 'accounting_refunds', 'accounting_payout'],
+        },
+        {
+            'id': 'adyenconf',
+            'legend': 'Adyen configuration',
+            'fields': ['notifications', 'returnurl', ],
         }
     ]
+
+    def fix_fields(self):
+        if self.instance.id:
+            self.initial.update({
+                'notifications': """
+In Adyen setup, select the merchant account (not the master account),
+then click Notifications in the account menu. In the field for URL, enter
+<code>{0}/p/adyen_notify/{1}/</code>, and pick format <code>HTTP POST</code>.""".format(
+                    settings.SITEBASE,
+                    self.instance.id,
+                ),
+                'returnurl': """
+In Adyen Test setup, edit the skin, and in the field for <i>Result URL</i>
+(production or test) enter <code>{0}/p/adyen_return/{1}/</code>.
+If this is a production setup, you also have to <i>publish</i>
+a new version of the skin.
+""".format(
+                    settings.SITEBASE,
+                    self.instance.id,
+                ),
+            })
 
 
 def _get_merchantaccount_choices():
