@@ -502,6 +502,7 @@ def _create_and_assign_bulk_payment(user, conference, regs, invoicerows, recipie
         accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
         accounting_object=conference.accounting_object,
         canceltime=get_invoice_autocancel(*autocancel_hours),
+        paymentmethods=conference.paymentmethods.all(),
     )
     bp.invoice.save()
     bp.save()
@@ -811,6 +812,7 @@ def reg_add_options(request, confname):
             accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
             accounting_object=conference.accounting_object,
             canceltime=get_invoice_autocancel(*autocancel_hours),
+            paymentmethods=conference.paymentmethods.all(),
         )
         order.invoice.save()
         order.save()
@@ -1689,6 +1691,7 @@ def confirmreg(request, confname):
                 accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
                 accounting_object=conference.accounting_object,
                 canceltime=autocancel,
+                paymentmethods=conference.paymentmethods.all(),
             )
 
             reg.invoice.save()
@@ -1992,6 +1995,7 @@ def createvouchers(request, confname):
                                   bankinfo=False,
                                   accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
                                   accounting_object=conference.accounting_object,
+                                  paymentmethods=conference.paymentmethods.all(),
                               )
                 invoice.save()
                 invoice.invoicerow_set.add(InvoiceRow(invoice=invoice,
@@ -2000,8 +2004,6 @@ def createvouchers(request, confname):
                                                       rowamount=regtype.cost,
                                                       vatrate=conference.vat_registrations,
                 ), bulk=False)
-                invoice.allowedmethods = InvoicePaymentMethod.objects.filter(auto=True)
-                invoice.save()
                 messages.warning(request, "Invoice created for this batch, but NOT finalized. Go do that manually!")
             return HttpResponseRedirect('%s/' % batch.id)
         # Else fall through to re-render

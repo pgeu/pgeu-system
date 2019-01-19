@@ -595,9 +595,9 @@ class InvoiceManager(object):
                        invoicedate,
                        duedate,
                        invoicerows,
+                       paymentmethods,
                        processor=None,
                        processorid=None,
-                       autopaymentoptions=True,
                        bankinfo=True,
                        accounting_account=None,
                        accounting_object=None,
@@ -635,9 +635,9 @@ class InvoiceManager(object):
                                                   vatrate=r[3],
             ), bulk=False)
 
-        if autopaymentoptions:
-            invoice.allowedmethods = InvoicePaymentMethod.objects.filter(auto=True)
-            invoice.save()
+        # Add the ways it can be paid
+        invoice.allowedmethods = paymentmethods
+        invoice.save()
 
         # That should be it. Finalize so we get a PDF, and then
         # return whatever we have.

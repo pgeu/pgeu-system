@@ -35,7 +35,6 @@ class InvoicePaymentMethod(models.Model):
     # Python class name (full path) to the class that implements
     # this payment method.
     classname = models.CharField(max_length=200, null=False, blank=False, verbose_name="Implementation class")
-    auto = models.BooleanField(null=False, blank=False, default=True, verbose_name="Used by automatically generated invoices")
     config = JSONField(blank=False, null=False, default={})
     status = JSONField(blank=False, null=False, default={}, encoder=DjangoJSONEncoder)
 

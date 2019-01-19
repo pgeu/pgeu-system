@@ -167,11 +167,10 @@ def create_sponsor_invoice(user, sponsor):
         bankinfo=True,
         accounting_account=settings.ACCOUNTING_CONFSPONSOR_ACCOUNT,
         accounting_object=conference.accounting_object,
-        autopaymentoptions=False,
         reverse_vat=reverse_vat,
         extra_bcc_list=conference.sponsoraddr,
+        paymentmethods=level.paymentmethods.all(),
     )
-    i.allowedmethods = level.paymentmethods.all()
     return i
 
 
@@ -260,6 +259,6 @@ def create_voucher_invoice(sponsor, user, rt, num):
         bankinfo=False,
         accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
         accounting_object=sponsor.conference.accounting_object,
-        autopaymentoptions=True
+        paymentmethods=sponsor.conference.paymentmethods.all(),
     )
     return i

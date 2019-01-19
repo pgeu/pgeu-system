@@ -81,7 +81,7 @@ class Command(BaseCommand):
                     bankinfo=True,
                     accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
                     accounting_object=code.conference.accounting_object,
-                    autopaymentoptions=True,
+                    paymentmethods=code.conference.paymentmethods.all(),
                 )
                 code.invoice.save()
                 code.is_invoiced = True

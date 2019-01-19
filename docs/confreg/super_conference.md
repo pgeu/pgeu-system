@@ -95,3 +95,9 @@ VAT rate for registrations
 
 VAT rate for sponsorship
 :  The VAT rate (if any) to apply to all invoices for sponsorship
+
+Invoice payment options
+:  The payment options available for invoices for registrations and
+addons to this conference. This does not include sponsorship invoices,
+but it does include the invoiecs that sponsors will get if they for
+example buy extra vouchers.
