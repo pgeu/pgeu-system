@@ -32,7 +32,7 @@ class BackendPaypalForm(BackendInvoicePaymentMethodForm):
     accounting_income = forms.ChoiceField(required=True, choices=get_account_choices,
                                           label="Income account")
     accounting_fee = forms.ChoiceField(required=True, choices=get_account_choices,
-                                       label="Fee account")
+                                       label="Fees account")
     accounting_transfer = forms.ChoiceField(required=True, choices=get_account_choices,
                                             label="Transfer account",
                                             help_text="Account that transfers from paypal are made to")
