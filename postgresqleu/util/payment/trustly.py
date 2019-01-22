@@ -67,11 +67,13 @@ class BackendTrustlyPaymentForm(BackendInvoicePaymentMethodForm):
 
     accounting_income = forms.ChoiceField(required=True, choices=get_account_choices,
                                           label="Income account")
+    accounting_fee = forms.ChoiceField(required=True, choices=get_account_choices,
+                                       label="Fees account")
 
     config_fields = ['user', 'test', 'password', 'hold_notifications',
                      'notification_receiver', 'countries',
                      'public_key', 'private_key',
-                     'accounting_income', ]
+                     'accounting_income', 'accounting_fee', ]
     config_fieldsets = [
         {
             'id': 'trustly',
@@ -91,7 +93,7 @@ class BackendTrustlyPaymentForm(BackendInvoicePaymentMethodForm):
         {
             'id': 'accounting',
             'legend': 'Accounting',
-            'fields': ['accounting_income', ],
+            'fields': ['accounting_income', 'accounting_fee', ],
         }
     ]
 
