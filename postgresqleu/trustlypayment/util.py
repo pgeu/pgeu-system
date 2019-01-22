@@ -120,7 +120,7 @@ class Trustly(TrustlyWrapper):
                 try:
                     self.process_completed_payment(trans)
                 except TrustlyException as e:
-                    self.log_and_email(e)
+                    self.log_and_email(e, method)
                     return False
                 trans.save()
                 notification.confirmed = True
