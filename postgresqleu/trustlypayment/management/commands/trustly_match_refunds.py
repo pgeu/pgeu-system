@@ -66,7 +66,7 @@ class Command(BaseCommand):
                         # this and convert the difference to what we expeced into the fee. This
                         # can end up being a negative fee, but it should be small enough that
                         # it's not a real problem.
-                        fees = (-Decimal(lr['amount']) - r.fullamount).quantize(Decimal('0.01'))
+                        fees = (r.fullamount + Decimal(lr['amount']).quantize(Decimal('0.01')))
                         TrustlyLog(
                             message="Refund for order {0}, invoice {1}, was made as {2} {3} instead of {4} {5}. Using ledger mapped to {6} {7} with difference of {8} {9} booked as fees".format(
                                 trustlytrans.orderid,
