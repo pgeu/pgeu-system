@@ -1,6 +1,7 @@
 import json
 from uuid import uuid4
 from time import time
+from datetime import timedelta
 from decimal import Decimal
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA
@@ -88,6 +89,14 @@ class TrustlyWrapper(object):
         elif len(w) != 1:
             raise TrustlyException('Received more than one withdrawal for order {0}'.format(orderid))
         return w[0]
+
+    def getledgerforday(self, day):
+        r = self.apicall('AccountLedger', {
+            'FromDate': day.strftime('%Y-%m-%d'),
+            'ToDate': (day + timedelta(hours=24)).strftime('%Y-%m-%d'),
+            'Currency': settings.CURRENCY_ABBREV,
+        })
+        return r['data']
 
     def apicall(self, method, data):
         params = {

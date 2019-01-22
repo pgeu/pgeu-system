@@ -164,7 +164,7 @@ class Trustly(TrustlyWrapper):
                                                      'Trustly id {0}'.format(trans.id),
                                                      0,  # XXX: we pay zero now, but should perhaps support fees?
                                                      pm.config('accounting_income'),
-                                                     0,  # XXX: if supporting fees, support fee account
+                                                     pm.config('accounting_fee'),
                                                      [],
                                                      invoice_logger,
                                                      method)

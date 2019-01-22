@@ -561,7 +561,7 @@ class InvoiceManager(object):
             accrows.append(
                 (refund.vatrate.vataccount.num, accountingtxt, refund.vatamount, None),
             )
-        if refundfee > 0:
+        if refundfee != 0:
             accrows.append(
                 (costaccount, accountingtxt, -refundfee, invoice.accounting_object),
             )
