@@ -71,7 +71,7 @@ class Command(BaseCommand):
                             message="Refund for order {0}, invoice {1}, was made as {2} {3} instead of {4} {5}. Using ledger mapped to {6} {7} with difference of {8} {9} booked as fees".format(
                                 trustlytrans.orderid,
                                 r.invoice.pk,
-                                Decimal(r['amount']),
+                                Decimal(w['amount']),
                                 w['currency'],
                                 r.fullamount,
                                 settings.CURRENCY_ABBREV,
