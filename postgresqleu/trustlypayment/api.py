@@ -94,7 +94,7 @@ class TrustlyWrapper(object):
         r = self.apicall('AccountLedger', {
             'FromDate': day.strftime('%Y-%m-%d'),
             'ToDate': (day + timedelta(hours=24)).strftime('%Y-%m-%d'),
-            'Currency': settings.CURRENCY_ABBREV,
+            'Currency': self.currency,
         })
         return r['data']
 
