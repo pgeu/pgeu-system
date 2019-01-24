@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import transaction
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 from postgresqleu.mailqueue.util import send_simple_mail
@@ -101,6 +101,13 @@ class Trustly(TrustlyWrapper):
                 if not trans.pendingat:
                     trans.pendingat = datetime.now()
                     trans.save()
+
+                try:
+                    self.process_pending_payment(trans)
+                except TrustlyException as e:
+                    self.log_and_email(e, method)
+                    return False
+
                 notification.confirmed = True
                 notification.save()
 
@@ -146,12 +153,31 @@ class Trustly(TrustlyWrapper):
         # Can't reach here
         return False
 
-    def process_completed_payment(self, trans):
-        manager = InvoiceManager()
+    def get_invoice_for_transaction(self, trans):
         try:
-            invoice = Invoice.objects.get(pk=trans.invoiceid)
+            return Invoice.objects.get(pk=trans.invoiceid)
         except Invoice.DoesNotExist:
             raise TrustlyException("Received Trustly notification for non-existing invoice id {0}".format(trans.invoiceid))
+
+    def process_pending_payment(self, trans):
+        # If we have received a 'pending' notification, postpone the invoice to ensure it's valid
+        # for another 2 hours, in case the credit notification is slightly delayed.
+        # A cronjob will run every hour to potentially further extend this.
+        manager = InvoiceManager()
+        invoice = self.get_invoice_for_transaction(trans)
+
+        # Postpone the invoice so it's valid for at least another 2 hours.
+        r = manager.postpone_invoice_autocancel(invoice,
+                                                timedelta(hours=2),
+                                                reason="Trustly pending arrived, awaiting credit",
+                                                silent=True)
+        if r:
+            TrustlyLog(message="Extended autocancel time for invoice {0} to ensure time for credit notification".format(invoice.id),
+                       paymentmethod=trans.paymentmethod).save()
+
+    def process_completed_payment(self, trans):
+        manager = InvoiceManager()
+        invoice = self.get_invoice_for_transaction(trans)
 
         def invoice_logger(msg):
             raise TrustlyException("Trustly invoice processing failed: {0}".format(msg))

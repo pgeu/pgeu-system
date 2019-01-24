@@ -14,7 +14,7 @@ import re
 from Crypto.Hash import SHA256
 from Crypto import Random
 
-from postgresqleu.mailqueue.util import send_template_mail
+from postgresqleu.mailqueue.util import send_template_mail, send_simple_mail
 from postgresqleu.accounting.util import create_accounting_entry
 
 
@@ -646,6 +646,41 @@ class InvoiceManager(object):
         wrapper = InvoiceWrapper(invoice)
         wrapper.finalizeInvoice()
         return invoice
+
+    def postpone_invoice_autocancel(self, invoice, mintime, reason, silent=False):
+        # Extend an invoice to be valid at least mintime into the future. Unless
+        # silent is set, a notification will be sent to the invoice address if
+        # this happens. No notification is sent to the end user.
+        if invoice.paidat:
+            # Already paid. Could happen if payment notification is delivered concurrently,
+            # so just ignore it.
+            return False
+        if not invoice.canceltime:
+            return False
+        if invoice.canceltime > datetime.now() + mintime:
+            return False
+
+        # Else we need to extend it, so do it
+        oldtime = invoice.canceltime
+        invoice.canceltime = datetime.now() + mintime
+        invoice.save()
+
+        InvoiceHistory(invoice=invoice, txt='Extended until {0}: {1}'.format(invoice.canceltime, reason)).save()
+
+        if not silent:
+            send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+                             settings.INVOICE_SENDER_EMAIL,
+                             "Invoice {0} automatically extended".format(invoice.id),
+                             """The invoice with id {0} has had it's automatic cancel time extended
+from {1} to {2}.
+
+The reason for this was:
+{3}
+
+The invoice remains active regardless of the original cancel time, and will
+keep getting extended until the process is manually stopped. A new notification
+will be sent after each extension.
+""".format(invoice.id, oldtime, invoice.canceltime, reason))
 
 
 # This is purely for testing, obviously
