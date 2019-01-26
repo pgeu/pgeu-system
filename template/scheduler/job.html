@@ -1,0 +1,73 @@
+{%extends "adm/admin_base.html" %}
+{%block title%}Scheduled Job{%endblock%}
+
+{%block extrahead %}
+<style>
+.history_popover {
+  cursor: pointer;
+}
+.history_content {
+  display: none;
+}
+.popover {
+  max-width: 80%;
+}
+</style>
+
+<script type="text/javascript">
+$(function() {
+  $('.history_popover').popover({
+    container: 'body',
+    placement: 'bottom',
+    html: true,
+    content: function () {
+         return $(this).find('.history_content').html();
+    },
+    title: 'Output',
+   });
+});
+</script>
+{%endblock%}
+
+{%block layoutblock %}
+<h1>{{job.description}}</h1>
+
+<form method="post" action="." class="form-horizontal">{% csrf_token%}
+{%include "confreg/admin_backend_form_content.html" with cancelurl="../" %}
+</form>
+
+<h2>Next run</h2>
+<p>
+  Next scheduled run: {%if job.nextrun%}{{job.nextrun}} (in {{job.nextrun|timeuntil}}){%else%}No execution currently scheduled{%endif%}
+</p>
+
+<form method="post" action="." class="form-horizontal">{% csrf_token%}
+  <input type="hidden" name="schedule-now" value="1">
+  <input type="submit" class="btn btn-default" value="Schedule immediate run">
+</form>
+
+<h2>History</h2>
+<table class="table table-sm table-striped table-hover">
+<tr>
+  <th>Time</th>
+  <th>Status</th>
+  <th>Runtime</th>
+  <th>Output</th>
+</tr>
+{%for h in history.object_list %}
+<tr{%if not h.success%} class="danger"{%endif%}>
+  <td>{{h.time}}</td>
+  <td>{{h.success|yesno:"Success,Failure"}}</td>
+  <td>{{h.runtime}}</td>
+  <td class="history_popover" data-toggle="popover">{{h.first_output}}
+    <div class="history_content"><pre>{{h.output|linebreaksbr}}</pre></div>
+  </td>
+</tr>
+{%endfor%}
+</table>
+
+{%include "adm/include/paginator.html" with pageobjects=history %}
+
+<a href="../" class="btn btn-default btn-block">Return to overview</a>
+<br/>
+{%endblock%}

@@ -8,6 +8,7 @@ import postgresqleu.static.views
 import postgresqleu.newsevents.views
 import postgresqleu.newsevents.backendviews
 import postgresqleu.views
+import postgresqleu.scheduler.views
 import postgresqleu.confreg.views
 import postgresqleu.confreg.backendviews
 import postgresqleu.confreg.backendlookups
@@ -270,6 +271,11 @@ urlpatterns.extend([
     url(r'^accounting/(\d+)/new/$', postgresqleu.accounting.views.new),
     url(r'^accounting/(\d+)/close/$', postgresqleu.accounting.views.closeyear),
     url(r'^accounting/([\d-]+)/report/(\w+)/$', postgresqleu.accounting.views.report),
+
+    # Scheduled jobs
+    url(r'^admin/jobs/$', postgresqleu.scheduler.views.index),
+    url(r'^admin/jobs/(\d+)/$', postgresqleu.scheduler.views.job),
+    url(r'^admin/jobs/history/$', postgresqleu.scheduler.views.history),
 
     # Handle paypal data returns
     url(r'^p/paypal_return/(\d+)/$', postgresqleu.paypal.views.paypal_return_handler),

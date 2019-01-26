@@ -1,0 +1,117 @@
+{%extends "adm/admin_base.html" %}
+{%load dictutil%}
+{%block title%}Scheduled jobs{%endblock%}
+
+{%block extrahead%}
+<link rel="stylesheet" type="text/css" href="/media/datatables/datatables.min.css"/>
+<script type="text/javascript" src="/media/datatables/datatables.min.js"></script>
+<script type="text/javascript" src="/media/js/admin.js"></script>
+
+<script language="javascript">
+$(document).ready(function() {
+   var dtable = $('#datatable').DataTable({
+      'paging': false,
+      'info': false,
+      'columnDefs': [
+         { targets: 'coltype-nosearch', searchable: false},
+      ],
+      'order': [[3, 'asc']],
+   });
+   $('#datatable').data('datatable', dtable);
+});
+</script>
+{%endblock%}
+
+{%block layoutblock %}
+<h1>Scheduled jobs</h1>
+<br/>
+
+{%if not runner_active%}
+<h2><span class="label label-danger">Job runner is not connected to the database!</span></h2>
+<br/>
+{%endif%}
+
+{%if holdall %}
+<h2><span class="label label-danger">All jobs are held and prevented from executing</span></h2>
+<br/>
+{%endif%}
+
+<h4><span class="label label-{{lastjob_recent|yesno:"info,warning"}}">Last job run: {{lastjob}}</span></h4>
+
+<table class="table table-striped table-hover datatable-tbl" id="datatable">
+  <thead>
+    <tr>
+      <th>Job</th>
+      <th>Application</th>
+      <th>Enabled</th>
+      <th>Next run</th>
+      <th>Last run</th>
+      <th>Last status</th>
+      <th>Last skipped</th>
+    </tr>
+  </thead>
+  <tbody>
+{%for job in jobs%}
+    <tr{%if job.enabled and job.lastrun and not job.lastrunsuccess %} class="danger"{%endif%}>
+      <td><a href="{{job.id}}/">{{job.description}}</a></td>
+      <td data-search="{{job.app}}">{{apps|dictlookup:job.app}}</td>
+      <td class="text-center">{%if job.enabled%}<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>{%endif%}</td>
+      <td data-order="{%if job.nextrun%}{{job.nextrun|date:"U"}}{%else%}99999999999999999999{%endif%}">{{job.nextrun|default:"Not scheduled"}}</td>
+      <td>{{job.lastrun|default:""}}</td>
+      <td>{%if job.lastrun%}{{job.lastrunsuccess|yesno:"Success,Failed"}}{%endif%}</td>
+      <td>{{job.lastskip|default:""}}</td>
+    </tr>
+{%endfor%}
+  </tbody>
+</table>
+
+<h2>Latest executions</h2>
+<table class="table table-striped table-small table-hover">
+  <tr>
+    <th>Time</th>
+    <th>Job</th>
+    <th>Status</th>
+    <th>Runtime</th>
+  </tr>
+{%for h in history%}
+  <tr{%if not h.success%} class="danger"{%endif%}>
+    <td>{{h.time}} ({{h.time|timesince}} ago)</td>
+    <td><a href="{{h.job.id}}/">{{h.job.description}}</a></td>
+    <td>{{h.success|yesno:"Success,Failure"}}</td>
+    <td>{{h.runtime}}</td>
+  </tr>
+{%endfor%}
+</table>
+
+<a href="history/" class="btn btn-default">View full history</a>
+
+<h2>Hold all jobs</h2>
+<form method="post" action="." class="form-horizontal">{%csrf_token%}
+{%if holdall%}
+  <p>
+    All jobs are currently held, and nothing is executed.
+  </p>
+  <div class="form-group">
+    <label for="pendingwhat" class="control-label col-lg-2">Pending jobs will be</label>
+    <div class="controls col-lg-9">
+      <select name="pending" class="form-control" id="pendingwhat" name="pendingwhat">
+	<option value="0">---</option>
+	<option value="1">executed immediately</option>
+	<option value="2">re-scheduled as if they just ran, with new intervals</option>
+      </select>
+    </div>
+  </div>
+  <input type="submit" name="submit" class="btn btn-primary" value="Re-enable job execution">
+{%else%}
+  <p>
+    If necessary, all jobs can be held. This will freeze all activity.
+  </p>
+  <input type="submit" name="submit" class="btn btn-default" value="Hold all jobs">
+{%endif%}
+</form>
+
+<br/>
+
+<a href="../" class="btn btn-default btn-block">Return</a>
+<br/>
+{%endblock%}

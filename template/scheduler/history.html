@@ -1,0 +1,29 @@
+{%extends "adm/admin_base.html" %}
+{%block title%}Job History{%endblock%}
+
+{%block layoutblock %}
+<h1>Job History</h1>
+<br/>
+
+<table class="table table-striped table-small table-hover">
+  <tr>
+    <th>Time</th>
+    <th>Job</th>
+    <th>Status</th>
+    <th>Runtime</th>
+  </tr>
+{%for h in history%}
+  <tr{%if not h.success%} class="danger"{%endif%}>
+    <td>{{h.time}} ({{h.time|timesince}} ago)</td>
+    <td><a href="../{{h.job.id}}/">{{h.job.description}}</a></td>
+    <td>{{h.success|yesno:"Success,Failure"}}</td>
+    <td>{{h.runtime}}</td>
+  </tr>
+{%endfor%}
+</table>
+
+{%include "adm/include/paginator.html" with pageobjects=history %}
+
+<a href="../" class="btn btn-default btn-block">Return to overview</a>
+<br/>
+{%endblock%}

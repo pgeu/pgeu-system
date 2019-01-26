@@ -95,6 +95,7 @@ INSTALLED_APPS = [
     'postgresqleu.selectable',
     'postgresqleu.static',
     'postgresqleu.countries',
+    'postgresqleu.scheduler.apps.SchedulerAppConfig',
     'postgresqleu.paypal',
     'postgresqleu.adyen',
     'postgresqleu.newsevents',
@@ -163,6 +164,9 @@ ENABLE_ELECTIONS = False
 # Set to a username and password in local_settings.py to enable global http auth
 GLOBAL_LOGIN_USER = ''
 GLOBAL_LOGIN_PASSWORD = ''
+
+# Email to send info about scheduled jos to
+SCHEDULED_JOBS_EMAIL = DEFAULT_EMAIL
 
 # Treasurer email address
 TREASURER_EMAIL = DEFAULT_EMAIL
