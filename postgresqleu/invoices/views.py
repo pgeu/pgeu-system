@@ -1,4 +1,3 @@
-from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.shortcuts import render, get_object_or_404
 from django.forms.models import inlineformset_factory
 from django.forms import ModelMultipleChoiceField
@@ -15,6 +14,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from postgresqleu.util.decorators import user_passes_test_or_error
+from postgresqleu.util.pagination import simple_pagination
 from .models import Invoice, InvoiceRow, InvoiceHistory, InvoicePaymentMethod, VatRate
 from .models import InvoiceRefund
 from .forms import InvoiceForm, InvoiceRowForm, RefundForm
@@ -54,28 +54,7 @@ def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=Fal
     })
 
     # Render a list of all invoices
-    paginator = Paginator(invoice_objects, 50)
-
-    try:
-        page = int(request.GET.get("page", "1"))
-    except ValueError:
-        page = 1
-
-    try:
-        invoices = paginator.page(page)
-    except (EmptyPage, InvalidPage):
-        invoices = paginator.page(paginator.num_pages)
-
-    if paginator.num_pages > 15:
-        if page < paginator.num_pages - 15:
-            firstpage = max(1, page - 7)
-            lastpage = firstpage + 15
-        else:
-            lastpage = min(paginator.num_pages + 1, page + 8)
-            firstpage = lastpage - 15
-        page_range = list(range(firstpage, lastpage))
-    else:
-        page_range = paginator.page_range
+    (invoices, paginator, page_range) = simple_pagination(request, invoice_objects, 50)
 
     has_pending = Invoice.objects.filter(finalized=False).exists()
     has_unpaid = Invoice.objects.filter(finalized=True, paidat__isnull=False).exists()
