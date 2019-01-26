@@ -45,7 +45,7 @@ class Command(BaseCommand):
                     a.tweeted = True
                     a.save()
                 else:
-                    print("Failed to post to twitter: %s" % msg)
+                    self.stderr.write("Failed to post to twitter: %s" % msg)
 
                 # Don't post more often than once / 10 seconds, to not trigger flooding.
                 time.sleep(10)
@@ -73,7 +73,7 @@ class Command(BaseCommand):
                     a.save()
                     continue
                 else:
-                    print("Failed to post to twitter: %s" % msg)
+                    self.stderr.write("Failed to post to twitter: %s" % msg)
 
             tl = list(ConferenceTweetQueue.objects.filter(conference=c).order_by('datetime')[:1])
             if tl:
@@ -83,4 +83,4 @@ class Command(BaseCommand):
                     t.delete()
                     continue
                 else:
-                    print("Failed to post to twitter: %s" % msg)
+                    self.stderr.write("Failed to post to twitter: %s" % msg)

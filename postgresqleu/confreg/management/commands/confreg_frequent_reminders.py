@@ -65,7 +65,7 @@ class Command(BaseCommand):
                             if not ok and code != 150:
                                 # Code 150 means trying to send DM to user not following us, so just
                                 # ignore that one. Other errors should be shown.
-                                print("Failed to send twitter DM to {0}: {1}".format(reg.twittername, err))
+                                self.stderr.write("Failed to send twitter DM to {0}: {1}".format(reg.twittername, err))
 
                     s.reminder_sent = True
                     s.save()
