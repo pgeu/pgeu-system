@@ -50,7 +50,7 @@ class InvoiceProcessor(object):
         # We'll get the member from the processorid
         try:
             member = Member.objects.get(pk=invoice.processorid)
-        except member.DoesNotExist:
+        except Member.DoesNotExist:
             raise Exception("Could not find member id %s for invoice!" % invoice.processorid)
 
         # Just remove the active invoice
