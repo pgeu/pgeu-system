@@ -6,7 +6,7 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.util import InvoiceWrapper
@@ -14,6 +14,10 @@ from postgresqleu.invoices.util import InvoiceWrapper
 
 class Command(BaseCommand):
     help = 'Send invoice reminders'
+
+    class ScheduledJob:
+        scheduled_times = [time(8, 18), ]
+        internal = True
 
     @transaction.atomic
     def handle(self, *args, **options):

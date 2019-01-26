@@ -25,6 +25,18 @@ from postgresqleu.paypal.models import TransactionInfo, ErrorLog
 class Command(BaseCommand):
     help = 'Match pending paypal payments'
 
+    class ScheduledJob:
+        # This job gets scheduled to run after paypal_fetch only.
+        internal = True
+
+        @classmethod
+        def should_run(self):
+            if not InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.paypal.Paypal').exists():
+                return False
+            if not TransactionInfo.objects.filter(matched=False).exists():
+                return False
+            return True
+
     @transaction.atomic
     def handle(self, *args, **options):
         invoicemanager = InvoiceManager()

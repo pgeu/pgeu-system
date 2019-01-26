@@ -17,8 +17,34 @@ from postgresqleu.confreg.models import Conference, ConferenceNews, ConferenceTw
 from postgresqleu.util.messaging.twitter import Twitter
 
 
+def news_tweets_queryset():
+    return News.objects.filter(tweeted=False, datetime__gt=datetime.now() - timedelta(days=7), datetime__lt=datetime.now())
+
+
+def conferences_with_tweets_queryset():
+    n = datetime.now().time()
+    return Conference.objects.filter(twittersync_active=True,
+                                     twitter_timewindow_start__lt=n,
+                                     twitter_timewindow_end__gt=n).extra(where=[
+                                         "EXISTS (SELECT 1 FROM confreg_conferencenews n WHERE n.conference_id=confreg_conference.id AND (NOT tweeted) AND datetime > now()-'7 days'::interval AND datetime < now()) OR EXISTS (SELECT 1 FROM confreg_conferencetweetqueue q WHERE q.conference_id=confreg_conference.id)"
+                                     ])
+
+
 class Command(BaseCommand):
     help = 'Post to twitter'
+
+    class ScheduledJob:
+        scheduled_interval = timedelta(minutes=10)
+
+        @classmethod
+        def should_run(self):
+            if settings.TWITTER_NEWS_TOKEN:
+                if news_tweets_queryset().exists():
+                    return True
+            if conferences_with_tweets_queryset().exists():
+                return True
+
+            return False
 
     def handle(self, *args, **options):
         curs = connection.cursor()
@@ -27,7 +53,7 @@ class Command(BaseCommand):
             raise CommandError("Failed to get advisory lock, existing twitter_post process stuck?")
 
         if settings.TWITTER_NEWS_TOKEN:
-            articles = list(News.objects.filter(tweeted=False, datetime__gt=datetime.now() - timedelta(days=7), datetime__lt=datetime.now()).order_by('datetime'))
+            articles = list(news_tweets_queryset().order_by('datetime'))
         else:
             articles = []
 
@@ -53,12 +79,7 @@ class Command(BaseCommand):
         # Find which conferences to tweet from. We will only put out one tweet for each
         # conference, expecting to be called again in 5 minutes or so to put out the
         # next one.
-        n = datetime.now().time()
-        for c in Conference.objects.filter(twittersync_active=True,
-                                           twitter_timewindow_start__lt=n,
-                                           twitter_timewindow_end__gt=n).extra(where=[
-                                               "EXISTS (SELECT 1 FROM confreg_conferencenews n WHERE n.conference_id=confreg_conference.id AND (NOT tweeted) AND datetime > now()-'7 days'::interval AND datetime < now()) OR EXISTS (SELECT 1 FROM confreg_conferencetweetqueue q WHERE q.conference_id=confreg_conference.id)"
-                                           ]):
+        for c in conferences_with_tweets_queryset():
             tw = Twitter(c)
 
             al = list(ConferenceNews.objects.filter(conference=c, tweeted=False, datetime__gt=datetime.now() - timedelta(days=7), datetime__lt=datetime.now(), conference__twittersync_active=True).order_by('datetime')[:1])

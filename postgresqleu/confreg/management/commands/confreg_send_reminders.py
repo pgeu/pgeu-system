@@ -9,7 +9,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from io import StringIO
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 
 from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 
@@ -18,7 +18,11 @@ from postgresqleu.confreg.models import ConferenceRegistration
 
 
 class Command(BaseCommand):
-    help = 'Send confreg reminders'
+    help = 'Send conference reminders'
+
+    class ScheduledJob:
+        scheduled_times = [time(5, 52), ]
+        internal = True
 
     def handle(self, *args, **options):
         for conference in Conference.objects.filter(active=True):

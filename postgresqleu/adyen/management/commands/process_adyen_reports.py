@@ -5,6 +5,7 @@
 #
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.db.models import Q
 from django.conf import settings
 
 import re
@@ -13,7 +14,7 @@ import io
 import requests
 from requests.auth import HTTPBasicAuth
 from base64 import standard_b64encode
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from decimal import Decimal
 
 from postgresqleu.adyen.models import AdyenLog, Report, TransactionStatus
@@ -23,6 +24,13 @@ from postgresqleu.accounting.util import create_accounting_entry
 
 class Command(BaseCommand):
     help = 'Download and/or process reports from Adyen'
+
+    class ScheduledJob:
+        scheduled_interval = timedelta(minutes=30)
+
+        @classmethod
+        def should_run(self):
+            return Report.objects.filter(Q(downloadedat__isnull=True) | Q(processedat__isnull=True)).exists()
 
     def add_arguments(self, parser):
         parser.add_argument('--only', choices=('download', 'process'))

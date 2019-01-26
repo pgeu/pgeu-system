@@ -19,7 +19,18 @@ from postgresqleu.util.messaging.twitter import Twitter
 
 
 class Command(BaseCommand):
-    help = 'Send confreg frequent reminders'
+    help = 'Send frequent conference reminders'
+
+    class ScheduledJob:
+        scheduled_interval = timedelta(minutes=5)
+
+        @classmethod
+        def should_run(self):
+            return Conference.objects.filter(twitterreminders_active=True,
+                                             startdate__lte=datetime.today() + timedelta(days=1),
+                                             enddate__gte=datetime.today() - timedelta(days=1)) \
+                                     .exclude(twitter_token='') \
+                                     .exclude(twitter_secret='').exists()
 
     def handle(self, *args, **options):
         if not settings.TWITTER_CLIENT or not settings.TWITTER_CLIENTSECRET:

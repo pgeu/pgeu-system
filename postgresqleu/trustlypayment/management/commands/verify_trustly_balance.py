@@ -11,6 +11,8 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.conf import settings
 
+from datetime import time
+
 from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.trustlypayment.util import Trustly
 from postgresqleu.accounting.util import get_latest_account_balance
@@ -19,6 +21,13 @@ from postgresqleu.mailqueue.util import send_simple_mail
 
 class Command(BaseCommand):
     help = 'Compare trustly balance to the accounting system'
+
+    class ScheduledJob:
+        scheduled_times = [time(3, 7), ]
+
+        @classmethod
+        def should_run(self):
+            return InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.trustly.TrustlyPayment').exists()
 
     @transaction.atomic
     def handle(self, *args, **options):

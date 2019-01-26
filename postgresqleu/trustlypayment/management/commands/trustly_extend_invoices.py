@@ -11,6 +11,14 @@ from datetime import timedelta
 class Command(BaseCommand):
     help = 'Extend trustly invoices if they are in pending state'
 
+    class ScheduledJob:
+        scheduled_interval = timedelta(hours=1)
+        internal = True
+
+        @classmethod
+        def should_run(self):
+            return TrustlyTransaction.objects.filter(pendingat__isnull=False, completedat__isnull=True).exists()
+
     def handle(self, *args, **options):
         manager = InvoiceManager()
         with transaction.atomic():

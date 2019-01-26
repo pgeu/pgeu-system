@@ -8,7 +8,7 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 
@@ -17,6 +17,16 @@ from postgresqleu.confreg.models import RegistrationWaitlistEntry, RegistrationW
 
 class Command(BaseCommand):
     help = 'Expire conference waitlist offers'
+
+    class ScheduledJob:
+        scheduled_interval = timedelta(minutes=30)
+        internal = True
+        trigger_next_jobs = 'postgresqleu.confreg.confreg_expire_additionaloptions'
+
+        @classmethod
+        def should_run(self):
+            # If there are no active conferences with waitlist management, there is nothing to expire
+            return Conference.objects.filter(active=True, attendees_before_waitlist__gt=0).exists()
 
     @transaction.atomic
     def handle(self, *args, **options):

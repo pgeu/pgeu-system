@@ -29,7 +29,17 @@ class LogFilter(object):
 
 
 class Command(BaseCommand):
-    help = 'Process Braintree transaction statuses'
+    help = 'Update Braintree transactions'
+
+    class ScheduledJob:
+        scheduled_interval = timedelta(hours=6)
+
+        @classmethod
+        def should_run(self):
+            if not InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.braintree.Braintree').exists():
+                return False
+
+            return BraintreeTransaction.objects.filter(Q(settledat__isnull=True) | Q(disbursedat__isnull=True)).exists()
 
     def handle(self, *args, **options):
         # Workaround the braintree API

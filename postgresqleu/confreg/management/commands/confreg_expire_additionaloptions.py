@@ -9,6 +9,7 @@ from django.db import transaction
 
 from collections import defaultdict
 from io import StringIO
+from datetime import timedelta
 
 
 from postgresqleu.mailqueue.util import send_simple_mail
@@ -19,6 +20,9 @@ from postgresqleu.confreg.models import ConferenceRegistration
 
 class Command(BaseCommand):
     help = 'Expire additional options on pending registrations'
+
+    class ScheduledJob:
+        internal = True
 
     @transaction.atomic
     def handle(self, *args, **options):

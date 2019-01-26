@@ -18,6 +18,10 @@ from postgresqleu.confreg.models import Conference
 class Command(BaseCommand):
     help = 'Send warnings about purging personal data'
 
+    class ScheduledJob:
+        scheduled_interval = timedelta(days=7)
+        internal = True
+
     def handle(self, *args, **options):
         for conference in Conference.objects.filter(personal_data_purged__isnull=True,
                                                     enddate__lt=datetime.now() - timedelta(days=30)) \

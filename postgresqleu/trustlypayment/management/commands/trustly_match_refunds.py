@@ -17,11 +17,22 @@ from postgresqleu.invoices.models import InvoiceRefund, InvoicePaymentMethod
 from postgresqleu.invoices.util import InvoiceManager
 
 from decimal import Decimal
+from datetime import timedelta
 import dateutil
 
 
 class Command(BaseCommand):
-    help = 'Verify that a Trustly refund has completed, and flag it as such'
+    help = 'Flag completed Trustly refunds'
+
+    class ScheduledJob:
+        scheduled_interval = timedelta(hours=4)
+
+        @classmethod
+        def should_run(self):
+            if not InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.trustly.TrustlyPayment').exists():
+                return False
+
+            return InvoiceRefund.objects.filter(completed__isnull=True, invoice__paidusing__classname='postgresqleu.util.payment.trustly.TrustlyPayment').exists()
 
     @transaction.atomic
     def handle(self, *args, **options):

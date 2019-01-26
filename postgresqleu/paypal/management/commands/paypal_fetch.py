@@ -115,6 +115,14 @@ class PaypalTransfer(PaypalBaseTransaction):
 class Command(BaseCommand):
     help = 'Fetch updated list of transactions from paypal'
 
+    class ScheduledJob:
+        scheduled_interval = timedelta(minutes=30)
+        trigger_next_jobs = 'postgresqleu.paypal.paypal_match'
+
+        @classmethod
+        def should_run(self):
+            return InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.paypal.Paypal').exists()
+
     @transaction.atomic
     def handle(self, *args, **options):
         synctime = datetime.now()

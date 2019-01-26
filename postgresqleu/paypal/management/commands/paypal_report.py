@@ -10,13 +10,23 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.conf import settings
 
+from datetime import time
+
 from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.paypal.models import ErrorLog, TransactionInfo
 from postgresqleu.mailqueue.util import send_simple_mail
 
 
 class Command(BaseCommand):
-    help = 'Send paypal report emails'
+    help = 'Send paypal reports'
+
+    class ScheduledJob:
+        scheduled_times = [time(1, 15), ]
+        internal = True
+
+        @classmethod
+        def should_run(self):
+            return InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.paypal.Paypal').exists()
 
     @transaction.atomic
     def handle(self, *args, **options):

@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.conf import settings
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, time
 
 from django.db.models import Q, F, Count
 
@@ -18,6 +18,14 @@ from postgresqleu.invoices.util import InvoiceManager, InvoiceWrapper
 
 class Command(BaseCommand):
     help = 'Generate invoices for discount codes'
+
+    class ScheduledJob:
+        scheduled_times = [time(5, 19), ]
+        internal = True
+
+        @classmethod
+        def should_run(self):
+            return DiscountCode.objects.filter(sponsor__isnull=False, is_invoiced=False).exists()
 
     @transaction.atomic
     def handle(self, *args, **options):

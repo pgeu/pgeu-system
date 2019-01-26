@@ -20,7 +20,20 @@ from datetime import datetime, timedelta
 
 
 class Command(BaseCommand):
-    help = 'Send off API-based refunds'
+    help = 'Send API-based refunds to providers'
+
+    class ScheduledJob:
+        scheduled_interval = timedelta(hours=4)
+
+        @classmethod
+        def should_run(self):
+            # If we have any invoices to refund
+            if InvoiceRefund.objects.filter(issued__isnull=True).exists():
+                return True
+            # If we have any stalled refunds to notify about
+            if InvoiceRefund.objects.filter(issued__isnull=False, completed__isnull=True):
+                return True
+            return False
 
     def handle(self, *args, **options):
         refunds = InvoiceRefund.objects.filter(issued__isnull=True)

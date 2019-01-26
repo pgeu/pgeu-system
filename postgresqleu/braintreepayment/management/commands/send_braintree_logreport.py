@@ -7,6 +7,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.conf import settings
 
+from datetime import time
 from io import StringIO
 
 from postgresqleu.invoices.models import InvoicePaymentMethod
@@ -16,6 +17,14 @@ from postgresqleu.mailqueue.util import send_simple_mail
 
 class Command(BaseCommand):
     help = 'Send log information about Braintree events'
+
+    class ScheduledJob:
+        scheduled_times = [time(23, 32), ]
+        internal = True
+
+        @classmethod
+        def should_run(self):
+            return InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.braintree.Braintree').exists()
 
     def handle(self, *args, **options):
         for method in InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.braintree.Braintree'):

@@ -11,7 +11,8 @@ from django.db import transaction
 from django.db.models import Q
 from django.conf import settings
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
+from datetime import time
 
 from postgresqleu.mailqueue.util import send_template_mail
 from postgresqleu.membership.models import Member, MemberLog, get_config
@@ -19,6 +20,10 @@ from postgresqleu.membership.models import Member, MemberLog, get_config
 
 class Command(BaseCommand):
     help = 'Expire members and other nightly tasks'
+
+    class ScheduledJob:
+        scheduled_times = [time(23, 50), ]
+        internal = True
 
     @transaction.atomic
     def handle(self, *args, **options):
