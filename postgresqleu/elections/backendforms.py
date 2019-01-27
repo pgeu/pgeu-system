@@ -21,7 +21,7 @@ class ElectionCandidateManager(object):
     def get_list(self, instance):
         return [(c.id, c.name, Truncator(c.presentation).words(30)) for c in instance.candidate_set.all()]
 
-    def get_form(self):
+    def get_form(self, obj, POST):
         return BackendCandidateForm
 
     def get_object(self, masterobj, subjid):
