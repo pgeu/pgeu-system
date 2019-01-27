@@ -7,18 +7,17 @@ import os
 import re
 import markdown
 
-from .models import Conference, ConferenceSeries
-from postgresqleu.confreg.util import get_authenticated_conference
+from postgresqleu.confreg.models import Conference, ConferenceSeries
 
 reTitle = re.compile('<h1>([^<]+)</h1>')
 
 _reSvgInline = re.compile('<img alt="([^"]+)" src="([^"]+)\.svg" />')
 
 
-def _replaceSvgInline(m):
+def _replaceSvgInline(m, section):
     # Group 1 = alt text
     # Group 2 = filename excluding svg
-    filename = 'docs/confreg/{0}.svg'.format(m.group(2))
+    filename = 'docs/{0}/{1}.svg'.format(section, m.group(2))
     if not os.path.isfile(filename):
         return m.group(0)
 
@@ -26,16 +25,12 @@ def _replaceSvgInline(m):
         return f.read()
 
 
-def docspage(request, urlname, page):
-    if urlname:
-        conference = get_authenticated_conference(request, urlname.rstrip('/'))
-    else:
-        # Allow a person who has *any* permissions on a conference to read the docs,
-        # because, well, they are docs.
-        if not request.user.is_superuser:
-            if not Conference.objects.filter(administrators=request.user).exists() and not ConferenceSeries.objects.filter(administrators=request.user).exists():
-                return HttpResponseForbidden("Access denied")
-        conference = None
+def docspage(request, page):
+    # Allow a person who has *any* permissions on a conference to read the docs,
+    # because, well, they are docs.
+    if not request.user.is_superuser:
+        if not Conference.objects.filter(administrators=request.user).exists() and not ConferenceSeries.objects.filter(administrators=request.user).exists():
+            return HttpResponseForbidden("Access denied")
 
     if page:
         page = page.rstrip('/')
@@ -47,24 +42,29 @@ def docspage(request, urlname, page):
     # Do we have the actual docs file?
     # It's safe to just put the filename in here, because the regexp in urls.py ensures
     # that we can not get into a path traversal case.
-    filename = 'docs/confreg/{0}.md'.format(page)
-    if not os.path.isfile(filename):
+    # The file can be in different subdirectories though, so enumerate them
+    for d in os.listdir('docs/'):
+        filename = 'docs/{0}/{1}.md'.format(d, page)
+        if os.path.isfile(filename):
+            section = d
+            break
+    else:
         raise Http404()
 
     with open(filename) as f:
         md = markdown.Markdown(extensions=['markdown.extensions.def_list'])
         contents = md.convert(f.read())
-    contents = _reSvgInline.sub(lambda m: _replaceSvgInline(m), contents)
+    contents = _reSvgInline.sub(lambda m: _replaceSvgInline(m, section), contents)
 
     # Find the title
     m = reTitle.search(contents)
     if m:
         title = m.group(1)
     else:
-        title = '{0} Conference Administration'.format(settings.ORG_SHORTNAME)
+        title = '{0} Administration'.format(settings.ORG_SHORTNAME)
 
     return render(request, 'confreg/admin_backend_docpage.html', {
-        'conference': conference,
+        'basepage': 'adm/admin_base.html',
         'page': page,
         'contents': contents,
         'title': title,

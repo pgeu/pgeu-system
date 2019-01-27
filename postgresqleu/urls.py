@@ -17,7 +17,6 @@ import postgresqleu.confreg.mobileviews
 import postgresqleu.confreg.feedback
 import postgresqleu.confreg.pdfschedule
 import postgresqleu.confreg.volsched
-import postgresqleu.confreg.docsviews
 import postgresqleu.confreg.checkin
 import postgresqleu.confwiki.views
 import postgresqleu.account.views
@@ -29,6 +28,7 @@ import postgresqleu.adyen.views
 import postgresqleu.trustlypayment.views
 import postgresqleu.braintreepayment.views
 import postgresqleu.accountinfo.views
+import postgresqleu.util.docsviews
 
 from postgresqleu.newsevents.feeds import LatestNews
 from postgresqleu.confreg.feeds import LatestEvents, ConferenceNewsFeed
@@ -69,6 +69,7 @@ urlpatterns.extend([
 
     # Global admin
     url(r'^admin/$', postgresqleu.views.admin_dashboard),
+    url(r'^admin/docs/(?P<page>\w+/)?$', postgresqleu.util.docsviews.docspage),
 
     # News
     url(r'^admin/news/news/(.*/)?$', postgresqleu.newsevents.backendviews.edit_news),
@@ -137,7 +138,6 @@ urlpatterns.extend([
     url(r'^events/admin/crossmail/$', postgresqleu.confreg.views.crossmail),
     url(r'^events/admin/crossmail/options/$', postgresqleu.confreg.views.crossmailoptions),
     url(r'^events/admin/reports/time/$', postgresqleu.confreg.reporting.timereport),
-    url(r'^events/admin/(?P<urlname>[^/]+/)?docs/(?P<page>\w+/)?$', postgresqleu.confreg.docsviews.docspage),
     url(r'^events/admin/([^/]+)/reports/$', postgresqleu.confreg.views.reports),
     url(r'^events/admin/([^/]+)/reports/simple/$', postgresqleu.confreg.views.simple_report),
     url(r'^events/admin/([^/]+)/reports/advanced/$', postgresqleu.confreg.views.advanced_report),

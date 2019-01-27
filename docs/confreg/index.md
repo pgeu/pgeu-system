@@ -11,7 +11,7 @@ you are currently working on you will be brought directly to the page
 for that. If not, you will be brought here to the index page, and can
 work from here.
 
-## Table of contents
+## Conferences
 * Quickstart
     * [Step by step to create a conference](stepbystep)
 * Basics

@@ -371,7 +371,7 @@ class BackendTransformConferenceDateTimeForm(django.forms.Form):
 
 
 class BackendRefundPatternForm(BackendForm):
-    helplink = 'registration'
+    helplink = 'registrations'
     list_fields = ['fromdate', 'todate', 'percent', 'fees', ]
     list_order_by = (F('fromdate').asc(nulls_first=True), 'todate', 'percent')
     exclude_date_validators = ['fromdate', 'todate', ]

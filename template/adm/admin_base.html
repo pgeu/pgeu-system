@@ -29,7 +29,7 @@
        <div class="collapse navbar-collapse" id="navbar">
 	 <ul class="nav navbar-nav">
 {%block topadmin%}
-{%if topadmin%}<li><a href="/admin/">{{topadmin}}</a></li>{%endif%}
+{%if topadmin%}<li><a href="/admin/{{topadmin_link|default:""}}">{{topadmin}}</a></li>{%endif%}
 {%endblock%}
 	   {%if conference %}
 	   <li><a href="/events/admin/{{conference.urlname}}/">{{conference}}</a></li>
@@ -39,7 +39,7 @@
 	   {%endfor%}
 	 </ul>
 	 <ul class="nav navbar-nav navbar-right">
-	   <li><a href="/events/admin/{%if conference and conference.urlname%}{{conference.urlname}}/{%endif%}docs/{%if helplink%}{{helplink|docslink}}{%endif%}">Help</a></li>
+	   <li><a href="/admin/docs/{%if helplink%}{{helplink|docslink}}{%endif%}">Help</a></li>
 	 </ul>
        </div>
      </div>

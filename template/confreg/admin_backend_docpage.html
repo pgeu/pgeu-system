@@ -1,7 +1,7 @@
-{%extends "confreg/confadmin_base.html"%}
+{%extends basepage%}
 {%block title%}{{title}}{%endblock%}
 {%block extrahead%}
-<base href="/events/admin/{%if conference and conference.urlname%}{{conference.urlname}}/{%endif%}docs/{%if urlpage%}{{urlpage}}{%endif%}">
+<base href="/admin/docs/{%if urlpage%}{{urlpage}}{%endif%}">
 {%endblock%}
 {%block layoutblock%}
 <div class="backenddocs">
