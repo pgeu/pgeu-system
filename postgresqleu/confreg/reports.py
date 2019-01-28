@@ -176,7 +176,7 @@ def attendee_report_filters(conference):
     yield ReportFilter('shareemail', 'Share email with sponsors')
     yield ReportFilter('photoconsent', 'Photo consent', ((1, 'Yes'), (0, 'No')))
     yield ReportFilter('payconfirmedat', 'Payment confirmed', emptyasnull=False)
-    yield ReportFilter('additionaloptions', 'Additional options', ConferenceAdditionalOption.objects.filter(conference=conference), 'name')
+    yield ReportFilter('additionaloptions', 'Additional options', ConferenceAdditionalOption.objects.filter(conference=conference), 'name', False)
     yield ReportFilter('shirtsize', 'T-Shirt size', ShirtSize.objects.all())
     yield ReportSpeakerFilter(conference)
 
