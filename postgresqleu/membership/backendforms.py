@@ -12,6 +12,8 @@ from postgresqleu.membership.backendlookups import MemberLookup
 
 
 class BackendConfigForm(BackendForm):
+    helplink = 'membership'
+
     class Meta:
         model = MembershipConfiguration
         fields = ['sender_email', 'membership_years', 'membership_cost', 'country_validator',
@@ -35,6 +37,7 @@ class MemberLogManager(object):
 
 
 class BackendMemberForm(BackendForm):
+    helplink = 'membership'
     list_fields = ['fullname', 'user', 'paiduntil']
     defaultsort = [[2, 'desc']]
     allow_email = True
@@ -63,6 +66,7 @@ class BackendMemberForm(BackendForm):
 
 
 class BackendMeetingForm(BackendForm):
+    helplink = 'meetings'
     list_fields = ['name', 'dateandtime', ]
 
     class Meta:
@@ -75,6 +79,7 @@ class BackendMeetingForm(BackendForm):
 
 
 class BackendMemberSendEmailForm(django.forms.Form):
+    helplink = 'membership'
     _from = django.forms.CharField(max_length=128, disabled=True, label="Form")
     subject = django.forms.CharField(max_length=128, required=True)
     recipients = django.forms.Field(widget=StaticTextWidget, required=False)

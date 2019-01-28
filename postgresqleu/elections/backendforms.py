@@ -6,6 +6,7 @@ from postgresqleu.elections.models import Election, Candidate
 
 
 class BackendCandidateForm(BackendForm):
+    helplink = 'elections#candidate'
     markdown_fields = ['presentation', ]
 
     class Meta:
@@ -14,6 +15,7 @@ class BackendCandidateForm(BackendForm):
 
 
 class ElectionCandidateManager(object):
+    helplink = 'elections'
     title = 'Candidates'
     singular = 'candidate'
     can_add = True
@@ -35,6 +37,7 @@ class ElectionCandidateManager(object):
 
 
 class BackendElectionForm(BackendForm):
+    helplink = 'elections#election'
     list_fields = ['name', 'startdate', 'enddate', 'isopen', 'resultspublic']
     linked_objects = OrderedDict({
         'candidates': ElectionCandidateManager(),

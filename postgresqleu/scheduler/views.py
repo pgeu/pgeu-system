@@ -71,6 +71,7 @@ def index(request):
         'holdall': config.hold_all_jobs,
         'history': history,
         'apps': {a.name: a.verbose_name for a in apps.get_app_configs()},
+        'helplink': 'jobs',
     })
 
 
@@ -105,6 +106,7 @@ def job(request, jobid):
         'form': form,
         'page_range': page_range,
         'breadcrumbs': [('/admin/jobs/', 'Scheduled jobs'), ],
+        'helplink': 'jobs',
     })
 
 
@@ -119,4 +121,5 @@ def history(request):
         'history': history,
         'page_range': page_range,
         'breadcrumbs': [('/admin/jobs/', 'Scheduled jobs'), ],
+        'helplink': 'jobs',
     })

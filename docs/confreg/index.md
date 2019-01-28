@@ -42,4 +42,22 @@ work from here.
     * [Badges](badges)
     * [Integrations](integrations)
     * [Copying from another conference](copyfromother)
-    * [Skinning the site](skinning)
+    * [Skinning the conference pages](skinning)
+
+
+## Membership
+
+* [Membership](membership)
+* [Meetings](meetings)
+
+## Elections
+
+* [Elections](elections)
+
+## Global configuration
+
+* Invoices and payments
+    * [Payment methods](payment)
+* Scheduled jobs
+    * [Scheduled jobs](jobs)
+
