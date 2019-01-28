@@ -91,7 +91,7 @@ class ReportFilter(object):
         )
 
     def _widgetstring(self):
-        if self.queryset:
+        if self.queryset is not None:
             querysetcol = self.querysetcol
 
             # Wrapper class that will return our custom column
