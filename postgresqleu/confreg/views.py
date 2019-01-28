@@ -2578,7 +2578,10 @@ def advanced_report(request, confname):
 
     from .reports import build_attendee_report
 
-    return build_attendee_report(conference, request.POST)
+    try:
+        return build_attendee_report(conference, request.POST)
+    except ValidationError as e:
+        return HttpResponse("Bad input: %s" % e)
 
 
 def simple_report(request, confname):
