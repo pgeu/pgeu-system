@@ -58,7 +58,7 @@ class Command(BaseCommand):
 
         while True:
             if get_config().hold_all_jobs:
-                self.stdout.write("All jobs are being held, sleeping for 10 minutes and then reconsidering")
+                self.stderr.write("All jobs are being held, sleeping for 10 minutes and then reconsidering")
                 self.eat_notifications()
                 select.select([connection.connection], [], [], 600)
                 continue
@@ -71,10 +71,10 @@ class Command(BaseCommand):
             # to time roundoff.
             secondsuntil = int((nextjob.nextrun - datetime.now()).total_seconds() + 1)
             if secondsuntil < 2:
-                self.stdout.write("Timeout to next job already expired, sleeping 1 second and then re-running queue.")
+                self.stderr.write("Timeout to next job already expired, sleeping 1 second and then re-running queue.")
                 time.sleep(1)
             else:
-                self.stdout.write("Sleeping {0} seconds until {1}".format(secondsuntil, nextjob.nextrun))
+                self.stderr.write("Sleeping {0} seconds until {1}".format(secondsuntil, nextjob.nextrun))
                 # This sleep is done while listening for PostgreSQL NOTIFY in case a job is
                 # being rescheduled from the web interface (or elsewhere in the system).
 
@@ -108,14 +108,14 @@ class Command(BaseCommand):
                         # to be on the safe side.
                         try:
                             if not cmd.ScheduledJob.should_run():
-                                self.stdout.write("Skipping job {}".format(job.description))
+                                self.stderr.write("Skipping job {}".format(job.description))
                                 job.lastskip = datetime.now()
                                 reschedule_job(job, save=True)
                                 continue
                         except Exception as e:
                             sys.stderr.write("Exception when trying to figure out if '{0}' should run:\n{1}\n\nJob will be run.".format(job.description, e))
 
-                    self.stdout.write("Running job {}".format(job.description))
+                    self.stderr.write("Running job {}".format(job.description))
                     # Now figure out what type of job it is, and run it
                     job.lastrunsuccess = self.run_job(job, cmd)
                     job.lastrun = datetime.now()
