@@ -3,9 +3,12 @@ Description=PGEU Scheduled Jobs Runner
 After=postgresql.service
 
 [Service]
-Execstart=/usr/local/www/www.postgresql.eu/postgresqleu/python manage.py scheduled_jobs_runner
+ExecStart=/usr/local/www/www.postgresql.eu/postgresqleu/python manage.py scheduled_jobs_runner
 WorkingDirectory=/usr/local/www/www.postgresql.eu/postgresqleu
 Restart=always
 RestartSec=30
 User=pgeuweb
 Group=pgeuweb
+
+[Install]
+WantedBy=multi-user.target
