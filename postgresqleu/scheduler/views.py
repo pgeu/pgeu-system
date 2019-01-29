@@ -50,7 +50,7 @@ def index(request):
 
     jobs = ScheduledJob.objects.all().order_by(F('nextrun').asc(nulls_last=True))
     try:
-        lastjob = ScheduledJob.objects.only('lastrun').filter(lastrun__isnull=False).order_by('lastrun')[0]
+        lastjob = ScheduledJob.objects.only('lastrun').filter(lastrun__isnull=False).order_by('-lastrun')[0]
         lastjobtime = lastjob.lastrun
     except IndexError:
         # No job has run yet, can happen on brand new installation
