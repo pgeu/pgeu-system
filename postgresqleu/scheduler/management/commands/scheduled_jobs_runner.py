@@ -113,7 +113,7 @@ class Command(BaseCommand):
                                 reschedule_job(job, save=True)
                                 continue
                         except Exception as e:
-                            sys.stderr.write("Exception when trying to figure out if '{0}' should run:\n{1}\n\nJob will be run.".format(job.description, e))
+                            sys.stderr.write("Exception when trying to figure out if '{0}' should run:\n{1}\n\nJob will be run.\n".format(job.description, e))
 
                     self.stderr.write("Running job {}".format(job.description))
                     # Now figure out what type of job it is, and run it
