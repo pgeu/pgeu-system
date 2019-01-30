@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 
 from postgresqleu.confreg.models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
+from postgresqleu.confreg.models import Conference
 
 
 class Command(BaseCommand):
