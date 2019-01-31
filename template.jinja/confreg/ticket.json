@@ -12,7 +12,7 @@
 
 	{"type": "box", "x": 8, "y": 52, "width": 134, "height": 20, "stroke": "black"},
 	{"type": "paragraph", "text": "Attendee", "x": 10, "y": 54, "width": 130, "height": 5},
-	{"type": "paragraph", "text": "{{reg.firstname}} {{reg.lastname}}", "x": 10, "y": 58, "width": 130, "height": 12, "color": "black", "align": "center"},
+	{"type": "paragraph", "text": "{{reg.firstname|escapejson}} {{reg.lastname|escapejson}}", "x": 10, "y": 58, "width": 130, "height": 12, "color": "black", "align": "center"},
 
 	{"type": "box", "x": 8, "y": 74, "width": 67, "height": 20, "stroke": "black"},
 	{"type": "paragraph", "text": "Dates", "x": 10, "y": 76, "width": 63, "height": 5},
