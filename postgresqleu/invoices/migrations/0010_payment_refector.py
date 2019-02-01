@@ -83,7 +83,7 @@ def migrate_payment_settings(apps, schema_editor):
             else:
                 pm.active = False
         elif pm.classname == 'postgresqleu.util.payment.braintree.Braintree':
-            if getattr(settings, ENABLE_BRAINTREE, False):
+            if getattr(settings, 'ENABLE_BRAINTREE', False):
                 pm.config = {
                     'sandbox': settings.BRAINTREE_SANDBOX,
                     'merchant_id': settings.BRAINTREE_MERCHANT_ID,
