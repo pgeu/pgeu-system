@@ -39,7 +39,8 @@ DATABASES={
 SECRET_KEY='reallysecretbutwhocares'
 SERVER_EMAIL='root@localhost'
 SESSION_COOKIE_SECURE=False
-SITEBASE="http://localhost:8000/"
+CSRF_COOKIE_SECURE=False
+SITEBASE="http://localhost:8012/"
 EOF
 
 ln -s tools/devsetup/venv_dev/bin/python .
