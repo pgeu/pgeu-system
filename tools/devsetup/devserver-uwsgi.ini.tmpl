@@ -1,0 +1,18 @@
+[uwsgi]
+plugins=http,python3
+home=%DJANGO%
+threads=3
+env=DJANGO_SETTINGS_MODULE=postgresqleu.settings
+module=postgresqleu.wsgi:application
+py-autoreload=1
+
+
+chdir=%d
+http=127.0.0.1:8012
+http-to=/tmp/uwsgi-pgeusys.sock
+socket=/tmp/uwsgi-pgeusys.sock
+static-map=/media=%d/media
+static-map=/media/admin=%DJANGO%/lib/python2.7/site-packages/django/contrib/admin/static/admin
+
+# When using skin, include local media here
+#static-map=/media/local=/some/where/some-website/media
