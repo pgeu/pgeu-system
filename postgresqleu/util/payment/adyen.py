@@ -121,6 +121,7 @@ class BackendAdyenCreditCardForm(BackendInvoicePaymentMethodForm):
     ]
 
     def fix_fields(self):
+        super(BackendAdyenCreditCardForm, self).fix_fields()
         if self.instance.id:
             self.initial.update({
                 'notifications': """

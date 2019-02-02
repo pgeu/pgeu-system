@@ -15,11 +15,12 @@ class _ValidatorField(forms.Field):
 
 class ConcurrentProtectedModelForm(forms.ModelForm):
     _validator = _ValidatorField()
+    exclude_fields_from_validation = []
 
     def _filter_initial(self):
         # self.initial will include things given in the URL after ?, so filter it to
         # only include items that are actually form fields.
-        return {k: v for k, v in list(self.initial.items()) if k in list(self.fields.keys())}
+        return {k: v for k, v in list(self.initial.items()) if k in list(self.fields.keys()) and k not in self.exclude_fields_from_validation}
 
     def update_protected_fields(self):
         self.fields['_validator'].initial = Signer().sign(base64.urlsafe_b64encode(pickle.dumps(self._filter_initial(), -1)))

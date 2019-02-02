@@ -54,12 +54,19 @@ class BackendInvoicePaymentMethodForm(BackendForm):
         return ['classname', ] + self.config_readonly
 
     @property
+    def exclude_fields_from_validation(self):
+        return self.config_readonly
+
+    @property
     def json_form_fields(self):
         return {
             'config': self.config_fields,
         }
 
     def fix_fields(self):
+        for k in self.config_readonly:
+            self.fields[k].required = False
+
         if self.newformdata:
             self.instance.classname = self.newformdata
             self.initial['classname'] = self.newformdata
