@@ -44,7 +44,7 @@ class TrackListFilter(admin.SimpleListFilter):
     parameter_name = 'track'
 
     def lookups(self, request, model_admin):
-        cid = request.GET.get('conference__id__exact', -1)
+        cid = int(request.GET.get('conference__id__exact', -1))
         if cid >= 0:
             return ((t.id, t.trackname) for t in Track.objects.filter(conference__id=cid))
 
