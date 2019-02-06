@@ -13,7 +13,6 @@ from datetime import datetime, timedelta
 from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 
 from postgresqleu.confreg.models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
-from postgresqleu.confreg.models import Conference
 
 
 class Command(BaseCommand):
@@ -26,8 +25,8 @@ class Command(BaseCommand):
 
         @classmethod
         def should_run(self):
-            # If there are no active conferences with waitlist management, there is nothing to expire
-            return Conference.objects.filter(active=True, attendees_before_waitlist__gt=0).exists()
+            # Are there any active waitlist entries at all?
+            return RegistrationWaitlistEntry.objects.filter(registration__payconfirmedat__isnull=True, registration__invoice__isnull=True).exists()
 
     @transaction.atomic
     def handle(self, *args, **options):
