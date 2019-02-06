@@ -254,13 +254,6 @@ $(function() {
         $('#loading').hide();
     });
 
-    $('#confirmModalConfirm').click(function() {
-        $('#confirmModal').data('confirm', true);
-    });
-    $('#confirmModalCancel').click(function() {
-        $('#confirmModal').data('confirm', false);
-    });
-
     $('#scanButton').click(function() {
         $('div.approw').hide();
         $('#scanrow').show();
@@ -337,34 +330,27 @@ $(function() {
 
 
     $('#checkinbutton').click(function() {
-        $('#confirmModalBody').text('Are you sure you want to check in this attendee?');
-        $('#confirmModal').on('hidden.bs.modal', function(e) {
-            $('#confirmModal').off('hidden.bs.modal');
-            if ($('#confirmModal').data('confirm')) {
-                $.ajax({
-                    method: "POST",
-                    dataType: "text",
-                    url: "api/checkin/",
-                    data: {"reg": $('#checkinModal').data('regid')},
-                    success: function(data, status, xhr) {
-                        if (xhr.status == 204) {
-                            /* Success! */
-                            showstatus('Attendee ' + $('#checkinModal').data('name') + ' checked in successfully', 'success');
-                        }
-                        else {
-                            show_ajax_error('checking in', xhr);
-                        }
-                        $('#checkinModal').modal('hide');
-                        reset_state();
-                    },
-                    error: function(xhr, status, thrown) {
-                        show_ajax_error('checking in', xhr);
-                        $('#checkinModal').modal('hide');
-                    }
-                });
+        $.ajax({
+            method: "POST",
+            dataType: "text",
+            url: "api/checkin/",
+            data: {"reg": $('#checkinModal').data('regid')},
+            success: function(data, status, xhr) {
+                if (xhr.status == 204) {
+                    /* Success! */
+                    showstatus('Attendee ' + $('#checkinModal').data('name') + ' checked in successfully', 'success');
+                }
+                else {
+                    show_ajax_error('checking in', xhr);
+                }
+                $('#checkinModal').modal('hide');
+                reset_state();
+            },
+            error: function(xhr, status, thrown) {
+                show_ajax_error('checking in', xhr);
+                $('#checkinModal').modal('hide');
             }
         });
-        $('#confirmModal').modal();
     });
 
     updateStatus();
