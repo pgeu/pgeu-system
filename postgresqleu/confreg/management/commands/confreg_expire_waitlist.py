@@ -26,7 +26,7 @@ class Command(BaseCommand):
         @classmethod
         def should_run(self):
             # Are there any active waitlist entries at all?
-            return RegistrationWaitlistEntry.objects.filter(registration__payconfirmedat__isnull=True, registration__invoice__isnull=True).exists()
+            return RegistrationWaitlistEntry.objects.filter(offeredon__isnull=False, registration__payconfirmedat__isnull=True, registration__invoice__isnull=True).exists()
 
     @transaction.atomic
     def handle(self, *args, **options):
