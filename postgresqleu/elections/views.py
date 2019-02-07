@@ -73,7 +73,7 @@ def election(request, electionid):
         # Verify that the user has been a member for at least 28 days.
         if member.membersince > election.startdate - timedelta(days=28):
             return render(request, 'elections/memberfourweeks.html', {
-                'registered_at': member.paiduntil - timedelta(days=365),
+                'membersince': member.membersince,
                 'mustregbefore': election.startdate - timedelta(days=28),
                 'election': election,
             })
