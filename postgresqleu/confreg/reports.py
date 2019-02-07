@@ -343,4 +343,5 @@ simple_reports = {
     'sessnoroom': "SELECT title AS \"Title\", trackname AS \"Track\", starttime || ' - ' || endtime AS \"Timeslot\" FROM confreg_conferencesession s LEFT JOIN confreg_track t ON t.id=s.track_id WHERE s.conference_id=%(confid)s AND status=1 AND room_id IS NULL AND NOT cross_schedule",
     'sessnotrack': "SELECT title AS \"Title\", roomname AS \"Room\", starttime || ' - ' || endtime AS \"Timeslot\" FROM confreg_conferencesession s LEFT JOIN confreg_room r ON r.id=s.room_id WHERE s.conference_id=%(confid)s AND status=1 AND track_id IS NULL",
     'queuepartitions': QueuePartitionForm,
+    'notcheckedin': 'SELECT lastname AS "Last name", firstname AS "First name", regtype AS "Registration type", c.printable_name AS "Country" FROM confreg_conferenceregistration r INNER JOIN confreg_registrationtype rt ON rt.id=r.regtype_id INNER JOIN country c ON c.iso=r.country_id WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND checkedinat IS NULL ORDER BY lastname, firstname',
 }
