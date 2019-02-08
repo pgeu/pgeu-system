@@ -104,7 +104,7 @@ class PaypalTransfer(PaypalBaseTransaction):
         self.transinfo.sender = 'treasurer@postgresql.eu'
         if apistruct.get('CURRENCYCODE', None) != settings.CURRENCY_ISO:
             self.message = "Invalid currency %s" % apistruct.get('CURRENCYCODE', '*UNKNOWN*')
-            self.transinfo.transtext += ' (currency %s, manually adjust amount!)' % apistruct['CURRENCYCODE']
+            self.transinfo.transtext += ' (currency %s, manually adjust amount!)' % apistruct.get('CURRENCYCODE', '*UNKNOWN*')
             self.transinfo.amount = -1  # To be on the safe side
 
     def fetch_details(self, api):
