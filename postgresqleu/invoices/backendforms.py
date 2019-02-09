@@ -17,7 +17,7 @@ class BackendVatRateForm(BackendForm):
 
 class BackendInvoicePaymentMethodNewForm(django.forms.Form):
     helplink = 'payment'
-    paymentclass = django.forms.ChoiceField(choices=payment_implementation_choices, label="Payment implementation")
+    paymentclass = django.forms.ChoiceField(choices=payment_implementation_choices(), label="Payment implementation")
 
     def get_newform_data(self):
         return self.cleaned_data['paymentclass']

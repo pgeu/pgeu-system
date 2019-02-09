@@ -26,4 +26,10 @@ payment_implementations = [
 ]
 
 
-payment_implementation_choices = [(x, '.'.join(x.split('.')[-2:])) for x in payment_implementations]
+def payment_implementation_choices():
+    return [(x, x.split('.')[-1]) for x in payment_implementations]
+
+
+def register_payment_implementation(classname):
+    if classname not in payment_implementations:
+        payment_implementations.append(classname)
