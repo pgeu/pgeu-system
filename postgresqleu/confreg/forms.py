@@ -625,19 +625,6 @@ class EmailSessionForm(forms.Form):
             del self.fields['confirm']
 
 
-class BulkRegistrationForm(forms.Form):
-    recipient_name = forms.CharField(required=True, max_length=100, label='Invoice recipient name')
-    recipient_address = forms.CharField(required=True, max_length=100, label='Invoice recipient address', widget=forms.Textarea)
-    email_list = forms.CharField(required=True, label='Emails to pay for', widget=forms.Textarea)
-
-    def clean_email_list(self):
-        email_list = self.cleaned_data.get('email_list')
-        emails = [e for e in email_list.splitlines(False) if e]
-        if len(emails) < 2:
-            raise ValidationError('Bulk payments can only be done for 2 or more emails')
-        return email_list
-
-
 class AttendeeMailForm(forms.ModelForm):
     confirm = forms.BooleanField(label="Confirm", required=False)
 

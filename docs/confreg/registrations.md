@@ -68,27 +68,6 @@ registration for somebody else, the process is the same.
 The system for multiple payments is automatically disabled once the
 [waitlist](waitlist) is in force.
 
-### Bulk payments
-
-Bulk payments is mostly the legacy way for handling multiple
-registrations, and is not used much anymore. The reason for this is
-that it requires a somewhat awkward interaction between the users
-registering and the person paying. The steps are:
-
-1. Each user makes their own registration, completing step 1-3 in the
-   list above. It is, however, very important that they do not proceed
-   to step 4 (this is the first part that usually fails).
-1. The person paying the bill then goes into the bulk payment
-   interface, and adds each individual registration using the email
-   address (this is the second part that usually fails), and enters
-   the invoicing details.
-1. The invoice is paid.
-1. The person who set up the invoice receives the receipt, and each
-   individual attendee receives the registration confirmation.
-
-The system for bulk payments is automatically disabled once the
-[waitlist](waitlist) is in force.
-
 ## Registration types and classes <a name="typesandclasses"></a>
 
 When making a registration, the attendee picks the appropriate

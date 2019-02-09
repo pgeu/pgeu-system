@@ -29,7 +29,7 @@ from .models import ConferenceNews
 from .forms import ConferenceRegistrationForm, RegistrationChangeForm, ConferenceSessionFeedbackForm
 from .forms import ConferenceFeedbackForm, SpeakerProfileForm
 from .forms import CallForPapersForm
-from .forms import CallForPapersCopyForm, PrepaidCreateForm, BulkRegistrationForm
+from .forms import CallForPapersCopyForm, PrepaidCreateForm
 from .forms import EmailSendForm, EmailSessionForm, CrossConferenceMailForm
 from .forms import AttendeeMailForm, WaitlistOfferForm, WaitlistSendmailForm, TransferRegForm
 from .forms import NewMultiRegForm, MultiRegInvoiceForm
@@ -468,7 +468,7 @@ def _create_and_assign_bulk_payment(user, conference, regs, invoicerows, recipie
             # added to the bulk payment.
             send_template_mail(conference.contactaddr,
                                r.email,
-                               "Your registration for {0} added to bulk payment".format(conference.conferencename),
+                               "Your registration for {0} added to multi-registration payment".format(conference.conferencename),
                                'confreg/mail/bulkpay_added.txt',
                                {
                                    'conference': conference,
@@ -2103,134 +2103,6 @@ def emailvouchers(request, confname, batchid):
                        receivername="{0} {1}".format(batch.buyer.first_name, batch.buyer.last_name),
                    )
     return HttpResponse('OK')
-
-
-@login_required
-@transaction.atomic
-def bulkpay(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
-
-    bulkpayments = BulkPayment.objects.filter(conference=conference, user=request.user)
-
-    if conference.waitlist_active():
-        return render_conference_response(request, conference, 'reg', 'confreg/bulkpay_list.html', {
-            'activewaitlist': True,
-            'bulkpayments': bulkpayments,
-            'currency_symbol': settings.CURRENCY_SYMBOL,
-        })
-
-    if request.method == 'POST':
-        confirmstep = (request.POST['submit'] == 'Confirm above registrations and generate invoice')
-        form = BulkRegistrationForm(data=request.POST)
-        email_list = request.POST['email_list']
-        emails = [e for e in email_list.splitlines(False) if e]
-        # Try to find registrations for all emails. We do this in an ugly loop
-        # since I can't convince the django ORM to be smart enough. But this
-        # is a very uncommon operation...
-        state = []
-        errors = not form.is_valid()
-        totalcost = 0
-        invoicerows = []
-        allregs = []
-
-        # Set up a savepoint for rolling back the counter of discount codes if necessary
-        if confirmstep:
-            savepoint = transaction.savepoint()
-
-        for e in sorted(emails):
-            regs = ConferenceRegistration.objects.filter(conference=conference, email__iexact=e)
-            if len(regs) == 1:
-                allregs.append(regs[0])
-            else:
-                state.append({'email': e, 'found': 0, 'text': 'Email not found or registration already completed.'})
-                errors = 1
-
-        # Validate each entry
-        for r in allregs:
-            e = r.email
-
-            if r.payconfirmedat:
-                state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Email not found or registration already completed.'})
-                errors = 1
-            elif r.invoice:
-                state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'This registration already has an invoice generated for individual payment.'})
-                errors = 1
-            elif r.bulkpayment:
-                state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'This registration is already part of a different bulk registration.'})
-                errors = 1
-            elif not (r.regtype and r.regtype.active):
-                state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration type for this registration is not active!'})
-                errors = 1
-            else:
-                # If this is the confirmation step, we flag vouchers as used.
-                # Else we just get the data and generate a confirmation page
-                try:
-                    regrows = invoicerows_for_registration(r, confirmstep)
-                    s = sum([r[1] * r[2] for r in regrows])
-                    if s == 0:
-                        # No payment needed
-                        state.append({'email': e, 'found': 1, 'pay': 0, 'text': 'Registration does not need payment'})
-                        errors = 1
-                    else:
-                        # All content is valid, so just append it
-                        state.append({'email': regs[0].email, 'found': 1, 'pay': 1, 'total': s, 'rows': ['%s (%s%s)' % (r[0], settings.CURRENCY_SYMBOL, r[2]) for r in regrows]})
-                        totalcost += s
-                        invoicerows.extend(regrows)
-
-                except InvoicerowsException as ex:
-                    state.append({'email': e, 'found': 1, 'pay': 0, 'text': str(ex)})
-                    errors = 1
-
-        if confirmstep:
-            # Trying to finish things off, are we? :)
-            if not errors:
-                # Verify the total cost
-                if Decimal(request.POST['confirmed_total_cost']) != totalcost:
-                    messages.warning(request, 'Total cost changed, probably because somebody modified their registration during processing. Please verify the costs below, and retry.')
-                    transaction.savepoint_rollback(savepoint)
-                else:
-                    # Ok, actually generate an invoice for this one.
-                    # Create a bulk payment record
-                    bp = _create_and_assign_bulk_payment(request.user,
-                                                         conference,
-                                                         allregs,
-                                                         invoicerows,
-                                                         form.data['recipient_name'],
-                                                         form.data['recipient_address'],
-                                                         True)
-                    return HttpResponseRedirect('%s/' % bp.pk)
-            else:
-                messages.warning(request, 'An error occurred processing the registrations, please review the email addresses on the list')
-                transaction.savepoint_rollback(savepoint)
-
-        return render_conference_response(request, conference, 'reg', 'confreg/bulkpay_list.html', {
-            'form': form,
-            'email_list': email_list,
-            'errors': errors,
-            'totalcost': errors and -1 or totalcost,
-            'state': state,
-            'bulkpayments': bulkpayments,
-            'currency_symbol': settings.CURRENCY_SYMBOL,
-        })
-    else:
-        form = BulkRegistrationForm()
-        return render_conference_response(request, conference, 'reg', 'confreg/bulkpay_list.html', {
-            'form': form,
-            'bulkpayments': bulkpayments,
-            'currency_symbol': settings.CURRENCY_SYMBOL,
-        })
-
-
-@login_required
-def bulkpay_view(request, confname, bulkpayid):
-    conference = get_object_or_404(Conference, urlname=confname)
-
-    bulkpayment = get_object_or_404(BulkPayment, conference=conference, user=request.user, pk=bulkpayid)
-
-    return render_conference_response(request, conference, 'reg', 'confreg/bulkpay_view.html', {
-        'bulkpayment': bulkpayment,
-        'invoice': InvoicePresentationWrapper(bulkpayment.invoice, '.'),
-    })
 
 
 @login_required

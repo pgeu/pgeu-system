@@ -43,8 +43,8 @@ when managing the waitlist are:
 
 Pending registrations with (invoice/bulk payment)
 : Number of attendees that are far enough into the process to have an
-invoice or a bulk payment generated. These can usually be expected to
-complete their payments and take their spot.
+invoice or a bulk (multi-registration) payment generated. These can
+usually be expected to complete their payments and take their spot.
 
 Active offers on the waitlist
 : Number of attendees that have been given an offer, but have not

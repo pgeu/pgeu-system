@@ -1,13 +1,13 @@
 Hello!
 
-The invoice for the bulk payment that your registration for
-{{conference}} has been refunded.
+The invoice for the multi-registration that your registration for
+{{conference}} is part of has been refunded.
 
 As a result of this, your registration has been unlocked, and
 you are no longer confirmed for attendance of the event.
 
 If you do not already know why, you can contact the person
-in charge of this bulk invoice, {{bulk.user.first_name}} {{bulk.user.last_name}}
+in charge of this invoice, {{bulk.user.first_name}} {{bulk.user.last_name}}
 for more information about why it was refunded.
 
 

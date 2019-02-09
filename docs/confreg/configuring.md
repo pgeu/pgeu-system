@@ -97,7 +97,7 @@ The form to edit a conference has the following fields:
 Attendees before waitlist
 : Number of confirmed attendees before the [waitlist](waitlist) is
 activated. This should be below the venue maximum *with some margin*,
-as the number of attendees can "jump" with either bulk registrations
+as the number of attendees can "jump" with either multi-registrations
 or parallel registration processes by multiple users.
 
 Autocancel invoices

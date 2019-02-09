@@ -83,8 +83,6 @@ urlpatterns.extend([
     url(r'^events/(?P<confname>[^/]+)/register/other/z/$', postgresqleu.confreg.views.multireg_zeropay),
     url(r'^events/(?P<confname>[^/]+)/register/change/$', postgresqleu.confreg.views.changereg),
     url(r'^events/register/attach/([a-z0-9]{64})/$', postgresqleu.confreg.views.multireg_attach),
-    url(r'^events/([^/]+)/bulkpay/$', postgresqleu.confreg.views.bulkpay),
-    url(r'^events/([^/]+)/bulkpay/(\d+)/$', postgresqleu.confreg.views.bulkpay_view),
     url(r'^events/([^/]+)/prepaid/(\d+)/$', postgresqleu.confreg.views.viewvouchers_user),
 
     url(r'^events/([^/]+)/feedback/$', postgresqleu.confreg.views.feedback),
@@ -220,7 +218,7 @@ urlpatterns.extend([
     url(r'^m/(\w+)/newsj/$', postgresqleu.confreg.mobileviews.newsproxy),
 
     # Legacy event URLs
-    url(r'^events/(register|bulkpay|feedback|schedule|sessions|talkvote|speakerprofile|callforpapers|reports)/([^/]+)/(.*)?$', postgresqleu.confreg.views.legacy_redirect),
+    url(r'^events/(register|feedback|schedule|sessions|talkvote|speakerprofile|callforpapers|reports)/([^/]+)/(.*)?$', postgresqleu.confreg.views.legacy_redirect),
 
 
     # Accounts

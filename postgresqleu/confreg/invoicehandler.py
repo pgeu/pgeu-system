@@ -150,7 +150,7 @@ class BulkInvoiceProcessor(object):
                 # registration.
                 send_template_mail(bp.conference.contactaddr,
                                    r.email,
-                                   "Your registration for {0} bulk payment canceled".format(bp.conference.conferencename),
+                                   "Your registration for {0} multi-registration canceled".format(bp.conference.conferencename),
                                    'confreg/mail/bulkpay_canceled.txt',
                                    {
                                        'conference': bp.conference,
@@ -194,7 +194,7 @@ class BulkInvoiceProcessor(object):
             bp = BulkPayment.objects.get(pk=invoice.processorid)
         except ConferenceRegistration.DoesNotExist:
             raise Exception("Could not find bulk payment %s" % invoice.processor)
-        return "%s/events/%s/bulkpay/%s/" % (settings.SITEBASE, bp.conference.urlname, invoice.processorid)
+        return "%s/events/%s/register/other/" % (settings.SITEBASE, bp.conference.urlname)
 
     # Admin access to the bulk payment we just send to the dashboard
     def get_admin_url(self, invoice):

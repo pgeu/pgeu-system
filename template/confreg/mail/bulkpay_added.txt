@@ -1,12 +1,12 @@
 Hello!
 
 Your registration for {{conference}}
-has been added to a bulk payment invoice created by
+has been added to a multi-registration invoice created by
 {{bulk.user.first_name}} {{bulk.user.last_name}}.
 
 This means that the registration has now been locked from
 making any changes, and will be automatically confirmed
-once the bulk payment invoice has been paid.
+once the invoice has been paid.
 
 No action from you is required at this time.
 

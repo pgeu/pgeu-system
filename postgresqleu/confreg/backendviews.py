@@ -242,7 +242,7 @@ def pendinginvoices(request, urlname):
         'conference': conference,
         'invoices': {
             'Attendee invoices': Invoice.objects.filter(paidat__isnull=True, conferenceregistration__conference=conference),
-            'Bulk payment invoices': Invoice.objects.filter(paidat__isnull=True, bulkpayment__conference=conference),
+            'Multi-registration invoices': Invoice.objects.filter(paidat__isnull=True, bulkpayment__conference=conference),
             'Sponsor invoices': Invoice.objects.filter(paidat__isnull=True, sponsor__conference=conference),
         },
     })
