@@ -20,6 +20,8 @@ from decimal import Decimal
 from postgresqleu.adyen.models import AdyenLog, Report, TransactionStatus
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.accounting.util import create_accounting_entry
+from postgresqleu.invoices.util import is_managed_bank_account
+from postgresqleu.invoices.util import register_pending_bank_matcher
 
 
 class Command(BaseCommand):
@@ -177,6 +179,7 @@ class Command(BaseCommand):
         # statement actually is.
         acctrows = []
         accstr = "Adyen settlement batch %s for %s" % (batchnum, acct)
+        payout_amount = 0
         for t, amount in list(types.items()):
             if t == 'Settled' or t == 'SettledBulk':
                 # Settled means we took it out of the payable balance
@@ -184,6 +187,8 @@ class Command(BaseCommand):
             elif t == 'MerchantPayout':
                 # Amount directly into our checking account
                 acctrows.append((pm.config('accounting_payout'), accstr, -amount, None))
+                # Payouts show up as negative, so we have to reverse the sign
+                payout_amount -= amount
             elif t == 'DepositCorrection' or t == 'Balancetransfer' or t == 'Balancetransfer2':
                 # Modification of our deposit account - in either direction!
                 acctrows.append((pm.config('accounting_merchant'), accstr, -amount, None))
@@ -200,9 +205,26 @@ class Command(BaseCommand):
         if len(acctrows) == len(types):
             # If all entries were processed, the accounting entry should
             # automatically be balanced by now, so we can safely just complete it.
-            create_accounting_entry(date.today(), acctrows, False)
+            # If payout is to a managed bank account (and there is a payout), we register
+            # the payout for processing there and leave the entry open. If not, then we
+            # just close it right away.
+            is_managed = is_managed_bank_account(pm.config('accounting_payout'))
+            if is_managed and payout_amount > 0:
+                entry = create_accounting_entry(date.today(), acctrows, True)
 
-            msg = "A settlement batch with Adyen has completed for merchant account %s. A summary of the entries are:\n\n%s\n\n" % (acct, msg)
+                # Register a pending bank transfer using the syntax that Adyen are
+                # currently using. We only match the most important keywords, just
+                # but it should still be safe against most other possibilities.
+                register_pending_bank_matcher(pm.config('accounting_payout'),
+                                              '.*ADYEN.*BATCH {0} .*'.format(batchnum),
+                                              payout_amount,
+                                              entry)
+                msg = "A settlement batch with Adyen has completed for merchant account %s. A summary of the entries are:\n\n%s\n\nAccounting entry %s was created and will automatically be closed once the payout has arrived." % (acct, msg, entry)
+            else:
+                # Close immediately
+                create_accounting_entry(date.today(), acctrows, False)
+
+                msg = "A settlement batch with Adyen has completed for merchant account %s. A summary of the entries are:\n\n%s\n\n" % (acct, msg)
         else:
             # All entries were not processed, so we write what we know to the
             # db, and then just leave the entry open.
