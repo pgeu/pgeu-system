@@ -148,6 +148,15 @@ table.journalentry tr td.objectname {
   {%endif%}
  {%else%}
   <h2>Edit entry {{entry}}</h2>
+{%if has_pending_banktrans %}
+  <h3>This entry has a pending bank transaction!</h3>
+  <p>
+    There is a <a href="/admin/invoices/banktransactions/">pending bank transaction</a> registered
+    for this accounting entry. That means it will be <i>automatically</i> closed once the matching
+    transaction appears on the bank account! The entry should normally be left unchanged until
+    this matching closes it automatically.
+  </p>
+{%endif%}
   <form method="post" action="." class="form">{% csrf_token %}
   {%if form.errors%}
    <p><b>Please correct the errors below, and re-submit the form.</b></p>
@@ -208,6 +217,15 @@ table.journalentry tr td.objectname {
   </div>
   {%endfor%}
   <br/><br/>
+
+{%if has_pending_banktrans %}
+  <p>
+    There is a <a href="/admin/invoices/banktransactions/">pending bank transaction</a> registered
+    for this accounting entry. That means it will be <i>automatically</i> closed once the matching
+    transaction appears on the bank account! The entry should normally be left unchanged until
+    this matching closes it automatically.
+  </p>
+{%endif%}
 
   <input type="submit" name="submit" value="Save" class="btn btn-default">
   <input type="submit" name="submit" value="Close" onclick="return confirmClose()" class="btn btn-default">

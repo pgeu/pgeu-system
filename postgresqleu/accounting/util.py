@@ -91,6 +91,8 @@ def create_accounting_entry(date,
 
         # Ok, it seems it worked...
         transaction.savepoint_commit(sid)
+
+        return entry
     except:
         transaction.savepoint_rollback(sid)
         raise

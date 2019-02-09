@@ -1,0 +1,95 @@
+{%extends "adm/admin_base.html" %}
+{%block title%}Match pending bank transaction to invoice{%endblock%}
+{%block layoutblock %}
+<h1>Match pending bank transaction to invoice</h1>
+
+<div class="panel panel-default">
+  <div class="panel-heading">Transaction</div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-md-2"><strong>Transaction text</strong></div>
+      <div class="col-md-8">{{transaction.transtext}}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Amount</strong></div>
+      <div class="col-md-8">{{currency_symbol}} {{transaction.amount}}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Payment method</strong></div>
+      <div class="col-md-8">{{transaction.method.internaldescription}}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Comments</strong></div>
+      <div class="col-md-8">{{transaction.comments|linebreaksbr}}</div>
+    </div>
+  </div>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">Invoice</div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-md-2"><strong>Invoice</strong></div>
+      <div class="col-md-8"><a href="/invoiceadmin/{{invoice.id}}/">#{{invoice.id}}</a></div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Title</strong></div>
+      <div class="col-md-8">{{invoice.title}}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Amount</strong></div>
+      <div class="col-md-8">{{currency_symbol}} {{invoice.total_amount}}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Recipient</strong></div>
+      <div class="col-md-8">{{invoice.recipient_name}}</div>
+    </div>
+  </div>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">Match</div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-md-2"><strong>{%if match.amountdiff == 0 %}Amount equal{%elif match.amountdiff < 0 %}Overpaid{%else%}Underpaid{%endif%}</strong></div>
+      <div class="col-md-8">{{currency_symbol}} {{match.absdiff}}{%if amountdiff != 0%} ({{match.percentdiff|floatformat}}%){%endif%}</div>
+    </div>
+{%if match.found_ref%}
+    <div class="row">
+      <div class="col-md-2"><strong>Found reference</strong></div>
+      <div class="col-md-8">{{match.highlight_ref|safe}}</div>
+    </div>
+{%endif%}
+{%if match.found_id%}
+    <div class="row">
+      <div class="col-md-2"><strong>Found id</strong></div>
+      <div class="col-md-8">{{match.highlight_id|safe}}</div>
+    </div>
+{%endif%}
+  </div>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">Complete</div>
+  <div class="panel-body">
+    <p>
+      To complete this matching, pick one of the below options.
+    </p>
+    <a href="../" class="btn btn-primary btn-block">Don't match invoice</a>
+    <br/>
+    <form method="post" action=".">{%csrf_token%}
+{%if fee_account %}
+      <input type="submit" value="Match invoice and book {{currency_symbol}} {{match.amountdiff}} on account '{{fee_account}}' as fees" class="btn btn-default btn-block">
+{%else%}
+      <select name="account" class="btn btn-block">
+{%for n,a in accounts%}
+        <option value="{{n}}">{{a}}</option>
+{%endfor%}
+      </select>
+      <input type="submit" value="Match invoice and book {{currency_symbol}} {{match.amountdiff}} on account selected above as fees" class="btn btn-default btn-block">
+{%endif%}
+    </form>
+  </div>
+</div>
+
+{%endblock%}

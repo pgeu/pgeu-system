@@ -1,6 +1,3 @@
-from .models import Invoice, InvoiceRow, InvoiceHistory, InvoiceLog
-from .models import InvoiceRefund
-from .models import InvoicePaymentMethod, PaymentMethodWrapper
 from django.conf import settings
 
 from collections import defaultdict
@@ -11,11 +8,18 @@ import importlib
 import os
 import base64
 import re
+import io
 from Crypto.Hash import SHA256
 from Crypto import Random
 
 from postgresqleu.mailqueue.util import send_template_mail, send_simple_mail
 from postgresqleu.accounting.util import create_accounting_entry
+
+from .models import Invoice, InvoiceRow, InvoiceHistory, InvoiceLog
+from .models import InvoiceRefund
+from .models import InvoicePaymentMethod, PaymentMethodWrapper
+from .models import PendingBankTransaction, PendingBankMatcher
+from postgresqleu.accounting.models import Account
 
 
 # Proxy around an invoice that adds presentation information,
@@ -98,6 +102,17 @@ class InvoiceWrapper(object):
             paymentlink = '{0}/invoices/{1}/{2}/'.format(settings.SITEBASE, self.invoice.pk, self.invoice.recipient_secret)
         else:
             paymentlink = None
+
+        # Include bank info on the invoice if any payment method chosen
+        # provides it. If more than one supports it then the one with
+        # the highest priority (=lowest sortkey) will be used.
+        for pm in self.invoice.allowedmethods.all():
+            if pm.config and 'bankinfo' in pm.config and len(pm.config['bankinfo']) > 1:
+                bankinfo = pm.config['bankinfo']
+                break
+        else:
+            bankinfo = None
+
         pdfinvoice = PDFInvoice(self.invoice.title,
                                 "%s\n%s" % (self.invoice.recipient_name, self.invoice.recipient_address),
                                 self.invoice.invoicedate,
@@ -105,7 +120,8 @@ class InvoiceWrapper(object):
                                 self.invoice.pk,
                                 preview=preview,
                                 receipt=receipt,
-                                bankinfo=self.invoice.bankinfo,
+                                bankinfo=bankinfo,
+                                paymentref=self.invoice.payment_reference,
                                 totalvat=self.invoice.total_vat,
                                 reverse_vat=self.invoice.reverse_vat,
                                 paymentlink=paymentlink,
@@ -600,7 +616,6 @@ class InvoiceManager(object):
                        paymentmethods,
                        processor=None,
                        processorid=None,
-                       bankinfo=True,
                        accounting_account=None,
                        accounting_object=None,
                        canceltime=None,
@@ -614,7 +629,6 @@ class InvoiceManager(object):
             invoicedate=invoicedate,
             duedate=duedate,
             total_amount=-1,
-            bankinfo=bankinfo,
             accounting_account=accounting_account,
             accounting_object=accounting_object,
             canceltime=canceltime,
@@ -715,3 +729,176 @@ def diff_workdays(start, end):
         weekdays = 0
 
     return weekdays
+
+
+def is_managed_bank_account(account):
+    # All managed bank account methods have to specify a field for
+    # "account" that is the one that they manage. So figure out if
+    # one exists for this account.
+    # We only look at payment methods that are active, of course
+    # NOTE! account is the number of the account, not the Account object!
+    return InvoicePaymentMethod.objects.filter(active=True).extra(
+        where=["config->>'bankaccount' = %s"],
+        params=[account],
+    ).exists()
+
+
+def automatch_bank_transaction_rule(trans, matcher):
+    # We only do exact matching, fuzzyness is handled elsewhere
+    if trans.amount == matcher.amount and re.match(matcher.pattern, trans.transtext, re.I):
+        # Flag the journal entry as closed since this transaction now arrived
+        if matcher.journalentry.closed:
+            send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+                             settings.INVOICE_SENDER_EMAIL,
+                             "Bank payment pattern match for closed entry received",
+                             "A bank tranksaction of {0}{1} with text\n{2}\nmatched journal entry {3}, but this entry was already closed!\n\nNeeds manual examination!".format(
+                                 trans.amount,
+                                 settings.CURRENCY_ABBREV,
+                                 trans.transtext,
+                                 matcher.journalentry,
+                             ))
+
+            InvoiceLog(message="Bank transaction of {0}{1} with text {2} matched journal entry {3}, but this entry was already closed!".format(
+                trans.amount,
+                settings.CURRENCY_ABBREV,
+                trans.transtext,
+                matcher.journalentry,
+            )).save()
+        else:
+            matcher.journalentry.closed = True
+            matcher.journalentry.save()
+
+            InvoiceLog(message="Matched bank transaction of {0}{1} with text {2} to journal entry {3}.".format(
+                trans.amount,
+                settings.CURRENCY_ABBREV,
+                trans.transtext,
+                matcher.journalentry,
+            )).save()
+
+        return True
+
+
+# Handle a new bank matcher. If it matches something already in the pending bank transfer
+# queue then process it. If not, then stick it in the queue.
+def register_pending_bank_matcher(account, pattern, amount, journalentry):
+    # Create an object so we can try to match it, but hold off on saving
+    # it until we know.
+    if not isinstance(account, Account):
+        account = Account.objects.get(num=account)
+    if not isinstance(amount, Decimal):
+        raise Exception("Amount must be specified as Decimal!")
+
+    matcher = PendingBankMatcher(pattern=pattern,
+                                 amount=amount,
+                                 foraccount=account,
+                                 journalentry=journalentry)
+
+    # Run the matcher across all pending banktransactions
+    for bt in PendingBankTransaction.objects.all():
+        if automatch_bank_transaction_rule(bt, matcher):
+            # The matcher object is never saved, but remove the pending
+            # bank transaction since it is now "used".
+            bt.remove()
+            return
+
+    # Not found, so save it for future matching (normal case, since banks
+    # tend to deliver their information slower).
+    matcher.save()
+
+
+# Handle a new bank transaction that has arrived. If it matches an invoice or
+# an existing BankMatcher, process that one immediately. If not, stick it on
+# the list of pending ones.
+# Returns true if the transaction was immediately matched to something and needs
+# no further processing.
+def register_bank_transaction(method, methodidentifier, amount, transtext, sender):
+    if not isinstance(amount, Decimal):
+        raise Exception("Amount must be specified as Decimal!")
+
+    # First try to match it against pending invoices.
+    # We search by amount and then match by payment reference as our primary choice.
+    for invoice in Invoice.objects.filter(finalized=True,
+                                          deleted=False,
+                                          paidat__isnull=True,
+                                          total_amount=amount):
+        if invoice.payment_reference in transtext:
+            # We have a match!
+            pm = method.get_implementation()
+
+            invoicelog = io.StringIO()
+            invoicelog.write("Invoice {0} matched but processing failed:\n".format(invoice.id))
+
+            def invoicelogger(msg):
+                invoicelog.write(msg)
+                invoicelog.write("\n")
+
+            manager = InvoiceManager()
+            (status, _invoice, _processor) = manager.process_incoming_payment_for_invoice(
+                invoice,
+                amount,
+                "Bank transfer from {0} with id {1}".format(method.internaldescription, methodidentifier),
+                0,  # No fees on bank transfers supported
+                pm.config('bankaccount'),
+                0,   # No fees, so no fees account
+                [],  # No URLs supported
+                invoicelogger,
+                method)
+
+            if status != manager.RESULT_OK:
+                # Payment failed somehow. In this case we leave the transaction as a
+                # pending transaction, and have the operator clean it up.
+                PendingBankTransaction(method=method,
+                                       methodidentifier=methodidentifier,
+                                       created=datetime.now(),
+                                       amount=amount,
+                                       transtext=transtext,
+                                       sender=sender,
+                                       comments=invoicelog.getvalue()
+                ).save()
+
+                InvoiceLog(message="Bank payment '{0}' matched invoice {1}, but processing failed".format(
+                    transtext,
+                    invoice.id,
+                )).save()
+
+                return False  # Needs more preocessing since we failed
+
+            # On success, send a notification
+            send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+                             settings.INVOICE_SENDER_EMAIL,
+                             "Bank transfer payment conirmed",
+                             "A bank transfer payment from {0} matched an invoice.\nInvoice: {1}\nRecipient name: {2}\nRecipient user: {3}\nPayment method: %s\n" % (
+                                 method.internal_description,
+                                 invoice.title,
+                                 invoice.recipient_name,
+                                 invoice.recipient_email,
+                             ))
+
+            InvoiceLog(message="Bank payment reference '{0}' matched invoice {1}".format(transtext, invoice.id)).save()
+
+            # Invoice processed immediately and we haven't stored the transaction
+            # yet, so just consider it done.
+            return True
+
+    # If no invoices are found, then try to match it against the pending
+    # bank matchers. (Check this later because it's a it more expensive)
+
+    # Create an object so we can try to match it, but hold off on saving
+    # it until we know.
+    trans = PendingBankTransaction(method=method,
+                                   methodidentifier=methodidentifier,
+                                   created=datetime.now(),
+                                   amount=amount,
+                                   transtext=transtext,
+                                   sender=sender)
+
+    for matcher in PendingBankMatcher.objects.all():
+        if automatch_bank_transaction_rule(trans, matcher):
+            matcher.delete()
+            return True
+
+    # Not found, so save it for future matching (probably going to end up manual)
+    trans.save()
+
+    # More processing needed later, so return False
+    return False

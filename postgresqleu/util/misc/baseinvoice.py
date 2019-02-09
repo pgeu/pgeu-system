@@ -11,7 +11,7 @@ from reportlab.lib.utils import ImageReader
 from reportlab.platypus import Paragraph
 from reportlab.platypus.tables import Table, TableStyle
 from reportlab.platypus.flowables import Image
-from reportlab.pdfbase.pdfmetrics import registerFont
+from reportlab.pdfbase.pdfmetrics import registerFont, getFont
 from reportlab.pdfbase.ttfonts import TTFont
 import qrencode
 from io import BytesIO
@@ -49,6 +49,10 @@ class PDFBase(object):
                 return s
             s = s[:len(s) - 2]
         return s
+
+    def fontheight(self, fontname, size):
+        face = getFont(fontname).face
+        return face.ascent * size / 1000.0 - face.descent * size / 1000.0
 
     def textlines(self, t, lines):
         for l in lines.splitlines():
@@ -101,11 +105,10 @@ class PDFBase(object):
 
 
 class BaseInvoice(PDFBase):
-    bankinfotext = None
     paymentterms = None
     ROWS_PER_PAGE = 14
 
-    def __init__(self, title, recipient, invoicedate, duedate, invoicenum, preview=False, receipt=False, bankinfo=True, totalvat=0, reverse_vat=None, paymentlink=None, **kw):
+    def __init__(self, title, recipient, invoicedate, duedate, invoicenum, preview=False, receipt=False, bankinfo=None, paymentref=None, totalvat=0, reverse_vat=None, paymentlink=None, **kw):
         super(BaseInvoice, self).__init__(recipient)
 
         self.title = title
@@ -115,6 +118,7 @@ class BaseInvoice(PDFBase):
         self.preview = preview
         self.receipt = receipt
         self.bankinfo = bankinfo
+        self.paymentref = paymentref
         self.totalvat = totalvat
         self.reverse_vat = reverse_vat
         self.paymentlink = paymentlink
@@ -123,7 +127,7 @@ class BaseInvoice(PDFBase):
 
         if self.receipt:
             # Never include bank info on receipts
-            self.bankinfo = False
+            self.bankinfo = None
 
         self.prepare()
 
@@ -155,9 +159,12 @@ class BaseInvoice(PDFBase):
                     self.canvas.drawCentredString(cm(10.5), cm(18.5), "Invoice number %s - %s%s" % (self.invoicenum, self.invoicedate.strftime("%B %d, %Y"), suffix))
                 self.canvas.setFont('DejaVu Serif Bold', 10)
                 if self.receipt:
-                    self.canvas.drawCentredString(cm(17), cm(28), "Receipt #%s" % self.invoicenum)
+                    self.canvas.drawString(cm(15), cm(28), "Receipt #%s" % self.invoicenum)
                 else:
-                    self.canvas.drawCentredString(cm(17), cm(28), "Invoice #%s" % self.invoicenum)
+                    self.canvas.drawString(cm(15), cm(28), "Invoice #%s" % self.invoicenum)
+                    if self.bankinfo:
+                        self.canvas.setFont('DejaVu Serif Bold', 8)
+                        self.canvas.drawString(cm(15), cm(27.5), "Payment ref: %s" % self.paymentref)
             else:
                 self.canvas.drawCentredString(cm(10.5), cm(18.5), "Receipt - %s%s" % (self.invoicedate.strftime("%B %d, %Y"), suffix))
 
@@ -259,10 +266,14 @@ class BaseInvoice(PDFBase):
             w, h = t.wrapOn(self.canvas, cm(10), cm(10))
             t.drawOn(self.canvas, cm(2), cm(18) - h)
 
+            self.canvas.setFont('DejaVu Serif Bold', 10)
             if self.receipt:
                 self.canvas.drawCentredString(cm(10.5), cm(17.3) - h, "This invoice was paid %s" % self.duedate.strftime("%B %d, %Y"))
             else:
                 self.canvas.drawCentredString(cm(10.5), cm(17.3) - h, "This invoice is due: %s" % self.duedate.strftime("%B %d, %Y"))
+                if self.bankinfo:
+                    self.canvas.setFont('DejaVu Serif', 8)
+                    self.canvas.drawCentredString(cm(10.5), cm(16.8) - h, "If paying with bank transfer, use payment reference %s" % self.paymentref)
 
             if islastpage:
                 self.draw_footer()
@@ -277,20 +288,31 @@ class BaseInvoice(PDFBase):
 
     def draw_footer(self):
         if not self.receipt and self.paymentterms:
+            fullheight = len(self.paymentterms.splitlines()) * self.fontheight('DejaVu Serif', 6)
             t = self.canvas.beginText()
-            t.setTextOrigin(cm(2), cm(1.5))
+            t.setTextOrigin(cm(2), cm(1) + fullheight)
             t.setFont("DejaVu Serif", 6)
             self.textlines(t, self.paymentterms)
             self.canvas.drawText(t)
 
-        if self.bankinfo and self.bankinfotext:
+        if self.bankinfo:
+            fullheight = 2 * self.fontheight('DejaVu Serif Bold', 9) + (2 + len(self.bankinfo.splitlines())) * self.fontheight('DejaVu Serif', 7)
+
             t = self.canvas.beginText()
-            t.setTextOrigin(cm(13), cm(3))
+            t.setTextOrigin(cm(13), cm(1) + fullheight)
+            t.setFont("DejaVu Serif Bold", 9)
+            t.textLine("Payment reference")
+
+            t.setFont("DejaVu Serif", 7)
+            t.textLine(self.paymentref)
+            t.textLine("")
+
             t.setFont("DejaVu Serif Bold", 9)
             t.textLine("Bank references")
 
             t.setFont("DejaVu Serif", 7)
-            self.textlines(t, self.bankinfotext)
+            self.textlines(t, self.bankinfo)
+
             self.canvas.drawText(t)
 
         if self.paymentlink:

@@ -83,7 +83,6 @@ def home(request):
                     invoicerows,
                     processor=processor,
                     processorid=member.pk,
-                    bankinfo=False,
                     canceltime=datetime.now() + timedelta(days=7),
                     accounting_account=settings.ACCOUNTING_MEMBERSHIP_ACCOUNT,
                     paymentmethods=cfg.paymentmethods.all(),

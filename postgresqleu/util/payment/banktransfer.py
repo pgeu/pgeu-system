@@ -3,6 +3,8 @@ from django import forms
 from django.template import Template, Context
 from urllib.parse import urlencode
 
+from postgresqleu.util.db import exec_to_scalar
+from postgresqleu.accounting.util import get_account_choices
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.backendforms import BackendInvoicePaymentMethodForm
 
@@ -23,13 +25,22 @@ def validate_django_template(value):
 
 
 class BackendBanktransferForm(BackendInvoicePaymentMethodForm):
+    bankinfo = forms.CharField(required=False, widget=forms.widgets.Textarea,
+                               label="Bank transfer information",
+                               help_text="Full bank transfer information. If specified, this will be included in PDF invoices automatically",
+    )
     template = forms.CharField(required=True, widget=forms.widgets.Textarea,
                                validators=[validate_django_template, ],
                                help_text="Full django template for bank transfer page. Usually inherits one of the base templates, but can skip that if wanted.",
     )
 
-    config_fields = ['template', ]
+    config_fields = ['template', 'bankinfo', ]
     config_fieldsets = [
+        {
+            'id': 'invoice',
+            'legend': 'Invoicing',
+            'fields': ['bankinfo', ],
+        },
         {
             'id': template,
             'legend': 'Template',
@@ -62,3 +73,61 @@ payment in Euros, and requires you to cover all transfer charges.
             'title': invoice.invoicestr,
             'amount': invoice.total_amount,
         }))
+
+
+# Base class for all *managed* bank payments (note that the above is
+# *unmanaged* bank payments)
+class BaseManagedBankPayment(BasePayment):
+    def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl=None):
+        param = {
+            'prv': self.id,
+            'invoice': invoiceid,
+            'key': Invoice.objects.get(pk=invoiceid).recipient_secret,
+        }
+        if returnurl:
+            param['ret'] = returnurl
+        return "/invoices/banktransfer/?%s" % urlencode(param)
+
+    def payment_fees(self, invoice):
+        return BankTransferFees.objects.filter(invoice=invoice).aggregate(Sum('fee'))['fee__sum'] or 0
+
+
+class BaseManagedBankPaymentForm(BackendInvoicePaymentMethodForm):
+    bankaccount = forms.ChoiceField(required=True, choices=get_account_choices,
+                                    label="Account",
+                                    help_text="Accounting account that is a 1-1 match to this bank account")
+    feeaccount = forms.ChoiceField(required=True, choices=get_account_choices,
+                                   label="Fee account",
+                                   help_text="Accounting account that receives any fees associated with payments")
+    bankinfo = forms.CharField(required=False, widget=forms.widgets.Textarea,
+                               label="Bank transfer information",
+                               help_text="Full bank transfer information. If specified, this will be included in PDF invoices automatically",
+    )
+
+    @property
+    def config_fields(self):
+        return ['bankaccount', 'feeaccount', 'bankinfo', ] + self.managed_fields
+
+    @property
+    def config_fieldsets(self):
+        return [
+            {
+                'id': 'accounting',
+                'legend': 'Accounting',
+                'fields': ['bankaccount', 'feeaccount', ],
+            },
+            {
+                'id': 'invoice',
+                'legend': 'Invoicing',
+                'fields': ['bankinfo', ],
+            },
+        ] + self.managed_fieldsets
+
+    def clean_bankaccount(self):
+        n = exec_to_scalar("SELECT count(1) FROM invoices_invoicepaymentmethod WHERE config->>'bankaccount' = %(account)s AND (id != %(self)s OR %(self)s IS NULL)", {
+            'account': self.cleaned_data['bankaccount'],
+            'self': self.instance.id,
+        })
+        if n > 0:
+            raise ValidationError("This account is already managed by a different payment method!")
+        return self.cleaned_data['bankaccount']

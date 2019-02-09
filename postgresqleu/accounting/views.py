@@ -173,6 +173,7 @@ def entry(request, entryid):
         'hasopen': any([not e.closed for e in entries]),
         'year': entry.year,
         'entry': entry,
+        'has_pending_banktrans': entry.pendingbankmatcher_set.exists(),
         'items': items,
         'urls': urls,
         'totals': totals,

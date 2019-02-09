@@ -16,10 +16,69 @@ invoice issuing, only at completion.
 
 ## Flagging invoices as paid
 
-Invoices paid to the primary bank account, or otherwise confirmed to
+Invoices paid to an unmanaged bank account, or otherwise confirmed to
 be in the system but not handled by the automated methods, can be
 flagged as paid using the invoice administration system. In this case,
 the administrator is assumed to have validated all details.
+
+## Managed bank accounts
+
+Managed bank account is a special case of the available payment
+methods. This is an account where the system can somehow get a list of
+transactions as they happen, including details about the transaction.
+
+When transactions occur on a managed bank account get they get fed
+into the central processing. This processing knows how to match some
+of them, and if they don't match, will provide an interface for doing
+manual matching.
+
+### Managed bank accounts and invoices
+
+If the invoice payment reference (as calculated and printed on the
+invoice payment page) is found *and* the amount on the invoice
+matches, the invoice in question will automatically be flagged as paid
+and the transaction will *not* show up in the pending bank transaction
+system.
+
+### Managed bank accounts and payouts
+
+If a different payment method (or any other part of the system where
+this would make sense) knows about a payout happening to a managed
+bank account, it can register this information in the system. It does
+so by creating a Pending Matcher, which is a combinatino of a regular
+expression and an amount. It will in this case also leave an open
+accounting entry. When a transaction shows up on this managed bank
+account with the correct amount and a transaction text that matches
+the regexp, the accounting entry will be automatically closed and the
+transaction will *not* show up in the pending bank transaction system.
+
+### Manually handling bank transactions
+
+Any bank transaction not matching the above will be listed on the page
+for managing pending bank transactions. These will have to be handled
+manually. There are three main options for handling tem:
+
+Match payment to invoice
+:  This can be done if the automatic matcher does not work, but it is
+*known* which invoice it is. This can be done in case of a missing
+payment reference but the rest of the details are clear enough for
+example. It can also be done if the amount of the payment is not
+correct -- in this case, the difference of amount will be recorded on
+a payment fees account. If the difference is very small (similar to
+other payment fees) it may be easier to just match the payment and
+accept the difference as a cost, rather than dealing with
+sub-payments.
+
+Create open accounting record
+:  This will simply create an open accounting record for this
+transaction (on the correct account), and direct the user to the
+accounting system to fill out the detail. This is the normal path for
+transactions that are not related to invoice payments.
+
+Discard
+:  The transaction can be discarded completely if it's known to be
+handled manually elsewhere (for example if a manual accounting record
+was already created).
 
 ## Payment methods
 

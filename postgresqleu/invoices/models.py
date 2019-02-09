@@ -11,7 +11,8 @@ from decimal import Decimal
 from .payment import PaymentMethodWrapper
 
 from postgresqleu.util.validators import ListOfEmailAddressValidator
-from postgresqleu.accounting.models import Account
+from postgresqleu.util.checksum import luhn
+from postgresqleu.accounting.models import Account, JournalEntry
 
 
 class InvoiceProcessor(models.Model):
@@ -122,7 +123,6 @@ class Invoice(models.Model):
 
     # Allowed payment methods
     allowedmethods = models.ManyToManyField(InvoicePaymentMethod, blank=True, verbose_name="Allowed payment methods")
-    bankinfo = models.BooleanField(null=False, blank=False, default=True, verbose_name="Include bank details on invoice")
 
     # Payment status of this invoice. Once it's paid, the payment system
     # writes the details of the transaction to the paymentdetails field.
@@ -222,6 +222,11 @@ class Invoice(models.Model):
         else:
             return "pending"
 
+    @property
+    def payment_reference(self):
+        ref = "{0}{1:05d}".format(str(int(self.invoicedate.timestamp()))[-4:], self.id)
+        return ref + str(luhn(ref))
+
     def __str__(self):
         return "Invoice #%s" % self.pk
 
@@ -297,3 +302,26 @@ class InvoiceLog(models.Model):
 
     class Meta:
         ordering = ['-timestamp', ]
+
+
+class PendingBankTransaction(models.Model):
+    method = models.ForeignKey(InvoicePaymentMethod, null=False, blank=False)
+    methodidentifier = models.IntegerField(null=False, blank=False)
+    created = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=False)
+    transtext = models.CharField(max_length=500, null=False, blank=True)
+    sender = models.CharField(max_length=200, null=False, blank=True)
+    comments = models.TextField(max_length=2000, null=False, blank=True)
+
+
+class PendingBankMatcher(models.Model):
+    created = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+    pattern = models.CharField(max_length=200, null=False, blank=False)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=False)
+    foraccount = models.ForeignKey(Account, null=False, blank=False)
+    journalentry = models.ForeignKey(JournalEntry, null=False, blank=False)
+
+
+class BankTransferFees(models.Model):
+    invoice = models.ForeignKey(Invoice, null=False, blank=False)
+    fee = models.DecimalField(max_digits=10, decimal_places=2, null=False)

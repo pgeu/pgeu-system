@@ -1,0 +1,84 @@
+{%extends "adm/admin_base.html" %}
+{%block title%}Pending bank transactions{%endblock%}
+{%block layoutblock %}
+<h1>Pending bank transactions</h1>
+<p>
+  Here you will find a list of all bank transactions that are not
+  matched to anything, as well as any pending matchers that have
+  not yet matched.
+</p>
+
+<h2>Pending bank transactions</h2>
+<p>
+  Pending bank transactions are transactions that have showed up on <i>any</i> of
+  the configured bank accounts, regardless of provider, but has not yet been processed.
+  This can be because the details didn't match (e.g. wrong amount of payment reference),
+  or because they were simply meant to be manually handled.
+</p>
+<div class="row">
+  <table class="table table-sm table-striped table-hover">
+    <tr>
+      <th>Added</th>
+      <th>Amount</th>
+      <th>Text</th>
+      <th>Method</th>
+      <th>Comments</th>
+      <th>Action</th>
+    </tr>
+{%for trans in transactions%}
+    <tr>
+      <td>{{trans.created}}</td>
+      <td class="nobr">{{currency_symbol}} {{trans.amount}}</td>
+      <td>{{trans.transtext}}</td>
+      <td>{{trans.method.internaldescription}}</td>
+      <td>{{trans.comments}}</td>
+      <td>
+	<form action="." method="post">{% csrf_token %}
+	  <input type="hidden" name="transid" value="{{trans.id}}">
+	  <a href="{{trans.id}}/" class="btn btn-default btn-sm btn-block">Match invoice</a>
+	  <input type="submit" name="submit" value="Create accounting record" class="btn btn-default btn-sm btn-block confirm-btn" data-confirm="This will create an open, pre-filled, accounting record, and take you to the accounting system." title="Create an open accounting entry for this transaction">
+	  <input type="submit" name="submit" value="Discard" class="btn btn-default btn-sm btn-block confirm-btn" data-confirm="This will discard the transaction completely, and there is no way to undo!" title="Discard this transaction completely">
+	</form>
+      </td>
+    </tr>
+{%endfor%}
+  </table>
+</div>
+
+<h2>Pending matchers</h2>
+<p>
+  Pending matchers are regexps that other parts of the system have registered as
+  "listening" for an expected transaction on a bank account. When this transaction
+  shows up it will be automatically matched and the associated accounting record
+  will be closed.
+</p>
+<div class="row">
+  <table class="table table-sm table-striped table-hover">
+    <tr>
+      <th>Added</th>
+      <th>Account</th>
+      <th>Pattern</th>
+      <th>Amount</th>
+      <th>Journal entry</th>
+      <th>Action</th>
+    </tr>
+{%for matcher in matchers%}
+    <tr>
+      <td>{{matcher.created}}</td>
+      <td>{{matcher.foraccount}}</td>
+      <td>{{matcher.pattern}}</td>
+      <td class="nobr">{{currency_symbol}} {{matcher.amount}}</td>
+      <td><a href="/accounting/e/{{matcher.journalentry.id}}/">{{matcher.journalentry}}</a></td>
+      <td>
+	<form action="." method="post">{% csrf_token %}
+	  <input type="hidden" name="matcherid" value="{{matcher.id}}">
+	  <input type="submit" name="submit" value="Discard" class="btn btn-default btn-sm btn-block confirm-btn" data-confirm="This will discard the matcher completely, and there is no undo. This should normally only be done to recover from out-of-sync state." title="Discard this matcher completely">
+	</form>
+      </td>
+    </tr>
+{%endfor%}
+  </table>
+</div>
+
+<a href="/admin/" class="btn btn-default btn-block">Back</a>
+{%endblock%}
