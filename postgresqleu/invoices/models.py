@@ -54,7 +54,7 @@ class InvoicePaymentMethod(models.Model):
 
     @property
     def classname_short(self):
-        return ".".join(self.classname.split('.')[-2:])
+        return self.classname.split('.')[-1]
 
 
 class InvoiceRefund(models.Model):
