@@ -53,7 +53,7 @@
    <div class="control">
      <input type="submit" name="submit" class="btn btn-default" value="{{savebutton|default:"Save"}}">
 {%if allow_delete%}
-     &nbsp;&nbsp;<input type="submit" name="submit" class="btn btn-default" value="Delete" onclick="return confirm_delete('{{what}}')">
+     &nbsp;&nbsp;<input type="submit" name="submit" class="btn btn-default confirm-btn" value="Delete" data-confirm="You are about to delete this {{what}}. There is no undo!">
 {%endif%}
 {%if cancelurl%}
      &nbsp;&nbsp;<a class="btn btn-default" href="{{cancelurl}}">{{cancelname|default:"Cancel"}}</a>

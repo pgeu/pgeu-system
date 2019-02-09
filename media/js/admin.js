@@ -1,4 +1,12 @@
 $(document).ready(function() {
+   $('.confirm-btn').on("click", function(e) {
+      p = $(this).data('confirm');
+      if (p)
+         p += "\n\n";
+      p +=  '\n\nAre you sure?';
+      return confirm(p);
+   });
+
    $('.dropdown-submenu a').on("click", function(e){
        $(this).next('ul').toggle();
        e.stopPropagation();

@@ -43,14 +43,6 @@ function extendCancel(days) {
    }
 }
 
-function confirm_delete() {
-    return confirm('Are you sure you want to mark this invoice as deleted?');
-}
-
-function confirm_reallydelete() {
-   return confirm('Are you sure you want to delete this invoice?');
-}
-
 function recompute_vat_sum_for_row(fieldid) {
    var rownum = fieldid.substring(18, 18+fieldid.substring(18).indexOf('-'));
    var prefix = '#id_invoicerow_set-' + rownum + '-';
@@ -250,7 +242,7 @@ also be tagged with your userid <i>{{user.username}}</i>.
   <div class="input-group col-md-6">
     <input type="text" class="form-control" name="reason" placeholder="Reason for cancellation" />
     <span class="input-group-btn">
-      <input type="submit" name="submit" value="Cancel invoice" onclick="return confirm_delete()" class="btn btn-default" />
+      <input type="submit" name="submit" value="Cancel invoice" class="btn btn-default confirm-btn" data-confirm="The invoice will be canceled and a note sent to the receiver." />
     </span>
   </div>
 </form>
@@ -299,7 +291,7 @@ also be tagged with your userid <i>{{user.username}}</i>.
 {%if not invoice.finalized%}
   <div class="col-md-2"><input type="submit" name="submit" value="Finalize" class="btn btn-default btn-block" data-toggle="tooltip" data-placement="bottom" title="Note! Finalizing will lock this invoice from further editing!"  /></div>
   <div class="col-md-2"><input type="submit" name="submit" value="Preview" class="btn btn-default btn-block" data-toggle="tooltip" data-placement="bottom" title="Note! Saves before preview!" /></div>
-  <div class="col-md-2"><input type="submit" name="submit" value="Delete" onclick="return confirm_reallydelete()" class="btn btn-default btn-block" data-toggle="tooltip" data-placement="bottom" title="Note! Actually deletets. To flag-as-deleted, first finalize the invoice" /></div>
+  <div class="col-md-2"><input type="submit" name="submit" value="Delete" class="btn btn-default btn-block confirm-btn" data-toggle="tooltip" data-placement="bottom" title="Note! Actually deletets. To flag-as-deleted, first finalize the invoice" data-confirm="This will actually delete the invoice. To flag as deleted (normal case), first finalize the invoice and then cancel it."/></div>
 </div>
 {%endif%}
 {%endif%}

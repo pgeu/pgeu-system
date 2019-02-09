@@ -2,11 +2,6 @@
 {%load markup%}
 {%block title%}Conference Sponsorship - {{sponsor}}{%endblock%}
 {%block extrahead%}
-<script type="text/javascript">
-  function confirmConfirm() {
-    return confirm('Are you sure you want to confirm this sponsor?\n\nThis should *only* be done if the sponsor contract is both signed and countersigned!');
-  }
-</script>
 <style>
 div.panelwrap {
    padding: 10px;
@@ -111,7 +106,7 @@ This sponsorship is awaiting an <a href="/invoiceadmin/{{sponsor.invoice.pk}}/">
 for this sponsor, it can be confirmed before the invoice is paid.
 </p>
 <p>
-<a class="btn btn-default" href="confirm/" onClick="return confirmConfirm()">Confirm sponsor</a>
+<a class="btn btn-default confirm-btn" href="confirm/" data-confirm="Once confirmed, there is no going back!">Confirm sponsor</a>
 </p>
 {%endif%}
 {%else%}
