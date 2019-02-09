@@ -33,7 +33,7 @@ class InvoiceForm(forms.ModelForm):
         if not settings.EU_VAT:
             del self.fields['reverse_vat']
 
-        if 'data' in kwargs and 'recipient_user' in kwargs['data']:
+        if 'data' in kwargs and 'recipient_user' in kwargs['data'] and kwargs['data']['recipient_user'] != '':
             # Postback with this field, so allow this specifi cuser
             self.fields['recipient_user'].queryset = User.objects.filter(pk=kwargs['data']['recipient_user'])
         elif self.instance and self.instance.recipient_user:
@@ -64,7 +64,8 @@ class InvoiceForm(forms.ModelForm):
         model = Invoice
         exclude = ['finalized', 'pdf_invoice', 'pdf_receipt', 'paidat', 'paymentdetails', 'paidusing', 'processor', 'processorid', 'deleted', 'deletion_reason', 'refund', 'recipient_secret']
         widgets = {
-            'invoicedate': HtmlDateInput(),
+            # Can't use HtmlDateInput since that truncates to just date
+            #            'invoicedate': HtmlDateInput(),
             'duedate': HtmlDateInput(),
         }
 
