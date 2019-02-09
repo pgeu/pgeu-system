@@ -17,6 +17,8 @@ from django.conf import settings
 from datetime import datetime
 
 from postgresqleu.invoices.util import InvoiceManager
+from postgresqleu.invoices.util import is_managed_bank_account
+from postgresqleu.invoices.util import register_pending_bank_matcher
 from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.accounting.util import create_accounting_entry
 from postgresqleu.paypal.models import TransactionInfo, ErrorLog
@@ -92,7 +94,12 @@ class Command(BaseCommand):
                         (pm.config('accounting_income'), accstr, trans.amount, None),
                         (pm.config('accounting_transfer'), accstr, -trans.amount, None),
                         ]
-                    create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
+                    entry = create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
+                    if is_managed_bank_account(pm.config('accounting_transfer')):
+                        register_pending_bank_matcher(pm.config('accounting_transfer'),
+                                                      '.*PAYPAL.*',
+                                                      -trans.amount,
+                                                      entry)
                     continue
                 textstart = 'Refund of Paypal payment: {0} refund '.format(settings.ORG_SHORTNAME)
                 if trans.amount < 0 and trans.transtext.startswith(textstart):
