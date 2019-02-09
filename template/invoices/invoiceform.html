@@ -158,7 +158,7 @@ This invoice has been <b>paid</b>.
 </p>
 {%if invoice.paidusing%}
 <p>
- This invoice was paid using {{invoice.paidusing}}. The payment fees were {{currency_symbol}}{{invoice.payment_fees}}.
+ This invoice was paid using {{invoice.paidusing.internaldescription}}. The payment fees were {{currency_symbol}}{{invoice.payment_fees}}.
 </p>
 {%else%}
 <p>This invoice was manually flagged as paid.</p>
