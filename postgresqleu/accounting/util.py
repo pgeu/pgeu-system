@@ -23,7 +23,7 @@ def create_accounting_entry(date,
     # items must be an array of tuples in the format:
     # (accountnumber, descriptiontext, amount, objectname)
     # Positive amounts indicate debit, negative amounts indicate credit.
-    # objects are referenced by *named* and looked up internally here.
+    # objects are referenced by *name* and looked up internally here.
     # Entries must be balanced unless leaveopen is set to True
     # Any urls listed in urllist must exist and be correct, no verification
     # is done.
