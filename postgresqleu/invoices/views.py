@@ -69,6 +69,7 @@ def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=Fal
         'searchterm': searchterm,
         'page_range': page_range,
         'breadcrumbs': [('/invoiceadmin/', 'Invoices'), ],
+        'helplink': 'payment',
     })
 
 
@@ -207,6 +208,7 @@ def oneinvoice(request, invoicenum):
         'currency_symbol': settings.CURRENCY_SYMBOL,
         'vatrates': VatRate.objects.all(),
         'breadcrumbs': [('/invoiceadmin/', 'Invoices'), ],
+        'helplink': 'payment',
     })
 
 
@@ -328,6 +330,7 @@ def refundinvoice(request, invoicenum):
         'form': form,
         'invoice': invoice,
         'breadcrumbs': [('/invoiceadmin/', 'Invoices'), ('/invoiceadmin/{0}/'.format(invoice.pk), 'Invoice #{0}'.format(invoice.pk)), ],
+        'helplink': 'payment',
         })
 
 
