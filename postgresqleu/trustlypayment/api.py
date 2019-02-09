@@ -91,9 +91,12 @@ class TrustlyWrapper(object):
         return w[0]
 
     def getledgerforday(self, day):
+        return self.getledgerforrange(day, day + timedelta(hours=24))
+
+    def getledgerforrange(self, fromday, today):
         r = self.apicall('AccountLedger', {
-            'FromDate': day.strftime('%Y-%m-%d'),
-            'ToDate': (day + timedelta(hours=24)).strftime('%Y-%m-%d'),
+            'FromDate': fromday.strftime('%Y-%m-%d'),
+            'ToDate': today.strftime('%Y-%m-%d'),
             'Currency': self.currency,
         })
         return r['data']

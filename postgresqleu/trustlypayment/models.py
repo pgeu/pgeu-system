@@ -54,3 +54,10 @@ class TrustlyLog(models.Model):
 class ReturnAuthorizationStatus(models.Model):
     orderid = models.BigIntegerField(null=False, blank=False, primary_key=True)
     seencount = models.IntegerField(null=False, default=0)
+
+
+class TrustlyWithdrawal(models.Model):
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
+    gluepayid = models.BigIntegerField(null=False, blank=False)
+    amount = models.DecimalField(decimal_places=2, max_digits=20, null=False, blank=False)
+    message = models.CharField(max_length=200, null=False, blank=True)
