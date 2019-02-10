@@ -10,6 +10,7 @@ from django.db import transaction
 from django.conf import settings
 
 from datetime import time, datetime, timedelta
+from decimal import Decimal
 
 from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.trustlypayment.util import Trustly
