@@ -73,5 +73,5 @@ class Command(BaseCommand):
                     if is_managed_bank_account(pm.config('accounting_transfer')):
                         register_pending_bank_matcher(pm.config('accounting_transfer'),
                                                       '.*TRUSTLY.*{0}.*'.format(w.gluepayid),
-                                                      -w.amount,
+                                                      w.amount,
                                                       entry)
