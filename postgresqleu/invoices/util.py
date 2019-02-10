@@ -798,7 +798,7 @@ def register_pending_bank_matcher(account, pattern, amount, journalentry):
         if automatch_bank_transaction_rule(bt, matcher):
             # The matcher object is never saved, but remove the pending
             # bank transaction since it is now "used".
-            bt.remove()
+            bt.delete()
             return
 
     # Not found, so save it for future matching (normal case, since banks
