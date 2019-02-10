@@ -17,14 +17,14 @@ from . import BasePayment
 class BackendPaypalForm(BackendInvoicePaymentMethodForm):
     sandbox = forms.BooleanField(required=False, help_text="Use testing sandbox")
     email = forms.EmailField(required=True, label="Paypal account email")
-    apiuser = forms.CharField(required=True, label="API user",
-                              help_text="Settings -> My Selling Tools -> API access -> Manage NVP API Credentials")
-    apipassword = forms.CharField(required=True, label="API user password", widget=forms.widgets.PasswordInput(render_value=True),
-                                  help_text="Settings -> My Selling Tools -> API access -> Manage NVP API Credentials")
+    clientid = forms.CharField(required=True, label="Client ID",
+                               widget=forms.widgets.PasswordInput(render_value=True),
+                               help_text='From developer.paypal.com, create app, <a href="/admin/docs/payment#paypal">set permissions</a>')
+    clientsecret = forms.CharField(required=True, label="Client secret",
+                                   widget=forms.widgets.PasswordInput(render_value=True),
+                                   help_text="From developer.paypal.com, app config")
     pdt_token = forms.CharField(required=True, label="PDT token", widget=forms.widgets.PasswordInput(render_value=True),
                                 help_text="Settings -> My Selling Tools -> Website preferences -> Payment data transfer")
-    signature = forms.CharField(required=True, label="API User signature", widget=forms.widgets.PasswordInput(render_value=True),
-                                help_text="Settings -> My Selling Tools -> API access -> Manage NVP API Credentials")
 
     donation_text = forms.CharField(required=True,
                                     help_text="Payments with this text will be auto-matched as donations")
@@ -39,8 +39,8 @@ class BackendPaypalForm(BackendInvoicePaymentMethodForm):
 
     returnurl = forms.CharField(label="Return URL", widget=StaticTextWidget)
 
-    config_fields = ['sandbox', 'email', 'apiuser', 'apipassword', 'pdt_token',
-                     'signature', 'donation_text', 'report_receiver',
+    config_fields = ['sandbox', 'email', 'clientid', 'clientsecret', 'pdt_token',
+                     'donation_text', 'report_receiver',
                      'accounting_income', 'accounting_fee', 'accounting_transfer',
                      'returnurl', ]
     config_readonly = ['returnurl', ]
@@ -48,8 +48,7 @@ class BackendPaypalForm(BackendInvoicePaymentMethodForm):
         {
             'id': 'paypal',
             'legend': 'Paypal',
-            'fields': ['email', 'sandbox', 'apiuser', 'apipassword', 'signature',
-                       'pdt_token'],
+            'fields': ['email', 'sandbox', 'clientid', 'clientsecret', 'pdt_token'],
         },
         {
             'id': 'integration',
@@ -69,6 +68,7 @@ class BackendPaypalForm(BackendInvoicePaymentMethodForm):
     ]
 
     def fix_fields(self):
+        super(BackendPaypalForm, self).fix_fields()
         if self.instance.id:
             self.initial.update({
                 'returnurl': """

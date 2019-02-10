@@ -136,7 +136,7 @@ configured with a django template that will get rendered to show a
 static page to the person paying the invoice, which should contain all
 the bank details. All processing is handled completely manually.
 
-#### Paypal
+#### Paypal <a name="paypal"></a>
 
 This method allows the payment using either a Paypal account or a
 Creditcard.
@@ -146,12 +146,20 @@ transactions on this account. This means that if the account is also
 used for other things, those transactions will be imported and
 generate warnings about not matching.
 
-Instructions for how to fill out the Paypal integration fields are in
-the form.
+To set up the paypal connection, a Paypal app registration must be done.
+To do this, go to `developer.paypal.com`, and create a *REST API
+app*. Record the *client id* and *secret* and copy these to the
+configuration form. Under *App feature options*, make sure the app has
+*Accept payments* (default) and *Transaction search* (*not* enabled by
+default), and remove all other permissions, including the options
+under *Advanced* (under Accept payments). Repeat this configuration
+for *both* the sandbox *and* the live environment, but note that there
+are different keys.
 
-It requires a Return URL to be configured in Paypal. Once the method
+It also requires a Return URL to be configured in Paypal. Once the method
 has been created, information about this will be visible at the bottom
-of the configuration page.
+of the configuration page. The return URL configuration on the REST app is
+currently *not* used.
 
 #### Adyen Creditcard
 
