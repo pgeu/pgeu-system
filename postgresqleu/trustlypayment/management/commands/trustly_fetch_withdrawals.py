@@ -11,6 +11,7 @@ from django.conf import settings
 
 from datetime import time, datetime, timedelta
 from decimal import Decimal
+import dateutil
 
 from postgresqleu.accounting.util import create_accounting_entry
 from postgresqleu.invoices.util import is_managed_bank_account
@@ -64,9 +65,9 @@ class Command(BaseCommand):
                         (pm.config('accounting_income'), accstr, w.amount, None),
                         (pm.config('accounting_transfer'), accstr, -w.amount, None),
                     ]
-                    entry = create_accounting_entry(t['timestamp'].date(),
+                    entry = create_accounting_entry(dateutil.parser.parse(w['datestamp']).date(),
                                                     accrows,
-                                                    dateutil.parser.parse(w['datestamp']),
+                                                    True,
                                                     [],
                     )
                     if is_managed_bank_account(pm.config('accounting_transfer')):
