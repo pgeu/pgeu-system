@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='invoicerefund',
             name='vatrate',
-            field=models.ForeignKey(to='invoices.VatRate', null=True, on_delete=models.CASCADE),
+            field=models.ForeignKey(to='invoices.VatRate', null=True, blank=True, on_delete=models.CASCADE),
         ),
         migrations.AlterField(
             model_name='invoicerefund',

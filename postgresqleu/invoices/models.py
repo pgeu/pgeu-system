@@ -63,7 +63,7 @@ class InvoiceRefund(models.Model):
 
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=False)
     vatamount = models.DecimalField(max_digits=10, decimal_places=2, null=False)
-    vatrate = models.ForeignKey('VatRate', null=True, on_delete=models.CASCADE)
+    vatrate = models.ForeignKey('VatRate', null=True, blank=True, on_delete=models.CASCADE)
 
     registered = models.DateTimeField(null=False, auto_now_add=True)
     issued = models.DateTimeField(null=True, blank=True)
