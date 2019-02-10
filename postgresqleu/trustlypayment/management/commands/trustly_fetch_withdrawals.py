@@ -44,8 +44,8 @@ class Command(BaseCommand):
                 w, created = TrustlyWithdrawal.objects.get_or_create(paymentmethod=method,
                                                                      gluepayid=t['gluepayid'],
                                                                      defaults={
-                                                                         amount: -Decimal(t['amount']),
-                                                                         message: t['messageid'],
+                                                                         'amount': -Decimal(t['amount']),
+                                                                         'message': t['messageid'],
                                                                      },
                 )
                 w.save()
