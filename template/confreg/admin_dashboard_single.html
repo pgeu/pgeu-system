@@ -46,7 +46,7 @@
 
 <h2>Sponsors</h2>
 <div class="row">
-  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/sponsor/admin/{{c.urlname}}/">Manage sponsors</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-{%if pending_sponsors%}danger{%elif pending_sponsor_benefits%}warning{%else%}default{%endif%} btn-block" href="/events/sponsor/admin/{{c.urlname}}/">Manage sponsors</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/sponsor/admin/{{c.urlname}}/sendmail/">Sponsor emails</a></div>
 </div>
 
