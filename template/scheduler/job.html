@@ -56,7 +56,7 @@ $(function() {
 </tr>
 {%for h in history.object_list %}
 <tr{%if not h.success%} class="danger"{%endif%}>
-  <td>{{h.time}}</td>
+  <td>{{h.time}} ({{h.time|timesince}} ago)</td>
   <td>{{h.success|yesno:"Success,Failure"}}</td>
   <td>{{h.runtime}}</td>
   <td class="history_popover" data-toggle="popover">{{h.first_output}}
