@@ -41,12 +41,12 @@ class Command(BaseCommand):
         for t in transactions:
             if t['accountname'] == 'BANK_WITHDRAWAL_QUEUED' and not t['orderid']:
                 # If it has an orderid, it's a refund, but if not, then it's a transfer out (probably)
-                w, created = TrustlyWithdrawal.get_or_create(paymentmethod=method,
-                                                             gluepayid=t['gluepayid'],
-                                                             defaults={
-                                                                 amount: -Decimal(t['amount']),
-                                                                 message: t['messageid'],
-                                                             },
+                w, created = TrustlyWithdrawal.objects.get_or_create(paymentmethod=method,
+                                                                     gluepayid=t['gluepayid'],
+                                                                     defaults={
+                                                                         amount: -Decimal(t['amount']),
+                                                                         message: t['messageid'],
+                                                                     },
                 )
                 w.save()
 
