@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponseForbidden, Http404
 from django.conf import settings
+from django.utils.safestring import mark_safe
 
 import codecs
 import os
@@ -67,6 +68,6 @@ def docspage(request, page):
         'basepage': 'adm/admin_base.html',
         'page': page,
         'contents': contents,
-        'title': title,
+        'title': mark_safe(title),
         'urlpage': urlpage,
     })
