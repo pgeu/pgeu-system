@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django import forms
+from django.db.models import Sum
 from django.template import Template, Context
 from urllib.parse import urlencode
 
