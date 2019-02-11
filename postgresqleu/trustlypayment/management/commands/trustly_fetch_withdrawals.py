@@ -62,8 +62,8 @@ class Command(BaseCommand):
 
                     accstr = 'Transfer from Trustly to bank'
                     accrows = [
-                        (pm.config('accounting_income'), accstr, w.amount, None),
-                        (pm.config('accounting_transfer'), accstr, -w.amount, None),
+                        (pm.config('accounting_income'), accstr, -w.amount, None),
+                        (pm.config('accounting_transfer'), accstr, w.amount, None),
                     ]
                     entry = create_accounting_entry(dateutil.parser.parse(t['datestamp']).date(),
                                                     accrows,
