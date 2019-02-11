@@ -24,7 +24,7 @@
 <h1>Invoices</h1>
 <div class="row">
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/invoiceadmin/">Invoice Administration</a></div>
-  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/invoices/banktransactions/">Pending bank transactions</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-{%if pending_bank%}warning{%else%}default{%endif%} btn-block" href="/admin/invoices/banktransactions/">Pending bank transactions</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/invoices/vatrates/">VAT rates</a></div>
 </div>
 {%endif%}
@@ -48,7 +48,7 @@
 <h1>System administration</h1>
 <div class="row">
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/invoices/paymentmethods/">Payment methods</a></div>
-  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/jobs/">Scheduled jobs</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-{%if schedalert%}danger{%else%}default{%endif%} btn-block" href="/admin/jobs/">Scheduled jobs</a></div>
 </div>
 <div class="row">
 {%if modules.membership%}

@@ -6,8 +6,9 @@ from django.conf import settings
 
 from postgresqleu.newsevents.models import News
 from postgresqleu.confreg.models import Conference, ConferenceSeries
+from postgresqleu.invoices.models import PendingBankTransaction
 
-from postgresqleu.util.db import exec_to_dict
+from postgresqleu.util.db import exec_to_dict, conditional_exec_to_scalar
 
 import datetime
 import markdown
@@ -135,8 +136,15 @@ def admin_dashboard(request):
             'invoices': "Invoice managers" in groups,
         }
 
+    if permissions['invoices']:
+        pending_bank = PendingBankTransaction.objects.all().exists()
+    else:
+        pending_bank = False
+
     return render(request, 'adm/index.html', {
         'permissions': permissions,
+        'pending_bank': pending_bank,
+        'schedalert': conditional_exec_to_scalar(request.user.is_superuser, "SELECT NOT EXISTS (SELECT 1 FROM pg_stat_activity WHERE application_name='pgeu scheduled job runner' AND datname=current_database())"),
     })
 
 
