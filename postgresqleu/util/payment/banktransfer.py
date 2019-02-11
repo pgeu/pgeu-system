@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 from postgresqleu.util.db import exec_to_scalar
 from postgresqleu.accounting.util import get_account_choices
 from postgresqleu.invoices.models import Invoice
+from postgresqleu.invoices.models import BankTransferFees
 from postgresqleu.invoices.backendforms import BackendInvoicePaymentMethodForm
 
 from decimal import Decimal
