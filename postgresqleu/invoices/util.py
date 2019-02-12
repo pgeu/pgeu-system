@@ -738,7 +738,7 @@ def is_managed_bank_account(account):
     # We only look at payment methods that are active, of course
     # NOTE! account is the number of the account, not the Account object!
     return InvoicePaymentMethod.objects.filter(active=True).extra(
-        where=["config->>'bankaccount' = %s"],
+        where=["config->>'bankaccount' = %s::text"],
         params=[account],
     ).exists()
 
