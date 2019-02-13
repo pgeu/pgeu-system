@@ -46,25 +46,13 @@ the code only to attendees of a specific training session.
 </p>
 {%endif%}
 
-<form method="post" action=".">{% csrf_token %}
-<table>
+<table class="table table-sm">
  <tr><th>Contact name</th><td>{{user_name}}</td></tr>
  <tr><th>Company name</th><td>{{sponsor.name}}</td></tr>
  <tr><th>Invoice address</th><td style="white-space: pre-line;">{{sponsor.invoiceaddr}}</td></tr>
-{%for field in form%}
- <tr {%if field.errors%}class="error"{%endif%}>
-  <th>{{field.label}}</th>
-{%ifequal field.label "Confirm"%}
-  <td colspan="2">{{field}} {{field.help_text}}</td>
-{%else%}
-  <td>{{field}}{%if field.help_text%}<br/>{{field.help_text}}{%endif%}</td>
-  <td>{%if field.errors%}{{field.errors}}{%endif%}</td>
-{%endifequal%}
- </tr>
-{%endfor%}
 </table>
-<input type="submit" value="Purchase!" class="btn btn-primary">
+<form method="post" action="." class="pgeuform">{% csrf_token %}
+{%include "forms/form_content.html"%}
 </form>
-
 
 {%endblock%}

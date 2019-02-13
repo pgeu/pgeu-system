@@ -21,73 +21,43 @@ will not be valid even if it is fully paid.
 </p>
 {%endif%}
 
-<form method="post" action=".">{% csrf_token%}
-{% if form.errors %}
-<p><b>Note! This form contains errors and has not been saved!</b></p>
-{% endif %}
-
- <fieldset id="personal_information" class="form-group">
-   <legend>Personal information</legend>
-      <div{% if form.fullname.errors %} class="errfld"{% endif %}>
-       {{ form.fullname.label_tag }} <br/>
-        {{ form.fullname }} {% if form.fullname.errors %}{{ form.fullname.errors}}{% endif %}
-      </div>
-
-      <div{% if form.country.errors %} class="errfld"{% endif %}>
-       {{ form.country.label_tag }} <br/>
-        {{ form.country }} {% if form.country.errors %}{{ form.country.errors}}{% endif %}
-      </div>
-
-      <div{% if form.listed.errors %} class="errfld"{% endif %}>
-       {{form.listed}} {{ form.listed.label_tag }} <br/>
-        {% if form.listed.errors %}{{ form.listed.errors}}{% endif %}
-      </div>
-  </fieldset>
+<form method="post" action="." class="pgeuform">{% csrf_token%}
+{%include "forms/form_content.html" %}
+</form>
 
 {%if registration_complete%}
-  <fieldset id="membership_status" class="form-group">
-   <legend>Membership Status</legend>
+<h3>Membership Status</h3>
 <div id="membershipinfo">
 {%if member.membersince %}
-You have been a member since {{member.membersince}}.<br/>
+<p>You have been a member since {{member.membersince}}.</p>
 {%endif%}
 {%if member.paiduntil %}
  {%if member.expiressoon %}
-Your membership is currently active but will expire in {{member.paiduntil|timeuntil}} on {{member.paiduntil}}.
+<p>Your membership is currently active but will expire in {{member.paiduntil|timeuntil}} on {{member.paiduntil}}.</p>
  {%else%}
-Your membership and payment has been registered, and will expire on {{member.paiduntil}}.
+<p>Your membership and payment has been registered, and will expire on {{member.paiduntil}}.</p>
  {%endif%}
 {%else%}
-Your membership will become active once you have paid the fee.
+<p>Your membership will become active once you have paid the fee.</p>
 {%endif%}
 </div>
 {%if member.expiressoon%}
-<div id="paymentdiv">
 {%if member.activeinvoice%}
 {%include "invoices/userinvoice_spec.html"%}
 {%else%}
 <p>
 To pay or renew your membership, please use the button below to generate an
-invoice. You can then pay this invoice using several different methods.
+invoice. You will then be able to pay this invoice using several different methods.
 </p>
-<p>
-Once you have completed your payment, it may take up to 24 hours before the payment shows
-up in this system.
-</p>
+<form action="." method="post">{%csrf_token%}
+ <input type="submit" name="submit" value="Generate invoice" class="btn btn-info" />
+</form>
 {%endif%}{%comment%}invoice or not{%endcomment%}
-</div>
 {%endif%}{%comment%}member.expiressoon{%endcomment%}
-  </fieldset>
 {%endif%}{%comment%}registration_complete{%endcomment%}
 
- <input type="submit" name="submit" value="Save" class="btn btn-primary"/>
-{%if member.expiressoon and not member.activeinvoice%}
- <input type="submit" name="submit" value="Generate invoice" class="btn btn-info" />
-{%endif%}
-
 {%if logdata%}
-<fieldset id="logdata" class="form-group">
- <legend>Membership activity</legend>
+ <h3>Membership activity</h3>
  <table class="table table-sm">
   {%for l in logdata%}
    <tr>
@@ -96,9 +66,7 @@ up in this system.
    </tr>
   {%endfor%}
  </table>
-</fieldset>
 {%endif%}
-</form>
 
 
 {%endblock%}

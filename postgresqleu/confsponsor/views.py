@@ -201,6 +201,8 @@ def sponsor_purchase_voucher(request, sponsorid):
         'user_name': request.user.first_name + ' ' + request.user.last_name,
         'sponsor': sponsor,
         'form': form,
+        'savebutton': 'Purchase!',
+        'cancelurl': '../../',
         })
 
 
@@ -248,6 +250,8 @@ def sponsor_purchase_discount(request, sponsorid):
         'user_name': request.user.first_name + ' ' + request.user.last_name,
         'sponsor': sponsor,
         'form': form,
+        'savebutton': 'Purchase!',
+        'cancelurl': '../../',
         })
 
 
@@ -411,6 +415,7 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
         'sponsor': sponsor,
         'benefit': benefit,
         'form': form,
+        'savebutton': 'Claim!',
         })
 
 

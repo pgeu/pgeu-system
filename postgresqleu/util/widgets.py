@@ -58,3 +58,11 @@ class AdminJsonWidget(PrettyPrintJsonWidget):
 class StaticTextWidget(TextInput):
     def render(self, name, value, attrs=None, renderer=None):
         return mark_safe(value)
+
+
+class Bootstrap4CheckboxSelectMultiple(forms.CheckboxSelectMultiple):
+    template_name = 'forms/widgets/bs4_checkbox_select.html'
+
+
+class Bootstrap4HtmlDateTimeInput(forms.DateTimeInput):
+    template_name = 'forms/widgets/bs4_datetime_input.html'

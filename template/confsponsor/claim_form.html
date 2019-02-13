@@ -31,22 +31,8 @@ Please fill out this form to claim the benefit.
 </div>
 {%endif%}
 
-{%if form.errors%}
-<p>
-<b>NOTE!</b> Your submitted form contained errors and has <b>not</b> been saved!
-</p>
-{%endif%}
-<form method="post" action="." enctype="multipart/form-data">{% csrf_token %}
-<table>
-{%for field in form%}
- <tr {%if field.errors%}class="error"{%endif%}>
-  <th>{{field.label}}</th>
-  <td>{{field}}{%if field.help_text%}<br/>{{field.help_text}}{%endif%}</td>
-  <td>{%if field.errors%}{{field.errors}}{%endif%}</td>
- </tr>
-{%endfor%}
-</table>
-<input type="submit" value="Claim!" class="btn btn-primary">
+<form method="post" action="." enctype="multipart/form-data" class="pgeuform">{% csrf_token %}
+{%include "forms/form_content.html" %}
 </form>
 
 <br/>

@@ -1,0 +1,24 @@
+{%load formutil%}
+ {%if not field.is_hidden%}
+<div class="form-group">
+{%if not field|ischeckbox%}
+   {{field|label_class:""}}
+{%endif%}
+  {%if field.errors %}
+   {%for e in field.errors%}
+ <div class="alert alert-danger">{{e}}</div>
+   {%endfor%}
+  {%endif%}
+{%if field|ischeckbox%}
+<div class="form-check">
+ {{field|field_class:"form-check-input"}}
+ {{field|label_class:"form-check-label"}}
+</div>
+{%else%}{# checkbox#}
+{{field|field_class:"form-control"}}
+{%endif%}{# checkbox #}
+{%if field.help_text%}<small class="form-text text-muted">{{field.help_text|safe}}</small>{%endif%}
+ </div>
+ {%else%}{# field.is_hidden #}
+{{field}}
+ {%endif%}

@@ -9,7 +9,7 @@ from .util import validate_country
 class MemberForm(forms.ModelForm):
     class Meta:
         model = Member
-        exclude = ('user', 'paiduntil', 'membersince', 'activeinvoice', 'expiry_warning_sent', 'country_exception')
+        fields = ('fullname', 'country', 'listed')
 
     def clean_country(self):
         if self.instance.country_exception:

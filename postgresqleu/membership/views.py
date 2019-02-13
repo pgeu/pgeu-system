@@ -48,6 +48,37 @@ def home(request):
     cfg = get_config()
 
     if request.method == "POST":
+        if request.POST["submit"] == "Generate invoice":
+            # Generate an invoice for the user
+            if member.activeinvoice:
+                raise Exception("This should not happen - generating invoice when one already exists!")
+
+            manager = InvoiceManager()
+            processor = InvoiceProcessor.objects.get(processorname="membership processor")
+            invoicerows = [('%s - %s years membership - %s' % (settings.ORG_NAME, cfg.membership_years, request.user.email), 1, cfg.membership_cost, None), ]
+            member.activeinvoice = manager.create_invoice(
+                request.user,
+                request.user.email,
+                request.user.first_name + ' ' + request.user.last_name,
+                '',  # We don't have an address
+                '%s membership for %s' % (settings.ORG_NAME, request.user.email),
+                datetime.now(),
+                datetime.now(),
+                invoicerows,
+                processor=processor,
+                processorid=member.pk,
+                canceltime=datetime.now() + timedelta(days=7),
+                accounting_account=settings.ACCOUNTING_MEMBERSHIP_ACCOUNT,
+                paymentmethods=cfg.paymentmethods.all(),
+                )
+            member.activeinvoice.save()
+            member.save()
+
+            # We'll redirect back to the same page, so make sure
+            # someone doing say a hard refresh on the page doesn't
+            # cause weird things to happen.
+            return HttpResponseRedirect('/membership/')
+
         form = MemberForm(data=request.POST, instance=member)
         if form.is_valid():
             member = form.save(commit=False)
@@ -64,36 +95,7 @@ def home(request):
                           timestamp=datetime.now(),
                           message="Modified registration data for field(s): %s" % (", ".join(form.changed_data)),
                           ).save()
-            if request.POST["submit"] == "Generate invoice":
-                # Generate an invoice for the user
-                if member.activeinvoice:
-                    raise Exception("This should not happen - generating invoice when one already exists!")
-
-                manager = InvoiceManager()
-                processor = InvoiceProcessor.objects.get(processorname="membership processor")
-                invoicerows = [('%s - %s years membership - %s' % (settings.ORG_NAME, cfg.membership_years, request.user.email), 1, cfg.membership_cost, None), ]
-                member.activeinvoice = manager.create_invoice(
-                    request.user,
-                    request.user.email,
-                    request.user.first_name + ' ' + request.user.last_name,
-                    '',  # We don't have an address
-                    '%s membership for %s' % (settings.ORG_NAME, request.user.email),
-                    datetime.now(),
-                    datetime.now(),
-                    invoicerows,
-                    processor=processor,
-                    processorid=member.pk,
-                    canceltime=datetime.now() + timedelta(days=7),
-                    accounting_account=settings.ACCOUNTING_MEMBERSHIP_ACCOUNT,
-                    paymentmethods=cfg.paymentmethods.all(),
-                    )
-                member.activeinvoice.save()
-                member.save()
-
-                # We'll redirect back to the same page, so make sure
-                # someone doing say a hard refresh on the page doesn't
-                # cause weird things to happen.
-                return HttpResponseRedirect('/membership/')
+            return HttpResponseRedirect(".")
     else:
         form = MemberForm(instance=member)
 
@@ -106,6 +108,7 @@ def home(request):
         'registration_complete': registration_complete,
         'logdata': logdata,
         'amount': cfg.membership_cost,
+        'cancelurl': '/account/',
     })
 
 

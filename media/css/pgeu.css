@@ -185,3 +185,17 @@ dl.eventlist dd {
    padding-left: 1em;
    margin-bottom: 1em;
 }
+
+
+/* Basic forms */
+form.pgeuform fieldset {
+    border: 1px solid #ddd;
+    border-radius:4px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+form.pgeuform fieldset legend {
+    width: auto;
+    padding-left: 0.2rem;
+    padding-right: 1rem;
+}

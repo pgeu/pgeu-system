@@ -1,0 +1,45 @@
+{%load dictutil%}
+{%if form.warning_text %}
+<div class="alert alert-danger">{{form.warning_text}}</div>
+{%endif%}
+{%if form.non_field_errors%}
+ <div class="alert alert-danger">{{form.non_field_errors}}</div>
+{%endif%}
+{%if note%}
+<div class="alert alert-info">{{note|safe}}</div>
+{%endif%}
+{%if form.fieldsets%}
+{{form.validator_field}}
+{%if form.newformdata_field%}{{form.newformdata_field}}{%endif%}
+{%for fieldset in form.fieldsets%}
+<fieldset id="{{fieldset.id}}" class="form-group">
+  <legend>{{fieldset.legend}}</legend>
+{%for field in fieldset.fields%}
+  {%include "forms/form_field.html" with field=form|dictlookup:field %}
+{%endfor%}
+</fieldset>
+{%endfor%}
+{%else%}{%comment%} No fieldsets, so render the full form{%endcomment%}
+{%for field in form%}
+{%include "forms/form_field.html"%}
+{%endfor%}
+{%endif%}
+
+{%if not nobuttons%}
+{%if form.warning_text %}
+<div class="alert alert-danger">{{form.warning_text}}</div>
+{%endif%}
+ <div class="form-group">
+  <div class="col-lg-12">
+   <div class="control">
+     <input type="submit" name="submit" class="col-md-2 mb-2 mr-2 btn btn-primary" value="{{savebutton|default:"Save"}}">
+{%if extrasubmitbutton%}
+     <input type="submit" name="submit" class="col-md-2 mb-2 mr-2 btn btn-{{extrasubmitbuttontype|default:"secondary"}}" value="{{extrasubmitbutton}}">
+{%endif%}
+{%if cancelurl%}
+     <a class="col-md-2 mb-2 mr-2 btn btn-secondary" href="{{cancelurl}}">{{cancelname|default:"Cancel"}}</a>
+{%endif%}
+   </div>
+  </div>
+ </div>
+{%endif%}
