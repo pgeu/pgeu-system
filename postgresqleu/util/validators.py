@@ -31,6 +31,18 @@ class AfterValidator(object):
             raise ValidationError("Ensure this date is after {0}".format(self.afterdate))
 
 
+def Http200Validator(value):
+    try:
+        r = requests.get(value, timeout=5)
+        if r.status_code != 200:
+            raise ValidationError("URL must return 200 OK, not {0}".format(r.status_code))
+
+    except requests.ConnectionError:
+        raise ValidationError("Connection to server failed")
+    except requests.exceptions.ReadTimeout:
+        raise ValidationError("URL timed out")
+
+
 def TwitterValidator(value):
     if value.startswith('@'):
         value = value[1:]

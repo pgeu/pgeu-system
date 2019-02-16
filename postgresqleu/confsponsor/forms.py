@@ -12,6 +12,7 @@ from postgresqleu.countries.models import EuropeCountry
 
 from postgresqleu.confreg.models import ConferenceAdditionalOption
 from postgresqleu.util.validators import BeforeValidator, AfterValidator, TwitterValidator
+from postgresqleu.util.validators import Http200Validator
 from postgresqleu.util.widgets import Bootstrap4HtmlDateTimeInput
 
 from datetime import date, timedelta
@@ -32,7 +33,7 @@ class SponsorSignupForm(forms.Form):
     address = forms.CharField(label="Company invoice address *", min_length=10, max_length=500, widget=forms.Textarea, help_text="The sponsor name is automatically included at beginning of address. The VAT number is automatically included at end of address.")
     vatstatus = forms.ChoiceField(label="Company VAT status", choices=vat_status_choices)
     vatnumber = forms.CharField(label="EU VAT Number", min_length=5, max_length=50, help_text="Enter EU VAT Number to be included on invoices if assigned one. Leave empty if outside the EU or without assigned VAT number.", required=False)
-    url = forms.URLField(label="Company URL *")
+    url = forms.URLField(label="Company URL *", validators=[Http200Validator, ])
     twittername = forms.CharField(label="Company twitter", min_length=0, max_length=100, required=False, validators=[TwitterValidator, ])
 
     def __init__(self, conference, *args, **kwargs):
