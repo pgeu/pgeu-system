@@ -146,10 +146,13 @@ class BackendSponsorshipLevelForm(BackendForm):
         model = SponsorshipLevel
         fields = ['levelname', 'urlname', 'levelcost', 'available', 'maxnumber', 'instantbuy',
                   'paymentmethods', 'contract', 'canbuyvoucher', 'canbuydiscountcode']
+        widgets = {
+            'paymentmethods': django.forms.CheckboxSelectMultiple,
+        }
 
     def fix_fields(self):
         self.fields['contract'].queryset = SponsorshipContract.objects.filter(conference=self.conference)
-        self.fields['paymentmethods'].label_from_instance = lambda x: x.internaldescription
+        self.fields['paymentmethods'].label_from_instance = lambda x: "{0}{1}".format(x.internaldescription, x.active and " " or " (INACTIVE)")
 
     def clean(self):
         cleaned_data = super(BackendSponsorshipLevelForm, self).clean()

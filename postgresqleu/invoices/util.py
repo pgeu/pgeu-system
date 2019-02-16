@@ -45,7 +45,7 @@ class InvoicePresentationWrapper(object):
 
     @property
     def allowedmethodwrappers(self):
-        return [PaymentMethodWrapper(m, self.__invoice, self.__returnurl) for m in self.allowedmethods.all()]
+        return [PaymentMethodWrapper(m, self.__invoice, self.__returnurl) for m in self.allowedmethods.filter(active=True)]
 
 
 # Functionality wrapper around an invoice that allows actions

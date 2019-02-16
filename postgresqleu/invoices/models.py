@@ -156,7 +156,7 @@ class Invoice(models.Model):
 
     @property
     def allowedmethodwrappers(self):
-        return [PaymentMethodWrapper(m, self) for m in self.allowedmethods.all()]
+        return [PaymentMethodWrapper(m, self) for m in self.allowedmethods.filter(active=True)]
 
     @property
     def invoicestr(self):
@@ -208,7 +208,7 @@ class Invoice(models.Model):
         if not self.paidat:
             return "not paid"
         if self.paidusing:
-            return "paid using {0}.".format(self.paidusing.name)
+            return "paid using {0}.".format(self.paidusing.internaldescription)
         return "manually flagged as paid."
 
     @property

@@ -44,8 +44,8 @@ class InvoiceForm(forms.ModelForm):
         self.fields['recipient_user'].label_from_instance = lambda u: '{0} {1} ({2})'.format(u.first_name, u.last_name, u.username)
         self.fields['canceltime'].widget = widgets.DateTimeInput()
         self.fields['allowedmethods'].widget = forms.CheckboxSelectMultiple()
-        self.fields['allowedmethods'].queryset = InvoicePaymentMethod.objects.filter(active=True)
-        self.fields['allowedmethods'].label_from_instance = lambda m: "{0} ({1})".format(m.name, m.internaldescription)
+        self.fields['allowedmethods'].queryset = InvoicePaymentMethod.objects.filter()
+        self.fields['allowedmethods'].label_from_instance = lambda x: "{0}{1}".format(x.internaldescription, x.active and " " or " (INACTIVE)")
 
         self.fields['accounting_account'].choices = [(0, '----'), ] + [(a.num, "%s: %s" % (a.num, a.name)) for a in Account.objects.filter(availableforinvoicing=True)]
         self.fields['accounting_object'].choices = [('', '----'), ] + [(o.name, o.name) for o in Object.objects.filter(active=True)]
