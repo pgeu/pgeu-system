@@ -1,7 +1,14 @@
 {%extends "nav_events.html" %}
+{%load alertmap%}
 {%block title%}Conference Sponsor Shipment - {{conference}}{%endblock%}
 {%block content%}
 <h1>Conference Sponsor Shipment</h1>
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert {{ message.tags|alertmap }}">{{message}}</div>
+{% endfor %}
+{% endif %}
 
 <div class="col-md-6">
   <p>

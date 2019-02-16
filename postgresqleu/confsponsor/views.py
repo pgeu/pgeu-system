@@ -513,6 +513,26 @@ def _sender_shipment(request, conference, sponsor, shipmentid):
                                  addresstoken=shipmentid)
 
     if request.method == 'POST':
+        if shipment.arrived_at:
+            messages.error(request, "This shipment has arrived and can no longer be edited")
+            return HttpResponseRedirect(".")
+
+        if request.POST['submit'] == 'Delete':
+            if shipment.sent_at:
+                # Can only happen on concurrent edits, but still
+                messages.error(request, "This shipment has been sent and can no longer be deleted")
+                return HttpResponseRedirect(".")
+
+            sname = sponsor and 'Sponsor {0}'.format(sponsor) or 'Conference organizers'
+            send_simple_mail(conference.sponsoraddr,
+                             conference.sponsoraddr,
+                             "{0} deleted a shipment".format(sname),
+                             "Shipment with id {0} and description '{1}' was deleted.\nIt had not been marked as sent yet.\n".format(shipment.addresstoken, shipment.description),
+                             sendername=conference.conferencename)
+            shipment.delete()
+            messages.info(request, "Shipment {0} deleted".format(shipmentid))
+            return HttpResponseRedirect("../../#shipment")
+
         form = SponsorShipmentForm(instance=shipment, data=request.POST)
         oldsent = shipment.sent_at
         if form.is_valid():
@@ -549,12 +569,19 @@ def _sender_shipment(request, conference, sponsor, shipmentid):
     else:
         form = SponsorShipmentForm(instance=shipment)
 
+    if shipment.sent_at or shipment.arrived_at:
+        extrabutton = None
+    else:
+        extrabutton = 'Delete'
+
     return render(request, 'confsponsor/sponsor_shipment.html', {
         'conference': conference,
         'sponsor': sponsor,
         'shipment': shipment,
         'form': form,
         'cancelurl': '../../#shipment',
+        'extrasubmitbutton': extrabutton,
+        'extrasubmitbuttontype': 'warning',
     })
 
 
