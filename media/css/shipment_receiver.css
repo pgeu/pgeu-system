@@ -1,0 +1,16 @@
+body {
+    padding-top: 60px;
+    padding-bottom: 60px;
+}
+
+#footer {
+  text-align: center;
+  padding: 2em 0 2em 0;
+  margin-top: 5em;
+  display: block;
+  border-top: 1px solid black;
+}
+
+.navbar {
+  box-shadow: 3px 0px 15px rgba(0,0,0,0.2);
+}

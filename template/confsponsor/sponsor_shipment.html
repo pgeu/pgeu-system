@@ -1,0 +1,30 @@
+{%extends "nav_events.html" %}
+{%block title%}Conference Sponsor Shipment - {{conference}}{%endblock%}
+{%block content%}
+<h1>Conference Sponsor Shipment</h1>
+
+<div class="col-md-6">
+  <p>
+    To send this shipment, use the below address. Please make sure you use this <em>exact</em>
+    address, with no changes or omissions!
+  </p>
+  <div class="card">
+    <div class="card-header">Address</div>
+    <div class="card-body">
+      {{shipment.full_address|linebreaksbr}}
+    </div>
+  </div>
+  <p> When the package is actually
+    <strong>shipped</strong>, fill out the details about number of boxes (<i>always</i>)
+    and tracking information if it's available.
+  </p>
+  <form method="post" action="." class="pgeuform">{% csrf_token %}
+    {%include "forms/form_content.html" %}
+  </form>
+</div>
+{%endblock%}
+
+
+{%block pagescript%}
+<script src="/media/js/pgeucontrols.js"></script>
+{%endblock%}

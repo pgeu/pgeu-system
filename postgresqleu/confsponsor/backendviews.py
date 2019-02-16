@@ -5,6 +5,7 @@ from .models import Sponsor
 from .backendforms import BackendSponsorForm
 from .backendforms import BackendSponsorshipLevelForm
 from .backendforms import BackendSponsorshipContractForm
+from .backendforms import BackendShipmentAddressForm
 
 
 def edit_sponsor(request, urlname, sponsorid):
@@ -37,5 +38,13 @@ def edit_sponsorship_contracts(request, urlname, rest):
     return backend_list_editor(request,
                                urlname,
                                BackendSponsorshipContractForm,
+                               rest,
+                               breadcrumbs=[('/events/sponsor/admin/{0}/'.format(urlname), 'Sponsors'), ])
+
+
+def edit_shipment_addresses(request, urlname, rest):
+    return backend_list_editor(request,
+                               urlname,
+                               BackendShipmentAddressForm,
                                rest,
                                breadcrumbs=[('/events/sponsor/admin/{0}/'.format(urlname), 'Sponsors'), ])

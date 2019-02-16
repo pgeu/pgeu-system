@@ -151,6 +151,47 @@ This matrix gives a quick overview of the status of the different benefits for e
 <br>
 {%endfor%}
 
+{%if has_shipment_tracking %}
+<h2>Shipments</h2>
+<a name="shipment"></a>
+<table class="table table-condensed">
+<tr class="active">
+  <th>Sponsor</th>
+  <th>ID</th>
+  <th>Shipment</th>
+  <th>Destination</th>
+  <th>Sent</th>
+  <th>Parcels</th>
+  <th>Arrived</th>
+  <th>Parcels arrived</th>
+  <th>Action</th>
+</tr>
+{%for s in shipments%}
+ <tr class="{{s.status_label_class}}">
+   <td>{{s.sponsor|default:"Conference organizers"}}</td>
+   <td>{{s.addresstoken}}</td>
+   <td>{{s.description}}</td>
+   <td>{{s.address.title}}</td>
+   <td>{{s.sent_at|default:"Not sent"}}</td>
+   <td>{%if s.sent_parcels%}{{s.sent_parcels}}{%else%}?{%endif%}</td>
+   <td>{{s.arrived_at|default:""}}</td>
+   <td>{%if s.arrived_at%}{{s.arrived_parcels}}{%endif%}</td>
+   <td>
+     <div class="btn-group">
+       <a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">Edit shipment <span class="caret"></span></a>
+       <ul class="dropdown-menu" role="menu">
+	 <li role="presentation"><a href="/events/sponsor/shipments/{{s.address.token}}/{{s.addresstoken}}/">Edit as receiver</a></li>
+	 <li role="presentation"><a href="{%if s.sponsor%}/events/sponsor/{{s.sponsor.id}}/{%endif%}shipments/{{s.addresstoken}}/">Edit as sender</a></li>
+       </ul>
+     </div>
+   </td>
+ </tr>
+{%endfor%}
+</table>
+
+<a class="btn btn-primary" href="shipments/new/">Register new shipment</a>
+{%endif%}
+
 {%if eu_vat and  user.is_superuser %}
 <h2>VAT testing</h2>
 <p>

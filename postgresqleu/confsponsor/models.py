@@ -10,6 +10,7 @@ from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.storage import delete_inline_storage, inlineencoded_upload_path
 from postgresqleu.util.validators import validate_lowercase
+from postgresqleu.util.random import generate_random_token
 
 from .benefits import benefit_choices
 
@@ -162,3 +163,77 @@ class PurchasedVoucher(models.Model):
     num = models.IntegerField(null=False, blank=False)
     invoice = models.ForeignKey(Invoice, null=False, blank=False, on_delete=models.CASCADE)
     batch = models.ForeignKey(PrepaidBatch, null=True, blank=True, on_delete=models.CASCADE)
+
+
+class ShipmentAddress(models.Model):
+    conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
+    available_to = models.ManyToManyField(SponsorshipLevel, blank=True,
+                                          help_text="Which sponsorsihp levels is this address available to")
+    active = models.BooleanField(null=False, blank=False, default=False,
+                                 help_text="Can address be viewed?")
+    startdate = models.DateField(null=True, blank=True,
+                                 help_text="Shipments cannot arrive before")
+    enddate = models.DateField(null=True, blank=True,
+                               help_text="Shipments cannot arrive after")
+    token = models.TextField(null=False, blank=False, unique=True,
+                             help_text="Token used by arriving party to indicate shipments",
+                             default=generate_random_token)
+    title = models.CharField(max_length=100, null=False, blank=False)
+    address = models.TextField(null=False, blank=False)
+    description = models.TextField(null=False, blank=True)
+
+    class Meta:
+        ordering = ('startdate', 'enddate', 'title', )
+
+
+class Shipment(models.Model):
+    conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
+    sponsor = models.ForeignKey(Sponsor, null=True, blank=True, on_delete=models.CASCADE)
+    address = models.ForeignKey(ShipmentAddress, null=False, blank=False, on_delete=models.CASCADE)
+    addresstoken = models.BigIntegerField(null=False, blank=False)
+    description = models.CharField(max_length=200, null=False, blank=False)
+    sent_parcels = models.IntegerField(null=False, blank=False,
+                                       help_text="Number of parcels sent",
+                                       verbose_name="Parcel count")
+    sent_at = models.DateTimeField(null=True, blank=True, verbose_name="Shipment sent at")
+    arrived_at = models.DateTimeField(null=True, blank=True,
+                                      help_text="Parcels arrived at")
+    arrived_parcels = models.IntegerField(null=False, blank=False,
+                                          help_text="Number of parcels arrived")
+    trackingnumber = models.CharField(max_length=100, null=False, blank=True,
+                                      verbose_name="Tracking number")
+    shippingcompany = models.CharField(max_length=100, null=False, blank=True,
+                                       verbose_name="Shipping company")
+    trackinglink = models.URLField(max_length=200, null=False, blank=True,
+                                   verbose_name="Tracking link")
+
+    class Meta:
+        unique_together = (
+            ('conference', 'addresstoken'),
+        )
+
+    @property
+    def full_address(self):
+        return self.address.address.replace('%%', str(self.addresstoken))
+
+    @property
+    def status_label_class(self):
+        if self.sent_at is None:
+            # Not sent yet
+            return "warning"
+        if self.arrived_at is not None:
+            # Has arrived. Check the number of parcels.
+            # They must be the same, or if sent parcels is set to 0 = Unknown,
+            # we just ignore it.
+            if self.arrived_parcels == self.sent_parcels or self.sent_parcels == 0:
+                return "success"
+            else:
+                return "danger"
+
+        return ""
+
+    @property
+    def sender(self):
+        if self.sponsor:
+            return self.sponsor.name
+        return "{0} organizers".format(self.conference)

@@ -126,6 +126,87 @@ List of attendee email addresses
    email addresses (only those that opted in to sharing) after the
    conference has finished.
 
+## Shipments
+
+A shipment tracking system is built into the sponsorship system. It
+can also be used to track shipments unrelated to sponsorships, but in
+that case only the administrators can use it.
+
+The system assigns individual shipments unique tracking numbers, using
+which it tracks the arrival of the packages. The receiving is handled
+outside of the regular system and uses a secure token URL, with the
+idea being that this URL can be handed to a venue or a partner to have
+them directly update packages as they arrive, if agreed upon.
+
+To use the shipment system, create at least one shipment
+address. Until a shipment address is created, the complete system is
+disabled.
+
+To generate a shipment address tied to a sponsor, select which
+sponsorship levels it should be available to. If no sponsorship level
+is selected, the address is only available to the organizers.
+
+A shipment address can be given a start and an end date. These are
+only *informational* and not enforced in any way, but they will render
+a note to the sponsor about what the first and last dates to have
+shipments arrive at this address is.
+
+For each shipment, a full address can be given. As part of this
+address, the token `%%` should be inserted at some point, usually at
+the end of the first row. This token will be automatically replaced
+with the unique number for each individual shipment.
+
+Finally, an address can be given a description which is shown to the
+sponsor when they request a shipment.
+
+Each sponsor can request an unlimited number of shipments, each
+getting a unique ID. This should be done once for each individually
+sent item or trackable item. A single shipment can consist of multiple
+parcels, the number of which is entered into the system. Once they
+have requested the shipment, they get the ID. When they actually
+*send* the shipment, they update the record with the date of the
+sending and the parcel count. If available, also tracking information
+such as the shipping company and a tracking URL (not required).
+
+The final part of the system is the receiving end. This can either be
+handled by interfacing with the recipient (venue, partner, etc)
+manually and in that case it's updated by the administrator. Or it can
+be handled directly by the recipient, which is the main idea behind
+it. The recipient will get a list of all shipments scheduled for that
+address, and has the ability to mark them as received as they arrive,
+based on the unique number. They can also indicate exactly how many
+parcels have arrived (and it is then up to the sender to explicitly
+validate this if they want -- the system will show both numbers and a
+warning, but does not require the *recipient* to deal with this).
+
+### Emails
+
+Emails are automatically triggered in the system when:
+
+A new shipment is requested
+:  An email is generated to the conference sponsorship address
+
+A shipment is marked as sent
+:  An email is generated to the conference sponsorship address
+
+A shipment is unmarked as sent
+:  An email is generated to the conference sponsorship address
+
+Shipment details are updated *after* it was sent
+:  An email is generated to the conference sponsorship address
+
+A shipment is marked as received
+:  An email is generated to the *sponsor*, as well as to the
+   conference sponsorship address.
+
+A shipment is marked as not received
+:  An email is generated to the *sponsor*, as well as to the
+   conference sponsorship address.
+
+Number of parcels arrived is changed
+:  An email is generated to the *sponsor*, as well as to the
+   conference sponsorship address.
+
 ## Reference
 
 ### Sponsorship <a name="sponsor"></a>

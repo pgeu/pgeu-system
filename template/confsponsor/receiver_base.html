@@ -1,0 +1,46 @@
+{%load alertmap%}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" dir="ltr">
+ <head>
+  <title>Shipment Tracking - {{conference.conferencename}}</title>
+  <meta http-equiv="Content-Type" content="text/xhtml; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" media="screen" href="/media/css/shipment_receiver.css" />
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+ </head>
+ <body>
+   <div class="container-fluid">
+     <div class="row justify-content-md-center">
+       <div class="col">
+	 <nav class="navbar fixed-top navbar-expand-lg navbar-light">
+           <a class="navbar-brand" href="#">Shipment Tracking - {{conference.conferencename}}</a>
+	 </nav>
+       </div>
+     </div>
+
+{%if messages%}
+     <div class="row">
+{%for message in messages%}
+<div class="col-md-12 alert{% if message.tags %} {{ message.tags|alertmap }}{%endif%}">{{ message }}</div>
+{%endfor%}
+     </div>
+{%endif%}
+     <div class="row">
+       <div class="col-md-12">
+{%block contents%}{%endblock%}
+       </div>
+     </div>
+
+     <footer id="footer">
+       <div class="container">
+	   If you have any questions, please contact {{conference.sponsoraddr}}.
+       </div>
+     </footer>
+
+   </div>
+ </body>
+ </head>

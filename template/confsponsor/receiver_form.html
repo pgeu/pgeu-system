@@ -1,0 +1,54 @@
+{%extends "confsponsor/receiver_base.html" %}
+{%block contents%}
+<div class="card mt-3 mb-3">
+  <div class="card-header"><h3>Shipment information</h3></div>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-2"><strong>Shipment ID:</strong></div>
+      <div class="col-md-10">{{shipment.addresstoken}}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Sender:</strong></div>
+      <div class="col-md-10">{{shipment.sender}}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Address used:</strong></div>
+      <div class="col-md-10">{{shipment.full_address|linebreaksbr}}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Sent at:</strong></div>
+      <div class="col-md-10">{{shipment.sentat|default:"<em>Not flagged as sent yet</em>"}}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Number of parcels:</strong></div>
+      <div class="col-md-10">{%if shipment.sent_parcels > 0 %}{{shipment.sent_parcels}}{%else%}Not specified{%endif%}</div>
+    </div>
+{%if shipment.shippingcompany or shipment.trackinglink%}
+    <div class="row">
+      <div class="col-md-2"><strong>Shipping company:</strong></div>
+      <div class="col-md-10">{{shipment.shippingcompany}}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Tracking number:</strong></div>
+      <div class="col-md-10">{{shipment.trackingnumber}}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Tracking link:</strong></div>
+      <div class="col-md-10"><a href="{{shipment.trackinglink}}">{{shipment.trackinglink}}</a></div>
+    </div>
+{%endif%}
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header"><h3>Shipment arrival</h3></div>
+{%if shipment.arrived_at%}
+  <div class="alert alert-success">This shipment was flagged as arrived at {{shipment.arrived_at}}</div>
+{%endif%}
+  <div class="card-body">
+    <form method="post" action=".">{%csrf_token%}
+{%include "forms/form_content.html"%}
+    </form>
+  </div>
+</div>
+{%endblock%}

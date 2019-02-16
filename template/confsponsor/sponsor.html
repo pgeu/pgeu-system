@@ -159,6 +159,45 @@ The following emails have been sent to the sponsors for this conference.
 </ul>
 {%endif%}
 
+{%if addresses%}
+<a name="shipment"></a>
+<h2>Shipments</h2>
+<p>
+  If you need to ship something to the event for your sponsorship benefits, you
+  <strong>must</strong> follow the below instructions. Any shipments sent without
+  following these instructions may be lost and we may be unable to help you.
+</p>
+{%if shipments%}
+<h3>Shipment list</h3>
+<table class="table table-sm">
+  <tr>
+    <th>Shipment ID</th>
+    <th>Description</th>
+    <th>Sent at</th>
+    <th>Parcels sent</th>
+    <th>Received at</th>
+    <th>Parcels received</th>
+    <th>Destination</th>
+  </tr>
+{%for s in shipments%}
+  <tr class="table-{{s.status_label_class}}">
+    <td><a href="shipments/{{s.addresstoken}}/">{{s.addresstoken}}</a></td>
+    <td>{{s.description}}</td>
+    <td>{{s.sent_at|default:"Not sent"}}</td>
+    <td>{%if s.sent_parcels%}{{s.sent_parcels}}{%else%}?{%endif%}</td>
+    <td>{{s.arrived_at|default:""}}</td>
+    <td>{%if s.arrived_at%}{{s.arrived_parcels}}{%endif%}</td>
+    <td>{{s.address.title}}</td>
+  </tr>
+{%endfor%}
+</table>
+{%endif%}
+<p>
+  To make a shipment, you must start by requesting a new shipment id and address.
+</p>
+<a href="shipments/new/" class="btn btn-primary">Request new shipment</a>
+{%endif%}
+
 {%if sponsor.level.canbuyvoucher or sponsor.level.canbuydiscountcode or vouchers or discountcodes%}
 <h2>Vouchers and discount codes</h2>
 {%if sponsor.level.canbuyvoucher or vouchers%}

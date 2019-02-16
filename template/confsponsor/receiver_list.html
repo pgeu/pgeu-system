@@ -1,0 +1,25 @@
+{%extends "confsponsor/receiver_base.html" %}
+{%block contents%}
+<p>
+  The following packages are pending deliveries to <em>{{address.title}}</em>. Please click
+  a package to mark it as received when it has arrived.
+</p>
+<table class="table table-striped table-hover">
+  <tr>
+    <th>Shipment id</th>
+    <th>Sender</th>
+    <th>Sent parcels</th>
+    <th>Status</th>
+    <th>Action</th>
+  </tr>
+{%for s in shipments%}
+  <tr>
+    <td>{{s.addresstoken}}</td>
+    <td>{{s.sender}}</td>
+    <td>{{s.sent_parcels|default:"Unspecified"}}</td>
+    <td>{%if s.arrived_at%}Arrived{%elif s.sent_at%}Sent{%else%}Pending{%endif%}</td>
+    <td><a class="btn btn-primary" href="{{s.addresstoken}}/">Update status</a></td>
+  </tr>
+{%endfor%}
+</table>
+{%endblock%}

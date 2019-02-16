@@ -1,16 +1,19 @@
 from django.forms import ValidationError
 import django.forms
+from django.conf import settings
 
 from collections import OrderedDict
 
 from postgresqleu.util.magic import magicdb
 from postgresqleu.util.widgets import RequiredFileUploadWidget
+from postgresqleu.util.widgets import StaticTextWidget
 from postgresqleu.util.backendforms import BackendForm
 from postgresqleu.util.backendlookups import GeneralAccountLookup
 from postgresqleu.confreg.jinjafunc import JinjaTemplateValidator, render_sandboxed_template
 
 from .models import Sponsor
 from .models import SponsorshipLevel, SponsorshipContract, SponsorshipBenefit
+from .models import ShipmentAddress
 
 from .benefits import get_benefit_class, benefit_choices
 from .benefitclasses import all_benefits
@@ -205,3 +208,22 @@ class BackendSponsorshipContractForm(BackendForm):
             if not mtype.startswith('application/pdf'):
                 return "Contracts must be uploaded in PDF format, not %s" % mtype
             f.seek(0)
+
+
+class BackendShipmentAddressForm(BackendForm):
+    helplink = 'sponsors#shpiment'
+    list_fields = ['title', 'active', 'startdate', 'enddate', ]
+    exclude_date_validators = ['startdate', 'enddate']
+    markdown_fields = ['description', ]
+    readonly_fields = ['receiverlink', ]
+
+    receiverlink = django.forms.CharField(required=False, label="Recipient link", widget=StaticTextWidget)
+
+    class Meta:
+        model = ShipmentAddress
+        fields = ['title', 'active', 'startdate', 'enddate', 'available_to', 'address', 'description', ]
+
+    def fix_fields(self):
+        self.fields['available_to'].queryset = SponsorshipLevel.objects.filter(conference=self.conference)
+        self.fields['address'].help_text = "Full address. %% will be substituted with the unique address number, so don't forget to include it!"
+        self.initial['receiverlink'] = 'The recipient should use the link <a href="{0}/events/sponsor/shipments/{1}/">{0}/events/sponsor/shipments/{1}/</a> to access the system.'.format(settings.SITEBASE, self.instance.token)

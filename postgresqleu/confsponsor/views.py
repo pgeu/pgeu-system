@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 
 from datetime import datetime, timedelta
+import random
 
 from postgresqleu.auth import user_search, user_import
 
@@ -23,8 +24,11 @@ from postgresqleu.invoices.util import InvoiceWrapper
 from .models import Sponsor, SponsorshipLevel, SponsorshipBenefit
 from .models import SponsorClaimedBenefit, SponsorMail, SponsorshipContract
 from .models import PurchasedVoucher
+from .models import ShipmentAddress, Shipment
 from .forms import SponsorSignupForm, SponsorSendEmailForm, SponsorDetailsForm
 from .forms import PurchaseVouchersForm, PurchaseDiscountForm
+from .forms import SponsorShipmentForm, ShipmentReceiverForm
+
 from .benefits import get_benefit_class
 from .invoicehandler import create_sponsor_invoice, confirm_sponsor, get_sponsor_invoice_address
 from .invoicehandler import create_voucher_invoice
@@ -86,6 +90,9 @@ def sponsor_conference(request, sponsorid):
         if b.benefit.benefit_class and not b.declined:
             b.claimhtml = get_benefit_class(b.benefit.benefit_class)(sponsor.level, b.benefit.class_parameters).render_claimdata(b)
 
+    addresses = ShipmentAddress.objects.filter(conference=sponsor.conference, available_to=sponsor.level, active=True)
+    shipments = Shipment.objects.filter(sponsor=sponsor)
+
     return render(request, 'confsponsor/sponsor.html', {
         'conference': sponsor.conference,
         'sponsor': sponsor,
@@ -98,6 +105,8 @@ def sponsor_conference(request, sponsorid):
         'discountcodes': discountcodes,
         'is_admin': is_admin,
         'detailsform': detailsform,
+        'addresses': addresses,
+        'shipments': shipments,
         })
 
 
@@ -420,6 +429,221 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
 
 
 @login_required
+def admin_shipment_new(request, confurlname):
+    conference = get_authenticated_conference(request, confurlname)
+
+    return _sender_shipment_new(request, conference, None)
+
+
+@login_required
+def sponsor_shipment_new(request, sponsorid):
+    sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
+
+    return _sender_shipment_new(request, sponsor.conference, sponsor)
+
+
+@transaction.atomic
+def _sender_shipment_new(request, conference, sponsor):
+    if sponsor:
+        addresses = ShipmentAddress.objects.filter(conference=conference, available_to=sponsor.level, active=True)
+    else:
+        addresses = ShipmentAddress.objects.filter(conference=conference, active=True)
+
+    if request.method == 'POST':
+        # Figure out which one it is for
+        for a in addresses:
+            if 'submit-{0}'.format(a.id) in request.POST:
+                address = a
+                break
+        else:
+            raise Http404()
+
+        for x in range(1, 25):
+            # Make 25 attempts to create a unique token :D
+            shipment, created = Shipment.objects.get_or_create(conference=conference,
+                                                               addresstoken=random.randint(10000, 99999),
+                                                               defaults={
+                                                                   'sponsor': sponsor,
+                                                                   'address': address,
+                                                                   'description': request.POST['description'],
+                                                                   'sent_parcels': 0,
+                                                                   'arrived_parcels': 0,
+                                                               },
+            )
+            if created:
+                shipment.save()
+
+                sname = sponsor and 'Sponsor {0}'.format(sponsor) or 'Conference organizers'
+                send_simple_mail(conference.sponsoraddr,
+                                 conference.sponsoraddr,
+                                 "{0} requested a new shipment".format(sname),
+                                 "New shipment with description '{0}' requested for destination\n{1}\nNot sent yet.".format(shipment.description, shipment.address.title),
+                                 sendername=conference.conferencename)
+
+                return HttpResponseRedirect("../{0}/".format(shipment.addresstoken))
+
+        raise Exception("Unable to generate a unique token!")
+
+    return render(request, 'confsponsor/new_shipment_address.html', {
+        'conference': conference,
+        'sponsor': sponsor,
+        'addresses': addresses,
+    })
+
+
+@login_required
+def admin_shipment(request, confurlname, shipmentid):
+    conference = get_authenticated_conference(request, confurlname)
+
+    return _sender_shipment(request, conference, None, shipmentid)
+
+
+@login_required
+def sponsor_shipment(request, sponsorid, shipmentid):
+    sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
+
+    return _sender_shipment(request, sponsor.conference, sponsor, shipmentid)
+
+
+@transaction.atomic
+def _sender_shipment(request, conference, sponsor, shipmentid):
+    shipment = get_object_or_404(Shipment,
+                                 conference=conference,
+                                 sponsor=sponsor,
+                                 addresstoken=shipmentid)
+
+    if request.method == 'POST':
+        form = SponsorShipmentForm(instance=shipment, data=request.POST)
+        oldsent = shipment.sent_at
+        if form.is_valid():
+            # Save it, and also notify sponsor management that someting
+            # is going on.
+            if oldsent is None and form.cleaned_data['sent_at'] is not None:
+                subject = "marked a shipment as sent"
+            elif oldsent is not None and form.cleaned_data['sent_at'] is None:
+                subject = "*unmarked* a previously sent shipment!"
+            elif form.cleaned_data['sent_at'] is not None:
+                subject = "updated a sent shipment"
+            else:
+                subject = None
+
+            form.save()
+
+            if subject:
+                mailstr = "Shipment id: {0}\nDescription: {1}\nSent date:   {2}\nPracels:     {3}\nShipper:     {4}\nTracking nr: {5}\nTracking link: {6}\n".format(
+                    form.instance.addresstoken,
+                    form.instance.description,
+                    form.instance.sent_at,
+                    form.instance.sent_parcels,
+                    form.instance.shippingcompany,
+                    form.instance.trackingnumber,
+                    form.instance.trackinglink,
+                )
+                sname = sponsor and 'Sponsor {0}'.format(sponsor) or 'Conference organizers'
+                send_simple_mail(conference.sponsoraddr,
+                                 conference.sponsoraddr,
+                                 "{0} {1}".format(sname, subject),
+                                 mailstr,
+                                 sendername=conference.conferencename)
+            return HttpResponseRedirect("../../#shipment")
+    else:
+        form = SponsorShipmentForm(instance=shipment)
+
+    return render(request, 'confsponsor/sponsor_shipment.html', {
+        'conference': conference,
+        'sponsor': sponsor,
+        'shipment': shipment,
+        'form': form,
+        'cancelurl': '../../#shipment',
+    })
+
+
+# Token based view for receiving side (e.g. hotel or partner)
+def sponsor_shipment_receiver(request, token):
+    address = get_object_or_404(ShipmentAddress, token=token)
+
+    shipments = Shipment.objects.filter(address=address).order_by('addresstoken')
+
+    return render(request, 'confsponsor/receiver_list.html', {
+        'conference': address.conference,
+        'address': address,
+        'shipments': shipments,
+    })
+
+
+def _send_shipment_mail(shipment, subject, contents):
+    if shipment.sponsor:
+        for manager in shipment.sponsor.managers.all():
+            send_simple_mail(shipment.conference.sponsoraddr,
+                             manager.email,
+                             "[{0}] {1}".format(shipment.conference, subject),
+                             "{0}\n\nTo view the details about your shipments, please click\n{1}/events/sponsor/{2}/#shipment".format(contents, settings.SITEBASE, shipment.sponsor.pk),
+                             sendername=shipment.conference.conferencename,
+                             receivername='{0} {1}'.format(manager.first_name, manager.last_name))
+    send_simple_mail(shipment.conference.sponsoraddr,
+                     shipment.conference.sponsoraddr,
+                     "[{0}] {1}".format(shipment.conference, subject),
+                     "{0}\n\nTo view all shipments, please click\n{1}/events/sponsor/admin/{2}/#shipment".format(contents, settings.SITEBASE, shipment.conference.urlname))
+
+
+@transaction.atomic
+def sponsor_shipment_receiver_shipment(request, token, addresstoken):
+    address = get_object_or_404(ShipmentAddress, token=token)
+    shipment = get_object_or_404(Shipment, address=address, addresstoken=addresstoken)
+
+    if request.method == 'POST':
+        form = ShipmentReceiverForm(instance=shipment, data=request.POST)
+        saved_arrived_parcels = shipment.arrived_parcels
+        if form.is_valid():
+            if request.POST['submit'] == 'Mark shipment as arrived':
+                if shipment.arrived_at:
+                    # Already done, so concurrent edit most likely. Just ignore.
+                    messages.warning(request, "Shipment was already marked as arrived")
+                else:
+                    shipment.arrived_at = datetime.now()
+                    shipment.arrived_parcels = request.POST['arrived_parcels']
+                    shipment.save()
+                    _send_shipment_mail(shipment,
+                                        "Shipment to {0} marked as arrived".format(address),
+                                        "The shipment with id {0} has been marked as arrived at {1}.\nThe recipient has indicated that {2} parcels arrived.".format(shipment.addresstoken, address.title, shipment.arrived_parcels))
+                    messages.info(request, "Shipment {0} marked as arrived".format(shipment.addresstoken))
+            elif request.POST['submit'] == 'Mark as NOT arrived':
+                if not shipment.arrived_at:
+                    messages.warning(request, "Shipment is not marked as arrived!")
+                else:
+                    shipment.arrived_at = None
+                    shipment.save()
+                    _send_shipment_mail(shipment,
+                                        "Shipment to {0} UNMARKED as arrived".format(address),
+                                        "The recipient at {0} has indicated that the shipment with id {1}\nwhich was previously marked as arrived, was wrong.\nThis shipment has NOT arrived.\n".format(address.title, shipment.addresstoken))
+                    messages.info(request, "Shipment {0} marked as not arrived".format(shipment.addresstoken))
+            elif request.POST['submit'] == "Change number of parcels":
+                if saved_arrived_parcels != shipment.arrived_parcels:
+                    shipment.save()
+                    _send_shipment_mail(shipment,
+                                        "Shipment to {0} updated number of parcels".format(address),
+                                        "The recipient at {0} has updated the number of parcels received for shipment id {1}\nThe updated number of parcels is {2}.\n".format(address.title, shipment.addresstoken, shipment.arrived_parcels))
+                    messages.info(request, "Number of parcels for shipment {0} changed".format(shipment.addresstoken))
+            else:
+                messages.error(request, "Invalid submit button pressed")
+                return HttpResponseRedirect(".")
+        return HttpResponseRedirect("../")
+    else:
+        form = ShipmentReceiverForm(instance=shipment)
+
+    return render(request, 'confsponsor/receiver_form.html', {
+        'conference': address.conference,
+        'address': address,
+        'shipment': shipment,
+        'form': form,
+        'cancelurl': '../',
+        'savebutton': shipment.arrived_at and 'Change number of parcels' or 'Mark shipment as arrived',
+        'extrasubmitbutton': shipment.arrived_at and 'Mark as NOT arrived' or None,
+        'extrasubmitbuttontype': 'warning',
+    })
+
+
+@login_required
 def sponsor_contract(request, contractid):
     # Our contracts are not secret, are they? Anybody can view them, we just require a login
     # to keep the load down and to make sure they are not spidered.
@@ -492,6 +716,12 @@ ORDER BY l.levelcost, l.levelname, s.name, b.sortkey, b.benefitname""", {'confid
         'cols': benefitcols,
     }
 
+    has_shipment_tracking = ShipmentAddress.objects.filter(conference=conference, active=True).exists()
+    if has_shipment_tracking:
+        shipments = Shipment.objects.filter(conference=conference).order_by('sponsor', 'addresstoken')
+    else:
+        shipments = None
+
     return render(request, 'confsponsor/admin_dashboard.html', {
         'conference': conference,
         'confirmed_sponsors': confirmed_sponsors,
@@ -500,6 +730,8 @@ ORDER BY l.levelcost, l.levelname, s.name, b.sortkey, b.benefitname""", {'confid
         'mails': mails,
         'benefitcols': benefitcols,
         'benefitmatrix': benefitmatrix,
+        'has_shipment_tracking': has_shipment_tracking,
+        'shipments': shipments,
         'helplink': 'sponsors',
         })
 

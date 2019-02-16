@@ -7,12 +7,14 @@ from django.conf import settings
 
 from .models import Sponsor, SponsorMail, SponsorshipLevel
 from .models import vat_status_choices
+from .models import Shipment
 from postgresqleu.confreg.models import Conference, RegistrationType, DiscountCode
 from postgresqleu.countries.models import EuropeCountry
 
 from postgresqleu.confreg.models import ConferenceAdditionalOption
 from postgresqleu.util.validators import BeforeValidator, AfterValidator, TwitterValidator
 from postgresqleu.util.validators import Http200Validator
+from postgresqleu.util.widgets import Bootstrap4CheckboxSelectMultiple
 from postgresqleu.util.widgets import Bootstrap4HtmlDateTimeInput
 
 from datetime import date, timedelta
@@ -190,6 +192,51 @@ class SponsorDetailsForm(forms.ModelForm):
     class Meta:
         model = Sponsor
         fields = ('extra_cc', )
+
+
+class SponsorShipmentForm(forms.ModelForm):
+    sent_parcels = forms.ChoiceField(choices=[], required=True)
+
+    class Meta:
+        model = Shipment
+        fields = ('description', 'sent_parcels', 'sent_at', 'trackingnumber', 'shippingcompany', 'trackinglink')
+        widgets = {
+            'sent_at': Bootstrap4HtmlDateTimeInput,
+        }
+
+    fieldsets = [
+        {
+            'id': 'shipment',
+            'legend': 'Shipment',
+            'fields': ['description', 'sent_parcels', 'sent_at', ],
+        },
+        {
+            'id': 'tracking',
+            'legend': 'Tracking',
+            'fields': ['trackingnumber', 'shippingcompany', 'trackinglink', ],
+        }
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super(SponsorShipmentForm, self).__init__(*args, **kwargs)
+        self.fields['sent_at'].help_text = "Date and (approximate) time when parcels were sent. <strong>DO NOT</strong> set until shipment is actually sent"
+        self.fields['sent_parcels'].choices = [('0', " * Don't know yet"), ] + [(str(x), str(x)) for x in range(1, 20)]
+        self.fields['trackinglink'].validators.append(Http200Validator)
+
+    def get(self, name, default=None):
+        return self[name]
+
+
+class ShipmentReceiverForm(forms.ModelForm):
+    arrived_parcels = forms.ChoiceField(choices=[], required=True)
+
+    class Meta:
+        model = Shipment
+        fields = ['arrived_parcels', ]
+
+    def __init__(self, *args, **kwargs):
+        super(ShipmentReceiverForm, self).__init__(*args, **kwargs)
+        self.fields['arrived_parcels'].choices = [(str(x), str(x)) for x in range(1, 20)]
 
 
 class AdminCopySponsorshipLevelForm(forms.Form):

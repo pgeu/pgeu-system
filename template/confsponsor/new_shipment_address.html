@@ -1,0 +1,37 @@
+{%extends "nav_events.html" %}
+{%load markup%}
+{%block title%}New Conference Sponsor Shipment - {{conference}}{%endblock%}
+{%block content %}
+<h1>New Conference Sponsor Shipment - {{conference}}</h1>
+<form method="post" action=".">{% csrf_token %}
+<div class="card mb-3">
+  <div class="card-header">Enter information about your shipment</div>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-1">Description</div>
+      <div class="col-md-6"><input type="text" required class="form-control" name="description"></div>
+    </div>
+  </div>
+</div>
+<p>
+  Pick which address you want to ship to, based on the criteria.
+</p>
+{%for a in addresses%}
+<div class="card mb-3">
+  <div class="card-header">{{a.title}}</div>
+  <div class="card-body">
+{%if a.startdate%}
+<p>Shipments to this address <strong>may not</strong> arrive before <strong>{{a.startdate}}</strong>.</p>
+{%endif%}
+{%if a.enddate%}
+<p>Shipments to this address <strong>must</strong> arrive before or on <strong>{{a.enddate}}</strong>.</p>
+{%endif%}
+    {{a.description|markdown}}
+    <input type="submit" class="btn btn-primary" name="submit-{{a.id}}" value="Ship to this address">
+  </div>
+</div>
+{%endfor%}
+</form>
+<br/>
+<a href="../../#shipment" class="btn btn-outline-dark">Back to {%if sponsor%}your sponsorship{%else%}sponsor overview{%endif%}</a>
+{%endblock%}
