@@ -14,6 +14,15 @@ this script.
 * openssl development libraries (typically libssl-dev) -- for crypto related modules
 * libjpeg-dev and libpng-dev (*before* installing pillow in python)
 * pg_config for postgresql, in path, for the correct version. Typically postgresql-dev package.
+* libqrencode-dev
+* uwsgi, uwsgi-plugin-python3
+
+
+Database access
+---------------
+
+Access to the PostgreSQL database must work without password.
+
 
 Other dependencies
 ------------------
@@ -21,6 +30,7 @@ For invoice generation to work, DejaVu needs to be installed in
 /usr/share/fonts/truetype/ttf-dejavu/
 
 On debian, just install ttf-dejavu.
+
 
 macOS support
 -------------
