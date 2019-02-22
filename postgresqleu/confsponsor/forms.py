@@ -60,7 +60,7 @@ class SponsorSignupForm(forms.Form):
     def clean_vatnumber(self):
         # EU VAT numbers begin with a two letter country-code, so let's
         # validate that first
-        v = self.cleaned_data['vatnumber'].upper()
+        v = self.cleaned_data['vatnumber'].upper().replace(' ', '')
 
         if v == "":
             # We allow empty VAT numbers, for sponsors from outside of

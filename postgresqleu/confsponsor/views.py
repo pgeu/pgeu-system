@@ -1030,7 +1030,7 @@ def sponsor_admin_test_vat(request, confurlname):
     if not vn:
         return HttpResponse("Empty search")
 
-    r = validate_eu_vat_number(vn)
+    r = validate_eu_vat_number(vn.upper().replace(' ', ''))
     if r:
         return HttpResponse("VAT validation error: %s" % r)
     return HttpResponse("VAT number is valid")
