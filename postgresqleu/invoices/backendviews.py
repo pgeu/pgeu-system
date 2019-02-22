@@ -18,6 +18,7 @@ from postgresqleu.invoices.models import PendingBankTransaction
 from postgresqleu.invoices.models import PendingBankMatcher
 from postgresqleu.invoices.models import BankTransferFees
 from postgresqleu.invoices.backendforms import BackendVatRateForm
+from postgresqleu.invoices.backendforms import BackendVatValidationCacheForm
 from postgresqleu.invoices.backendforms import BackendInvoicePaymentMethodForm
 
 from datetime import date
@@ -30,6 +31,19 @@ def edit_vatrate(request, rest):
     return backend_list_editor(request,
                                None,
                                BackendVatRateForm,
+                               rest,
+                               bypass_conference_filter=True,
+                               topadmin='Invoices',
+                               return_url='/admin/',
+    )
+
+
+def edit_vatvalidationcache(request, rest):
+    authenticate_backend_group(request, 'Invoice managers')
+
+    return backend_list_editor(request,
+                               None,
+                               BackendVatValidationCacheForm,
                                rest,
                                bypass_conference_filter=True,
                                topadmin='Invoices',

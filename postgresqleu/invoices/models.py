@@ -251,6 +251,11 @@ class VatRate(models.Model):
         return "%s%% (%s)" % (self.vatpercent, self.shortname)
 
 
+class VatValidationCache(models.Model):
+    vatnumber = models.CharField(max_length=100, null=False, blank=False)
+    checkedat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+
+
 class InvoiceRow(models.Model):
     # Invoice rows are only used up until the invoice is finished,
     # but allows us to save a half-finished invoice.

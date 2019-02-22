@@ -1,18 +1,28 @@
 import django.forms
 
 from postgresqleu.util.backendforms import BackendForm
-from postgresqleu.invoices.models import VatRate, InvoicePaymentMethod
+from postgresqleu.invoices.models import VatRate, VatValidationCache, InvoicePaymentMethod
 from postgresqleu.accounting.models import Account
 
 from postgresqleu.util.payment import payment_implementation_choices
 
 
 class BackendVatRateForm(BackendForm):
+    helplink = 'payment'
     list_fields = ['name', 'shortname', 'vatpercent', ]
 
     class Meta:
         model = VatRate
         fields = ['name', 'shortname', 'vatpercent', 'vataccount', ]
+
+
+class BackendVatValidationCacheForm(BackendForm):
+    helplink = 'payment'
+    list_fields = ['vatnumber', 'checkedat', ]
+
+    class Meta:
+        model = VatValidationCache
+        fields = ['vatnumber', ]
 
 
 class BackendInvoicePaymentMethodNewForm(django.forms.Form):
