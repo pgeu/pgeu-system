@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
                 ('title', models.CharField(max_length=100)),
                 ('address', models.TextField()),
                 ('description', models.TextField(blank=True)),
-                ('available_to', models.ManyToManyField(help_text='Which sponsorsihp levels is this address available to', to='confsponsor.SponsorshipLevel')),
+                ('available_to', models.ManyToManyField(blank=True, help_text='Which sponsorsihp levels is this address available to', to='confsponsor.SponsorshipLevel')),
                 ('conference', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='confreg.Conference')),
             ],
             options={
