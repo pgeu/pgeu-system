@@ -234,8 +234,8 @@ def sponsor_purchase_discount(request, sponsorid):
                 # will be depending on the discount code.
                 code = DiscountCode(conference=conference,
                                     code=form.cleaned_data['code'],
-                                    discountamount=form.cleaned_data['amount'],
-                                    discountpercentage=form.cleaned_data['percent'],
+                                    discountamount=form.cleaned_data['amount'] or 0,
+                                    discountpercentage=form.cleaned_data['percent'] or 0,
                                     regonly=True,
                                     validuntil=form.cleaned_data['expires'],
                                     maxuses=form.cleaned_data['maxuses'],
