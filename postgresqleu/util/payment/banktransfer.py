@@ -9,8 +9,10 @@ from postgresqleu.accounting.util import get_account_choices
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.models import BankTransferFees
 from postgresqleu.invoices.backendforms import BackendInvoicePaymentMethodForm
+from postgresqleu.invoices.util import diff_workdays
 
 from decimal import Decimal
+from datetime import datetime
 
 from . import BasePayment
 
@@ -92,6 +94,21 @@ class BaseManagedBankPayment(BasePayment):
 
     def payment_fees(self, invoice):
         return BankTransferFees.objects.filter(invoice=invoice).aggregate(Sum('fee'))['fee__sum'] or 0
+
+    # Override availability for direct bank transfers. We hide it if the invoice will be
+    # automatically canceled in less than <n> working days.
+    unavailable_less_than_days = 4
+
+    def available(self, invoice):
+        if invoice.canceltime:
+            if diff_workdays(datetime.now(), invoice.canceltime) < self.unavailable_less_than_days:
+                return False
+        return True
+
+    def unavailable_reason(self, invoice):
+        if invoice.canceltime:
+            if diff_workdays(datetime.now(), invoice.canceltime) < self.unavailable_less_than_days:
+                return "Since this invoice will be automatically canceled in less than {0} working days, it requires the use of a faster payment method.".format(self.unavailable_less_than_days)
 
 
 class BaseManagedBankPaymentForm(BackendInvoicePaymentMethodForm):
