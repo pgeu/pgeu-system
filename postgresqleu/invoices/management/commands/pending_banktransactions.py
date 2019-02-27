@@ -23,11 +23,11 @@ class Command(BaseCommand):
 
         @classmethod
         def should_run(self):
-            return PendingBankTransaction.objects.filter(created__lte=datetime.now() - timedelta(hours=24)).exists()
+            return PendingBankTransaction.objects.filter(created__lte=datetime.now() - timedelta(hours=72)).exists()
 
     @transaction.atomic
     def handle(self, *args, **options):
-        trans = PendingBankTransaction.objects.filter(created__lte=datetime.now() - timedelta(hours=24))
+        trans = PendingBankTransaction.objects.filter(created__lte=datetime.now() - timedelta(hours=72))
         if trans:
             send_simple_mail(
                 settings.INVOICE_SENDER_EMAIL,
