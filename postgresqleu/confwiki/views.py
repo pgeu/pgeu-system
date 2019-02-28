@@ -444,6 +444,7 @@ def signup_admin_editsignup(request, urlname, signupid, id):
         form = SignupAdminEditSignupForm(signup, isnew=(id == 'new'), instance=attendeesignup)
 
     return render(request, 'confreg/admin_backend_form.html', {
+        'basetemplate': 'confreg/confadmin_base.html',
         'conference': conference,
         'form': form,
         'what': 'attendee signup',

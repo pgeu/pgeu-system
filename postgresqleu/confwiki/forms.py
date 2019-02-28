@@ -107,6 +107,7 @@ class SignupAdminEditSignupForm(ConcurrentProtectedModelForm):
                 Q(user_attendees=signup) | Q(regtype__user_regtypes=signup)).exclude(attendeesignup__signup=signup).distinct()
         else:
             del self.fields['attendee']
+            self.update_protected_fields()
 
         if signup.options:
             choices = signup.options.split(',')
