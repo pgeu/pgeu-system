@@ -73,7 +73,7 @@ class BackendForm(ConcurrentProtectedModelForm):
             all_fieldsetted_fields = set(reduce(lambda x, y: x + y, [v['fields'] for v in self.fieldsets]))
             missing = all_fields.difference(all_fieldsetted_fields)
             if missing:
-                raise Exception("ERROR: fields %s are not in a fieldset" % ", ".join(missing))
+                raise Exception("ERROR: fields %s are not in a fieldset (fieldsets have %s)" % (", ".join(missing)), ", ".join(all_fieldsetted_fields))
 
         for k, v in list(self.fields.items()):
             # Adjust widgets
