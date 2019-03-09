@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             name='startdate',
             field=models.DateField(db_index=True, verbose_name='Start date'),
         ),
-        migrations.RunSQL("CREATE INDEX confreg_conferenceregistration_id_unpaid ON confreg_conferenceregistration(id) WHERE payconfirmedat IS NULL"),
-        migrations.RunSQL("CREATE INDEX confreg_conferenceregistration_additionaloptions_options ON confreg_conferenceregistration_additionaloptions (conferenceadditionaloption_id)"),
-        migrations.RunSQL("CREATE INDEX confreg_conferencesession_speaker_speaker_id ON confreg_conferencesession_speaker (speaker_id)"),
+        migrations.RunSQL("CREATE INDEX IF NOT EXISTS confreg_conferenceregistration_id_unpaid ON confreg_conferenceregistration(id) WHERE payconfirmedat IS NULL"),
+        migrations.RunSQL("CREATE INDEX IF NOT EXISTS confreg_conferenceregistration_additionaloptions_options ON confreg_conferenceregistration_additionaloptions (conferenceadditionaloption_id)"),
+        migrations.RunSQL("CREATE INDEX IF NOT EXISTS confreg_conferencesession_speaker_speaker_id ON confreg_conferencesession_speaker (speaker_id)"),
     ]
