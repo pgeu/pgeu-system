@@ -9,7 +9,7 @@ class BraintreeTransaction(models.Model):
     authorizedat = models.DateTimeField(null=False, blank=False)
     settledat = models.DateTimeField(null=True, blank=True)
     disbursedat = models.DateTimeField(null=True, blank=True)
-    amount = models.IntegerField(null=False)
+    amount = models.DecimalField(null=False, decimal_places=2, max_digits=20)
     disbursedamount = models.DecimalField(null=True, blank=True, decimal_places=2, max_digits=20)
     method = models.CharField(max_length=100, null=True, blank=True)
     accounting_object = models.CharField(max_length=30, null=True, blank=True)
