@@ -229,7 +229,7 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
     # Optionally load the JSON context with template-specific data
     if conference and conference.jinjadir and os.path.exists(os.path.join(conference.jinjadir, 'templates/context.json')):
         try:
-            with open(os.path.join(conference.jinjadir, 'templates/context.json')) as f:
+            with open(os.path.join(conference.jinjadir, 'templates/context.json'), encoding='utf8') as f:
                 c = json.load(f)
         except ValueError as e:
             return HttpResponse("JSON parse failed: {0}".format(e), content_type="text/plain")
