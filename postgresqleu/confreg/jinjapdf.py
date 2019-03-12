@@ -195,7 +195,11 @@ def test_inlist(v, l):
 
 class JinjaRenderer(object):
     def __init__(self, rootdir, templatefile, debug=False, systemroot=None):
-        self.templatedir = os.path.join(rootdir, 'templates')
+        if rootdir:
+            self.templatedir = os.path.join(rootdir, 'templates')
+        else:
+            self.templatedir = None
+
         self.debug = debug
 
         self.border = self.pagebreaks = False
@@ -203,7 +207,7 @@ class JinjaRenderer(object):
         registerFont(TTFont('DejaVu Serif', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf"))
         registerFont(TTFont('DejaVu Serif Bold', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif-Bold.ttf"))
 
-        if os.path.exists(os.path.join(self.templatedir, templatefile)):
+        if self.templatedir and os.path.exists(os.path.join(self.templatedir, templatefile)):
             template = os.path.join(self.templatedir, templatefile)
         elif systemroot and os.path.exists(os.path.join(systemroot, 'confreg/', templatefile)):
             template = os.path.join(systemroot, 'confreg/', templatefile)
@@ -222,13 +226,19 @@ class JinjaRenderer(object):
             })
             self.template = env.from_string(f.read())
 
-        self.context = self._load_context(os.path.join(self.templatedir, 'context.json'))
-        self.context.update(self._load_context(os.path.join(self.templatedir, 'context.override.json')))
+        if self.templatedir:
+            self.context = self._load_context(os.path.join(self.templatedir, 'context.json'))
+            self.context.update(self._load_context(os.path.join(self.templatedir, 'context.override.json')))
+        else:
+            self.context = {}
 
-        self.staticdir = os.path.join(rootdir, 'static')
-        if not os.path.isdir(self.staticdir):
-            if debug:
-                print("Static directory {0} does not exist, ignoring.".format(self.staticdir))
+        if rootdir:
+            self.staticdir = os.path.join(rootdir, 'static')
+            if not os.path.isdir(self.staticdir):
+                if debug:
+                    print("Static directory {0} does not exist, ignoring.".format(self.staticdir))
+                self.staticdir = None
+        else:
             self.staticdir = None
 
         self.story = []
