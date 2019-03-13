@@ -1,0 +1,13 @@
+# Set if system skinning is enabled
+# SYSTEM_SKIN_DIRECTORY = "/some/where/skin"
+
+# Set on all production installs
+ALLOWED_HOSTS = ["*"]
+
+# ALWAYS set these
+SECRET_KEY = ''
+SERVER_EMAIL = ""
+
+# If PG community authentication system is used, set below
+#PGAUTH_KEY = ""
+#PGAUTH_REDIRECT = ""
