@@ -3,21 +3,25 @@ body {
     padding-bottom: 60px;
 }
 
-dl#checkin_list dt {
+dl.checkin_list dt {
     background-color: lightgray;
     padding: 3px;
     padding-left: 5px;
     border-radius: 3px;
 }
 
-dl#checkin_list dd {
+dl.checkin_list dd {
     margin-bottom: 3px;
     padding: 3px;
 }
 
-dl#checkin_list dd ul {
+dl.checkin_list dd ul {
     padding-left: 15px;
     margin-bottom: 0;
+}
+
+#completed_div {
+    display: none;
 }
 
 table#statsTable tbody tr th {

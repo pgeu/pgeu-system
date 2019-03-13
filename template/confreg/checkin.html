@@ -30,6 +30,14 @@
          <div id="statusdiv" class="alert alert-warning fade">Loading...</div>
        </div>
      </div>
+     <div class="row">
+       <div class="col-md-12">
+	 <div id="completed_div">
+           <dl id="completed_list" class="checkin_list">
+	   </dl>
+	 </div>
+       </div>
+     </div>
      <div id="buttonrow" class="row approw">
        <div class="col-md-12 buttonrow">
          <button id="scanButton" class="btn btn-default btn-block btn-lg">Scan registration</button>
@@ -126,11 +134,7 @@
            <h4 class="modal-title">Check in attendee</h4>
          </div>
          <div class="modal-body">
-           <dl id="checkin_list">
-             <dt>Name</dt>
-             <dd id="checkin_name"></dd>
-             <dt>Type</dt>
-             <dd id="checkin_type"></dd>
+           <dl id="checkin_list" class="checkin_list">
            </dl>
          </div>
          <div class="modal-footer">

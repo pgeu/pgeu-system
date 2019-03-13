@@ -23,7 +23,10 @@ function format_datetime(d) {
     return s.substring(0,10) + ' ' + s.substring(11, 19);
 }
 
-function reset_state() {
+function reset_state(leave_completed) {
+    if (!leave_completed)
+        $('#completed_div').hide();
+
     $('div.approw').hide();
     $('div#buttonrow').show();
     $('input[type=submit]').attr('disabled', null);
@@ -54,6 +57,41 @@ function show_ajax_error(type, xhr) {
     }
 }
 
+function add_dynamic_fields(reg, cl, regcompleted) {
+    fields = [
+        [reg.name, 'Name'],
+        [reg.type, 'Registration type'],
+        [reg.photoconsent, 'Photo consent'],
+        [reg.tshirt, 'T-Shirt size']
+    ];
+
+    if (!regcompleted) {
+        fields.push([reg.company, 'Company']);
+        fields.push([reg.partition, 'Queue Partition']);
+    }
+
+    if (reg.additional.length > 0) {
+        fields.push([
+            $('<ul/>').append(
+                $.map(reg.additional, function (x) { return $('<li/>').text(x); })
+            ),
+            'Additional options',
+        ]);
+    }
+
+    fields.forEach(function(a) {
+        if (a[0]) {
+            cl.append($('<dt/>').text(a[1]).addClass('checkin_dyn'));;
+            if (typeof(a[0]) == 'string') {
+                cl.append($('<dd/>').text(a[0]).addClass('checkin_dyn'));
+            }
+            else {
+                cl.append($('<dd/>').html(a[0]).addClass('checkin_dyn'));
+            }
+        }
+    });
+}
+
 function show_checkin_dialog(reg) {
     $('#checkinModal').data('regid', reg.id);
     $('#checkinModal').data('name', reg.name);
@@ -63,23 +101,7 @@ function show_checkin_dialog(reg) {
 
     cl = $('#checkin_list');
 
-    function _add_dyn(val, title) {
-        if (val) {
-            cl.append($('<dt/>').text(title).addClass('checkin_dyn'));;
-            cl.append($('<dd/>').text(val).addClass('checkin_dyn'));;
-        }
-    }
-    _add_dyn(reg.photoconsent, 'Photo consent');
-    _add_dyn(reg.company, 'Company');
-    _add_dyn(reg.tshirt, 'T-Shirt size');
-    _add_dyn(reg.partition, 'Queue partition');
-
-    if (reg.additional.length > 0) {
-        cl.append($('<dt/>').text('Additional').addClass('checkin_dyn'));
-        cl.append($('<dd/>').append($('<ul/>').append(
-            $.map(reg.additional, function (x) { return $('<li/>').text(x); })
-        )).addClass('checkin_dyn'));
-    }
+    add_dynamic_fields(reg, cl);
 
     if (reg.checkedin) {
         cl.append($('<dt/>').text('Already checked in').addClass('checkin_dyn'));
@@ -239,8 +261,9 @@ $(function() {
         reset_state();
     });
 
-    $('#statusdiv').click(function() {
+    $('#statusdiv, #completed_div').click(function() {
         $('#statusdiv').hide();
+        $('#completed_div').hide();
     });
 
     $(document).bind('ajaxSuccess', function() {
@@ -255,12 +278,14 @@ $(function() {
     });
 
     $('#scanButton').click(function() {
+        $('#completed_div').hide();
         $('div.approw').hide();
         $('#scanrow').show();
         start_scanning();
     });
 
     $('#searchButton').click(function() {
+        $('#completed_div').hide();
         $('div.approw').hide();
         $('#searchinput').val('');
         $('#searchrow').show();
@@ -268,6 +293,7 @@ $(function() {
     });
 
     $('#statsButton').click(function() {
+        $('#completed_div').hide();
         $('div.approw').hide();
         $('#statsrow').show();
         load_stats();
@@ -332,19 +358,22 @@ $(function() {
     $('#checkinbutton').click(function() {
         $.ajax({
             method: "POST",
-            dataType: "text",
+            dataType: "json",
             url: "api/checkin/",
             data: {"reg": $('#checkinModal').data('regid')},
             success: function(data, status, xhr) {
-                if (xhr.status == 204) {
+                if (xhr.status == 200) {
                     /* Success! */
                     showstatus('Attendee ' + $('#checkinModal').data('name') + ' checked in successfully', 'success');
+                    $('.checkin_dyn').remove();
+                    add_dynamic_fields(data['reg'], $('#completed_list'), true);
+                    $('#completed_div').show();
                 }
                 else {
                     show_ajax_error('checking in', xhr);
                 }
                 $('#checkinModal').modal('hide');
-                reset_state();
+                reset_state(true);
             },
             error: function(xhr, status, thrown) {
                 show_ajax_error('checking in', xhr);
