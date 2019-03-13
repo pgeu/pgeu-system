@@ -174,6 +174,8 @@ def api(request, urlname, regtoken, what):
         reg.checkedinat = datetime.datetime.now()
         reg.checkedinby = user
         reg.save()
-        return HttpResponse("{}", status=204)
+        return _json_response({
+            'reg': _get_reg_json(reg),
+        })
     else:
         raise Http404()
