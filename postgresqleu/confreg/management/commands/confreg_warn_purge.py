@@ -7,6 +7,7 @@
 #
 from django.core.management.base import BaseCommand
 from django.conf import settings
+from django.db import transaction
 
 from datetime import datetime, timedelta
 
@@ -22,6 +23,7 @@ class Command(BaseCommand):
         scheduled_interval = timedelta(days=7)
         internal = True
 
+    @transaction.atomic
     def handle(self, *args, **options):
         for conference in Conference.objects.filter(personal_data_purged__isnull=True,
                                                     enddate__lt=datetime.now() - timedelta(days=30)) \
