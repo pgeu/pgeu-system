@@ -60,7 +60,7 @@ def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=No
         if type(bcc) is list or type(bcc) is tuple:
             bcc = set(bcc)
         else:
-            bcc = set(bcc, )
+            bcc = set((bcc, ))
 
         for b in bcc:
             QueuedMail(sender=sender, receiver=b, fullmsg=msg.as_string()).save()
