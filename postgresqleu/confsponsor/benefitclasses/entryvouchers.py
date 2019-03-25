@@ -83,6 +83,10 @@ class EntryVouchers(BaseBenefit):
 
     def render_claimdata(self, claimedbenefit):
         # Look up our batch
+        if claimedbenefit.claimdata == "0":
+            # This benefit has been declined
+            return "Benefit was declined."
+
         batch = PrepaidBatch.objects.get(pk=int(claimedbenefit.claimdata))
         vouchers = list(batch.prepaidvoucher_set.all())
 
