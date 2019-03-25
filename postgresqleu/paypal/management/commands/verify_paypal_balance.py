@@ -49,7 +49,7 @@ class Command(BaseCommand):
 
     This could be because some entry has been missed in the accouting
     (automatic or manual), or because of an ongoing booking of something
-    that the system deosn't know about.
+    that the system doesn't know about.
 
     Better go check manually!
     """.format(paypal_balance, accounting_balance, method.internaldescription))
