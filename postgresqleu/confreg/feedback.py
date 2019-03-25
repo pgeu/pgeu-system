@@ -83,10 +83,10 @@ def feedback_sessions(request, confname):
     toplists = []
 
     # Start with top sessions
-    toplists.extend(build_toplists('Sessions', "SELECT s.title || ' (' || (SELECT string_agg(fullname, ', ') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker css ON css.speaker_id=spk.id WHERE css.conferencesession_id=s.id) || ')', avg(fb.{{key}}), count(*), stddev(fb.{{key}}) FROM confreg_conferencesessionfeedback fb INNER JOIN confreg_conferencesession s ON fb.session_id=s.id WHERE s.conference_id=%s AND fb.{{key}}>0 GROUP BY s.id HAVING count(*)>%s ORDER BY 2 DESC" % (conference.id, minvotes)))
+    toplists.extend(build_toplists('Sessions', "SELECT s.title || ' (' || (SELECT string_agg(fullname, ', ') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker css ON css.speaker_id=spk.id WHERE css.conferencesession_id=s.id) || ')', avg(fb.{{key}}), count(*), stddev(fb.{{key}}) FROM confreg_conferencesessionfeedback fb INNER JOIN confreg_conferencesession s ON fb.session_id=s.id WHERE s.conference_id=%s AND fb.{{key}}>0 GROUP BY s.id HAVING count(*)>=%s ORDER BY 2 DESC" % (conference.id, minvotes)))
 
     # Now let's do the speakers
-    toplists.extend(build_toplists('Speakers', "SELECT (SELECT string_agg(fullname, ', ') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker css ON css.speaker_id=spk.id WHERE css.conferencesession_id=s.id) AS speakername, avg(fb.{{key}}), count(*), stddev(fb.{{key}}) FROM confreg_conferencesessionfeedback fb INNER JOIN confreg_conferencesession s ON fb.session_id=s.id WHERE s.conference_id=%s AND fb.{{key}}>0 GROUP BY speakername HAVING count(*)>%s ORDER BY 2 DESC" % (conference.id, minvotes)))
+    toplists.extend(build_toplists('Speakers', "SELECT (SELECT string_agg(fullname, ', ') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker css ON css.speaker_id=spk.id WHERE css.conferencesession_id=s.id) AS speakername, avg(fb.{{key}}), count(*), stddev(fb.{{key}}) FROM confreg_conferencesessionfeedback fb INNER JOIN confreg_conferencesession s ON fb.session_id=s.id WHERE s.conference_id=%s AND fb.{{key}}>0 GROUP BY speakername HAVING count(*)>=%s ORDER BY 2 DESC" % (conference.id, minvotes)))
 
     return render(request, 'confreg/admin_session_feedback.html', {
         'conference': conference,
