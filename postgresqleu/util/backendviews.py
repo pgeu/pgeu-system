@@ -91,6 +91,15 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
         else:
             instance = get_object_or_404(formclass.Meta.model, pk=id, conference=conference)
 
+    if request.method == 'GET' and request.GET.get('validate', '') == '1':
+        if not id:
+            return HttpResponse("Record not saved, cannot preview", content_type='text/plain')
+        else:
+            try:
+                return HttpResponse(formclass.validate_data_for(instance))
+            except Exception as e:
+                return HttpResponse("Validation failed: {}".format(e))
+
     if request.method == 'POST' and not nopostprocess:
         extra_error = None
         if allow_delete and request.POST['submit'] == 'Delete':

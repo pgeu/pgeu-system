@@ -60,6 +60,10 @@ class StaticTextWidget(TextInput):
         return mark_safe(value)
 
 
+class TestButtonWidget(TextInput):
+    template_name = 'forms/widgets/test_button_widget.html'
+
+
 class Bootstrap4CheckboxSelectMultiple(forms.CheckboxSelectMultiple):
     template_name = 'forms/widgets/bs4_checkbox_select.html'
 

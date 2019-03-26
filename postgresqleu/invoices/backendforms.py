@@ -1,6 +1,7 @@
 import django.forms
 
 from postgresqleu.util.backendforms import BackendForm
+from postgresqleu.util.widgets import TestButtonWidget
 from postgresqleu.invoices.models import VatRate, VatValidationCache, InvoicePaymentMethod
 from postgresqleu.accounting.models import Account
 
@@ -34,6 +35,8 @@ class BackendInvoicePaymentMethodNewForm(django.forms.Form):
 
 
 class BackendInvoicePaymentMethodForm(BackendForm):
+    testsettings = django.forms.CharField(required=False, label='Test', widget=TestButtonWidget)
+
     helplink = 'payment'
     list_fields = ['name', 'internaldescription', 'classname_short', 'active', 'sortkey', ]
     form_before_new = BackendInvoicePaymentMethodNewForm
@@ -55,13 +58,22 @@ class BackendInvoicePaymentMethodForm(BackendForm):
 
     @property
     def fieldsets(self):
-        return [
+        fs = [
             {'id': 'common', 'legend': 'Common', 'fields': ['name', 'internaldescription', 'active', 'sortkey', 'classname'], }
         ] + self.config_fieldsets
+        if hasattr(self, 'validate_data_for'):
+            fs += [
+                {'id': 'test', 'legend': 'Test', 'fields': ['testsettings', ]},
+            ]
+
+        return fs
 
     @property
     def readonly_fields(self):
-        return ['classname', ] + self.config_readonly
+        if hasattr(self, 'validate_data_for'):
+            return ['classname', 'testsettings', ] + self.config_readonly
+        else:
+            return ['classname', ] + self.config_readonly
 
     @property
     def exclude_fields_from_validation(self):
@@ -80,3 +92,6 @@ class BackendInvoicePaymentMethodForm(BackendForm):
         if self.newformdata:
             self.instance.classname = self.newformdata
             self.initial['classname'] = self.newformdata
+
+        if not hasattr(self, 'validate_data_for'):
+            self.remove_field('testsettings')

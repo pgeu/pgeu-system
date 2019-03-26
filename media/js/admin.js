@@ -13,6 +13,22 @@ $(document).ready(function() {
        e.preventDefault();
    });
 
+    $('.btn-test-validate').on("click", function(e) {
+	$.ajax({
+	    'url': '?validate=1',
+	    'success': function(data, status, xhr) {
+		$('.test-validate-wrap').html(data.replace(/\n/g, "<br/>"));
+	    },
+	    'error': function(data, status, xhr) {
+		alert('Error: ' + xhr);
+	    }
+	});
+	return false;
+    });
+    $('input').on("change", function(e) {
+	$('.btn-test-validate').attr("disabled","disabled").attr("title", "Form must be saved before it can be tested");
+    });
+
    /* Set up mailbox checkboxes */
    $('#mailcheckboxtoggler').click(function() {
       var root = $($('#datatable').data('datatable').rows( { filter : 'applied'} ).nodes());
