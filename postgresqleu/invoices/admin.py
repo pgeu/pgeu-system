@@ -18,6 +18,11 @@ class InvoiceAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelF
             'recipient_user': AutoCompleteSelectWidget(lookup_class=UserLookup),
         }
 
+    def __init__(self, *args, **kwargs):
+        super(InvoiceAdminForm, self).__init__(*args, **kwargs)
+        self.fields['allowedmethods'].label_from_instance = lambda o: o.internaldescription
+        self.fields['paidusing'].label_from_instance = lambda o: o.internaldescription
+
     def clean_recipient_email(self):
         if 'finalized' in self.cleaned_data:
             raise ValidationError("Can't edit email field on a finalized invoice!")
