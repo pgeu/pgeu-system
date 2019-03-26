@@ -60,7 +60,16 @@ class PaymentMethodWrapper(object):
 
     @property
     def can_autorefund(self):
-        return hasattr(self, 'implementation') and hasattr(self.implementation, 'autorefund')
+        # If an implementation exists, and has can_autorefund(), then ask the implementation
+        # specifically if it can refund. If can_autorefund() is not present, assume the
+        # implementation can refund all transactions provided if it has an autorefund() method,
+        # and no transactions if it doesn't.
+        # Finally, if we have no implementation, we can of course not refund.
+        if hasattr(self, 'implementation'):
+            if hasattr(self.implementation, 'can_autorefund'):
+                return self.implementation.can_autorefund(self.invoice)
+            return hasattr(self.implementation, 'autorefund')
+        return False
 
     @property
     def used_method_details(self):
