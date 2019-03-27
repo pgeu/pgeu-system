@@ -5,4 +5,4 @@ register = template.Library()
 
 @register.filter
 def join_on_attr(l, attrname, separator=', '):
-    return separator.join(str(getattr(i, attrname)) for i in l)
+    return separator.join(" ".join([str(getattr(i, a)) for a in attrname.split(',')]) for i in l)

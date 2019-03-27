@@ -20,7 +20,7 @@
 </div>
 <div class="row">
   <div class="col-md-2"><b>Sent to nonreg users:</b></div>
-  <div class="col-md-10">{{mail.pending_regs.all|join_on_attr:"fullname"}}</div>
+  <div class="col-md-10">{{mail.pending_regs.all|join_on_attr:"first_name,last_name"}}</div>
 </div>
 <div class="row">
   <div class="col-md-10 well">
