@@ -61,6 +61,13 @@ Discount amount
 : The amount of discount this code gives. Can't be specified at the
 same time as discount percentage.
 
+Public
+:  If this discount code is public. If a code is made public it becomes
+available using a separate permission in the [access tokens](tokens)
+feature, and can that way be used to for example update a website. For
+codes that need to remain secret for their use, obviously public
+should not be set as it could be leaked through the token interface.
+
 Valid until
 : The date until which this code can be used.
 

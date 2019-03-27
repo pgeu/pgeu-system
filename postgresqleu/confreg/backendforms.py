@@ -692,7 +692,7 @@ class DiscountCodeUserManager(object):
 
 class BackendDiscountCodeForm(BackendForm):
     helplink = 'vouchers#discountcodes'
-    list_fields = ['code', 'validuntil', 'maxuses']
+    list_fields = ['code', 'validuntil', 'maxuses', 'public']
     linked_objects = OrderedDict({
         '../../regdashboard/list': DiscountCodeUserManager(),
     })
@@ -703,7 +703,7 @@ class BackendDiscountCodeForm(BackendForm):
 
     class Meta:
         model = DiscountCode
-        fields = ['code', 'discountamount', 'discountpercentage', 'regonly', 'validuntil', 'maxuses',
+        fields = ['code', 'discountamount', 'discountpercentage', 'regonly', 'public', 'validuntil', 'maxuses',
                   'requiresregtype', 'requiresoption']
 
     def fix_fields(self):

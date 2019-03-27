@@ -986,6 +986,7 @@ class DiscountCode(models.Model):
     maxuses = models.IntegerField(null=False, blank=False, default=0, verbose_name="Max uses")
     requiresoption = models.ManyToManyField(ConferenceAdditionalOption, blank=True, verbose_name="Requires option", help_text='Requires this option to be set in order to be valid')
     requiresregtype = models.ManyToManyField(RegistrationType, blank=True, verbose_name="Requires registration type", help_text='Require a specific registration type to be valid')
+    public = models.BooleanField(null=False, blank=False, default=False, help_text="Is the existance of this discount code public")
 
     registrations = models.ManyToManyField(ConferenceRegistration, blank=True)
 
@@ -1063,6 +1064,7 @@ class AggregatedDietary(models.Model):
 AccessTokenPermissions = (
     ('regtypes', 'Registration types and counters'),
     ('discounts', 'Discount codes'),
+    ('discountspublic', 'Public discount codes'),
     ('vouchers', 'Voucher codes'),
     ('sponsors', 'Sponsors and counts'),
     ('addopts', 'Additional options and counts'),
