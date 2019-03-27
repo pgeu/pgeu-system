@@ -30,7 +30,11 @@ class PaypalAPI(object):
                 },
                 auth=HTTPBasicAuth(self.pm.config('clientid'), self.pm.config('clientsecret')),
             )
-            self.token = r.json()['access_token']
+            if r.status_code != 200:
+                r.raise_for_status()
+            j = r.json()
+            self.token = j['access_token']
+            self.tokenscope = j['scope']
 
     def _authorized_headers(self):
         self.ensure_access_token()
