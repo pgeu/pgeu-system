@@ -61,7 +61,7 @@ class TransferwiseApi(object):
     def get_balance(self):
         for b in self.get_account()['balances']:
             if b['currency'] == settings.CURRENCY_ABBREV:
-                return b['amount']['value']
+                return Decimal(b['amount']['value']).quantize(Decimal('0.01'))
         return None
 
     def get_transactions(self, startdate=None, enddate=None):
