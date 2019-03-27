@@ -80,11 +80,11 @@
 </p>
 
 {%if unclaimedbenefits%}
-<h2>Claim your benefits</h2>
+<h2>Claim / Turn down your benefits</h2>
 <p>
-Some of your sponsorship benefits requires a specific claiming to be used - either because
+Some of your sponsorship benefits require a specific claiming to be used - either because
 we need to know if you want to use it, or because it requires further information from you.
-Click on the benefit in the list below to claim it:
+Click on the benefit in the list below to claim them or turn them down:
 </p>
 <div id="unclaimedlist">
 {%for b in unclaimedbenefits%}
@@ -97,7 +97,7 @@ Click on the benefit in the list below to claim it:
    <div id="unclaimed_b_{{b.id}}" class="collapse" aria-labelledby="unclaimed_h_{{b.id}}" data-parent="unclaimedlist">
      <div class="card-body">
        {{b.benefitdescription|markdown}}
-       <a class="btn btn-primary" href="claim/{{b.id}}/">Claim benefit</a>
+       <a class="btn btn-primary" href="claim/{{b.id}}/">Claim / Turn down benefit</a>
      </div>
    </div>
  </div>
