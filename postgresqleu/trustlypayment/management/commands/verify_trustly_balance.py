@@ -50,7 +50,7 @@ class Command(BaseCommand):
                              'Trustly balance mismatch!',
                              """Trustly balance ({0}) for {1} does not match the accounting system ({2})!
 
-This could be because some entry has been missed in the accouting
+This could be because some entry has been missed in the accounting
 (automatic or manual), or because of an ongoing booking of something
 that the system doesn't know about.
 
