@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.conf import settings
 
 from collections import defaultdict
@@ -379,7 +380,8 @@ class InvoiceManager(object):
                 # get_invoice_processor() has already logged
                 return (self.RESULT_PROCESSORFAIL, None, None)
             try:
-                processor.process_invoice_payment(invoice)
+                with transaction.atomic():
+                    processor.process_invoice_payment(invoice)
             except Exception as ex:
                 logger("Failed to run invoice processor '%s': %s" % (invoice.processor, ex))
                 return (self.RESULT_PROCESSORFAIL, None, None)
@@ -475,7 +477,8 @@ class InvoiceManager(object):
         processor = self.get_invoice_processor(invoice)
         if processor:
             try:
-                processor.process_invoice_cancellation(invoice)
+                with transaction.atomic():
+                    processor.process_invoice_cancellation(invoice)
             except Exception as ex:
                 raise Exception("Failed to run invoice processor '%s': %s" % (invoice.processor, ex))
 
