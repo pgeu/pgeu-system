@@ -43,7 +43,7 @@ from .regtypes import confirm_special_reg_type, validate_special_reg_type
 from .jinjafunc import render_jinja_conference_response, JINJA_TEMPLATE_ROOT
 from .jinjapdf import render_jinja_ticket
 from .backendviews import get_authenticated_conference
-from .backendforms import CancelRegistrationForm
+from .backendforms import CancelRegistrationForm, ConfirmRegistrationForm
 
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.random import generate_random_token
@@ -2802,6 +2802,48 @@ def admin_registration_cancel(request, urlname, regid):
             ('/events/admin/{0}/regdashboard/list/'.format(urlname), 'Registration list'),
             ('/events/admin/{0}/regdashboard/list/{1}/'.format(urlname, reg.id), reg.fullname),
         ),
+    })
+
+
+@transaction.atomic
+def admin_registration_confirm(request, urlname, regid):
+    conference = get_authenticated_conference(request, urlname)
+    reg = get_object_or_404(ConferenceRegistration, id=regid, conference=conference)
+
+    if reg.payconfirmedat:
+        messages.error(request, "Registration already confirmed")
+        return HttpResponseRedirect("../")
+    if not reg.can_edit:
+        messages.error(request, "Cannot confirm a registration with active invoice or multireg")
+        return HttpResponseRedirect("../")
+
+    if request.method == 'POST':
+        form = ConfirmRegistrationForm(data=request.POST)
+        if form.is_valid():
+            reg.payconfirmedat = datetime.now()
+            reg.payconfirmedby = "Manual/{0}".format(request.user.username)[:16]
+            reg.save()
+            notify_reg_confirmed(reg)
+            messages.info(request, "Registration marked confirmed.")
+            return HttpResponseRedirect("../")
+    else:
+        form = ConfirmRegistrationForm()
+
+    return render(request, 'confreg/admin_backend_form.html', {
+        'basetemplate': 'confreg/confadmin_base.html',
+        'conference': conference,
+        'reg': reg,
+        'form': form,
+        'helplink': 'registrations',
+        'breadcrumbs': (
+            ('/events/admin/{0}/regdashboard/'.format(urlname), 'Registration dashboard'),
+            ('/events/admin/{0}/regdashboard/list/'.format(urlname), 'Registration list'),
+            ('/events/admin/{0}/regdashboard/list/{1}/'.format(urlname, reg.id), reg.fullname),
+        ),
+        'whatverb': 'Confirm',
+        'what': 'registration',
+        'cancelurl': '../',
+        'savebutton': 'Confirm registration',
     })
 
 

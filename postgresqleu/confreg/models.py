@@ -590,6 +590,8 @@ class ConferenceRegistration(models.Model):
             return "Paid by individual invoice #{0}.\n Invoice {1}".format(self.invoice.id, self.invoice.payment_method_description)
         if self.payconfirmedby == "Bulk paid":
             return "Paid by bulk payment #{0}.\n Bulk {1}".format(self.bulkpayment.id, self.bulkpayment.payment_method_description)
+        if self.payconfirmedby.startswith("Manual/"):
+            return "Manually confirmed"
 
         return "Payment details not available"
 

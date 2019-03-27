@@ -805,6 +805,13 @@ class TwitterTestForm(django.forms.Form):
 
 
 #
+# Form for confirming a registration
+#
+class ConfirmRegistrationForm(django.forms.Form):
+    confirm = django.forms.BooleanField(help_text="Confirm that you want to confirm this registration!<br/>Normaly this is handled by the automated system, and registrations should only be manually confirmed in special cases!")
+
+
+#
 # Form for canceling a registration
 #
 class CancelRegistrationForm(django.forms.Form):
@@ -825,7 +832,7 @@ class CancelRegistrationForm(django.forms.Form):
         super(CancelRegistrationForm, self).__init__(*args, **kwargs)
 
         if reg.payconfirmedat:
-            if reg.payconfirmedby in ("no payment reqd", "Multireg/nopay"):
+            if reg.payconfirmedby in ("no payment reqd", "Multireg/nopay") or reg.payconfirmedby.startswith("Manual/"):
                 choices = [(self.Methods.NO_INVOICE, 'Registration did not require payment, just cancel'), ]
             elif reg.payconfirmedby in ("Invoice paid", 'Bulk paid'):
                 choices = [

@@ -158,6 +158,7 @@ urlpatterns.extend([
     url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/$', postgresqleu.confreg.views.admin_registration_single),
     url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/edit/$', postgresqleu.confreg.backendviews.edit_registration),
     url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/cancel/$', postgresqleu.confreg.views.admin_registration_cancel),
+    url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/confirm/$', postgresqleu.confreg.views.admin_registration_confirm),
     url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/clearcode/$', postgresqleu.confreg.views.admin_registration_clearcode),
     url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/ticket/$', postgresqleu.confreg.backendviews.view_registration_ticket),
     url(r'^events/admin/(\w+)/regdashboard/list/sendmail/$', postgresqleu.confreg.backendviews.registration_dashboard_send_email),
