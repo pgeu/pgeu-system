@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conference',
             name='paymentmethods',
-            field=models.ManyToManyField(to='invoices.InvoicePaymentMethod', verbose_name='Invoice payment options'),
+            field=models.ManyToManyField(to='invoices.InvoicePaymentMethod', verbose_name='Invoice payment options', blank=True),
         ),
         migrations.RunSQL("""
 INSERT INTO confreg_conference_paymentmethods (conference_id, invoicepaymentmethod_id)
