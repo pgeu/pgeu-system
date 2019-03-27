@@ -108,6 +108,7 @@ INSTALLED_APPS = [
     'postgresqleu.util',
     'postgresqleu.trustlypayment',
     'postgresqleu.braintreepayment',
+    'postgresqleu.transferwise',
     'postgresqleu.membership',
 ]
 
