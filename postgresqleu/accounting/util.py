@@ -38,7 +38,7 @@ def create_accounting_entry(date,
             if r[2] == 0:
                 raise AccountingException("Submitted accounting journal entry has a zero sum entry!")
             if Decimal(r[2]).as_tuple().exponent < -2:
-                raise AccountingException("Submitted accounting journal entry has items that are not rounded off to two decimal points!")
+                raise AccountingException("Submitted accounting journal entry has items that are not rounded off to two decimal points ({0})!".format(r[2]))
 
         debitsum = sum([r[2] for r in items if r[2] > 0])
         creditsum = -sum([r[2] for r in items if r[2] < 0])
