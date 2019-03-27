@@ -867,9 +867,10 @@ def register_bank_transaction(method, methodidentifier, amount, transtext, sende
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                              settings.INVOICE_SENDER_EMAIL,
                              "Bank transfer payment conirmed",
-                             "A bank transfer payment from {0} matched an invoice.\nInvoice: {1}\nRecipient name: {2}\nRecipient user: {3}\nPayment method: %s\n" % (
-                                 method.internal_description,
+                             "A bank transfer payment from {0} matched an invoice.\nInvoice: {1}\nAmount: {2}\nRecipient name: {3}\nRecipient user: {4}\n".format(
+                                 method.internaldescription,
                                  invoice.title,
+                                 invoice.total_amount,
                                  invoice.recipient_name,
                                  invoice.recipient_email,
                              ))
