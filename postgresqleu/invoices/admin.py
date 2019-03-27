@@ -72,6 +72,7 @@ class InvoiceLogAdmin(admin.ModelAdmin):
 
 class InvoiceRefundAdmin(admin.ModelAdmin):
     list_display = ('registered', 'issued', 'completed', 'amount', 'vatamount', 'reason')
+    exclude = ['refund_pdf', ]
 
 
 class InvoicePaymentMethodAdmin(admin.ModelAdmin):
