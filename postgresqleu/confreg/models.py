@@ -11,6 +11,7 @@ from django.utils.dateformat import DateFormat
 from django.contrib.postgres.fields import DateTimeRangeField
 
 from postgresqleu.util.validators import validate_lowercase
+from django.core.validators import validate_slug
 from postgresqleu.util.validators import TwitterValidator
 from postgresqleu.util.validators import PictureUrlValidator
 from postgresqleu.util.forms import ChoiceArrayField
@@ -124,7 +125,7 @@ class GlobalOptOut(models.Model):
 
 
 class Conference(models.Model):
-    urlname = models.CharField(max_length=32, blank=False, null=False, unique=True, validators=[validate_lowercase, ], verbose_name="URL name")
+    urlname = models.CharField(max_length=32, blank=False, null=False, unique=True, validators=[validate_lowercase, validate_slug, ], verbose_name="URL name")
     conferencename = models.CharField(max_length=64, blank=False, null=False, verbose_name="Conference name")
     startdate = models.DateField(blank=False, null=False, verbose_name="Start date", db_index=True)
     enddate = models.DateField(blank=False, null=False, verbose_name="End date")
