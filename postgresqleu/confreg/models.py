@@ -1012,6 +1012,8 @@ class AttendeeMail(models.Model):
     regclasses = models.ManyToManyField(RegistrationClass, blank=True, verbose_name="Registration classes")
     registrations = models.ManyToManyField(ConferenceRegistration, blank=True, verbose_name="Registrations")
     pending_regs = models.ManyToManyField(User, blank=True, verbose_name="Pending registrations")
+    tovolunteers = models.BooleanField(null=False, blank=False, default=False, verbose_name="To volunteers")
+    tocheckin = models.BooleanField(null=False, blank=False, default=False, verbose_name="To check-in processors")
     sentat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     subject = models.CharField(max_length=100, null=False, blank=False)
     message = models.TextField(max_length=8000, null=False, blank=False)
@@ -1021,6 +1023,14 @@ class AttendeeMail(models.Model):
 
     class Meta:
         ordering = ('-sentat', )
+
+    @property
+    def regclasses_and_special(self):
+        yield from self.regclasses.all()
+        if self.tovolunteers:
+            yield '[volunteers]'
+        if self.tocheckin:
+            yield '[checkin]'
 
 
 class PendingAdditionalOrder(models.Model):

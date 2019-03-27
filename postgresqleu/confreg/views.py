@@ -99,13 +99,25 @@ def _get_registration_signups(conference, reg):
     return [dict(list(zip(['id', 'title', 'deadline', 'closed', 'savedat'], r))) for r in cursor.fetchall()]
 
 
-# Not a view in itself, only called from other views
-def _registration_dashboard(request, conference, reg, has_other_multiregs, redir_root):
-    mails = AttendeeMail.objects.filter(conference=conference).extra(where=["""
+# Return a queryset with all the emails this attendee has permissions to see.
+# Should then be extended with whatever other requirements there are to limit
+# what's actually returned.
+def _attendeemail_queryset(conference, reg):
+    return AttendeeMail.objects.filter(conference=conference).extra(where=["""
  EXISTS (SELECT 1 FROM confreg_attendeemail_regclasses rc WHERE rc.attendeemail_id=confreg_attendeemail.id AND registrationclass_id=%s)
 OR
- EXISTS (SELECT 1 FROM confreg_attendeemail_registrations r WHERE r.attendeemail_id=confreg_attendeemail.id AND conferenceregistration_id=%s)""",
-    ], params=[reg.regtype.regclass and reg.regtype.regclass.id or None, reg.id])
+ EXISTS (SELECT 1 FROM confreg_attendeemail_registrations r WHERE r.attendeemail_id=confreg_attendeemail.id AND conferenceregistration_id=%s)
+OR
+ (tovolunteers AND EXISTS (SELECT 1 FROM confreg_conference_volunteers cv WHERE cv.conference_id=confreg_attendeemail.conference_id AND cv.conferenceregistration_id=%s))
+OR
+ (tocheckin AND EXISTS (SELECT 1 FROM confreg_conference_checkinprocessors cp WHERE cp.conference_id=confreg_attendeemail.conference_id AND cp.conferenceregistration_id=%s))
+""",
+    ], params=[reg.regtype.regclass and reg.regtype.regclass.id or None, reg.id, reg.id, reg.id])
+
+
+# Not a view in itself, only called from other views
+def _registration_dashboard(request, conference, reg, has_other_multiregs, redir_root):
+    mails = _attendeemail_queryset(conference, reg)
 
     wikipagesQ = Q(publicview=True) | Q(viewer_attendee__attendee=request.user) | Q(viewer_regtype__conferenceregistration__attendee=request.user)
     wikipages = Wikipage.objects.filter(Q(conference=conference) & wikipagesQ).distinct()
@@ -1875,11 +1887,7 @@ def attendee_mail(request, confname, mailid):
     conference = get_object_or_404(Conference, urlname=confname)
     reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
 
-    mail = AttendeeMail.objects.filter(conference=conference, pk=mailid).extra(where=["""
- EXISTS (SELECT 1 FROM confreg_attendeemail_regclasses rc WHERE rc.attendeemail_id=confreg_attendeemail.id AND registrationclass_id=%s)
-OR
- EXISTS (SELECT 1 FROM confreg_attendeemail_registrations r WHERE r.attendeemail_id=confreg_attendeemail.id AND conferenceregistration_id=%s)""",
-    ], params=[reg.regtype.regclass and reg.regtype.regclass.id or None, reg.id])
+    mail = _attendeemail_queryset(conference, reg).filter(pk=mailid)
     if len(mail) != 1:
         raise Http404()
     mail = mail[0]
@@ -3072,14 +3080,22 @@ def admin_attendeemail(request, urlname):
         if form.is_valid():
             msg = AttendeeMail(conference=conference,
                                subject=form.data['subject'],
-                               message=form.data['message'])
+                               message=form.data['message'],
+                               tovolunteers='tovolunteers' in form.data,
+                               tocheckin='tocheckin' in form.data,
+            )
             msg.save()
             for rc in form.data.getlist('regclasses'):
                 msg.regclasses.add(rc)
             msg.save()
 
             # Now also send the email out to the currently registered attendees
-            attendees = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, regtype__regclass__in=form.data.getlist('regclasses'))
+            attendees = set(ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, regtype__regclass__in=form.data.getlist('regclasses')))
+            if msg.tovolunteers:
+                attendees.update(conference.volunteers.all())
+            if msg.tocheckin:
+                attendees.update(conference.checkinprocessors.all())
+
             for a in attendees:
                 msgtxt = "{0}\n\n-- \nThis message was sent to attendees of {1}.\nYou can view all communications for this conference at:\n{2}/events/{3}/register/\n".format(msg.message, conference, settings.SITEBASE, conference.urlname)
                 send_simple_mail(conference.contactaddr,

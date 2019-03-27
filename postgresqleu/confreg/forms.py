@@ -630,7 +630,7 @@ class AttendeeMailForm(forms.ModelForm):
 
     class Meta:
         model = AttendeeMail
-        fields = ('regclasses', 'subject', 'message')
+        fields = ('regclasses', 'tovolunteers', 'tocheckin', 'subject', 'message')
 
     def regclass_label(self, obj):
         return "{0} (contains {1}; total {2} registrations)".format(
@@ -650,7 +650,7 @@ class AttendeeMailForm(forms.ModelForm):
         self.fields['regclasses'].label_from_instance = self.regclass_label
         self.fields['subject'].help_text = 'Subject will be prefixed with <strong>[{}]</strong>'.format(conference)
 
-        if not (self.data.get('regclasses') and self.data.get('subject') and self.data.get('message')):
+        if not (self.data.get('subject') and self.data.get('message')):
             del self.fields['confirm']
 
     def clean_confirm(self):
