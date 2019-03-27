@@ -100,6 +100,16 @@ class BackendTrustlyPaymentForm(BackendInvoicePaymentMethodForm):
         }
     ]
 
+    @classmethod
+    def validate_data_for(self, instance):
+        pm = instance.get_implementation()
+        trustly = Trustly(pm)
+
+        # Test the Trustly setup by getting the balance
+        trustly.get_balance()
+
+        return "Trustly API setup works"
+
 
 class TrustlyPayment(BasePayment):
     backend_form_class = BackendTrustlyPaymentForm

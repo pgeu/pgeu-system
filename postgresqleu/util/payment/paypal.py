@@ -4,6 +4,7 @@ from django import forms
 from urllib.parse import urlencode
 
 import re
+from io import StringIO
 
 from postgresqleu.util.widgets import StaticTextWidget
 from postgresqleu.paypal.models import TransactionInfo
@@ -79,6 +80,21 @@ is enabled, and enter the url <code>{0}/p/paypal_return/{1}/</code>""".format(
                     self.instance.id,
                 ),
             })
+
+    @classmethod
+    def validate_data_for(self, instance):
+        pm = instance.get_implementation()
+        api = PaypalAPI(pm)
+
+        s = StringIO()
+        api.ensure_access_token()
+        s.write("Paypal API access credentials correct,\n")
+        if 'https://uri.paypal.com/services/reporting/search/read ' not in api.tokenscope:
+            s.write("Paypal token does <strong>NOT</strong> have have <i>Transaction search</i> permissions!\n")
+        if 'https://api.paypal.com/v1/payments/.* ' not in api.tokenscope:
+            s.write("Paypal token does <strong>NOT</strong> have have <i>Accept payments</i> permissions!\n")
+
+        return s.getvalue()
 
 
 class Paypal(BasePayment):
