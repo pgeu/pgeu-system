@@ -254,7 +254,7 @@ def multiregs(request, urlname):
 
     return render(request, 'confreg/admin_multireg_list.html', {
         'conference': conference,
-        'bulkpays': BulkPayment.objects.select_related('user', 'invoice__paidusing').prefetch_related('conferenceregistration_set').filter(conference=conference).order_by('paidat', 'createdat'),
+        'bulkpays': BulkPayment.objects.select_related('user', 'invoice__paidusing').prefetch_related('conferenceregistration_set').filter(conference=conference).order_by('-paidat', '-createdat'),
         'highlight': int(request.GET.get('b', -1)),
     })
 
