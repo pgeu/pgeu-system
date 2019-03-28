@@ -23,6 +23,7 @@ from .jinjapdf import render_jinja_ticket
 
 from .models import Conference, ConferenceSeries
 from .models import ConferenceRegistration, Speaker
+from .models import BulkPayment
 from .models import AccessToken
 from .models import ShirtSize
 
@@ -245,6 +246,16 @@ def pendinginvoices(request, urlname):
             'Multi-registration invoices': Invoice.objects.filter(paidat__isnull=True, bulkpayment__conference=conference),
             'Sponsor invoices': Invoice.objects.filter(paidat__isnull=True, sponsor__conference=conference),
         },
+    })
+
+
+def multiregs(request, urlname):
+    conference = get_authenticated_conference(request, urlname)
+
+    return render(request, 'confreg/admin_multireg_list.html', {
+        'conference': conference,
+        'bulkpays': BulkPayment.objects.select_related('user', 'invoice__paidusing').prefetch_related('conferenceregistration_set').filter(conference=conference).order_by('paidat', 'createdat'),
+        'highlight': int(request.GET.get('b', -1)),
     })
 
 

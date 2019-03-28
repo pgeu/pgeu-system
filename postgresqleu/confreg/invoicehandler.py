@@ -202,7 +202,7 @@ class BulkInvoiceProcessor(object):
             bp = BulkPayment.objects.get(pk=invoice.processorid)
         except ConferenceRegistration.DoesNotExist:
             return None
-        return "/events/admin/{0}/regdashboard/".format(bp.conference.urlname)
+        return "/events/admin/{0}/multiregs/?b={1}".format(bp.conference.urlname, bp.id)
 
 
 class AddonInvoiceProcessor(object):
