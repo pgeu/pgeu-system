@@ -116,7 +116,7 @@ class BackendForm(ConcurrentProtectedModelForm):
             else:
                 vals = []
             if 'data' in kwargs and str(field) in kwargs['data']:
-                vals.extend([int(x) for x in kwargs['data'].getlist(field)])
+                vals.extend([x for x in kwargs['data'].getlist(field)])
             self.fields[field].widget.attrs['data-selecturl'] = lookup.url
             self.fields[field].queryset = self.fields[field].queryset.filter(pk__in=set(vals))
             self.fields[field].label_from_instance = lookup.label_from_instance

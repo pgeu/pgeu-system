@@ -146,6 +146,7 @@ urlpatterns.extend([
     url(r'^events/admin/meta/series/(.*/)?$', postgresqleu.confreg.backendviews.edit_series),
     url(r'^events/admin/meta/tshirts/(.*/)?$', postgresqleu.confreg.backendviews.edit_tshirts),
     url(r'^events/admin/lookups/accounts/$', postgresqleu.util.backendlookups.GeneralAccountLookup.lookup),
+    url(r'^events/admin/lookups/country/$', postgresqleu.util.backendlookups.CountryLookup.lookup),
     url(r'^events/admin/lookups/speakers/$', postgresqleu.confreg.backendlookups.SpeakerLookup.lookup),
     url(r'^events/admin/(\w+)/$', postgresqleu.confreg.views.admin_dashboard_single),
     url(r'^events/admin/(\w+)/edit/$', postgresqleu.confreg.backendviews.edit_conference),

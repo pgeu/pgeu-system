@@ -16,6 +16,7 @@ from .models import ConferenceSession, ConferenceSessionFeedback
 from .models import PrepaidVoucher, DiscountCode, AttendeeMail
 
 from .regtypes import validate_special_reg_type
+from postgresqleu.util.db import exec_to_list
 from postgresqleu.util.magic import magicdb
 
 from postgresqleu.countries.models import Country
@@ -43,12 +44,31 @@ class ConferenceRegistrationForm(forms.ModelForm):
             self.fields['email'].widget.attrs['readonly'] = True
         self.fields['additionaloptions'].queryset = ConferenceAdditionalOption.objects.filter(
             conference=self.instance.conference, public=True)
-        self.fields['country'].queryset = Country.objects.order_by('printable_name')
+        self.fields['country'].choices = self._get_country_choices()
 
         if not self.regforother:
             self.intro_html = mark_safe('<p>You are currently making a registration for account<br/><i>{0} ({1} {2} &lt;{3}&gt;).</i></p>'.format(escape(self.user.username), escape(self.user.first_name), escape(self.user.last_name), escape(self.user.email)))
         else:
             self.intro_html = mark_safe('<p>You are currently editing a registration for somebody other than yourself.</p>')
+
+    def _get_country_choices(self):
+        yield (None, 'Prefer not to say')
+
+        def _common_countries():
+            for iso, prn in exec_to_list("WITH t AS (SELECT iso, printable_name FROM country c INNER JOIN (SELECT country_id FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND country_id IS NOT NULL UNION ALL SELECT country_id FROM confreg_conference_initial_common_countries WHERE conference_id=%(confid)s) x ON c.iso=x.country_id GROUP BY c.iso ORDER BY count(iso) DESC LIMIT 8) SELECT iso, printable_name FROM t ORDER BY printable_name", {
+                    'confid': self.instance.conference.id,
+            }):
+                yield (iso, prn)
+
+        def _all_countries():
+            for c in Country.objects.order_by('printable_name'):
+                yield (c.iso, c.printable_name)
+
+        cc = list(_common_countries())
+        if cc:
+            yield ('Common countries', cc)
+
+        yield ('All countries', list(_all_countries()))
 
     def clean_regtype(self):
         newval = self.cleaned_data.get('regtype')

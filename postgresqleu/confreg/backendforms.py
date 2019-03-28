@@ -34,7 +34,7 @@ from postgresqleu.newsevents.models import NewsPosterProfile
 from postgresqleu.confreg.models import valid_status_transitions, get_status_string
 from postgresqleu.confreg.models import STATUS_CHOICES
 
-from postgresqleu.util.backendlookups import GeneralAccountLookup
+from postgresqleu.util.backendlookups import GeneralAccountLookup, CountryLookup
 from postgresqleu.confreg.backendlookups import RegisteredUsersLookup, SpeakerLookup
 
 
@@ -47,6 +47,7 @@ class BackendConferenceForm(BackendForm):
         'staff': GeneralAccountLookup(),
         'volunteers': RegisteredUsersLookup(None),
         'checkinprocessors': RegisteredUsersLookup(None),
+        'initial_common_countries': CountryLookup(),
     }
 
     class Meta:
@@ -59,7 +60,8 @@ class BackendConferenceForm(BackendForm):
                   'testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors',
                   'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'askphotoconsent',
                   'skill_levels', 'additionalintro', 'callforpapersintro', 'sendwelcomemail', 'welcomemail',
-                  'tickets', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist']
+                  'tickets', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist',
+                  'initial_common_countries']
 
     def fix_fields(self):
         self.selectize_multiple_fields['volunteers'] = RegisteredUsersLookup(self.conference)
@@ -68,7 +70,7 @@ class BackendConferenceForm(BackendForm):
 
     fieldsets = [
         {'id': 'base_info', 'legend': 'Basic information', 'fields': ['attendees_before_waitlist', 'invoice_autocancel_hours', 'notifyregs', ]},
-        {'id': 'welcomeandreg', 'legend': 'Welcome and registration', 'fields': ['sendwelcomemail', 'welcomemail', 'tickets', 'queuepartitioning', ]},
+        {'id': 'welcomeandreg', 'legend': 'Welcome and registration', 'fields': ['sendwelcomemail', 'welcomemail', 'tickets', 'queuepartitioning', 'initial_common_countries']},
         {'id': 'promo', 'legend': 'Website promotion', 'fields': ['promoactive', 'promotext', 'promopicurl']},
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', ]},
         {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'askphotoconsent', 'additionalintro', ]},

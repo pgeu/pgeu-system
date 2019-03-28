@@ -133,6 +133,12 @@ name (pick wihch one). Information about this partitioning will be
 written on the tickets (if included in the templates), so should
 normally not be changed after the first tickets have been issued.
 
+Initial common countries
+: Initial list of countries to show under *common countries* on the registration
+form. Each o these counttries will count as one when the list of most
+common countries is populated. Once registrations start arriving, they
+will get replaced by actual countries used as they show up.
+
 Promotion active
 : Should this conference be listed in promotional parts of the website.
 Without this, the only way to access the conference information is to

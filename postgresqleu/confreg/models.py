@@ -190,6 +190,7 @@ class Conference(models.Model):
     attendees_before_waitlist = models.IntegerField(blank=False, null=False, default=0, validators=[MinValueValidator(0), ], verbose_name="Attendees before waitlist", help_text="Maximum number of attendees before enabling waitlist management. 0 for no waitlist management")
     series = models.ForeignKey(ConferenceSeries, null=False, blank=False, on_delete=models.CASCADE)
     personal_data_purged = models.DateTimeField(null=True, blank=True, help_text="Personal data for registrations for this conference have been purged")
+    initial_common_countries = models.ManyToManyField(Country, blank=True, help_text="Initial set of common countries")
 
     # Attributes that are safe to access in jinja templates
     _safe_attributes = ('active', 'askfood', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
@@ -475,7 +476,7 @@ class ConferenceRegistration(models.Model):
     email = models.EmailField(null=False, blank=False, verbose_name="E-mail address")
     company = models.CharField(max_length=100, null=False, blank=True, verbose_name="Company")
     address = models.TextField(max_length=200, null=False, blank=True, verbose_name="Address")
-    country = models.ForeignKey(Country, null=False, blank=False, verbose_name="Country", on_delete=models.CASCADE)
+    country = models.ForeignKey(Country, null=True, blank=True, verbose_name="Country", on_delete=models.CASCADE)
     phone = models.CharField(max_length=100, null=False, blank=True, verbose_name="Phone number")
     shirtsize = models.ForeignKey(ShirtSize, null=True, blank=True, verbose_name="Preferred T-shirt size", on_delete=models.CASCADE)
     dietary = models.CharField(max_length=100, null=False, blank=True, verbose_name="Special dietary needs")

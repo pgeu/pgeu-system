@@ -59,3 +59,25 @@ class GeneralAccountLookup(LookupBase):
                 Q(username__icontains=query) | Q(first_name__icontains=query) | Q(last_name__icontains=query)
             )[:30]
         ]
+
+
+class CountryLookup(LookupBase):
+    @property
+    def url(self):
+        return '/events/admin/lookups/country/'
+
+    @property
+    def label_from_instance(self):
+        return lambda x: x.printable_name
+
+    @classmethod
+    def get_values(self, query):
+        return [
+            {
+                'id': c.iso,
+                'value': c.printable_name,
+            }
+            for c in Country.objects.filter(
+                Q(printable_name__icontains=query) | Q(iso__icontains=query)
+            )[:30]
+        ]
