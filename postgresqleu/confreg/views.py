@@ -2824,6 +2824,9 @@ def admin_registration_confirm(request, urlname, regid):
     if not reg.can_edit:
         messages.error(request, "Cannot confirm a registration with active invoice or multireg")
         return HttpResponseRedirect("../")
+    if not reg.regtype:
+        messages.error(request, "Cannot confirm a registration without a registration type!")
+        return HttpResponseRedirect("../")
 
     if request.method == 'POST':
         form = ConfirmRegistrationForm(data=request.POST)
