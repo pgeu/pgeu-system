@@ -105,7 +105,7 @@ INSTALLED_APPS = [
     'postgresqleu.mailqueue',
     'postgresqleu.invoices',
     'postgresqleu.accounting',
-    'postgresqleu.util',
+    'postgresqleu.util.apps.UtilAppConfig',
     'postgresqleu.trustlypayment',
     'postgresqleu.braintreepayment',
     'postgresqleu.transferwise',
