@@ -200,7 +200,7 @@ class BulkInvoiceProcessor(object):
     def get_admin_url(self, invoice):
         try:
             bp = BulkPayment.objects.get(pk=invoice.processorid)
-        except ConferenceRegistration.DoesNotExist:
+        except BulkPayment.DoesNotExist:
             return None
         return "/events/admin/{0}/multiregs/?b={1}".format(bp.conference.urlname, bp.id)
 
