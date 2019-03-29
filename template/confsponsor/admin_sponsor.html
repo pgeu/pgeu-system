@@ -33,20 +33,35 @@ div.panelwrap {
       <div style="border: 1px solid black">{{b.claimhtml|safe}}</div>
 {%endif%}
       <br/>
+       <div class="row">
 {%if not b.confirmed%}
-      <form method="post" action=".">{% csrf_token %}
-	<input type="hidden" name="confirm" value="1">
-	<input type="hidden" name="claimid" value="{{b.id}}">
-	<input type="submit" class="btn btn-default" value="Confirm this benefit">
-      </form>
+        <div class="col-md-2">
+	  <form method="post" action=".">{% csrf_token %}
+	    <input type="hidden" name="confirm" value="1">
+	    <input type="hidden" name="claimid" value="{{b.id}}">
+	    <input type="submit" class="btn btn-primary btn-sm" value="Confirm this benefit">
+	  </form>
+	</div>
 {%else%}
-      <span class="label label-success">Confirmed</span>
+	<div class="col-md-1">
+	  <span class="btn btn-success btn-sm disabled">Confirmed</span>
+	</div>
 {%endif%}
-      </div>
-    </div>
+{%if b.can_unclaim %}
+	<div class="col-md-1">
+	  <form method="post" action=".">{% csrf_token %}
+	    <input type="hidden" name="unclaim" value="1">
+	    <input type="hidden" name="claimid" value="{{b.id}}">
+	    <input type="submit" class="btn btn-warning btn-sm confirm-btn" value="Unclaim this benefit" data-confirm="You are about to unclaim this benefit, including sending an email to the sponsor about this?">
+	  </form>
+	</div>
+{%endif%}
+       </div>{# row of buttons #}
+      </div>{# panelwrap #}
+    </div>{# panel-collapse #}
+  </div>{# panel #}
 {%endfor%}
-  </div>
-</div>
+</div>{# panel-group #}
 {%else%}
 <p>There are no claimed benefits for this sponsor.</p>
 {%endif%}

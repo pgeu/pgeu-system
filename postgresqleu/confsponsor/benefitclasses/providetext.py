@@ -79,3 +79,6 @@ class ProvideText(BaseBenefit):
 
     def render_claimdata(self, claimedbenefit):
         return claimedbenefit.claimdata
+
+    def can_unclaim(self, claimedbenefit):
+        return True

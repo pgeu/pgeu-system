@@ -798,6 +798,36 @@ def _confirm_benefit(request, benefit):
                                  })).save()
 
 
+def _unclaim_benefit(request, claimed_benefit):
+    with transaction.atomic():
+        benefit = claimed_benefit.benefit
+        sponsor = claimed_benefit.sponsor
+        conference = sponsor.conference
+        benefitclass = get_benefit_class(benefit.benefit_class)(benefit.level, benefit.class_parameters)
+        if not benefitclass.can_unclaim(claimed_benefit):
+            messages.error(request, "Benefit {0} cannot be unclaimed".format(benefit))
+            return
+
+        # To unclaim a benefit, we delete it, simple as that
+        messages.info(request, "Benefit {0} for {1} unclaimed.".format(benefit, sponsor))
+        claimed_benefit.delete()
+
+        # Send email
+        for manager in sponsor.managers.all():
+            send_simple_mail(conference.sponsoraddr,
+                             manager.email,
+                             "[{0}] sponsorship benefit unclaimed".format(conference.conferencename, benefit),
+                             "Your sponsorship benefit {0} at {1} has been marked as unclaimed by the organizers.".format(benefit, conference.conferencename),
+                             sendername=conference.conferencename,
+                             receivername='{0} {1}'.format(manager.first_name, manager.last_name))
+        send_simple_mail(conference.sponsoraddr,
+                         conference.sponsoraddr,
+                         "Sponsorship benefit {0} for {1} has been unclaimed".format(benefit, sponsor),
+                         "Sponsorship benefit {0} for {1} has been unclaimed".format(benefit, sponsor),
+                         sendername=conference.conferencename,
+                         )
+
+
 @login_required
 def sponsor_admin_sponsor(request, confurlname, sponsorid):
     conference = get_authenticated_conference(request, confurlname)
@@ -808,6 +838,12 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
         # Confirm one of the benefits, so do this before we load the list
         benefit = get_object_or_404(SponsorClaimedBenefit, sponsor=sponsor, id=request.POST['claimid'])
         _confirm_benefit(request, benefit)
+        return HttpResponseRedirect('.')
+
+    if request.method == 'POST' and request.POST.get('unclaim', '0') == '1':
+        # Unclaim one of the benefits
+        benefit = get_object_or_404(SponsorClaimedBenefit, sponsor=sponsor, id=request.POST['claimid'])
+        _unclaim_benefit(request, benefit)
         return HttpResponseRedirect('.')
 
     if request.method == 'POST':
@@ -866,7 +902,12 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 
     for b in claimedbenefits:
         if b.benefit.benefit_class:
-            b.claimhtml = get_benefit_class(b.benefit.benefit_class)(sponsor.level, b.benefit.class_parameters).render_claimdata(b)
+            c = get_benefit_class(b.benefit.benefit_class)(sponsor.level, b.benefit.class_parameters)
+            b.claimhtml = c.render_claimdata(b)
+            if b.confirmed:
+                b.can_unclaim = c.can_unclaim(b)
+            else:
+                b.can_unclaim = True
 
     return render(request, 'confsponsor/admin_sponsor.html', {
         'conference': conference,

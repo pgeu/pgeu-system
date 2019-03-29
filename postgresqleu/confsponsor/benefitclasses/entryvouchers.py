@@ -100,3 +100,13 @@ class EntryVouchers(BaseBenefit):
             s.write("<tr><td><code>{0}</code></td><td>{1}</td><td>{2}</td></tr>".format(v.vouchervalue, v.user and v.user.fullname or '', v.usedate and v.usedate or ''))
         s.write("</table>")
         return s.getvalue()
+
+    def can_unclaim(self, claimedbenefit):
+        if claimedbenefit.claimdata == "0":
+            # It was declined, so we can unclaim that
+            return True
+
+        batch = PrepaidBatch.objects.get(pk=int(claimedbenefit.claimdata))
+        if batch.prepaidvoucher_set.filter(user__isnull=False).exists():
+            return False
+        return True

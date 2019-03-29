@@ -11,6 +11,9 @@ class BaseBenefit(object):
     def render_claimdata(self, claimedbenefit):
         return ''
 
+    def can_unclaim(self, claimedbenefit):
+        return True
+
     def save_form(self, form, claim, request):
         raise Exception("Form saving not implemented!")
 
