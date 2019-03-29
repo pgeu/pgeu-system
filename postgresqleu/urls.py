@@ -80,6 +80,7 @@ urlpatterns.extend([
     url(r'^events/(?P<confname>[^/]+)/register/other/(?P<regid>(\d+)/)?$', postgresqleu.confreg.views.multireg),
     url(r'^events/(?P<confname>[^/]+)/register/other/newinvoice/$', postgresqleu.confreg.views.multireg_newinvoice),
     url(r'^events/(?P<confname>[^/]+)/register/other/b(?P<bulkid>(\d+))/$', postgresqleu.confreg.views.multireg_bulkview),
+    url(r'^events/(?P<confname>[^/]+)/register/other/b(?P<bulkid>(\d+))/cancel/$', postgresqleu.confreg.views.multireg_bulk_cancel),
     url(r'^events/(?P<confname>[^/]+)/register/other/z/$', postgresqleu.confreg.views.multireg_zeropay),
     url(r'^events/(?P<confname>[^/]+)/register/change/$', postgresqleu.confreg.views.changereg),
     url(r'^events/register/attach/([a-z0-9]{64})/$', postgresqleu.confreg.views.multireg_attach),

@@ -653,6 +653,30 @@ def multireg_bulkview(request, confname, bulkid):
 
 @login_required
 @transaction.atomic
+def multireg_bulk_cancel(request, confname, bulkid):
+    conference = get_object_or_404(Conference, urlname=confname)
+    bp = get_object_or_404(BulkPayment, conference=conference, pk=bulkid, user=request.user)
+
+    if not bp.invoice:
+        return HttpResponseRedirect("../")
+    if bp.invoice.paidat or bp.invoice.deleted:
+        return HttpResponseRedirect("../")
+
+    if request.method == 'POST':
+        if request.POST['submit'].find('Cancel invoice') >= 0:
+            manager = InvoiceManager()
+            manager.cancel_invoice(bp.invoice, "User {0} requested cancellation".format(request.user))
+            return HttpResponseRedirect('../../')
+        else:
+            return HttpResponseRedirect('../')
+
+    return render_conference_response(request, conference, 'reg', 'confreg/regmulti_cancel.html', {
+        'bp': bp,
+    })
+
+
+@login_required
+@transaction.atomic
 def multireg_attach(request, token):
     reg = get_object_or_404(ConferenceRegistration, regtoken=token)
     if reg.attendee:
