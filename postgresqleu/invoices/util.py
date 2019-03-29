@@ -872,7 +872,7 @@ def register_bank_transaction(method, methodidentifier, amount, transtext, sende
             # On success, send a notification
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                              settings.INVOICE_SENDER_EMAIL,
-                             "Bank transfer payment conirmed",
+                             "Bank transfer payment confirmed",
                              "A bank transfer payment from {0} matched an invoice.\nInvoice: {1}\nAmount: {2}\nRecipient name: {3}\nRecipient user: {4}\n".format(
                                  method.internaldescription,
                                  invoice.title,
