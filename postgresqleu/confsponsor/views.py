@@ -687,8 +687,8 @@ def sponsor_contract(request, contractid):
 def sponsor_admin_dashboard(request, confurlname):
     conference = get_authenticated_conference(request, confurlname)
 
-    confirmed_sponsors = Sponsor.objects.filter(conference=conference, confirmed=True).order_by('-level__levelcost', 'confirmedat')
-    unconfirmed_sponsors = Sponsor.objects.filter(conference=conference, confirmed=False).order_by('level__levelcost', 'name')
+    confirmed_sponsors = Sponsor.objects.select_related('invoice', 'level').filter(conference=conference, confirmed=True).order_by('-level__levelcost', 'confirmedat')
+    unconfirmed_sponsors = Sponsor.objects.select_related('invoice', 'level').filter(conference=conference, confirmed=False).order_by('level__levelcost', 'name')
 
     unconfirmed_benefits = SponsorClaimedBenefit.objects.filter(sponsor__conference=conference, confirmed=False).order_by('sponsor__level__levelcost', 'sponsor', 'benefit__sortkey')
 
@@ -745,7 +745,7 @@ ORDER BY l.levelcost, l.levelname, s.name, b.sortkey, b.benefitname""", {'confid
 
     has_shipment_tracking = ShipmentAddress.objects.filter(conference=conference, active=True).exists()
     if has_shipment_tracking:
-        shipments = Shipment.objects.filter(conference=conference).order_by('sponsor', 'addresstoken')
+        shipments = Shipment.objects.select_related('address').filter(conference=conference).order_by('sponsor', 'addresstoken')
     else:
         shipments = None
 
