@@ -38,7 +38,7 @@ from .util import invoicerows_for_registration, notify_reg_confirmed, Invoicerow
 from .util import get_invoice_autocancel, cancel_registration
 from .util import attendee_cost_from_bulk_payment
 
-from .models import get_status_string, get_status_string_short
+from .models import get_status_string, get_status_string_short, valid_status_transitions
 from .regtypes import confirm_special_reg_type, validate_special_reg_type
 from .jinjafunc import render_jinja_conference_response, JINJA_TEMPLATE_ROOT
 from .jinjapdf import render_jinja_ticket
@@ -2257,6 +2257,7 @@ def talkvote(request, confname):
         'tracks': alltracks,
         'selectedtracks': selectedtracks,
         'selectedstatuses': selectedstatuses,
+        'valid_status_transitions': valid_status_transitions,
         'urlfilter': urltrackfilter + urlstatusfilter,
         'helplink': 'callforpapers',
     })
@@ -2271,13 +2272,17 @@ def talkvote_status(request, confname):
 
     isadmin = conference.administrators.filter(pk=request.user.id).exists() or conference.series.administrators.filter(pk=request.user.id).exists()
     if not isadmin:
-        return HttpResponse('Only admins can change the status')
+        return PermissionDenied('Only admins can change the status')
 
     if request.method != 'POST':
-        return HttpResponse('Can only use POST')
+        return HttpResponse('Can only use POST', status_code=400)
 
+    newstatus = int(request.POST['newstatus'])
     session = get_object_or_404(ConferenceSession, conference=conference, id=request.POST['sessionid'])
-    session.status = int(request.POST['newstatus'])
+    if newstatus not in valid_status_transitions[session.status]:
+        return HttpResponse("Cannot change from {} to {}".format(get_status_string(session.status), get_status_string(newstatus)), status=400)
+
+    session.status = newstatus
     session.save()
     return HttpResponse("{0};{1}".format(get_status_string(session.status),
                                          session.status != session.lastnotifiedstatus and 1 or 0,

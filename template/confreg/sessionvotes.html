@@ -59,46 +59,46 @@ function showDialog(id, title) {
    }
 }
 
-var buttonoptions = {
-{%for o in status_choices%}
-   {{o.0}}: '{{o.1}}',
-{%endfor%}
-};
-var buttonoptions_reverse = {
-{%for o in status_choices%}
-   '{{o.1}}': {{o.0}},
-{%endfor%}
+var valid_status_transitions = {{%for s, v in valid_status_transitions.items %}
+   {{s}}: {
+{%for k,t in v.items %}
+      {{k}}: '{{t}}',{%endfor%}
+   },{%endfor%}
 };
 
-function doUpdateStatus(id, statustext) {
-   statusval = buttonoptions_reverse[statustext];
+function doUpdateStatus(id, statusval) {
    $.post('changestatus/',
       {
          'csrfmiddlewaretoken': '{{csrf_token}}',
          'sessionid': id,
          'newstatus': statusval,
       },
-      function(data) {
-         var pieces = data.split(';');
-         $('#ajaxStatus').text('Changed status to ' + pieces[0]).fadeIn(500).delay(1000).fadeOut(500);
-         $('#statusstr' + id).text(pieces[0]).css('background-color', pieces[1]=='1'?'yellow':'white');
+      function(data, status, xhr) {
+         if (xhr.status == 200) {
+            var pieces = data.split(';');
+            $('#ajaxStatus').text('Changed status to ' + pieces[0]).addClass('alert-success').removeClass('alert-danger').fadeIn(500).delay(1000).fadeOut(500);
+            $('#statusstr' + id).text(pieces[0]).css('background-color', pieces[1]=='1'?'yellow':'white').data('currstatus', statusval);
+         } else {
+         }
       }
-   ).fail(function() {
-      alert('AJAX call failed');
+   ).fail(function(xhr, status, err) {
+      if (xhr.status >= 400 && xhr.status < 500) {
+         $('#ajaxStatus').text('Error: ' + xhr.responseText).removeClass('alert-success').addClass('alert-danger').fadeIn(500).delay(1000).fadeOut(500);
+      } else {
+         $('#ajaxStatus').text('Error: ' + xhr.err).removeClass('alert-success').addClass('alert-danger').fadeIn(500).delay(1000).fadeOut(500);
+      }
    });
 }
 
 function changeStatus(id) {
-   var currentstatus = buttonoptions_reverse[$('#statusstr' + id).text()];
+   var currentstatus = $('#statusstr' + id).data('currstatus');
    var buttons = {};
-   for (var k in buttonoptions) {
-      if (k != currentstatus && k != 1) {
-         buttons[buttonoptions[k]] = function(event) {
-            doUpdateStatus(id, $(event.target).text());
-            $(this).dialog("close");
-         };
+   $.each(valid_status_transitions[currentstatus], function(k,v) {
+      buttons[v] = function(event) {
+         doUpdateStatus(id, k);
+         $(this).dialog("close");
       }
-   }
+   });
    buttons['Cancel'] = function() {
            $( this ).dialog( "close" );
    };
@@ -252,7 +252,7 @@ width: 100%;
      </div>
    </td>
    {%if isadmin%}
-   <td{%if not s.statusid == s.laststatusid %} bgcolor="yellow"{%endif%} onClick="changeStatus({{s.id}})" class="dlgClickable" id="statusstr{{s.id}}">{{s.status}}</td>
+   <td{%if not s.statusid == s.laststatusid %} bgcolor="yellow"{%endif%} onClick="changeStatus({{s.id}})" class="dlgClickable" id="statusstr{{s.id}}" data-currstatus="{{s.statusid}}">{{s.status}}</td>
 {%else%}
    <td>{{s.status}}</td>
 {%endif%}
