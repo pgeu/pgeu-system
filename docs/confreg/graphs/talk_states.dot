@@ -12,7 +12,8 @@ digraph talkstates {
 	pending[shape=box label=Pending];
 	approved[shape=box label=Approved];
 	reserve[shape=box label=Reserve];
-	pendingreserve[shape=diamond label="Contact speaker to ask\nabout reserve list"];
+	pendingreserve[shape=box label="Pending reserve"];
+
 	rejected[shape=box label="Not Accepted"];
 
 	start -> submitted [label = "Speaker submits talk", color=green];
@@ -21,9 +22,9 @@ digraph talkstates {
 	pending -> rejected [label = "Speaker declines", color=green]
 	pending -> submitted [label = "Talk unapproved", color=blue]
 	submitted -> rejected [label = "Talk rejected", color=blue]
-	submitted -> pendingreserve [xabel = "Talk to\nreserve list", color=blue]
-	pendingreserve -> reserve [label = "Confirmed to\nreserve list", color=blue]
-	pendingreserve -> rejected [label = "Speaker declined", color=blue]
+	submitted -> pendingreserve [label = "Talk to\nreserve list", color=blue]
+	pendingreserve -> reserve [label = "Speaker confirms to\nreserve list", color=green]
+	pendingreserve -> rejected [label = "Speaker declines", color=green]
 	reserve -> pending [label = "Normal activate talk\n from reserve list", color=blue]
 	approved -> rejected [label = "Speaker withdraws", color=blue]
 	rejected -> submitted [label = "Processing reset", color=blue]

@@ -67,15 +67,7 @@ the list of sessions, if that is enabled for the
 [conference](configuring).
 
 See below for a diagram of how a session moves through the different
-states. Most of these steps are fully automatic by changing the
-state. The *exception* to consider here is the **reserve list**!
-
-To put a session on the reserve list, the process is:
-
-1. Contact the speaker manually via email to confirm that they are
-willing to be on the reserve list, knowing what it means.
-1. Change the state to Reserve
-1. Trigger the email
+states.
 
 ## Session states <a name="states"></a>
 

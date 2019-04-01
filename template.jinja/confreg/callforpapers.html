@@ -30,7 +30,7 @@ You have made the following submission{%if sessions|length > 1%}s{%endif%} to th
 <ul>
 {%for s in sessions%}
   <li>
-  <a href="{{s.id}}/">{{s.title}}</a>{%if s.status == 3 %} - <a href="{{s.id}}/speakerconfirm/">confirm</a>{%endif%}{%if s.status == 1 and s.has_feedback and not conference.feedbackopen%} - <a href="{{s.id}}/">View feedback</a>{%endif%}
+  <a href="{{s.id}}/">{{s.title}}</a>{%if s.status in (3,5) %} - <a href="{{s.id}}/speakerconfirm/">confirm</a>{%endif%}{%if s.status == 1 and s.has_feedback and not conference.feedbackopen%} - <a href="{{s.id}}/">View feedback</a>{%endif%}
   {%if s.status == 1 %}{# Approved - so link to the public description #}
   (<a href="/events/{{conference.urlname}}/schedule/session/{{s.id}}/">public view</a>)
   {%endif%}

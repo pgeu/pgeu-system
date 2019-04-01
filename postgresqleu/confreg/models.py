@@ -43,6 +43,7 @@ STATUS_CHOICES = (
     (2, "Not Accepted"),
     (3, "Pending"),      # Approved, but not confirmed
     (4, "Reserve"),      # Reserve list
+    (5, 'Pending reserve'),  # Reserve list, but not confirmed
 )
 STATUS_CHOICES_LONG = (
     (0, "Submitted, not processed yet"),
@@ -50,6 +51,7 @@ STATUS_CHOICES_LONG = (
     (2, "Not Accepted"),
     (3, "Pending speaker confirmation"),               # Approved, but not confirmed
     (4, "Reserve-listed in case of cancels/changes"),  # Reserve list
+    (5, "Pending reserve-list confirmation"),          # Reserve list, but not confirmed
 )
 STATUS_CHOICES_SHORT = (
     (0, "submitted"),
@@ -57,6 +59,7 @@ STATUS_CHOICES_SHORT = (
     (2, "notaccepted"),
     (3, "pending"),               # Approved, but not confirmed
     (4, "reserve"),  # Reserve list
+    (5, "pendreserve"),
 )
 
 
@@ -73,11 +76,12 @@ def get_status_string_short(val):
 
 
 valid_status_transitions = {
-    0: {3: 'Talk approved', 2: 'Talk is rejected', 4: 'Talk added to reserve list'},
+    0: {3: 'Talk approved', 2: 'Talk is rejected', 5: 'Talk added to reserve list'},
     1: {2: 'Talk withdrawn', },
     2: {0: 'Talk processing reset', },
     3: {0: 'Talk unapproved', 1: 'Speaker confirms', 2: 'Speaker declines'},
     4: {1: 'Last-minute reservelist', 3: 'Activated from reservelist'},
+    5: {4: 'Talk confirmed to reservelist', 2: 'Speaker declines'},
 }
 
 

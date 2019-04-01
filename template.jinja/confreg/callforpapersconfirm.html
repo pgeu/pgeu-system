@@ -3,12 +3,26 @@
 {%block content%}
 <h1>Confirm session - {{conference}}</h1>
 
+{%if session.status == 3 %}
 <p>
 Your session <strong>{{session.title}}</strong> is currently
 in state <em>pending</em>. This means that the session has been
 selected by the organizers, and all that is required is that you
 confirm your attendance.
 </p>
+{%else%}
+<p>
+Your session <strong>{{session.title}}</strong> is currently
+in state <em>pending reserve</em>. This means that the organizers
+would like to keep your talk on the reserve list if possible.
+</p>
+<p>
+Reserve list means that we'd like the ability to approve this session
+any time between now and the event, in case another session has
+to be canceled. This can include both early cancellations and late
+ones due to for example another speaker unable to make it to the event.
+</p>
+{%endif%}
 
 <p>
 Please do <em>not</em> do this until you are fully certain that

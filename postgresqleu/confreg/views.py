@@ -38,7 +38,7 @@ from .util import invoicerows_for_registration, notify_reg_confirmed, Invoicerow
 from .util import get_invoice_autocancel, cancel_registration
 from .util import attendee_cost_from_bulk_payment
 
-from .models import get_status_string
+from .models import get_status_string, get_status_string_short
 from .regtypes import confirm_special_reg_type, validate_special_reg_type
 from .jinjafunc import render_jinja_conference_response, JINJA_TEMPLATE_ROOT
 from .jinjapdf import render_jinja_ticket
@@ -1545,28 +1545,44 @@ def callforpapers_confirm(request, confname, sessionid):
     session = get_object_or_404(ConferenceSession, conference=conference,
                                 speaker=speaker, pk=sessionid)
 
-    if session.status != 3 and session.status != 1:
-        # Session needs to be either pending approval (render the form) or
-        # already approved (indicate that it is). For any other status,
-        # just send back to the index page.
+    if session.status not in (1, 3, 4, 5):
+        # 1 = confirmed, so render
+        # 2 = pending, so render form
+        # 4 = reserve, so render
+        # 5 = pending reserve, so render form
         return HttpResponseRedirect("../..")
 
-    if session.status == 1:
-        # Confirmed
+    if session.status in (1, 4):
+        if not conference.active:
+            can_register = False
+        elif session.status == 1:
+            # If a "speaker" or a "speaker or reserve speaker" regtype exists
+            can_register = RegistrationType.objects.filter(conference=conference, active=True, specialtype__in=('spk', 'spkr')).exists()
+        else:
+            # If a "sapeaker or reserve speaker" regtype exists
+            can_register = RegistrationType.objects.filter(conference=conference, active=True, specialtype='spkr').exists()
+
         return render_conference_response(request, conference, 'cfp', 'confreg/callforpapersconfirmed.html', {
             'session': session,
+            'speaker_can_register': can_register,
         })
 
     if request.method == 'POST':
         if request.POST.get('is_confirmed', 0) == '1':
-            session.status = 1
+            if session.status == 3:
+                session.status = 1
+            elif session.status == 5:
+                session.status = 4
+            else:
+                # Should not happen case, so just redirect the user back
+                return HttpResponseRedirect("../..")
             session.save()
             # We can generate the email for this right away, so let's do that
             for spk in session.speaker.all():
                 send_template_mail(conference.contactaddr,
                                    spk.user.email,
                                    "Your session '%s' submitted to %s" % (session.title, conference),
-                                   'confreg/mail/session_notify_approved.txt',
+                                   'confreg/mail/session_notify_{}.txt'.format(get_status_string_short(session.status)),
                                    {
                                        'conference': conference,
                                        'session': session,

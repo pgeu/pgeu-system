@@ -5,14 +5,14 @@
 
 <p>
 Your session <strong>{{session.title}}</strong> has now been
-confirmed!
+<em>confirmed{%if session.status == 4%} on the reserve list{%endif%}</em>!
 </p>
 
 <p>
 We look forward to seeing you at {{conference}}!
 </p>
 
-{%if conference.active %}
+{%if speaker_can_register %}
 <p>
 If you have not already done so, you can now proceed to
 <a href="/events/{{conference.urlname}}/register/">register</a>

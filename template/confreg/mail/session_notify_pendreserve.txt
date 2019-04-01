@@ -1,0 +1,34 @@
+Hello!
+
+This email is sent to you because the status of your session
+
+{{session.title|safe}}
+
+submitted to {{conference}} has been updated.
+
+We would like to put this session on the reserve list.
+
+Reserve list means that we'd like the ability to approve this session
+any time between now and the event, in case another session has
+to be canceled. This can include both early cancellations and late
+ones due to for example another speaker unable to make it to the event.
+
+For this reason it is important that you are planning to attend the
+event regardless of having this session selected, and also that you have
+the session prepared and ready to give on short notice.
+
+Before your session is fully moved to the reserve list, we need you to
+confirm that you are OK with this. Please go to the website (as linked
+below) and confirm your acceptance as soon as you can. If you have any
+further questions about what this means, please make sure you contact
+us *before* you confirm the reserve listing. You can do so by replying
+to this email.
+
+Also, if you do not wish for your session to be used for the reserve
+list, please let us know by responding to this email.
+
+If you have made more than one submission to the conference,
+please note that this status only affects this specific session.
+To view the status of all your sessions, please view the website
+
+{{sitebase}}/events/{{conference.urlname}}/callforpapers/
