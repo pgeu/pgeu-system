@@ -34,6 +34,10 @@ tr.error {
 {{mail.message}}
 </pre>
 
+{%if admin%}
 <a href="/events/sponsor/admin/{{conference.urlname}}/" class="btn btn-default btn-block">Back to sponsors</a>
+{%else%}
+<a href="../../" class="btn btn-default btn-block">Back to sponsorship</a>
+{%endif%}
 
 {%endblock%}
