@@ -66,5 +66,9 @@
 	{%endfor%}
     </ul></td>
   </tr>
+  <tr>
+    <th>Send email:</th>
+    <td><a class="btn btn-default btn-sm" href="../sendmail/?sendto=sponsor&preselectsponsors={{sponsor.id}}">Send email to sponsor</a></td>
+  </tr>
 {%endif%}{# if details #}
 </table>

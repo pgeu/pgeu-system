@@ -102,11 +102,20 @@ class SponsorSendEmailForm(forms.ModelForm):
         model = SponsorMail
         exclude = ('conference', )
 
-    def __init__(self, conference, *args, **kwargs):
+    def __init__(self, conference, sendto, *args, **kwargs):
         self.conference = conference
+        self.sendto = sendto
         super(SponsorSendEmailForm, self).__init__(*args, **kwargs)
-        self.fields['levels'].widget = forms.CheckboxSelectMultiple()
-        self.fields['levels'].queryset = SponsorshipLevel.objects.filter(conference=self.conference)
+        if self.sendto == 'level':
+            self.fields['levels'].widget = forms.CheckboxSelectMultiple()
+            self.fields['levels'].queryset = SponsorshipLevel.objects.filter(conference=self.conference)
+            self.fields['levels'].required = True
+            del self.fields['sponsors']
+        else:
+            self.fields['sponsors'].widget = forms.CheckboxSelectMultiple()
+            self.fields['sponsors'].queryset = Sponsor.objects.filter(conference=self.conference)
+            self.fields['sponsors'].required = True
+            del self.fields['levels']
 
         if not (self.data.get('levels') and self.data.get('subject') and self.data.get('message')):
                 del self.fields['confirm']

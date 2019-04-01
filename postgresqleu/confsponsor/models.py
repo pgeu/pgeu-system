@@ -144,7 +144,8 @@ class SponsorClaimedBenefit(models.Model):
 
 class SponsorMail(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
-    levels = models.ManyToManyField(SponsorshipLevel, blank=False)
+    levels = models.ManyToManyField(SponsorshipLevel, blank=True)
+    sponsors = models.ManyToManyField(Sponsor, blank=True)
     sentat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     subject = models.CharField(max_length=100, null=False, blank=False)
     message = models.TextField(max_length=8000, null=False, blank=False)

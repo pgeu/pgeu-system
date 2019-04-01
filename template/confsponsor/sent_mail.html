@@ -25,7 +25,12 @@ tr.error {
 {%if admin%}
  <tr>
    <th>To:</th>
-   <td>{{mail.levels.all|join:", "}}</td>
+   <td>
+     <ul>
+{%if mail.levels.all%}<li>{{mail.levels.all|join:", "}}</li>{%endif%}
+{%if mail.sponsors.all%}<li>{{mail.sponsors.all|join:", "}}</li>{%endif%}
+     </ul>
+   </td>
  </tr>
 {%endif%}
 </table>

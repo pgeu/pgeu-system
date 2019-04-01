@@ -3,6 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidde
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
 from django.db import transaction, connection
+from django.db.models import Q
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -73,7 +74,7 @@ def sponsor_conference(request, sponsorid):
     unclaimedbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=False).exclude(sponsorclaimedbenefit__sponsor=sponsor)
     claimedbenefits = SponsorClaimedBenefit.objects.filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey')
     noclaimbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=True)
-    mails = SponsorMail.objects.filter(conference=sponsor.conference, levels=sponsor.level)
+    mails = SponsorMail.objects.filter(conference=sponsor.conference).filter(Q(levels=sponsor.level) | Q(sponsors=sponsor))
     vouchers = PrepaidVoucher.objects.filter(batch__sponsor=sponsor)
     pendingvouchers = PurchasedVoucher.objects.filter(sponsor=sponsor, batch__isnull=True)
     discountcodes = DiscountCode.objects.filter(sponsor=sponsor)
@@ -164,7 +165,7 @@ def sponsor_manager_add(request, sponsorid):
 def sponsor_view_mail(request, sponsorid, mailid):
     sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
 
-    mail = get_object_or_404(SponsorMail, conference=sponsor.conference, levels=sponsor.level, id=mailid)
+    mail = get_object_or_404(SponsorMail, Q(levels=sponsor.level) | Q(sponsors=sponsor), conference=sponsor.conference, id=mailid)
 
     return render(request, 'confsponsor/sent_mail.html', {
         'conference': sponsor.conference,
@@ -692,7 +693,7 @@ def sponsor_admin_dashboard(request, confurlname):
 
     unconfirmed_benefits = SponsorClaimedBenefit.objects.filter(sponsor__conference=conference, confirmed=False).order_by('sponsor__level__levelcost', 'sponsor', 'benefit__sortkey')
 
-    mails = SponsorMail.objects.filter(conference=conference)
+    mails = SponsorMail.objects.prefetch_related('levels', 'sponsors').filter(conference=conference)
 
     # Maybe we could do this with the ORM based on data we already have, but SQL is easier
     curs = connection.cursor()
@@ -969,20 +970,31 @@ def sponsor_admin_benefit(request, confurlname, benefitid):
 def sponsor_admin_send_mail(request, confurlname):
     conference = get_authenticated_conference(request, confurlname)
 
+    sendto = request.GET.get('sendto', '') or request.POST.get('sendto', '')
+    if sendto not in ('', 'level', 'sponsor'):
+        return HttpResponseRedirect(".")
+
     if request.method == 'POST':
-        form = SponsorSendEmailForm(conference, data=request.POST)
+        form = SponsorSendEmailForm(conference, sendto, data=request.POST)
         if form.is_valid():
             # Create a message record
             msg = SponsorMail(conference=conference,
                               subject=form.data['subject'],
                               message=form.data['message'])
             msg.save()
-            for l in form.data.getlist('levels'):
-                msg.levels.add(l)
+            if sendto == 'level':
+                for l in form.data.getlist('levels'):
+                    msg.levels.add(l)
+                sponsors = Sponsor.objects.filter(conference=conference, level__in=form.data.getlist('levels'), confirmed=True)
+                deststr = "sponsorship levels {0}".format(", ".join([l.levelname for l in msg.levels.all()]))
+            else:
+                for s in form.data.getlist('sponsors'):
+                    msg.sponsors.add(s)
+                sponsors = Sponsor.objects.filter(conference=conference, pk__in=form.data.getlist('sponsors'))
+                deststr = "sponsors {0}".format(", ".join([s.name for s in msg.sponsors.all()]))
             msg.save()
 
             # Now also send the email out to the *current* subscribers
-            sponsors = Sponsor.objects.filter(conference=conference, level__in=form.data.getlist('levels'), confirmed=True)
             for sponsor in sponsors:
                 msgtxt = "{0}\n\n-- \nThis message was sent to sponsors of {1}.\nYou can view all communications for this conference at:\n{2}/events/sponsor/{3}/\n".format(msg.message, conference, settings.SITEBASE, sponsor.pk)
                 for manager in sponsor.managers.all():
@@ -1005,19 +1017,26 @@ def sponsor_admin_send_mail(request, confurlname):
             send_simple_mail(conference.sponsoraddr,
                              conference.sponsoraddr,
                              "Email sent to sponsors",
-                             "An email was sent to sponsors of {0}.\n\nTo view it, go to {1}/events/sponsor/admin/{2}/viewmail/{3}/".format(conference, settings.SITEBASE, conference.urlname, msg.id),
+                             "An email was sent to sponsors of {0}\nwith subject '{1}'.\n\nIt was sent to {2}\n\nTo view it, go to {3}/events/sponsor/admin/{4}/viewmail/{5}/".format(conference, msg.subject, deststr, settings.SITEBASE, conference.urlname, msg.id),
                              sendername=conference.conferencename,
                              receivername=conference.conferencename)
 
             messages.info(request, "Email sent to %s sponsors, and added to all sponsor pages" % len(sponsors))
             return HttpResponseRedirect("../")
     else:
-        form = SponsorSendEmailForm(conference)
+        if sendto == 'sponsor' and request.GET.get('preselectsponsors', ''):
+            initial_sponsors = Sponsor.objects.filter(conference=conference, pk__in=request.GET.getlist('preselectsponsors'))
+        else:
+            initial_sponsors = None
+        form = SponsorSendEmailForm(conference, sendto, initial={
+            'sponsors': initial_sponsors,
+        })
 
     return render(request, 'confsponsor/sendmail.html', {
         'conference': conference,
         'form': form,
-        'mails': SponsorMail.objects.filter(conference=conference).order_by('sentat'),
+        'sendto': sendto,
+        'mails': SponsorMail.objects.prefetch_related('levels', 'sponsors').filter(conference=conference).order_by('sentat'),
         'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
         'helplink': 'sponsors',
     })

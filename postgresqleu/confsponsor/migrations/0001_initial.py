@@ -113,7 +113,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='sponsormail',
             name='levels',
-            field=models.ManyToManyField(to='confsponsor.SponsorshipLevel'),
+            field=models.ManyToManyField(to='confsponsor.SponsorshipLevel', blank=True),
         ),
         migrations.AddField(
             model_name='sponsorclaimedbenefit',

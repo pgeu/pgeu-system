@@ -16,20 +16,30 @@ up as a sponsor at that level later.
     <th>Sent at</th>
     <th>Subject</th>
     <th>Sent to level(s)</th>
+    <th>Sent to sponsor(s)</th>
   </tr>
 {%for m in mails%}
   <tr>
     <td>{{m.sentat|date:"Y-m-d H:i"}}</td>
     <td><a href="../viewmail/{{m.id}}/">{{m.subject}}</a></td>
     <td>{{m.levels.all|join:", "}}</td>
+    <td>{{m.sponsors.all|join:", "}}</td>
   </tr>
 {%endfor%}
 </table>
 {%endif%}
 
 <h2>New email</h2>
+{%if sendto %}
 <form method="post" action="." class="form-horizontal">{% csrf_token %}
+<input type="hidden" name="sendto" value="{{sendto}}">
 {%include "confreg/admin_backend_form_content.html" with savebutton="Send mail" cancelurl="../" %}
+{%else%}
+<p>
+  <a href="?sendto=level" class="btn btn-default">Send to sponsorship level</a>
+  <a href="?sendto=sponsor" class="btn btn-default">Send to individual sponsors</a>
+</p>
+{%endif%}
 
 <a href="/events/sponsor/admin/{{conference.urlname}}/" class="btn btn-default btn-block">Back to sponsors</a>
 {%endblock%}

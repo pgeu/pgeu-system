@@ -97,12 +97,14 @@ The following emails have been sent to sponsors so far:
     <th>Sent at</th>
     <th>Subject</th>
     <th>Sent to level(s)</th>
+    <th>Sent to sponsor(s)</th>
   </tr>
 {%for m in mails%}
   <tr>
     <td>{{m.sentat|date:"Y-m-d H:i"}}</td>
     <td><a href="viewmail/{{m.id}}/">{{m.subject}}</a></td>
     <td>{{m.levels.all|join:", "}}</td>
+    <td>{{m.sponsors.all|join:", "}}</td>
   </tr>
 {%endfor%}
 </table>
