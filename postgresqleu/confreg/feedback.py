@@ -71,7 +71,7 @@ def feedback_sessions(request, confname):
 
     # Get all sessions that have actual comments on them
     cursor = connection.cursor()
-    cursor.execute("SELECT s.title || ' (' || (SELECT string_agg(fullname, ', ') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker css ON css.speaker_id=spk.id WHERE css.conferencesession_id=s.id) || ')', conference_feedback FROM confreg_conferencesessionfeedback fb INNER JOIN confreg_conferencesession s ON fb.session_id=s.id WHERE s.conference_id=%s AND NOT conference_feedback='' ORDER BY 1,2" % (conference.id,))
+    cursor.execute("SELECT concat(s.title, ' (' || (SELECT string_agg(fullname, ', ') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker css ON css.speaker_id=spk.id WHERE css.conferencesession_id=s.id) || ')'), conference_feedback FROM confreg_conferencesessionfeedback fb INNER JOIN confreg_conferencesession s ON fb.session_id=s.id WHERE s.conference_id=%s AND NOT conference_feedback='' ORDER BY 1,2" % (conference.id,))
     commented_sessions = cursor.fetchall()
 
     # Now for all of our fancy toplists
