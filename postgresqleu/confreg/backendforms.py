@@ -58,7 +58,7 @@ class BackendConferenceForm(BackendForm):
                   'twitter_timewindow_start', 'twitter_timewindow_end',
                   'schedulewidth', 'pixelsperminute', 'notifyregs',
                   'testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors',
-                  'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'askphotoconsent',
+                  'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent',
                   'skill_levels', 'additionalintro', 'callforpapersintro', 'sendwelcomemail', 'welcomemail',
                   'tickets', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist',
                   'initial_common_countries']
@@ -73,7 +73,7 @@ class BackendConferenceForm(BackendForm):
         {'id': 'welcomeandreg', 'legend': 'Welcome and registration', 'fields': ['sendwelcomemail', 'welcomemail', 'tickets', 'queuepartitioning', 'initial_common_countries']},
         {'id': 'promo', 'legend': 'Website promotion', 'fields': ['promoactive', 'promotext', 'promopicurl']},
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', ]},
-        {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askshareemail', 'askphotoconsent', 'additionalintro', ]},
+        {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent', 'additionalintro', ]},
         {'id': 'steps', 'legend': 'Steps', 'fields': ['active', 'allowedit', 'callforpapersopen', 'callforsponsorsopen', 'scheduleactive', 'sessionsactive', 'checkinactive', 'conferencefeedbackopen', 'feedbackopen']},
         {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpapersintro']},
         {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', ]},
@@ -151,14 +151,14 @@ class BackendRegistrationForm(BackendForm):
     helplink = "registrations"
     fieldsets = [
         {'id': 'personal_info', 'legend': 'Personal information', 'fields': ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'twittername', 'nick']},
-        {'id': 'reg_info', 'legend': 'Registration information', 'fields': ['regtype', 'additionaloptions', 'shareemail']},
-        {'id': 'attendee_specifics', 'legend': 'Attendee specifics', 'fields': ['shirtsize', 'dietary', 'shareemail']},
+        {'id': 'reg_info', 'legend': 'Registration information', 'fields': ['regtype', 'additionaloptions', 'badgescan', 'shareemail']},
+        {'id': 'attendee_specifics', 'legend': 'Attendee specifics', 'fields': ['shirtsize', 'dietary', ]},
     ]
 
     class Meta:
         model = ConferenceRegistration
         fields = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone',
-                  'shirtsize', 'dietary', 'twittername', 'nick', 'shareemail',
+                  'shirtsize', 'dietary', 'twittername', 'nick', 'badgescan', 'shareemail',
                   'regtype', 'additionaloptions']
 
     def fix_fields(self):
@@ -171,6 +171,8 @@ class BackendRegistrationForm(BackendForm):
             self.remove_field('dietary')
         if not self.conference.asktshirt:
             self.remove_field('shirtsize')
+        if not self.conference.askbadgescan:
+            self.remove_field('badgescan')
         if not self.conference.askshareemail:
             self.remove_field('shareemail')
         self.update_protected_fields()

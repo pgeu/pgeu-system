@@ -172,6 +172,7 @@ class Conference(models.Model):
     askfood = models.BooleanField(blank=False, null=False, default=True, verbose_name="Field: dietary", help_text="Include field for dietary needs")
     asktwitter = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: twitter name", help_text="Include field for twitter name")
     asknick = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: nick", help_text="Include field for nick")
+    askbadgescan = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: badge scanning", help_text="Include field for allowing sponsors to scan badge")
     askshareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: share email", help_text="Include field for sharing email with sponsors")
     askphotoconsent = models.BooleanField(null=False, blank=False, default=True, verbose_name="Field: photo consent", help_text="Include field for getting photo consent")
     skill_levels = models.BooleanField(blank=False, null=False, default=True)
@@ -197,7 +198,7 @@ class Conference(models.Model):
     initial_common_countries = models.ManyToManyField(Country, blank=True, help_text="Initial set of common countries")
 
     # Attributes that are safe to access in jinja templates
-    _safe_attributes = ('active', 'askfood', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
+    _safe_attributes = ('active', 'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
                         'callforpapersintro', 'callforpapersopen',
                         'conferencefeedbackopen', 'confurl', 'contactaddr', 'tickets',
                         'conferencedatestr', 'location',
@@ -231,6 +232,8 @@ class Conference(models.Model):
             yield 'nick'
         if not self.asktwitter:
             yield 'twittername'
+        if not self.askbadgescan:
+            yield 'badgescan'
         if not self.askshareemail:
             yield 'shareemail'
         if not self.askphotoconsent:
@@ -487,6 +490,7 @@ class ConferenceRegistration(models.Model):
     additionaloptions = models.ManyToManyField(ConferenceAdditionalOption, blank=True, verbose_name="Additional options")
     twittername = models.CharField(max_length=100, null=False, blank=True, verbose_name="Twitter account", validators=[TwitterValidator, ])
     nick = models.CharField(max_length=100, null=False, blank=True, verbose_name="Nickname")
+    badgescan = models.BooleanField(null=False, blank=False, default=True, verbose_name="Allow sponsors get contact information by scanning badge")
     shareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Share e-mail address with sponsors")
     photoconsent = models.NullBooleanField(null=True, blank=False, verbose_name="Consent to having your photo taken at the event by the organisers")
 
@@ -613,13 +617,20 @@ class ConferenceRegistration(models.Model):
             return 'ID${0}$ID'.format(self.idtoken)
         return ''
 
+    # Public token including the identifier
+    @property
+    def fullpublictoken(self):
+        if self.publictoken:
+            return 'AT${0}$AT'.format(self.publictoken)
+        return ''
+
     # For the admin interface (mainly)
     def __str__(self):
         return "%s: %s %s <%s>" % (self.conference, self.firstname, self.lastname, self.email)
 
     # For exporting "safe attributes" to external systems
     def safe_export(self):
-        attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'shareemail', 'fullidtoken', 'queuepartition', ]
+        attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'badgescan', 'shareemail', 'fullidtoken', 'fullpublictoken', 'queuepartition', ]
         d = dict((a, getattr(self, a) and str(getattr(self, a))) for a in attribs)
         if self.regtype:
             d['regtype'] = self.regtype.safe_export()

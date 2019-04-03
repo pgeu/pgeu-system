@@ -1,0 +1,70 @@
+{%extends "nav_events.html" %}
+{%load alertmap%}
+{%block title%}Conference Sponsor Badge Scanning - {{conference}}{%endblock%}
+{%block content%}
+<h1>Conference Sponsor Badge Scanning</h1>
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert {{ message.tags|alertmap }}">{{message}}</div>
+{% endfor %}
+{% endif %}
+
+<h2>Scanners</h2>
+{%if scanners%}
+<p>
+  The following users can scan badges for your sponsorship:
+</p>
+<form method="post" action=".">
+<input type="hidden" name="what" value="del">{% csrf_token %}
+<ul>
+{%for s in scanners %}
+<li>{{s.scanner.fullname}}
+  <input type="submit" value="Remove" name="remove-{{s.id}}" class="btn btn-primary btn-sm">
+  <input type="submit" value="Send instructions email" name="email-{{s.id}}" class="btn btn-primary btn-sm">
+</li>
+{%endfor%}
+</ul>
+</form>
+{%endif%}
+<h3>Add user</h3>
+<p>
+  Enter the email user of an attendee who should be able to scan badges
+  on behalf of your sponsorship. Note that this attendee must have a confirmed
+  registration to the conerence using the specified email address.
+</p>
+<form method="post" action=".">{% csrf_token%}
+  <input type="hidden" name="what" value="add">
+  <input type="email" name="email" placeholder="Attendee email">
+  <input type="submit" value="Add scanner" class="btn btn-primary">
+</form>
+
+<h2>Scanned users</h2>
+<table class="table table-striped table-hover table-sm">
+  <tr>
+    <th>Name</th>
+    <th>Country</th>
+    <th>Company</th>
+    <th>Email</th>
+    <th>Scanned at</th>
+    <th>Scanned by</th>
+    <th>Note</th>
+  </tr>
+{%for a in scanned%}
+  <tr>
+    <td>{{a.attendee.fullname}}</td>
+    <td>{{a.attendee.country|default:""}}</td>
+    <td>{{a.attendee.company}}</td>
+    <td>{{a.attendee.email}}</td>
+    <td>{{a.scannedat}}</td>
+    <td>{{a.scannedby.fullname}}</td>
+    <td>{{a.note|linebreaksbr}}</td>
+  </tr>
+{%endfor%}
+</table>
+
+<a href="download.csv" class="btn btn-primary">Download CSV file</a>
+<br/><br/>
+
+<a href="../" class="btn btn-outline-dark">Back to sponsorship</a>
+{%endblock%}

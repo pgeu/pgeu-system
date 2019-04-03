@@ -1,0 +1,12 @@
+{%extends "nav_events.html" %}
+{%block title%}Test scan{%endblock%}
+{%block content%}
+<h1>Test scan</h1>
+<p>
+  Scanning the below QR code with the badge scanning app should result
+  in a message about the test code being scanned successfully.
+</p>
+<p>
+  <img src="data:image/png;base64,{{qrtest}}" />
+</p>
+{%endblock%}

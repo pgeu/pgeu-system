@@ -126,7 +126,10 @@ function setup_instascan() {
     scanner.addListener('scan', function(content) {
         scanner.stop();
         if (!content.startsWith('ID$') || !content.endsWith('$ID')) {
-            showstatus('Scanned QR code is not from a correct ticket', 'danger');
+            if (content.startsWith('AT$'))
+                showstatus('You appear to have scanned a badge instead of a ticket!', 'info');
+            else
+                showstatus('Scanned QR code is not from a correct ticket', 'danger');
             reset_state();
             return;
         }

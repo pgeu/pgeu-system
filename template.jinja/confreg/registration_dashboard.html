@@ -52,7 +52,7 @@ form input[type=submit] {
 
 <p>
 Your registration (for {{reg.firstname}} {{reg.lastname}}) has been
-completed on {{reg.payconfirmedat}}. Welcome to {{conference}}!
+completed on {{reg.payconfirmedat|datetimeformat("%Y-%m-%d %H:%M")}}. Welcome to {{conference}}!
 </p>
 {%if not has_other_multiregs%}
 <p>
@@ -214,6 +214,18 @@ to change anything other than this, please contact the conference organizers.
   {%endfor%}
 <input type="submit" value="Update registration">
 </form>
+{%endif%}
+
+{%if scanned_by_sponsors%}
+<h2>Scanned by sponsors</h2>
+<p>
+  Your badge has been scanned by the following sponsors:
+</p>
+<ul>
+{%for s in scanned_by_sponsors %}
+ <li>{{s.sponsor.displayname}} (at {{s.scannedat|datetimeformat("%Y-%m-%d %H:%M")}})</li>
+{%endfor%}
+</ul>
 {%endif%}
 
 {%if availableoptions%}

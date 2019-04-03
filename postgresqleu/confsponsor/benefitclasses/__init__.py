@@ -5,4 +5,9 @@ all_benefits = {
     3: {"class": "entryvouchers.EntryVouchers", "description": "Claim entry vouchers"},
     4: {"class": "providetext.ProvideText", "description": "Provide text string"},
     5: {"class": "attendeelist.AttendeeList", "description": "List of attendee email addresses"},
+    6: {"class": "badgescanning.BadgeScanning", "description": "Scanning of attendee badges"},
 }
+
+
+def get_benefit_id(classname):
+    return next((k for k, v in all_benefits.items() if v['class'] == classname))

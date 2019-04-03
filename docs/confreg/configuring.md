@@ -175,6 +175,10 @@ Field twitter name
 : Should the field asking for twitter name be displayed on the
 registration form.
 
+Field badge scanning
+: Should the field asking to allow sponsors to scan the attendees
+badge be displayed on the registration form.
+
 Field share email
 : Should the field asking to share email address with sponsors be
 displayed on the registration form.

@@ -9,6 +9,7 @@ from django.template import loader
 
 from django.db.models.fields.files import ImageFieldFile
 
+from postgresqleu.confsponsor.models import ScannedAttendee
 from .models import Conference
 from .models import ConferenceRegistration, RegistrationType, Speaker
 from .models import ConferenceAdditionalOption, Track, RegistrationClass
@@ -272,10 +273,11 @@ class ConferenceRegistrationForm(forms.ModelForm):
         model = ConferenceRegistration
         fields = ('regtype', 'firstname', 'lastname', 'email', 'company', 'address',
                   'country', 'phone', 'shirtsize', 'dietary', 'additionaloptions',
-                  'twittername', 'nick', 'shareemail', 'photoconsent', 'vouchercode',
+                  'twittername', 'nick', 'badgescan', 'shareemail', 'photoconsent', 'vouchercode',
         )
         widgets = {
             'photoconsent': forms.Select(choices=((None, ''), (True, 'I consent to having my photo taken'), (False, "I don't want my photo taken"))),
+            'badgescan': forms.Select(choices=((True, 'Allow sponsors to scan my badge'), (False, "Don't allow sponsors to scan my badge"))),
         }
 
     @property
@@ -294,12 +296,14 @@ class ConferenceRegistrationForm(forms.ModelForm):
                'fields': [self[x] for x in fields],
                }
 
-        if conf.asktshirt or conf.askfood or conf.askshareemail:
+        if conf.asktshirt or conf.askfood or conf.askbadgescan or conf.askshareemail:
             fields = []
             if conf.asktshirt:
                 fields.append(self['shirtsize'])
             if conf.askfood:
                 fields.append(self['dietary'])
+            if conf.askbadgescan:
+                fields.append(self['badgescan'])
             if conf.askshareemail:
                 fields.append(self['shareemail'])
             yield {'id': 'conference_info',
@@ -335,10 +339,21 @@ class RegistrationChangeForm(forms.ModelForm):
 
     class Meta:
         model = ConferenceRegistration
-        fields = ('shirtsize', 'dietary', 'twittername', 'nick', 'shareemail', 'photoconsent', )
+        fields = ('shirtsize', 'dietary', 'twittername', 'nick', 'badgescan', 'shareemail', 'photoconsent', )
         widgets = {
             'photoconsent': forms.Select(choices=((None, ''), (True, 'I consent to having my photo taken'), (False, "I don't want my photo taken"))),
+            'badgescan': forms.Select(choices=((True, 'Allow sponsors to scan my badge'), (False, "Don't allow sponsors to scan my badge"))),
         }
+
+    def clean_badgescan(self):
+        newval = self.cleaned_data.get('badgescan')
+        if self.instance.badgescan and not newval:
+            # Change from allowed -> disallowed is only allowed (!) if no sponsor has already
+            # scanned this badge.
+            if ScannedAttendee.objects.filter(attendee=self.instance).exists():
+                raise ValidationError("This setting cannot be changed since your badge has already been scanned by at least one sponsor.")
+
+        return newval
 
 
 rating_choices = (

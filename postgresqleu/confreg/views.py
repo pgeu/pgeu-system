@@ -49,6 +49,7 @@ from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod, InvoiceRow
 from postgresqleu.confwiki.models import Wikipage
+from postgresqleu.confsponsor.models import ScannedAttendee
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor, InvoiceHistory
 from postgresqleu.mailqueue.util import send_mail, send_simple_mail, send_template_mail, template_to_string
@@ -160,10 +161,15 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
     else:
         changeform = None
 
-    fields = ['shirtsize', 'dietary', 'nick', 'twittername', 'shareemail', 'photoconsent']
+    fields = ['shirtsize', 'dietary', 'nick', 'twittername', 'badgescan', 'shareemail', 'photoconsent']
     for f in conference.remove_fields:
         fields.remove(f)
     displayfields = [(reg._meta.get_field(k).verbose_name.capitalize(), reg.get_field_string(k)) for k in fields]
+
+    if conference.askbadgescan:
+        scanned_by_sponsors = ScannedAttendee.objects.select_related('sponsor').filter(attendee=reg)
+    else:
+        scanned_by_sponosrs = None
 
     return render_conference_response(request, conference, 'reg', 'confreg/registration_dashboard.html', {
         'redir_root': redir_root,
@@ -177,6 +183,7 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
         'pendingadditional': pendingadditional,
         'pendingadditionalinvoice': pendingadditionalinvoice,
         'invoices': invoices,
+        'scanned_by_sponsors': scanned_by_sponsors,
         'changeform': changeform,
         'displayfields': displayfields,
     })

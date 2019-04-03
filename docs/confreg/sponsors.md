@@ -126,6 +126,17 @@ List of attendee email addresses
    email addresses (only those that opted in to sharing) after the
    conference has finished.
 
+Scanning of attendee badges
+:  This benefit class allows the sponsor to get access to the webapp
+   for scanning attendee badges. Doing so in turn lets them collect
+   contact information for those attendees that visit their sponsor
+   table and similar, if the badges are scanned. Each attendee also
+   gets the ability to refuse sharing data (on the registration form),
+   in which case the sponsor will get an error when they try to scan
+   their badge.
+   Note that for this feature to work, the *Field: badge scanning*
+   on the [conference configuration](configuring) must be enabled.
+
 ## Shipments
 
 A shipment tracking system is built into the sponsorship system. It

@@ -70,6 +70,12 @@
   <td>{{reg.dietary}}</td>
  </tr>
 {%endif%}
+{%if conference.askbadgescan%}
+ <tr>
+  <td>Allow badge scan</td>
+  <td>{{reg.badgescan|yesno}}</td>
+ </tr>
+{%endif%}
 {%if conference.askshareemail%}
  <tr>
   <td>Share email</td>

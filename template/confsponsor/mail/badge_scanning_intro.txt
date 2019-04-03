@@ -1,0 +1,30 @@
+Hello!
+
+You are receiving this email because you have been assiged as a "badge
+scanner" for {{sponsor.displayname}} at {{conference}}.
+
+This means you will be able to scan badges of attendees at the
+conference, collecting contact data. You will of course only be able
+to view the data of those attendees that have authorized the sharing
+of their data.
+
+To scan a badge you will use your regular smartphone. The system has
+been tested with the most common models of smartphones, and should
+hopefully work with the one you have. Note that you will need to grant
+the website permissions to use your camera, and depending on
+smartphone model you may need to configure the camera before you scan
+(for example so that it doesn't use the front-facing camera, which
+some models do by default).
+
+To access your personal scanning page, go to:
+
+{{sitebase}}/events/sponsor/scanning/{{scanner.token}}/
+
+Note that this is your *personal* link, so do not share it with
+others! Each person designated to perform badge scanning will have
+their own personal link!
+
+We also strongly recommend that you test the system before the
+conference. You can find a code to test with at
+
+{{sitebase}}/events/sponsor/scanning/test/

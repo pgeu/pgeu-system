@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
 
 from postgresqleu.confreg.models import Conference, RegistrationType, PrepaidBatch
+from postgresqleu.confreg.models import ConferenceRegistration
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.storage import delete_inline_storage, inlineencoded_upload_path
@@ -128,6 +129,8 @@ class Sponsor(models.Model):
     def __str__(self):
         return self.name
 
+    _safe_attributes = ('displayname', )
+
 
 class SponsorClaimedBenefit(models.Model):
     sponsor = models.ForeignKey(Sponsor, null=False, blank=False, on_delete=models.CASCADE)
@@ -155,6 +158,33 @@ class SponsorMail(models.Model):
 
     class Meta:
         ordering = ('-sentat',)
+
+
+class SponsorScanner(models.Model):
+    sponsor = models.ForeignKey(Sponsor, null=False, blank=False)
+    scanner = models.ForeignKey(ConferenceRegistration, null=False, blank=False)
+    token = models.TextField(null=False, blank=False, unique=True)
+
+    class Meta:
+        unique_together = (
+            ('sponsor', 'scanner', ),
+        )
+
+
+class ScannedAttendee(models.Model):
+    sponsor = models.ForeignKey(Sponsor, null=False, blank=False)
+    scannedby = models.ForeignKey(ConferenceRegistration, null=False, blank=False, related_name='scanned_attendees')
+    attendee = models.ForeignKey(ConferenceRegistration, null=False, blank=False, related_name='scanned_by')
+    scannedat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+    note = models.TextField(null=False, blank=True)
+
+    class Meta:
+        ordering = ('-scannedat', )
+        unique_together = (
+            ('sponsor', 'scannedby', 'attendee', )
+        )
+
+    _safe_attributes = ('sponsor', 'scannedat', )
 
 
 class PurchasedVoucher(models.Model):

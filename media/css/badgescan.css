@@ -1,0 +1,90 @@
+body {
+    padding-top: 60px;
+    padding-bottom: 60px;
+}
+
+dl.badge_list dt {
+    background-color: lightgray;
+    padding: 3px;
+    padding-left: 5px;
+    border-radius: 3px;
+}
+
+dl.badge_list dd {
+    margin-bottom: 3px;
+    padding: 3px;
+}
+
+dl.badge_list dd textarea {
+    width: 100%;
+    height: 7em;
+}
+
+#completed_div {
+    display: none;
+}
+
+video#qrpreview {
+    border: 1px solid black;
+    width: 200px;
+    height: 200px;
+    display: block;
+    margin: 0 auto;
+}
+
+button.cancelButton {
+    margin-top: 20px;
+}
+
+div.buttonrow {
+    margin-bottom: 10px;
+}
+
+
+/*
+ * Loading spinner
+ */
+div#loading {
+    float: right;
+}
+
+.spinner-ring {
+    display: inline-block;
+    position: relative;
+    width: 50px;
+    height: 50px;
+}
+
+.spinner-ring div {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 42px;
+    height: 42px;
+    margin: 6px;
+    border: 6px solid #000;
+    border-radius: 50%;
+    animation: spinner-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border-color: #000 transparent transparent transparent;
+}
+
+.spinner-ring div:nth-child(1) {
+    animation-delay: -0.45s;
+}
+
+.spinner-ring div:nth-child(2) {
+    animation-delay: -0.3s;
+}
+
+.spinner-ring div:nth-child(3) {
+    animation-delay: -0.15s;
+}
+
+@keyframes spinner-ring {
+    0% {
+	transform: rotate(0deg);
+    }
+    100% {
+	transform: rotate(360deg);
+    }
+}

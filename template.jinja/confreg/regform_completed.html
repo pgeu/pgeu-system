@@ -77,7 +77,7 @@ at {{conference.contactaddr}}.
 {%endif%}
  </table>
 </fieldset>
-{%if conference.asktshirt or conference.askfood or conference.askshareemail%}
+{%if conference.asktshirt or conference.askfood or conference.askbadgescan or conference.askshareemail%}
 <fieldset>
  <legend>Conference information</legend>
  <table class="reginfotbl">
@@ -86,6 +86,9 @@ at {{conference.contactaddr}}.
  {%endif%}
  {%if conference.askfood%}
   <tr><td class="firstcol">Dietary needs</td><td>{{reg.dietary}}</td></tr>
+ {%endif%}
+ {%if conference.askbadgescan%}
+  <tr><td class="firstcol">Allow badge scanning</td><td>{{reg.badgescan|yesno("Yes,No")}}</td></tr>
  {%endif%}
  {%if conference.askshareemail%}
   <tr><td class="firstcol">Share email</td><td>{{reg.shareemail|yesno("Yes,No")}}</td></tr>

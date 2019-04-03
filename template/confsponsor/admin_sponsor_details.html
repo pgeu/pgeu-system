@@ -66,6 +66,16 @@
 	{%endfor%}
     </ul></td>
   </tr>
+{%if sponsor.level.sponsor_scanning %}
+  <tr>
+    <th>Scanners:</th>
+    <td><ul>
+	{%for s in sponsor.sponsorscanner.all%}
+	<li>s.scanner.fullname</li>
+	{%endfor%}
+    </ul></td>
+  </tr>
+{%endif%}
   <tr>
     <th>Send email:</th>
     <td><a class="btn btn-default btn-sm" href="../sendmail/?sendto=sponsor&preselectsponsors={{sponsor.id}}">Send email to sponsor</a></td>

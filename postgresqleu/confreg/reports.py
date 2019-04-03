@@ -173,6 +173,7 @@ def attendee_report_filters(conference):
     yield ReportFilter('twittername', 'Twitter')
     yield ReportFilter('nick', 'Nickname')
     yield ReportFilter('dietary', 'Dietary needs')
+    yield ReportFilter('badgescan', 'Allow badge scanning')
     yield ReportFilter('shareemail', 'Share email with sponsors')
     yield ReportFilter('photoconsent', 'Photo consent', ((1, 'Yes'), (0, 'No')))
     yield ReportFilter('payconfirmedat', 'Payment confirmed', emptyasnull=False)
