@@ -331,15 +331,21 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
 
 class RegistrationChangeForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, allowedit, *args, **kwargs):
         super(RegistrationChangeForm, self).__init__(*args, **kwargs)
+        self.allowedit = allowedit
         self.fields['photoconsent'].required = True
         for f in self.instance.conference.remove_fields:
             del self.fields[f]
+        if not self.allowedit:
+            for f in self.fields:
+                if f not in self.Meta.unlocked_fields:
+                    self.fields[f].widget.attrs['readonly'] = 'true'
 
     class Meta:
         model = ConferenceRegistration
         fields = ('shirtsize', 'dietary', 'twittername', 'nick', 'badgescan', 'shareemail', 'photoconsent', )
+        unlocked_fields = ('badgescan', )
         widgets = {
             'photoconsent': forms.Select(choices=((None, ''), (True, 'I consent to having my photo taken'), (False, "I don't want my photo taken"))),
             'badgescan': forms.Select(choices=((True, 'Allow sponsors to scan my badge'), (False, "Don't allow sponsors to scan my badge"))),
@@ -354,6 +360,14 @@ class RegistrationChangeForm(forms.ModelForm):
                 raise ValidationError("This setting cannot be changed since your badge has already been scanned by at least one sponsor.")
 
         return newval
+
+    def clean(self):
+        d = super(RegistrationChangeForm, self).clean()
+        if not self.allowedit:
+            for k in d.keys():
+                if k not in self.Meta.unlocked_fields:
+                    d[k] = self.initial[k]
+        return d
 
 
 rating_choices = (

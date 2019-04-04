@@ -148,18 +148,15 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
     for pao in PendingAdditionalOrder.objects.filter(reg=reg, invoice__isnull=False):
         invoices.append(('Additional options invoice and receipt', InvoicePresentationWrapper(pao.invoice, '.')))
 
-    if conference.allowedit:
-        # Form for changeable fields
-        if request.method == 'POST':
-            changeform = RegistrationChangeForm(instance=reg, data=request.POST)
-            if changeform.is_valid():
-                changeform.save()
-                messages.info(request, "Registration updated.")
-                return HttpResponseRedirect("../")
-        else:
-            changeform = RegistrationChangeForm(instance=reg)
+    # Form for changeable fields
+    if request.method == 'POST':
+        changeform = RegistrationChangeForm(conference.allowedit, instance=reg, data=request.POST)
+        if changeform.is_valid():
+            changeform.save()
+            messages.info(request, "Registration updated.")
+            return HttpResponseRedirect("../")
     else:
-        changeform = None
+        changeform = RegistrationChangeForm(conference.allowedit, instance=reg)
 
     fields = ['shirtsize', 'dietary', 'nick', 'twittername', 'badgescan', 'shareemail', 'photoconsent']
     for f in conference.remove_fields:
@@ -359,9 +356,6 @@ def changereg(request, confname):
     # Change certain allowed fields on a registration.
     conference = get_object_or_404(Conference, urlname=confname)
     reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
-
-    if not conference.allowedit:
-        return HttpResponseRedirect('../')
 
     return _registration_dashboard(request, conference, reg, False, '../')
 
