@@ -20,7 +20,10 @@ Verify the changes above before proceeding!
 </p>
 
 <p>
-  <a class="btn btn-default" href="?doit=1">Publish</a>
+  <form method="post" action=".">{% csrf_token %}
+    <input type="hidden" name="doit" value="1">
+    <input type="submit" class="btn btn-default" value="Publish">
+  </form>
 </p>
 
 <a class="btn btn-default btn-block" href="../">Back</a>

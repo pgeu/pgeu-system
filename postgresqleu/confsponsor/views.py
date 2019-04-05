@@ -114,7 +114,7 @@ def sponsor_conference(request, sponsorid):
 @login_required
 def sponsor_manager_delete(request, sponsorid):
     sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
-    user = get_object_or_404(User, id=request.GET['id'])
+    user = get_object_or_404(User, id=request.POST['id'])
 
     if user == request.user:
         messages.warning(request, "Can't delete yourself! Have one of your colleagues do it...")

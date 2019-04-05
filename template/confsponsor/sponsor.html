@@ -311,7 +311,7 @@ must already have an account and have logged in at least once.
 <p>Current managers:</p>
 <ul>
 {%for m in sponsor.managers.all%}
-<li>{{m.first_name}} {{m.last_name}} ({{m.email}}) (<a href="managers/del/?id={{m.id}}">delete</a>)</li>
+<li><form method="post" action="managers/del/" class="form-inline">{{m.first_name}} {{m.last_name}} ({{m.email}}){%csrf_token%}<input type="hidden" name="id" value="{{m.id}}"> <input type="submit" value="Delete" class="btn btn-outline-dark btn-sm ml-4"></form></li>
 {%endfor%}
 </ul>
 

@@ -2465,7 +2465,7 @@ def publishschedule(request, confname):
         if dirty:
             s.save()
 
-    if request.GET.get('doit', 0) == '1':
+    if request.method == 'POST' and request.POST.get('doit', 0) == '1':
         transaction.commit()
         return render(request, 'confreg/schedule_publish.html', {
             'done': 1,
