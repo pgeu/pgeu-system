@@ -60,4 +60,5 @@ work from here.
     * [Payment methods](payment)
 * Scheduled jobs
     * [Scheduled jobs](jobs)
-
+* Email infrastructure
+    * [Email infrastructure](mail)

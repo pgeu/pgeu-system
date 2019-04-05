@@ -12,6 +12,7 @@ class BackendMailqueueForm(BackendForm):
     decoded = forms.CharField(label="Decoded message", widget=StaticTextWidget)
 
     list_fields = ['sendtime', 'sender', 'receiver', 'subject', ]
+    helplink = 'mail'
 
     class Meta:
         model = QueuedMail
