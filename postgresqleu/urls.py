@@ -29,6 +29,7 @@ import postgresqleu.trustlypayment.views
 import postgresqleu.braintreepayment.views
 import postgresqleu.accountinfo.views
 import postgresqleu.util.docsviews
+import postgresqleu.mailqueue.backendviews
 
 from postgresqleu.newsevents.feeds import LatestNews
 from postgresqleu.confreg.feeds import LatestEvents, ConferenceNewsFeed
@@ -284,6 +285,9 @@ urlpatterns.extend([
     url(r'^admin/jobs/$', postgresqleu.scheduler.views.index),
     url(r'^admin/jobs/(\d+)/$', postgresqleu.scheduler.views.job),
     url(r'^admin/jobs/history/$', postgresqleu.scheduler.views.history),
+
+    # Mail queue
+    url(r'^admin/mailqueue/(.*/)?$', postgresqleu.mailqueue.backendviews.edit_mailqueue),
 
     # Handle paypal data returns
     url(r'^p/paypal_return/(\d+)/$', postgresqleu.paypal.views.paypal_return_handler),

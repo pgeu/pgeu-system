@@ -54,7 +54,7 @@ def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=No
             msg.attach(part)
 
     # Just write it to the queue, so it will be transactionally rolled back
-    QueuedMail(sender=sender, receiver=receiver, fullmsg=msg.as_string()).save()
+    QueuedMail(sender=sender, receiver=receiver, subject=subject, fullmsg=msg.as_string()).save()
     # Any bcc is just entered as a separate email
     if bcc:
         if type(bcc) is list or type(bcc) is tuple:
@@ -63,9 +63,9 @@ def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=No
             bcc = set((bcc, ))
 
         for b in bcc:
-            QueuedMail(sender=sender, receiver=b, fullmsg=msg.as_string()).save()
+            QueuedMail(sender=sender, receiver=b, subject=subject, fullmsg=msg.as_string()).save()
 
 
-def send_mail(sender, receiver, fullmsg):
+def send_mail(sender, receiver, subject, fullmsg):
     # Send an email, prepared as the full MIME encoded mail already
-    QueuedMail(sender=sender, receiver=receiver, fullmsg=fullmsg).save()
+    QueuedMail(sender=sender, receiver=receiver, subject=subject, fullmsg=fullmsg).save()
