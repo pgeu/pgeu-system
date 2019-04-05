@@ -35,16 +35,42 @@ def _get_conference_and_reg(request, urlname):
 
 
 @login_required
+@transaction.atomic
 def volunteerschedule(request, urlname, adm=False):
     try:
         (conference, can_admin, reg) = _get_conference_and_reg(request, urlname)
     except ConferenceRegistration.DoesNotExist:
         return HttpResponse("Must be registered for conference to view volunteer schedule")
 
+    is_admin = can_admin and adm
+
+    if request.method == 'POST':
+        for k, v in request.POST.items():
+            if k.startswith('signup-'):
+                _signup(request, conference, reg, is_admin, int(k[len('signup-'):]))
+                break
+            elif k.startswith('remove-'):
+                pieces = [int(i) for i in k[len('remove-'):].split('-')]
+                _remove(request, conference, reg, is_admin, pieces[0], pieces[1])
+                break
+            elif k.startswith('confirm-'):
+                pieces = [int(i) for i in k[len('confirm-'):].split('-')]
+                _confirm(request, conference, reg, is_admin, pieces[0], pieces[1])
+                break
+            elif k.startswith('add-vol-'):
+                if is_admin:
+                    slotid = int(k[len('add-vol-'):])
+                    volid = int(v)
+                    _add(request, conference, reg, is_admin, slotid, volid)
+                else:
+                    messages.warning(request, "Permission denied")
+                break
+        else:
+            messages.error(request, "Unknown button pressed")
+        return HttpResponseRedirect(".")
+
     slots = VolunteerSlot.objects.filter(conference=conference).order_by('timerange', 'title')
     allregs = conference.volunteers.all()
-
-    is_admin = can_admin and adm
 
     stats = ConferenceRegistration.objects.filter(conference=conference) \
                                           .filter(volunteers_set=conference) \
@@ -66,11 +92,7 @@ def volunteerschedule(request, urlname, adm=False):
     })
 
 
-@login_required
-@transaction.atomic
-def signup(request, urlname, slotid, adm=False):
-    (conference, is_admin, reg) = _get_conference_and_reg(request, urlname)
-
+def _signup(request, conference, reg, adm, slotid):
     slot = get_object_or_404(VolunteerSlot, conference=conference, id=slotid)
     if VolunteerAssignment.objects.filter(slot=slot, reg=reg).exists():
         request.session['rowerror'] = [int(slotid), "Already a volunteer for selected slot"]
@@ -80,17 +102,10 @@ def signup(request, urlname, slotid, adm=False):
         request.session['rowerror'] = [int(slotid), "Cannot sign up for an overlapping slot"]
     else:
         VolunteerAssignment(slot=slot, reg=reg, vol_confirmed=True, org_confirmed=False).save()
-    return HttpResponseRedirect('../..')
 
 
-@login_required
-@transaction.atomic
-def add(request, urlname, slotid, regid, adm=False):
-    (conference, is_admin, reg) = _get_conference_and_reg(request, urlname)
-    if not is_admin:
-        return HttpResponseRedirect("../..")
-
-    addreg = get_object_or_404(ConferenceRegistration, conference=conference, id=regid)
+def _add(request, conference, reg, adm, slotid, volid):
+    addreg = get_object_or_404(ConferenceRegistration, conference=conference, id=volid)
     slot = get_object_or_404(VolunteerSlot, conference=conference, id=slotid)
     if VolunteerAssignment.objects.filter(slot=slot, reg=addreg).exists():
         request.session['rowerror'] = [int(slotid), "Already a volunteer for selected slot"]
@@ -100,14 +115,9 @@ def add(request, urlname, slotid, regid, adm=False):
         request.session['rowerror'] = [int(slotid), "Cannot add to an overlapping slot"]
     else:
         VolunteerAssignment(slot=slot, reg=addreg, vol_confirmed=False, org_confirmed=True).save()
-    return HttpResponseRedirect('../..')
 
 
-@login_required
-@transaction.atomic
-def remove(request, urlname, slotid, aid, adm=False):
-    (conference, is_admin, reg) = _get_conference_and_reg(request, urlname)
-
+def _remove(request, conference, reg, is_admin, slotid, aid):
     slot = get_object_or_404(VolunteerSlot, conference=conference, id=slotid)
     if is_admin:
         a = get_object_or_404(VolunteerAssignment, slot=slot, id=aid)
@@ -117,16 +127,11 @@ def remove(request, urlname, slotid, aid, adm=False):
         request.session['rowerror'] = [int(slotid), "Cannot remove a confirmed assignment. Please contact the volunteer schedule coordinator for manual processing."]
     else:
         a.delete()
-    return HttpResponseRedirect('../..')
 
 
-@login_required
-@transaction.atomic
-def confirm(request, urlname, slotid, aid, adm=False):
-    (conference, is_admin, reg) = _get_conference_and_reg(request, urlname)
-
+def _confirm(request, conference, reg, is_admin, slotid, aid):
     slot = get_object_or_404(VolunteerSlot, conference=conference, id=slotid)
-    if is_admin and adm:
+    if is_admin:
         # Admins can make organization confirms
         a = get_object_or_404(VolunteerAssignment, slot=slot, id=aid)
         if a.org_confirmed:
@@ -142,7 +147,6 @@ def confirm(request, urlname, slotid, aid, adm=False):
         else:
             a.vol_confirmed = True
             a.save()
-    return HttpResponseRedirect('../..')
 
 
 def ical(request, urlname, token):
@@ -154,13 +158,3 @@ def ical(request, urlname, token):
         'assignments': assignments,
         'now': datetime.utcnow(),
     }, content_type='text/calendar')
-
-
-urlpatterns = [
-    url(r'^$', volunteerschedule),
-    url(r'^signup/(?P<slotid>\d+)/$', signup),
-    url(r'^remove/(?P<slotid>\d+)-(?P<aid>\d+)/$', remove),
-    url(r'^confirm/(?P<slotid>\d+)-(?P<aid>\d+)/$', confirm),
-    url(r'^add/(?P<slotid>\d+)-(?P<regid>\d+)/$', add),
-    url(r'^ical/(?P<token>[a-z0-9]{64})/$', ical),
-]
