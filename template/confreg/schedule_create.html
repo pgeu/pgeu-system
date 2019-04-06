@@ -97,7 +97,7 @@ function init() {
   ;
 
   // Load the current state
-  $.post('.', {'get': 1}, function(data) {
+  $.get('.?get=1', function(data) {
      $.each(data, function(k, v) {
         slot = $('#' + k);
         session = $('#' + v);
@@ -120,7 +120,9 @@ function saveDraft() {
       return;
    }
    // Build a representation of all scheduled slots
-   sched = {}
+   sched = {
+      'csrfmiddlewaretoken': '{{csrf_token}}',
+   }
    $('.sessionslot').each(function(i, el) {
       sessionid = $(el).attr('sessionid');
       if (sessionid) {

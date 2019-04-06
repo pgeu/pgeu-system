@@ -5,7 +5,6 @@ from django.core.exceptions import PermissionDenied
 from django.core import paginator
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect, HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.conf import settings
@@ -2333,7 +2332,6 @@ def talkvote_comment(request, confname):
 
 
 @login_required
-@csrf_exempt
 @transaction.atomic
 def createschedule(request, confname):
     conference = get_object_or_404(Conference, urlname=confname)
@@ -2343,15 +2341,16 @@ def createschedule(request, confname):
             ):
         raise PermissionDenied('You are not an administrator or talk voter for this conference!')
 
-    if request.method == "POST":
-        if 'get' in request.POST:
+    if request.method == "GET":
+        if request.GET.get('get', 0) == '1':
             # Get the current list of tentatively scheduled talks
             s = {}
             for sess in conference.conferencesession_set.all():
                 if sess.tentativeroom is not None and sess.tentativescheduleslot is not None:
                     s['slot%s' % ((sess.tentativeroom.id * 1000000) + sess.tentativescheduleslot.id)] = 'sess%s' % sess.id
             return HttpResponse(json.dumps(s), content_type="application/json")
-
+        # Else it was a get for the page so fall through
+    elif request.method == "POST":
         # Else we are saving. This is only allowed by superusers and administrators,
         # not all talk voters (as it potentially changes the website).
         if not request.user.is_superuser and not is_admin:
