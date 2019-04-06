@@ -117,7 +117,7 @@ class PaypalAPI(object):
             if 'fee_amount' in t['transaction_info']:
                 r['FEEAMT'] = t['transaction_info']['fee_amount']['value']
 
-            if code in ('T0000', 'T0001', 'T0006', 'T0007', 'T0013'):
+            if code in ('T0000', 'T0001', 'T0002', 'T0006', 'T0007', 'T0013'):
                 if 'item_details' in t['cart_info']:
                     r['SUBJECT'] = t['cart_info']['item_details'][0]['item_name']
                 elif 'transaction_note' in t['transaction_info']:
