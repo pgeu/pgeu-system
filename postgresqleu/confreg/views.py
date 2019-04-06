@@ -165,7 +165,7 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
     if conference.askbadgescan:
         scanned_by_sponsors = ScannedAttendee.objects.select_related('sponsor').filter(attendee=reg)
     else:
-        scanned_by_sponosrs = None
+        scanned_by_sponsors = None
 
     return render_conference_response(request, conference, 'reg', 'confreg/registration_dashboard.html', {
         'redir_root': redir_root,
