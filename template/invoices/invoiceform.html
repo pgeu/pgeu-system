@@ -25,15 +25,16 @@ function sendEmail(reason) {
    }
 
    if (confirm(q)) {
-      $.ajax({
-         'url': 'send_email/?really=yes&reason=' + reason,
-         'success': function() {
+      $.post(
+         'send_email/',
+         {
+            'reason': reason,
+            'csrfmiddlewaretoken': '{{csrf_token}}',
+         }).success(function() {
             alert('Email sent!');
-         },
-         'error': function(xhr, status, error) {
+         }).fail(function(xhr, status, error) {
             alert('Failed to send email: ' + error + '!\n' + xhr.responseText);
-         },
-      });
+         });
    }
 }
 

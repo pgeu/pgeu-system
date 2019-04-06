@@ -350,12 +350,12 @@ def previewinvoice(request, invoicenum):
 @user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @transaction.atomic
 def emailinvoice(request, invoicenum):
-    if request.GET.get('really', None) != 'yes':
-        return HttpResponse('Secret key is missing!', status=401)
+    if request.method != 'POST':
+        raise HttpResponse('Must be POST', status=401)
 
-    if 'reason' not in request.GET:
+    if 'reason' not in request.POST:
         return HttpResponse('Reason is missing!', status=401)
-    if not request.GET['reason'] in ('initial', 'reminder'):
+    if request.POST['reason'] not in ('initial', 'reminder'):
         return HttpResponse('Invalid reason given!', status=401)
 
     invoice = get_object_or_404(Invoice, pk=invoicenum)
@@ -365,9 +365,9 @@ def emailinvoice(request, invoicenum):
 
     # Ok, it seems we're good to go...
     wrapper = InvoiceWrapper(invoice)
-    if request.GET['reason'] == 'initial':
+    if request.POST['reason'] == 'initial':
         wrapper.email_invoice()
-    elif request.GET['reason'] == 'reminder':
+    elif request.POST['reason'] == 'reminder':
         wrapper.email_reminder()
     else:
         raise Exception("Cannot happen")
