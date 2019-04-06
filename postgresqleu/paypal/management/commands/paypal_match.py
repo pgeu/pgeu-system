@@ -71,7 +71,7 @@ class Command(BaseCommand):
                     continue
                 # Record type: payment, but with no notice (auto-generated elsewhere, the text is
                 # hard-coded in paypal_fetch.py
-                if trans.transtext == "Paypal payment with empty note":
+                if trans.transtext == "Paypal payment with empty note" or trans.transtext == "Recurring paypal payment without note":
                     trans.setmatched('Empty payment description, leaving for operator')
 
                     accstr = "Unlabeled paypal payment from {0}".format(trans.sender)

@@ -125,7 +125,7 @@ class PaypalAPI(object):
                 else:
                     r['SUBJECT'] = 'Paypal payment with empty note'
             elif code == 'T0002':
-                r['SUBJECT'] = 'Paypal recurring payment, unknown source'
+                r['SUBJECT'] = 'Recurring paypal payment without note'
             elif code == 'T1107':
                 if t['transaction_info'].get('transaction_subject', ''):
                     r['SUBJECT'] = 'Refund of Paypal payment: %s' % t['transaction_info']['transaction_subject']
