@@ -528,6 +528,13 @@ class ConferenceRegistration(models.Model):
     def fullname(self):
         return "%s %s" % (self.firstname, self.lastname)
 
+    @property
+    def countryname(self):
+        if self.country:
+            return self.country.name
+        else:
+            return ''
+
     def has_invoice(self):
         # Return if this registration has an invoice, whether through
         # a direct invoice or a bulk payment.
@@ -630,7 +637,7 @@ class ConferenceRegistration(models.Model):
 
     # For exporting "safe attributes" to external systems
     def safe_export(self):
-        attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'badgescan', 'shareemail', 'fullidtoken', 'fullpublictoken', 'queuepartition', ]
+        attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'countryname', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'badgescan', 'shareemail', 'fullidtoken', 'fullpublictoken', 'queuepartition', ]
         d = dict((a, getattr(self, a) and str(getattr(self, a))) for a in attribs)
         if self.regtype:
             d['regtype'] = self.regtype.safe_export()
