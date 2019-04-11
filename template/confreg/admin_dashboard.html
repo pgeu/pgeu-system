@@ -35,14 +35,39 @@
 {%endif%}
 
 {%if past%}
-<h3>Past conferences</h3>
+<h3>Past conferences{%if singleseries%} in {{singleseries.name}}{%endif%}</h3>
+{%regroup past by seriesid as past_series%}
+{%for series in past_series%}
+
+{%for c in series.list %}
+{%if forloop.first %}
+{%if not singleseries%}
+<h5>{{c.seriesname}}</h5>
+{%endif%}
 <div class="row">
-{%for c in past %}
-  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow">
-    <a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/">{{c}}</a>
-  </div>
-{%endfor%}
+{%endif%}
+ <div class="col-md-3 col-sm-6 col-xs-12 buttonrow">
+  <a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/">{{c.conferencename}}</a>
+ </div>
+{%if forloop.last%}
 </div>
+{%if c.seriesperm and not singleseries%}
+<div class="row">
+ <div class="col-md-6 col-sm-9 col-xs-12 buttonrow">
+  <a class="btn btn-default btn-block" href="?series={{c.seriesid}}">All conferences in series {{c.seriesname}}</a>
+ </div>
+</div>
+{%endif%}
+{%endif%}
+{%endfor%}
+{%endfor%}
+{%if singleseries %}
+<div class="row">
+ <div class="col-md-12 col-sm-12 col-xs-12 buttonrow">
+  <a class="btn btn-default btn-block" href=".">All conference series</a>
+ </div>
+</div>
+{%endif%}
 {%endif%}
 
 {%if user.is_superuser%}

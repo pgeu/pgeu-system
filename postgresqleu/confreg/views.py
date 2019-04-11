@@ -2568,30 +2568,48 @@ def simple_report(request, confname):
 @login_required
 def admin_dashboard(request):
     if request.user.is_superuser:
-        conferences = Conference.objects.filter(startdate__gt=datetime.now() - timedelta(days=3 * 365)).order_by('-startdate')
+        conferences = Conference.objects.filter(startdate__gt=datetime.now() - timedelta(days=14)).order_by('-startdate')
+        pastconf_perm = 'true'
+        pastconf_where = ''
+        pastconf_param = {}
     else:
-        conferences = Conference.objects.filter(Q(administrators=request.user) | Q(series__administrators=request.user), startdate__gt=datetime.now() - timedelta(days=3 * 365)).distinct().order_by('-startdate')
+        conferences = Conference.objects.filter(Q(administrators=request.user) | Q(series__administrators=request.user), startdate__gt=datetime.now() - timedelta(days=14)).distinct().order_by('-startdate')
+        pastconf_perm = 'EXISTS (SELECT 1 FROM confreg_conferenceseries_administrators a WHERE a.conferenceseries_id=s.id AND a.user_id=%(user)s)'
+        pastconf_where = ' WHERE EXISTS (SELECT 1 FROM confreg_conferenceseries_administrators a WHERE a.conferenceseries_id=s.id AND a.user_id=%(user)s) OR EXISTS (SELECT 1 FROM confreg_conference_administrators ca WHERE ca.conference_id=c.id AND ca.user_id=%(user)s) '
+        pastconf_param = {
+            'user': request.user.id,
+        }
 
-    # Split conferences in three buckets:
+    # If a specific series is specified, then include *all* past conferences for that series
+    if request.GET.get('series', None):
+        if request.user.is_superuser:
+            singleseries = get_object_or_404(ConferenceSeries, pk=request.GET.get('series'))
+        else:
+            singleseries = get_object_or_404(ConferenceSeries, pk=request.GET.get('series'), administrators=request.user)
+        pastconferences = exec_to_dict("SELECT s.id AS seriesid, s.name AS seriesname, c.conferencename, c.urlname, c.startdate FROM confreg_conference c INNER JOIN confreg_conferenceseries s ON s.id=c.series_id WHERE s.id=%(id)s ORDER BY startdate DESC", {
+            'id': singleseries.id,
+        })
+    else:
+        singleseries = None
+        pastconferences = exec_to_dict("SELECT s.id AS seriesid, s.name AS seriesname, {} AS seriesperm, c.conferencename, c.urlname, c.startdate, max(startdate) OVER (PARTITION BY s.id) AS maxdate FROM confreg_conferenceseries s INNER JOIN LATERAL (SELECT id, conferencename, urlname, startdate FROM confreg_conference WHERE series_id=s.id ORDER BY startdate DESC LIMIT 4) c ON true {} ORDER BY maxdate DESC, s.name, startdate DESC".format(pastconf_perm, pastconf_where), pastconf_param)
+
+    # Split conferences in two buckets:
     #  Current: anything that starts or finishes within two weeks
     #  Upcoming: anything newer than that
-    #  Past: anything older than that
 
     current = []
     upcoming = []
-    past = []
     for c in conferences:
         if abs((date.today() - c.startdate).days) < 14 or abs((date.today() - c.enddate).days) < 14:
             current.insert(0, c)
         elif c.startdate > date.today():
             upcoming.insert(0, c)
-        else:
-            past.append(c)
 
     return render(request, 'confreg/admin_dashboard.html', {
         'current': current,
         'upcoming': upcoming,
-        'past': past,
+        'past': pastconferences,
+        'singleseries': singleseries,
         'cross_conference': request.user.is_superuser or ConferenceSeries.objects.filter(administrators=request.user).exists(),
     })
 
