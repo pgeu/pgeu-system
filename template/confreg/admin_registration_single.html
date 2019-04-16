@@ -108,6 +108,10 @@
   <td>Registration completed</td>
   <td>{%if reg.payconfirmedat%}{{reg.payconfirmedat}}{%elif reg.invoice%}Invoice generated, <b>not</b> paid{%elif reg.bulkpayment%}Bulk payment generated, NOT paid{%else%}registration <b>not</b> paid{%endif%}</td>
  </tr>
+ <tr>
+  <td>Registration account</td>
+  <td>{%if reg.attendee%}{{reg.attendee}} ({{reg.attendee.first_name}} {{reg.attendee.last_name}} &lt;{{reg.attendee.email}}&gt;){%else%}Not connected to account{%endif%}</td>
+ </tr>
 {%if reg.attendee != reg.registrator %}
  <tr>
   <td>Registration made by</td>
