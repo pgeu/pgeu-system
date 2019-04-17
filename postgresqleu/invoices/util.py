@@ -109,8 +109,10 @@ class InvoiceWrapper(object):
         # the highest priority (=lowest sortkey) will be used.
         for pm in self.invoice.allowedmethods.all():
             if pm.config and 'bankinfo' in pm.config and len(pm.config['bankinfo']) > 1:
-                bankinfo = pm.config['bankinfo']
-                break
+                m = pm.get_implementation()
+                if not (hasattr(m, 'available') and not m.available(self.invoice)):
+                    bankinfo = pm.config['bankinfo']
+                    break
         else:
             bankinfo = None
 
