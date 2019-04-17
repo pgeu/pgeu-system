@@ -2,6 +2,7 @@ from django.db.models import Q
 
 from postgresqleu.util.backendlookups import LookupBase
 from postgresqleu.confreg.models import Conference, ConferenceRegistration, Speaker
+from postgresqleu.confreg.models import ConferenceSessionTag
 
 
 class RegisteredUsersLookup(LookupBase):
@@ -21,6 +22,21 @@ class RegisteredUsersLookup(LookupBase):
                     payconfirmedat__isnull=False).filter(
                         Q(firstname__icontains=query) | Q(lastname__icontains=query) | Q(email__icontains=query)
                     )[:30]]
+
+
+class SessionTagLookup(LookupBase):
+    @property
+    def url(self):
+        return '/events/admin/{0}/lookups/tags/'.format(self.conference.urlname)
+
+    @property
+    def label_from_instance(self):
+        return lambda x: x.tag
+
+    @classmethod
+    def get_values(self, query, conference):
+        return [{'id': t.id, 'value': t.tag}
+                for t in ConferenceSessionTag.objects.filter(conference=conference)]
 
 
 class SpeakerLookup(LookupBase):

@@ -13,7 +13,7 @@ from postgresqleu.confsponsor.models import ScannedAttendee
 from .models import Conference
 from .models import ConferenceRegistration, RegistrationType, Speaker
 from .models import ConferenceAdditionalOption, Track, RegistrationClass
-from .models import ConferenceSession, ConferenceSessionFeedback
+from .models import ConferenceSession, ConferenceSessionFeedback, ConferenceSessionTag
 from .models import PrepaidVoucher, DiscountCode, AttendeeMail
 
 from .regtypes import validate_special_reg_type
@@ -509,7 +509,7 @@ class SpeakerProfileForm(forms.ModelForm):
 class CallForPapersForm(forms.ModelForm):
     class Meta:
         model = ConferenceSession
-        fields = ('title', 'abstract', 'skill_level', 'track', 'speaker', 'submissionnote')
+        fields = ('title', 'abstract', 'skill_level', 'track', 'tags', 'speaker', 'submissionnote')
 
     def __init__(self, currentspeaker, *args, **kwargs):
         self.currentspeaker = currentspeaker
@@ -536,6 +536,13 @@ class CallForPapersForm(forms.ModelForm):
 
         if not self.instance.conference.skill_levels:
             del self.fields['skill_level']
+
+        if self.instance.conference.callforpaperstags:
+            self.fields['tags'].queryset = ConferenceSessionTag.objects.filter(conference=self.instance.conference)
+            self.fields['tags'].label_from_instance = lambda x: x.tag
+            self.fields['tags'].required = False
+        else:
+            del self.fields['tags']
 
         if not self.instance.conference.track_set.filter(incfp=True).count() > 0:
             del self.fields['track']

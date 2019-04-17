@@ -28,6 +28,27 @@ $(function() {
        });
     },
   });
+
+  /* Selectize the tags field, if it exists */
+  $('#id_tags').selectize({
+    plugins: ['remove_button'],
+    valueField: 'id',
+    labelField: 'value',
+    searchField: 'value',
+    load: function(query, callback) {
+       if (!query.length) return callback();
+       $.ajax({
+         'url': '/events/{{conference.urlname}}/callforpapers/lookups/tags/',
+         'type': 'GET',
+         'dataType': 'json',
+         'data': {
+           'query': query,
+         },
+         'error': function() { callback(); },
+         'success': function(res) { callback(res.values);},
+       });
+    },
+  });
 });
 </script>
 {%endblock%}

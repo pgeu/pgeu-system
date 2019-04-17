@@ -34,6 +34,7 @@ from .backendforms import BackendConferenceForm, BackendSuperConferenceForm, Bac
 from .backendforms import BackendRegistrationTypeForm, BackendRegistrationClassForm
 from .backendforms import BackendRegistrationDayForm, BackendAdditionalOptionForm
 from .backendforms import BackendTrackForm, BackendRoomForm, BackendConferenceSessionForm
+from .backendforms import BackendTagForm
 from .backendforms import BackendConferenceSessionSlotForm, BackendVolunteerSlotForm
 from .backendforms import BackendFeedbackQuestionForm, BackendDiscountCodeForm
 from .backendforms import BackendAccessTokenForm
@@ -172,6 +173,13 @@ def edit_rooms(request, urlname, rest):
     return backend_list_editor(request,
                                urlname,
                                BackendRoomForm,
+                               rest)
+
+
+def edit_tags(request, urlname, rest):
+    return backend_list_editor(request,
+                               urlname,
+                               BackendTagForm,
                                rest)
 
 

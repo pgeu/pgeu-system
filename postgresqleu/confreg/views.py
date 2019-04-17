@@ -1488,6 +1488,21 @@ def public_speaker_lookup(request, confname):
 
 
 @login_required
+def public_tags_lookup(request, confname):
+    conference = get_object_or_404(Conference, urlname=confname)
+    speaker = get_object_or_404(Speaker, user=request.user)
+
+    prefix = request.GET['query']
+    vals = [{
+        'id': t.id,
+        'value': t.tag,
+    } for s in ConferenceSessionTag.objects.filter(conference=conference)]
+    return HttpResponse(json.dumps({
+        'values': vals,
+    }), content_type='application/json')
+
+
+@login_required
 @transaction.atomic
 def callforpapers_copy(request, confname):
     conference = get_object_or_404(Conference, urlname=confname)

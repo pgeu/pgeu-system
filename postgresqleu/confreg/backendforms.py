@@ -22,7 +22,7 @@ import postgresqleu.accounting.models
 from postgresqleu.confreg.models import Conference, ConferenceRegistration, ConferenceAdditionalOption
 from postgresqleu.confreg.models import RegistrationClass, RegistrationType, RegistrationDay
 from postgresqleu.confreg.models import ConferenceFeedbackQuestion
-from postgresqleu.confreg.models import ConferenceSession, Track, Room
+from postgresqleu.confreg.models import ConferenceSession, Track, Room, ConferenceSessionTag
 from postgresqleu.confreg.models import ConferenceSessionScheduleSlot, VolunteerSlot
 from postgresqleu.confreg.models import DiscountCode, AccessToken, AccessTokenPermissions
 from postgresqleu.confreg.models import ConferenceSeries
@@ -35,7 +35,7 @@ from postgresqleu.confreg.models import valid_status_transitions, get_status_str
 from postgresqleu.confreg.models import STATUS_CHOICES
 
 from postgresqleu.util.backendlookups import GeneralAccountLookup, CountryLookup
-from postgresqleu.confreg.backendlookups import RegisteredUsersLookup, SpeakerLookup
+from postgresqleu.confreg.backendlookups import RegisteredUsersLookup, SpeakerLookup, SessionTagLookup
 
 
 class BackendConferenceForm(BackendForm):
@@ -59,7 +59,7 @@ class BackendConferenceForm(BackendForm):
                   'schedulewidth', 'pixelsperminute', 'notifyregs',
                   'testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors',
                   'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent',
-                  'skill_levels', 'additionalintro', 'callforpapersintro', 'sendwelcomemail', 'welcomemail',
+                  'skill_levels', 'additionalintro', 'callforpapersintro', 'callforpaperstags', 'sendwelcomemail', 'welcomemail',
                   'tickets', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist',
                   'initial_common_countries']
 
@@ -75,7 +75,7 @@ class BackendConferenceForm(BackendForm):
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', ]},
         {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent', 'additionalintro', ]},
         {'id': 'steps', 'legend': 'Steps', 'fields': ['active', 'allowedit', 'callforpapersopen', 'callforsponsorsopen', 'scheduleactive', 'sessionsactive', 'checkinactive', 'conferencefeedbackopen', 'feedbackopen']},
-        {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpapersintro']},
+        {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpaperstags', 'callforpapersintro']},
         {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', ]},
         {'id': 'legacy', 'legend': 'Legacy', 'fields': ['schedulewidth', 'pixelsperminute']},
     ]
@@ -364,6 +364,15 @@ class BackendRoomForm(BackendForm):
         fields = ['roomname', 'sortkey']
 
 
+class BackendTagForm(BackendForm):
+    helplink = 'schedule#tags'
+    list_fields = ['tag', ]
+
+    class Meta:
+        model = ConferenceSessionTag
+        fields = ['tag', ]
+
+
 class BackendTransformConferenceDateTimeForm(django.forms.Form):
     timeshift = django.forms.DurationField(required=True, help_text="Shift all times by this much")
 
@@ -429,6 +438,7 @@ class BackendConferenceSessionForm(BackendForm):
     }
     selectize_multiple_fields = {
         'speaker': SpeakerLookup(),
+        'tags': SessionTagLookup(None),
     }
     markdown_fields = ['abstract', ]
     allow_copy_previous = True
@@ -439,7 +449,7 @@ class BackendConferenceSessionForm(BackendForm):
     class Meta:
         model = ConferenceSession
         fields = ['title', 'htmlicon', 'speaker', 'status', 'starttime', 'endtime', 'cross_schedule',
-                  'track', 'room', 'can_feedback', 'skill_level', 'abstract', 'submissionnote']
+                  'track', 'room', 'can_feedback', 'skill_level', 'tags', 'abstract', 'submissionnote']
 
     def fix_fields(self):
         self.fields['track'].queryset = Track.objects.filter(conference=self.conference)
@@ -451,6 +461,12 @@ class BackendConferenceSessionForm(BackendForm):
         if not self.conference.skill_levels:
             self.remove_field('skill_level')
             self.update_protected_fields()
+
+        if not self.conference.callforpaperstags:
+            self.remove_field('tags')
+            self.update_protected_fields()
+        else:
+            self.selectize_multiple_fields['tags'] = SessionTagLookup(self.conference)
 
     @classmethod
     def get_column_filters(cls, conference):

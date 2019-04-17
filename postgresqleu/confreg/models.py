@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.dateformat import DateFormat
+from django.template.defaultfilters import slugify
 from django.contrib.postgres.fields import DateTimeRangeField
 
 from postgresqleu.util.validators import validate_lowercase
@@ -179,6 +180,7 @@ class Conference(models.Model):
     additionalintro = models.TextField(blank=True, null=False, verbose_name="Additional options intro", help_text="Additional text shown just before the list of available additional options")
     jinjadir = models.CharField(max_length=200, blank=True, null=True, default=None, help_text="Full path to new style jinja repository root", verbose_name="Jinja directory")
     callforpapersintro = models.TextField(blank=True, null=False, verbose_name="Call for papers intro")
+    callforpaperstags = models.BooleanField(blank=False, null=False, default=False, verbose_name='Use tags')
 
     sendwelcomemail = models.BooleanField(blank=False, null=False, default=False, verbose_name="Send welcome email", help_text="Send an email to attendees once their registration is completed.")
     welcomemail = models.TextField(blank=True, null=False, verbose_name="Welcome email contents")
@@ -199,7 +201,7 @@ class Conference(models.Model):
 
     # Attributes that are safe to access in jinja templates
     _safe_attributes = ('active', 'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
-                        'callforpapersintro', 'callforpapersopen',
+                        'callforpapersintro', 'callforpapersopen', 'callforpaperstags',
                         'conferencefeedbackopen', 'confurl', 'contactaddr', 'tickets',
                         'conferencedatestr', 'location',
                         'feedbackopen', 'skill_levels', 'urlname', 'conferencename')
@@ -768,6 +770,25 @@ class ConferenceSessionScheduleSlot(models.Model):
         return "%s - %s" % (self.starttime, self.endtime)
 
 
+class ConferenceSessionTag(models.Model):
+    conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
+    tag = models.CharField(max_length=32, null=False, blank=False)
+    slug = models.CharField(max_length=32, null=False, blank=False)
+
+    def __str__(self):
+        return self.tag
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.tag)
+        super(ConferenceSessionTag, self).save(*args, **kwargs)
+
+    class Meta:
+        unique_together = (
+            ('conference', 'tag'),
+            ('conference', 'slug'),
+        )
+
+
 class ConferenceSession(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     speaker = models.ManyToManyField(Speaker, blank=True, verbose_name="Speakers")
@@ -790,6 +811,7 @@ class ConferenceSession(models.Model):
     tentativeroom = models.ForeignKey(Room, null=True, blank=True, related_name='tentativeroom', on_delete=models.CASCADE)
     lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
     reminder_sent = models.BooleanField(null=False, default=False, verbose_name='Speaker reminder(s) sent')
+    tags = models.ManyToManyField(ConferenceSessionTag, blank=True)
 
     # NOTE! Any added fields need to be considered for inclusion in
     # forms.CallForPapersForm and in views.callforpapers_copy()!
