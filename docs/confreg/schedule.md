@@ -146,6 +146,12 @@ Track
 Room
 :	The room selected for this schedule, if any.
 
+Can feedback
+:   Indicates if feedback can be given on this session
+
+Skill level
+:   Skill level of this session (if enabled at the conference level)
+
 Abstract
 :   This is the abstract that is listed on the schedule and session
 description pages. Any text here is public.
