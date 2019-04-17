@@ -30,7 +30,8 @@ not conform to a schedule slot.
 Cross schedule sessions
 :     A cross schedule session is one that is not tied to a particular
 room, but instead spans across the entire schedule. Typical examples
-of this is coffee breaks and lunch.
+of this is coffee breaks and lunch. Cross schedule sessions do not show
+details about the session.
 
 ## Building a schedule graphically
 
@@ -138,7 +139,9 @@ End time
 
 Cross schedule
 :	If this session should be displayed across the schedule, instead
-of in one room. Typically used for things like breaks and lunch.
+of in one room. Typically used for things like breaks and lunch. When
+set to cross session, the details for the session cannot be viewed, so
+it should not be used for regular sessions.
 
 Track
 :	The track selected for this schedule, if any.
