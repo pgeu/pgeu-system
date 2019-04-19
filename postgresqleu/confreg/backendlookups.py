@@ -27,7 +27,10 @@ class RegisteredUsersLookup(LookupBase):
 class SessionTagLookup(LookupBase):
     @property
     def url(self):
-        return '/events/admin/{0}/lookups/tags/'.format(self.conference.urlname)
+        if self.conference:
+            return '/events/admin/{0}/lookups/tags/'.format(self.conference.urlname)
+        else:
+            return None
 
     @property
     def label_from_instance(self):

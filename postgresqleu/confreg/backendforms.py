@@ -464,6 +464,8 @@ class BackendConferenceSessionForm(BackendForm):
 
         if not self.conference.callforpaperstags:
             self.remove_field('tags')
+            if 'tags' in self.selectize_multiple_fields:
+                del self.selectize_multiple_fields['tags']
             self.update_protected_fields()
         else:
             self.selectize_multiple_fields['tags'] = SessionTagLookup(self.conference)
