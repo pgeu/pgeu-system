@@ -267,6 +267,7 @@ urlpatterns.extend([
     url(r'^admin/invoices/banktransactions/$', postgresqleu.invoices.backendviews.banktransactions),
     url(r'^admin/invoices/banktransactions/(\d+)/$', postgresqleu.invoices.backendviews.banktransactions_match),
     url(r'^admin/invoices/banktransactions/(\d+)/(\d+)/$', postgresqleu.invoices.backendviews.banktransactions_match_invoice),
+    url(r'^admin/invoices/banktransactions/(\d+)/m(\d+)/$', postgresqleu.invoices.backendviews.banktransactions_match_matcher),
     url(r'^admin/invoices/paymentmethods/(.*/)?$', postgresqleu.invoices.backendviews.edit_paymentmethod),
     url(r'^invoices/trustlypay/(\d+)/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.invoicepayment_secret),
     url(r'^trustly_notification/(\d+)/$', postgresqleu.trustlypayment.views.notification),

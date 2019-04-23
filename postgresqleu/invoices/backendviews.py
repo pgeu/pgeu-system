@@ -134,9 +134,13 @@ def banktransactions_match(request, transid):
 
     im = map(_match_invoice, invoices)
 
+    pm = trans.method.get_implementation()
+    matchers = PendingBankMatcher.objects.filter(foraccount__num=pm.config('bankaccount'), amount=trans.amount)
+
     return render(request, 'invoices/banktransactions_match.html', {
         'transaction': trans,
         'invoice_matchinfo': im,
+        'matchers': matchers,
         'topadmin': 'Invoices',
         'breadcrumbs': [('/admin/invoices/banktransactions/', 'Pending bank transactions'), ],
         'helplink': 'payment',
@@ -223,6 +227,54 @@ def banktransactions_match_invoice(request, transid, invoiceid):
             'highlight_ref': re.sub('({0})'.format(invoice.payment_reference), r'<strong>\1</strong>', escape(trans.transtext)),
             'highlight_id': re.sub('({0})'.format(invoice.id), r'<strong>\1</strong>', escape(trans.transtext)),
         },
+        'breadcrumbs': [
+            ('/admin/invoices/banktransactions/', 'Pending bank transactions'),
+            ('/admin/invoices/banktransactions/{0}/'.format(trans.id), 'Transaction'),
+        ],
+        'helplink': 'payment',
+    })
+
+
+@transaction.atomic
+def banktransactions_match_matcher(request, transid, matcherid):
+    authenticate_backend_group(request, 'Invoice managers')
+
+    trans = get_object_or_404(PendingBankTransaction, pk=transid)
+    matcher = get_object_or_404(PendingBankMatcher, pk=matcherid)
+
+    pm = trans.method.get_implementation()
+
+    if request.method == 'POST':
+        if trans.amount != matcher.amount:
+            # Should not happen, but let's make sure
+            messages.error(request, "Amount mismatch")
+            return HttpResponseRedirect(".")
+
+        if matcher.journalentry.closed:
+            messages.error(request, "Accounting entry already closed")
+            return HttpResponseRedirect(".")
+
+        # The whole point of what we do here is to ignore the text of the match,
+        # so once the amount is correct, we just complete it.
+        matcher.journalentry.closed = True
+        matcher.journalentry.save()
+
+        InvoiceLog(message="Manually matched bank transaction of {0}{1} with text {2} to journal entry {3}.".format(
+            trans.amount,
+            settings.CURRENCY_ABBREV,
+            trans.transtext,
+            matcher.journalentry,
+        )).save()
+
+        # Remove both the pending transaction *and* the pending matcher
+        trans.delete()
+        matcher.delete()
+        return HttpResponseRedirect("../../")
+
+    return render(request, 'invoices/banktransactions_match_matcher.html', {
+        'transaction': trans,
+        'matcher': matcher,
+        'topadmin': 'Invoices',
         'breadcrumbs': [
             ('/admin/invoices/banktransactions/', 'Pending bank transactions'),
             ('/admin/invoices/banktransactions/{0}/'.format(trans.id), 'Transaction'),

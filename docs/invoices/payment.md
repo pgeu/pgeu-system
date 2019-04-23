@@ -69,6 +69,14 @@ other payment fees) it may be easier to just match the payment and
 accept the difference as a cost, rather than dealing with
 sub-payments.
 
+Match payment to matcher
+:  This can be used as a workaround for incorrect bank matchers.
+Normally, when a transaction that matches a bank matcher shows up,
+it automatically gets processed. In case te transaction text has
+changed or is incomplete, the matcher might not work. In this case,
+it can be matched manually. Only exact amount matches can be processed
+this way.
+
 Create open accounting record
 :  This will simply create an open accounting record for this
 transaction (on the correct account), and direct the user to the

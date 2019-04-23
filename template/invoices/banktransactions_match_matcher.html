@@ -1,0 +1,64 @@
+{%extends "adm/admin_base.html" %}
+{%block title%}Match pending bank transaction to pending matcher{%endblock%}
+{%block layoutblock %}
+<h1>Match pending bank transaction to pending matcher</h1>
+
+<div class="panel panel-default">
+  <div class="panel-heading">Transaction</div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-md-2"><strong>Transaction text</strong></div>
+      <div class="col-md-8">{{transaction.transtext}}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Amount</strong></div>
+      <div class="col-md-8">{{currency_symbol}} {{transaction.amount}}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Payment method</strong></div>
+      <div class="col-md-8">{{transaction.method.internaldescription}}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Comments</strong></div>
+      <div class="col-md-8">{{transaction.comments|linebreaksbr}}</div>
+    </div>
+  </div>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">Matcher</div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-md-2"><strong>Pattern</strong></div>
+      <div class="col-md-8">{{matcher.pattern}}></div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Amount</strong></div>
+      <div class="col-md-8">{{currency_symbol}} {{matcher.amount}}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Account</strong></div>
+      <div class="col-md-8">{{matcher.foraccount}}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Accounting entry</strong></div>
+      <div class="col-md-8"><a href="/accounting/e/{{matcher.journalentry.id}}/">{{matcher.journalentry}}</a></div>
+    </div>
+  </div>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">Complete</div>
+  <div class="panel-body">
+    <p>
+      To complete this matching, pick one of the below options.
+    </p>
+    <a href="../" class="btn btn-primary btn-block">Don't match matcher</a>
+    <br/>
+    <form method="post" action=".">{%csrf_token%}
+      <input type="submit" value="Match matcher, close accounting entry, and remove pending records" class="btn btn-default btn-block">
+    </form>
+  </div>
+</div>
+
+{%endblock%}

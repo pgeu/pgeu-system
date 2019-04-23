@@ -35,7 +35,7 @@
       <td>
 	<form action="." method="post">{% csrf_token %}
 	  <input type="hidden" name="transid" value="{{trans.id}}">
-	  <a href="{{trans.id}}/" class="btn btn-default btn-sm btn-block">Match invoice</a>
+	  <a href="{{trans.id}}/" class="btn btn-default btn-sm btn-block">Match invoice or matcher</a>
 	  <input type="submit" name="submit" value="Create accounting record" class="btn btn-default btn-sm btn-block confirm-btn" data-confirm="This will create an open, pre-filled, accounting record, and take you to the accounting system." title="Create an open accounting entry for this transaction">
 	  <input type="submit" name="submit" value="Discard" class="btn btn-default btn-sm btn-block confirm-btn" data-confirm="This will discard the transaction completely, and there is no way to undo!" title="Discard this transaction completely">
 	</form>

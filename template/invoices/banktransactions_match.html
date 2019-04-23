@@ -48,5 +48,34 @@
   </table>
 </div>
 
+{%if matchers%}
+<h2>Pending matchers</h2>
+<p>
+  Select a matcher to match tihs payment to. Normally this should always be
+  matched with the regexp, but in case it doesn't a manual match can be done
+  here.
+</p>
+<p>
+  Only matchers where the amonut matches exactly are invluded.
+</p>
+
+<div class="row">
+  <table class="table table-sm table-striped table-hover">
+    <tr>
+      <th>Pattern</th>
+      <th>Amount</th>
+      <th>Journal Entry</th>
+      <th>Action</th>
+    </tr>
+{%for m in matchers%}
+    <tr>
+      <td>{{m.pattern}}</td>
+      <td class="nobr">{{currency_symbol}} {{m.amount}}</td>
+      <td><a href="/accounting/e/{{m.journalentry.id}}/">{{m.journalentry}}</a></td>
+      <td><a href="m{{m.id}}/" class="btn btn-default btn-xs">Match this matcher</a></td>
+    </tr>
+{%endfor%}
+  </table>
+{%endif%}
 
 {%endblock%}
