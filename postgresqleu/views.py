@@ -123,6 +123,7 @@ def admin_dashboard(request):
             'membership': settings.ENABLE_MEMBERSHIP,
             'elections': settings.ENABLE_ELECTIONS,
             'invoices': True,
+            'accounting': True,
         }
     else:
         groups = [g.name for g in request.user.groups.all()]
@@ -134,6 +135,7 @@ def admin_dashboard(request):
             'membership': settings.ENABLE_MEMBERSHIP and 'Membership administrators' in groups,
             'elections': settings.ENABLE_ELECTIONS and 'Election administrators' in groups,
             'invoices': "Invoice managers" in groups,
+            'accounting': "Accounting managers" in groups,
         }
 
     if permissions['invoices']:

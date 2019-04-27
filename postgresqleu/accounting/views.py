@@ -9,16 +9,15 @@ from django.core.paginator import Paginator
 
 from datetime import datetime, date
 
-from postgresqleu.util.decorators import user_passes_test_or_error
+from postgresqleu.util.auth import authenticate_backend_group
 
 from .models import JournalEntry, JournalItem, JournalUrl, Year, Object
 from .models import IncomingBalance, Account
 from .forms import JournalEntryForm, JournalItemForm, JournalItemFormset, JournalUrlForm
 
 
-@login_required
-@user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
 def index(request):
+    authenticate_backend_group(request, 'Accounting managers')
     # Always redirect to the current year
     return HttpResponseRedirect("%s/" % datetime.today().year)
 
@@ -62,10 +61,10 @@ class EntryPaginator(Paginator):
             return self.page_range
 
 
-@login_required
 @transaction.atomic
-@user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
 def year(request, year):
+    authenticate_backend_group(request, 'Accounting managers')
+
     year = get_object_or_404(Year, year=int(year))
     if 'search' in request.GET:
         _setup_search(request, request.GET['search'])
@@ -88,10 +87,10 @@ def year(request, year):
         })
 
 
-@login_required
 @transaction.atomic
-@user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
 def new(request, year):
+    authenticate_backend_group(request, 'Accounting managers')
+
     year = int(year)
 
     # Default the date to the same date as the last entry for this year,
@@ -116,10 +115,10 @@ def new(request, year):
     return HttpResponseRedirect('/accounting/e/%s/' % entry.pk)
 
 
-@login_required
 @transaction.atomic
-@user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
 def entry(request, entryid):
+    authenticate_backend_group(request, 'Accounting managers')
+
     entry = get_object_or_404(JournalEntry, pk=entryid)
 
     if 'search' in request.GET:
@@ -289,10 +288,10 @@ def _collate_results(query, queryparam, numvalues):
     return (results, totalresult)
 
 
-@login_required
 @transaction.atomic
-@user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
 def closeyear(request, year):
+    authenticate_backend_group(request, 'Accounting managers')
+
     year = Year.objects.get(pk=year)
     hasopen = JournalEntry.objects.filter(year=year, closed=False).exists()
     try:
@@ -370,10 +369,10 @@ SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
     })
 
 
-@login_required
 @transaction.atomic
-@user_passes_test_or_error(lambda u: u.has_module_perms('accounting'))
 def report(request, year, reporttype):
+    authenticate_backend_group(request, 'Accounting managers')
+
     years = list(Year.objects.all())
     if year == "-1":
         # This means all years. Only available for results report. It's the only thing

@@ -10,6 +10,7 @@ PERMISSION_GROUPS = (
     'News administrators',
     'Membership administrators',
     'Election administrators',
+    'Accounting managers',
 )
 
 
