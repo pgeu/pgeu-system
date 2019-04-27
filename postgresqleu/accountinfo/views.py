@@ -7,13 +7,13 @@ from django.contrib.auth.models import User
 
 import json
 
-from postgresqleu.util.decorators import user_passes_test_or_error
+from postgresqleu.util.auth import authenticate_backend_group
 from postgresqleu.auth import user_search, user_import
 
 
-@login_required
-@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def search(request):
+    authenticate_backend_group(request, 'Invoice managers')
+
     term = request.GET['term']
     upstream = request.GET.get('upstream', False)
 
@@ -41,10 +41,10 @@ def search(request):
                                      } for u in users]), content_type='application/json')
 
 
-@login_required
-@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @transaction.atomic
 def importuser(request):
+    authenticate_backend_group(request, 'Invoice managers')
+
     uid = request.POST['uid']
     try:
         user_import(uid)

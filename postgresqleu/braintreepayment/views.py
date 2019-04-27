@@ -6,6 +6,7 @@ from django.db import transaction
 
 from datetime import datetime
 
+from postgresqleu.util.auth import authenticate_backend_group
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.mailqueue.util import send_simple_mail
@@ -159,8 +160,8 @@ def _invoice_payment(request, paymentmethodid, invoice):
 @login_required
 def invoicepayment(request, paymentmethodid, invoiceid):
     invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True)
-    if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
-        return HttpResponseForbidden("Access denied")
+    if invoice.recipient_user != request.user:
+        authenticate_backend_group(request, 'Invoice managers')
 
     return _invoice_payment(request, paymentmethodid, invoice)
 

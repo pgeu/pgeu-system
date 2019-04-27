@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 import base64
 
+from postgresqleu.util.auth import authenticate_backend_group
 from postgresqleu.util.decorators import global_login_exempt
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.invoices.util import InvoiceManager
@@ -146,8 +147,8 @@ def _invoice_payment(request, methodid, invoice):
 @login_required
 def invoicepayment(request, methodid, invoiceid):
     invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True)
-    if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
-        return HttpResponseForbidden("Access denied")
+    if invoice.recipient_user != request.user:
+        authenticate_backend_group(request, 'Invoice managers')
 
     return _invoice_payment(request, methodid, invoice)
 

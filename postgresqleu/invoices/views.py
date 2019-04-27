@@ -13,7 +13,7 @@ import io
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from postgresqleu.util.decorators import user_passes_test_or_error
+from postgresqleu.util.auth import authenticate_backend_group
 from postgresqleu.util.pagination import simple_pagination
 from .models import Invoice, InvoiceRow, InvoiceHistory, InvoicePaymentMethod, VatRate
 from .models import InvoiceRefund
@@ -22,32 +22,27 @@ from .util import InvoiceWrapper, InvoiceManager, InvoicePresentationWrapper
 from .payment import PaymentMethodWrapper
 
 
-@login_required
-@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def paid(request):
     return _homeview(request, Invoice.objects.filter(paidat__isnull=False, deleted=False, finalized=True), paid=True)
 
 
-@login_required
-@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def unpaid(request):
     return _homeview(request, Invoice.objects.filter(paidat=None, deleted=False, finalized=True), unpaid=True)
 
 
-@login_required
-@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def pending(request):
     return _homeview(request, Invoice.objects.filter(finalized=False, deleted=False), pending=True)
 
 
-@login_required
-@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def deleted(request):
     return _homeview(request, Invoice.objects.filter(deleted=True), deleted=True)
 
 
-# Not a view, just a utility function, thus no separate permissions check
 def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=False, paid=False, searchterm=None):
+    # Utility function for all main invoice views, so make the shared permissions
+    # check here.
+    authenticate_backend_group(request, 'Invoice managers')
+
     # Add info about refunds to all invoices
     invoice_objects = invoice_objects.extra(select={
         'has_refund': 'EXISTS (SELECT 1 FROM invoices_invoicerefund r WHERE r.invoice_id=invoices_invoice.id)',
@@ -73,9 +68,12 @@ def _homeview(request, invoice_objects, unpaid=False, pending=False, deleted=Fal
     })
 
 
-@login_required
-@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def search(request):
+    # Authenticate early, so we don't end up leaking information in case
+    # the user shouldn't have it. This might lead to an extra round of
+    # authentication in some cases, but it's not exactly expensive.
+    authenticate_backend_group(request, 'Invoice managers')
+
     if 'term' in request.POST:
         term = request.POST['term']
     elif 'term' in request.GET:
@@ -110,10 +108,9 @@ def search(request):
     return _homeview(request, invoices, searchterm=term)
 
 
-@login_required
-@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @transaction.atomic
 def oneinvoice(request, invoicenum):
+    authenticate_backend_group(request, 'Invoice managers')
     # Called to view an invoice, to edit one, and to create a new one,
     # since they're all based on the same model and form.
     if invoicenum == 'new':
@@ -212,9 +209,9 @@ def oneinvoice(request, invoicenum):
     })
 
 
-@login_required
-@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def flaginvoice(request, invoicenum):
+    authenticate_backend_group(request, 'Invoice managers')
+
     transaction.set_autocommit(False)
 
     invoice = get_object_or_404(Invoice, pk=invoicenum)
@@ -251,10 +248,10 @@ def flaginvoice(request, invoicenum):
     return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
 
-@login_required
-@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @transaction.atomic
 def cancelinvoice(request, invoicenum):
+    authenticate_backend_group(request, 'Invoice managers')
+
     invoice = get_object_or_404(Invoice, pk=invoicenum)
 
     reason = request.POST['reason']
@@ -270,10 +267,10 @@ def cancelinvoice(request, invoicenum):
     return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
 
-@login_required
-@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @transaction.atomic
 def extend_cancel(request, invoicenum):
+    authenticate_backend_group(request, 'Invoice managers')
+
     invoice = get_object_or_404(Invoice, pk=invoicenum)
 
     try:
@@ -289,10 +286,10 @@ def extend_cancel(request, invoicenum):
     return HttpResponseRedirect("/invoiceadmin/%s/" % invoice.id)
 
 
-@login_required
-@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @transaction.atomic
 def refundinvoice(request, invoicenum):
+    authenticate_backend_group(request, 'Invoice managers')
+
     invoice = get_object_or_404(Invoice, pk=invoicenum)
 
     if request.method == 'POST':
@@ -334,9 +331,9 @@ def refundinvoice(request, invoicenum):
         })
 
 
-@login_required
-@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 def previewinvoice(request, invoicenum):
+    authenticate_backend_group(request, 'Invoice managers')
+
     invoice = get_object_or_404(Invoice, pk=invoicenum)
 
     # We assume there is no PDF yet
@@ -346,10 +343,10 @@ def previewinvoice(request, invoicenum):
     return r
 
 
-@login_required
-@user_passes_test_or_error(lambda u: u.has_module_perms('invoices'))
 @transaction.atomic
 def emailinvoice(request, invoicenum):
+    authenticate_backend_group(request, 'Invoice managers')
+
     if request.method != 'POST':
         raise HttpResponse('Must be POST', status=401)
 
@@ -385,8 +382,9 @@ def emailinvoice(request, invoicenum):
 @login_required
 def viewinvoice(request, invoiceid):
     invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True)
-    if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
-        return HttpResponseForbidden("Access denied")
+    if invoice.recipient_user != request.user:
+        # End users can only view their own invoices, but invoice managers can view all
+        authenticate_backend_group(request, 'Invoice managers')
 
     return render(request, 'invoices/userinvoice.html', {
         'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/" % (settings.SITEBASE, invoice.pk)),
@@ -404,8 +402,9 @@ def viewinvoice_secret(request, invoiceid, invoicesecret):
 @login_required
 def viewinvoicepdf(request, invoiceid):
     invoice = get_object_or_404(Invoice, pk=invoiceid)
-    if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
-        return HttpResponseForbidden("Access denied")
+    if invoice.recipient_user != request.user:
+        # End users can only view their own invoices, but invoice managers can view all
+        authenticate_backend_group(request, 'Invoice managers')
 
     r = HttpResponse(content_type='application/pdf')
     r.write(base64.b64decode(invoice.pdf_invoice))
@@ -422,8 +421,9 @@ def viewinvoicepdf_secret(request, invoiceid, invoicesecret):
 @login_required
 def viewreceipt(request, invoiceid):
     invoice = get_object_or_404(Invoice, pk=invoiceid)
-    if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
-        return HttpResponseForbidden("Access denied")
+    if invoice.recipient_user != request.user:
+        # End users can only view their own invoices, but invoice managers can view all
+        authenticate_backend_group(request, 'Invoice managers')
 
     r = HttpResponse(content_type='application/pdf')
     r.write(base64.b64decode(invoice.pdf_receipt))
@@ -440,8 +440,10 @@ def viewreceipt_secret(request, invoiceid, invoicesecret):
 @login_required
 def viewrefundnote(request, invoiceid, refundid):
     invoice = get_object_or_404(Invoice, pk=invoiceid)
-    if not (request.user.has_module_perms('invoices') or invoice.recipient_user == request.user):
-        return HttpResponseForbidden("Access denied")
+    if invoice.recipient_user != request.user:
+        # End users can only view their own invoices, but invoice managers can view all
+        authenticate_backend_group(request, 'Invoice managers')
+
     refund = get_object_or_404(InvoiceRefund, invoice=invoiceid, pk=refundid)
 
     r = HttpResponse(content_type='application/pdf')
