@@ -16,21 +16,26 @@ ACCOUNT_OBJECT_CHOICES = (
 
 class AccountClass(models.Model):
     name = models.CharField(max_length=100)
-    inbalance = models.BooleanField(null=False, blank=False, default=False)
-    balancenegative = models.BooleanField(null=False, blank=False, default=False)
+    inbalance = models.BooleanField(null=False, blank=False, default=False, verbose_name='In balance',
+                                    help_text='Is this account class listed in the balance report (instead of results report)')
+    balancenegative = models.BooleanField(null=False, blank=False, default=False, verbose_name='Balance negative',
+                                          help_text='Should the sign of the balance of this account be reversed in the report')
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name = 'Account classes'
+        verbose_name = 'Account class'
+        verbose_name_plural = 'Account classes'
         ordering = ('name', )
 
 
 class AccountGroup(models.Model):
     name = models.CharField(max_length=100)
-    accountclass = models.ForeignKey(AccountClass, blank=False, default=False, on_delete=models.CASCADE)
-    foldable = models.BooleanField(null=False, blank=False, default=False)
+    accountclass = models.ForeignKey(AccountClass, blank=False, default=False, on_delete=models.CASCADE,
+                                     verbose_name='Account class')
+    foldable = models.BooleanField(null=False, blank=False, default=False,
+                                   help_text='If this account is alone in the group having values, fold it into a single line and rmeove the group header/footer')
 
     def __str__(self):
         return self.name
@@ -43,8 +48,12 @@ class Account(models.Model):
     num = models.IntegerField(verbose_name="Account number", unique=True)
     group = models.ForeignKey(AccountGroup, null=False, blank=False, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
-    availableforinvoicing = models.BooleanField(null=False, blank=False, default=False)
-    objectrequirement = models.IntegerField(null=False, default=0, choices=ACCOUNT_OBJECT_CHOICES, verbose_name="Object requirements")
+    availableforinvoicing = models.BooleanField(null=False, blank=False, default=False,
+                                                verbose_name='Available for invoicing',
+                                                help_text='List this account in the dropdown when creating a manual invoice')
+    objectrequirement = models.IntegerField(null=False, default=0, choices=ACCOUNT_OBJECT_CHOICES,
+                                            verbose_name="Object required",
+                                            help_text='Require an object to be specified when using this account')
 
     def __str__(self):
         return "%s - %s" % (self.num, self.name)

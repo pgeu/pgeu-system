@@ -17,8 +17,8 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('num', models.IntegerField(unique=True, verbose_name='Account number')),
                 ('name', models.CharField(max_length=100)),
-                ('availableforinvoicing', models.BooleanField(default=False)),
-                ('objectrequirement', models.IntegerField(default=0, verbose_name='Object requirements', choices=[(0, 'Optional'), (1, 'Required'), (2, 'Forbidden')])),
+                ('availableforinvoicing', models.BooleanField(default=False, verbose_name='Available for invoicing', help_text='List this account in the dropdown when creating a manual invoice')),
+                ('objectrequirement', models.IntegerField(default=0, verbose_name='Object required', choices=[(0, 'Optional'), (1, 'Required'), (2, 'Forbidden')], help_text='Require an object to be specified when using this account')),
             ],
             options={
                 'ordering': ('num',),
@@ -29,12 +29,13 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=100)),
-                ('inbalance', models.BooleanField(default=False)),
-                ('balancenegative', models.BooleanField(default=False)),
+                ('inbalance', models.BooleanField(default=False, verbose_name='In balance', help_text='Is this account class listed in the balance report (instead of results report)')),
+                ('balancenegative', models.BooleanField(default=False, verbose_name='Balance negative', help_text='Should the sign of the balance of this account be reversed in the report')),
             ],
             options={
                 'ordering': ('name',),
-                'verbose_name': 'Account classes',
+                'verbose_name': 'Account class',
+                'verbose_name_plural': 'Account classes',
             },
         ),
         migrations.CreateModel(
@@ -42,8 +43,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=100)),
-                ('foldable', models.BooleanField(default=False)),
-                ('accountclass', models.ForeignKey(default=False, to='accounting.AccountClass', on_delete=models.CASCADE)),
+                ('foldable', models.BooleanField(default=False, help_text='If this account is alone in the group having values, fold it into a single line and rmeove the group header/footer')),
+                ('accountclass', models.ForeignKey(default=False, to='accounting.AccountClass', on_delete=models.CASCADE, verbose_name='Account class')),
             ],
             options={
                 'ordering': ('name',),

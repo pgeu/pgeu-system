@@ -23,6 +23,7 @@ import postgresqleu.account.views
 import postgresqleu.invoices.views
 import postgresqleu.invoices.backendviews
 import postgresqleu.accounting.views
+import postgresqleu.accounting.backendviews
 import postgresqleu.paypal.views
 import postgresqleu.adyen.views
 import postgresqleu.trustlypayment.views
@@ -284,6 +285,10 @@ urlpatterns.extend([
     url(r'^accounting/(\d+)/new/$', postgresqleu.accounting.views.new),
     url(r'^accounting/(\d+)/close/$', postgresqleu.accounting.views.closeyear),
     url(r'^accounting/([\d-]+)/report/(\w+)/$', postgresqleu.accounting.views.report),
+    url(r'^admin/accounting/accountstructure/$', postgresqleu.accounting.backendviews.accountstructure),
+    url(r'^admin/accounting/accountclasses/(.*/)?$', postgresqleu.accounting.backendviews.edit_accountclass),
+    url(r'^admin/accounting/accountgroups/(.*/)?$', postgresqleu.accounting.backendviews.edit_accountgroup),
+    url(r'^admin/accounting/accounts/(.*/)?$', postgresqleu.accounting.backendviews.edit_account),
 
     # Scheduled jobs
     url(r'^admin/jobs/$', postgresqleu.scheduler.views.index),

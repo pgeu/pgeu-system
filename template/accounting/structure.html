@@ -1,0 +1,36 @@
+{%extends "adm/admin_base.html" %}
+{%block title%}Account structure{%endblock%}
+{%block layoutblock %}
+<h1>Account structure</h1>
+<table class="table table-bordered table-condensed">
+{%for a in accounts%}
+{%ifchanged a.inbalance%}
+<tr class="bg-primary">
+  <th colspan="4" class="text-center">{{a.inbalance|yesno:"Balance,Results"}}</th>
+</tr>
+{%endifchanged%}
+
+{%ifchanged a.classname%}
+<tr class="bg-info">
+  <th colspan="4"><a href="/admin/accounting/accountclasses/{{a.classid}}/">{{a.classname}}</a></th>
+</tr>
+{%endifchanged%}
+
+{%ifchanged a.groupname%}
+<tr class="bg-success">
+  <th>&nbsp;</th>
+  <th colspan="3"><a href="/admin/accounting/accountgroups/{{a.groupid}}/">{{a.groupname}}</a></th>
+</tr>
+{%endifchanged%}
+
+<tr>
+  <td colspan="2">&nbsp;</td>
+  <td><strong><a href="/admin/accounting/accounts/{{a.accountid}}/">{{a.accountnum}}</a></strong></td>
+  <td>{{a.accountname}}</td>
+
+</tr>
+{%endfor%}
+</table>
+
+<a href="/admin/" class="btn btn-default btn-block">Back</a>
+{%endblock%}
