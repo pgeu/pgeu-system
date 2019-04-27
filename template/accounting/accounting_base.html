@@ -1,50 +1,43 @@
-{%load alertmap%}
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" dir="ltr">
- <head>
-  <title>{%block title%}{%endblock%} - {{org_name}}</title>
-  <meta http-equiv="Content-Type" content="text/xhtml; charset=utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="shortcut icon" href="/favicon.ico" />
-  <link rel="stylesheet" media="screen" href="/media/css/bootstrap.min.css" />
-  <link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
-  <link rel="stylesheet" href="/media/css/selectize.css" />
-  <link rel="stylesheet" href="/media/css/selectize.default.css" />
-  <script type="text/javascript" src="/media/jq/jquery-1.8.2.min.js"></script>
-  <script type="text/javascript" src="/media/js/bootstrap.min.js"></script>
-  <script type="text/javascript" src="/media/jq/jquery-ui.min.js"></script>
-  <script type="text/javascript" src="/media/js/selectize.min.js"></script>
-  <script type="text/javascript" src="/media/js/pgeu_accounting.js"></script>
-{%block extrahead%}{%endblock%}
- </head>
- <body>
-   <nav class="navbar navbar-default">
-     <div class="container-fluid">
-       <div class="navbar-header">
-	 <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-           <span class="icon-bar"></span>
-           <span class="icon-bar"></span>
-           <span class="icon-bar"></span>
-	 </button>
-	 <a href="/admin/"><img class="pull-left" style="margin-right: 8px; margin-top: 5px;" src="/media/img/pgeu_logo_small.png" /></a>
-	 <a class="navbar-brand" href="/accounting/">Accounting</a>
-       </div>
-       <div class="collapse navbar-collapse" id="navbar">
-{%block navbarextra%}{%endblock%}
-       </div>
-     </div>
-   </nav>
+{%extends "adm/admin_base.html" %}
+{%block containerextend%}-fluid{%endblock%}
 
-   <div class="container-fluid">
-{% if messages %}
-{% for message in messages %}
-<div class="alert{% if message.tags %} {{ message.tags|alertmap }}{%endif%}">{{ message }}</div>
-{% endfor %}
-{% endif %}
+{%block extrahead%}
+ <link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
+ <link rel="stylesheet" href="/media/css/selectize.css" />
+ <link rel="stylesheet" href="/media/css/selectize.default.css" />
+ <link rel="stylesheet" href="/media/css/pgeu_accounting.css" />
+ <script type="text/javascript" src="/media/jq/jquery-ui.min.js"></script>
+ <script type="text/javascript" src="/media/js/selectize.min.js"></script>
+ <script type="text/javascript" src="/media/js/pgeu_accounting.js"></script>
+{%endblock%}
 
-	 {%block layoutblock%}{%endblock%}
-   </div>
+{%block topadmin%}
+<li><a href="/accounting/">Accounting</a></li>
 
- </body>
-</html>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Reports <span class="caret"></span></a>
+  <ul class="dropdown-menu">
+{%if reporttype != 'results' %}<li><a href="/accounting/{{year.year}}/report/results/" target="_blank">Results</a></li>{%endif%}
+{%if reporttype != 'balance' %}<li><a href="/accounting/{{year.year}}/report/balance/" target="_blank">Balance</a></li>{%endif%}
+{%if reporttype != 'ledger' %}<li><a href="/accounting/{{year.year}}/report/ledger/" target="_blank">General ledger</a></li>{%endif%}
+  </ul>
+</li>
+
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Year: {{year}} <span class="caret"></span></a>
+  <ul class="dropdown-menu">
+{%for y in years %}
+    <li><a href="/accounting/{{y.year}}/{{yearsuffix}}">{{y}}</a></li>
+{%endfor%}
+  </ul>
+</li>
+
+<li>
+  <form class="navbar-form navbar-left" role="search">
+    <div class="form-group">
+      <input type="text" id="searchentry" class="form-control" placeholder="Search" name="search" value="{{searchterm}}">
+    </div>
+    <button type="submit" class="btn btn-default">Search</button>
+  </form>
+</li>
+{%endblock%}

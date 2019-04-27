@@ -1,0 +1,136 @@
+input.datepicker {
+   width: 100px;
+}
+
+div.accounting-left {
+   border-right: 1px solid black;
+}
+ul.journal-entry-list {
+   list-style-type: none;
+   padding: 0px;
+}
+
+table#entryheader {
+   margin-bottom: 10px;
+}
+
+/* Account form */
+input.debitbox, input.creditbox {
+   text-align: right;
+}
+.dropdownbox {
+   width: 100%;
+}
+
+/* Viewing a journal entry */
+table.journalentry {
+   width: 900px;
+   border: 1px solid gray;
+   border-spacing: 0;
+}
+table.journalentry tr.header {
+   background-color: lightgray;
+}
+table.journalentry tr.header td {
+   border-bottom: 1px solid gray;
+   font-weight: bold;
+}
+table.journalentry tr.footer {
+   background-color: lightgray;
+}
+table.journalentry tr.footer td {
+   border-top: 1px solid gray;
+   font-style: italic;
+}
+table.journalentry tr td.amount {
+   width: 75px;
+   text-align: right;
+}
+table.journalentry tr td.accountname {
+   width: 230px;
+}
+table.journalentry tr td.objectname {
+   width: 100px;
+}
+
+
+/* Reports */
+
+table.reporttable {
+   width: 100%;
+}
+table.reporttable tr td.header {
+   font-weight: bold;
+   text-decoration: underline;
+}
+table.reporttable tr td.amount {
+   text-align: right;
+   width: 120px;
+}
+table.reporttable tr td.amount.unfolded {
+   padding-right: 10px;
+}
+table.reporttable tr td.spacer {
+   width: 15px;
+}
+table.reporttable tr td.classname {
+   font-weight: bold;
+}
+table.reporttable tr.groupsum td {
+   font-style: italic;
+}
+table.reporttable tr.classsum td.amount {
+   border-top: 1px solid black;
+   font-weight: bold;
+}
+table.reporttable tr.classsum td {
+   padding-bottom: 15px;
+}
+table.reporttable tr.finalrow td {
+   font-weight: bold;
+}
+table.reporttable tr.finalrow td.amount {
+   border-top: 3px double black;
+}
+
+/* Ledger report */
+
+table.ledgertable {
+   width: 100%;
+   border-spacing: 0;
+   border-collapse: collapse;
+}
+table.ledgertable tr.accountname td {
+   background-color: lightgray;
+   font-weight: bold;
+   text-align: center;
+}
+table.ledgertable tr.accountsummary td {
+   background-color: lightgray;
+}
+table.ledgertable tr.accountsummary td.amount {
+   border-top: 1px solid black;
+}
+table.ledgertable tr.header td {
+   font-weight: bold;
+}
+table.ledgertable tr td {
+   overflow: hidden;
+}
+table.ledgertable tr td.amount {
+   text-align: right;
+   width: 75px;
+}
+table.ledgertable tr td.entryfield {
+   width: 150px;
+}
+table.ledgertable tr td.objectfield {
+   width: 150px;
+}
+
+/* Printing shouldn't include all the nav stuff */
+@media print {
+   .noprint, nav {
+      display: none;
+   }
+}

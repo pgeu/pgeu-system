@@ -8,30 +8,6 @@ function confirmNew() {
    return confirm('Are you sure you want to create a new entry?\n\nA new, empty, entry will be created immediately, and you have to fill it out with information. Until you do so, the database contents will be incomplete.');
 }
 
-function changeYear(doconfirm, currentyear) {
-   if (doconfirm && !confirm('Are you sure you want to change year? Any currently unsaved changes will be lost!')) {
-      /* Change the value back */
-      $('#yearpick').val(currentyear);
-      return false;
-   }
-
-   newyear = $('#yearpick').val();
-   document.location.href = '/accounting/' + newyear + '/';
-}
-
-function pickReport(year, samewindow) {
-   v = $('#reportpick').val();
-   if (!v) return;
-
-   url = '/accounting/' + year + '/report/' + v + '/';
-   if (samewindow) {
-      document.location.href = url;
-   } else {
-      window.open(url);
-      $('#reportpick').val('');
-   }
-}
-
 function recalculate_sums() {
       var debit=0, credit=0;
       $('.debitbox').each(function(){ debit += Number($(this).val()); });

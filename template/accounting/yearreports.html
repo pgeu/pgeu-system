@@ -2,104 +2,54 @@
 {%load humanize%}
 {%block title%}Accounting - {{title}}{%endblock%}
 {%block extrahead%}
-<script type="text/javascript" src="/media/js/pgeu_accounting.js"></script>
-<style>
-input.datepicker {
-   width: 100px;
-}
-table.reporttable {
-   width: 100%;
-}
-table.reporttable tr td.header {
-   font-weight: bold;
-   text-decoration: underline;
-}
-table.reporttable tr td.amount {
-   text-align: right;
-   width: 120px;
-}
-table.reporttable tr td.amount.unfolded {
-   padding-right: 10px;
-}
-table.reporttable tr td.spacer {
-   width: 15px;
-}
-table.reporttable tr td.classname {
-   font-weight: bold;
-}
-table.reporttable tr.groupsum td {
-   font-style: italic;
-}
-table.reporttable tr.classsum td.amount {
-   border-top: 1px solid black;
-   font-weight: bold;
-}
-table.reporttable tr.classsum td {
-   padding-bottom: 15px;
-}
-table.reporttable tr.finalrow td {
-   font-weight: bold;
-}
-table.reporttable tr.finalrow td.amount {
-   border-top: 3px double black;
-}
-
-/* Printing shouldn't include all the nav stuff */
-@media print {
-   div#pgHeaderContainer { display: none; }
-   div#pgFooter { display: none; }
-   div.dateinfo { margin-bottom: 40px; }
-
-   /* Override styles in the base */
-   h1 {
-      font-size: 2.5em;
-      color: black;
-   }
-}
-</style>
-
+{{block.super}}
 <script type="text/javascript">
 function refreshlocation() {
       o = $('#objsel').val();
-      y = $('#yearsel').val();
       ed = $('#enddate').val();
       io = $('#includeopen').prop('checked') ? 1 : 0;
 
-      document.location.href = '/accounting/' + y + '/report/{{reporttype}}/?obj=' + o + '&ed=' + ed + '&io=' + io;
+      document.location.href = '/accounting/' + {{year.year}} + '/report/{{reporttype}}/?obj=' + o + '&ed=' + ed + '&io=' + io;
 }
 
 $(function() {
-   $('input.datepicker').datepicker({
-      'dateFormat': 'yy-mm-dd',
-   });
    $('input.datepicker').change(function() {
       refreshlocation();
    });
-   $('#objsel, #yearsel, #includeopen').change(function() {
+   $('#objsel, #includeopen').change(function() {
       refreshlocation();
    });
 });
 </script>
 {%endblock%}
 
-{%block navbarextra%}
-<form class="navbar-form navbar-right">
-  <div class="form-group">
-    <select id="reportpick" onchange="pickReport({{year.year}}, true)"><option value="">Select report</option><option value="results">Results</optioN><option value="balance">Balance</option><option value="ledger">General ledger</option></select>
-  </div>
-</form>
-{%endblock%}
-
 {%block layoutblock%}
 <div class="container">
+
+<form class="form-inline noprint">
+  <div class="form-group">
+    <label for="objsel">Object:</label>
+    <select id="objsel" class="form-control"><option value="">All</option>{%for o in objects%}<option value="{{o.id}}"{%if o == currentobj%} SELECTED{%endif%}>{{o}}</option>{%endfor%}</select>
+  </div>
+{%if year != -1%}
+  <div class="form-group">
+    <label for="enddate">End date:</label>
+    <input type="text" class="datepicker" id="enddate" value="{{enddate|date:"Y-m-d"}}">
+  </div>
+{%endif%}
+  <div class="form-group">
+    <label for="includeopen">Include open entries</label>
+    <input type="checkbox" class="form-control" id="includeopen" value="1" {%if includeopen %}CHECKED{%endif%}>
+  </div>
+</form>
+
+
 <h1>{{title}}</h1>
 
 {%if year != -1%}
 <div class="dateinfo">{{year.year}}-01-01 - {{enddate|date:"Y-m-d"}}</div>
 {%endif%}
 
-Year: <select id="yearsel">{%for y in years%}<option value="{{y.year}}"{%if y == year%} SELECTED{%endif%}>{{y}}</option>{%endfor%}{%ifequal reporttype "results"%}<option value="-1"{%if year == -1%} SELECTED{%endif%}>All years</option>{%endifequal%}</select>
-Object: <select id="objsel"><option value="">All</option>{%for o in objects%}<option value="{{o.id}}"{%if o == currentobj%} SELECTED{%endif%}>{{o}}</option>{%endfor%}</select> {%if year != -1%}Enddate: <input type="text" class="datepicker" id="enddate" value="{{enddate|date:"Y-m-d"}}">{%endif%} <input type="checkbox" id="includeopen" value="1" {%if includeopen %}CHECKED{%endif%}>Include open
 
 <table cellspacing="0" cellpadding="1" class="reporttable">
 <tr><td colspan="3"></td>{%for h in valheaders%}<td class="header amount">{{h}}</td>{%endfor%}</tr>

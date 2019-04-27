@@ -2,54 +2,15 @@
 {%load humanize%}
 {%block title%}Accounting - General Ledger{%endblock%}
 {%block extrahead%}
-<script type="text/javascript" src="/media/js/pgeu_accounting.js"></script>
-<style>
-input.datepicker {
-   width: 100px;
-}
-
-table.ledgertable {
-   width: 100%;
-   border-spacing: 0;
-   border-collapse: collapse;
-}
-table.ledgertable tr.accountname td {
-   background-color: lightgray;
-   font-weight: bold;
-   text-align: center;
-}
-table.ledgertable tr.accountsummary td {
-   background-color: lightgray;
-}
-table.ledgertable tr.accountsummary td.amount {
-   border-top: 1px solid black;
-}
-table.ledgertable tr.header td {
-   font-weight: bold;
-}
-table.ledgertable tr td {
-   overflow: hidden;
-}
-table.ledgertable tr td.amount {
-   text-align: right;
-   width: 75px;
-}
-table.ledgertable tr td.entryfield {
-   width: 150px;
-}
-table.ledgertable tr td.objectfield {
-   width: 150px;
-}
-</style>
+{{block.super}}
 <script type="text/javascript">
 function refreshlocation() {
       o = $('#objsel').val();
-      y = $('#yearsel').val();
       a = $('#accsel').val();
       ed = $('#enddate').val();
       io = $('#includeopen').prop('checked') ? 1 : 0;
 
-      document.location.href = '/accounting/' + y + '/report/{{reporttype}}/?obj=' + o + '&acc=' + a + '&ed=' + ed + '&io=' + io;
+      document.location.href = '/accounting/' + {{year.year}} + '/report/{{reporttype}}/?obj=' + o + '&acc=' + a + '&ed=' + ed + '&io=' + io;
 }
 $(function() {
    $('input.datepicker').datepicker({
@@ -58,30 +19,39 @@ $(function() {
    $('input.datepicker').change(function() {
       refreshlocation();
    });
-   $('#objsel, #yearsel, #accsel, #includeopen').change(function() {
+   $('#objsel, #accsel, #includeopen').change(function() {
       refreshlocation();
    });
 });
 </script>
 {%endblock%}
 
-{%block navbarextra%}
-<form class="navbar-form navbar-right">
-  <div class="form-group">
-    <select id="reportpick" onchange="pickReport({{year.year}}, true)"><option value="">Select report</option><option value="results">Results</optioN><option value="balance">Balance</option><option value="ledger">General ledger</option></select>
-  </div>
-</form>
-{%endblock%}
-
 {%block layoutblock%}
 <div class="container">
-<h1>{{title}}</h1>
 
-Year: <select id="yearsel">{%for y in years%}<option value="{{y.year}}"{%if y == year%} SELECTED{%endif%}>{{y}}</option>{%endfor%}</select>
-Object: <select id="objsel"><option value="">All</option>{%for o in objects%}<option value="{{o.id}}"{%if o == currentobj%} SELECTED{%endif%}>{{o}}</option>{%endfor%}</select>
-Account: <select id="accsel"><option value="">All</option>{%for a in accounts%}<option value="{{a.num}}"{%if a == currentaccount%} SELECTED{%endif%}>{{a|truncatechars:20}}</option>{%endfor%}</select>
-Enddate: <input type="text" class="datepicker" id="enddate" value="{{enddate|date:"Y-m-d"}}">
-<input type="checkbox" id="includeopen" value="1" {%if includeopen %}CHECKED{%endif%}>Include open entries
+<form class="form-inline noprint">
+  <div class="form-group">
+    <label for="objsel">Object:</label>
+    <select id="objsel" class="form-control"><option value="">All</option>{%for o in objects%}<option value="{{o.id}}"{%if o == currentobj%} SELECTED{%endif%}>{{o}}</option>{%endfor%}</select>
+  </div>
+  <div class="form-group">
+    <label for="accsel">Account:</label>
+    <select id="accsel" class="form-control"><option value="">All</option>{%for a in accounts%}<option value="{{a.num}}"{%if a == currentaccount%} SELECTED{%endif%}>{{a|truncatechars:20}}</option>{%endfor%}</select>
+  </div>
+{%if year != -1%}
+  <div class="form-group">
+    <label for="enddate">End date:</label>
+    <input type="text" class="datepicker" id="enddate" value="{{enddate|date:"Y-m-d"}}">
+  </div>
+{%endif%}
+  <div class="form-group">
+    <label for="includeopen">Include open entries</label>
+    <input type="checkbox" class="form-control" id="includeopen" value="1" {%if includeopen %}CHECKED{%endif%}>
+  </div>
+</form>
+
+
+<h1>{{title}}</h1>
 
 <br/><br/>
 

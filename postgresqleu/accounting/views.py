@@ -401,9 +401,6 @@ def report(request, year, reporttype):
     else:
         hasopenentries = False
 
-    if year and year.isopen:
-        messages.info(request, "This year is still open!")
-
     if request.GET.get('acc', None):
         account = get_object_or_404(Account, num=request.GET['acc'])
     else:
@@ -481,9 +478,12 @@ def report(request, year, reporttype):
             'accounts': Account.objects.all(),
             'currentaccount': account,
             'reporttype': 'ledger',
+            'title': 'Ledger',
             'items': items,
             'enddate': enddate,
             'includeopen': includeopen,
+            'yearsuffix': 'report/ledger/',
+            'isreport': True,
         })
     elif reporttype == 'results':
         # The results report is the easiest one, since we can assume that
@@ -548,4 +548,6 @@ def report(request, year, reporttype):
         'currentobj': object,
         'enddate': enddate,
         'includeopen': includeopen,
+        'yearsuffix': 'report/{}/'.format(reporttype),
+        'isreport': True,
     })

@@ -46,10 +46,10 @@
      </div>
    </nav>
 
-   <div class="container">
+   <div class="container{%block containerextend%}{%endblock%}">
 {% if messages %}
 {% for message in messages %}
-<div class="alert{% if message.tags %} {{ message.tags|alertmap }}{%endif%}">{{ message }}</div>
+<div class="alert{% if message.tags %} {{ message.tags|alertmap }}{%endif%} noprint">{{ message }}</div>
 {% endfor %}
 {% endif %}
 
