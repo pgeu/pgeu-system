@@ -61,7 +61,8 @@ def volunteerschedule(request, urlname, adm=False):
                 if is_admin:
                     slotid = int(k[len('add-vol-'):])
                     volid = int(v)
-                    _add(request, conference, reg, is_admin, slotid, volid)
+                    if volid != -1:
+                        _add(request, conference, reg, is_admin, slotid, volid)
                 else:
                     messages.warning(request, "Permission denied")
                 break
