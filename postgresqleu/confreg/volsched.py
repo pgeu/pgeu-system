@@ -63,6 +63,10 @@ def volunteerschedule(request, urlname, adm=False):
                     volid = int(v)
                     if volid != -1:
                         _add(request, conference, reg, is_admin, slotid, volid)
+                    else:
+                        # If it's an add of -1, there may be something else present
+                        # as well, so keep searching.
+                        continue
                 else:
                     messages.warning(request, "Permission denied")
                 break
