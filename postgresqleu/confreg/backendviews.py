@@ -498,7 +498,7 @@ def _attendee_email_form(request, conference, query, breadcrumbs):
         if form.is_valid():
             with transaction.atomic():
                 if form.cleaned_data['storeonregpage']:
-                    mailid = exec_to_scalar("INSERT INTO confreg_attendeemail (conference_id, sentat, subject, message) VALUES (%(confid)s, CURRENT_TIMESTAMP, %(subject)s, %(message)s) RETURNING id", {
+                    mailid = exec_to_scalar("INSERT INTO confreg_attendeemail (conference_id, sentat, subject, message, tocheckin, tovolunteers) VALUES (%(confid)s, CURRENT_TIMESTAMP, %(subject)s, %(message)s, false, false) RETURNING id", {
                         'confid': conference.id,
                         'subject': form.cleaned_data['subject'],
                         'message': form.cleaned_data['message'],
