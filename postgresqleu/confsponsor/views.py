@@ -600,19 +600,20 @@ def sponsor_shipment_receiver(request, token):
     })
 
 
-def _send_shipment_mail(shipment, subject, contents):
+def _send_shipment_mail(shipment, subject, mailtemplate):
     if shipment.sponsor:
         for manager in shipment.sponsor.managers.all():
-            send_simple_mail(shipment.conference.sponsoraddr,
-                             manager.email,
-                             "[{0}] {1}".format(shipment.conference, subject),
-                             "{0}\n\nTo view the details about your shipments, please click\n{1}/events/sponsor/{2}/#shipment".format(contents, settings.SITEBASE, shipment.sponsor.pk),
-                             sendername=shipment.conference.conferencename,
-                             receivername='{0} {1}'.format(manager.first_name, manager.last_name))
-    send_simple_mail(shipment.conference.sponsoraddr,
-                     shipment.conference.sponsoraddr,
-                     "[{0}] {1}".format(shipment.conference, subject),
-                     "{0}\n\nTo view all shipments, please click\n{1}/events/sponsor/admin/{2}/#shipment".format(contents, settings.SITEBASE, shipment.conference.urlname))
+            send_conference_mail(shipment.conference,
+                                 manager.email,
+                                 "[{0}] {1}".format(shipment.conference, subject),
+                                 'confsponsor/mail/shipment_{0}.txt'.format(mailtemplate),
+                                 {
+                                     'shipment': shipment,
+                                     'sponsor': shipment.sponsor,
+                                 },
+                                 sender=shipment.conference.sponsoraddr,
+                                 bcc=shipment.conference.sponsoraddr,
+                                 receivername='{0} {1}'.format(manager.first_name, manager.last_name))
 
 
 @transaction.atomic
@@ -633,8 +634,8 @@ def sponsor_shipment_receiver_shipment(request, token, addresstoken):
                     shipment.arrived_parcels = request.POST['arrived_parcels']
                     shipment.save()
                     _send_shipment_mail(shipment,
-                                        "Shipment to {0} marked as arrived".format(address),
-                                        "The shipment with id {0} has been marked as arrived at {1}.\nThe recipient has indicated that {2} parcels arrived.".format(shipment.addresstoken, address.title, shipment.arrived_parcels))
+                                        "Shipment to {0} marked as arrived".format(address.title),
+                                        'arrived')
                     messages.info(request, "Shipment {0} marked as arrived".format(shipment.addresstoken))
             elif request.POST['submit'] == 'Mark as NOT arrived':
                 if not shipment.arrived_at:
@@ -643,15 +644,15 @@ def sponsor_shipment_receiver_shipment(request, token, addresstoken):
                     shipment.arrived_at = None
                     shipment.save()
                     _send_shipment_mail(shipment,
-                                        "Shipment to {0} UNMARKED as arrived".format(address),
-                                        "The recipient at {0} has indicated that the shipment with id {1}\nwhich was previously marked as arrived, was wrong.\nThis shipment has NOT arrived.\n".format(address.title, shipment.addresstoken))
+                                        "Shipment to {0} UNMARKED as arrived".format(address.title),
+                                        'unmarked')
                     messages.info(request, "Shipment {0} marked as not arrived".format(shipment.addresstoken))
             elif request.POST['submit'] == "Change number of parcels":
                 if saved_arrived_parcels != shipment.arrived_parcels:
                     shipment.save()
                     _send_shipment_mail(shipment,
-                                        "Shipment to {0} updated number of parcels".format(address),
-                                        "The recipient at {0} has updated the number of parcels received for shipment id {1}\nThe updated number of parcels is {2}.\n".format(address.title, shipment.addresstoken, shipment.arrived_parcels))
+                                        "Shipment to {0} updated number of parcels".format(address.title),
+                                        'changed')
                     messages.info(request, "Number of parcels for shipment {0} changed".format(shipment.addresstoken))
             else:
                 messages.error(request, "Invalid submit button pressed")
@@ -776,12 +777,15 @@ def _confirm_benefit(request, benefit):
 
         # Send email
         for manager in benefit.sponsor.managers.all():
-            send_simple_mail(conference.sponsoraddr,
-                             manager.email,
-                             "[{0}] sponsorship benefit confirmed".format(conference.conferencename, benefit.benefit),
-                             "Your sponsorship benefit {0} at {1} has been marked as confirmed by the organizers.".format(benefit.benefit, conference.conferencename),
-                             sendername=conference.conferencename,
-                             receivername='{0} {1}'.format(manager.first_name, manager.last_name))
+            send_conference_mail(conference,
+                                 manager.email,
+                                 "[{0}] sponsorship benefit confirmed".format(conference.conferencename, benefit.benefit),
+                                 'confsponsor/mail/benefit_confirmed.txt',
+                                 {
+                                     'benefit': benefit.benefit,
+                                 },
+                                 sender=conference.sponsoraddr,
+                                 receivername='{0} {1}'.format(manager.first_name, manager.last_name))
         send_simple_mail(conference.sponsoraddr,
                          conference.sponsoraddr,
                          "Sponsorship benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor),
@@ -816,12 +820,15 @@ def _unclaim_benefit(request, claimed_benefit):
 
         # Send email
         for manager in sponsor.managers.all():
-            send_simple_mail(conference.sponsoraddr,
-                             manager.email,
-                             "[{0}] sponsorship benefit unclaimed".format(conference.conferencename, benefit),
-                             "Your sponsorship benefit {0} at {1} has been marked as unclaimed by the organizers.".format(benefit, conference.conferencename),
-                             sendername=conference.conferencename,
-                             receivername='{0} {1}'.format(manager.first_name, manager.last_name))
+            send_conference_mail(conference,
+                                 manager.email,
+                                 "[{0}] sponsorship benefit unclaimed".format(conference.conferencename, benefit),
+                                 'confsponsor/mail/benefit_unclaimed.txt',
+                                 {
+                                     'benefit': benefit,
+                                 },
+                                 sender=conference.sponsoraddr,
+                                 receivername='{0} {1}'.format(manager.first_name, manager.last_name))
         send_simple_mail(conference.sponsoraddr,
                          conference.sponsoraddr,
                          "Sponsorship benefit {0} for {1} has been unclaimed".format(benefit, sponsor),
@@ -997,22 +1004,28 @@ def sponsor_admin_send_mail(request, confurlname):
 
             # Now also send the email out to the *current* subscribers
             for sponsor in sponsors:
-                msgtxt = "{0}\n\n-- \nThis message was sent to sponsors of {1}.\nYou can view all communications for this conference at:\n{2}/events/sponsor/{3}/\n".format(msg.message, conference, settings.SITEBASE, sponsor.pk)
                 for manager in sponsor.managers.all():
-                    send_simple_mail(conference.sponsoraddr,
-                                     manager.email,
-                                     "[{0}] {1}".format(conference, msg.subject),
-                                     msgtxt,
-                                     sendername=conference.conferencename,
-                                     receivername='{0} {1}'.format(manager.first_name, manager.last_name))
+                    send_conference_mail(conference,
+                                         manager.email,
+                                         "[{0}] {1}".format(conference, msg.subject),
+                                         'confsponsor/mail/sponsor_mail.txt',
+                                         {
+                                             'body': msg.message,
+                                             'sponsor': sponsor,
+                                         },
+                                         sender=conference.sponsoraddr,
+                                         receivername='{0} {1}'.format(manager.first_name, manager.last_name))
                 # And possibly send it out to the extra address for the sponsor
                 if sponsor.extra_cc:
-                    msgtxt = "{0}\n\n-- \nThis message was sent to sponsors of {1}.\nThis address was added as an extra CC address by one of the managers.\n".format(msg.message, conference)
-                    send_simple_mail(conference.sponsoraddr,
-                                     sponsor.extra_cc,
-                                     "[{0}] {1}".format(conference, msg.subject),
-                                     msgtxt,
-                                     sendername=conference.conferencename,
+                    send_conference_mail(conference,
+                                         sponsor.extra_cc,
+                                         "[{0}] {1}".format(conference, msg.subject),
+                                         'confsponsor/mail/sponsor_mail.txt',
+                                         {
+                                             'body': msg.message,
+                                             'sponsor': sponsor,
+                                         },
+                                         sender=conference.sponsoraddr,
                     )
 
             send_simple_mail(conference.sponsoraddr,

@@ -53,7 +53,7 @@ from postgresqleu.confwiki.models import Wikipage
 from postgresqleu.confsponsor.models import ScannedAttendee
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor, InvoiceHistory
-from postgresqleu.mailqueue.util import send_mail, send_simple_mail, template_to_string
+from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.jsonutil import JsonSerializer
 from postgresqleu.util.db import exec_to_dict, exec_to_grouped_dict, exec_to_keyed_dict
 from postgresqleu.util.db import exec_no_result, exec_to_list, exec_to_scalar, conditional_exec_to_scalar
@@ -3118,18 +3118,24 @@ def admin_waitlist_sendmail(request, urlname):
 
                     msgbody = form.cleaned_data['message']
                     if int(form.cleaned_data['include_position']) == form.POSITION_FULL:
-                        msgbody += "\n\nYour position on the waitlist is {0} of {1}.\n".format(n, tot)
+                        positioninfo = "Your position on the waitlist is {0} of {1}.".format(n, tot)
                     elif int(form.cleaned_data['include_position']) == form.POSITION_ONLY:
-                        msgbody += "\n\nYour position on the waitlist is {0}.\n".format(n)
+                        positioninfo = "Your position on the waitlist is {0}.".format(n)
                     elif int(form.cleaned_data['include_position']) == form.POSITION_SIZE:
-                        msgbody += "\n\nThe current size of the waitlist is {0}.\n".format(tot)
+                        positioninfo = "The current size of the waitlist is {0}.".format(tot)
+                    else:
+                        positioninfo = None
 
-                    send_simple_mail(conference.contactaddr,
-                                     w.registration.email,
-                                     "[{0}] {1}".format(conference.conferencename, form.cleaned_data['subject']),
-                                     msgbody,
-                                     sendername=conference.conferencename,
-                                     receivername=w.registration.fullname)
+                    send_conference_mail(conference,
+                                         w.registration.email,
+                                         "[{0}] {1}".format(conference.conferencename, form.cleaned_data['subject']),
+                                         'confreg/mail/waitlist_manual_mail.txt',
+                                         {
+                                             'body': msgbody,
+                                             'positioninfo': positioninfo,
+                                         },
+                                         receivername=w.registration.fullname,
+                    )
                 if n:
                     messages.info(request, "Sent {0} emails.".format(tot))
                 else:
@@ -3174,14 +3180,16 @@ def admin_attendeemail(request, urlname):
                 attendees.update(conference.checkinprocessors.all())
 
             for a in attendees:
-                msgtxt = "{0}\n\n-- \nThis message was sent to attendees of {1}.\nYou can view all communications for this conference at:\n{2}/events/{3}/register/\n".format(msg.message, conference, settings.SITEBASE, conference.urlname)
-                send_simple_mail(conference.contactaddr,
-                                 a.email,
-                                 "[{0}] {1}".format(conference, msg.subject),
-                                 msgtxt,
-                                 sendername=conference.conferencename,
-                                 receivername=a.fullname,
-                                 )
+                send_conference_mail(conference,
+                                     a.email,
+                                     "[{0}] {1}".format(conference, msg.subject),
+                                     'confreg/mail/attendee_mail.txt',
+                                     {
+                                         'body': msg.message,
+                                         'linkback': True,
+                                     },
+                                     receivername=a.fullname,
+                )
             messages.info(request, "Email sent to %s attendees, and added to registration pages" % len(attendees))
             return HttpResponseRedirect(".")
     else:

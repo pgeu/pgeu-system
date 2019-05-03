@@ -129,7 +129,7 @@ class Sponsor(models.Model):
     def __str__(self):
         return self.name
 
-    _safe_attributes = ('displayname', 'twittername', 'url', )
+    _safe_attributes = ('id', 'displayname', 'twittername', 'url', )
 
 
 class SponsorClaimedBenefit(models.Model):
@@ -213,6 +213,9 @@ class ShipmentAddress(models.Model):
     address = models.TextField(null=False, blank=False)
     description = models.TextField(null=False, blank=True)
 
+    _safe_attributes = ('active', 'startdate', 'enddate', 'token',
+                        'title', 'address', 'description')
+
     class Meta:
         ordering = ('startdate', 'enddate', 'title', )
 
@@ -237,6 +240,10 @@ class Shipment(models.Model):
                                        verbose_name="Shipping company")
     trackinglink = models.URLField(max_length=200, null=False, blank=True,
                                    verbose_name="Tracking link")
+
+    _safe_attributes = ('sponsor', 'address', 'addresstoken', 'description',
+                        'sent_parcels', 'sent_at', 'arrived_at', 'arrived_parcels',
+                        'trackingnumber', 'shippingcompany', 'trackinglink', )
 
     class Meta:
         unique_together = (

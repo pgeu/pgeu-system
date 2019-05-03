@@ -226,13 +226,15 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
 
     # Ok, this attendee needs a notification. For now we don't support
     # any string replacements in it, maybe in the future.
-    send_simple_mail(reg.conference.contactaddr,
-                     reg.email,
-                     "[{0}] Registration complete".format(reg.conference),
-                     reg.conference.welcomemail,
-                     sendername=reg.conference.conferencename,
-                     receivername=reg.fullname,
-                     attachments=attachments,
+    send_conference_mail(reg.conference,
+                         reg.email,
+                         "[{0}] Registration complete".format(reg.conference),
+                         'confreg/mail/welcomemail.txt',
+                         {
+                             'reg': reg,
+                         },
+                         receivername=reg.fullname,
+                         attachments=attachments,
     )
 
 

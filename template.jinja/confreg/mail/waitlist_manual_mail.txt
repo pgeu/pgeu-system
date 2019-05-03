@@ -1,0 +1,4 @@
+{{body}}
+{%if positioninfo%}
+{{positioninfo}}
+{%endif%}

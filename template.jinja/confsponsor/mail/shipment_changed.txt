@@ -1,0 +1,5 @@
+The recipient at {{shipment.address.title}} has updated the number of parcels received for shipment id {{shipment.addresstoken}}.
+The updated number of parcels is {{shipment.arrived_parcels}}.
+
+To view the details about your shipments, please click
+{{sitebase}}/events/sponsor/{{sponsor.id}}/#shipment

@@ -203,7 +203,7 @@ class Conference(models.Model):
     _safe_attributes = ('active', 'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
                         'callforpapersintro', 'callforpapersopen', 'callforpaperstags',
                         'conferencefeedbackopen', 'confurl', 'contactaddr', 'tickets',
-                        'conferencedatestr', 'location',
+                        'conferencedatestr', 'location', 'welcomemail',
                         'feedbackopen', 'skill_levels', 'urlname', 'conferencename')
 
     def safe_export(self):

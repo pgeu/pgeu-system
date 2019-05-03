@@ -16,10 +16,10 @@ from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.messaging.twitter import Twitter, TwitterSetup
 from postgresqleu.util.backendviews import backend_list_editor, backend_process_form
 from postgresqleu.confreg.util import get_authenticated_conference
-from postgresqleu.mailqueue.util import send_mail, send_simple_mail
 
 from .jinjafunc import JINJA_TEMPLATE_ROOT
 from .jinjapdf import render_jinja_ticket
+from .util import send_conference_mail
 
 from .models import Conference, ConferenceSeries
 from .models import ConferenceRegistration, Speaker
@@ -504,16 +504,15 @@ def _attendee_email_form(request, conference, query, breadcrumbs):
                         'message': form.cleaned_data['message'],
                     })
                 for r in recipients:
-                    if form.cleaned_data['storeonregpage']:
-                        msgtxt = "{0}\n\n-- \nThis message was sent to attendees of {1}.\nYou can view all communications for this conference at:\n{2}/events/{3}/register/\n".format(form.cleaned_data['message'], conference, settings.SITEBASE, conference.urlname)
-                    else:
-                        msgtxt = "{0}\n\n-- \nThis message was sent to attendees of {1}.\n".format(form.cleaned_data['message'], conference)
-                    send_simple_mail(conference.contactaddr,
-                                     r['email'],
-                                     "[{0}] {1}".format(conference, form.cleaned_data['subject']),
-                                     msgtxt,
-                                     sendername=conference.conferencename,
-                                     receivername=r['fullname'],
+                    send_conference_mail(conference,
+                                         r['email'],
+                                         "[{0}] {1}".format(conference, form.cleaned_data['subject']),
+                                         'confreg/mail/attendee_mail.txt',
+                                         {
+                                             'body': form.cleaned_data['message'],
+                                             'linkback': form.cleaned_data['storeonregpage'],
+                                         },
+                                         receivername=r['fullname'],
                     )
 
                     if form.cleaned_data['storeonregpage']:
