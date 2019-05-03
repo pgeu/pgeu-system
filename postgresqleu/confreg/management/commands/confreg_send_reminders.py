@@ -11,10 +11,11 @@ from django.db import transaction
 from io import StringIO
 from datetime import datetime, timedelta, time
 
-from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
+from postgresqleu.mailqueue.util import send_simple_mail
 
 from postgresqleu.confreg.models import Conference, Speaker, ConferenceSession
 from postgresqleu.confreg.models import ConferenceRegistration
+from postgresqleu.confreg.util import send_conference_mail
 
 
 class Command(BaseCommand):
@@ -85,17 +86,16 @@ class Command(BaseCommand):
                     s.lastnotifiedtime = datetime.now()
                     s.save()
 
-                send_template_mail(conference.contactaddr,
-                                   speaker.user.email,
-                                   "Your submissions to {0}".format(conference),
-                                   'confreg/mail/speaker_remind_confirm.txt',
-                                   {
-                                       'conference': conference,
-                                       'sessions': sessions,
-                                   },
-                                   sendername=conference.conferencename,
-                                   receivername=speaker.fullname,
-                               )
+                send_conference_mail(conference,
+                                     speaker.user.email,
+                                     "Your submissions to {0}".format(conference),
+                                     'confreg/mail/speaker_remind_confirm.txt',
+                                     {
+                                         'conference': conference,
+                                         'sessions': sessions,
+                                     },
+                                     receivername=speaker.fullname,
+                )
 
                 whatstr.write("Reminded speaker {0} to confirm {1} talks\n".format(speaker, len(sessions)))
 
@@ -118,16 +118,15 @@ class Command(BaseCommand):
                     lastnotifiedtime=datetime.now()
                 )
 
-                send_template_mail(conference.contactaddr,
-                                   speaker.user.email,
-                                   "Your registration to {0}".format(conference),
-                                   'confreg/mail/speaker_remind_register.txt',
-                                   {
-                                       'conference': conference,
-                                   },
-                                   sendername=conference.conferencename,
-                                   receivername=speaker.fullname,
-                               )
+                send_conference_mail(conference,
+                                     speaker.user.email,
+                                     "Your registration to {0}".format(conference),
+                                     'confreg/mail/speaker_remind_register.txt',
+                                     {
+                                         'conference': conference,
+                                     },
+                                     receivername=speaker.fullname,
+                )
 
                 whatstr.write("Reminded speaker {0} to register\n".format(speaker))
 
@@ -154,17 +153,16 @@ class Command(BaseCommand):
         if regs:
             whatstr.write("Found {0} unconfirmed registrations that are stalled:\n".format(len(regs)))
             for reg in regs:
-                send_template_mail(conference.contactaddr,
-                                   reg.email,
-                                   "Your registration to {0}".format(conference),
-                                   'confreg/mail/attendee_stalled_registration.txt',
-                                   {
-                                       'conference': conference,
-                                       'reg': reg,
-                                   },
-                                   sendername=conference.conferencename,
-                                   receivername=reg.fullname,
-                               )
+                send_conference_mail(conference,
+                                     reg.email,
+                                     "Your registration to {0}".format(conference),
+                                     'confreg/mail/attendee_stalled_registration.txt',
+                                     {
+                                         'conference': conference,
+                                         'reg': reg,
+                                     },
+                                     receivername=reg.fullname,
+                )
                 reg.lastmodified = datetime.now()
                 reg.save()
 
@@ -194,17 +192,16 @@ class Command(BaseCommand):
             whatstr.write("Found {0} unconfirmed multiregistrations that are stalled:\n".format(len(multiregs)))
 
             for r in multiregs:
-                send_template_mail(conference.contactaddr,
-                                   r.email,
-                                   "Your registrations for {0}".format(conference),
-                                   'confreg/mail/multireg_stalled_registration.txt',
-                                   {
-                                       'conference': conference,
-                                       'registrator': r,
-                                   },
-                                   sendername=conference.conferencename,
-                                   receivername="{0} {1}".format(r.first_name, r.last_name),
-                               )
+                send_conference_mail(conference,
+                                     r.email,
+                                     "Your registrations for {0}".format(conference),
+                                     'confreg/mail/multireg_stalled_registration.txt',
+                                     {
+                                         'conference': conference,
+                                         'registrator': r,
+                                     },
+                                     receivername="{0} {1}".format(r.first_name, r.last_name),
+                )
 
                 whatstr.write("Reminded user {0} ({1}) that their multi-registration is not confirmed\n".format(r.username, r.email))
 
@@ -224,17 +221,16 @@ class Command(BaseCommand):
                                                             status=0,
                                                             lastmodified__lt=datetime.now() - timedelta(days=3)):
             for spk in sess.speaker.all():
-                send_template_mail(conference.contactaddr,
-                                   spk.email,
-                                   "Your submission to {0}".format(conference),
-                                   'confreg/mail/speaker_empty_submission.txt',
-                                   {
-                                       'conference': conference,
-                                       'session': sess,
-                                   },
-                                   sendername=conference.conferencename,
-                                   receivername=spk.name,
-                               )
+                send_conference_mail(conference,
+                                     spk.email,
+                                     "Your submission to {0}".format(conference),
+                                     'confreg/mail/speaker_empty_submission.txt',
+                                     {
+                                         'conference': conference,
+                                         'session': sess,
+                                     },
+                                     receivername=spk.name,
+                )
                 whatstr.write("Reminded speaker {0} that they have made an empty submission\n".format(spk.name))
             sess.lastmodified = datetime.now()
             sess.save()
@@ -250,17 +246,16 @@ class Command(BaseCommand):
                                       ).distinct()
 
         for spk in speakers:
-            send_template_mail(conference.contactaddr,
-                               spk.email,
-                               "Your submission to {0}".format(conference),
-                               'confreg/mail/speaker_empty_profile.txt',
-                               {
-                                   'conference': conference,
-                                   'speaker': spk,
-                               },
-                               sendername=conference.conferencename,
-                               receivername=spk.name,
-                           )
+            send_conference_mail(conference,
+                                 spk.email,
+                                 "Your submission to {0}".format(conference),
+                                 'confreg/mail/speaker_empty_profile.txt',
+                                 {
+                                     'conference': conference,
+                                     'speaker': spk,
+                                 },
+                                 receivername=spk.name,
+            )
             spk.lastmodified = datetime.now()
             spk.save()
             whatstr.write("Reminded speaker {0} that their profile is empty\n".format(spk.name))

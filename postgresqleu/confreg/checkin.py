@@ -10,10 +10,10 @@ from django.conf import settings
 
 from postgresqleu.util.db import exec_to_list, exec_to_dict
 from postgresqleu.util.qr import generate_base64_qr
-from postgresqleu.mailqueue.util import send_template_mail
 
 from .models import Conference, ConferenceRegistration
 from .views import render_conference_response
+from .util import send_conference_mail
 
 import datetime
 import json
@@ -30,17 +30,16 @@ def landing(request, urlname):
     link = "{0}/events/{1}/checkin/{2}/".format(settings.SITEBASE, conference.urlname, reg.regtoken)
 
     if request.method == 'POST' and request.POST.get('op') == 'sendmail':
-        send_template_mail(conference.contactaddr,
-                           reg.email,
-                           "[{0}] Your check-in link".format(conference.conferencename),
-                           "confreg/mail/checkin_link.txt",
-                           {
-                               'conference': conference,
-                               'reg': reg,
-                               'link': link,
-                           },
-                           sendername=conference.conferencename,
-                           receivername=reg.fullname)
+        send_conference_mail(conference,
+                             reg.email,
+                             "[{0}] Your check-in link".format(conference.conferencename),
+                             "confreg/mail/checkin_link.txt",
+                             {
+                                 'conference': conference,
+                                 'reg': reg,
+                                 'link': link,
+                             },
+                             receivername=reg.fullname)
         messages.info(request, "Link has been sent to {0}".format(reg.email))
         return HttpResponseRedirect(".")
 

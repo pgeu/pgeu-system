@@ -10,9 +10,10 @@ from django.db import transaction
 
 from datetime import datetime, timedelta
 
-from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
+from postgresqleu.mailqueue.util import send_simple_mail
 
 from postgresqleu.confreg.models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
+from postgresqleu.confreg.util import send_conference_mail
 
 
 class Command(BaseCommand):
@@ -50,18 +51,17 @@ class Command(BaseCommand):
                              sendername=reg.conference.conferencename)
 
             # Also send an email to the user
-            send_template_mail(reg.conference.contactaddr,
-                               reg.email,
-                               'Your waitlist offer for {0}'.format(reg.conference.conferencename),
-                               'confreg/mail/waitlist_expired.txt',
-                               {
-                                   'conference': reg.conference,
-                                   'reg': reg,
-                                   'offerexpires': w.offerexpires,
-                               },
-                               sendername=reg.conference.conferencename,
-                               receivername=reg.fullname,
-                           )
+            send_conference_mail(reg.conference,
+                                 reg.email,
+                                 'Your waitlist offer for {0}'.format(reg.conference.conferencename),
+                                 'confreg/mail/waitlist_expired.txt',
+                                 {
+                                     'conference': reg.conference,
+                                     'reg': reg,
+                                     'offerexpires': w.offerexpires,
+                                 },
+                                 receivername=reg.fullname,
+            )
 
             # Now actually expire the offer
             w.offeredon = None

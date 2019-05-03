@@ -9,14 +9,31 @@ import urllib.parse
 from io import BytesIO
 import re
 
-from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
+from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.middleware import RedirectException
-from postgresqleu.confreg.jinjafunc import JINJA_TEMPLATE_ROOT
+from postgresqleu.confreg.jinjafunc import JINJA_TEMPLATE_ROOT, render_jinja_conference_template
 from postgresqleu.confreg.jinjapdf import render_jinja_ticket
 
 from .models import PrepaidVoucher, DiscountCode, RegistrationWaitlistHistory
 from .models import ConferenceRegistration, Conference
 from .models import AttendeeMail
+
+
+#
+# Send an email using a conference template
+#
+def send_conference_mail(conference, receiver, subject, templatename, templateattr={}, attachments=None, bcc=None, receivername=None, sender=None, sendername=None):
+    if not ((conference and conference.jinjadir) or os.path.exists(os.path.join(JINJA_TEMPLATE_ROOT, templatename))):
+        raise Exception("Mail template not found")
+
+    send_simple_mail(sender or conference.contactaddr,
+                     receiver,
+                     subject,
+                     render_jinja_conference_template(conference, templatename, templateattr),
+                     attachments,
+                     bcc,
+                     sendername or conference.conferencename,
+                     receivername)
 
 
 class InvoicerowsException(Exception):
@@ -163,16 +180,15 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
         if not found:
             # User not found, so we use the random token and send it
             # to ask them to attach their account to this registration.
-            send_template_mail(reg.conference.contactaddr,
-                               reg.email,
-                               "Your registration for {0}".format(reg.conference),
-                               'confreg/mail/regmulti_attach.txt',
-                               {
-                                   'conference': reg.conference,
-                                   'reg': reg,
-                               },
-                               sendername=reg.conference.conferencename,
-                               receivername=reg.fullname,
+            send_conference_mail(reg.conference,
+                                 reg.email,
+                                 "Your registration for {0}".format(reg.conference),
+                                 'confreg/mail/regmulti_attach.txt',
+                                 {
+                                     'conference': reg.conference,
+                                     'reg': reg,
+                                 },
+                                 receivername=reg.fullname,
             )
 
     # If the registration has a user account, we may have email to connect
@@ -184,15 +200,15 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
             m.registrations.add(reg)
 
     if reg.conference.notifyregs:
-        send_template_mail(reg.conference.notifyaddr,
-                           reg.conference.notifyaddr,
-                           "[{0}] New registration".format(reg.conference.conferencename),
-                           'confreg/mail/admin_notify_reg.txt',
-                           {
-                               'reg': reg,
-                           },
-                           sendername=reg.conference.conferencename,
-                           receivername=reg.conference.conferencename,
+        send_conference_mail(reg.conference,
+                             reg.conference.notifyaddr,
+                             "[{0}] New registration".format(reg.conference.conferencename),
+                             'confreg/mail/admin_notify_reg.txt',
+                             {
+                                 'reg': reg,
+                             },
+                             sender=reg.conference.notifyaddr,
+                             receivername=reg.conference.conferencename,
         )
 
     # Do we need to send the welcome email?
@@ -230,17 +246,16 @@ def cancel_registration(reg, is_unconfirmed=False, reason=None):
 
     # If we sent a welcome mail, also send a goodbye mail
     if reg.conference.sendwelcomemail:
-        send_template_mail(reg.conference.contactaddr,
-                           reg.email,
-                           "[{0}] Registration canceled".format(reg.conference),
-                           'confreg/mail/reg_canceled.txt',
-                           {
-                               'conference': reg.conference,
-                               'reg': reg,
-                               'unconfirmed': is_unconfirmed,
-                           },
-                           sendername=reg.conference.conferencename,
-                           receivername=reg.fullname,
+        send_conference_mail(reg.conference,
+                             reg.email,
+                             "[{0}] Registration canceled".format(reg.conference),
+                             'confreg/mail/reg_canceled.txt',
+                             {
+                                 'conference': reg.conference,
+                                 'reg': reg,
+                                 'unconfirmed': is_unconfirmed,
+                             },
+                             receivername=reg.fullname,
         )
 
     # Now actually delete the reg. Start by unlinking things that might be there.
@@ -260,16 +275,16 @@ def cancel_registration(reg, is_unconfirmed=False, reason=None):
     reg.save()
 
     if reg.conference.notifyregs and not is_unconfirmed:
-        send_template_mail(reg.conference.notifyaddr,
-                           reg.conference.notifyaddr,
-                           "[{0}] Canceled registration".format(reg.conference.conferencename),
-                           'confreg/mail/admin_notify_cancel.txt',
-                           {
-                               'reg': reg,
-                               'reason': reason,
-                           },
-                           sendername=reg.conference.conferencename,
-                           receivername=reg.conference.conferencename,
+        send_conference_mail(reg.conference,
+                             reg.conference.notifyaddr,
+                             "[{0}] Canceled registration".format(reg.conference.conferencename),
+                             'confreg/mail/admin_notify_cancel.txt',
+                             {
+                                 'reg': reg,
+                                 'reason': reason,
+                             },
+                             sender=reg.conference.notifyaddr,
+                             receivername=reg.conference.conferencename,
         )
 
     # Once unlinked, remove the registration as well. If we don't
@@ -306,18 +321,17 @@ def expire_additional_options(reg):
         # we don't expire these things very often, so we don't care)
 
         if reg.attendee:
-            send_template_mail(reg.conference.contactaddr,
-                               reg.email,
-                               'Your pending registration for {0}'.format(reg.conference.conferencename),
-                               'confreg/mail/additionaloption_expired.txt',
-                               {
-                                   'conference': reg.conference,
-                                   'reg': reg,
-                                   'options': expireset,
-                                   'optionscount': len(expireset),
-                               },
-                               sendername=reg.conference.conferencename,
-                               receivername=reg.fullname,
+            send_conference_mail(reg.conference,
+                                 reg.email,
+                                 'Your pending registration for {0}'.format(reg.conference.conferencename),
+                                 'confreg/mail/additionaloption_expired.txt',
+                                 {
+                                     'conference': reg.conference,
+                                     'reg': reg,
+                                     'options': expireset,
+                                     'optionscount': len(expireset),
+                                 },
+                                 receivername=reg.fullname,
             )
 
         for ao in expireset:

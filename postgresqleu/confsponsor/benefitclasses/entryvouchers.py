@@ -7,10 +7,10 @@ import io as StringIO
 
 from .base import BaseBenefit, BaseBenefitForm
 
-from postgresqleu.mailqueue.util import send_template_mail
 from postgresqleu.confsponsor.backendforms import BackendSponsorshipLevelBenefitForm
 
 from postgresqleu.confreg.models import RegistrationType, PrepaidBatch, PrepaidVoucher
+from postgresqleu.confreg.util import send_conference_mail
 
 
 class EntryVouchersForm(BaseBenefitForm):
@@ -65,16 +65,17 @@ class EntryVouchers(BaseBenefit):
                 vouchers.append(v)
 
             # Send an email about the new vouchers
-            send_template_mail(self.level.conference.sponsoraddr,
-                               request.user.email,
-                               "Entry vouchers for {0}".format(self.level.conference),
-                               'confreg/mail/prepaid_vouchers.txt',
-                               {
-                                   'batch': batch,
-                                   'vouchers': vouchers,
-                                   'conference': self.level.conference,
-                               }
-                           )
+            send_conference_mail(self.level.conference,
+                                 request.user.email,
+                                 "Entry vouchers for {0}".format(self.level.conference),
+                                 'confreg/mail/prepaid_vouchers.txt',
+                                 {
+                                     'batch': batch,
+                                     'vouchers': vouchers,
+                                     'conference': self.level.conference,
+                                 },
+                                 sender=self.level.conference.sponsoraddr,
+            )
 
             # Finally, finish the claim
             claim.claimdata = batch.id

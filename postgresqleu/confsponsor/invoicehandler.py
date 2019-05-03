@@ -4,11 +4,12 @@ from datetime import datetime, timedelta, date
 import base64
 import os
 
-from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
+from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager
 
 from .models import Sponsor, PurchasedVoucher
 from postgresqleu.confreg.models import PrepaidBatch, PrepaidVoucher
+from postgresqleu.confreg.util import send_conference_mail
 import postgresqleu.invoices.models as invoicemodels
 
 
@@ -22,16 +23,16 @@ def confirm_sponsor(sponsor, who):
     sponsor.save()
 
     for manager in sponsor.managers.all():
-        send_template_mail(sponsor.conference.sponsoraddr,
-                           manager.email,
-                           "[{0}] Sponsorship confirmed".format(sponsor.conference),
-                           'confsponsor/mail/sponsor_confirmed.txt',
-                           {
-                               'sponsor': sponsor,
-                               'conference': sponsor.conference,
-                           },
-                           sendername=sponsor.conference.conferencename,
-                           receivername='{0} {1}'.format(manager.first_name, manager.last_name))
+        send_conference_mail(sponsor.conference,
+                             manager.email,
+                             "[{0}] Sponsorship confirmed".format(sponsor.conference),
+                             'confsponsor/mail/sponsor_confirmed.txt',
+                             {
+                                 'sponsor': sponsor,
+                                 'conference': sponsor.conference,
+                             },
+                             sender=sponsor.conference.sponsoraddr,
+                             receivername='{0} {1}'.format(manager.first_name, manager.last_name))
 
 
 class InvoiceProcessor(object):

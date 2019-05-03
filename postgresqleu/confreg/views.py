@@ -36,10 +36,12 @@ from .forms import SessionSlidesUrlForm, SessionSlidesFileForm
 from .util import invoicerows_for_registration, notify_reg_confirmed, InvoicerowsException
 from .util import get_invoice_autocancel, cancel_registration
 from .util import attendee_cost_from_bulk_payment
+from .util import send_conference_mail
 
 from .models import get_status_string, get_status_string_short, valid_status_transitions
 from .regtypes import confirm_special_reg_type, validate_special_reg_type
 from .jinjafunc import render_jinja_conference_response, JINJA_TEMPLATE_ROOT
+from .jinjafunc import render_jinja_conference_template
 from .jinjapdf import render_jinja_ticket
 from .backendviews import get_authenticated_conference
 from .backendforms import CancelRegistrationForm, ConfirmRegistrationForm
@@ -51,7 +53,7 @@ from postgresqleu.confwiki.models import Wikipage
 from postgresqleu.confsponsor.models import ScannedAttendee
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor, InvoiceHistory
-from postgresqleu.mailqueue.util import send_mail, send_simple_mail, send_template_mail, template_to_string
+from postgresqleu.mailqueue.util import send_mail, send_simple_mail, template_to_string
 from postgresqleu.util.jsonutil import JsonSerializer
 from postgresqleu.util.db import exec_to_dict, exec_to_grouped_dict, exec_to_keyed_dict
 from postgresqleu.util.db import exec_no_result, exec_to_list, exec_to_scalar, conditional_exec_to_scalar
@@ -478,17 +480,16 @@ def _create_and_assign_bulk_payment(user, conference, regs, invoicerows, recipie
         if send_mail:
             # Also notify these registrants that they have been
             # added to the bulk payment.
-            send_template_mail(conference.contactaddr,
-                               r.email,
-                               "Your registration for {0} added to multi-registration payment".format(conference.conferencename),
-                               'confreg/mail/bulkpay_added.txt',
-                               {
-                                   'conference': conference,
-                                   'reg': r,
-                                   'bulk': bp,
-                               },
-                               sendername=conference.conferencename,
-                               receivername=r.fullname,
+            send_conference_mail(conference,
+                                 r.email,
+                                 "Your registration for {0} added to multi-registration payment".format(conference.conferencename),
+                                 'confreg/mail/bulkpay_added.txt',
+                                 {
+                                     'conference': conference,
+                                     'reg': r,
+                                     'bulk': bp,
+                                 },
+                                 receivername=r.fullname,
             )
 
     # Now that our bulkpayment is complete, create an invoice for it
@@ -1594,17 +1595,16 @@ def callforpapers_confirm(request, confname, sessionid):
             session.save()
             # We can generate the email for this right away, so let's do that
             for spk in session.speaker.all():
-                send_template_mail(conference.contactaddr,
-                                   spk.user.email,
-                                   "Your session '%s' submitted to %s" % (session.title, conference),
-                                   'confreg/mail/session_notify_{}.txt'.format(get_status_string_short(session.status)),
-                                   {
-                                       'conference': conference,
-                                       'session': session,
-                                   },
-                                   sendername=conference.conferencename,
-                                   receivername=spk.fullname,
-                               )
+                send_conference_mail(conference,
+                                     spk.user.email,
+                                     "Your session '%s' submitted to %s" % (session.title, conference),
+                                     'confreg/mail/session_notify_{}.txt'.format(get_status_string_short(session.status)),
+                                     {
+                                         'conference': conference,
+                                         'session': session,
+                                     },
+                                     receivername=spk.fullname,
+                )
             session.lastnotifiedstatus = 1
             session.lastnotifiedtime = datetime.now()
             session.save()
@@ -2095,7 +2095,7 @@ def viewvouchers(request, confname, batchid):
     batch = get_object_or_404(PrepaidBatch, conference=conference, pk=batchid)
     vouchers = batch.prepaidvoucher_set.all()
 
-    vouchermailtext = template_to_string('confreg/mail/prepaid_vouchers.txt', {
+    vouchermailtext = render_jinja_conference_template(conference, 'confreg/mail/prepaid_vouchers.txt', {
         'batch': batch,
         'vouchers': vouchers,
         'conference': conference,
@@ -2153,18 +2153,17 @@ def emailvouchers(request, confname, batchid):
     batch = PrepaidBatch.objects.get(pk=batchid)
     vouchers = batch.prepaidvoucher_set.all()
 
-    send_template_mail(batch.conference.contactaddr,
-                       batch.buyer.email,
-                       "Attendee vouchers for %s" % batch.conference,
-                       'confreg/mail/prepaid_vouchers.txt',
-                       {
-                           'batch': batch,
-                           'vouchers': vouchers,
-                           'conference': conference,
-                       },
-                       sendername=batch.conference.conferencename,
-                       receivername="{0} {1}".format(batch.buyer.first_name, batch.buyer.last_name),
-                   )
+    send_conference_mail(batch.conference,
+                         batch.buyer.email,
+                         "Attendee vouchers for %s" % batch.conference,
+                         'confreg/mail/prepaid_vouchers.txt',
+                         {
+                             'batch': batch,
+                             'vouchers': vouchers,
+                             'conference': conference,
+                         },
+                         receivername="{0} {1}".format(batch.buyer.first_name, batch.buyer.last_name),
+    )
     return HttpResponse('OK')
 
 
@@ -3004,18 +3003,17 @@ def admin_waitlist(request, urlname):
                     RegistrationWaitlistHistory(waitlist=wl,
                                                 text="Made offer valid until {0} by {1}".format(form.cleaned_data['until'], request.user.username)).save()
                 wl.save()
-                send_template_mail(conference.contactaddr,
-                                   r.email,
-                                   "Your waitlisted registration for {0}".format(conference.conferencename),
-                                   'confreg/mail/waitlist_offer.txt',
-                                   {
-                                       'conference': conference,
-                                       'reg': r,
-                                       'offerexpires': wl.offerexpires,
-                                   },
-                                   sendername=conference.conferencename,
-                                   receivername=r.fullname,
-                               )
+                send_conference_mail(conference,
+                                     r.email,
+                                     "Your waitlisted registration for {0}".format(conference.conferencename),
+                                     'confreg/mail/waitlist_offer.txt',
+                                     {
+                                         'conference': conference,
+                                         'reg': r,
+                                         'offerexpires': wl.offerexpires,
+                                     },
+                                     receivername=r.fullname,
+                )
                 messages.info(request, "Sent offer to {0}".format(r.email))
             return HttpResponseRedirect(".")
     else:
@@ -3058,16 +3056,15 @@ def admin_waitlist_cancel(request, urlname, wlid):
                          'Waitlist offer for user {0} {1} <{2}> canceled by {3}. User remains on waitlist.'.format(reg.firstname, reg.lastname, reg.email, request.user),
                          sendername=reg.conference.conferencename)
 
-        send_template_mail(reg.conference.contactaddr,
-                           reg.email,
-                           'Waitlist offer canceled',
-                           'confreg/mail/waitlist_admin_offer_cancel.txt',
-                           {
-                               'conference': conference,
-                               'reg': reg,
-                           },
-                           sendername=reg.conference.conferencename,
-                           receivername=reg.fullname,
+        send_conference_mail(reg.conference,
+                             reg.email,
+                             'Waitlist offer canceled',
+                             'confreg/mail/waitlist_admin_offer_cancel.txt',
+                             {
+                                 'conference': conference,
+                                 'reg': reg,
+                             },
+                             receivername=reg.fullname,
         )
         messages.info(request, "Waitlist offer canceled.")
 
@@ -3081,16 +3078,15 @@ def admin_waitlist_cancel(request, urlname, wlid):
                          'User {0} {1} <{2}> removed from the waitlist by {3}.'.format(reg.firstname, reg.lastname, reg.email, request.user),
                          sendername=reg.conference.conferencename)
 
-        send_template_mail(reg.conference.contactaddr,
-                           reg.email,
-                           'Waitlist canceled',
-                           'confreg/mail/waitlist_admin_cancel.txt',
-                           {
-                               'conference': conference,
-                               'reg': reg,
-                           },
-                           sendername=reg.conference.conferencename,
-                           receivername=reg.fullname,
+        send_conference_mail(reg.conference,
+                             reg.email,
+                             'Waitlist canceled',
+                             'confreg/mail/waitlist_admin_cancel.txt',
+                             {
+                                 'conference': conference,
+                                 'reg': reg,
+                             },
+                             receivername=reg.fullname,
         )
 
         messages.info(request, "Waitlist entry removed.")
@@ -3223,17 +3219,16 @@ def session_notify_queue(request, urlname):
         num = 0
         for s in notifysessions:
             for spk in s.speaker.all():
-                send_template_mail(conference.contactaddr,
-                                   spk.user.email,
-                                   "Your session '%s' submitted to %s" % (s.title, conference),
-                                   'confreg/mail/session_notify_{0}.txt'.format(s.status_string_short),
-                                   {
-                                       'conference': conference,
-                                       'session': s,
-                                   },
-                                   sendername=conference.conferencename,
-                                   receivername=spk.fullname,
-                               )
+                send_conference_mail(conference,
+                                     spk.user.email,
+                                     "Your session '%s' submitted to %s" % (s.title, conference),
+                                     'confreg/mail/session_notify_{0}.txt'.format(s.status_string_short),
+                                     {
+                                         'conference': conference,
+                                         'session': s,
+                                     },
+                                     receivername=spk.fullname,
+                )
                 num += 1
             s.lastnotifiedstatus = s.status
             s.lastnotifiedtime = datetime.now()
@@ -3344,15 +3339,14 @@ def transfer_reg(request, urlname):
         notify_reg_confirmed(toreg, False)
 
         yield "Sending notification to source registration"
-        send_template_mail(fromreg.conference.contactaddr,
-                           fromreg.email,
-                           "[{0}] Registration transferred".format(fromreg.conference),
-                           'confreg/mail/reg_transferred.txt', {
-                               'conference': conference,
-                               'toreg': toreg,
-                           },
-                           sendername=fromreg.conference.conferencename,
-                           receivername=fromreg.fullname)
+        send_conference_mail(fromreg.conference,
+                             fromreg.email,
+                             "[{0}] Registration transferred".format(fromreg.conference),
+                             'confreg/mail/reg_transferred.txt', {
+                                 'conference': conference,
+                                 'toreg': toreg,
+                             },
+                             receivername=fromreg.fullname)
 
         send_simple_mail(fromreg.conference.notifyaddr,
                          fromreg.conference.notifyaddr,

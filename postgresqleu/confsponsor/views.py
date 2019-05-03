@@ -17,7 +17,8 @@ from postgresqleu.confreg.models import Conference, PrepaidVoucher, DiscountCode
 from postgresqleu.confreg.models import ConferenceTweetQueue
 from postgresqleu.confreg.util import get_authenticated_conference
 from postgresqleu.confreg.jinjafunc import render_sandboxed_template
-from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
+from postgresqleu.confreg.util import send_conference_mail
+from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.invoices.util import InvoiceWrapper
@@ -878,17 +879,17 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
                              "The sponsor {0} has been rejected by {1}.\nThe reason given was: {2}".format(sponsor.name, request.user, reason),
                              sendername=conference.conferencename)
             for manager in sponsor.managers.all():
-                send_template_mail(conference.sponsoraddr,
-                                   manager.email,
-                                   "[{0}] Sponsorship removed".format(conference),
-                                   'confsponsor/mail/sponsor_rejected.txt',
-                                   {
-                                       'sponsor': sponsor,
-                                       'conference': conference,
-                                       'reason': reason,
-                                   },
-                                   sendername=conference.conferencename,
-                                   receivername='{0} {1}'.format(manager.first_name, manager.last_name))
+                send_conference_mail(conference,
+                                     manager.email,
+                                     "[{0}] Sponsorship removed".format(conference),
+                                     'confsponsor/mail/sponsor_rejected.txt',
+                                     {
+                                         'sponsor': sponsor,
+                                         'conference': conference,
+                                         'reason': reason,
+                                     },
+                                     sender=conference.sponsoraddr,
+                                     receivername='{0} {1}'.format(manager.first_name, manager.last_name))
 
             messages.info(request, "Sponsor {0} rejected.".format(sponsor.name))
             sponsor.delete()

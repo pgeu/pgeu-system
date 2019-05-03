@@ -11,8 +11,9 @@ from datetime import date, datetime, timedelta, time
 from django.db.models import Q, F, Count
 
 from postgresqleu.confreg.models import DiscountCode
+from postgresqleu.confreg.util import send_conference_mail
 from postgresqleu.confsponsor.models import Sponsor
-from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
+from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager, InvoiceWrapper
 
 
@@ -51,17 +52,17 @@ class Command(BaseCommand):
                                  sendername=code.conference.conferencename)
 
                 for manager in code.sponsor.managers.all():
-                    send_template_mail(code.conference.sponsoraddr,
-                                       manager.email,
-                                       "[{0}] Discount code {1} expired".format(code.conference, code.code),
-                                       'confsponsor/mail/discount_expired.txt',
-                                       {
-                                           'code': code,
-                                           'sponsor': code.sponsor,
-                                           'conference': code.conference,
-                                       },
-                                       sendername=code.conference.conferencename,
-                                       receivername='{0} {1}'.format(manager.first_name, manager.last_name))
+                    send_conference_mail(code.conference,
+                                         manager.email,
+                                         "[{0}] Discount code {1} expired".format(code.conference, code.code),
+                                         'confsponsor/mail/discount_expired.txt',
+                                         {
+                                             'code': code,
+                                             'sponsor': code.sponsor,
+                                             'conference': code.conference,
+                                         },
+                                         sender=code.conference.sponsoraddr,
+                                         receivername='{0} {1}'.format(manager.first_name, manager.last_name))
             else:
                 # At least one use, so we generate the invoice
                 invoicerows = []
@@ -111,18 +112,18 @@ class Command(BaseCommand):
                                  sendername=code.conference.conferencename)
 
                 for manager in code.sponsor.managers.all():
-                    send_template_mail(code.conference.sponsoraddr,
-                                       manager.email,
-                                       "[{0}] Discount code {1} has been invoiced".format(code.conference, code.code),
-                                       'confsponsor/mail/discount_invoiced.txt',
-                                       {
-                                           'code': code,
-                                           'conference': code.conference,
-                                           'sponsor': code.sponsor,
-                                           'invoice': code.invoice,
-                                           'curr': settings.CURRENCY_ABBREV,
-                                           'expired_time': code.validuntil < date.today(),
-                                       },
-                                       sendername=code.conference.conferencename,
-                                       receivername='{0} {1}'.format(manager.first_name, manager.last_name)
-                                   )
+                    send_conference_mail(code.conference,
+                                         manager.email,
+                                         "[{0}] Discount code {1} has been invoiced".format(code.conference, code.code),
+                                         'confsponsor/mail/discount_invoiced.txt',
+                                         {
+                                             'code': code,
+                                             'conference': code.conference,
+                                             'sponsor': code.sponsor,
+                                             'invoice': code.invoice,
+                                             'curr': settings.CURRENCY_ABBREV,
+                                             'expired_time': code.validuntil < date.today(),
+                                         },
+                                         sender=code.conference.sponsoraddr,
+                                         receivername='{0} {1}'.format(manager.first_name, manager.last_name)
+                    )

@@ -3,7 +3,7 @@ Hello!
 You were recently sent an offer from the waitlist for
 {{conference.conferencename}}.
 
-Unfortunately this offer expired on {{offerexpires|date:"Y-m-d H:i"}}
+Unfortunately this offer expired on {{offerexpires|datetimeformat("%Y-%m-%d %H:%M")}}
 without being claimed, and has therefor been canceled.
 
 Your registration has been returned to the waitlist at this

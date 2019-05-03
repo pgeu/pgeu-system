@@ -4,4 +4,4 @@ Name: {{reg.fullname}}
 
 Type: {{reg.regtype.regtype}}
 
-Reason: {{reason|default:"not given"}}
+Reason: {{reason|default("not given")}}

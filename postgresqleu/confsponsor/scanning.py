@@ -9,8 +9,8 @@ import json
 
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.qr import generate_base64_qr
-from postgresqleu.mailqueue.util import send_template_mail
 from postgresqleu.confreg.models import ConferenceRegistration
+from postgresqleu.confreg.util import send_conference_mail
 
 from .views import _get_sponsor_and_admin
 from .models import SponsorScanner, ScannedAttendee
@@ -74,8 +74,8 @@ def sponsor_scanning(request, sponsorid):
                     rid = k[len('email-'):]
                     try:
                         scanner = SponsorScanner.objects.get(sponsor=sponsor, pk=rid)
-                        send_template_mail(
-                            sponsor.conference.sponsoraddr,
+                        send_conference_mail(
+                            sponsor.conference,
                             scanner.scanner.email,
                             "[{0}] Attendee badge scanning".format(sponsor.conference),
                             "confsponsor/mail/badge_scanning_intro.txt",
@@ -84,7 +84,7 @@ def sponsor_scanning(request, sponsorid):
                                 'sponsor': sponsor,
                                 'scanner': scanner,
                             },
-                            sendername=sponsor.conference.conferencename,
+                            sender=sponsor.conference.sponsoraddr,
                             receivername=scanner.scanner.fullname,
                         )
                         messages.info(request, "Instructions email sent to {0}".format(scanner.scanner.fullname))

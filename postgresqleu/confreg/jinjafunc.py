@@ -197,9 +197,7 @@ def filter_datetimeformat(value, fmt):
         return dateutil.parser.parse(value).strftime(fmt)
 
 
-# Render a conference response based on jinja2 templates configured for the conference.
-# Returns the appropriate django HttpResponse object.
-def render_jinja_conference_response(request, conference, pagemagic, templatename, dictionary):
+def render_jinja_conference_template(conference, templatename, dictionary):
     # It all starts from the base template for this conference. If it
     # does not exist, just throw a 404 early.
     if conference and conference.jinjadir and not os.path.exists(os.path.join(conference.jinjadir, 'templates/base.html')):
@@ -220,10 +218,6 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
         'yesno': lambda b, v: v.split(',')[not b],
     })
 
-    # If ?test=1 is specified, try to load a template with .test in the
-    # name.
-    if request.GET.get('test', None) == '1':
-        templatename = templatename + '.test'
     t = env.get_template(templatename)
 
     # Optionally load the JSON context with template-specific data
@@ -238,23 +232,10 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
     else:
         c = {}
 
-    if request.user and request.user.is_authenticated():
-        fullname = '{0} {1}'.format(request.user.first_name, request.user.last_name)
-        email = request.user.email
-    else:
-        fullname = None
-        email = None
     c.update({
         'pgeu_hosted': True,
         'now': datetime.now(),
         'conference': conference,
-        'pagemagic': pagemagic,
-        'username': request.user and request.user.username or None,
-        'userfullname': fullname,
-        'useremail': email,
-        'csrf_input': csrf_input_lazy(request),
-        'csrf_token': csrf_token_lazy(request),
-        'messages': get_messages(request),
     })
     if conference and conference.jinjadir:
         c['githash'] = find_git_revision(conference.jinjadir)
@@ -272,7 +253,42 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
 
     c.update(settings_context())
 
-    return HttpResponse(t.render(**c), content_type='text/html')
+    return t.render(**c)
+
+
+# Render a conference response based on jinja2 templates configured for the conference.
+# Returns the appropriate django HttpResponse object.
+def render_jinja_conference_response(request, conference, pagemagic, templatename, dictionary):
+    # If ?test=1 is specified, try to load a template with .test in the
+    # name.
+    if request.GET.get('test', None) == '1':
+        templatename = templatename + '.test'
+
+    d = {
+        'pagemagic': pagemagic,
+        'csrf_input': csrf_input_lazy(request),
+        'csrf_token': csrf_token_lazy(request),
+        'messages': get_messages(request),
+    }
+
+    if request.user and request.user.is_authenticated():
+        d.update({
+            'username': request.user.username,
+            'userfullname': '{0} {1}'.format(request.user.first_name, request.user.last_name),
+            'useremail': request.user.email,
+        })
+    else:
+        d.update({
+            'username': None,
+            'userfullname': None,
+            'useremail': None,
+        })
+    d.update(dictionary)
+
+    return HttpResponse(
+        render_jinja_conference_template(conference, templatename, d),
+        content_type='text/html',
+    )
 
 
 # Small sandboxed jinja templates that can be configured in system

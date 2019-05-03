@@ -1,9 +1,9 @@
 from django.conf import settings
 
-from postgresqleu.mailqueue.util import send_template_mail, send_simple_mail
 from .models import ConferenceRegistration, BulkPayment, PendingAdditionalOrder
 from .models import RegistrationWaitlistHistory, PrepaidVoucher
 from .util import notify_reg_confirmed, expire_additional_options
+from .util import send_conference_mail
 
 from datetime import datetime
 
@@ -148,17 +148,16 @@ class BulkInvoiceProcessor(object):
             if r.attendee:
                 # Only notify if this attendee actually knows about the
                 # registration.
-                send_template_mail(bp.conference.contactaddr,
-                                   r.email,
-                                   "Your registration for {0} multi-registration canceled".format(bp.conference.conferencename),
-                                   'confreg/mail/bulkpay_canceled.txt',
-                                   {
-                                       'conference': bp.conference,
-                                       'reg': r,
-                                       'bulk': bp,
-                                   },
-                                   sendername=bp.conference.conferencename,
-                                   receivername=r.fullname,
+                send_conference_mail(bp.conference,
+                                     r.email,
+                                     "Your registration for {0} multi-registration canceled".format(bp.conference.conferencename),
+                                     'confreg/mail/bulkpay_canceled.txt',
+                                     {
+                                         'conference': bp.conference,
+                                         'reg': r,
+                                         'bulk': bp,
+                                     },
+                                     receivername=r.fullname,
                 )
 
             # If this registration holds any additional options that are about to expire, release
