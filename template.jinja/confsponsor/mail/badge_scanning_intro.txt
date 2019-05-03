@@ -1,6 +1,6 @@
 Hello!
 
-You are receiving this email because you have been assiged as a "badge
+You are receiving this email because you have been assigned as a "badge
 scanner" for {{sponsor.displayname}} at {{conference}}.
 
 This means you will be able to scan badges of attendees at the
