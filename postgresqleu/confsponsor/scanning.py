@@ -77,7 +77,7 @@ def sponsor_scanning(request, sponsorid):
                         send_conference_mail(
                             sponsor.conference,
                             scanner.scanner.email,
-                            "[{0}] Attendee badge scanning".format(sponsor.conference),
+                            "Attendee badge scanning",
                             "confsponsor/mail/badge_scanning_intro.txt",
                             {
                                 'conference': sponsor.conference,

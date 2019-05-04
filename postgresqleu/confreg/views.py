@@ -482,7 +482,7 @@ def _create_and_assign_bulk_payment(user, conference, regs, invoicerows, recipie
             # added to the bulk payment.
             send_conference_mail(conference,
                                  r.email,
-                                 "Your registration for {0} added to multi-registration payment".format(conference.conferencename),
+                                 "Your registration has been added to multi-registration payment",
                                  'confreg/mail/bulkpay_added.txt',
                                  {
                                      'conference': conference,
@@ -1597,7 +1597,7 @@ def callforpapers_confirm(request, confname, sessionid):
             for spk in session.speaker.all():
                 send_conference_mail(conference,
                                      spk.user.email,
-                                     "Your session '%s' submitted to %s" % (session.title, conference),
+                                     "Your session '{0}'".format(session.title),
                                      'confreg/mail/session_notify_{}.txt'.format(get_status_string_short(session.status)),
                                      {
                                          'conference': conference,
@@ -2155,7 +2155,7 @@ def emailvouchers(request, confname, batchid):
 
     send_conference_mail(batch.conference,
                          batch.buyer.email,
-                         "Attendee vouchers for %s" % batch.conference,
+                         "Attendee vouchers",
                          'confreg/mail/prepaid_vouchers.txt',
                          {
                              'batch': batch,
@@ -3005,7 +3005,7 @@ def admin_waitlist(request, urlname):
                 wl.save()
                 send_conference_mail(conference,
                                      r.email,
-                                     "Your waitlisted registration for {0}".format(conference.conferencename),
+                                     "Your waitlisted registration",
                                      'confreg/mail/waitlist_offer.txt',
                                      {
                                          'conference': conference,
@@ -3128,7 +3128,7 @@ def admin_waitlist_sendmail(request, urlname):
 
                     send_conference_mail(conference,
                                          w.registration.email,
-                                         "[{0}] {1}".format(conference.conferencename, form.cleaned_data['subject']),
+                                         form.cleaned_data['subject'],
                                          'confreg/mail/waitlist_manual_mail.txt',
                                          {
                                              'body': msgbody,
@@ -3182,7 +3182,7 @@ def admin_attendeemail(request, urlname):
             for a in attendees:
                 send_conference_mail(conference,
                                      a.email,
-                                     "[{0}] {1}".format(conference, msg.subject),
+                                     msg.subject,
                                      'confreg/mail/attendee_mail.txt',
                                      {
                                          'body': msg.message,
@@ -3229,7 +3229,7 @@ def session_notify_queue(request, urlname):
             for spk in s.speaker.all():
                 send_conference_mail(conference,
                                      spk.user.email,
-                                     "Your session '%s' submitted to %s" % (s.title, conference),
+                                     "Your session '{0}'".format(s.title),
                                      'confreg/mail/session_notify_{0}.txt'.format(s.status_string_short),
                                      {
                                          'conference': conference,
@@ -3349,7 +3349,7 @@ def transfer_reg(request, urlname):
         yield "Sending notification to source registration"
         send_conference_mail(fromreg.conference,
                              fromreg.email,
-                             "[{0}] Registration transferred".format(fromreg.conference),
+                             "Registration transferred",
                              'confreg/mail/reg_transferred.txt', {
                                  'conference': conference,
                                  'toreg': toreg,

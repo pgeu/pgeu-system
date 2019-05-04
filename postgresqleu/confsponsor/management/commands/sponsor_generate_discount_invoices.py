@@ -54,7 +54,7 @@ class Command(BaseCommand):
                 for manager in code.sponsor.managers.all():
                     send_conference_mail(code.conference,
                                          manager.email,
-                                         "[{0}] Discount code {1} expired".format(code.conference, code.code),
+                                         "Discount code {0} expired".format(code.code),
                                          'confsponsor/mail/discount_expired.txt',
                                          {
                                              'code': code,
@@ -114,7 +114,7 @@ class Command(BaseCommand):
                 for manager in code.sponsor.managers.all():
                     send_conference_mail(code.conference,
                                          manager.email,
-                                         "[{0}] Discount code {1} has been invoiced".format(code.conference, code.code),
+                                         "Discount code {0} has been invoiced".format(code.code),
                                          'confsponsor/mail/discount_invoiced.txt',
                                          {
                                              'code': code,

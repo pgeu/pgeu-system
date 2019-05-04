@@ -53,7 +53,7 @@ class Command(BaseCommand):
             # Also send an email to the user
             send_conference_mail(reg.conference,
                                  reg.email,
-                                 'Your waitlist offer for {0}'.format(reg.conference.conferencename),
+                                 'Your waitlist offer has expired',
                                  'confreg/mail/waitlist_expired.txt',
                                  {
                                      'conference': reg.conference,

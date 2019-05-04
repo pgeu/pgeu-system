@@ -605,7 +605,7 @@ def _send_shipment_mail(shipment, subject, mailtemplate):
         for manager in shipment.sponsor.managers.all():
             send_conference_mail(shipment.conference,
                                  manager.email,
-                                 "[{0}] {1}".format(shipment.conference, subject),
+                                 subject,
                                  'confsponsor/mail/shipment_{0}.txt'.format(mailtemplate),
                                  {
                                      'shipment': shipment,
@@ -779,7 +779,7 @@ def _confirm_benefit(request, benefit):
         for manager in benefit.sponsor.managers.all():
             send_conference_mail(conference,
                                  manager.email,
-                                 "[{0}] sponsorship benefit confirmed".format(conference.conferencename, benefit.benefit),
+                                 "Sponsorship benefit confirmed",
                                  'confsponsor/mail/benefit_confirmed.txt',
                                  {
                                      'benefit': benefit.benefit,
@@ -822,7 +822,7 @@ def _unclaim_benefit(request, claimed_benefit):
         for manager in sponsor.managers.all():
             send_conference_mail(conference,
                                  manager.email,
-                                 "[{0}] sponsorship benefit unclaimed".format(conference.conferencename, benefit),
+                                 "Sponsorship benefit unclaimed",
                                  'confsponsor/mail/benefit_unclaimed.txt',
                                  {
                                      'benefit': benefit,
@@ -888,7 +888,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
             for manager in sponsor.managers.all():
                 send_conference_mail(conference,
                                      manager.email,
-                                     "[{0}] Sponsorship removed".format(conference),
+                                     "Sponsorship removed",
                                      'confsponsor/mail/sponsor_rejected.txt',
                                      {
                                          'sponsor': sponsor,
@@ -1007,7 +1007,7 @@ def sponsor_admin_send_mail(request, confurlname):
                 for manager in sponsor.managers.all():
                     send_conference_mail(conference,
                                          manager.email,
-                                         "[{0}] {1}".format(conference, msg.subject),
+                                         msg.subject,
                                          'confsponsor/mail/sponsor_mail.txt',
                                          {
                                              'body': msg.message,
@@ -1019,7 +1019,7 @@ def sponsor_admin_send_mail(request, confurlname):
                 if sponsor.extra_cc:
                     send_conference_mail(conference,
                                          sponsor.extra_cc,
-                                         "[{0}] {1}".format(conference, msg.subject),
+                                         msg.subject,
                                          'confsponsor/mail/sponsor_mail.txt',
                                          {
                                              'body': msg.message,

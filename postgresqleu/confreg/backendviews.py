@@ -506,7 +506,7 @@ def _attendee_email_form(request, conference, query, breadcrumbs):
                 for r in recipients:
                     send_conference_mail(conference,
                                          r['email'],
-                                         "[{0}] {1}".format(conference, form.cleaned_data['subject']),
+                                         form.cleaned_data['subject'],
                                          'confreg/mail/attendee_mail.txt',
                                          {
                                              'body': form.cleaned_data['message'],

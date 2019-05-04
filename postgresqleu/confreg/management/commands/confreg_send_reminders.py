@@ -88,7 +88,7 @@ class Command(BaseCommand):
 
                 send_conference_mail(conference,
                                      speaker.user.email,
-                                     "Your submissions to {0}".format(conference),
+                                     "Your submissions".format(conference),
                                      'confreg/mail/speaker_remind_confirm.txt',
                                      {
                                          'conference': conference,
@@ -120,7 +120,7 @@ class Command(BaseCommand):
 
                 send_conference_mail(conference,
                                      speaker.user.email,
-                                     "Your registration to {0}".format(conference),
+                                     "Your registration".format(conference),
                                      'confreg/mail/speaker_remind_register.txt',
                                      {
                                          'conference': conference,
@@ -155,7 +155,7 @@ class Command(BaseCommand):
             for reg in regs:
                 send_conference_mail(conference,
                                      reg.email,
-                                     "Your registration to {0}".format(conference),
+                                     "Your registration".format(conference),
                                      'confreg/mail/attendee_stalled_registration.txt',
                                      {
                                          'conference': conference,
@@ -194,7 +194,7 @@ class Command(BaseCommand):
             for r in multiregs:
                 send_conference_mail(conference,
                                      r.email,
-                                     "Your registrations for {0}".format(conference),
+                                     "Your registrations".format(conference),
                                      'confreg/mail/multireg_stalled_registration.txt',
                                      {
                                          'conference': conference,
@@ -223,7 +223,7 @@ class Command(BaseCommand):
             for spk in sess.speaker.all():
                 send_conference_mail(conference,
                                      spk.email,
-                                     "Your submission to {0}".format(conference),
+                                     "Your submission".format(conference),
                                      'confreg/mail/speaker_empty_submission.txt',
                                      {
                                          'conference': conference,
@@ -248,7 +248,7 @@ class Command(BaseCommand):
         for spk in speakers:
             send_conference_mail(conference,
                                  spk.email,
-                                 "Your submission to {0}".format(conference),
+                                 "Your submission".format(conference),
                                  'confreg/mail/speaker_empty_profile.txt',
                                  {
                                      'conference': conference,

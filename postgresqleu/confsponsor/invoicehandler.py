@@ -25,7 +25,7 @@ def confirm_sponsor(sponsor, who):
     for manager in sponsor.managers.all():
         send_conference_mail(sponsor.conference,
                              manager.email,
-                             "[{0}] Sponsorship confirmed".format(sponsor.conference),
+                             "Sponsorship confirmed",
                              'confsponsor/mail/sponsor_confirmed.txt',
                              {
                                  'sponsor': sponsor,

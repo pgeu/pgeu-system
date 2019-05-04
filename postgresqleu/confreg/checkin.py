@@ -32,7 +32,7 @@ def landing(request, urlname):
     if request.method == 'POST' and request.POST.get('op') == 'sendmail':
         send_conference_mail(conference,
                              reg.email,
-                             "[{0}] Your check-in link".format(conference.conferencename),
+                             "Your check-in link",
                              "confreg/mail/checkin_link.txt",
                              {
                                  'conference': conference,

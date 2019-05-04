@@ -67,7 +67,7 @@ class EntryVouchers(BaseBenefit):
             # Send an email about the new vouchers
             send_conference_mail(self.level.conference,
                                  request.user.email,
-                                 "Entry vouchers for {0}".format(self.level.conference),
+                                 "Entry vouchers",
                                  'confreg/mail/prepaid_vouchers.txt',
                                  {
                                      'batch': batch,

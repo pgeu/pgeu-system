@@ -28,7 +28,7 @@ def send_conference_mail(conference, receiver, subject, templatename, templateat
 
     send_simple_mail(sender or conference.contactaddr,
                      receiver,
-                     subject,
+                     "[{0}] {1}".format(conference.conferencename, subject),
                      render_jinja_conference_template(conference, templatename, templateattr),
                      attachments,
                      bcc,
@@ -182,7 +182,7 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
             # to ask them to attach their account to this registration.
             send_conference_mail(reg.conference,
                                  reg.email,
-                                 "Your registration for {0}".format(reg.conference),
+                                 "Your registration",
                                  'confreg/mail/regmulti_attach.txt',
                                  {
                                      'conference': reg.conference,
@@ -202,7 +202,7 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
     if reg.conference.notifyregs:
         send_conference_mail(reg.conference,
                              reg.conference.notifyaddr,
-                             "[{0}] New registration".format(reg.conference.conferencename),
+                             "New registration",
                              'confreg/mail/admin_notify_reg.txt',
                              {
                                  'reg': reg,
@@ -228,7 +228,7 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
     # any string replacements in it, maybe in the future.
     send_conference_mail(reg.conference,
                          reg.email,
-                         "[{0}] Registration complete".format(reg.conference),
+                         "Registration complete",
                          'confreg/mail/welcomemail.txt',
                          {
                              'reg': reg,
@@ -250,7 +250,7 @@ def cancel_registration(reg, is_unconfirmed=False, reason=None):
     if reg.conference.sendwelcomemail:
         send_conference_mail(reg.conference,
                              reg.email,
-                             "[{0}] Registration canceled".format(reg.conference),
+                             "Registration canceled",
                              'confreg/mail/reg_canceled.txt',
                              {
                                  'conference': reg.conference,
@@ -279,7 +279,7 @@ def cancel_registration(reg, is_unconfirmed=False, reason=None):
     if reg.conference.notifyregs and not is_unconfirmed:
         send_conference_mail(reg.conference,
                              reg.conference.notifyaddr,
-                             "[{0}] Canceled registration".format(reg.conference.conferencename),
+                             "Canceled registration",
                              'confreg/mail/admin_notify_cancel.txt',
                              {
                                  'reg': reg,
@@ -325,7 +325,7 @@ def expire_additional_options(reg):
         if reg.attendee:
             send_conference_mail(reg.conference,
                                  reg.email,
-                                 'Your pending registration for {0}'.format(reg.conference.conferencename),
+                                 'Your pending registration',
                                  'confreg/mail/additionaloption_expired.txt',
                                  {
                                      'conference': reg.conference,

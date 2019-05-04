@@ -150,7 +150,7 @@ class BulkInvoiceProcessor(object):
                 # registration.
                 send_conference_mail(bp.conference,
                                      r.email,
-                                     "Your registration for {0} multi-registration canceled".format(bp.conference.conferencename),
+                                     "Your multi-registration canceled",
                                      'confreg/mail/bulkpay_canceled.txt',
                                      {
                                          'conference': bp.conference,
