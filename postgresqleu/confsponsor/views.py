@@ -318,13 +318,16 @@ def sponsor_signup(request, confurlname, levelurlname):
             # Confirm is set, but if the Continue editing button is selected we should go back
             # to just rendering the normal form. Otherwise, go ahead and create the record.
             if request.POST.get('submit', '') != 'Continue editing':
+                twname = form.cleaned_data.get('twittername', '')
+                if twname and twname[0] != '@':
+                    twname = '@{0}'.format(twname)
                 sponsor = Sponsor(conference=conference,
                                   signupat=datetime.now(),
                                   name=form.cleaned_data['name'],
                                   displayname=form.cleaned_data['displayname'],
                                   url=form.cleaned_data['url'],
                                   level=level,
-                                  twittername=form.cleaned_data.get('twittername', ''),
+                                  twittername=twname,
                                   invoiceaddr=form.cleaned_data['address'])
                 if settings.EU_VAT:
                     sponsor.vatstatus = int(form.cleaned_data['vatstatus'])
