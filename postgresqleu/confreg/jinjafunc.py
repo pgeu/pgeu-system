@@ -283,7 +283,8 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
             'userfullname': None,
             'useremail': None,
         })
-    d.update(dictionary)
+    if dictionary:
+        d.update(dictionary)
 
     return HttpResponse(
         render_jinja_conference_template(conference, templatename, d),
