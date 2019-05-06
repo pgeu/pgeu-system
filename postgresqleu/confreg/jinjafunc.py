@@ -4,6 +4,7 @@ from django.template import defaultfilters
 from django.core.exceptions import ValidationError
 from django.contrib.messages.api import get_messages
 from django.utils.text import slugify
+from django.utils.timesince import timesince
 from django.conf import settings
 
 import json
@@ -210,6 +211,7 @@ def render_jinja_conference_template(conference, templatename, dictionary):
         'escapejs': defaultfilters.escapejs_filter,
         'floatstr': filter_float_str,
         'datetimeformat': filter_datetimeformat,
+        'timesince': timesince,
         'groupby_sort': filter_groupby_sort,
         'leadingnbsp': leadingnbsp,
         'markdown': lambda t: jinja2.Markup(markdown.markdown(t, extensions=['tables', ])),
