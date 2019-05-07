@@ -29,15 +29,17 @@
 <h2>Create invoice</h2>
 {%if activewaitlist%}
 <p>
-  This conference is sold out and the waitlist is active. At this point,
-  each registrant must place their own registration on the waitlist and
-  pay it individually.
+  This conference has the waitlist activated. Any remaining seats are
+  handled manually. Each attendee must place their own registration
+  on the waitlist and pay for it individually. Please advise others
+  interested in attending to go to the conference website and make a
+  personal registration.
 </p>
 {%else%}
 <p>
   Once you have added all the registrations you want, you can proceed
   to create a single invoice for all pending registrations to pay for
-them all.
+  them all.
 </p>
 <form method="post" action="newinvoice/">{{ csrf_input }}
   <input type="submit" name="submit" value="Create invoice" />
@@ -60,8 +62,10 @@ them all.
 <h2>Add registration</h2>
 {%if activewaitlist%}
 <p>
-  This conference is sold out and the waitlist is active. At this point,
-  only personal registrations can be placed on the waitlist.
+  This conference has the waitlist activated. Any remaining seats are
+  handled manually. At this point, only personal registrations can
+  be placed on the waitlist. Please advise others interested in attending
+  to go to the conference website and make a personal registration.
 </p>
 {%else%}
 <p>
