@@ -48,7 +48,7 @@ class Command(BaseCommand):
 
         # Pending bank transactions are included in the tw_balance, but they are *not* yet
         # in the accounting system (that's the definition of being pending..)
-        pending = PendingBankTransaction.objects.filter(method=method, amount=7).aggregate(sum=Sum('amount'))['sum'] or Decimal(0)
+        pending = PendingBankTransaction.objects.filter(method=method).aggregate(sum=Sum('amount'))['sum'] or Decimal(0)
 
         if accounting_balance + pending != tw_balance:
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
