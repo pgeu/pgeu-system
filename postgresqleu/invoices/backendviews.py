@@ -1,5 +1,5 @@
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.utils.html import escape
 from django.shortcuts import get_object_or_404, render
 from django.contrib import messages
@@ -147,6 +147,63 @@ def banktransactions_match(request, transid):
     })
 
 
+def _flag_invoices(request, trans, invoices, pm, fee_account):
+    manager = InvoiceManager()
+    invoicelog = []
+
+    transaction.set_autocommit(False)
+
+    def invoicelogger(msg):
+        invoicelog.append(msg)
+
+    if len(invoices) == 1:
+        fee = invoices[0].total_amount - trans.amount  # Calculated fee
+    else:
+        # There can be no fees when using multiple invoices, so ensure that
+        if sum([i.total_amount for i in invoices]) != trans.amount:
+            raise Exception("Fees not supported for multi-invoice flagging")
+        fee = 0
+
+    for invoice in invoices:
+        (status, _invoice, _processor) = manager.process_incoming_payment_for_invoice(
+            invoice,
+            invoice.total_amount,
+            "Bank transfer from {0} with id {1}, manually matched".format(trans.method.internaldescription, trans.methodidentifier),
+            fee,
+            pm.config('bankaccount'),
+            fee_account and fee_account.num,
+            [],
+            invoicelogger,
+            trans.method)
+
+        if status != manager.RESULT_OK:
+            messages.error(request, "Failed to run invoice processor:")
+            for m in invoicelog:
+                messages.warning(request, m)
+
+            # Roll back any changes so far
+            transaction.rollback()
+
+            return False
+
+        BankTransferFees(invoice=invoice, fee=fee).save()
+
+        InvoiceLog(message="Manually matched invoice {0} for {1} {2}, bank transaction {3} {2}, fees {4}".format(
+            invoice.id,
+            invoice.total_amount,
+            settings.CURRENCY_ABBREV,
+            trans.amount,
+            fee,
+        )).save()
+
+    # Remove the pending transaction
+    trans.delete()
+
+    transaction.commit()
+
+    return True
+
+
 def banktransactions_match_invoice(request, transid, invoiceid):
     authenticate_backend_group(request, 'Invoice managers')
 
@@ -161,49 +218,18 @@ def banktransactions_match_invoice(request, transid, invoiceid):
         else:
             fee_account = get_object_or_404(Account, num=request.POST['account'])
 
-        manager = InvoiceManager()
-        invoicelog = []
+        r = _flag_invoices(request,
+                           trans,
+                           [invoice, ],
+                           pm,
+                           fee_account)
 
-        def invoicelogger(msg):
-            invoicelog.append(msg)
-
-        transaction.set_autocommit(False)
-        (status, _invoice, _processor) = manager.process_incoming_payment_for_invoice(
-            invoice,
-            invoice.total_amount,
-            "Bank transfer from {0} with id {1}, manually matched".format(trans.method.internaldescription, trans.methodidentifier),
-            invoice.total_amount - trans.amount,  # Calculated fee
-            pm.config('bankaccount'),
-            fee_account.num,
-            [],
-            invoicelogger,
-            trans.method)
-
-        if status != manager.RESULT_OK:
-            messages.error(request, "Failed to run invoice processor:")
-            for m in invoicelog:
-                messages.warning(request, m)
-
-            # Roll back any changes so far
-            transaction.rollback()
-
+        if r:
+            return HttpResponseRedirect("/admin/invoices/banktransactions/")
+        else:
             return HttpResponseRedirect(".")
 
-        BankTransferFees(invoice=invoice, fee=invoice.total_amount - trans.amount).save()
-
-        InvoiceLog(message="Manually matched invoice {0} for {1} {2}, bank transaction {3} {2}, fees {4}".format(
-            invoice.id,
-            invoice.total_amount,
-            settings.CURRENCY_ABBREV,
-            trans.amount,
-            invoice.total_amount - trans.amount,
-        )).save()
-
-        # Remove the pending transaction
-        trans.delete()
-
-        transaction.commit()
-        return HttpResponseRedirect("/admin/invoices/banktransactions/")
+    # Generate the form
 
     if pm.config('feeaccount'):
         fee_account = Account.objects.get(num=pm.config('feeaccount'))
@@ -214,7 +240,7 @@ def banktransactions_match_invoice(request, transid, invoiceid):
 
     return render(request, 'invoices/banktransactions_match_invoice.html', {
         'transaction': trans,
-        'invoice': invoice,
+        'invoices': [invoice, ],
         'topadmin': 'Invoices',
         'fee_account': fee_account,
         'accounts': accounts,
@@ -227,6 +253,47 @@ def banktransactions_match_invoice(request, transid, invoiceid):
             'highlight_ref': re.sub('({0})'.format(invoice.payment_reference), r'<strong>\1</strong>', escape(trans.transtext)),
             'highlight_id': re.sub('({0})'.format(invoice.id), r'<strong>\1</strong>', escape(trans.transtext)),
         },
+        'breadcrumbs': [
+            ('/admin/invoices/banktransactions/', 'Pending bank transactions'),
+            ('/admin/invoices/banktransactions/{0}/'.format(trans.id), 'Transaction'),
+        ],
+        'helplink': 'payment',
+    })
+
+
+def banktransactions_match_multiple(request, transid):
+    authenticate_backend_group(request, 'Invoice managers')
+
+    trans = get_object_or_404(PendingBankTransaction, pk=transid)
+
+    pm = trans.method.get_implementation()
+
+    invoices = [get_object_or_404(Invoice, pk=invoiceid) for invoiceid in request.GET.getlist('invoiceid')]
+    if not invoices:
+        invoices = [get_object_or_404(Invoice, pk=invoiceid) for invoiceid in request.POST.get('invoiceidlist').split(',')]
+
+    if len(invoices) == 0:
+        raise Http404("No invoices")
+
+    if request.method == 'POST':
+        r = _flag_invoices(request, trans, invoices, pm, None)
+        if r:
+            return HttpResponseRedirect("/admin/invoices/banktransactions/")
+        else:
+            return HttpResponseRedirect(".")
+
+    total_amount = sum([i.total_amount for i in invoices])
+
+    return render(request, 'invoices/banktransactions_match_invoice.html', {
+        'transaction': trans,
+        'invoices': invoices,
+        'topadmin': 'Invoices',
+        'match': {
+            'amountdiff': total_amount - trans.amount,
+            'absdiff': abs(total_amount - trans.amount),
+            'percentdiff': (abs(total_amount - trans.amount) / total_amount) * 100,
+        },
+        'cantmatch': (total_amount != trans.amount),
         'breadcrumbs': [
             ('/admin/invoices/banktransactions/', 'Pending bank transactions'),
             ('/admin/invoices/banktransactions/{0}/'.format(trans.id), 'Transaction'),
