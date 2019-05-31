@@ -95,20 +95,33 @@ class TransferwiseApi(object):
         # This is a many-step process, unfortunately complicated.
         twr = TransferwiseRefund(origtransaction=origtrans, uuid=uuid.uuid4(), refundid=refundid)
 
+        (accid, quoteid, transferid) = self.make_transfer(origtrans.counterpart_name,
+                                                          origtrans.counterpart_account,
+                                                          refundamount,
+                                                          refundstr,
+                                                          twr.uuid,
+        )
+        twr.accid = accid
+        twr.quoteid = quoteid
+        twr.transferid = transferid
+        twr.save()
+        return twr.id
+
+    def make_transfer(self, counterpart_name, counterpart_account, amount, reference, xuuid):
         # Create a recipient account
         acc = self.post(
             'accounts',
             {
                 'profile': self.get_profile(),
                 'currency': settings.CURRENCY_ABBREV,
-                'accountHolderName': origtrans.counterpart_name,
+                'accountHolderName': counterpart_name,
                 'type': 'iban',
                 'details': {
-                    'IBAN': origtrans.counterpart_account,
+                    'IBAN': counterpart_account,
                 },
             }
         )
-        twr.accid = acc['id']
+        accid = acc['id']
 
         # Create a quote (even though we're not doing currency exchange)
         quote = self.post(
@@ -118,33 +131,32 @@ class TransferwiseApi(object):
                 'source': settings.CURRENCY_ABBREV,
                 'target': settings.CURRENCY_ABBREV,
                 'rateType': 'FIXED',
-                'targetAmount': refundamount,
+                'targetAmount': amount,
                 'type': 'BALANCE_PAYOUT',
             },
         )
-        twr.quoteid = quote['id']
+        quoteid = quote['id']
 
         # Create the actual transfer
         transfer = self.post(
             'transfers',
             {
-                'targetAccount': twr.accid,
-                'quote': twr.quoteid,
-                'customerTransactionId': str(twr.uuid),
+                'targetAccount': accid,
+                'quote': quoteid,
+                'customerTransactionId': str(xuuid),
                 'details': {
-                    'reference': refundstr,
+                    'reference': reference,
                 },
             },
         )
-        twr.transferid = transfer['id']
-        twr.save()
+        transferid = transfer['id']
 
         # Fund the transfer from our account
         fund = self.post(
-            'transfers/{0}/payments'.format(twr.transferid),
+            'transfers/{0}/payments'.format(transferid),
             {
                 'type': 'BALANCE',
             },
         )
 
-        return twr.id
+        return (accid, quoteid, transferid)
