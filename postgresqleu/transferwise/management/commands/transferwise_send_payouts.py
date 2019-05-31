@@ -9,6 +9,7 @@ from django.conf import settings
 
 from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.transferwise.models import TransferwiseTransaction, TransferwiseRefund
+from postgresqleu.transferwise.models import TansferwisePayout
 
 from datetime import datetime, timedelta
 import re
@@ -23,10 +24,10 @@ class Command(BaseCommand):
 
         @classmethod
         def should_run(self):
-            return TransferWisePayout.objects.filter(sentat__isnull=True).exists()
+            return TransferwisePayout.objects.filter(sentat__isnull=True).exists()
 
     def handle(self, *args, **options):
-        for p in TransferWisePayout.objects.filter(sentat__isnull=True):
+        for p in TransferwisePayout.objects.filter(sentat__isnull=True):
             self.handle_one_payout(p)
 
     @transaction.atomic
