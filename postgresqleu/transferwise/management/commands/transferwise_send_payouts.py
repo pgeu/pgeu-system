@@ -9,7 +9,7 @@ from django.conf import settings
 
 from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.transferwise.models import TransferwiseTransaction, TransferwiseRefund
-from postgresqleu.transferwise.models import TansferwisePayout
+from postgresqleu.transferwise.models import TransferwisePayout
 
 from datetime import datetime, timedelta
 import re
