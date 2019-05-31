@@ -1,8 +1,10 @@
+from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
 
 import requests
 from datetime import datetime, timedelta
 from decimal import Decimal
+import json
 import re
 import uuid
 
@@ -35,9 +37,13 @@ class TransferwiseApi(object):
         return r.json()
 
     def post(self, suburl, params):
+        j = json.dumps(params, cls=DjangoJSONEncoder)
         r = self.session.post(
             'https://api.transferwise.com/v1/{}'.format(suburl),
-            json=params,
+            data=j,
+            headers={
+                'Content-Type': 'application/json',
+            },
         )
         r.raise_for_status()
         return r.json()
