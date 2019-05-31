@@ -42,6 +42,8 @@ class TransferwisePayout(models.Model):
     paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
     amount = models.DecimalField(decimal_places=2, max_digits=20, null=False)
     reference = models.CharField(max_length=100, null=False, blank=False)
+    counterpart_name = models.CharField(max_length=100, blank=True, null=False)
+    counterpart_account = models.CharField(max_length=100, blank=True, null=False)
     uuid = models.UUIDField(blank=False, null=False, unique=True)
     transferid = models.BigIntegerField(null=True)
     accid = models.BigIntegerField(null=True)

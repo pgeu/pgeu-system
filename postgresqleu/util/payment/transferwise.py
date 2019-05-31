@@ -136,6 +136,8 @@ must be exact and all fees covered by sender.
             paymentmethod=trans.method,
             amount=twtrans.amount,
             reference='{0} returned payment {1}'.format(settings.ORG_SHORTNAME, twtrans.id),
+            counterpart_name=twtrans.counterpart_name,
+            counterpart_account=twtrans.counterpart_account,
             uuid=uuid.uuid4(),
         )
         payout.save()
