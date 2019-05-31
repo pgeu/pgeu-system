@@ -3,6 +3,7 @@ from django.conf import settings
 import requests
 from datetime import datetime, timedelta
 from decimal import Decimal
+import re
 import uuid
 
 from .models import TransferwiseRefund
@@ -114,7 +115,7 @@ class TransferwiseApi(object):
             {
                 'profile': self.get_profile(),
                 'currency': settings.CURRENCY_ABBREV,
-                'accountHolderName': counterpart_name,
+                'accountHolderName': re.sub(r'\d+', '', counterpart_name),
                 'type': 'iban',
                 'details': {
                     'IBAN': counterpart_account,
