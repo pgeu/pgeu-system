@@ -12,7 +12,7 @@ from postgresqleu.invoices.util import InvoiceManager, register_bank_transaction
 from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.transferwise.models import TransferwiseTransaction, TransferwiseRefund
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import re
 
 
