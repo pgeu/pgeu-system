@@ -56,7 +56,7 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
 
     class_param_fields = []  # Overridden in subclass!
 
-    benefit_class_name = django.forms.CharField()
+    benefit_class_name = django.forms.CharField(required=False)
 
     @property
     def fieldsets(self):
@@ -79,7 +79,11 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
 
     def fix_fields(self):
         if self.newformdata:
-            self.instance.benefit_class = int(self.newformdata)
+            if int(self.newformdata) != 0:
+                self.instance.benefit_class = int(self.newformdata)
+            else:
+                self.instance_benefit_class = None
+
         self.initial['benefit_class_name'] = self.instance.benefit_class and all_benefits[self.instance.benefit_class]['description'] or ''
 
         self.fields['tweet_template'].validators = [
@@ -117,11 +121,14 @@ class BackendSponsorshipLevelBenefitManager(object):
         if obj and obj.benefit_class:
             return get_benefit_class(obj.benefit_class).get_backend_form()
         elif POST.get('_newformdata'):
-            return get_benefit_class(int(POST.get('_newformdata'))).get_backend_form()
+            bc = get_benefit_class(int(POST.get('_newformdata')))
+            if bc:
+                return bc.get_backend_form()
         elif POST.get('benefitclass', None):
-            return get_benefit_class(int(POST.get('benefitclass'))).get_backend_form()
-        else:
-            return BackendSponsorshipLevelBenefitForm
+            bc = get_benefit_class(int(POST.get('benefitclass')))
+            if bc:
+                return bc.get_backend_form()
+        return BackendSponsorshipLevelBenefitForm
 
     def get_object(self, masterobj, subjid):
         try:

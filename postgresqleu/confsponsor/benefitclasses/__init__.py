@@ -1,5 +1,6 @@
 # NOTE! id fields are stored in database!
 all_benefits = {
+    0: {"class": None, "description": "Automatically claimed"},
     1: {"class": "imageupload.ImageUpload", "description": 'Require uploaded image'},
     2: {"class": "requireclaiming.RequireClaiming", "description": "Requires explicit claiming"},
     3: {"class": "entryvouchers.EntryVouchers", "description": "Claim entry vouchers"},
