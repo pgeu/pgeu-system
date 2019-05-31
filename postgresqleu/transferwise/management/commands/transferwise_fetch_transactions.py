@@ -100,8 +100,8 @@ class Command(BaseCommand):
                     if not m:
                         raise Exception("Could not find returned transaction id in reference '{0}'".format(trans.paymentref))
                     twtrans = TransferwiseTransaction.objects.get(pk=m.groups(1)[0])
-                    if twtrans.amount != trans.amount:
-                        raise Exception("Original amount {0} does not match returned amount {1}".format(twtrans.amount, trans.amount))
+                    if twtrans.amount != -trans.amount - trans.feeamount:
+                        raise Exception("Original amount {0} does not match returned amount {1}".format(twtrans.amount, -trans.amount - trans.feeamount))
 
                     accstr = "TransferWise returned payment {0}".format(trans.transferid)
                     accrows = [
