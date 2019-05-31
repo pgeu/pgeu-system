@@ -103,7 +103,7 @@ class Command(BaseCommand):
                     if twtrans.amount != -trans.amount - trans.feeamount:
                         raise Exception("Original amount {0} does not match returned amount {1}".format(twtrans.amount, -trans.amount - trans.feeamount))
 
-                    accstr = "TransferWise returned payment {0}".format(trans.twreference)
+                    accountingtxt = "TransferWise returned payment {0}".format(trans.twreference)
                     accrows = [
                         (pm.config('bankaccount'), accountingtxt, trans.amount, None),
                         (pm.config('feeaccount'), accountingtxt, trans.feeamount, None),
