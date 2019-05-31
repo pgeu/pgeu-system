@@ -109,7 +109,7 @@ class Command(BaseCommand):
                         (pm.config('feeaccount'), accountingtxt, trans.feeamount, None),
                         (pm.config('bankaccount'), accountingtxt, -(trans.amount + trans.feeamount), None),
                     ]
-                    create_accounting_record(date.today(), accrows)
+                    create_accounting_entry(date.today(), accrows)
                 else:
                     # Else register a pending bank transaction. This may immediately match an invoice
                     # if it was an invoice payment, in which case the entire process will copmlete.
