@@ -99,7 +99,7 @@ class Command(BaseCommand):
                     m = re.match('^{0} returned payment (\d+)$'.format(settings.ORG_SHORTNAME), trans.paymentref)
                     if not m:
                         raise Exception("Could not find returned transaction id in reference '{0}'".format(trans.paymentref))
-                    twtrans = TransferwiseTransaction.objects.get(pk=twtrans.id)
+                    twtrans = TransferwiseTransaction.objects.get(pk=m.groups(1)[0])
                     if twtrans.amount != trans.amount:
                         raise Exception("Original amount {0} does not match returned amount {1}".format(twtrans.amount, trans.amount))
 
