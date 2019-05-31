@@ -317,6 +317,7 @@ class PendingBankTransaction(models.Model):
     transtext = models.CharField(max_length=500, null=False, blank=True)
     sender = models.CharField(max_length=200, null=False, blank=True)
     comments = models.TextField(max_length=2000, null=False, blank=True)
+    canreturn = models.BooleanField(null=False, blank=False, default=False)
 
 
 class PendingBankMatcher(models.Model):

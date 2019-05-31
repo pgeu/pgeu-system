@@ -36,3 +36,16 @@ class TransferwiseRefund(models.Model):
     quoteid = models.BigIntegerField(null=True)
     createdat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     completedat = models.DateTimeField(null=True, blank=True)
+
+
+class TransferwisePayout(models.Model):
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
+    amount = models.DecimalField(decimal_places=2, max_digits=20, null=False)
+    reference = models.CharField(max_length=100, null=False, blank=False)
+    uuid = models.UUIDField(blank=False, null=False, unique=True)
+    transferid = models.BigIntegerField(null=True)
+    accid = models.BigIntegerField(null=True)
+    quoteid = models.BigIntegerField(null=True)
+    createdat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+    sentat = models.DateTimeField(null=True, blank=True)
+    completedat = models.DateTimeField(null=True, blank=True)

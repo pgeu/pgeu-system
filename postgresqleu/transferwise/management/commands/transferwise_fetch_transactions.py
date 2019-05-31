@@ -7,6 +7,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.conf import settings
 
+from postgresqleu.accounting.util import create_accounting_entry
 from postgresqleu.invoices.util import InvoiceManager, register_bank_transaction
 from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.transferwise.models import TransferwiseTransaction, TransferwiseRefund
@@ -70,7 +71,7 @@ class Command(BaseCommand):
                         twrefund = TransferwiseRefund.objects.get(transferid=transferid)
                     except TransferwiseRefund.DoesNotExist:
                         print("Could not find transferwise refund for id {0}, registering as manual bank transaction".format(transferid))
-                        register_bank_transaction(method, trans.id, trans.amount, trans.paymentref, trans.fulldescription)
+                        register_bank_transaction(method, trans.id, trans.amount, trans.paymentref, trans.fulldescription, False)
                         continue
 
                     if twrefund.refundtransaction or twrefund.completedat:
@@ -91,8 +92,31 @@ class Command(BaseCommand):
                         [],  # urls
                         method,
                     )
+                elif trans.transtype == 'TRANSFER' and trans.paymentref.startswith('{0} returned payment'.format(settings.ORG_SHORTNAME)):
+                    # Returned payment. Nothing much to do, but we create an accounting record
+                    # for it just to make things nice and clear. But first make sure we can
+                    # actually find the original transaction.
+                    m = re.match('^{0} returned payment (\d+)$'.format(settings.ORG_SHORTNAME), trans.paymentref)
+                    if not m:
+                        raise Exception("Could not find returned transaction id in reference '{0}'".format(trans.paymentref))
+                    twtrans = TransferWiseTransaction.objects.get(pk=twtrans.id)
+                    if twtrans.amount != trans.amount:
+                        raise Exception("Original amount {0} does not match returned amount {1}".format(twtrans.amount, trans.amount))
 
+                    accstr = "TransferWise returned payment {0}".format(trans.transferid)
+                    accrows = [
+                        (pm.config('bankaccount'), accountingtxt, trans.amount, None),
+                        (pm.config('feeaccount'), accountingtxt, trans.feeamount, None),
+                        (pm.config('bankaccount'), accountingtxt, -(trans.amount + trans.feeamount), None),
+                    ]
+                    create_accounting_record(date.today(), accrows)
                 else:
                     # Else register a pending bank transaction. This may immediately match an invoice
                     # if it was an invoice payment, in which case the entire process will copmlete.
-                    register_bank_transaction(method, trans.id, trans.amount, trans.paymentref, trans.fulldescription)
+                    register_bank_transaction(method,
+                                              trans.id,
+                                              trans.amount,
+                                              trans.paymentref,
+                                              trans.fulldescription,
+                                              trans.counterpart_valid_iban
+                    )

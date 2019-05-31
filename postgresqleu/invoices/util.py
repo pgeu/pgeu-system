@@ -819,7 +819,7 @@ def register_pending_bank_matcher(account, pattern, amount, journalentry):
 # the list of pending ones.
 # Returns true if the transaction was immediately matched to something and needs
 # no further processing.
-def register_bank_transaction(method, methodidentifier, amount, transtext, sender):
+def register_bank_transaction(method, methodidentifier, amount, transtext, sender, canreturn=False):
     if not isinstance(amount, Decimal):
         raise Exception("Amount must be specified as Decimal!")
 
@@ -861,7 +861,8 @@ def register_bank_transaction(method, methodidentifier, amount, transtext, sende
                                        amount=amount,
                                        transtext=transtext,
                                        sender=sender,
-                                       comments=invoicelog.getvalue()
+                                       comments=invoicelog.getvalue(),
+                                       canreturn=canreturn and amount > 0,
                 ).save()
 
                 InvoiceLog(message="Bank payment '{0}' matched invoice {1}, but processing failed".format(
@@ -899,7 +900,9 @@ def register_bank_transaction(method, methodidentifier, amount, transtext, sende
                                    created=datetime.now(),
                                    amount=amount,
                                    transtext=transtext,
-                                   sender=sender)
+                                   sender=sender,
+                                   canreturn=canreturn and amount > 0,
+    )
 
     for matcher in PendingBankMatcher.objects.all():
         if automatch_bank_transaction_rule(trans, matcher):

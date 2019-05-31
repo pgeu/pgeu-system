@@ -82,6 +82,15 @@ def banktransactions(request):
                 trans.delete()
 
                 return HttpResponseRedirect("/accounting/e/{0}/".format(entry.id))
+            elif request.POST['submit'] == 'Return to sender':
+                pm = trans.method.get_implementation()
+
+                pm.return_payment(trans)
+
+                InvoiceLog(message="Scheduled transaction '{0}' ({1}{2}) for return to sender using {3}".format(trans.transtext, trans.amount, settings.CURRENCY_ABBREV, trans.method.internaldescription)).save()
+                trans.delete()
+
+                return HttpResponseRedirect(".")
             else:
                 raise Http404("Invalid request")
         elif 'matcherid' in request.POST:

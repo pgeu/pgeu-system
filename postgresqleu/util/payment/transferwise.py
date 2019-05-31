@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.conf import settings
 
 import re
+import uuid
 from io import StringIO
 
 from postgresqleu.util.payment.banktransfer import BaseManagedBankPayment
@@ -10,7 +11,7 @@ from postgresqleu.util.payment.banktransfer import BaseManagedBankPaymentForm
 from postgresqleu.transferwise.api import TransferwiseApi
 
 from postgresqleu.invoices.models import Invoice
-from postgresqleu.transferwise.models import TransferwiseTransaction
+from postgresqleu.transferwise.models import TransferwiseTransaction, TransferwisePayout
 
 
 class BackendTransferwiseForm(BaseManagedBankPaymentForm):
@@ -119,3 +120,22 @@ must be exact and all fees covered by sender.
         # At this point, we succeeded. Anything that failed will bubble
         # up as an exception.
         return True
+
+    def return_payment(self, trans):
+        # Return a payment that is *not* attached to an invoice
+        if not self.config('canrefund'):
+            raise Exception("Cannot process automatic refunds. Configuration has changed?")
+
+        print(trans.methodidentifier)
+        twtrans = TransferwiseTransaction.objects.get(
+            paymentmethod=trans.method,
+            id=trans.methodidentifier,
+        )
+
+        payout = TransferwisePayout(
+            paymentmethod=trans.method,
+            amount=twtrans.amount,
+            reference='{0} returned payment {1}'.format(settings.ORG_SHORTNAME, twtrans.id),
+            uuid=uuid.uuid4(),
+        )
+        payout.save()
