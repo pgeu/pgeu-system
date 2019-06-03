@@ -91,7 +91,7 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
                 'conference': self.conference,
                 'benefit': self.instance,
                 'level': self.instance.level,
-                'sponsor': Sponsor(name='Test'),
+                'sponsor': Sponsor(name='Test', displayname="Test", twittername="@twittertest"),
             }),
         ]
 
@@ -105,6 +105,7 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
                     'level': o.level,
                     'conference': o.level.conference,
                     'sponsor': Sponsor(name='Test'),
+                    'sponsor': Sponsor(name='Test', displayname="Test", twittername="@twittertest"),
                 })
             return ''
 
