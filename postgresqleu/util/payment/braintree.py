@@ -14,6 +14,8 @@ class BackendBraintreeForm(BackendInvoicePaymentMethodForm):
     sandbox = forms.BooleanField(required=False, label="Use testing sandbox")
     merchantid = forms.CharField(required=True, label="Merchant ID",
                                  help_text="From Account -> Merchant Account Info")
+    merchantacctid = forms.CharField(required=False, label="Merchant Account ID",
+                                     help_text="If provided, will use specific Merchant Account instead of the default")
     notification_receiver = forms.EmailField(required=True)
     public_key = forms.CharField(required=True, label="Public key",
                                  help_text="From Settings -> API Keys")
@@ -29,14 +31,14 @@ class BackendBraintreeForm(BackendInvoicePaymentMethodForm):
     accounting_payout = forms.ChoiceField(required=True, choices=get_account_choices,
                                           label="Payout account")
 
-    config_fields = ['sandbox', 'merchantid', 'notification_receiver', 'public_key', 'private_key',
+    config_fields = ['sandbox', 'merchantid', 'merchantacctid', 'notification_receiver', 'public_key', 'private_key',
                      'accounting_authorized', 'accounting_payable', 'accounting_fee', 'accounting_payout']
 
     config_fieldsets = [
         {
             'id': 'braintree',
             'legend': 'Braintree',
-            'fields': ['merchantid', 'notification_receiver', 'sandbox', 'public_key', 'private_key', ],
+            'fields': ['merchantid', 'merchantacctid', 'notification_receiver', 'sandbox', 'public_key', 'private_key', ],
         },
         {
             'id': 'accounting',

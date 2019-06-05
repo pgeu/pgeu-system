@@ -39,6 +39,7 @@ def payment_post(request):
         'amount': '{0}'.format(invoice.total_amount),
         'order_id': '#{0}'.format(invoice.pk),
         'payment_method_nonce': nonce,
+        'merchant_account_id': pm.config('merchantacctid'),
         'options': {
             'submit_for_settlement': True,
         }
