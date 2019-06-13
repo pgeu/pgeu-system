@@ -46,6 +46,10 @@
       <div class="col-md-2"><strong>Recipient</strong></div>
       <div class="col-md-8">{{invoice.recipient_name}}</div>
     </div>
+    <div class="row">
+      <div class="col-md-2"><strong>Address</strong></div>
+      <div class="col-md-8">{{invoice.recipient_address|linebreaksbr}}</div>
+    </div>
   </div>
 </div>
 {%endfor%}
