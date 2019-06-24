@@ -125,19 +125,15 @@ def banktransactions_match(request, transid):
     invoices = Invoice.objects.filter(finalized=True, paidat__isnull=True, deleted=False).order_by('invoicedate')
 
     def _match_invoice(i):
+        matchinfos = []
         if i.total_amount == trans.amount:
-            matchinfo = 'Amount matches exact'
-            matchlabel = 'success'
-        elif i.payment_reference in trans.transtext:
-            matchinfo = 'Payment reference found'
-            matchlabel = 'success'
-        else:
-            matchinfo = ''
-            matchlabel = ''
+            matchinfos.append('Amount matches exact')
+        if i.payment_reference in trans.transtext.replace(' ', ''):
+            matchinfos.append('Payment reference found')
 
         return {
-            'matchinfo': matchinfo,
-            'matchlabel': matchlabel,
+            'matchinfo': ",\n".join(matchinfos),
+            'matchlabel': len(matchinfos) > 0 and 'success' or '',
             'i': i,
         }
 

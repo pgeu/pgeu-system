@@ -829,7 +829,7 @@ def register_bank_transaction(method, methodidentifier, amount, transtext, sende
                                           deleted=False,
                                           paidat__isnull=True,
                                           total_amount=amount):
-        if invoice.payment_reference in transtext:
+        if invoice.payment_reference in transtext.replace(' ', ''):
             # We have a match!
             pm = method.get_implementation()
 

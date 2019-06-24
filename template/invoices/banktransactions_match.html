@@ -42,7 +42,7 @@
       <td>{{im.i.title}}</td>
       <td class="nobr">{{currency_symbol}} {{im.i.total_amount}}</td>
       <td>{{im.i.recipient_name}}</td>
-      <td>{{im.matchinfo}}</td>
+      <td>{{im.matchinfo|linebreaksbr}}</td>
       <td>
 	<a href="{{im.i.id}}/" class="btn btn-{%if im.matchlabel%}primary{%else%}default{%endif%} btn-xs">Match this invoice</a><br/>
 	<div class="checkbox">
