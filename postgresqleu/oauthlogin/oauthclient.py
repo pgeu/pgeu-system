@@ -26,8 +26,30 @@ def configure():
     os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
 
 
+def _perform_oauth_login(request, provider, email, firstname, lastname):
+    try:
+        user = User.objects.get(email=email)
+        log.info("Oauth signin of {0} using {1} from {2}.".format(email, provider, get_client_ip(request)))
+    except User.DoesNotExist:
+        log.info("Oauth signin of {0} using {1} from {2}. User not found, creating new.".format(email, provider, get_client_ip(request)))
+
+        user = User(username=email,
+                    email=email,
+                    first_name=firstname,
+                    last_name=lastname)
+        user.save()
+
+    user.backend = settings.AUTHENTICATION_BACKENDS[0]
+    django_login(request, user)
+    n = request.session.pop('login_next')
+    if n:
+        return HttpResponseRedirect(n)
+    else:
+        return HttpResponseRedirect('/account/')
+
+
 #
-# Generic OAuth login for multiple providers
+# Generic OAuth2 login for multiple providers
 #
 def _login_oauth(request, provider, authurl, tokenurl, scope, authdatafunc):
     from requests_oauthlib import OAuth2Session
@@ -59,25 +81,7 @@ def _login_oauth(request, provider, authurl, tokenurl, scope, authdatafunc):
             log.warning("Oauth signing using {0} was missing data: {1}".format(provider, e))
             return HttpResponse('OAuth login was missing critical data. To log in, you need to allow access to email, first name and last name!')
 
-        try:
-            user = User.objects.get(email=email)
-            log.info("Oauth signin of {0} using {1} from {2}.".format(email, provider, get_client_ip(request)))
-        except User.DoesNotExist:
-            log.info("Oauth signin of {0} using {1} from {2}. User not found, creating new.".format(email, provider, get_client_ip(request)))
-
-            user = User(username=email,
-                        email=email,
-                        first_name=firstname,
-                        last_name=lastname)
-            user.save()
-
-        user.backend = settings.AUTHENTICATION_BACKENDS[0]
-        django_login(request, user)
-        n = request.session.pop('login_next')
-        if n:
-            return HttpResponseRedirect(n)
-        else:
-            return HttpResponseRedirect('/')
+        return _perform_oauth_login(request, provider, email, firstname, lastname)
     else:
         log.info("Initiating {0} oauth2 step from {1}".format(provider, get_client_ip(request)))
         # First step is redirect to provider
@@ -87,6 +91,51 @@ def _login_oauth(request, provider, authurl, tokenurl, scope, authdatafunc):
         )
         request.session['login_next'] = request.GET.get('next', '')
         request.session['oauth_state'] = state
+        request.session.modified = True
+        return HttpResponseRedirect(authorization_url)
+
+
+#
+# Generic Oauth1 provider
+#
+def _login_oauth1(request, provider, requesturl, accessurl, baseauthurl, authdatafunc):
+    from requests_oauthlib import OAuth1Session
+
+    client_id = settings.OAUTH[provider]['clientid']
+    client_secret = settings.OAUTH[provider]['secret']
+    redir = '{0}/accounts/login/{1}/'.format(settings.SITEBASE, provider)
+
+    if 'oauth_verifier' in request.GET:
+        log.info("Completing {0} oauth1 step from {1}".format(provider, get_client_ip(request)))
+
+        oa = OAuth1Session(client_id, client_secret)
+        r = oa.parse_authorization_response(request.build_absolute_uri())
+        verifier = r.get('oauth_verifier')
+
+        ro_key = request.session.pop('ro_key')
+        ro_secret = request.session.pop('ro_secret')
+
+        oa = OAuth1Session(client_id, client_secret, ro_key, ro_secret, verifier=verifier)
+        tokens = oa.fetch_access_token(accessurl)
+
+        try:
+            (email, firstname, lastname) = authdatafunc(oa)
+            email = email.lower()
+        except KeyError as e:
+            log.warning("Oauth1 signing using {0} was missing data: {1}".format(provider, e))
+            return HttpResponse('OAuth login was missing critical data. To log in, you need to allow access to email, first name and last name!')
+
+        return _perform_oauth_login(request, provider, email, firstname, lastname)
+    else:
+        log.info("Initiating {0} oauth1 step from {1}".format(provider, get_client_ip(request)))
+
+        oa = OAuth1Session(client_id, client_secret=client_secret)
+        fr = oa.fetch_request_token(requesturl)
+        authorization_url = oa.authorization_url(baseauthurl)
+
+        request.session['login_next'] = request.GET.get('next', '')
+        request.session['ro_key'] = fr.get('oauth_token')
+        request.session['ro_secret'] = fr.get('oauth_token_secret')
         request.session.modified = True
         return HttpResponseRedirect(authorization_url)
 
@@ -199,6 +248,33 @@ def oauth_login_microsoft(request):
         'https://login.live.com/oauth20_token.srf',
         ['wl.basic', 'wl.emails', ],
         _microsoft_auth_data)
+
+
+#
+# Twitter login
+#  Registration: https://developer.twitter.com/en/apps
+#
+def oauth_login_twitter(request):
+    def _twitter_auth_data(oa):
+        r = oa.get('https://api.twitter.com/1.1/account/verify_credentials.json?include_email=true').json()
+        n = r['name'].split(None, 1)
+        while len(n) < 2:
+            # Handle single name names
+            n.append('')
+
+        return (
+            r['email'],
+            n[0],
+            n[1]
+        )
+
+    return _login_oauth1(
+        request,
+        'twitter',
+        'https://api.twitter.com/oauth/request_token',
+        'https://api.twitter.com/oauth/access_token',
+        'https://api.twitter.com/oauth/authorize',
+        _twitter_auth_data)
 
 
 def login_oauth(request, provider):
