@@ -54,6 +54,9 @@ if settings.ENABLE_PG_COMMUNITY_AUTH:
         url(r'^accounts/logout/$', postgresqleu.auth.logout),
         url(r'^auth_receive/$', postgresqleu.auth.auth_receive),
     ])
+elif settings.ENABLE_OAUTH_AUTH:
+    from postgresqleu.oauthlogin.urls import oauthurlpatterns
+    urlpatterns.extend(oauthurlpatterns)
 else:
     from django.contrib.auth import views as auth_views
     urlpatterns.extend([

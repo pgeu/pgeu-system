@@ -158,9 +158,13 @@ DATETIME_FORMAT = "Y-m-d H:i:s"
 # Enable/disable modules
 # ----------------------
 ENABLE_PG_COMMUNITY_AUTH = False
+ENABLE_OAUTH_AUTH = False
 ENABLE_NEWS = True
 ENABLE_MEMBERSHIP = False
 ENABLE_ELECTIONS = False
+
+# When using oauth login, define providers
+OAUTH = {}
 
 # Set to a username and password in local_settings.py to enable global http auth
 GLOBAL_LOGIN_USER = ''
