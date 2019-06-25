@@ -102,6 +102,14 @@ class PaypalAPI(object):
                 yield r
                 continue
 
+            if code == 'T1201':
+                # Chargeback, also doesn't have normal details
+                r['EMAIL'] = self.pm.config('email')
+                r['NAME'] = self.pm.config('email')
+                r['SUBJECT'] = 'Paypal chargeback'
+                yield r
+                continue
+
             r['EMAIL'] = t['payer_info']['email_address']
 
             # Figure out the name, since it can be in completely different places
