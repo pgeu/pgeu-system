@@ -147,7 +147,7 @@ class Command(BaseCommand):
                         entry = create_accounting_entry(date.today(), accrows, True)
                         register_pending_bank_matcher(pm.config('accounting_payout'),
                                                       '.*TW.*payout.*{0}.*'.format(refno),
-                                                      -trans.amount,
+                                                      -(trans.amount + trans.feeamount),
                                                       entry)
                     else:
                         create_accounting_entry(date.today(), accrows)
