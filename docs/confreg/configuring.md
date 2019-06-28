@@ -152,9 +152,9 @@ URL to promo picture
 : An URL pointing to a picture promoting this event, which will be
 used on the main website. If left blank a default (or random)
 picture will be used. Picture must have an aspect ratio of 2.3, but
-wil lotherwise be reasonably sized to fit the screen of the visitors.
+will otherwise be reasonably sized to fit the screen of the visitors.
 
-Dont't post tweet before/after
+Don't post tweet before/after
 : A timestamp (00:00 - 24:00) indicating during which period tweets
 can be posted. If a tweet is queued outside this window, it will be
 posted once the window is entered.

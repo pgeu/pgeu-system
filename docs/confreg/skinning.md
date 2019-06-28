@@ -8,7 +8,7 @@ The proper way to do this in the current version is to use the
 `jinja2` based method, as this will also allow for automatic
 deployment of static pages for the conference (if wanted).
 
-To utilize this sytem, for each conference to be skinned, create a
+To utilize this system, for each conference to be skinned, create a
 directory structure like:
 
     /templates

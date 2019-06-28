@@ -33,7 +33,7 @@ Name
 : Name of the candidate
 
 Email
-: Email to the candiate
+: Email to the candidate
 
 Presentation
 : Short presentation of the candidate, supports Markdown text.

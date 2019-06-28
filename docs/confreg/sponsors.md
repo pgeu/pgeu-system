@@ -84,7 +84,7 @@ In the period where there are fewer *confirmed* sponsors than there
 are maximum number of allowed sponsors, a wait list is allowed. The
 waitlist is *manually* managed, so what happens is that these sponsors
 are added as normal, but should not be "clicked through" by the
-adminstrator. Once the limit is exceeded a red warning text is shown
+administrator. Once the limit is exceeded a red warning text is shown
 on the page where invoices are generated, to avoid doing this by
 mistake.
 

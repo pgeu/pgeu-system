@@ -34,7 +34,7 @@ of this is coffee breaks and lunch. Cross schedule sessions do not show
 details about the session.
 
 Tags <a name="tags"></a>
-:     Tags can be assigned ot each session if enabled at the conference
+:     Tags can be assigned to each session if enabled at the conference
 level. Each session can have zero or more tags assigned. These can later
 be used in the schedule for viewing, or similar things. There is currently
 not much core functionality like filtering, but could be in the future.

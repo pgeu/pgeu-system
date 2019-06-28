@@ -80,6 +80,6 @@ started before the job runner.
 A template for a `systemd` service file is in `tools/systemd/', but
 needs to be adjusted for paths and users before being used.
 
-The deamon will write to stdout and stderr, so care should be taken to
+The daemon will write to stdout and stderr, so care should be taken to
 write these to a reasonable logfile unless the init system already
 takes care of it (systemd does by default).
