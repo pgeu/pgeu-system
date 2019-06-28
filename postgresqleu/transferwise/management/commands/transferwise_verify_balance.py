@@ -23,6 +23,7 @@ from postgresqleu.invoices.models import InvoicePaymentMethod, PendingBankTransa
 from postgresqleu.accounting.util import get_latest_account_balance
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.transferwise.api import TransferwiseApi
+from postgresqleu.transferwise.models import TransferwisePayout
 from postgresqleu.util.checksum import luhn
 
 
