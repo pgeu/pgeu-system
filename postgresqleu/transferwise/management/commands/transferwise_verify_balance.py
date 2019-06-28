@@ -97,10 +97,10 @@ Better go check manually!
                     uuid=uuid.uuid4())
                 payout.save()
 
-            send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-                             settings.TREASURER_EMAIL,
-                             'TransferWise payout triggered',
-                             """TransferWise balance ({0}) for {1} exceeded {2}.
+                send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+                                 settings.TREASURER_EMAIL,
+                                 'TransferWise payout triggered',
+                                 """TransferWise balance ({0}) for {1} exceeded {2}.
 An automatic payout of {3} has been initiated, bringing the
 balance down to {4}.
 """.format(tw_balance, method.internaldescription, pm.config('autopayouttrigger'), amount, pm.config('autopayoutlimit')))
