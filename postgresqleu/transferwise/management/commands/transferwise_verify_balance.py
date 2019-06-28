@@ -69,8 +69,8 @@ Better go check manually!
 """.format(tw_balance, method.internaldescription, accounting_balance + pending))
 
         # If balance matches, possibly check if we should trigger an automatic payout
-        if pm.config.get('autopayout', None):
-            if tw_balance > pm.config['autopayouttrigger']:
+        if pm.config('autopayout'):
+            if tw_balance > pm.config('autopayouttrigger'):
                 # There is more money in the account than we need!
                 # If there is an existing Payout that has not yet been sent,
                 # we don't risk sending one more, we wait until that one is
@@ -80,7 +80,7 @@ Better go check manually!
                     return
 
                 # Creat a payout down to the limited amount
-                amount = tw_balance - pm.config['autopayoutlimit']
+                amount = tw_balance - pm.config('autopayoutlimit')
 
                 # Generate a unique reference (unique enough)
                 refno = "{}{}".format(int(time.time() % 100000), method.id)
@@ -90,8 +90,8 @@ Better go check manually!
                     paymentmethod=method,
                     amount=amount,
                     reference='TW payout {0}'.format(refno),
-                    counterpart_name=pm.config['autopayoutname'],
-                    counterpart_account=pm.config['autopayoutiban'],
+                    counterpart_name=pm.config('autopayoutname'),
+                    counterpart_account=pm.config('autopayoutiban'),
                     uuid=uuid.uuid4())
                 payout.save()
 
@@ -101,4 +101,4 @@ Better go check manually!
                              """TransferWise balance ({0}) for {1} exceeded {2}.
 An automatic payout of {3} has been initiated, bringing the
 balance down to {4}.
-""".format(tw_balance, method.internaldescription, pm.config['autopayouttrigger'], amount, pm.config['autopayoutlimit']))
+""".format(tw_balance, method.internaldescription, pm.config('autopayouttrigger'), amount, pm.config('autopayoutlimit')))
