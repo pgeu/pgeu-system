@@ -62,7 +62,7 @@
     <th>Managers:</th>
     <td><ul>
 	{%for m in sponsor.managers.all%}
-	<li>{{m.first_name}} {{m.last_name}} ({{m.email}})</li>
+	<li>{{m.first_name}} {{m.last_name}} &lt;{{m.email}}&gt;</li>
 	{%endfor%}
     </ul></td>
   </tr>
