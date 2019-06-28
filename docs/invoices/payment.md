@@ -69,16 +69,16 @@ other payment fees) it may be easier to just match the payment and
 accept the difference as a cost, rather than dealing with
 sub-payments.
 
-Mathc payment to multiple invoices
-:  This can be uased in case a single payment contains the payments
-for multiple inoices, when somebody has "helpfully" merged two
+Match payment to multiple invoices
+:  This can be used in case a single payment contains the payments
+for multiple invoices, when somebody has "helpfully" merged two
 payments. This *only* works if there amounts match exactly and there
 are no fees involved.
 
 Match payment to matcher
 :  This can be used as a workaround for incorrect bank matchers.
 Normally, when a transaction that matches a bank matcher shows up,
-it automatically gets processed. In case te transaction text has
+it automatically gets processed. In case the transaction text has
 changed or is incomplete, the matcher might not work. In this case,
 it can be matched manually. Only exact amount matches can be processed
 this way.
