@@ -18,6 +18,7 @@ from django.conf import settings
 import datetime
 import time
 from decimal import Decimal
+import uuid
 
 from postgresqleu.invoices.models import InvoicePaymentMethod, PendingBankTransaction
 from postgresqleu.accounting.util import get_latest_account_balance
