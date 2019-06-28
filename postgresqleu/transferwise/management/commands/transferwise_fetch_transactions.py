@@ -139,15 +139,15 @@ class Command(BaseCommand):
                     # is a managed one, create a bank matcher. Otherwise just close the record
                     # immediately.
                     accrows = [
-                        (pm.config('accounting_payout'), trans.paymentref, trans.amount, None),
+                        (pm.config('bankaccount'), trans.paymentref, trans.amount, None),
                         (pm.config('feeaccount'), trans.paymentref, trans.feeamount, None),
-                        (pm.config('bankaccount'), trans.paymentref, -(trans.amount + trans.feeamount), None),
+                        (pm.config('accounting_payout'), trans.paymentref, -(trans.amount + trans.feeamount), None),
                     ]
                     if is_managed_bank_account(pm.config('accounting_payout')):
                         entry = create_accounting_entry(date.today(), accrows, True)
                         register_pending_bank_matcher(pm.config('accounting_payout'),
                                                       '.*TW.*payout.*{0}.*'.format(refno),
-                                                      trans.amount,
+                                                      -trans.amount,
                                                       entry)
                     else:
                         create_accounting_entry(date.today(), accrows)
