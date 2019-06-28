@@ -8,7 +8,9 @@ from django.db import transaction
 from django.conf import settings
 
 from postgresqleu.accounting.util import create_accounting_entry
-from postgresqleu.invoices.util import InvoiceManager, register_bank_transaction
+from postgresqleu.invoices.util import is_managed_bank_account
+from postgresqleu.invoices.util import register_pending_bank_matcher, register_bank_transaction
+from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.transferwise.models import TransferwiseTransaction, TransferwiseRefund
 
@@ -119,6 +121,35 @@ class Command(BaseCommand):
                         (pm.config('bankaccount'), accountingtxt, -(trans.amount + trans.feeamount), None),
                     ]
                     create_accounting_entry(date.today(), accrows)
+                elif trans.transtype == 'TRANSFER' and trans.paymentref.startswith('TW payout'):
+                    # Payout. Create an appropriate accounting record and a pending matcher.
+                    try:
+                        po = TransferwisePayout.objects.get(reference=trans.paymentref)
+                    except TransferwisePayout.DoesNotExist:
+                        raise Exception("Could not find transferwise payout object for {0}".format(trans.paymentref))
+
+                    po.completedat = datetime.now()
+                    po.completedtrans = trans
+                    po.save()
+
+                    refno = int(trans.paymentref[len("TW payout "):])
+
+                    # Payout exists at TW, so proceed to generate records. If the receiving account
+                    # is a managed one, create a bank matcher. Otherwise just close the record
+                    # immediately.
+                    accrows = [
+                        (pm.config('accounting_payout'), trans.paymentref, trans.amount, None),
+                        (pm.config('feeaccount'), trans.paymentref, trans.feeamount, None),
+                        (pm.config('bankaccount'), trans.paymentref, -(trans.amount + trans.feeamount), None),
+                    ]
+                    if is_managed_bank_account(pm.config('accounting_payout')):
+                        entry = create_accounting_entry(date.today(), accrows, True)
+                        register_pending_bank_matcher(pm.config('accounting_payout'),
+                                                      '.*TW.*payout.*{0}.*'.format(refno),
+                                                      trans.amount,
+                                                      entry)
+                    else:
+                        create_accounting_entry(date.today(), accrows)
                 else:
                     # Else register a pending bank transaction. This may immediately match an invoice
                     # if it was an invoice payment, in which case the entire process will copmlete.

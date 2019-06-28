@@ -254,6 +254,12 @@ automatically validate this information when the transaction is
 received, and if the required information is not present, the refund
 function will not be available.
 
+If refunds are enabled, automatic payouts can also be enabled. In this
+case, the balance of the account is monitored and once it goes above a
+certain limit, an IBAN transfer to a different bank account is
+generated. The payment will be made leaving a defined amount of money
+still in the account to handle things like refunds.
+
 ## Currencies
 
 The system can only support one currency, globally, at any given

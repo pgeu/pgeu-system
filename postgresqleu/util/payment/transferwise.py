@@ -1,4 +1,6 @@
 from django import forms
+from django.forms import ValidationError
+from django.core.validators import MinValueValidator
 from django.shortcuts import render
 from django.conf import settings
 
@@ -8,6 +10,7 @@ from io import StringIO
 
 from postgresqleu.util.payment.banktransfer import BaseManagedBankPayment
 from postgresqleu.util.payment.banktransfer import BaseManagedBankPaymentForm
+from postgresqleu.accounting.util import get_account_choices
 from postgresqleu.transferwise.api import TransferwiseApi
 
 from postgresqleu.invoices.models import Invoice
@@ -18,15 +21,62 @@ class BackendTransferwiseForm(BaseManagedBankPaymentForm):
     apikey = forms.CharField(required=True, widget=forms.widgets.PasswordInput(render_value=True))
     canrefund = forms.BooleanField(required=False, label='Can refund',
                                    help_text='Process automatic refunds. This requires an API key with full access to make transfers to any accounts')
+    autopayout = forms.BooleanField(required=False, label='Automatic payouts',
+                                    help_text='Issue automatic payouts when account balances goes above a specified level.')
+    autopayouttrigger = forms.IntegerField(required=False, label='Payout trigger',
+                                           validators=[MinValueValidator(1), ],
+                                           help_text='Trigger automatic payouts when balance goes above this')
+    autopayoutlimit = forms.IntegerField(required=False, label='Payout limit',
+                                         validators=[MinValueValidator(0), ],
+                                         help_text='When issuing automatic payouts, keep this amount in the account after the payout is done')
+    autopayoutname = forms.CharField(required=False, max_length=64, label='Recipent name',
+                                     help_text='Name of recipient to make IBAN payouts to')
+    autopayoutiban = forms.CharField(required=False, max_length=64, label='Recipient IBAN',
+                                     help_text='IBAN number of account to make payouts to')
+    accounting_payout = forms.ChoiceField(required=True, choices=get_account_choices,
+                                          label="Payout account")
 
-    managed_fields = ['apikey', 'canrefund', ]
+    managed_fields = ['apikey', 'canrefund', 'autopayout', 'autopayouttrigger', 'autopayoutlimit',
+                      'autopayoutname', 'autopayoutiban', 'accounting_payout']
     managed_fieldsets = [
         {
             'id': 'tw',
             'legend': 'TransferWise',
             'fields': ['canrefund', 'apikey', ],
+        },
+        {
+            'id': 'twautopayout',
+            'legend': 'Automatic Payouts',
+            'fields': ['autopayout', 'autopayouttrigger', 'autopayoutlimit',
+                       'autopayoutname', 'autopayoutiban', 'accounting_payout'],
         }
     ]
+
+    def clean(self):
+        cleaned_data = super(BackendTransferwiseForm, self).clean()
+        if cleaned_data['autopayout']:
+            if not cleaned_data.get('canrefund', None):
+                self.add_error('autopayout', 'Automatic payouts can only be enabled if refunds are enabled')
+
+            # If auto payouts are enabled, a number of fields become mandateory
+            for fn in ('autopayouttrigger', 'autopayoutlimit', 'autopayoutname', 'autopayoutiban', 'accounting_payout'):
+                if not cleaned_data.get(fn, None):
+                    self.add_error(fn, 'This field is required when automatic payouts are enabled')
+
+            if cleaned_data['autopayoutlimit'] >= cleaned_data['autopayouttrigger']:
+                self.add_error('autopayoutlimit', 'This value must be lower than the trigger value')
+
+            # Actually make an API call to validate the IBAN
+            if 'autopayoutiban' in cleaned_data and cleaned_data['autopayoutiban']:
+                pm = self.instance.get_implementation()
+                api = pm.get_api()
+                try:
+                    if not api.validate_iban(cleaned_data['autopayoutiban']):
+                        self.add_error('autopayoutiban', 'IBAN number could not be validated')
+                except Exception as e:
+                    self.add_error('autopayoutiban', 'IBAN number could not be validated: {}'.format(e))
+
+        return cleaned_data
 
     @classmethod
     def validate_data_for(self, instance):
