@@ -126,7 +126,6 @@ must be exact and all fees covered by sender.
         if not self.config('canrefund'):
             raise Exception("Cannot process automatic refunds. Configuration has changed?")
 
-        print(trans.methodidentifier)
         twtrans = TransferwiseTransaction.objects.get(
             paymentmethod=trans.method,
             id=trans.methodidentifier,
