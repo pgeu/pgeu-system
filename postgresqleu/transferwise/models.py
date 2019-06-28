@@ -41,7 +41,7 @@ class TransferwiseRefund(models.Model):
 class TransferwisePayout(models.Model):
     paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
     amount = models.DecimalField(decimal_places=2, max_digits=20, null=False)
-    reference = models.CharField(max_length=100, null=False, blank=False)
+    reference = models.CharField(max_length=100, null=False, blank=False, unique=True)
     counterpart_name = models.CharField(max_length=100, blank=True, null=False)
     counterpart_account = models.CharField(max_length=100, blank=True, null=False)
     uuid = models.UUIDField(blank=False, null=False, unique=True)
@@ -51,3 +51,4 @@ class TransferwisePayout(models.Model):
     createdat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     sentat = models.DateTimeField(null=True, blank=True)
     completedat = models.DateTimeField(null=True, blank=True)
+    completedtrans = models.ForeignKey(TransferwiseTransaction, blank=True, null=True)

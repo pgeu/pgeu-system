@@ -96,6 +96,15 @@ class Command(BaseCommand):
                     # Returned payment. Nothing much to do, but we create an accounting record
                     # for it just to make things nice and clear. But first make sure we can
                     # actually find the original transaction.
+                    try:
+                        po = TransferwisePayout.objects.get(reference=trans.paymentref)
+                    except TransferwisePayout.DoesNotExist:
+                        raise Exception("Could not find transferwise payout object for {0}".format(trans.paymentref))
+
+                    po.completedat = datetime.now()
+                    po.completedtrans = trans
+                    po.save()
+
                     m = re.match('^{0} returned payment (\d+)$'.format(settings.ORG_SHORTNAME), trans.paymentref)
                     if not m:
                         raise Exception("Could not find returned transaction id in reference '{0}'".format(trans.paymentref))
