@@ -13,6 +13,7 @@ from postgresqleu.invoices.util import register_pending_bank_matcher, register_b
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.transferwise.models import TransferwiseTransaction, TransferwiseRefund
+from postgresqleu.transferwise.models import TransferwisePayout
 
 from datetime import datetime, timedelta, date
 import re
