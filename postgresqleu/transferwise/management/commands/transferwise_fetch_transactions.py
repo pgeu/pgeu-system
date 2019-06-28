@@ -129,11 +129,14 @@ class Command(BaseCommand):
                     except TransferwisePayout.DoesNotExist:
                         raise Exception("Could not find transferwise payout object for {0}".format(trans.paymentref))
 
+                    refno = int(trans.paymentref[len("TW payout "):])
+
+                    if po.amount != -(trans.amount + trans.feeamount):
+                        raise Exception("Transferwise payout {0} returned transaction with amount {1} instead of {2}".format(refno, -(trans.amount + trans.feeamount), po.amount))
+
                     po.completedat = datetime.now()
                     po.completedtrans = trans
                     po.save()
-
-                    refno = int(trans.paymentref[len("TW payout "):])
 
                     # Payout exists at TW, so proceed to generate records. If the receiving account
                     # is a managed one, create a bank matcher. Otherwise just close the record
