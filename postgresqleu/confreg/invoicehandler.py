@@ -169,8 +169,17 @@ class BulkInvoiceProcessor(object):
             # longer counted against it. Also clear out the field, in case others want to use
             # that discount code.
             if r.discountcode_set.exists():
+                # If this discountcode is in the vouchercode field, clear it.
+                dcodes = r.discountcode_set.all()
+                if len(dcodes) != 1:
+                    raise Exception("Matched {} discount codes, not 1!".format(len(dcodes)))
+                if dcodes[0].code == r.vouchercode:
+                    r.vouchercode = ''
                 r.discountcode_set.clear()
                 r.save()
+
+            # If there is still a voucher code, it must be referring to a regular voucher
+            # and not a discount code.
             if r.vouchercode:
                 # Also mark the voucher code as not used anymore
                 vc = PrepaidVoucher.objects.get(vouchervalue=r.vouchercode)
