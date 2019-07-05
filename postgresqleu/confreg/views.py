@@ -34,7 +34,7 @@ from .forms import AttendeeMailForm, WaitlistOfferForm, WaitlistSendmailForm, Tr
 from .forms import NewMultiRegForm, MultiRegInvoiceForm
 from .forms import SessionSlidesUrlForm, SessionSlidesFileForm
 from .util import invoicerows_for_registration, notify_reg_confirmed, InvoicerowsException
-from .util import get_invoice_autocancel, cancel_registration
+from .util import get_invoice_autocancel, cancel_registration, send_welcome_email
 from .util import attendee_cost_from_bulk_payment
 from .util import send_conference_mail
 
@@ -45,6 +45,7 @@ from .jinjafunc import render_jinja_conference_template
 from .jinjapdf import render_jinja_ticket
 from .backendviews import get_authenticated_conference
 from .backendforms import CancelRegistrationForm, ConfirmRegistrationForm
+from .backendforms import ResendWelcomeMailForm
 
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.random import generate_random_token
@@ -2932,6 +2933,42 @@ def admin_registration_confirm(request, urlname, regid):
         'what': 'registration',
         'cancelurl': '../',
         'savebutton': 'Confirm registration',
+    })
+
+
+@transaction.atomic
+def admin_registration_resendwelcome(request, urlname, regid):
+    conference = get_authenticated_conference(request, urlname)
+    reg = get_object_or_404(ConferenceRegistration, id=regid, conference=conference)
+
+    if not reg.payconfirmedat:
+        messages.error(request, "Registration not confirmed")
+        return HttpResponseRedirect("../")
+
+    if request.method == 'POST':
+        form = ResendWelcomeMailForm(data=request.POST)
+        if form.is_valid():
+            send_welcome_email(reg)
+            messages.info(request, "Welcome email re-sent.")
+            return HttpResponseRedirect("../")
+    else:
+        form = ResendWelcomeMailForm()
+
+    return render(request, 'confreg/admin_backend_form.html', {
+        'basetemplate': 'confreg/confadmin_base.html',
+        'conference': conference,
+        'reg': reg,
+        'form': form,
+        'helplink': 'registrations',
+        'breadcrumbs': (
+            ('/events/admin/{0}/regdashboard/'.format(urlname), 'Registration dashboard'),
+            ('/events/admin/{0}/regdashboard/list/'.format(urlname), 'Registration list'),
+            ('/events/admin/{0}/regdashboard/list/{1}/'.format(urlname, reg.id), reg.fullname),
+        ),
+        'whatverb': 'Re-send',
+        'what': 'welcome email',
+        'cancelurl': '../',
+        'savebutton': 'Re-send welcome email',
     })
 
 

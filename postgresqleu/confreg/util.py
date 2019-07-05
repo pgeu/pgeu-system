@@ -150,6 +150,34 @@ def attendee_cost_from_bulk_payment(reg):
     return (totalnovat, totalvat)
 
 
+def send_welcome_email(reg):
+    # Do we need to send the welcome email?
+    if not reg.conference.sendwelcomemail:
+        return
+
+    if reg.conference.tickets:
+        buf = BytesIO()
+        render_jinja_ticket(reg, buf, systemroot=JINJA_TEMPLATE_ROOT)
+        attachments = [
+            ('{0}_ticket.pdf'.format(reg.conference.urlname), 'application/pdf', buf.getvalue()),
+        ]
+    else:
+        attachments = None
+
+    # Ok, this attendee needs a notification. For now we don't support
+    # any string replacements in it, maybe in the future.
+    send_conference_mail(reg.conference,
+                         reg.email,
+                         "Registration complete",
+                         'confreg/mail/welcomemail.txt',
+                         {
+                             'reg': reg,
+                         },
+                         receivername=reg.fullname,
+                         attachments=attachments,
+    )
+
+
 def notify_reg_confirmed(reg, updatewaitlist=True):
     # This one was off the waitlist, so generate a history entry
     if updatewaitlist and hasattr(reg, 'registrationwaitlistentry'):
@@ -212,31 +240,7 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
                              receivername=reg.conference.conferencename,
         )
 
-    # Do we need to send the welcome email?
-    if not reg.conference.sendwelcomemail:
-        return
-
-    if reg.conference.tickets:
-        buf = BytesIO()
-        render_jinja_ticket(reg, buf, systemroot=JINJA_TEMPLATE_ROOT)
-        attachments = [
-            ('{0}_ticket.pdf'.format(reg.conference.urlname), 'application/pdf', buf.getvalue()),
-        ]
-    else:
-        attachments = None
-
-    # Ok, this attendee needs a notification. For now we don't support
-    # any string replacements in it, maybe in the future.
-    send_conference_mail(reg.conference,
-                         reg.email,
-                         "Registration complete",
-                         'confreg/mail/welcomemail.txt',
-                         {
-                             'reg': reg,
-                         },
-                         receivername=reg.fullname,
-                         attachments=attachments,
-    )
+    send_welcome_email(reg)
 
 
 def cancel_registration(reg, is_unconfirmed=False, reason=None):

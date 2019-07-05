@@ -834,6 +834,13 @@ class ConfirmRegistrationForm(django.forms.Form):
 
 
 #
+# Form for re-sending welcome email
+#
+class ResendWelcomeMailForm(django.forms.Form):
+    confirm = django.forms.BooleanField(help_text="Confirm that you want to re-send the welcome email for this registration!")
+
+
+#
 # Form for canceling a registration
 #
 class CancelRegistrationForm(django.forms.Form):
