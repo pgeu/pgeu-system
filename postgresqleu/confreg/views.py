@@ -3376,6 +3376,9 @@ def transfer_reg(request, urlname):
             wle.registration = toreg
             wle.save()
 
+        yield "Resetting registration date"
+        toreg.created = datetime.now()
+
         yield "Copying payment confirmation"
         toreg.payconfirmedat = fromreg.payconfirmedat
         toreg.payconfirmedby = "{0}(x)".format(fromreg.payconfirmedby)[:16]
