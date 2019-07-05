@@ -1,0 +1,28 @@
+{%extends "navbase.html"%}
+{%block extrahead%}
+<meta http-equiv="refresh" content="{{refresh}}">
+{%endblock%}
+{%block title%}Payment pending{%endblock%}
+{%block content%}
+<h1>Payment pending</h1>
+<p>
+Your payment is pending.
+</p>
+
+<p>
+Your payment order was registered with Stripe at {{createdat|date:"Y-m-d H:i"}}.
+We are currently awaiting status from the payment systems that the payment has
+been fully completed.
+</p>
+
+<p>
+  As soon as your payment has been completed, a receipt will be generated
+  and emailed to you automatically. You can also refresh this page to
+  follow the status of your payment.
+</p>
+
+<p>
+  If you have any questions about this payment, please feel free to
+  contact us at {{treasurer_email}}.
+</p>
+{%endblock%}

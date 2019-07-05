@@ -28,6 +28,7 @@ import postgresqleu.paypal.views
 import postgresqleu.adyen.views
 import postgresqleu.trustlypayment.views
 import postgresqleu.braintreepayment.views
+import postgresqleu.stripepayment.views
 import postgresqleu.accountinfo.views
 import postgresqleu.util.docsviews
 import postgresqleu.mailqueue.backendviews
@@ -281,6 +282,10 @@ urlpatterns.extend([
     url(r'^invoices/braintree/(\d+)/(\d+)/$', postgresqleu.braintreepayment.views.invoicepayment),
     url(r'^invoices/braintree/(\d+)/(\d+)/(\w+)/$', postgresqleu.braintreepayment.views.invoicepayment_secret),
     url(r'^p/braintree/$', postgresqleu.braintreepayment.views.payment_post),
+    url(r'^invoices/stripepay/(\d+)/(\d+)/(\w+)/$', postgresqleu.stripepayment.views.invoicepayment_secret),
+    url(r'^invoices/stripepay/(\d+)/(\d+)/(\w+)/results/$', postgresqleu.stripepayment.views.invoicepayment_results),
+    url(r'^invoices/stripepay/(\d+)/(\d+)/(\w+)/cancel/$', postgresqleu.stripepayment.views.invoicepayment_cancel),
+    url(r'^p/stripe/(\d+)/webhook/', postgresqleu.stripepayment.views.webhook),
 
     # Basic accounting system
     url(r'^accounting/$', postgresqleu.accounting.views.index),

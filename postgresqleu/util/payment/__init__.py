@@ -24,6 +24,7 @@ payment_implementations = [
     'postgresqleu.util.payment.trustly.TrustlyPayment',
     'postgresqleu.util.payment.braintree.Braintree',
     'postgresqleu.util.payment.transferwise.Transferwise',
+    'postgresqleu.util.payment.stripe.Stripe',
 ]
 
 
