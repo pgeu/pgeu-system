@@ -1,8 +1,9 @@
 from django.core.exceptions import ValidationError
-from django.core.validators import EmailValidator
+from django.core.validators import EmailValidator, RegexValidator
 from django.utils.deconstruct import deconstructible
 
 from io import BytesIO
+import re
 
 import requests
 from PIL import Image
@@ -11,6 +12,14 @@ from PIL import Image
 def validate_lowercase(value):
     if value != value.lower():
         raise ValidationError("This field must be lowercase only")
+
+
+_urlname_re = re.compile(r'^\w+\Z')
+validate_urlname = RegexValidator(
+    _urlname_re,
+    "Enter a valid urlname consisting of letters, numbers or underscore.",
+    'invalid'
+)
 
 
 class BeforeValidator(object):

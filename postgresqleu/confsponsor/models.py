@@ -10,7 +10,7 @@ from postgresqleu.confreg.models import ConferenceRegistration
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.storage import delete_inline_storage, inlineencoded_upload_path
-from postgresqleu.util.validators import validate_lowercase
+from postgresqleu.util.validators import validate_lowercase, validate_urlname
 from postgresqleu.util.random import generate_random_token
 
 from .benefits import benefit_choices
@@ -51,7 +51,8 @@ pre_delete.connect(delete_inline_storage, sender=SponsorshipContract)
 class SponsorshipLevel(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     levelname = models.CharField(max_length=100, null=False, blank=False, verbose_name="Level name")
-    urlname = models.CharField(max_length=100, null=False, blank=False, validators=[validate_lowercase, ],
+    urlname = models.CharField(max_length=100, null=False, blank=False,
+                               validators=[validate_lowercase, validate_urlname],
                                verbose_name="URL name")
     levelcost = models.IntegerField(null=False, blank=False, verbose_name="Cost")
     available = models.BooleanField(null=False, blank=False, default=True, verbose_name="Available for signup")

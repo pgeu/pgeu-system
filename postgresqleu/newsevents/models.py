@@ -1,10 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
+from postgresqleu.util.validators import validate_urlname
 
 
 class NewsPosterProfile(models.Model):
     author = models.OneToOneField(User, primary_key=True)
-    urlname = models.CharField(max_length=50, null=False, blank=False, unique=True, verbose_name="URL name")
+    urlname = models.CharField(max_length=50, null=False, blank=False, unique=True, verbose_name="URL name",
+                               validators=[validate_urlname, ])
     fullname = models.CharField(max_length=100, null=False, blank=False, verbose_name="Full name")
     canpostglobal = models.BooleanField(null=False, default=False, verbose_name="Can post global news")
 
