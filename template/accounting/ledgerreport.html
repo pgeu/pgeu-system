@@ -29,25 +29,29 @@ $(function() {
 {%block layoutblock%}
 <div class="container">
 
+{%if hasopenentries and not includeopen %}
+<div class="alert alert-warning noprint">Open entries are present but not included in the report!</div>
+{%endif%}
+
 <form class="form-inline noprint">
   <div class="form-group">
     <label for="objsel">Object:</label>
-    <select id="objsel" class="form-control"><option value="">All</option>{%for o in objects%}<option value="{{o.id}}"{%if o == currentobj%} SELECTED{%endif%}>{{o}}</option>{%endfor%}</select>
+    <select id="objsel" class="form-control"><option value="">All</option>{%for o in reportable_objects%}<option value="{{o.id}}"{%if o == currentobj%} SELECTED{%endif%}>{{o}}</option>{%endfor%}</select>
   </div>
   <div class="form-group">
     <label for="accsel">Account:</label>
     <select id="accsel" class="form-control"><option value="">All</option>{%for a in accounts%}<option value="{{a.num}}"{%if a == currentaccount%} SELECTED{%endif%}>{{a|truncatechars:20}}</option>{%endfor%}</select>
   </div>
-{%if year != -1%}
   <div class="form-group">
     <label for="enddate">End date:</label>
     <input type="text" class="datepicker" id="enddate" value="{{enddate|date:"Y-m-d"}}">
   </div>
-{%endif%}
+{%if hasopenentries%}
   <div class="form-group">
     <label for="includeopen">Include open entries</label>
     <input type="checkbox" class="form-control" id="includeopen" value="1" {%if includeopen %}CHECKED{%endif%}>
   </div>
+{%endif%}
 </form>
 
 

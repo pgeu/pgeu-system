@@ -20,9 +20,14 @@
 {%if reporttype != 'results' %}<li><a href="/accounting/{{year.year}}/report/results/" target="_blank">Results</a></li>{%endif%}
 {%if reporttype != 'balance' %}<li><a href="/accounting/{{year.year}}/report/balance/" target="_blank">Balance</a></li>{%endif%}
 {%if reporttype != 'ledger' %}<li><a href="/accounting/{{year.year}}/report/ledger/" target="_blank">General ledger</a></li>{%endif%}
+   <li role="separator" class="divider"></li>
+{%for obj in reportable_objects %}
+   <li><a href="/accounting/{{year.year}}/report/object/?obj={{obj.id}}">{{obj.name}}</a></li>
+{%endfor%}
   </ul>
 </li>
 
+{%if not suppress_years %}
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Year: {{year}} <span class="caret"></span></a>
   <ul class="dropdown-menu">
@@ -31,6 +36,7 @@
 {%endfor%}
   </ul>
 </li>
+{%endif%}
 
 <li>
   <form class="navbar-form navbar-left" role="search">

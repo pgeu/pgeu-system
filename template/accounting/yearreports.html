@@ -5,11 +5,14 @@
 {{block.super}}
 <script type="text/javascript">
 function refreshlocation() {
+      io = $('#includeopen').prop('checked') ? 1 : 0;
+{%if reporttype == 'object' %}
+      document.location.href = '/accounting/{{year.year}}/report/{{reporttype}}/?obj={{currentobj.id}}&io=' + io;
+{%else%}
       o = $('#objsel').val();
       ed = $('#enddate').val();
-      io = $('#includeopen').prop('checked') ? 1 : 0;
-
-      document.location.href = '/accounting/' + {{year.year}} + '/report/{{reporttype}}/?obj=' + o + '&ed=' + ed + '&io=' + io;
+      document.location.href = '/accounting/{{year.year}}/report/{{reporttype}}/?obj=' + o + '&ed=' + ed + '&io=' + io;
+{%endif%}
 }
 
 $(function() {
@@ -26,28 +29,41 @@ $(function() {
 {%block layoutblock%}
 <div class="container">
 
+{%if hasopenentries and not includeopen %}
+<div class="alert alert-warning noprint">Open entries are present but not included in the report!</div>
+{%endif%}
+
 <form class="form-inline noprint">
+{%if reporttype != 'object' %}
   <div class="form-group">
     <label for="objsel">Object:</label>
-    <select id="objsel" class="form-control"><option value="">All</option>{%for o in objects%}<option value="{{o.id}}"{%if o == currentobj%} SELECTED{%endif%}>{{o}}</option>{%endfor%}</select>
+    <select id="objsel" class="form-control"><option value="">All</option>{%for o in reportable_objects%}<option value="{{o.id}}"{%if o == currentobj%} SELECTED{%endif%}>{{o}}</option>{%endfor%}</select>
   </div>
-{%if year != -1%}
   <div class="form-group">
     <label for="enddate">End date:</label>
     <input type="text" class="datepicker" id="enddate" value="{{enddate|date:"Y-m-d"}}">
   </div>
 {%endif%}
+{%if hasopenentries%}
   <div class="form-group">
     <label for="includeopen">Include open entries</label>
     <input type="checkbox" class="form-control" id="includeopen" value="1" {%if includeopen %}CHECKED{%endif%}>
   </div>
+{%endif%}
 </form>
 
+{%if reporttype == 'results' and currentobj %}
+<p>
+  View cross-year <a href="/accounting/{{year.year}}/report/object/?obj={{currentobj.id}}">object report</a> for <i>{{currentobj}}</i>.
+</p>
+{%endif%}
 
 <h1>{{title}}</h1>
 
-{%if year != -1%}
+{%if reporttype != 'object' %}
 <div class="dateinfo">{{year.year}}-01-01 - {{enddate|date:"Y-m-d"}}</div>
+{%else%}
+Includes entries from {{mindate|date:"Y-m-d"}} to {{maxdate|date:"Y-m-d"}}.
 {%endif%}
 
 
