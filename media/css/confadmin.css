@@ -36,6 +36,10 @@ table.borderless tr th {
     border: none;
 }
 
+table.nonfluid {
+    width: auto !important;
+}
+
 select.colfilter {
     font-size: 0.6em;
     width: 100%;

@@ -25,7 +25,7 @@
   </div>
 {%endif%}
 {%if year.isopen and not hasopen %}
-<button onclick="document.location.href='/accounting/{{year.year}}/close/'">Close year</button>
+<a class="btn btn-default" href="/accounting/{{year.year}}/close/">Close year</a>
 {%endif%}
  </div> <!-- left -->
  <div class="col-md-9 col-lg-10 accounting-right">

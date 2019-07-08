@@ -1,44 +1,8 @@
 {%extends "accounting/accounting_base.html"%}
 {%load humanize%}
 {%block title%}Accounting - close year{%endblock%}
-{%block extrahead%}
-<script type="text/javascript" src="/media/jq/jquery-1.8.2.min.js"></script>
-<style>
-ul.messages {
-  list-style-type: none;
-  padding: 2px;
-  padding-left: 20px;
-}
-ul.messages li {
-   background-color: yellow;
-   padding: 3px;
-}
-ul.messages li.warning {
-   background-color: red;
-}
-ul.messages li.info {
-   background-color: lightgray;
-}
-div#pgContainer {
-   width: 1200px;
-}
-</style>
-<script type="text/javascript">
-function confirmCloseYear() {
-   return confirm('Are you absolutely sure you want to close this year?\n\nThere really is no going back! And you can no longer make changes to the year!\n');
-}
-</script>
-{%endblock%}
 {%block layoutblock%}
 <h1>Accounting - Close year</h1>
-
-{% if messages %}
-    <ul class="messages">
-    {% for message in messages %}
-      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-    </ul>
-{% endif %}
 
 {%if hasopen%}
 <h2>Open entries</h2>
@@ -53,7 +17,6 @@ The next year has already been assigned an incoming balance. This should
 normally never happen, so you will have to go investigate it!
 </p>
 {%else%}
-<form method="post" action=".">{% csrf_token %}
 <p>
 You are now ready to close this year.
 </p>
@@ -61,10 +24,10 @@ You are now ready to close this year.
 <p>
 The following outgoing balances will be transferred to the next year:
 </p>
-<table border="0" cellspacing="0" cellpadding="2">
+<table class="table table-striped table-bordered table-condensed nonfluid">
  <tr>
   <td><b>Account</b></td>
-  <td><b>Balance</b></td>
+  <td align="right"><b>Balance</b></td>
  </tr>
 {%for a in outgoingbalance %}
  <tr>
@@ -79,15 +42,13 @@ The following outgoing balances will be transferred to the next year:
 The results for this year is <i><b>{{yearresult}}</b></i>. This needs to be
 posted to a balance account. Choose which account to post to:
 </p>
-<select name="resultaccount">
- <option value="">Select account</option>
-{%for a in accounts%}
- <option value="{{a.num}}">{{a}}</option>
-{%endfor%}
-</select>
-<p><input type="checkbox" name="confirm">Check this box to confirm your are ready!</p>
-<input type="submit" value="Close year" onclick="return confirmCloseYear()">
-</form>
-<button onclick="document.location.href='../'">Cancel</button>
+<div class="row">
+ <div class="col-md-6">
+   <form method="post" action="." class="form">{% csrf_token %}
+{%include "confreg/admin_backend_form_content.html" with savebutton="Close year" cancelurl="../" %}
+   </form>
+ </div>
+</div>
+
 {%endif%}
 {%endblock%}

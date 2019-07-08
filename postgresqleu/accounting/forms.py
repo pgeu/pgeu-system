@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.forms.models import BaseInlineFormSet
 
 
-from .models import JournalEntry, JournalItem, Object, JournalUrl
+from .models import JournalEntry, JournalItem, Object, JournalUrl, Account
 
 
 class JournalEntryForm(forms.ModelForm):
@@ -111,3 +111,22 @@ class JournalUrlForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(JournalUrlForm, self).__init__(*args, **kwargs)
         self.fields['url'].widget.attrs['class'] = 'form-control'
+
+
+class CloseYearForm(forms.Form):
+    account = forms.ModelChoiceField(Account.objects.filter(group__accountclass__inbalance=True),
+                                     label="Balance account", required=True,
+                                     help_text="Results for this year will be posted to this account, typically 'last years profit'")
+    confirm = forms.BooleanField(label="Confirm", required=True,
+                                 help_text="Confirm that you want to close this year, transferring the results to the selected balance account")
+
+    def __init__(self, balance, *args, **kwargs):
+        super(CloseYearForm, self).__init__(*args, **kwargs)
+        self.balance = balance
+
+    def clean_account(self):
+        account = self.cleaned_data['account']
+        for b in self.balance:
+            if b['anum'] == account.num and b['outgoingamount'] != 0:
+                raise ValidationError("Account {0} has an outgoing balance of {1}, should be empty!".format(account.num, b['outgoingamount']))
+        return account

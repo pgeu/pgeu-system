@@ -14,6 +14,7 @@ from postgresqleu.util.auth import authenticate_backend_group
 from .models import JournalEntry, JournalItem, JournalUrl, Year, Object
 from .models import IncomingBalance, Account
 from .forms import JournalEntryForm, JournalItemForm, JournalItemFormset, JournalUrlForm
+from .forms import CloseYearForm
 
 
 def index(request):
@@ -342,18 +343,15 @@ SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
     yearresult = curs.fetchall()[0][0]
 
     if request.method == 'POST':
-        if not request.POST.get('confirm', None):
-            messages.warning(request, "You must check the box for confirming!")
-        elif not request.POST['resultaccount']:
-            messages.warning(request, "You must pick which account to post the results to!")
-        else:
+        form = CloseYearForm(balance, data=request.POST)
+        if form.is_valid():
             # Ok, let's do this :)
             # Create a new year if we have to
             (nextyear, created) = Year.objects.get_or_create(year=year.year + 1, defaults={'isopen': True})
 
             # Start by transferring this years result
             IncomingBalance(year=nextyear,
-                            account=Account.objects.get(num=request.POST['resultaccount']),
+                            account=form.cleaned_data['account'],
                             amount=-yearresult
                             ).save()
 
@@ -369,6 +367,8 @@ SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
             year.save()
 
             return HttpResponseRedirect('/accounting/%s/' % year.year)
+    else:
+        form = CloseYearForm(balance)
 
     return render(request, 'accounting/closeyear.html', {
         'year': year,
@@ -376,7 +376,8 @@ SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
         'hasnext': hasnext,
         'outgoingbalance': balance,
         'yearresult': yearresult,
-        'accounts': Account.objects.filter(group__accountclass__inbalance=True),
+        'form': form,
+        'years': Year.objects.all(),
     })
 
 
