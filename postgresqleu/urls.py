@@ -299,6 +299,7 @@ urlpatterns.extend([
     url(r'^admin/accounting/accountclasses/(.*/)?$', postgresqleu.accounting.backendviews.edit_accountclass),
     url(r'^admin/accounting/accountgroups/(.*/)?$', postgresqleu.accounting.backendviews.edit_accountgroup),
     url(r'^admin/accounting/accounts/(.*/)?$', postgresqleu.accounting.backendviews.edit_account),
+    url(r'^admin/accounting/objects/(.*/)?$', postgresqleu.accounting.backendviews.edit_object),
 
     # Scheduled jobs
     url(r'^admin/jobs/$', postgresqleu.scheduler.views.index),

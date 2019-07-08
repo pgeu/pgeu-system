@@ -97,6 +97,7 @@ class Object(models.Model):
 
     class Meta:
         ordering = ('name', )
+        verbose_name = 'Accounting object'
 
 
 class JournalEntry(models.Model):

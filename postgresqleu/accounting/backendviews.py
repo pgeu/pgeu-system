@@ -7,6 +7,7 @@ from postgresqleu.util.db import exec_to_dict
 from postgresqleu.accounting.backendforms import BackendAccountClassForm
 from postgresqleu.accounting.backendforms import BackendAccountGroupForm
 from postgresqleu.accounting.backendforms import BackendAccountForm
+from postgresqleu.accounting.backendforms import BackendObjectForm
 
 
 def edit_accountclass(request, rest):
@@ -41,6 +42,19 @@ def edit_account(request, rest):
     return backend_list_editor(request,
                                None,
                                BackendAccountForm,
+                               rest,
+                               bypass_conference_filter=True,
+                               topadmin='Accounting',
+                               return_url='/admin/',
+    )
+
+
+def edit_object(request, rest):
+    authenticate_backend_group(request, 'Accounting managers')
+
+    return backend_list_editor(request,
+                               None,
+                               BackendObjectForm,
                                rest,
                                bypass_conference_filter=True,
                                topadmin='Accounting',

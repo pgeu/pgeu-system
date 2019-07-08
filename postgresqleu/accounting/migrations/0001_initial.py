@@ -97,6 +97,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'ordering': ('name',),
+                'verbose_name': 'Accounting object'
             },
         ),
         migrations.CreateModel(

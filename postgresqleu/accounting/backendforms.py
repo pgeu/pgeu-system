@@ -1,6 +1,6 @@
 from postgresqleu.util.backendforms import BackendForm
 
-from postgresqleu.accounting.models import Account, AccountGroup, AccountClass
+from postgresqleu.accounting.models import Account, AccountGroup, AccountClass, Object
 
 
 class BackendAccountClassForm(BackendForm):
@@ -28,3 +28,12 @@ class BackendAccountForm(BackendForm):
     class Meta:
         model = Account
         fields = ['num', 'name', 'group', 'availableforinvoicing', 'objectrequirement', ]
+
+
+class BackendObjectForm(BackendForm):
+    helplink = 'accounting'
+    list_fields = ['name', 'active', ]
+
+    class Meta:
+        model = Object
+        fields = ['name', 'active', ]
