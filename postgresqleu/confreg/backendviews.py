@@ -467,8 +467,8 @@ def tokendata(request, urlname, token, datatype, dataformat):
         writer.columns(headers, True)
         writer.write_rows(data)
     elif datatype == 'addopts':
-        writer.columns(['Option', 'Confirmed', 'Unconfirmed', 'Remaining'])
-        writer.write_query("SELECT ao.name, count(payconfirmedat) AS confirmed, count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed, CASE WHEN maxcount>0 THEN maxcount ELSE NULL END-count(r.id) AS remaining FROM confreg_conferenceadditionaloption ao LEFT JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceadditionaloption_id=ao.id LEFT JOIN confreg_conferenceregistration r ON r.id=rao.conferenceregistration_id WHERE ao.conference_id=%(confid)s GROUP BY ao.id ORDER BY ao.name", {'confid': conference.id})
+        writer.columns(['sysid', 'Option', 'Confirmed', 'Unconfirmed', 'Remaining'])
+        writer.write_query("SELECT ao.id, ao.name, count(payconfirmedat) AS confirmed, count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed, CASE WHEN maxcount>0 THEN maxcount ELSE NULL END-count(r.id) AS remaining FROM confreg_conferenceadditionaloption ao LEFT JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceadditionaloption_id=ao.id LEFT JOIN confreg_conferenceregistration r ON r.id=rao.conferenceregistration_id WHERE ao.conference_id=%(confid)s GROUP BY ao.id ORDER BY ao.name", {'confid': conference.id})
     else:
         raise Http404()
 
