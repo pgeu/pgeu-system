@@ -91,7 +91,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('levelname', models.CharField(max_length=100, verbose_name='Level name')),
-                ('urlname', models.CharField(max_length=100, validators=[postgresqleu.util.validators.validate_lowercase], verbose_name='URL name')),
+                ('urlname', models.CharField(max_length=100, validators=[postgresqleu.util.validators.validate_lowercase, postgresqleu.util.validators.validate_urlname], verbose_name='URL name')),
                 ('levelcost', models.IntegerField(verbose_name="Cost")),
                 ('available', models.BooleanField(default=True, verbose_name='Available for signup')),
                 ('instantbuy', models.BooleanField(default=False, verbose_name="Instant buy available")),

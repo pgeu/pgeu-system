@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
+import postgresqleu.util.validators
 
 
 class Migration(migrations.Migration):
@@ -19,7 +20,7 @@ class Migration(migrations.Migration):
             name='NewsPosterProfile',
             fields=[
                 ('author', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL)),
-                ('urlname', models.CharField(max_length=50, unique=True, verbose_name="URL name")),
+                ('urlname', models.CharField(max_length=50, unique=True, verbose_name="URL name", validators=[postgresqleu.util.validators.validate_urlname])),
                 ('fullname', models.CharField(max_length=100, verbose_name="Full name")),
                 ('canpostglobal', models.BooleanField(default=False, verbose_name="Can post global news")),
             ],

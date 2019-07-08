@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
             name='Conference',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('urlname', models.CharField(unique=True, max_length=32, validators=[postgresqleu.util.validators.validate_lowercase, django.core.validators.validate_slug], verbose_name='URL name')),
+                ('urlname', models.CharField(unique=True, max_length=32, validators=[postgresqleu.util.validators.validate_lowercase, postgresqleu.util.validators.validate_urlname], verbose_name='URL name')),
                 ('conferencename', models.CharField(max_length=64, verbose_name='Conference name')),
                 ('startdate', models.DateField(verbose_name='Start date')),
                 ('enddate', models.DateField(verbose_name='End date')),
