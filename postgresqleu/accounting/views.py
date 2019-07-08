@@ -1,4 +1,4 @@
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404
@@ -65,7 +65,18 @@ class EntryPaginator(Paginator):
 def year(request, year):
     authenticate_backend_group(request, 'Accounting managers')
 
-    year = get_object_or_404(Year, year=int(year))
+    try:
+        year = Year.objects.get(year=int(year))
+    except Year.DoesNotExist:
+        # Year does not exist, but what do we do about it?
+        if int(year) == date.today().year:
+            # For current year, we automatically create the year and move on
+            year = Year(year=int(year), isopen=True)
+            year.save()
+            messages.info(request, "Year {} did not exist in the system, but since it's the current year it has now been created.".format(year.year))
+        else:
+            return HttpResponse("Year {} does not exist in the system, and is not current year.".format(int(year)))
+
     if 'search' in request.GET:
         _setup_search(request, request.GET['search'])
         return HttpResponseRedirect('/accounting/%s/' % year.year)

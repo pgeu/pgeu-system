@@ -8,6 +8,8 @@ from django.conf import settings
 
 from decimal import Decimal
 
+from postgresqleu.mailqueue.util import send_simple_mail
+
 from .models import JournalEntry, JournalItem, JournalUrl
 from .models import Object, Account, Year
 
@@ -48,8 +50,25 @@ def create_accounting_entry(date,
         try:
             year = Year.objects.get(year=date.year)
         except Year.DoesNotExist:
-            raise AccountingException("Year %s does not exist in the accounting system!" % date.year)
+            # If the year simply doesn't exist, we create one and send an alert about it.
+            # This will handle the case of automated entries showing up very early in the year when
+            # nobody has had time to deal with it manually yet.
+            year = Year(year=date.year, isopen=True)
+            year.save()
+
+            send_simple_mail(
+                settings.TREASURER_EMAIL,
+                settings.TREASURER_EMAIL,
+                "Accounting year {} created".format(year.year),
+                """An accounting entry for non-existing year {0} arrived,
+so the year was automatically created and the entry added.
+
+If this is in error, you will have to go remove the entry
+and the year manually!
+""".format(year.year),
+            )
         if not year.isopen:
+            # If the year exists but is closed, then it's actually an error.
             raise AccountingException("Year %s is not open for new entries!" % date.year)
         seq = JournalEntry.objects.filter(year=year).aggregate(Max('seq'))['seq__max']
         if seq is None:
