@@ -41,7 +41,7 @@ form input[type=submit] {
 {%endblock%}
 {%block content%}
 {% if messages %}
-<ul style="background-color: yellow;">
+<ul style="background-color: yellow;" class="regdashboardmessage">
     {% for message in messages %}
     <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
     {% endfor %}
