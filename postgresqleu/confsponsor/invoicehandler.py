@@ -57,7 +57,7 @@ class InvoiceProcessor(object):
         send_simple_mail(conference.sponsoraddr,
                          conference.sponsoraddr,
                          "Confirmed sponsor: %s" % sponsor.name,
-                         "The sponsor\n%s\nhas completed payment of the sponsorship invoice,\nand is now activated.\nBenefits are not claimed yet." % sponsor.name,
+                         "The sponsor\n%s\nhas completed payment of the sponsorship invoice,\nfor level %s and is now activated.\nBenefits are not claimed yet." % (sponsor.name, sponsor.level),
                          sendername=conference.conferencename)
 
     # An invoice was canceled.
