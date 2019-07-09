@@ -176,8 +176,11 @@ OAUTH = {}
 GLOBAL_LOGIN_USER = ''
 GLOBAL_LOGIN_PASSWORD = ''
 
-# Email to send info about scheduled jos to
+# Email to send info about scheduled jobs to
 SCHEDULED_JOBS_EMAIL = DEFAULT_EMAIL
+
+# Email to send info about scheduled jobs from
+# SCHEDULED_JOBS_EMAIL_SENDER = DEFAULT_EMAIL
 
 # Treasurer email address. This is only used as pass-through to templates for
 # end-user reference, and never actually by the system to send and receive.
@@ -258,3 +261,6 @@ if ENABLE_ELECTIONS:
 
 if 'INVOICE_NOTIFICATION_RECEIVER' not in globals():
     INVOICE_NOTIFICATION_RECEIVER = INVOICE_SENDER_EMAIL
+
+if 'SCHEDULED_JOBS_EMAIL_SENDER' not in globals():
+    SCHEDULED_JOBS_EMAIL_SENDER = SCHEDULED_JOBS_EMAIL

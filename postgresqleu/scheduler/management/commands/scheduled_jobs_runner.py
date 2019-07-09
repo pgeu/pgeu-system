@@ -235,7 +235,7 @@ class Command(BaseCommand):
 
     def send_notification_email(self, subject, contents):
         send_simple_mail(
-            settings.SCHEDULED_JOBS_EMAIL,
+            settings.SCHEDULED_JOBS_EMAIL_SENDER,
             settings.SCHEDULED_JOBS_EMAIL,
             subject,
             contents,
