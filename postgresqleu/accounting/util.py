@@ -57,8 +57,8 @@ def create_accounting_entry(date,
             year.save()
 
             send_simple_mail(
-                settings.TREASURER_EMAIL,
-                settings.TREASURER_EMAIL,
+                settings.INVOICE_SENDER_EMAIL,
+                settings.INVOICE_SENDER_EMAIL,
                 "Accounting year {} created".format(year.year),
                 """An accounting entry for non-existing year {0} arrived,
 so the year was automatically created and the entry added.

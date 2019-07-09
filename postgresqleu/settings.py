@@ -174,7 +174,8 @@ GLOBAL_LOGIN_PASSWORD = ''
 # Email to send info about scheduled jos to
 SCHEDULED_JOBS_EMAIL = DEFAULT_EMAIL
 
-# Treasurer email address
+# Treasurer email address. This is only used as pass-through to templates for
+# end-user reference, and never actually by the system to send and receive.
 TREASURER_EMAIL = DEFAULT_EMAIL
 
 # Twitter application keys

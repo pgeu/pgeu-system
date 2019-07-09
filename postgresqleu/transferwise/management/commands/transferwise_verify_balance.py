@@ -59,7 +59,7 @@ class Command(BaseCommand):
 
         if accounting_balance + pending != tw_balance:
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-                             settings.TREASURER_EMAIL,
+                             pm.config('notification_receiver'),
                              'TransferWise balance mismatch!',
                              """TransferWise balance ({0}) for {1} does not match the accounting system ({2})!
 
@@ -98,7 +98,7 @@ Better go check manually!
                 payout.save()
 
                 send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-                                 settings.TREASURER_EMAIL,
+                                 pm.config('notification_receiver'),
                                  'TransferWise payout triggered',
                                  """TransferWise balance ({0}) for {1} exceeded {2}.
 An automatic payout of {3} has been initiated, bringing the
