@@ -29,7 +29,7 @@ from .forms import ConferenceRegistrationForm, RegistrationChangeForm, Conferenc
 from .forms import ConferenceFeedbackForm, SpeakerProfileForm
 from .forms import CallForPapersForm
 from .forms import CallForPapersCopyForm, PrepaidCreateForm
-from .forms import EmailSendForm, EmailSessionForm, CrossConferenceMailForm
+from .forms import CrossConferenceMailForm
 from .forms import AttendeeMailForm, WaitlistOfferForm, WaitlistSendmailForm, TransferRegForm
 from .forms import NewMultiRegForm, MultiRegInvoiceForm
 from .forms import SessionSlidesUrlForm, SessionSlidesFileForm

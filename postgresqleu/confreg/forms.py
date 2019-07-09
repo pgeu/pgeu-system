@@ -645,42 +645,6 @@ class PrepaidCreateForm(forms.Form):
             del self.fields['confirm']
 
 
-class EmailSendForm(forms.Form):
-    ids = forms.CharField(label="List of id's", widget=forms.widgets.HiddenInput())
-    returnurl = forms.CharField(label="Return url", widget=forms.widgets.HiddenInput())
-    sender = forms.EmailField(label="Sending email")
-    subject = forms.CharField(label="Subject", min_length=10)
-    text = forms.CharField(label="Email text", min_length=50, widget=forms.Textarea)
-    confirm = forms.BooleanField(help_text="Confirm that you really want to send this email! Double and triple check the text and sender!")
-
-    def __init__(self, *args, **kwargs):
-        super(EmailSendForm, self).__init__(*args, **kwargs)
-        self.fields['ids'].widget.attrs['readonly'] = True
-        readytogo = False
-        if self.data and 'ids' in self.data and 'sender' in self.data and 'subject' in self.data and 'text' in self.data:
-            if len(self.data['ids']) > 1 and len(self.data['sender']) > 5 and len(self.data['subject']) > 10 and len(self.data['text']) > 50:
-                readytogo = True
-        if not readytogo:
-            del self.fields['confirm']
-
-
-class EmailSessionForm(forms.Form):
-    sender = forms.EmailField(label="Sending email")
-    subject = forms.CharField(label="Subject", min_length=10)
-    returnurl = forms.CharField(label="Return url", widget=forms.widgets.HiddenInput(), required=False)
-    text = forms.CharField(label="Email text", min_length=50, widget=forms.Textarea)
-    confirm = forms.BooleanField(help_text="Confirm that you really want to send this email! Double and triple check the text and sender!")
-
-    def __init__(self, *args, **kwargs):
-        super(EmailSessionForm, self).__init__(*args, **kwargs)
-        readytogo = False
-        if self.data and 'sender' in self.data and 'subject' in self.data and 'text' in self.data:
-            if len(self.data['sender']) > 5 and len(self.data['subject']) > 10 and len(self.data['text']) > 50:
-                readytogo = True
-        if not readytogo:
-            del self.fields['confirm']
-
-
 class AttendeeMailForm(forms.ModelForm):
     confirm = forms.BooleanField(label="Confirm", required=False)
 

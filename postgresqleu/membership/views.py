@@ -13,7 +13,6 @@ from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
-from postgresqleu.confreg.forms import EmailSendForm
 from postgresqleu.mailqueue.util import send_simple_mail
 
 from datetime import date, datetime, timedelta
