@@ -79,7 +79,7 @@ class WikipageHistory(models.Model):
     publishedat = models.DateTimeField(null=False, blank=False)
     contents = models.TextField(null=False, blank=False)
 
-    _safe_attributes = ('id', 'author', 'page', 'publishedat', 'contents', 'org_name', 'treasurer_email')
+    _safe_attributes = ('id', 'author', 'page', 'publishedat', 'contents')
 
     class Meta:
         ordering = ('-publishedat',)
@@ -156,7 +156,7 @@ class AttendeeSignup(models.Model):
     choice = models.CharField(max_length=100, null=False, blank=True)
     saved = models.DateTimeField(null=False, blank=False, auto_now=True)
 
-    _safe_attributes = ('choice', 'org_name', 'saved', 'treasurer_email')
+    _safe_attributes = ('choice', 'saved', )
 
     class Meta:
         unique_together = (
