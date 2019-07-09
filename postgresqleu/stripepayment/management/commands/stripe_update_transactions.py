@@ -9,6 +9,7 @@ from django.conf import settings
 
 from datetime import time, datetime, timedelta
 
+from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.stripepayment.models import StripeCheckout
 from postgresqleu.stripepayment.util import process_stripe_checkout
 
