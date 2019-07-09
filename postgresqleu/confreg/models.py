@@ -200,7 +200,7 @@ class Conference(models.Model):
 
     # Attributes that are safe to access in jinja templates
     _safe_attributes = ('active', 'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
-                        'callforpapersintro', 'callforpapersopen', 'callforpaperstags',
+                        'callforpapersintro', 'callforpapersopen', 'callforpaperstags', 'allowedit',
                         'conferencefeedbackopen', 'confurl', 'contactaddr', 'tickets',
                         'conferencedatestr', 'location', 'welcomemail',
                         'feedbackopen', 'skill_levels', 'urlname', 'conferencename')
