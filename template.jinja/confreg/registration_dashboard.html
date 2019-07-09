@@ -212,7 +212,11 @@ to change anything other than this, please contact the conference organizers.
     </div>
   </div>
   {%endfor%}
-<input type="submit" value="Update registration">
+<div class="regwrap">
+ <div class="regleft">
+  <input type="submit" value="Update registration">
+ </div>
+</div>
 </form>
 {%endif%}
 
@@ -252,7 +256,11 @@ registration being mutually exclusive.
 <input type="checkbox" name="ao_{{o.id}}" value="1" /> {{o}}<br/>
 {%endfor%}
 <br/>
+<div class="regwrap">
+  <div class="regleft">
 <input type="submit" value="Register for additional options">
+  </div>
+</div>
 </form>
 {%endif%}
 
