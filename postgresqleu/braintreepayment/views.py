@@ -68,9 +68,7 @@ def payment_post(request):
             # We'll just throw the "processing error" page, and have
             # the operator deal with the complaints as this is a
             # should-never-happen scenario.
-            return render(request, 'braintreepayment/processing_error.html', {
-                'contact': settings.INVOICE_SENDER_EMAIL,
-            })
+            return render(request, 'braintreepayment/processing_error.html')
 
         with transaction.atomic():
             # Flag the invoice as paid
@@ -95,9 +93,7 @@ def payment_post(request):
                                  'Exception occurred processing Braintree result',
                                  "An exception occured processing the payment result for {0}:\n\n{1}\n".format(trans.id, ex))
 
-                return render(request, 'braintreepayment/processing_error.html', {
-                    'contact': settings.INVOICE_SENDER_EMAIL,
-                })
+                return render(request, 'braintreepayment/processing_error.html')
 
             # Create a braintree transaction - so we can update it later when the transaction settles
             bt = BraintreeTransaction(transid=trans.id,
