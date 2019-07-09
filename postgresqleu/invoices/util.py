@@ -263,7 +263,7 @@ class InvoiceWrapper(object):
             pdfdata = [(pdfname, 'application/pdf', base64.b64decode(pdfcontents)), ]
 
         if bcc:
-            bcclist = [settings.INVOICE_SENDER_EMAIL, ]
+            bcclist = [settings.INVOICE_NOTIFICATION_RECEIVER, ]
         else:
             bcclist = []
         if self.invoice.extra_bcc_list:
@@ -691,7 +691,7 @@ class InvoiceManager(object):
 
         if not silent:
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-                             settings.INVOICE_SENDER_EMAIL,
+                             settings.INVOICE_NOTIFICATION_RECEIVER,
                              "Invoice {0} automatically extended".format(invoice.id),
                              """The invoice with id {0} has had it's automatic cancel time extended
 from {1} to {2}.
@@ -757,7 +757,7 @@ def automatch_bank_transaction_rule(trans, matcher):
         # Flag the journal entry as closed since this transaction now arrived
         if matcher.journalentry.closed:
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-                             settings.INVOICE_SENDER_EMAIL,
+                             settings.INVOICE_NOTIFICATION_RECEIVER,
                              "Bank payment pattern match for closed entry received",
                              "A bank tranksaction of {0}{1} with text\n{2}\nmatched journal entry {3}, but this entry was already closed!\n\nNeeds manual examination!".format(
                                  trans.amount,
@@ -874,7 +874,7 @@ def register_bank_transaction(method, methodidentifier, amount, transtext, sende
 
             # On success, send a notification
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-                             settings.INVOICE_SENDER_EMAIL,
+                             settings.INVOICE_NOTIFICATION_RECEIVER,
                              "Bank transfer payment confirmed",
                              "A bank transfer payment from {0} matched an invoice.\nInvoice: {1}\nAmount: {2}\nRecipient name: {3}\nRecipient user: {4}\n".format(
                                  method.internaldescription,

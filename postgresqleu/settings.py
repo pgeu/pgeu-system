@@ -113,8 +113,13 @@ INSTALLED_APPS = [
     'postgresqleu.membership',
 ]
 
-# Emails
+# Email address used to send emails from the invoice system, or other
+# parts of the "finance" system.
 INVOICE_SENDER_EMAIL = DEFAULT_EMAIL
+
+# Email address that receives notifications from the invoice system, or
+# other parts of the "finance" system.
+# INVOICE_NOTIFICATION_RECEIVER = DEFAULT_EMAIL
 
 
 # Currency parameter
@@ -250,3 +255,6 @@ if ENABLE_MEMBERSHIP:
 
 if ENABLE_ELECTIONS:
     INSTALLED_APPS.append('postgresqleu.elections')
+
+if 'INVOICE_NOTIFICATION_RECEIVER' not in globals():
+    INVOICE_NOTIFICATION_RECEIVER = INVOICE_SENDER_EMAIL

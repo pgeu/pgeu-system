@@ -31,7 +31,7 @@ class Command(BaseCommand):
         if trans:
             send_simple_mail(
                 settings.INVOICE_SENDER_EMAIL,
-                settings.INVOICE_SENDER_EMAIL,
+                settings.INVOICE_NOTIFICATION_RECEIVER,
                 "Pending bank transactions present",
                 """There are currently {0} bank transactions that have been pending for more than 24 hours.
 This means transactions that were not matched to any invoice or

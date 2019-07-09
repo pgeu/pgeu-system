@@ -63,7 +63,7 @@ class Command(BaseCommand):
                                                       issued__lt=datetime.now() - timedelta(days=3))
         if stalledrefunds:
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-                             settings.INVOICE_SENDER_EMAIL,
+                             settings.INVOICE_NOTIFICATION_RECEIVER,
                              "Stalled invoice refunds",
                              """One or more invoice refunds appear to be stalled.
 These refunds have been issued to the provider, but no confirmation has
