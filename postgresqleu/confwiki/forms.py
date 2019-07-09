@@ -140,7 +140,7 @@ class SignupSendmailForm(forms.Form):
     recipients = forms.ChoiceField(required=True)
     confirm = forms.BooleanField(required=True)
 
-    def __init__(self, additional_choices, *args, **kwargs):
+    def __init__(self, conference, additional_choices, *args, **kwargs):
         if 'num' in kwargs:
             self.num = kwargs['num']
             del kwargs['num']
@@ -151,6 +151,7 @@ class SignupSendmailForm(forms.Form):
 
         self.recipient_choices = self._recipient_choices + additional_choices
         self.fields['recipients'].choices = self.recipient_choices
+        self.fields['subject'].help_text = "Subject will be prefixed with <b>[{0}]</b>".format(conference.conferencename)
 
         if 'data' in kwargs:
             # This is a re-post of the form.

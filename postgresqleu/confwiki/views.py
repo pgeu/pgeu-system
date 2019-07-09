@@ -487,14 +487,14 @@ def signup_admin_sendmail(request, urlname, signupid):
 
         numtosend = exec_to_scalar("SELECT count(*) {0}".format(qq), params)
 
-        form = SignupSendmailForm(additional_choices, data=request.POST, num=numtosend)
+        form = SignupSendmailForm(conference, additional_choices, data=request.POST, num=numtosend)
         if form.is_valid():
             towhat = next(v for k, v in form.recipient_choices if k == rr)
             recipients = exec_to_list("SELECT firstname || ' ' || lastname, email {0}".format(qq), params)
             for n, e in recipients:
                 send_simple_mail(conference.contactaddr,
                                  e,
-                                 form.cleaned_data['subject'],
+                                 "[{0}] {1}".format(conference.conferencename, form.cleaned_data['subject']),
                                  "{0}\n\nTo view the signup, please see {1}/events/{2}/register/signup/{3}/".format(
                                      form.cleaned_data['body'],
                                      settings.SITEBASE, conference.urlname, signup.id),
@@ -518,7 +518,7 @@ def signup_admin_sendmail(request, urlname, signupid):
             if signup.public and rr == 'all':
                 messages.warning(request, "Since this is a public signup and you are sending to all attendees, you should probably consider using regular mail send instead of signup mail send, so it gets delivered to future attendees as well!")
     else:
-        form = SignupSendmailForm(additional_choices)
+        form = SignupSendmailForm(conference, additional_choices)
         numtosend = None
 
     return render(request, 'confwiki/signup_sendmail_form.html', {
