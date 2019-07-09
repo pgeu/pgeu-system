@@ -195,10 +195,16 @@ invoices and receipts in the <a href="/invoices/">invoice section</a>.
 
 {%if changeform%}
 <h2>Change your registration</h2>
+{% if conference.allowedit %}
 <p>
 A limited number of fields on your registration can be changed. If you need
 to change anything other than this, please contact the conference organizers.
 </p>
+{%else%}
+<p>
+Your registration can no longer be modified.
+</p>
+{%endif%}
 {%if changeform.non_field_errors()%}{{changeform.non_field_errors()}}{%endif%}
 <form method="post" action="{{redir_root}}change/">{{ csrf_input }}
   {%for f in changeform %}
@@ -212,11 +218,13 @@ to change anything other than this, please contact the conference organizers.
     </div>
   </div>
   {%endfor%}
+{%if conference.allowedit %}
 <div class="regwrap">
  <div class="regleft">
   <input type="submit" value="Update registration">
  </div>
 </div>
+{%endif%}
 </form>
 {%endif%}
 
