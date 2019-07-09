@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
-from postgresqleu.util.widgets import EmailTextWidget
+from postgresqleu.util.widgets import EmailTextWidget, MonospaceTextarea
 
 from postgresqleu.confreg.models import RegistrationType, ConferenceRegistration
 from .models import Wikipage, Signup, AttendeeSignup
@@ -16,6 +16,8 @@ class WikipageEditForm(ConcurrentProtectedModelForm):
 
 
 class WikipageAdminEditForm(ConcurrentProtectedModelForm):
+    selectize_multiple_fields = ['author', 'viewer_regtype', 'editor_regtype', 'viewer_attendee', 'editor_attendee']
+
     def __init__(self, *args, **kwargs):
         super(WikipageAdminEditForm, self).__init__(*args, **kwargs)
         self.fields['author'].queryset = ConferenceRegistration.objects.filter(conference=self.instance.conference)
@@ -30,6 +32,9 @@ class WikipageAdminEditForm(ConcurrentProtectedModelForm):
     class Meta:
         model = Wikipage
         exclude = ['conference', ]
+        widgets = {
+            'contents': MonospaceTextarea,
+        }
 
 
 class SignupSubmitForm(forms.Form):
@@ -78,6 +83,8 @@ class SignupSubmitForm(forms.Form):
 
 
 class SignupAdminEditForm(ConcurrentProtectedModelForm):
+    selectize_multiple_fields = ['author', 'regtypes', 'attendees']
+
     def __init__(self, *args, **kwargs):
         super(SignupAdminEditForm, self).__init__(*args, **kwargs)
         self.fields['author'].queryset = ConferenceRegistration.objects.filter(conference=self.instance.conference)

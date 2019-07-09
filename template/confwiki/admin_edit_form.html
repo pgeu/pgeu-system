@@ -4,18 +4,6 @@
 <script type="text/javascript" src="/media/js/selectize.min.js"></script>
 <link rel="stylesheet" href="/media/css/selectize.css" />
 <link rel="stylesheet" href="/media/css/selectize.default.css" />
-<style>
-tr.error {
-   background-color: #ffb6b6;
-}
-table.pageform tr {
-   vertical-align: top;
-}
-table.pageform input[type=text],textarea,select {
-   width: 500px;
-}
-</style>
-
 <script type="text/javascript">
 $(function() {
    $('#id_author').selectize();
@@ -35,11 +23,10 @@ history. Instead, they will be emailed to the conference list.
 <a href="/events/{{conference.urlname}}/register/wiki/{{page.url}}/">regular editor</a>.
 </p>
 
-<form method="post" action=".">{%csrf_token%}
-<table class="pageform">
-{{form}}
-</table>
-<input type="submit" value="Save">
+<form method="post" action="." class="form-horizontal">{%csrf_token%}
+{%include "confreg/admin_backend_form_content.html" %}
 </form>
+
+<a class="btn btn-default btn-block" href="../">Back</a>
 
 {%endblock%}

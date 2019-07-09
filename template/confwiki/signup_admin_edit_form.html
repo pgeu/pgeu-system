@@ -4,43 +4,16 @@
 <script type="text/javascript" src="/media/js/selectize.min.js"></script>
 <link rel="stylesheet" href="/media/css/selectize.css" />
 <link rel="stylesheet" href="/media/css/selectize.default.css" />
-<style>
-tr.error {
-   background-color: #ffb6b6;
-}
-table.signupform tr {
-   vertical-align: top;
-}
-table.signupform th, td {
-   padding: 5px;
-}
-table.signupform input[type=text],textarea,select {
-   width: 500px;
-}
-table.signupresults {
-   border-spacing: 1px;
-}
-table.signupresults th, td {
-   padding: 5px;
-}
-table.signupdetails {
-   border-spacing: 1px;
-}
-table.signupdetails th, td {
-   padding: 5px;
-}
-table.signupresponse {
-   border-spacing: 1px;
-}
-table.signupresponse th, td {
-   padding: 5px;
-}
-</style>
 
 <script type="text/javascript">
 $(function() {
    $('#id_author').selectize();
-   $('#id_regtypes, #id_attendees').selectize({plugins: ['remove_button']});
+   $('#id_regtypes, #id_attendees').selectize({
+      plugins: ['remove_button'],
+      valueField: 'id',
+      labelField: 'value',
+      searchField: 'value'
+   });
 });
 
 </script>
@@ -49,15 +22,12 @@ $(function() {
 {%block layoutblock%}
 <h1>Signup: {{signup.title}}</h1>
 
-<p>Current <a href="#results">results</a>.</p>
+<a class="btn btn-default btn-block" href="#results">View current results</a>
+<br/><br/>
 
-<form method="post" action=".">{%csrf_token%}
-<table class="signupform">
-{{form}}
-</table>
-<input type="submit" value="Save" class="btn btn-default">
+<form method="post" action="." class="form-horizontal">{%csrf_token%}
+{%include "confreg/admin_backend_form_content.html"%}
 </form>
-<br/>
 
 <p>
  <a class="btn btn-default" href="sendmail/">Send email</a>
@@ -66,7 +36,7 @@ $(function() {
 <a name="results"></a>
 <h2>Current results</h2>
 <h3>Summary</h3>
-<table border="0" class="signupresults">
+<table class="table table-striped table-condensed">
  <tr>
   <th>Choice</th>
   <th>Count</th>
@@ -76,7 +46,7 @@ $(function() {
  <tr>
   <td>{{r.choice}}</td>
   <td>{{r.num}}</td>
-  <td><div style="background-color: blue; width: {{r.percentwidth}}px; display:inline-block; height: 1em;"></div></td>
+  <td><div style="background-color: blue; width: {{r.percentwidth}}px; display:inline-block; height: 1em;" title="{{r.percent}}%"></div></td>
  </tr>
 {%endfor%}
 </table>
@@ -85,11 +55,12 @@ $(function() {
 {%endif%}
 
 <h3>Details</h3>
-<table border="0" class="signupdetails">
+<table class="table table-striped table-condensed">
  <tr>
   <th>Name</th>
   <th>Choice</th>
   <th>Time</th>
+  <th></th>
  </tr>
 {%for r in results.details %}
  <tr>
@@ -119,8 +90,6 @@ $(function() {
 
 {%endif%}
 
-<p>
 <br/><br/>
-<a href="../">Back</a> to list.
-</p>
+<a class="btn btn-default btn-block" href="../">Back</a>
 {%endblock%}

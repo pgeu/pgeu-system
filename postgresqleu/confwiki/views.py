@@ -368,11 +368,11 @@ def signup_admin_edit(request, urlname, signupid):
         # a summary.
         results = {}
         cursor = connection.cursor()
-        cursor.execute("WITH t AS (SELECT choice, count(*) AS num FROM confwiki_attendeesignup WHERE signup_id=%(signup)s GROUP BY choice) SELECT choice, num, CAST(num*100*4/sum(num) OVER () AS integer) FROM t ORDER BY 2 DESC", {
+        cursor.execute("WITH t AS (SELECT choice, count(*) AS num FROM confwiki_attendeesignup WHERE signup_id=%(signup)s GROUP BY choice) SELECT choice, num, CAST(num*100/sum(num) OVER () AS integer), CAST(num*100*4/sum(num) OVER () AS integer) FROM t ORDER BY 2 DESC", {
             'signup': signup.id,
         })
         sumresults = cursor.fetchall()
-        results['summary'] = [dict(list(zip(['choice', 'num', 'percentwidth'], r))) for r in sumresults]
+        results['summary'] = [dict(list(zip(['choice', 'num', 'percent', 'percentwidth'], r))) for r in sumresults]
         cursor.execute("SELECT s.id, firstname || ' ' || lastname,choice,saved FROM confreg_conferenceregistration r INNER JOIN confwiki_attendeesignup s ON r.id=s.attendee_id WHERE s.signup_id=%(signup)s ORDER BY saved", {
             'signup': signup.id,
         })
@@ -381,7 +381,7 @@ def signup_admin_edit(request, urlname, signupid):
             optionstrings = signup.options.split(',')
             optionvalues = [int(x) for x in signup.optionvalues.split(',')]
             totalvalues = 0
-            for choice, num, width in sumresults:
+            for choice, num, percent, width in sumresults:
                 totalvalues += num * optionvalues[optionstrings.index(choice)]
             results['totalvalues'] = totalvalues
 
