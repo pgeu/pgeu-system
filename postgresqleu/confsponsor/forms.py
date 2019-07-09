@@ -14,7 +14,7 @@ from postgresqleu.countries.models import EuropeCountry
 from postgresqleu.confreg.models import ConferenceAdditionalOption
 from postgresqleu.util.validators import BeforeValidator, AfterValidator, TwitterValidator
 from postgresqleu.util.validators import Http200Validator
-from postgresqleu.util.widgets import Bootstrap4CheckboxSelectMultiple
+from postgresqleu.util.widgets import Bootstrap4CheckboxSelectMultiple, EmailTextWidget
 from postgresqleu.util.widgets import Bootstrap4HtmlDateTimeInput
 
 from datetime import date, timedelta
@@ -101,6 +101,9 @@ class SponsorSendEmailForm(forms.ModelForm):
     class Meta:
         model = SponsorMail
         exclude = ('conference', )
+        widgets = {
+            'message': EmailTextWidget(),
+        }
 
     def __init__(self, conference, sendto, *args, **kwargs):
         self.conference = conference

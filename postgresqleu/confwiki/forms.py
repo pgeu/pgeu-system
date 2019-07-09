@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
+from postgresqleu.util.widgets import EmailTextWidget
 
 from postgresqleu.confreg.models import RegistrationType, ConferenceRegistration
 from .models import Wikipage, Signup, AttendeeSignup
@@ -128,7 +129,7 @@ class SignupSendmailForm(forms.Form):
     ]
 
     subject = forms.CharField(max_length=100, required=True)
-    body = forms.CharField(widget=forms.widgets.Textarea, required=True)
+    body = forms.CharField(widget=EmailTextWidget, required=True)
     recipients = forms.ChoiceField(required=True)
     confirm = forms.BooleanField(required=True)
 

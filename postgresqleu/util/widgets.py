@@ -49,6 +49,23 @@ class PrettyPrintJsonWidget(forms.Textarea):
         return t
 
 
+class MonospaceTextarea(forms.Textarea):
+    def render(self, name, value, attrs=None, renderer=None):
+        attrs['class'] = "{0} text-monospace".format(attrs.get('class', ''))
+        return super(MonospaceTextarea, self).render(name, value, attrs, renderer)
+
+
+class EmailTextWidget(forms.Textarea):
+    def render(self, name, value, attrs=None, renderer=None):
+        attrs.update({
+            "cols": "72",
+            "class": "{0} textarea-mail".format(attrs.get('class', '')),
+            "wrap": "hard",
+        })
+        t = super(EmailTextWidget, self).render(name, value, attrs, renderer)
+        return mark_safe('<div class="textarea-mail-prefix">This text area is sized to the correct width of an email! Automatic line wrappings are preserved.</div>') + t
+
+
 class AdminJsonWidget(PrettyPrintJsonWidget):
     def render(self, name, value, attrs=None, renderer=None):
         attrs['cols'] = 100
@@ -56,8 +73,16 @@ class AdminJsonWidget(PrettyPrintJsonWidget):
 
 
 class StaticTextWidget(TextInput):
+    def __init__(self, *args, **kwargs):
+        self.monospace = kwargs.pop('monospace', False)
+
+        super(StaticTextWidget, self).__init__(*args, **kwargs)
+
     def render(self, name, value, attrs=None, renderer=None):
-        return mark_safe(value)
+        if self.monospace:
+            return mark_safe('<div class="text-monospace">{0}</div>'.format(value))
+        else:
+            return mark_safe(value)
 
 
 class TestButtonWidget(TextInput):

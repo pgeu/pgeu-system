@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 
 from collections import OrderedDict
 
-from postgresqleu.util.widgets import StaticTextWidget
+from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget
 from postgresqleu.util.backendforms import BackendForm
 from postgresqleu.util.backendlookups import GeneralAccountLookup
 from postgresqleu.membership.models import Member, MemberLog, Meeting, MembershipConfiguration
@@ -83,7 +83,7 @@ class BackendMemberSendEmailForm(django.forms.Form):
     _from = django.forms.CharField(max_length=128, disabled=True, label="Form")
     subject = django.forms.CharField(max_length=128, required=True)
     recipients = django.forms.Field(widget=StaticTextWidget, required=False)
-    message = django.forms.CharField(widget=django.forms.Textarea, required=True)
+    message = django.forms.CharField(widget=EmailTextWidget, required=True)
     idlist = django.forms.CharField(widget=django.forms.HiddenInput, required=True)
     confirm = django.forms.BooleanField(label="Confirm", required=False)
 

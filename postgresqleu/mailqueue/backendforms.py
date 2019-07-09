@@ -9,7 +9,7 @@ from postgresqleu.mailqueue.models import QueuedMail
 
 
 class BackendMailqueueForm(BackendForm):
-    decoded = forms.CharField(label="Decoded message", widget=StaticTextWidget)
+    decoded = forms.CharField(label="Decoded message", widget=StaticTextWidget(monospace=True))
 
     list_fields = ['sendtime', 'sender', 'receiver', 'subject', ]
     helplink = 'mail'

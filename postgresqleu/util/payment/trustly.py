@@ -6,6 +6,7 @@ from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.backendforms import BackendInvoicePaymentMethodForm
 from postgresqleu.accounting.util import get_account_choices
 from postgresqleu.util.forms import CharToArrayField
+from postgresqleu.util.widgets import MonospaceTextarea
 
 from postgresqleu.trustlypayment.models import TrustlyTransaction, TrustlyLog
 
@@ -62,8 +63,8 @@ class BackendTrustlyPaymentForm(BackendInvoicePaymentMethodForm):
                                  label="Available countries",
                                  help_text="Comma separate list of countries available in")
 
-    public_key = forms.CharField(required=True, widget=forms.widgets.Textarea, validators=[validate_pem_public_key, ])
-    private_key = forms.CharField(required=True, widget=forms.widgets.Textarea, validators=[validate_pem_private_key, ])
+    public_key = forms.CharField(required=True, widget=MonospaceTextarea, validators=[validate_pem_public_key, ])
+    private_key = forms.CharField(required=True, widget=MonospaceTextarea, validators=[validate_pem_private_key, ])
 
     accounting_income = forms.ChoiceField(required=True, choices=get_account_choices,
                                           label="Income account")

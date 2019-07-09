@@ -13,7 +13,7 @@ from psycopg2.extras import DateTimeTZRange
 from decimal import Decimal
 
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
-from postgresqleu.util.widgets import StaticTextWidget
+from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.backendforms import BackendForm
 
@@ -923,7 +923,7 @@ class BackendSendEmailForm(django.forms.Form):
     recipients = django.forms.Field(widget=StaticTextWidget, required=False)
     storeonregpage = django.forms.BooleanField(label="Store on registration page", required=False,
                                                help_text="If checked, store in db and show to attendees later. If not checked, one-off email is sent.")
-    message = django.forms.CharField(widget=django.forms.Textarea, required=True)
+    message = django.forms.CharField(widget=EmailTextWidget, required=True)
     idlist = django.forms.CharField(widget=django.forms.HiddenInput, required=True)
     confirm = django.forms.BooleanField(label="Confirm", required=False)
 

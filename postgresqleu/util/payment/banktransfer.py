@@ -5,6 +5,7 @@ from django.template import Template, Context
 from urllib.parse import urlencode
 
 from postgresqleu.util.db import exec_to_scalar
+from postgresqleu.util.widgets import MonospaceTextarea
 from postgresqleu.accounting.util import get_account_choices
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.models import BankTransferFees
@@ -29,7 +30,7 @@ def validate_django_template(value):
 
 
 class BackendBanktransferForm(BackendInvoicePaymentMethodForm):
-    bankinfo = forms.CharField(required=False, widget=forms.widgets.Textarea,
+    bankinfo = forms.CharField(required=False, widget=MonospaceTextarea,
                                label="Bank transfer information",
                                help_text="Full bank transfer information. If specified, this will be included in PDF invoices automatically",
     )
@@ -118,7 +119,7 @@ class BaseManagedBankPaymentForm(BackendInvoicePaymentMethodForm):
     feeaccount = forms.ChoiceField(required=True, choices=get_account_choices,
                                    label="Fee account",
                                    help_text="Accounting account that receives any fees associated with payments")
-    bankinfo = forms.CharField(required=False, widget=forms.widgets.Textarea,
+    bankinfo = forms.CharField(required=False, widget=MonospaceTextarea,
                                label="Bank transfer information",
                                help_text="Full bank transfer information. If specified, this will be included in PDF invoices automatically",
     )

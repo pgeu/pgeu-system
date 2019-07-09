@@ -49,6 +49,17 @@ th.colfilter {
     padding: 3px !important;
 }
 
+/*
+ * Text-area styling for writing plaintext email
+ */
+textarea.textarea-mail {
+   width: unset;
+   font-family: monospace;
+}
+
+.text-monospace {
+   font-family: monospace;
+}
 
 /*
  * Check-boxes that look like mail envelopes, used to toggle

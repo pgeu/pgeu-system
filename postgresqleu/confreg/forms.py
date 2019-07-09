@@ -17,6 +17,7 @@ from .models import ConferenceSession, ConferenceSessionFeedback, ConferenceSess
 from .models import PrepaidVoucher, DiscountCode, AttendeeMail
 
 from .regtypes import validate_special_reg_type
+from postgresqleu.util.widgets import EmailTextWidget
 from postgresqleu.util.db import exec_to_list
 from postgresqleu.util.magic import magicdb
 
@@ -651,6 +652,9 @@ class AttendeeMailForm(forms.ModelForm):
     class Meta:
         model = AttendeeMail
         fields = ('regclasses', 'tovolunteers', 'tocheckin', 'subject', 'message')
+        widgets = {
+            'message': EmailTextWidget,
+        }
 
     def regclass_label(self, obj):
         return "{0} (contains {1}; total {2} registrations)".format(
@@ -737,7 +741,7 @@ class WaitlistSendmailForm(forms.Form):
 
     waitlist_target = forms.ChoiceField(required=True, choices=TARGET_CHOICES)
     subject = forms.CharField(max_length=100, required=True)
-    message = forms.CharField(required=True, widget=forms.Textarea)
+    message = forms.CharField(required=True, widget=EmailTextWidget)
     include_position = forms.ChoiceField(required=True, choices=POSITION_CHOICES,
                                          help_text="Include a footer with information about waitpost position and/or size")
     confirm = forms.BooleanField(help_text="Confirm that you are ready to send this email!", required=False)
@@ -777,7 +781,7 @@ class CrossConferenceMailForm(forms.Form):
     include = forms.CharField(widget=forms.widgets.HiddenInput(), required=False)
     exclude = forms.CharField(widget=forms.widgets.HiddenInput(), required=False)
     subject = forms.CharField(min_length=10, max_length=80, required=True)
-    text = forms.CharField(min_length=30, required=True, widget=forms.Textarea)
+    text = forms.CharField(min_length=30, required=True, widget=EmailTextWidget)
 
     confirm = forms.BooleanField(label="Confirm", required=False)
 
