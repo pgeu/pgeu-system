@@ -120,7 +120,7 @@ class Command(BaseCommand):
                             BraintreeLog(transid=t.transid,
                                          error=True,
                                          paymentmethod=method,
-                                         messagE='Transaction {0} was authorized on {1} and settled on {2}, but has not been disbursed yet!'.format(t.transid, t.authorizedat, t.settledat)).save()
+                                         message='Transaction {0} was authorized on {1} and settled on {2}, but has not been disbursed yet!'.format(t.transid, t.authorizedat, t.settledat)).save()
 
                 elif datetime.today() - t.authorizedat > timedelta(days=10):
                     BraintreeLog(transid=t.transid,
