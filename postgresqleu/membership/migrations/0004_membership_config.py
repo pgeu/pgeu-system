@@ -6,6 +6,7 @@ import django.core.validators
 from django.conf import settings
 from django.db import migrations, models
 
+from postgresqleu.util.fields import LowercaseEmailField
 from postgresqleu.membership.models import MembershipConfiguration
 
 
@@ -31,7 +32,7 @@ class Migration(migrations.Migration):
             name='MembershipConfiguration',
             fields=[
                 ('id', models.IntegerField(primary_key=True, serialize=False)),
-                ('sender_email', models.EmailField(max_length=254)),
+                ('sender_email', LowercaseEmailField(max_length=254)),
                 ('membership_years', models.IntegerField(default=1, help_text='Membership length in years', validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(10)], verbose_name='Membership length')),
                 ('membership_cost', models.IntegerField(default=10, validators=[django.core.validators.MinValueValidator(1)], verbose_name='Membership cost')),
                 ('country_validator', models.CharField(max_length=100, blank=True, choices=[('europe', 'Must be from European country')], help_text='Validate member countries against this rule', verbose_name='Country validator')),

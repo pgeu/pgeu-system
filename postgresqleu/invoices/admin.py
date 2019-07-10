@@ -26,7 +26,7 @@ class InvoiceAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelF
     def clean_recipient_email(self):
         if 'finalized' in self.cleaned_data:
             raise ValidationError("Can't edit email field on a finalized invoice!")
-        return self.cleaned_data['recipient_email']
+        return self.cleaned_data['recipient_email'].lower()
 
     def clean_recipient_name(self):
         if 'finalized' in self.cleaned_data:

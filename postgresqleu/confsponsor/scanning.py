@@ -43,7 +43,7 @@ def sponsor_scanning(request, sponsorid):
                 messages.warning(request, "Cannot add empty address")
                 return HttpResponseRedirect(".")
             try:
-                reg = ConferenceRegistration.objects.get(conference=sponsor.conference, email=request.POST.get('email'))
+                reg = ConferenceRegistration.objects.get(conference=sponsor.conference, email=request.POST.get('email').lower())
                 if not reg.payconfirmedat:
                     messages.error(request, "Attendee is not confirmed")
                     return HttpResponseRedirect(".")

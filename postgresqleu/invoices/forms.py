@@ -73,7 +73,7 @@ class InvoiceForm(forms.ModelForm):
         if not self.cleaned_data['recipient_user'] and self.cleaned_data.get('recipient_email', None):
             # User not specified. If we can find one by email, auto-populate
             # the field.
-            matches = User.objects.filter(email=self.cleaned_data['recipient_email'])
+            matches = User.objects.filter(email=self.cleaned_data['recipient_email'].lower())
             if len(matches) == 1:
                 self.cleaned_data['recipient_user'] = matches[0]
 

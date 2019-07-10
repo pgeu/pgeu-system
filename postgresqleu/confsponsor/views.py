@@ -136,15 +136,15 @@ def sponsor_manager_add(request, sponsorid):
         messages.warning(request, "Email not specified")
         return HttpResponseRedirect('../../')
     try:
-        user = User.objects.get(email=request.POST['email'])
+        user = User.objects.get(email=request.POST['email'].lower())
         sponsor.managers.add(user)
         sponsor.save()
         messages.info(request, "User %s added as manager." % user.username)
         return HttpResponseRedirect('../../')
     except User.DoesNotExist:
         # Try an upstream search if the user is not here
-        users = user_search(request.POST['email'])
-        if len(users) == 1 and users[0]['e'] == request.POST['email']:
+        users = user_search(request.POST['email'].lower())
+        if len(users) == 1 and users[0]['e'] == request.POST['email'].lower():
             try:
                 user_import(users[0]['u'])
                 try:
@@ -158,7 +158,7 @@ def sponsor_manager_add(request, sponsorid):
             except Exception as e:
                 messages.warning(request, "Failed to import user with email %s (userid %s): %s" % (users[0]['e'], users[0]['u'], e))
         else:
-            messages.warning(request, "Could not find user with email address %s" % request.POST['email'])
+            messages.warning(request, "Could not find user with email address %s" % request.POST['email'].lower())
         return HttpResponseRedirect('../../')
 
 

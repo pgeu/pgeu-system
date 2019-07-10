@@ -1,4 +1,5 @@
 from django.db import models
+from postgresqleu.util.fields import LowercaseEmailField
 from postgresqleu.membership.models import Member
 
 
@@ -20,7 +21,7 @@ class Election(models.Model):
 class Candidate(models.Model):
     election = models.ForeignKey(Election, null=False, blank=False, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, null=False, blank=False)
-    email = models.EmailField(max_length=200, null=False, blank=False)
+    email = LowercaseEmailField(max_length=200, null=False, blank=False)
     presentation = models.TextField(null=False, blank=False)
 
     def __str__(self):

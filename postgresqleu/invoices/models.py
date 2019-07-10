@@ -12,6 +12,7 @@ from .payment import PaymentMethodWrapper
 
 from postgresqleu.util.validators import ListOfEmailAddressValidator
 from postgresqleu.util.checksum import luhn
+from postgresqleu.util.fields import LowercaseEmailField
 from postgresqleu.accounting.models import Account, JournalEntry
 
 
@@ -90,7 +91,7 @@ class Invoice(models.Model):
     # a recipient is matched, the recipient_user field "owns" the
     # recipient information.
     recipient_user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
-    recipient_email = models.EmailField(blank=True, null=False)
+    recipient_email = LowercaseEmailField(blank=True, null=False)
     recipient_name = models.CharField(max_length=100, blank=False, null=False)
     recipient_address = models.TextField(blank=False, null=False)
     recipient_secret = models.CharField(max_length=64, blank=True, null=True)

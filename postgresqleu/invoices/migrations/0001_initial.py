@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
+from postgresqleu.util.fields import LowercaseEmailField
 from django.conf import settings
 
 
@@ -16,7 +17,7 @@ class Migration(migrations.Migration):
             name='Invoice',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('recipient_email', models.EmailField(max_length=254, blank=True)),
+                ('recipient_email', LowercaseEmailField(max_length=254, blank=True)),
                 ('recipient_name', models.CharField(max_length=100)),
                 ('recipient_address', models.TextField()),
                 ('recipient_secret', models.CharField(max_length=64, null=True, blank=True)),

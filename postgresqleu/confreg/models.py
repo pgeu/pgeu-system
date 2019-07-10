@@ -15,6 +15,8 @@ from postgresqleu.util.validators import validate_lowercase, validate_urlname
 from postgresqleu.util.validators import TwitterValidator
 from postgresqleu.util.validators import PictureUrlValidator
 from postgresqleu.util.forms import ChoiceArrayField
+from postgresqleu.util.fields import LowercaseEmailField
+
 
 from postgresqleu.confreg.dbimage import SpeakerImageStorage
 
@@ -138,9 +140,9 @@ class Conference(models.Model):
     promopicurl = models.URLField(blank=True, null=False, verbose_name="URL to promo picture", validators=[PictureUrlValidator(aspect=2.3)])
     promotext = models.TextField(null=False, blank=True, max_length=1000, verbose_name="Promotion text")
     timediff = models.IntegerField(null=False, blank=False, default=0)
-    contactaddr = models.EmailField(blank=False, null=False, verbose_name="Contact address")
-    sponsoraddr = models.EmailField(blank=False, null=False, verbose_name="Sponsor address")
-    notifyaddr = models.EmailField(blank=False, null=False, verbose_name="Notification address")
+    contactaddr = LowercaseEmailField(blank=False, null=False, verbose_name="Contact address")
+    sponsoraddr = LowercaseEmailField(blank=False, null=False, verbose_name="Sponsor address")
+    notifyaddr = LowercaseEmailField(blank=False, null=False, verbose_name="Notification address")
     notifyregs = models.BooleanField(blank=False, null=False, default=False, verbose_name="Notify about registrations")
     active = models.BooleanField(blank=False, null=False, default=False, verbose_name="Registration open")
     callforpapersopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Call for papers open")
@@ -481,7 +483,7 @@ class ConferenceRegistration(models.Model):
     registrator = models.ForeignKey(User, null=False, blank=False, related_name="registrator", on_delete=models.CASCADE)
     firstname = models.CharField(max_length=100, null=False, blank=False, verbose_name="First name")
     lastname = models.CharField(max_length=100, null=False, blank=False, verbose_name="Last name")
-    email = models.EmailField(null=False, blank=False, verbose_name="E-mail address")
+    email = LowercaseEmailField(null=False, blank=False, verbose_name="E-mail address")
     company = models.CharField(max_length=100, null=False, blank=True, verbose_name="Company")
     address = models.TextField(max_length=200, null=False, blank=True, verbose_name="Address")
     country = models.ForeignKey(Country, null=True, blank=True, verbose_name="Country", on_delete=models.CASCADE)

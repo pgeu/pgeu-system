@@ -247,7 +247,7 @@ def register(request, confname, whatfor=None):
 
         # No previous registration, grab some data from the user profile
         reg = ConferenceRegistration(conference=conference, attendee=request.user)
-        reg.email = request.user.email
+        reg.email = request.user.email.lower()
         reg.firstname = request.user.first_name
         reg.lastname = request.user.last_name
         reg.created = datetime.now()
@@ -406,11 +406,11 @@ def multireg(request, confname, regid=None):
                 # a separate page for it.
                 # Create a registration but don't save it until we have
                 # details entered.
-                reg.email = newform.cleaned_data['email']
+                reg.email = newform.cleaned_data['email'].lower()
                 regform = ConferenceRegistrationForm(request.user, instance=reg, regforother=True)
                 return render_conference_response(request, conference, 'reg', 'confreg/regmulti_form.html', {
                     'form': regform,
-                    '_email': newform.cleaned_data['email'],
+                    '_email': newform.cleaned_data['email'].lower(),
                 })
         elif request.POST['submit'] == 'Cancel':
             return HttpResponseRedirect(redir_root)
@@ -421,7 +421,7 @@ def multireg(request, confname, regid=None):
                 reg.delete()
             return HttpResponseRedirect(redir_root)
         elif request.POST['submit'] == 'Save':
-            reg.email = request.POST['_email']
+            reg.email = request.POST['_email'].lower()
             regform = ConferenceRegistrationForm(request.user, data=request.POST, instance=reg, regforother=True)
             if regform.is_valid():
                 reg = regform.save(commit=False)
@@ -1476,7 +1476,7 @@ def public_speaker_lookup(request, confname):
     # This is a lookup for speakers that's public. To avoid harvesting, we allow
     # only *prefix* matching of email addresses, and you have to type at least 6 characters
     # before you get anything.
-    prefix = request.GET['query']
+    prefix = request.GET['query'].lower()
     if len(prefix) > 5:
         vals = [{
             'id': s.id,

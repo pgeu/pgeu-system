@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from django.db import migrations, models
 import postgresqleu.confreg.models
 import postgresqleu.util.validators
+from postgresqleu.util.fields import LowercaseEmailField
 import postgresqleu.confreg.dbimage
 from django.conf import settings
 import django.core.validators
@@ -46,8 +47,8 @@ class Migration(migrations.Migration):
                 ('startdate', models.DateField(verbose_name='Start date')),
                 ('enddate', models.DateField(verbose_name='End date')),
                 ('location', models.CharField(max_length=128)),
-                ('contactaddr', models.EmailField(max_length=254, verbose_name='Contact address')),
-                ('sponsoraddr', models.EmailField(max_length=254, verbose_name='Sponsor address')),
+                ('contactaddr', LowercaseEmailField(max_length=254, verbose_name='Contact address')),
+                ('sponsoraddr', LowercaseEmailField(max_length=254, verbose_name='Sponsor address')),
                 ('active', models.BooleanField(default=False, verbose_name='Registration open')),
                 ('callforpapersopen', models.BooleanField(default=False, verbose_name="Call for papers open")),
                 ('callforsponsorsopen', models.BooleanField(default=False, verbose_name="Call for sponsors open")),
@@ -138,7 +139,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('firstname', models.CharField(max_length=100, verbose_name='First name')),
                 ('lastname', models.CharField(max_length=100, verbose_name='Last name')),
-                ('email', models.EmailField(max_length=254, verbose_name='E-mail address')),
+                ('email', LowercaseEmailField(max_length=254, verbose_name='E-mail address')),
                 ('company', models.CharField(max_length=100, verbose_name='Company', blank=True)),
                 ('address', models.TextField(max_length=200, verbose_name='Address', blank=True)),
                 ('phone', models.CharField(max_length=100, verbose_name='Phone number', blank=True)),

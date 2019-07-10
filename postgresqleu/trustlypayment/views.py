@@ -44,7 +44,7 @@ def invoicepayment_secret(request, paymentmethod, invoiceid, secret):
             enduserid = request.user.username
             first = request.user.first_name
             last = request.user.last_name
-            email = request.user.email
+            email = request.user.email.lower()
         else:
             first = last = email = None
             # For secret payments, use the invoice secret as the identifier
