@@ -70,6 +70,7 @@
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/reports/simple/?report=countries">Attendee countries</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/reports/simple/?report=regdays">Confirmed attendees per day</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn {%if sessions_noroom%}btn-warning{%else%}btn-default{%endif%} btn-block" href="/events/admin/{{c.urlname}}/reports/simple/?report=sessnoroom">Sessions with no room</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn {%if sessions_roomoverlap%}btn-warning{%else%}btn-default{%endif%} btn-block" href="/events/admin/{{c.urlname}}/reports/simple/?report=sessoverlaproom">Rooms with overlapping sessions</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn {%if sessions_notrack%}btn-warning{%else%}btn-default{%endif%} btn-block" href="/events/admin/{{c.urlname}}/reports/simple/?report=sessnotrack">Sessions with no track</a></div>
 {%if conference.queuepartitioning %}
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/reports/simple/?report=queuepartitions">Queue partitions</a></div>
