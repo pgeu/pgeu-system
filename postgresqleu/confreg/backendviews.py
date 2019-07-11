@@ -34,7 +34,7 @@ from .backendforms import BackendConferenceForm, BackendSuperConferenceForm, Bac
 from .backendforms import BackendRegistrationTypeForm, BackendRegistrationClassForm
 from .backendforms import BackendRegistrationDayForm, BackendAdditionalOptionForm
 from .backendforms import BackendTrackForm, BackendRoomForm, BackendConferenceSessionForm
-from .backendforms import BackendTagForm
+from .backendforms import BackendSpeakerForm, BackendTagForm
 from .backendforms import BackendConferenceSessionSlotForm, BackendVolunteerSlotForm
 from .backendforms import BackendFeedbackQuestionForm, BackendDiscountCodeForm
 from .backendforms import BackendAccessTokenForm
@@ -188,6 +188,16 @@ def edit_sessions(request, urlname, rest):
                                urlname,
                                BackendConferenceSessionForm,
                                rest)
+
+
+def edit_speakers(request, urlname, rest):
+    return backend_list_editor(request,
+                               urlname,
+                               BackendSpeakerForm,
+                               rest,
+                               allow_new=False,
+                               allow_delete=False,
+    )
 
 
 def edit_scheduleslots(request, urlname, rest):

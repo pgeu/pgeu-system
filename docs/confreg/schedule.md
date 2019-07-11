@@ -171,3 +171,29 @@ description pages. Any text here is public.
 Submission notes
 :   These are notes given by the submitter in the call for papers
 form, that are only visible to the conference organisers.
+
+### Speakers <a name="speakers"></a>
+
+Note that speakers are *shared* between all conferences. For each
+individual conference, it is possible to edit those speakers that have
+submitted one or more sessions for this conference, but not other
+conferences.This is, however, not a *security* boundary, as it is
+possible to take another speaker and add them to a fake session, and
+then edit them. It's more a convenience feature.
+
+The form to edit a speaker has the following fields:
+
+Fullname
+:    The full name of the speaker, as shown on the schedule.
+
+Twittername
+:    The twitter handle fo the speaker, if any.
+
+Company
+:    The company of the speaker.
+
+Abstract
+:    An abstract for the speaker.
+
+Photo
+:    A photo of the speaker, JPEG format, max 128x128 pixels.

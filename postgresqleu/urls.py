@@ -205,6 +205,7 @@ urlpatterns.extend([
     url(r'^events/admin/(\w+)/refundpatterns/(.*/)?$', postgresqleu.confreg.backendviews.edit_refundpatterns),
     url(r'^events/admin/(\w+)/sessions/sendmail/$', postgresqleu.confreg.backendviews.conference_session_send_email),
     url(r'^events/admin/(\w+)/sessions/(.*/)?$', postgresqleu.confreg.backendviews.edit_sessions),
+    url(r'^events/admin/(\w+)/speakers/(.*/)?$', postgresqleu.confreg.backendviews.edit_speakers),
     url(r'^events/admin/(\w+)/scheduleslots/(.*/)?$', postgresqleu.confreg.backendviews.edit_scheduleslots),
     url(r'^events/admin/(\w+)/volunteerslots/(.*/)?$', postgresqleu.confreg.backendviews.edit_volunteerslots),
     url(r'^events/admin/(\w+)/feedbackquestions/(.*/)?$', postgresqleu.confreg.backendviews.edit_feedbackquestions),

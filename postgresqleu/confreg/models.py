@@ -706,7 +706,7 @@ def _get_upload_path(instance, filename):
 class Speaker(models.Model):
     user = models.OneToOneField(User, null=True, blank=True, unique=True, on_delete=models.CASCADE)
     fullname = models.CharField(max_length=100, null=False, blank=False)
-    twittername = models.CharField(max_length=32, null=False, blank=True)
+    twittername = models.CharField(max_length=32, null=False, blank=True, validators=[TwitterValidator, ])
     company = models.CharField(max_length=100, null=False, blank=True)
     abstract = models.TextField(null=False, blank=True)
     photofile = models.ImageField(upload_to=_get_upload_path, storage=SpeakerImageStorage(), blank=True, null=True, verbose_name="Photo", validators=[ImageValidator(maxsize=(128, 128)), ])
@@ -726,6 +726,13 @@ class Speaker(models.Model):
             return self.user.email
         else:
             return None
+
+    def _display_user(self):
+        if self.user:
+            if self.user.email:
+                return "{0} <{1}>".format(self.user.username, self.user.email)
+            else:
+                return self.user.username
 
     def has_abstract(self):
         return len(self.abstract) > 0

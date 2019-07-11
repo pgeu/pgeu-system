@@ -128,7 +128,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                 messages.warning(request, "New {0} not deleted, object was never saved.".format(formclass.Meta.model._meta.verbose_name.capitalize()))
                 return HttpResponseRedirect(cancel_url)
 
-        form = formclass(conference, instance=instance, data=request.POST, newformdata=newformdata)
+        form = formclass(conference, instance=instance, data=request.POST, files=request.FILES, newformdata=newformdata)
         if extra_error:
             form.add_error(None, extra_error)
 

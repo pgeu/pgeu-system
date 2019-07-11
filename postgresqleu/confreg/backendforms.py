@@ -5,6 +5,7 @@ from django.db.models.expressions import F
 import django.forms
 import django.forms.widgets
 from django.utils.safestring import mark_safe
+from django.utils.html import escape
 from django.conf import settings
 
 import datetime
@@ -13,7 +14,7 @@ from psycopg2.extras import DateTimeTZRange
 from decimal import Decimal
 
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
-from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget
+from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget, PhotoUploadWidget
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.backendforms import BackendForm
 
@@ -21,7 +22,7 @@ import postgresqleu.accounting.models
 
 from postgresqleu.confreg.models import Conference, ConferenceRegistration, ConferenceAdditionalOption
 from postgresqleu.confreg.models import RegistrationClass, RegistrationType, RegistrationDay
-from postgresqleu.confreg.models import ConferenceFeedbackQuestion
+from postgresqleu.confreg.models import ConferenceFeedbackQuestion, Speaker
 from postgresqleu.confreg.models import ConferenceSession, Track, Room, ConferenceSessionTag
 from postgresqleu.confreg.models import ConferenceSessionScheduleSlot, VolunteerSlot
 from postgresqleu.confreg.models import DiscountCode, AccessToken, AccessTokenPermissions
@@ -566,6 +567,33 @@ class BackendConferenceSessionForm(BackendForm):
         if slotlist:
             return "no scheduled sessions picked, so no transformation will happen"
         return None
+
+
+class BackendSpeakerForm(BackendForm):
+    helplink = 'schedule#speakers'
+    list_fields = ['fullname', 'user', 'company', ]
+    markdown_fields = ['abstract', ]
+    readonly_fields = ['user', ]
+    exclude_fields_from_validation = ['user', ]
+
+    class Meta:
+        model = Speaker
+        fields = ['fullname', 'user', 'twittername', 'company', 'abstract', 'photofile', ]
+        widgets = {
+            'user': StaticTextWidget,
+        }
+
+        @classmethod
+        def conference_queryset(cls, conference):
+            # Ugly because django can't properly do exists
+            return Speaker.objects.extra(
+                where=("EXISTS (SELECT 1 FROM confreg_conferencesession_speaker css INNER JOIN confreg_conferencesession s ON s.id=css.conferencesession_id WHERE css.speaker_id=confreg_speaker.id AND s.conference_id=%s)", ),
+                params=(conference.id, ),
+            )
+
+    def fix_fields(self):
+        self.fields['photofile'].widget = PhotoUploadWidget()
+        self.initial['user'] = escape(self.instance._display_user())
 
 
 class BackendConferenceSessionSlotForm(BackendForm):
