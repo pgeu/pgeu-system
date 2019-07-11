@@ -89,7 +89,13 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
         if bypass_conference_filter:
             instance = get_object_or_404(formclass.Meta.model, pk=id)
         else:
-            instance = get_object_or_404(formclass.Meta.model, pk=id, conference=conference)
+            if hasattr(formclass.Meta, 'conference_queryset'):
+                try:
+                    instance = formclass.Meta.conference_queryset(conference).get(pk=id)
+                except formclass.Meta.model.DoesNotExist:
+                    raise Http404()
+            else:
+                instance = get_object_or_404(formclass.Meta.model, pk=id, conference=conference)
 
     if request.method == 'GET' and request.GET.get('validate', '') == '1':
         if not id:
@@ -208,7 +214,10 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
         if bypass_conference_filter:
             objects = formclass.Meta.model.objects.all()
         else:
-            objects = formclass.Meta.model.objects.filter(conference=conference)
+            if hasattr(formclass.Meta, 'conference_queryset'):
+                objects = formclass.Meta.conference_queryset(conference).all()
+            else:
+                objects = formclass.Meta.model.objects.filter(conference=conference)
         if formclass.list_order_by:
             objects = objects.order_by(*formclass.list_order_by)
 
@@ -288,7 +297,10 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
 
         handler = formclass.linked_objects[restpieces[1]]
         if conference:
-            masterobj = formclass.Meta.model.objects.get(pk=id, conference=conference)
+            if hasattr(formclass.Meta, 'conference_queryset'):
+                masterobj = formclass.Meta.conference_queryset(conference).get(pk=id)
+            else:
+                masterobj = formclass.Meta.model.objects.get(pk=id, conference=conference)
         else:
             masterobj = formclass.Meta.model.objects.get(pk=id)
 
