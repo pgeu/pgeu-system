@@ -148,6 +148,7 @@ class BaseInvoice(PDFBase):
                 suffix = ''
 
             self.canvas.setFont('DejaVu Serif Bold', 12)
+            self.canvas.setFillColor(colors.black)
             # Center between 2 and 19 is 10.5
             self.canvas.drawCentredString(cm(10.5), cm(19), self.title)
             self.canvas.setFont('DejaVu Serif', 9)
