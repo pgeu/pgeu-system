@@ -13,6 +13,7 @@ def settings_context(request=None):
         'org_short_name': settings.ORG_SHORTNAME,
         'treasurer_email': settings.TREASURER_EMAIL,
         'sitebase': settings.SITEBASE,
+        'debug': settings.DEBUG,
         'currency_abbrev': settings.CURRENCY_ABBREV,
         'currency_symbol': settings.CURRENCY_SYMBOL,
         'is_debugging': settings.DEBUG,

@@ -16,6 +16,9 @@
 {%block extrahead%}{%endblock%}
  </head>
  <body>
+{%if debug %}
+  <div class="alert alert-danger text-center">This site has DEBUG enabled!</div>
+{%endif%}
    <nav class="navbar navbar-default">
      <div class="container-fluid">
        <div class="navbar-header">
