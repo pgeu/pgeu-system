@@ -13,7 +13,7 @@ from django.contrib.postgres.fields import DateTimeRangeField
 
 from postgresqleu.util.validators import validate_lowercase, validate_urlname
 from postgresqleu.util.validators import TwitterValidator
-from postgresqleu.util.validators import PictureUrlValidator
+from postgresqleu.util.validators import PictureUrlValidator, ImageValidator
 from postgresqleu.util.forms import ChoiceArrayField
 from postgresqleu.util.fields import LowercaseEmailField
 
@@ -709,7 +709,7 @@ class Speaker(models.Model):
     twittername = models.CharField(max_length=32, null=False, blank=True)
     company = models.CharField(max_length=100, null=False, blank=True)
     abstract = models.TextField(null=False, blank=True)
-    photofile = models.ImageField(upload_to=_get_upload_path, storage=SpeakerImageStorage(), blank=True, null=True, verbose_name="Photo")
+    photofile = models.ImageField(upload_to=_get_upload_path, storage=SpeakerImageStorage(), blank=True, null=True, verbose_name="Photo", validators=[ImageValidator(maxsize=(128, 128)), ])
     lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
     speakertoken = models.TextField(null=False, blank=False, unique=True)
 

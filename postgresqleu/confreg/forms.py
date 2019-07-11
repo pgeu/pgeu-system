@@ -5,7 +5,6 @@ from django.forms.utils import ErrorList
 from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
-from django.template import loader
 
 from django.db.models.fields.files import ImageFieldFile
 
@@ -17,7 +16,7 @@ from .models import ConferenceSession, ConferenceSessionFeedback, ConferenceSess
 from .models import PrepaidVoucher, DiscountCode, AttendeeMail
 
 from .regtypes import validate_special_reg_type
-from postgresqleu.util.widgets import EmailTextWidget
+from postgresqleu.util.widgets import EmailTextWidget, PhotoUploadWidget
 from postgresqleu.util.db import exec_to_list
 from postgresqleu.util.magic import magicdb
 
@@ -456,14 +455,6 @@ class ConferenceFeedbackForm(forms.Form):
         return -1
 
 
-class PhotoUploadWidget(forms.ClearableFileInput):
-    clear_checkbox_label = "Remove photo"
-
-    def render(self, name, value, attrs=None, renderer=None):
-        context = self.get_context(name, value, attrs)
-        return mark_safe(loader.render_to_string('confreg/widgets/photo_upload_widget.html', context))
-
-
 class SpeakerProfileForm(forms.ModelForm):
     class Meta:
         model = Speaker
@@ -472,27 +463,6 @@ class SpeakerProfileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(SpeakerProfileForm, self).__init__(*args, **kwargs)
         self.fields['photofile'].widget = PhotoUploadWidget()
-
-    def clean_photofile(self):
-        if not self.cleaned_data['photofile']:
-            return self.cleaned_data['photofile']
-        if isinstance(self.cleaned_data['photofile'], ImageFieldFile):
-            return self.cleaned_data['photofile']  # If it's unchanged...
-
-        img = None
-        try:
-            from PIL import ImageFile
-            p = ImageFile.Parser()
-            p.feed(self.cleaned_data['photofile'].read())
-            p.close()
-            img = p.image
-        except Exception as e:
-            raise ValidationError("Could not parse image: %s" % e)
-        if img.format != 'JPEG':
-            raise ValidationError("Only JPEG format images are accepted, not '%s'" % img.format)
-        if img.size[0] > 128 or img.size[1] > 128:
-            raise ValidationError("Maximum image size is 128x128")
-        return self.cleaned_data['photofile']
 
     def clean_twittername(self):
         if not self.cleaned_data['twittername']:

@@ -352,7 +352,7 @@ class Migration(migrations.Migration):
                 ('twittername', models.CharField(max_length=32, blank=True)),
                 ('company', models.CharField(max_length=100, blank=True)),
                 ('abstract', models.TextField(blank=True)),
-                ('photofile', models.ImageField(storage=postgresqleu.confreg.dbimage.SpeakerImageStorage(), upload_to=postgresqleu.confreg.models._get_upload_path, null=True, verbose_name='Photo', blank=True)),
+                ('photofile', models.ImageField(storage=postgresqleu.confreg.dbimage.SpeakerImageStorage(), upload_to=postgresqleu.confreg.models._get_upload_path, null=True, verbose_name='Photo', blank=True, validators=[postgresqleu.util.validators.ImageValidator(maxsize=(128, 128)), ])),
                 ('lastmodified', models.DateTimeField(auto_now=True)),
             ],
             options={

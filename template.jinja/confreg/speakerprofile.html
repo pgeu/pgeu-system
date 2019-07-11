@@ -33,7 +33,7 @@ you are a speaker.
 </tr>
 <tr>
  <th>{{form.photofile.label_tag()}}</th>
- <td>{%if speaker.photofile%}<img src="{{speaker.photofile.url}}"/><br/>{%endif%}{{form.photofile}}{% if form.photofile.errors %}{{ form.photofile.errors}}{% endif %}</td>
+ <td>{{form.photofile}}{% if form.photofile.errors %}{{ form.photofile.errors}}{% endif %}</td>
 </tr>
 </table>
 <input type="submit" value="Save">

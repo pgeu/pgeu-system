@@ -1,6 +1,7 @@
 from django import forms
 from django.forms.widgets import TextInput
 from django.utils.safestring import mark_safe
+from django.template import loader
 
 import datetime
 import json
@@ -64,6 +65,14 @@ class EmailTextWidget(forms.Textarea):
         })
         t = super(EmailTextWidget, self).render(name, value, attrs, renderer)
         return mark_safe('<div class="textarea-mail-prefix">This text area is sized to the correct width of an email! Automatic line wrappings are preserved.</div>') + t
+
+
+class PhotoUploadWidget(forms.ClearableFileInput):
+    clear_checkbox_label = "Remove photo"
+
+    def render(self, name, value, attrs=None, renderer=None):
+        context = self.get_context(name, value, attrs)
+        return mark_safe(loader.render_to_string('confreg/widgets/photo_upload_widget.html', context))
 
 
 class AdminJsonWidget(PrettyPrintJsonWidget):

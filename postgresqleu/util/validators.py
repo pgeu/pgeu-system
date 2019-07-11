@@ -6,7 +6,7 @@ from io import BytesIO
 import re
 
 import requests
-from PIL import Image
+from PIL import Image, ImageFile
 
 
 def validate_lowercase(value):
@@ -137,3 +137,29 @@ class PictureUrlValidator(object):
 
     def __eq__(self, other):
         return self.aspect == other.aspect
+
+
+@deconstructible
+class ImageValidator(object):
+    def __init__(self, formats=['JPEG', ], maxsize=None):
+        self.formats = formats
+        self.maxsize = maxsize
+
+    def __call__(self, value):
+        if value.size is None:
+            # This happens when no new file is uploaded, so assume things are fine
+            return
+
+        try:
+            p = ImageFile.Parser()
+            p.feed(value.read())
+            p.close()
+            img = p.image
+        except Exception as e:
+            raise ValidationError("Could not parse image: %s" % e)
+
+        if img.format.upper() not in self.formats:
+            raise ValidationError("Files of format {0} are not accepted, only {1}".format(img.format, ", ".join(self.formats)))
+        if self.maxsize:
+            if img.size[0] > self.maxsize[0] or img.size[1] > self.maxsize[1]:
+                raise ValidationError("Maximum image size is {}x{}".format(*self.maxsize))
