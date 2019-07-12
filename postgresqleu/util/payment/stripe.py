@@ -59,7 +59,7 @@ class BackendStripeForm(BackendInvoicePaymentMethodForm):
 From the Stripe dashboard, go to Webhooks and add an endpoint that points to
 <code>{0}/p/stripe/{1}/webhook/</code>. This webhook should receive events of
 types <b>checkout.session.completed</b>, <b>charge.refunded</b> and
-<b>payout.created</b>.
+<b>payout.paid</b>.
 Copy the key from this webhook into the <i>webhook secret</i> field above.""".format(
                     settings.SITEBASE,
                     self.instance.id),

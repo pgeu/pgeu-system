@@ -26,6 +26,14 @@ class StripeRefund(models.Model):
     completedat = models.DateTimeField(null=True, blank=True)
 
 
+class StripePayout(models.Model):
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
+    payoutid = models.CharField(max_length=200, null=False, blank=False, unique=True)
+    amount = models.DecimalField(decimal_places=2, max_digits=20, null=False)
+    sentat = models.DateTimeField(null=False, blank=False)
+    description = models.CharField(max_length=500, null=False, blank=False)
+
+
 class ReturnAuthorizationStatus(models.Model):
     checkoutid = models.IntegerField(null=False, blank=False, primary_key=True)
     seencount = models.IntegerField(null=False, default=0)

@@ -4,15 +4,20 @@ from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import json
 import hmac
 import hashlib
+from decimal import Decimal
 
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.invoices.util import InvoiceManager
+from postgresqleu.invoices.util import is_managed_bank_account
+from postgresqleu.invoices.util import register_pending_bank_matcher
+from postgresqleu.accounting.util import create_accounting_entry
+from postgresqleu.mailqueue.util import send_simple_mail
 
-from .models import StripeCheckout, StripeRefund, StripeLog
+from .models import StripeCheckout, StripeRefund, StripePayout, StripeLog
 from .models import ReturnAuthorizationStatus
 from .api import StripeApi
 from .util import process_stripe_checkout
@@ -200,6 +205,59 @@ def webhook(request, methodid):
                     [],
                     method)
         return HttpResponse("OK")
+    elif payload['type'] == 'payout.paid':
+        # Payout has left Stripe. Should include both automatic and manual ones
+        payoutid = payload['data']['object']['id']
+
+        obj = payload['data']['object']
+        if obj['currency'].lower() != settings.CURRENCY_ISO.lower():
+            StripeLog(message="Received payout in incorrect currency {}, ignoring".format(obj['currency']),
+                      error=True,
+                      paymentmethod=method).save()
+            return HttpResponse("OK")
+
+        with transaction.atomic():
+            if StripePayout.objects.filter(payoutid=payoutid).exists():
+                StripeLog(message="Received duplicate notification for payout {}, ignoring".format(payoutid),
+                          error=True,
+                          paymentmethod=method).save()
+                return HttpResponse("OK")
+
+            payout = StripePayout(paymentmethod=method,
+                                  payoutid=payoutid,
+                                  amount=Decimal(obj['amount']) / 100,
+                                  sentat=datetime.now(),
+                                  description=obj['description'])
+            payout.save()
+
+            acctrows = [
+                (pm.config('accounting_income'), 'Stripe payout {}'.format(payout.payoutid), -payout.amount, None),
+                (pm.config('accounting_payout'), 'Stripe payout {}'.format(payout.payoutid), payout.amount, None),
+            ]
+
+            if is_managed_bank_account(pm.config('accounting_payout')):
+                entry = create_accounting_entry(date.today(), acctrows, True)
+
+                # XXX: we don't know what this looks like at the other end yet, so put a random string in there
+                register_pending_bank_matcher(pm.config('accounting_payout'),
+                                              '.*STRIPE_PAYOUT_WHAT_GOES_HERE?.*',
+                                              payout.amount,
+                                              entry)
+                msg = "A Stripe payout with description {} completed for {}.\n\nAccounting entry {} was created and will automatically be closed once the payout has arrived.".format(
+                    payout.description,
+                    method.internaldescription,
+                    entry,
+                )
+            else:
+                msg = "A Stripe payout with description {} completed for {}.\n".format(payout.description, method.internaldescription)
+
+            StripeLog(message=msg, paymentmethod=method).save()
+            send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+                             pm.config('notification_receiver'),
+                             'Stripe payout completed',
+                             msg,
+            )
+            return HttpResponse("OK")
     else:
         StripeLog(message="Received unknown Stripe event type '{}'".format(payload['type']),
                   error=True,
