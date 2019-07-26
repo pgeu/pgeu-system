@@ -1,0 +1,26 @@
+{%extends "base.html" %}
+{%block title%}Open Call for papers{%endblock%}
+{%block content%}
+<h1>Open Call for papers</h1>
+
+{%if not speaker %}
+<h2>New speaker</h2>
+<p>
+Please fill out the form below to register your speaker profile. Once
+this is done, you will be presented with a list of open call for papers.
+</p>
+{%endif%}
+
+{%if callforpapers%}
+<h2>Call for papers</h2>
+<p>
+The following conferences currently have open call for papers:
+<ul>
+  {%for c in callforpapers%}
+  <li><a href="/events/{{c.urlname}}/callforpapers/">{{c}}</a></li>
+  {%endfor%}
+</ul>
+</p>
+{%endif%}
+
+{%endblock%}

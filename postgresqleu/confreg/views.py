@@ -1337,6 +1337,24 @@ def callforpapers(request, confname):
 
 
 @login_required
+def callforpaperslist(request):
+    speaker = callforpapers = None
+    try:
+        speaker = get_object_or_404(Speaker, user=request.user)
+        callforpapers = Conference.objects.filter(callforpapersopen=True).order_by('startdate')
+    except Speaker.DoesNotExist:
+        speaker = None
+        callforpapers = None
+    except Exception:
+        pass
+
+    return render_conference_response(request, None, 'cfp', 'confreg/callforpaperslist.html', {
+        'speaker': speaker,
+        'callforpapers': callforpapers,
+    })
+
+
+@login_required
 def callforpapers_edit(request, confname, sessionid):
     conference = get_object_or_404(Conference, urlname=confname)
     is_tester = conference.testers.filter(pk=request.user.id).exists()

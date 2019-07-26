@@ -121,6 +121,7 @@ urlpatterns.extend([
     url(r'^events/([^/]+)/callforpapers/(\d+)/speakerconfirm/$', postgresqleu.confreg.views.callforpapers_confirm),
     url(r'^events/([^/]+)/callforpapers/lookups/speakers/$', postgresqleu.confreg.views.public_speaker_lookup),
     url(r'^events/([^/]+)/callforpapers/lookups/tags/$', postgresqleu.confreg.views.public_tags_lookup),
+    url(r'^events/callforpapers/$', postgresqleu.confreg.views.callforpaperslist),
     url(r'^events/([^/]+)/register/confirm/$', postgresqleu.confreg.views.confirmreg),
     url(r'^events/([^/]+)/register/waitlist_signup/$', postgresqleu.confreg.views.waitlist_signup),
     url(r'^events/([^/]+)/register/waitlist_cancel/$', postgresqleu.confreg.views.waitlist_cancel),
