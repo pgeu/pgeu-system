@@ -325,7 +325,7 @@ class BackendAdditionalOptionForm(BackendForm):
 
 class BackendTrackForm(BackendForm):
     helplink = 'schedule#tracks'
-    list_fields = ['trackname', 'sortkey']
+    list_fields = ['trackname', 'incfp', 'sortkey']
     allow_copy_previous = True
     coltypes = {
         'Sortkey': ['nosearch', ],
