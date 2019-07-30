@@ -304,6 +304,7 @@ class InvoiceManager(object):
     RESULT_DELETED = 4
     RESULT_INVALIDAMOUNT = 5
     RESULT_PROCESSORFAIL = 6
+    RESULT_NOTMATCHED = 7
 
     def process_incoming_payment(self, transtext, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls=None, logger=None, method=None):
         # If there is no logger specified, just log with print statement
@@ -329,8 +330,7 @@ class InvoiceManager(object):
         #
         m = re.match('^%s #(\d+) .*' % settings.INVOICE_TITLE_PREFIX, transtext)
         if not m:
-            logger("Could not match transaction text '%s'" % transtext)
-            return (self.RESULT_NOTFOUND, None, None)
+            return (self.RESULT_NOTMATCHED, None, None)
 
         try:
             invoiceid = int(m.groups(1)[0])

@@ -238,6 +238,8 @@ def flaginvoice(request, invoicenum):
                                              logger=payment_logger)
 
     if r != InvoiceManager.RESULT_OK:
+        # It will always be a match (since we use invoicestr), but something else can go wrong
+        # so capture the error message.
         transaction.rollback()
         return HttpResponse("Failed to process payment flagging:\n%s" % str.getvalue(),
                             content_type="text/plain")

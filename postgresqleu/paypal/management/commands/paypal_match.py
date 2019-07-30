@@ -162,6 +162,21 @@ class Command(BaseCommand):
 
                 if r == invoicemanager.RESULT_OK:
                     trans.setmatched('Matched standard invoice')
+                elif r == invoicemanager.RESULT_NOTMATCHED:
+                    # Could not match this to our pattern of transaction texts. Treat it
+                    # the same way as we would treat an empty one -- create an open accounting
+                    # entry.
+                    trans.setmatched('Could not match transaction text, leaving for operator')
+
+                    accstr = "Paypal payment '{0}' from {1}".format(trans.transtext, trans.sender)
+                    accrows = [
+                        (pm.config('accounting_income'), accstr, trans.amount - trans.fee, None),
+                    ]
+                    if trans.fee:
+                        accrows.append(
+                            (pm.config('accounting_fee'), accstr, trans.fee, None),
+                        )
+                    create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
                 else:
                     # Logging is done by the invoice manager callback
                     pass
