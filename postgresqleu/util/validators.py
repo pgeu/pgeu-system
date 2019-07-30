@@ -61,9 +61,9 @@ def TwitterValidator(value):
         raise ValidationError("Enter twitter name or leave field empty")
 
     try:
-        r = requests.head('https://twitter.com/{0}'.format(value),
-                          headers={'User-agent': 'Firefox/60'},
-                          timeout=5)
+        r = requests.get('https://twitter.com/{0}'.format(value),
+                         headers={'User-agent': 'Firefox/60'},
+                         timeout=5)
     except requests.exceptions.ReadTimeout:
         raise ValidationError("Could not verify twitter name - timeout")
 
