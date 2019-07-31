@@ -110,7 +110,13 @@ class PaypalAPI(object):
                 yield r
                 continue
 
-            r['EMAIL'] = t['payer_info']['email_address']
+            if code == 'T1106':
+                # "Payment reversal, initiated by PayPal", *sometimes* has email and
+                # sometimes not. Undocumented when they differ.
+                r['EMAIL'] = t['payer_info'].get('email_address', self.pm.config('email'))
+
+            if not r['EMAIL']:
+                r['EMAIL'] = t['payer_info']['email_address']
 
             # Figure out the name, since it can be in completely different places
             # depending on the transaction (even for the same type of transactions)
