@@ -110,7 +110,7 @@ class PaypalAPI(object):
                 yield r
                 continue
 
-            if code == 'T1106':
+            if code in ('T1106', 'T1108'):
                 # "Payment reversal, initiated by PayPal", *sometimes* has email and
                 # sometimes not. Undocumented when they differ.
                 r['EMAIL'] = t['payer_info'].get('email_address', self.pm.config('email'))
@@ -153,6 +153,8 @@ class PaypalAPI(object):
             elif code == 'T1106':
                 # Payment reversal initiated by paypal
                 r['SUBJECT'] = 'Reversal of {0}'.format(t['transaction_info']['paypal_reference_id'])
+            elif code == 'T1108':
+                r['SUBJECT'] = 'Reversal of fee for {0}'.format(t['transaction_info']['paypal_reference_id'])
             else:
                 raise Exception("Unknown paypal transaction event code %s" % code)
 
