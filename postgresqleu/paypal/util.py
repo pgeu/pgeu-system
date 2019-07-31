@@ -128,6 +128,11 @@ class PaypalAPI(object):
                 elif 'alternate_full_name' in t['payer_info']['payer_name']:
                     r['NAME'] = t['payer_info']['payer_name']['alternate_full_name']
 
+            # If we haven't found a name on the transaction *anywhere*, set the name field to
+            # the email address.
+            if not r['NAME']:
+                r['NAME'] = r['EMAIL']
+
             if 'fee_amount' in t['transaction_info']:
                 r['FEEAMT'] = t['transaction_info']['fee_amount']['value']
 
