@@ -362,7 +362,7 @@ class BackendRoomForm(BackendForm):
 
     class Meta:
         model = Room
-        fields = ['roomname', 'sortkey']
+        fields = ['roomname', 'sortkey', 'comment']
 
 
 class BackendTagForm(BackendForm):

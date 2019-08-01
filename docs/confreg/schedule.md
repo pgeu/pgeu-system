@@ -109,6 +109,11 @@ Sortkey
 :   An integer representing how to sort the room. Lower values sorts
 earlier.
 
+Comment
+:   An internal comment about this room, typically something like
+location and capacity of room. Only used internally, intended for
+organizers only.
+
 ### Schedule slots <a name="slots"></a>
 
 Start time

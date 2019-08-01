@@ -689,6 +689,8 @@ class Room(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     roomname = models.CharField(max_length=20, null=False, blank=False, verbose_name="Room name")
     sortkey = models.IntegerField(null=False, blank=False, default=100)
+    comment = models.CharField(max_length=200, null=False, blank=True,
+                               help_text='Internal comment for planning')
 
     json_included_attributes = ['roomname', 'sortkey']
 
