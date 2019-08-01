@@ -34,7 +34,7 @@ import dateutil.parser
 # attributes on the grouped objects.
 def filter_groupby_sort(objects, keyfield, sortkey):
     group = [(key, list(group)) for key, group in groupby(objects, lambda x: getattr(x, keyfield))]
-    return sorted(group, key=lambda y: y[0] and getattr(y[0], sortkey) or None)
+    return sorted(group, key=lambda y: y[0] and getattr(y[0], sortkey) or 0)
 
 
 # Shuffle the order in a list, for example to randomize the order of sponsors
