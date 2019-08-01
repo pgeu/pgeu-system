@@ -1067,7 +1067,7 @@ def _scheduledata(request, conference):
         'confid': conference.id,
     })
 
-    allrooms = exec_to_keyed_dict("SELECT id, sortkey, roomname FROM confreg_room r WHERE conference_id=%(confid)s", {
+    allrooms = exec_to_keyed_dict("SELECT id, sortkey, roomname, comment AS roomcomment FROM confreg_room r WHERE conference_id=%(confid)s", {
         'confid': conference.id,
     })
 
