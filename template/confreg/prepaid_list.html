@@ -27,7 +27,7 @@ function confirmDeleteVoucher() {
  </tr>
 {%for v in b.prepaidvoucher_set.all %}
  <tr>
-   <td>{{v.vouchervalue}}</code></td>
+   <td><code>{{v.vouchervalue}}</code></td>
    <td>{%if v.user%}<a href="../../regdashboard/list/{{v.user.id}}/">{{v.user.fullname}}</a>{%endif%}</td>
    <td>{{v.usedate|default:""}}{%if not v.usedate%}<a href="../{{b.id}}/del/{{v.id}}/" onclick="return confirmDeleteVoucher()"><i class="glyphicon glyphicon-remove" style="float:right"></i></a>{%endif%}</td>
  </tr>
