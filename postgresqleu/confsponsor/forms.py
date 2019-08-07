@@ -116,8 +116,9 @@ class SponsorSendEmailForm(forms.ModelForm):
             del self.fields['sponsors']
         else:
             self.fields['sponsors'].widget = forms.CheckboxSelectMultiple()
-            self.fields['sponsors'].queryset = Sponsor.objects.filter(conference=self.conference)
+            self.fields['sponsors'].queryset = Sponsor.objects.select_related('level').filter(conference=self.conference)
             self.fields['sponsors'].required = True
+            self.fields['sponsors'].label_from_instance = lambda s: "{0} ({1}, {2})".format(s, s.level.levelname, s.confirmed and "confirmed {:%Y-%m-%d %H:%M}".format(s.confirmedat) or "NOT confirmed")
             del self.fields['levels']
 
         if not ((self.data.get('levels') or self.data.get('sponsors')) and self.data.get('subject') and self.data.get('message')):
