@@ -233,10 +233,18 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
                     raise PermissionDenied()
                 with transaction.atomic():
                     for obj in objects.filter(id__in=request.POST.get('idlist').split(',')):
-                        if setval:
-                            setattr(obj, what, related.objects.get(pk=setval))
+                        if isinstance(getattr(obj, what), bool):
+                            # Special-case booleans, they can only be set to true or false, and clearfing
+                            # means the same as set to false.
+                            if setval:
+                                setattr(obj, what, True)
+                            else:
+                                setattr(obj, what, False)
                         else:
-                            setattr(obj, what, None)
+                            if setval:
+                                setattr(obj, what, related.objects.get(pk=setval))
+                            else:
+                                setattr(obj, what, None)
                         obj.save()
                 return HttpResponseRedirect('.')
             else:

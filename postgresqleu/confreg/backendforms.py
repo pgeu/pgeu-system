@@ -488,6 +488,16 @@ class BackendConferenceSessionForm(BackendForm):
                 'title': 'Track',
                 'options': [(t.id, t.trackname) for t in Track.objects.filter(conference=conference)],
             },
+            {
+                'name': 'room',
+                'title': 'Room',
+                'options': [(r.id, r.roomname) for r in Room.objects.filter(conference=conference)],
+            },
+            {
+                'name': 'cross_schedule',
+                'title': 'Cross schedule',
+                'options': [(1, 'Yes'), (0, 'No'), ]
+            },
         ]
 
     def clean(self):
