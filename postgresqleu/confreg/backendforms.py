@@ -432,10 +432,11 @@ class BackendRefundPatternForm(BackendForm):
 
 class BackendConferenceSessionForm(BackendForm):
     helplink = 'schedule#sessions'
-    list_fields = ['title', 'speaker_list', 'status_string', 'starttime', 'track', 'room']
+    list_fields = ['title', 'speaker_list', 'status_string', 'starttime', 'track', 'room', 'cross_schedule']
     verbose_field_names = {
         'speaker_list': 'Speakers',
         'status_string': 'Status',
+        'cross_schedule': 'Cross sched',
     }
     selectize_multiple_fields = {
         'speaker': SpeakerLookup(),
