@@ -110,9 +110,10 @@ class PaypalAPI(object):
                 yield r
                 continue
 
-            if code in ('T1106', 'T1108'):
+            if code in ('T1106', 'T1108', 'T0106'):
                 # "Payment reversal, initiated by PayPal", *sometimes* has email and
                 # sometimes not. Undocumented when they differ.
+                # T0106 is chargeback fee, also from no real sender
                 r['EMAIL'] = t['payer_info'].get('email_address', self.pm.config('email'))
 
             if not r['EMAIL']:
@@ -155,6 +156,8 @@ class PaypalAPI(object):
                 r['SUBJECT'] = 'Reversal of {0}'.format(t['transaction_info']['paypal_reference_id'])
             elif code == 'T1108':
                 r['SUBJECT'] = 'Reversal of fee for {0}'.format(t['transaction_info']['paypal_reference_id'])
+            elif code == 'T0106':
+                r['SUBJECT'] = 'Paypal chargeback fee for {0}'.format(t['transaction_info']['paypal_reference_id'])
             else:
                 raise Exception("Unknown paypal transaction event code %s" % code)
 
