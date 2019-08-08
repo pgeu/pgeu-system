@@ -303,9 +303,29 @@ class BackendRegistrationDayForm(BackendForm):
         fields = ['day', ]
 
 
+class AdditionalOptionUserManager(object):
+    title = 'Users'
+    singular = 'user'
+
+    def get_list(self, instance):
+        return [(r.id, r.fullname, r.invoice_status) for r in instance.conferenceregistration_set.all()]
+
+    def get_form(self):
+        return None
+
+    def get_object(self, masterobj, subid):
+        try:
+            return masterobj.conferenceregistration_set.get(pk=subid)
+        except models.DoesNotExist:
+            return None
+
+
 class BackendAdditionalOptionForm(BackendForm):
     helplink = 'registrations#additionaloptions'
     list_fields = ['name', 'cost', 'maxcount', 'invoice_autocancel_hours']
+    linked_objects = OrderedDict({
+        '../../regdashboard/list': AdditionalOptionUserManager(),
+    })
     vat_fields = {'cost': 'reg'}
     auto_cascade_delete_to = ['registrationtype_requires_option', 'conferenceadditionaloption_requires_regtype',
                               'conferenceadditionaloption_mutually_exclusive', ]

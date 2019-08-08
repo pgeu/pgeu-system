@@ -87,7 +87,7 @@
   <td>
    <ul>
 {%for ao in reg.additionaloptions.all %}
-<li>{{ao.name}}</li>
+<li><a href="../../../addopts/{{ao.pk}}/">{{ao.name}}</a></li>
 {%endfor%}
    </ul>
   </td>
