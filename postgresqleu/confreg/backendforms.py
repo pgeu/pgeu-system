@@ -374,7 +374,7 @@ class BackendTrackForm(BackendForm):
 
 class BackendRoomForm(BackendForm):
     helplink = 'schedule#rooms'
-    list_fields = ['roomname', 'sortkey']
+    list_fields = ['roomname', 'comment', 'sortkey']
     coltypes = {
         'Sortkey': ['nosearch', ],
     }
