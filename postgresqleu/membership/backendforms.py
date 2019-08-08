@@ -39,7 +39,7 @@ class MemberLogManager(object):
 class BackendMemberForm(BackendForm):
     helplink = 'membership'
     list_fields = ['fullname', 'user', 'paiduntil']
-    defaultsort = [[2, 'desc']]
+    defaultsort = [['paiduntil', 'desc'], ['fullname', 'asc']]
     allow_email = True
 
     class Meta:

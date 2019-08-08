@@ -211,7 +211,7 @@ class BackendRegistrationTypeForm(BackendForm):
     coltypes = {
         'Sortkey': ['nosearch', ],
     }
-    defaultsort = [[4, 'asc']]
+    defaultsort = [['sortkey', 'asc']]
     auto_cascade_delete_to = ['registrationtype_days', 'registrationtype_requires_option']
 
     class Meta:
@@ -350,7 +350,7 @@ class BackendTrackForm(BackendForm):
     coltypes = {
         'Sortkey': ['nosearch', ],
     }
-    defaultsort = [[1, 'asc']]
+    defaultsort = [['sortkey', 'asc']]
 
     class Meta:
         model = Track
@@ -378,7 +378,7 @@ class BackendRoomForm(BackendForm):
     coltypes = {
         'Sortkey': ['nosearch', ],
     }
-    defaultsort = [[2, 'asc']]
+    defaultsort = [['sortkey', 'asc']]
 
     class Meta:
         model = Room
@@ -718,7 +718,7 @@ class BackendFeedbackQuestionForm(BackendForm):
         'Sortkey': ['nosearch', ],
         'Newfieldset': ['nosort', ],
     }
-    defaultsort = [[2, 'asc']]
+    defaultsort = [['sortkey', 'asc']]
 
     def clean(self):
         cleaned_data = super(BackendFeedbackQuestionForm, self).clean()
@@ -845,7 +845,7 @@ class BackendNewsForm(BackendForm):
     list_fields = ['title', 'datetime', 'author', ]
     markdown_fields = ['summary', ]
     exclude_date_validators = ['datetime', ]
-    defaultsort = [[1, "desc"]]
+    defaultsort = [['datetime', "desc"]]
 
     class Meta:
         model = ConferenceNews

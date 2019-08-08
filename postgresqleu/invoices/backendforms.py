@@ -46,7 +46,7 @@ class BackendInvoicePaymentMethodForm(BackendForm):
     coltypes = {
         'Sort key': ['nosearch', ],
     }
-    defaultsort = [[4, 'asc']]
+    defaultsort = [['sortkey', 'asc'], ['name', 'asc']]
 
     config_fields = []
     config_fieldsets = []
