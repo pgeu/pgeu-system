@@ -46,7 +46,7 @@ $(document).ready(function() {
   <th><a href="?sort={%if sortkey == "typ" %}-{%endif%}type">Registration type</a></th>
   <th class="coltype-nosearch"><a href="?sort={%if sortkey == "date" %}-{%endif%}date">Confirmed</a></th>
   {%if waitlist_active%}<th>Waitlist status</th>{%endif%}
-  <th><i id="mailcheckboxtoggler" class="glyphicon glyphicon-envelope"></i></th>
+  <th><i id="mailcheckboxtoggler" class="glyphicon glyphicon-envelope" title="Select all registrations"></i></th>
  </tr>
 </thead>
 <tbody>

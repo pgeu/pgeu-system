@@ -75,7 +75,7 @@ $(document).ready(function() {
 <thead>
  <tr>
    {%for h in headers%}<th{%if coltypes|dictlookup:h%} class="{%for k in coltypes|dictlookup:h%}coltype-{{k}} {%endfor%}"{%endif%}>{{h}}</th>{%endfor%}
-{%if is_copy_previous%}<th class="coltype-copy">{%if not filtercolumns%}Copy <input type="checkbox" id="copyallcheckbox">{%endif%}</th>{%endif%}
+{%if is_copy_previous%}<th class="coltype-copy">{%if not filtercolumns%}Copy <input type="checkbox" id="copyallcheckbox" title="Select all entries for copy">{%endif%}</th>{%endif%}
 {%if allow_email or assignable_columns %}<th class="coltype-copy"></th>{%endif%}
  </tr>
 {%if filtercolumns%}
@@ -85,9 +85,9 @@ $(document).ready(function() {
 <option>{{o}}</option>
 {%endfor%}
 </select>{%endif%}</th>{%endwith%}{%endfor%}
-{%if is_copy_previous%}<th>Copy <input type="checkbox" id="copyallcheckbox"></th>{%endif%}
+{%if is_copy_previous%}<th>Copy <input type="checkbox" id="copyallcheckbox" title="Select all entries for copy"></th>{%endif%}
 {%if allow_email or assignable_columns%}<th class="nobr">
-{%if allow_email%}<i id="mailcheckboxtoggler" class="glyphicon glyphicon-envelope"></i>{%endif%}
+{%if allow_email%}<i id="mailcheckboxtoggler" class="glyphicon glyphicon-envelope" title="Select all entries for sending an email"></i>{%endif%}
 </th>{%endif%}
  </tr>
 {%endif%}
@@ -100,8 +100,8 @@ $(document).ready(function() {
 {%endfor%}
 {%if is_copy_previous%}<td><input type="checkbox" class="copybox" name="c_{{o.id}}" value="1"{%if o.id in idlist%} CHECKED{%endif%}></td>{%endif%}
 {%if allow_email or assignable_columns%}<td class="nobr">
-{%if allow_email%}<input class="skincheckbox mailcheckbox" type="checkbox" name="em_{{o.id}}" id="em_{{o.id}}"><label for="em_{{o.id}}"><i class="glyphicon glyphicon-envelope"></i></label>{%endif%}
-{%if assignable_columns%}<input class="skincheckbox assigncheckbox" type="checkbox" name="ass_{{o.id}}" id="ass_{{o.id}}"><label for="ass_{{o.id}}"><i class="glyphicon glyphicon-tasks"></i></label>{%endif%}
+{%if allow_email%}<input class="skincheckbox mailcheckbox" type="checkbox" name="em_{{o.id}}" id="em_{{o.id}}"><label for="em_{{o.id}}"><i class="glyphicon glyphicon-envelope" title="Select entry for sending an email"></i></label>{%endif%}
+{%if assignable_columns%}<input class="skincheckbox assigncheckbox" type="checkbox" name="ass_{{o.id}}" id="ass_{{o.id}}"><label for="ass_{{o.id}}"><i class="glyphicon glyphicon-tasks" title="Select entry for assignment"></i></label>{%endif%}
 </td>{%endif%}
  </tr>
 {%endfor%}
@@ -111,8 +111,13 @@ $(document).ready(function() {
 
 {%if allow_email or assignable_columns %}
 <div class="row buttonrow">
+{%if allow_email%}
+  <div class="col-md-3 col-md-offset-{%if allow_email%}6{%else%}9{%endif%}">
+    <button id="sendmailbutton" class="btn btn-default" disabled data-template="Send mail to {} {{title|lower}}"></button>
+  </div>
+{%endif%}
 {%if assignable_columns%}
-  <div class="col-md-3 col-md-offset-{%if allow_email%}6{%else%}9{%endif%}" dropdown>
+  <div class="col-md-3{%if not allow_email%} col-md-offset-9{%endif%}" dropdown>
     <button id="assignbutton" class="btn btn-default btn-block dropdown-toggle" disabled data-toggle="dropdown" data-template="Assign to {} {{title|lower}}"></button>
     <ul class="dropdown-menu">
 {%for col in assignable_columns %}
@@ -127,9 +132,6 @@ $(document).ready(function() {
 {%endfor%}
     </ul>
   </div>
-{%endif%}
-{%if allow_email%}
-  <div class="col-md-3{%if not assignable_columns%} col-md-offset-9{%endif%}"><button id="sendmailbutton" class="btn btn-default" disabled data-template="Send mail to {} {{title|lower}}"></button></div>
 {%endif%}
 </div>
 {%endif%}
