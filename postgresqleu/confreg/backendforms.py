@@ -378,7 +378,7 @@ class BackendRoomForm(BackendForm):
     coltypes = {
         'Sortkey': ['nosearch', ],
     }
-    defaultsort = [[1, 'asc']]
+    defaultsort = [[2, 'asc']]
 
     class Meta:
         model = Room
