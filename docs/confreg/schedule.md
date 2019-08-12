@@ -112,6 +112,12 @@ Sortkey
 :   An integer representing how to sort the room. Lower values sorts
 earlier.
 
+Available days
+:   List the days that this room is available. If no day is specified, the
+room is made available on all days. If there are no registration days defined
+on the conference ,this field does not exist. This field is only used
+when building a schedule graphically, not during regular viewing.
+
 Comment
 :   An internal comment about this room, typically something like
 location and capacity of room. Only used internally, intended for

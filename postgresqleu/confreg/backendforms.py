@@ -382,7 +382,14 @@ class BackendRoomForm(BackendForm):
 
     class Meta:
         model = Room
-        fields = ['roomname', 'sortkey', 'comment']
+        fields = ['roomname', 'sortkey', 'availabledays', 'comment']
+
+    def fix_fields(self):
+        if RegistrationDay.objects.filter(conference=self.conference).exists():
+            self.fields['availabledays'].queryset = RegistrationDay.objects.filter(conference=self.conference)
+        else:
+            self.remove_field('availabledays')
+            self.update_protected_fields()
 
 
 class BackendTagForm(BackendForm):

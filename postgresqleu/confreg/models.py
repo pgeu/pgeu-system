@@ -691,6 +691,8 @@ class Room(models.Model):
     sortkey = models.IntegerField(null=False, blank=False, default=100)
     comment = models.CharField(max_length=200, null=False, blank=True,
                                help_text='Internal comment for planning')
+    availabledays = models.ManyToManyField(RegistrationDay, blank=True, verbose_name='Available days',
+                                           help_text='Only used for schedule creation, not actual viewing!')
 
     json_included_attributes = ['roomname', 'sortkey']
 

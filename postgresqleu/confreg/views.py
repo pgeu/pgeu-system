@@ -2430,7 +2430,27 @@ def createschedule(request, confname):
 
     # Generate a sessionset with the slots only, but with one slot for
     # each room when we have multiple rooms.
-    raw = exec_to_grouped_dict("SELECT s.starttime::date AS day, r.id * 1000000 + s.id AS id, s.starttime, s.endtime, r.id AS room_id, to_char(starttime, 'HH24:MI') || ' - ' || to_char(endtime, 'HH24:MI') AS timeslot, min(starttime) OVER days AS firsttime,max(endtime) OVER days AS lasttime, 'f'::boolean as cross_schedule FROM confreg_conferencesessionscheduleslot s CROSS JOIN confreg_room r WHERE r.conference_id=%(confid)s AND s.conference_id=%(confid)s WINDOW days AS (PARTITION BY s.starttime::date) ORDER BY day, s.starttime", {
+    raw = exec_to_grouped_dict("""SELECT
+    s.starttime::date AS day,
+    r.id * 1000000 + s.id AS id,
+    s.starttime, s.endtime,
+    r.id AS room_id,
+    to_char(starttime, 'HH24:MI') || ' - ' || to_char(endtime, 'HH24:MI') AS timeslot,
+    min(starttime) OVER days AS firsttime,
+    max(endtime) OVER days AS lasttime,
+    'f'::boolean as cross_schedule
+FROM confreg_conferencesessionscheduleslot s
+CROSS JOIN confreg_room r
+WHERE
+    r.conference_id=%(confid)s AND
+    s.conference_id=%(confid)s AND (
+      EXISTS (SELECT 1 FROM confreg_room_availabledays ad
+              INNER JOIN confreg_registrationday rd ON rd.id=ad.registrationday_id
+              WHERE ad.room_id=r.id AND rd.day=s.starttime::date)
+      OR NOT EXISTS (SELECT 1 FROM confreg_room_availabledays ad2 WHERE ad2.room_id=r.id)
+    )
+WINDOW days AS (PARTITION BY s.starttime::date)
+ORDER BY day, s.starttime""", {
         'confid': conference.id,
     })
 
@@ -2442,7 +2462,27 @@ def createschedule(request, confname):
     days = []
 
     for d, d_sessions in list(raw.items()):
-        sessionset = SessionSet(allrooms, allrooms, conference.schedulewidth, conference.pixelsperminute, d_sessions)
+        # All rooms possibly not available on all days, so re-query
+        rooms = exec_to_keyed_dict("""SELECT
+   id,
+   sortkey,
+   roomname,
+   comment AS roomcomment
+FROM confreg_room r
+WHERE conference_id=%(confid)s
+AND (
+   EXISTS (SELECT 1 FROM confreg_room_availabledays ad
+        INNER JOIN confreg_registrationday rd ON rd.id=ad.registrationday_id
+        WHERE ad.room_id=r.id AND rd.conference_id=%(confid)s AND rd.day=%(day)s
+   ) OR NOT EXISTS (
+        SELECT 1 FROM confreg_room_availabledays ad2 WHERE ad2.room_id=r.id
+   )
+) ORDER BY sortkey, roomname""", {
+            'confid': conference.id,
+            'day': d,
+        })
+
+        sessionset = SessionSet(allrooms, rooms, conference.schedulewidth, conference.pixelsperminute, d_sessions)
         days.append({
             'day': d,
             'sessions': sessionset.all(),
