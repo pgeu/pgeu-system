@@ -173,7 +173,7 @@ function init() {
      else {
         // Are we moving away from existing slot? If so, mark it as open!
         if (session.data('slotid')) {
-           oldslot = $('#' + session.data('slotid'));
+           oldslot = $('#slot' + session.data('slotid'));
            unassignSessionInSlot(oldslot);
            // Session value overwritten in next step
         }
