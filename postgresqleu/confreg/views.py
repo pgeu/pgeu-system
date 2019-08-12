@@ -2463,11 +2463,8 @@ ORDER BY day, s.starttime""", {
 
     for d, d_sessions in list(raw.items()):
         # All rooms possibly not available on all days, so re-query
-        rooms = exec_to_keyed_dict("""SELECT
-   id,
-   sortkey,
-   roomname,
-   comment AS roomcomment
+        rooms = exec_to_scalar("""SELECT
+   array_agg(id ORDER BY sortkey, roomname)
 FROM confreg_room r
 WHERE conference_id=%(confid)s
 AND (
@@ -2477,7 +2474,7 @@ AND (
    ) OR NOT EXISTS (
         SELECT 1 FROM confreg_room_availabledays ad2 WHERE ad2.room_id=r.id
    )
-) ORDER BY sortkey, roomname""", {
+)""", {
             'confid': conference.id,
             'day': d,
         })
