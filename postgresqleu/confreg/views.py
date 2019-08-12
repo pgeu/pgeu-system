@@ -1625,7 +1625,7 @@ def callforpapers_confirm(request, confname, sessionid):
                                      },
                                      receivername=spk.fullname,
                 )
-            session.lastnotifiedstatus = 1
+            session.lastnotifiedstatus = session.status
             session.lastnotifiedtime = datetime.now()
             session.save()
             return HttpResponseRedirect(".")
