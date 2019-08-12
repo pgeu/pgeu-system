@@ -131,6 +131,19 @@ function init() {
 
   $('.actualsession, .sesscontentwrap').contextmenu(function(e) {
       assignMenu.data('sourceid', $(this).data('sessionid'));
+
+      /* Loop over all slots and show/hide the available ones */
+      $('div#assignMenu a[data-slotid]').each(function(i, e) {
+         var o = $(e);
+         var slot = $('#slot' + o.data('slotid'));
+         if (slot.data('sessionid')) {
+            o.parent().hide();
+         }
+         else {
+            o.parent().show();
+         }
+      });
+
       assignMenu.css({
         display:"block",
         left: e.pageX,
