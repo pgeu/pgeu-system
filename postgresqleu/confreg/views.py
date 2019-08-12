@@ -1583,7 +1583,7 @@ def callforpapers_confirm(request, confname, sessionid):
 
     if session.status not in (1, 3, 4, 5):
         # 1 = confirmed, so render
-        # 2 = pending, so render form
+        # 3 = pending, so render form
         # 4 = reserve, so render
         # 5 = pending reserve, so render form
         return HttpResponseRedirect("../..")
@@ -1595,7 +1595,7 @@ def callforpapers_confirm(request, confname, sessionid):
             # If a "speaker" or a "speaker or reserve speaker" regtype exists
             can_register = RegistrationType.objects.filter(conference=conference, active=True, specialtype__in=('spk', 'spkr')).exists()
         else:
-            # If a "sapeaker or reserve speaker" regtype exists
+            # If a "speaker or reserve speaker" regtype exists
             can_register = RegistrationType.objects.filter(conference=conference, active=True, specialtype='spkr').exists()
 
         return render_conference_response(request, conference, 'cfp', 'confreg/callforpapersconfirmed.html', {
