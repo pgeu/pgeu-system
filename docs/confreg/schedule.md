@@ -48,9 +48,12 @@ slots are available on the left.
 
 Cross schedule sessions are typically not scheduled using this tool.
 
-Drag and drop a session between locations to move it. Note that
-session length is *not* considered when doing this, so if you drag a
-session to a different length slot, it will change length!
+Right-click a session to schedule it, and pick the day, room and
+timeslot the session should be. Note that session length is *not*
+considered when doing this, so if you assign a session to a different
+length slot, it will change length!
+
+To unassign a session, simply right-click the session and choose unassign.
 
 A draft can be saved at any time, and will only be visible to other
 administrators.

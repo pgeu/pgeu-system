@@ -1,8 +1,6 @@
 {%extends "confreg/confadmin_base.html" %}
 {%block title%}Create schedule{%endblock%}
 {%block extrahead%}
-<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
-<script type="text/javascript" src="/media/jq/jquery-ui.min.js"></script>
 <style media="print">
 #pgHeaderContainer, #pgSideWrap { display:none; }
 div.schedwrap {
@@ -17,6 +15,8 @@ div.schedwrap {
 div.sessblock {
    border: 1px solid gray;
    overflow:hidden;
+}
+div.sessionslot {
    position: absolute;
 }
 div.sesspending {
@@ -27,6 +27,7 @@ div.roomheader {
    font-size: 1.2em;
    top: 0px;
    text-align: center;
+   position: absolute;
 }
 div.sessblock a {
    text-decoration: none;
@@ -34,6 +35,36 @@ div.sessblock a {
 }
 div.actualsession {
    z-index: 10;
+}
+div.sesscontentwrap {
+   position: relative;
+   height: 100%;
+}
+div.sesscontentwrap div.sessspeaker {
+   font-style: italic;
+}
+div#availablewrapper {
+   border: 1px solid;
+   display: flex;
+   flex-direction: column;
+   position: fixed;
+   top: 8%;
+   left: 1400px;
+   height: 88%;
+   width: 300px;
+   background-color: white;
+}
+div#availablewrapper h3 {
+   position: relative;
+   text-align: center;
+}
+div#availablewrapper div#availablesesswrap {
+   position: relative;
+   overflow-y: scroll;
+}
+div#availablewrapper div.sessblock {
+   width: 250px;
+   height: 75px;
 }
 #assignMenu {
   position: absolute;
@@ -49,57 +80,57 @@ div.track{{track.id}} {
 </style>
 
 <script type="text/javascript">
+var sessions = {
+{%for s in sessions %}
+   {{s.id}}: {
+      'title': '{{s.title|escapejs}}',
+      'track': {{s.track_id}},
+      'ispending': {{s.ispending|yesno:"true,false"}},
+      'speakers': '{{s.speaker_list|escapejs}}',
+   },
+{%endfor%}
+};
+
+var alltrackclasses = '{%for t in tracks%}track{{t.id}} {%endfor%}';
+
 $( init );
 /* Yes, this is very full of ugly hacks */
+
+function assignSessionToSlot(session, slot) {
+   var sessdata = sessions[session.data('sessionid')];
+
+   slot.data('sessionid', session.data('sessionid'));
+   session.data('slotid', slot.data('slotid'));
+
+   var wrap = slot.children('div.sesscontentwrap');
+   wrap.removeClass(alltrackclasses);
+   wrap.addClass('track'+sessdata.track);
+   wrap.data('sessionid', session.data('sessionid'));
+
+   wrap.children('div.sesstitle').text(sessdata['title']);
+   wrap.children('div.sessspeaker').text(sessdata['speakers']);
+
+   wrap.attr('title', sessdata['title'] + ' -- ' + sessdata['speakers']);
+
+   session.hide();
+}
+
+function unassignSessionInSlot(slot) {
+   var wrap = slot.children('div.sesscontentwrap');
+   wrap.children('div').empty();
+   wrap.removeClass(alltrackclasses);
+
+   var session = $('#sess' + slot.data('sessionid'));
+   slot.data('sessionid', null);
+
+   session.show();
+}
 
 function init() {
   var assignMenu = $('#assignMenu');
 
-  $('.actualsession').draggable({
-    cursor: 'move',
-    snap: '.sessionslot',
-    revert: 'invalid',
-  });
-
-  $('.sessionslot').droppable({
-    drop: function(event, ui) {
-     session = ui.draggable;
-
-     // Are we moving away from existing slot? If so, mark it as open!
-     if (session.attr('slot')) {
-        oldslot = $('#' + session.attr('slot'));
-        oldslot.attr('sessionid', null);
-        oldslot.droppable('option', 'accept', '.actualsession');
-     }
-
-     $(this).attr('sessionid', session.attr('id'));
-     session.attr('slot', $(this).attr('id'));
-
-     // Since something is now in this slot, turn off the acceptableness
-     $(this).droppable('option', 'accept', 'busy');
-
-     // Align the position of our object
-     session.css($(this).offset());
-     session.height($(this).height());
-     session.width($(this).width());
-   }
-  });
-
-  $('#availablewrapper').droppable({
-    drop: function(event, ui) {
-      session = ui.draggable;
-      // Are we moving away from existing slot? If so, mark it as open!
-      if (session.attr('slot')) {
-        oldslot = $('#' + session.attr('slot'));
-        oldslot.attr('sessionid', null);
-        oldslot.droppable('option', 'accept', '.actualsession');
-        session.attr('slot', null);
-      }
-    }
-  });
-
-  $('.actualsession').contextmenu(function(e) {
-      assignMenu.data('sourceid', this.id);
+  $('.actualsession, .sesscontentwrap').contextmenu(function(e) {
+      assignMenu.data('sourceid', $(this).data('sessionid'));
       assignMenu.css({
         display:"block",
         left: e.pageX,
@@ -117,45 +148,15 @@ function init() {
   });
 
   $('#assign_unassign').click(function(e) {
-     var session = $('#' + assignMenu.data('sourceid'));
+     var session = $('#sess' + assignMenu.data('sourceid'));
+
      /* Unassign the currently selected session, if it's scheduled */
-     if (session.attr('slot')) {
+     if (session.data('slotid')) {
+        oldslot = $('#slot' + session.data('slotid'));
 
-        var openslot = -1;
-        /* Find find the first available slot */
-        for (var i = 0; i < {{sessions|length}}; i++) {
-           var t = (i+2)*75 + 120;
-           var found = false;
-           $('div.actualsession').each(function(i, o) {
-              var e = $(o);
-              if (e.attr('slot')) {
-                 return true;
-              }
-              if (e.position().top == t) {
-                 found = true;
-                 return false;
-              }
-           });
-           if (!found) {
-              openslot = i;
-              break;
-           }
-        }
-        if (openslot < 0) {
-           alert('Unable to find open slot to reposition old item! Aborting! Sorry!');
-           return;
-        }
+        unassignSessionInSlot(oldslot);
 
-        oldslot = $('#' + session.attr('slot'));
-        oldslot.attr('sessionid', null);
-        oldslot.droppable('option', 'accept', '.actualsession');
-        session.attr('slot', null);
-        session.css({
-           'top': (openslot + 2)*75 + 120,
-           'left': $('#availablewrapper').position().left,
-           'height': 75,
-           'width': {{sesswidth}}
-        });
+        session.data('slotid', null);
       }
       else
          alert('This session is not assigned to a slot');
@@ -164,35 +165,27 @@ function init() {
   $('.assignMenuTimeslot').click(function(e) {
      var slotid = $(this).data('slotid');
      var slot = $('#slot' + slotid);
-     var session = $('#' + assignMenu.data('sourceid'));
+     var session = $('#sess' + assignMenu.data('sourceid'));
 
-     if (slot.attr('sessionid')) {
+     if (slot.data('sessionid')) {
         alert('A session is already assigned to this slot. Unassign that one first.');
      }
      else {
         // Are we moving away from existing slot? If so, mark it as open!
-        if (session.attr('slot')) {
-           oldslot = $('#' + session.attr('slot'));
-           oldslot.attr('sessionid', null);
-           oldslot.droppable('option', 'accept', '.actualsession');
+        if (session.data('slotid')) {
+           oldslot = $('#' + session.data('slotid'));
+           unassignSessionInSlot(oldslot);
+           // Session value overwritten in next step
         }
 
-        slot.attr('sessionid', session.attr('id'));
-        session.attr('slot', slotid);
-
-        slot.droppable('option', 'accept', 'busy');
-
-        // Update the position as necessary
-        session.css(slot.offset());
-        session.height(slot.height());
-        session.width(slot.width());
+        assignSessionToSlot(session, slot);
      }
 
      assignMenu.hide();
      $('.assignSubMenu').hide();
   });
 
-/* Fix for submenus */
+/* Fix for multiple submenus */
   $('ul.dropdown-menu [data-toggle=dropdown]').on('click', function (event) {
      $(this).parent().siblings('.dropdown-submenu').each(function(i, o) {
         $(o).find('ul.dropdown-menu').hide();
@@ -211,16 +204,8 @@ function init() {
      $.each(data, function(k, v) {
         slot = $('#' + k);
         session = $('#' + v);
-        slot.attr('sessionid', session.attr('id'));
-        session.attr('slot', slot.attr('id'));
 
-        // Since something is now in this slot, turn off the acceptableness
-        slot.droppable('option', 'accept', 'busy');
-
-        // Align the position of our object
-        session.css(slot.offset());
-        session.height(slot.height());
-        session.width(slot.width());
+        assignSessionToSlot(session, slot);
      });
   });
 }
@@ -234,9 +219,9 @@ function saveDraft() {
       'csrfmiddlewaretoken': '{{csrf_token}}',
    }
    $('.sessionslot').each(function(i, el) {
-      sessionid = $(el).attr('sessionid');
+      sessionid = $(el).data('sessionid');
       if (sessionid) {
-         sched[$(el).attr('id')] = sessionid;
+         sched[$(el).attr('id')] = 'sess' + sessionid;
       }
    });
    $.post('.', sched, function(data) {
@@ -260,11 +245,13 @@ the talk slot, if your schedule supports multiple different lengths.
   <font size="30">Please wait, talking to Mr Server...</font>
 </div>
 
-<div id="availablewrapper" style="float:right; border:1px solid blue;width:{{sesswidth}}px;height:{{availableheight}}px; margin-top: 0px;">
+<div id="availablewrapper">
   <h3>Available sessions</h3> 
+  <div id="availablesesswrap">
   {%for s in sessions %}
-   <div id="sess{{s.id}}" class="sessblock actualsession track{{s.track_id}}{%if s.ispending%} sesspending{%endif%}" style="top: {{s.top|add:"120"}}px; width: {{sesswidth}}px; height: 75px;">{{s.title}}<br/><i>{{s.speaker_list}}</i></div>
+   <div id="sess{{s.id}}" data-sessionid="{{s.id}}" class="sessblock actualsession track{{s.track_id}}{%if s.ispending%} sesspending{%endif%}">{{s.title}}<br/><i>{{s.speaker_list}}</i></div>
   {%endfor%}
+  </div>
 </div>
 
 {%for day in days%}
@@ -276,8 +263,9 @@ the talk slot, if your schedule supports multiple different lengths.
  </div>
 {%endfor%}
 {%for session in day.sessions%}
-  <div id="slot{{session.id}}" class="sessblock sessionslot" style="top: {{session.toppos}}px; left: {{session.leftpos}}px; width: {{session.widthpos}}px; height: {{session.heightpos}}px;">
+  <div id="slot{{session.id}}" data-slotid="{{session.id}}" class="sessblock sessionslot" style="top: {{session.toppos}}px; left: {{session.leftpos}}px; width: {{session.widthpos}}px; height: {{session.heightpos}}px;">
   {{session.timeslot}}
+  <div class="sesscontentwrap"><div class="sesstitle"></div><div class="sessspeaker"></div></div>
 </div>
 {%endfor%}
 </div>
