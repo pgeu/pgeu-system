@@ -2680,15 +2680,17 @@ def admin_registration_dashboard(request, urlname):
  count(payconfirmedat) AS confirmed,
  count(r.id) FILTER (WHERE payconfirmedat IS NULL AND (r.invoice_id IS NOT NULL OR bp.invoice_id IS NOT NULL)) AS invoiced,
  count(r.id) FILTER (WHERE payconfirmedat IS NULL AND (r.invoice_id IS NULL AND bp.invoice_id IS NULL)) AS unconfirmed,
- count(r.id) AS total
+ count(r.id) AS total,
+ invoice_autocancel_hours
 FROM confreg_conferenceregistration r
 RIGHT JOIN confreg_registrationtype rt ON rt.id=r.regtype_id
 LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id
 WHERE rt.conference_id={0}
 GROUP BY rt.id ORDER BY rt.sortkey""".format(conference.id))
     tables.append({'title': 'Registration types',
-                   'columns': ['Type', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total'],
+                   'columns': ['Type', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total', 'Inv. autoc'],
                    'fixedcols': 1,
+                   'fixedcolsend': 1,
                    'hidecols': 0,
                    'rows': curs.fetchall()},)
 
@@ -2701,15 +2703,16 @@ GROUP BY rt.id ORDER BY rt.sortkey""".format(conference.id))
  CASE WHEN {0} > 0 THEN {0}-count(r.id) ELSE NULL END AS remaining"""
 
     # Additional options
-    curs.execute("""SELECT ao.id, ao.name, {0}
+    curs.execute("""SELECT ao.id, ao.name, {0}, ao.invoice_autocancel_hours
 FROM confreg_conferenceregistration r
 INNER JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceregistration_id=r.id
 RIGHT JOIN confreg_conferenceadditionaloption ao ON ao.id=rao.conferenceadditionaloption_id
 LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id
 WHERE ao.conference_id={1} GROUP BY ao.id ORDER BY ao.name""".format(statusstr.format('ao.maxcount'), conference.id))
     tables.append({'title': 'Additional options',
-                   'columns': ['id', 'Name', 'Max uses', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total', 'Remaining'],
+                   'columns': ['id', 'Name', 'Max uses', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total', 'Remaining', 'Inv. autoc'],
                    'fixedcols': 2,
+                   'fixedcolsend': 1,
                    'hidecols': 1,
                    'linker': lambda x: '../addopts/{0}/'.format(x[0]),
                    'rows': curs.fetchall()})
@@ -2723,6 +2726,7 @@ WHERE dc.conference_id={1} AND (r.conference_id={1} OR r.conference_id IS NULL) 
     tables.append({'title': 'Discount codes',
                    'columns': ['id', 'Code', 'Expires', 'Max uses', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total', 'Remaining', ],
                    'fixedcols': 3,
+                   'fixedcolsend': 0,
                    'hidecols': 1,
                    'linker': lambda x: '../discountcodes/{0}/'.format(x[0]),
                    'rows': curs.fetchall()})
@@ -2732,17 +2736,21 @@ WHERE dc.conference_id={1} AND (r.conference_id={1} OR r.conference_id IS NULL) 
     tables.append({'title': 'Prepaid vouchers',
                    'columns': ['id', 'Buyer', 'Sponsor', 'Used', 'Unused', 'Total'],
                    'fixedcols': 3,
+                   'fixedcolsend': 0,
                    'hidecols': 1,
                    'linker': lambda x: '../prepaid/{0}/'.format(x[0]),
                    'rows': curs.fetchall()})
 
     # Add a sum row for eveything
     for t in tables:
+        print(t)
         sums = ['Total']
         for cn in range(1, t['fixedcols']):
             sums.append('')
-        for cn in range(t['fixedcols'] - 1, len(t['columns']) - 1):
+        for cn in range(t['fixedcols'] - 1, len(t['columns']) - 1 - t['fixedcolsend']):
             sums.append(sum((r[cn + 1] for r in t['rows'] if r[cn + 1] is not None)))
+        for cn in range(1, t['fixedcolsend']):
+            sums.append('')
         t['rows'] = [(r, t.get('linker', lambda x: None)(r)) for r in t['rows']]
         t['rows'].append((sums, None))
     return render(request, 'confreg/admin_registration_dashboard.html', {
