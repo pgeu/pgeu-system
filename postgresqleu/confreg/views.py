@@ -2743,13 +2743,12 @@ WHERE dc.conference_id={1} AND (r.conference_id={1} OR r.conference_id IS NULL) 
 
     # Add a sum row for eveything
     for t in tables:
-        print(t)
         sums = ['Total']
         for cn in range(1, t['fixedcols']):
             sums.append('')
         for cn in range(t['fixedcols'] - 1, len(t['columns']) - 1 - t['fixedcolsend']):
             sums.append(sum((r[cn + 1] for r in t['rows'] if r[cn + 1] is not None)))
-        for cn in range(1, t['fixedcolsend']):
+        for cn in range(0, t['fixedcolsend']):
             sums.append('')
         t['rows'] = [(r, t.get('linker', lambda x: None)(r)) for r in t['rows']]
         t['rows'].append((sums, None))
