@@ -35,6 +35,12 @@ div.sessblock a {
 div.actualsession {
    z-index: 10;
 }
+#assignMenu {
+  position: absolute;
+  display:none;
+  z-index: 10000;
+}
+
 {%for track in tracks%}
 div.track{{track.id}} {
    background-color: {{track.color}};
@@ -47,6 +53,8 @@ $( init );
 /* Yes, this is very full of ugly hacks */
 
 function init() {
+  var assignMenu = $('#assignMenu');
+
   $('.actualsession').draggable({
     cursor: 'move',
     snap: '.sessionslot',
@@ -89,6 +97,108 @@ function init() {
       }
     }
   });
+
+  $('.actualsession').contextmenu(function(e) {
+      assignMenu.data('sourceid', this.id);
+      assignMenu.css({
+        display:"block",
+        left: e.pageX,
+        top: e.pageY
+      });
+      return(false);
+  });
+  assignMenu.on("click", "a", function() {
+     assignMenu.hide();
+     $('.assignSubMenu').hide();
+  });
+  $('body').click(function () {
+     assignMenu.hide();
+     $('.assignSubMenu').hide();
+  });
+
+  $('#assign_unassign').click(function(e) {
+     var session = $('#' + assignMenu.data('sourceid'));
+     /* Unassign the currently selected session, if it's scheduled */
+     if (session.attr('slot')) {
+
+        var openslot = -1;
+        /* Find find the first available slot */
+        for (var i = 0; i < {{sessions|length}}; i++) {
+           var t = (i+2)*75 + 120;
+           var found = false;
+           $('div.actualsession').each(function(i, o) {
+              var e = $(o);
+              if (e.attr('slot')) {
+                 return true;
+              }
+              if (e.position().top == t) {
+                 found = true;
+                 return false;
+              }
+           });
+           if (!found) {
+              openslot = i;
+              break;
+           }
+        }
+        if (openslot < 0) {
+           alert('Unable to find open slot to reposition old item! Aborting! Sorry!');
+           return;
+        }
+
+        oldslot = $('#' + session.attr('slot'));
+        oldslot.attr('sessionid', null);
+        oldslot.droppable('option', 'accept', '.actualsession');
+        session.attr('slot', null);
+        session.css({
+           'top': (openslot + 2)*75 + 120,
+           'left': $('#availablewrapper').position().left,
+           'height': 75,
+           'width': {{sesswidth}}
+        });
+      }
+      else
+         alert('This session is not assigned to a slot');
+  });
+
+  $('.assignMenuTimeslot').click(function(e) {
+     var slotid = $(this).data('slotid');
+     var slot = $('#slot' + slotid);
+     var session = $('#' + assignMenu.data('sourceid'));
+
+     if (slot.attr('sessionid')) {
+        alert('A session is already assigned to this slot. Unassign that one first.');
+     }
+     else {
+        // Are we moving away from existing slot? If so, mark it as open!
+        if (session.attr('slot')) {
+           oldslot = $('#' + session.attr('slot'));
+           oldslot.attr('sessionid', null);
+           oldslot.droppable('option', 'accept', '.actualsession');
+        }
+
+        slot.attr('sessionid', session.attr('id'));
+        session.attr('slot', slotid);
+
+        slot.droppable('option', 'accept', 'busy');
+
+        // Update the position as necessary
+        session.css(slot.offset());
+        session.height(slot.height());
+        session.width(slot.width());
+     }
+
+     assignMenu.hide();
+     $('.assignSubMenu').hide();
+  });
+
+/* Fix for submenus */
+  $('ul.dropdown-menu [data-toggle=dropdown]').on('click', function (event) {
+     $(this).parent().siblings('.dropdown-submenu').each(function(i, o) {
+        $(o).find('ul.dropdown-menu').hide();
+     });
+  });
+/* End of fix for submenus */
 
   $('#loaderDiv')
      .hide()
@@ -180,4 +290,32 @@ save using the standard save button first, of course)
 </p>
 
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/">Back to dashboard</a>
+
+<div id="assignMenu" class="dropdown clearfix">
+  <ul class="dropdown-menu" role="menu" style="display:block;position:static;margin-bottom:5px;">
+    <li class="dropdown-header">Assign session</li>
+    <li><a href="#" id="assign_unassign">Unassign</a></li>
+    <div class="dropdown-divider"></div>
+    <li role="separator" class="divider"></li>
+{%for day in days %}
+    <li class="dropdown-submenu">
+    <a href="#" data-toggle="dropdown">{{day.day|date:"l, F d"}} <span class="glyphicon glyphicon-chevron-right"></span></a>
+      <ul class="dropdown-menu assignSubMenu">
+{%for room in day.rooms %}
+        <li class="dropdown-submenu">
+          <a href="#" data-toggle="dropdown">{{room.name}} <span class="glyphicon glyphicon-chevron-right"></span></a>
+	  <ul class="dropdown-menu assignSubMenu">
+{%for session in day.sessions %}
+{%if session.room_id == room.id %}
+            <li><a href="#" class="assignMenuTimeslot" data-slotid="{{session.id}}">{{session.timeslot}}</a></li>
+{%endif%}
+{%endfor%}
+	  </ul>
+	</li>
+{%endfor%}
+      </ul>
+    </li>
+{%endfor%}
+  </ul>
+</div>
 {%endblock%}
