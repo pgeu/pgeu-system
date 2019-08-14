@@ -26,6 +26,7 @@ from .models import ConferenceRegistration, Speaker
 from .models import BulkPayment
 from .models import AccessToken
 from .models import ShirtSize
+from .models import PendingAdditionalOrder
 
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.confsponsor.util import get_sponsor_dashboard_data
@@ -274,6 +275,15 @@ def multiregs(request, urlname):
         'conference': conference,
         'bulkpays': BulkPayment.objects.select_related('user', 'invoice__paidusing').prefetch_related('conferenceregistration_set').filter(conference=conference).order_by('-paidat', '-createdat'),
         'highlight': int(request.GET.get('b', -1)),
+    })
+
+
+def addoptorders(request, urlname):
+    conference = get_authenticated_conference(request, urlname)
+
+    return render(request, 'confreg/admin_addoptorder_list.html', {
+        'conference': conference,
+        'orders': PendingAdditionalOrder.objects.select_related('reg', 'invoice__paidusing').filter(reg__conference=conference).order_by('-payconfirmedat', '-createtime'),
     })
 
 

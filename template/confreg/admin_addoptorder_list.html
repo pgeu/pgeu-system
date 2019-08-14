@@ -1,0 +1,36 @@
+{%extends "confreg/confadmin_base.html" %}
+{%block title%}Additional Options Orders{%endblock%}
+
+{%block layoutblock%}
+<h1>Additional Options Orders</h1>
+
+<table class="table table-bordered table-striped table-hover table-condensed">
+  <tr>
+    <th>Attendee</th>
+    <th>Created at</th>
+    <th>Invoice</th>
+    <th>Paid at</th>
+    <th>Status</th>
+    <th>Options</th>
+  </tr>
+{%for o in orders %}
+  <tr>
+    <td>{{o.reg.fullname}}</td>
+    <td>{{o.createtime}}</td>
+    <td>#{%if user.is_superuser%}<a href="/invoiceadmin/{{o.invoice.id}}/">{{o.invoice.id}}</a>{%else%}{{o.invoice.id}}{%endif%}</td>
+    <td>{{o.payconfirmedat}}</td>
+    <td>{%if o.payconfirmedat%}{{o.invoice.payment_method_description}}{%else%}<strong>not</strong> paid{%endif%}</td>
+    <td>
+      <ul class="nopad">
+{%for ao in o.options.all %}
+       <li><a href="../addopts/{{ao.id}}/">{{ao.name}}</a></li>
+{%endfor%}
+      </ul>
+    </td>
+  </tr>
+{%endfor%}
+</table>
+
+<a class="btn btn-default btn-block" href="../">Back</a>
+
+{%endblock%}

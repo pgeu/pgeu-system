@@ -135,6 +135,23 @@
   </td>
  </tr>
  <tr>
+  <td>Additional orders</td>
+  <td><ul>
+{%for o in reg.pendingadditionalorder_set.all %}
+<li>Created {{o.createtime}}{%if o.invoice%}, invoice <a href="/invoiceadmin/{{o.invoice.id}}">#{{o.invoice.id}}</a>{%endif%}, {%if o.payconfirmedat%}{{o.invoice.payment_method_description}}{%else%}<strong>not</strong> paid{%endif%}
+      <ul>
+{%if o.newregtype %}
+        <li>New registration type: {{o.newregtype.regtype}}</li>
+{%endif%}
+{%for ao in o.options.all %}
+        <li>{{ao.name}}</li>
+{%endfor%}
+      </ul>
+    </li>
+{%endfor%}
+  </ul></td>
+ </tr>
+ <tr>
   <th colspan="2" class="col-md-12">Check-in process</th>
  </tr>
 {%if conference.queuepartitioning%}
