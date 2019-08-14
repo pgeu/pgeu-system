@@ -58,7 +58,6 @@ class StripeApi(object):
 
     def get_balance(self):
         r = self.secret('balance').json()
-        print(r)
         balance = Decimal(0)
 
         for a in r['available']:

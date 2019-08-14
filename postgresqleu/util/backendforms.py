@@ -159,7 +159,6 @@ class BackendForm(ConcurrentProtectedModelForm):
 
     @classmethod
     def numeric_defaultsort(cls):
-        print([(cls.list_fields.index(fn), d) for fn, d in cls.defaultsort])
         return [[cls.list_fields.index(fn), d] for fn, d in cls.defaultsort]
 
     @property
