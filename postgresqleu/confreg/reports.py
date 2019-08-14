@@ -333,19 +333,163 @@ def build_attendee_report(conference, POST):
 # Simple conference reports - basically, just queries and sometimes mapped with a form
 #
 simple_reports = {
-    'unregspeaker': 'SELECT DISTINCT fullname AS "Name", u.email AS "E-mail" FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id INNER JOIN auth_user u ON u.id=spk.user_id WHERE s.conference_id=%(confid)s AND s.status=1 AND NOT EXISTS (SELECT * FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.attendee_id=spk.user_id) ORDER BY fullname',
-    'unregstaff': 'SELECT last_name, first_name, email FROM auth_user u INNER JOIN confreg_conference_staff s ON s.user_id=u.id WHERE s.conference_id=%(confid)s AND u.id NOT IN (SELECT attendee_id FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND attendee_id IS NOT NULL) ORDER BY last_name, first_name',
-    'unconfirmspeaker': 'SELECT fullname AS "Name", u.email AS "E-mail", title AS "Title", stat.statustext AS "Session status" FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id INNER JOIN auth_user u ON u.id=spk.user_id INNER JOIN confreg_status_strings stat ON stat.id=s.status WHERE s.conference_id=%(confid)s AND s.status IN (3,5) ORDER BY fullname',
-    'sessionstatus': 'SELECT ss.id AS _id, statustext AS "Status",count(*) AS "Count", NULL as "Sum" FROM confreg_conferencesession s INNER JOIN confreg_status_strings ss ON ss.id=s.status WHERE conference_id=%(confid)s GROUP BY ss.id UNION ALL SELECT 10000, statusgroup, NULL, count(*) FROM confreg_conferencesession s INNER JOIN confreg_status_strings ss ON ss.id=s.status WHERE conference_id=%(confid)s AND statusgroup IS NOT NULL GROUP BY statusgroup ORDER BY 1',
-    'tshirtsizes': 'SELECT shirtsize AS "Size", count(*) AS "Num", round(count(*)*100/sum(count(*)) over ()) AS "Percent" FROM confreg_conferenceregistration r INNER JOIN confreg_shirtsize s ON s.id=r.shirtsize_id WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL GROUP BY shirtsize_id, shirtsize ORDER BY shirtsize_id',
-    'tshirtsizes__anon': 'SELECT shirtsize AS "Size", num as "Num", round(num*100/sum(num) over (), 0) AS "Percent" FROM confreg_aggregatedtshirtsizes t INNER JOIN confreg_shirtsize s ON s.id=t.size_id WHERE t.conference_id=%(confid)s ORDER BY size_id',
-    'countries': 'SELECT COALESCE(printable_name, $$Unspecified$$) AS "Country", count(*) AS "Registrations" FROM confreg_conferenceregistration LEFT JOIN country ON country.iso=country_id WHERE payconfirmedat IS NOT NULL AND conference_id=%(confid)s GROUP BY printable_name ORDER BY 2 DESC',
-    'regdays': """WITH t AS (SELECT r.id, rd.day FROM confreg_conferenceregistration r INNER JOIN confreg_registrationtype rt ON rt.id=r.regtype_id INNER JOIN confreg_registrationtype_days rtd ON rtd.registrationtype_id=rt.id INNER JOIN confreg_registrationday rd ON rd.id=rtd.registrationday_id WHERE r.conference_id=24 AND r.payconfirmedat IS NOT NULL
-UNION
-SELECT r.id, rd.day FROM confreg_conferenceregistration r INNER JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceregistration_id=r.id INNER JOIN confreg_conferenceadditionaloption ao ON ao.id=rao.conferenceadditionaloption_id INNER JOIN confreg_conferenceadditionaloption_additionaldays aoad ON aoad.conferenceadditionaloption_id=ao.id INNER JOIN confreg_registrationday rd ON rd.id=aoad.registrationday_id WHERE r.conference_id=24 AND r.payconfirmedat IS NOT NULL) SELECT day,count(*) FROM t GROUP BY day ORDER BY day""",
-    'sessnoroom': "SELECT title AS \"Title\", trackname AS \"Track\", starttime || ' - ' || endtime AS \"Timeslot\" FROM confreg_conferencesession s LEFT JOIN confreg_track t ON t.id=s.track_id WHERE s.conference_id=%(confid)s AND status=1 AND room_id IS NULL AND NOT cross_schedule",
-    'sessnotrack': "SELECT title AS \"Title\", roomname AS \"Room\", starttime || ' - ' || endtime AS \"Timeslot\" FROM confreg_conferencesession s LEFT JOIN confreg_room r ON r.id=s.room_id WHERE s.conference_id=%(confid)s AND status=1 AND track_id IS NULL",
-    'sessoverlaproom': "SELECT roomname AS \"Room\", title AS \"Title\", starttime || ' - ' || endtime AS \"Timeslot\" FROM confreg_conferencesession s INNER JOIN confreg_room r ON r.id=s.room_id WHERE s.conference_id=%(confid)s AND r.conference_id=%(confid)s AND status=1 AND EXISTS (SELECT 1 FROM confreg_conferencesession s2 WHERE s2.conference_id=%(confid)s AND s2.status=1 AND s2.room_id=s.room_id AND s.id != s2.id AND tstzrange(s.starttime, s.endtime) && tstzrange(s2.starttime, s2.endtime)) ORDER BY 1,3",
+    'unregspeaker': """SELECT DISTINCT
+   fullname AS "Name",
+   u.email AS "E-mail"
+FROM confreg_speaker spk
+INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id
+INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id
+INNER JOIN auth_user u ON u.id=spk.user_id
+WHERE s.conference_id=%(confid)s AND
+      s.status=1 AND
+      NOT EXISTS (SELECT * FROM confreg_conferenceregistration r
+                  WHERE r.conference_id=%(confid)s
+                  AND r.payconfirmedat IS NOT NULL
+                  AND r.attendee_id=spk.user_id)
+ORDER BY fullname""",
+    'unregstaff': """SELECT
+   last_name,
+   first_name,
+   email
+FROM auth_user u
+INNER JOIN confreg_conference_staff s ON s.user_id=u.id
+WHERE s.conference_id=%(confid)s AND
+      u.id NOT IN (SELECT attendee_id FROM confreg_conferenceregistration r
+                   WHERE r.conference_id=%(confid)s AND
+                         payconfirmedat IS NOT NULL AND
+                         attendee_id IS NOT NULL
+                  )
+ORDER BY last_name, first_name""",
+
+    'unconfirmspeaker': """SELECT
+   fullname AS "Name",
+   u.email AS "E-mail",
+   title AS "Title",
+   stat.statustext AS "Session status"
+FROM confreg_speaker spk
+INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id
+INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id
+INNER JOIN auth_user u ON u.id=spk.user_id
+INNER JOIN confreg_status_strings stat ON stat.id=s.status
+WHERE s.conference_id=%(confid)s AND s.status IN (3,5)
+ORDER BY fullname""",
+
+    'sessionstatus': """SELECT
+   ss.id AS _id,
+   statustext AS "Status",
+   count(*) AS "Count",
+   NULL as "Sum"
+FROM confreg_conferencesession s
+INNER JOIN confreg_status_strings ss ON ss.id=s.status
+WHERE conference_id=%(confid)s
+GROUP BY ss.id
+
+UNION ALL
+
+SELECT
+   10000,
+    statusgroup,
+    NULL,
+    count(*)
+FROM confreg_conferencesession s
+INNER JOIN confreg_status_strings ss ON ss.id=s.status
+WHERE conference_id=%(confid)s AND statusgroup IS NOT NULL
+GROUP BY statusgroup
+
+ORDER BY 1""",
+
+    'tshirtsizes': """SELECT
+   shirtsize AS "Size",
+   count(*) AS "Num",
+   round(count(*)*100/sum(count(*)) over ()) AS "Percent"
+FROM confreg_conferenceregistration r
+INNER JOIN confreg_shirtsize s ON s.id=r.shirtsize_id
+WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL
+GROUP BY shirtsize_id, shirtsize
+ORDER BY shirtsize_id""",
+    'tshirtsizes__anon': """SELECT
+   shirtsize AS "Size",
+   num as "Num",
+   round(num*100/sum(num) over (), 0) AS "Percent"
+FROM confreg_aggregatedtshirtsizes t
+INNER JOIN confreg_shirtsize s ON s.id=t.size_id
+WHERE t.conference_id=%(confid)s
+ORDER BY size_id""",
+    'countries': """SELECT
+   COALESCE(printable_name, $$Unspecified$$) AS "Country",
+   count(*) AS "Registrations"
+FROM confreg_conferenceregistration
+LEFT JOIN country ON country.iso=country_id
+WHERE payconfirmedat IS NOT NULL AND conference_id=%(confid)s
+GROUP BY printable_name
+ORDER BY 2 DESC""",
+
+    'regdays': """WITH t AS (
+   SELECT r.id, rd.day
+   FROM confreg_conferenceregistration r
+   INNER JOIN confreg_registrationtype rt ON rt.id=r.regtype_id
+   INNER JOIN confreg_registrationtype_days rtd ON rtd.registrationtype_id=rt.id
+   INNER JOIN confreg_registrationday rd ON rd.id=rtd.registrationday_id
+   WHERE r.conference_id=24 AND r.payconfirmedat IS NOT NULL
+ UNION
+   SELECT r.id, rd.day
+   FROM confreg_conferenceregistration r
+   INNER JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceregistration_id=r.id
+   INNER JOIN confreg_conferenceadditionaloption ao ON ao.id=rao.conferenceadditionaloption_id
+   INNER JOIN confreg_conferenceadditionaloption_additionaldays aoad ON aoad.conferenceadditionaloption_id=ao.id
+   INNER JOIN confreg_registrationday rd ON rd.id=aoad.registrationday_id
+   WHERE r.conference_id=24 AND r.payconfirmedat IS NOT NULL
+)
+SELECT
+   day,count(*)
+FROM t
+GROUP BY day
+ORDER BY day""",
+
+    'sessnoroom': """SELECT
+   title AS \"Title\",
+   trackname AS \"Track\",
+   starttime || ' - ' || endtime AS \"Timeslot\"
+FROM confreg_conferencesession s
+LEFT JOIN confreg_track t ON t.id=s.track_id
+WHERE s.conference_id=%(confid)s AND status=1 AND room_id IS NULL AND NOT cross_schedule""",
+    'sessnotrack': """SELECT
+   title AS \"Title\",
+   roomname AS \"Room\",
+   starttime || ' - ' || endtime AS \"Timeslot\"
+FROM confreg_conferencesession s
+LEFT JOIN confreg_room r ON r.id=s.room_id
+WHERE s.conference_id=%(confid)s AND status=1 AND track_id IS NULL""",
+    'sessoverlaproom': """SELECT
+   roomname AS \"Room\",
+   title AS \"Title\",
+   starttime || ' - ' || endtime AS \"Timeslot\"
+FROM confreg_conferencesession s
+INNER JOIN confreg_room r ON r.id=s.room_id
+WHERE s.conference_id=%(confid)s AND
+      r.conference_id=%(confid)s AND
+      status=1 AND
+      EXISTS (SELECT 1 FROM confreg_conferencesession s2
+              WHERE s2.conference_id=%(confid)s AND
+                    s2.status=1 AND
+                    s2.room_id=s.room_id AND
+                    s.id != s2.id AND
+                    tstzrange(s.starttime, s.endtime) && tstzrange(s2.starttime, s2.endtime)
+      )
+ORDER BY 1,3""",
+
     'queuepartitions': QueuePartitionForm,
-    'notcheckedin': 'SELECT lastname AS "Last name", firstname AS "First name", regtype AS "Registration type", COALESCE(c.printable_name, $$Unspecified$$) AS "Country" FROM confreg_conferenceregistration r INNER JOIN confreg_registrationtype rt ON rt.id=r.regtype_id LEFT JOIN country c ON c.iso=r.country_id WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND checkedinat IS NULL ORDER BY lastname, firstname',
+
+    'notcheckedin': """SELECT
+   lastname AS "Last name",
+   firstname AS "First name",
+   regtype AS "Registration type",
+   COALESCE(c.printable_name, $$Unspecified$$) AS "Country"
+FROM confreg_conferenceregistration r
+INNER JOIN confreg_registrationtype rt ON rt.id=r.regtype_id
+LEFT JOIN country c ON c.iso=r.country_id
+WHERE r.conference_id=%(confid)s AND
+      payconfirmedat IS NOT NULL AND
+      checkedinat IS NULL
+ORDER BY lastname, firstname""",
 }
