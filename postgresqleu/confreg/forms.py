@@ -518,7 +518,14 @@ class CallForPapersForm(forms.ModelForm):
         if not self.instance.conference.track_set.filter(incfp=True).count() > 0:
             del self.fields['track']
         else:
-            self.fields['track'].queryset = Track.objects.filter(conference=self.instance.conference, incfp=True).order_by('trackname')
+            # Special case -- if a track already picked is no longer flagged as "incfp", it means that this particular
+            # track has been closed. But we want to still allow editing of *other* details, so juste create a set
+            # of tracks that includes just this one.
+            if self.instance.track and not self.instance.track.incfp:
+                self.fields['track'].queryset = Track.objects.filter(conference=self.instance.conference, pk=self.instance.track.pk)
+                self.fields['track'].empty_label = None
+            else:
+                self.fields['track'].queryset = Track.objects.filter(conference=self.instance.conference, incfp=True).order_by('trackname')
 
     def clean_abstract(self):
         abstract = self.cleaned_data.get('abstract')
