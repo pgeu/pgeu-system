@@ -337,11 +337,12 @@ class BackendAdditionalOptionForm(BackendForm):
     class Meta:
         model = ConferenceAdditionalOption
         fields = ['name', 'cost', 'maxcount', 'public', 'upsellable', 'invoice_autocancel_hours',
-                  'requires_regtype', 'mutually_exclusive']
+                  'requires_regtype', 'mutually_exclusive', 'additionaldays']
 
     def fix_fields(self):
         self.fields['requires_regtype'].queryset = RegistrationType.objects.filter(conference=self.conference)
         self.fields['mutually_exclusive'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference).exclude(pk=self.instance.pk)
+        self.fields['additionaldays'].queryset = RegistrationDay.objects.filter(conference=self.conference)
 
 
 class BackendTrackForm(BackendForm):

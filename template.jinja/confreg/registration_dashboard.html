@@ -146,10 +146,10 @@ spamfilters.
 <dl>
  <dt>Registration type</dt>
  <dd>Your registration type is <i>{{reg.regtype}}</i>.
-{%if reg.regtype.days.count() %}
-This registration type gives you access to the conference on {{reg.regtype.available_days}}.
+{%if reg.access_days %}
+ <dt>Access days</dt>
+ <dd>Your registration gives you access to the conference on {{reg.access_days}}.</dd>
 {%endif%}
- </dd>
 {%if conference.tickets %}
  <dt>Ticket</dt>
  <dd>You can download <a href="{{redir_root}}ticket/">your ticket</a> and bring to the conference

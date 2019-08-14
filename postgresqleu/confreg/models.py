@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.dateformat import DateFormat
+from django.utils.functional import cached_property
 from django.template.defaultfilters import slugify
 from django.contrib.postgres.fields import DateTimeRangeField
 
@@ -409,6 +410,7 @@ class ConferenceAdditionalOption(models.Model):
     invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), ], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
     requires_regtype = models.ManyToManyField(RegistrationType, blank=True, verbose_name="Requires registration type", help_text='Can only be picked with selected registration types')
     mutually_exclusive = models.ManyToManyField('self', blank=True, help_text='Mutually exlusive with these additional options', symmetrical=True)
+    additionaldays = models.ManyToManyField(RegistrationDay, blank=True, verbose_name="Adds access to days", help_text='Adds access to additional conference day(s), even if the registration type does not')
 
     class Meta:
         ordering = ['name', ]
@@ -614,6 +616,26 @@ class ConferenceRegistration(models.Model):
 
         return "Payment details not available"
 
+    @property
+    def alldays(self):
+        days = set(self.regtype.days.all())
+        for ao in self.additionaloptions.all():
+            days.update(ao.additionaldays.all())
+        return sorted(days, key=lambda x: x.day)
+
+    @cached_property
+    def access_days(self):
+        days = self.alldays
+
+        if not days:
+            # Registration days not in use
+            return None
+
+        if len(days) == 1:
+            return days[0].shortday()
+
+        return ", ".join([x.shortday() for x in days[:-1]]) + " and " + days[-1].shortday()
+
     def get_field_string(self, field):
         r = getattr(self, field)
         if isinstance(r, bool):
@@ -640,7 +662,7 @@ class ConferenceRegistration(models.Model):
 
     # For exporting "safe attributes" to external systems
     def safe_export(self):
-        attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'countryname', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'badgescan', 'shareemail', 'fullidtoken', 'fullpublictoken', 'queuepartition', ]
+        attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'countryname', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'badgescan', 'shareemail', 'fullidtoken', 'fullpublictoken', 'queuepartition', 'alldays', ]
         d = dict((a, getattr(self, a) and str(getattr(self, a))) for a in attribs)
         if self.regtype:
             d['regtype'] = self.regtype.safe_export()

@@ -120,8 +120,8 @@ are listed as staff in the [conference configuration](configuring).
 
 Registration days are not a mandatory part of the system, but if they are used
 they are used to indicate which different days the conference runs, and can be
-used to limit certain registration types to certain days, typically used to
-render information on the badges.
+used to limit certain registration types and additional options to certain days,
+typically used to render information on the badges or produce numbers to a venue.
 
 IN the system, registration days are simply a list of dates, that must fall
 between the [conference](configuring) start date and end date.
@@ -287,3 +287,7 @@ options. This is typically used for things like training sessions
 running at the same time. If the exclusion is specified in one
 direction between the two options, it is automatically excluding both
 directions.
+
+Additional days
+: This options list additional days that this option gives access to,
+beyond those specified by the registration type.
