@@ -618,7 +618,10 @@ class ConferenceRegistration(models.Model):
 
     @property
     def alldays(self):
-        days = set(self.regtype.days.all())
+        if self.regtype:
+            days = set(self.regtype.days.all())
+        else:
+            days = set()
         for ao in self.additionaloptions.all():
             days.update(ao.additionaldays.all())
         return sorted(days, key=lambda x: x.day)
