@@ -731,6 +731,7 @@ def reg_add_options(request, confname):
     options = ConferenceAdditionalOption.objects.filter(conference=conference, pk__in=options, upsellable=True)
     if len(options) < 0:
         messages.warning(request, "Option searching mismatch, order canceled.")
+        return HttpResponseRedirect('../')
 
     # Check the count on each option (yes, this is inefficient, but who cares)
     for o in options:
