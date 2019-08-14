@@ -308,7 +308,8 @@ class AdditionalOptionUserManager(object):
     singular = 'user'
 
     def get_list(self, instance):
-        return [(r.id, r.fullname, r.invoice_status) for r in instance.conferenceregistration_set.all()]
+        if instance.id:
+            return [(r.id, r.fullname, r.invoice_status) for r in instance.conferenceregistration_set.all()]
 
     def get_form(self):
         return None
