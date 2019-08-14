@@ -430,7 +430,7 @@ ORDER BY 2 DESC""",
    INNER JOIN confreg_registrationtype rt ON rt.id=r.regtype_id
    INNER JOIN confreg_registrationtype_days rtd ON rtd.registrationtype_id=rt.id
    INNER JOIN confreg_registrationday rd ON rd.id=rtd.registrationday_id
-   WHERE r.conference_id=24 AND r.payconfirmedat IS NOT NULL
+   WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL
  UNION
    SELECT r.id, rd.day
    FROM confreg_conferenceregistration r
@@ -438,7 +438,7 @@ ORDER BY 2 DESC""",
    INNER JOIN confreg_conferenceadditionaloption ao ON ao.id=rao.conferenceadditionaloption_id
    INNER JOIN confreg_conferenceadditionaloption_additionaldays aoad ON aoad.conferenceadditionaloption_id=ao.id
    INNER JOIN confreg_registrationday rd ON rd.id=aoad.registrationday_id
-   WHERE r.conference_id=24 AND r.payconfirmedat IS NOT NULL
+   WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL
 )
 SELECT
    day,count(*)
