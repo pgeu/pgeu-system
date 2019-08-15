@@ -64,6 +64,10 @@ def build_linear_pdf_schedule(conference, room, tracks, day, colored, pagesize, 
     (width, height, canvas, resp) = _setup_canvas(pagesize, orientation)
 
     # Fetch and modify styles
+    st_time = getSampleStyleSheet()['Normal']
+    st_time.fontName = "DejaVu Serif"
+    st_time.fontSize = 10
+    st_time.spaceAfter = 8
     st_title = getSampleStyleSheet()['Normal']
     st_title.fontName = "DejaVu Serif"
     st_title.fontSize = 10
@@ -105,7 +109,13 @@ def build_linear_pdf_schedule(conference, room, tracks, day, colored, pagesize, 
             lastdate = s.starttime.date()
             tbldata = []
             tblstyle = copy.copy(default_tbl_style)
-        tstr = Paragraph("%s - %s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")), st_title)
+
+        if colored and s.track and s.track.fgcolor:
+            st_title.textColor = st_speakers.textColor = s.track.fgcolor
+        else:
+            st_title.textColor = st_speakers.textColor = color.black
+
+        tstr = Paragraph("%s - %s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")), st_time)
         if s.cross_schedule:
             # Just add a blank row for cross schedule things, so we get the time on there
             tbldata.extend([(tstr, '')])
@@ -251,7 +261,10 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
                 canvas.rect(s_left, s_top, thisroomwidth, s_height, stroke=1, fill=colored)
 
                 timestampstr = "%s-%s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M"))
+                if colored and s.track and s.track.fgcolor:
+                    timestampstyle.textColor = s.track.fgcolor
                 ts = Paragraph(timestampstr, timestampstyle)
+
                 (tsaw, tsah) = ts.wrap(thisroomwidth - mm(2), timestampstyle.fontSize)
                 ts.drawOn(canvas, s_left + mm(1), s_top + s_height - tsah - mm(1))
 
@@ -283,6 +296,9 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
                                 sessionstyle = ParagraphStyle('sessionstyle')
                                 sessionstyle.fontName = "DejaVu Serif"
                                 sessionstyle.fontSize = fs
+                                if colored and s.track and s.track.fgcolor:
+                                    sessionstyle.textColor = s.track.fgcolor
+
                                 speakersize = fs > 8 and 8 or fs - 1
                                 if includespeaker:
                                     p = Paragraph(title + "<br/><font size=%s>%s</font>" % (speakersize, s.speaker_list), sessionstyle)

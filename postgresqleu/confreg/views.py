@@ -1064,7 +1064,7 @@ class SessionSet(object):
 
 
 def _scheduledata(request, conference):
-    tracks = exec_to_dict("SELECT id, color, incfp, trackname, sortkey FROM confreg_track t WHERE conference_id=%(confid)s AND EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.track_id=t.id AND s.status=1) ORDER BY sortkey", {
+    tracks = exec_to_dict("SELECT id, color, fgcolor, incfp, trackname, sortkey FROM confreg_track t WHERE conference_id=%(confid)s AND EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.track_id=t.id AND s.status=1) ORDER BY sortkey", {
         'confid': conference.id,
     })
 

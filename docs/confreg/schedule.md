@@ -95,8 +95,11 @@ Sort key
 :   An integer representing how to sort the track. Lower values sorts
 earlier.
 
-Color
-:   Color to use on schedule (and other places) for this track
+Background color
+:   Background color to use on schedule (and other places) for this track
+
+Foreground color
+:   Foreground color to use on schedule (and other places) for this track
 
 In call for papers
 :   Whether this track should be available to choose in the

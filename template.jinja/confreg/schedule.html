@@ -31,6 +31,10 @@ div.sessblock a {
 {%for track in tracks%}
 div.track{{track.id}} {
    background-color: {{track.color}};
+   color: {{track.fgcolor}};
+}
+div.track{{track.id}} a {
+   color: {{track.fgcolor}};
 }
 {%endfor%}
 </style>
