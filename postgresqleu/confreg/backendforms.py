@@ -63,6 +63,9 @@ class BackendConferenceForm(BackendForm):
                   'skill_levels', 'additionalintro', 'callforpapersintro', 'callforpaperstags', 'sendwelcomemail', 'welcomemail',
                   'tickets', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist',
                   'initial_common_countries']
+        widgets = {
+            'welcomemail': EmailTextWidget,
+        }
 
     def fix_fields(self):
         self.selectize_multiple_fields['volunteers'] = RegisteredUsersLookup(self.conference)
