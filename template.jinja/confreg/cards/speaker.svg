@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+	 width="800" height="419"
+	 style="font-family: lato;"
+>
+  <rect width="100%" height="100%" fill="black" />
+
+  <rect x="10" y="10" width="780" height="399" rx="10" fill="gray" />
+
+  <text x="400" y="60" text-anchor="middle" style="font-size: 40pt">{{speaker.fullname}}</text>
+{{speaker.abstract|svgparagraph(75, 180, 80, 20, 10)}}
+
+{%if speaker.has_photo%}
+  <image x="30" y="80" width="128" height="128" xlink:href="data:image/jpg;base64,{{speaker.photo_data}}" />
+{%endif%}
+</svg>

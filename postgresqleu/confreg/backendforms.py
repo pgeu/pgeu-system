@@ -54,7 +54,7 @@ class BackendConferenceForm(BackendForm):
     class Meta:
         model = Conference
         fields = ['active', 'callforpapersopen', 'callforsponsorsopen', 'feedbackopen', 'checkinactive',
-                  'conferencefeedbackopen', 'scheduleactive', 'sessionsactive', 'allowedit',
+                  'conferencefeedbackopen', 'scheduleactive', 'sessionsactive', 'cardsactive', 'allowedit',
                   'promoactive', 'promotext', 'promopicurl',
                   'twitter_timewindow_start', 'twitter_timewindow_end',
                   'schedulewidth', 'pixelsperminute', 'notifyregs',
@@ -78,7 +78,7 @@ class BackendConferenceForm(BackendForm):
         {'id': 'promo', 'legend': 'Website promotion', 'fields': ['promoactive', 'promotext', 'promopicurl']},
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', ]},
         {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent', 'additionalintro', ]},
-        {'id': 'steps', 'legend': 'Steps', 'fields': ['active', 'allowedit', 'callforpapersopen', 'callforsponsorsopen', 'scheduleactive', 'sessionsactive', 'checkinactive', 'conferencefeedbackopen', 'feedbackopen']},
+        {'id': 'steps', 'legend': 'Steps', 'fields': ['active', 'allowedit', 'callforpapersopen', 'callforsponsorsopen', 'scheduleactive', 'sessionsactive', 'cardsactive', 'checkinactive', 'conferencefeedbackopen', 'feedbackopen']},
         {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpaperstags', 'callforpapersintro']},
         {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', ]},
         {'id': 'legacy', 'legend': 'Legacy', 'fields': ['schedulewidth', 'pixelsperminute']},

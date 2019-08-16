@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+	 width="800" height="419"
+	 style="font-family: lato;"
+>
+  <rect width="100%" height="100%" fill="black" />
+
+  <rect x="10" y="10" width="780" height="399" rx="10" fill="gray" />
+
+  <text x="400" y="60" text-anchor="middle" style="font-size: 40pt">{{session.title}}</text>
+{{session.abstract|svgparagraph(75, 180, 80, 20, 10)}}
+
+{%for s in session.speaker.all()%}
+  <text x="30" y="{{100 + 20*loop.index0}}" style="font-size: 12pt">{{s.fullname}}</text>
+{%endfor%}
+</svg>

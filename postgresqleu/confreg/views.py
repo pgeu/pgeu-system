@@ -4,6 +4,7 @@ from django.shortcuts import render, get_object_or_404
 from django.core.exceptions import PermissionDenied
 from django.core import paginator
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect, HttpResponse, Http404
+from django.http import HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -42,6 +43,7 @@ from .models import get_status_string, get_status_string_short, valid_status_tra
 from .regtypes import confirm_special_reg_type, validate_special_reg_type
 from .jinjafunc import render_jinja_conference_response, JINJA_TEMPLATE_ROOT
 from .jinjafunc import render_jinja_conference_template
+from .jinjafunc import render_jinja_conference_svg
 from .jinjapdf import render_jinja_ticket
 from .backendviews import get_authenticated_conference
 from .backendforms import CancelRegistrationForm, ConfirmRegistrationForm
@@ -1224,7 +1226,7 @@ def schedule_xml(request, confname):
     return resp
 
 
-def session(request, confname, sessionid, junk=None):
+def session(request, confname, sessionid):
     conference = get_object_or_404(Conference, urlname=confname)
 
     if not conference.sessionsactive:
@@ -1235,6 +1237,19 @@ def session(request, confname, sessionid, junk=None):
     return render_conference_response(request, conference, 'schedule', 'confreg/session.html', {
         'session': session,
         'slides': ConferenceSessionSlides.objects.filter(session=session),
+    })
+
+
+def session_card(request, confname, sessionid, cardformat):
+    conference = get_object_or_404(Conference, urlname=confname)
+
+    if not (conference.sessionsactive and conference.cardsactive):
+        if not conference.testers.filter(pk=request.user.id):
+            raise HttpResponseForbidden()
+
+    session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False, status=1)
+    return render_jinja_conference_svg(request, conference, cardformat, 'confreg/cards/session.svg', {
+        'session': session,
     })
 
 
@@ -1251,7 +1266,7 @@ def session_slides(request, confname, sessionid, slideid):
                         content_type='application/pdf')
 
 
-def speaker(request, confname, speakerid, junk=None):
+def speaker(request, confname, speakerid):
     conference = get_object_or_404(Conference, urlname=confname)
     if not conference.sessionsactive:
         if not conference.testers.filter(pk=request.user.id):
@@ -1262,6 +1277,24 @@ def speaker(request, confname, speakerid, junk=None):
     if len(sessions) < 1:
         raise Http404("Speaker has no sessions at this conference")
     return render_conference_response(request, conference, 'schedule', 'confreg/speaker.html', {
+        'speaker': speaker,
+        'sessions': sessions,
+    })
+
+
+def speaker_card(request, confname, speakerid, cardformat):
+    conference = get_object_or_404(Conference, urlname=confname)
+
+    if not (conference.sessionsactive and conference.cardsactive):
+        if not conference.testers.filter(pk=request.user.id):
+            return HttpResponseForbidden()
+
+    speaker = get_object_or_404(Speaker, pk=speakerid)
+    sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker, cross_schedule=False, status=1).order_by('starttime')
+    if len(sessions) < 1:
+        raise Http404("Speaker has no sessions at this conference")
+
+    return render_jinja_conference_svg(request, conference, cardformat, 'confreg/cards/speaker.svg', {
         'speaker': speaker,
         'sessions': sessions,
     })

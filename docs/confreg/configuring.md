@@ -216,6 +216,11 @@ Session list publishing active
 and their details, typically used before the schedule is done but
 talks are being approved.
 
+Cards active
+: If the card publishing is active *and* the session publishing is
+active, then [cards](skinning#cards) (small adapted images in SVG and
+PNG format) will be published for sessions and speakers.
+
 Check-in active
 : If the [check-in](tickets) system is active and attendees can be
 checked in.

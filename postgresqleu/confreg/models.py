@@ -153,6 +153,7 @@ class Conference(models.Model):
     allowedit = models.BooleanField(blank=False, null=False, default=True, verbose_name="Allow editing registrations")
     scheduleactive = models.BooleanField(blank=False, null=False, default=False, verbose_name="Schedule publishing active")
     sessionsactive = models.BooleanField(blank=False, null=False, default=False, verbose_name="Session list publishing active")
+    cardsactive = models.BooleanField(blank=False, null=False, default=False, verbose_name="Card publishing active", help_text='Publish "cards" for sessions and speakers')
     checkinactive = models.BooleanField(blank=False, null=False, default=False, verbose_name="Check-in active")
     schedulewidth = models.IntegerField(blank=False, default=600, null=False, verbose_name="Width of HTML schedule")
     pixelsperminute = models.FloatField(blank=False, default=1.5, null=False, verbose_name="Vertical pixels per minute")
@@ -743,7 +744,7 @@ class Speaker(models.Model):
     lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
     speakertoken = models.TextField(null=False, blank=False, unique=True)
 
-    _safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract', 'photofile', 'lastmodified', )
+    _safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract', 'photofile', 'has_photo', 'photo_data', 'lastmodified', )
     json_included_attributes = ['fullname', 'twittername', 'company', 'abstract', 'lastmodified']
 
     @property
@@ -771,6 +772,13 @@ class Speaker(models.Model):
     def has_photo(self):
         return (self.photofile is not None and self.photofile != "")
     has_photo.boolean = True
+
+    @cached_property
+    def photo_data(self):
+        try:
+            return Speaker_Photo.objects.get(pk=self.pk).photo
+        except Speaker_Photo.DoesNotExist:
+            return None
 
     def __str__(self):
         return self.name

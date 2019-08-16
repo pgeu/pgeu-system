@@ -19,3 +19,4 @@ requests
 requests-oauthlib==0.7.0
 file-magic
 qrencode
+cairosvg

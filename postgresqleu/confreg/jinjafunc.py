@@ -1,4 +1,4 @@
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseNotModified
 from django.template.backends.utils import csrf_input_lazy, csrf_token_lazy
 from django.template import defaultfilters
 from django.core.exceptions import ValidationError
@@ -13,12 +13,15 @@ import random
 from itertools import groupby
 from datetime import datetime, date, time
 import dateutil.parser
+import textwrap
+from Crypto.Hash import SHA
 
 from postgresqleu.util.context_processors import settings_context
 
 import jinja2
 import jinja2.sandbox
 import markdown
+import cairosvg
 
 
 from postgresqleu.confreg.templatetags.leadingnbsp import leadingnbsp
@@ -198,6 +201,20 @@ def filter_datetimeformat(value, fmt):
         return dateutil.parser.parse(value).strftime(fmt)
 
 
+# Take a multiline text and turn it into what's needed to create a multiline svg text
+# using <tspan>. Linebreak at <linelength> characters.
+def filter_svgparagraph(value, linelength, x, y, dy, parady):
+    def _svgparagraph():
+        for j, p in enumerate(value.split("\n")):
+            for i, l in enumerate(textwrap.wrap(p, width=linelength, expand_tabs=False)):
+                _dy = dy
+                if i == 0 and j != 0:
+                    _dy += parady
+                yield '<tspan x="{}" dy="{}">{}</tspan>'.format(x, _dy, jinja2.escape(l))
+
+    return '<text x="{}" y="{}">{}</text>'.format(x, y, "\n".join(_svgparagraph()))
+
+
 def render_jinja_conference_template(conference, templatename, dictionary):
     # It all starts from the base template for this conference. If it
     # does not exist, just throw a 404 early.
@@ -218,6 +235,8 @@ def render_jinja_conference_template(conference, templatename, dictionary):
         'shuffle': filter_shuffle,
         'slugify': slugify,
         'yesno': lambda b, v: v.split(',')[not b],
+        'wordwraptolist': lambda t, w: textwrap.wrap(t, width=w, expand_tabs=False),
+        'svgparagraph': filter_svgparagraph,
     })
 
     t = env.get_template(templatename)
@@ -292,6 +311,23 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
         render_jinja_conference_template(conference, templatename, d),
         content_type='text/html',
     )
+
+
+def render_jinja_conference_svg(request, conference, cardformat, templatename, dictionary):
+    svg = render_jinja_conference_template(conference, templatename, dictionary)
+    if cardformat == 'svg':
+        return HttpResponse(svg, 'image/svg+xml')
+    else:
+        # Since turning SVG into PNG is a lot mroe expensive than just rendering the SVG,
+        # generate an appropriate ETag for it, and verify that one.
+        etag = '"{}"'.format(SHA.new(svg.encode('utf8')).hexdigest())
+
+        if request.META.get('HTTP_IF_NONE_MATCH', None) == etag:
+            return HttpResponseNotModified()
+
+        r = HttpResponse(cairosvg.svg2png(svg), content_type='image/png')
+        r['ETag'] = etag
+        return r
 
 
 # Small sandboxed jinja templates that can be configured in system
