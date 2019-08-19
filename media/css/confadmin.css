@@ -49,6 +49,11 @@ th.colfilter {
     padding: 3px !important;
 }
 
+/* Special handling for dynamic preview results */
+.admin_dynamicpreview_contents {
+    white-space: pre;
+}
+
 /*
  * Text-area styling for writing plaintext email
  */
