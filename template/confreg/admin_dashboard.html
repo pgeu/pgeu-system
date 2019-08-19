@@ -35,7 +35,7 @@
 {%endif%}
 
 {%if past%}
-<h3>Past conferences{%if singleseries%} in {{singleseries.name}}{%endif%}</h3>
+<h3>All conferences{%if singleseries%} in {{singleseries.name}}{%endif%}</h3>
 {%regroup past by seriesid as past_series%}
 {%for series in past_series%}
 
