@@ -1084,6 +1084,13 @@ def _scheduledata(request, conference):
 
     days = []
     for d, sessions in list(raw.items()):
+        if d not in day_rooms:
+            # This day has no rooms. This can happen if *all* sessions for the day are cross-schedule.
+            # It cannot happen if there are no sessions at all, because then they simply wouldn't
+            # be included in the raw result.
+            # For now, just ignore days that have only cross-schedule entries, to avoid crashing.
+            continue
+
         sessionset = SessionSet(allrooms, day_rooms[d]['rooms'],
                                 conference.schedulewidth, conference.pixelsperminute,
                                 sessions)
