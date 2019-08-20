@@ -250,7 +250,11 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
             else:
                 raise Http404()
 
-        values = [{'id': o.pk, 'vals': [getattr(o, '_display_{0}'.format(f), getattr(o, f)) for f in formclass.list_fields]} for o in objects]
+        values = [{
+            'id': o.pk,
+            'vals': [getattr(o, '_display_{0}'.format(f), getattr(o, f)) for f in formclass.list_fields],
+            'rowclass': formclass.get_rowclass(o),
+        } for o in objects]
 
         return render(request, 'confreg/admin_backend_list.html', {
             'conference': conference,

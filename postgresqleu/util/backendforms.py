@@ -152,6 +152,10 @@ class BackendForm(ConcurrentProtectedModelForm):
         return {}
 
     @classmethod
+    def get_rowclass(self, obj):
+        return None
+
+    @classmethod
     def get_field_verbose_name(self, f):
         if f in self.verbose_field_names:
             return self.verbose_field_names[f]
