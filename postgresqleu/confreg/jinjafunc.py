@@ -215,6 +215,31 @@ def filter_svgparagraph(value, linelength, x, y, dy, parady):
     return '<text x="{}" y="{}">{}</text>'.format(x, y, "\n".join(_svgparagraph()))
 
 
+def filter_applymacro(context, obj, macroname):
+    return context.resolve(macroname)(obj)
+
+
+filter_applymacro.contextfilter = True
+
+
+extra_filters = {
+    'currency_format': filter_currency_format,
+    'escapejs': defaultfilters.escapejs_filter,
+    'floatstr': filter_float_str,
+    'datetimeformat': filter_datetimeformat,
+    'timesince': timesince,
+    'groupby_sort': filter_groupby_sort,
+    'leadingnbsp': leadingnbsp,
+    'markdown': lambda t: jinja2.Markup(markdown.markdown(t, extensions=['tables', ])),
+    'shuffle': filter_shuffle,
+    'slugify': slugify,
+    'yesno': lambda b, v: v.split(',')[not b],
+    'wordwraptolist': lambda t, w: textwrap.wrap(t, width=w, expand_tabs=False),
+    'svgparagraph': filter_svgparagraph,
+    'applymacro': filter_applymacro,
+}
+
+
 def render_jinja_conference_template(conference, templatename, dictionary):
     # It all starts from the base template for this conference. If it
     # does not exist, just throw a 404 early.
@@ -223,21 +248,7 @@ def render_jinja_conference_template(conference, templatename, dictionary):
 
     env = ConfSandbox(loader=ConfTemplateLoader(conference, templatename),
                       extensions=['jinja2.ext.with_'])
-    env.filters.update({
-        'currency_format': filter_currency_format,
-        'escapejs': defaultfilters.escapejs_filter,
-        'floatstr': filter_float_str,
-        'datetimeformat': filter_datetimeformat,
-        'timesince': timesince,
-        'groupby_sort': filter_groupby_sort,
-        'leadingnbsp': leadingnbsp,
-        'markdown': lambda t: jinja2.Markup(markdown.markdown(t, extensions=['tables', ])),
-        'shuffle': filter_shuffle,
-        'slugify': slugify,
-        'yesno': lambda b, v: v.split(',')[not b],
-        'wordwraptolist': lambda t, w: textwrap.wrap(t, width=w, expand_tabs=False),
-        'svgparagraph': filter_svgparagraph,
-    })
+    env.filters.update(extra_filters)
 
     t = env.get_template(templatename)
 
@@ -333,6 +344,7 @@ def render_jinja_conference_svg(request, conference, cardformat, templatename, d
 # Small sandboxed jinja templates that can be configured in system
 def render_sandboxed_template(templatestr, context):
     env = ConfSandbox(loader=jinja2.DictLoader({'t': templatestr}))
+    env.filters.update(extra_filters)
     t = env.get_template('t')
     return t.render(context)
 
