@@ -511,6 +511,7 @@ class BackendConferenceSessionForm(BackendForm):
             'Status': [v for k, v in STATUS_CHOICES],
             'Track': Track.objects.filter(conference=conference),
             'Room': Room.objects.filter(conference=conference),
+            'Cross sched': ['true', 'false', ],
         }
 
     @classmethod
