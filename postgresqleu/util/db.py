@@ -13,6 +13,12 @@ def exec_to_list(query, params=None):
     return curs.fetchall()
 
 
+def exec_to_single_list(query, params=None):
+    curs = connection.cursor()
+    curs.execute(query, params)
+    return [r[0] for r in curs.fetchall()]
+
+
 def exec_to_dict(query, params=None):
     curs = connection.cursor()
     curs.execute(query, params)
