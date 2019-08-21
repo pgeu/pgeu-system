@@ -4,7 +4,6 @@
 # For now this only means sending a reminder to speakers 10-15 minutes
 # before their session begins.
 #
-# Intended to run every 2-3 minutes from cron.
 
 from django.core.management.base import BaseCommand
 from django.db import transaction, connection
