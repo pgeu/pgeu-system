@@ -45,7 +45,8 @@ account, or that they have public DMs open.
 To set up the twitter integration, first configure `TWITTER_CLIENT`
 and `TWITTER_CLIENTSECRET` in the `settings.py` file. These are the
 values that can be retrieved after setting up an application on
-[apps.twitter.com](https://apps.twitter.com).
+[apps.twitter.com](https://apps.twitter.com). Note that this application
+must be granted permissions to read, write and direct messages.
 
 Once that is done, initiate the integration setup on the website. This
 will open a new window to twitter in the browser, where the
