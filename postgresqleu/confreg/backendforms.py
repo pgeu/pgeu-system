@@ -470,11 +470,15 @@ class BackendRefundPatternForm(BackendForm):
 
 class BackendConferenceSessionForm(BackendForm):
     helplink = 'schedule#sessions'
-    list_fields = ['title', 'speaker_list', 'status_string', 'starttime', 'track', 'room', 'cross_schedule']
+    list_fields = ['title', 'q_speaker_list', 'q_status_string', 'starttime', 'track', 'room', 'cross_schedule']
     verbose_field_names = {
-        'speaker_list': 'Speakers',
-        'status_string': 'Status',
+        'q_speaker_list': 'Speakers',
+        'q_status_string': 'Status',
         'cross_schedule': 'Cross sched',
+    }
+    queryset_extra_fields = {
+        'q_status_string': "(SELECT statustext FROM confreg_status_strings css WHERE css.id=status)",
+        'q_speaker_list': "(SELECT string_agg(spk.fullname, ', ') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=confreg_conferencesession.id)",
     }
     selectize_multiple_fields = {
         'speaker': SpeakerLookup(),
