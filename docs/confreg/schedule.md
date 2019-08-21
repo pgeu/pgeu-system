@@ -105,6 +105,12 @@ In call for papers
 :   Whether this track should be available to choose in the
 [call for papers](callforpapers) submission form.
 
+Allow speaker reg
+:   Speakers with approved talks in this track will be allowed to
+register for free *if* a registration type with one of the
+[special registration types](registrations#typesandclasses) for speaker
+registration exists.
+
 
 ### Rooms <a name="rooms"></a>
 

@@ -359,7 +359,7 @@ class BackendTrackForm(BackendForm):
 
     class Meta:
         model = Track
-        fields = ['trackname', 'sortkey', 'color', 'fgcolor', 'incfp']
+        fields = ['trackname', 'sortkey', 'color', 'fgcolor', 'incfp', 'speakerreg']
 
     @classmethod
     def copy_from_conference(self, targetconf, sourceconf, idlist):

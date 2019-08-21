@@ -1,20 +1,31 @@
 # This file holds some special registration types
 
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 
 _specialregtypes = {}
 
 
-def validate_speaker_registration(reg):
+def validate_speaker_registration(reg, reqstatuses=(1, )):
     # This registration is only available if a speaker is *confirmed*
     # at this conference.
     from .models import ConferenceSession
     if reg.attendee is None:
         raise ValidationError('Speaker registrations have to be done by the speaker directly')
+
+    trackQ = Q(track__isnull=True) | Q(track__speakerreg=True)
     if not ConferenceSession.objects.filter(conference=reg.conference,
                                             speaker__user=reg.attendee,
-                                            status=1,  # approved
-                                        ).exists():
+                                            status__in=reqstatuses,  # approved
+                                        ).filter(trackQ).exists():
+        # If the speaker has approved talks on the "wrong" track, then give a nicer error message
+        slist = list(ConferenceSession.objects.filter(conference=reg.conference,
+                                                      speaker__user=reg.attendee,
+                                                      status__in=reqstatuses,
+        ))
+        if slist and slist[0].track:
+            raise ValidationError('This registration type is not available to you as sessions on track "{0}" are not eligible for free registration'.format(slist[0].track.trackname))
+
         raise ValidationError('This registration type is only available if you are a confirmed speaker at this conference')
 
 
@@ -27,14 +38,7 @@ _specialregtypes['spk'] = {
 def validate_speaker_or_reserve_registration(reg):
     # This registration is only available if a speaker is *confirmed*
     # or *reserve listed* at this conference.
-    from .models import ConferenceSession
-    if reg.attendee is None:
-        raise ValidationError('Speaker registrations have to be done by the speaker directly')
-    if not ConferenceSession.objects.filter(conference=reg.conference,
-                                            speaker__user=reg.attendee,
-                                            status__in=(1, 4),  # approved/reserve
-                                        ).exists():
-        raise ValidationError('This registration type is only available if you are a confirmed speaker at this conference')
+    validate_speaker_registration(reg, reqstatuses=(1, 4))
 
 
 _specialregtypes['spkr'] = {

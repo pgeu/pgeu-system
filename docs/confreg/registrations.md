@@ -101,14 +101,17 @@ attendee. It requires the administrator to confirm it manually.
 Confirmed speaker
 : The attendee registering must, with the same account, have
 a speaker profile, and have at least one talk by this speaker profile
-be in a [state](callforpapers#states) of *Accepted*. Most of the time,
-the "Confirmed or reserve speaker" should probably be used instead.
+be in a [state](callforpapers#states) of *Accepted* and must be on a
+track that has the flag for free speaker registration set. Most of the time,
+the "Confirmed or reserve speaker" should probably be used
+instead.
 
 Confirmed or reserve speaker
 : The attendee registering must, with the same account, have
 a speaker profile, and have at least one talk by this speaker profile
 be in a [state](callforpapers#states) of *Accepted* or the state
-*Reserve*.. This means that speakers on the reserve list can also use
+*Reserve*, and must be on a track that has the flag for free speaker
+registration set. This means that speakers on the reserve list can also use
 this registration type, which is usually the choice wanted since they
 should be able to be substituted at the last moment.
 
