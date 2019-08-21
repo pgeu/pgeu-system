@@ -2115,9 +2115,13 @@ def createvouchers(request, confname):
                                   total_amount=-1,
                                   accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
                                   accounting_object=conference.accounting_object,
-                                  paymentmethods=conference.paymentmethods.all(),
                               )
                 invoice.save()
+
+                # Save first to get id, then add additionalmethods
+                invoice.allowedmethods = conference.paymentmethods.all()
+                invoice.save()
+
                 invoice.invoicerow_set.add(InvoiceRow(invoice=invoice,
                                                       rowtext='Voucher for "%s"' % regtype.regtype,
                                                       rowcount=regcount,
