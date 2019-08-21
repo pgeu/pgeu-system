@@ -2,10 +2,13 @@ from django import forms
 from django.forms import ValidationError
 from django.core.signing import Signer, BadSignature
 from django.contrib.postgres.fields import ArrayField
+from django.forms.widgets import FILE_INPUT_CONTRADICTION
 
 import pickle
 import base64
 from itertools import groupby
+
+from .widgets import InlineImageUploadWidget
 
 
 class _ValidatorField(forms.Field):
@@ -107,3 +110,30 @@ class CharToArrayField(forms.CharField):
             return ", ".join(value)
         else:
             return value
+
+
+class ImageBinaryFormField(forms.Field):
+    widget = InlineImageUploadWidget
+
+    def to_python(self, value):
+        if value is False:
+            # Value gets set to False if the clear checkbox is marked
+            return None
+        if value == FILE_INPUT_CONTRADICTION:
+            # This gets set if the user *both* uploads a new file *and* marks the clear checkbox
+            return None
+        if value is None:
+            return None
+        return value.read()
+
+    def prepare_value(self, value):
+        return value
+
+    def clean(self, data, initial=None):
+        if data is False:
+            if not self.required:
+                return False
+            data = None
+        if not data and initial:
+            return initial
+        return super(ImageBinaryFormField, self).clean(data)

@@ -1,8 +1,10 @@
 from django import forms
 from django.forms.widgets import TextInput
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.utils.safestring import mark_safe
 from django.template import loader
 
+import base64
 import datetime
 import json
 
@@ -73,6 +75,16 @@ class PhotoUploadWidget(forms.ClearableFileInput):
     def render(self, name, value, attrs=None, renderer=None):
         context = self.get_context(name, value, attrs)
         return mark_safe(loader.render_to_string('confreg/widgets/photo_upload_widget.html', context))
+
+
+class InlineImageUploadWidget(forms.ClearableFileInput):
+    clear_checkbox_label = "Remove image"
+
+    def render(self, name, value, attrs=None, renderer=None):
+        context = self.get_context(name, value, attrs)
+        if value and not isinstance(value, InMemoryUploadedFile):
+            context['widget']['value'] = base64.b64encode(value)
+        return mark_safe(loader.render_to_string('confreg/widgets/inline_photo_upload_widget.html', context))
 
 
 class AdminJsonWidget(PrettyPrintJsonWidget):
