@@ -5,6 +5,9 @@
 <h1>Twitter integration</h1>
 {%if conference.twitter_token%}
 <h3>Twitter integration currently configured</h3>
+<p>
+  Configured twitter user is <strong>{{conference.twitter_user}}</strong>.
+</p>
 <form class="form-horizontal" method="POST" action="." enctype="multipart/form-data">{%csrf_token%}
 {%include "confreg/admin_backend_form_content.html" %}
 </form>

@@ -41,6 +41,7 @@ work from here.
     * [Access tokens](tokens)
     * [Badges](badges)
     * [Integrations](integrations)
+        * [Campaigns](integrations#campaigns)
     * [Copying from another conference](copyfromother)
     * [Skinning the conference pages](skinning)
 

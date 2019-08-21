@@ -7,9 +7,21 @@ are currently available:
 
 The twitter integration supports:
 
+* Manually posting to conference twitter
 * Posting conference news
 * Posting confirmed sponsorship benefits
+* Creating campaigns
 * Sending reminders to speaker just before their presentation
+
+
+### Manually posting to conference twitter
+
+To manually post to twitter, just add an entry to the *Twitter post
+queue*. This button becomes available from the main dashboard of a
+conference once the integration has been configured.
+
+Only posts which are flagged as *approved* will be posted. All other
+posts are queued until they are approved.
 
 ### Posting conference news
 
@@ -54,3 +66,50 @@ application can be authorized (make sure you are logged in with the
 *correct* Twitter account at this point!). Once authorized, a PIN code
 is shown, which should be copied and pasted into the form on the
 original page.
+
+For each conference a time period start and end can be configured. No
+tweets will be posted outside of this time. Any tweets posted during
+that time, manual or automatic, will be queued up and sent the next
+day once the time period is entered.
+
+## Campaigns <a name="campaigns"></a>
+
+Automated campaigns of tweets can be created. When a campaign is
+created, a number of tweets are automatically created and added to the
+queue, at a defined interval (including some random portion). The
+contents of the tweets are based on data in the database.
+
+All tweets are added as not approved, and thus have to be approved
+before sending. This also allows the operator to edit the tweets and
+possibly change some of the text to be more specific.
+
+A full set of jinja operations are available in the campaigns, and
+it's possible to do things like define macros, which can make for
+fairly advanced templates.
+
+There can be multiple types of campaigns:
+
+### Approved sessions campaign
+
+This creates a campaign with one tweet for each approved session in
+the system, filtered by which track the session is on. The template is
+called with the following variables:
+
+session
+: An object referencing this session. It has access to the same
+variables as a general template, so it can access for example the
+speakers information.
+
+conference
+: The current conference object.
+
+#### Sample template
+
+A sample template for this campaign that shows some variables used:
+
+~~~
+{%macro speaker(s)%}{{s}}{%if s.twittername%} ({{s.twittername}}){%endif%}{%endmacro%}
+Come see {{session.speaker.all()|map("applymacro", "speaker")|join(" and ")}} talk about {{session.title}}
+
+#awesome #conference #pgeu
+~~~

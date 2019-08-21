@@ -16,7 +16,7 @@ from postgresqleu.util.validators import validate_lowercase, validate_urlname
 from postgresqleu.util.validators import TwitterValidator
 from postgresqleu.util.validators import PictureUrlValidator, ImageValidator
 from postgresqleu.util.forms import ChoiceArrayField
-from postgresqleu.util.fields import LowercaseEmailField
+from postgresqleu.util.fields import LowercaseEmailField, ImageBinaryField
 
 
 from postgresqleu.confreg.dbimage import SpeakerImageStorage
@@ -1211,5 +1211,15 @@ class ConferenceNews(models.Model):
 
 class ConferenceTweetQueue(models.Model):
     conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
-    datetime = models.DateTimeField(blank=False, default=datetime.datetime.now)
+    datetime = models.DateTimeField(blank=False, default=datetime.datetime.now, verbose_name="Date and time",
+                                    help_text="Date and time to send tweet")
     contents = models.CharField(max_length=250, null=False, blank=False)
+    image = ImageBinaryField(null=True, blank=True, max_length=1000000)
+    approved = models.BooleanField(null=False, default=False, blank=False)
+    author = models.ForeignKey(User, null=True, blank=True)
+    sent = models.BooleanField(null=False, default=False, blank=False)
+
+    class Meta:
+        ordering = ['sent', 'datetime', ]
+        verbose_name_plural = 'Conference Tweets'
+        verbose_name = 'Conference Tweet'

@@ -25,7 +25,7 @@ from .models import AttendeeMail, ConferenceAdditionalOption
 from .models import PendingAdditionalOrder
 from .models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
 from .models import STATUS_CHOICES
-from .models import ConferenceNews
+from .models import ConferenceNews, ConferenceTweetQueue
 from .forms import ConferenceRegistrationForm, RegistrationChangeForm, ConferenceSessionFeedbackForm
 from .forms import ConferenceFeedbackForm, SpeakerProfileForm
 from .forms import CallForPapersForm
@@ -2747,6 +2747,8 @@ def admin_dashboard_single(request, urlname):
         'uncheckedin_attendees': conditional_exec_to_scalar(conference.checkinactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND checkedinat IS NULL)", {'confid': conference.id}),
         'pending_sponsors': conditional_exec_to_scalar(conference.callforsponsorsopen, "SELECT EXISTS (SELECT 1 FROM confsponsor_sponsor WHERE conference_id=%(confid)s AND invoice_id IS NULL AND NOT confirmed)", {'confid': conference.id}),
         'pending_sponsor_benefits': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confsponsor_sponsorclaimedbenefit b INNER JOIN confsponsor_sponsor s ON s.id=b.sponsor_id WHERE s.conference_id=%(confid)s AND NOT (b.confirmed OR b.declined))", {'confid': conference.id}),
+        'pending_tweets': ConferenceTweetQueue.objects.filter(conference=conference, sent=False).exists(),
+        'pending_tweet_approvals': ConferenceTweetQueue.objects.filter(conference=conference, approved=False).exists(),
     })
 
 

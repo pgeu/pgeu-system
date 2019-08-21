@@ -27,6 +27,7 @@ from .models import BulkPayment
 from .models import AccessToken
 from .models import ShirtSize
 from .models import PendingAdditionalOrder
+from .models import ConferenceTweetQueue
 
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.confsponsor.util import get_sponsor_dashboard_data
@@ -42,9 +43,12 @@ from .backendforms import BackendAccessTokenForm
 from .backendforms import BackendConferenceSeriesForm
 from .backendforms import BackendTshirtSizeForm
 from .backendforms import BackendNewsForm
-from .backendforms import TwitterForm, TwitterTestForm
+from .backendforms import TwitterForm, TwitterTestForm, BackendTweetQueueForm
+from .backendforms import TweetCampaignSelectForm
 from .backendforms import BackendSendEmailForm
 from .backendforms import BackendRefundPatternForm
+
+from .campaigns import get_campaign_from_id
 
 
 #######################
@@ -243,6 +247,18 @@ def edit_news(request, urlname, rest):
                                rest)
 
 
+def edit_tweetqueue(request, urlname, rest):
+    conference = get_authenticated_conference(request, urlname)
+
+    return backend_list_editor(request,
+                               urlname,
+                               BackendTweetQueueForm,
+                               rest,
+                               return_url='../../',
+                               instancemaker=lambda: ConferenceTweetQueue(conference=conference, author=request.user)
+    )
+
+
 ###
 # Non-simple-editor views
 ###
@@ -354,10 +370,18 @@ def twitter_integration(request, urlname):
             conference.twitter_token = tokens.get('oauth_token')
             conference.twitter_secret = tokens.get('oauth_token_secret')
             conference.twittersync_active = False
+            tw = Twitter(conference)
+            try:
+                conference.twitter_user = tw.get_own_screen_name()
+            except Exception as e:
+                messages.error(request, 'Failed to verify account credentials and get username: {}'.format(e))
+                return HttpResponseRedirect('.')
+
             conference.save()
             messages.info(request, 'Twitter integration enabled')
             return HttpResponseRedirect('.')
         elif request.POST.get('deactivate_twitter', '') == '1':
+            conference.twitter_user = ''
             conference.twitter_token = ''
             conference.twitter_secret = ''
             conference.twittersync_active = False
@@ -394,6 +418,57 @@ def twitter_integration(request, urlname):
         'form': form,
         'testform': testform,
         'helplink': 'integrations#twitter',
+    })
+
+
+def tweetcampaignselect(request, urlname):
+    conference = get_authenticated_conference(request, urlname)
+
+    if request.method == 'POST':
+        form = TweetCampaignSelectForm(data=request.POST)
+        if form.is_valid():
+            return HttpResponseRedirect("{}/".format(form.cleaned_data['campaigntype']))
+    else:
+        form = TweetCampaignSelectForm()
+
+    return render(request, 'confreg/admin_backend_form.html', {
+        'conference': conference,
+        'basetemplate': 'confreg/confadmin_base.html',
+        'form': form,
+        'whatverb': 'Create campaign',
+        'savebutton': 'Select campaign type',
+        'cancelurl': '../../',
+        'helplink': 'integrations#campaigns',
+    })
+
+
+def tweetcampaign(request, urlname, typeid):
+    conference = get_authenticated_conference(request, urlname)
+
+    campaign = get_campaign_from_id(typeid)
+
+    if request.method == 'GET' and 'fieldpreview' in request.GET:
+        return campaign.get_dynamic_preview(conference, request.GET['fieldpreview'], request.GET['previewval'])
+
+    if request.method == 'POST':
+        form = campaign.form(conference, request.POST)
+        if form.is_valid():
+            with transaction.atomic():
+                form.generate_tweets(request.user)
+                messages.info(request, "Campaign tweets generated")
+                return HttpResponseRedirect("../../queue/")
+    else:
+        form = campaign.form(conference)
+
+    return render(request, 'confreg/admin_backend_form.html', {
+        'conference': conference,
+        'basetemplate': 'confreg/confadmin_base.html',
+        'form': form,
+        'whatverb': 'Create campaign',
+        'savebutton': "Create campaign",
+        'cancelurl': '../../../',
+        'note': campaign.note,
+        'helplink': 'integrations#campaigns',
     })
 
 

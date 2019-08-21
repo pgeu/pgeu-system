@@ -798,7 +798,7 @@ def _confirm_benefit(request, benefit):
 
         # Potentially send tweet
         if benefit.benefit.tweet_template:
-            ConferenceTweetQueue(conference=conference, datetime=datetime.now(),
+            ConferenceTweetQueue(conference=conference, datetime=datetime.now(), approved=True,
                                  contents=render_sandboxed_template(benefit.benefit.tweet_template, {
                                      'benefit': benefit.benefit,
                                      'level': benefit.benefit.level,

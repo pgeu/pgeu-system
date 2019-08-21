@@ -53,7 +53,7 @@ def docspage(request, page):
         raise Http404()
 
     with open(filename) as f:
-        md = markdown.Markdown(extensions=['markdown.extensions.def_list'])
+        md = markdown.Markdown(extensions=['markdown.extensions.def_list', 'markdown.extensions.fenced_code'])
         contents = md.convert(f.read())
     contents = _reSvgInline.sub(lambda m: _replaceSvgInline(m, section), contents)
 

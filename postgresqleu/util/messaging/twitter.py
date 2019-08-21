@@ -19,10 +19,27 @@ class Twitter(object):
                                                   token,
                                                   secret)
 
-    def post_tweet(self, tweet):
-        r = self.tw.post('https://api.twitter.com/1.1/statuses/update.json', data={
+    def get_own_screen_name(self):
+        r = self.tw.get('https://api.twitter.com/1.1/account/verify_credentials.json?include_entities=false&skip_status=true&include_email=false')
+        if r.status_code != 200:
+            raise Exception("http status {}".format(r.status_code))
+        return r.json()['screen_name']
+
+    def post_tweet(self, tweet, image=None):
+        d = {
             'status': tweet,
-        })
+        }
+
+        if image:
+            # Images are separately uploaded as a first step
+            r = self.tw.post('https://upload.twitter.com/1.1/media/upload.json', files={
+                'media': bytearray(image),
+            })
+            if r.status_code != 200:
+                return (False, 'Media upload: {}'.format(r.text))
+            d['media_ids'] = r.json()['media_id']
+
+        r = self.tw.post('https://api.twitter.com/1.1/statuses/update.json', data=d)
         if r.status_code != 200:
             return (False, r.text)
         return (True, None)

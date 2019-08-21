@@ -26,7 +26,7 @@ def conferences_with_tweets_queryset():
     return Conference.objects.filter(twittersync_active=True,
                                      twitter_timewindow_start__lt=n,
                                      twitter_timewindow_end__gt=n).extra(where=[
-                                         "EXISTS (SELECT 1 FROM confreg_conferencenews n WHERE n.conference_id=confreg_conference.id AND (NOT tweeted) AND datetime > now()-'7 days'::interval AND datetime < now()) OR EXISTS (SELECT 1 FROM confreg_conferencetweetqueue q WHERE q.conference_id=confreg_conference.id)"
+                                         "EXISTS (SELECT 1 FROM confreg_conferencetweetqueue q WHERE q.conference_id=confreg_conference.id AND q.approved AND NOT q.sent)"
                                      ])
 
 
@@ -34,7 +34,7 @@ class Command(BaseCommand):
     help = 'Post to twitter'
 
     class ScheduledJob:
-        scheduled_interval = timedelta(minutes=10)
+        scheduled_interval = timedelta(minutes=5)
 
         @classmethod
         def should_run(self):
@@ -53,14 +53,9 @@ class Command(BaseCommand):
             raise CommandError("Failed to get advisory lock, existing twitter_post process stuck?")
 
         if settings.TWITTER_NEWS_TOKEN:
-            articles = list(news_tweets_queryset().order_by('datetime'))
-        else:
-            articles = []
-
-        if articles:
             tw = Twitter()
 
-            for a in articles:
+            for a in news_tweets_queryset().order_by('datetime'):
                 # We hardcode 30 chars for the URL shortener. And then 10 to cover the intro and spacing.
                 statusstr = "{0} {1}/news/{2}-{3}/".format(a.title[:140 - 40],
                                                            settings.SITEBASE,
@@ -73,35 +68,21 @@ class Command(BaseCommand):
                 else:
                     self.stderr.write("Failed to post to twitter: %s" % msg)
 
-                # Don't post more often than once / 10 seconds, to not trigger flooding.
+                # Don't post more often than once / 10 seconds, to not trigger flooding detection.
                 time.sleep(10)
 
-        # Find which conferences to tweet from. We will only put out one tweet for each
-        # conference, expecting to be called again in 5 minutes or so to put out the
-        # next one.
+        # Send off the conference twitter queue (which should normally only be one or two tweets, due to the filtering
+        # on datetime.
         for c in conferences_with_tweets_queryset():
             tw = Twitter(c)
 
-            al = list(ConferenceNews.objects.filter(conference=c, tweeted=False, datetime__gt=datetime.now() - timedelta(days=7), datetime__lt=datetime.now(), conference__twittersync_active=True).order_by('datetime')[:1])
-            if al:
-                a = al[0]
-                statusstr = "{0} {1}##{2}".format(a.title[:250 - 40],
-                                                  c.confurl,
-                                                  a.id)
-                ok, msg = tw.post_tweet(statusstr)
+            for t in ConferenceTweetQueue.objects.filter(conference=c, approved=True, sent=False, datetime__lte=datetime.now()).order_by('datetime'):
+                ok, msg = tw.post_tweet(t.contents, t.image)
                 if ok:
-                    a.tweeted = True
-                    a.save()
-                    continue
+                    t.sent = True
+                    t.save(update_fields=['sent', ])
                 else:
                     self.stderr.write("Failed to post to twitter: %s" % msg)
 
-            tl = list(ConferenceTweetQueue.objects.filter(conference=c).order_by('datetime')[:1])
-            if tl:
-                t = tl[0]
-                ok, msg = tw.post_tweet(t.contents)
-                if ok:
-                    t.delete()
-                    continue
-                else:
-                    self.stderr.write("Failed to post to twitter: %s" % msg)
+                # Don't post more often than once / 10 seconds, to not trigger flooding detection.
+                time.sleep(10)

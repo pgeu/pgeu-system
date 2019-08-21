@@ -13,8 +13,9 @@ from collections import OrderedDict
 from psycopg2.extras import DateTimeTZRange
 from decimal import Decimal
 
+from postgresqleu.util.db import exec_to_single_list
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
-from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget, PhotoUploadWidget
+from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget, PhotoUploadWidget, MonospaceTextarea
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.backendforms import BackendForm
 
@@ -28,6 +29,7 @@ from postgresqleu.confreg.models import ConferenceSessionScheduleSlot, Volunteer
 from postgresqleu.confreg.models import DiscountCode, AccessToken, AccessTokenPermissions
 from postgresqleu.confreg.models import ConferenceSeries
 from postgresqleu.confreg.models import ConferenceNews
+from postgresqleu.confreg.models import ConferenceTweetQueue
 from postgresqleu.confreg.models import ShirtSize
 from postgresqleu.confreg.models import RefundPattern
 from postgresqleu.newsevents.models import NewsPosterProfile
@@ -37,6 +39,8 @@ from postgresqleu.confreg.models import STATUS_CHOICES
 
 from postgresqleu.util.backendlookups import GeneralAccountLookup, CountryLookup
 from postgresqleu.confreg.backendlookups import RegisteredUsersLookup, SpeakerLookup, SessionTagLookup
+
+from postgresqleu.confreg.campaigns import allcampaigns
 
 
 class BackendConferenceForm(BackendForm):
@@ -899,6 +903,70 @@ class TwitterForm(ConcurrentProtectedModelForm):
 class TwitterTestForm(django.forms.Form):
     recipient = django.forms.CharField(max_length=64)
     message = django.forms.CharField(max_length=200)
+
+
+class BackendTweetQueueForm(BackendForm):
+    helplink = 'integrations#twitter'
+    list_fields = ['datetime', 'contents', 'author', 'approved', 'sent', 'hasimage', ]
+    verbose_field_names = {
+        'hasimage': 'Has image',
+    }
+    exclude_date_validators = ['datetime', ]
+    defaultsort = [['sent', 'asc'], ['datetime', 'desc']]
+    exclude_fields_from_validation = ['image', ]
+    queryset_select_related = ['author', ]
+    queryset_extra_fields = {
+        'hasimage': "image is not null and image != ''",
+    }
+
+    class Meta:
+        model = ConferenceTweetQueue
+        fields = ['datetime', 'approved', 'contents', 'image']
+        widgets = {
+            'contents': MonospaceTextarea,
+        }
+
+    def clean_datetime(self):
+        if self.instance:
+            t = self.cleaned_data['datetime'].time()
+            if self.conference.twitter_timewindow_start and self.conference.twitter_timewindow_start != datetime.time(0, 0, 0):
+                if t < self.conference.twitter_timewindow_start:
+                    raise ValidationError("Tweets for this conference cannot be scheduled before {}".format(self.conference.twitter_timewindow_start))
+            if self.conference.twitter_timewindow_end:
+                if t > self.conference.twitter_timewindow_end and self.conference.twitter_timewindow_end != datetime.time(0, 0, 0):
+                    raise ValidationError("Tweets for this conference cannot be scheduled after {}".format(self.conference.twitter_timewindow_end))
+            return self.cleaned_data['datetime']
+
+    @classmethod
+    def get_assignable_columns(cls, conference):
+        return [
+            {
+                'name': 'approved',
+                'title': 'Approval',
+                'options': [(1, 'Yes'), (0, 'No'), ]
+            },
+        ]
+
+    @classmethod
+    def get_rowclass(self, obj):
+        if obj.sent:
+            return "info"
+        return None
+
+    @classmethod
+    def get_column_filters(cls, conference):
+        return {
+            'Author': exec_to_single_list('SELECT DISTINCT username FROM confreg_conferencetweetqueue q INNER JOIN auth_user u ON u.id=q.author_id WHERE q.conference_id=%(confid)s', {'confid': conference.id, }),
+            'Approved': ['true', 'false'],
+            'Sent': ['true', 'false'],
+        }
+
+
+class TweetCampaignSelectForm(django.forms.Form):
+    campaigntype = django.forms.ChoiceField(
+        label='Campaign type',
+        choices=[(id, c.name) for id, c in allcampaigns],
+    )
 
 
 #
