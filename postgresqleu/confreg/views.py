@@ -2863,9 +2863,11 @@ def admin_registration_list(request, urlname):
 
     return render(request, 'confreg/admin_registration_list.html', {
         'conference': conference,
-        'waitlist_active': conference.waitlist_active,
+        'waitlist_active': conference.waitlist_active(),
         'sortkey': (revsort and '-' or '') + skey,
-        'regs': ConferenceRegistration.objects.select_related('regtype').select_related('registrationwaitlistentry').filter(conference=conference).order_by((revsort and '-' or '') + sortmap[skey], '-created'),
+        'regs': ConferenceRegistration.objects.select_related('regtype', 'registrationwaitlistentry', 'invoice', 'bulkpayment').extra(select={
+            'waitlist_offers_made': """CASE WHEN "confreg_registrationwaitlistentry"."registration_id" IS NULL THEN 0 ELSE (SELECT count(*) FROM confreg_registrationwaitlisthistory h WHERE h.waitlist_id="confreg_registrationwaitlistentry"."registration_id" AND h.text LIKE 'Made offer%%')  END""",
+        }).filter(conference=conference).order_by((revsort and '-' or '') + sortmap[skey], '-created'),
         'regsummary': exec_to_dict("SELECT count(1) FILTER (WHERE payconfirmedat IS NOT NULL) AS confirmed, count(1) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed FROM confreg_conferenceregistration WHERE conference_id=%(confid)s", {'confid': conference.id})[0],
         'breadcrumbs': (('/events/admin/{0}/regdashboard/'.format(urlname), 'Registration dashboard'),),
         'helplink': 'registrations',
