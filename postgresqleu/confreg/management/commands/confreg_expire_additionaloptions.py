@@ -9,7 +9,7 @@ from django.db import transaction
 
 from collections import defaultdict
 from io import StringIO
-from datetime import timedelta
+from datetime import timedelta, date
 
 
 from postgresqleu.mailqueue.util import send_simple_mail
@@ -22,7 +22,17 @@ class Command(BaseCommand):
     help = 'Expire additional options on pending registrations'
 
     class ScheduledJob:
+        scheduled_interval = timedelta(hours=4)
         internal = True
+
+        @classmethod
+        def should_run(self):
+            # Are there any conferences open for registration, conference is still in the future,
+            # that have additional options with autocancel set
+            return Conference.objects.filter(active=True,
+                                             conferenceadditionaloption__invoice_autocancel_hours__isnull=False,
+                                             enddate__gt=date.today() + timedelta(days=1),
+            ).exists()
 
     @transaction.atomic
     def handle(self, *args, **options):
