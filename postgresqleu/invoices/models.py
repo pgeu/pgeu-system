@@ -53,10 +53,6 @@ class InvoicePaymentMethod(models.Model):
         mod = __import__(modname, fromlist=[classname, ])
         return getattr(mod, classname)(self.id, self)
 
-    @property
-    def classname_short(self):
-        return self.classname.split('.')[-1]
-
 
 class InvoiceRefund(models.Model):
     invoice = models.ForeignKey("Invoice", null=False, blank=False)

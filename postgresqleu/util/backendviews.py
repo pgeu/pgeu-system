@@ -221,6 +221,12 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
         if formclass.list_order_by:
             objects = objects.order_by(*formclass.list_order_by)
 
+        if formclass.queryset_select_related:
+            objects = objects.select_related(*formclass.queryset_select_related)
+        if formclass.queryset_extra_fields:
+            objects = objects.extra(select=formclass.queryset_extra_fields)
+        objects = objects.only(*(formclass.list_fields - formclass.queryset_extra_fields.keys()))
+
         if request.method == "POST":
             if request.POST.get('operation') == 'assign':
                 what = request.POST.get('what')

@@ -208,6 +208,7 @@ class BackendRegistrationClassForm(BackendForm):
 class BackendRegistrationTypeForm(BackendForm):
     helplink = 'registrations#regtypes'
     list_fields = ['regtype', 'regclass', 'cost', 'active', 'sortkey']
+    queryset_select_related = ['regclass', ]
     exclude_date_validators = ['activeuntil', ]
     vat_fields = {'cost': 'reg'}
     allow_copy_previous = True
@@ -857,6 +858,7 @@ class BackendAccessTokenForm(BackendForm):
 class BackendNewsForm(BackendForm):
     helplink = 'news'
     list_fields = ['title', 'datetime', 'author', ]
+    queryset_select_related = ['author', ]
     markdown_fields = ['summary', ]
     exclude_date_validators = ['datetime', ]
     defaultsort = [['datetime', "desc"]]

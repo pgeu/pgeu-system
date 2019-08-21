@@ -39,6 +39,7 @@ class MemberLogManager(object):
 class BackendMemberForm(BackendForm):
     helplink = 'membership'
     list_fields = ['fullname', 'user', 'paiduntil']
+    queryset_select_related = ['user', ]
     defaultsort = [['paiduntil', 'desc'], ['fullname', 'asc']]
     allow_email = True
 

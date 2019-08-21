@@ -15,6 +15,7 @@ class BackendAccountClassForm(BackendForm):
 class BackendAccountGroupForm(BackendForm):
     helplink = 'accounting'
     list_fields = ['name', 'accountclass', 'foldable', ]
+    queryset_select_related = ['accountclass', ]
 
     class Meta:
         model = AccountGroup

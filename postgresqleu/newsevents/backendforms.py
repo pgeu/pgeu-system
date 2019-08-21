@@ -7,6 +7,7 @@ from postgresqleu.newsevents.models import News, NewsPosterProfile
 
 class BackendNewsForm(BackendForm):
     list_fields = ['datetime', 'title', 'author', ]
+    queryset_select_related = ['author', ]
     markdown_fields = ['summary', ]
 
     class Meta:
