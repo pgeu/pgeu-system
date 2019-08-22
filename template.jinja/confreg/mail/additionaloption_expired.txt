@@ -5,7 +5,7 @@ but it was never completed.
 
 As some options for this event are getting close to being sold out,
 they have been removed from your pending registration in order to
-make room for others. The following option{%if optionscount > 0%}s have{%else%} has{%endif%} been removed:
+make room for others. The following option{%if optionscount != 1%}s have{%else%} has{%endif%} been removed:
 
 {%for o in options%}{{o.name}}
 {%endfor%}
