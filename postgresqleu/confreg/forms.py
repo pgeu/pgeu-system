@@ -16,9 +16,10 @@ from .models import ConferenceSession, ConferenceSessionFeedback, ConferenceSess
 from .models import PrepaidVoucher, DiscountCode, AttendeeMail
 
 from .regtypes import validate_special_reg_type
-from postgresqleu.util.widgets import EmailTextWidget, PhotoUploadWidget
+from postgresqleu.util.widgets import EmailTextWidget, PhotoUploadWidget, MonospaceTextarea
 from postgresqleu.util.db import exec_to_list
 from postgresqleu.util.magic import magicdb
+from postgresqleu.util.backendlookups import GeneralAccountLookup
 
 from postgresqleu.countries.models import Country
 
@@ -605,11 +606,16 @@ class SessionSlidesFileForm(forms.Form):
 
 
 class PrepaidCreateForm(forms.Form):
-    regtype = forms.ModelChoiceField(queryset=RegistrationType.objects.filter(id=-1))
-    count = forms.IntegerField(min_value=1, max_value=100)
+    regtype = forms.ModelChoiceField(label="Registration type", queryset=RegistrationType.objects.filter(id=-1))
+    count = forms.IntegerField(label="Number of vouchers", min_value=1, max_value=100)
     buyer = forms.ModelChoiceField(queryset=User.objects.all().order_by('username'), help_text="Pick the user who bought the batch. If he/she does not have an account, pick your own userid")
     invoice = forms.BooleanField(help_text="Automatically create invoice template for these vouchers. Note that the vouchers are created immediately, not at payment time! Also note that only a template is created and has to be finalized!", required=False)
+    invoiceaddress = forms.CharField(label="Invoice address", help_text="Complete address to put on invoice. Note that the name of the buyer is prepended to this!", required=False, widget=MonospaceTextarea)
     confirm = forms.BooleanField(help_text="Confirm that the chosen registration type and count are correct (there is no undo past this point, the vouchers will be created!")
+
+    selectize_multiple_fields = {
+        'buyer': GeneralAccountLookup(),
+    }
 
     def __init__(self, conference, *args, **kwargs):
         self.conference = conference
@@ -621,6 +627,15 @@ class PrepaidCreateForm(forms.Form):
                 'regtype' in self.data and
                 self.data.get('count')):
             del self.fields['confirm']
+        if 'invoice' in self.data and not self.data.get('invoiceaddress', ''):
+            del self.fields['confirm']
+
+    def clean(self):
+        cleaned_data = super(PrepaidCreateForm, self).clean()
+        if self.cleaned_data.get('invoice', False):
+            if not self.cleaned_data.get('invoiceaddress'):
+                self.add_error('invoiceaddress', 'Invoice address must be specified if invoice creation is selected!')
+        return cleaned_data
 
 
 class AttendeeMailForm(forms.ModelForm):

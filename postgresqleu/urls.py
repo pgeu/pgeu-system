@@ -182,6 +182,7 @@ urlpatterns.extend([
     url(r'^events/admin/(\w+)/prepaid/(\d+)/$', postgresqleu.confreg.views.viewvouchers),
     url(r'^events/admin/(\w+)/prepaid/(\d+)/del/(\d+)/$', postgresqleu.confreg.views.delvouchers),
     url(r'^events/admin/(\w+)/prepaid/(\d+)/send_email/$', postgresqleu.confreg.views.emailvouchers),
+    url(r'^events/admin/(\w+)/prepaidorders/$', postgresqleu.confreg.backendviews.prepaidorders),
     url(r'^events/admin/([^/]+)/schedule/create/$', postgresqleu.confreg.views.createschedule),
     url(r'^events/admin/([^/]+)/schedule/create/publish/$', postgresqleu.confreg.views.publishschedule),
     url(r'^events/admin/([^/]+)/schedule/jsonschedule/$', postgresqleu.confreg.views.schedulejson),

@@ -52,8 +52,10 @@ from .backendforms import ResendWelcomeMailForm
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod, InvoiceRow
+from postgresqleu.invoices.util import InvoiceWrapper
 from postgresqleu.confwiki.models import Wikipage
-from postgresqleu.confsponsor.models import ScannedAttendee
+from postgresqleu.confsponsor.models import ScannedAttendee, PurchasedVoucher
+from postgresqleu.confsponsor.invoicehandler import create_voucher_invoice
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor, InvoiceHistory
 from postgresqleu.mailqueue.util import send_simple_mail
@@ -2092,52 +2094,55 @@ def createvouchers(request, confname):
             buyer = User.objects.get(pk=form.data['buyer'])
             buyername = '{0} {1}'.format(buyer.first_name, buyer.last_name)
 
-            batch = PrepaidBatch(conference=conference,
-                                 regtype=regtype,
-                                 buyer=buyer,
-                                 buyername=buyername)
-            batch.save()
+            if form.data.get('invoice', False):
+                # This should be invoiced, and thus *not* created immediately.
 
-            for n in range(0, regcount):
-                v = PrepaidVoucher(conference=conference,
-                                   vouchervalue=base64.b64encode(os.urandom(37)).rstrip(b'=').decode('utf8'),
-                                   batch=batch)
-                v.save()
+                invoice = create_voucher_invoice(conference,
+                                                 form.data['invoiceaddress'],
+                                                 buyer,
+                                                 regtype,
+                                                 regcount)
 
-            if form.data.get('invoice', None):
-                invoice = Invoice(recipient_user=buyer,
-                                  recipient_email=buyer.email,
-                                  recipient_name=buyername,
-                                  title='%s prepaid vouchers' % conference.conferencename,
-                                  invoicedate=datetime.now(),
-                                  duedate=datetime.now(),
-                                  finalized=False,
-                                  total_amount=-1,
-                                  accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
-                                  accounting_object=conference.accounting_object,
-                              )
+                pv = PurchasedVoucher(conference=conference,
+                                      sponsor=None,
+                                      user=buyer,
+                                      regtype=regtype,
+                                      num=regcount,
+                                      invoice=invoice)
+                pv.save()
+                invoice.processorid = pv.pk
                 invoice.save()
 
-                # Save first to get id, then add additionalmethods
-                invoice.allowedmethods = conference.paymentmethods.all()
-                invoice.save()
+                wrapper = InvoiceWrapper(invoice)
+                wrapper.email_invoice()
 
-                invoice.invoicerow_set.add(InvoiceRow(invoice=invoice,
-                                                      rowtext='Voucher for "%s"' % regtype.regtype,
-                                                      rowcount=regcount,
-                                                      rowamount=regtype.cost,
-                                                      vatrate=conference.vat_registrations,
-                ), bulk=False)
-                messages.warning(request, "Invoice created for this batch, but NOT finalized. Go do that manually!")
+                return HttpResponseRedirect('../prepaidorders/')
+            else:
+                # No invoice, so create the vouchers immediately
+                batch = PrepaidBatch(conference=conference,
+                                     regtype=regtype,
+                                     buyer=buyer,
+                                     buyername=buyername)
+                batch.save()
+
+                for n in range(0, regcount):
+                    v = PrepaidVoucher(conference=conference,
+                                       vouchervalue=base64.b64encode(os.urandom(37)).rstrip(b'=').decode('utf8'),
+                                       batch=batch)
+                    v.save()
             return HttpResponseRedirect('%s/' % batch.id)
         # Else fall through to re-render
     else:
         # Get request means we render an empty form
         form = PrepaidCreateForm(conference)
 
-    return render(request, 'confreg/prepaid_create_form.html', {
-        'form': form,
+    return render(request, 'confreg/admin_backend_form.html', {
         'conference': conference,
+        'basetemplate': 'confreg/confadmin_base.html',
+        'form': form,
+        'whatverb': 'Create',
+        'what': 'prepaid vouchers',
+        'savebutton': 'Create',
         'breadcrumbs': (('/events/admin/{0}/prepaid/list/'.format(conference.urlname), 'Prepaid vouchers'),),
     })
 

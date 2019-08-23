@@ -187,7 +187,7 @@ class VoucherInvoiceProcessor(object):
             raise Exception("This voucher order has already been processed: %s" % invoice.processorid)
 
         # Set up the batch
-        batch = PrepaidBatch(conference=pv.sponsor.conference,
+        batch = PrepaidBatch(conference=pv.conference,
                              regtype=pv.regtype,
                              buyer=pv.user,
                              buyername="{0} {1}".format(pv.user.first_name, pv.user.last_name),
@@ -195,7 +195,7 @@ class VoucherInvoiceProcessor(object):
         batch.save()
 
         for n in range(0, pv.num):
-            v = PrepaidVoucher(conference=pv.sponsor.conference,
+            v = PrepaidVoucher(conference=pv.conference,
                                vouchervalue=base64.b64encode(os.urandom(37)).rstrip(b'=').decode('utf8'),
                                batch=batch)
             v.save()
@@ -203,11 +203,26 @@ class VoucherInvoiceProcessor(object):
         pv.batch = batch
         pv.save()
 
-        send_simple_mail(pv.sponsor.conference.sponsoraddr,
-                         pv.sponsor.conference.sponsoraddr,
-                         "Sponsor %s purchased vouchers" % pv.sponsor.name,
-                         "The sponsor\n%s\nhas purchased %s vouchers of type \"%s\".\n\n" % (pv.sponsor.name, pv.num, pv.regtype.regtype),
-                         sendername=pv.sponsor.conference.conferencename)
+        if pv.sponsor:
+            send_simple_mail(pv.conference.sponsoraddr,
+                             pv.conference.sponsoraddr,
+                             "Sponsor %s purchased vouchers" % pv.sponsor.name,
+                             "The sponsor\n%s\nhas purchased %s vouchers of type \"%s\".\n\n" % (pv.sponsor.name, pv.num, pv.regtype.regtype),
+                             sendername=pv.sponsor.conference.conferencename)
+        else:
+            # For non-sponsors, there is no dashboard available, so we send the actual vouchers in an
+            # email directly.
+            send_conference_mail(pv.conference,
+                                 pv.batch.buyer.email,
+                                 "Entry vouchers to {}".format(pv.conference.conferencename),
+                                 'confreg/mail/prepaid_vouchers.txt',
+                                 {
+                                     'batch': batch,
+                                     'vouchers': batch.prepaidvoucher_set.all(),
+                                     'conference': pv.conference,
+                                 },
+                                 sender=pv.conference.contactaddr,
+            )
 
     # An invoice was canceled.
     def process_invoice_cancellation(self, invoice):
@@ -228,18 +243,24 @@ class VoucherInvoiceProcessor(object):
             pv = PurchasedVoucher.objects.get(pk=invoice.processorid)
         except PurchasedVoucher.DoesNotExist:
             raise Exception("Could not find voucher order %s" % invoice.processorid)
-        return "%s/events/sponsor/%s/" % (settings.SITEBASE, pv.sponsor.id)
+        if pv.sponsor:
+            return "%s/events/sponsor/%s/" % (settings.SITEBASE, pv.sponsor.id)
+        else:
+            return "{0}/events/{1}/prepaid/{2}/".format(settings.SITEBASE, pv.conference.urlname, pv.batch.id)
 
     def get_admin_url(self, invoice):
         try:
             pv = PurchasedVoucher.objects.get(pk=invoice.processorid)
         except PurchasedVoucher.DoesNotExist:
             return None
-        return "/events/sponsor/admin/{0}/{1}/".format(pv.sponsor.conference.urlname, pv.sponsor.id)
+        if pv.sponsor:
+            return "/events/sponsor/admin/{0}/{1}/".format(pv.conference.urlname, pv.sponsor.id)
+        else:
+            return "/events/admin/{0}/prepaidorders/".format(pv.conference.urlname)
 
 
 # Generate an invoice for prepaid vouchers
-def create_voucher_invoice(sponsor, user, rt, num):
+def create_voucher_invoice(conference, invoiceaddr, user, rt, num):
     invoicerows = [
         ['Voucher for "%s"' % rt.regtype, num, rt.cost, rt.conference.vat_registrations]
         ]
@@ -250,14 +271,14 @@ def create_voucher_invoice(sponsor, user, rt, num):
         user,
         user.email,
         user.first_name + ' ' + user.last_name,
-        sponsor.invoiceaddr,
-        'Prepaid vouchers for %s' % sponsor.conference.conferencename,
+        invoiceaddr,
+        'Prepaid vouchers for %s' % conference.conferencename,
         datetime.now(),
         date.today(),
         invoicerows,
         processor=processor,
         accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
-        accounting_object=sponsor.conference.accounting_object,
-        paymentmethods=sponsor.conference.paymentmethods.all(),
+        accounting_object=conference.accounting_object,
+        paymentmethods=conference.paymentmethods.all(),
     )
     return i

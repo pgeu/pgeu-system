@@ -185,13 +185,15 @@ def sponsor_purchase_voucher(request, sponsorid):
         if form.is_valid():
             # Create an invoice (backwards order?)
             rt = form.cleaned_data['regtype']
-            invoice = create_voucher_invoice(sponsor,
+            invoice = create_voucher_invoice(sponsor.conference,
+                                             sponsor.invoiceaddr,
                                              request.user,
                                              rt,
                                              int(form.cleaned_data['num']))
 
             # Create a purchase order
-            pv = PurchasedVoucher(sponsor=sponsor,
+            pv = PurchasedVoucher(conference=sponsor.conference,
+                                  sponsor=sponsor,
                                   user=request.user,
                                   regtype=form.cleaned_data['regtype'],
                                   num=int(form.cleaned_data['num']),

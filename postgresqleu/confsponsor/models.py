@@ -189,7 +189,8 @@ class ScannedAttendee(models.Model):
 
 
 class PurchasedVoucher(models.Model):
-    sponsor = models.ForeignKey(Sponsor, null=False, blank=False, on_delete=models.CASCADE)
+    conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
+    sponsor = models.ForeignKey(Sponsor, null=True, blank=True, on_delete=models.CASCADE)
     user = models.ForeignKey(User, null=False, blank=False, on_delete=models.CASCADE)
     regtype = models.ForeignKey(RegistrationType, null=False, blank=False, on_delete=models.CASCADE)
     num = models.IntegerField(null=False, blank=False)
