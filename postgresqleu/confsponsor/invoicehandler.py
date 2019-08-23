@@ -262,8 +262,8 @@ class VoucherInvoiceProcessor(object):
 # Generate an invoice for prepaid vouchers
 def create_voucher_invoice(conference, invoiceaddr, user, rt, num):
     invoicerows = [
-        ['Voucher for "%s"' % rt.regtype, num, rt.cost, rt.conference.vat_registrations]
-        ]
+        ['Voucher for "%s"' % rt.regtype, 1, rt.cost, rt.conference.vat_registrations]
+    ] * num
 
     manager = InvoiceManager()
     processor = invoicemodels.InvoiceProcessor.objects.get(processorname="confsponsor voucher processor")
