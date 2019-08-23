@@ -990,11 +990,12 @@ def feedback_conference(request, confname):
 
 
 class SessionSet(object):
-    def __init__(self, allrooms, day_rooms, totalwidth, pixelsperminute, sessions):
+    def __init__(self, allrooms, day_rooms, totalwidth, pixelsperminute, feedbackopen, sessions):
         self.headersize = 30
         self.available_rooms = allrooms
         self.totalwidth = totalwidth
         self.pixelsperminute = pixelsperminute
+        self.feedbackopen = feedbackopen
 
         # Get a dict from each roomid to the 0-based position of the room from left to right,
         # so the position can be calculated.
@@ -1011,6 +1012,7 @@ class SessionSet(object):
                 'toppos': self.timediff_to_y_pixels(s['starttime'], s['firsttime']) + self.headersize,
                 'widthpos': self.roomwidth() - 2,
                 'heightpos': self.timediff_to_y_pixels(s['endtime'], s['starttime']),
+                'canfeedback': self.feedbackopen and s.get('can_feedback', False) and (s['starttime'] <= datetime.now()),
             })
         else:
             s.update({
@@ -1018,9 +1020,13 @@ class SessionSet(object):
                 'toppos': self.timediff_to_y_pixels(s['starttime'], s['firsttime']) + self.headersize,
                 'widthpos': self.roomwidth() * len(self.rooms) - 2,
                 'heightpos': self.timediff_to_y_pixels(s['endtime'], s['starttime']) - 2,
+                'canfeedback': False,
             })
             if 'id' in s:
                 del s['id']
+        # Remove raw can_feedback value, we have replaced it with canfeedback that's calculated
+        if 'can_feedback' in s:
+            del s['can_feedback']
         return s
 
     def all(self):
@@ -1080,7 +1086,7 @@ def _scheduledata(request, conference):
         'confid': conference.id,
     })
 
-    raw = exec_to_grouped_dict("SELECT s.starttime::date AS day, s.id, s.starttime, s.endtime, to_json(t.*) AS track, s.track_id, to_json(r.*) AS room, s.room_id, s.title, s.htmlicon, to_char(starttime, 'HH24:MI') || ' - ' || to_char(endtime, 'HH24:MI') AS timeslot, extract(epoch FROM endtime-starttime)/60 AS length, min(starttime) OVER days AS firsttime, max(endtime) OVER days AS lasttime, cross_schedule, EXISTS (SELECT 1 FROM confreg_conferencesessionslides sl WHERE sl.session_id=s.id) AS has_slides, COALESCE(json_agg(json_build_object('id', spk.id, 'name', spk.fullname, 'company', spk.company, 'twittername', spk.twittername)) FILTER (WHERE spk.id IS NOT NULL), '[]') AS speakers FROM confreg_conferencesession s LEFT JOIN confreg_track t ON t.id=s.track_id LEFT JOIN confreg_room r ON r.id=s.room_id LEFT JOIN confreg_conferencesession_speaker css ON css.conferencesession_id=s.id LEFT JOIN confreg_speaker spk ON spk.id=css.speaker_id WHERE s.conference_id=%(confid)s AND s.status=1 AND (cross_schedule OR room_id IS NOT NULL) GROUP BY s.id, t.id, r.id WINDOW days AS (PARTITION BY s.starttime::date) ORDER BY day, s.starttime, r.sortkey", {
+    raw = exec_to_grouped_dict("SELECT s.starttime::date AS day, s.id, s.starttime, s.endtime, s.can_feedback, to_json(t.*) AS track, s.track_id, to_json(r.*) AS room, s.room_id, s.title, s.htmlicon, to_char(starttime, 'HH24:MI') || ' - ' || to_char(endtime, 'HH24:MI') AS timeslot, extract(epoch FROM endtime-starttime)/60 AS length, min(starttime) OVER days AS firsttime, max(endtime) OVER days AS lasttime, cross_schedule, EXISTS (SELECT 1 FROM confreg_conferencesessionslides sl WHERE sl.session_id=s.id) AS has_slides, COALESCE(json_agg(json_build_object('id', spk.id, 'name', spk.fullname, 'company', spk.company, 'twittername', spk.twittername)) FILTER (WHERE spk.id IS NOT NULL), '[]') AS speakers FROM confreg_conferencesession s LEFT JOIN confreg_track t ON t.id=s.track_id LEFT JOIN confreg_room r ON r.id=s.room_id LEFT JOIN confreg_conferencesession_speaker css ON css.conferencesession_id=s.id LEFT JOIN confreg_speaker spk ON spk.id=css.speaker_id WHERE s.conference_id=%(confid)s AND s.status=1 AND (cross_schedule OR room_id IS NOT NULL) GROUP BY s.id, t.id, r.id WINDOW days AS (PARTITION BY s.starttime::date) ORDER BY day, s.starttime, r.sortkey", {
         'confid': conference.id,
     })
 
@@ -1095,6 +1101,7 @@ def _scheduledata(request, conference):
 
         sessionset = SessionSet(allrooms, day_rooms[d]['rooms'],
                                 conference.schedulewidth, conference.pixelsperminute,
+                                conference.feedbackopen,
                                 sessions)
         days.append({
             'day': d,
@@ -2529,7 +2536,7 @@ AND (
             'day': d,
         })
 
-        sessionset = SessionSet(allrooms, rooms, conference.schedulewidth, conference.pixelsperminute, d_sessions)
+        sessionset = SessionSet(allrooms, rooms, conference.schedulewidth, conference.pixelsperminute, conference.feedbackopen, d_sessions)
         days.append({
             'day': d,
             'sessions': sessionset.all(),
