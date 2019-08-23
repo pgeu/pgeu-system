@@ -85,7 +85,7 @@ var sessions = {
 {%for s in sessions %}
    {{s.id}}: {
       'title': '{{s.title|escapejs}}',
-      'track': {{s.track_id}},
+      'track': {{s.track_id|default:"null"}},
       'ispending': {{s.ispending|yesno:"true,false"}},
       'speakers': '{{s.speaker_list|escapejs}}',
    },
