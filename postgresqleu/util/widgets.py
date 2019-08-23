@@ -58,6 +58,19 @@ class MonospaceTextarea(forms.Textarea):
         return super(MonospaceTextarea, self).render(name, value, attrs, renderer)
 
 
+class TagOptionsTextWidget(forms.Textarea):
+    def __init__(self, taglist, *args, **kwargs):
+        self.taglist = taglist
+        super(TagOptionsTextWidget, self).__init__(*args, **kwargs)
+
+    def render(self, name, value, attrs=None, renderer=None):
+        t = super(TagOptionsTextWidget, self).render(name, value, attrs, renderer)
+        return t + mark_safe('<div class="textarea-tagoptions-list" data-areaid="{}">Suggested tags: {}</div>'.format(
+            attrs['id'],
+            "".join(('<span class="label label-success tagoption">{}</span>'.format(t) for t in self.taglist))
+        ))
+
+
 class EmailTextWidget(forms.Textarea):
     def render(self, name, value, attrs=None, renderer=None):
         attrs.update({

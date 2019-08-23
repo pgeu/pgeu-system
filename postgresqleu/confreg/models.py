@@ -6,7 +6,7 @@ from django.db.models.expressions import F
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.utils.dateformat import DateFormat
 from django.utils.functional import cached_property
 from django.template.defaultfilters import slugify
@@ -1207,6 +1207,21 @@ class ConferenceNews(models.Model):
     class Meta:
         ordering = ['-datetime', ]
         verbose_name_plural = 'Conference News'
+
+
+class ConferenceHashtag(models.Model):
+    conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
+    hashtag = models.CharField(max_length=32, null=False, blank=False,
+                               validators=[RegexValidator('^[#@]', 'Enter a hashtag (starting with #) or username (starting with @)'), ])
+
+    def __str__(self):
+        return self.hashtag
+
+    class Meta:
+        unique_together = (
+            ('conference', 'hashtag', )
+        )
+        ordering = ['hashtag', ]
 
 
 class ConferenceTweetQueue(models.Model):

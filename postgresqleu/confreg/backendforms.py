@@ -16,6 +16,7 @@ from decimal import Decimal
 from postgresqleu.util.db import exec_to_single_list
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget, PhotoUploadWidget, MonospaceTextarea
+from postgresqleu.util.widgets import TagOptionsTextWidget
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.backendforms import BackendForm
 
@@ -29,7 +30,7 @@ from postgresqleu.confreg.models import ConferenceSessionScheduleSlot, Volunteer
 from postgresqleu.confreg.models import DiscountCode, AccessToken, AccessTokenPermissions
 from postgresqleu.confreg.models import ConferenceSeries
 from postgresqleu.confreg.models import ConferenceNews
-from postgresqleu.confreg.models import ConferenceTweetQueue
+from postgresqleu.confreg.models import ConferenceTweetQueue, ConferenceHashtag
 from postgresqleu.confreg.models import ShirtSize
 from postgresqleu.confreg.models import RefundPattern
 from postgresqleu.newsevents.models import NewsPosterProfile
@@ -930,6 +931,10 @@ class BackendTweetQueueForm(BackendForm):
             'contents': MonospaceTextarea,
         }
 
+    def __init__(self, *args, **kwargs):
+        super(BackendTweetQueueForm, self).__init__(*args, **kwargs)
+        self.fields['contents'].widget = TagOptionsTextWidget([h.hashtag for h in ConferenceHashtag.objects.filter(conference=self.conference)])
+
     def clean_datetime(self):
         if self.instance:
             t = self.cleaned_data['datetime'].time()
@@ -964,6 +969,15 @@ class BackendTweetQueueForm(BackendForm):
             'Approved': ['true', 'false'],
             'Sent': ['true', 'false'],
         }
+
+
+class BackendHashtagForm(BackendForm):
+    helplink = 'integrations#twitter'
+    list_fields = ['hashtag', ]
+
+    class Meta:
+        model = ConferenceHashtag
+        fields = ['hashtag', ]
 
 
 class TweetCampaignSelectForm(django.forms.Form):

@@ -75,6 +75,25 @@ $(document).ready(function() {
        }
    });
 
+   $('div.textarea-tagoptions-list span.tagoption').click(function (e) {
+       /* Insert the text from the list of options */
+       var t = $(this).text();
+       var ta = $('#' + $(this).parent().data('areaid'));
+       var curpos = ta.prop('selectionStart');
+       var txt = ta.text();
+       var outtext = txt.substring(0, curpos);
+       if (outtext.substr(-1) != ' ') {
+	   outtext += ' ';
+       }
+       outtext += t;
+       remaining = txt.substring(curpos);
+       if (remaining.length) {
+	   outtext += ' ';
+	   outtext += remaining;
+       }
+       ta.text(outtext);
+   });
+
    update_sendmail_count();
    update_assign_count();
 });

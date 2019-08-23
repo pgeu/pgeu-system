@@ -44,7 +44,7 @@ from .backendforms import BackendAccessTokenForm
 from .backendforms import BackendConferenceSeriesForm
 from .backendforms import BackendTshirtSizeForm
 from .backendforms import BackendNewsForm
-from .backendforms import TwitterForm, TwitterTestForm, BackendTweetQueueForm
+from .backendforms import TwitterForm, TwitterTestForm, BackendTweetQueueForm, BackendHashtagForm
 from .backendforms import TweetCampaignSelectForm
 from .backendforms import BackendSendEmailForm
 from .backendforms import BackendRefundPatternForm
@@ -257,6 +257,15 @@ def edit_tweetqueue(request, urlname, rest):
                                rest,
                                return_url='../../',
                                instancemaker=lambda: ConferenceTweetQueue(conference=conference, author=request.user)
+    )
+
+
+def edit_hashtags(request, urlname, rest):
+    return backend_list_editor(request,
+                               urlname,
+                               BackendHashtagForm,
+                               rest,
+                               return_url='../../',
     )
 
 
