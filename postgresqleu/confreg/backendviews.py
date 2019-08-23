@@ -292,6 +292,7 @@ def multiregs(request, urlname):
         'conference': conference,
         'bulkpays': BulkPayment.objects.select_related('user', 'invoice__paidusing').prefetch_related('conferenceregistration_set').filter(conference=conference).order_by('-paidat', '-createdat'),
         'highlight': int(request.GET.get('b', -1)),
+        'helplink': 'registrations',
     })
 
 
@@ -301,6 +302,7 @@ def addoptorders(request, urlname):
     return render(request, 'confreg/admin_addoptorder_list.html', {
         'conference': conference,
         'orders': PendingAdditionalOrder.objects.select_related('reg', 'invoice__paidusing').filter(reg__conference=conference).order_by('-payconfirmedat', '-createtime'),
+        'helplink': 'registrations#options',
     })
 
 
