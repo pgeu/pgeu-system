@@ -433,6 +433,8 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
                 transform_form = None
 
         objects = formclass.Meta.model.objects.filter(conference=sourceconf)
+        if formclass.queryset_extra_fields:
+            objects = objects.extra(select=formclass.queryset_extra_fields)
         values = [{'id': o.pk, 'vals': [getattr(o, '_display_{0}'.format(f), getattr(o, f)) for f in formclass.list_fields]} for o in objects]
         return render(request, 'confreg/admin_backend_list.html', {
             'conference': conference,
