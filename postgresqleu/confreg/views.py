@@ -1082,7 +1082,16 @@ def _scheduledata(request, conference):
         'confid': conference.id,
     })
 
-    day_rooms = exec_to_keyed_dict("WITH t AS (SELECT DISTINCT s.starttime::date AS day, room_id FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND status=1 AND s.room_id IS NOT NULL) SELECT day, array_agg(room_id ORDER BY r.sortkey, r.roomname) AS rooms FROM t INNER JOIN confreg_room r on r.id=t.room_id GROUP BY day", {
+    day_rooms = exec_to_keyed_dict("""WITH t AS (
+  SELECT s.starttime::date AS day, room_id
+   FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND status=1 AND s.room_id IS NOT NULL AND s.starttime IS NOT NULL
+ UNION
+  SELECT d.day, ad.room_id
+   FROM confreg_room_availabledays ad INNER JOIN confreg_registrationday d ON d.id=ad.registrationday_id
+)
+SELECT day, array_agg(room_id ORDER BY r.sortkey, r.roomname) AS rooms FROM t
+INNER JOIN confreg_room r ON r.id=t.room_id GROUP BY day
+""", {
         'confid': conference.id,
     })
 
