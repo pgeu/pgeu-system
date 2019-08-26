@@ -602,6 +602,7 @@ class BackendConferenceSessionForm(BackendForm):
                                       status=0,
                                       submissionnote=source.submissionnote,
                                       initialsubmit=source.initialsubmit,
+                                      htmlicon=source.htmlicon,
                 )
                 s.save()
                 for spk in source.speaker.all():
