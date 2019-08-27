@@ -1100,6 +1100,7 @@ INNER JOIN confreg_room r ON r.id=t.room_id GROUP BY day
     })
 
     days = []
+    roomsinuse = set()
     for d, sessions in list(raw.items()):
         if d not in day_rooms:
             # This day has no rooms. This can happen if *all* sessions for the day are cross-schedule.
@@ -1107,6 +1108,7 @@ INNER JOIN confreg_room r ON r.id=t.room_id GROUP BY day
             # be included in the raw result.
             # For now, just ignore days that have only cross-schedule entries, to avoid crashing.
             continue
+        roomsinuse |= set(day_rooms[d]['rooms'])
 
         sessionset = SessionSet(allrooms, day_rooms[d]['rooms'],
                                 conference.schedulewidth, conference.pixelsperminute,
@@ -1123,6 +1125,7 @@ INNER JOIN confreg_room r ON r.id=t.room_id GROUP BY day
     return {
         'days': days,
         'tracks': tracks,
+        'rooms': sorted([allrooms[r] for r in roomsinuse], key=lambda x: (x['sortkey'], x['roomname']))
     }
 
 
