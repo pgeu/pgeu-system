@@ -1115,7 +1115,7 @@ INNER JOIN confreg_room r ON r.id=t.room_id GROUP BY day
        'name', spk.fullname,
        'company', spk.company,
        'twittername', spk.twittername
-    )) FILTER (WHERE spk.id IS NOT NULL), '[]') AS speakers
+    ) ORDER BY spk.fullname) FILTER (WHERE spk.id IS NOT NULL), '[]') AS speakers
 FROM confreg_conferencesession s
 LEFT JOIN confreg_track t ON t.id=s.track_id
 LEFT JOIN confreg_room r ON r.id=s.room_id
