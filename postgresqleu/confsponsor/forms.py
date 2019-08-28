@@ -250,7 +250,3 @@ class ShipmentReceiverForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ShipmentReceiverForm, self).__init__(*args, **kwargs)
         self.fields['arrived_parcels'].choices = [(str(x), str(x)) for x in range(1, 20)]
-
-
-class AdminCopySponsorshipLevelForm(forms.Form):
-    targetconference = forms.ModelChoiceField(queryset=Conference.objects.all(), label='Target conference')
