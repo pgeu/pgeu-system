@@ -277,7 +277,7 @@ def sponsor_signup_dashboard(request, confurlname):
         get_authenticated_conference(request, confurlname)
 
     current_signups = Sponsor.objects.filter(managers=request.user, conference=conference)
-    levels = SponsorshipLevel.objects.filter(conference=conference)
+    levels = SponsorshipLevel.objects.filter(conference=conference, public=True)
 
     return render(request, 'confsponsor/signup.html', {
         'conference': conference,
@@ -294,7 +294,7 @@ def sponsor_signup(request, confurlname, levelurlname):
         # This one is not open. But if we're an admin, we may bypass
         get_authenticated_conference(request, confurlname)
 
-    level = get_object_or_404(SponsorshipLevel, conference=conference, urlname=levelurlname, available=True)
+    level = get_object_or_404(SponsorshipLevel, conference=conference, urlname=levelurlname, available=True, public=True)
     if not level.can_signup:
         messages.error(request, "This level is not currently available for signup")
         return HttpResponseRedirect("../")

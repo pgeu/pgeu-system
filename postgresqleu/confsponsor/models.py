@@ -56,6 +56,8 @@ class SponsorshipLevel(models.Model):
                                verbose_name="URL name")
     levelcost = models.IntegerField(null=False, blank=False, verbose_name="Cost")
     available = models.BooleanField(null=False, blank=False, default=True, verbose_name="Available for signup")
+    public = models.BooleanField(null=False, blank=False, default=True, verbose_name="Publicly visible",
+                                 help_text="If unchecked the sponsorship level will be treated as internal, for example for testing")
     maxnumber = models.IntegerField(null=False, blank=False, default=0, verbose_name="Maximum number of sponsors")
     instantbuy = models.BooleanField(null=False, blank=False, default=False, verbose_name="Instant buy available")
     paymentmethods = models.ManyToManyField(InvoicePaymentMethod, blank=False, verbose_name="Payment methods for generated invoices")

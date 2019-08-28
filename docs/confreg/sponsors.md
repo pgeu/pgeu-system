@@ -237,6 +237,11 @@ Cost
 Available for signup
 :  Whether this level is currently enabled for signup.
 
+Publicly visible
+:  Whether this level is listed on the public website. If a level is
+   visible but unavailable it is still listed, just with an indication that
+   it's not available. When it's not public, then it's not listed at all.
+
 Maximum number of sponsors
 :  Maximum number of sponsors that can sign up at this level. If more
    than this number of *confirmed* sponsors exist, the sign up button

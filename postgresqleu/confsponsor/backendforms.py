@@ -143,7 +143,7 @@ class BackendSponsorshipLevelBenefitManager(object):
 
 class BackendSponsorshipLevelForm(BackendForm):
     helplink = 'sponsors#level'
-    list_fields = ['levelname', 'levelcost', 'available', ]
+    list_fields = ['levelname', 'levelcost', 'available', 'public', ]
     linked_objects = OrderedDict({
         'benefit': BackendSponsorshipLevelBenefitManager(),
     })
@@ -152,7 +152,7 @@ class BackendSponsorshipLevelForm(BackendForm):
 
     class Meta:
         model = SponsorshipLevel
-        fields = ['levelname', 'urlname', 'levelcost', 'available', 'maxnumber', 'instantbuy',
+        fields = ['levelname', 'urlname', 'levelcost', 'available', 'public', 'maxnumber', 'instantbuy',
                   'paymentmethods', 'contract', 'canbuyvoucher', 'canbuydiscountcode']
         widgets = {
             'paymentmethods': django.forms.CheckboxSelectMultiple,
