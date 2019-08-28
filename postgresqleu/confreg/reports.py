@@ -365,12 +365,14 @@ ORDER BY last_name, first_name""",
    fullname AS "Name",
    u.email AS "E-mail",
    title AS "Title",
+   COALESCE(track.trackname, '<No track>') AS "Track name",
    stat.statustext AS "Session status"
 FROM confreg_speaker spk
 INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id
 INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id
 INNER JOIN auth_user u ON u.id=spk.user_id
 INNER JOIN confreg_status_strings stat ON stat.id=s.status
+LEFT JOIN confreg_track track ON track.id=s.track_id
 WHERE s.conference_id=%(confid)s AND s.status IN (3,5)
 ORDER BY fullname""",
 
