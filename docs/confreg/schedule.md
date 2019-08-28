@@ -105,6 +105,10 @@ In call for papers
 :   Whether this track should be available to choose in the
 [call for papers](callforpapers) submission form.
 
+Show company
+:   Whether sessions in this track should have the company name of the speaker
+	listed on the schedule.
+
 Allow speaker reg
 :   Speakers with approved talks in this track will be allowed to
 register for free *if* a registration type with one of the

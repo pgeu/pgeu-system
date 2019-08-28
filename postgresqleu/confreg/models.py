@@ -705,10 +705,12 @@ class Track(models.Model):
     fgcolor = models.CharField(max_length=20, null=False, blank=False, validators=[color_validator, ], verbose_name="Foreground color", default='#000000')
     sortkey = models.IntegerField(null=False, default=100, blank=False)
     incfp = models.BooleanField(null=False, default=False, blank=False, verbose_name="In call for papers")
+    showcompany = models.BooleanField(null=False, default=False, blank=False, verbose_name="Show company name",
+                                      help_text="Show the company name on the schedule")
     speakerreg = models.BooleanField(null=False, blank=False, default=True, verbose_name="Allow speaker reg",
                                      help_text="Confirmed speakers on this track are allowed to register as speakers, if enabled")
 
-    json_included_attributes = ['trackname', 'color', 'fgcolor', 'sortkey', 'incfp']
+    json_included_attributes = ['trackname', 'color', 'fgcolor', 'sortkey', 'incfp', 'showcompany']
 
     def __str__(self):
         return self.trackname
