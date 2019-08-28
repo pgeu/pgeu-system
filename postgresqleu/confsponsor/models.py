@@ -171,6 +171,8 @@ class SponsorScanner(models.Model):
             ('sponsor', 'scanner', ),
         )
 
+    _safe_attributes = ('id', 'sponsor', 'token', )
+
 
 class ScannedAttendee(models.Model):
     sponsor = models.ForeignKey(Sponsor, null=False, blank=False)
