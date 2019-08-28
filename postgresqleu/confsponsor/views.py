@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 
 from datetime import datetime, timedelta
 import random
+from collections import OrderedDict
 
 from postgresqleu.auth import user_search, user_import
 
@@ -696,9 +697,9 @@ def sponsor_admin_dashboard(request, confurlname):
     conference = get_authenticated_conference(request, confurlname)
 
     confirmed_sponsors = Sponsor.objects.select_related('invoice', 'level').filter(conference=conference, confirmed=True).order_by('-level__levelcost', 'confirmedat')
-    unconfirmed_sponsors = Sponsor.objects.select_related('invoice', 'level').filter(conference=conference, confirmed=False).order_by('level__levelcost', 'name')
+    unconfirmed_sponsors = Sponsor.objects.select_related('invoice', 'level').filter(conference=conference, confirmed=False).order_by('-level__levelcost', 'name')
 
-    unconfirmed_benefits = SponsorClaimedBenefit.objects.filter(sponsor__conference=conference, confirmed=False).order_by('sponsor__level__levelcost', 'sponsor', 'benefit__sortkey')
+    unconfirmed_benefits = SponsorClaimedBenefit.objects.filter(sponsor__conference=conference, confirmed=False).order_by('-sponsor__level__levelcost', 'sponsor', 'benefit__sortkey')
 
     mails = SponsorMail.objects.prefetch_related('levels', 'sponsors').filter(conference=conference)
 
@@ -712,8 +713,8 @@ INNER JOIN confsponsor_sponsorshiplevel l ON s.level_id=l.id
 INNER JOIN confsponsor_sponsorshipbenefit b ON b.level_id=l.id
 LEFT JOIN confsponsor_sponsorclaimedbenefit scb ON scb.sponsor_id=s.id AND scb.benefit_id=b.id
 WHERE b.benefit_class IS NOT NULL AND s.confirmed AND s.conference_id=%(confid)s
-ORDER BY l.levelcost, l.levelname, s.name, b.sortkey, b.benefitname""", {'confid': conference.id})
-    benefitmatrix = {}
+ORDER BY l.levelcost DESC, l.levelname, s.name, b.sortkey, b.benefitname""", {'confid': conference.id})
+    benefitmatrix = OrderedDict()
     currentlevel = None
 
     benefitcols = []

@@ -102,7 +102,7 @@ class Migration(migrations.Migration):
                 ('paymentmethods', models.ManyToManyField(to='invoices.InvoicePaymentMethod', verbose_name='Payment methods for generated invoices')),
             ],
             options={
-                'ordering': ('levelcost', 'levelname'),
+                'ordering': ('-levelcost', 'levelname'),
             },
         ),
         migrations.AddField(
