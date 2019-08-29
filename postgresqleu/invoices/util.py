@@ -574,8 +574,8 @@ class InvoiceManager(object):
         if not refund.issued:
             raise Exception("Refund {0} has not been issued, yet signaled completed!".format(refundid))
 
-        if -refundamount != refund.amount + refund.vatamount:
-            raise Exception("Refund {0} attempted to process amount {1} but refund should be {2}".format(refundid, -refundamount, refund.amount + refund.vatamount))
+        if refundamount != refund.amount + refund.vatamount:
+            raise Exception("Refund {0} attempted to process amount {1} but refund should be {2}".format(refundid, refundamount, refund.amount + refund.vatamount))
 
         accountingtxt = 'Refund ({0}) of invoice #{1}'.format(refundid, invoice.id)
         accrows = [
