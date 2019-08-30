@@ -249,12 +249,18 @@ def build_attendee_report(request, conference, data):
     fields = data['fields']
     extracols = [_f for _f in [x.strip() for x in data['additionalcols'].split(',')] if _f]
 
-    # Build the filters
+    # Build the filters. Each filter within a filter group is ANDed together, and then the
+    # filter groups are ORed together. And finally, all of this is ANDed with the conference
+    # (so we don't get attendees from other conferences)
     filtermap = attendee_report_filters_map(conference)
-    q = Q(conference=conference)
-    for flt in data['filters']:
-        f = filtermap[flt['filter']]
-        q = q & f.build_Q(flt['value'])
+    allBlockQs = []
+    for fltblock in data['filters']:
+        blockQs = []
+        for flt in fltblock:
+            f = filtermap[flt['filter']]
+            blockQs.append(f.build_Q(flt['value']))
+        allBlockQs.append(reduce(lambda x, y: x & y, blockQs))
+    q = Q(conference=conference) & reduce(lambda x, y: x | y, allBlockQs)
 
     # Figure out our order by
     orderby = [_attendee_report_field_map[x][2] and _attendee_report_field_map[x][2] or x for x in [data['orderby1'], data['orderby2']]]

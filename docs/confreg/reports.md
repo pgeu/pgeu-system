@@ -16,13 +16,22 @@ anything related to attendees.
 
 For fields, pick the fields you want.
 
-For filters, check boxes for the fields that should be filtered. In
-each filter field, type what to filter for. This field can also take
+For filtering, different filters can be added by selecting the type of
+filter in the dropdown list. The filter will be added to the bottom of
+the current list.
+
+Filters are grouped into filterblocks. Within each filter block,
+filters are *AND*ed together if there are multiple filters.
+
+The different filterblocks are then *OR*ed with each other to produce
+the final results.
+
+When filtering on a text field, a value can be entered to do a
+substring search for it. If the field is left empty, it is only
+searched for not null/not empty (depending on filter) and any rows
+that exist will be returned. And finally, this field can also take
 *>* and *<* to indicate that the value should be greater/smaller (for
-numbers) or after/before (for dates). For string filters, a *%filter%*
-is applied, so it matches partial filters. If a field is marked but
-nothing is entered in the search box, the filter will be checked for
-presence (meaning not null).
+numbers) or after/before (for dates).
 
 Specify a title if you want one on the report, mainly for printing.
 

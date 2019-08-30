@@ -11,6 +11,10 @@ input[type=checkbox] { margin-right: 1em; }
 a.delete-link {
    cursor: pointer;
 }
+a.delete-block {
+    font-weight: normal;
+    cursor: pointer;
+}
 .dlgInput {
    width: 100%;
 }
@@ -46,9 +50,10 @@ select.dlgInput {
     <td>
       <table id="addedfilters" class="table table-condensed">
 	<thead>
-	  <tr>
+	  <tr class="filterHeader">
 	    <th>Filter</th>
 	    <th>Value</th>
+	    <th></th>
 	  </tr>
 	</thead>
 	<tbody></tbody>
@@ -62,6 +67,10 @@ select.dlgInput {
       </select>
       <p>
 	Multiple filters are ANDed together.
+      </p>
+      <button id="btnAddFilterBlock" class="btn btn-sm btn-default">Add filter block</button>
+      <p>
+	Multiple filter blocks are ORed together.
       </p>
     </td>
   </tr>
@@ -136,7 +145,9 @@ select.dlgInput {
 </div>
 
 <script type="text/javascript">
-var selectedFilters = [];
+var selectedFilters = [
+  [],
+];
 
 var filters = {
 {%for filter in adv_filters %}
@@ -160,14 +171,28 @@ function refreshFilterView() {
 
    $(tbl).children().remove();
 
-   $.each(selectedFilters, function (i, e) {
-      tbl.append(
-       $('<tr/>')
-        .append($('<td/>').text(filters[e.filter].name))
-        .append($('<td/>').text(e.display))
-        .append($('<td/>').append('<a class="delete-link">Remove filter</a>'))
-      );
-   });
+   $.each(selectedFilters, function (i, filterBlock) {
+      if (i != 0) {
+         var a = $('<a class="delete-block">Remove filter block</a>');
+         a.data('filterblock', i);
+
+         var r = $('#addedfilters thead tr.filterHeader').clone();
+         r.find('th:last-child').append(a);
+         tbl.append(r);
+      }
+
+      $.each(filterBlock, function(j, e) {
+         var a = $('<a class="delete-link">Remove filter</a>');
+         a.data('filterblock', i);
+         a.data('filteridx', j);
+         tbl.append(
+          $('<tr/>')
+           .append($('<td/>').text(filters[e.filter].name))
+           .append($('<td/>').text(e.display))
+           .append($('<td/>').append(a))
+         );
+      });
+    });
 }
 
 function getReportDefinition() {
@@ -251,7 +276,9 @@ $(function() {
                    f['value'] = $('#dlgSelectFieldSelect').val();
                    f['display'] = $('#dlgSelectFieldSelect option:selected').toArray().map(item => item.text).join(', ');
                 }
-                selectedFilters.push(f);
+
+                /* Always push to the last filter block */
+                selectedFilters[selectedFilters.length - 1].push(f);
 
                 refreshFilterView();
 
@@ -306,6 +333,15 @@ $(function() {
        return false;
     });
 
+    $('#btnAddFilterBlock').click(function() {
+       if (selectedFilters[selectedFilters.length - 1].length == 0) {
+          return;
+       }
+
+       selectedFilters.push([]);
+       refreshFilterView();
+    });
+
     $('#btnLoadReport').click(function() {
        $.get('.', {
           'storedreport': $('#selStoredReports').val(),
@@ -346,8 +382,19 @@ $(function() {
     });
 
     $(document).on("click", "a.delete-link", function() {
-       var idx = $('#addedfilters tbody').children().index($(this).parent().parent());
-       selectedFilters.splice(idx, 1);
+       var block = $(this).data('filterblock');
+       var idx = $(this).data('filteridx');
+
+       selectedFilters[block].splice(idx, 1);
+       if (block > 0 && selectedFilters[block].length == 0) {
+          selectedFilters.splice(block, 1);
+       }
+       refreshFilterView();
+    });
+
+    $(document).on("click", "a.delete-block", function() {
+       var block = $(this).data('filterblock');
+       selectedFilters.splice(block, 1);
        refreshFilterView();
     });
   });
