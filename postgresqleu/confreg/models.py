@@ -10,7 +10,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator, RegexVa
 from django.utils.dateformat import DateFormat
 from django.utils.functional import cached_property
 from django.template.defaultfilters import slugify
-from django.contrib.postgres.fields import DateTimeRangeField
+from django.contrib.postgres.fields import DateTimeRangeField, JSONField
+from django.core.serializers.json import DjangoJSONEncoder
 
 from postgresqleu.util.validators import validate_lowercase, validate_urlname
 from postgresqleu.util.validators import TwitterValidator
@@ -1111,6 +1112,18 @@ class DiscountCode(models.Model):
     @property
     def count(self):
         return self.registrations.count()
+
+
+class SavedReportDefinition(models.Model):
+    conference = models.ForeignKey(Conference, null=False, blank=False)
+    title = models.CharField(max_length=100, null=False, blank=False)
+    definition = JSONField(blank=False, null=False, encoder=DjangoJSONEncoder)
+
+    class Meta:
+        ordering = ('title', )
+        unique_together = (
+            ('conference', 'title'),
+        )
 
 
 class AttendeeMail(models.Model):

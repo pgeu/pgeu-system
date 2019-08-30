@@ -1,5 +1,6 @@
 from django.db.models import Q
 from django.http import HttpResponse
+from django.shortcuts import render
 from django import forms
 
 from reportlab.lib import colors
@@ -54,29 +55,30 @@ class ReportFilter(object):
         self.queryset = queryset
         self.querysetcol = querysetcol
         self.emptyasnull = emptyasnull
+        if self.queryset:
+            self.type = 'select'
+        else:
+            self.type = 'string'
 
-    def build_Q(self, POST):
+    def build_Q(self, val):
         if self.queryset and not isinstance(self.queryset, tuple) and not isinstance(self.queryset, list):
             # Our input is a list of IDs. Return registrations that has
             # *any* of the given id's. But we need to make sure that
             # django doesn't evaluate it as a subselect.
-            val = POST.getlist("adv_%s" % self.id, None)
             return Q(**{"%s__pk__in" % self.id: val})
         elif self.queryset:
             # Our input is a list of IDs, but they should be looked up
             # in a set of tuples rather than as foreign keys.
-            vals = POST.getlist("adv_%s" % self.id, None)
-            return Q(**{"%s__in" % self.id: vals})
+            return Q(**{"%s__in" % self.id: val})
         else:
-            if POST.get('adv_%s_filter' % self.id, None):
+            if val != '':
                 # Limit by value
-                v = POST['adv_%s_filter' % self.id]
-                if v.startswith('>'):
-                    return Q(**{"%s__gt" % self.id: v[1:]})
-                elif v.startswith('<'):
-                    return Q(**{"%s__lt" % self.id: v[1:]})
+                if val.startswith('>'):
+                    return Q(**{"%s__gt" % self.id: val[1:]})
+                elif val.startswith('<'):
+                    return Q(**{"%s__lt" % self.id: val[1:]})
                 else:
-                    return Q(**{"%s__icontains" % self.id: v})
+                    return Q(**{"%s__icontains" % self.id: val})
             else:
                 # Just make sure it exists
                 if self.emptyasnull:
@@ -84,34 +86,16 @@ class ReportFilter(object):
                 else:
                     return Q(**{"%s__isnull" % self.id: False})
 
-    @property
-    def html(self):
-        return """<input type="checkbox" class="adv_filter_check" name="adv_%s_on">%s%s""" % (
-            self.id,
-            self.name,
-            self._widgetstring(),
-        )
-
-    def _widgetstring(self):
-        if self.queryset is not None:
-            querysetcol = self.querysetcol
-
-            # Wrapper class that will return our custom column
-            class MultipleChoiceWrapper(forms.ModelMultipleChoiceField):
-                def label_from_instance(self, obj):
-                    if querysetcol:
-                        return getattr(obj, querysetcol)
-                    else:
-                        return super(MultipleChoiceWrapper, self).label_from_instance(obj)
-
-            if isinstance(self.queryset, tuple) or isinstance(self.queryset, list):
-                field = forms.MultipleChoiceField(choices=self.queryset)
-            else:
-                field = MultipleChoiceWrapper(queryset=self.queryset)
-
-            return "<blockquote class=\"adv_filter_wrap\">%s</blockquote><br/>" % (field.widget.render("adv_%s" % self.id, None), )
+    def options(self):
+        if isinstance(self.queryset, tuple) or isinstance(self.queryset, list):
+            return self.queryset
         else:
-            return '<input type="text" class="adv_filter_box" name="adv_%s_filter"><br/>' % self.id
+            def _get_value(obj):
+                if self.querysetcol:
+                    return getattr(obj, self.querysetcol)
+                else:
+                    return str(obj)
+            return [(o.pk, _get_value(o)) for o in self.queryset.all()]
 
 
 class ReportQueuePartitionFilter(ReportFilter):
@@ -123,9 +107,9 @@ class ReportQueuePartitionFilter(ReportFilter):
             [['Other', 'Other']] + [(chr(x), chr(x)) for x in range(ord('A'), ord('Z') + 1)]
         )
 
-    def build_Q(self, POST):
-        letters = [k for k in POST.getlist('adv_queuepartition') if k != 'Other']
-        other = 'Other' in POST.getlist('adv_queuepartition')
+    def build_Q(self, val):
+        letters = [k for k in val if k != 'Other']
+        other = 'Other' in val
 
         p = []
         if letters:
@@ -144,48 +128,50 @@ class ReportQueuePartitionFilter(ReportFilter):
 # so it needs a special implementation.
 class ReportSpeakerFilter(object):
     id = 'speakerstate'
+    name = 'Speaker with sessions'
+    type = 'select'
 
     def __init__(self, conference):
         self.conference = conference
 
-    def build_Q(self, POST):
+    def build_Q(self, val):
         return Q(attendee__speaker__conferencesession__conference=self.conference,
-                 attendee__speaker__conferencesession__status__in=POST.getlist('adv_speakerstate'))
+                 attendee__speaker__conferencesession__status__in=val)
 
-    @property
-    def html(self):
-        return """<input type="checkbox" class="adv_filter_check" name="adv_%s_on">Speaker with talk state%s""" % (
-            self.id,
-            self._widgetstring(),
-        )
-
-    def _widgetstring(self):
-        field = forms.MultipleChoiceField(choices=STATUS_CHOICES)
-        return "<blockquote class=\"adv_filter_wrap\">%s</blockquote><br/>" % (field.widget.render("adv_speakerstate", None), )
+    def options(self):
+        return STATUS_CHOICES
 
 
 def attendee_report_filters(conference):
-    yield ReportFilter('regtype', 'Registration type', RegistrationType.objects.filter(conference=conference), 'regtype')
-    yield ReportFilter('lastname', 'Last name')
-    yield ReportFilter('firstname', 'First name')
-    yield ReportQueuePartitionFilter(conference)
-    yield ReportFilter('country', 'Country', Country.objects.all())
-    yield ReportFilter('company', 'Company')
-    yield ReportFilter('phone', 'Phone')
-    yield ReportFilter('twittername', 'Twitter')
-    yield ReportFilter('nick', 'Nickname')
-    yield ReportFilter('dietary', 'Dietary needs')
-    yield ReportFilter('badgescan', 'Allow badge scanning')
-    yield ReportFilter('shareemail', 'Share email with sponsors')
-    yield ReportFilter('photoconsent', 'Photo consent', ((1, 'Yes'), (0, 'No')))
-    yield ReportFilter('payconfirmedat', 'Payment confirmed', emptyasnull=False)
-    yield ReportFilter('additionaloptions', 'Additional options', ConferenceAdditionalOption.objects.filter(conference=conference), 'name', False)
-    yield ReportFilter('shirtsize', 'T-Shirt size', ShirtSize.objects.all())
-    yield ReportSpeakerFilter(conference)
+    return [
+        ReportFilter('regtype', 'Registration type', RegistrationType.objects.filter(conference=conference), 'regtype'),
+        ReportFilter('lastname', 'Last name'),
+        ReportFilter('firstname', 'First name'),
+        ReportQueuePartitionFilter(conference),
+        ReportFilter('country', 'Country', Country.objects.all()),
+        ReportFilter('company', 'Company'),
+        ReportFilter('phone', 'Phone'),
+        ReportFilter('twittername', 'Twitter'),
+        ReportFilter('nick', 'Nickname'),
+        ReportFilter('dietary', 'Dietary needs'),
+        ReportFilter('badgescan', 'Allow badge scanning', ((1, 'Yes'), (0, 'No'))),
+        ReportFilter('shareemail', 'Share email with sponsors', ((1, 'Yes'), (0, 'No'))),
+        ReportFilter('photoconsent', 'Photo consent', ((1, 'Yes'), (0, 'No'))),
+        ReportFilter('payconfirmedat', 'Payment confirmed', emptyasnull=False),
+        ReportFilter('additionaloptions', 'Additional options', ConferenceAdditionalOption.objects.filter(conference=conference), 'name', False),
+        ReportFilter('shirtsize', 'T-Shirt size', ShirtSize.objects.all()),
+        ReportSpeakerFilter(conference),
+    ]
+
+
+def attendee_report_filters_map(conference):
+    return {r.id: r for r in attendee_report_filters(conference)}
 
 
 class ReportWriterBase(object):
-    def __init__(self, title, borders):
+    def __init__(self, request, conference, title, borders):
+        self.request = request
+        self.conference = conference
         self.rows = []
         self.title = title
         self.borders = borders
@@ -199,15 +185,15 @@ class ReportWriterBase(object):
 
 class ReportWriterHtml(ReportWriterBase):
     def render(self):
-        resp = HttpResponse()
-        if self.title:
-            resp.write("<h1>%s</h1>" % self.title)
-        resp.write('<table border="%s" cellspacing="0" cellpadding="1"><tr><th>%s</th></tr>' % (self.borders and 1 or 0, "</th><th>".join(self.headers)))
-        for r in self.rows:
-            resp.write("<tr><td>%s</td></tr>\n" % "</td><td>".join(r))
-        resp.write("</table>\n")
-
-        return resp
+        return render(self.request, 'confreg/simple_report.html', {
+            'conference': self.conference,
+            'columns': self.headers,
+            'data': self.rows,
+            'helplink': 'reports',
+            'breadcrumbs': (('/events/admin/{0}/reports/'.format(self.conference.urlname), 'Attendee reports'), ),
+            'backurl': '/events/admin/{0}/reports/'.format(self.conference.urlname),
+            'backwhat': 'attendee reports',
+        })
 
 
 class ReportWriterCsv(ReportWriterBase):
@@ -254,36 +240,35 @@ class ReportWriterPdf(ReportWriterBase):
         return resp
 
 
-def build_attendee_report(conference, POST):
-    title = POST['title']
-    format = POST['format']
-    orientation = POST['orientation']
-    borders = 'border' in POST
-    pagebreaks = 'pagebreaks' in POST
-    fields = POST.getlist('fields')
-    extracols = [_f for _f in [x.strip() for x in POST['additionalcols'].split(',')] if _f]
+def build_attendee_report(request, conference, data):
+    title = data['title']
+    format = data['format']
+    orientation = data['orientation']
+    borders = data['borders']
+    pagebreaks = data['pagebreaks']
+    fields = data['fields']
+    extracols = [_f for _f in [x.strip() for x in data['additionalcols'].split(',')] if _f]
 
     # Build the filters
+    filtermap = attendee_report_filters_map(conference)
     q = Q(conference=conference)
-    for f in attendee_report_filters(conference):
-        k = "adv_%s_on" % f.id
-        if k in POST:
-            # This filter is checked
-            q = q & f.build_Q(POST)
+    for flt in data['filters']:
+        f = filtermap[flt['filter']]
+        q = q & f.build_Q(flt['value'])
 
     # Figure out our order by
-    orderby = [_attendee_report_field_map[x][2] and _attendee_report_field_map[x][2] or x for x in [POST['orderby1'], POST['orderby2']]]
+    orderby = [_attendee_report_field_map[x][2] and _attendee_report_field_map[x][2] or x for x in [data['orderby1'], data['orderby2']]]
 
     # Run the query!
     result = ConferenceRegistration.objects.select_related('shirtsize', 'regtype', 'country', 'conference').filter(q).distinct().order_by(*orderby)
 
     if format == 'html':
-        writer = ReportWriterHtml(title, borders)
+        writer = ReportWriterHtml(request, conference, title, borders)
     elif format == 'pdf':
-        writer = ReportWriterPdf(title, borders)
+        writer = ReportWriterPdf(request, conference, title, borders)
         writer.set_orientation(orientation)
     elif format == 'csv':
-        writer = ReportWriterCsv(title, borders)
+        writer = ReportWriterCsv(request, conference, title, borders)
     elif format == 'json':
         # Don't want to use normal renderer here, since we need to pass
         # the filtered full objects into the builder (because it needs to

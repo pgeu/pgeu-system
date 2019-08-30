@@ -150,7 +150,6 @@ urlpatterns.extend([
     url(r'^events/admin/reports/time/$', postgresqleu.confreg.reporting.timereport),
     url(r'^events/admin/([^/]+)/reports/$', postgresqleu.confreg.views.reports),
     url(r'^events/admin/([^/]+)/reports/simple/$', postgresqleu.confreg.views.simple_report),
-    url(r'^events/admin/([^/]+)/reports/advanced/$', postgresqleu.confreg.views.advanced_report),
     url(r'^events/admin/([^/]+)/reports/feedback/$', postgresqleu.confreg.feedback.feedback_report),
     url(r'^events/admin/([^/]+)/reports/feedback/session/$', postgresqleu.confreg.feedback.feedback_sessions),
     url(r'^events/admin/([^/]+)/reports/schedule/$', postgresqleu.confreg.pdfschedule.pdfschedule),

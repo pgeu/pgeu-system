@@ -8,12 +8,28 @@
 #fieldlist { list-style-type: none; margin: 0; padding: 0; }
 #fieldlist li { cursor: move;}
 input[type=checkbox] { margin-right: 1em; }
+a.delete-link {
+   cursor: pointer;
+}
+.dlgInput {
+   width: 100%;
+}
+select.dlgInput {
+   height: 200px;
+}
 </style>
 {%endblock%}
 {%block layoutblock%}
-{%if list%}
 <h1>Reports</h1>
-<form method="post" action="advanced/">{% csrf_token %}
+<select id="selStoredReports">
+{%for r in stored_reports %}
+ <option value="{{r.id}}">{{r.title}}</option>
+{%endfor%}
+</select>
+<button id="btnLoadReport" class="btn btn-default">Load report</button>
+<button id="btnDeleteReport" class="btn btn-default">Delete stored report</button>
+
+<h2>Report</h2>
 <table class="table">
   <tr>
     <td class="col-md-3"><h3>Fields</h3>Select fields to include.<br/>Drag to change order.</td>
@@ -28,24 +44,40 @@ input[type=checkbox] { margin-right: 1em; }
  <tr>
     <td class="col-md-3"><h3>Filters</h3>Select filters to apply</td>
     <td>
+      <table id="addedfilters" class="table table-condensed">
+	<thead>
+	  <tr>
+	    <th>Filter</th>
+	    <th>Value</th>
+	  </tr>
+	</thead>
+	<tbody></tbody>
+      </table>
+      <strong>Add filter:</strong><br/>
+      <select id="addFilterSelect">
+	<option value="0">** Select filter to add</option>
       {%for filter in adv_filters%}
-      {{filter.html|safe}}
+	<option value="{{filter.id}}">{{filter.name}}</option>
       {%endfor%}
+      </select>
+      <p>
+	Multiple filters are ANDed together.
+      </p>
     </td>
   </tr>
   <tr>
     <td class="col-md-3"><h3>Title</h3></td>
-    <td><input type="text" name="title"></td>
+    <td><input type="text" name="title" id="txtTitle"></td>
   </tr>
   <tr>
     <td class="col-md-3"><h3>Additional columns</h3>(These columns will be added empty, for manual entry. Separate with comma.)</td>
-    <td><input type="text" name="additionalcols"></td>
+    <td><input type="text" name="additionalcols" id="txtAdditionalCols"></td>
   </tr>
   <tr>
     <td class="col-md-3"><h3>Order by</h3></td>
     <td>
-      <select name="orderby1">{%for f,fn,d,fk in adv_fields %}<option value="{{f}}">{{fn}}</option>{%endfor%}</select>
-      <select name="orderby2">{%for f,fn,d,fk in adv_fields %}<option value="{{f}}">{{fn}}</option>{%endfor%}</select>
+      <select name="orderby1" id="selOrderby1">{%for f,fn,d,fk in adv_fields %}<option value="{{f}}">{{fn}}</option>{%endfor%}</select>
+      <select name="orderby2" id="selOrderby2">{%for f,fn,d,fk in adv_fields %}<option value="{{f}}">{{fn}}</option>{%endfor%}</select>
     </td>
   </tr>
   <tr>
@@ -54,7 +86,7 @@ input[type=checkbox] { margin-right: 1em; }
       <table border="0" cellspacing="1" cellpadding="0">
 	<tr>
 	  <td>Format:</td>
-	  <td><select name="format"><option value="html">HTML</option><option value="pdf">PDF</option><option value="csv">CSV</option><option value="badge">Badge</option><option value="json">JSON</option></select></td>
+	  <td><select name="format" id="selFormat"><option value="html">HTML</option><option value="pdf">PDF</option><option value="csv">CSV</option><option value="badge">Badge</option><option value="json">JSON</option></select></td>
 	</tr>
 	<tr>
 	  <td></td>
@@ -62,25 +94,102 @@ input[type=checkbox] { margin-right: 1em; }
 	</tr>
 	<tr>
 	  <td>PDF orientation:</td>
-	  <td><select name="orientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></td>
+	  <td><select name="orientation" id="selOrientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></td>
 	</tr>
 	<tr>
 	  <td>Borders</td>
-	  <td><input type="checkbox" name="border" CHECKED> include table and badge borders</td>
+	  <td><input type="checkbox" name="border" CHECKED id="cbBorders"> include table and badge borders</td>
 	<tr>
 	  <td>Pagebreaks</td>
-	  <td><input type="checkbox" name="pagebreaks" CHECKED> force page break (between badges only)</td>
-	</tr>
+	  <td><input type="checkbox" name="pagebreaks" CHECKED id="cbPagebreaks"> force page break (between badges only)</td>
 	</tr>
       </table>
     </td>
   </tr>
 </table>
-<input type="submit" value="Generate report" class="btn btn-default"/>
+
+<form method="post" action=".">{% csrf_token %}
+<input type="hidden" name="reportdata" id="reportdata">
+<input type="hidden" name="what" id="txtWhat">
+<input type="submit" id="btnSubmit" value="Generate report" class="btn btn-primary"/>
+<input type="submit" id="btnSave" value="Save report definition" class="btn btn-default"/>
+<a href="." class="btn btn-default">Reset form</a>
 </form>
 
+<div id="dlgStringField">
+  <input type="text" id="dlgStringFieldString" class="dlgInput">
+  <ul>
+    <li>Enter a value to search for entries containing it (non-exact match)</li>
+    <li>Enter <i>&gt;value</i> to search for values greater than</li>
+    <li>Enter <i>&lt;value</i> to search for values lesser than</li>
+    <li>Leave empty to search for *any* value</li>
+  </ul>
+</div>
+
+<div id="dlgSelectField">
+  Selct one or more values to include.
+  <select id="dlgSelectFieldSelect" MULTIPLE class="dlgInput"></select>
+</div>
+
+<div id="dlgSaveReport">
+  Name: <input type="text" id="dlgSaveReportName">
+</div>
+
 <script type="text/javascript">
+var selectedFilters = [];
+
+var filters = {
+{%for filter in adv_filters %}
+  "{{filter.id}}": {
+    type: "{{filter.type}}",
+    name: "{{filter.name}}",{%if filter.type == "select" %}
+    options: [{%for k,v in filter.options %}
+  ["{{k}}", "{{v}}"],{%endfor%}
+],{%endif%}
+  },
+{%endfor%}
+};
+
+var stored_reports = {
+{%for r in stored_reports%}
+   '{{r.title}}': true,{%endfor%}
+};
+
+function refreshFilterView() {
+   var tbl = $('#addedfilters tbody');
+
+   $(tbl).children().remove();
+
+   $.each(selectedFilters, function (i, e) {
+      tbl.append(
+       $('<tr/>')
+        .append($('<td/>').text(filters[e.filter].name))
+        .append($('<td/>').text(e.display))
+        .append($('<td/>').append('<a class="delete-link">Remove filter</a>'))
+      );
+   });
+}
+
+function getReportDefinition() {
+  return {
+    fields: $('#fieldlist input:checkbox:checked').map(function() { return $(this).val(); }).get(),
+    filters: selectedFilters,
+    title: $('#txtTitle').val(),
+    additionalcols: $('#txtAdditionalCols').val(),
+    orderby1: $('#selOrderby1').val(),
+    orderby2: $('#selOrderby2').val(),
+    format: $('#selFormat').val(),
+    orientation: $('#selOrientation').val(),
+    borders: $('#cbBorders').is(":checked"),
+    pagebreaks: $('#cbPagebreaks').is(":checked"),
+  };
+}
+
 $(function() {
+    $( '#dlgStringField').dialog({ autoOpen: false, modal: true, resizable: false, minWidth: 500});
+    $( '#dlgSelectField').dialog({ autoOpen: false, modal: true, resizable: false, minWidth: 500});
+    $( '#dlgSaveReport').dialog({ autoOpen: false, modal: true, resizable: false });
+
     $( "#fieldlist" ).sortable();
     $( "#fieldlist" ).disableSelection();
 
@@ -100,24 +209,148 @@ $(function() {
           }
        });
     });
+
+    $('#addFilterSelect').change(function() {
+       var id = $(this).val();
+       if (id == "0") return;
+
+       var dlg;
+       if (filters[id].type == "string") {
+          dlg = $('#dlgStringField');
+          $('#dlgStringFieldString').val("");
+       } else if (filters[id].type == "select") {
+          dlg = $('#dlgSelectField');
+          var sel = document.getElementById('dlgSelectFieldSelect');
+          sel.options.length = 0;
+          $.each(filters[id].options, function(i, e) {
+             var opt = document.createElement('option');
+             opt.value = e[0];
+             opt.innerHTML = e[1];
+             sel.appendChild(opt);
+          });
+       }
+       dlg.dialog('option', {
+          'title': filters[id].name,
+          'buttons': {
+             'Cancel': function() {
+                $('#addFilterSelect').val(0);
+                $(this).dialog('close');
+             },
+             'Add filter': function() {
+                var f = {
+                   'filter': id,
+                };
+                if (filters[id].type == "string") {
+                   f['value'] = $('#dlgStringFieldString').val();
+                   f['display'] = f['value'];
+                } else if (filters[id].type == "select") {
+                   if (!$('#dlgSelectFieldSelect').val()) {
+                      return;
+                   }
+
+                   f['value'] = $('#dlgSelectFieldSelect').val();
+                   f['display'] = $('#dlgSelectFieldSelect option:selected').toArray().map(item => item.text).join(', ');
+                }
+                selectedFilters.push(f);
+
+                refreshFilterView();
+
+                $('#addFilterSelect').val(0);
+                $(this).dialog('close');
+             }
+          }
+       }).dialog('open');
+    });
+
+    $('#btnSubmit').click(function() {
+       $('#reportdata').val(JSON.stringify(getReportDefinition()));
+       $('#txtWhat').val('generate');
+       return true;
+    });
+
+    $('#btnSave').click(function() {
+       $('#dlgSaveReportName').val($('#txtTitle').val());
+       $('#dlgSaveReport').dialog('option', {
+          'title': 'Save report',
+          'buttons': {
+             'Cancel': function() {
+                $(this).dialog('close');
+             },
+             'Save report': function() {
+                var overwrite = 0;
+                if ($('#dlgSaveReportName').val() in stored_reports) {
+                   if (!confirm('A report with this name already exists. Overwrite?'))
+                      return;
+                   overwrite = 1;
+                }
+
+                $.post('.', {
+                   'csrfmiddlewaretoken': '{{csrf_token}}',
+                   'reportdata': JSON.stringify(getReportDefinition()),
+                   'what': 'save',
+                   'name': $('#dlgSaveReportName').val(),
+                   'overwrite': overwrite,
+                }).success(function() {
+                   document.location.href = '.';
+                }).fail(function() {
+                  alert('Error saving');
+                }).always(function() {
+                  $('#txtWhat').val('save');
+                  $('#dlgStringField').dialog('close');
+                });
+             }
+          }
+       }).dialog('open');
+
+
+       return false;
+    });
+
+    $('#btnLoadReport').click(function() {
+       $.get('.', {
+          'storedreport': $('#selStoredReports').val(),
+       }).success(function(data) {
+          $('#txtTitle').val(data.title);
+          $('#txtAdditionalCols').val(data.additionalcols);
+          $('#selOrderby1').val(data.orderby1);
+          $('#selOrderby2').val(data.orderby2);
+          $('#selFormat').val(data.format);
+          $('#selOrientation').val(data.orientation);
+          $('#cbBorders').prop('checked', data.borders);
+          $('#cbPagebreaks').prop('checked', data.pagebreaks);
+
+          $('#fieldlist input:checkbox').prop('checked', false);
+          $.each(data.fields, function(i, e) {
+             $('#fieldlist input:checkbox[value="' + e + '"]').prop('checked', true);
+          });
+
+          selectedFilters = data.filters;
+          refreshFilterView();
+       }).fail(function() {
+          alert('Failed to load report');
+       });
+    });
+
+    $('#btnDeleteReport').click(function() {
+       if (!confirm('Are you sure you want to delete this report?')) return;
+
+       $.post('.', {
+          'csrfmiddlewaretoken': '{{csrf_token}}',
+          'what': 'delete',
+          'storedreport': $('#selStoredReports').val(),
+       }).success(function(data) {
+          document.location.href = '.';
+       }).fail(function() {
+          alert('Failed to delete report');
+       });
+    });
+
+    $(document).on("click", "a.delete-link", function() {
+       var idx = $('#addedfilters tbody').children().index($(this).parent().parent());
+       selectedFilters.splice(idx, 1);
+       refreshFilterView();
+    });
   });
 </script>
 
-{% else %}
-<table border="1" cellspacing="0" cellpadding="1">
-{%if reporttitle%}<h2>{{reporttitle}}</h2>{%endif%}
- <tr>
-  {%for col in header%}
-   <th>{{col}}</th>
-  {%endfor%}
-</tr>
-{%for row in data%}
- <tr>
-  {%for col in row%}
-   <td>{{col}}</td>
-  {%endfor%}
- </tr>
-{%endfor%}
-</table>
-{%endif%}
 {%endblock%}

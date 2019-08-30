@@ -26,6 +26,7 @@ from .models import PendingAdditionalOrder
 from .models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
 from .models import STATUS_CHOICES
 from .models import ConferenceNews, ConferenceTweetQueue
+from .models import SavedReportDefinition
 from .forms import ConferenceRegistrationForm, RegistrationChangeForm, ConferenceSessionFeedbackForm
 from .forms import ConferenceFeedbackForm, SpeakerProfileForm
 from .forms import CallForPapersForm
@@ -2652,29 +2653,44 @@ def reports(request, confname):
     conference = get_authenticated_conference(request, confname)
 
     # Include information for the advanced reports
-    from .reports import attendee_report_fields, attendee_report_filters
+    from .reports import attendee_report_fields, attendee_report_filters, build_attendee_report
+
+    if request.method == 'POST':
+        if request.POST['what'] == 'delete':
+            get_object_or_404(SavedReportDefinition, conference=conference, pk=request.POST['storedreport']).delete()
+            return HttpResponse("OK")
+
+        data = json.loads(request.POST['reportdata'])
+        if request.POST['what'] == 'generate':
+            return build_attendee_report(request, conference, data)
+        elif request.POST['what'] == 'save':
+            with transaction.atomic():
+                if request.POST.get('overwrite', 0) == "1":
+                    obj = get_object_or_404(SavedReportDefinition, conference=conference, title=request.POST['name'])
+                    obj.definition = data
+                    obj.save()
+                else:
+                    if SavedReportDefinition.objects.filter(conference=conference, title=request.POST['name']).exists():
+                        return HttpResponse("Already exists", status=409)
+
+                    SavedReportDefinition(conference=conference,
+                                          title=request.POST['name'],
+                                          definition=data).save()
+                return HttpResponse("OK")
+        raise Http404()
+    elif 'storedreport' in request.GET:
+        # Load a special stored report
+        r = get_object_or_404(SavedReportDefinition, conference=conference, pk=request.GET['storedreport'])
+        return HttpResponse(json.dumps(r.definition), content_type='application/json')
+
     return render(request, 'confreg/reports.html', {
         'conference': conference,
-        'list': True,
         'additionaloptions': conference.conferenceadditionaloption_set.all(),
         'adv_fields': attendee_report_fields,
         'adv_filters': attendee_report_filters(conference),
+        'stored_reports': SavedReportDefinition.objects.filter(conference=conference).order_by('title'),
         'helplink': 'reports#attendee',
     })
-
-
-def advanced_report(request, confname):
-    conference = get_authenticated_conference(request, confname)
-
-    if request.method != "POST":
-        raise Http404()
-
-    from .reports import build_attendee_report
-
-    try:
-        return build_attendee_report(conference, request.POST)
-    except ValidationError as e:
-        return HttpResponse("Bad input: %s" % e)
 
 
 def simple_report(request, confname):
@@ -2734,6 +2750,8 @@ def simple_report(request, confname):
         'columns': [dd for dd in collist if not dd.startswith('_')],
         'data': d,
         'helplink': 'reports',
+        'backurl': '/events/admin/{0}/'.format(conference.urlname),
+        'backwhat': 'dashboard',
     })
 
 
