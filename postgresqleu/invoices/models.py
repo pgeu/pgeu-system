@@ -312,7 +312,7 @@ class PendingBankTransaction(models.Model):
     created = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=False)
     transtext = models.CharField(max_length=500, null=False, blank=True)
-    sender = models.CharField(max_length=200, null=False, blank=True)
+    sender = models.CharField(max_length=1000, null=False, blank=True)
     comments = models.TextField(max_length=2000, null=False, blank=True)
     canreturn = models.BooleanField(null=False, blank=False, default=False)
 
