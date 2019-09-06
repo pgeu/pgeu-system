@@ -43,7 +43,7 @@ function show_scan_dialog(token, data) {
     $('#badge_company').text(data.company);
     $('#badge_country').text(data.country);
     $('#badge_email').text(data.email);
-    $('#badge_note').val('');
+    $('#badge_note').val(data.note);
 
     $('#badgescanModal').modal({});
 }
