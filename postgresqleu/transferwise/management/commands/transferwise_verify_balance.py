@@ -44,7 +44,6 @@ class Command(BaseCommand):
             self.verify_one_account(method)
 
     def verify_one_account(self, method):
-        method = method
         pm = method.get_implementation()
 
         api = TransferwiseApi(pm)
