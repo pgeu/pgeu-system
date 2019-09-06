@@ -18,7 +18,7 @@ from postgresqleu.util.backendviews import backend_list_editor, backend_process_
 from postgresqleu.confreg.util import get_authenticated_conference
 
 from .jinjafunc import JINJA_TEMPLATE_ROOT
-from .jinjapdf import render_jinja_ticket
+from .jinjapdf import render_jinja_ticket, render_jinja_badges
 from .util import send_conference_mail
 
 from .models import Conference, ConferenceSeries
@@ -278,6 +278,15 @@ def view_registration_ticket(request, urlname, regid):
 
     resp = HttpResponse(content_type='application/pdf')
     render_jinja_ticket(reg, resp, systemroot=JINJA_TEMPLATE_ROOT)
+    return resp
+
+
+def view_registration_badge(request, urlname, regid):
+    conference = get_authenticated_conference(request, urlname)
+    reg = get_object_or_404(ConferenceRegistration, conference=conference, pk=regid)
+
+    resp = HttpResponse(content_type='application/pdf')
+    render_jinja_badges(conference, [reg.safe_export(), ], resp, False, False)
     return resp
 
 

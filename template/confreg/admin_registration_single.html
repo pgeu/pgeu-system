@@ -214,6 +214,7 @@
 {%if conference.tickets%}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/ticket/">Preview ticket</a>
 {%endif%}
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/badge/">Preview badge</a>
 {%if conference.sendwelcomemail and reg.payconfirmedat %}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/resendwelcome/">Re-send welcome email</a>
 {%endif%}
