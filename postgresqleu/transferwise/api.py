@@ -27,14 +27,23 @@ class TransferwiseApi(object):
     def parse_datetime(self, s):
         return datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    def get(self, suburl, params=None):
+    def _get(self, suburl, params=None, stream=False):
         r = self.session.get(
             'https://api.transferwise.com/v1/{}'.format(suburl),
             params=params,
+            stream=stream,
         )
         if r.status_code != 200:
             r.raise_for_status()
-        return r.json()
+        return r
+
+    def get(self, suburl, params=None):
+        return self._get(suburl, params, False).json()
+
+    def get_binary(self, suburl, params=None):
+        r = self._get(suburl, params, True)
+        r.raw.decode_content = True
+        return r.raw
 
     def post(self, suburl, params):
         j = json.dumps(params, cls=DjangoJSONEncoder)

@@ -34,16 +34,19 @@ class BackendTransferwiseForm(BaseManagedBankPaymentForm):
     autopayoutiban = forms.CharField(required=False, max_length=64, label='Recipient IBAN',
                                      help_text='IBAN number of account to make payouts to')
     notification_receiver = forms.EmailField(required=True)
+    send_statements = forms.BooleanField(required=False, label="Send statements",
+                                         help_text="Send monthly PDF statements by email")
     accounting_payout = forms.ChoiceField(required=True, choices=get_account_choices,
                                           label="Payout account")
 
     managed_fields = ['apikey', 'canrefund', 'notification_receiver', 'autopayout', 'autopayouttrigger',
-                      'autopayoutlimit', 'autopayoutname', 'autopayoutiban', 'accounting_payout']
+                      'autopayoutlimit', 'autopayoutname', 'autopayoutiban', 'accounting_payout',
+                      'send_statements']
     managed_fieldsets = [
         {
             'id': 'tw',
             'legend': 'TransferWise',
-            'fields': ['notification_receiver', 'canrefund', 'apikey', ],
+            'fields': ['notification_receiver', 'send_statements', 'canrefund', 'apikey', ],
         },
         {
             'id': 'twautopayout',

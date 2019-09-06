@@ -52,3 +52,15 @@ class TransferwisePayout(models.Model):
     sentat = models.DateTimeField(null=True, blank=True)
     completedat = models.DateTimeField(null=True, blank=True)
     completedtrans = models.ForeignKey(TransferwiseTransaction, blank=True, null=True)
+
+
+class TransferwiseMonthlyStatement(models.Model):
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
+    month = models.DateField(null=False, blank=False)
+    downloaded = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+    contents = models.BinaryField(null=False)
+
+    class Meta:
+        unique_together = (
+            ('month', 'paymentmethod'),
+        )
