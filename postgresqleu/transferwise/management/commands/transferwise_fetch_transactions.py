@@ -58,6 +58,11 @@ class Command(BaseCommand):
                 # Set optional fields
                 trans.counterpart_name = t['details'].get('senderName', '')
                 trans.counterpart_account = t['details'].get('senderAccount', '').replace(' ', '')
+
+                # Weird stuff that sometimes shows up
+                if trans.counterpart_account == 'Unknownbankaccount':
+                    trans.counterpart_account = ''
+
                 if trans.counterpart_account:
                     # If account is IBAN, then try to validate it!
                     trans.counterpart_valid_iban = api.validate_iban(trans.counterpart_account)
