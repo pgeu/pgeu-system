@@ -15,41 +15,142 @@ import json
 
 from .jinjapdf import render_jinja_badges
 
+from postgresqleu.util.db import exec_to_dict
 from postgresqleu.countries.models import Country
 from .models import ConferenceRegistration, RegistrationType, ConferenceAdditionalOption, ShirtSize
 from .models import STATUS_CHOICES
 from .reportingforms import QueuePartitionForm
 from functools import reduce
 
+
+class ReportField(object):
+    virtualfield = False
+
+    def __init__(self, id, title, default=False):
+        self.id = id
+        self.title = title
+        self.default = default
+        if not self.virtualfield:
+            self.field = ConferenceRegistration._meta.get_field(id)
+
+    def get_select_name(self):
+        return self.id
+
+    def get_value(self, val):
+        if type(val) == bool:
+            return val and 'Yes' or 'No'
+        elif type(val) != str:
+            return str(val)
+        return val
+
+    def get_orderby_field(self):
+        return self.id
+
+    def get_join(self):
+        return None
+
+
+class DerivedReportField(ReportField):
+    virtualfield = True
+
+    def __init__(self, id, title, expression, default=False):
+        super(DerivedReportField, self).__init__(id, title, default)
+        self.expression = expression
+
+    def get_select_name(self):
+        return "{} AS {}".format(self.expression, self.id)
+
+
+class ForeignReportField(ReportField):
+    def __init__(self, id, title, remotecol, sort=None, default=False):
+        super(ForeignReportField, self).__init__(id, title, default)
+        self.sort = sort
+        self.remotecol = remotecol
+
+    def get_select_name(self):
+        return "{}.{} AS {}".format(
+            self.field.remote_field.model._meta.db_table,
+            self.remotecol,
+            self.id,
+        )
+
+    def get_orderby_field(self):
+        if self.sort:
+            return "{}.{}".format(
+                self.field.remote_field.model._meta.db_table,
+                self.sort,
+            )
+        else:
+            return "{}.{}".format(
+                self.field.remote_field.model._meta.db_table,
+                self.remotecol,
+            )
+
+    def get_join(self):
+        joincols = self.field.get_joining_columns()
+        if len(joincols) != 1:
+            raise Exception("Wrong number of join columns")
+
+        return "LEFT JOIN {} ON r.{}={}.{}".format(
+            self.field.remote_field.model._meta.db_table,
+            joincols[0][0],
+            self.field.remote_field.model._meta.db_table,
+            joincols[0][1],
+        )
+
+
+class AdditionalOptionsReportField(object):
+    def __init__(self):
+        self.id = 'additionaloptions'
+        self.title = 'Additional Options'
+
+    def get_select_name(self):
+        return "(\n          SELECT array_agg(name) FROM confreg_conferenceadditionaloption ccao\n          INNER JOIN confreg_conferenceregistration_additionaloptions ccrao ON ccrao.conferenceadditionaloption_id=ccao.id\n          WHERE ccrao.conferenceregistration_id=r.id\n       ) AS additionaloptions"
+
+    def get_value(self, val):
+        if val:
+            return ",\n".join(val)
+        else:
+            return ''
+
+    def get_orderby_field(self):
+        raise Exception("Can't order by this")
+
+    def get_join(self):
+        return None
+
+
 # Fields that are available in an advanced attendee report
-# (id, field title, default, field_user_for_order_by)
 attendee_report_fields = [
-    ('lastname', 'Last name', True, None),
-    ('firstname', 'First name', True, None),
-    ('queuepartition', 'Queue partition', False, None),
-    ('email', 'E-mail', True, None),
-    ('company', 'Company', False, None),
-    ('address', 'Address', False, None),
-    ('country', 'Country', False, None),
-    ('phone', 'Phone', False, None),
-    ('twittername', 'Twitter', False, None),
-    ('nick', 'Nickname', False, None),
-    ('dietary', 'Dietary needs', False, None),
-    ('shirtsize.shirtsize', 'T-Shirt size', False, 'shirtsize__shirtsize'),
-    ('photoconsent', 'Photo consent', False, None),
-    ('regtype.regtype', 'Registration type', False, 'regtype__sortkey'),
-    ('additionaloptionlist', 'Additional options', False, 'id'),
-    ('created', 'Registration created', False, None),
-    ('payconfirmedat', 'Payment confirmed', False, None),
-    ('fullpublictoken', 'Public token', False, None),
-    ('fullidtoken', 'ID token', False, None),
+    ReportField('lastname', 'Last name', True),
+    ReportField('firstname', 'First name', True),
+    ReportField('email', 'E-mail', True),
+    DerivedReportField('queuepartition', 'Queue partition', "regexp_replace(upper(substring(CASE WHEN conference.queuepartitioning=1 THEN lastname WHEN conference.queuepartitioning=2 THEN firstname END, 1, 1)), '[^A-Z]', 'Other')"),
+    ReportField('company', 'Company'),
+    ReportField('address', 'Address'),
+    ForeignReportField('country', 'Country', remotecol='printable_name'),
+    ReportField('phone', 'Phone'),
+    ReportField('twittername', 'Twitter'),
+    ReportField('nick', 'Nickname'),
+    ReportField('dietary', 'Dietary needs'),
+    ForeignReportField('shirtsize', 'T-Shirt size', remotecol='shirtsize', sort='shirtsize'),
+    ReportField('photoconsent', 'Photo consent'),
+    ForeignReportField('regtype', 'Registration type', remotecol='regtype', sort='sortkey'),
+    AdditionalOptionsReportField(),
+    ReportField('created', 'Registration created'),
+    ReportField('payconfirmedat', 'Payment confirmed'),
+    DerivedReportField('publictoken', 'Public token', "'AT$' || publictoken || '$AT'"),
+    DerivedReportField('idtoken', 'ID token', "'ID$' || idtoken || '$ID'"),
 ]
 
-_attendee_report_field_map = dict([(a, (b, c, d)) for a, b, c, d in attendee_report_fields])
+
+_attendee_report_field_map = {f.id: f for f in attendee_report_fields}
 
 
 class ReportFilter(object):
-    def __init__(self, id, name, queryset=None, querysetcol=None, emptyasnull=True):
+    booleanoptions = ((1, 'Yes'), (0, 'No'))
+
+    def __init__(self, id, name, queryset=None, querysetcol=None, emptyasnull=True, manytomany=False):
         self.id = id
         self.name = name
         self.queryset = queryset
@@ -59,32 +160,78 @@ class ReportFilter(object):
             self.type = 'select'
         else:
             self.type = 'string'
+        self.manytomany = manytomany
+        self.field = ConferenceRegistration._meta.get_field(id)
+        self.db_colname = self.field.get_attname_column()[1]
 
-    def build_Q(self, val):
-        if self.queryset and not isinstance(self.queryset, tuple) and not isinstance(self.queryset, list):
-            # Our input is a list of IDs. Return registrations that has
-            # *any* of the given id's. But we need to make sure that
-            # django doesn't evaluate it as a subselect.
-            return Q(**{"%s__pk__in" % self.id: val})
-        elif self.queryset:
-            # Our input is a list of IDs, but they should be looked up
-            # in a set of tuples rather than as foreign keys.
-            return Q(**{"%s__in" % self.id: val})
+    def build_SQL(self, flt, blockno):
+        val = flt['value']
+        if self.queryset:
+            # Our input is a list of IDs.
+            # Note! For some silly models (hello Country), the id is text :/ So we need
+            # to figure that out.
+            if self.queryset == self.booleanoptions:
+                idlist = [bool(int(v)) for v in val]
+            elif isinstance(self.queryset, tuple):
+                idlist = [int(v) for v in val]
+            else:
+                idlist = list(map(self.field.related_model._meta.pk.get_prep_value, val))
+            if flt.get('mincount', None) is None:
+                return (
+                    '{}=ANY(%({}_ids)s)'.format(self.db_colname, self.id),
+                    {'{}_ids'.format(self.id): idlist},
+                )
+            else:
+                # We have a minimum count, so we turn this into a subquery this time
+                return (
+                    '(SELECT count(*) FROM {} {}_{} WHERE {}_{}.{}=r.id AND {}=ANY(%({}_ids_{})s)) >= %({}_mincount_{})s'.format(
+                        self.field.m2m_db_table(),      # SELECT FROM
+                        self.field.m2m_db_table(),      # SELECT FROM alias
+                        blockno,                        # SELECT FROM alias
+                        self.field.m2m_db_table(),      # WHERE table alias
+                        blockno,                        # WHERE table alias
+                        self.field.m2m_column_name(),   # column in binding table
+                        self.field.m2m_reverse_name(),  # column where our ids live
+                        self.id,             # {}_ids
+                        blockno,             # _ids{}
+                        self.id,             # {}_mincount
+                        blockno,             # _mincount{}
+                    ),
+                    {
+                        '{}_mincount_{}'.format(self.id, blockno): int(flt.get('mincount')),
+                        '{}_ids_{}'.format(self.id, blockno): idlist,
+                    },
+                )
         else:
             if val != '':
                 # Limit by value
                 if val.startswith('>'):
-                    return Q(**{"%s__gt" % self.id: val[1:]})
+                    return (
+                        "{} > %({})s".format(self.db_colname, self.id),
+                        {self.id: val[1:]}
+                    )
                 elif val.startswith('<'):
-                    return Q(**{"%s__lt" % self.id: val[1:]})
+                    return (
+                        "{} < %({})s".format(self.db_colname, self.id),
+                        {self.id: val[1:]}
+                    )
                 else:
-                    return Q(**{"%s__icontains" % self.id: val})
+                    return (
+                        "{} LIKE %({})s".format(self.db_colname, self.id),
+                        {self.id: '%{}%'.format(val)}
+                    )
             else:
                 # Just make sure it exists
                 if self.emptyasnull:
-                    return Q(**{"%s__isnull" % self.id: False, "%s__gt" % self.id: ''})
+                    return (
+                        "{} IS NOT NULL AND {} != ''".format(self.db_colname, self.db_colname),
+                        {}
+                    )
                 else:
-                    return Q(**{"%s__isnull" % self.id: False})
+                    return (
+                        "{} IS NOT NULL".format(self.db_colname),
+                        {}
+                    )
 
     def options(self):
         if isinstance(self.queryset, tuple) or isinstance(self.queryset, list):
@@ -98,16 +245,16 @@ class ReportFilter(object):
             return [(o.pk, _get_value(o)) for o in self.queryset.all()]
 
 
-class ReportQueuePartitionFilter(ReportFilter):
+class ReportQueuePartitionFilter(object):
+    id = 'queuepartition'
+    name = 'Queue partition'
+    type = 'select'
+
     def __init__(self, conference):
         self.conference = conference
-        super(ReportQueuePartitionFilter, self).__init__(
-            'queuepartition',
-            'Queue Partition',
-            [['Other', 'Other']] + [(chr(x), chr(x)) for x in range(ord('A'), ord('Z') + 1)]
-        )
 
-    def build_Q(self, val):
+    def build_SQL(self, flt, blockno):
+        val = flt['value']
         letters = [k for k in val if k != 'Other']
         other = 'Other' in val
 
@@ -118,14 +265,18 @@ class ReportQueuePartitionFilter(ReportFilter):
             p.append("[^A-Z]")
         r = "^({0})".format('|'.join(p))
 
-        if self.conference.queuepartitioning == 1:
-            return Q(lastname__iregex=r)
-        else:
-            return Q(firstname__iregex=r)
+        return (
+            "r.{} ~* %(qpart_{})s".format(
+                (self.conference.queuepartitioning == 1) and 'lastname' or 'firstname',
+                blockno),
+            {"qpart_{}".format(blockno): r}
+        )
+
+    def options(self):
+        return [['Other', 'Other']] + [(chr(x), chr(x)) for x in range(ord('A'), ord('Z') + 1)]
 
 
-# Filter by speaker state is more complex than the default filter can handle,
-# so it needs a special implementation.
+# Filter by speaker having at least one session in any of the given states
 class ReportSpeakerFilter(object):
     id = 'speakerstate'
     name = 'Speaker with sessions'
@@ -134,9 +285,12 @@ class ReportSpeakerFilter(object):
     def __init__(self, conference):
         self.conference = conference
 
-    def build_Q(self, val):
-        return Q(attendee__speaker__conferencesession__conference=self.conference,
-                 attendee__speaker__conferencesession__status__in=val)
+    def build_SQL(self, flt, blockno):
+        val = flt['value']
+        return (
+            "EXISTS (SELECT 1 FROM confreg_conferencesession conferencesession_{0} INNER JOIN confreg_conferencesession_speaker conferencesession_speaker_{0} ON conferencesession_{0}.id=conferencesession_speaker_{0}.conferencesession_id INNER JOIN confreg_speaker speaker_{0} ON conferencesession_speaker_{0}.speaker_id=speaker_{0}.id WHERE speaker_{0}.user_id=r.attendee_id AND conferencesession_{0}.conference_id=%(conference_id)s AND conferencesession_{0}.status=ANY(%(sessionstatuses_{0})s))".format(blockno),
+            {"sessionstatuses_{}".format(blockno): [int(v) for v in val]}
+        )
 
     def options(self):
         return STATUS_CHOICES
@@ -154,11 +308,11 @@ def attendee_report_filters(conference):
         ReportFilter('twittername', 'Twitter'),
         ReportFilter('nick', 'Nickname'),
         ReportFilter('dietary', 'Dietary needs'),
-        ReportFilter('badgescan', 'Allow badge scanning', ((1, 'Yes'), (0, 'No'))),
-        ReportFilter('shareemail', 'Share email with sponsors', ((1, 'Yes'), (0, 'No'))),
-        ReportFilter('photoconsent', 'Photo consent', ((1, 'Yes'), (0, 'No'))),
+        ReportFilter('badgescan', 'Allow badge scanning', ReportFilter.booleanoptions),
+        ReportFilter('shareemail', 'Share email with sponsors', ReportFilter.booleanoptions),
+        ReportFilter('photoconsent', 'Photo consent', ReportFilter.booleanoptions),
         ReportFilter('payconfirmedat', 'Payment confirmed', emptyasnull=False),
-        ReportFilter('additionaloptions', 'Additional options', ConferenceAdditionalOption.objects.filter(conference=conference), 'name', False),
+        ReportFilter('additionaloptions', 'Additional options', ConferenceAdditionalOption.objects.filter(conference=conference), 'name', False, True),
         ReportFilter('shirtsize', 'T-Shirt size', ShirtSize.objects.all()),
         ReportSpeakerFilter(conference),
     ]
@@ -252,21 +406,92 @@ def build_attendee_report(request, conference, data):
     # Build the filters. Each filter within a filter group is ANDed together, and then the
     # filter groups are ORed together. And finally, all of this is ANDed with the conference
     # (so we don't get attendees from other conferences)
+    def _reduce_Q(x, y):
+        return (
+            x[0] + [y[0]],
+            dict(x[1], **y[1])
+        )
+
     filtermap = attendee_report_filters_map(conference)
     allBlockQs = []
-    for fltblock in data['filters']:
-        blockQs = []
-        for flt in fltblock:
-            f = filtermap[flt['filter']]
-            blockQs.append(f.build_Q(flt['value']))
-        allBlockQs.append(reduce(lambda x, y: x & y, blockQs))
-    q = Q(conference=conference) & reduce(lambda x, y: x | y, allBlockQs)
+    for blockno, fltblock in enumerate(data['filters']):
+        if fltblock:
+            blockQs = reduce(_reduce_Q,
+                             [filtermap[flt['filter']].build_SQL(flt, blockno) for flt in fltblock],
+                             ([], {})
+            )
+            allBlockQs.append((
+                "(" + "\n      AND ".join(blockQs[0]) + ")",
+                blockQs[1],
+            ), )
+    if allBlockQs:
+        (allblocks, params) = reduce(_reduce_Q, allBlockQs, ([], {}))
+        where = "AND (\n    {}\n)".format(
+            "\n OR ".join(allblocks),
+        )
+    else:
+        where = ""
+        params = {}
 
-    # Figure out our order by
-    orderby = [_attendee_report_field_map[x][2] and _attendee_report_field_map[x][2] or x for x in [data['orderby1'], data['orderby2']]]
+    params.update({
+        'conference_id': conference.id,
+    })
 
-    # Run the query!
-    result = ConferenceRegistration.objects.select_related('shirtsize', 'regtype', 'country', 'conference').filter(q).distinct().order_by(*orderby)
+    ofields = [_attendee_report_field_map[f] for f in (data['orderby1'], data['orderby2'])]
+    if format not in ('json', 'badge'):
+        # Regular reports, so we control all fields
+        rfields = [_attendee_report_field_map[f] for f in fields]
+
+        # Colums to actually select (including expressions)
+        cols = [f.get_select_name() for f in rfields]
+
+        # Table to join in to get the required columns
+        joins = [j.get_join() for j in rfields if j.get_join()]
+
+        # There could be more joins needed for the order by
+        joins.extend([j.get_join() for j in ofields if j.get_join() and j.get_join() not in joins])
+        joinstr = "\n".join(joins)
+        if joinstr:
+            joinstr = "\n" + joinstr
+
+        query = "SELECT r.id,{}\nFROM confreg_conferenceregistration r INNER JOIN confreg_conference conference ON conference.id=r.conference_id{}\nWHERE r.conference_id=%(conference_id)s {}\nORDER BY {}".format(
+            ", ".join(cols),
+            joinstr,
+            where,
+            ", ".join([o.get_orderby_field() for o in ofields]),
+        )
+    else:
+        # For json and badge, we have a mostly hardcoded query, but we still get the filter from
+        # above.
+        # We do this hardcoded because the django ORM can't even begin to understand what we're
+        # doing here, and generates a horrible loop of queries.
+        query = """SELECT r.id, firstname, lastname, email, company, address, phone, dietary, twittername, nick, badgescan, shareemail,
+  country.name AS countryname, country.printable_name AS country,
+  s.shirtsize,
+  'ID$' || idtoken || '$ID' AS fullidtoken,
+  'AT$' || publictoken || '$AT' AS fullpublictoken,
+  regexp_replace(upper(substring(CASE WHEN conference.queuepartitioning=1 THEN lastname WHEN conference.queuepartitioning=2 THEN firstname END, 1, 1)), '[^A-Z]', 'Other') AS queuepartition,
+  json_build_object('regtype', rt.regtype, 'specialtype', rt.specialtype,
+    'days', (SELECT array_agg(day) FROM confreg_registrationday rd INNER JOIN confreg_registrationtype_days rtd ON rtd.registrationday_id=rd.id WHERE rtd.registrationtype_id=rt.id),
+  'regclass', json_build_object('regclass', rc.regclass, 'badgecolor', rc.badgecolor, 'badgeforegroundcolor', rc.badgeforegroundcolor,
+        'bgcolortuplestr', CASE WHEN badgecolor!='' THEN ('x'||substring(badgecolor, 2, 2))::bit(8)::int || ',' || ('x'||substring(badgecolor, 4, 2))::bit(8)::int || ',' || ('x'||substring(badgecolor, 6, 2))::bit(8)::int END,
+        'fgcolortuplestr', CASE WHEN badgeforegroundcolor!='' THEN ('x'||substring(badgeforegroundcolor, 2, 2))::bit(8)::int || ',' || ('x'||substring(badgeforegroundcolor, 4, 2))::bit(8)::int || ',' || ('x'||substring(badgeforegroundcolor, 6, 2))::bit(8)::int END
+        )
+  ) AS regtype,
+  COALESCE(json_agg(json_build_object('id', ao.id, 'name', ao.name)) FILTER (WHERE ao.id IS NOT NULL), '[]') AS additionaloptions
+FROM confreg_conferenceregistration r
+INNER JOIN confreg_conference conference ON conference.id=r.conference_id
+INNER JOIN confreg_registrationtype rt ON rt.id=r.regtype_id
+INNER JOIN confreg_registrationclass rc ON rc.id=rt.regclass_id
+LEFT JOIN confreg_conferenceregistration_additionaloptions crao ON crao.conferenceregistration_id=r.id
+LEFT JOIN confreg_conferenceadditionaloption ao ON crao.conferenceadditionaloption_id=ao.id
+LEFT JOIN country ON country.iso=r.country_id
+LEFT JOIN confreg_shirtsize s ON s.id=r.shirtsize_id
+WHERE r.conference_id=%(conference_id)s {}
+GROUP BY r.id, conference.id, rt.id, rc.id, country.iso, s.id
+ORDER BY {}""".format(where, ", ".join([o.get_orderby_field() for o in ofields]))
+
+    result = exec_to_dict(query, params)
 
     if format == 'html':
         writer = ReportWriterHtml(request, conference, title, borders)
@@ -276,15 +501,10 @@ def build_attendee_report(request, conference, data):
     elif format == 'csv':
         writer = ReportWriterCsv(request, conference, title, borders)
     elif format == 'json':
-        # Don't want to use normal renderer here, since we need to pass
-        # the filtered full objects into the builder (because it needs to
-        # be the same data as the badges get)
         resp = HttpResponse(content_type='application/json')
-        json.dump([r.safe_export() for r in result], resp, indent=2)
+        json.dump(result, resp, indent=2)
         return resp
     elif format == 'badge':
-        # Can't use a normal renderer here, since we need to actually
-        # pass the full objects into the badge builder.
         try:
             resp = HttpResponse(content_type='application/pdf')
             render_jinja_badges(conference, result, resp, borders, pagebreaks)
@@ -294,29 +514,14 @@ def build_attendee_report(request, conference, data):
     else:
         raise Exception("Unknown format")
 
-    allheaders = [_attendee_report_field_map[f][0] for f in fields]
+    allheaders = [_attendee_report_field_map[f].title for f in fields]
     if len(extracols):
         allheaders.extend(extracols)
     writer.set_headers(allheaders)
 
     for r in result:
-        row = []
-        for f in fields:
-            # Recursively step into other models if necessary
-            o = [r]
-            o.extend(f.split('.'))
-            try:
-                t = reduce(getattr, o)
-                if type(t) == bool:
-                    row.append(t and 'Yes' or 'No')
-                else:
-                    row.append(str(t))
-            except AttributeError:
-                # NULL in a field, typically
-                row.append('')
-        if extracols:
-            for x in extracols:
-                row.append('')
+        row = [_attendee_report_field_map[f].get_value(r[f]) for f in fields]
+        row.extend([[]] * len(extracols))
         writer.add_row(row)
 
     return writer.render()

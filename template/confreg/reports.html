@@ -21,6 +21,9 @@ a.delete-block {
 select.dlgInput {
    height: 200px;
 }
+input#dlgSelectFieldCountText {
+   width: 50px;
+}
 </style>
 {%endblock%}
 {%block layoutblock%}
@@ -39,8 +42,8 @@ select.dlgInput {
     <td class="col-md-3"><h3>Fields</h3>Select fields to include.<br/>Drag to change order.</td>
     <td>
       <ul id="fieldlist">
-      {%for f,fn,d,fk in adv_fields %}
-      <li><input type="checkbox" name="fields" value="{{f}}"{%if d%} CHECKED{%endif%}/>{{fn}}</li>
+      {%for f in adv_fields %}
+      <li><input type="checkbox" name="fields" value="{{f.id}}"{%if f.default%} CHECKED{%endif%}/>{{f.title}}</li>
       {%endfor%}
       </ul>
     </td>
@@ -85,8 +88,8 @@ select.dlgInput {
   <tr>
     <td class="col-md-3"><h3>Order by</h3></td>
     <td>
-      <select name="orderby1" id="selOrderby1">{%for f,fn,d,fk in adv_fields %}<option value="{{f}}">{{fn}}</option>{%endfor%}</select>
-      <select name="orderby2" id="selOrderby2">{%for f,fn,d,fk in adv_fields %}<option value="{{f}}">{{fn}}</option>{%endfor%}</select>
+      <select name="orderby1" id="selOrderby1">{%for f in adv_fields %}<option value="{{f.id}}">{{f.title}}</option>{%endfor%}</select>
+      <select name="orderby2" id="selOrderby2">{%for f in adv_fields %}<option value="{{f.id}}">{{f.title}}</option>{%endfor%}</select>
     </td>
   </tr>
   <tr>
@@ -138,6 +141,9 @@ select.dlgInput {
 <div id="dlgSelectField">
   Selct one or more values to include.
   <select id="dlgSelectFieldSelect" MULTIPLE class="dlgInput"></select>
+  <div id="dlgSelectFieldCountDiv">
+    Require a minimum of <input type="number" id="dlgSelectFieldCountText" /> of the selected options.
+  </div>
 </div>
 
 <div id="dlgSaveReport">
@@ -154,6 +160,7 @@ var filters = {
   "{{filter.id}}": {
     type: "{{filter.type}}",
     name: "{{filter.name}}",{%if filter.type == "select" %}
+    manytomany: {{filter.manytomany|yesno:"true,false"}},
     options: [{%for k,v in filter.options %}
   ["{{k}}", "{{v}}"],{%endfor%}
 ],{%endif%}
@@ -245,6 +252,12 @@ $(function() {
           $('#dlgStringFieldString').val("");
        } else if (filters[id].type == "select") {
           dlg = $('#dlgSelectField');
+          if (filters[id].manytomany) {
+             $('#dlgSelectFieldCountText').val(1);
+             $('#dlgSelectFieldCountDiv').show();
+          } else {
+             $('#dlgSelectFieldCountDiv').hide();
+          }
           var sel = document.getElementById('dlgSelectFieldSelect');
           sel.options.length = 0;
           $.each(filters[id].options, function(i, e) {
@@ -275,6 +288,10 @@ $(function() {
 
                    f['value'] = $('#dlgSelectFieldSelect').val();
                    f['display'] = $('#dlgSelectFieldSelect option:selected').toArray().map(item => item.text).join(', ');
+                   if (filters[id].manytomany) {
+                      f['mincount'] = parseInt($('#dlgSelectFieldCountText').val());
+                      f['display'] = f['mincount'] + ' of ' + f['display'];
+                   }
                 }
 
                 /* Always push to the last filter block */

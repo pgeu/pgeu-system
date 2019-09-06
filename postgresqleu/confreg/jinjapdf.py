@@ -311,7 +311,7 @@ def render_jinja_badges(conference, registrations, output, border, pagebreaks):
     renderer = JinjaBadgeRenderer(conference.jinjadir, border=border, pagebreaks=pagebreaks)
 
     for reg in registrations:
-        renderer.add_badge(reg.safe_export(), conference.safe_export())
+        renderer.add_badge(reg, conference.safe_export())
 
     renderer.render(output)
 
