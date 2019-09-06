@@ -90,6 +90,9 @@ news!
 {%if reg.is_checkinprocessor %}
   <li><a href="/events/{{conference.urlname}}/checkin/">Checkin processing</a> &bull;</li>
 {%endif%}
+{%if reg.is_badgescanner %}
+  <li><a href="/events/sponsor/scanning/{{reg.sponsorscanner_token}}/">Sponsor badge scanning</a> &bull;</li>
+{%endif%}
  </ul>
 </div>
 

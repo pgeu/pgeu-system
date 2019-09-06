@@ -586,6 +586,17 @@ class ConferenceRegistration(models.Model):
     def is_checkinprocessor(self):
         return self.checkinprocessors_set.exists()
 
+    @cached_property
+    def sponsorscanner_token(self):
+        qq = self.sponsorscanner_set.all()[:1]
+        if qq:
+            return qq[0].token
+        return None
+
+    @property
+    def is_badgescanner(self):
+        return self.sponsorscanner_token is not None
+
     @property
     def queuepartition(self):
         if self.conference.queuepartitioning == 1:
