@@ -180,7 +180,7 @@ def scanning_api(request, scannertoken):
             if request.method == 'GET':
                 # If already scanned by the same scanner, then provide a default value for the
                 # note field.
-                qq = attendee.scanned_by.filter(scannedby__scanner=scanner)[:1]
+                qq = attendee.scanned_by.filter(scannedby=scanner.scanner)[:1]
                 if qq:
                     existingnote = qq[0].note
                 else:
@@ -193,6 +193,9 @@ def scanning_api(request, scannertoken):
                     scan.save()
                     return _json_response(attendee, 201)
                 else:
+                    if scan.note != request.POST.get('note'):
+                        scan.note = request.POST.get('note')
+                        scan.save()
                     return _json_response(attendee, 208)
     else:
         return HttpResponse("Invalid method", status=400)
