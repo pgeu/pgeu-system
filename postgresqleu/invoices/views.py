@@ -469,7 +469,6 @@ def userhome(request):
     })
 
 
-@login_required
 def banktransfer(request):
     invoice = get_object_or_404(Invoice, pk=request.GET['invoice'], recipient_secret=request.GET['key'])
     method = get_object_or_404(InvoicePaymentMethod, pk=request.GET['prv'])
