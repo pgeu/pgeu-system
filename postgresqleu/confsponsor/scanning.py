@@ -180,7 +180,7 @@ def scanning_api(request, scannertoken):
             if request.method == 'GET':
                 # If already scanned by the same scanner, then provide a default value for the
                 # note field.
-                qq = attendee.scanned_by.filter(scannedby=scanner__scanner)[:1]
+                qq = attendee.scanned_by.filter(scannedby__scanner=scanner)[:1]
                 if qq:
                     existingnote = qq[0].note
                 else:
