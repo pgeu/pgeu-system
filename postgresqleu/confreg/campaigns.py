@@ -18,12 +18,12 @@ def _timestamps_for_tweets(conference, starttime, interval, randint, num):
         t = parse_datetime(starttime)
 
     if isinstance(interval, datetime.time):
-        ival = datetime.timedelta(interval.hour, interval.minute, interval.second)
+        ival = datetime.timedelta(hours=interval.hour, minutes=interval.minute, seconds=interval.second)
     else:
         ival = parse_duration(interval)
 
     if isinstance(randint, datetime.time):
-        rsec = datetime.timedelta(interval.hour, interval.minute, interval.second).total_seconds()
+        rsec = datetime.timedelta(hours=randint.hour, minutes=randint.minute, seconds=randint.second).total_seconds()
     else:
         rsec = parse_duration(randint).total_seconds()
 
