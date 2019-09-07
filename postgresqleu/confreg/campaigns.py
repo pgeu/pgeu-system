@@ -40,7 +40,7 @@ class BaseCampaignForm(forms.Form):
     timebetween = forms.TimeField(label="Time between tweets", initial=datetime.time(1, 0, 0))
     timerandom = forms.TimeField(label="Time randomization", initial=datetime.time(0, 10, 0),
                                  help_text="A random time from zero to this is added after each time interval")
-    content_template = forms.CharField(max_length=250,
+    content_template = forms.CharField(max_length=2000,
                                        widget=MonospaceTextarea,
                                        required=True)
     dynamic_preview_fields = ['content_template', ]
@@ -97,7 +97,7 @@ class ApprovedSessionsCampaignForm(BaseCampaignForm):
         return render_sandboxed_template(s, {
             'conference': conference,
             'session': session,
-        }).strip()
+        }).strip()[:249]
 
     def get_queryset(self):
         return ConferenceSession.objects.filter(conference=self.conference, status=1, cross_schedule=False, track__in=self.data.getlist('tracks'))
