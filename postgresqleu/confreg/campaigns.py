@@ -103,7 +103,7 @@ class ApprovedSessionsCampaignForm(BaseCampaignForm):
         return ConferenceSession.objects.filter(conference=self.conference, status=1, cross_schedule=False, track__in=self.data.getlist('tracks'))
 
     def generate_tweets(self, author):
-        sessions = list(self.get_queryset())
+        sessions = list(self.get_queryset().order_by('?'))
         for ts, session in zip(_timestamps_for_tweets(self.conference, self.cleaned_data['starttime'], self.cleaned_data['timebetween'], self.cleaned_data['timerandom'], len(sessions)), sessions):
             ConferenceTweetQueue(
                 conference=self.conference,
