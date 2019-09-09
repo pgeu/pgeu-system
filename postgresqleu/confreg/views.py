@@ -2480,8 +2480,10 @@ def createschedule(request, confname):
     if request.method == "GET":
         if request.GET.get('get', 0) == '1':
             # Get the current list of tentatively scheduled talks
+            # Explicitly exclude those that are not approved/pending (can happen if a session was first approved, then scheduled,
+            # and then unapproved)
             s = {}
-            for sess in conference.conferencesession_set.all():
+            for sess in conference.conferencesession_set.filter(status__in=(1, 3)):
                 if sess.tentativeroom is not None and sess.tentativescheduleslot is not None:
                     s['slot%s' % ((sess.tentativeroom.id * 1000000) + sess.tentativescheduleslot.id)] = 'sess%s' % sess.id
             return HttpResponse(json.dumps(s), content_type="application/json")
