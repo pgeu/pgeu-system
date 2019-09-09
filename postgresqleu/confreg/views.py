@@ -2483,9 +2483,8 @@ def createschedule(request, confname):
             # Explicitly exclude those that are not approved/pending (can happen if a session was first approved, then scheduled,
             # and then unapproved)
             s = {}
-            for sess in conference.conferencesession_set.filter(status__in=(1, 3)):
-                if sess.tentativeroom is not None and sess.tentativescheduleslot is not None:
-                    s['slot%s' % ((sess.tentativeroom.id * 1000000) + sess.tentativescheduleslot.id)] = 'sess%s' % sess.id
+            for sess in conference.conferencesession_set.filter(status__in=(1, 3), tentativeroom__isnull=False, tentativescheduleslot__isnull=False):
+                s['slot%s' % ((sess.tentativeroom.id * 1000000) + sess.tentativescheduleslot.id)] = 'sess%s' % sess.id
             return HttpResponse(json.dumps(s), content_type="application/json")
         # Else it was a get for the page so fall through
     elif request.method == "POST":
