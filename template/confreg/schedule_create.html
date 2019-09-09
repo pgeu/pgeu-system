@@ -176,6 +176,11 @@ function init() {
          alert('This session is not assigned to a slot');
   });
 
+  $('#assign_viewsession').click(function(e) {
+     var session = parseInt(assignMenu.data('sourceid'));
+     window.open('/events/admin/{{conference.urlname}}/sessions/' + session + '/', '_blank');
+  });
+
   $('.assignMenuTimeslot').click(function(e) {
      var slotid = $(this).data('slotid');
      var slot = $('#slot' + slotid);
@@ -297,6 +302,7 @@ save using the standard save button first, of course)
   <ul class="dropdown-menu" role="menu" style="display:block;position:static;margin-bottom:5px;">
     <li class="dropdown-header">Assign session</li>
     <li><a href="#" id="assign_unassign">Unassign</a></li>
+    <li><a href="#" id="assign_viewsession">View session details</a></li>
     <div class="dropdown-divider"></div>
     <li role="separator" class="divider"></li>
 {%for day in days %}
