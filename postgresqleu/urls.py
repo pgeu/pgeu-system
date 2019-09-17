@@ -13,7 +13,6 @@ import postgresqleu.confreg.views
 import postgresqleu.confreg.backendviews
 import postgresqleu.confreg.backendlookups
 import postgresqleu.confreg.reporting
-import postgresqleu.confreg.mobileviews
 import postgresqleu.confreg.feedback
 import postgresqleu.confreg.pdfschedule
 import postgresqleu.confreg.volsched
@@ -236,12 +235,6 @@ urlpatterns.extend([
 
     # "Homepage" for events
     url(r'^events/([^/]+)/$', postgresqleu.confreg.views.confhome),
-
-    # Mobile conference stuff
-    url(r'^m/(\w+)/$', postgresqleu.confreg.mobileviews.index),
-    url(r'^m/(\w+)/cache.manifest/$', postgresqleu.confreg.mobileviews.cachemanifest),
-    url(r'^m/(\w+)/cdj/(\d+)?$', postgresqleu.confreg.mobileviews.conferencedata),
-    url(r'^m/(\w+)/newsj/$', postgresqleu.confreg.mobileviews.newsproxy),
 
     # Legacy event URLs
     url(r'^events/(register|feedback|schedule|sessions|talkvote|speakerprofile|callforpapers|reports)/([^/]+)/(.*)?$', postgresqleu.confreg.views.legacy_redirect),

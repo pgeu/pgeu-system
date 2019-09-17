@@ -192,7 +192,6 @@ class Conference(models.Model):
     queuepartitioning = models.IntegerField(blank=True, null=True, choices=((1, 'By last name'), (2, 'By first name'), ), verbose_name="Queue partitioning", help_text="If queue partitioning is used, partition by what?")
 
     lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
-    newsjson = models.CharField(max_length=128, blank=True, null=True, default=None)
     accounting_object = models.CharField(max_length=30, blank=True, null=True, verbose_name="Accounting object name")
     vat_registrations = models.ForeignKey(VatRate, null=True, blank=True, verbose_name='VAT rate for registrations', related_name='vat_registrations', on_delete=models.CASCADE)
     vat_sponsorship = models.ForeignKey(VatRate, null=True, blank=True, verbose_name='VAT rate for sponsorships', related_name='vat_sponsorship', on_delete=models.CASCADE)
