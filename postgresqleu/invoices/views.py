@@ -470,6 +470,8 @@ def userhome(request):
 
 
 def banktransfer(request):
+    if any(k not in request.GET for k in ('invoice', 'key', 'prv')):
+        return HttpResponse("Required parameter missing")
     invoice = get_object_or_404(Invoice, pk=request.GET['invoice'], recipient_secret=request.GET['key'])
     method = get_object_or_404(InvoicePaymentMethod, pk=request.GET['prv'])
     wrapper = PaymentMethodWrapper(method, invoice)
