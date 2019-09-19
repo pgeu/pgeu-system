@@ -1,8 +1,29 @@
 {%extends "nav_events.html" %}
 {%load alertmap%}
 {%block title%}Conference Sponsor Shipment - {{conference}}{%endblock%}
+{%block extrahead%}
+<script>
+function copy_address_to_clipboard() {
+
+  var range = document.createRange();
+  range.selectNode(document.getElementById("shipment_address"));
+  window.getSelection().addRange(range);
+
+  document.execCommand("copy");
+
+  window.getSelection().removeAllRanges();
+}</script>
+{%endblock%}
 {%block content%}
 <h1>Conference Sponsor Shipment</h1>
+
+
+<style>
+copy_address_button:active {
+  transform: translateY(4px);
+}
+</style>
+
 
 {% if messages %}
 {% for message in messages %}
@@ -17,9 +38,10 @@
   </p>
   <div class="card">
     <div class="card-header">Address</div>
-    <div class="card-body">
+    <div class="card-body" id="shipment_address">
       {{shipment.full_address|linebreaksbr}}
     </div>
+    <button id="copy_address_button" class="btn btn-secondary" onclick="copy_address_to_clipboard()" alt="Click to copy address to clipboard" title="Click to copy address to clipboard">Copy address</button>
   </div>
   <p> When the package is actually
     <strong>shipped</strong>, fill out the details about number of boxes (<i>always</i>)
