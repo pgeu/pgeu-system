@@ -189,7 +189,7 @@ class Command(BaseCommand):
                 acctrows.append((pm.config('accounting_payout'), accstr, -amount, None))
                 # Payouts show up as negative, so we have to reverse the sign
                 payout_amount -= amount
-            elif t == 'DepositCorrection' or t == 'Balancetransfer' or t == 'Balancetransfer2':
+            elif t in ('DepositCorrection', 'Balancetransfer', 'Balancetransfer2', 'ReserveAdjustment'):
                 # Modification of our deposit account - in either direction!
                 acctrows.append((pm.config('accounting_merchant'), accstr, -amount, None))
             elif t == 'InvoiceDeduction':
