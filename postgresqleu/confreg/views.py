@@ -3415,7 +3415,7 @@ def admin_attendeemail(request, urlname):
                                      },
                                      receivername=a.fullname,
                 )
-            messages.info(request, "Email sent to %s attendees, and added to registration pages" % len(attendees))
+            messages.info(request, "Email sent to %s attendees, and added to their registration pages" % len(attendees))
             return HttpResponseRedirect(".")
     else:
         form = AttendeeMailForm(conference)

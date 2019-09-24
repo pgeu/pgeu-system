@@ -1041,7 +1041,7 @@ def sponsor_admin_send_mail(request, confurlname):
                              sendername=conference.conferencename,
                              receivername=conference.conferencename)
 
-            messages.info(request, "Email sent to %s sponsors, and added to all sponsor pages" % len(sponsors))
+            messages.info(request, "Email sent to %s sponsors, and added to their sponsor pages" % len(sponsors))
             return HttpResponseRedirect("../")
     else:
         if sendto == 'sponsor' and request.GET.get('preselectsponsors', ''):

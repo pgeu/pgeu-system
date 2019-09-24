@@ -656,7 +656,7 @@ def _attendee_email_form(request, conference, query, breadcrumbs):
                                 'userid': r['user_id'],
                             })
                 if form.cleaned_data['storeonregpage']:
-                    messages.info(request, "Email sent to %s attendees, and added to registration pages when possible" % len(recipients))
+                    messages.info(request, "Email sent to %s attendees, and added to their registration pages when possible" % len(recipients))
                 else:
                     messages.info(request, "Email sent to %s attendees" % len(recipients))
 
