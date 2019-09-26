@@ -609,7 +609,7 @@ class PrepaidCreateForm(forms.Form):
     regtype = forms.ModelChoiceField(label="Registration type", queryset=RegistrationType.objects.filter(id=-1))
     count = forms.IntegerField(label="Number of vouchers", min_value=1, max_value=100)
     buyer = forms.ModelChoiceField(queryset=User.objects.all().order_by('username'), help_text="Pick the user who bought the batch. If he/she does not have an account, pick your own userid")
-    invoice = forms.BooleanField(help_text="Automatically create invoice template for these vouchers. Note that the vouchers are created immediately, not at payment time! Also note that only a template is created and has to be finalized!", required=False)
+    invoice = forms.BooleanField(help_text="Automatically create invoice for these vouchers and send it to the person ordering them.", required=False)
     invoiceaddress = forms.CharField(label="Invoice address", help_text="Complete address to put on invoice. Note that the name of the buyer is prepended to this!", required=False, widget=MonospaceTextarea)
     confirm = forms.BooleanField(help_text="Confirm that the chosen registration type and count are correct (there is no undo past this point, the vouchers will be created!")
 
