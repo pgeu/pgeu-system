@@ -28,7 +28,7 @@
     </div>
     <div class="col-xs-11 col-xs-offset-1 col-md-2 col-md-offset-0">
       <div class="col-xs-6">{{w.registration.regtype.regtype}}</div>
-      <div class="col-xs-6">{{w.registration.country_id}}</div>
+      <div class="col-xs-6">{{w.registration.country_id|default:""}}</div>
     </div>
     <div class="col-xs-11 col-xs-offset-1 col-md-2 col-md-offset-0">
       <div class="col-xs-6">{{w.enteredon|date:"M j, H:i"|default:''}}</div>
