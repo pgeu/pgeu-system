@@ -35,3 +35,10 @@ the codes - in case your mail program has reformatted the lines):
 
 The registration form is available at:
 {{sitebase}}/events/{{batch.conference.urlname}}/register/
+{%if batch.sponsor%}
+You can view the status of each vouchers usage from your
+sponsorship dashboard page.
+{%else%}
+To view the status of each of the vouchers, please see
+{{sitebase}}/events/{{batch.conference.urlname}}/prepaid/{{batch.pk}}/
+{%endif%}
