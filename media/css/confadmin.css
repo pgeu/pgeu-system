@@ -23,6 +23,10 @@ div.backendform_checkbox ul li label {
     text-indent: -1.5em;
 }
 
+form.backend-form img.inline-photo-widget {
+    max-width: 100%;
+}
+
 div.backenddocs dd {
     margin-left: 2em;
 }

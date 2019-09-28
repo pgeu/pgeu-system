@@ -1,6 +1,6 @@
 {{value}}
 {%if widget.value %}
-<img src="data:image/jpg;base64,{{widget.value}}"><br/>
+<img src="data:image/jpg;base64,{{widget.value}}" class="inline-photo-widget"><br/>
 {%endif%}
 {% if not widget.required %}
 <input type="checkbox" name="{{ widget.checkbox_name }}" id="{{ widget.checkbox_id }}" />
