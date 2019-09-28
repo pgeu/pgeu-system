@@ -8,6 +8,15 @@ def notify_job_change():
         curs.execute("NOTIFY pgeu_scheduled_job")
 
 
+def trigger_immediate_job_run(command):
+    from .models import ScheduledJob
+
+    j = ScheduledJob.objects.get(command=command)
+    j.nextrun = datetime.now()
+    j.save(update_fields=['nextrun'])
+    notify_job_change()
+
+
 def _get_next_time(times):
     # Next time will be the first one that's after current time
     current = datetime.now().time()
