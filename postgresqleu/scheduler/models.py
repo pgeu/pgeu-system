@@ -13,7 +13,7 @@ def get_config():
 
 class ScheduledJob(models.Model):
     app = models.CharField(max_length=200, null=False, blank=False)
-    command = models.CharField(max_length=100, null=False, blank=False)
+    command = models.CharField(max_length=100, null=False, blank=False, unique=True)
     description = models.CharField(max_length=200, null=False, blank=False)
     enabled = models.BooleanField(default=True)
     notifyonsuccess = models.BooleanField(default=False, verbose_name="Notify on success",
