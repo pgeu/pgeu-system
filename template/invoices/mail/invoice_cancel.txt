@@ -7,6 +7,10 @@ Invoice #{{invoice.id}}: {{invoice.title}}
 sent to you recently, has been canceled. You no longer need to pay
 this invoice.
 
+
+Note: We can no longer extend the deadline on this invoice!
+
+
 The following reason was given for the cancellation:
 {{reason}}
 
