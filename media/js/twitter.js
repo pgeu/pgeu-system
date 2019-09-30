@@ -66,7 +66,7 @@ function check_queue() {
 		if (data['hasqueue']) {
 		    if ("Notification" in window) {
 			if (Notification.permission === "granted") {
-			    var not = new Notification("One or more tweets arrived in the queue to be processed");
+			    var not = new Notification($('body').data('confname') + ": One or more tweets arrived in the queue to be processed");
 			}
 		    }
 		}
