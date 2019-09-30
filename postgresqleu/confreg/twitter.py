@@ -153,7 +153,7 @@ def volunteer_twitter(request, urlname, token):
         })
     elif request.GET.get('op', None) == 'hasqueue':
         return _json_response({
-            'hasqueue': ConferenceTweetQueue.objects.filter(conference=conference, approved=False).exists()
+            'hasqueue': ConferenceTweetQueue.objects.filter(conference=conference, approved=False).exclude(author=reg.attendee_id).exists()
         })
     elif request.GET.get('op', None) == 'thumb':
         # Get a thumbnail -- or make one if it's not there
