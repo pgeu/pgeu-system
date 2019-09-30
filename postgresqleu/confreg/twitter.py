@@ -52,7 +52,7 @@ def volunteer_twitter(request, urlname, token):
                 # Admins can use the bypass parameter to, well, bypass
                 if request.POST.get('bypass', '0') == '1':
                     approved = True
-                    approvedby = request.user
+                    approvedby = reg.attendee
             else:
                 if conference.twitter_postpolicy in (0, 1):
                     raise PermissionDenied()
@@ -60,7 +60,7 @@ def volunteer_twitter(request, urlname, token):
                 if conference.twitter_postpolicy == 4:
                     # Post without approval for volunteers
                     approved = True
-                    approvedby = request.user
+                    approvedby = reg.attendee
 
             # Now insert it in the queue
             t = ConferenceTweetQueue(
@@ -68,7 +68,7 @@ def volunteer_twitter(request, urlname, token):
                 contents=request.POST['txt'][:280],
                 approved=approved,
                 approvedby=approvedby,
-                author=request.user,
+                author=reg.attendee,
                 )
             if 'image' in request.FILES:
                 t.image = request.FILES['image'].read()
@@ -114,11 +114,11 @@ def volunteer_twitter(request, urlname, token):
                 return _json_response({'error': 'Tweet has already been approved'})
 
             if request.POST.get('op') == 'approve':
-                if t.author == request.user:
+                if t.author == reg.attendee:
                     return _json_response({'error': "Can't approve your own tweets"})
 
                 t.approved = True
-                t.approvedby = request.user
+                t.approvedby = reg.attendee
                 t.save()
                 trigger_immediate_job_run('twitter_post')
             else:
