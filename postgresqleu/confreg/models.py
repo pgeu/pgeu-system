@@ -38,6 +38,14 @@ SKILL_CHOICES = (
     (2, "Advanced"),
 )
 
+TWITTER_POST_CHOICES = (
+    (0, "Nobody can post"),
+    (1, "Admins can post without approval, volunteers can't post"),
+    (2, "Volunteers can post, require admin approval"),
+    (3, "Volunteers can post, require volunteer or admin approval"),
+    (4, "Volunteers and admins can post without approval"),
+)
+
 # NOTE! The contents of these arrays must also be matched with the
 # database table confreg_status_strings. This one is managed by
 # manually creating a separate migration in case the contents change.
@@ -166,6 +174,8 @@ class Conference(models.Model):
     twitter_secret = models.CharField(max_length=128, blank=True, null=False)
     twitter_timewindow_start = models.TimeField(null=False, blank=False, default='00:00', verbose_name="Don't post tweets before")
     twitter_timewindow_end = models.TimeField(null=False, blank=False, default='23:59:59', verbose_name="Don't post tweets after")
+    twitter_postpolicy = models.IntegerField(null=False, blank=False, default=0, choices=TWITTER_POST_CHOICES,
+                                             verbose_name="Posting policy")
 
     administrators = models.ManyToManyField(User, blank=True)
     testers = models.ManyToManyField(User, blank=True, related_name="testers_set", help_text="Users who can bypass the '<function> is open' check and access pages before they're open, in order to test")
@@ -596,6 +606,16 @@ class ConferenceRegistration(models.Model):
     @property
     def is_badgescanner(self):
         return self.sponsorscanner_token is not None
+
+    @cached_property
+    def is_tweeter(self):
+        if self.conference.twittersync_active:
+            if self.conference.twitter_postpolicy != 0:
+                if self.conference.administrators.filter(pk=self.attendee_id).exists():
+                    return True
+            if self.conference.twitter_postpolicy in (2, 3, 4) and self.is_volunteer:
+                return True
+        return False
 
     @property
     def queuepartition(self):
@@ -1255,8 +1275,10 @@ class ConferenceTweetQueue(models.Model):
                                     help_text="Date and time to send tweet")
     contents = models.CharField(max_length=250, null=False, blank=False)
     image = ImageBinaryField(null=True, blank=True, max_length=1000000)
+    imagethumb = ImageBinaryField(null=True, blank=True, max_length=100000)
     approved = models.BooleanField(null=False, default=False, blank=False)
     author = models.ForeignKey(User, null=True, blank=True)
+    approvedby = models.ForeignKey(User, null=True, blank=True, related_name="tweetapprovals")
     sent = models.BooleanField(null=False, default=False, blank=False)
 
     class Meta:

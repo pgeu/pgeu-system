@@ -903,7 +903,7 @@ class BackendCopySelectConferenceForm(django.forms.Form):
 class TwitterForm(ConcurrentProtectedModelForm):
     class Meta:
         model = Conference
-        fields = ['twittersync_active', 'twitterreminders_active']
+        fields = ['twittersync_active', 'twitterreminders_active', 'twitter_postpolicy']
 
 
 class TwitterTestForm(django.forms.Form):
@@ -913,14 +913,15 @@ class TwitterTestForm(django.forms.Form):
 
 class BackendTweetQueueForm(BackendForm):
     helplink = 'integrations#twitter'
-    list_fields = ['datetime', 'contents', 'author', 'approved', 'sent', 'hasimage', ]
+    list_fields = ['datetime', 'contents', 'author', 'approved', 'approvedby', 'sent', 'hasimage', ]
     verbose_field_names = {
         'hasimage': 'Has image',
+        'approvedby': 'Approved by',
     }
     exclude_date_validators = ['datetime', ]
     defaultsort = [['sent', 'asc'], ['datetime', 'desc']]
     exclude_fields_from_validation = ['image', ]
-    queryset_select_related = ['author', ]
+    queryset_select_related = ['author', 'approvedby', ]
     queryset_extra_fields = {
         'hasimage': "image is not null and image != ''",
     }
@@ -968,6 +969,7 @@ class BackendTweetQueueForm(BackendForm):
         return {
             'Author': exec_to_single_list('SELECT DISTINCT username FROM confreg_conferencetweetqueue q INNER JOIN auth_user u ON u.id=q.author_id WHERE q.conference_id=%(confid)s', {'confid': conference.id, }),
             'Approved': ['true', 'false'],
+            'Approved by': exec_to_single_list('SELECT DISTINCT username FROM confreg_conferencetweetqueue q INNER JOIN auth_user u ON u.id=q.approvedby_id WHERE q.conference_id=%(confid)s', {'confid': conference.id, }),
             'Sent': ['true', 'false'],
         }
 

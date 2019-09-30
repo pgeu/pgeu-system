@@ -16,12 +16,16 @@ The twitter integration supports:
 
 ### Manually posting to conference twitter
 
-To manually post to twitter, just add an entry to the *Twitter post
+As an administrator, the easiest way to post to twitter using the
+integration is to just add an entry to the table for *Twitter post
 queue*. This button becomes available from the main dashboard of a
 conference once the integration has been configured.
 
 Only posts which are flagged as *approved* will be posted. All other
 posts are queued until they are approved.
+
+The system also comes with a [mobile website](#mobilesite) specifically
+to handle moderated postings.
 
 ### Posting conference news
 
@@ -72,6 +76,9 @@ tweets will be posted outside of this time. Any tweets posted during
 that time, manual or automatic, will be queued up and sent the next
 day once the time period is entered.
 
+Each conference can also be configured with a *posting policy* that
+controls how posts from the [mobile site](#mobilesite) are handled.
+
 ## Campaigns <a name="campaigns"></a>
 
 Automated campaigns of tweets can be created. When a campaign is
@@ -113,3 +120,37 @@ Come see {{session.speaker.all()|map("applymacro", "speaker")|join(" and ")}} ta
 
 #awesome #conference #pgeu
 ~~~
+
+
+## Twitter mobile site <a name="mobilesite"></a>
+
+The mobile website will be enabled for administrators if any twitter
+posting is enabled, and for volunteers specifically if the posting
+policy allows for volunteers to post. When enabled, a link will show
+up on the registration page for these users.
+
+The link itself uses the registration token, which means that it can
+be accessed without logging in by somebody who knows the full URL. The
+reason for this is to let in particular mobile users store it as a
+bookmark in a browser that cannot easily log in. This of course also
+means the link has to be treated as secret.
+
+The mobile site will both allow a user to make posts, including
+attaching images. On mobile phones the attach image feature will
+normally allow images to be taken directly with the camera if wanted,
+or an image from the local gallery can be uploaded.
+
+When a post is made it is entered into the twitter queue as
+unapproved, and will not be posted until it is. Administrators will
+have the ability to bypass the moderation step and post directly, but
+in the normal workflow should not.
+
+Once a tweet is queued, it will show up in the moderation
+queue. Depending on the posting policy, either an administrator or a
+volunteer can approve posts that are in the queue. Once approved, the
+scheduled job to post tweets is triggered immediately, so the tweet
+will be posted right away.
+
+While the page is open, a scheduled job will periodically check if a
+new tweet has shown up in the queue, and post a notification if it has
+(provided the user allowed notifications in the browser).

@@ -1,0 +1,72 @@
+body {
+    padding-top: 60px;
+    padding-bottom: 60px;
+}
+
+div.buttonrow {
+    margin-bottom: 10px;
+}
+
+/* New tweet */
+textarea#newTweetText {
+    width: 100%;
+    height: 10rem;
+}
+
+div.queueentry img.preview-image {
+    max-width: 90%;
+    display: block;
+}
+
+button.approve-button, button.discard-button {
+    margin-top: 1rem;
+    margin-right: 2rem;
+}
+
+/*
+ * Loading spinner
+ */
+div#loading {
+    float: right;
+}
+
+.spinner-ring {
+    display: inline-block;
+    position: relative;
+    width: 50px;
+    height: 50px;
+}
+
+.spinner-ring div {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 42px;
+    height: 42px;
+    margin: 6px;
+    border: 6px solid #000;
+    border-radius: 50%;
+    animation: spinner-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border-color: #000 transparent transparent transparent;
+}
+
+.spinner-ring div:nth-child(1) {
+    animation-delay: -0.45s;
+}
+
+.spinner-ring div:nth-child(2) {
+    animation-delay: -0.3s;
+}
+
+.spinner-ring div:nth-child(3) {
+    animation-delay: -0.15s;
+}
+
+@keyframes spinner-ring {
+    0% {
+	transform: rotate(0deg);
+    }
+    100% {
+	transform: rotate(360deg);
+    }
+}

@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" dir="ltr">
+ <head>
+  <title>{{conference.conferencename}} - twitter</title>
+  <meta http-equiv="Content-Type" content="text/xhtml; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="stylesheet" media="screen" href="/media/css/bootstrap.min.css" />
+  <link rel="stylesheet" media="screen" href="/media/css/twitter.css" />
+  <script type="text/javascript" src="/media/jq/jquery-1.9.1.min.js"></script>
+  <script type="text/javascript" src="/media/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="/media/js/twitter.js"></script>
+ </head>
+ <body data-poster="{{poster}}" data-directposter = "{{directposter}}" data-moderator="{{moderator}}">
+   <nav class="navbar navbar-default navbar-fixed-top" id="topnavbar">
+     <div id="loading">
+       <div class="spinner-ring"><div></div><div></div><div></div><div></div></div>
+     </div>
+     <div class="container-fluid">
+       <div class="navbar-header">
+         <a class="navbar-brand" href="#">{{conference.conferencename}} - Twitter posts</a>
+       </div>
+     </div>
+   </nav>
+   <div class="container">
+     <div class="row">
+       <div class="col-md-12">
+         <div id="statusdiv" class="alert alert-warning fade">Loading...</div>
+       </div>
+     </div>
+     <div id="queuerow" class="row approw">
+     </div>
+     <div id="buttonrow" class="row approw">
+{%if poster %}
+       <div class="col-md-12 buttonrow">
+	 <button id="newTweetButton" class="btn btn-primary btn-block btn-lg">Post tweet</button>
+       </div>
+{%endif%}
+       <div class="col-md-12 buttonrow">
+	 <button id="tweetQueueButton" class="btn btn-primary btn-block btn-lg">View queue</button>
+       </div>
+     </div>
+   </div>{# container #}
+
+   <nav class="navbar navbar-default navbar-fixed-bottom">
+     <div class="container-fluid">
+       <div class="navbar-header">
+         <div class="navbar-brand">
+           <ul class="nav small">
+             <li>User: {{reg.attendee.username}}</li>
+           </ul>
+         </div>
+       </div>
+     </div>
+   </nav>
+
+
+   <div class="modal fade" tabindex="-1" role="dialog" id="newTweetModal">
+     <div class="modal-dialog" role="document">
+       <div class="modal-content">
+         <div class="modal-header">
+           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+           <h4 class="modal-title">Post new tweet</h4>
+         </div>
+         <div class="modal-body">
+	   <textarea id="newTweetText" maxlength="280"></textarea>
+	   Length: <span id="tweetLength">0</span><br/> Attach
+	   image: <input type="file" id="newTweetUpload"
+	   accept="image/jpeg, image/png"><br/> {%if directposter %}
+	   <input type="checkbox" id="tweetBypassApproval" /> Bypass
+	   approval {%endif%}
+         </div>
+         <div class="modal-footer">
+           <button type="button" class="btn btn-default btn-primary" id="posttweetbutton">Post tweet</button>
+           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+         </div>
+       </div>
+     </div>
+   </div>{# newTweetModal #}
+
+ </body>
+</html>
