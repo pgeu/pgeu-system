@@ -73,12 +73,12 @@ $(function() {
 {%if admin %}
   {%if v.vol_confirmed and v.org_confirmed%}<span class="label label-success">confirmed</span>{%else%}<span class="label label-warning" title="{%if v.vol_confirmed%}Awaiting organizer confirmation{%else%}Awaiting volunteer confirmation{%endif%}">unconfirmed</span>{%endif%}
 {%if not v.org_confirmed%}<input type="submit" class="btn btn-primary btn-xs" name="confirm-{{s.id}}-{{v.id}}" value="confirm">{%endif%}
-<input type="submit" class="btn btn-primary btn-xs" name="remove-{{s.id}}-{{v.id}}" value="remove">
+<input type="submit" class="btn btn-default btn-xs" name="remove-{{s.id}}-{{v.id}}" value="remove">
 {%else%}
 {# non-admin #}
  {%if v.reg == reg %}
   {%if not v.vol_confirmed%}<input type="submit" class="btn btn-primary btn-xs" name="confirm-{{s.id}}-{{v.id}}" value="confirm">
-  {%elif not v.org_confirmed%}<span class="label label-warning" title="Awaiting organizer confirmation">unconfirmed</span> <input type="submit" class="btn btn-primary btn-xs" name="remove-{{s.id}}-{{v.id}}" value="remove">
+  {%elif not v.org_confirmed%}<span class="label label-warning" title="Awaiting organizer confirmation">unconfirmed</span> <input type="submit" class="btn btn-default btn-xs" name="remove-{{s.id}}-{{v.id}}" value="remove">
   {%else%}<span class="label label-success">confirmed</span>
   {%endif%}
  {%endif%}
