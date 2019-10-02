@@ -190,7 +190,6 @@ def scanning_api(request, scannertoken):
             elif request.method == 'POST':
                 scan, created = ScannedAttendee.objects.get_or_create(sponsor=sponsor, scannedby=scanner.scanner, attendee=attendee, defaults={'note': request.POST.get('note')})
                 if created:
-                    scan.save()
                     return _json_response(attendee, 201)
                 else:
                     if scan.note != request.POST.get('note'):
