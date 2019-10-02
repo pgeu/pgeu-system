@@ -178,15 +178,11 @@ def scanning_api(request, scannertoken):
                 return HttpResponse("Attendee has not authorized badge scanning", status=403)
 
             if request.method == 'GET':
-                # If already scanned by the same scanner, then provide a default value for the
-                # note field.
-                qq = attendee.scanned_by.filter(scannedby=scanner.scanner)[:1]
-                if qq:
-                    existingnote = qq[0].note
-                else:
-                    existingnote = ''
+                # Mark the badge as scanned already on search. The POST later can change the note,
+                # but we record it regardless
+                scan, created = ScannedAttendee.objects.get_or_create(sponsor=sponsor, scannedby=scanner.scanner, attendee=attendee)
 
-                return _json_response(attendee, 200, existingnote)
+                return _json_response(attendee, 200, scan.note)
             elif request.method == 'POST':
                 scan, created = ScannedAttendee.objects.get_or_create(sponsor=sponsor, scannedby=scanner.scanner, attendee=attendee, defaults={'note': request.POST.get('note')})
                 if created:
