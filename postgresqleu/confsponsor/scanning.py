@@ -195,6 +195,6 @@ def scanning_api(request, scannertoken):
                     if scan.note != request.POST.get('note'):
                         scan.note = request.POST.get('note')
                         scan.save()
-                    return _json_response(attendee, 208)
+                    return _json_response(attendee, 208, scan.note)
     else:
         return HttpResponse("Invalid method", status=400)
