@@ -1745,6 +1745,11 @@ def confirmreg(request, confname):
     if reg.bulkpayment:
         return render_conference_response(request, conference, 'reg', 'confreg/bulkpayexists.html')
 
+    # If the registration is *already* confirmed (e.g. somebody went directly to the confirmed page),
+    # redirect instead of canceling off waitlist.
+    if reg.payconfirmedat:
+        return HttpResponseRedirect("../")
+
     registration_warnings = []
 
     # If there is already an invoice, then this registration has
