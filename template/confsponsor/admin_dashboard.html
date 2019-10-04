@@ -153,6 +153,16 @@ This matrix gives a quick overview of the status of the different benefits for e
 <br>
 {%endfor%}
 
+{%if conference.askbadgescan %}
+<h2>Badge scanning</h2>
+<p>
+  Badge scanning is (potentially) active for this conference.
+</p>
+<a href="badgescanstatus/" class="btn btn-default">View badge scan status</a>
+<br>
+{%endif%}
+
+
 {%if has_shipment_tracking %}
 <h2>Shipments</h2>
 <a name="shipment"></a>

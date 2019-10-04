@@ -40,4 +40,5 @@ urlpatterns = [
     url(r'^admin/(\w+)/addresses/(.*/)?$', backendviews.edit_shipment_addresses),
     url(r'^admin/(\w+)/shipments/new/$', views.admin_shipment_new),
     url(r'^admin/(\w+)/shipments/(\d+)/$', views.admin_shipment),
+    url(r'^admin/(\w+)/badgescanstatus/$', scanning.admin_scan_status),
 ]

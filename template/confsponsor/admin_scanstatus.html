@@ -1,0 +1,39 @@
+{%extends "confreg/confadmin_base.html" %}
+{%load dictutil%}
+{%block title%}Badge scanning status - {{conference}}{%endblock%}
+{%block layoutblock%}
+<h1>Badge scanning status - {{conference}}</h1>
+
+<p>
+  This list shows the number of unique scans per sponsor and scanner. If the same attendee
+  is scanned by multiple scanners the total number for the sponsor will not match the sum
+  of the individual scans.
+</p>
+
+<table class="table table-condensed table-striped">
+  <thead>
+    <tr>
+      <th>Sponsor</th>
+      <th>Scanner</th>
+      <th>Unique scans</th>
+    </tr>
+  </thead>
+  <tbody>
+{%for sp in scans%}
+{%ifchanged sp.sponsorname%}
+   <tr>
+     <th><a href="/events/sponsor/{{sp.sponsorid}}/scanning/">{{sp.sponsorname}}</a></th>
+     <th></th>
+     <th>{%with spid=sp.sponsorid%}{{uniquebysponsor|dictlookup:spid}}{%endwith%}</th>
+   </tr>
+{%endifchanged%}
+   <tr>
+     <td></td>
+     <td>{{sp.email}}</td>
+     <td>{{sp.num}}</td>
+   </tr>
+{%endfor%}
+  </tbody>
+</table>
+
+{%endblock%}

@@ -9,10 +9,11 @@ import json
 
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.qr import generate_base64_qr
+from postgresqleu.util.db import exec_to_dict, exec_to_keyed_scalar
 from postgresqleu.confreg.models import ConferenceRegistration
 from postgresqleu.confreg.util import send_conference_mail
 
-from .views import _get_sponsor_and_admin
+from .views import _get_sponsor_and_admin, get_authenticated_conference
 from .models import SponsorScanner, ScannedAttendee
 from .models import SponsorClaimedBenefit
 from .benefitclasses import get_benefit_id
@@ -194,3 +195,47 @@ def scanning_api(request, scannertoken):
                     return _json_response(attendee, 208, scan.note)
     else:
         return HttpResponse("Invalid method", status=400)
+
+
+def admin_scan_status(request, confurlname):
+    conference = get_authenticated_conference(request, confurlname)
+
+    if not conference.askbadgescan:
+        return HttpResponse("Badge scanning not active")
+
+    uniquebysponsor = exec_to_keyed_scalar("""
+SELECT
+  sp.id AS sponsorid,
+  count(DISTINCT sa.attendee_id) AS num
+FROM confsponsor_sponsorscanner sc
+INNER JOIN confsponsor_sponsor sp ON sc.sponsor_id=sp.id
+LEFT JOIN confsponsor_scannedattendee sa ON sa.sponsor_id=sp.id
+WHERE sp.conference_id=%(confid)s
+GROUP BY sp.id""", {
+        'confid': conference.id,
+    })
+
+    uniquebyscanner = exec_to_dict("""
+SELECT
+  sp.id AS sponsorid,
+  sp.name AS sponsorname,
+  r.email,
+  count(DISTINCT sa.attendee_id) AS num
+FROM confsponsor_sponsorscanner sc
+INNER JOIN confsponsor_sponsor sp ON sc.sponsor_id=sp.id
+INNER JOIN confsponsor_sponsorshiplevel l ON sp.level_id=l.id
+INNER JOIN confreg_conferenceregistration r ON r.id=sc.scanner_id
+LEFT JOIN confsponsor_scannedattendee sa ON sa.sponsor_id=sp.id AND sa.scannedby_id=r.id
+WHERE sp.conference_id=%(confid)s
+GROUP BY sp.id, sp.name, l.id, r.email
+ORDER BY l.levelcost DESC, l.levelname, sp.name, r.email
+""", {
+        'confid': conference.id,
+    })
+
+    return render(request, 'confsponsor/admin_scanstatus.html', {
+        'conference': conference,
+        'uniquebysponsor': uniquebysponsor,
+        'scans': uniquebyscanner,
+        'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
+    })

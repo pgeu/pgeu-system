@@ -50,6 +50,12 @@ def exec_to_keyed_dict(query, params=None):
     return {r[columns[0]]: r for r in (dict(list(zip(columns, row)))for row in curs.fetchall())}
 
 
+def exec_to_keyed_scalar(query, params=None):
+    curs = connection.cursor()
+    curs.execute(query, params)
+    return dict(curs.fetchall())
+
+
 def exec_to_grouped_dict(query, params=None):
     curs = connection.cursor()
     curs.execute(query, params)
