@@ -1037,7 +1037,23 @@ def sponsor_admin_send_mail(request, confurlname):
             send_simple_mail(conference.sponsoraddr,
                              conference.sponsoraddr,
                              "Email sent to sponsors",
-                             "An email was sent to sponsors of {0}\nwith subject '{1}'.\n\nIt was sent to {2}\n\nTo view it, go to {3}/events/sponsor/admin/{4}/viewmail/{5}/".format(conference, msg.subject, deststr, settings.SITEBASE, conference.urlname, msg.id),
+                             """An email was sent to sponsors of {0}
+with subject '{1}'.
+
+It was sent to {2}.
+
+------
+{3}
+------
+
+To view it on the site, go to {4}/events/sponsor/admin/{5}/viewmail/{6}/""".format(
+                                 conference,
+                                 msg.subject,
+                                 deststr,
+                                 msg.message,
+                                 settings.SITEBASE,
+                                 conference.urlname,
+                                 msg.id),
                              sendername=conference.conferencename,
                              receivername=conference.conferencename)
 
