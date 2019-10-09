@@ -215,7 +215,6 @@ $(function() {
     });
 
     if ("Notification" in window) {
-	console.log("A");
 	if (Notification.permission === "default") {
 	    console.log("B");
 	    /* Have not asked before, so ask now! */
@@ -233,5 +232,4 @@ $(function() {
     check_queue();
     /* Update the buttons every 60 seconds */
     setInterval(check_queue, 60*1000);
-    console.log("setit");
 });
