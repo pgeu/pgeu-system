@@ -40,6 +40,8 @@
 </form>
 
 <h2>Scanned users</h2>
+<form method="post" action=".">{% csrf_token %}
+<input type="hidden" name="what" value="delscan">
 <table class="table table-striped table-hover table-sm">
   <tr>
     <th>Name</th>
@@ -49,6 +51,7 @@
     <th>Scanned at</th>
     <th>Scanned by</th>
     <th>Note</th>
+    <th></th>
   </tr>
 {%for a in scanned%}
   <tr>
@@ -59,12 +62,24 @@
     <td>{{a.scannedat}}</td>
     <td>{{a.scannedby.fullname}}</td>
     <td>{{a.note|linebreaksbr}}</td>
+    <td><input type="submit" class="btn btn-primary btn-sm confirm-btn" name="delete-scan-{{a.id}}" value="Delete scan">
+    </td>
   </tr>
 {%endfor%}
 </table>
+</form>
 
 <a href="download.csv" class="btn btn-primary">Download CSV file</a>
 <br/><br/>
 
 <a href="../" class="btn btn-outline-dark">Back to sponsorship</a>
+{%endblock%}
+{%block pagescript%}
+<script language="javascript">
+$(document).ready(function() {
+   $('.confirm-btn').on("click", function(e) {
+      return confirm("Are you sure you want to delete this scan?\nThere is no way to undo!");
+   });
+});
+</script>
 {%endblock%}

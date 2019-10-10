@@ -98,6 +98,20 @@ def sponsor_scanning(request, sponsorid):
             else:
                 messages.error(request, "Invalid form submit")
                 return HttpResponseRedirect(".")
+        elif request.POST.get('what', '') == 'delscan':
+            # There should only be one delete-scan-<id>
+            for k in request.POST.keys():
+                if k.startswith('delete-scan-'):
+                    scid = int(k[len('delete-scan-'):])
+                    try:
+                        scan = ScannedAttendee.objects.get(sponsor=sponsor, pk=scid)
+                        scan.delete()
+                    except ScannedAttendee.DoesNotExist:
+                        messages.error(request, "Scan has already been removed or permission denied")
+                    break
+            else:
+                messages.error(request, "Invalid form submit")
+            return HttpResponseRedirect(".")
         else:
             # Unknown form, so just return
             return HttpResponseRedirect(".")
