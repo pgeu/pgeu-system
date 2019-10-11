@@ -184,6 +184,7 @@ def volunteer_twitter(request, urlname, token):
                     return _json_response({'error': 'Tweet '})
                 t.retweetstate = 1
                 t.save(update_fields=['retweetstate'])
+                trigger_immediate_job_run('twitter_post')
 
             return _json_response({})
         else:
