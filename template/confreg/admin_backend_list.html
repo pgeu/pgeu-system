@@ -69,6 +69,11 @@ $(document).ready(function() {
 {%endif%}
 {%endif%}
 
+{%if allow_new%}
+<div class="row buttonrow">
+<a class="btn btn-default btn-block" href="new/">New {{singular_name}}</a>
+</div>
+{%endif%}
 
 <div class="row">
 <table class="table table-bordered table-striped table-hover table-condensed datatable-tbl" id="datatable">
