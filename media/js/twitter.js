@@ -47,7 +47,7 @@ function add_queue_entry_html(row, d, modbuttons) {
 
 function add_incoming_entry_html(row, d, discardbutton) {
     var e = $('<div/>').addClass('incomingentry panel panel-primary').data('replyid', d['id']).data('replyto', d['author']);
-    e.append($('<div/>').addClass('panel-heading').text('Posted by @' + d['author'] + ' (' + d['authorfullname'] + ')'));
+    e.append($('<div/>').addClass('panel-heading').text('Posted by @' + d['author'] + ' (' + d['authorfullname'] + ') at ' + d['time']));
     var cdiv = $('<div/>').addClass('panel-body').text(d['txt']);
     e.append(cdiv);
     fdiv = $('<div/>').addClass('panel-footer');
@@ -55,6 +55,7 @@ function add_incoming_entry_html(row, d, discardbutton) {
     if (discardbutton) {
        fdiv.append($('<button/>').data('tid', d['id']).addClass('btn btn-default btn-sm discard-incoming-button').text('Discard'));
     }
+    fdiv.append($('<button/>').data('tid', d['id']).addClass('btn btn-defaeult btn-sm view-twitter-button').text('View on twitter'));
     e.append(fdiv);
 
     row.append(e);
@@ -332,6 +333,11 @@ $(function() {
 		alert('Error updating status: ' + xhr.status);
 	    },
 	});
+    });
+
+    $(document).on('click', 'button.view-twitter-button', function(e) {
+	window.open('https://twitter.com/statuses/' + $(this).data('tid'));
+
     });
 
     $(document).on('click', 'button.reply-button', function(e) {
