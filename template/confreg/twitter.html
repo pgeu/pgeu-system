@@ -31,14 +31,21 @@
      </div>
      <div id="queuerow" class="row approw">
      </div>
+     <div id="incomingrow" class="row approw">
+     </div>
      <div id="buttonrow" class="row approw">
 {%if poster %}
        <div class="col-md-12 buttonrow">
 	 <button id="newTweetButton" class="btn btn-primary btn-block btn-lg">Post tweet</button>
        </div>
 {%endif%}
+{%if conference.twitterincoming_active %}
        <div class="col-md-12 buttonrow">
-	 <button id="tweetQueueButton" class="btn btn-primary btn-block btn-lg">View queue</button>
+	 <button id="incomingTweetsButton" class="btn btn-primary btn-block btn-lg">Incoming tweets</button>
+       </div>
+{%endif%}
+       <div class="col-md-12 buttonrow">
+	 <button id="tweetQueueButton" class="btn btn-primary btn-block btn-lg">Outgoing queue</button>
        </div>
      </div>
    </div>{# container #}

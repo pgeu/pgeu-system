@@ -168,6 +168,7 @@ class Conference(models.Model):
     pixelsperminute = models.FloatField(blank=False, default=1.5, null=False, verbose_name="Vertical pixels per minute")
     confurl = models.CharField(max_length=128, blank=False, null=False, validators=[validate_lowercase, ], verbose_name="Conference URL")
     twittersync_active = models.BooleanField(null=False, default=False, verbose_name='Twitter posting active')
+    twitterincoming_active = models.BooleanField(null=False, default=False, verbose_name='Twitter incoming polling active')
     twitterreminders_active = models.BooleanField(null=False, default=False, verbose_name='Twitter reminder DMs active')
     twitter_user = models.CharField(max_length=32, blank=True, null=False)
     twitter_token = models.CharField(max_length=128, blank=True, null=False)
@@ -1280,8 +1281,27 @@ class ConferenceTweetQueue(models.Model):
     author = models.ForeignKey(User, null=True, blank=True)
     approvedby = models.ForeignKey(User, null=True, blank=True, related_name="tweetapprovals")
     sent = models.BooleanField(null=False, default=False, blank=False)
+    tweetid = models.BigIntegerField(null=False, blank=False, default=0, db_index=True)
+    replytotweetid = models.BigIntegerField(null=True, blank=True, verbose_name="Reply to tweet")
 
     class Meta:
         ordering = ['sent', 'datetime', ]
         verbose_name_plural = 'Conference Tweets'
         verbose_name = 'Conference Tweet'
+
+
+class ConferenceIncomingTweet(models.Model):
+    conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
+    statusid = models.BigIntegerField(null=False, blank=False, unique=True)
+    created = models.DateTimeField(null=False, blank=False)
+    processedat = models.DateTimeField(null=True, blank=True)
+    processedby = models.ForeignKey(User, null=True, blank=True)
+    text = models.CharField(max_length=512, null=False, blank=False)
+    replyto_statusid = models.BigIntegerField(null=True, blank=True, db_index=True)
+    author_id = models.BigIntegerField(null=False, blank=False)
+    author_screenname = models.CharField(max_length=50, null=False, blank=False)
+    author_name = models.CharField(max_length=100, null=False, blank=False)
+    author_image_url = models.URLField(max_length=1024, null=False, blank=False)
+    quoted_statusid = models.BigIntegerField(null=True, blank=True)
+    quoted_text = models.CharField(max_length=512, null=True, blank=True)
+    quoted_permalink = models.URLField(max_length=1024, null=True, blank=True)

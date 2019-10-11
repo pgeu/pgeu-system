@@ -8,6 +8,9 @@
 <p>
   Configured twitter user is <strong>{{conference.twitter_user}}</strong>.
 </p>
+{%for c in conferences_with_same_user%}
+<div class="alert alert-warning">Warning: conference {{c}} uses the same twitter user and has incoming active!</div>
+{%endfor%}
 <form class="form-horizontal" method="POST" action="." enctype="multipart/form-data">{%csrf_token%}
 {%include "confreg/admin_backend_form_content.html" %}
 </form>

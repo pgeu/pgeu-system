@@ -903,7 +903,7 @@ class BackendCopySelectConferenceForm(django.forms.Form):
 class TwitterForm(ConcurrentProtectedModelForm):
     class Meta:
         model = Conference
-        fields = ['twittersync_active', 'twitterreminders_active', 'twitter_postpolicy']
+        fields = ['twittersync_active', 'twitterincoming_active', 'twitterreminders_active', 'twitter_postpolicy']
 
 
 class TwitterTestForm(django.forms.Form):

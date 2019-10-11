@@ -12,6 +12,7 @@ The twitter integration supports:
 * Posting confirmed sponsorship benefits
 * Creating campaigns
 * Sending reminders to speaker just before their presentation
+* Polling incoming tweet mentions
 
 
 ### Manually posting to conference twitter
@@ -56,7 +57,14 @@ will begin soon, and which room it's in.
 This of course requires that the speaker follows the conference
 account, or that they have public DMs open.
 
-### Setting up
+### Polling incoming tweet mentions
+
+When enabled, the system will poll every 5 minutes for mentions of the
+configured twitter account, and add it to the queue. If the
+[mobile website](#mobilesite) is used, it can be used to track
+incoming tweets and to either discard or make replies to them.
+
+## Setting up
 
 To set up the twitter integration, first configure `TWITTER_CLIENT`
 and `TWITTER_CLIENTSECRET` in the `settings.py` file. These are the
@@ -150,6 +158,12 @@ queue. Depending on the posting policy, either an administrator or a
 volunteer can approve posts that are in the queue. Once approved, the
 scheduled job to post tweets is triggered immediately, so the tweet
 will be posted right away.
+
+The site will also show a list of all pending mentions of the primary
+account, and allow the user to either discard them or to reply to
+them. This way it's intended that all incoming requests will be
+handled one way or another. The same posting policy as new posts
+apply, including moderation.
 
 While the page is open, a scheduled job will periodically check if a
 new tweet has shown up in the queue, and post a notification if it has

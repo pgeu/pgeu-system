@@ -25,10 +25,13 @@ class Twitter(object):
             raise Exception("http status {}".format(r.status_code))
         return r.json()['screen_name']
 
-    def post_tweet(self, tweet, image=None):
+    def post_tweet(self, tweet, image=None, replytotweetid=None):
         d = {
             'status': tweet,
         }
+        if replytotweetid:
+            d['in_reply_to_status_id'] = replytotweetid
+            d['auto_populate_reply_metadata'] = True
 
         if image:
             # Images are separately uploaded as a first step
@@ -41,8 +44,8 @@ class Twitter(object):
 
         r = self.tw.post('https://api.twitter.com/1.1/statuses/update.json', data=d)
         if r.status_code != 200:
-            return (False, r.text)
-        return (True, None)
+            return (None, r.text)
+        return (r.json()['id'], None)
 
     def send_message(self, tousername, msg):
         # Nor the username
@@ -82,6 +85,16 @@ class Twitter(object):
         except Exception as e:
             return (False, None, e)
         return (True, None, None)
+
+    def get_timeline(self, tlname, since=None):
+        if since:
+            sincestr = "&since={}".format(since)
+        else:
+            sincestr = ""
+        r = self.tw.get('https://api.twitter.com/1.1/statuses/{}_timeline.json?tweet_mode=extended{}'.format(tlname, sincestr))
+        if r.status_code != 200:
+            return None
+        return r.json()
 
 
 class TwitterSetup(object):

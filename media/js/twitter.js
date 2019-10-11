@@ -21,6 +21,7 @@ function show_ajax_error(type, xhr) {
 function reset_state() {
     $('#statusdiv').hide();
     $('#queuerow').hide();
+    $('#incomingrow').hide();
     $('#buttonrow').show();
 }
 
@@ -43,8 +44,27 @@ function add_queue_entry_html(row, d, modbuttons) {
     row.append(e);
 }
 
+
+function add_incoming_entry_html(row, d, discardbutton) {
+    var e = $('<div/>').addClass('incomingentry panel panel-primary').data('replyid', d['id']).data('replyto', d['author']);
+    e.append($('<div/>').addClass('panel-heading').text('Posted by @' + d['author'] + ' (' + d['authorfullname'] + ')'));
+    var cdiv = $('<div/>').addClass('panel-body').text(d['txt']);
+    e.append(cdiv);
+    fdiv = $('<div/>').addClass('panel-footer');
+    fdiv.append($('<button/>').data('tid', d['id']).addClass('btn btn-primary btn-sm reply-button').text('Reply'));
+    if (discardbutton) {
+       fdiv.append($('<button/>').data('tid', d['id']).addClass('btn btn-default btn-sm discard-incoming-button').text('Discard'));
+    }
+    e.append(fdiv);
+
+    row.append(e);
+}
+
+
+
 var lastcheck = 0;
-var laststatus = true;
+var lastqueue = true;
+var lastincoming = true;
 function check_queue() {
     if ((new Date()) - lastcheck < 1000) {
 	console.log('Less than 1 second since last time, not checking queue')
@@ -56,13 +76,14 @@ function check_queue() {
 	    "op": "hasqueue",
 	},
 	success: function(data, status, xhr) {
-	    if (data['hasqueue'] != laststatus) {
+	    if (data['hasqueue'] != lastqueue) {
 		if (data['hasqueue']) {
 		    $('#tweetQueueButton').removeClass('btn-default').addClass('btn-primary');
 		}
 		else {
 		    $('#tweetQueueButton').removeClass('btn-primary').addClass('btn-default');
 		}
+
 		if (data['hasqueue']) {
 		    if ("Notification" in window) {
 			if (Notification.permission === "granted") {
@@ -70,7 +91,25 @@ function check_queue() {
 			}
 		    }
 		}
-		laststatus = data['hasqueue'];
+		lastqueue = data['hasqueue'];
+	    }
+
+	    if (data['hasincoming'] != lastincoming) {
+		if (data['hasincoming']) {
+		    $('#incomingTweetsButton').removeClass('btn-default').addClass('btn-primary');
+		}
+		else {
+		    $('#incomingTweetsButton').removeClass('btn-primary').addClass('btn-default');
+		}
+
+		if (data['hasincoming']) {
+		    if ("Notification" in window) {
+			if (Notification.permission === "granted") {
+			    var not = new Notification($('body').data('confname') + ": One or more incoming tweets arrived");
+			}
+		    }
+		}
+		lastincoming = data['hasincoming'];
 	    }
 	    lastcheck = new Date();
 	}
@@ -110,6 +149,7 @@ $(function() {
 	$('#newTweetUpload').val('');
 	$('#tweetBypassApproval').prop('checked', false);
 	$('#tweetLength').text('0');
+	$('#newTweetModal').data('replyid', '');
 	$('#newTweetModal').modal({});
     });
 
@@ -131,6 +171,9 @@ $(function() {
 	if ($('#newTweetUpload')[0].files[0]) {
 	    fd.append("image", $('#newTweetUpload')[0].files[0]);
 	}
+	if ($('#newTweetModal').data('replyid')) {
+	    fd.append("replyid", $('#newTweetModal').data('replyid'));
+	}
 
 	$.ajax({
 	    "method": "POST",
@@ -148,6 +191,15 @@ $(function() {
 		    showstatus('Tweet queued', 'success');
 		}
 		check_queue();
+
+		if ($('#newTweetModal').data('replyid')) {
+		    /* If we did a reply we should remove it from the incoming queue */
+		    $('#incomingrow .incomingentry').each(function () {
+			if ($(this).data('replyid') == $('#newTweetModal').data('replyid')) {
+			    $(this).hide('fast', function() { e.remove(); });
+			}
+		    });
+		};
 	    },
 	    error: function(xhr, status, thrown) {
 		alert('Error posting tweet: ' + xhr.status);
@@ -155,6 +207,9 @@ $(function() {
 	});
     });
 
+    /*
+     * Queued outgoing tweets
+     */
     $('#tweetQueueButton').click(function() {
 	$.ajax({
 	    "method": "GET",
@@ -213,6 +268,85 @@ $(function() {
 	    },
 	});
     });
+    // End of tweet outgoing queue
+
+    /*
+     * Incoming tweets
+     */
+    $('#incomingTweetsButton').click(function() {
+	$.ajax({
+	    "method": "GET",
+	    "data": {
+		"op": "incoming",
+	    },
+	    success: function(data, status, xhr) {
+		var t = (new Date()).toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit', second: '2-digit', hour12: false});
+
+		/* Remove old entries */
+		$('#incomingrow .incomingentry').remove();
+
+		var row = $('#incomingrow');
+		row.append($('<div/>').addClass('well well-sm incomingentry').text('Incoming tweets at ' + t));
+		$.each(data['incoming'], function(i, d) {
+		    add_incoming_entry_html(row, d, is_moderator);
+		});
+		row.append($('<div/>').addClass('well well-sm incomingentry').text('Processed incoming at ' + t));
+		$.each(data['incominglatest'], function(i, d) {
+		    add_incoming_entry_html(row, d, false);
+		});
+
+		$('#buttonrow').hide();
+		$('#incomingrow').show();
+	    },
+	    error: function(xhr, status, thrown) {
+		show_ajax_error('getting queue', xhr);
+	    },
+	});
+    });
+
+    $(document).on('click', 'button.discard-incoming-button', function(e) {
+	var btn = $(this);
+
+	if (!confirm('Are you sure you want to discard this tweet without a reply?')) {
+	    return;
+	}
+
+	$.ajax({
+	    "method": "POST",
+	    "dataType": "json",
+	    "url": ".",
+	    "data": {
+		"op": 'discardincoming',
+		"id": $(this).data('tid'),
+	    },
+	    success: function(data, status, xhr) {
+		if ('error' in data) {
+		    alert(data['error']);
+		    return;
+		}
+
+		var e = btn.parent().parent();
+		e.hide('fast', function() { e.remove(); });
+	    },
+	    error: function(xhr, status, thrown) {
+		alert('Error updating status: ' + xhr.status);
+	    },
+	});
+    });
+
+    $(document).on('click', 'button.reply-button', function(e) {
+	var btn = $(this);
+
+	var replyto = $(this).parent().parent().data('replyto');
+        $('#newTweetText').val('@' + replyto + ' ');
+	$('#newTweetUpload').val('');
+	$('#tweetBypassApproval').prop('checked', false);
+	$('#tweetLength').text('0');
+	$('#newTweetModal').data('replyid', $(this).parent().parent().data('replyid'));
+	$('#newTweetModal').modal({});
+    });
+
+    // End of tweet incoming queue
 
     if ("Notification" in window) {
 	if (Notification.permission === "default") {

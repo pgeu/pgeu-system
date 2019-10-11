@@ -18,7 +18,7 @@ div.queueentry img.preview-image {
     display: block;
 }
 
-button.approve-button, button.discard-button {
+button.approve-button, button.discard-button, button.reply-button, button.discard-incoming-button {
     margin-top: 1rem;
     margin-right: 2rem;
 }

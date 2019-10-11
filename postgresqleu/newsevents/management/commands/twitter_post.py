@@ -61,8 +61,8 @@ class Command(BaseCommand):
                                                            settings.SITEBASE,
                                                            slugify(a.title),
                                                            a.id)
-                ok, msg = tw.post_tweet(statusstr)
-                if ok:
+                id, msg = tw.post_tweet(statusstr)
+                if id:
                     a.tweeted = True
                     a.save()
                 else:
@@ -77,10 +77,11 @@ class Command(BaseCommand):
             tw = Twitter(c)
 
             for t in ConferenceTweetQueue.objects.filter(conference=c, approved=True, sent=False, datetime__lte=datetime.now()).order_by('datetime'):
-                ok, msg = tw.post_tweet(t.contents, t.image)
-                if ok:
+                id, msg = tw.post_tweet(t.contents, t.image, t.replytotweetid)
+                if id:
                     t.sent = True
-                    t.save(update_fields=['sent', ])
+                    t.tweetid = id
+                    t.save(update_fields=['sent', 'tweetid', ])
                 else:
                     self.stderr.write("Failed to post to twitter: %s" % msg)
 

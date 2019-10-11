@@ -401,6 +401,7 @@ def twitter_integration(request, urlname):
             conference.twitter_token = tokens.get('oauth_token')
             conference.twitter_secret = tokens.get('oauth_token_secret')
             conference.twittersync_active = False
+            conference.twitterincoming_active = False
             tw = Twitter(conference)
             try:
                 conference.twitter_user = tw.get_own_screen_name()
@@ -416,6 +417,7 @@ def twitter_integration(request, urlname):
             conference.twitter_token = ''
             conference.twitter_secret = ''
             conference.twittersync_active = False
+            conference.twitterincoming_active = False
             conference.save()
             messages.info(request, 'Twitter integration disabled')
             return HttpResponseRedirect('.')
@@ -444,10 +446,16 @@ def twitter_integration(request, urlname):
         form = TwitterForm(instance=conference)
         testform = TwitterTestForm()
 
+    if conference.twitter_user:
+        sameuser = Conference.objects.filter(twitterincoming_active=True, twitter_user=conference.twitter_user).exclude(pk=conference.pk).order_by('urlname')
+    else:
+        sameuser = []
+
     return render(request, 'confreg/admin_integ_twitter.html', {
         'conference': conference,
         'form': form,
         'testform': testform,
+        'conferences_with_same_user': sameuser,
         'helplink': 'integrations#twitter',
     })
 

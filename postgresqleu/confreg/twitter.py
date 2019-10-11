@@ -5,12 +5,14 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.views.decorators.csrf import csrf_exempt
 
+import datetime
 import io
 import json
 from PIL import Image, ImageFile
 
 from postgresqleu.scheduler.util import trigger_immediate_job_run
-from .models import ConferenceTweetQueue, Conference, ConferenceRegistration
+from .models import ConferenceTweetQueue, ConferenceIncomingTweet
+from .models import Conference, ConferenceRegistration
 
 
 def _json_response(d):
@@ -69,6 +71,7 @@ def volunteer_twitter(request, urlname, token):
                 approved=approved,
                 approvedby=approvedby,
                 author=reg.attendee,
+                replytotweetid=request.POST.get('replyid', None),
                 )
             if 'image' in request.FILES:
                 t.image = request.FILES['image'].read()
@@ -99,6 +102,9 @@ def volunteer_twitter(request, urlname, token):
                         return _json_response({'error': 'Image file too big and automatic resize failed'})
 
             t.save()
+            if request.POST.get('replyid', None):
+                ConferenceIncomingTweet.objects.filter(conference=conference, statusid=request.POST.get('replyid', None)).update(processedat=datetime.datetime.now(), processedby=reg.attendee)
+
             return _json_response({})
         elif request.POST.get('op', None) in ('approve', 'discard'):
             if not is_admin:
@@ -123,6 +129,23 @@ def volunteer_twitter(request, urlname, token):
                 trigger_immediate_job_run('twitter_post')
             else:
                 t.delete()
+            return _json_response({})
+        elif request.POST.get('op', None) == 'discardincoming':
+            if not is_admin:
+                # Admins can always approve, but volunteers only if policy allows
+                if conference.twitter_postpolicy != 3:
+                    raise PermissionDenied()
+
+            try:
+                t = ConferenceIncomingTweet.objects.get(conference=conference, statusid=int(request.POST['id']))
+            except ConferenceIncomingTweet.DoesNotExist:
+                return _json_response({'error': 'Tweet does not exist'})
+            if t.processedat:
+                return _json_response({'error': 'Tweet is already discarded or replied'})
+
+            t.processedby = reg.attendee
+            t.processedat = datetime.datetime.now()
+            t.save()
             return _json_response({})
         else:
             # Unknown op
@@ -151,9 +174,25 @@ def volunteer_twitter(request, urlname, token):
             'queue': _postdata(queue),
             'latest': _postdata(latest),
         })
+    elif request.GET.get('op', None) == 'incoming':
+        if conference.twitterincoming_active:
+            incoming = ConferenceIncomingTweet.objects.filter(conference=conference, processedat__isnull=True).order_by('created')
+            latest = ConferenceIncomingTweet.objects.filter(conference=conference, processedat__isnull=False).order_by('-processedat')[:5]
+        else:
+            incoming = latest = []
+
+        def _postdata(objs):
+            return [
+                {'id': str(t.statusid), 'txt': t.text, 'author': t.author_screenname, 'authorfullname': t.author_name, 'time': t.created}
+                for t in objs]
+        return _json_response({
+            'incoming': _postdata(incoming),
+            'incominglatest': _postdata(latest),
+        })
     elif request.GET.get('op', None) == 'hasqueue':
         return _json_response({
-            'hasqueue': ConferenceTweetQueue.objects.filter(conference=conference, approved=False).exclude(author=reg.attendee_id).exists()
+            'hasqueue': ConferenceTweetQueue.objects.filter(conference=conference, approved=False).exclude(author=reg.attendee_id).exists(),
+            'hasincoming': ConferenceIncomingTweet.objects.filter(conference=conference, processedat__isnull=True).exists(),
         })
     elif request.GET.get('op', None) == 'thumb':
         # Get a thumbnail -- or make one if it's not there
