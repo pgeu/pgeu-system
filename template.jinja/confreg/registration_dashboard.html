@@ -142,7 +142,7 @@ spamfilters.
 <h2>Signups</h2>
 <ul>
 {%for s in signups%}
- <li><a href="{{redir_root}}signup/{{s.id}}/">{{s.title}}</a>{%if s.closed%} (closed){%elif s.deadline%} (closes {{s.deadline.strftime("%Y-%m-%d %H:%M")}}){%endif%}{%if s.savedat%} - you responded on {{s.savedat.strftime("%Y-%m-%d %H:%M")}}{%endif%}</li>
+ <li><a href="{{redir_root}}signup/{{s.title|slugify}}-{{s.id}}/">{{s.title}}</a>{%if s.closed%} (closed){%elif s.deadline%} (closes {{s.deadline.strftime("%Y-%m-%d %H:%M")}}){%endif%}{%if s.savedat%} - you responded on {{s.savedat.strftime("%Y-%m-%d %H:%M")}}{%endif%}</li>
 {%endfor%}
 </ul>
 {%endif%}

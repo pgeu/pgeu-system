@@ -6,6 +6,7 @@ from django.db import transaction, connection
 from django.db.models import Q
 from django.contrib import messages
 from django.conf import settings
+from django.template.defaultfilters import slugify
 
 from datetime import datetime
 from io import StringIO
@@ -500,9 +501,9 @@ def signup_admin_sendmail(request, urlname, signupid):
                 send_simple_mail(conference.contactaddr,
                                  e,
                                  "[{0}] {1}".format(conference.conferencename, form.cleaned_data['subject']),
-                                 "{0}\n\nTo view the signup, please see {1}/events/{2}/register/signup/{3}/".format(
+                                 "{0}\n\nTo view the signup, please see {1}/events/{2}/register/signup/{3}-{4}/".format(
                                      form.cleaned_data['body'],
-                                     settings.SITEBASE, conference.urlname, signup.id),
+                                     settings.SITEBASE, conference.urlname, slugify(signup.title), signup.id),
                                  sendername=conference.conferencename,
                                  receivername=n)
             send_simple_mail(conference.notifyaddr,
