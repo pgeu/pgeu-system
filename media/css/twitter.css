@@ -13,12 +13,12 @@ textarea#newTweetText {
     height: 10rem;
 }
 
-div.queueentry img.preview-image {
+div.queueentry img.preview-image, div.incomingentry img.preview-image {
     max-width: 90%;
     display: block;
 }
 
-button.approve-button, button.discard-button, button.reply-button, button.discard-incoming-button, button.view-twitter-button {
+button.approve-button, button.discard-button, button.reply-button, button.discard-incoming-button, button.view-twitter-button, button.retweet-button {
     margin-top: 1rem;
     margin-right: 2rem;
 }

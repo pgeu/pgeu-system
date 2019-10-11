@@ -4,6 +4,7 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.postgres.aggregates import ArrayAgg
 
 import datetime
 import io
@@ -130,7 +131,7 @@ def volunteer_twitter(request, urlname, token):
             else:
                 t.delete()
             return _json_response({})
-        elif request.POST.get('op', None) == 'discardincoming':
+        elif request.POST.get('op', None) in ('discardincoming', 'retweet'):
             if not is_admin:
                 # Admins can always approve, but volunteers only if policy allows
                 if conference.twitter_postpolicy != 3:
@@ -140,12 +141,20 @@ def volunteer_twitter(request, urlname, token):
                 t = ConferenceIncomingTweet.objects.get(conference=conference, statusid=int(request.POST['id']))
             except ConferenceIncomingTweet.DoesNotExist:
                 return _json_response({'error': 'Tweet does not exist'})
-            if t.processedat:
-                return _json_response({'error': 'Tweet is already discarded or replied'})
 
-            t.processedby = reg.attendee
-            t.processedat = datetime.datetime.now()
-            t.save()
+            if request.POST.get('op', None) == 'discardincoming':
+                if t.processedat:
+                    return _json_response({'error': 'Tweet is already discarded or replied'})
+
+                t.processedby = reg.attendee
+                t.processedat = datetime.datetime.now()
+                t.save(update_fields=['processedby', 'processedat'])
+            else:
+                if t.retweetstate > 0:
+                    return _json_response({'error': 'Tweet '})
+                t.retweetstate = 1
+                t.save(update_fields=['retweetstate'])
+
             return _json_response({})
         else:
             # Unknown op
@@ -183,8 +192,8 @@ def volunteer_twitter(request, urlname, token):
 
         def _postdata(objs):
             return [
-                {'id': str(t.statusid), 'txt': t.text, 'author': t.author_screenname, 'authorfullname': t.author_name, 'time': t.created}
-                for t in objs]
+                {'id': str(t.statusid), 'txt': t.text, 'author': t.author_screenname, 'authorfullname': t.author_name, 'time': t.created, 'rt': t.retweetstate, 'media': [m for m in t.media if m is not None]}
+                for t in objs.annotate(media=ArrayAgg('conferenceincomingtweetmedia__mediaurl'))]
         return _json_response({
             'incoming': _postdata(incoming),
             'incominglatest': _postdata(latest),

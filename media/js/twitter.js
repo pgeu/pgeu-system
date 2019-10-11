@@ -49,12 +49,26 @@ function add_incoming_entry_html(row, d, discardbutton) {
     var e = $('<div/>').addClass('incomingentry panel panel-primary').data('replyid', d['id']).data('replyto', d['author']);
     e.append($('<div/>').addClass('panel-heading').text('Posted by @' + d['author'] + ' (' + d['authorfullname'] + ') at ' + d['time']));
     var cdiv = $('<div/>').addClass('panel-body').text(d['txt']);
+    if (d['media']) {
+	$.each(d['media'], function(i, o) {
+	    cdiv.append($('<img/>').addClass('preview-image').attr('src', o + '?name=thumb'));
+	});
+    }
     e.append(cdiv);
     fdiv = $('<div/>').addClass('panel-footer');
     fdiv.append($('<button/>').data('tid', d['id']).addClass('btn btn-primary btn-sm reply-button').text('Reply'));
     if (discardbutton) {
        fdiv.append($('<button/>').data('tid', d['id']).addClass('btn btn-default btn-sm discard-incoming-button').text('Discard'));
     }
+    var rtbtn = $('<button/>').data('tid', d['id']).addClass('btn btn-default btn-sm retweet-button');
+    if (d['rt'] == 0) {
+	rtbtn.text('Retweet');
+    }
+    else {
+	rtbtn.text('Retweeted');
+	rtbtn.attr('disabled', 'disabled');
+    }
+    fdiv.append(rtbtn);
     fdiv.append($('<button/>').data('tid', d['id']).addClass('btn btn-default btn-sm view-twitter-button').text('View on twitter'));
     e.append(fdiv);
 
@@ -328,6 +342,36 @@ $(function() {
 
 		var e = btn.parent().parent();
 		e.hide('fast', function() { e.remove(); });
+	    },
+	    error: function(xhr, status, thrown) {
+		alert('Error updating status: ' + xhr.status);
+	    },
+	});
+    });
+
+    $(document).on('click', 'button.retweet-button', function(e) {
+	var btn = $(this);
+
+	if (!confirm('Are you sure you want to retweet this?')) {
+	    return;
+	}
+
+	$.ajax({
+	    "method": "POST",
+	    "dataType": "json",
+	    "url": ".",
+	    "data": {
+		"op": 'retweet',
+		"id": $(this).data('tid'),
+	    },
+	    success: function(data, status, xhr) {
+		if ('error' in data) {
+		    alert(data['error']);
+		    return;
+		}
+
+		btn.text('Retweeted');
+		btn.attr('disabled', 'disabled');
 	    },
 	    error: function(xhr, status, thrown) {
 		alert('Error updating status: ' + xhr.status);

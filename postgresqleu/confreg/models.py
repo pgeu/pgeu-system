@@ -1305,3 +1305,10 @@ class ConferenceIncomingTweet(models.Model):
     quoted_statusid = models.BigIntegerField(null=True, blank=True)
     quoted_text = models.CharField(max_length=512, null=True, blank=True)
     quoted_permalink = models.URLField(max_length=1024, null=True, blank=True)
+    retweetstate = models.IntegerField(null=False, blank=False, default=0, choices=((0, 'No retweet'), (1, 'Scheduled'), (2, 'Retweeted')))
+
+
+class ConferenceIncomingTweetMedia(models.Model):
+    incomingtweet = models.ForeignKey(ConferenceIncomingTweet, null=False, blank=False)
+    sequence = models.IntegerField(null=False, blank=False)
+    mediaurl = models.URLField(max_length=1024, null=False, blank=False)

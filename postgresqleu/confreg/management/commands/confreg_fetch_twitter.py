@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 import dateutil.parser
 
 from postgresqleu.confreg.models import Conference, ConferenceIncomingTweet, ConferenceTweetQueue
+from postgresqleu.confreg.models import ConferenceIncomingTweetMedia
 
 from postgresqleu.util.messaging.twitter import Twitter
 
@@ -71,3 +72,9 @@ class Command(BaseCommand):
                             it.quoted_text = tj['quoted_status']['full_text']
                             it.quoted_permalink = tj['quoted_status_permalink']
                         it.save()
+
+                        if 'media' in tj['entities']:
+                            for seq, m in enumerate(tj['entities']['media']):
+                                ConferenceIncomingTweetMedia(incomingtweet=it,
+                                                             sequence=seq,
+                                                             mediaurl=m['media_url_https']).save()

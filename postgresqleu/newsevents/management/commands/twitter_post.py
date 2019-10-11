@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 import time
 
 from postgresqleu.newsevents.models import News
-from postgresqleu.confreg.models import Conference, ConferenceNews, ConferenceTweetQueue
+from postgresqleu.confreg.models import Conference, ConferenceNews, ConferenceTweetQueue, ConferenceIncomingTweet
 
 from postgresqleu.util.messaging.twitter import Twitter
 
@@ -26,7 +26,7 @@ def conferences_with_tweets_queryset():
     return Conference.objects.filter(twittersync_active=True,
                                      twitter_timewindow_start__lt=n,
                                      twitter_timewindow_end__gt=n).extra(where=[
-                                         "EXISTS (SELECT 1 FROM confreg_conferencetweetqueue q WHERE q.conference_id=confreg_conference.id AND q.approved AND NOT q.sent)"
+                                         "(EXISTS (SELECT 1 FROM confreg_conferencetweetqueue q WHERE q.conference_id=confreg_conference.id AND q.approved AND NOT q.sent) OR EXISTS (SELECT 1 FROM confreg_conferenceincomingtweet i WHERE i.conference_id=confreg_conference.id AND i.retweetstate=1))"
                                      ])
 
 
@@ -87,3 +87,13 @@ class Command(BaseCommand):
 
                 # Don't post more often than once / 10 seconds, to not trigger flooding detection.
                 time.sleep(10)
+
+            for t in ConferenceIncomingTweet.objects.filter(conference=c, retweetstate=1):
+                ok, msg = tw.retweet(t.statusid)
+                if ok:
+                    t.retweetstate = 2
+                    t.save(update_fields=['retweetstate'])
+                else:
+                    self.stderr.write("Failed to retweet: %s" % msg)
+
+                time.sleep(2)

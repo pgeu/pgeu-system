@@ -47,6 +47,12 @@ class Twitter(object):
             return (None, r.text)
         return (r.json()['id'], None)
 
+    def retweet(self, tweetid):
+        r = self.tw.post('https://api.twitter.com/1.1/statuses/retweet/{0}.json'.format(tweetid))
+        if r.status_code != 200:
+            return (None, r.text)
+        return (True, None)
+
     def send_message(self, tousername, msg):
         # Nor the username
         tousername = tousername.lower().replace('@', '')
