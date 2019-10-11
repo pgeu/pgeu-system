@@ -25,8 +25,8 @@ function reset_state() {
     $('#buttonrow').show();
 }
 
-function add_queue_entry_html(row, d, modbuttons) {
-    var e = $('<div/>').addClass('queueentry panel panel-primary');
+function add_queue_entry_html(row, d, modbuttons, panelstyle) {
+    var e = $('<div/>').addClass('queueentry panel panel-' + panelstyle);
     e.append($('<div/>').addClass('panel-heading').text(d['time']));
     var cdiv = $('<div/>').addClass('panel-body').text(d['txt']);
     if (d['hasimage']) {
@@ -45,8 +45,8 @@ function add_queue_entry_html(row, d, modbuttons) {
 }
 
 
-function add_incoming_entry_html(row, d, discardbutton) {
-    var e = $('<div/>').addClass('incomingentry panel panel-primary').data('replyid', d['id']).data('replyto', d['author']);
+function add_incoming_entry_html(row, d, discardbutton, panelstyle) {
+    var e = $('<div/>').addClass('incomingentry panel panel-' + panelstyle).data('replyid', d['id']).data('replyto', d['author']);
     e.append($('<div/>').addClass('panel-heading').text('Posted by @' + d['author'] + ' (' + d['authorfullname'] + ') at ' + d['time']));
     var cdiv = $('<div/>').addClass('panel-body').text(d['txt']);
     if (d['media']) {
@@ -238,13 +238,13 @@ $(function() {
 		$('#queuerow .queueentry').remove();
 
 		var row = $('#queuerow');
-		row.append($('<div/>').addClass('well well-sm queueentry').text('Moderation queue at ' + t));
+		row.append($('<div/>').addClass('well sectionwell queueentry').text('Moderation queue at ' + t));
 		$.each(data['queue'], function(i, d) {
-		    add_queue_entry_html(row, d, is_moderator);
+		    add_queue_entry_html(row, d, is_moderator, 'primary');
 		});
-		row.append($('<div/>').addClass('well well-sm queueentry').text('Latest posts' + t));
+		row.append($('<div/>').addClass('well sectionwell queueentry').text('Latest posts at ' + t));
 		$.each(data['latest'], function(i, d) {
-		    add_queue_entry_html(row, d, false);
+		    add_queue_entry_html(row, d, false, 'info');
 		});
 
 		$('#buttonrow').hide();
@@ -301,13 +301,13 @@ $(function() {
 		$('#incomingrow .incomingentry').remove();
 
 		var row = $('#incomingrow');
-		row.append($('<div/>').addClass('well well-sm incomingentry').text('Incoming tweets at ' + t));
+		row.append($('<div/>').addClass('well sectionwell incomingentry').text('Incoming tweets at ' + t));
 		$.each(data['incoming'], function(i, d) {
-		    add_incoming_entry_html(row, d, is_moderator);
+		    add_incoming_entry_html(row, d, is_moderator, 'primary');
 		});
-		row.append($('<div/>').addClass('well well-sm incomingentry').text('Processed incoming at ' + t));
+		row.append($('<div/>').addClass('well sectionwell incomingentry').text('Processed incoming at ' + t));
 		$.each(data['incominglatest'], function(i, d) {
-		    add_incoming_entry_html(row, d, false);
+		    add_incoming_entry_html(row, d, false, 'info');
 		});
 
 		$('#buttonrow').hide();
