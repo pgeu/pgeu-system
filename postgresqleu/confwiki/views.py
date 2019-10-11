@@ -27,36 +27,45 @@ from .forms import SignupSubmitForm, SignupAdminEditForm, SignupSendmailForm
 from .forms import SignupAdminEditSignupForm
 
 
-def _check_wiki_permissions(page, reg, readwrite=False):
+def _check_wiki_permissions(request, page, readwrite=False):
+    try:
+        reg = ConferenceRegistration.objects.get(conference=page.conference, attendee=request.user, payconfirmedat__isnull=False)
+    except ConferenceRegistration.DoesNotExist:
+        raise PermissionDenied("You must be registered for the conference in order to view this page")
+
     # Edit access implies both read and write
     if page.publicedit:
-        return
+        return reg
     if page.editor_attendee.filter(id=reg.id).exists() or page.editor_regtype.filter(id=reg.regtype.id).exists():
-        return
+        return reg
     if readwrite:
         raise PermissionDenied("Edit permission denied")
     # Now check read only
     if page.publicview:
-        return
+        return reg
     if page.viewer_attendee.filter(id=reg.id).exists() or page.viewer_regtype.filter(id=reg.regtype.id).exists():
-        return
+        return reg
     raise PermissionDenied("View permission denied")
 
 
-def _check_signup_permissions(signup, reg):
+def _check_signup_permissions(request, signup):
+    try:
+        reg = ConferenceRegistration.objects.get(conference=signup.conference, attendee=request.user, payconfirmedat__isnull=False)
+    except ConferenceRegistration.DoesNotExist:
+        raise PermissionDenied("You must be registered for the conference in order to view this page")
+
     if signup.public:
-        return
+        return reg
     if signup.attendees.filter(id=reg.id).exists() or signup.regtypes.filter(id=reg.regtype.id).exists():
-        return
+        return reg
     raise PermissionDenied("Signup permission denied")
 
 
 @login_required
 def wikipage(request, confurl, wikiurl):
     conference = get_object_or_404(Conference, urlname=confurl)
-    reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user, payconfirmedat__isnull=False)
     page = get_object_or_404(Wikipage, conference=conference, url=wikiurl)
-    _check_wiki_permissions(page, reg)
+    reg = _check_wiki_permissions(request, page)
 
     is_subscribed = WikipageSubscriber.objects.filter(page=page, subscriber=reg).exists()
 
@@ -75,9 +84,8 @@ def wikipage(request, confurl, wikiurl):
 @transaction.atomic
 def wikipage_subscribe(request, confurl, wikiurl):
     conference = get_object_or_404(Conference, urlname=confurl)
-    reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user, payconfirmedat__isnull=False)
     page = get_object_or_404(Wikipage, conference=conference, url=wikiurl)
-    _check_wiki_permissions(page, reg)
+    reg = _check_wiki_permissions(request, page)
 
     subs = WikipageSubscriber.objects.filter(page=page, subscriber=reg)
     if subs:
@@ -93,9 +101,8 @@ def wikipage_subscribe(request, confurl, wikiurl):
 @login_required
 def wikipage_history(request, confurl, wikiurl):
     conference = get_object_or_404(Conference, urlname=confurl)
-    reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user, payconfirmedat__isnull=False)
     page = get_object_or_404(Wikipage, conference=conference, url=wikiurl)
-    _check_wiki_permissions(page, reg)
+    reg = _check_wiki_permissions(request, page)
     if not page.history:
         raise PermissionDenied()
 
@@ -137,9 +144,8 @@ def wikipage_history(request, confurl, wikiurl):
 @transaction.atomic
 def wikipage_edit(request, confurl, wikiurl):
     conference = get_object_or_404(Conference, urlname=confurl)
-    reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user, payconfirmedat__isnull=False)
     page = get_object_or_404(Wikipage, conference=conference, url=wikiurl)
-    _check_wiki_permissions(page, reg, True)
+    reg = _check_wiki_permissions(request, page)
 
     baseform = True
     preview = ''
@@ -283,9 +289,8 @@ def admin_edit_page(request, urlname, pageid):
 @transaction.atomic
 def signup(request, urlname, signupid):
     conference = get_object_or_404(Conference, urlname=urlname)
-    reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user, payconfirmedat__isnull=False)
     signup = get_object_or_404(Signup, conference=conference, id=signupid)
-    _check_signup_permissions(signup, reg)
+    reg = _check_signup_permissions(request, signup)
 
     attendee_signup = AttendeeSignup.objects.filter(signup=signup, attendee=reg)
     if len(attendee_signup) == 1:
