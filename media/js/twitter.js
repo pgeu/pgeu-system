@@ -55,7 +55,7 @@ function add_incoming_entry_html(row, d, discardbutton) {
     if (discardbutton) {
        fdiv.append($('<button/>').data('tid', d['id']).addClass('btn btn-default btn-sm discard-incoming-button').text('Discard'));
     }
-    fdiv.append($('<button/>').data('tid', d['id']).addClass('btn btn-defaeult btn-sm view-twitter-button').text('View on twitter'));
+    fdiv.append($('<button/>').data('tid', d['id']).addClass('btn btn-default btn-sm view-twitter-button').text('View on twitter'));
     e.append(fdiv);
 
     row.append(e);
