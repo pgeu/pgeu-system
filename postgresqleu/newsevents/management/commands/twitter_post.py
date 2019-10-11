@@ -22,12 +22,9 @@ def news_tweets_queryset():
 
 
 def conferences_with_tweets_queryset():
-    n = datetime.now().time()
-    return Conference.objects.filter(twittersync_active=True,
-                                     twitter_timewindow_start__lt=n,
-                                     twitter_timewindow_end__gt=n).extra(where=[
-                                         "(EXISTS (SELECT 1 FROM confreg_conferencetweetqueue q WHERE q.conference_id=confreg_conference.id AND q.approved AND NOT q.sent) OR EXISTS (SELECT 1 FROM confreg_conferenceincomingtweet i WHERE i.conference_id=confreg_conference.id AND i.retweetstate=1))"
-                                     ])
+    return Conference.objects.filter(twittersync_active=True).extra(where=[
+        "(EXISTS (SELECT 1 FROM confreg_conferencetweetqueue q WHERE q.conference_id=confreg_conference.id AND q.approved AND NOT q.sent) OR EXISTS (SELECT 1 FROM confreg_conferenceincomingtweet i WHERE i.conference_id=confreg_conference.id AND i.retweetstate=1))"
+    ])
 
 
 class Command(BaseCommand):

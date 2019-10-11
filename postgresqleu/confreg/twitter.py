@@ -16,6 +16,35 @@ from .models import ConferenceTweetQueue, ConferenceIncomingTweet
 from .models import Conference, ConferenceRegistration
 
 
+def post_conference_tweet(conference, contents, approved=False, posttime=None, author=None):
+    if not posttime:
+        posttime = datetime.datetime.now()
+
+    # Adjust the start time to be inside the configured window
+    if posttime.time() < conference.twitter_timewindow_start:
+        # Trying to post before the first allowed time, so just adjust it forward until we
+        # get to the allowed time.
+        posttime = posttime.replace(hour=conference.twitter_timewindow_start.hour,
+                                    minute=conference.twitter_timewindow_start.minute,
+                                    second=conference.twitter_timewindow_start.second,
+                                    microsecond=0)
+    elif posttime.time() > conference.twitter_timewindow_end:
+        # Trying to post after the last allowed time, so adjust it forward until the first
+        # allowed time *the next day*
+        posttime = posttime.replace(hour=conference.twitter_timewindow_start.hour,
+                                    minute=conference.twitter_timewindow_start.minute,
+                                    second=conference.twitter_timewindow_start.second,
+                                    microsecond=0) + datetime.timedelta(days=1)
+
+    t = ConferenceTweetQueue(conference=conference,
+                             contents=contents,
+                             approved=approved,
+                             datetime=posttime,
+                             author=author)
+    t.save()
+    return t
+
+
 def _json_response(d):
     return HttpResponse(json.dumps(d, cls=DjangoJSONEncoder), content_type='application/json')
 
@@ -65,7 +94,8 @@ def volunteer_twitter(request, urlname, token):
                     approved = True
                     approvedby = reg.attendee
 
-            # Now insert it in the queue
+            # Now insert it in the queue, bypassing time validation since it's not an automatically
+            # generated tweet.
             t = ConferenceTweetQueue(
                 conference=conference,
                 contents=request.POST['txt'][:280],

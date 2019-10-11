@@ -155,9 +155,10 @@ picture will be used. Picture must have an aspect ratio of 2.3, but
 will otherwise be reasonably sized to fit the screen of the visitors.
 
 Don't post tweet before/after
-: A timestamp (00:00 - 24:00) indicating during which period tweets
-can be posted. If a tweet is queued outside this window, it will be
-posted once the window is entered.
+: A timestamp (00:00 - 24:00) indicating during which period automated
+tweets can be posted. If an automated tweet is queued outside this
+window, it will be posted once the window is entered. Manual tweets
+can be queued for any time.
 
 Field t-shirt
 : Should the field asking for t-shirt size be displayed on

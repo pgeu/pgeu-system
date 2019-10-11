@@ -15,10 +15,10 @@ from collections import OrderedDict
 from postgresqleu.auth import user_search, user_import
 
 from postgresqleu.confreg.models import Conference, PrepaidVoucher, DiscountCode
-from postgresqleu.confreg.models import ConferenceTweetQueue
 from postgresqleu.confreg.util import get_authenticated_conference
 from postgresqleu.confreg.jinjafunc import render_sandboxed_template
 from postgresqleu.confreg.util import send_conference_mail
+from postgresqleu.confreg.twitter import post_conference_tweet
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.decorators import superuser_required
@@ -801,13 +801,14 @@ def _confirm_benefit(request, benefit):
 
         # Potentially send tweet
         if benefit.benefit.tweet_template:
-            ConferenceTweetQueue(conference=conference, datetime=datetime.now(), approved=True,
-                                 contents=render_sandboxed_template(benefit.benefit.tweet_template, {
-                                     'benefit': benefit.benefit,
-                                     'level': benefit.benefit.level,
-                                     'conference': conference,
-                                     'sponsor': benefit.sponsor
-                                 })).save()
+            post_conference_tweet(conference,
+                                  render_sandboxed_template(benefit.benefit.tweet_template, {
+                                      'benefit': benefit.benefit,
+                                      'level': benefit.benefit.level,
+                                      'conference': conference,
+                                      'sponsor': benefit.sponsor
+                                  }),
+                                  approved=True)
 
 
 def _unclaim_benefit(request, claimed_benefit):

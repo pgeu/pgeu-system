@@ -12,7 +12,8 @@ from django.db import transaction
 
 from datetime import datetime, timedelta
 
-from postgresqleu.confreg.models import ConferenceNews, ConferenceTweetQueue
+from postgresqleu.confreg.models import ConferenceNews
+from postgresqleu.confreg.twitter import post_conference_tweet
 
 
 class Command(BaseCommand):
@@ -34,10 +35,6 @@ class Command(BaseCommand):
             statusstr = "{0} {1}##{2}".format(n.title[:250 - 40],
                                               n.conference.confurl,
                                               n.id)
-            ConferenceTweetQueue(
-                conference=n.conference,
-                contents=statusstr,
-                approved=True,
-            ).save()
+            post_conference_tweet(n.conference, statusstr, approved=True)
             n.tweeted = True
             n.save()
