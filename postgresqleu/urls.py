@@ -140,6 +140,7 @@ urlpatterns.extend([
     url(r'^events/([^/]+)/register/signup/(\d+)/$', postgresqleu.confwiki.views.signup),
     url(r'^events/([^/]+)/register/signup/(?:.*)-(\d+)/$', postgresqleu.confwiki.views.signup),
     url(r'^events/([^/]+)/register/ticket/$', postgresqleu.confreg.views.download_ticket),
+    url(r'^events/([^/]+)/register/viewticket/$', postgresqleu.confreg.views.view_ticket),
 
     # Opt out of communications
     url(r'^events/optout/$', postgresqleu.confreg.views.optout),

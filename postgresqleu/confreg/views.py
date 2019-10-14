@@ -63,6 +63,7 @@ from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.jsonutil import JsonSerializer
 from postgresqleu.util.db import exec_to_dict, exec_to_grouped_dict, exec_to_keyed_dict
 from postgresqleu.util.db import exec_no_result, exec_to_list, exec_to_scalar, conditional_exec_to_scalar
+from postgresqleu.util.qr import generate_base64_qr
 
 from decimal import Decimal
 from operator import itemgetter
@@ -2081,6 +2082,18 @@ def download_ticket(request, confname):
     resp = HttpResponse(content_type='application/pdf')
     render_jinja_ticket(reg, resp, systemroot=JINJA_TEMPLATE_ROOT)
     return resp
+
+
+@login_required
+def view_ticket(request, confname):
+    conference = get_object_or_404(Conference, urlname=confname, tickets=True)
+    reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
+
+    return render_conference_response(request, conference, 'reg', 'confreg/view_ticket.html', {
+        'conference': conference,
+        'reg': reg,
+        'qrcode': generate_base64_qr(reg.fullidtoken, None, 300),
+        })
 
 
 @transaction.atomic

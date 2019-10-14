@@ -161,8 +161,12 @@ spamfilters.
 {%endif%}
 {%if conference.tickets %}
  <dt>Ticket</dt>
- <dd>You can download <a href="{{redir_root}}ticket/">your ticket</a> and bring to the conference
-   for quicker processing.
+ <dd>
+   <p>
+     You can <a href="{{ redir_root }}viewticket/">view your ticket here</a> or
+     <a href="{{ redir_root }}ticket/">download a PDF version</a> to bring to
+     the conference.
+   </p>
  </dd>
 {%endif%}
  <dt>Registration details</dt>
