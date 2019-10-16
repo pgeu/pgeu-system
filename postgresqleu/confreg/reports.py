@@ -680,7 +680,7 @@ ORDER BY 1,3""",
 
     'queuepartitions': QueuePartitionForm,
 
-    'notcheckedin': """SELECT
+    'attendeesnotcheckedin': """SELECT
    lastname AS "Last name",
    firstname AS "First name",
    regtype AS "Registration type",
@@ -691,5 +691,21 @@ LEFT JOIN country c ON c.iso=r.country_id
 WHERE r.conference_id=%(confid)s AND
       payconfirmedat IS NOT NULL AND
       checkedinat IS NULL
+ORDER BY lastname, firstname""",
+
+    'speakersnotcheckedin': """SELECT
+   lastname AS "Last name",
+   firstname AS "First name",
+   r.email AS "E-mail",
+   title AS "Title",
+   COALESCE(track.trackname, '<No track>') AS "Track name"
+FROM confreg_speaker spk
+INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id
+INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id
+INNER JOIN confreg_conferenceregistration r ON r.attendee_id=spk.user_id
+INNER JOIN confreg_status_strings stat ON stat.id=s.status
+LEFT JOIN confreg_track track ON track.id=s.track_id
+WHERE s.conference_id=%(confid)s AND s.status=1
+AND r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.checkedinat IS NULL
 ORDER BY lastname, firstname""",
 }
