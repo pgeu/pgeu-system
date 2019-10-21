@@ -211,7 +211,7 @@ reporttypes.append(('Registration types', RegistrationTypesReport))
 
 class CountryReport(SingleConferenceReport):
     def fetch_all_data(self, min, max, startdate):
-        self.curs.execute("SELECT DISTINCT country_id FROM confreg_conferenceregistration r WHERE r.payconfirmedat IS NOT NULL AND r.conference_id=%(id)s", {
+        self.curs.execute("SELECT DISTINCT country_id FROM confreg_conferenceregistration r WHERE r.payconfirmedat IS NOT NULL AND r.conference_id=%(id)s AND country_id IS NOT NULL", {
             'id': self.conference.id,
         })
         for countryid, in self.curs.fetchall():
