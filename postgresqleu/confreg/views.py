@@ -18,6 +18,7 @@ from django.forms import ValidationError
 from .models import Conference, ConferenceRegistration, ConferenceSession, ConferenceSeries
 from .models import ConferenceSessionSlides, ConferenceSessionVote, GlobalOptOut
 from .models import ConferenceSessionFeedback, Speaker, Speaker_Photo
+from .models import ConferenceSessionTag
 from .models import ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
 from .models import RegistrationType, PrepaidVoucher, PrepaidBatch, RefundPattern
 from .models import BulkPayment, Room, Track, ConferenceSessionScheduleSlot
