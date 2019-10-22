@@ -217,7 +217,7 @@ class ReportFilter(object):
                     )
                 else:
                     return (
-                        "{} LIKE %({})s".format(self.db_colname, self.id),
+                        "{} ILIKE %({})s".format(self.db_colname, self.id),
                         {self.id: '%{}%'.format(val)}
                     )
             else:
