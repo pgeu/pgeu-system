@@ -1614,7 +1614,7 @@ def public_tags_lookup(request, confname):
     vals = [{
         'id': t.id,
         'value': t.tag,
-    } for s in ConferenceSessionTag.objects.filter(conference=conference)]
+    } for t in ConferenceSessionTag.objects.filter(conference=conference)]
     return HttpResponse(json.dumps({
         'values': vals,
     }), content_type='application/json')
