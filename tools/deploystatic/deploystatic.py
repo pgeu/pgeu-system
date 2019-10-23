@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Deploy a static site based on jinja2 templates (sandboxed)
@@ -179,11 +179,11 @@ def find_git_revision(path):
             with open(os.path.join(path, '.git/HEAD')) as f:
                 ref = f.readline().strip()
             if not ref.startswith('ref: refs/heads/'):
-                print "Invalid git reference {0}".format(ref)
+                print("Invalid git reference {0}".format(ref))
                 return None
             refname = os.path.join(path, ".git/", ref[5:])
             if not os.path.isfile(refname):
-                print "Could not find git ref {0}".format(refname)
+                print("Could not find git ref {0}".format(refname))
                 return None
             with open(refname) as f:
                 fullref = f.readline()
@@ -230,12 +230,13 @@ def _get_all_parent_directories(dirlist):
             if d:
                 yield d
 
+
 def remove_unknown(knownfiles, destpath):
     # Build a list of known directories. This includes any directories with
     # files in them, but also parents of any such directories (recursively).
     knowndirs = set([os.path.dirname(f) for f in knownfiles])
 
-    knowndirs.update([d for d in _get_all_parent_directories(knowndirs) if not d in knowndirs])
+    knowndirs.update([d for d in _get_all_parent_directories(knowndirs) if d not in knowndirs])
 
     for dn, subdirs, filenames in os.walk(destpath):
         relpath = os.path.relpath(dn, destpath)
@@ -263,18 +264,18 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not os.path.isabs(args.sourcepath):
-        print "Source path is not absolute!"
+        print("Source path is not absolute!")
         sys.exit(1)
     if not os.path.isabs(args.destpath):
-        print "Destination path is not absolute!"
+        print("Destination path is not absolute!")
         sys.exit(1)
 
     if not os.path.isdir(args.sourcepath):
-        print "Source directory does not exist!"
+        print("Source directory does not exist!")
         sys.exit(1)
 
     if not os.path.isdir(args.destpath):
-        print "Destination directory does not exist!"
+        print("Destination directory does not exist!")
         sys.exit(1)
 
     if args.branch:
@@ -294,7 +295,7 @@ if __name__ == "__main__":
 
     for d in ('templates', 'templates/pages', 'static'):
         if not source.isdir(d):
-            print "'{0}' subdirectory does not exist in source!".format(d)
+            print("'{0}' subdirectory does not exist in source!".format(d))
             sys.exit(1)
 
     if args.templates:
@@ -363,7 +364,7 @@ if __name__ == "__main__":
 
             if fn == 'index.html':
                 if relpath != 'templates/pages':
-                    print "index.html can only be used in the root directory!"
+                    print("index.html can only be used in the root directory!")
                     sys.exit(1)
                 destdir = ''
             else:
