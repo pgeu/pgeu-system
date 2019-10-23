@@ -196,7 +196,11 @@ def find_git_revision(path):
 # Actual deployment function
 def deploy_template(env, template, destfile, context):
     t = env.get_template(template)
-    s = t.render(**context)
+    try:
+        s = t.render(**context)
+    except jinja2.exceptions.TemplateSyntaxError as e:
+        print("ERROR: Jinja template syntax error in {}: {}".format(template, e))
+        sys.exit(1)
 
     # Only write the file if it has actually changed
     if os.path.isfile(destfile):
