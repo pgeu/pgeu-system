@@ -3,6 +3,7 @@ A new registration has completed for {{reg.conference.conferencename}}.
 Name: {{reg.fullname}}
 Company: {{reg.company}}
 Type: {{reg.regtype.regtype}}
+{%-if reg.vouchercode %}Voucher/Discount code used: {{reg.vouchercode}}{%endif%}
 
 
 View: {{sitebase}}/events/admin/{{reg.conference.urlname}}/regdashboard/list/{{reg.id}}/
