@@ -223,11 +223,20 @@ def _deploy_static(source, destpath):
     return knownfiles
 
 
+def _get_all_parent_directories(dirlist):
+    for d in dirlist:
+        while d:
+            d = os.path.dirname(d)
+            if d:
+                yield d
+
 def remove_unknown(knownfiles, destpath):
     # Build a list of known directories. This includes any directories with
-    # files in them, but also parents of any such directories.
+    # files in them, but also parents of any such directories (recursively).
     knowndirs = set([os.path.dirname(f) for f in knownfiles])
-    knowndirs.update([os.path.dirname(d) for d in knowndirs if not os.path.dirname(d) in knowndirs])
+
+    knowndirs.update([d for d in _get_all_parent_directories(knowndirs) if not d in knowndirs])
+
     for dn, subdirs, filenames in os.walk(destpath):
         relpath = os.path.relpath(dn, destpath)
         if relpath == '.':
