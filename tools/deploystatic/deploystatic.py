@@ -99,7 +99,7 @@ class SourceWrapper(object):
 
     def readfile(self, src):
         if os.path.isfile(os.path.join(self.root, src)):
-            with open(os.path.join(self.root, src)) as f:
+            with open(os.path.join(self.root, src), "rb") as f:
                 return f.read()
         else:
             return None
@@ -143,12 +143,12 @@ class TarWrapper(object):
         sourcedata = self.readfile(relsource)
 
         if os.path.isfile(fulldest):
-            with open(fulldest, 'r') as f:
+            with open(fulldest, 'rb') as f:
                 x = f.read()
                 if x == sourcedata:
                     return
 
-        with open(fulldest, 'w') as f:
+        with open(fulldest, 'wb') as f:
             f.write(sourcedata)
 
 
@@ -166,7 +166,7 @@ class JinjaTarLoader(jinja2.BaseLoader):
 # Optionally load a JSON context
 def load_context(jsondata):
     if jsondata:
-        return json.loads(jsondata)
+        return json.loads(jsondata.decode('utf8'))
     else:
         return {}
 
@@ -196,7 +196,7 @@ def find_git_revision(path):
 # Actual deployment function
 def deploy_template(env, template, destfile, context):
     t = env.get_template(template)
-    s = t.render(**context).encode('utf8')
+    s = t.render(**context)
 
     # Only write the file if it has actually changed
     if os.path.isfile(destfile):
@@ -287,7 +287,7 @@ if __name__ == "__main__":
         s = subprocess.Popen(['/usr/bin/git', 'rev-parse', '--short', args.branch],
                              stdout=subprocess.PIPE,
                              cwd=args.sourcepath)
-        git_revision = s.stdout.readline().strip()
+        git_revision = s.stdout.readline().strip().decode('ascii')
         s.stdout.close()
     else:
         source = SourceWrapper(args.sourcepath)
