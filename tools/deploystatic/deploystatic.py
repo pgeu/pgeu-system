@@ -204,11 +204,11 @@ def deploy_template(env, template, destfile, context):
 
     # Only write the file if it has actually changed
     if os.path.isfile(destfile):
-        with open(destfile) as f:
+        with open(destfile, encoding="utf8") as f:
             if f.read() == s:
                 return
 
-    with open(destfile, 'w') as f:
+    with open(destfile, 'w', encoding="utf8") as f:
         f.write(s)
 
 
