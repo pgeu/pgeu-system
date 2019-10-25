@@ -173,8 +173,8 @@ $(function() {
     });
 
     $('#posttweetbutton').click(function() {
-	var txt = $('#newTweetText').val();
-	if ($.trim(txt).length < 5) {
+	var txt = $.trim($('#newTweetText').val());
+	if (txt.length < 5) {
            alert('Tweet too short');
 	   return;
         }
