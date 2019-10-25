@@ -197,7 +197,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
                 # the sets above means we only check this when *this*
                 # registration doesn't have the option, and thus the count
                 # will always increase by one if we save this.
-                current_count = option.conferenceregistration_set.count()
+                current_count = option.conferenceregistration_set.count() + option.pendingadditionalorder_set.filter(payconfirmedat__isnull=False).count()
                 if current_count + 1 > option.maxcount:
                     raise forms.ValidationError("The option \"%s\" is no longer available due to too many signups." % option.name)
 

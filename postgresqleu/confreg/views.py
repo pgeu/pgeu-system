@@ -743,7 +743,7 @@ def reg_add_options(request, confname):
     # Check the count on each option (yes, this is inefficient, but who cares)
     for o in options:
         if o.maxcount > 0:
-            if o.conferenceregistration_set.count() >= o.maxcount:
+            if o.conferenceregistration_set.count() + o.pendingadditionalorder_set.filter(payconfirmedat__isnull=True).count() >= o.maxcount:
                 messages.warning(request, "Option '{0}' is sold out.".format(o.name))
                 return HttpResponseRedirect('../')
 
@@ -2873,21 +2873,47 @@ GROUP BY rt.id ORDER BY rt.sortkey""".format(conference.id))
                    'hidecols': 0,
                    'rows': curs.fetchall()},)
 
-    # Copy/paste string to get the reg status
-    statusstr = """{0},
- count(payconfirmedat) AS confirmed,
- count(r.id) FILTER (WHERE payconfirmedat IS NULL AND (r.invoice_id IS NOT NULL)) AS invoiced,
- count(r.id) FILTER (WHERE payconfirmedat IS NULL AND (r.invoice_id IS NULL)) AS unconfirmed,
- count(r.id) AS total,
- CASE WHEN {0} > 0 THEN {0}-count(r.id) ELSE NULL END AS remaining"""
+    # Additional options. We need to run basically two queries (we do so in CTEs) here since
+    # an AO can be added both as part of a pending registration and as a pending additional
+    # order on a confirmed registration.
+    # Pending orders don't count when they are confirmed, since they are then part of the
+    # regular ones, but they have to count when they are pending.
+    curs.execute("""WITH direct AS (
+ SELECT rao.conferenceadditionaloption_id AS aoid,
+        count(*) FILTER (WHERE r.payconfirmedat IS NOT NULL) AS confirmed,
+        count(*) FILTER (WHERE r.payconfirmedat IS NULL AND (r.invoice_id IS NOT NULL OR bp.invoice_id IS NOT NULL)) AS invoiced,
+        count(*) FILTER (WHERE r.payconfirmedat IS NULL AND r.invoice_id IS NULL AND bp.invoice_id IS NULL) AS unconfirmed,
+        count(*) AS total
+ FROM confreg_conferenceregistration r
+ INNER JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceregistration_id=r.id
+ LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id
+ WHERE r.conference_id={0}
+ GROUP BY aoid
+),
+pending AS (
+ SELECT paoo.conferenceadditionaloption_id AS aoid,
+        count(*) FILTER (WHERE pao.invoice_id IS NOT NULL) AS invoiced,
+        count(*) FILTER (WHERE pao.invoice_id IS NULL) AS unconfirmed,
+        count(*) AS total
+ FROM confreg_pendingadditionalorder_options paoo
+ INNER JOIN confreg_pendingadditionalorder pao ON pao.id=paoo.pendingadditionalorder_id
+ INNER JOIN confreg_conferenceregistration r ON r.id=pao.reg_id
+ WHERE r.conference_id={0} AND pao.payconfirmedat IS NULL
+ GROUP BY aoid
+)
+SELECT ao.id, ao.name, ao.maxcount,
+       COALESCE(direct.confirmed, 0) AS confirmed,
+       COALESCE(direct.invoiced, 0)+COALESCE(pending.invoiced, 0) AS invoiced,
+       COALESCE(direct.unconfirmed, 0)+COALESCE(pending.unconfirmed, 0) AS unconfirmed,
+       COALESCE(direct.total, 0)+COALESCE(pending.total, 0) AS total,
+       ao.maxcount-COALESCE(direct.total, 0)-COALESCE(pending.total, 0) AS remaining,
+       ao.invoice_autocancel_hours
+FROM confreg_conferenceadditionaloption ao
+LEFT JOIN pending ON pending.aoid=ao.id
+LEFT JOIN direct ON direct.aoid=ao.id
+WHERE ao.conference_id={0}
+""".format(conference.id))
 
-    # Additional options
-    curs.execute("""SELECT ao.id, ao.name, {0}, ao.invoice_autocancel_hours
-FROM confreg_conferenceregistration r
-INNER JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceregistration_id=r.id
-RIGHT JOIN confreg_conferenceadditionaloption ao ON ao.id=rao.conferenceadditionaloption_id
-LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id
-WHERE ao.conference_id={1} GROUP BY ao.id ORDER BY ao.name""".format(statusstr.format('ao.maxcount'), conference.id))
     tables.append({'title': 'Additional options',
                    'columns': ['id', 'Name', 'Max uses', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total', 'Remaining', 'Inv. autoc'],
                    'fixedcols': 2,
@@ -2897,11 +2923,16 @@ WHERE ao.conference_id={1} GROUP BY ao.id ORDER BY ao.name""".format(statusstr.f
                    'rows': curs.fetchall()})
 
     # Discount codes
-    curs.execute("""SELECT dc.id, code, validuntil, {0}
+    curs.execute("""SELECT dc.id, code, validuntil, maxuses,
+ count(payconfirmedat) AS confirmed,
+ count(r.id) FILTER (WHERE payconfirmedat IS NULL AND (r.invoice_id IS NOT NULL OR bp.invoice_id IS NOT NULL)) AS invoiced,
+ count(r.id) FILTER (WHERE payconfirmedat IS NULL AND (r.invoice_id IS NULL AND bp.invoice_id IS NULL)) AS unconfirmed,
+ count(r.id) AS total,
+ CASE WHEN maxuses > 0 THEN maxuses-count(r.id) ELSE NULL END AS remaining
 FROM confreg_conferenceregistration r
 RIGHT JOIN confreg_discountcode dc ON dc.code=r.vouchercode
 LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id
-WHERE dc.conference_id={1} AND (r.conference_id={1} OR r.conference_id IS NULL) GROUP BY dc.id ORDER BY code""".format(statusstr.format('maxuses'), conference.id))
+WHERE dc.conference_id={0} AND (r.conference_id={0} OR r.conference_id IS NULL) GROUP BY dc.id ORDER BY code""".format(conference.id))
     tables.append({'title': 'Discount codes',
                    'columns': ['id', 'Code', 'Expires', 'Max uses', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total', 'Remaining', ],
                    'fixedcols': 3,

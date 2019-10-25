@@ -330,11 +330,24 @@ class AdditionalOptionUserManager(object):
             return None
 
 
+class AdditionalOptionPendingManager(object):
+    title = 'Pending additional users'
+    singular = 'user'
+
+    def get_list(self, instance):
+        if instance.id:
+            return [(None, p.reg.fullname, p.invoice_status) for p in instance.pendingadditionalorder_set.all()]
+
+    def get_form(self):
+        return None
+
+
 class BackendAdditionalOptionForm(BackendForm):
     helplink = 'registrations#additionaloptions'
     list_fields = ['name', 'cost', 'maxcount', 'invoice_autocancel_hours']
     linked_objects = OrderedDict({
         '../../regdashboard/list': AdditionalOptionUserManager(),
+        '../../addoptorders/': AdditionalOptionPendingManager(),
     })
     vat_fields = {'cost': 'reg'}
     auto_cascade_delete_to = ['registrationtype_requires_option', 'conferenceadditionaloption_requires_regtype',

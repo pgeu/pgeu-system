@@ -440,7 +440,7 @@ class ConferenceAdditionalOption(models.Model):
         if self.maxcount == -1:
             return "%s%s (currently not available)" % (self.name, coststr)
         if self.maxcount > 0:
-            usedcount = self.conferenceregistration_set.count()
+            usedcount = self.conferenceregistration_set.count() + self.pendingadditionalorder_set.filter(payconfirmedat__isnull=True).count()
             return "%s%s (%s of %s available)" % (self.name, coststr,
                                                   self.maxcount - usedcount,
                                                   self.maxcount)
@@ -1182,6 +1182,15 @@ class PendingAdditionalOrder(models.Model):
 
     def __str__(self):
         return "%s" % (self.reg, )
+
+    @property
+    def invoice_status(self):
+        if self.payconfirmedat:
+            return "paid and confirmed"
+        elif self.invoice:
+            return "invoice generated, not paid"
+        else:
+            return "pending"
 
 
 class RefundPattern(models.Model):

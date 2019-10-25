@@ -602,7 +602,35 @@ def tokendata(request, urlname, token, datatype, dataformat):
         writer.write_rows(data)
     elif datatype == 'addopts':
         writer.columns(['sysid', 'Option', 'Confirmed', 'Unconfirmed', 'Remaining'])
-        writer.write_query("SELECT ao.id, ao.name, count(payconfirmedat) AS confirmed, count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed, CASE WHEN maxcount>0 THEN maxcount ELSE NULL END-count(r.id) AS remaining FROM confreg_conferenceadditionaloption ao LEFT JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceadditionaloption_id=ao.id LEFT JOIN confreg_conferenceregistration r ON r.id=rao.conferenceregistration_id WHERE ao.conference_id=%(confid)s GROUP BY ao.id ORDER BY ao.name", {'confid': conference.id})
+        writer.write_query("""WITH direct AS (
+ SELECT
+  ao.id,
+  ao.name,
+  count(payconfirmedat) AS confirmed,
+  count(r.id) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed,
+  ao.maxcount
+ FROM confreg_conferenceadditionaloption ao
+ LEFT JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceadditionaloption_id=ao.id
+ LEFT JOIN confreg_conferenceregistration r ON r.id=rao.conferenceregistration_id
+ WHERE ao.conference_id=%(confid)s
+ GROUP BY ao.id
+), pending AS (
+ SELECT
+  paoo.conferenceadditionaloption_id AS id,
+  count(*) AS unconfirmed
+ FROM confreg_pendingadditionalorder pao
+ INNER JOIN confreg_pendingadditionalorder_options paoo ON paoo.pendingadditionalorder_id=pao.id
+ INNER JOIN confreg_conferenceregistration r ON r.id=pao.reg_id
+ WHERE pao.payconfirmedat IS NULL AND r.conference_id=%(confid)s
+ GROUP BY paoo.conferenceadditionaloption_id
+)
+SELECT direct.id, direct.name,
+       direct.confirmed,
+       direct.unconfirmed+COALESCE(pending.unconfirmed, 0),
+       CASE WHEN maxcount > 0 THEN maxcount ELSE NULL END-(direct.confirmed+direct.unconfirmed+COALESCE(pending.unconfirmed, 0))
+FROM direct
+LEFT JOIN pending ON direct.id=pending.id
+ORDER BY name""", {'confid': conference.id})
     else:
         raise Http404()
 
