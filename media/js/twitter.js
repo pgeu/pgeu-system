@@ -190,6 +190,7 @@ $(function() {
 	    fd.append("replyid", $('#newTweetModal').data('replyid'));
 	}
 
+	$('#newTweetModal .disableonpost').attr("disabled", true);
 	$.ajax({
 	    "method": "POST",
 	    "dataType": "json",
@@ -198,6 +199,7 @@ $(function() {
 	    processData: false,
 	    contentType: false,
 	    success: function(data, status, xhr) {
+		$('#newTweetModal .disableonpost').removeAttr("disabled");
 		if ('error' in data) {
 		    alert(data['error']);
 		}

@@ -71,16 +71,16 @@
            <h4 class="modal-title">Post new tweet</h4>
          </div>
          <div class="modal-body">
-	   <textarea id="newTweetText" maxlength="280"></textarea>
+	   <textarea id="newTweetText" maxlength="280" class="disableonpost"></textarea>
 	   Length: <span id="tweetLength">0</span><br/> Attach
-	   image: <input type="file" id="newTweetUpload"
+	   image: <input type="file" id="newTweetUpload" class="disableonpost"
 	   accept="image/jpeg, image/png"><br/> {%if directposter %}
-	   <input type="checkbox" id="tweetBypassApproval" /> Bypass
+	   <input type="checkbox" id="tweetBypassApproval" class="disableonpost"/> Bypass
 	   approval {%endif%}
          </div>
          <div class="modal-footer">
-           <button type="button" class="btn btn-default btn-primary" id="posttweetbutton">Post tweet</button>
-           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+           <button type="button" class="btn btn-default btn-primary disableonpost" id="posttweetbutton">Post tweet</button>
+           <button type="button" class="btn btn-default disableonpost" data-dismiss="modal">Cancel</button>
          </div>
        </div>
      </div>

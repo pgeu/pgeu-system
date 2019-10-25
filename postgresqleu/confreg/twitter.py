@@ -94,6 +94,11 @@ def volunteer_twitter(request, urlname, token):
                     approved = True
                     approvedby = reg.attendee
 
+            # Check if we have *exactly the same tweet* in the queue already, in the past 5 minutes.
+            # in which case it's most likely a clicked-too-many-times.
+            if ConferenceTweetQueue.objects.filter(conference=conference, contents=request.POST['txt'][:280], author=reg.attendee, datetime__gt=datetime.datetime.now() - datetime.timedelta(minutes=5)):
+                return _json_response({'error': 'Duplicate post detected'})
+
             # Now insert it in the queue, bypassing time validation since it's not an automatically
             # generated tweet.
             t = ConferenceTweetQueue(
