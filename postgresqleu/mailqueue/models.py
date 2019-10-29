@@ -12,3 +12,6 @@ class QueuedMail(models.Model):
 
     def __str__(self):
         return "%s: %s -> %s" % (self.pk, self.sender, self.receiver)
+
+    class Meta:
+        ordering = ('sendtime', )

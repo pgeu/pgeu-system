@@ -18,5 +18,8 @@ class Migration(migrations.Migration):
                 ('receiver', models.EmailField(max_length=100)),
                 ('fullmsg', models.TextField()),
             ],
+            options={
+                'ordering': ('sendtime', ),
+            },
         ),
     ]
