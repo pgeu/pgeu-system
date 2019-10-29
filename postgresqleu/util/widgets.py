@@ -100,6 +100,16 @@ class InlineImageUploadWidget(forms.ClearableFileInput):
         return mark_safe(loader.render_to_string('confreg/widgets/inline_photo_upload_widget.html', context))
 
 
+class InlinePdfUploadWidget(forms.ClearableFileInput):
+    clear_checkbox_label = "Remove PDF"
+
+    def render(self, name, value, attrs=None, renderer=None):
+        context = self.get_context(name, value, attrs)
+        if value and not isinstance(value, InMemoryUploadedFile):
+            context['widget']['value'] = base64.b64encode(value)
+        return mark_safe(loader.render_to_string('confreg/widgets/inline_pdf_upload_widget.html', context))
+
+
 class AdminJsonWidget(PrettyPrintJsonWidget):
     def render(self, name, value, attrs=None, renderer=None):
         attrs['cols'] = 100

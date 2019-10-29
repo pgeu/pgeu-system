@@ -58,6 +58,10 @@ th.colfilter {
     white-space: pre;
 }
 
+a.preview-pdf-link {
+    cursor: pointer;
+}
+
 /*
  * Text-area styling for writing plaintext email
  */

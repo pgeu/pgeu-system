@@ -8,7 +8,7 @@ import pickle
 import base64
 from itertools import groupby
 
-from .widgets import InlineImageUploadWidget
+from .widgets import InlineImageUploadWidget, InlinePdfUploadWidget
 
 
 class _ValidatorField(forms.Field):
@@ -137,3 +137,7 @@ class ImageBinaryFormField(forms.Field):
         if not data and initial:
             return initial
         return super(ImageBinaryFormField, self).clean(data)
+
+
+class PdfBinaryFormField(ImageBinaryFormField):
+    widget = InlinePdfUploadWidget

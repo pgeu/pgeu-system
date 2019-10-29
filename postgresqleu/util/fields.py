@@ -1,8 +1,10 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-from .forms import ImageBinaryFormField
+from .forms import ImageBinaryFormField, PdfBinaryFormField
 
 from PIL import ImageFile
+
+from postgresqleu.util.magic import magicdb
 
 
 class LowercaseEmailField(models.EmailField):
@@ -83,3 +85,23 @@ class ImageBinaryField(models.Field):
         defaults = {'form_class': ImageBinaryFormField}
         defaults.update(kwargs)
         return super(ImageBinaryField, self).formfield(**defaults)
+
+
+class PdfBinaryField(ImageBinaryField):
+    def get_internal_type(self):
+        return "PdfBinaryField"
+
+    def formfield(self, **kwargs):
+        defaults = {'form_class': PdfBinaryFormField}
+        defaults.update(kwargs)
+        return super(PdfBinaryField, self).formfield(**defaults)
+
+    def to_python(self, value):
+        if self.max_length is not None and len(value) > self.max_length:
+            raise ValidationError("Maximum size of file is {} bytes".format(self.max_length))
+
+        mtype = magicdb.buffer(value)
+        if not mtype.startswith('application/pdf'):
+            raise ValidationError("File must be PDF, not %s" % mtype)
+
+        return value

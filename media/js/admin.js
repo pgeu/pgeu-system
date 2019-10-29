@@ -75,6 +75,11 @@ $(document).ready(function() {
        }
    });
 
+   $('a.preview-pdf-link').click(function(e) {
+       var w = window.open("");
+       w.document.write('<iframe width="100%" height="100%" src="data:application/pdf;base64, ' + $(e.target).data('pdf') + '"></iframe>');
+   });
+
    $('div.textarea-tagoptions-list span.tagoption').click(function (e) {
        /* Insert the text from the list of options */
        var t = $(this).text();
