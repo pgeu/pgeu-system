@@ -845,6 +845,7 @@ def _unclaim_benefit(request, claimed_benefit):
 
 
 @login_required
+@transaction.atomic
 def sponsor_admin_sponsor(request, confurlname, sponsorid):
     conference = get_authenticated_conference(request, confurlname)
 
@@ -869,6 +870,10 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
                 messages.warning(request, "This sponsor already has an invoice!")
                 return HttpResponseRedirect(".")
 
+            if sponsor.level.levelcost == 0:
+                messages.warning(request, "Should not be possible to generate zero cost invoice, something went wrong!")
+                return HttpResponseRedirect(".")
+
             # Actually generate the invoice!
             manager = sponsor.managers.all()[0]
             sponsor.invoice = create_sponsor_invoice(manager, sponsor)
@@ -877,6 +882,19 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
             wrapper = InvoiceWrapper(sponsor.invoice)
             wrapper.email_invoice()
             messages.info(request, "Invoice sent to {0}".format(manager.email))
+            return HttpResponseRedirect(".")
+        if request.POST.get('submit', '') == 'Confirm sponsorship':
+            confirm_sponsor(sponsor, request.user.username)
+            messages.info(request, "Sponsor {0} confirmed".format(sponsor.name))
+            return HttpResponseRedirect(".")
+        if request.POST.get('submit', '') == 'Confirm sponsorship without invoice':
+            # Directly confirm the sponsorship, since the cost was zero (any payment is assumed
+            # to have been handled manually in this case)
+            if sponsor.level.levelcost > 0:
+                messages.error(request, "Cannot confirm a sponsor with non-zero cost without an inovice!")
+                return HttpResponseRedirect(".")
+            confirm_sponsor(sponsor, request.user.username)
+            messages.info(request, "Sponsor {0} confirmed".format(sponsor.name))
             return HttpResponseRedirect(".")
         if request.POST.get('submit', '') == 'Reject sponsorship':
             if sponsor.invoice:
@@ -935,18 +953,6 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
         'euvat': settings.EU_VAT,
         'helplink': 'sponsors',
         })
-
-
-@login_required
-@transaction.atomic
-def sponsor_admin_confirm(request, confurlname, sponsorid):
-    conference = get_authenticated_conference(request, confurlname)
-
-    sponsor = get_object_or_404(Sponsor, id=sponsorid, conference=conference)
-
-    confirm_sponsor(sponsor, request.user.username)
-
-    return HttpResponseRedirect('../')
 
 
 @login_required

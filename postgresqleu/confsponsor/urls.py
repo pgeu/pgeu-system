@@ -30,7 +30,6 @@ urlpatterns = [
     url(r'^admin/(\w+)/$', views.sponsor_admin_dashboard),
     url(r'^admin/(\w+)/(\d+)/$', views.sponsor_admin_sponsor),
     url(r'^admin/(\w+)/(\d+)/edit/$', backendviews.edit_sponsor),
-    url(r'^admin/(\w+)/(\d+)/confirm/$', views.sponsor_admin_confirm),
     url(r'^admin/(\w+)/benefit/(\d+)/$', views.sponsor_admin_benefit),
     url(r'^admin/(\w+)/sendmail/$', views.sponsor_admin_send_mail),
     url(r'^admin/(\w+)/viewmail/(\d+)/$', views.sponsor_admin_view_mail),

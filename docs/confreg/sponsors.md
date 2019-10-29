@@ -232,7 +232,10 @@ URL name
    slug-style lowercase version of the name)
 
 Cost
-:  Price for this level (excluding VAT if VAT is used)
+:  Price for this level (excluding VAT if VAT is used). If a cost of 0
+is entered, no invoice will be generated for this level, and all
+confirmation will be handled manually (this is not supported for
+levels that are instant buy).
 
 Available for signup
 :  Whether this level is currently enabled for signup.
