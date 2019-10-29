@@ -18,6 +18,7 @@ class ImageUploadForm(BaseBenefitForm):
         super(ImageUploadForm, self).__init__(*args, **kwargs)
 
         self.fields['image'].help_text = "Upload a file in %s format, fitting in a box of %sx%s pixels." % (self.params['format'].upper(), self.params['xres'], self.params['yres'])
+        self.fields['image'].widget.attrs['accept'] = 'image/png'
 
     def clean(self):
         declined = self.cleaned_data.get('decline', False)
