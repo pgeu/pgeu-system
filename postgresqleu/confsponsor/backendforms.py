@@ -4,8 +4,6 @@ from django.conf import settings
 
 from collections import OrderedDict
 
-from postgresqleu.util.magic import magicdb
-from postgresqleu.util.widgets import RequiredFileUploadWidget
 from postgresqleu.util.widgets import StaticTextWidget
 from postgresqleu.util.backendforms import BackendForm
 from postgresqleu.util.backendlookups import GeneralAccountLookup
@@ -202,30 +200,17 @@ class BackendSponsorshipLevelForm(BackendForm):
 class BackendSponsorshipContractForm(BackendForm):
     helplink = 'sponsors#contract'
     list_fields = ['contractname', ]
-    file_fields = ['contractpdf', ]
+    exclude_fields_from_validation = ['contractpdf', ]
 
     class Meta:
         model = SponsorshipContract
         fields = ['contractname', 'contractpdf', ]
 
     def fix_fields(self):
-        self.fields['contractpdf'].widget = RequiredFileUploadWidget(filename='{0}.pdf'.format(self.instance.contractname))
-
-    def validate_file(self, field, f):
-        if field == 'contractpdf':
-            if not f:
-                if getattr(self.instance, 'contractpdf', None):
-                    # No file included in this upload, but it existed before. So
-                    # just leave untouched.
-                    return None
-                if self.instance.pk:
-                    return "Contract must be uploaded"
-                else:
-                    return None
-            mtype = magicdb.buffer(f.read())
-            if not mtype.startswith('application/pdf'):
-                return "Contracts must be uploaded in PDF format, not %s" % mtype
-            f.seek(0)
+        # Field must be non-required so we can save things. The widget is still required,
+        # so things cannot be removed. Yes, that's kind of funky.
+        if self.instance.pk:
+            self.fields['contractpdf'].required = False
 
 
 class BackendShipmentAddressForm(BackendForm):

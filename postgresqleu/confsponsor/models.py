@@ -8,8 +8,7 @@ from django.contrib.postgres.fields import JSONField
 from postgresqleu.confreg.models import Conference, RegistrationType, PrepaidBatch
 from postgresqleu.confreg.models import ConferenceRegistration
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
-from postgresqleu.util.storage import InlineEncodedStorage
-from postgresqleu.util.storage import delete_inline_storage, inlineencoded_upload_path
+from postgresqleu.util.fields import PdfBinaryField
 from postgresqleu.util.validators import validate_lowercase, validate_urlname
 from postgresqleu.util.random import generate_random_token
 
@@ -27,25 +26,10 @@ vat_status_choices = (
 class SponsorshipContract(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     contractname = models.CharField(max_length=100, null=False, blank=False, verbose_name='Contract name')
-    contractpdf = FileField(null=False, blank=True, storage=InlineEncodedStorage('sponsorcontract'), upload_to=inlineencoded_upload_path, verbose_name='Contract PDF')
+    contractpdf = PdfBinaryField(null=False, blank=False, max_length=1000000)
 
     def __str__(self):
         return self.contractname
-
-    def clean(self):
-        if self.contractpdf and not self.pk:
-            raise ValidationError("Can't upload a file until saved at least once! Try again without uploading a file!")
-
-    def save(self, force_insert=False, force_update=False, update_fields=None):
-        if not self.contractpdf:
-            self.contractpdf.storage._delete(self.id)
-        return super(SponsorshipContract, self).save(update_fields=update_fields)
-
-    def delete_inline_storage(self):
-        self.contractpdf.storage._delete(self.id)
-
-
-pre_delete.connect(delete_inline_storage, sender=SponsorshipContract)
 
 
 class SponsorshipLevel(models.Model):
