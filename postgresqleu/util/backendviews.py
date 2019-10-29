@@ -133,42 +133,29 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
             form.add_error(None, extra_error)
 
         if form.is_valid():
-            # If there are any file fields, they have to be independently verified
-            # since the django default form handling doesn't care about them.
-            errors = False
-            for f in form.file_fields:
-                r = form.validate_file(f, request.FILES.get(f, None))
-                if r:
-                    form.add_error(f, r)
-                    errors = True
+            # We don't want to use form.save(), because it actually saves all
+            # fields on the model, including those we don't care about.
+            # The savem2m model, however, *does* care about the listed fields.
+            # Consistency is overrated!
+            with transaction.atomic():
+                if allow_new and ((not instance.pk) or form.force_insert):
+                    form.pre_create_item()
+                    form.save()
+                form._save_m2m()
+                all_excludes = ['_validator', '_newformdata'] + form.readonly_fields
+                if form.json_form_fields:
+                    for fn, ffields in form.json_form_fields.items():
+                        all_excludes.extend(ffields)
 
-            if not errors:
-                # We don't want to use form.save(), because it actually saves all
-                # fields on the model, including those we don't care about.
-                # The savem2m model, however, *does* care about the listed fields.
-                # Consistency is overrated!
-                with transaction.atomic():
-                    if allow_new and ((not instance.pk) or form.force_insert):
-                        form.pre_create_item()
-                        form.save()
-                    form._save_m2m()
-                    for f in form.file_fields:
-                        if f in request.FILES:
-                            setattr(form.instance, f, request.FILES[f])
-                    all_excludes = ['_validator', '_newformdata'] + form.readonly_fields
-                    if form.json_form_fields:
-                        for fn, ffields in form.json_form_fields.items():
-                            all_excludes.extend(ffields)
+                form.instance.save(update_fields=[f for f in form.fields.keys() if f not in all_excludes and not isinstance(form[f].field, forms.ModelMultipleChoiceField)])
 
-                    form.instance.save(update_fields=[f for f in form.fields.keys() if f not in all_excludes and not isinstance(form[f].field, forms.ModelMultipleChoiceField)])
+                # Merge fields stored in json
+                if form.json_form_fields:
+                    for fn, ffields in form.json_form_fields.items():
+                        setattr(form.instance, fn, {fld: form.cleaned_data[fld] for fld in ffields})
+                    form.instance.save(update_fields=form.json_form_fields.keys())
 
-                    # Merge fields stored in json
-                    if form.json_form_fields:
-                        for fn, ffields in form.json_form_fields.items():
-                            setattr(form.instance, fn, {fld: form.cleaned_data[fld] for fld in ffields})
-                        form.instance.save(update_fields=form.json_form_fields.keys())
-
-                    return HttpResponseRedirect(saved_url)
+                return HttpResponseRedirect(saved_url)
     else:
         form = formclass(conference, instance=instance, newformdata=newformdata)
 
