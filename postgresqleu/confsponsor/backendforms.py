@@ -169,6 +169,10 @@ class BackendSponsorshipLevelForm(BackendForm):
             self.add_error('instantbuy', 'Sponsorship level must either be instant signup or have a contract')
             self.add_error('contract', 'Sponsorship level must either be instant signup or have a contract')
 
+        if int(cleaned_data['levelcost'] == 0) and cleaned_data.get('instantbuy', False):
+            self.add_error('levelcost', 'Sponsorships with zero cost can not be instant signup')
+            self.add_error('instantbuy', 'Sponsorships with zero cost can not be instant signup')
+
         return cleaned_data
 
     @classmethod
