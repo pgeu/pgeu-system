@@ -214,7 +214,10 @@ class BackendSponsorshipContractForm(BackendForm):
                     # No file included in this upload, but it existed before. So
                     # just leave untouched.
                     return None
-                return "Contract must be uploaded"
+                if self.instance.pk:
+                    return "Contract must be uploaded"
+                else:
+                    return None
             mtype = magicdb.buffer(f.read())
             if not mtype.startswith('application/pdf'):
                 return "Contracts must be uploaded in PDF format, not %s" % mtype
