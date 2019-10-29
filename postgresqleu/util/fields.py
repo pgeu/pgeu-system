@@ -2,6 +2,8 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from .forms import ImageBinaryFormField
 
+from PIL import ImageFile
+
 
 class LowercaseEmailField(models.EmailField):
     def get_prep_value(self, value):
@@ -16,6 +18,7 @@ class ImageBinaryField(models.Field):
 
     def __init__(self, *args, **kwargs):
         ml = kwargs.pop('max_length', None)
+        self.max_resolution = kwargs.pop('max_resolution', None)
         super(ImageBinaryField, self).__init__(*args, **kwargs)
         self.max_length = ml
 
@@ -48,6 +51,25 @@ class ImageBinaryField(models.Field):
     def to_python(self, value):
         if self.max_length is not None and len(value) > self.max_length:
             raise ValidationError("Maximum size of file is {} bytes".format(self.max_length))
+
+        if isinstance(value, memoryview):
+            v = bytes(value)
+        else:
+            v = value
+        try:
+            p = ImageFile.Parser()
+            p.feed(v)
+            p.close()
+            img = p.image
+        except Exception as e:
+            raise ValidationError("Could not parse image: %s" % e)
+
+        if img.format.upper() != 'JPEG':
+            raise ValidationError("Only JPEG files are allowed")
+
+        if self.max_resolution:
+            if img.size[0] > self.max_resolution[0] or img.size[1] > self.max_resolution[1]:
+                raise ValidationError("Maximum image size is {}x{}".format(*self.max_resolution))
 
         return value
 
