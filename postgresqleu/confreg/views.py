@@ -17,7 +17,7 @@ from django.forms import ValidationError
 
 from .models import Conference, ConferenceRegistration, ConferenceSession, ConferenceSeries
 from .models import ConferenceSessionSlides, ConferenceSessionVote, GlobalOptOut
-from .models import ConferenceSessionFeedback, Speaker, Speaker_Photo
+from .models import ConferenceSessionFeedback, Speaker
 from .models import ConferenceSessionTag
 from .models import ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
 from .models import RegistrationType, PrepaidVoucher, PrepaidBatch, RefundPattern
@@ -1364,8 +1364,8 @@ def speaker_card(request, confname, speakerid, cardformat):
 
 
 def speakerphoto(request, speakerid):
-    speakerphoto = get_object_or_404(Speaker_Photo, pk=speakerid)
-    return HttpResponse(base64.b64decode(speakerphoto.photo), content_type='image/jpg')
+    speaker = get_object_or_404(Speaker, pk=speakerid)
+    return HttpResponse(speaker.photo, content_type='image/jpg')
 
 
 @login_required

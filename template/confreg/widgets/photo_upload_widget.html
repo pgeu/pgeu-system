@@ -1,9 +1,0 @@
-{%if widget.value and widget.value.url%}
-<img src="{{widget.value.url}}"><br/>
-{%endif%}
-{% if widget.is_initial %}{% if not widget.required %}
-<input type="checkbox" name="{{ widget.checkbox_name }}" id="{{ widget.checkbox_id }}" />
-<label for="{{ widget.checkbox_id }}">{{ widget.clear_checkbox_label }}</label>{% endif %}<br />
-{% endif %}
-<input type="{{ widget.type }}" name="{{ widget.name }}"{% for name, value in widget.attrs.items %}{% if value is not False %} {{ name }}{% if value is not True %}="{{ value|stringformat:'s' }}"{% endif %}{% endif %}{% endfor %}
- />

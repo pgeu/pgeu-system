@@ -15,12 +15,9 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 from postgresqleu.util.validators import validate_lowercase, validate_urlname
 from postgresqleu.util.validators import TwitterValidator
-from postgresqleu.util.validators import PictureUrlValidator, ImageValidator
+from postgresqleu.util.validators import PictureUrlValidator
 from postgresqleu.util.forms import ChoiceArrayField
 from postgresqleu.util.fields import LowercaseEmailField, ImageBinaryField
-
-
-from postgresqleu.confreg.dbimage import SpeakerImageStorage
 
 import datetime
 import pytz
@@ -776,11 +773,11 @@ class Speaker(models.Model):
     twittername = models.CharField(max_length=32, null=False, blank=True, validators=[TwitterValidator, ])
     company = models.CharField(max_length=100, null=False, blank=True)
     abstract = models.TextField(null=False, blank=True)
-    photofile = models.ImageField(upload_to=_get_upload_path, storage=SpeakerImageStorage(), blank=True, null=True, verbose_name="Photo", validators=[ImageValidator(maxsize=(128, 128)), ])
+    photo = ImageBinaryField(blank=True, null=True, verbose_name="Photo", max_resolution=(128, 128))
     lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
     speakertoken = models.TextField(null=False, blank=False, unique=True)
 
-    _safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract', 'photofile', 'has_photo', 'photo_data', 'lastmodified', )
+    _safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract', 'photo', 'has_photo', 'photo_data', 'lastmodified', )
     json_included_attributes = ['fullname', 'twittername', 'company', 'abstract', 'lastmodified']
 
     @property
@@ -806,15 +803,16 @@ class Speaker(models.Model):
     has_abstract.boolean = True
 
     def has_photo(self):
-        return (self.photofile is not None and self.photofile != "")
+        return (self.photo is not None and self.photo != "")
     has_photo.boolean = True
 
     @cached_property
     def photo_data(self):
-        try:
-            return Speaker_Photo.objects.get(pk=self.pk).photo
-        except Speaker_Photo.DoesNotExist:
-            return None
+        return self.photo
+
+    @property
+    def photofile(self):
+        return self.photo
 
     def __str__(self):
         return self.name
@@ -827,20 +825,6 @@ class DeletedItems(models.Model):
     itemid = models.IntegerField(null=False, blank=False)
     type = models.CharField(max_length=16, blank=False, null=False)
     deltime = models.DateTimeField(blank=False, null=False)
-
-
-class Speaker_Photo(models.Model):
-    speaker = models.OneToOneField(Speaker, db_column='id', primary_key=True, on_delete=models.CASCADE)
-    photo = models.TextField(null=False, blank=False)
-
-    def __str__(self):
-        return self.speaker.name
-
-    def delete(self):
-        # Remove reference from speaker, so we don't think the pic is there
-        self.speaker.photofile = None
-        self.speaker.save()
-        super(Speaker_Photo, self).delete()
 
 
 class ConferenceSessionScheduleSlot(models.Model):

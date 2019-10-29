@@ -15,7 +15,7 @@ from decimal import Decimal
 
 from postgresqleu.util.db import exec_to_single_list
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
-from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget, PhotoUploadWidget, MonospaceTextarea
+from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget, MonospaceTextarea
 from postgresqleu.util.widgets import TagOptionsTextWidget
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.backendforms import BackendForm
@@ -643,11 +643,11 @@ class BackendSpeakerForm(BackendForm):
     list_fields = ['fullname', 'user', 'company', ]
     markdown_fields = ['abstract', ]
     readonly_fields = ['user', ]
-    exclude_fields_from_validation = ['user', ]
+    exclude_fields_from_validation = ['user', 'photo', ]
 
     class Meta:
         model = Speaker
-        fields = ['fullname', 'user', 'twittername', 'company', 'abstract', 'photofile', ]
+        fields = ['fullname', 'user', 'twittername', 'company', 'abstract', 'photo', ]
         widgets = {
             'user': StaticTextWidget,
         }
@@ -661,7 +661,6 @@ class BackendSpeakerForm(BackendForm):
             )
 
     def fix_fields(self):
-        self.fields['photofile'].widget = PhotoUploadWidget()
         self.initial['user'] = escape(self.instance._display_user())
 
 

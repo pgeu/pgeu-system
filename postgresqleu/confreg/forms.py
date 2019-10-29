@@ -16,7 +16,7 @@ from .models import ConferenceSession, ConferenceSessionFeedback, ConferenceSess
 from .models import PrepaidVoucher, DiscountCode, AttendeeMail
 
 from .regtypes import validate_special_reg_type
-from postgresqleu.util.widgets import EmailTextWidget, PhotoUploadWidget, MonospaceTextarea
+from postgresqleu.util.widgets import EmailTextWidget, MonospaceTextarea
 from postgresqleu.util.db import exec_to_list
 from postgresqleu.util.magic import magicdb
 from postgresqleu.util.backendlookups import GeneralAccountLookup
@@ -463,7 +463,6 @@ class SpeakerProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(SpeakerProfileForm, self).__init__(*args, **kwargs)
-        self.fields['photofile'].widget = PhotoUploadWidget()
 
     def clean_twittername(self):
         if not self.cleaned_data['twittername']:
@@ -501,7 +500,7 @@ class CallForPapersForm(forms.ModelForm):
         if 'data' in kwargs and 'speaker' in kwargs['data']:
             vals.extend([int(x) for x in kwargs['data'].getlist('speaker')])
 
-        self.fields['speaker'].queryset = Speaker.objects.filter(pk__in=vals)
+        self.fields['speaker'].queryset = Speaker.objects.defer('photo').filter(pk__in=vals)
         self.fields['speaker'].label_from_instance = lambda x: "{0} <{1}>".format(x.fullname, x.email)
         self.fields['speaker'].required = True
         self.fields['speaker'].help_text = "Type the beginning of a speakers email address to add more speakers"

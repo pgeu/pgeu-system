@@ -14,7 +14,7 @@ from .models import RegistrationType, Speaker
 from .models import ConferenceSession, Track, Room, ConferenceSessionScheduleSlot
 from .models import RegistrationClass, RegistrationDay, AttendeeMail
 from .models import ShirtSize, ConferenceAdditionalOption
-from .models import ConferenceFeedbackQuestion, Speaker_Photo
+from .models import ConferenceFeedbackQuestion
 from .models import PrepaidVoucher, PrepaidBatch, BulkPayment, DiscountCode
 from .models import PendingAdditionalOrder
 from .models import VolunteerSlot
@@ -29,7 +29,6 @@ from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
 from .util import notify_reg_confirmed
 
-from postgresqleu.confreg.dbimage import InlinePhotoWidget
 from postgresqleu.accounting.models import Object
 from postgresqleu.confsponsor.models import Sponsor
 
@@ -323,13 +322,6 @@ class SpeakerAdmin(admin.ModelAdmin):
     form = SpeakerAdminForm
 
 
-class SpeakerPhotoAdmin(admin.ModelAdmin):
-    def formfield_for_dbfield(self, db_field, **kwargs):
-        if db_field.name == 'photo':
-            kwargs['widget'] = InlinePhotoWidget
-        return super(SpeakerPhotoAdmin, self).formfield_for_dbfield(db_field, **kwargs)
-
-
 class TrackAdmin(admin.ModelAdmin):
     list_filter = ['conference', ]
     list_display = ['conference', 'trackname', 'sortkey', 'color', 'incfp', ]
@@ -569,7 +561,6 @@ admin.site.register(ConferenceSessionScheduleSlot, ConferenceSessionScheduleSlot
 admin.site.register(Track, TrackAdmin)
 admin.site.register(Room, RoomAdmin)
 admin.site.register(Speaker, SpeakerAdmin)
-admin.site.register(Speaker_Photo, SpeakerPhotoAdmin)
 admin.site.register(ConferenceAdditionalOption, ConferenceAdditionalOptionAdmin)
 admin.site.register(ConferenceFeedbackQuestion, ConferenceFeedbackQuestionAdmin)
 admin.site.register(PrepaidBatch, PrepaidBatchAdmin)
