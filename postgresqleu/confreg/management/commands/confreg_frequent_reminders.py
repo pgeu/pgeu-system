@@ -9,6 +9,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction, connection
 from django.conf import settings
 
+import sys
 from datetime import datetime, timedelta
 
 from postgresqleu.confreg.models import Conference, ConferenceSession
@@ -45,6 +46,7 @@ class Command(BaseCommand):
         # We can also filter for conferences that actually have reminders active.
         # Right now that's only twitter reminders, butin the future there cna be
         # more plugins.
+        has_error = False
         for conference in Conference.objects.filter(twitterreminders_active=True,
                                                     startdate__lte=datetime.today() + timedelta(days=1),
                                                     enddate__gte=datetime.today() - timedelta(days=1)) \
@@ -76,6 +78,11 @@ class Command(BaseCommand):
                                 # Code 150 means trying to send DM to user not following us, so just
                                 # ignore that one. Other errors should be shown.
                                 self.stderr.write("Failed to send twitter DM to {0}: {1}".format(reg.twittername, err))
+                                has_error = True
 
                     s.reminder_sent = True
                     s.save()
+
+        if has_error:
+            self.stderr.write("One or more messages failed to send. They will *not* be retried!")
+            sys.exit(1)
