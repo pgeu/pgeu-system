@@ -12,7 +12,6 @@ httplib2
 psycopg2
 pycrypto
 reportlab==3.3.0
-wsgiref
 pytz
 python-dateutil
 requests
