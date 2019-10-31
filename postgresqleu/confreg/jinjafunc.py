@@ -121,7 +121,7 @@ class ConfSandbox(jinja2.sandbox.SandboxedEnvironment):
     def is_safe_attribute(self, obj, attr, value):
         modname = obj.__class__.__module__
 
-        if obj.__class__.__name__ in ('str', 'unicode') and attr == 'format':
+        if obj.__class__.__name__ in ('str', 'unicode') and attr in ('format', 'format_map'):
             # We reject all format strings for now, due to
             # https://www.palletsprojects.com/blog/jinja-281-released/
             # (until we have it safely patched everywhere, *if* we need this elsewhere)
