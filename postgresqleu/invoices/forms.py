@@ -7,7 +7,6 @@ from django.conf import settings
 
 from decimal import Decimal
 
-from postgresqleu.accountinfo.lookups import UserLookup
 from postgresqleu.util.widgets import HtmlDateInput
 
 from .models import Invoice, InvoiceRow, InvoicePaymentMethod
