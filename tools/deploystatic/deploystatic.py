@@ -74,6 +74,18 @@ global_filters = {
 }
 
 
+# Extend the default jinja sandbox
+class DeploySandbox(jinja2.sandbox.SandboxedEnvironment):
+    def is_safe_attribute(self, obj, attr, value):
+        if obj.__class__.__name__ in ('str', 'unicode') and attr in ('format', 'format_map'):
+            # We reject all format strings for now, due to
+            # https://www.palletsprojects.com/blog/jinja-281-released/
+            # (until we have it safely patched everywhere, *if* we need this elsewhere)
+            return False
+
+        return super(DeploySandbox, self).is_safe_attribute(obj, attr, value)
+
+
 # Wrap operations on a generic directory
 class SourceWrapper(object):
     def __init__(self, root):
@@ -330,9 +342,9 @@ if __name__ == "__main__":
 
     # Set up jinja environment
     if args.branch:
-        env = jinja2.sandbox.SandboxedEnvironment(loader=JinjaTarLoader(source))
+        env = DeploySandbox(loader=JinjaTarLoader(source))
     else:
-        env = jinja2.sandbox.SandboxedEnvironment(loader=jinja2.FileSystemLoader([os.path.join(args.sourcepath, 'templates/'), ]))
+        env = DeploySandbox(loader=jinja2.FileSystemLoader([os.path.join(args.sourcepath, 'templates/'), ]))
     env.filters.update(global_filters)
 
     # If there is a context json, load it as well
