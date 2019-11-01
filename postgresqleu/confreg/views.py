@@ -73,7 +73,7 @@ import base64
 import re
 import os
 from email.mime.text import MIMEText
-from Crypto.Hash import SHA256
+from Cryptodome.Hash import SHA256
 from io import StringIO
 import xml.etree.ElementTree as ET
 

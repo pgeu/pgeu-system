@@ -16,7 +16,7 @@ from postgresqleu.trustlypayment.api import TrustlyException
 from . import BasePayment
 
 import collections
-from Crypto.PublicKey import RSA
+from Cryptodome.PublicKey import RSA
 
 
 def validate_pem_public_key(value):

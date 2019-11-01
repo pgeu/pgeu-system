@@ -1,5 +1,5 @@
-from Crypto.Hash import SHA256
-from Crypto import Random
+from Cryptodome.Hash import SHA256
+from Cryptodome import Random
 
 
 def generate_random_token():

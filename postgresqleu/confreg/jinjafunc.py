@@ -14,7 +14,7 @@ from itertools import groupby
 from datetime import datetime, date, time
 import dateutil.parser
 import textwrap
-from Crypto.Hash import SHA
+from Cryptodome.Hash import SHA
 
 from postgresqleu.util.context_processors import settings_context
 
