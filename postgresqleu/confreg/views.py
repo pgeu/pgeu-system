@@ -2427,7 +2427,7 @@ def talkvote_status(request, confname):
 
     isadmin = conference.administrators.filter(pk=request.user.id).exists() or conference.series.administrators.filter(pk=request.user.id).exists()
     if not isadmin:
-        return PermissionDenied('Only admins can change the status')
+        raise PermissionDenied('Only admins can change the status')
 
     if request.method != 'POST':
         return HttpResponse('Can only use POST', status_code=400)
