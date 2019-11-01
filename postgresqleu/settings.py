@@ -113,6 +113,9 @@ INSTALLED_APPS = [
     'postgresqleu.membership',
 ]
 
+# List of IP addresses (v4 and v6) that is allowed to access monitoring urls
+MONITOR_SERVER_IPS = []
+
 # Email address used to send emails from the invoice system, or other
 # parts of the "finance" system.
 INVOICE_SENDER_EMAIL = DEFAULT_EMAIL

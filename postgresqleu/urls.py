@@ -32,6 +32,7 @@ import postgresqleu.stripepayment.views
 import postgresqleu.accountinfo.views
 import postgresqleu.util.docsviews
 import postgresqleu.mailqueue.backendviews
+import postgresqleu.util.monitor
 
 from postgresqleu.newsevents.feeds import LatestNews
 from postgresqleu.confreg.feeds import LatestEvents, ConferenceNewsFeed
@@ -326,6 +327,9 @@ urlpatterns.extend([
     # Account info callbacks
     url(r'^accountinfo/search/$', postgresqleu.accountinfo.views.search),
     url(r'^accountinfo/import/$', postgresqleu.accountinfo.views.importuser),
+
+    # Monitoring endpoints
+    url(r'^monitor/git/$', postgresqleu.util.monitor.gitinfo),
 ])
 
 if settings.ENABLE_NEWS:
