@@ -10,11 +10,10 @@ import os
 import base64
 import re
 import io
-from Crypto.Hash import SHA256
-from Crypto import Random
 
 from postgresqleu.mailqueue.util import send_template_mail, send_simple_mail
 from postgresqleu.accounting.util import create_accounting_entry
+from postgresqleu.util.random import generate_random_token
 
 from .models import Invoice, InvoiceRow, InvoiceHistory, InvoiceLog
 from .models import InvoiceRefund
@@ -74,11 +73,7 @@ class InvoiceWrapper(object):
 
         # Generate a secret key that can be used to view the invoice if
         # there is no associated account
-        s = SHA256.new()
-        r = Random.new()
-        s.update(self.invoice.pdf_invoice.encode('ascii'))
-        s.update(r.read(250))
-        self.invoice.recipient_secret = s.hexdigest()
+        self.invoice.recipient_secret = generate_random_token()
 
         # Generate pdf
         self.invoice.pdf_invoice = base64.b64encode(self.render_pdf_invoice())
