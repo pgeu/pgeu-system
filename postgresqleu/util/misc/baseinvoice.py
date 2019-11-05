@@ -13,7 +13,6 @@ from reportlab.platypus.tables import Table, TableStyle
 from reportlab.platypus.flowables import Image
 from reportlab.pdfbase.pdfmetrics import registerFont, getFont
 from reportlab.pdfbase.ttfonts import TTFont
-import qrencode
 from io import BytesIO
 
 from django.conf import settings
@@ -324,11 +323,17 @@ class BaseInvoice(PDFBase):
             p.wrapOn(self.canvas, cm(12), cm(2))
             p.drawOn(self.canvas, cm(2), cm(3.5))
 
-            (ver, size, qrimage) = qrencode.encode(self.paymentlink)
-            qrimage = qrimage.resize((size * 4, size * 4))
-            self.canvas.drawImage(ImageReader(qrimage),
-                                  cm(2), cm(1.8),
-                                  cm(1.5), cm(1.5))
+            try:
+                import qrencode
+                (ver, size, qrimage) = qrencode.encode(self.paymentlink)
+                qrimage = qrimage.resize((size * 4, size * 4))
+                self.canvas.drawImage(ImageReader(qrimage),
+                                      cm(2), cm(1.8),
+                                      cm(1.5), cm(1.5))
+            except ImportError:
+                # If we don't have the qrcode module, we just don't bother drawing the
+                # QR code for the link
+                pass
 
             if self.reverse_vat:
                 t = self.canvas.beginText()

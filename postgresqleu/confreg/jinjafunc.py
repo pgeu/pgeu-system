@@ -21,7 +21,6 @@ from postgresqleu.util.context_processors import settings_context
 import jinja2
 import jinja2.sandbox
 import markdown
-import cairosvg
 
 
 from postgresqleu.confreg.templatetags.leadingnbsp import leadingnbsp
@@ -329,7 +328,13 @@ def render_jinja_conference_svg(request, conference, cardformat, templatename, d
     if cardformat == 'svg':
         return HttpResponse(svg, 'image/svg+xml')
     else:
-        # Since turning SVG into PNG is a lot mroe expensive than just rendering the SVG,
+        try:
+            import cairosvg
+        except ImportError:
+            # No cairosvg available, so just 404 on this.
+            raise Http404()
+
+        # Since turning SVG into PNG is a lot more expensive than just rendering the SVG,
         # generate an appropriate ETag for it, and verify that one.
         etag = '"{}"'.format(SHA.new(svg.encode('utf8')).hexdigest())
 

@@ -22,8 +22,6 @@ from PIL import Image
 import jinja2
 import jinja2.sandbox
 
-import qrencode
-
 alignments = {
     'left': TA_LEFT,
     'center': TA_CENTER,
@@ -127,6 +125,12 @@ class JinjaFlowable(Flowable):
             ver = 6
         else:
             raise Exception("String too long for QR encode")
+
+        try:
+            import qrencode
+        except ImportError:
+            # No qrcode library -> no qrcode image!
+            return
 
         (ver, size, qrimage) = qrencode.encode(s, version=ver, level=qrencode.QR_ECLEVEL_M)
         if size < 500:

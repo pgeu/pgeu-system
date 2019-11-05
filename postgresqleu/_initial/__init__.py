@@ -1,4 +1,5 @@
 import types
+import logging
 
 from django.contrib import admin
 
@@ -33,3 +34,15 @@ def _concurrent_injected_register(self, model_or_iterable, admin_class=None, **o
 
 
 admin.site.register = types.MethodType(_concurrent_injected_register, admin.AdminSite)
+
+
+# Try to import some libraries and log if it fails
+try:
+    import cairosvg
+except ImportError:
+    logging.getLogger(__name__).warning("Could not load cairosvg library, PNG cards will not be available")
+
+try:
+    import qrencode
+except ImportError:
+    logging.getLogger(__name__).warning("Could not load qrencode library. QR based functionality will not be available")
