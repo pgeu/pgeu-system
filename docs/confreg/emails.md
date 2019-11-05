@@ -3,15 +3,14 @@
 ## Attendee emails
 
 Using the *Attendee emails* functionality it is possible to send email
-to attendees of a specific
-[registration class](registrations#typesandclasses), individual
+to attendees matching a specific criteria (such as a
+[registration class](registrations#typesandclasses)), individual
 attendees or speakers of sessions (who may or may not later become
 attendees).. Emails sent using this function will both be sent as an
 email to the attendee *and* optionally listed on the registration
 dashboard for those that have registered. This means that attendees
 who sign up *after* the email is sent will **also** be able to view
-the emails, assuming they are sign up with a registration class that
-received the emails.
+the emails, assuming they are sign up in a way that matches the criteria.
 
 If emails are sent to a recipient that has not yet registered
 (typically sent so somebody who has submitted a talk on the call for
@@ -21,12 +20,12 @@ id) registers it will automatically be transferred to the dashboard of
 the user. The email is of course still delivered to the user, just not
 connected in the database.
 
-### Sending attendee emails to registration class
+### Sending attendee emails to registrations based on criteria
 
-Sending email to all attendees of a specific registration class is
+Sending email to all attendees matching a specific criteria is
 done by clicking the *Attendee email* button on the dashboard. Emails
-to registration classes are always stored for future attendees of the
-same class to see.
+based on criteriaare always stored for future attendees matching the
+same criteria to see.
 
 From
 :  The *from* address of the email will always be the
@@ -35,6 +34,12 @@ From
 Registration classes
 :  Select the registration classes that the email should be delivered to,
 and visible for on the registration dashboard.
+
+To volunteers
+:  Check this box to send to everybody listed as a volunteer at the conference.
+
+To check-in processors
+:  Check this box to send to everybody listead as a check-in processor at th conference.
 
 Subject
 :  The subject of the email
