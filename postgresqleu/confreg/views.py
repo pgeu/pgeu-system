@@ -116,13 +116,15 @@ def _attendeemail_queryset(conference, reg):
     return AttendeeMail.objects.filter(conference=conference).extra(where=["""
  EXISTS (SELECT 1 FROM confreg_attendeemail_regclasses rc WHERE rc.attendeemail_id=confreg_attendeemail.id AND registrationclass_id=%s)
 OR
+ EXISTS (SELECT 1 FROM confreg_attendeemail_addopts ao INNER JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceadditionaloption_id=ao.conferenceadditionaloption_id WHERE ao.attendeemail_id=confreg_attendeemail.id AND rao.conferenceregistration_id=%s)
+OR
  EXISTS (SELECT 1 FROM confreg_attendeemail_registrations r WHERE r.attendeemail_id=confreg_attendeemail.id AND conferenceregistration_id=%s)
 OR
  (tovolunteers AND EXISTS (SELECT 1 FROM confreg_conference_volunteers cv WHERE cv.conference_id=confreg_attendeemail.conference_id AND cv.conferenceregistration_id=%s))
 OR
  (tocheckin AND EXISTS (SELECT 1 FROM confreg_conference_checkinprocessors cp WHERE cp.conference_id=confreg_attendeemail.conference_id AND cp.conferenceregistration_id=%s))
 """,
-    ], params=[reg.regtype.regclass and reg.regtype.regclass.id or None, reg.id, reg.id, reg.id])
+    ], params=[reg.regtype.regclass and reg.regtype.regclass.id or None, reg.id, reg.id, reg.id, reg.id])
 
 
 # Not a view in itself, only called from other views
@@ -3446,10 +3448,14 @@ def admin_attendeemail(request, urlname):
             msg.save()
             for rc in form.data.getlist('regclasses'):
                 msg.regclasses.add(rc)
+            for ao in form.data.getlist('addopts'):
+                msg.addopts.add(ao)
             msg.save()
 
             # Now also send the email out to the currently registered attendees
             attendees = set(ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, regtype__regclass__in=form.data.getlist('regclasses')))
+            if form.data.getlist('addopts'):
+                attendees.update(ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, additionaloptions__in=form.data.getlist('addopts')))
             if msg.tovolunteers:
                 attendees.update(conference.volunteers.all())
             if msg.tocheckin:

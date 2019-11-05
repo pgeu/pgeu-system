@@ -642,7 +642,7 @@ class AttendeeMailForm(forms.ModelForm):
 
     class Meta:
         model = AttendeeMail
-        fields = ('regclasses', 'tovolunteers', 'tocheckin', 'subject', 'message')
+        fields = ('regclasses', 'addopts', 'tovolunteers', 'tocheckin', 'subject', 'message')
         widgets = {
             'message': EmailTextWidget,
         }
@@ -656,6 +656,14 @@ class AttendeeMailForm(forms.ModelForm):
                                                   regtype__regclass=obj).count(),
         )
 
+    def addopts_label(self, obj):
+        return "{0} (total {1} registrations)".format(
+            obj.name,
+            ConferenceRegistration.objects.filter(conference=self.conference,
+                                                  payconfirmedat__isnull=False,
+                                                  additionaloptions=obj).count()
+        )
+
     def __init__(self, conference, *args, **kwargs):
         self.conference = conference
         super(AttendeeMailForm, self).__init__(*args, **kwargs)
@@ -663,6 +671,11 @@ class AttendeeMailForm(forms.ModelForm):
         self.fields['regclasses'].widget = forms.CheckboxSelectMultiple()
         self.fields['regclasses'].queryset = RegistrationClass.objects.filter(conference=self.conference)
         self.fields['regclasses'].label_from_instance = self.regclass_label
+
+        self.fields['addopts'].widget = forms.CheckboxSelectMultiple()
+        self.fields['addopts'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference)
+        self.fields['addopts'].label_from_instance = self.addopts_label
+
         self.fields['subject'].help_text = 'Subject will be prefixed with <strong>[{}]</strong>'.format(conference)
 
         if not (self.data.get('subject') and self.data.get('message')):

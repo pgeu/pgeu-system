@@ -15,6 +15,10 @@
   <div class="col-md-10"><ul class="nopad">{%for rc in mail.regclasses.all %}<li>{{rc}}</li>{%endfor%}</ul></div>
 </div>
 <div class="row">
+  <div class="col-md-2"><b>Sent to options: </b></div>
+  <div class="col-md-10"><ul class="nopad">{%for ao in mail.addopts.all %}<li>{{ao.name}}</li>{%endfor%}</ul></div>
+</div>
+<div class="row">
   <div class="col-md-2"><b>Sent to attendees: </b></div>
   <div class="col-md-10">{{mail.registrations.all|join_on_attr:"fullname"}}</div>
 </div>

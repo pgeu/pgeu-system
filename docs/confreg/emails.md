@@ -35,6 +35,10 @@ Registration classes
 :  Select the registration classes that the email should be delivered to,
 and visible for on the registration dashboard.
 
+Attendees with options
+:  Select additional options here and the email will be delivered to all confirmed
+   attendees that have one of the selected additional options on their registration.
+
 To volunteers
 :  Check this box to send to everybody listed as a volunteer at the conference.
 
