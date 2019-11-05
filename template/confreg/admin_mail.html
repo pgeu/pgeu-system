@@ -17,6 +17,8 @@ The following emails have been sent to all attendees of the conference:
     <th>Date</th>
     <th>Subject</th>
     <th>Regclasses</th>
+    <th>Volunteers</th>
+    <th>Checkins</th>
     <th>Registrations</th>
     <th>Pending regs</th>
   </tr>
@@ -24,7 +26,9 @@ The following emails have been sent to all attendees of the conference:
   <tr>
     <td>{{m.sentat|date:"Y-m-d H:i"}}</td>
     <td><a href="{{m.id}}/">{{m.subject}}</a></td>
-    <td>{{m.regclasses_and_special|join:", "}}</td>
+    <td>{{m.regclasses.all|join:", "}}</td>
+    <td class="text-center">{%if m.tovolunteers%}<img src="/media/img/green_tick.png">{%endif%}</td>
+    <td class="text-center">{%if m.tocheckin%}<img src="/media/img/green_tick.png">{%endif%}</td>
     <td>{%for r in m.registrations.all%}<span class="nobr" title="{{r.email}}">{{r.fullname}}</span>{%if not forloop.last%}, {%endif%}{%endfor%}</td>
     <td>{%for r in m.pending_regs.all%}<span class="nobr" title="{{r.email}}">{{r.first_name}} {{r.last_name}}</span>{%if not forloop.last%}, {%endif%}{%endfor%}</td>
   </tr>

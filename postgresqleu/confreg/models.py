@@ -1148,14 +1148,6 @@ class AttendeeMail(models.Model):
     class Meta:
         ordering = ('-sentat', )
 
-    @property
-    def regclasses_and_special(self):
-        yield from self.regclasses.all()
-        if self.tovolunteers:
-            yield '[volunteers]'
-        if self.tocheckin:
-            yield '[checkin]'
-
 
 class PendingAdditionalOrder(models.Model):
     reg = models.ForeignKey(ConferenceRegistration, null=False, blank=False, on_delete=models.CASCADE)
