@@ -19,6 +19,7 @@ from postgresqleu.util.validators import PictureUrlValidator
 from postgresqleu.util.forms import ChoiceArrayField
 from postgresqleu.util.fields import LowercaseEmailField, ImageBinaryField
 
+import base64
 import datetime
 import pytz
 from decimal import Decimal
@@ -808,7 +809,7 @@ class Speaker(models.Model):
 
     @cached_property
     def photo_data(self):
-        return self.photo
+        return base64.b64encode(self.photo).decode('ascii')
 
     @property
     def photofile(self):
