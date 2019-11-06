@@ -818,6 +818,14 @@ class Speaker(models.Model):
     def __str__(self):
         return self.name
 
+    def __reduce_ex__(self, protocol):
+        r = super(Speaker, self).__reduce_ex__(protocol)
+        # Ooh, this is ugly. But this is to ensure that the 'photo' part of the
+        # pickled value works (because memoryviews can't be pickled)
+        if isinstance(r[2]['photo'], memoryview):
+            r[2]['photo'] = bytes(r[2]['photo'])
+        return r
+
     class Meta:
         ordering = ['fullname', ]
 
