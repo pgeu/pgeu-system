@@ -1507,7 +1507,7 @@ def callforpapers_edit(request, confname, sessionid):
             curs = connection.cursor()
             feedbackcomparisons = []
             for measurement in feedback_fields:
-                curs.execute("SELECT g.g,g.g+0.25,COALESCE(y.count,0),this FROM generate_series(0,4.75,0.25) g(g) LEFT JOIN (SELECT r, count(*), max(this::int) AS this FROM (SELECT session_id,round(floor(avg({0})*4)/4,2) AS r,session_id=%(sessid)s AS this FROM confreg_conferencesessionfeedback WHERE conference_id=%(confid)s GROUP BY session_id) x GROUP BY r) y ON g.g=y.r".format(measurement), {
+                curs.execute("SELECT g.g,g.g+0.25,COALESCE(y.count,0),this FROM generate_series(0,4.75,0.25) g(g) LEFT JOIN (SELECT r, count(*), max(this::int) AS this FROM (SELECT session_id,round(floor(avg({0})*4)/4,2) AS r,session_id=%(sessid)s AS this FROM confreg_conferencesessionfeedback WHERE conference_id=%(confid)s AND {0}>0 GROUP BY session_id) x GROUP BY r) y ON g.g=y.r".format(measurement), {
                     'confid': conference.id,
                     'sessid': session.id,
                 })
