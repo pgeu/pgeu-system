@@ -15,26 +15,7 @@ you are a speaker.
 
 <form method="post" action="." enctype="multipart/form-data">{{ csrf_input }}
 <table id="speakerprofile_table">
-<tr>
- <th>Full name:</th>
- <td>{{form.fullname}}{% if form.fullname.errors %}{{ form.fullname.errors}}{% endif %}</td>
-</tr>
-<tr>
- <th>{{form.twittername.label_tag()}}</th>
- <td>{{form.twittername}}{% if form.twittername.errors %}{{ form.twittername.errors}}{% endif %}</td>
-</tr>
-<tr>
- <th>{{form.company.label_tag()}}</th>
- <td>{{form.company}}{% if form.company.errors %}{{ form.company.errors}}{% endif %}</td>
-</tr>
-<tr>
- <th>Bio:</th>
- <td>{{form.abstract}}{% if form.abstract.errors %}{{ form.abstract.errors}}{% endif %}</td>
-</tr>
-<tr>
- <th>{{form.photo.label_tag()}}</th>
- <td>{{form.photo}}{% if form.photo.errors %}{{ form.photo.errors}}{% endif %}</td>
-</tr>
+  {{form}}
 </table>
 <input type="submit" value="Save">
 </form>

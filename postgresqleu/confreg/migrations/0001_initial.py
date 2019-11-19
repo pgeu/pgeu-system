@@ -348,10 +348,10 @@ class Migration(migrations.Migration):
             name='Speaker',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('fullname', models.CharField(max_length=100)),
-                ('twittername', models.CharField(max_length=32, blank=True, validators=[postgresqleu.util.validators.TwitterValidator])),
+                ('fullname', models.CharField(max_length=100, verbose_name='Full name')),
+                ('twittername', models.CharField(max_length=32, blank=True, validators=[postgresqleu.util.validators.TwitterValidator], verbose_name='Twitter name')),
                 ('company', models.CharField(max_length=100, blank=True)),
-                ('abstract', models.TextField(blank=True)),
+                ('abstract', models.TextField(blank=True, verbose_name='Bio')),
                 ('photofile', models.ImageField(storage=postgresqleu.confreg.dbimage.SpeakerImageStorage(), upload_to=postgresqleu.confreg.models._get_upload_path, null=True, verbose_name='Photo', blank=True, validators=[postgresqleu.util.validators.ImageValidator(maxsize=(128, 128)), ])),
                 ('lastmodified', models.DateTimeField(auto_now=True)),
             ],

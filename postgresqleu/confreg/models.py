@@ -770,10 +770,11 @@ def _get_upload_path(instance, filename):
 
 class Speaker(models.Model):
     user = models.OneToOneField(User, null=True, blank=True, unique=True, on_delete=models.CASCADE)
-    fullname = models.CharField(max_length=100, null=False, blank=False)
-    twittername = models.CharField(max_length=32, null=False, blank=True, validators=[TwitterValidator, ])
+    fullname = models.CharField(max_length=100, null=False, blank=False, verbose_name="Full name")
+    twittername = models.CharField(max_length=32, null=False, blank=True, validators=[TwitterValidator, ],
+                                   verbose_name='Twitter name')
     company = models.CharField(max_length=100, null=False, blank=True)
-    abstract = models.TextField(null=False, blank=True)
+    abstract = models.TextField(null=False, blank=True, verbose_name="Bio")
     photo = ImageBinaryField(blank=True, null=True, verbose_name="Photo", max_resolution=(128, 128))
     lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
     speakertoken = models.TextField(null=False, blank=False, unique=True)
