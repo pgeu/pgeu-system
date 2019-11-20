@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
         @classmethod
         def should_run(self):
-            if InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.stripe.StripePayment').exists():
+            if InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.stripe.Stripe').exists():
                 return StripeCheckout.objects.filter(completedat__isnull=True).exists()
 
     def handle(self, *args, **options):

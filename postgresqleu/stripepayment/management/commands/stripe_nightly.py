@@ -27,10 +27,10 @@ class Command(BaseCommand):
 
         @classmethod
         def should_run(self):
-            return InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.stripe.StripePayment').exists()
+            return InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.stripe.Stripe').exists()
 
     def handle(self, *args, **options):
-        for method in InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.stripe.StripePayment'):
+        for method in InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.stripe.Stripe'):
             self.handle_one_account(method)
 
     @transaction.atomic
