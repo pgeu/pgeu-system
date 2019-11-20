@@ -131,7 +131,7 @@ class StripeApi(object):
 
         refund = StripeRefund(paymentmethod=co.paymentmethod,
                               chargeid=chargeid,
-                              invoicerefundid=refundid,
+                              invoicerefundid_id=refundid,
                               amount=amount,
                               refundid=r['id'])
         refund.save()
