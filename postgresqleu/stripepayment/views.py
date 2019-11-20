@@ -198,7 +198,7 @@ def webhook(request, methodid):
                 manager = InvoiceManager()
                 manager.complete_refund(
                     refund.invoicerefundid,
-                    -refund.amount,
+                    refund.amount,
                     0,  # Unknown fee
                     pm.config('accounting_income'),
                     pm.config('accounting_fee'),
