@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
-from django.db import transaction
+from django.db import transaction, connection
 from django.core.management import get_commands, load_command_class
 from django.conf import settings
 
@@ -11,6 +11,14 @@ def handle_post_migrate(sender, **kwargs):
     ScheduledJob = sender.get_model('ScheduledJob')
 
     with transaction.atomic():
+        # Check that our own app has actually been migrated. If it has not, just don't
+        # do anything -- it might be part of an initial migration of just some apps.
+        curs = connection.cursor()
+        curs.execute("SELECT id FROM django_migrations WHERE app='scheduler'")
+        if curs.rowcount == 0:
+            print("Job scheduler not yet installed, not triggering migration")
+            return
+
         jobs = []
         for name, app in get_commands().items():
             if app.startswith('django'):
