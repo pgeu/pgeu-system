@@ -252,7 +252,7 @@ if ENABLE_PG_COMMUNITY_AUTH:
         'postgresqleu.auth.AuthBackend',
     )
     LOGIN_URL = "{0}/accounts/login/".format(SITEBASE)
-4
+
 if ENABLE_ELECTIONS and not ENABLE_MEMBERSHIP:
     raise Exception("Elections module requires membership module!")
 
