@@ -15,20 +15,20 @@ def gitinfo(request):
     _validate_monitor_request(request)
 
     # Get information about our current position in the git structure
-    def _run_git(*args):
+    def _run_git(*args, do_check=True):
         p = subprocess.run(
             ['git', ] + list(args),
             stdout=subprocess.PIPE,
             cwd=os.path.abspath(os.path.dirname(__file__)),
             timeout=2,
-            check=True,
+            check=do_check,
             universal_newlines=True,
         )
         if p.stdout:
             return p.stdout.splitlines()[0]
         return ""
 
-    branch = _run_git('symbolic-ref', '--short', 'HEAD')
+    branch = _run_git('symbolic-ref', '--short', 'HEAD', do_check=False)
     tag = _run_git('tag', '--points-at', 'HEAD')
     commitandtime = _run_git('log', '-1', '--format=%H;%cI')
 
