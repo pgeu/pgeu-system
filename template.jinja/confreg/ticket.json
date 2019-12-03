@@ -16,7 +16,7 @@
 
 	{"type": "box", "x": 8, "y": 74, "width": 67, "height": 20, "stroke": "black"},
 	{"type": "paragraph", "text": "Dates", "x": 10, "y": 76, "width": 63, "height": 5},
-	{"type": "paragraph", "text": "{{conference.conferencedatestr}}", "x": 10, "y": 80, "width": 63, "height": 12, "color": "black", "align": "center"},
+	{"type": "paragraph", "text": "{%if reg.alldays%}{{reg.regdatestr}}{%else%}{{conference.conferencedatestr}}{%endif%}", "x": 10, "y": 80, "width": 63, "height": 12, "color": "black", "align": "center"},
 	{"type": "box", "x": 75, "y": 74, "width": 67, "height": 20, "stroke": "black"},
 	{"type": "paragraph", "text": "Location", "x": 77, "y": 76, "width": 63, "height": 5},
 	{"type": "paragraph", "text": "{{conference.location}}", "x": 79, "y": 80, "width": 63, "height": 12, "color": "black", "align": "center"},

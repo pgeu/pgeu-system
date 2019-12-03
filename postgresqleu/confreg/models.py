@@ -348,6 +348,10 @@ class RegistrationDay(models.Model):
         df = DateFormat(self.day)
         return df.format('D jS')
 
+    def isoday(self):
+        df = DateFormat(self.day)
+        return df.format('Y-m-d')
+
 
 class RegistrationType(models.Model):
     conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
@@ -670,6 +674,23 @@ class ConferenceRegistration(models.Model):
 
         return ", ".join([x.shortday() for x in days[:-1]]) + " and " + days[-1].shortday()
 
+    @property
+    def regdatestr(self):
+        days = self.alldays
+
+        if not days:
+            return None
+
+        if len(days) == 1:
+            return days[0].isoday()
+
+        # If the days are continous, then we list the first and last day
+        if all((days[i + 1].day - days[i].day).days == 1 for i in range(len(days) - 1)):
+            # Continous range
+            return "{} - {}".format(days[0].isoday(), days[-1].isoday())
+
+        return ", ".join([d.isoday() for d in days])
+
     def get_field_string(self, field):
         r = getattr(self, field)
         if isinstance(r, bool):
@@ -696,7 +717,7 @@ class ConferenceRegistration(models.Model):
 
     # For exporting "safe attributes" to external systems
     def safe_export(self):
-        attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'countryname', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'badgescan', 'shareemail', 'fullidtoken', 'fullpublictoken', 'queuepartition', 'alldays', ]
+        attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'countryname', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'badgescan', 'shareemail', 'fullidtoken', 'fullpublictoken', 'queuepartition', 'alldays', 'regdatestr', ]
         d = dict((a, getattr(self, a) and str(getattr(self, a))) for a in attribs)
         if self.regtype:
             d['regtype'] = self.regtype.safe_export()
