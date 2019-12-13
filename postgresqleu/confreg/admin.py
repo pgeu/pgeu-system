@@ -310,6 +310,8 @@ class ConferenceAdditionalOptionAdmin(admin.ModelAdmin):
 
 
 class SpeakerAdminForm(ConcurrentProtectedModelForm):
+    exclude_fields_from_validation = ['photo', ]
+
     class Meta:
         model = Speaker
         exclude = []
