@@ -64,10 +64,10 @@ configured twitter account, and add it to the queue. If the
 [mobile website](#mobilesite) is used, it can be used to track
 incoming tweets and to either discard or make replies to them.
 
-## Setting up
+## Setting up <a name="twittersetup"></a>
 
 To set up the twitter integration, first configure `TWITTER_CLIENT`
-and `TWITTER_CLIENTSECRET` in the `settings.py` file. These are the
+and `TWITTER_CLIENTSECRET` in the `local_settings.py` file. These are the
 values that can be retrieved after setting up an application on
 [apps.twitter.com](https://apps.twitter.com). Note that this application
 must be granted permissions to read, write and direct messages.

@@ -43,6 +43,14 @@ for example yourself.
 <br/><br/>
 <input type="submit" class="btn btn-primary" value="Enable twitter integration">
 </form>
+{%elif not twitter_app_configured %}
+<h3>Twitter integration not set up</h3>
+<p>
+  Twitter integration is not configured in the global settings. Please see the
+  <a href="/admin/docs/integrations/#twittersetup">documentation</a> and configure the
+  settings <i>TWITTER_CLIENT</i> and <i>TWITTER_CLIENTSECRET</i> in the global
+  configuration file.
+</p>
 {%else%}
 <h3>Twitter integration disabled</h3>
 <p>

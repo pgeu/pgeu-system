@@ -456,6 +456,7 @@ def twitter_integration(request, urlname):
         'form': form,
         'testform': testform,
         'conferences_with_same_user': sameuser,
+        'twitter_app_configured': settings.TWITTER_CLIENT != '' and settings.TWITTER_CLIENTSECRET != '',
         'helplink': 'integrations#twitter',
     })
 
