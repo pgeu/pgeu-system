@@ -10,22 +10,24 @@
 	{"type": "paragraph", "text": "Conference", "x": 10, "y": 32, "width": 130, "height": 5},
 	{"type": "paragraph", "text": "{{conference.conferencename}}", "x": 10, "y": 36, "width": 130, "height": 12, "color": "black", "align": "center", "bold": true},
 
-	{"type": "box", "x": 8, "y": 52, "width": 134, "height": 20, "stroke": "black"},
-	{"type": "paragraph", "text": "Attendee", "x": 10, "y": 54, "width": 130, "height": 5},
-	{"type": "paragraph", "text": "{{reg.firstname|escapejson}} {{reg.lastname|escapejson}}", "x": 10, "y": 58, "width": 130, "height": 12, "color": "black", "align": "center"},
+	{"type": "qrimage", "x": 60, "y": 54, "width": 30, "height": 30, "qrcontent": "{{reg.fullidtoken}}"},
 
-	{"type": "box", "x": 8, "y": 74, "width": 67, "height": 20, "stroke": "black"},
-	{"type": "paragraph", "text": "Dates", "x": 10, "y": 76, "width": 63, "height": 5},
-	{"type": "paragraph", "text": "{%if reg.alldays%}{{reg.regdatestr}}{%else%}{{conference.conferencedatestr}}{%endif%}", "x": 10, "y": 80, "width": 63, "height": 12, "color": "black", "align": "center"},
-	{"type": "box", "x": 75, "y": 74, "width": 67, "height": 20, "stroke": "black"},
-	{"type": "paragraph", "text": "Location", "x": 77, "y": 76, "width": 63, "height": 5},
-	{"type": "paragraph", "text": "{{conference.location}}", "x": 79, "y": 80, "width": 63, "height": 12, "color": "black", "align": "center"},
+	{"type": "box", "x": 8, "y": 87, "width": 134, "height": 20, "stroke": "black"},
+	{"type": "paragraph", "text": "Attendee", "x": 10, "y": 89, "width": 130, "height": 5},
+	{"type": "paragraph", "text": "{{reg.firstname|escapejson}} {{reg.lastname|escapejson}}", "x": 10, "y": 93, "width": 130, "height": 12, "color": "black", "align": "center"},
+
+	{"type": "box", "x": 8, "y": 109, "width": 67, "height": 20, "stroke": "black"},
+	{"type": "paragraph", "text": "Dates", "x": 10, "y": 111, "width": 63, "height": 5},
+	{"type": "paragraph", "text": "{%if reg.alldays%}{{reg.regdatestr}}{%else%}{{conference.conferencedatestr}}{%endif%}", "x": 10, "y": 115, "width": 63, "height": 12, "color": "black", "align": "center"},
+	{"type": "box", "x": 75, "y": 109, "width": 67, "height": 20, "stroke": "black"},
+	{"type": "paragraph", "text": "Location", "x": 77, "y": 111, "width": 63, "height": 5},
+	{"type": "paragraph", "text": "{{conference.location}}", "x": 79, "y": 115, "width": 63, "height": 12, "color": "black", "align": "center"}
 
 {%if reg.queuepartition%}
-	{"type": "box", "x": 8, "y": 96, "width": 134, "height": 20, "stroke": "black"},
-	{"type": "paragraph", "text": "If queue partitioning is used at registration,\nplease go to the queue for:", "x": 10, "y": 98, "width": 100, "height": 15, "verticalcenter": true},
-	{"type": "paragraph", "text": "{{reg.queuepartition}}", "x": 110, "y": 98, "width": 30, "height": 15, "verticalcenter": true, "align": "right"},
+,
+	{"type": "box", "x": 8, "y": 131, "width": 134, "height": 20, "stroke": "black"},
+	{"type": "paragraph", "text": "If queue partitioning is used at registration,\nplease go to the queue for:", "x": 10, "y": 133, "width": 100, "height": 15, "verticalcenter": true},
+	{"type": "paragraph", "text": "{{reg.queuepartition}}", "x": 110, "y": 133, "width": 30, "height": 15, "verticalcenter": true, "align": "right"}
 {%endif%}
-	{"type": "qrimage", "x": 60, "y": {{ 100 + (reg.queuepartition and 24 or 0) }}, "width": 30, "height": 30, "qrcontent": "{{reg.fullidtoken}}"}
     ]
 }
