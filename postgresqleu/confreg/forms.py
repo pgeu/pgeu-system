@@ -297,24 +297,27 @@ class ConferenceRegistrationForm(forms.ModelForm):
                'fields': [self[x] for x in fields],
                }
 
-        if conf.asktshirt or conf.askfood or conf.askbadgescan or conf.askshareemail:
+        if conf.asktshirt or conf.askfood or conf.askshareemail:
             fields = []
             if conf.asktshirt:
                 fields.append(self['shirtsize'])
             if conf.askfood:
                 fields.append(self['dietary'])
-            if conf.askbadgescan:
-                fields.append(self['badgescan'])
             if conf.askshareemail:
                 fields.append(self['shareemail'])
             yield {'id': 'conference_info',
                    'legend': 'Conference information',
                    'fields': fields}
 
-        if self.instance.conference.askphotoconsent:
+        if conf.askphotoconsent or conf.askbadgescan:
+            fields = []
+            if conf.askphotoconsent:
+                fields.append(self['photoconsent'])
+            if conf.askbadgescan:
+                fields.append(self['badgescan'])
             yield {'id': 'consent_info',
                    'legend': 'Consent',
-                   'fields': [self[x] for x in ['photoconsent', ]],
+                   'fields': fields,
             }
 
         if conf.conferenceadditionaloption_set.filter(public=True).exists():
