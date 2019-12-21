@@ -1,4 +1,4 @@
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django import forms
 from django.shortcuts import render, get_object_or_404
@@ -110,6 +110,12 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
         extra_error = None
         if allow_delete and request.POST['submit'] == 'Delete':
             if instance.pk:
+                if hasattr(instance, 'validate_object_delete'):
+                    try:
+                        instance.validate_object_delete()
+                    except ValidationError as e:
+                        extra_error = "This {0} cannot be deleted: {1}".format(formclass.Meta.model._meta.verbose_name, e.message)
+
                 # Are there any associated objects here, by any chance?
                 collector = NestedObjects(using='default')
                 collector.collect([instance, ])
@@ -117,7 +123,10 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                 to_delete.remove(instance)
                 if to_delete:
                     to_delete = [d for d in flatten_list(to_delete[0]) if d._meta.model_name not in formclass.auto_cascade_delete_to]
-                if to_delete:
+
+                if extra_error:
+                    pass
+                elif to_delete:
                     pieces = [str(to_delete[n]) for n in range(0, min(5, len(to_delete))) if not isinstance(to_delete[n], list)]
                     extra_error = "This {0} cannot be deleted. It would have resulted in the following other objects also being deleted: {1}".format(formclass.Meta.model._meta.verbose_name, ', '.join(pieces))
                 else:
