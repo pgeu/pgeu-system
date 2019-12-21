@@ -402,6 +402,20 @@ class RegistrationType(models.Model):
         d['days'] = [dd.day.strftime('%Y-%m-%d') for dd in self.days.all()]
         return d
 
+    def validate_object_delete(self):
+        # Most deletions are blocked by foreign keys, but registration types are referenced
+        # from inside JSON objects in the sponsor system. So build an ugly app-level
+        # foreign key...
+
+        # Can't import this model globally as it causes a circular dependency
+        from postgresqleu.confsponsor.models import SponsorshipBenefit
+        from postgresqleu.confsponsor.benefitclasses import get_benefit_id
+
+        if SponsorshipBenefit.objects.filter(level__conference=self.conference,
+                                             benefit_class=get_benefit_id('entryvouchers.EntryVouchers'),
+                                             class_parameters__type=self.regtype).exists():
+            raise ValidationError("A sponsorship benefit is using this registration type")
+
 
 class ShirtSize(models.Model):
     shirtsize = models.CharField(max_length=32)
