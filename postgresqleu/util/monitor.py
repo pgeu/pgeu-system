@@ -5,12 +5,15 @@ from django.conf import settings
 import subprocess
 import os.path
 
+from postgresqleu.util.decorators import global_login_exempt
+
 
 def _validate_monitor_request(request):
     if request.META['REMOTE_ADDR'] not in settings.MONITOR_SERVER_IPS:
         raise PermissionDenied("Invalid IP")
 
 
+@global_login_exempt
 def gitinfo(request):
     _validate_monitor_request(request)
 
