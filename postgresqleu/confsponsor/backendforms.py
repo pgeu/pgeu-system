@@ -194,6 +194,12 @@ class BackendSponsorshipLevelForm(BackendForm):
             for b in level.sponsorshipbenefit_set.all():
                 b.pk = None
                 b.level = newlevel
+                c = get_benefit_class(b.benefit_class)(b.level, b.class_parameters)
+                try:
+                    c.validate_parameters()
+                except ValidationError as e:
+                    yield 'Cannot copy level {}, benefit {} cannot be copied: {}'.format(level.levelname, b.benefitname, e.message)
+                    continue
                 b.save()
 
 

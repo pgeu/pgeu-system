@@ -1,5 +1,5 @@
 from django import forms
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, ValidationError
 
 import base64
 import os
@@ -111,3 +111,8 @@ class EntryVouchers(BaseBenefit):
         if batch.prepaidvoucher_set.filter(user__isnull=False).exists():
             return False
         return True
+
+    def validate_parameters(self):
+        # Verify that the registration type being copied in actually exists
+        if not RegistrationType.objects.filter(conference=self.level.conference, regtype=self.params['type']).exists():
+            raise ValidationError("Registration type '{}' does not exist".format(self.params['type']))
