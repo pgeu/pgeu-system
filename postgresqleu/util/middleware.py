@@ -61,7 +61,7 @@ class GlobalLoginMiddleware(object):
             if len(auth) != 2:
                 return http.HttpResponseForbidden("Invalid authentication")
             if auth[0].lower() == "basic":
-                user, pwd = base64.b64decode(auth[1]).split(':')
+                user, pwd = base64.b64decode(auth[1]).decode('utf8').split(':')
                 if user == settings.GLOBAL_LOGIN_USER and pwd == settings.GLOBAL_LOGIN_PASSWORD:
                     return None
             # Else we fall through and request a login prompt
