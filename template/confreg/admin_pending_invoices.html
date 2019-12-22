@@ -25,22 +25,27 @@ $(function () {
 
 {%block layoutblock%}
 <h1>Pending invoices</h1>
+<p>
+  This page shows all pending invoices for this conference. To view the history of
+  an invoice, hover the mouse pointer over the invoice number.
+</p>
 
 {%for t,l in invoices.items%}
 <h2>{{t}}</h2>
 <table class="table table-bordered table-striped table-hover table-condensed">
   <tr>
     <th class="col-md-1">Number</td>
-    <th>Title</td>
-    <th>Recipient</td>
+    <th class="col-md-3">Title</td>
+    <th class="col-md-3">Recipient</td>
     <th class="col-md-1">Amount</td>
-    <th class="col-md-2">Sent</td>
-    <th class="col-md-2">Due</td>
-    <th class="col-md-2">Autocancel</td>
+    <th class="col-md-1">Sent</td>
+    <th class="col-md-1">Due</td>
+    <th class="col-md-1">Autocancel</td>
+    <th class="col-md-1"></th>
   </tr>
 {%for i in l%}
-  <tr class="history_popover" data-toggle="popover" data-trigger="hover" data-container="body" data-placement="bottom">
-    <td>#{%if user.is_superuser%}<a href="/invoiceadmin/{{i.id}}/">{{i.id}}</a>{%else%}{{i.id}}{%endif%}
+  <tr>
+    <td class="history_popover" data-toggle="popover" data-trigger="hover" data-container="body" data-placement="bottom">#{%if user.is_superuser%}<a href="/invoiceadmin/{{i.id}}/">{{i.id}}</a>{%else%}{{i.id}}{%endif%}
 <div class="history_content">
 {%for h in i.invoicehistory_set.all %}
 {{h.time}}: {{h.txt}}<br/>
@@ -53,6 +58,7 @@ $(function () {
     <td>{{i.invoicedate}}</td>
     <td>{{i.duedate}}</td>
     <td>{{i.canceltime|default:""}}</td>
+    <td><a class="btn btn-default btn-sm" href="{{i.id}}/cancel/">Cancel</a></td>
   </tr>
 {%endfor%}
 </table>

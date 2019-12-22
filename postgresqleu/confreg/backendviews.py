@@ -31,8 +31,9 @@ from .models import PendingAdditionalOrder
 from .models import ConferenceTweetQueue
 
 from postgresqleu.invoices.models import Invoice
+from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.confsponsor.util import get_sponsor_dashboard_data
-from postgresqleu.confsponsor.models import PurchasedVoucher
+from postgresqleu.confsponsor.models import PurchasedVoucher, Sponsor
 
 from .backendforms import BackendConferenceForm, BackendSuperConferenceForm, BackendRegistrationForm
 from .backendforms import BackendRegistrationTypeForm, BackendRegistrationClassForm
@@ -49,6 +50,7 @@ from .backendforms import TwitterForm, TwitterTestForm, BackendTweetQueueForm, B
 from .backendforms import TweetCampaignSelectForm
 from .backendforms import BackendSendEmailForm
 from .backendforms import BackendRefundPatternForm
+from .backendforms import ConferenceInvoiceCancelForm
 
 from .campaigns import get_campaign_from_id
 
@@ -301,6 +303,44 @@ def pendinginvoices(request, urlname):
             ('Multi-registration invoices', Invoice.objects.filter(paidat__isnull=True, bulkpayment__conference=conference)),
             ('Sponsor invoices', Invoice.objects.filter(paidat__isnull=True, sponsor__conference=conference)),
         )),
+    })
+
+
+@transaction.atomic
+def pendinginvoices_cancel(request, urlname, invoiceid):
+    conference = get_authenticated_conference(request, urlname)
+    invoice = get_object_or_404(Invoice, pk=invoiceid, paidat__isnull=True)
+
+    # Have to verify that this invoice is actually for this conference
+    if not (
+            ConferenceRegistration.objects.filter(conference=conference, invoice=invoice).exists() or
+            BulkPayment.objects.filter(conference=conference, invoice=invoice).exists() or
+            Sponsor.objects.filter(conference=conference, invoice=invoice).exists()
+    ):
+        raise PermissionDenied("Invoice not for this conference")
+
+    if request.method == 'POST':
+        form = ConferenceInvoiceCancelForm(data=request.POST)
+        if form.is_valid():
+            manager = InvoiceManager()
+            try:
+                manager.cancel_invoice(invoice, form.cleaned_data['reason'])
+                messages.info(request, 'Invoice {} canceled.'.format(invoice.id))
+                return HttpResponseRedirect('../../')
+            except Exception as e:
+                messages.error(request, 'Failed to cancel invoice: {}'.format(e))
+    else:
+        form = ConferenceInvoiceCancelForm()
+
+    return render(request, 'confreg/admin_backend_form.html', {
+        'conference': conference,
+        'basetemplate': 'confreg/confadmin_base.html',
+        'form': form,
+        'whatverb': 'Cancel invoice',
+        'savebutton': 'Cancel invoice',
+        'cancelname': 'Return without canceling',
+        'cancelurl': '../../',
+        'note': 'Canceling invoice #{} ({}) will disconnect it from the associated objects and send a notification to the recipient of the invoice ({}).'.format(invoice.id, invoice.title, invoice.recipient_name),
     })
 
 

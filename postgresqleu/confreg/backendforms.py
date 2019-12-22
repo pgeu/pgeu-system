@@ -1091,6 +1091,21 @@ class CancelRegistrationForm(django.forms.Form):
 
 
 #
+# Form for canceling a conference invoice
+#
+class ConferenceInvoiceCancelForm(django.forms.Form):
+    reason = django.forms.CharField(max_length=400, min_length=10, required=True, label="Reason for cancel",
+                                    help_text="Specify the reason for canceling the invoice. Note that this reason is sent by email to the invoice recipient.")
+    confirm = django.forms.BooleanField(help_text="Confirm that you really want to cancel this invoice!")
+
+    def __init__(self, *args, **kwargs):
+        super(ConferenceInvoiceCancelForm, self).__init__(*args, **kwargs)
+
+        if 'reason' not in self.data:
+            del self.fields['confirm']
+
+
+#
 # Form for sending email
 #
 class BackendSendEmailForm(django.forms.Form):

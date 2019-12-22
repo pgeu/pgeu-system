@@ -225,6 +225,7 @@ urlpatterns.extend([
     url(r'^events/admin/(\w+)/tweet/campaign/$', postgresqleu.confreg.backendviews.tweetcampaignselect),
     url(r'^events/admin/(\w+)/tweet/campaign/(\d+)/$', postgresqleu.confreg.backendviews.tweetcampaign),
     url(r'^events/admin/(\w+)/pendinginvoices/$', postgresqleu.confreg.backendviews.pendinginvoices),
+    url(r'^events/admin/(\w+)/pendinginvoices/(\d+)/cancel/$', postgresqleu.confreg.backendviews.pendinginvoices_cancel),
     url(r'^events/admin/(\w+)/multiregs/$', postgresqleu.confreg.backendviews.multiregs),
     url(r'^events/admin/(\w+)/addoptorders/$', postgresqleu.confreg.backendviews.addoptorders),
     url(r'^events/admin/(\w+)/purgedata/$', postgresqleu.confreg.backendviews.purge_personal_data),
