@@ -262,7 +262,7 @@ def cancelinvoice(request, invoicenum):
 
     manager = InvoiceManager()
     try:
-        manager.cancel_invoice(invoice, reason)
+        manager.cancel_invoice(invoice, reason, request.user.username)
     except Exception as ex:
         messages.warning(request, "Failed to cancel: %s" % ex)
 

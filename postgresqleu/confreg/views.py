@@ -283,7 +283,8 @@ def register(request, confname, whatfor=None):
             # Yup, should be canceled
             manager = InvoiceManager()
             manager.cancel_invoice(reg.invoice,
-                                   "Invoice was automatically canceled because payment was not received on time.")
+                                   "Invoice was automatically canceled because payment was not received on time.",
+                                   "system")
 
             # cancel_invoice will call the processor to unlink the invoice,
             # so make sure we refresh the object.
@@ -676,7 +677,7 @@ def multireg_bulk_cancel(request, confname, bulkid):
     if request.method == 'POST':
         if request.POST['submit'].find('Cancel invoice') >= 0:
             manager = InvoiceManager()
-            manager.cancel_invoice(bp.invoice, "User {0} requested cancellation".format(request.user))
+            manager.cancel_invoice(bp.invoice, "User {0} requested cancellation".format(request.user), request.user.username)
             return HttpResponseRedirect('../../')
         else:
             return HttpResponseRedirect('../')
@@ -2023,7 +2024,8 @@ def invoice(request, confname, regid):
         # Yup, should be canceled
         manager = InvoiceManager()
         manager.cancel_invoice(reg.invoice,
-                               "Invoice was automatically canceled because payment was not received on time.")
+                               "Invoice was automatically canceled because payment was not received on time.",
+                               "system")
         return HttpResponseRedirect('../../')
 
     return render_conference_response(request, conference, 'reg', 'confreg/invoice.html', {
@@ -2051,7 +2053,7 @@ def invoice_cancel(request, confname, regid):
     if request.method == 'POST':
         if request.POST['submit'].find('Cancel invoice') >= 0:
             manager = InvoiceManager()
-            manager.cancel_invoice(reg.invoice, "User {0} requested cancellation".format(request.user))
+            manager.cancel_invoice(reg.invoice, "User {0} requested cancellation".format(request.user), request.user.username)
             return HttpResponseRedirect('../../../')
         else:
             return HttpResponseRedirect('../')
@@ -3058,7 +3060,7 @@ def admin_registration_cancel(request, urlname, regid):
             elif method == form.Methods.CANCEL_INVOICE:
                 # An invoice exists and should be canceled. Since it's not paid yet,
                 # this is easy.
-                manager.cancel_invoice(reg.invoice, reason)
+                manager.cancel_invoice(reg.invoice, reason, request.user.username)
             elif method == form.Methods.NO_REFUND:
                 # An invoice may exist, but in this case we don't want to provide
                 # a refund. This can only happen for registrations that are actually

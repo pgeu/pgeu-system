@@ -324,7 +324,7 @@ def pendinginvoices_cancel(request, urlname, invoiceid):
         if form.is_valid():
             manager = InvoiceManager()
             try:
-                manager.cancel_invoice(invoice, form.cleaned_data['reason'])
+                manager.cancel_invoice(invoice, form.cleaned_data['reason'], request.user.username)
                 messages.info(request, 'Invoice {} canceled.'.format(invoice.id))
                 return HttpResponseRedirect('../../')
             except Exception as e:

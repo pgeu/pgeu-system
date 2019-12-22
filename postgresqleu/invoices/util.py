@@ -469,7 +469,7 @@ class InvoiceManager(object):
             return None
 
     # Cancel the specified invoice, calling any processor set on it if necessary
-    def cancel_invoice(self, invoice, reason):
+    def cancel_invoice(self, invoice, reason, who):
         # If this invoice has a processor, we need to start by calling it
         processor = self.get_invoice_processor(invoice)
         if processor:
@@ -483,14 +483,14 @@ class InvoiceManager(object):
         invoice.deletion_reason = reason
         invoice.save()
 
-        InvoiceHistory(invoice=invoice, txt='Canceled').save()
+        InvoiceHistory(invoice=invoice, txt='Canceled by {}'.format(who)).save()
 
         # Send the receipt to the user if possible - that should make
         # them happy :)
         wrapper = InvoiceWrapper(invoice)
         wrapper.email_cancellation(reason)
 
-        InvoiceLog(timestamp=datetime.now(), message="Deleted invoice %s: %s" % (invoice.id, invoice.deletion_reason)).save()
+        InvoiceLog(timestamp=datetime.now(), message="Deleted invoice %s (deleted by %s): %s" % (invoice.id, who, invoice.deletion_reason)).save()
 
     def refund_invoice(self, invoice, reason, amount, vatamount, vatrate):
         # Initiate a refund of an invoice if there is a payment provider that supports it.

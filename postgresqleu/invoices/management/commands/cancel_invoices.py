@@ -36,4 +36,5 @@ class Command(BaseCommand):
             # The manager will automatically cancel any registrations etc,
             # as well as send an email to the user.
             manager.cancel_invoice(invoice,
-                                   "Invoice was automatically canceled because payment was not received on time.")
+                                   "Invoice was automatically canceled because payment was not received on time.",
+                                   "system")
