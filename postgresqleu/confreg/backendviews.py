@@ -10,6 +10,7 @@ from django.conf import settings
 import datetime
 import csv
 import json
+from collections import OrderedDict
 
 from postgresqleu.util.db import exec_to_list, exec_to_dict, exec_no_result, exec_to_scalar
 from postgresqleu.util.decorators import superuser_required
@@ -295,11 +296,11 @@ def pendinginvoices(request, urlname):
 
     return render(request, 'confreg/admin_pending_invoices.html', {
         'conference': conference,
-        'invoices': {
-            'Attendee invoices': Invoice.objects.filter(paidat__isnull=True, conferenceregistration__conference=conference),
-            'Multi-registration invoices': Invoice.objects.filter(paidat__isnull=True, bulkpayment__conference=conference),
-            'Sponsor invoices': Invoice.objects.filter(paidat__isnull=True, sponsor__conference=conference),
-        },
+        'invoices': OrderedDict((
+            ('Attendee invoices', Invoice.objects.filter(paidat__isnull=True, conferenceregistration__conference=conference)),
+            ('Multi-registration invoices', Invoice.objects.filter(paidat__isnull=True, bulkpayment__conference=conference)),
+            ('Sponsor invoices', Invoice.objects.filter(paidat__isnull=True, sponsor__conference=conference)),
+        )),
     })
 
 
