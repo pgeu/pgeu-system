@@ -331,6 +331,7 @@ urlpatterns.extend([
 
     # Monitoring endpoints
     url(r'^monitor/git/$', postgresqleu.util.monitor.gitinfo),
+    url(r'^monitor/nagios/$', postgresqleu.util.monitor.nagios),
 ])
 
 if settings.ENABLE_NEWS:
