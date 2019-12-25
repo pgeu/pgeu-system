@@ -173,13 +173,22 @@ def _json_response(reg, status, existingnote=''):
 @csrf_exempt
 def scanning_api(request, scannertoken):
     try:
-        scanner = SponsorScanner.objects.select_related('sponsor', 'sponsor__conference').get(token=scannertoken)
+        scanner = SponsorScanner.objects.select_related('sponsor', 'sponsor__conference', 'scanner', 'scanner__attendee').get(token=scannertoken)
     except SponsorScanner.DoesNotExist:
         raise Http404("Not found")
 
     sponsor = scanner.sponsor
 
     if request.method in ('GET', 'POST'):
+        if request.GET.get('status', ''):
+            # Request for status is handled separately, everything else is a scan
+            return HttpResponse(json.dumps({
+                'scanner': scanner.scanner.attendee.username,
+                'name': scanner.scanner.fullname,
+                'confname': scanner.sponsor.conference.conferencename,
+
+            }), content_type='application/json')
+
         with transaction.atomic():
             token = request.GET.get('token', '') or request.POST.get('token', '')
             if not token:
