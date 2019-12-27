@@ -131,7 +131,8 @@ def api(request, urlname, regtoken, what):
             'admin': is_admin,
         })
 
-    if not conference.checkinactive:
+    # Only the stats API call is allowed when check-in is not open
+    if not conference.checkinactive and what != 'stats':
         return HttpResponse("Check-in not open", status=412)
 
     if what == 'lookup':
