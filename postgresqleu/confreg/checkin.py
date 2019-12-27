@@ -128,6 +128,7 @@ def api(request, urlname, regtoken, what):
             'name': user.fullname,
             'active': conference.checkinactive,
             'confname': conference.conferencename,
+            'admin': is_admin,
         })
 
     if not conference.checkinactive:
