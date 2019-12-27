@@ -45,7 +45,7 @@ class Command(BaseCommand):
     def expire_sessions(self, method, pm):
         # If there are any sessions that have not been touched for 48+ hours, then clearly something
         # went wrong, so just get rid of them.
-        for co in StripeCheckout.objects.filter(method=method, completedat__isnull=True, createdat__lt=datetime.now() - timedelta(hours=48)):
+        for co in StripeCheckout.objects.filter(paymentmethod=method, completedat__isnull=True, createdat__lt=datetime.now() - timedelta(hours=48)):
             StripeLog(message="Expired checkout session {0} (id {1}), not completed for 48 hours.".format(co.id, co.sessionid),
                       paymentmethod=method).save()
             co.delete()
