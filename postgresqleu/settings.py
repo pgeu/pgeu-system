@@ -232,7 +232,7 @@ else:
 if not SECRET_KEY:
     raise Exception("SECRET_KEY must be configured!")
 
-# Reset admins based on confir params from skins and local
+# Reset admins based on config params from skins and local
 ADMINS = (
     ('{0} webmaster'.format(ORG_NAME), DEFAULT_EMAIL),
 )
