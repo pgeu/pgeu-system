@@ -16,7 +16,7 @@ from django.conf import settings
 from datetime import time, datetime, timedelta
 
 from postgresqleu.invoices.models import InvoicePaymentMethod
-from postgresqleu.stripepayment.models import StripeCheckout
+from postgresqleu.stripepayment.models import StripeCheckout, StripeRefund, StripeLog
 
 
 class Command(BaseCommand):
