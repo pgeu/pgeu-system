@@ -17,6 +17,7 @@ from datetime import time, datetime, timedelta
 
 from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.stripepayment.models import StripeCheckout, StripeRefund, StripeLog
+from postgresqleu.stripepayment.api import StripeApi
 
 
 class Command(BaseCommand):
