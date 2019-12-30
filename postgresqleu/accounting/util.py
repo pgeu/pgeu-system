@@ -91,7 +91,7 @@ and the year manually!
                             account=account,
                             amount=amount,
                             object=obj,
-                            description=description).save()
+                            description=description[:200]).save()
             except Account.DoesNotExist:
                 raise AccountingException("Account %s does not exist!" % accountnum)
             except Object.DoesNotExist:
