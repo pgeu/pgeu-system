@@ -78,10 +78,10 @@ Better go check manually!
                                              completedat__isnull=False,
                                              invoicerefund__issued__lt=datetime.now() - timedelta(hours=6)):
 
-            send_simle_mail(settings.INVOICE_SENDER_EMAIL,
-                            pm.config('notification_receiver'),
-                            'Stripe stalled refund!',
-                            """Stripe refund {0} for {1} has been stalled for more than 6 hours!
+            send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+                             pm.config('notification_receiver'),
+                             'Stripe stalled refund!',
+                             """Stripe refund {0} for {1} has been stalled for more than 6 hours!
 
 This is probably not normal and should be checked!
 """.format(r.id, method.internaldescription))
