@@ -76,7 +76,7 @@ Better go check manually!
     def check_refunds(self, method, pm):
         for r in StripeRefund.objects.filter(paymentmethod=method,
                                              completedat__isnull=False,
-                                             invoicerefund__issued__lt=datetime.now() - timedelta(hours=6)):
+                                             invoicerefundid__issued__lt=datetime.now() - timedelta(hours=6)):
 
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                              pm.config('notification_receiver'),
