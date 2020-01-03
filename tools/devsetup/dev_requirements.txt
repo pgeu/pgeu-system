@@ -6,7 +6,7 @@ Pillow==4.0.0
 argparse
 cryptography
 django-markdown==0.8.4
-django-markwhat==1.4
+django-markwhat==1.6.2
 flup
 httplib2
 psycopg2
