@@ -27,4 +27,4 @@ their own personal link!
 We also strongly recommend that you test the system before the
 conference. You can find a code to test with at
 
-{{sitebase}}/events/sponsor/scanning/test/
+{{sitebase}}/events/sponsor/scanning-test/
