@@ -14,6 +14,9 @@ class BasePayment(object):
     def config(self, param, default=None):
         return self.method.config.get(param, default)
 
+    def upload_tooltip(self):
+        return ''
+
 
 payment_implementations = [
     'postgresqleu.util.payment.dummy.DummyPayment',

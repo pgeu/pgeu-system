@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django import forms
 from django.db.models import Sum
 from django.template import Template, Context
@@ -113,6 +114,8 @@ class BaseManagedBankPayment(BasePayment):
 
 
 class BaseManagedBankPaymentForm(BackendInvoicePaymentMethodForm):
+    bank_file_uploads = False
+
     bankaccount = forms.ChoiceField(required=True, choices=get_account_choices,
                                     label="Account",
                                     help_text="Accounting account that is a 1-1 match to this bank account")
@@ -123,14 +126,39 @@ class BaseManagedBankPaymentForm(BackendInvoicePaymentMethodForm):
                                label="Bank transfer information",
                                help_text="Full bank transfer information. If specified, this will be included in PDF invoices automatically",
     )
+    file_upload_interval = forms.IntegerField(required=True,
+                                              label="File upload interval",
+                                              help_text="How often to request file uploads for this account, or zero if never",
+                                              validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
+
+    def fix_fields(self):
+        super(BaseManagedBankPaymentForm, self).fix_fields()
+        if not self.bank_file_uploads:
+            del self.fields['file_upload_interval']
 
     @property
     def config_fields(self):
-        return ['bankaccount', 'feeaccount', 'bankinfo', ] + self.managed_fields
+        extra = []
+        if self.bank_file_uploads:
+            extra = ['file_upload_interval', ]
+
+        return ['bankaccount', 'feeaccount', 'bankinfo', ] + self.managed_fields + extra
 
     @property
     def config_fieldsets(self):
-        return [
+        prep = []
+
+        if self.bank_file_uploads:
+            prep = [
+                {
+                    'id': 'management',
+                    'legend': 'Management',
+                    'fields': ['file_upload_interval', ]
+                },
+            ]
+
+        return prep + [
             {
                 'id': 'accounting',
                 'legend': 'Accounting',

@@ -6,7 +6,7 @@ from django.conf import settings
 
 from postgresqleu.newsevents.models import News
 from postgresqleu.confreg.models import Conference, ConferenceSeries
-from postgresqleu.invoices.models import PendingBankTransaction
+from postgresqleu.invoices.models import PendingBankTransaction, BankFileUpload, InvoicePaymentMethod
 
 from postgresqleu.util.db import exec_to_dict, conditional_exec_to_scalar
 
@@ -140,12 +140,30 @@ def admin_dashboard(request):
 
     if permissions['invoices']:
         pending_bank = PendingBankTransaction.objects.all().exists()
+        ipm = list(InvoicePaymentMethod.objects.filter(active=True, config__has_key='file_upload_interval'))
+        if ipm:
+            # At least one payment method exists that *should* get uploads checked
+            # XXX: this could probably be done more efficient... But we never have
+            # many payment methods, and even fewer that actually handle file uploads.
+            for pm in ipm:
+                if pm.config['file_upload_interval'] > 0:
+                    if not BankFileUpload.objects.filter(method=pm,
+                                                         created__gt=datetime.datetime.now() - datetime.timedelta(days=pm.config['file_upload_interval'])
+                    ).exists():
+                        bank_file_uploads = True
+                        break
+            else:
+                bank_file_uploads = False
+        else:
+            bank_file_uploads = None
     else:
         pending_bank = False
+        bank_file_uploads = None
 
     return render(request, 'adm/index.html', {
         'permissions': permissions,
         'pending_bank': pending_bank,
+        'bank_file_uploads': bank_file_uploads,
         'schedalert': conditional_exec_to_scalar(request.user.is_superuser, "SELECT NOT EXISTS (SELECT 1 FROM pg_stat_activity WHERE application_name='pgeu scheduled job runner' AND datname=current_database())"),
         'mailqueuealert': conditional_exec_to_scalar(request.user.is_superuser, "SELECT EXISTS (SELECT 1 FROM mailqueue_queuedmail LIMIT 1)"),
     })

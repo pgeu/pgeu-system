@@ -3,12 +3,14 @@ from django.http import HttpResponseRedirect, Http404
 from django.utils.html import escape
 from django.shortcuts import get_object_or_404, render
 from django.contrib import messages
+from django.db.models import Max
 from django.db import transaction
 from django.conf import settings
 
 from postgresqleu.util.backendviews import backend_list_editor
 from postgresqleu.util.auth import authenticate_backend_group
 from postgresqleu.util.payment import payment_implementations
+from postgresqleu.util.pagination import simple_pagination
 from postgresqleu.accounting.util import create_accounting_entry, get_account_choices
 from postgresqleu.invoices.util import InvoiceManager
 
@@ -17,6 +19,7 @@ from postgresqleu.invoices.models import InvoicePaymentMethod, Invoice, InvoiceL
 from postgresqleu.invoices.models import PendingBankTransaction
 from postgresqleu.invoices.models import PendingBankMatcher
 from postgresqleu.invoices.models import BankTransferFees
+from postgresqleu.invoices.models import BankFileUpload
 from postgresqleu.invoices.backendforms import BackendVatRateForm
 from postgresqleu.invoices.backendforms import BackendVatValidationCacheForm
 from postgresqleu.invoices.backendforms import BackendInvoicePaymentMethodForm
@@ -148,6 +151,50 @@ def banktransactions_match(request, transid):
         'matchers': matchers,
         'topadmin': 'Invoices',
         'breadcrumbs': [('/admin/invoices/banktransactions/', 'Pending bank transactions'), ],
+        'helplink': 'payment',
+    })
+
+
+@transaction.atomic
+def bankfiles(request):
+    authenticate_backend_group(request, 'Invoice managers')
+
+    if request.method == 'POST':
+        # Uploading a file!
+        method = get_object_or_404(InvoicePaymentMethod, active=True, config__has_key='file_upload_interval', id=request.POST['id'])
+        if 'f' not in request.FILES:
+            messages.error(request, "No file included in upload")
+        elif request.FILES['f'].size < 1:
+            messages.error(request, "Uploaded file is empty")
+        else:
+            f = request.FILES['f']
+            impl = method.get_implementation()
+
+            try:
+                contents = f.read().decode('utf8')
+                (numrows, numtrans, numpending) = impl.parse_uploaded_file(contents)
+                BankFileUpload(method=method,
+                               uploadby=request.user.username,
+                               name=f.name,
+                               textcontents=contents,
+                               parsedrows=numrows,
+                               newtrans=numtrans,
+                               newpending=numpending,
+                ).save()
+                messages.info(request, "File uploaded. {} rows parsed, {} transactions stored, resulting in {} pending transactions.".format(numrows, numtrans, numpending))
+                return HttpResponseRedirect('.')
+            except Exception as e:
+                messages.error(request, "Error uploading file: {}".format(e))
+
+    methods = InvoicePaymentMethod.objects.filter(active=True, config__has_key='file_upload_interval').annotate(latest_file=Max('bankfileupload__created'))
+    file_objects = BankFileUpload.objects.select_related('method').all().order_by('-created')[:1000]
+    (files, paginator, page_range) = simple_pagination(request, file_objects, 50)
+
+    return render(request, 'invoices/bankfiles.html', {
+        'files': files,
+        'page_range': page_range,
+        'methods': methods,
+        'topadmin': 'Invoices',
         'helplink': 'payment',
     })
 

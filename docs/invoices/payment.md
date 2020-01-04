@@ -32,6 +32,19 @@ into the central processing. This processing knows how to match some
 of them, and if they don't match, will provide an interface for doing
 manual matching.
 
+For some managed bank accounts, these transactions are automatically
+loaded through a job running in the [schedule jobs runner](jobs). For
+others the transactions are manually uploaded, but automatically
+processed.
+
+When at least one managed bank account supports file uploading (and
+is configured and active), a button will show up on the admin
+dashboard for *Bank file uploads*. Under this page a list of all
+uploaded files can be viewed, and new uploads can be made. Hover the
+mouse pointer over the button for uploading files to get instructions
+for how to download the correct format file from the specific bank
+provider.
+
 ### Managed bank accounts and invoices
 
 If the invoice payment reference (as calculated and printed on the

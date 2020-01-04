@@ -25,6 +25,11 @@
 <div class="row">
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/invoiceadmin/">Invoice Administration</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-{%if pending_bank%}warning{%else%}default{%endif%} btn-block" href="/admin/invoices/banktransactions/">Pending bank transactions</a></div>
+{%if bank_file_uploads is not None %}
+  <div class="col-md-3 col-sm-6 col-xs12 buttonrow"><a class="btn btn-{%if bank_file_uploads %}warning{%else%}default{%endif%} btn-block" href="/admin/invoices/bankfiles/">Bank file uploads</a></div>
+{%endif%}
+</div>
+<div class="row">
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/invoices/vatrates/">VAT rates</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/invoices/vatcache/">VAT validation cache</a></div>
 </div>

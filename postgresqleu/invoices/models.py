@@ -4,6 +4,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
+from django.utils.safestring import mark_safe
 
 from datetime import datetime
 from decimal import Decimal
@@ -52,6 +53,9 @@ class InvoicePaymentMethod(models.Model):
         classname = pieces[-1]
         mod = __import__(modname, fromlist=[classname, ])
         return getattr(mod, classname)(self.id, self)
+
+    def upload_tooltip(self):
+        return mark_safe(self.get_implementation().upload_tooltip)
 
 
 class InvoiceRefund(models.Model):
@@ -328,3 +332,19 @@ class PendingBankMatcher(models.Model):
 class BankTransferFees(models.Model):
     invoice = models.ForeignKey(Invoice, null=False, blank=False)
     fee = models.DecimalField(max_digits=10, decimal_places=2, null=False)
+
+
+class BankFileUpload(models.Model):
+    method = models.ForeignKey(InvoicePaymentMethod, null=False, blank=False)
+    created = models.DateTimeField(null=False, blank=False, auto_now_add=True, db_index=True)
+    parsedrows = models.IntegerField(null=False, blank=False)
+    newtrans = models.IntegerField(null=False, blank=False)
+    newpending = models.IntegerField(null=False, blank=False)
+    uploadby = models.CharField(max_length=50, null=False, blank=False)
+    name = models.CharField(max_length=200, null=False, blank=True)
+    textcontents = models.TextField(max_length=100000, null=False, blank=False)
+
+    class Meta:
+        unique_together = (
+            ('method', 'created'),
+        )

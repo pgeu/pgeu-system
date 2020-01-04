@@ -1,0 +1,78 @@
+{%extends "adm/admin_base.html" %}
+{%block title%}Bank files{%endblock%}
+{%block extrahead%}
+<style>
+.upload_content { display: none }
+.popover { max-width: 80% }
+</style>
+<script type="text/javascript">
+$(function() {
+   $('.upload_popover').popover({
+      container: 'body',
+      placement: 'bottom',
+      html: true,
+      content: function() {
+         return $(this).find('.upload_content').html();
+      },
+      title: 'Upload instructions',
+      trigger: 'hover',
+   });
+});
+</script>
+{%endblock%}
+{%block layoutblock %}
+<h1>Bank files</h1>
+<p>
+  This list represents uploaded bank files (automatically or manually so). You
+  can also upload a new file, if you have payment methods active supporting it.
+</p>
+
+<h2>Upload bank file</h2>
+<form id="singleuploadform" method="post" action="." enctype="multipart/form-data"><input id="singleuploadformfile" type="file" name="f"><input id="singleuploadformid" type="hidden" name="id">{%csrf_token%}</form>
+
+<table class="table table-bordered table-striped table-hover table-condensed">
+  <tr>
+    <th>Method</th>
+    <th>Last uploaded</th>
+    <th></th>
+  </tr>
+{%for m in methods %}
+  <tr>
+    <td>{{m.internaldescription}}</td>
+    <td>{%if m.latest_file%}{{m.latest_file}} ({{m.latest_file|timesince}} ago){%else%}Never{%endif%}</td>
+    <td class="upload_popover" data-toggle="popover">
+      <button class="btn btn-sm btn-primary singleuploadformtrigger" data-formid="{{m.id}}">Upload file</button>
+      <div class="upload_content">{{m.upload_tooltip}}</div>
+    </td>
+  </tr>
+{%endfor%}
+</table>
+<h2>Bank files</h2>
+<table class="table table-sm table-striped-table-hover">
+<tr>
+  <th>Time</th>
+  <th>Method</th>
+  <th>Filename</th>
+  <th>Rows</th>
+  <th>New trans.</th>
+  <th>Pending</th>
+  <th>Uploaded by</th>
+</tr>
+{%for f in files.object_list %}
+<tr>
+  <td>{{f.created}} ({{f.created|timesince}} ago)</td>
+  <td>{{f.method.internaldescription}}</td>
+  <td>{{f.name}}</td>
+  <td>{{f.parsedrows}}</td>
+  <td>{{f.newtrans}}</td>
+  <td>{{f.newpending}}</td>
+  <td>{{f.uploadby}}</td>
+</tr>
+{%endfor%}
+</table>
+{%include "adm/include/paginator.html" with pageobjects=files %}
+
+
+
+<a href="/admin/" class="btn btn-default btn-block">Back</a>
+{%endblock%}
