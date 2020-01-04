@@ -7,6 +7,15 @@ $(document).ready(function() {
       return confirm(p);
    });
 
+   $('#singleuploadformfile').on('change', function(e) {
+       $('#singleuploadform').submit();
+   });
+
+   $('button.singleuploadformtrigger').on('click', function(e) {
+       $('#singleuploadformid').val($(this).data('formid'));
+       $('#singleuploadformfile').trigger('click');
+   });
+
    $('.dropdown-submenu a').on("click", function(e){
        $(this).next('ul').toggle();
        e.stopPropagation();

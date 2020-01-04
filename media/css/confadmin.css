@@ -119,6 +119,13 @@ input.skincheckbox[type=checkbox]:checked + label
 }
 
 /*
+ * Hidden form used to upload single file with a nicer UI
+ */
+form#singleuploadform {
+    display: none;
+}
+
+/*
  * Partially collapsing part of a page. Like a bootstrap
  * collapse (and uses the bootstrap collapse underneath)
  * but leaves the first 150 pixels visible even when collapsed.
