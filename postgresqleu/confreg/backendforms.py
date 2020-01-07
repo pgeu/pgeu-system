@@ -1109,7 +1109,7 @@ class ConferenceInvoiceCancelForm(django.forms.Form):
 # Form for sending email
 #
 class BackendSendEmailForm(django.forms.Form):
-    _from = django.forms.CharField(max_length=128, disabled=True, label="From")
+    _from = django.forms.CharField(max_length=100, disabled=True, label="From")
     subject = django.forms.CharField(max_length=128, required=True)
     recipients = django.forms.Field(widget=StaticTextWidget, required=False)
     storeonregpage = django.forms.BooleanField(label="Store on registration page", required=False,
@@ -1120,6 +1120,7 @@ class BackendSendEmailForm(django.forms.Form):
 
     def __init__(self, conference, *args, **kwargs):
         super(BackendSendEmailForm, self).__init__(*args, **kwargs)
+        self.conference = conference
         if not (self.data.get('subject') and self.data.get('message')):
             del self.fields['confirm']
 
@@ -1128,3 +1129,15 @@ class BackendSendEmailForm(django.forms.Form):
     def clean_confirm(self):
         if not self.cleaned_data['confirm']:
             raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")
+
+    def clean_subject(self):
+        if not self.cleaned_data['subject']:
+            raise ValidationError("Please enter a subject")
+
+        # Max length of subject is 100, but we prefix with [] and a space
+        maxlen = 100 - len(str(self.conference)) - 3
+
+        if len(self.cleaned_data['subject']) > maxlen:
+            raise ValidationError("Maximum length of subject is {}, to leave room for prefix. You entered {} characters.".format(maxlen, len(self.cleaned_data['subject'])))
+
+        return self.cleaned_data['subject']
