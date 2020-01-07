@@ -10,6 +10,7 @@ import json
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.qr import generate_base64_qr
 from postgresqleu.util.db import exec_to_dict, exec_to_keyed_scalar
+from postgresqleu.util.decorators import global_login_exempt
 from postgresqleu.confreg.models import ConferenceRegistration
 from postgresqleu.confreg.util import send_conference_mail
 
@@ -171,6 +172,7 @@ def _json_response(reg, status, existingnote=''):
 
 
 @csrf_exempt
+@global_login_exempt
 def scanning_api(request, scannertoken):
     try:
         scanner = SponsorScanner.objects.select_related('sponsor', 'sponsor__conference', 'scanner', 'scanner__attendee').get(token=scannertoken)

@@ -10,6 +10,7 @@ from django.conf import settings
 
 from postgresqleu.util.db import exec_to_list, exec_to_dict
 from postgresqleu.util.qr import generate_base64_qr
+from postgresqleu.util.decorators import global_login_exempt
 
 from .models import Conference, ConferenceRegistration
 from .views import render_conference_response
@@ -119,6 +120,7 @@ def _get_reg_json(r):
 
 
 @csrf_exempt
+@global_login_exempt
 def api(request, urlname, regtoken, what):
     (conference, user, is_admin) = _get_checkin(request, urlname, regtoken)
 
