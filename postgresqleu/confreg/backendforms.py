@@ -1109,7 +1109,7 @@ class ConferenceInvoiceCancelForm(django.forms.Form):
 # Form for sending email
 #
 class BackendSendEmailForm(django.forms.Form):
-    _from = django.forms.CharField(max_length=128, disabled=True, label="Form")
+    _from = django.forms.CharField(max_length=128, disabled=True, label="From")
     subject = django.forms.CharField(max_length=128, required=True)
     recipients = django.forms.Field(widget=StaticTextWidget, required=False)
     storeonregpage = django.forms.BooleanField(label="Store on registration page", required=False,

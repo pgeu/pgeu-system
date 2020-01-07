@@ -81,7 +81,7 @@ class BackendMeetingForm(BackendForm):
 
 class BackendMemberSendEmailForm(django.forms.Form):
     helplink = 'membership'
-    _from = django.forms.CharField(max_length=128, disabled=True, label="Form")
+    _from = django.forms.CharField(max_length=128, disabled=True, label="From")
     subject = django.forms.CharField(max_length=128, required=True)
     recipients = django.forms.Field(widget=StaticTextWidget, required=False)
     message = django.forms.CharField(widget=EmailTextWidget, required=True)
