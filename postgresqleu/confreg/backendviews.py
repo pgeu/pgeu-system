@@ -683,6 +683,8 @@ def _attendee_email_form(request, conference, query, breadcrumbs):
     if request.method == 'POST':
         idlist = list(map(int, request.POST['idlist'].split(',')))
     else:
+        if 'idlist' not in request.GET:
+            raise Http404("Mandatory parameter idlist is missing")
         idlist = list(map(int, request.GET['idlist'].split(',')))
 
     queryparams = {'conference': conference.id, 'idlist': idlist}
