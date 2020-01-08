@@ -2519,7 +2519,7 @@ def createschedule(request, confname):
         # Remove all the existing mappings, and add new ones
         # Yes, we do this horribly inefficiently, but it doesn't run very
         # often at all...
-        re_slot = re.compile('^slot(\d+)$')
+        re_slot = re.compile(r'^slot(\d+)$')
         for sess in conference.conferencesession_set.all():
             found = False
             for k, v in list(request.POST.items()):

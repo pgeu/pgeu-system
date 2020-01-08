@@ -86,7 +86,7 @@ class Twitter(object):
                     # Normally these errors come back as json
                     ej = r.json()['errors'][0]
                     return (False, ej['code'], ej['message'])
-                except:
+                except Exception as e:
                     return (False, None, r.text)
         except Exception as e:
             return (False, None, e)

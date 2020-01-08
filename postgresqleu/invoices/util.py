@@ -158,7 +158,7 @@ class InvoiceWrapper(object):
         try:
             pm = PaymentMethodWrapper(self.invoice.paidusing, self.invoice)
             return pm.used_method_details
-        except:
+        except Exception as e:
             raise
 
     def email_receipt(self):
@@ -323,13 +323,13 @@ class InvoiceManager(object):
         #
         # Returns a tuple of (status,invoice,processor)
         #
-        m = re.match('^%s #(\d+) .*' % settings.INVOICE_TITLE_PREFIX, transtext)
+        m = re.match(r'^%s #(\d+) .*' % settings.INVOICE_TITLE_PREFIX, transtext)
         if not m:
             return (self.RESULT_NOTMATCHED, None, None)
 
         try:
             invoiceid = int(m.groups(1)[0])
-        except:
+        except Exception as e:
             logger("Could not match transaction id from '%s'" % transtext)
             return (self.RESULT_NOTFOUND, None, None)
 

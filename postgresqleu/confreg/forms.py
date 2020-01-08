@@ -579,7 +579,7 @@ class SessionSlidesUrlForm(forms.Form):
                 raise ValidationError("URL returns status %s" % r.status_code)
         except ValidationError:
             raise
-        except:
+        except Exception as e:
             raise ValidationError("URL does not validate")
         return u
 

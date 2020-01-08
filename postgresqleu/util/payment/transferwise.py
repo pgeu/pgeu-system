@@ -131,7 +131,7 @@ must be exact and all fees covered by sender.
         return TransferwiseApi(self)
 
     def _find_invoice_transaction(self, invoice):
-        r = re.compile('Bank transfer from {} with id (\d+)'.format(self.method.internaldescription))
+        r = re.compile(r'Bank transfer from {} with id (\d+)'.format(self.method.internaldescription))
         m = r.match(invoice.paymentdetails)
         if m:
             try:

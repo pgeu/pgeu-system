@@ -112,7 +112,7 @@ and the year manually!
         transaction.savepoint_commit(sid)
 
         return entry
-    except:
+    except Exception as e:
         transaction.savepoint_rollback(sid)
         raise
 

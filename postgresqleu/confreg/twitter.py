@@ -119,7 +119,7 @@ def volunteer_twitter(request, urlname, token):
                     image = p.image
                     if image.format not in ('PNG', 'JPEG'):
                         return _json_response({'error': 'Image must be PNG or JPEG, not {}'.format(image.format)})
-                except:
+                except Exception as e:
                     return _json_response({'error': 'Failed to parse image'})
 
                 MAXIMAGESIZE = 1 * 1024 * 1024

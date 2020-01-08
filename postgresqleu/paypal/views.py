@@ -204,7 +204,7 @@ def paypal_return_handler(request, methodid):
     if d['payment_status'] == 'Pending':
         try:
             pending_reason = d['pending_reason']
-        except:
+        except Exception as e:
             pending_reason = 'no reason given'
         return render(request, 'paypal/pending.html', {
             'reason': pending_reason,

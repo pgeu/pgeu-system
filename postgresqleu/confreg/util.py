@@ -119,7 +119,7 @@ def invoicerows_for_registration(reg, update_used_vouchers):
 
 
 def attendee_cost_from_bulk_payment(reg):
-    re_email_dash = re.compile("^[^\s]+@[^\s]+ - [^\s]")
+    re_email_dash = re.compile(r"^[^\s]+@[^\s]+ - [^\s]")
     if not reg.bulkpayment:
         raise Exception("Not called with bulk payment!")
 

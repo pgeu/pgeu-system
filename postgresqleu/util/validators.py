@@ -117,7 +117,7 @@ class PictureUrlValidator(object):
             r = requests.get(value,
                              headers={'User-agent': 'Firefox/60'},
                              timeout=5)
-        except:
+        except Exception as e:
             raise ValidationError("Could not download promotion picture")
 
         if r.status_code != 200:

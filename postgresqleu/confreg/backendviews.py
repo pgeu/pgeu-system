@@ -435,7 +435,7 @@ def twitter_integration(request, urlname):
                                                 request.session.pop('ownersecret'),
                                                 request.POST.get('pincode'),
                 )
-            except:
+            except Exception as e:
                 messages.error(request, 'Failed to get tokens from twitter.')
                 return HttpResponseRedirect('.')
 

@@ -66,7 +66,7 @@ class AttendeeSignupAdminForm(ConcurrentProtectedModelForm):
         super(AttendeeSignupAdminForm, self).__init__(*args, **kwargs)
         try:
             self.fields['attendee'].queryset = ConferenceRegistration.objects.filter(conference=self.instance.signup.conference)
-        except:
+        except Exception as e:
             pass
 
 

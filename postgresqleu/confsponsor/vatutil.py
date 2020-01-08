@@ -24,5 +24,5 @@ def validate_eu_vat_number(number):
             VatValidationCache(vatnumber=number).save()
             return None
         return "Invalid VAT number according to validation service"
-    except:
+    except Exception as e:
         return "Unable to reach validation service"

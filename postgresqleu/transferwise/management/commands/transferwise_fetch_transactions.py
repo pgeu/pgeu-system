@@ -71,7 +71,7 @@ class Command(BaseCommand):
                 # If this is a refund transaction, process it as such
                 if trans.transtype == 'TRANSFER' and trans.paymentref.startswith('{0} refund'.format(settings.ORG_SHORTNAME)):
                     # Yes, this is one of our refunds. Can we find the corresponding transaction?
-                    m = re.match('^TRANSFER-(\d+)$', t['referenceNumber'])
+                    m = re.match(r'^TRANSFER-(\d+)$', t['referenceNumber'])
                     if not m:
                         raise Exception("Could not find TRANSFER info in transfer reference {0}".format(t['referenceNumber']))
                     transferid = m.groups(1)[0]
@@ -113,7 +113,7 @@ class Command(BaseCommand):
                     po.completedtrans = trans
                     po.save()
 
-                    m = re.match('^{0} returned payment (\d+)$'.format(settings.ORG_SHORTNAME), trans.paymentref)
+                    m = re.match(r'^{0} returned payment (\d+)$'.format(settings.ORG_SHORTNAME), trans.paymentref)
                     if not m:
                         raise Exception("Could not find returned transaction id in reference '{0}'".format(trans.paymentref))
                     twtrans = TransferwiseTransaction.objects.get(pk=m.groups(1)[0])

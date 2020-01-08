@@ -12,7 +12,7 @@ from postgresqleu.confreg.models import Conference, ConferenceSeries
 
 reTitle = re.compile('<h1>([^<]+)</h1>')
 
-_reSvgInline = re.compile('<img alt="([^"]+)" src="([^"]+)\.svg" />')
+_reSvgInline = re.compile(r'<img alt="([^"]+)" src="([^"]+)\.svg" />')
 
 
 def _replaceSvgInline(m, section):

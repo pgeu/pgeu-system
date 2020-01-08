@@ -43,7 +43,7 @@ def filter_shuffle(l):
         r = list(l)
         random.shuffle(r)
         return r
-    except:
+    except Exception as e:
         return l
 
 

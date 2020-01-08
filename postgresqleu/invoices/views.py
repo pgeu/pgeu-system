@@ -277,7 +277,7 @@ def extend_cancel(request, invoicenum):
 
     try:
         days = int(request.GET.get('days', 5))
-    except:
+    except Exception as e:
         days = 5
 
     invoice.canceltime += timedelta(days=days)

@@ -409,7 +409,7 @@ def process_raw_adyen_notification(raw, POST):
             notification.reason = POST['reason']
             try:
                 notification.amount = Decimal(POST['value']) / 100
-            except:
+            except Exception as e:
                 # Invalid amount, set to -1
                 AdyenLog(pspReference=notification.pspReference, message='Received invalid amount %s' % POST['value'], error=True, paymentmethod=method).save()
                 notification.amount = -1

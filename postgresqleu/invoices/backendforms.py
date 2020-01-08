@@ -44,7 +44,7 @@ class BackendInvoicePaymentMethodForm(BackendForm):
         'classname_short': 'Implementation',
     }
     queryset_extra_fields = {
-        'classname_short': "substring(classname, '[^\.]+$')",
+        'classname_short': r"substring(classname, '[^\.]+$')",
     }
     coltypes = {
         'Sort key': ['nosearch', ],

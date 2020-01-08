@@ -145,7 +145,7 @@ class Command(BaseCommand):
         pm = method.get_implementation()
 
         # Get the batch number from the url
-        batchnum = re.search('settlement_detail_report_batch_(\d+).csv$', report.url).groups(1)[0]
+        batchnum = re.search(r'settlement_detail_report_batch_(\d+).csv$', report.url).groups(1)[0]
 
         # Now summarize the contents
         sio = io.StringIO(report.contents)
