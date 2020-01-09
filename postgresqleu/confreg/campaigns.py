@@ -38,8 +38,8 @@ def _timestamps_for_tweets(conference, starttime, interval, randint, num):
 
 class BaseCampaignForm(forms.Form):
     starttime = forms.DateTimeField(label="Date and time of first tweet", initial=datetime.datetime.now)
-    timebetween = forms.TimeField(label="Time between tweets", initial=datetime.time(1, 0, 0))
-    timerandom = forms.TimeField(label="Time randomization", initial=datetime.time(0, 10, 0),
+    timebetween = forms.TimeField(label="Time between tweets", initial=datetime.time(6, 0, 0))
+    timerandom = forms.TimeField(label="Time randomization", initial=datetime.time(0, 30, 0),
                                  help_text="A random time from zero to this is added after each time interval")
     content_template = forms.CharField(max_length=2000,
                                        widget=MonospaceTextarea,
