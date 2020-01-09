@@ -10,7 +10,13 @@ of their data.
 
 To scan a badge you will use your regular smartphone. The system has
 been tested with the most common models of smartphones, and should
-hopefully work with the one you have. Note that you will need to grant
+hopefully work with the one you have.
+
+For Android there is a native app available in the play store to
+download from: https://play.google.com/store/apps/details?id=eu.postgresql.android.conferencescanner
+
+For both Android and iOS, there is a web app available that can also
+be used for the scanning. Note that you will need to grant
 the website permissions to use your camera, and depending on
 smartphone model you may need to configure the camera before you scan
 (for example so that it doesn't use the front-facing camera, which
@@ -19,6 +25,10 @@ some models do by default).
 To access your personal scanning page, go to:
 
 {{sitebase}}/events/sponsor/scanning/{{scanner.token}}/
+
+If you go to this address and have the Android app installed, it will
+auto-activate. If it does not, copy this URL and paste it into the
+configuration of the app.
 
 Note that this is your *personal* link, so do not share it with
 others! Each person designated to perform badge scanning will have
