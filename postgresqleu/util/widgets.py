@@ -1,6 +1,6 @@
 from django import forms
 from django.forms.widgets import TextInput
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.uploadedfile import UploadedFile
 from django.utils.safestring import mark_safe
 from django.template import loader
 
@@ -87,7 +87,7 @@ class InlineImageUploadWidget(forms.ClearableFileInput):
 
     def render(self, name, value, attrs=None, renderer=None):
         context = self.get_context(name, value, attrs)
-        if value and not isinstance(value, InMemoryUploadedFile):
+        if value and not isinstance(value, UploadedFile):
             context['widget']['value'] = base64.b64encode(value)
         return mark_safe(loader.render_to_string('confreg/widgets/inline_photo_upload_widget.html', context))
 
@@ -97,7 +97,7 @@ class InlinePdfUploadWidget(forms.ClearableFileInput):
 
     def render(self, name, value, attrs=None, renderer=None):
         context = self.get_context(name, value, attrs)
-        if value and not isinstance(value, InMemoryUploadedFile):
+        if value and not isinstance(value, UploadedFile):
             context['widget']['value'] = base64.b64encode(value)
         return mark_safe(loader.render_to_string('confreg/widgets/inline_pdf_upload_widget.html', context))
 
