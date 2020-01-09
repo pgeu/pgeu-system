@@ -18,11 +18,10 @@ class LowercaseEmailField(models.EmailField):
 class ImageBinaryField(models.Field):
     empty_values = [None, b'']
 
-    def __init__(self, *args, **kwargs):
-        ml = kwargs.pop('max_length', None)
+    def __init__(self, max_length, *args, **kwargs):
         self.max_resolution = kwargs.pop('max_resolution', None)
         super(ImageBinaryField, self).__init__(*args, **kwargs)
-        self.max_length = ml
+        self.max_length = max_length
 
     def deconstruct(self):
         name, path, args, kwargs = super(ImageBinaryField, self).deconstruct()

@@ -810,7 +810,7 @@ class Speaker(models.Model):
                                    verbose_name='Twitter name')
     company = models.CharField(max_length=100, null=False, blank=True)
     abstract = models.TextField(null=False, blank=True, verbose_name="Bio")
-    photo = ImageBinaryField(blank=True, null=True, verbose_name="Photo", max_resolution=(128, 128))
+    photo = ImageBinaryField(blank=True, null=True, verbose_name="Photo", max_length=1000000, max_resolution=(128, 128))
     lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
     speakertoken = models.TextField(null=False, blank=False, unique=True)
 
