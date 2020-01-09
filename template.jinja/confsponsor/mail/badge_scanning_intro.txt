@@ -12,7 +12,7 @@ To scan a badge you will use your regular smartphone. The system has
 been tested with the most common models of smartphones, and should
 hopefully work with the one you have.
 
-For Android there is a native app available in the play store to
+For Android there is a native app available in Google Play to
 download from: https://play.google.com/store/apps/details?id=eu.postgresql.android.conferencescanner
 
 For both Android and iOS, there is a web app available that can also
