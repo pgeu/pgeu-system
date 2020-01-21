@@ -216,6 +216,7 @@ def news_json(request, confname):
 
     r = HttpResponse(json.dumps(
         [{
+            'id': n.id,
             'title': n.title,
             'datetime': n.datetime,
             'authorname': n.author.fullname,
