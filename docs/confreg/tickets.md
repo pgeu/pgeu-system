@@ -57,6 +57,13 @@ checking in, providing the information needed at the registration desk
 (such as t-shirt size and additional options), and then process the
 check-in as quickly as possible.
 
+There are multiple ways to access the check-in system. At the base
+is a mobile website available from a link on the registration page
+of the person performing checkins. There is also a native Android
+app available in the
+[play store](https://play.google.com/store/apps/details?id=eu.postgresql.android.conferencescanner)
+(source available at [pgeu github](https://github.com/pgeu/android-ConferenceScanner).
+
 If a supported mobile device is used (which should include all
 reasonably modern android and modern iPhone), then the QR code present
 on the ticket can be scanned to immediately look up the user. If the
