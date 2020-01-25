@@ -52,6 +52,7 @@ def feedback_report(request, confname):
 
     return render(request, 'confreg/admin_conference_feedback.html', {
         'conference': conference,
+        'numresponses': ConferenceFeedbackAnswer.objects.filter(conference=conference).aggregate(Count('attendee', distinct=True))['attendee__count'],
         'feedback': sections,
         'helplink': 'feedback',
     })
