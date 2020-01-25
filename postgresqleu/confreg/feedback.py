@@ -8,45 +8,57 @@ from postgresqleu.confreg.util import get_authenticated_conference
 from collections import OrderedDict
 
 
-def build_graphdata(question, key, options):
+def build_graphdata(answers, options):
     optionhash = OrderedDict(list(zip(options, [0] * len(options))))
-    for answer in ConferenceFeedbackAnswer.objects.filter(conference=question.conference, question=question).order_by(key).values(key).annotate(Count(key)):
-        optionhash[answer[key]] = answer['%s__count' % key]
+    for a in answers:
+        optionhash[a] += 1
     return iter(optionhash.items())
-
-
-def build_feedback_response(question):
-    r = {'question': question.question, 'id': question.id, }
-    confid = question.conference.id
-    questionid = question.id
-    if question.isfreetext:
-        # This can actually be either freetext *or* graph!
-        if question.textchoices:
-            r['graphdata'] = build_graphdata(question, 'textanswer', question.textchoices.split(';'))
-        else:
-            r['textanswers'] = [a.textanswer for a in ConferenceFeedbackAnswer.objects.only('textanswer').filter(conference_id=confid, question_id=questionid).exclude(textanswer='')]
-    else:
-        # Numeric choices from 1-5
-        r['graphdata'] = build_graphdata(question, 'rateanswer', list(range(0, 6)))
-    return r
 
 
 def feedback_report(request, confname):
     conference = get_authenticated_conference(request, confname)
 
     sections = []
-    # Get the global conference feedback. Yes, this will be inefficient, but it will work
+    # Get the global conference feedback. Actually pusing down the counting of options would
+    # make this more efficient, but at least we're down to a single query now.
+    curs = connection.cursor()
+    curs.execute(
+        """SELECT q.id, q.newfieldset, q.question, q.isfreetext, q.textchoices,
+ array_agg(a.textanswer) FILTER (WHERE a.textanswer != '') AS textanswers,
+ array_agg(a.rateanswer) FILTER (WHERE a.rateanswer IS NOT NULL) AS rateanswers
+FROM confreg_conferencefeedbackquestion q
+LEFT JOIN confreg_conferencefeedbackanswer a ON a.question_id=q.id
+WHERE q.conference_id=%(confid)s
+GROUP BY q.id
+ORDER BY sortkey""", {
+            'confid': conference.id,
+        })
+
     currentsection = {}
-    for q in ConferenceFeedbackQuestion.objects.filter(conference=conference).order_by('sortkey'):
-        if q.newfieldset:
+    for questionid, newfieldset, question, isfreetext, textchoices, textanswers, rateanswers in curs.fetchall():
+        if newfieldset:
             if currentsection:
                 sections.append(currentsection)
                 currentsection = {}
             if not currentsection:
                 # Either first row, or a new fieldset per above
-                currentsection['title'] = q.newfieldset
+                currentsection['title'] = newfieldset
                 currentsection['questions'] = []
-        currentsection['questions'].append(build_feedback_response(q))
+
+        r = {
+            'id': questionid,
+            'question': question,
+        }
+        if isfreetext:
+            if textchoices:
+                # This is actually a set of choices, even if freetext is set
+                r['graphdata'] = build_graphdata(textanswers, textchoices.split(';'))
+            else:
+                r['textanswers'] = textanswers
+        else:
+            r['graphdata'] = build_graphdata(rateanswers, list(range(0, 6)))
+
+        currentsection['questions'].append(r)
     else:
         sections.append(currentsection)
 
