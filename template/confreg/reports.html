@@ -360,6 +360,11 @@ $(function() {
     });
 
     $('#btnLoadReport').click(function() {
+       if ($('#selStoredReports').val() == null) {
+           alert('No report selected.');
+           return;
+       }
+
        $.get('.', {
           'storedreport': $('#selStoredReports').val(),
        }).success(function(data) {
@@ -385,6 +390,11 @@ $(function() {
     });
 
     $('#btnDeleteReport').click(function() {
+       if ($('#selStoredReports').val() == null) {
+           alert('No report selected.');
+           return;
+       }
+
        if (!confirm('Are you sure you want to delete this report?')) return;
 
        $.post('.', {

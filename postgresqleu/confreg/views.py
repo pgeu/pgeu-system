@@ -2682,6 +2682,9 @@ def reports(request, confname):
 
     if request.method == 'POST':
         if request.POST['what'] == 'delete':
+            if request.POST.get('storedreport', '') == '':
+                raise Http404()
+
             get_object_or_404(SavedReportDefinition, conference=conference, pk=request.POST['storedreport']).delete()
             return HttpResponse("OK")
 
@@ -2705,6 +2708,9 @@ def reports(request, confname):
         raise Http404()
     elif 'storedreport' in request.GET:
         # Load a special stored report
+        if request.GET.get('storedreport', '') == '':
+            raise Http404()
+
         r = get_object_or_404(SavedReportDefinition, conference=conference, pk=request.GET['storedreport'])
         return HttpResponse(json.dumps(r.definition), content_type='application/json')
 
