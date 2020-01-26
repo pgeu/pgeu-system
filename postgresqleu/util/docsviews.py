@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.http import HttpResponseForbidden, Http404
 from django.conf import settings
 from django.utils.safestring import mark_safe
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 
 import codecs
 import os
@@ -9,6 +11,8 @@ import re
 import markdown
 
 from postgresqleu.confreg.models import Conference, ConferenceSeries
+from postgresqleu.util.auth import PERMISSION_GROUPS
+
 
 reTitle = re.compile('<h1>([^<]+)</h1>')
 
@@ -26,11 +30,17 @@ def _replaceSvgInline(m, section):
         return f.read()
 
 
+@login_required
 def docspage(request, page):
     # Allow a person who has *any* permissions on a conference to read the docs,
     # because, well, they are docs.
+    # Since we also have docs for non-conference things, check for membership
+    # of *any* permissions groups.
     if not request.user.is_superuser:
-        if not Conference.objects.filter(administrators=request.user).exists() and not ConferenceSeries.objects.filter(administrators=request.user).exists():
+        q = Q(administrators=request.user) | Q(talkvoters=request.user)
+        if not Conference.objects.filter(q).exists() and \
+           not ConferenceSeries.objects.filter(administrators=request.user).exists() and \
+           not request.user.groups.filter(name__in=PERMISSION_GROUPS).exists():
             return HttpResponseForbidden("Access denied")
 
     if page:
