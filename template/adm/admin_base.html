@@ -36,7 +36,7 @@
 {%if topadmin%}<li><a href="/admin/{{topadmin_link|default:""}}">{{topadmin}}</a></li>{%endif%}
 {%endblock%}
 	   {%if conference %}
-	   <li><a href="/events/admin/{{conference.urlname}}/">{{conference}}</a></li>
+	   <li><a href="{%if conference.nobreadcrumb%}#{%else%}/events/admin/{{conference.urlname}}/{%endif%}">{{conference}}</a></li>
 	   {%endif%}
 	   {%for k,v in breadcrumbs %}
 	   <li><a href="{{k}}">{{v}}</a></li>

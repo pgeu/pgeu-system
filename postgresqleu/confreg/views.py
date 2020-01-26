@@ -2407,6 +2407,12 @@ def talkvote(request, confname):
         yield rd
 
     all = curs.fetchall()
+
+    # If the user is only talkvoter at the conference, and not an administrator,
+    # don't generate a breadcrumbs link that goes to a permission denied error.
+    if not isadmin:
+        conference.nobreadcrumb = True
+
     return render(request, 'confreg/sessionvotes.html', {
         'users': getusernames(all),
         'sessionvotes': transform(all),
