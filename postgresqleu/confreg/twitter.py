@@ -212,7 +212,7 @@ def volunteer_twitter(request, urlname, token):
 
         def _postdata(objs):
             return [
-                {'id': t.id, 'txt': t.contents, 'author': t.author.username, 'time': t.datetime, 'hasimage': t.hasimage}
+                {'id': t.id, 'txt': t.contents, 'author': t.author and t.author.username or '', 'time': t.datetime, 'hasimage': t.hasimage}
                 for t in objs]
 
         return _json_response({
