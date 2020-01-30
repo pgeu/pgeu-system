@@ -171,8 +171,7 @@ def bankfiles(request):
             impl = method.get_implementation()
 
             try:
-                contents = f.read().decode('utf8')
-                (numrows, numtrans, numpending) = impl.parse_uploaded_file(contents)
+                (contents, numrows, numtrans, numpending) = impl.parse_uploaded_file(f)
                 BankFileUpload(method=method,
                                uploadby=request.user.username,
                                name=f.name,
