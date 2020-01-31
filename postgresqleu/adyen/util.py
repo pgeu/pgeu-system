@@ -383,7 +383,7 @@ def process_raw_adyen_notification(raw, POST):
             # success=False -> success=True.
             if not notification.success and POST['success'] == 'true':
                 # We'll implement this one later, but for now trigger a
-                # manual email so we don't loose things.
+                # manual email so we don't lose things.
                 send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                                  pm.config('notification_receiver'),
                                  'Received adyen notification type %s that went from failure to success!' % notification.eventCode,
