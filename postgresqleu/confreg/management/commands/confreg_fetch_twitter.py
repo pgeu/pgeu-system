@@ -67,7 +67,9 @@ class Command(BaseCommand):
                             author_id=tj['user']['id'],
                             author_image_url=tj['user']['profile_image_url_https'],
                         )
-                        if tj['is_quote_status']:
+                        if tj['is_quote_status'] and 'quoted_status_id' in tj:
+                            # Skip the ones that have no quoted_status_id, which is the case
+                            # when it's a quoted tweet that we don't have permissions on.
                             it.quoted_statusid = tj['quoted_status_id']
                             it.quoted_text = tj['quoted_status']['full_text']
                             it.quoted_permalink = tj['quoted_status_permalink']
