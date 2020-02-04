@@ -9,6 +9,7 @@ from django.db import connection
 from django.conf import settings
 
 from datetime import datetime, timedelta
+import sys
 import time
 
 from postgresqleu.newsevents.models import News
@@ -49,6 +50,8 @@ class Command(BaseCommand):
         if not curs.fetchall()[0][0]:
             raise CommandError("Failed to get advisory lock, existing twitter_post process stuck?")
 
+        err = False
+
         if settings.TWITTER_NEWS_TOKEN:
             tw = Twitter()
 
@@ -63,6 +66,7 @@ class Command(BaseCommand):
                     a.tweeted = True
                     a.save()
                 else:
+                    err = True
                     self.stderr.write("Failed to post to twitter: %s" % msg)
 
                 # Don't post more often than once / 10 seconds, to not trigger flooding detection.
@@ -80,6 +84,7 @@ class Command(BaseCommand):
                     t.tweetid = id
                     t.save(update_fields=['sent', 'tweetid', ])
                 else:
+                    err = True
                     self.stderr.write("Failed to post to twitter: %s" % msg)
 
                 # Don't post more often than once / 10 seconds, to not trigger flooding detection.
@@ -94,3 +99,8 @@ class Command(BaseCommand):
                     self.stderr.write("Failed to retweet: %s" % msg)
 
                 time.sleep(2)
+
+        if err:
+            # Error message printed earlier, but we need to exit with non-zero exitcode
+            # to flag the whole job as failed.
+            sys.exit(1)
