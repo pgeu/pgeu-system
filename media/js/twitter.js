@@ -69,7 +69,7 @@ function add_incoming_entry_html(row, d, discardbutton, panelstyle) {
 	rtbtn.attr('disabled', 'disabled');
     }
     fdiv.append(rtbtn);
-    fdiv.append($('<button/>').data('tid', d['id']).addClass('btn btn-default btn-sm view-twitter-button').text('View on twitter'));
+    fdiv.append($('<button/>').data('tid', d['id']).data('author', d['author']).addClass('btn btn-default btn-sm view-twitter-button').text('View on twitter'));
     e.append(fdiv);
 
     row.append(e);
@@ -382,7 +382,7 @@ $(function() {
     });
 
     $(document).on('click', 'button.view-twitter-button', function(e) {
-	window.open('https://twitter.com/statuses/' + $(this).data('tid'));
+	window.open('https://twitter.com/' + $(this).data('author') + '/status/' + $(this).data('tid'));
 
     });
 
