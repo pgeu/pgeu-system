@@ -168,11 +168,11 @@
 {%if reg.checkedinat%}
  <tr>
    <td>Checked in at</td>
-   <td>{{r.checkedinat}}</td>
+   <td>{{reg.checkedinat}}</td>
  </tr>
  <tr>
    <td>Checked in by</td>
-   <td>{{r.checkedinby}}</td>
+   <td>{{reg.checkedinby.fullname}} ({{reg.checkedinby.attendee.username}})</td>
  </tr>
 {%endif%}
 {%endif%}
