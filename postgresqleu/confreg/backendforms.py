@@ -311,6 +311,16 @@ class BackendRegistrationDayForm(BackendForm):
         model = RegistrationDay
         fields = ['day', ]
 
+    def clean_day(self):
+        if self.instance.id:
+            if RegistrationDay.objects.filter(conference=self.conference, day=self.cleaned_data['day']).exclude(id=self.instance.id).exists():
+                raise ValidationError("This day already exists for this conference")
+        else:
+            if RegistrationDay.objects.filter(conference=self.conference, day=self.cleaned_data['day']).exists():
+                raise ValidationError("This day already exists for this conference")
+
+        return self.cleaned_data['day']
+
 
 class AdditionalOptionUserManager(object):
     title = 'Users'
@@ -848,6 +858,16 @@ class BackendDiscountCodeForm(BackendForm):
         self.fields['requiresoption'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference).exclude(pk=self.instance.pk)
 
         self.update_protected_fields()
+
+    def clean_code(self):
+        if self.instance.id:
+            if DiscountCode.objects.filter(conference=self.conference, code=self.cleaned_data['code']).exclude(id=self.instance.id).exists():
+                raise ValidationError("This discount code already exists for this conference")
+        else:
+            if DiscountCode.objects.filter(conference=self.conference, code=self.cleaned_data['code']).exists():
+                raise ValidationError("This discount code already exists for this conference")
+
+        return self.cleaned_data['code']
 
 
 class BackendAccessTokenForm(BackendForm):
