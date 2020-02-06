@@ -2,7 +2,7 @@ Django>=1.11,<1.12
 Jinja2==2.10
 Markdown==3.0.1
 MarkupSafe==1.1.0
-Pillow==5.4.1
+Pillow==6.2.0
 argparse
 cryptography
 django-markdown==0.8.4
