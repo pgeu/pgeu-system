@@ -1,8 +1,8 @@
 Django>=1.11,<1.12
-Jinja2==2.8
-Markdown==2.6.5
-MarkupSafe==0.23
-Pillow==4.0.0
+Jinja2==2.10
+Markdown==3.0.1
+MarkupSafe==1.1.0
+Pillow==5.4.1
 argparse
 cryptography
 django-markdown==0.8.4
@@ -10,10 +10,10 @@ django-markwhat==1.6.2
 flup
 httplib2
 psycopg2
-pycryptodomex>=3.4.7,<3.5
-reportlab==3.3.0
+pycryptodomex==3.6.1
+reportlab==3.5.13
 pytz
 python-dateutil
 requests
-requests-oauthlib==0.7.0
+requests-oauthlib==1.0.0
 file-magic
