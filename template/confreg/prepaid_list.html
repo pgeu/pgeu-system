@@ -23,7 +23,7 @@ function confirmDeleteVoucher() {
   </tr>
 {%for b in batches%}
  <tr class="info">
-   <td colspan="3"><a href="../{{b.id}}/">Batch {{b.id}}</a> for {{b.buyername}}{%if b.sponsor%} (sponsor {{b.sponsor}}){%endif%}, registration type {{b.regtype.regtype}}</td>
+   <td colspan="3"><a href="../{{b.id}}/">Batch {{b.id}}</a> for {{b.buyername}}{%if b.sponsor%} (sponsor {{b.sponsor}}){%endif%}, registration type {{b.regtype.regtype}}{%if b.purchasedvoucher %} (independently <a href="../../prepaidorders/">ordered</a> and paid on {{b.purchasedvoucher.invoice.paidat}}){%endif%}</td>
  </tr>
 {%for v in b.prepaidvoucher_set.all %}
  <tr>

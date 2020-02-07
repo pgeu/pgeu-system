@@ -2226,7 +2226,7 @@ def createvouchers(request, confname):
 def listvouchers(request, confname):
     conference = get_authenticated_conference(request, confname)
 
-    batches = PrepaidBatch.objects.select_related('regtype').filter(conference=conference).prefetch_related('prepaidvoucher_set')
+    batches = PrepaidBatch.objects.select_related('regtype', 'purchasedvoucher', 'purchasedvoucher__invoice').filter(conference=conference).prefetch_related('prepaidvoucher_set')
 
     return render(request, 'confreg/prepaid_list.html', {
         'conference': conference,
