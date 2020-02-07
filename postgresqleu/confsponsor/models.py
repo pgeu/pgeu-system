@@ -183,7 +183,7 @@ class PurchasedVoucher(models.Model):
     regtype = models.ForeignKey(RegistrationType, null=False, blank=False, on_delete=models.CASCADE)
     num = models.IntegerField(null=False, blank=False)
     invoice = models.ForeignKey(Invoice, null=False, blank=False, on_delete=models.CASCADE)
-    batch = models.ForeignKey(PrepaidBatch, null=True, blank=True, on_delete=models.CASCADE)
+    batch = models.OneToOneField(PrepaidBatch, null=True, blank=True, on_delete=models.CASCADE)
 
 
 class ShipmentAddress(models.Model):
