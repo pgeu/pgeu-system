@@ -216,7 +216,7 @@ def flaginvoice(request, invoicenum):
 
     invoice = get_object_or_404(Invoice, pk=invoicenum)
 
-    reason = request.POST['reason']
+    reason = request.POST.get('reason', '')
     if not reason:
         return HttpResponseForbidden("Can't flag an invoice without a reason!")
 
@@ -256,7 +256,7 @@ def cancelinvoice(request, invoicenum):
 
     invoice = get_object_or_404(Invoice, pk=invoicenum)
 
-    reason = request.POST['reason']
+    reason = request.POST.get('reason', '')
     if not reason:
         return HttpResponseForbidden("Can't cancel an invoice without a reason!")
 

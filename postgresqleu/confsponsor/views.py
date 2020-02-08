@@ -115,6 +115,9 @@ def sponsor_conference(request, sponsorid):
 
 @login_required
 def sponsor_manager_delete(request, sponsorid):
+    if 'id' not in request.POST:
+        raise Http404("No id")
+
     sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
     user = get_object_or_404(User, id=request.POST['id'])
 
@@ -133,7 +136,7 @@ def sponsor_manager_delete(request, sponsorid):
 def sponsor_manager_add(request, sponsorid):
     sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
 
-    if not request.POST['email']:
+    if not request.POST.get('email', ''):
         messages.warning(request, "Email not specified")
         return HttpResponseRedirect('../../')
     try:
@@ -473,7 +476,7 @@ def _sender_shipment_new(request, conference, sponsor):
                                                                defaults={
                                                                    'sponsor': sponsor,
                                                                    'address': address,
-                                                                   'description': request.POST['description'],
+                                                                   'description': request.POST.get('description', ''),
                                                                    'sent_parcels': 0,
                                                                    'arrived_parcels': 0,
                                                                },
@@ -853,13 +856,13 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 
     if request.method == 'POST' and request.POST.get('confirm', '0') == '1':
         # Confirm one of the benefits, so do this before we load the list
-        benefit = get_object_or_404(SponsorClaimedBenefit, sponsor=sponsor, id=request.POST['claimid'])
+        benefit = get_object_or_404(SponsorClaimedBenefit, sponsor=sponsor, id=request.POST.get('claimid', -1))
         _confirm_benefit(request, benefit)
         return HttpResponseRedirect('.')
 
     if request.method == 'POST' and request.POST.get('unclaim', '0') == '1':
         # Unclaim one of the benefits
-        benefit = get_object_or_404(SponsorClaimedBenefit, sponsor=sponsor, id=request.POST['claimid'])
+        benefit = get_object_or_404(SponsorClaimedBenefit, sponsor=sponsor, id=request.POST.get('claimid', -1))
         _unclaim_benefit(request, benefit)
         return HttpResponseRedirect('.')
 

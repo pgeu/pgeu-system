@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
@@ -251,6 +251,8 @@ def meeting_proxy(request, meetingid):
 
 # API calls from meeting bot
 def meetingcode(request):
+    if 's' not in request.GET or 'm' not in request.GET:
+        raise Http404("Mandatory parameter is missing")
     secret = request.GET['s']
     meetingid = request.GET['m']
 

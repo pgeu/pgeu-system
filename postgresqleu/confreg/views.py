@@ -432,7 +432,7 @@ def multireg(request, confname, regid=None):
                 reg.delete()
             return HttpResponseRedirect(redir_root)
         elif request.POST['submit'] == 'Save':
-            reg.email = request.POST['_email'].lower()
+            reg.email = request.POST.get('_email', '').lower()
             regform = ConferenceRegistrationForm(request.user, data=request.POST, instance=reg, regforother=True)
             if regform.is_valid():
                 reg = regform.save(commit=False)
@@ -1590,6 +1590,9 @@ def callforpapers_edit(request, confname, sessionid):
 
 @login_required
 def public_speaker_lookup(request, confname):
+    if 'query' not in request.GET:
+        raise Http404("No query")
+
     conference = get_object_or_404(Conference, urlname=confname)
     speaker = get_object_or_404(Speaker, user=request.user)
 
@@ -1611,6 +1614,9 @@ def public_speaker_lookup(request, confname):
 
 @login_required
 def public_tags_lookup(request, confname):
+    if 'query' not in request.GET:
+        raise Http404("No query")
+
     conference = get_object_or_404(Conference, urlname=confname)
     speaker = get_object_or_404(Speaker, user=request.user)
 
@@ -1820,7 +1826,7 @@ def confirmreg(request, confname):
         if request.POST['submit'].find('Back') >= 0:
             return HttpResponseRedirect("../")
         if reg.regtype.require_phone:
-            reg.phone = request.POST['phone']
+            reg.phone = request.POST.get('phone', '')
             if len(reg.phone) < 3:
                 phone_error = True
                 errors = True
@@ -2444,6 +2450,11 @@ def talkvote_status(request, confname):
     if request.method != 'POST':
         return HttpResponse('Can only use POST', status_code=400)
 
+    if 'newstatus' not in request.POST:
+        raise Http404("No new status")
+    if 'sessionid' not in request.POST:
+        raise Http404("No sessionid")
+
     newstatus = int(request.POST['newstatus'])
     session = get_object_or_404(ConferenceSession, conference=conference, id=request.POST['sessionid'])
     if newstatus not in valid_status_transitions[session.status]:
@@ -2465,8 +2476,11 @@ def talkvote_vote(request, confname):
     if request.method != 'POST':
         return HttpResponse('Can only use POST')
 
+    if 'sessionid' not in request.POST:
+        raise Http404("No sessionid")
+
     session = get_object_or_404(ConferenceSession, conference=conference, id=request.POST['sessionid'])
-    v = int(request.POST['vote'])
+    v = int(request.POST.get('vote', 0))
     if v > 0:
         vote, created = ConferenceSessionVote.objects.get_or_create(session=session, voter=request.user)
         vote.vote = v
@@ -2489,10 +2503,12 @@ def talkvote_comment(request, confname):
         raise PermissionDenied('You are not a talk voter for this conference!')
     if request.method != 'POST':
         return HttpResponse('Can only use POST')
+    if 'sessionid' not in request.POST:
+        raise Http404("No sessionid")
 
     session = get_object_or_404(ConferenceSession, conference=conference, id=request.POST['sessionid'])
     vote, created = ConferenceSessionVote.objects.get_or_create(session=session, voter=request.user)
-    vote.comment = request.POST['comment']
+    vote.comment = request.POST.get('comment', '')
     vote.save()
 
     return HttpResponse(vote.comment, content_type='text/plain')
@@ -2737,8 +2753,12 @@ def simple_report(request, confname):
     from .reports import simple_reports
 
     if request.method == 'GET':
+        if 'report' not in request.GET:
+            raise Http404("No report")
         rep = request.GET['report']
     else:
+        if 'report' not in request.POST:
+            raise Http404("No report")
         rep = request.POST['report']
 
     if "__" in rep:
@@ -3820,6 +3840,9 @@ def crossmail(request):
 @login_required
 @transaction.atomic
 def crossmailoptions(request):
+    if 'conf' not in request.GET:
+        raise Http404("No conf")
+
     if not (request.user.is_superuser or ConferenceSeries.objects.filter(administrators=request.user).exists()):
         return HttpResponseForbidden()
     conf = get_object_or_404(Conference, id=request.GET['conf'])
