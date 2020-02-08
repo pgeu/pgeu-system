@@ -3868,7 +3868,7 @@ def crossmailoptions(request):
 
 
 # Redirect from old style event URLs
-def legacy_redirect(self, what, confname, resturl=None):
+def legacy_redirect(request, what, confname, resturl=None):
     # Fallback to most basic syntax
     if resturl:
         return HttpResponsePermanentRedirect('/events/{0}/{1}/{2}'.format(confname, what, resturl))
