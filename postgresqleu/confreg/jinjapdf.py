@@ -22,6 +22,9 @@ from PIL import Image
 import jinja2
 import jinja2.sandbox
 
+from .contextutil import load_base_context, update_with_override_context
+
+
 alignments = {
     'left': TA_LEFT,
     'center': TA_CENTER,
@@ -230,9 +233,9 @@ class JinjaRenderer(object):
             })
             self.template = env.from_string(f.read())
 
-        if self.templatedir:
-            self.context = self._load_context(os.path.join(self.templatedir, 'context.json'))
-            self.context.update(self._load_context(os.path.join(self.templatedir, 'context.override.json')))
+        if rootdir:
+            self.context = load_base_context(rootdir)
+            update_with_override_context(self.context, rootdir)
         else:
             self.context = {}
 
@@ -246,13 +249,6 @@ class JinjaRenderer(object):
             self.staticdir = None
 
         self.story = []
-
-    def _load_context(self, jsonfile):
-        if os.path.isfile(jsonfile):
-            with open(jsonfile) as f:
-                return json.load(f)
-        else:
-            return {}
 
     def add_to_story(self, ctx):
         ctx.update(self.context)

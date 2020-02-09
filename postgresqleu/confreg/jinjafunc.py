@@ -17,13 +17,14 @@ import textwrap
 from Cryptodome.Hash import SHA
 
 from postgresqleu.util.context_processors import settings_context
+from postgresqleu.confreg.templatetags.leadingnbsp import leadingnbsp
 
 import jinja2
 import jinja2.sandbox
 import markdown
 
 
-from postgresqleu.confreg.templatetags.leadingnbsp import leadingnbsp
+from .contextutil import load_base_context, update_with_override_context
 
 # We use a separate root directory for jinja2 templates, so find that
 # directory by searching relative to ourselves.
@@ -252,14 +253,11 @@ def render_jinja_conference_template(conference, templatename, dictionary):
     t = env.get_template(templatename)
 
     # Optionally load the JSON context with template-specific data
-    if conference and conference.jinjadir and os.path.exists(os.path.join(conference.jinjadir, 'templates/context.json')):
+    if conference and conference.jinjadir:
         try:
-            with open(os.path.join(conference.jinjadir, 'templates/context.json'), encoding='utf8') as f:
-                c = json.load(f)
+            c = load_base_context(conference.jinjadir)
         except ValueError as e:
             return HttpResponse("JSON parse failed: {0}".format(e), content_type="text/plain")
-        except Exception:
-            c = {}
     else:
         c = {}
 
@@ -274,13 +272,8 @@ def render_jinja_conference_template(conference, templatename, dictionary):
     if dictionary:
         c.update(dictionary)
 
-    # For local testing, there may also be a context.override.json
-    if conference and conference.jinjadir and os.path.exists(os.path.join(conference.jinjadir, 'templates/context.override.json')):
-        try:
-            with open(os.path.join(conference.jinjadir, 'templates/context.override.json')) as f:
-                c.update(json.load(f))
-        except Exception:
-            pass
+    if conference and conference.jinjadir:
+        update_with_override_context(c, conference.jinjadir)
 
     c.update(settings_context())
 

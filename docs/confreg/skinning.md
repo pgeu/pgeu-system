@@ -121,17 +121,16 @@ when run under the main conference system.
 
 ## Overriding variables
 
-For the static deployment process, as second json file called
-`context.override.json` can be created in the same directory. Any
-variables specified in this file will override those coming from
-`context.json` and any defined from the deploy script, such as the git
-hash.
+For the static deployment process, any number of override context
+files can be created in the `context.override.d` directory. Any files in this
+directory named `*.json` will be loaded (in alphabetical order), overriding
+any values coming from `context.json`.
 
-This file is typically used to for example override the git hash (by
+These files are typically used to for example override the git hash (by
 specifying "githash":"" in the json data) to turn off cache busting on
-local test deployments.
+local test deployments, or to override base locations for links etc.
 
-This file is normally not committed to the git repository, as it would
+These files are normally not committed to the git repository, as it would
 in that case apply to the main static checkout.
 
 

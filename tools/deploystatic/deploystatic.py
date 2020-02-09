@@ -16,6 +16,7 @@ import unicodedata
 import io
 import subprocess
 import tarfile
+import copy
 
 import jinja2
 import jinja2.sandbox
@@ -102,7 +103,9 @@ class SourceWrapper(object):
                 yield (relpath, fn)
 
     def listfiles(self, d):
-        return os.listdir(os.path.join(self.root, d))
+        if os.path.isdir(os.path.join(self.root, d)):
+            return os.listdir(os.path.join(self.root, d))
+        return []
 
     def copy_if_changed(self, relsource, fulldest):
         fullsrc = os.path.join(self.root, relsource)
@@ -181,6 +184,23 @@ def load_context(jsondata):
         return json.loads(jsondata.decode('utf8'))
     else:
         return {}
+
+
+# XXX: keep in sync with confreg/contextutil.py
+def deep_update_context(target, source):
+    for k, v in source.items():
+        if type(v) == dict:
+            # If this is a dict stored in the dict
+            if k not in target:
+                # Target didn't have it, so copy it over
+                target[k] = copy.deepcopy(v)
+            elif type(target[k]) != dict:
+                # Target had something but it's not a dict, so overwrite it
+                target[k] = copy.deepcopy(v)
+            else:
+                deep_update_context(target[k], v)
+        else:
+            target[k] = copy.copy(v)
 
 
 # Locate which git revision we're on
@@ -353,8 +373,11 @@ if __name__ == "__main__":
     # Fetch the current git revision if this is coming out of a git repository
     context['githash'] = git_revision
 
-    # Load a context that can override everything, including static hashes
-    context.update(load_context(source.readfile('templates/context.override.json')))
+    # Load contexts in override directory, if any
+    if os.path.isdir('templates/context.override.d'):
+        for f in sorted(source.listfiles('templates/context.override.d')):
+            if f.endswith('.json'):
+                deep_update_context(context, load_context(source.readfile(os.path.join('templates/context.override.d', f))))
 
     knownfiles = []
     knownfiles = _deploy_static(source, args.destpath)
