@@ -10,7 +10,7 @@
 	{"type": "paragraph", "text": "Conference", "x": 10, "y": 32, "width": 130, "height": 5},
 	{"type": "paragraph", "text": "{{conference.conferencename}}", "x": 10, "y": 36, "width": 130, "height": 12, "color": "black", "align": "center", "bold": true},
 
-	{"type": "qrimage", "x": 60, "y": 54, "width": 30, "height": 30, "qrcontent": "{{reg.fullidtoken}}"},
+	{"type": "qrimage", "x": 10, "y": 54, "width": 30, "height": 30, "qrcontent": "{{reg.fullidtoken}}"},
 
 	{"type": "box", "x": 8, "y": 87, "width": 134, "height": 20, "stroke": "black"},
 	{"type": "paragraph", "text": "Attendee", "x": 10, "y": 89, "width": 130, "height": 5},
