@@ -15,6 +15,7 @@ from decimal import Decimal
 
 from postgresqleu.util.auth import authenticate_backend_group
 from postgresqleu.util.pagination import simple_pagination
+from postgresqleu.util.request import get_int_or_error
 from .models import Invoice, InvoiceRow, InvoiceHistory, InvoicePaymentMethod, VatRate
 from .models import InvoiceRefund
 from .forms import InvoiceForm, InvoiceRowForm, RefundForm
@@ -472,8 +473,8 @@ def userhome(request):
 def banktransfer(request):
     if any(k not in request.GET for k in ('invoice', 'key', 'prv')):
         return HttpResponse("Required parameter missing")
-    invoice = get_object_or_404(Invoice, pk=request.GET['invoice'], recipient_secret=request.GET['key'])
-    method = get_object_or_404(InvoicePaymentMethod, pk=request.GET['prv'])
+    invoice = get_object_or_404(Invoice, pk=get_int_or_error(request.GET, 'invoice'), recipient_secret=request.GET['key'])
+    method = get_object_or_404(InvoicePaymentMethod, pk=get_int_or_error(request.GET, 'prv'))
     wrapper = PaymentMethodWrapper(method, invoice)
 
     return HttpResponse(wrapper.implementation.render_page(request, invoice))

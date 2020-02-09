@@ -51,6 +51,7 @@ from .backendviews import get_authenticated_conference
 from .backendforms import CancelRegistrationForm, ConfirmRegistrationForm
 from .backendforms import ResendWelcomeMailForm
 
+from postgresqleu.util.request import get_int_or_error
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod, InvoiceRow
@@ -2455,8 +2456,8 @@ def talkvote_status(request, confname):
     if 'sessionid' not in request.POST:
         raise Http404("No sessionid")
 
-    newstatus = int(request.POST['newstatus'])
-    session = get_object_or_404(ConferenceSession, conference=conference, id=request.POST['sessionid'])
+    newstatus = get_int_or_error(request.POST, 'newstatus')
+    session = get_object_or_404(ConferenceSession, conference=conference, id=get_int_or_error(request.POST, 'sessionid'))
     if newstatus not in valid_status_transitions[session.status]:
         return HttpResponse("Cannot change from {} to {}".format(get_status_string(session.status), get_status_string(newstatus)), status=400)
 
@@ -2479,8 +2480,8 @@ def talkvote_vote(request, confname):
     if 'sessionid' not in request.POST:
         raise Http404("No sessionid")
 
-    session = get_object_or_404(ConferenceSession, conference=conference, id=request.POST['sessionid'])
-    v = int(request.POST.get('vote', 0))
+    session = get_object_or_404(ConferenceSession, conference=conference, id=get_int_or_error(request.POST, 'sessionid'))
+    v = get_int_or_error(request.POST, 'vote', 0)
     if v > 0:
         vote, created = ConferenceSessionVote.objects.get_or_create(session=session, voter=request.user)
         vote.vote = v
@@ -2506,7 +2507,7 @@ def talkvote_comment(request, confname):
     if 'sessionid' not in request.POST:
         raise Http404("No sessionid")
 
-    session = get_object_or_404(ConferenceSession, conference=conference, id=request.POST['sessionid'])
+    session = get_object_or_404(ConferenceSession, conference=conference, id=get_int_or_error(request.POST, 'sessionid'))
     vote, created = ConferenceSessionVote.objects.get_or_create(session=session, voter=request.user)
     vote.comment = request.POST.get('comment', '')
     vote.save()
@@ -2708,7 +2709,7 @@ def reports(request, confname):
             if request.POST.get('storedreport', '') == '':
                 raise Http404()
 
-            get_object_or_404(SavedReportDefinition, conference=conference, pk=request.POST['storedreport']).delete()
+            get_object_or_404(SavedReportDefinition, conference=conference, pk=get_int_or_error(request.POST, 'storedreport')).delete()
             return HttpResponse("OK")
 
         data = json.loads(request.POST['reportdata'])
@@ -2734,7 +2735,7 @@ def reports(request, confname):
         if request.GET.get('storedreport', '') == '':
             raise Http404()
 
-        r = get_object_or_404(SavedReportDefinition, conference=conference, pk=request.GET['storedreport'])
+        r = get_object_or_404(SavedReportDefinition, conference=conference, pk=get_int_or_error(request.GET, 'storedreport'))
         return HttpResponse(json.dumps(r.definition), content_type='application/json')
 
     return render(request, 'confreg/reports.html', {
@@ -2831,9 +2832,9 @@ def admin_dashboard(request):
     # If a specific series is specified, then include *all* past conferences for that series
     if request.GET.get('series', None):
         if request.user.is_superuser:
-            singleseries = get_object_or_404(ConferenceSeries, pk=request.GET.get('series'))
+            singleseries = get_object_or_404(ConferenceSeries, pk=get_int_or_error(request.GET, 'series'))
         else:
-            singleseries = get_object_or_404(ConferenceSeries, pk=request.GET.get('series'), administrators=request.user)
+            singleseries = get_object_or_404(ConferenceSeries, pk=get_int_or_error(request.GET, 'series'), administrators=request.user)
         pastconferences = exec_to_dict("SELECT s.id AS seriesid, s.name AS seriesname, c.conferencename, c.urlname, c.startdate FROM confreg_conference c INNER JOIN confreg_conferenceseries s ON s.id=c.series_id WHERE s.id=%(id)s ORDER BY startdate DESC", {
             'id': singleseries.id,
         })
@@ -3278,7 +3279,7 @@ def admin_waitlist(request, urlname):
         p = paginator.Paginator(objs, 20)
         p.varsuffix = objtype
         try:
-            page = int(request.GET.get("page_{0}".format(objtype), "1"))
+            page = get_int_or_error(request.GET, "page_{0}".format(objtype), 1)
         except ValueError:
             page = 1
         try:
@@ -3845,7 +3846,7 @@ def crossmailoptions(request):
 
     if not (request.user.is_superuser or ConferenceSeries.objects.filter(administrators=request.user).exists()):
         return HttpResponseForbidden()
-    conf = get_object_or_404(Conference, id=request.GET['conf'])
+    conf = get_object_or_404(Conference, id=get_int_or_error(request.GET, 'conf'))
 
     # Get a list of different crossmail options for this conference. Note that
     # each of them must have an implementation in _get_one_filter() or bad things

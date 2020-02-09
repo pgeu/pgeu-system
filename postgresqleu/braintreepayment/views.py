@@ -7,6 +7,7 @@ from django.db import transaction
 from datetime import datetime
 
 from postgresqleu.util.auth import authenticate_backend_group
+from postgresqleu.util.request import get_int_or_error
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.mailqueue.util import send_simple_mail
@@ -20,8 +21,8 @@ class BraintreeProcessingException(Exception):
 
 def payment_post(request):
     nonce = request.POST['payment_method_nonce']
-    invoice = get_object_or_404(Invoice, pk=request.POST['invoice'], deleted=False, finalized=True)
-    method = get_object_or_404(InvoicePaymentMethod, pk=request.POST['method'], active=True)
+    invoice = get_object_or_404(Invoice, pk=get_int_or_error(request.POST, 'invoice'), deleted=False, finalized=True)
+    method = get_object_or_404(InvoicePaymentMethod, pk=get_int_or_error(request.POST, 'method'), active=True)
     pm = method.get_implementation()
 
     if invoice.processor:

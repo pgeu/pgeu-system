@@ -19,6 +19,7 @@ from postgresqleu.confreg.views import render_conference_response
 from postgresqleu.confreg.util import get_authenticated_conference
 
 from postgresqleu.util.db import exec_to_scalar, exec_to_list
+from postgresqleu.util.request import get_int_or_error
 
 from .models import Wikipage, WikipageHistory, WikipageSubscriber
 from .forms import WikipageEditForm, WikipageAdminEditForm
@@ -115,10 +116,10 @@ def wikipage_history(request, confurl, wikiurl):
             messages.warning(request, "Must specify both source and target version")
             return HttpResponseRedirect('.')
 
-        page_from = get_object_or_404(WikipageHistory, page=page, pk=request.POST['from'])
+        page_from = get_object_or_404(WikipageHistory, page=page, pk=get_int_or_error(request.POST, 'from'))
         fromid = page_from.id
         if request.POST['to'] != '-1':
-            page_to = get_object_or_404(WikipageHistory, page=page, pk=request.POST['to'])
+            page_to = get_object_or_404(WikipageHistory, page=page, pk=get_int_or_error(request.POST, 'to'))
             toid = page_to.id
         else:
             page_to = page

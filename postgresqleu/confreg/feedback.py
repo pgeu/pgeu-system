@@ -4,6 +4,7 @@ from django.db import connection
 
 from .models import ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
 from postgresqleu.confreg.util import get_authenticated_conference
+from postgresqleu.util.request import get_int_or_error
 
 from collections import OrderedDict
 
@@ -91,7 +92,7 @@ def feedback_sessions(request, confname):
     # The django ORM just can't do this...
     minvotes = 10
     if request.method == 'POST':
-        minvotes = int(request.POST['minvotes'])
+        minvotes = get_int_or_error(request.POST, 'minvotes')
 
     toplists = []
 

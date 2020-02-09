@@ -11,6 +11,7 @@ from postgresqleu.util.backendviews import backend_list_editor
 from postgresqleu.util.auth import authenticate_backend_group
 from postgresqleu.util.payment import payment_implementations
 from postgresqleu.util.pagination import simple_pagination
+from postgresqleu.util.request import get_int_or_error
 from postgresqleu.accounting.util import create_accounting_entry, get_account_choices
 from postgresqleu.invoices.util import InvoiceManager
 
@@ -63,7 +64,7 @@ def banktransactions(request):
             return HttpResponseRedirect(".")
 
         if 'transid' in request.POST:
-            trans = get_object_or_404(PendingBankTransaction, id=request.POST['transid'])
+            trans = get_object_or_404(PendingBankTransaction, id=get_int_or_error(request.POST, 'transid'))
 
             if request.POST['submit'] == 'Discard':
                 InvoiceLog(message="Discarded bank transaction of {0}{1} with text {2}".format(trans.amount, settings.CURRENCY_ABBREV, trans.transtext)).save()
@@ -97,7 +98,7 @@ def banktransactions(request):
             else:
                 raise Http404("Invalid request")
         elif 'matcherid' in request.POST:
-            matcher = get_object_or_404(PendingBankMatcher, pk=request.POST['matcherid'])
+            matcher = get_object_or_404(PendingBankMatcher, pk=get_int_or_error(request.POST, 'matcherid'))
             if request.POST['submit'] == 'Discard':
                 InvoiceLog(message="Discarded pending bank matcher {0} for {1} {2}".format(matcher.pattern, matcher.amount, settings.CURRENCY_ABBREV)).save()
 
@@ -161,7 +162,7 @@ def bankfiles(request):
 
     if request.method == 'POST':
         # Uploading a file!
-        method = get_object_or_404(InvoicePaymentMethod, active=True, config__has_key='file_upload_interval', id=request.POST['id'])
+        method = get_object_or_404(InvoicePaymentMethod, active=True, config__has_key='file_upload_interval', id=get_int_or_error(request.POST, 'id'))
         if 'f' not in request.FILES:
             messages.error(request, "No file included in upload")
         elif request.FILES['f'].size < 1:
@@ -267,7 +268,7 @@ def banktransactions_match_invoice(request, transid, invoiceid):
         if pm.config('feeaccount'):
             fee_account = Account.objects.get(num=pm.config('feeaccount'))
         else:
-            fee_account = get_object_or_404(Account, num=request.POST['account'])
+            fee_account = get_object_or_404(Account, num=get_int_or_error(request.POST, 'account'))
 
         r = _flag_invoices(request,
                            trans,

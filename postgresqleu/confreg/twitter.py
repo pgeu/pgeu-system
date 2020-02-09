@@ -12,6 +12,7 @@ import json
 from PIL import Image, ImageFile
 
 from postgresqleu.scheduler.util import trigger_immediate_job_run
+from postgresqleu.util.request import get_int_or_error
 from .models import ConferenceTweetQueue, ConferenceIncomingTweet
 from .models import Conference, ConferenceRegistration
 
@@ -139,7 +140,7 @@ def volunteer_twitter(request, urlname, token):
 
             t.save()
             if request.POST.get('replyid', None):
-                ConferenceIncomingTweet.objects.filter(conference=conference, statusid=request.POST.get('replyid', None)).update(processedat=datetime.datetime.now(), processedby=reg.attendee)
+                ConferenceIncomingTweet.objects.filter(conference=conference, statusid=get_int_or_error(request.POST, 'replyid')).update(processedat=datetime.datetime.now(), processedby=reg.attendee)
 
             return _json_response({})
         elif request.POST.get('op', None) in ('approve', 'discard'):
@@ -149,7 +150,7 @@ def volunteer_twitter(request, urlname, token):
                     raise PermissionDenied()
 
             try:
-                t = ConferenceTweetQueue.objects.get(conference=conference, approved=False, pk=int(request.POST['id']))
+                t = ConferenceTweetQueue.objects.get(conference=conference, approved=False, pk=get_int_or_error(request.POST, 'id'))
             except ConferenceTweetQueue.DoesNotExist:
                 return _json_response({'error': 'Tweet already discarded'})
             if t.approved:
@@ -173,7 +174,7 @@ def volunteer_twitter(request, urlname, token):
                     raise PermissionDenied()
 
             try:
-                t = ConferenceIncomingTweet.objects.get(conference=conference, statusid=int(request.POST['id']))
+                t = ConferenceIncomingTweet.objects.get(conference=conference, statusid=get_int_or_error(request.POST, 'id'))
             except ConferenceIncomingTweet.DoesNotExist:
                 return _json_response({'error': 'Tweet does not exist'})
 
@@ -241,7 +242,7 @@ def volunteer_twitter(request, urlname, token):
         })
     elif request.GET.get('op', None) == 'thumb':
         # Get a thumbnail -- or make one if it's not there
-        t = get_object_or_404(ConferenceTweetQueue, conference=conference, pk=int(request.GET['id']))
+        t = get_object_or_404(ConferenceTweetQueue, conference=conference, pk=get_int_or_error(request.GET, 'id'))
         if not t.imagethumb:
             # Need to generate a thumbnail here. Thumbnails are always made in PNG!
             p = ImageFile.Parser()

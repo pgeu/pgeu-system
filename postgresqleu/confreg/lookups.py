@@ -2,6 +2,8 @@ from selectable.base import ModelLookup
 from selectable.registry import registry
 from selectable.decorators import staff_member_required
 
+from postgresqleu.util.request import get_int_or_error
+
 from postgresqleu.confreg.models import ConferenceRegistration
 
 
@@ -18,7 +20,7 @@ class RegistrationLookup(ModelLookup):
     def get_query(self, request, term):
         q = super(RegistrationLookup, self).get_query(request, term)
         if 'conference' in request.GET:
-            return q.filter(conference_id=request.GET['conference'], payconfirmedat__isnull=False)
+            return q.filter(conference_id=get_int_or_error(request.GET, 'conference'), payconfirmedat__isnull=False)
         else:
             # Don't return anything if parameter not present
             return None

@@ -9,6 +9,7 @@ from django.core.paginator import Paginator
 
 from datetime import datetime, date
 
+from postgresqleu.util.request import get_int_or_error
 from postgresqleu.util.auth import authenticate_backend_group
 
 from .models import JournalEntry, JournalItem, JournalUrl, Year, Object
@@ -89,7 +90,7 @@ def year(request, year):
     (searchterm, entries) = _perform_search(request, year)
 
     paginator = EntryPaginator(entries)
-    currpage = int(request.GET.get('p', 1))
+    currpage = get_int_or_error(request.GET, 'p', 1)
 
     return render(request, 'accounting/main.html', {
         'entries': paginator.page(currpage),
@@ -145,7 +146,7 @@ def entry(request, entryid):
     (searchterm, entries) = _perform_search(request, entry.year)
 
     paginator = EntryPaginator(entries)
-    currpage = int(request.GET.get('p', 1))
+    currpage = get_int_or_error(request.GET, 'p', 1)
 
     extra = max(2, 6 - entry.journalitem_set.count())
     inlineformset = inlineformset_factory(JournalEntry, JournalItem, JournalItemForm, JournalItemFormset, can_delete=True, extra=extra)
@@ -399,7 +400,7 @@ def report(request, year, reporttype):
     suppress_years = False
 
     if request.GET.get('obj', None):
-        object = get_object_or_404(Object, pk=request.GET['obj'])
+        object = get_object_or_404(Object, pk=get_int_or_error(request.GET, 'obj'))
         objstr = "AND ji.object_id=%s" % object.id
     else:
         object = None
@@ -408,7 +409,7 @@ def report(request, year, reporttype):
     hasopenentries = JournalEntry.objects.filter(year=year, closed=False).exists()
 
     if request.GET.get('acc', None):
-        account = get_object_or_404(Account, num=request.GET['acc'])
+        account = get_object_or_404(Account, num=get_int_or_error(request.GET, 'acc'))
     else:
         account = None
 
@@ -439,10 +440,10 @@ def report(request, year, reporttype):
             }
         if request.GET.get('obj', None):
             sql += " AND o.id=%(objectid)s"
-            params['objectid'] = int(request.GET['obj'])
+            params['objectid'] = get_int_or_error(request.GET, 'obj')
         if request.GET.get('acc', None):
             sql += " AND a.num=%(account)s"
-            params['account'] = int(request.GET['acc'])
+            params['account'] = get_int_or_error(request.GET, 'acc')
         sql += " WINDOW w1 AS (PARTITION BY a.num) ORDER BY a.num, e.date, e.seq"
         curs = connection.cursor()
         curs.execute(sql, params)

@@ -22,6 +22,7 @@ from postgresqleu.confreg.twitter import post_conference_tweet
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.decorators import superuser_required
+from postgresqleu.util.request import get_int_or_error
 from postgresqleu.invoices.util import InvoiceWrapper
 
 from .models import Sponsor, SponsorshipLevel, SponsorshipBenefit
@@ -119,7 +120,7 @@ def sponsor_manager_delete(request, sponsorid):
         raise Http404("No id")
 
     sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
-    user = get_object_or_404(User, id=request.POST['id'])
+    user = get_object_or_404(User, id=get_int_or_error(request.POST, 'id'))
 
     if user == request.user:
         messages.warning(request, "Can't delete yourself! Have one of your colleagues do it...")
@@ -856,13 +857,13 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 
     if request.method == 'POST' and request.POST.get('confirm', '0') == '1':
         # Confirm one of the benefits, so do this before we load the list
-        benefit = get_object_or_404(SponsorClaimedBenefit, sponsor=sponsor, id=request.POST.get('claimid', -1))
+        benefit = get_object_or_404(SponsorClaimedBenefit, sponsor=sponsor, id=get_int_or_error(request.POST, 'claimid'))
         _confirm_benefit(request, benefit)
         return HttpResponseRedirect('.')
 
     if request.method == 'POST' and request.POST.get('unclaim', '0') == '1':
         # Unclaim one of the benefits
-        benefit = get_object_or_404(SponsorClaimedBenefit, sponsor=sponsor, id=request.POST.get('claimid', -1))
+        benefit = get_object_or_404(SponsorClaimedBenefit, sponsor=sponsor, id=get_int_or_error(request.POST, 'claimid'))
         _unclaim_benefit(request, benefit)
         return HttpResponseRedirect('.')
 

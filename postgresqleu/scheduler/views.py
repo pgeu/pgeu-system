@@ -9,6 +9,7 @@ from django.apps import apps
 from datetime import datetime, timedelta
 
 from postgresqleu.util.pagination import simple_pagination
+from postgresqleu.util.request import get_int_or_error
 
 from .models import ScheduledJob, JobHistory, get_config
 from .forms import ScheduledJobForm
@@ -28,7 +29,7 @@ def index(request):
             notify_job_change()
             return HttpResponseRedirect('.')
         elif request.POST.get('submit') == 'Re-enable job execution':
-            what = int(request.POST.get('pending'))
+            what = get_int_or_error(request.POST, 'pending')
             if what == 0:
                 messages.error(request, "Must decide what to do with pending jobs")
                 return HttpResponseRedirect(".")

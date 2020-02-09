@@ -11,6 +11,7 @@ from django.conf import settings
 from postgresqleu.util.db import exec_to_list, exec_to_dict
 from postgresqleu.util.qr import generate_base64_qr
 from postgresqleu.util.decorators import global_login_exempt
+from postgresqleu.util.request import get_int_or_error
 
 from .models import Conference, ConferenceRegistration
 from .views import render_conference_response
@@ -158,7 +159,7 @@ def api(request, urlname, regtoken, what):
         if not conference.checkinactive:
             return HttpResponse("Check-in not open", status=412)
 
-        reg = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, pk=request.POST.get('reg'))
+        reg = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, pk=get_int_or_error(request.POST, 'reg'))
         if reg.checkedinat:
             return HttpResponse("Already checked in.", status=412)
         reg.checkedinat = datetime.datetime.now()
