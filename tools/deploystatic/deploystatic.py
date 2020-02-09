@@ -374,7 +374,7 @@ if __name__ == "__main__":
     context['githash'] = git_revision
 
     # Load contexts in override directory, if any
-    if os.path.isdir('templates/context.override.d'):
+    if source.isdir('templates/context.override.d'):
         for f in sorted(source.listfiles('templates/context.override.d')):
             if f.endswith('.json'):
                 deep_update_context(context, load_context(source.readfile(os.path.join('templates/context.override.d', f))))
