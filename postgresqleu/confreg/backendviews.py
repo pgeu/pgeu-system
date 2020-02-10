@@ -529,15 +529,21 @@ def tweetcampaign(request, urlname, typeid):
     campaign = get_campaign_from_id(typeid)
 
     if request.method == 'GET' and 'fieldpreview' in request.GET:
-        return campaign.get_dynamic_preview(conference, request.GET['fieldpreview'], request.GET['previewval'])
+        try:
+            return campaign.get_dynamic_preview(conference, request.GET['fieldpreview'], request.GET['previewval'])
+        except Exception as e:
+            return HttpResponse('Excpetion rendering preview: {}'.format(e), content_type='text/plain', status=500)
 
     if request.method == 'POST':
         form = campaign.form(conference, request.POST)
         if form.is_valid():
             with transaction.atomic():
-                form.generate_tweets(request.user)
-                messages.info(request, "Campaign tweets generated")
-                return HttpResponseRedirect("../../queue/")
+                try:
+                    form.generate_tweets(request.user)
+                    messages.info(request, "Campaign tweets generated")
+                    return HttpResponseRedirect("../../queue/")
+                except Exception as e:
+                    form.add_error('content_template', 'Exception rendering template: {}'.format(e))
     else:
         form = campaign.form(conference)
 

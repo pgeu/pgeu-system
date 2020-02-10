@@ -48,6 +48,12 @@ function backend_dynamic_preview(id) {
    function update() {
       $.get('?fieldpreview=' + id + '&previewval=' + encodeURIComponent(e.val()), function(v) {
          p.text(v);
+      }).fail(function(xhr, status, err) {
+	 if (xhr.status == 500) {
+             p.text('Error generating preview: ' + xhr.responseText);
+         } else {
+	     p.text('Error generating preview: ' + xhr.status);
+	 }
       });
    }
 
