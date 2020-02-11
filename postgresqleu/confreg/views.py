@@ -275,7 +275,10 @@ def register(request, confname, whatfor=None):
             # Render the dashboard.
             return _registration_dashboard(request, conference, reg, has_other_multiregs, redir_root)
         else:
-            return render_conference_response(request, conference, 'reg', 'confreg/closed.html')
+            if datetime.now().date() < conference.startdate:
+                return render_conference_response(request, conference, 'reg', 'confreg/not_yet_open.html')
+            else:
+                return render_conference_response(request, conference, 'reg', 'confreg/closed.html')
 
     # Else registration is open.
 
@@ -382,7 +385,10 @@ def multireg(request, confname, regid=None):
     is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
     if not is_active:
         # Registration not open.
-        return render_conference_response(request, conference, 'reg', 'confreg/closed.html')
+        if datetime.now().date() < conference.startdate:
+            return render_conference_response(request, conference, 'reg', 'confreg/not_yet_open.html')
+        else:
+            return render_conference_response(request, conference, 'reg', 'confreg/closed.html')
 
     allregs = ConferenceRegistration.objects.filter(conference=conference, registrator=request.user)
     try:
@@ -542,7 +548,10 @@ def multireg_newinvoice(request, confname):
     is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
     if not is_active:
         # Registration not open.
-        return render_conference_response(request, conference, 'reg', 'confreg/closed.html')
+        if datetime.now().date() < conference.startdate:
+            return render_conference_response(request, conference, 'reg', 'confreg/not_yet_open.html')
+        else:
+            return render_conference_response(request, conference, 'reg', 'confreg/closed.html')
 
     if request.method == 'POST' and request.POST['submit'] == 'Cancel':
         return HttpResponseRedirect('../')
@@ -655,7 +664,10 @@ def multireg_bulkview(request, confname, bulkid):
     is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
     if not is_active:
         # Registration not open.
-        return render_conference_response(request, conference, 'reg', 'confreg/closed.html')
+        if datetime.now().date() < conference.startdate:
+            return render_conference_response(request, conference, 'reg', 'confreg/not_yet_open.html')
+        else:
+            return render_conference_response(request, conference, 'reg', 'confreg/closed.html')
 
     bp = get_object_or_404(BulkPayment, conference=conference, pk=bulkid, user=request.user)
 
