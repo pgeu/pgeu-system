@@ -252,7 +252,7 @@ width: 100%;
      </div>
    </td>
    {%if isadmin%}
-   <td{%if not s.statusid == s.laststatusid %} bgcolor="yellow"{%endif%} onClick="changeStatus({{s.id}})" class="dlgClickable" id="statusstr{{s.id}}" data-currstatus="{{s.statusid}}">{{s.status}}</td>
+   <td{%if not s.statusid == s.laststatusid %} bgcolor="yellow"{%endif%} onClick="changeStatus({{s.id}})" class="dlgClickable" id="statusstr{{s.id}}" data-currstatus="{{s.statusid}}"><a href="#">{{s.status}}</a></td>
 {%else%}
    <td>{{s.status}}</td>
 {%endif%}
