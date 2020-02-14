@@ -188,6 +188,17 @@ width: 100%;
 {%block layoutblock%}
 <h1>Vote for sessions - {{conference}}</h1>
 
+{%if isadmin and conference.pending_session_notifications%}
+<h2>Notifications</h2>
+<p>
+  There are pending
+  <a href="/events/admin/{{conference.urlname}}/sessionnotifyqueue/">session notifications</a>
+  to be sent!
+</p>
+{%endif%}
+
+<h2>Voting</h2>
+
 <form method="get" style="margin-bottom: 10px">
   <div>
     <select id="selectTracks" name="tracks" multiple="multiple" style="inline-block; width=80%;">
@@ -282,15 +293,6 @@ width: 100%;
  </tr>
 {%endfor%}
 </table>
-
-{%if isadmin and conference.pending_session_notifications%}
-<h2>Notifications</h2>
-<p>
-  There are pending
-  <a href="/events/admin/{{conference.urlname}}/sessionnotifyqueue/">session notifications</a>
-  to be sent!
-</p>
-{%endif%}
 
 <div id="dlgStatus">
 </div>
