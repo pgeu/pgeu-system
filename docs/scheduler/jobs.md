@@ -66,7 +66,7 @@ HH:MM:SS. Either times or interval can be specified, not both.
 ## Installation
 
 First, consider changing the configuration parameter
-`SCEDULED_JOBS_EMAIL`. This is the address that will receive all
+`SCHEDULED_JOBS_EMAIL`. This is the address that will receive all
 notifications from the scheduler.
 
 Second, the command `manage.py scheduled_jobs_runner` needs to be
