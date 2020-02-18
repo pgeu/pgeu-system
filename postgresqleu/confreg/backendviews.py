@@ -16,6 +16,7 @@ from postgresqleu.util.db import exec_to_list, exec_to_dict, exec_no_result, exe
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.messaging.twitter import Twitter, TwitterSetup
 from postgresqleu.util.backendviews import backend_list_editor, backend_process_form
+from postgresqleu.util.request import get_int_or_error
 from postgresqleu.confreg.util import get_authenticated_conference
 
 from .jinjafunc import JINJA_TEMPLATE_ROOT
