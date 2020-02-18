@@ -115,6 +115,8 @@ class BaseManagedBankPayment(BasePayment):
 
 class BaseManagedBankPaymentForm(BackendInvoicePaymentMethodForm):
     bank_file_uploads = False
+    managed_fields = []
+    managed_fieldsets = []
 
     bankaccount = forms.ChoiceField(required=True, choices=get_account_choices,
                                     label="Account",
