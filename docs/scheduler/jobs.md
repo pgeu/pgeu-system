@@ -34,7 +34,7 @@ backlogged, the job will not run immediately.
 ### Holding jobs
 
 During major maintenance, all jobs can be held using the button on the
-frontpage. It is of course also possible to just stop the daemon
+Scheduled Jobs page. It is of course also possible to just stop the daemon
 process that runs jobs.
 
 ## Configuring jobs
