@@ -39,6 +39,15 @@ def gitinfo(request):
     return HttpResponse("{};{};{}".format(branch, tag, commitandtime), content_type='text/plain')
 
 
+def check_all_emails(params):
+    for p in params:
+        e = getattr(settings, p, None)
+        if not e:
+            yield 'Email {} not configured'.format(p)
+        elif e == 'webmaster@localhost' or e == 'root@localhost':
+            yield 'Email {} not changed from default'.format(p)
+
+
 @global_login_exempt
 def nagios(request):
     _validate_monitor_request(request)
@@ -54,6 +63,9 @@ def nagios(request):
 
     if exec_to_scalar("SELECT EXISTS (SELECT 1 FROM mailqueue_queuedmail WHERE sendtime < now() - '2 minutes'::interval)"):
         errors.append('Unsent emails are present in the outbound mailqueue')
+
+    # Check for email addresses not configured
+    errors.extend(check_all_emails(['DEFAULT_EMAIL', 'INVOICE_SENDER_EMAIL', 'INVOICE_NOTIFICATION_RECEIVER', 'SCHEDULED_JOBS_EMAIL', 'SCHEDULED_JOBS_EMAIL_SENDER', 'INVOICE_NOTIFICATION_RECEIVER', 'TREASURER_EMAIL', 'SERVER_EMAIL']))
 
     if errors:
         return HttpResponse("CRITICAL: {}".format(", ".join(errors)), content_type='text/plain')
