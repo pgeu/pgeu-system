@@ -11,6 +11,12 @@ local SMTP server.
 There are no attempts to do DKIM or anything similar, as that is all
 expected to be handled by the local SMTP server.
 
+To change the local SMTP server that is used to another host and/or
+port, configure *settings.SMTPSERVER*. This can be set to for example
+*host.domain.com:587* to include both host and port. Note that this
+server should be local to make sure it can always receive and queue
+outgoing emails, and must not use authentication or other restrictions.
+
 It is explicitly *not* included in the [job scheduler](jobs) to send
 emails, as this would make it impossible for that scheduler to
 actually send any error reports.

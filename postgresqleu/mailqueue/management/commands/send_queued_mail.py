@@ -7,6 +7,7 @@
 #
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
+from django.conf import settings
 
 import smtplib
 
@@ -29,7 +30,7 @@ class Command(BaseCommand):
             # Yes, we do a new connection for each run. Just because we can.
             # If it fails we'll throw an exception and just come back on the
             # next cron job. And local delivery should never fail...
-            smtp = smtplib.SMTP("localhost")
+            smtp = smtplib.SMTP(getattr(settings, "SMTPSERVER", "localhost"))
             smtp.sendmail(m.sender, m.receiver, m.fullmsg.encode('utf-8'))
             smtp.close()
             m.delete()
