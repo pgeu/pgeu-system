@@ -44,7 +44,12 @@ class PrettyPrintJsonWidget(forms.Textarea):
         # This is mighty ugly -- we parse the json and then turn it back into json.
         # Luckily this isn't called often :)
         try:
-            value = json.dumps(json.loads(value), indent=2)
+            if value is not None:
+                if isinstance(value, dict):
+                    # Already a dict, so just turn it into json
+                    value = json.dumps(value, indent=2)
+                else:
+                    value = json.dumps(json.loads(value), indent=2)
         except ValueError:
             # Don't try to do anything if it's not valid json
             pass
