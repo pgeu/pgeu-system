@@ -7,7 +7,7 @@
 
 {%for n in newspage%}
 <h3>{{n.title}}</h3>
-<i class="fa fa-clock-o"></i> {{n.datetime|date:"Y-m-d"}}
+<i class="fa fa-clock-o"></i> {{n.datetime}}
 <div class="newscontent">
 {{n.summary|markdown|truncatewords_html:75}}
 </div>

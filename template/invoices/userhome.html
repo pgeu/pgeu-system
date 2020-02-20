@@ -24,7 +24,7 @@ We have the following invoices registered to your account:
 {%elif invoice.ispaid%}<span class="badge badge-success">Paid</span>
 {%else%}<span class="badge badge-primary">Awaiting payment</span>{%endif%}
 </td>
- <td>{{invoice.duedate|date:"Y-m-d"}}</td>
+ <td>{{invoice.duedate|date}}</td>
  <td>
    <a class="btn btn-sm btn-outline-dark" href="{{invoice.id}}/pdf/">Download invoice</a>
 {%if invoice.ispaid and not invoice.refunded%}<a class="btn btn-sm btn-outline-dark" href="{{invoice.id}}/receipt/">Download receipt</a>{%endif%}

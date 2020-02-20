@@ -41,7 +41,7 @@ $(function() {
   </div>
   <div class="form-group">
     <label for="enddate">End date:</label>
-    <input type="text" class="datepicker" id="enddate" value="{{enddate|date:"Y-m-d"}}">
+    <input type="text" class="datepicker" id="enddate" value="{{enddate}}">
   </div>
 {%endif%}
 {%if hasopenentries%}
@@ -61,9 +61,9 @@ $(function() {
 <h1>{{title}}</h1>
 
 {%if reporttype != 'object' %}
-<div class="dateinfo">{{year.year}}-01-01 - {{enddate|date:"Y-m-d"}}</div>
+<div class="dateinfo">{{year.year}}-01-01 - {{enddate}}</div>
 {%else%}
-Includes entries from {{mindate|date:"Y-m-d"}} to {{maxdate|date:"Y-m-d"}}.
+Includes entries from {{mindate}} to {{maxdate}}.
 {%endif%}
 
 

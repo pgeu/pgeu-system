@@ -48,9 +48,9 @@ tr.invoice-deleted {
  <td><a href="/invoiceadmin/{{invoice.id}}/">{{invoice.title}}</a></td>
  <td style="white-space: nowrap">{{invoice.recipient_name}}</td>
  <td style="white-space: nowrap; text-align: right;">{%if invoice.total_amount > 0%}{{invoice.total_amount|intcomma}}{%endif%}</td>
- <td style="white-space: nowrap">{{invoice.invoicedate|date:"Y-m-d"}}</td>
- <td style="white-space: nowrap" class="duedate" >{{invoice.duedate|date:"Y-m-d"}}</td>
- <td style="white-space: nowrap">{%if invoice.ispaid%}{{invoice.paidat|date:"Y-m-d"}}{%else%}No{%endif%}</td>
+ <td style="white-space: nowrap">{{invoice.invoicedate}}</td>
+ <td style="white-space: nowrap" class="duedate" >{{invoice.duedate}}</td>
+ <td style="white-space: nowrap">{%if invoice.ispaid%}{{invoice.paidat}}{%else%}No{%endif%}</td>
  <td>
 {%if not invoice.finalized %}
 Not finalized

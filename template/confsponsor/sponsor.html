@@ -279,7 +279,7 @@ be invoiced to you once the code is used.
    <td>{{c.code}}</td>
    <td>{{c.is_invoiced|yesno:"closed,active"}}</td>
    <td>{{c.maxuses}}</td>
-   <td>{{c.validuntil|date:"Y-m-d"}}</td>
+   <td>{{c.validuntil}}</td>
    <td>{{c.count}}</td>
    <td><ul>
 {%for r in c.registrations.all%}{%if r.payconfirmedat%}

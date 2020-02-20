@@ -23,7 +23,7 @@
  </tr>
  <tr>
    <td style="white-space: nowrap">Due date:</td>
-   <td{%if invoice.isexpired%} style="color:red"{%endif%}>{{invoice.duedate|date:"Y-m-d"}}</td>
+   <td{%if invoice.isexpired%} style="color:red"{%endif%}>{{invoice.duedate}}</td>
 </tr>
 {%if invoice.isexpired and invoice.canceltime%}
  <tr>
@@ -84,7 +84,7 @@
 {%for r in invoice.invoicerefund_set.all %}
        <tr>
 	 <td>{{currency_symbol}}{{r.fullamount}}</td>
-	 <td>{%if r.completed%}Refunded {{r.completed|date:"Y-m-d"}}{%elif r.issued%}Submitted to payment provider {{r.issued|date:"Y-m-d"}}{%else%}Pending since {{r.registered|date:"Y-m-d"}}{%endif%}</td>
+	 <td>{%if r.completed%}Refunded {{r.completed}}{%elif r.issued%}Submitted to payment provider {{r.issued}}{%else%}Pending since {{r.registered}}{%endif%}</td>
 	 <td><a href="/invoices/{{invoice.pk}}/{%if fromsecret or not invoice.has_recipient_user%}{{invoice.recipient_secret}}/{%endif%}refundnote/{{r.id}}/">View refund note</a></td>
        </tr>
 {%endfor%}

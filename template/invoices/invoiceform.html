@@ -17,7 +17,7 @@ function sendEmail(reason) {
       q = 'This will send an email to {{invoice.recipient_email}}, with the invoice attached. Are you sure you want to do this?';
    }
    else if (reason == 'reminder') {
-      q = 'This will send reminder email to {{invoice.recipient_email}}, with the invoice attached, specifying that it was supposed to have been paid {{invoice.duedate|date:"Y-m-d"}}. Are you sure you want to do this?';
+      q = 'This will send reminder email to {{invoice.recipient_email}}, with the invoice attached, specifying that it was supposed to have been paid {{invoice.duedate}}. Are you sure you want to do this?';
    }
    else {
       alert('You must select which type of email to send!');

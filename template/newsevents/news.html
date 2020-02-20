@@ -4,7 +4,7 @@
 {%block navsection%}News{%endblock%}
 {%block content%}
 <h1>{{item.title}}</h1>
-<i class="fa fa-clock-o"></i> {{item.datetime|date:"Y-m-d"}}{%if item.author%} by {{item.author.fullname}}{%endif%}
+<i class="fa fa-clock-o"></i> {{item.datetime}}{%if item.author%} by {{item.author.fullname}}{%endif%}
 <p></p>
 {{item.summary|markdown}}
 {%endblock%}

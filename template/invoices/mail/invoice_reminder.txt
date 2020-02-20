@@ -4,7 +4,7 @@ You were recently sent an invoice from {{org_name}}:
 
 Invoice #{{invoice.id}}: {{invoice.title}}
 
-This invoice was due for payment on {{invoice.duedate|date:"Y-m-d"}}, and
+This invoice was due for payment on {{invoice.duedate}}, and
 we have not yet registered a payment from you.
 {%if invoice.canceltime%}
 If payment for this invoice has not been received by
