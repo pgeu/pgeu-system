@@ -1,0 +1,74 @@
+{
+    "name": "Swedbank",
+    "region": "Sweden",
+    "encoding": "latin1",
+    "type": "delimited",
+    "delimiter": "\t",
+    "firstisheader": true,
+    "validateheader": true,
+    "skiprows": 1,
+    "columns": [
+	{
+	    "header": ["Radnr"],
+	    "function": "ignore"
+	},
+	{
+	    "header": ["Clnr"],
+	    "function": "validate",
+	    "validate": "Clearingnr"
+	},
+	{
+	    "header": ["Kontonr"],
+	    "function": "validate",
+	    "validate": "Kontonr"
+	},
+	{
+	    "header": ["Produkt"],
+	    "function": "ignore"
+	},
+	{
+	    "header": ["Valuta"],
+	    "function": "validate",
+	    "validate": "Valuta"
+	},
+	{
+	    "header": ["Bokfdag"],
+	    "function": "date",
+	    "format": "date",
+	    "dateformat": "%Y-%m-%d"
+	},
+	{
+	    "header": ["Transdag"],
+	    "function": "store",
+	    "format": "date",
+	    "dateformat": "%Y-%m-%d"
+	},
+	{
+	    "header": ["Valutadag"],
+	    "function": "store",
+	    "format": "date",
+	    "dateformat": "%Y-%m-%d"
+	},
+	{
+	    "header": ["Referens"],
+	    "function": "text"
+	},
+	{
+	    "header": ["Text"],
+	    "function": "store"
+	},
+	{
+	    "header": ["Belopp"],
+	    "function": "amount",
+	    "format": "decimal",
+	    "decimal": ","
+	},
+	{
+	    "header": ["Saldo"],
+	    "function": "balance",
+	    "format": "decimal",
+	    "decimal": ","
+	}
+    ],
+    "upload_tooltip": "Log into the internet bank, and select the account. Proceed to <i>order report</i>, select <i>transaction report</i>, and choose format <b>txt</b>.\nOnce the report is generated, you will find it under <i>ordered reports</i> from the overview page."
+}

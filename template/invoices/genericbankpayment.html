@@ -1,0 +1,40 @@
+{%extends "navbase.html"%}
+{%block title%}Pay with bank transfer{%endblock%}
+{%block content%}
+<h1>Pay with bank transfer</h1>
+<p>
+To pay your invoice using bank transfer, please make a payment
+according to the following:
+</p>
+
+<table border="1" cellspacing="0" cellpadding="3">
+<tr>
+  <th>Account information</th>
+  <td>{{bankinfo|linebreaksbr}}</td>
+</tr>
+<tr>
+ <th>Payment reference</th>
+ <td><strong>{{invoice.payment_reference}}</strong></td>
+</tr>
+<tr>
+ <th>Amount</th>
+ <td>€{{invoice.total_amount}}</td>
+</tr>
+</table>
+
+<p>
+<b>Note</b> that it is <b><i>very</i></b> important that you provide the
+correct text on the transfer, or we may not be able to match your payment
+to the correct invoice. In particular, <b>do not</b> use the invoice number,
+use the specified payment reference!
+</p>
+
+<p>
+<b>Note</b> that bank transfers take a few days to process, so if your
+payment is nedeed repidly in order to confirm something, this is <strong>not</strong> a good
+choice of payment method.
+</p>
+
+{%if returnurl%}<a href="{{returnurl}}" class="btn btn-outline-dark">Return to payment options</a>{%endif%}
+
+{%endblock%}

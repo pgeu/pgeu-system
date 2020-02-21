@@ -1,0 +1,45 @@
+{%extends "adm/admin_base.html" %}
+{%load dictutil%}
+{%block title%}Bank file transactions{%endblock%}
+{%block layoutblock %}
+<h1>Bank file transactions</h1>
+<table class="table table-bordered table-striped table-hover table-condensed">
+  <thead>
+    <tr class="info">
+{%if hasvaluefor.uniqueid%}
+    <th>ID</th>
+{%endif%}
+    <th>Date</th>
+    <th>Text</th>
+    <th class="text-right">Amount</th>
+{%if hasvaluefor.balance%}
+    <th class="text-right">Balance</th>
+{%endif%}
+{%for k in extrakeys%}
+    <th>{{k}}</th>
+{%endfor%}
+    </tr>
+  </thead>
+{%for r in rows.object_list %}
+  <tr>
+{%if hasvaluefor.uniqueid%}
+    <td>{{r.uniqueid}}</td>
+{%endif%}
+    <td >{{r.date}}</td>
+    <td>{{r.description}}</td>
+    <td class="text-right">{{r.amount}}</td>
+{%if hasvaluefor.balance%}
+    <td class="text-right">{{r.balance}}</td>
+{%endif%}
+{%for k in extrakeys%}
+    <td>{{r.other|dictlookup:k}}</td>
+{%endfor%}
+  </tr>
+{%endfor%}
+</table>
+
+{%include "adm/include/paginator.html" with pageobjects=rows %}
+
+<a class="btn btn-default btn-block" href="{{backbutton}}">Back</a>
+
+{%endblock%}

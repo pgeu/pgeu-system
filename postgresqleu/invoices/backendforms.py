@@ -98,3 +98,12 @@ class BackendInvoicePaymentMethodForm(BackendForm):
 
         if not hasattr(self, 'validate_data_for'):
             self.remove_field('testsettings')
+
+
+class BankfilePaymentMethodChoiceForm(django.forms.Form):
+    paymentmethod = django.forms.ModelChoiceField(queryset=None, required=True, label="Payment method")
+
+    def __init__(self, *args, **kwargs):
+        methods = kwargs.pop('methods')
+        super().__init__(*args, **kwargs)
+        self.fields['paymentmethod'].queryset = methods

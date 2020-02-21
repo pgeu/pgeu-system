@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect, Http404
 from django.utils.html import escape
 from django.shortcuts import get_object_or_404, render
 from django.contrib import messages
-from django.db.models import Max
+from django.db.models import Max, Q
 from django.db import transaction
 from django.conf import settings
 
@@ -20,13 +20,17 @@ from postgresqleu.invoices.models import InvoicePaymentMethod, Invoice, InvoiceL
 from postgresqleu.invoices.models import PendingBankTransaction
 from postgresqleu.invoices.models import PendingBankMatcher
 from postgresqleu.invoices.models import BankTransferFees
-from postgresqleu.invoices.models import BankFileUpload
+from postgresqleu.invoices.models import BankFileUpload, BankStatementRow
 from postgresqleu.invoices.backendforms import BackendVatRateForm
 from postgresqleu.invoices.backendforms import BackendVatValidationCacheForm
 from postgresqleu.invoices.backendforms import BackendInvoicePaymentMethodForm
+from postgresqleu.invoices.backendforms import BankfilePaymentMethodChoiceForm
+from postgresqleu.invoices.util import register_bank_transaction
 
 from datetime import date
 import re
+import base64
+from io import BytesIO
 
 
 def edit_vatrate(request, rest):
@@ -156,33 +160,102 @@ def banktransactions_match(request, transid):
     })
 
 
-@transaction.atomic
 def bankfiles(request):
     authenticate_backend_group(request, 'Invoice managers')
 
     if request.method == 'POST':
         # Uploading a file!
         method = get_object_or_404(InvoicePaymentMethod, active=True, config__has_key='file_upload_interval', id=get_int_or_error(request.POST, 'id'))
+
+        impl = method.get_implementation()
+        # Stage 1 upload has the file in request.FILES. Stage 2 has it in a hidden field in the form instead,
+        # because we can't make it upload th file twice.
+        if 'fc' in request.POST:
+            # In stage 2 the file is included ase base64
+            txt = impl.convert_uploaded_file_to_utf8(BytesIO(base64.b64decode(request.POST['fc'])))
+
+            try:
+                rows = impl.parse_uploaded_file_to_rows(txt)
+                (anyerror, extrakeys, hasvaluefor) = impl.process_loaded_rows(rows)
+
+                numrows = len(rows)
+                numtrans = 0
+                numpending = 0
+                numerrors = 0
+
+                with transaction.atomic():
+                    # Store thef file itself
+                    bankfile = BankFileUpload(method=method,
+                                              parsedrows=numrows,
+                                              newtrans=0,
+                                              newpending=0,
+                                              errors=0,
+                                              uploadby=request.user.username,
+                                              name=request.POST['name'],
+                                              textcontents=txt,
+                    )
+                    bankfile.save()  # To get an id we can use
+
+                    for r in rows:
+                        if r['row_already_exists']:
+                            continue
+                        if r.get('row_errors', []):
+                            numerrors += 1
+                            continue
+
+                        # Insert the row
+                        b = BankStatementRow(method=method,
+                                             fromfile=bankfile,
+                                             uniqueid=r.get('uniqueid', None),
+                                             date=r['date'],
+                                             amount=r['amount'],
+                                             description=r['text'],
+                                             balance=r.get('balance', None),
+                                             other=r['other'],
+                        )
+                        b.save()
+                        numtrans += 1
+
+                        if not register_bank_transaction(b.method, b.id, b.amount, b.description, ''):
+                            # This means the transaction wasn't directly matched and has been
+                            # registered as a pending transaction.
+                            numpending += 1
+
+                    bankfile.newtrans = numtrans
+                    bankfile.newpending = numpending
+                    bankfile.errors = numerrors
+                    bankfile.save()
+            except Exception as e:
+                messages.error(request, "Error uploading file: {}".format(e))
+
+            return HttpResponseRedirect(".")
+
         if 'f' not in request.FILES:
             messages.error(request, "No file included in upload")
         elif request.FILES['f'].size < 1:
             messages.error(request, "Uploaded file is empty")
         else:
             f = request.FILES['f']
-            impl = method.get_implementation()
 
             try:
-                (contents, numrows, numtrans, numpending) = impl.parse_uploaded_file(f)
-                BankFileUpload(method=method,
-                               uploadby=request.user.username,
-                               name=f.name,
-                               textcontents=contents,
-                               parsedrows=numrows,
-                               newtrans=numtrans,
-                               newpending=numpending,
-                ).save()
-                messages.info(request, "File uploaded. {} rows parsed, {} transactions stored, resulting in {} pending transactions.".format(numrows, numtrans, numpending))
-                return HttpResponseRedirect('.')
+                # Stage 1, mean we parse it and render a second form to confirm
+                rows = impl.parse_uploaded_file_to_rows(impl.convert_uploaded_file_to_utf8(f))
+                (anyerror, extrakeys, hasvaluefor) = impl.process_loaded_rows(rows)
+
+                f.seek(0)
+
+                return render(request, 'invoices/bankfile_uploaded.html', {
+                    'method': method,
+                    'rows': rows,
+                    'extrakeys': sorted(extrakeys),
+                    'hasvaluefor': hasvaluefor,
+                    'anyerror': anyerror,
+                    'filename': f.name,
+                    'fc': base64.b64encode(f.read()),
+                    'topadmin': 'Invoices',
+                    'helplink': 'payment',
+                    'breadcrumbs': [('../../', 'Bank files'), ],
+                })
             except Exception as e:
                 messages.error(request, "Error uploading file: {}".format(e))
 
@@ -196,6 +269,92 @@ def bankfiles(request):
         'methods': methods,
         'topadmin': 'Invoices',
         'helplink': 'payment',
+    })
+
+
+def bankfile_transaction_methodchoice(request):
+    authenticate_backend_group(request, 'Invoice managers')
+
+    methods = InvoicePaymentMethod.objects.filter(config__has_key='file_upload_interval').order_by('internaldescription')
+    if not methods:
+        # Should never happen since the button is only visible if they exist
+        messages.error(request, "No managed bank providers configured!")
+        return HttpResponseRedirect("/admin/")
+
+    if len(methods) == 1:
+        # Only one, so no need for prompt
+        return HttpResponseRedirect("{}/".format(methods[0].id))
+
+    if request.method == 'POST':
+        form = BankfilePaymentMethodChoiceForm(methods=methods, data=request.POST)
+        if form.is_valid():
+            return HttpResponseRedirect("{}/".format(form.cleaned_data['paymentmethod'].id))
+    else:
+        form = BankfilePaymentMethodChoiceForm(methods=methods)
+
+    return render(request, 'confreg/admin_backend_form.html', {
+        'basetemplate': 'adm/admin_base.html',
+        'form': form,
+        'whatverb': 'View',
+        'what': 'bank transactions',
+        'savebutton': 'View transactions',
+        'cancelurl': '/admin/',
+        'cancelname': 'Back',
+        'topadmin': 'Invoices',
+        'helplink': 'payment',
+    })
+
+
+def bankfile_transactions(request, methodid):
+    authenticate_backend_group(request, 'Invoice managers')
+
+    method = get_object_or_404(InvoicePaymentMethod, pk=methodid)
+
+    # Needed for backlinks
+    methodcount = InvoicePaymentMethod.objects.filter(config__has_key='file_upload_interval').count()
+
+    backbutton = "../"
+    breadlabel = "Bank transactions"
+
+    if methodcount == 1:
+        # If there is only one method, we have to return all the way back to the index page, or we'll
+        # just get redirected back to ourselves.
+        backbutton = "/admin/"
+
+    q = Q(method=method)
+    if 'file' in request.GET:
+        q = q & Q(fromfile=get_int_or_error(request.GET, 'file'))
+        backbutton = "../../"
+        breadlabel = "Bankfiles"
+
+    allrows = BankStatementRow.objects.filter(q).order_by('-date', 'id')
+    (rows, paginator, page_range) = simple_pagination(request, allrows, 50)
+
+    extrakeys = set()
+    hasvaluefor = {
+        'uniqueid': False,
+        'balance': False,
+    }
+    for r in rows:
+        extrakeys.update(r.other.keys())
+        for k in hasvaluefor.keys():
+            if getattr(r, k, None):
+                hasvaluefor[k] = True
+
+    params = request.GET.copy()
+    if 'page' in params:
+        del params['page']
+
+    return render(request, 'invoices/bankfile_transactions.html', {
+        'rows': rows,
+        'extrakeys': extrakeys,
+        'hasvaluefor': hasvaluefor,
+        'page_range': page_range,
+        'topadmin': 'Invoices',
+        'helplink': 'payment',
+        'requestparams': params.urlencode(),
+        'breadcrumbs': [(backbutton, breadlabel), ],
+        'backbutton': backbutton,
     })
 
 

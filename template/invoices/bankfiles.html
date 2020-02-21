@@ -53,19 +53,21 @@ $(function() {
   <th>Time</th>
   <th>Method</th>
   <th>Filename</th>
-  <th>Rows</th>
-  <th>New trans.</th>
-  <th>Pending</th>
+  <th title="Total rows with transactions in file">Rows</th>
+  <th title="New transactions found">New trans.</th>
+  <th title="Transactions resulting in pending bank transactions">Pending</th>
+  <th title="Rows skipped because of errors">Errors</th>
   <th>Uploaded by</th>
 </tr>
 {%for f in files.object_list %}
 <tr>
-  <td>{{f.created}} ({{f.created|timesince}} ago)</td>
+  <td>{%if f.newtrans%}<a href="transactions/{{f.method.pk}}/?file={{f.id}}">{{f.created}}</a>{%else%}{{f.created}}{%endif%} ({{f.created|timesince}} ago)</td>
   <td>{{f.method.internaldescription}}</td>
   <td>{{f.name}}</td>
   <td>{{f.parsedrows}}</td>
   <td>{{f.newtrans}}</td>
   <td>{{f.newpending}}</td>
+  <td>{{f.errors}}</td>
   <td>{{f.uploadby}}</td>
 </tr>
 {%endfor%}

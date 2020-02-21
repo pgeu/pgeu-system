@@ -1,0 +1,59 @@
+{%extends "adm/admin_base.html" %}
+{%load dictutil%}
+{%block title%}Upload bank file{%endblock%}
+{%block layoutblock %}
+<h1>Upload bank file</h1>
+<p>
+  The following contents were parsed from the uploaded file. Highlighted columns are
+  the ones that will be imported as main data, other columns will be loaded as auxiliary data.
+</p>
+
+<table class="table table-bordered table-striped table-hover table-condensed">
+  <tr>
+{%if hasvaluefor.uniqueid%}
+    <th class="info">ID</th>
+{%endif%}
+    <th class="info">Date</th>
+    <th class="info">Text</th>
+    <th class="info text-right">Amount</th>
+{%if hasvaluefor.balance%}
+    <th class="info text-right">Balance</th>
+{%endif%}
+{%for k in extrakeys%}
+    <th>{{k}}</th>
+{%endfor%}
+{%if anyerror%}
+    <th>Errors</th>
+{%endif%}
+  </tr>
+{%for r in rows %}
+  <tr class="{%if r.row_errors%}danger{%elif r.row_already_exists%}success{%else%}info{%endif%}">
+{%if hasvaluefor.uniqueid%}
+    <td>{{r.uniqueid}}</td>
+{%endif%}
+    <td >{{r.date}}</td>
+    <td>{{r.text}}</td>
+    <td class="text-right">{{r.amount}}</td>
+{%if hasvaluefor.balance%}
+    <td class="text-right">{{r.balance}}</td>
+{%endif%}
+{%for k in extrakeys%}
+    <td>{{r.other|dictlookup:k}}</td>
+{%endfor%}
+{%if anyerror%}
+    <td>{%if r.row_errors%}<ul>{%for e in r.row_errors%}<li>{{e}}</li>{%endfor%}</ul>{%endif%}</td>
+{%endif%}
+  </tr>
+{%endfor%}
+</table>
+
+<h2>Upload bank file</h2>
+<form method="post" action="." enctype="multipart/form-data">{%csrf_token%}
+ <input type="hidden" name="id" value="{{method.id}}">
+ <input type="hidden" name="name" value="{{filename}}">
+ <input type="hidden" name="fc" value="{{fc}}">
+ <input type="submit" value="Store file" class="btn btn-primary">
+ <a class="btn btn-default" href=".">Cancel upload</a>
+</form>
+
+{%endblock%}

@@ -1,0 +1,42 @@
+{
+    "name": "SEB",
+    "region": "Sweden",
+    "encoding": "latin1",
+    "type": "delimited",
+    "delimiter": ",",
+    "firstisheader": true,
+    "validateheader": true,
+    "columns": [
+	{
+	    "header": ["Bokföringsdatum"],
+	    "function": "date",
+	    "format": "date",
+	    "dateformat": "%Y-%m-%d"
+	},
+	{
+	    "header": ["Valutadatum"],
+	    "function": "store",
+	    "format": "date",
+	    "dateformat": "%Y-%m-%d"
+	},
+	{
+	    "header": ["Verifikationsnummer"],
+	    "function": "store"
+	},
+	{
+	    "header": ["Text/mottagare"],
+	    "function": "text"
+	},
+	{
+	    "header": ["Belopp"],
+	    "function": "amount",
+	    "format": "decimal"
+	},
+	{
+	    "header": ["Saldo"],
+	    "function": "balance",
+	    "format": "decimal"
+	}
+    ],
+    "upload_tooltip": "Log into the internet banking site, and navigate to the correct account.\nPick a reasonable date range (with a few days overlap to the previous file), and click <i>save account transactions</i>.\nSelect format <b>csv</b> and delimiter <b>comma</b>."
+}

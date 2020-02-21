@@ -340,6 +340,7 @@ class BankFileUpload(models.Model):
     parsedrows = models.IntegerField(null=False, blank=False)
     newtrans = models.IntegerField(null=False, blank=False)
     newpending = models.IntegerField(null=False, blank=False)
+    errors = models.IntegerField(null=False, blank=False)
     uploadby = models.CharField(max_length=50, null=False, blank=False)
     name = models.CharField(max_length=200, null=False, blank=True)
     textcontents = models.TextField(max_length=100000, null=False, blank=False)
@@ -347,4 +348,25 @@ class BankFileUpload(models.Model):
     class Meta:
         unique_together = (
             ('method', 'created'),
+        )
+
+
+class BankStatementRow(models.Model):
+    method = models.ForeignKey(InvoicePaymentMethod, null=False, blank=False)
+    created = models.DateTimeField(null=False, blank=False, auto_now_add=True, db_index=True)
+    fromfile = models.ForeignKey(BankFileUpload, null=True, blank=True)
+
+    uniqueid = models.TextField(null=True, blank=True)
+    date = models.DateField(null=False, blank=False)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
+    description = models.CharField(max_length=300, null=False, blank=False)
+    balance = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    other = JSONField(blank=False, null=False, default={}, encoder=DjangoJSONEncoder)
+
+    class Meta:
+        unique_together = (
+            ('uniqueid', 'method'),
+        )
+        index_together = (
+            ('method', 'date'),
         )

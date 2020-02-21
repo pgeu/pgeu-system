@@ -1,0 +1,41 @@
+{
+    "name": "Credit Mutuel",
+    "region": "France",
+    "encoding": "latin1",
+    "type": "delimited",
+    "delimiter": ";",
+    "firstisheader": true,
+    "validateheader": true,
+    "delayincomingdays": 1,
+    "columns": [
+	{
+	    "header": ["Date"],
+	    "function": "date",
+	    "format": "date",
+	    "dateformat": "%d/%m/%Y"
+	},
+	{
+	    "header": ["Value date", "Date de valeur"],
+	    "function": "store",
+	    "format": "date",
+	    "dateformat": "%d/%m/%Y"
+	},
+	{
+	    "header": ["Amount", "Montant"],
+	    "function": "amount",
+	    "format": "decimal",
+	    "decimal": "."
+	},
+	{
+	    "header": ["Message", "Libellé"],
+	    "function": "text"
+	},
+	{
+	    "header": ["Balance", "Solde"],
+	    "function": "balance",
+	    "format": "decimal",
+	    "decimal": "."
+	}
+    ],
+    "upload_tooltip": "Go the CM website, select the account and click the download button for format <i>other</i>.\n<b>Format:</b> CSV\n\n<b>Format:</b> Excel XP and following\n<b>Dates:</b> French long\n<b>Field separator:</b> Semicolon\n<b>Amounts in:</b> a single column\n<b>Decimal separator:</b> point\n\nDownload a reasonable range of transactions, typically with a few days overlap."
+}

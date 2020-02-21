@@ -45,6 +45,22 @@ mouse pointer over the button for uploading files to get instructions
 for how to download the correct format file from the specific bank
 provider.
 
+When files are loaded manually, either through dedicated file
+uploaders or through [generic](#genericmanaged) managed bank accounts,
+files should be uploaded at reasonably regular intervals and always
+contains dates that overlap by a few days (to make sure not to miss
+transactions across date boundaries).
+
+### Generic managed bank accounts <a name="genericmanaged"></a>
+
+For bank accounts that do not provide API or other automated access to
+the transaction list, but do allow for downloading of transaction
+lists in some form of structured format (such as CSV files), there is
+functionality for *generic managed bank accounts*. These accounts have
+an input file format definition in json (stored in
+*util/payment/fileproviders/* or stored manually on the payment method
+definition).
+
 ### Managed bank accounts and invoices
 
 If the invoice payment reference (as calculated and printed on the
