@@ -238,9 +238,10 @@ def webhook(request, methodid):
             if is_managed_bank_account(pm.config('accounting_payout')):
                 entry = create_accounting_entry(date.today(), acctrows, True)
 
-                # XXX: we don't know what this looks like at the other end yet, so put a random string in there
+                # Stripe payouts include a "magic number", but unfortunately this magic number
+                # is not available through the APIs so there is no way to match on it.
                 register_pending_bank_matcher(pm.config('accounting_payout'),
-                                              '.*STRIPE_PAYOUT_WHAT_GOES_HERE?.*',
+                                              r'.*STRIPE\s+[^\s+].*',
                                               payout.amount,
                                               entry)
                 msg = "A Stripe payout with description {} completed for {}.\n\nAccounting entry {} was created and will automatically be closed once the payout has arrived.".format(
