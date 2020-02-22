@@ -75,10 +75,10 @@ function doUpdateStatus(id, statusval) {
       },
       function(data, status, xhr) {
          if (xhr.status == 200) {
-            var pieces = data.split(';');
-            $('#ajaxStatus').text('Changed status to ' + pieces[0]).addClass('alert-success').removeClass('alert-danger').fadeIn(500).delay(1000).fadeOut(500);
-            $('#statusstr' + id).css('background-color', pieces[1]=='1'?'yellow':'white').data('currstatus', statusval);
-            $('#statusstr' + id + ' a').text(pieces[0]);
+            $('#ajaxStatus').text('Changed status to ' + data.newstatus).addClass('alert-success').removeClass('alert-danger').fadeIn(500).delay(1000).fadeOut(500);
+            $('#statusstr' + id).css('background-color', data.statechanged?'yellow':'white').data('currstatus', statusval);
+            $('#statusstr' + id + ' a').text(data.newstatus);
+	    $('#pendingNotificationsButton').toggle(data.pendingnotifications);
          } else {
          }
       }
@@ -180,6 +180,11 @@ div.dlg {
   display: none;
 }
 
+div.filterButtonRow {
+  margin-top: 1em;
+  margin-bottom: 1.5em;
+}
+
 /* Override bootstrap to make full screen */
 .container {
 width: 100%;
@@ -188,17 +193,6 @@ width: 100%;
 {%endblock%}
 {%block layoutblock%}
 <h1>Vote for sessions - {{conference}}</h1>
-
-{%if isadmin and conference.pending_session_notifications%}
-<h2>Notifications</h2>
-<p>
-  There are pending
-  <a href="/events/admin/{{conference.urlname}}/sessionnotifyqueue/">session notifications</a>
-  to be sent!
-</p>
-{%endif%}
-
-<h2>Voting</h2>
 
 <form method="get" style="margin-bottom: 10px">
   <div>
@@ -215,8 +209,13 @@ width: 100%;
 {%endfor%}
     </select>
   </div>
+  <div class="filterButtonRow">
   <input type="submit" class="btn btn-default" value="Update">
   <a href="." class="btn btn-default">Reset</a>
+{%if isadmin%}
+  <a href="../sessionnotifyqueue/" id="pendingNotificationsButton" class="btn btn-warning"{%if not conference.pending_session_notifications%} style="display:none;"{%endif%}>View and send pending notifications</a>
+{%endif%}
+  </div>
 </form>
 
 <div id="ajaxStatus" class="alert alert-success" style="position: fixed; width: 100%;opacity: .8; text-align: center; font-weight: bold; font-size: 1.2em;">Loading submissions</div>

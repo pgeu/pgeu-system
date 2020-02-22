@@ -2483,14 +2483,21 @@ def talkvote_status(request, confname):
 
     session.status = newstatus
     session.save()
-    if session.speaker.exists():
-        statechange = session.status != session.lastnotifiedstatus and 1 or 0
-    else:
-        statechange = 0
+    statechange = session.speaker.exists() and (session.status != session.lastnotifiedstatus)
 
-    return HttpResponse("{0};{1}".format(get_status_string(session.status),
-                                         statechange,
-                                     ), content_type='text/plain')
+    if statechange:
+        # If *this* session has a state changed, then we can shortcut the lookup for
+        # others and just indicate we know there is one.
+        pendingnotifications = True
+    else:
+        # Otherwise we have to see if there are any others
+        pendingnotifications = conference.pending_session_notifications
+
+    return HttpResponse(json.dumps({
+        'newstatus': get_status_string(session.status),
+        'statechanged': statechange,
+        'pending': bool(pendingnotifications),
+    }), content_type='application/json')
 
 
 @login_required
