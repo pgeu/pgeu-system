@@ -551,7 +551,7 @@ def signup_admin_sendmail(request, urlname, signupid):
                                  receivername=n)
             send_simple_mail(conference.notifyaddr,
                              conference.notifyaddr,
-                             'Email sent to signup {0}'.format(signup.id),
+                             'Email sent to signup {0}'.format(signup.title),
                              """An email was sent to recipients of the signup "{0}"\nIt was sent to {1}, leading to {2} recipients.\n\nSubject:{3}\nBody:\n{4}\n""".format(
                                  signup.title,
                                  towhat,
