@@ -111,7 +111,7 @@ def volunteerschedule_api(request, urlname, adm=False):
             'volunteers': [{
                 'id': vol.id,
                 'name': vol.fullname,
-            } for vol in conference.volunteers.all()],
+            } for vol in conference.volunteers.all().order_by('firstname', 'lastname')],
             'meta': {
                 'isadmin': is_admin,
                 'regid': reg.id,
