@@ -29,4 +29,5 @@ digraph talkstates {
 	approved -> rejected [label = "Speaker withdraws", color=blue]
 	rejected -> submitted [label = "Processing reset", color=blue]
 	reserve -> approved [label = "Last minute activate\nfrom reserve", color=blue]
+	reserve -> rejected [label = "Speaker withdraws", color=blue]
 }

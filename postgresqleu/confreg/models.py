@@ -90,7 +90,7 @@ valid_status_transitions = {
     1: {2: 'Talk withdrawn', },
     2: {0: 'Talk processing reset', },
     3: {0: 'Talk unapproved', 1: 'Speaker confirms', 2: 'Speaker declines'},
-    4: {1: 'Last-minute reservelist', 3: 'Activated from reservelist'},
+    4: {1: 'Last-minute reservelist', 3: 'Activated from reservelist', 2: 'Talk withdrawn'},
     5: {4: 'Talk confirmed to reservelist', 2: 'Speaker declines'},
 }
 
