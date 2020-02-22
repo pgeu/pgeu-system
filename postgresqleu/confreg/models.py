@@ -86,7 +86,7 @@ def get_status_string_short(val):
 
 
 valid_status_transitions = {
-    0: {3: 'Talk approved', 2: 'Talk is rejected', 5: 'Talk added to reserve list'},
+    0: {3: 'Talk approved', 2: 'Talk not accepted', 5: 'Talk added to reserve list'},
     1: {2: 'Talk withdrawn', },
     2: {0: 'Talk processing reset', },
     3: {0: 'Talk unapproved', 1: 'Speaker confirms', 2: 'Speaker declines'},
