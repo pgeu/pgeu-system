@@ -10,7 +10,6 @@ from datetime import datetime
 
 from postgresqleu.util.db import exec_to_dict
 
-from .views import render_conference_response
 from .models import Conference, ConferenceRegistration
 from .models import VolunteerSlot, VolunteerAssignment
 from .util import send_conference_mail
@@ -111,7 +110,9 @@ def volunteerschedule(request, urlname, adm=False):
                                               function='age'))) \
                                           .order_by('lastname', 'firstname')
 
-    return render_conference_response(request, conference, 'reg', 'confreg/volunteer_schedule.html', {
+    return render(request, 'confreg/volunteer_schedule.html', {
+        'basetemplate': is_admin and 'confreg/confadmin_base.html' or 'adm/admin_base.html',
+        'conference': conference,
         'admin': is_admin,
         'can_admin': can_admin,
         'reg': reg,

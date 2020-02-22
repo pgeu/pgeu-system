@@ -1,4 +1,4 @@
-{%extends "base.html" %}
+{%extends basetemplate %}
 {%block title%}Volunteer Schedule - {{conference}}{%endblock%}
 {%block extrahead%}
 {%if admin%}
@@ -14,7 +14,7 @@ $(function() {
 </script>
 {%endif%}
 {%endblock%}
-{%block content%}
+{%block layoutblock%}
 <h1>Volunteer Schedule</h1>
 {% if messages %}
 <ul style="background-color: yellow;">
@@ -43,7 +43,7 @@ $(function() {
 </p>
 {%endif%}
 
-<form method="post" action=".">{{ csrf_input }}
+<form method="post" action=".">{% csrf_token %}
 <table class="table">
   <tr>
     <th>Time</th>
@@ -51,22 +51,23 @@ $(function() {
     <th>Count</th>
     <th>Volunteers</th>
   </tr>
-{%for day in slots|groupby('weekday')%}
+{% regroup slots by weekday as slots_by_weekday%}
+{%for day in slots_by_weekday %}
   <tr class="info">
     <th colspan="4">{{day.grouper}}</th>
   </tr>
 {%for s in day.list%}
-{%with assigned_slot = s.volunteerassignment_set.filter(reg=reg).exists()%}
-{%if rowerror[0] == s.id %}
+{%with assigned_slot as s.volunteerassignment_set.filter(reg=reg).exists %}
+{%if rowerror.0 == s.id %}
   <tr class="danger"><td colspan="4">Error: {{rowerror.1}}</td></tr>
 {%endif%}
-  <tr{%if rowerror[0] == s.id%} class="danger"{%elif assigned_slot%} class="success"{%endif%}>
-    <td>{{s.timerange.lower.strftime("%H:%M")}} - {{s.timerange.upper.strftime("%H:%M")}}</td>
+  <tr{%if rowerror.0 == s.id%} class="danger"{%elif assigned_slot%} class="success"{%endif%}>
+    <td>{{s.timerange.lower|time:"H:i"}} - {{s.timerange.upper|time:"H:i"}}</td>
     <td>{{s.title}}</td>
     <td{%if s.countvols < s.min_staff%} class="danger"{%endif%}>{{s.countvols}} / {{s.max_staff}}{%if s.max_staff != s.min_staff%} (min {{s.min_staff}}){%endif%}</td>
     <td>
       <div class="container-fluid">
-{%for v in s.volunteerassignment_set.all()%}
+{%for v in s.volunteerassignment_set.all %}
        <div class="row">
 	 <div class="col-md-6">{{v.reg.fullname}}</div>
 	 <div class="col-md-6">
