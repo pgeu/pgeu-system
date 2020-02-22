@@ -77,7 +77,8 @@ function doUpdateStatus(id, statusval) {
          if (xhr.status == 200) {
             var pieces = data.split(';');
             $('#ajaxStatus').text('Changed status to ' + pieces[0]).addClass('alert-success').removeClass('alert-danger').fadeIn(500).delay(1000).fadeOut(500);
-            $('#statusstr' + id).text(pieces[0]).css('background-color', pieces[1]=='1'?'yellow':'white').data('currstatus', statusval);
+            $('#statusstr' + id).css('background-color', pieces[1]=='1'?'yellow':'white').data('currstatus', statusval);
+            $('#statusstr' + id + ' a').text(pieces[0]);
          } else {
          }
       }
