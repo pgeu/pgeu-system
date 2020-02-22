@@ -1,54 +1,37 @@
 {%extends basetemplate %}
 {%block title%}Volunteer Schedule - {{conference}}{%endblock%}
 {%block extrahead%}
-{%if admin%}
-<script type="text/javascript" src="/media/jq/jquery-1.9.1.min.js"></script>
-<script type="text/javascript">
-$(function() {
-   $('.add_volunteer_dropdown').change(function(event) {
-      if (event.target.value <= 0)
-         return;
-      this.form.submit();
-   });
-});
-</script>
-{%endif%}
+<script type="text/javascript" src="/media/js/volsched.js"></script>
+<style>
+.assignment-status {
+   display: inline-block;
+   min-width: 100px;
+   margin-left: 0.5em;
+   margin-bottom: 0.5em;
+}
+</style>
 {%endblock%}
+
 {%block layoutblock%}
 <h1>Volunteer Schedule</h1>
-{% if messages %}
-<ul style="background-color: yellow;">
-    {% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
 
-<h2>Schedule</h2>
+<div class="buttonrow">
 {%if reg.regtoken and not admin %}
-<p>
-  You can also get the <a href="ical/{{reg.regtoken}}/">ical</a> version.
-</p>
-<p>
-  Green background indicates a slot assigned to you.
-</p>
-{%endif%}
-{%if admin%}
-<p>
-  <b>NOTE!</b> You are using the system as an administrator! <a href="/events/{{conference.urlname}}/volunteer/">Switch</a> to volunteer view.
-</p>
-{%elif can_admin%}
-<p>
-  You are using the system as a volunteer. <a href="/events/admin/{{conference.urlname}}/volunteer/">Switch</a> to admin mode.
-</p>
+<a class="btn btn-sm btn-default" href="ical/{{reg.regtoken}}/">Access ical version</a>
 {%endif%}
 
-<form method="post" action=".">{% csrf_token %}
-<table class="table">
+{%if admin%}
+<a class="btn btn-sm btn-primary" href="/events/{{conference.urlname}}/volunteer/">Volunteer mode</a>
+{%elif can_admin%}
+<a class="btn btn-sm btn-primary" href="/events/admin/{{conference.urlname}}/volunteer/">Administrator mode</a>
+{%endif%}
+</div>
+
+<table class="table" id="tblSchedule" data-csrf="{{csrf_token}}">
   <tr>
-    <th>Time</th>
-    <th>Title</th>
-    <th>Count</th>
+    <th class="col-md-2">Time</th>
+    <th class="col-md-2">Title</th>
+    <th class="col-md-1">Count</th>
     <th>Volunteers</th>
   </tr>
 {% regroup slots by weekday as slots_by_weekday%}
@@ -57,73 +40,37 @@ $(function() {
     <th colspan="4">{{day.grouper}}</th>
   </tr>
 {%for s in day.list%}
-{%with assigned_slot as s.volunteerassignment_set.filter(reg=reg).exists %}
-{%if rowerror.0 == s.id %}
-  <tr class="danger"><td colspan="4">Error: {{rowerror.1}}</td></tr>
-{%endif%}
-  <tr{%if rowerror.0 == s.id%} class="danger"{%elif assigned_slot%} class="success"{%endif%}>
+  <tr class="slot-row" data-slotid="{{s.id}}">
     <td>{{s.timerange.lower|time:"H:i"}} - {{s.timerange.upper|time:"H:i"}}</td>
     <td>{{s.title}}</td>
-    <td{%if s.countvols < s.min_staff%} class="danger"{%endif%}>{{s.countvols}} / {{s.max_staff}}{%if s.max_staff != s.min_staff%} (min {{s.min_staff}}){%endif%}</td>
-    <td>
-      <div class="container-fluid">
-{%for v in s.volunteerassignment_set.all %}
-       <div class="row">
-	 <div class="col-md-6">{{v.reg.fullname}}</div>
-	 <div class="col-md-6">
-{%if admin %}
-  {%if v.vol_confirmed and v.org_confirmed%}<span class="label label-success">confirmed</span>{%else%}<span class="label label-warning" title="{%if v.vol_confirmed%}Awaiting organizer confirmation{%else%}Awaiting volunteer confirmation{%endif%}">unconfirmed</span>{%endif%}
-{%if not v.org_confirmed%}<input type="submit" class="btn btn-primary btn-xs" name="confirm-{{s.id}}-{{v.id}}" value="confirm">{%endif%}
-<input type="submit" class="btn btn-default btn-xs" name="remove-{{s.id}}-{{v.id}}" value="remove">
-{%else%}
-{# non-admin #}
- {%if v.reg == reg %}
-  {%if not v.vol_confirmed%}<input type="submit" class="btn btn-primary btn-xs" name="confirm-{{s.id}}-{{v.id}}" value="confirm">
-  {%elif not v.org_confirmed%}<span class="label label-warning" title="Awaiting organizer confirmation">unconfirmed</span> <input type="submit" class="btn btn-default btn-xs" name="remove-{{s.id}}-{{v.id}}" value="remove">
-  {%else%}<span class="label label-success">confirmed</span>
-  {%endif%}
- {%endif%}
-{%endif%}
-	 </div>
-       </div>
-{%endfor%}
-   </div>{# list of current volunteers #}
-{%if s.countvols < s.max_staff%}
- {%if not assigned_slot and not admin%}<input type="submit" class="btn btn-default btn-xs btn-primary" name="signup-{{s.id}}" value="Sign up">
- {%endif%}
- {%if admin %}
-<div>
-<select name="add-vol-{{s.id}}" class="add_volunteer_dropdown form-control">
-<option value="-1">* Add volunteer</option>
- {%for r in allregs%}<option value="{{r.id}}">{{r.fullname}}</option>{%endfor%}
-</select></div>
- {%endif%}
-{%endif%}
-    </td>
+    <td class="slot-count"{%if s.countvols < s.min_staff%} class="danger"{%endif%}><span class="slot-count-val">{{s.countvols}}</span> / {{s.max_staff}}{%if s.max_staff != s.min_staff%} (min {{s.min_staff}}){%endif%}</td>
+    <td><div class="container-fluid slot-volunteer-list">
+    </div></td>
   </tr>
-{%endwith%}
 {%endfor%}
 {%endfor%}
-
 </table>
-</form>
 
 <h2>Statistics</h2>
 <p>
  The following volunteers are currently assigned slots:
 </p>
-<table class="table table-condensed">
+<table class="table table-condensed" id="statsTable">
+ <thead>
   <tr class="info">
     <th>Volunteer</th>
     <th>Assignments</th>
     <th>Total time</th>
   </tr>
+ </thead>
+ <tbody>
 {%for s in stats%}
   <tr>
     <td>{{s.fullname}}</td>
     <td>{{s.num_assignments}}</td>
     <td>{{s.total_time}}</td>
   </tr>
+ </tbody>
 {%endfor%}
 </table>
 
