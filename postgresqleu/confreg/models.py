@@ -959,6 +959,10 @@ class ConferenceSession(models.Model):
         return get_status_string(self.lastnotifiedstatus)
 
     @property
+    def lastnotified_status_string_long(self):
+        return get_status_string_long(self.lastnotifiedstatus)
+
+    @property
     def has_feedback(self):
         return self.conferencesessionfeedback_set.exists()
 

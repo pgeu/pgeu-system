@@ -1701,6 +1701,12 @@ def callforpapers_confirm(request, confname, sessionid):
     session = get_object_or_404(ConferenceSession, conference=conference,
                                 speaker=speaker, pk=sessionid)
 
+    # If there is a pending notification that has not been sent, don't allow
+    # confirmation (as it might bypass things). This is normally a can't-happen,
+    # since there is no link to confirm at this time, but in concurrent cases...
+    if session.status != session.lastnotifiedstatus:
+        return HttpResponseRedirect("../..")
+
     if session.status not in (1, 3, 4, 5):
         # 1 = confirmed, so render
         # 3 = pending, so render form

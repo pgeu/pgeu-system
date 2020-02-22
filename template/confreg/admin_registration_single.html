@@ -184,7 +184,7 @@
  <tr>
   <td>Sessions</td>
   <td><ul>{%for s in sessions%}
-    <li>{{s.title}} ({{s.status_string}})</li>
+    <li>{{s.title}} ({{s.status_string}}{%if s.status != s.lastnotifiedstatus%} - lasdt notified notified as {{s.lastnotified_status_string}}{%endif%})</li>
 {%endfor%}
   </ul></td>
  </tr>
