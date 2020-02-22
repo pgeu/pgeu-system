@@ -237,13 +237,13 @@ width: 100%;
    <td class="text-center">{{forloop.counter}}</td>
    <td>
      <div class="talkaccd">
-       <h3>{{s.title}} ({{s.speakers}}) [id: {{s.id}}]</h3>
+       <h3>{{s.title}}{%if s.speakers%} ({{s.speakers}}){%endif%} [id: {{s.id}}]</h3>
        <div>
 {%if isadmin%}
 	 <a class="btn btn-default" style="float:right" href="/events/admin/{{conference.urlname}}/sessions/{{s.id}}/" target="_blank">Edit submission</a>
 {%endif%}
-	 <div><strong>Speakers:</strong> {{s.speakers_full}}</div>
-	 <div><strong>Track:</strong> {{s.track}}</div>
+	 <div><strong>Speakers:</strong> {{s.speakers_full|default:""}}</div>
+	 <div><strong>Track:</strong> {{s.track|default:""}}</div>
 	 <br/>
 	 <p>
 {{s.abstract|markdown}}
