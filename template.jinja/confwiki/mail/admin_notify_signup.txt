@@ -1,0 +1,6 @@
+Attendee {{attendeesignup.attendee.fullname}} has signed up for {{signup.title}}.
+
+Attendee name:     {{attendeesignup.attendee.fullname}}
+Registration type: {{attendeesignup.attendee.regtype.regtype}}
+
+Signup choice:     {{attendeesignup.choice}}

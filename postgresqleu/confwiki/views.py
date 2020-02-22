@@ -17,6 +17,7 @@ from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.confreg.models import Conference, ConferenceRegistration
 from postgresqleu.confreg.views import render_conference_response
 from postgresqleu.confreg.util import get_authenticated_conference
+from postgresqleu.confreg.util import send_conference_mail
 
 from postgresqleu.util.db import exec_to_scalar, exec_to_list
 from postgresqleu.util.request import get_int_or_error
@@ -326,17 +327,58 @@ def signup(request, urlname, signupid):
             if form.cleaned_data['choice'] == '':
                 # Remove instead!
                 if attendee_signup:
+                    if signup.notify_changes:
+                        send_conference_mail(conference,
+                                             conference.notifyaddr,
+                                             'Signup response removed from {}'.format(signup.title),
+                                             'confwiki/mail/admin_notify_signup_delete.txt',
+                                             {
+                                                 'conference': conference,
+                                                 'signup': signup,
+                                                 'attendeesignup': attendee_signup,
+                                             },
+                                             sender=conference.notifyaddr,
+                                             receivername=conference.conferencename,
+                        )
                     attendee_signup.delete()
                     messages.info(request, "Your response has been deleted.")
                 # If it did not exist, don't bother deleting it
             else:
                 # Store an actual response
                 if attendee_signup:
+                    oldchoice = attendee_signup.choice
                     attendee_signup.choice = form.cleaned_data['choice']
+                    if signup.notify_changes:
+                        send_conference_mail(conference,
+                                             conference.notifyaddr,
+                                             'Signup response updated for {}'.format(signup.title),
+                                             'confwiki/mail/admin_notify_signup_modify.txt',
+                                             {
+                                                 'conference': conference,
+                                                 'signup': signup,
+                                                 'attendeesignup': attendee_signup,
+                                                 'oldchoice': oldchoice,
+                                             },
+                                             sender=conference.notifyaddr,
+                                             receivername=conference.conferencename,
+                        )
                 else:
                     attendee_signup = AttendeeSignup(attendee=reg,
                                                      signup=signup,
                                                      choice=form.cleaned_data['choice'])
+                    if signup.notify_changes:
+                        send_conference_mail(conference,
+                                             conference.notifyaddr,
+                                             'Attendee signed up for {}'.format(signup.title),
+                                             'confwiki/mail/admin_notify_signup.txt',
+                                             {
+                                                 'conference': conference,
+                                                 'signup': signup,
+                                                 'attendeesignup': attendee_signup,
+                                             },
+                                             sender=conference.notifyaddr,
+                                             receivername=conference.conferencename,
+                        )
                 attendee_signup.save()
                 messages.info(request, "Your response has been stored. Thank you!")
 

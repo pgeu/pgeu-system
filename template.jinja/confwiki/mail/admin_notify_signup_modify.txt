@@ -1,0 +1,7 @@
+Attendee {{attendeesignup.attendee.fullname}} has changed their signup for {{signup.title}}.
+
+Attendee name:     {{attendeesignup.attendee.fullname}}
+Registration type: {{attendeesignup.attendee.regtype.regtype}}
+
+NEW choice:        {{attendeesignup.choice}}
+OLD choice:        {{oldchoice}}

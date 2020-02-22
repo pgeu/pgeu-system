@@ -127,6 +127,7 @@ class Signup(models.Model):
     maxsignups = models.IntegerField(null=False, blank=False, default=-1)
     options = models.CharField(max_length=1000, null=False, blank=True, help_text="Comma separated list of options to choose.", validators=[validate_options, ])
     optionvalues = models.CharField(max_length=1000, null=False, blank=True, help_text="Optional comma separated list of how much each choice counts towards the max value", validators=[validate_optionvalues, ])
+    notify_changes = models.BooleanField(null=False, blank=False, default=False, help_text="Send email notifications when attendees sign up or change their signup information")
 
     public = models.BooleanField(null=False, blank=False, default=False, help_text="All attendees can sign up")
     visible = models.BooleanField(null=False, blank=False, default=False, help_text="Show who have signed up to all invited attendees")
@@ -156,7 +157,7 @@ class AttendeeSignup(models.Model):
     choice = models.CharField(max_length=100, null=False, blank=True)
     saved = models.DateTimeField(null=False, blank=False, auto_now=True)
 
-    _safe_attributes = ('choice', 'saved', )
+    _safe_attributes = ('choice', 'saved', 'attendee', )
 
     class Meta:
         unique_together = (

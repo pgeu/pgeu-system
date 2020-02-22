@@ -1,0 +1,6 @@
+Attendee {{attendeesignup.attendee.fullname}} has removed their signup for {{signup.title}}.
+
+Attendee name:     {{attendeesignup.attendee.fullname}}
+Registration type: {{attendeesignup.attendee.regtype.regtype}}
+
+DELETED choice:    {{attendeesignup.choice}}
