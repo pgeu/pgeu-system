@@ -180,6 +180,7 @@ def volunteerschedule(request, urlname, adm=False):
         'can_admin': can_admin,
         'reg': reg,
         'slots': slots,
+        'helplink': 'volunteers',
     })
 
 
