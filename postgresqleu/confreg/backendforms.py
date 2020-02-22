@@ -62,7 +62,7 @@ class BackendConferenceForm(BackendForm):
                   'conferencefeedbackopen', 'scheduleactive', 'sessionsactive', 'cardsactive', 'allowedit',
                   'promoactive', 'promotext', 'promopicurl',
                   'twitter_timewindow_start', 'twitter_timewindow_end',
-                  'schedulewidth', 'pixelsperminute', 'notifyregs',
+                  'schedulewidth', 'pixelsperminute', 'notifyregs', 'notifysessionstatus', 'notifyvolunteerstatus',
                   'testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors',
                   'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent',
                   'skill_levels', 'additionalintro', 'callforpapersintro', 'callforpaperstags', 'sendwelcomemail', 'welcomemail',
@@ -76,9 +76,11 @@ class BackendConferenceForm(BackendForm):
         self.selectize_multiple_fields['volunteers'] = RegisteredUsersLookup(self.conference)
         self.selectize_multiple_fields['checkinprocessors'] = RegisteredUsersLookup(self.conference)
         self.fields['notifyregs'].help_text = 'Notifications will be sent to {} whenever someone registers or cancels.'.format(self.conference.notifyaddr)
+        self.fields['notifysessionstatus'].help_text = 'Notifications will be sent to {} whenever a speaker confirms a session.'.format(self.conference.notifyaddr)
+        self.fields['notifyvolunteerstatus'].help_text = 'Notifications will be sent to {} whenever a volunteer makes changes to a slot.'.format(self.conference.notifyaddr)
 
     fieldsets = [
-        {'id': 'base_info', 'legend': 'Basic information', 'fields': ['attendees_before_waitlist', 'invoice_autocancel_hours', 'notifyregs', ]},
+        {'id': 'base_info', 'legend': 'Basic information', 'fields': ['attendees_before_waitlist', 'invoice_autocancel_hours', 'notifyregs', 'notifysessionstatus', 'notifyvolunteerstatus', ]},
         {'id': 'welcomeandreg', 'legend': 'Welcome and registration', 'fields': ['sendwelcomemail', 'welcomemail', 'tickets', 'queuepartitioning', 'initial_common_countries']},
         {'id': 'promo', 'legend': 'Website promotion', 'fields': ['promoactive', 'promotext', 'promopicurl']},
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', ]},

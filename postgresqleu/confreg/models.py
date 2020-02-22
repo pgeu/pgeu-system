@@ -152,6 +152,8 @@ class Conference(models.Model):
     sponsoraddr = LowercaseEmailField(blank=False, null=False, verbose_name="Sponsor address")
     notifyaddr = LowercaseEmailField(blank=False, null=False, verbose_name="Notification address")
     notifyregs = models.BooleanField(blank=False, null=False, default=False, verbose_name="Notify about registrations")
+    notifysessionstatus = models.BooleanField(blank=False, null=False, default=False, verbose_name="Notify about session status changes by speakers")
+    notifyvolunteerstatus = models.BooleanField(blank=False, null=False, default=False, verbose_name="Notify about volunteer schedule changes")
     active = models.BooleanField(blank=False, null=False, default=False, verbose_name="Registration open")
     callforpapersopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Call for papers open")
     callforsponsorsopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Call for sponsors open")

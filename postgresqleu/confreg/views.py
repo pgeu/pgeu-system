@@ -1754,6 +1754,21 @@ def callforpapers_confirm(request, confname, sessionid):
             session.lastnotifiedstatus = session.status
             session.lastnotifiedtime = datetime.now()
             session.save()
+
+            if conference.notifysessionstatus:
+                # Send notification to the administrators as well
+                send_conference_mail(conference,
+                                     conference.notifyaddr,
+                                     "Session confirmation",
+                                     'confreg/mail/admin_notify_session.txt',
+                                     {
+                                         'conference': conference,
+                                         'session': session,
+                                     },
+                                     sender=conference.notifyaddr,
+                                     receivername=conference.conferencename,
+                )
+
             return HttpResponseRedirect(".")
 
     return render_conference_response(request, conference, 'cfp', 'confreg/callforpapersconfirm.html', {

@@ -8,9 +8,12 @@ from django.conf.urls import url
 
 from datetime import datetime
 
+from postgresqleu.util.db import exec_to_dict
+
 from .views import render_conference_response
 from .models import Conference, ConferenceRegistration
 from .models import VolunteerSlot, VolunteerAssignment
+from .util import send_conference_mail
 
 
 def _check_admin(request, conference):
@@ -32,6 +35,28 @@ def _get_conference_and_reg(request, urlname):
             raise Http404("Volunteer entry not found")
 
     return (conference, is_admin, reg)
+
+
+def send_volunteer_notification(conference, assignment, subject, template):
+    if not conference.notifyvolunteerstatus:
+        return
+
+    # No filter aggregates in our version of Django, so direct SQL it is
+    pending = exec_to_dict("SELECT count(*) FILTER (WHERE NOT org_confirmed) AS admin, count(*) FILTER (WHERE NOT vol_confirmed) AS volunteer FROM  confreg_volunteerassignment a INNER JOIN confreg_volunteerslot s ON s.id=a.slot_id WHERE s.conference_id=%(confid)s", {
+        'confid': conference.id,
+    })[0]
+
+    send_conference_mail(conference,
+                         conference.notifyaddr,
+                         subject,
+                         'confreg/mail/{}'.format(template), {
+                             'conference': conference,
+                             'assignment': assignment,
+                             'pending': pending,
+                         },
+                         sender=conference.notifyaddr,
+                         receivername=conference.conferencename,
+    )
 
 
 @login_required
@@ -106,7 +131,9 @@ def _signup(request, conference, reg, adm, slotid):
     elif VolunteerAssignment.objects.filter(reg=reg, slot__timerange__overlap=slot.timerange).exists():
         request.session['rowerror'] = [int(slotid), "Cannot sign up for an overlapping slot"]
     else:
-        VolunteerAssignment(slot=slot, reg=reg, vol_confirmed=True, org_confirmed=False).save()
+        a = VolunteerAssignment(slot=slot, reg=reg, vol_confirmed=True, org_confirmed=False)
+        a.save()
+        send_volunteer_notification(conference, a, 'Volunteer signed up', 'admin_notify_volunteer_signup.txt')
 
 
 def _add(request, conference, reg, adm, slotid, volid):
@@ -152,6 +179,7 @@ def _confirm(request, conference, reg, is_admin, slotid, aid):
         else:
             a.vol_confirmed = True
             a.save()
+            send_volunteer_notification(conference, a, 'Volunteer slot confirmed', 'admin_notify_volunteer_confirmed.txt')
 
 
 def ical(request, urlname, token):

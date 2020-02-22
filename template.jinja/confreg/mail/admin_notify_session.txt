@@ -1,0 +1,7 @@
+A speaker has confirmed their session for {{conference.conferencename}}.
+
+Session:    {{session.title}}
+Speaker(s): {{session.speaker_list}}
+New status: {{session.status_string_long}}
+
+View: {{sitebase}}/events/admin/{{conference.urlname}}/sessions/{{session.id}}/

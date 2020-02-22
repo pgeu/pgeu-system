@@ -1,0 +1,10 @@
+A volunteer has signed up for an assignment at {{conference.conferencename}}.
+
+Volunteer:  {{assignment.reg.fullname}}
+Slot:       {{assignment.slot}}
+Title:      {{assignment.slot.title}}
+
+There are currently {{pending.admin}} assignments awaiting organiser confirmation
+and {{pending.volunteer}} assignments awaiting volunteer confirmation.
+
+View: {{sitebase}}/events/admin/{{conference.urlname}}/volunteer/
