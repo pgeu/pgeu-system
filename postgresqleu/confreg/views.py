@@ -2483,8 +2483,13 @@ def talkvote_status(request, confname):
 
     session.status = newstatus
     session.save()
+    if session.speaker.exists():
+        statechange = session.status != session.lastnotifiedstatus and 1 or 0
+    else:
+        statechange = 0
+
     return HttpResponse("{0};{1}".format(get_status_string(session.status),
-                                         session.status != session.lastnotifiedstatus and 1 or 0,
+                                         statechange,
                                      ), content_type='text/plain')
 
 
