@@ -17,7 +17,7 @@
 
 {%if page.history%}
 <p style="font-size: small">
-<i>This page was last edited by {{page.author.fullname}} at {{page.publishedat.strftime("%Y-%m-%d %H:%M")}}. View <a href="history/">history</a>.</i>
+<i>This page was last edited by {{page.author.fullname}} at {{page.publishedat|datetimeformat("%Y-%m-%d %H:%M")}}. View <a href="history/">history</a>.</i>
 </p>
 {%endif%}
 

@@ -3,7 +3,7 @@
 {%block content%}
 <h2>{{mail.subject}}</h2>
 <p>
-<div><b>Sent: </b>{{mail.sentat.strftime("%Y-%m-%d %H:%M")}}</div>
+<div><b>Sent: </b>{{mail.sentat|datetimeformat("%Y-%m-%d %H:%M")}}</div>
 <div>
 {{"<br>".join(mail.message.splitlines())}}
 </div>

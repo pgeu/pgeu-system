@@ -6,8 +6,8 @@
 
 <h2>{{session.title}}</h2>
 <p>
-{%if session.starttime%}<b>Date:</b> {{session.starttime.strftime("%Y-%m-%d")}}<br/>{%endif%}
-{%if session.starttime%}<b>Time:</b> {{session.starttime.strftime("%H:%M")}} - {{session.endtime.strftime("%H:%M")}}<br/>{%endif%}
+{%if session.starttime%}<b>Date:</b> {{session.starttime|datetimeformat("%Y-%m-%d")}}<br/>{%endif%}
+{%if session.starttime%}<b>Time:</b> {{session.starttime|datetimeformat("%H:%M")}} - {{session.endtime|datetimeformat("%H:%M")}}<br/>{%endif%}
 <b>Room:</b> {{session.room.roomname}}<br/>
 {%if conference.skill_levels %}
 <b>Level:</b> {{session.skill_level_string}}<br/>

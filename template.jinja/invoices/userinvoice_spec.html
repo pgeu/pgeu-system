@@ -27,12 +27,12 @@
  </tr>
  <tr>
    <td style="white-space: nowrap">Due date:</td>
-   <td{%if invoice.isexpired%} style="color:red"{%endif%}>{{invoice.duedate.strftime("%Y-%m-%d")}}</td>
+   <td{%if invoice.isexpired%} style="color:red"{%endif%}>{{invoice.duedate|datetimeformat("%Y-%m-%d")}}</td>
 </tr>
 {%if invoice.isexpired and invoice.canceltime%}
  <tr>
    <td style="white-space: nowrap">Auto cancel:</td>
-   <td>If not paid before {{invoice.canceltime.strftime("%Y-%m-%d %H:%M")}}, this invoice will automatically be cancelled.</td>
+   <td>If not paid before {{invoice.canceltime|datetimeformat("%Y-%m-%d %H:%M")}}, this invoice will automatically be cancelled.</td>
  </tr>
 {%endif%}
  <tr>

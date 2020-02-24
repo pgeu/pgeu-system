@@ -30,14 +30,14 @@ table.versiontable tr td,th {
 <tr>
  <td></td>
  <td><input type="radio" name="to" value="-1"{%if not toid%} CHECKED{%endif%}></td>
- <td>{{page.publishedat.strftime("%Y-%m-%d %H:%M")}}</td>
+ <td>{{page.publishedat|datetimeformat("%Y-%m-%d %H:%M")}}</td>
  <td>{{page.author.fullname}}</td>
 </tr>
 {%for h in page.wikipagehistory_set.all()%}
 <tr>
  <td><input type="radio" name="from" value="{{h.id}}"{%if fromid == h.id or loop.first and not fromid%} CHECKED{%endif%}></td>
  <td><input type="radio" name="to" value="{{h.id}}"{%if toid == h.id%} CHECKED{%endif%}></td>
- <td>{{h.publishedat.strftime("%Y-%m-%d %H:%M")}}</td>
+ <td>{{h.publishedat|datetimeformat("%Y-%m-%d %H:%M")}}</td>
  <td>{{h.author.fullname}}</td>
 </tr>
 {%endfor%}

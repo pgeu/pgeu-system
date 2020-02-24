@@ -54,7 +54,7 @@
       {% endif -%}
       <p class="ticket-checkedin">
         {%- if reg.checkedinat -%}
-        Checked in at {{ reg.checkedinat.strftime("%Y-%m-%d %H:%M") }}.
+        Checked in at {{ reg.checkedinat|datetimeformat("%Y-%m-%d %H:%M") }}.
         {%- else -%}
         Not checked in.
         {%- endif -%}
