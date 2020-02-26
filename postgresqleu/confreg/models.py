@@ -476,8 +476,8 @@ class BulkPayment(models.Model):
     invoice = models.ForeignKey(Invoice, null=True, blank=True, on_delete=models.CASCADE)
     numregs = models.IntegerField(null=False, blank=False)
 
-    createdat = models.DateField(null=False, blank=False, auto_now_add=True)
-    paidat = models.DateField(null=True, blank=True)
+    createdat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+    paidat = models.DateTimeField(null=True, blank=True)
 
     def ispaid(self):
         return self.paidat and True or False

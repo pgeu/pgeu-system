@@ -116,7 +116,7 @@ class BulkInvoiceProcessor(object):
         if bp.paidat:
             raise Exception("Bulk payment already paid")
 
-        bp.paidat = datetime.today()
+        bp.paidat = datetime.now()
 
         # Confirm all related ones
         for r in bp.conferenceregistration_set.all():
