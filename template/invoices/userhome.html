@@ -18,7 +18,7 @@ We have the following invoices registered to your account:
 {%for invoice in invoices %}
 <tr>
  <td>#{{invoice.id}}</td>
- <td><a href="{{invoice.id}}/">{{invoice.title}}</td>
+ <td><a href="{{invoice.id}}/">{{invoice.title}}</a></td>
  <td>{%if invoice.invoicerefund_set.exists%}
   <span class="badge badge-info">Refunded</span>
 {%elif invoice.ispaid%}<span class="badge badge-success">Paid</span>
