@@ -16,7 +16,7 @@ from collections import OrderedDict
 from postgresqleu.auth import user_search, user_import
 
 from postgresqleu.confreg.models import Conference, PrepaidVoucher, DiscountCode
-from postgresqleu.confreg.util import get_authenticated_conference
+from postgresqleu.confreg.util import get_authenticated_conference, get_conference_or_404
 from postgresqleu.confreg.jinjafunc import render_sandboxed_template
 from postgresqleu.confreg.util import send_conference_mail
 from postgresqleu.confreg.twitter import post_conference_tweet
@@ -276,7 +276,7 @@ def sponsor_purchase_discount(request, sponsorid):
 
 @login_required
 def sponsor_signup_dashboard(request, confurlname):
-    conference = get_object_or_404(Conference, urlname=confurlname)
+    conference = get_conference_or_404(urlname)
     if not conference.callforsponsorsopen:
         # This one is not open. But if we're an admin, we may bypass
         get_authenticated_conference(request, confurlname)
@@ -294,7 +294,7 @@ def sponsor_signup_dashboard(request, confurlname):
 @login_required
 @transaction.atomic
 def sponsor_signup(request, confurlname, levelurlname):
-    conference = get_object_or_404(Conference, urlname=confurlname)
+    conference = get_conference_or_404(confurlname)
     if not conference.callforsponsorsopen:
         # This one is not open. But if we're an admin, we may bypass
         get_authenticated_conference(request, confurlname)
@@ -1129,7 +1129,8 @@ def sponsor_admin_imageview(request, benefitid):
 
 @superuser_required
 def sponsor_admin_test_vat(request, confurlname):
-    get_object_or_404(Conference, urlname=confurlname)
+    # Just verify the conference exists and we have permissions
+    get_authenticated_conference(request, confurlname)
 
     vn = request.POST.get('vatnumber', '')
     if not vn:

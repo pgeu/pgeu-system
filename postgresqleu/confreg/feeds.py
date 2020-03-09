@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from .models import Conference
+from .util import get_conference_or_404
 
 from postgresqleu.util.db import exec_to_dict
 
@@ -25,7 +26,7 @@ class ConferenceNewsFeed(Feed):
     description_template = "pieces/news_description.html"
 
     def get_object(self, request, what):
-        return get_object_or_404(Conference, urlname=what)
+        return get_conference_or_404(what)
 
     def title(self, obj):
         return "News - {0}".format(obj.conferencename)

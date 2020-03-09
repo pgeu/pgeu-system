@@ -371,3 +371,8 @@ def get_authenticated_conference(request, urlname=None, confid=None):
         if c.series.administrators.filter(pk=request.user.id).exists():
             return c
         raise PermissionDenied()
+
+
+def get_conference_or_404(urlname):
+    conference = get_object_or_404(Conference, urlname=urlname)
+    return conference

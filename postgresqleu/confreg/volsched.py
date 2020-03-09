@@ -15,7 +15,7 @@ from postgresqleu.util.request import get_int_or_error
 
 from .models import Conference, ConferenceRegistration
 from .models import VolunteerSlot, VolunteerAssignment
-from .util import send_conference_mail
+from .util import send_conference_mail, get_conference_or_404
 
 
 def _check_admin(request, conference):
@@ -26,7 +26,7 @@ def _check_admin(request, conference):
 
 
 def _get_conference_and_reg(request, urlname):
-    conference = get_object_or_404(Conference, urlname=urlname)
+    conference = get_conference_or_404(urlname)
     is_admin = _check_admin(request, conference)
     if is_admin:
         reg = ConferenceRegistration.objects.get(conference=conference, attendee=request.user)
@@ -241,7 +241,7 @@ def _confirm(request, conference, reg, is_admin, slot, aid):
 
 
 def ical(request, urlname, token):
-    conference = get_object_or_404(Conference, urlname=urlname)
+    conference = get_conference_or_404(urlname)
     reg = get_object_or_404(ConferenceRegistration, regtoken=token)
     assignments = VolunteerAssignment.objects.filter(reg=reg).order_by('slot__timerange')
     return render(request, 'confreg/volunteer_schedule.ical', {

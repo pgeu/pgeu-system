@@ -21,7 +21,7 @@ from postgresqleu.confreg.util import get_authenticated_conference
 
 from .jinjafunc import JINJA_TEMPLATE_ROOT
 from .jinjapdf import render_jinja_ticket, render_jinja_badges
-from .util import send_conference_mail
+from .util import send_conference_mail, get_conference_or_404
 
 from .models import Conference, ConferenceSeries
 from .models import ConferenceRegistration, Speaker
@@ -80,7 +80,7 @@ def superedit_conference(request, urlname):
     return backend_process_form(request,
                                 urlname,
                                 BackendSuperConferenceForm,
-                                get_object_or_404(Conference, urlname=urlname).pk,
+                                get_conference_or_404(urlname).pk,
                                 bypass_conference_filter=True,
                                 allow_new=False,
                                 allow_delete=False)
@@ -617,7 +617,7 @@ class JsonWriter(object):
 
 
 def tokendata(request, urlname, token, datatype, dataformat):
-    conference = get_object_or_404(Conference, urlname=urlname)
+    conference = get_conference_or_404(urlname)
     if not AccessToken.objects.filter(conference=conference, token=token, permissions__contains=[datatype, ]).exists():
         raise Http404()
 

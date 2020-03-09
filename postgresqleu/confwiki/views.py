@@ -16,7 +16,7 @@ from postgresqleu.mailqueue.util import send_simple_mail
 
 from postgresqleu.confreg.models import Conference, ConferenceRegistration
 from postgresqleu.confreg.views import render_conference_response
-from postgresqleu.confreg.util import get_authenticated_conference
+from postgresqleu.confreg.util import get_authenticated_conference, get_conference_or_404
 from postgresqleu.confreg.util import send_conference_mail
 
 from postgresqleu.util.db import exec_to_scalar, exec_to_list
@@ -66,7 +66,7 @@ def _check_signup_permissions(request, signup):
 
 @login_required
 def wikipage(request, confurl, wikiurl):
-    conference = get_object_or_404(Conference, urlname=confurl)
+    conference = get_conference_or_404(confurl)
     page = get_object_or_404(Wikipage, conference=conference, url=wikiurl)
     reg = _check_wiki_permissions(request, page)
 
@@ -86,7 +86,7 @@ def wikipage(request, confurl, wikiurl):
 @login_required
 @transaction.atomic
 def wikipage_subscribe(request, confurl, wikiurl):
-    conference = get_object_or_404(Conference, urlname=confurl)
+    conference = get_conference_or_404(confurl)
     page = get_object_or_404(Wikipage, conference=conference, url=wikiurl)
     reg = _check_wiki_permissions(request, page)
 
@@ -103,7 +103,7 @@ def wikipage_subscribe(request, confurl, wikiurl):
 
 @login_required
 def wikipage_history(request, confurl, wikiurl):
-    conference = get_object_or_404(Conference, urlname=confurl)
+    conference = get_conference_or_404(confurl)
     page = get_object_or_404(Wikipage, conference=conference, url=wikiurl)
     reg = _check_wiki_permissions(request, page)
     if not page.history:
@@ -146,7 +146,7 @@ def wikipage_history(request, confurl, wikiurl):
 @login_required
 @transaction.atomic
 def wikipage_edit(request, confurl, wikiurl):
-    conference = get_object_or_404(Conference, urlname=confurl)
+    conference = get_conference_or_404(confurl)
     page = get_object_or_404(Wikipage, conference=conference, url=wikiurl)
     reg = _check_wiki_permissions(request, page)
 
@@ -291,7 +291,7 @@ def admin_edit_page(request, urlname, pageid):
 @login_required
 @transaction.atomic
 def signup(request, urlname, signupid):
-    conference = get_object_or_404(Conference, urlname=urlname)
+    conference = get_conference_or_404(urlname)
     signup = get_object_or_404(Signup, conference=conference, id=signupid)
     reg = _check_signup_permissions(request, signup)
 

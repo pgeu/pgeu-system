@@ -16,14 +16,14 @@ from postgresqleu.util.request import get_int_or_error
 
 from .models import Conference, ConferenceRegistration
 from .views import render_conference_response
-from .util import send_conference_mail
+from .util import send_conference_mail, get_conference_or_404
 
 import json
 
 
 @login_required
 def landing(request, urlname):
-    conference = get_object_or_404(Conference, urlname=urlname)
+    conference = get_conference_or_404(urlname)
     reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
 
     if not reg.checkinprocessors_set.filter(pk=conference.pk).exists():
@@ -54,7 +54,7 @@ def landing(request, urlname):
 
 
 def _get_checkin(request, urlname, regtoken):
-    conference = get_object_or_404(Conference, urlname=urlname)
+    conference = get_conference_or_404(urlname)
     reg = get_object_or_404(ConferenceRegistration,
                             conference=conference,
                             regtoken=regtoken,

@@ -48,7 +48,7 @@ from .jinjafunc import render_jinja_conference_response, JINJA_TEMPLATE_ROOT
 from .jinjafunc import render_jinja_conference_template
 from .jinjafunc import render_jinja_conference_svg
 from .jinjapdf import render_jinja_ticket
-from .backendviews import get_authenticated_conference
+from .util import get_authenticated_conference, get_conference_or_404
 from .backendforms import CancelRegistrationForm, ConfirmRegistrationForm
 from .backendforms import ResendWelcomeMailForm
 
@@ -200,7 +200,7 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
 
 
 def confhome(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
 
     # If there is a registration, redirect to the registration dashboard.
     # If not, or if the user is not logged in, redirect to the conference homepage.
@@ -234,7 +234,7 @@ def news_json(request, confname):
 @login_required
 @transaction.atomic
 def register(request, confname, whatfor=None):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     if whatfor:
         whatfor = whatfor.rstrip('/')
         redir_root = '../'
@@ -372,7 +372,7 @@ def register(request, confname, whatfor=None):
 @transaction.atomic
 def changereg(request, confname):
     # Change certain allowed fields on a registration.
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
 
     return _registration_dashboard(request, conference, reg, False, '../')
@@ -382,7 +382,7 @@ def changereg(request, confname):
 @transaction.atomic
 def multireg(request, confname, regid=None):
     # "Register for somebody else" functionality.
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
     if not is_active:
         # Registration not open.
@@ -545,7 +545,7 @@ def _create_and_assign_bulk_payment(user, conference, regs, invoicerows, recipie
 @login_required
 @transaction.atomic
 def multireg_newinvoice(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
     if not is_active:
         # Registration not open.
@@ -653,7 +653,7 @@ def multireg_newinvoice(request, confname):
 
 @login_required
 def multireg_zeropay(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     return render_conference_response(request, conference, 'reg', 'confreg/regmulti_zeropay.html', {
     })
 
@@ -661,7 +661,7 @@ def multireg_zeropay(request, confname):
 @login_required
 @transaction.atomic
 def multireg_bulkview(request, confname, bulkid):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
     if not is_active:
         # Registration not open.
@@ -681,7 +681,7 @@ def multireg_bulkview(request, confname, bulkid):
 @login_required
 @transaction.atomic
 def multireg_bulk_cancel(request, confname, bulkid):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     bp = get_object_or_404(BulkPayment, conference=conference, pk=bulkid, user=request.user)
 
     if not bp.invoice:
@@ -734,7 +734,7 @@ def feedback_available(request):
 @login_required
 @transaction.atomic
 def reg_add_options(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
 
     if not reg.payconfirmedat:
@@ -885,7 +885,7 @@ def reg_add_options(request, confname):
 
 @login_required
 def feedback(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
 
     if not conference.feedbackopen:
         # Allow conference testers to override
@@ -933,7 +933,7 @@ def feedback(request, confname):
 @login_required
 def feedback_session(request, confname, sessionid):
     # Room for optimization: don't get these as separate steps
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     session = get_object_or_404(ConferenceSession, pk=sessionid, conference=conference, status=1)
 
     if not conference.feedbackopen:
@@ -976,7 +976,7 @@ def feedback_session(request, confname, sessionid):
 @login_required
 @transaction.atomic
 def feedback_conference(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
 
     if not conference.feedbackopen:
         # Allow conference testers to override
@@ -1183,7 +1183,7 @@ ORDER BY day, s.starttime, r.sortkey""", {
 
 
 def schedule(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
 
     if not conference.scheduleactive:
         if not conference.testers.filter(pk=request.user.id):
@@ -1202,7 +1202,7 @@ def schedulejson(request, confname):
 
 
 def sessionlist(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
 
     if not conference.sessionsactive:
         if not conference.testers.filter(pk=request.user.id):
@@ -1218,7 +1218,7 @@ def sessionlist(request, confname):
 
 
 def schedule_ical(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
 
     if not conference.scheduleactive:
         # Not open. But we can't really render an error, so render a
@@ -1234,7 +1234,7 @@ def schedule_ical(request, confname):
 
 
 def schedule_xcal(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
 
     if not conference.scheduleactive:
         raise Http404()
@@ -1264,7 +1264,7 @@ def schedule_xcal(request, confname):
 
 
 def schedule_xml(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
 
     if not conference.scheduleactive:
         raise Http404()
@@ -1308,7 +1308,7 @@ def schedule_xml(request, confname):
 
 
 def session(request, confname, sessionid):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
 
     if not conference.sessionsactive:
         if not conference.testers.filter(pk=request.user.id):
@@ -1322,7 +1322,7 @@ def session(request, confname, sessionid):
 
 
 def session_card(request, confname, sessionid, cardformat):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
 
     if not (conference.sessionsactive and conference.cardsactive):
         if not conference.testers.filter(pk=request.user.id):
@@ -1335,7 +1335,7 @@ def session_card(request, confname, sessionid, cardformat):
 
 
 def session_slides(request, confname, sessionid, slideid):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
 
     if not conference.sessionsactive:
         if not conference.testers.filter(pk=request.user.id):
@@ -1348,7 +1348,7 @@ def session_slides(request, confname, sessionid, slideid):
 
 
 def speaker(request, confname, speakerid):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     if not conference.sessionsactive:
         if not conference.testers.filter(pk=request.user.id):
             return render_conference_response(request, conference, 'schedule', 'confreg/sessionsclosed.html')
@@ -1364,7 +1364,7 @@ def speaker(request, confname, speakerid):
 
 
 def speaker_card(request, confname, speakerid, cardformat):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
 
     if not (conference.sessionsactive and conference.cardsactive):
         if not conference.testers.filter(pk=request.user.id):
@@ -1389,7 +1389,7 @@ def speakerphoto(request, speakerid):
 @login_required
 def speakerprofile(request, confurlname=None):
     if confurlname:
-        conf = get_object_or_404(Conference, urlname=confurlname)
+        conf = get_conference_or_404(confurlname)
     else:
         conf = None
 
@@ -1431,7 +1431,7 @@ def speakerprofile(request, confurlname=None):
 @login_required
 @transaction.atomic
 def callforpapers(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     # This is called both for open and non-open call for papers, to let submitters view
     # when the schedule is not published. Thus, no check for callforpapersopen here.
 
@@ -1472,7 +1472,7 @@ def callforpaperslist(request):
 
 @login_required
 def callforpapers_edit(request, confname, sessionid):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     is_tester = conference.testers.filter(pk=request.user.id).exists()
 
     if sessionid == 'new':
@@ -1607,7 +1607,7 @@ def public_speaker_lookup(request, confname):
     if 'query' not in request.GET:
         raise Http404("No query")
 
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     speaker = get_object_or_404(Speaker, user=request.user)
 
     # This is a lookup for speakers that's public. To avoid harvesting, we allow
@@ -1631,7 +1631,7 @@ def public_tags_lookup(request, confname):
     if 'query' not in request.GET:
         raise Http404("No query")
 
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     speaker = get_object_or_404(Speaker, user=request.user)
 
     prefix = request.GET['query']
@@ -1647,7 +1647,7 @@ def public_tags_lookup(request, confname):
 @login_required
 @transaction.atomic
 def callforpapers_copy(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     speaker = get_object_or_404(Speaker, user=request.user)
 
     if request.method == 'POST':
@@ -1681,7 +1681,7 @@ def callforpapers_copy(request, confname):
 
 @login_required
 def callforpapers_delslides(request, confname, sessionid, slideid):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     speaker = get_object_or_404(Speaker, user=request.user)
     session = get_object_or_404(ConferenceSession, conference=conference,
                                 speaker=speaker, pk=sessionid)
@@ -1693,7 +1693,7 @@ def callforpapers_delslides(request, confname, sessionid, slideid):
 @login_required
 @transaction.atomic
 def callforpapers_confirm(request, confname, sessionid):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
 
     # Find users speaker record (should always exist when we get this far)
     speaker = get_object_or_404(Speaker, user=request.user)
@@ -1783,7 +1783,7 @@ def confirmreg(request, confname):
     # Confirm a registration step. This will show the user the final
     # cost of the registration, minus any discounts found (including
     # complete-registration vouchers).
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
     # This should never happen since we should error out in the form,
     # but make sure we don't accidentally proceed.
@@ -1975,7 +1975,7 @@ def confirmreg(request, confname):
 @login_required
 @transaction.atomic
 def waitlist_signup(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
 
     # CSRF ensures that this post comes from us.
@@ -2009,7 +2009,7 @@ def waitlist_signup(request, confname):
 @login_required
 @transaction.atomic
 def waitlist_cancel(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
 
     # CSRF ensures that this post comes from us.
@@ -2040,7 +2040,7 @@ def waitlist_cancel(request, confname):
 
 @login_required
 def cancelreg(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     return render_conference_response(request, conference, 'reg', 'confreg/canceled.html')
 
 
@@ -2051,7 +2051,7 @@ def invoice(request, confname, regid):
     # even though the invoice is present on the main view as well, in order
     # to make things even more obvious.
     # Assumes that the actual invoice has already been created!
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     reg = get_object_or_404(ConferenceRegistration, id=regid, attendee=request.user, conference=conference)
 
     if reg.bulkpayment:
@@ -2080,7 +2080,7 @@ def invoice(request, confname, regid):
 @transaction.atomic
 def invoice_cancel(request, confname, regid):
     # Show an optional cancel of this invoice
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     reg = get_object_or_404(ConferenceRegistration, id=regid, attendee=request.user, conference=conference)
 
     if not reg.invoice:
@@ -2107,7 +2107,7 @@ def invoice_cancel(request, confname, regid):
 
 @login_required
 def attendee_mail(request, confname, mailid):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
 
     mail = _attendeemail_queryset(conference, reg).filter(pk=mailid)
@@ -2123,7 +2123,10 @@ def attendee_mail(request, confname, mailid):
 
 @login_required
 def download_ticket(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname, tickets=True)
+    conference = get_conference_or_404(confname)
+    if not conference.tickets:
+        raise Http404()
+
     reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
 
     resp = HttpResponse(content_type='application/pdf')
@@ -2133,7 +2136,10 @@ def download_ticket(request, confname):
 
 @login_required
 def view_ticket(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname, tickets=True)
+    conference = get_conference_or_404(confname)
+    if not conference.tickets:
+        raise Http404()
+
     reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
 
     return render_conference_response(request, conference, 'reg', 'confreg/view_ticket.html', {
@@ -2322,7 +2328,7 @@ def delvouchers(request, confname, batchid, voucherid):
 
 @login_required
 def viewvouchers_user(request, confname, batchid):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     batch = get_object_or_404(PrepaidBatch, conference=conference, pk=batchid)
     if batch.buyer != request.user:
         raise PermissionDenied()
@@ -2357,7 +2363,7 @@ def emailvouchers(request, confname, batchid):
 @login_required
 @transaction.atomic
 def talkvote(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
 
     isvoter = conference.talkvoters.filter(pk=request.user.id).exists()
     isadmin = conference.administrators.filter(pk=request.user.id).exists() or conference.series.administrators.filter(pk=request.user.id).exists()
@@ -2476,7 +2482,7 @@ def talkvote(request, confname):
 @login_required
 @transaction.atomic
 def talkvote_status(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     if not conference.talkvoters.filter(pk=request.user.id).exists() and not conference.administrators.filter(pk=request.user.id).exists() and not conference.series.administrators.filter(pk=request.user.id).exists():
         raise PermissionDenied('You are not a talk voter or administrator for this conference!')
 
@@ -2519,7 +2525,7 @@ def talkvote_status(request, confname):
 @login_required
 @transaction.atomic
 def talkvote_vote(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     if not conference.talkvoters.filter(pk=request.user.id):
         raise PermissionDenied('You are not a talk voter for this conference!')
     if request.method != 'POST':
@@ -2547,7 +2553,7 @@ def talkvote_vote(request, confname):
 @login_required
 @transaction.atomic
 def talkvote_comment(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     if not conference.talkvoters.filter(pk=request.user.id):
         raise PermissionDenied('You are not a talk voter for this conference!')
     if request.method != 'POST':
@@ -2566,7 +2572,7 @@ def talkvote_comment(request, confname):
 @login_required
 @transaction.atomic
 def createschedule(request, confname):
-    conference = get_object_or_404(Conference, urlname=confname)
+    conference = get_conference_or_404(confname)
     is_admin = conference.administrators.filter(pk=request.user.id).exists() or conference.series.administrators.filter(pk=request.user.id).exists()
     if not (request.user.is_superuser or is_admin or
             conference.talkvoters.filter(pk=request.user.id).exists()
@@ -3894,6 +3900,8 @@ def crossmailoptions(request):
 
     if not (request.user.is_superuser or ConferenceSeries.objects.filter(administrators=request.user).exists()):
         return HttpResponseForbidden()
+    # We can safely get the conference directly here, since we won't be using any
+    # date/time information and thus don't need the timezone to be set.
     conf = get_object_or_404(Conference, id=get_int_or_error(request.GET, 'conf'))
 
     # Get a list of different crossmail options for this conference. Note that
