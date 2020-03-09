@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
+from django.utils import timezone
 
 import os
 from decimal import Decimal
@@ -68,7 +69,7 @@ def invoicerows_for_registration(reg, update_used_vouchers):
             else:
                 # Valid voucher found!
                 if update_used_vouchers:
-                    v.usedate = datetime.now()
+                    v.usedate = timezone.now()
                     v.user = reg
                     v.save()
                 # Add a row with the discount of the registration type
@@ -306,7 +307,7 @@ def get_invoice_autocancel(*args):
     # or None if there is no limit
     hours = [a for a in args if a is not None]
     if hours:
-        return datetime.now() + timedelta(hours=min(hours))
+        return timezone.now() + timedelta(hours=min(hours))
     else:
         return None
 
@@ -317,7 +318,7 @@ def expire_additional_options(reg):
     # being expired (expects to run within a transaction).
     # Returns the list of options expired for this particular user.
 
-    hours = int(round((datetime.now() - reg.lastmodified).total_seconds() / 3600))
+    hours = int(round((timezone.now() - reg.lastmodified).total_seconds() / 3600))
     expireset = list(reg.additionaloptions.filter(invoice_autocancel_hours__isnull=False,
                                                   invoice_autocancel_hours__lt=hours))
 

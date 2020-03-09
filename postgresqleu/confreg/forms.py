@@ -5,6 +5,7 @@ from django.forms.utils import ErrorList
 from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
+from django.utils import timezone
 
 from django.db.models.fields.files import ImageFieldFile
 
@@ -691,7 +692,7 @@ class AttendeeMailForm(forms.ModelForm):
 
 class WaitlistOfferForm(forms.Form):
     hours = forms.IntegerField(min_value=1, max_value=240, label='Offer valid for (hours)', initial=48)
-    until = forms.DateTimeField(label='Offer valid until', initial=(datetime.now() + timedelta(hours=48)).strftime('%Y-%m-%d %H:%M'))
+    until = forms.DateTimeField(label='Offer valid until', initial=(timezone.now() + timedelta(hours=48)).strftime('%Y-%m-%d %H:%M'))
     confirm = forms.BooleanField(help_text='Confirm')
 
     def __init__(self, *args, **kwargs):

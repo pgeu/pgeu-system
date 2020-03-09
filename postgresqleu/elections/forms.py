@@ -1,11 +1,10 @@
 from django import forms
 from django.forms.utils import ErrorList
 from django.db import transaction
+from django.utils import timezone
 
 from .models import Vote
 from postgresqleu.membership.models import MemberLog
-
-from datetime import datetime
 
 
 class VoteForm(forms.Form):
@@ -89,7 +88,7 @@ class VoteForm(forms.Form):
                 id = int(k[4:])
                 Vote(election=self.election, voter=self.member, candidate_id=id, score=v).save()
             self.votes = Vote.objects.filter(election=self.election, voter=self.member)
-            MemberLog(member=self.member, timestamp=datetime.now(),
+            MemberLog(member=self.member, timestamp=timezone.now(),
                       message="Voted in election '%s'" % self.election.name).save()
             self.saved_and_modified = True
         elif len(self.votes) == len(self.candidates):
@@ -103,7 +102,7 @@ class VoteForm(forms.Form):
                     changedany = True
 
             if changedany:
-                MemberLog(member=self.member, timestamp=datetime.now(),
+                MemberLog(member=self.member, timestamp=timezone.now(),
                           message="Changed votes in election '%s'" % self.election.name).save()
                 self.saved_and_modified = True
         else:

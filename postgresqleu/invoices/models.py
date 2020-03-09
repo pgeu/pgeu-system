@@ -5,8 +5,8 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.utils.safestring import mark_safe
+from django.utils import timezone
 
-from datetime import datetime
 from decimal import Decimal
 
 from .payment import PaymentMethodWrapper
@@ -153,7 +153,7 @@ class Invoice(models.Model):
 
     @property
     def isexpired(self):
-        return (self.paidat is None) and self.duedate and (self.duedate < datetime.now())
+        return (self.paidat is None) and self.duedate and (self.duedate < timezone.now())
 
     @property
     def allowedmethodwrappers(self):

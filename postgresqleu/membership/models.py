@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.utils import timezone
 
 from postgresqleu.util.fields import LowercaseEmailField
 from postgresqleu.countries.models import Country
@@ -93,7 +94,7 @@ class Meeting(models.Model):
 
     @property
     def joining_active(self):
-        if datetime.now() > self.dateandtime - timedelta(hours=4):
+        if timezone.now() > self.dateandtime - timedelta(hours=4):
             return True
         return False
 

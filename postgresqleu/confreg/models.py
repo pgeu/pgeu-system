@@ -12,6 +12,7 @@ from django.utils.functional import cached_property
 from django.template.defaultfilters import slugify
 from django.contrib.postgres.fields import DateTimeRangeField, JSONField
 from django.core.serializers.json import DjangoJSONEncoder
+from django.utils import timezone
 
 from postgresqleu.util.validators import validate_lowercase, validate_urlname
 from postgresqleu.util.validators import TwitterValidator
@@ -1277,7 +1278,7 @@ class AccessToken(models.Model):
 
 class ConferenceNews(models.Model):
     conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
-    datetime = models.DateTimeField(blank=False, default=datetime.datetime.now)
+    datetime = models.DateTimeField(blank=False, default=timezone.now)
     title = models.CharField(max_length=128, blank=False)
     summary = models.TextField(blank=False)
     author = models.ForeignKey(NewsPosterProfile)
@@ -1309,7 +1310,7 @@ class ConferenceHashtag(models.Model):
 
 class ConferenceTweetQueue(models.Model):
     conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
-    datetime = models.DateTimeField(blank=False, default=datetime.datetime.now, verbose_name="Date and time",
+    datetime = models.DateTimeField(blank=False, default=timezone.now, verbose_name="Date and time",
                                     help_text="Date and time to send tweet")
     contents = models.CharField(max_length=250, null=False, blank=False)
     image = ImageBinaryField(null=True, blank=True, max_length=1000000)

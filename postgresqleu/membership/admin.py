@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.db.models import Q
 from django.http import HttpResponseRedirect
+from django.utils import timezone
 
-from datetime import datetime
 import urllib.parse
 
 from .models import Member, MemberLog, Meeting
@@ -20,9 +20,9 @@ class ActiveMemberFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value() == 'Yes':
-            return queryset.filter(paiduntil__gte=datetime.now())
+            return queryset.filter(paiduntil__gte=timezone.now())
         if self.value() == 'No':
-            return queryset.filter(Q(paiduntil__lt=datetime.now()) | Q(paiduntil__isnull=True))
+            return queryset.filter(Q(paiduntil__lt=timezone.now()) | Q(paiduntil__isnull=True))
         return queryset
 
 

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.urls import reverse
 from django.db import transaction
+from django.utils import timezone
 
 from datetime import datetime, date
 from decimal import Decimal
@@ -36,7 +37,7 @@ def process_authorization(notification):
         # can validate that it goes from authorized->captured.
         trans = TransactionStatus(pspReference=notification.pspReference,
                                   notification=notification,
-                                  authorizedat=datetime.now(),
+                                  authorizedat=timezone.now(),
                                   amount=notification.amount,
                                   method=notification.paymentMethod,
                                   notes=notification.merchantReference,
@@ -204,7 +205,7 @@ def process_capture(notification):
         # Successful capture, so we just set when the capture happened
         try:
             ts = TransactionStatus.objects.get(pspReference=notification.originalReference, paymentmethod=notification.rawnotification.paymentmethod)
-            ts.capturedat = datetime.now()
+            ts.capturedat = timezone.now()
             ts.save()
         except TransactionStatus.DoesNotExist:
             # We just ignore captures for non-existant transactions. This

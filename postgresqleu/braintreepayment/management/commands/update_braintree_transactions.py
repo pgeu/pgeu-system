@@ -12,6 +12,7 @@ from datetime import date, datetime, timedelta
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import Q
+from django.utils import timezone
 from django.conf import settings
 
 from postgresqleu.invoices.models import InvoicePaymentMethod
@@ -71,7 +72,7 @@ class Command(BaseCommand):
                         # it is now. So we mark the settlement.
                         # Braintree don't give us the date/time for the settlement,
                         # so just use whenever we noticed it.
-                        t.settledat = datetime.now()
+                        t.settledat = timezone.now()
                         t.save()
                         BraintreeLog(transid=t.transid, paymentmethod=method,
                                      message='Transaction has been settled').save()
@@ -122,7 +123,7 @@ class Command(BaseCommand):
                                          paymentmethod=method,
                                          message='Transaction {0} was authorized on {1} and settled on {2}, but has not been disbursed yet!'.format(t.transid, t.authorizedat, t.settledat)).save()
 
-                elif datetime.today() - t.authorizedat > timedelta(days=10):
+                elif timezone.now() - t.authorizedat > timedelta(days=10):
                     BraintreeLog(transid=t.transid,
                                  error=True,
                                  paymentmethod=method,

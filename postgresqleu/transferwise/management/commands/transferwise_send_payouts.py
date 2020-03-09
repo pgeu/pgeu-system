@@ -6,12 +6,13 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.conf import settings
+from django.utils import timezone
 
 from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.transferwise.models import TransferwiseTransaction, TransferwiseRefund
 from postgresqleu.transferwise.models import TransferwisePayout
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 import re
 
 
@@ -44,5 +45,5 @@ class Command(BaseCommand):
             p.reference,
             p.uuid
         )
-        p.sentat = datetime.now()
+        p.sentat = timezone.now()
         p.save()

@@ -5,6 +5,7 @@ from django.db.models import Sum
 from django.template import Template, Context
 from django.shortcuts import render
 from django.utils.functional import cached_property
+from django.utils import timezone
 from urllib.parse import urlencode
 
 from postgresqleu.util.db import exec_to_scalar
@@ -17,7 +18,6 @@ from postgresqleu.invoices.backendforms import BackendInvoicePaymentMethodForm
 from postgresqleu.invoices.util import diff_workdays
 
 from decimal import Decimal
-from datetime import datetime
 import os.path
 import json
 import itertools
@@ -110,13 +110,13 @@ class BaseManagedBankPayment(BasePayment):
 
     def available(self, invoice):
         if invoice.canceltime:
-            if diff_workdays(datetime.now(), invoice.canceltime) < self.unavailable_less_than_days:
+            if diff_workdays(timezone.now(), invoice.canceltime) < self.unavailable_less_than_days:
                 return False
         return True
 
     def unavailable_reason(self, invoice):
         if invoice.canceltime:
-            if diff_workdays(datetime.now(), invoice.canceltime) < self.unavailable_less_than_days:
+            if diff_workdays(timezone.now(), invoice.canceltime) < self.unavailable_less_than_days:
                 return "Since this invoice will be automatically canceled in less than {0} working days, it requires the use of a faster payment method.".format(self.unavailable_less_than_days)
 
 

@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.conf import settings
 
 from datetime import datetime, timedelta, date
@@ -18,7 +19,7 @@ def confirm_sponsor(sponsor, who):
     # This will save the specified sponsor model as well, but the function
     # expects to be wrapped in external transaction handler.
     sponsor.confirmed = True
-    sponsor.confirmedat = datetime.now()
+    sponsor.confirmedat = timezone.now()
     sponsor.confirmedby = who
     sponsor.save()
 
@@ -150,7 +151,7 @@ def create_sponsor_invoice(user, sponsor):
     else:
         # More than 30 days before the conference, set the due date
         # to 30 days from now.
-        duedate = datetime.now() + timedelta(days=30)
+        duedate = timezone.now() + timedelta(days=30)
 
     manager = InvoiceManager()
     processor = invoicemodels.InvoiceProcessor.objects.get(processorname="confsponsor processor")
@@ -160,7 +161,7 @@ def create_sponsor_invoice(user, sponsor):
         user.first_name + ' ' + user.last_name,
         get_sponsor_invoice_address(sponsor.name, sponsor.invoiceaddr, sponsor.vatnumber),
         '%s sponsorship' % conference.conferencename,
-        datetime.now(),
+        timezone.now(),
         duedate,
         invoicerows,
         processor=processor,

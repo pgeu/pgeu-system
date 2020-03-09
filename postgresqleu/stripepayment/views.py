@@ -2,6 +2,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 from django.conf import settings
 
 from datetime import datetime, timedelta, date
@@ -45,7 +46,7 @@ def invoicepayment_secret(request, paymentmethod, invoiceid, secret):
         # again.
     except StripeCheckout.DoesNotExist:
         # Create a new checkout session
-        co = StripeCheckout(createdat=datetime.now(),
+        co = StripeCheckout(createdat=timezone.now(),
                             paymentmethod=method,
                             invoiceid=invoice.id,
                             amount=invoice.total_amount)
@@ -192,7 +193,7 @@ def webhook(request, methodid):
                 # OK, refund looks fine
                 StripeLog(message="Received Stripe webhook for refund {}. Processing.".format(refund.id), paymentmethod=method).save()
 
-                refund.completedat = datetime.now()
+                refund.completedat = timezone.now()
                 refund.save()
 
                 manager = InvoiceManager()
@@ -226,7 +227,7 @@ def webhook(request, methodid):
             payout = StripePayout(paymentmethod=method,
                                   payoutid=payoutid,
                                   amount=Decimal(obj['amount']) / 100,
-                                  sentat=datetime.now(),
+                                  sentat=timezone.now(),
                                   description=obj['description'])
             payout.save()
 

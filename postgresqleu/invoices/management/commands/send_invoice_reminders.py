@@ -5,6 +5,7 @@
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils import timezone
 
 from datetime import datetime, timedelta, time
 
@@ -23,10 +24,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # We send reminder automatically when an invoice is 1 day overdue.
         # We never send a second reminder, that is done manually.
-        invoices = Invoice.objects.filter(finalized=True, deleted=False, paidat__isnull=True, remindersent__isnull=True, duedate__lt=datetime.now() - timedelta(days=1))
+        invoices = Invoice.objects.filter(finalized=True, deleted=False, paidat__isnull=True, remindersent__isnull=True, duedate__lt=timezone.now() - timedelta(days=1))
         for invoice in invoices:
             wrapper = InvoiceWrapper(invoice)
             wrapper.email_reminder()
-            invoice.remindersent = datetime.now()
+            invoice.remindersent = timezone.now()
             invoice.save()
             self.stdout.write("Sent invoice reminder for #{0} - {1}".format(invoice.id, invoice.title))

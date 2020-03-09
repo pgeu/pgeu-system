@@ -14,6 +14,7 @@ from django.db.models import Q, Count, Avg
 from django.db.models.expressions import F
 from django import forms
 from django.forms import ValidationError
+from django.utils import timezone
 
 from .models import Conference, ConferenceRegistration, ConferenceSession, ConferenceSeries
 from .models import ConferenceSessionSlides, ConferenceSessionVote, GlobalOptOut
@@ -212,7 +213,7 @@ def confhome(request, confname):
 
 def news_json(request, confname):
     news = ConferenceNews.objects.select_related('author').filter(conference__urlname=confname,
-                                                                  datetime__lt=datetime.now(),
+                                                                  datetime__lt=timezone.now(),
     )[:5]
 
     r = HttpResponse(json.dumps(
@@ -261,7 +262,7 @@ def register(request, confname, whatfor=None):
         reg.email = request.user.email.lower()
         reg.firstname = request.user.first_name
         reg.lastname = request.user.last_name
-        reg.created = datetime.now()
+        reg.created = timezone.now()
         reg.regtoken = generate_random_token()
         reg.idtoken = generate_random_token()
         reg.publictoken = generate_random_token()
@@ -284,7 +285,7 @@ def register(request, confname, whatfor=None):
 
     if reg.invoice and not reg.payconfirmedat:
         # Pending invoice exists. See if it should be canceled.
-        if reg.invoice.canceltime and reg.invoice.canceltime < datetime.now():
+        if reg.invoice.canceltime and reg.invoice.canceltime < timezone.now():
             # Yup, should be canceled
             manager = InvoiceManager()
             manager.cancel_invoice(reg.invoice,
@@ -408,7 +409,7 @@ def multireg(request, confname, regid=None):
     else:
         reg = ConferenceRegistration(conference=conference,
                                      registrator=request.user,
-                                     created=datetime.now(),
+                                     created=timezone.now(),
                                      regtoken=generate_random_token(),
                                      idtoken=generate_random_token(),
                                      publictoken=generate_random_token(),
@@ -525,8 +526,8 @@ def _create_and_assign_bulk_payment(user, conference, regs, invoicerows, recipie
         recipient_name,
         recipient_address,
         invoicetitle,
-        datetime.now(),
-        datetime.now(),
+        timezone.now(),
+        timezone.now(),
         invoicerows,
         processor=processor,
         processorid=bp.pk,
@@ -634,7 +635,7 @@ def multireg_newinvoice(request, confname):
                 # Flag discount code/vouchers as used
                 invoicerows_for_registration(r, True)
                 # Now mark the registration as done.
-                r.payconfirmedat = datetime.now()
+                r.payconfirmedat = timezone.now()
                 r.payconfirmedby = "Multireg/nopay"
                 r.save()
                 notify_reg_confirmed(r)
@@ -849,7 +850,7 @@ def reg_add_options(request, confname):
 
         # Create a pending addon order, and generate an invoice
         order = PendingAdditionalOrder(reg=reg,
-                                       createtime=datetime.now())
+                                       createtime=timezone.now())
         if new_regtype:
             order.newregtype = new_regtype
 
@@ -865,8 +866,8 @@ def reg_add_options(request, confname):
             reg.firstname + ' ' + reg.lastname,
             reg.company + "\n" + reg.address + "\n" + reg.countryname,
             "%s additional options" % conference.conferencename,
-            datetime.now(),
-            datetime.now(),
+            timezone.now(),
+            timezone.now(),
             invoicerows,
             processor=processor,
             processorid=order.pk,
@@ -910,7 +911,7 @@ def feedback(request, confname):
     if is_conf_tester:
         sessions = ConferenceSession.objects.select_related().filter(conference=conference).filter(can_feedback=True).filter(status=1)
     else:
-        sessions = ConferenceSession.objects.select_related().filter(conference=conference).filter(can_feedback=True).filter(starttime__lte=datetime.now()).filter(status=1)
+        sessions = ConferenceSession.objects.select_related().filter(conference=conference).filter(can_feedback=True).filter(starttime__lte=timezone.now()).filter(status=1)
 
     # Then get a list of everything this user has feedbacked on
     feedback = ConferenceSessionFeedback.objects.filter(conference=conference, attendee=request.user)
@@ -944,7 +945,7 @@ def feedback_session(request, confname, sessionid):
     else:
         is_conf_tester = False
 
-    if session.starttime > datetime.now() and not is_conf_tester:
+    if session.starttime > timezone.now() and not is_conf_tester:
         return render_conference_response(request, conference, 'feedback', 'confreg/feedbacknotyet.html', {
             'session': session,
         })
@@ -1032,7 +1033,7 @@ class SessionSet(object):
                 'toppos': self.timediff_to_y_pixels(s['starttime'], s['firsttime']) + self.headersize,
                 'widthpos': self.roomwidth() - 2,
                 'heightpos': self.timediff_to_y_pixels(s['endtime'], s['starttime']),
-                'canfeedback': self.feedbackopen and s.get('can_feedback', False) and (s['starttime'] <= datetime.now()),
+                'canfeedback': self.feedbackopen and s.get('can_feedback', False) and (s['starttime'] <= timezone.now()),
             })
         else:
             s.update({
@@ -1664,7 +1665,7 @@ def callforpapers_copy(request, confname):
                                       abstract=s.abstract,
                                       skill_level=s.skill_level,
                                       status=0,
-                                      initialsubmit=datetime.now(),
+                                      initialsubmit=timezone.now(),
                                       submissionnote=submissionnote,
                                       )
                 n.save()
@@ -1752,7 +1753,7 @@ def callforpapers_confirm(request, confname, sessionid):
                                      receivername=spk.fullname,
                 )
             session.lastnotifiedstatus = session.status
-            session.lastnotifiedtime = datetime.now()
+            session.lastnotifiedtime = timezone.now()
             session.save()
 
             if conference.notifysessionstatus:
@@ -1814,7 +1815,7 @@ def confirmreg(request, confname):
     if hasattr(reg, 'registrationwaitlistentry'):
         if reg.registrationwaitlistentry.offeredon:
             # Waitlist has been offered, but has it expired?
-            if reg.registrationwaitlistentry.offerexpires < datetime.now():
+            if reg.registrationwaitlistentry.offerexpires < timezone.now():
                 # It has expired
                 RegistrationWaitlistHistory(waitlist=reg.registrationwaitlistentry,
                                             text="Offer expired at {0}".format(reg.registrationwaitlistentry.offerexpires)).save()
@@ -1822,7 +1823,7 @@ def confirmreg(request, confname):
                 reg.registrationwaitlistentry.offeredon = None
                 reg.registrationwaitlistentry.offerexpires = None
                 # Move registration to the back of the waitlist
-                reg.registrationwaitlistentry.enteredon = datetime.now()
+                reg.registrationwaitlistentry.enteredon = timezone.now()
                 reg.registrationwaitlistentry.save()
 
                 messages.warning(request, "We're sorry, but your registration was not completed in time before the offer expired, and has been moved back to the waitlist.")
@@ -1885,7 +1886,7 @@ def confirmreg(request, confname):
                 # Paid in total with vouchers, or completely free
                 # registration type. So just flag the registration
                 # as confirmed.
-                reg.payconfirmedat = datetime.now()
+                reg.payconfirmedat = timezone.now()
                 reg.payconfirmedby = "no payment reqd"
                 reg.save()
                 notify_reg_confirmed(reg)
@@ -1913,8 +1914,8 @@ def confirmreg(request, confname):
                 reg.firstname + ' ' + reg.lastname,
                 reg.company + "\n" + reg.address + "\n" + reg.countryname,
                 "%s registration for %s" % (conference.conferencename, reg.email),
-                datetime.now(),
-                datetime.now(),
+                timezone.now(),
+                timezone.now(),
                 invoicerows,
                 processor=processor,
                 processorid=reg.pk,
@@ -2061,7 +2062,7 @@ def invoice(request, confname, regid):
         # happen, just redirect back.
         return HttpResponseRedirect('../../')
 
-    if reg.invoice.canceltime and reg.invoice.canceltime < datetime.now() and not reg.payconfirmedat:
+    if reg.invoice.canceltime and reg.invoice.canceltime < timezone.now() and not reg.payconfirmedat:
         # Yup, should be canceled
         manager = InvoiceManager()
         manager.cancel_invoice(reg.invoice,
@@ -2864,12 +2865,12 @@ def simple_report(request, confname):
 @login_required
 def admin_dashboard(request):
     if request.user.is_superuser:
-        conferences = Conference.objects.filter(startdate__gt=datetime.now() - timedelta(days=14)).order_by('-startdate')
+        conferences = Conference.objects.filter(startdate__gt=timezone.now() - timedelta(days=14)).order_by('-startdate')
         pastconf_perm = 'true'
         pastconf_where = ''
         pastconf_param = {}
     else:
-        conferences = Conference.objects.filter(Q(administrators=request.user) | Q(series__administrators=request.user), startdate__gt=datetime.now() - timedelta(days=14)).distinct().order_by('-startdate')
+        conferences = Conference.objects.filter(Q(administrators=request.user) | Q(series__administrators=request.user), startdate__gt=timezone.now() - timedelta(days=14)).distinct().order_by('-startdate')
         pastconf_perm = 'EXISTS (SELECT 1 FROM confreg_conferenceseries_administrators a WHERE a.conferenceseries_id=s.id AND a.user_id=%(user)s)'
         pastconf_where = ' WHERE EXISTS (SELECT 1 FROM confreg_conferenceseries_administrators a WHERE a.conferenceseries_id=s.id AND a.user_id=%(user)s) OR EXISTS (SELECT 1 FROM confreg_conference_administrators ca WHERE ca.conference_id=c.id AND ca.user_id=%(user)s) '
         pastconf_param = {
@@ -3234,7 +3235,7 @@ def admin_registration_confirm(request, urlname, regid):
     if request.method == 'POST':
         form = ConfirmRegistrationForm(data=request.POST)
         if form.is_valid():
-            reg.payconfirmedat = datetime.now()
+            reg.payconfirmedat = timezone.now()
             reg.payconfirmedby = "Manual/{0}".format(request.user.username)[:16]
             reg.save()
             notify_reg_confirmed(reg)
@@ -3355,9 +3356,9 @@ def admin_waitlist(request, urlname):
                 wl = r.registrationwaitlistentry
                 if wl.offeredon:
                     raise Exception("One or more already offered!")
-                wl.offeredon = datetime.now()
+                wl.offeredon = timezone.now()
                 if request.POST.get('submit') == 'Make offer for hours':
-                    wl.offerexpires = datetime.now() + timedelta(hours=form.cleaned_data['hours'])
+                    wl.offerexpires = timezone.now() + timedelta(hours=form.cleaned_data['hours'])
                     RegistrationWaitlistHistory(waitlist=wl,
                                                 text="Made offer valid for {0} hours by {1}".format(form.cleaned_data['hours'], request.user.username)).save()
                 else:
@@ -3409,7 +3410,7 @@ def admin_waitlist_cancel(request, urlname, wlid):
                                     text="Offer canceled by {0}".format(request.user.username)).save()
         wl.offeredon = None
         wl.offerexpires = None
-        wl.enteredon = datetime.now()
+        wl.enteredon = timezone.now()
         wl.save()
 
         send_simple_mail(reg.conference.notifyaddr,
@@ -3605,7 +3606,7 @@ def session_notify_queue(request, urlname):
                 )
                 num += 1
             s.lastnotifiedstatus = s.status
-            s.lastnotifiedtime = datetime.now()
+            s.lastnotifiedtime = timezone.now()
             s.save()
         messages.info(request, 'Sent email to %s recipients, for %s sessions' % (num, len(notifysessions)))
         return HttpResponseRedirect('.')
@@ -3706,7 +3707,7 @@ def transfer_reg(request, urlname):
             wle.save()
 
         yield "Resetting registration date"
-        toreg.created = datetime.now()
+        toreg.created = timezone.now()
 
         yield "Copying payment confirmation"
         toreg.payconfirmedat = fromreg.payconfirmedat

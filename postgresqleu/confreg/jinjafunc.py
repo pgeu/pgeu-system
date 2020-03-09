@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.messages.api import get_messages
 from django.utils.text import slugify
 from django.utils.timesince import timesince
+from django.utils import timezone
 from django.conf import settings
 
 import json
@@ -263,7 +264,7 @@ def render_jinja_conference_template(conference, templatename, dictionary):
 
     c.update({
         'pgeu_hosted': True,
-        'now': datetime.now(),
+        'now': timezone.now(),
         'conference': conference,
     })
     if conference and conference.jinjadir:

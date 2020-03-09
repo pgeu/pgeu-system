@@ -2,6 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.http import Http404, HttpResponse
 from django.utils.dateparse import parse_datetime, parse_duration
+from django.utils import timezone
 from postgresqleu.confreg.jinjafunc import JinjaTemplateValidator, render_sandboxed_template
 
 from postgresqleu.util.widgets import MonospaceTextarea
@@ -37,7 +38,7 @@ def _timestamps_for_tweets(conference, starttime, interval, randint, num):
 
 
 class BaseCampaignForm(forms.Form):
-    starttime = forms.DateTimeField(label="Date and time of first tweet", initial=datetime.datetime.now)
+    starttime = forms.DateTimeField(label="Date and time of first tweet", initial=timezone.now)
     timebetween = forms.TimeField(label="Time between tweets", initial=datetime.time(6, 0, 0))
     timerandom = forms.TimeField(label="Time randomization", initial=datetime.time(0, 30, 0),
                                  help_text="A random time from zero to this is added after each time interval")

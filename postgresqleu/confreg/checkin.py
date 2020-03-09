@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.utils import timezone
 from django.conf import settings
 
 from postgresqleu.util.db import exec_to_list, exec_to_dict
@@ -17,7 +18,6 @@ from .models import Conference, ConferenceRegistration
 from .views import render_conference_response
 from .util import send_conference_mail
 
-import datetime
 import json
 
 
@@ -162,7 +162,7 @@ def api(request, urlname, regtoken, what):
         reg = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, pk=get_int_or_error(request.POST, 'reg'))
         if reg.checkedinat:
             return HttpResponse("Already checked in.", status=412)
-        reg.checkedinat = datetime.datetime.now()
+        reg.checkedinat = timezone.now()
         reg.checkedinby = user
         reg.save()
         return _json_response({

@@ -5,9 +5,9 @@ from django.core.exceptions import PermissionDenied
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib import messages
+from django.utils import timezone
 from django.conf import settings
 
-import datetime
 import csv
 import json
 from collections import OrderedDict
@@ -388,7 +388,7 @@ def purge_personal_data(request, urlname):
         exec_no_result("INSERT INTO confreg_aggregatedtshirtsizes (conference_id, size_id, num) SELECT conference_id, shirtsize_id, count(*) FROM confreg_conferenceregistration WHERE conference_id=%(confid)s AND shirtsize_id IS NOT NULL GROUP BY conference_id, shirtsize_id", {'confid': conference.id, })
         exec_no_result("INSERT INTO confreg_aggregateddietary (conference_id, dietary, num) SELECT conference_id, lower(dietary), count(*) FROM confreg_conferenceregistration WHERE conference_id=%(confid)s AND dietary IS NOT NULL AND dietary != '' GROUP BY conference_id, lower(dietary)", {'confid': conference.id, })
         exec_no_result("UPDATE confreg_conferenceregistration SET shirtsize_id=NULL, dietary='', phone='', address='' WHERE conference_id=%(confid)s", {'confid': conference.id, })
-        conference.personal_data_purged = datetime.datetime.now()
+        conference.personal_data_purged = timezone.now()
         conference.save()
         messages.info(request, "Personal data purged from conference")
         return HttpResponseRedirect('../')
@@ -567,7 +567,7 @@ class DelimitedWriter(object):
         self.writer = csv.writer(self.response, delimiter=delimiter)
 
     def writeloaded(self):
-        self.writer.writerow(["File loaded", datetime.datetime.now()])
+        self.writer.writerow(["File loaded", timezone.now()])
 
     def columns(self, columns, grouping=False):
         self.writer.writerow(columns)
@@ -585,7 +585,7 @@ class JsonWriter(object):
         self.d = {}
 
     def writeloaded(self):
-        self.d['FileLoaded'] = datetime.datetime.now()
+        self.d['FileLoaded'] = timezone.now()
 
     def columns(self, columns, grouping=False):
         self.grouping = grouping

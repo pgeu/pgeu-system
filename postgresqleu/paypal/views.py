@@ -2,6 +2,7 @@ from django.http import HttpResponseForbidden, HttpResponse
 from django.db import transaction
 from django.shortcuts import render, get_object_or_404
 from django.conf import settings
+from django.utils import timezone
 
 from datetime import datetime, date
 from decimal import Decimal
@@ -31,7 +32,7 @@ def paypal_return_handler(request, methodid):
     # Logger for the invoice processing - we store it in the genereal
     # paypal logs
     def payment_logger(msg):
-        ErrorLog(timestamp=datetime.now(),
+        ErrorLog(timestamp=timezone.now(),
                  sent=False,
                  message='Paypal automatch for %s: %s' % (tx, msg),
                  paymentmethod=method,
@@ -121,7 +122,7 @@ def paypal_return_handler(request, methodid):
         else:
             transtext = d['item_name']
         ti = TransactionInfo(paypaltransid=tx,
-                             timestamp=datetime.now(),
+                             timestamp=timezone.now(),
                              paymentmethod=method,
                              sender=d['payer_email'],
                              sendername=d['first_name'] + ' ' + d['last_name'],

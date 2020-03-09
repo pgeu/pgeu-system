@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
+from django.utils import timezone
 
 from .models import Member, MemberLog, Meeting, MemberMeetingKey, get_config
 from .forms import MemberForm, ProxyVoterForm
@@ -32,7 +33,7 @@ def home(request):
         # the web is up to date with information if necessary.
         if member.paiduntil and member.paiduntil < date.today():
             MemberLog(member=member,
-                      timestamp=datetime.now(),
+                      timestamp=timezone.now(),
                       message="Membership expired").save()
             member.membersince = None
             member.paiduntil = None
@@ -61,12 +62,12 @@ def home(request):
                 request.user.first_name + ' ' + request.user.last_name,
                 '',  # We don't have an address
                 '%s membership for %s' % (settings.ORG_NAME, request.user.email),
-                datetime.now(),
-                datetime.now(),
+                timezone.now(),
+                timezone.now(),
                 invoicerows,
                 processor=processor,
                 processorid=member.pk,
-                canceltime=datetime.now() + timedelta(days=7),
+                canceltime=timezone.now() + timedelta(days=7),
                 accounting_account=settings.ACCOUNTING_MEMBERSHIP_ACCOUNT,
                 paymentmethods=cfg.paymentmethods.all(),
                 )
@@ -85,13 +86,13 @@ def home(request):
             member.save()
             if not registration_complete:
                 MemberLog(member=member,
-                          timestamp=datetime.now(),
+                          timestamp=timezone.now(),
                           message="Registration received, awaiting payment").save()
                 registration_complete = True  # So we show the payment info!
             elif form.has_changed():
                 # Figure out what changed
                 MemberLog(member=member,
-                          timestamp=datetime.now(),
+                          timestamp=timezone.now(),
                           message="Modified registration data for field(s): %s" % (", ".join(form.changed_data)),
                           ).save()
             return HttpResponseRedirect(".")
@@ -112,7 +113,7 @@ def home(request):
 
 
 def userlist(request):
-    members = Member.objects.select_related('country').filter(listed=True, paiduntil__gt=datetime.now()).order_by('fullname')
+    members = Member.objects.select_related('country').filter(listed=True, paiduntil__gt=timezone.now()).order_by('fullname')
     return render(request, 'community/userlist.html', {
         'members': members,
     })
@@ -122,7 +123,7 @@ def userlist(request):
 def meetings(request):
     # Only available for actual members
     member = get_object_or_404(Member, user=request.user)
-    q = Q(dateandtime__gte=datetime.now() - timedelta(hours=4)) & (Q(allmembers=True) | Q(members=member))
+    q = Q(dateandtime__gte=timezone.now() - timedelta(hours=4)) & (Q(allmembers=True) | Q(members=member))
     meetings = Meeting.objects.filter(q).distinct().order_by('dateandtime')
 
     meetinginfo = [{
@@ -227,14 +228,14 @@ def meeting_proxy(request, meetingid):
                 key.key = base64.urlsafe_b64encode(os.urandom(40)).rstrip(b'=').decode('utf8')
                 key.save()
                 MemberLog(member=member,
-                          timestamp=datetime.now(),
+                          timestamp=timezone.now(),
                           message="Assigned {0} as proxy voter in {1}".format(key.proxyname, meeting.name)
                 ).save()
                 return HttpResponseRedirect('.')
             else:
                 key.delete()
                 MemberLog(member=member,
-                          timestamp=datetime.now(),
+                          timestamp=timezone.now(),
                           message="Canceled proxy voting in {0}".format(meeting.name)
                 ).save()
                 return HttpResponseRedirect("../../")
@@ -258,7 +259,7 @@ def meetingcode(request):
 
     try:
         key = MemberMeetingKey.objects.get(key=secret, meeting__pk=meetingid)
-        if key.meeting.dateandtime + timedelta(hours=4) < datetime.now():
+        if key.meeting.dateandtime + timedelta(hours=4) < timezone.now():
             return HttpResponse(json.dumps({'err': 'This meeting is not open for signing in yet.'}),
                                 content_type='application/json')
         member = key.member

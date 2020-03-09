@@ -10,8 +10,9 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import Q
 from django.conf import settings
+from django.utils import timezone
 
-from datetime import datetime, timedelta, time
+from datetime import timedelta, time
 from datetime import time
 
 from postgresqleu.mailqueue.util import send_template_mail
@@ -30,9 +31,9 @@ class Command(BaseCommand):
         cfg = get_config()
 
         # Expire members (and let them know it happened)
-        expired = Member.objects.filter(paiduntil__lt=datetime.now())
+        expired = Member.objects.filter(paiduntil__lt=timezone.now())
         for m in expired:
-            MemberLog(member=m, timestamp=datetime.now(), message='Membership expired').save()
+            MemberLog(member=m, timestamp=timezone.now(), message='Membership expired').save()
             # Generate an email to the user
             send_template_mail(cfg.sender_email,
                                m.user.email,
@@ -54,14 +55,14 @@ class Command(BaseCommand):
         # slightly different times.
 
         warning = Member.objects.filter(
-            Q(paiduntil__gt=datetime.now() - timedelta(days=1)) &
-            Q(paiduntil__lt=datetime.now() + timedelta(days=30)) &
+            Q(paiduntil__gt=timezone.now() - timedelta(days=1)) &
+            Q(paiduntil__lt=timezone.now() + timedelta(days=30)) &
             (
-                Q(expiry_warning_sent__lt=datetime.now() - timedelta(days=10)) |
+                Q(expiry_warning_sent__lt=timezone.now() - timedelta(days=10)) |
                 Q(expiry_warning_sent__isnull=True)
                 ))
         for m in warning:
-            MemberLog(member=m, timestamp=datetime.now(), message='Membership expiry warning sent to %s' % m.user.email).save()
+            MemberLog(member=m, timestamp=timezone.now(), message='Membership expiry warning sent to %s' % m.user.email).save()
             # Generate an email to the user
             send_template_mail(cfg.sender_email,
                                m.user.email,
@@ -72,5 +73,5 @@ class Command(BaseCommand):
                                },
                            )
             self.stdout.write("Sent warning to member {0} (paid until {1}, last warned {2})".format(m, m.paiduntil, m.expiry_warning_sent))
-            m.expiry_warning_sent = datetime.now()
+            m.expiry_warning_sent = timezone.now()
             m.save()

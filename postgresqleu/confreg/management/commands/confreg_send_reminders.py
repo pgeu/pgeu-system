@@ -7,9 +7,10 @@
 #
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils import timezone
 
 from io import StringIO
-from datetime import datetime, timedelta, time
+from datetime import timedelta, time
 
 from postgresqleu.mailqueue.util import send_simple_mail
 
@@ -76,14 +77,14 @@ class Command(BaseCommand):
         speakers = Speaker.objects.filter(conferencesession__conference=conference,
                                           conferencesession__status=3,
                                           conferencesession__lastnotifiedstatus=3,
-                                          conferencesession__lastnotifiedtime__lt=datetime.now() - timedelta(days=7)).distinct()
+                                          conferencesession__lastnotifiedtime__lt=timezone.now() - timedelta(days=7)).distinct()
         if speakers:
             whatstr.write("Found {0} unconfirmed talks:\n".format(len(speakers)))
 
             for speaker in speakers:
                 sessions = speaker.conferencesession_set.filter(conference=conference, status=3)
                 for s in sessions:
-                    s.lastnotifiedtime = datetime.now()
+                    s.lastnotifiedtime = timezone.now()
                     s.save()
 
                 send_conference_mail(conference,
@@ -104,7 +105,7 @@ class Command(BaseCommand):
     def remind_unregistered_speakers(self, whatstr, conference):
         # Get speakers that are approved but not registered
         speakers = list(Speaker.objects.raw("SELECT s.* FROM confreg_speaker s WHERE EXISTS (SELECT 1 FROM confreg_conferencesession sess INNER JOIN confreg_conferencesession_speaker css ON css.conferencesession_id=sess.id WHERE sess.conference_id=%s AND css.speaker_id=s.id AND sess.status=1 and sess.lastnotifiedstatus=1 AND sess.lastnotifiedtime<%s) AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%s AND r.attendee_id=s.user_id AND r.payconfirmedat IS NOT NULL)",
-                                            [conference.id, datetime.now() - timedelta(days=7), conference.id]))
+                                            [conference.id, timezone.now() - timedelta(days=7), conference.id]))
         if speakers:
             whatstr.write("Found {0} unregistered speakers:\n".format(len(speakers)))
             for speaker in speakers:
@@ -115,7 +116,7 @@ class Command(BaseCommand):
                                                  speaker=speaker,
                                                  status=1
                 ).update(
-                    lastnotifiedtime=datetime.now()
+                    lastnotifiedtime=timezone.now()
                 )
 
                 send_conference_mail(conference,
@@ -141,14 +142,14 @@ class Command(BaseCommand):
         # reminders to registrations that are managed by somebody else.
         regs = ConferenceRegistration.objects.filter(conference=conference,
                                                      conference__active=True,
-                                                     conference__enddate__gt=datetime.now(),
+                                                     conference__enddate__gt=timezone.now(),
                                                      attendee__isnull=False,
                                                      payconfirmedat__isnull=True,
                                                      invoice__isnull=True,
                                                      bulkpayment__isnull=True,
                                                      registrationwaitlistentry__isnull=True,
-                                                     created__lt=datetime.now() - timedelta(days=5),
-                                                     lastmodified__lt=datetime.now() - timedelta(days=5))
+                                                     created__lt=timezone.now() - timedelta(days=5),
+                                                     lastmodified__lt=timezone.now() - timedelta(days=5))
 
         if regs:
             whatstr.write("Found {0} unconfirmed registrations that are stalled:\n".format(len(regs)))
@@ -163,7 +164,7 @@ class Command(BaseCommand):
                                      },
                                      receivername=reg.fullname,
                 )
-                reg.lastmodified = datetime.now()
+                reg.lastmodified = timezone.now()
                 reg.save()
 
                 whatstr.write("Reminded attendee {0} that their registration is not confirmed\n".format(reg.fullname))
@@ -176,15 +177,15 @@ class Command(BaseCommand):
         # those that are managed by somebody else.
         regs = ConferenceRegistration.objects.filter(conference=conference,
                                                      conference__active=True,
-                                                     conference__enddate__gt=datetime.now(),
+                                                     conference__enddate__gt=timezone.now(),
                                                      attendee__isnull=True,
                                                      registrator__isnull=False,
                                                      payconfirmedat__isnull=True,
                                                      invoice__isnull=True,
                                                      bulkpayment__isnull=True,
                                                      registrationwaitlistentry__isnull=True,
-                                                     created__lt=datetime.now() - timedelta(days=5),
-                                                     lastmodified__lt=datetime.now() - timedelta(days=5))
+                                                     created__lt=timezone.now() - timedelta(days=5),
+                                                     lastmodified__lt=timezone.now() - timedelta(days=5))
 
         if regs:
             multiregs = set([r.registrator for r in regs])
@@ -209,7 +210,7 @@ class Command(BaseCommand):
 
             # Separately mark each part of the multireg as touched
             for reg in regs:
-                reg.lastmodified = datetime.now()
+                reg.lastmodified = timezone.now()
                 reg.save()
 
     def remind_empty_submissions(self, whatstr, conference):
@@ -219,7 +220,7 @@ class Command(BaseCommand):
 
         for sess in conference.conferencesession_set.filter(abstract='',
                                                             status=0,
-                                                            lastmodified__lt=datetime.now() - timedelta(days=3)):
+                                                            lastmodified__lt=timezone.now() - timedelta(days=3)):
             for spk in sess.speaker.all():
                 send_conference_mail(conference,
                                      spk.email,
@@ -232,7 +233,7 @@ class Command(BaseCommand):
                                      receivername=spk.name,
                 )
                 whatstr.write("Reminded speaker {0} that they have made an empty submission\n".format(spk.name))
-            sess.lastmodified = datetime.now()
+            sess.lastmodified = timezone.now()
             sess.save()
 
     def remind_empty_speakers(self, whatstr, conference):
@@ -241,7 +242,7 @@ class Command(BaseCommand):
 
         speakers = Speaker.objects.filter(conferencesession__conference=conference,
                                           conferencesession__status=0,
-                                          lastmodified__lt=datetime.now() - timedelta(days=3),
+                                          lastmodified__lt=timezone.now() - timedelta(days=3),
                                           abstract='',
                                       ).distinct()
 
@@ -256,6 +257,6 @@ class Command(BaseCommand):
                                  },
                                  receivername=spk.name,
             )
-            spk.lastmodified = datetime.now()
+            spk.lastmodified = timezone.now()
             spk.save()
             whatstr.write("Reminded speaker {0} that their profile is empty\n".format(spk.name))

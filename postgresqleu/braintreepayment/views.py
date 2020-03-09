@@ -2,9 +2,8 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.conf import settings
+from django.utils import timezone
 from django.db import transaction
-
-from datetime import datetime
 
 from postgresqleu.util.auth import authenticate_backend_group
 from postgresqleu.util.request import get_int_or_error
@@ -98,7 +97,7 @@ def payment_post(request):
 
             # Create a braintree transaction - so we can update it later when the transaction settles
             bt = BraintreeTransaction(transid=trans.id,
-                                      authorizedat=datetime.now(),
+                                      authorizedat=timezone.now(),
                                       amount=trans.amount,
                                       method=trans.credit_card['card_type'],
                                       paymentmethod=method)

@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils import timezone
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -167,7 +168,7 @@ class PaypalAPI(object):
         # The new Paypal APIs don't offer a way to get the balance other than to check
         # transactions. So we do that. Start at todays date going back week by week until we find
         # a transaction, and then use the ending balance from that.
-        d = datetime.now()
+        d = timezone.now()
         while True:
             r = self._rest_api_call('v1/reporting/transactions/', {
                 'start_date': self._dateformat(d - timedelta(days=8)),
@@ -180,7 +181,7 @@ class PaypalAPI(object):
             if len(r.json()['transaction_details']) == 0:
                 # No transactions found, so move back
                 d -= timedelta(days=6)
-                if d < datetime.now() - timedelta(days=180):
+                if d < timezone.now() - timedelta(days=180):
                     raise Exception("No transactions found going back 180 days, giving up")
                 continue
             maxdate = None

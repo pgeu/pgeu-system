@@ -9,11 +9,11 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management import load_command_class
 from django.db import connection
-from django.utils import autoreload
+from django.utils import autoreload, timezone
 from django.utils.six.moves import _thread as thread
 from django.conf import settings
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 import time
 import io
 import sys
@@ -69,7 +69,7 @@ class Command(BaseCommand):
             nextjob = ScheduledJob.objects.only('nextrun').filter(enabled=True).order_by('nextrun')[0]
             # Find seconds until next job. Add one second to make sure we don't end up in a tight loop due
             # to time roundoff.
-            secondsuntil = int((nextjob.nextrun - datetime.now()).total_seconds() + 1)
+            secondsuntil = int((nextjob.nextrun - timezone.now()).total_seconds() + 1)
             if secondsuntil < 2:
                 self.stderr.write("Timeout to next job already expired, sleeping 1 second and then re-running queue.")
                 time.sleep(1)
@@ -93,7 +93,7 @@ class Command(BaseCommand):
 
     def run_pending_jobs(self):
         while True:
-            jobs = ScheduledJob.objects.filter(nextrun__lte=datetime.now(), enabled=True)
+            jobs = ScheduledJob.objects.filter(nextrun__lte=timezone.now(), enabled=True)
             if not jobs:
                 # Nothing left to do!
                 return
@@ -109,7 +109,7 @@ class Command(BaseCommand):
                         try:
                             if not cmd.ScheduledJob.should_run():
                                 self.stderr.write("Skipping job {}".format(job.description))
-                                job.lastskip = datetime.now()
+                                job.lastskip = timezone.now()
                                 reschedule_job(job, save=True)
                                 continue
                         except Exception as e:
@@ -118,7 +118,7 @@ class Command(BaseCommand):
                     self.stderr.write("Running job {}".format(job.description))
                     # Now figure out what type of job it is, and run it
                     job.lastrunsuccess = self.run_job(job, cmd)
-                    job.lastrun = datetime.now()
+                    job.lastrun = timezone.now()
                     job.lastskip = None
                     reschedule_job(job, save=True)
 
@@ -137,7 +137,7 @@ class Command(BaseCommand):
                                 pieces = j.split('.')
                                 sj = ScheduledJob.objects.get(app='.'.join(pieces[:-1]),
                                                               command=pieces[-1])
-                                sj.nextrun = datetime.now()
+                                sj.nextrun = timezone.now()
                                 sj.save()
                             except ScheduledJob.DoesNotExist:
                                 self.stderr.write("Could not find job {} to run after {}".format(j, job.description))
@@ -146,13 +146,13 @@ class Command(BaseCommand):
                 except Exception as e:
                     # Hard exception at the top level will cause us to disbale
                     # the job.
-                    job.lastrun = datetime.now()
+                    job.lastrun = timezone.now()
                     job.lastrunsuccess = False
                     job.enabled = False
                     job.nextrun = None
                     job.save()
                     JobHistory(job=job,
-                               time=datetime.now(),
+                               time=timezone.now(),
                                success=False,
                                runtime=timedelta(),
                                output="Internal exception:\n{0}\n\nJob has been disabled".format(e),
@@ -170,7 +170,7 @@ class Command(BaseCommand):
         # Create a job history record. The caller will update the main job entry,
         # but we want to store the output.
         JobHistory(job=job,
-                   time=datetime.now(),
+                   time=timezone.now(),
                    success=success,
                    runtime=timedelta(seconds=time.time() - starttime),
                    output=output.getvalue(),

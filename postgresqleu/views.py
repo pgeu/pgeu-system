@@ -2,6 +2,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.template.defaultfilters import slugify
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 from django.conf import settings
 
 from postgresqleu.newsevents.models import News
@@ -148,7 +149,7 @@ def admin_dashboard(request):
             for pm in ipm:
                 if pm.config['file_upload_interval'] > 0:
                     if not BankFileUpload.objects.filter(method=pm,
-                                                         created__gt=datetime.datetime.now() - datetime.timedelta(days=pm.config['file_upload_interval'])
+                                                         created__gt=timezone.now() - datetime.timedelta(days=pm.config['file_upload_interval'])
                     ).exists():
                         bank_file_uploads = True
                         break

@@ -7,8 +7,9 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.conf import settings
+from django.utils import timezone
 
-from datetime import datetime, timedelta, time
+from datetime import timedelta, time
 
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.models import PendingBankTransaction
@@ -23,11 +24,11 @@ class Command(BaseCommand):
 
         @classmethod
         def should_run(self):
-            return PendingBankTransaction.objects.filter(created__lte=datetime.now() - timedelta(hours=72)).exists()
+            return PendingBankTransaction.objects.filter(created__lte=timezone.now() - timedelta(hours=72)).exists()
 
     @transaction.atomic
     def handle(self, *args, **options):
-        trans = PendingBankTransaction.objects.filter(created__lte=datetime.now() - timedelta(hours=72))
+        trans = PendingBankTransaction.objects.filter(created__lte=timezone.now() - timedelta(hours=72))
         if trans:
             send_simple_mail(
                 settings.INVOICE_SENDER_EMAIL,

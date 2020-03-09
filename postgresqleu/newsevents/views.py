@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.core import paginator
+from django.utils import timezone
 
 import datetime
 
@@ -8,8 +9,8 @@ from postgresqleu.newsevents.models import News
 
 def newsitem(request, itemid):
     item = get_object_or_404(News.objects.select_related('author'),
-                             pk=itemid, datetime__lte=datetime.datetime.today())
-    news = News.objects.filter(datetime__lte=datetime.datetime.today(), inarchive=True)[:10]
+                             pk=itemid, datetime__lte=timezone.now())
+    news = News.objects.filter(datetime__lte=timezone.now(), inarchive=True)[:10]
 
     return render(request, 'newsevents/news.html', {
         'item': item,
@@ -18,8 +19,8 @@ def newsitem(request, itemid):
 
 
 def newsarchive(request):
-    news = News.objects.filter(datetime__lte=datetime.datetime.today(), inarchive=True)[:10]
-    allnews = News.objects.filter(datetime__lte=datetime.datetime.today(), inarchive=True)
+    news = News.objects.filter(datetime__lte=timezone.now(), inarchive=True)[:10]
+    allnews = News.objects.filter(datetime__lte=timezone.now(), inarchive=True)
 
     p = paginator.Paginator(allnews, 15)
 

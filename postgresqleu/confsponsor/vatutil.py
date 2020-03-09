@@ -1,11 +1,13 @@
-from datetime import datetime, timedelta
+from django.utils import timezone
+
+from datetime import timedelta
 import requests
 
 from postgresqleu.invoices.models import VatValidationCache
 
 
 def validate_eu_vat_number(number):
-    if VatValidationCache.objects.filter(vatnumber=number, checkedat__gt=datetime.now() - timedelta(days=90)).exists():
+    if VatValidationCache.objects.filter(vatnumber=number, checkedat__gt=timezone.now() - timedelta(days=90)).exists():
         return None
 
     country = number[:2]

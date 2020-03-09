@@ -6,8 +6,9 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.conf import settings
+from django.utils import timezone
 
-from datetime import datetime, timedelta, time
+from datetime import timedelta, time
 from io import StringIO
 
 from postgresqleu.invoices.models import InvoicePaymentMethod
@@ -51,7 +52,7 @@ class Command(BaseCommand):
                              sio.getvalue())
 
     def report_unconfirmed_notifications(self, method, pm):
-        lines = list(TrustlyNotification.objects.filter(confirmed=False, receivedat__lt=datetime.now() - timedelta(days=1), rawnotification__paymentmethod=method).order_by('receivedat'))
+        lines = list(TrustlyNotification.objects.filter(confirmed=False, receivedat__lt=timezone.now() - timedelta(days=1), rawnotification__paymentmethod=method).order_by('receivedat'))
         if len(lines):
             sio = StringIO()
             sio.write("The following notifications have not been confirmed in the Trustly integration for {0}.\nThese need to be manually processed and then flagged as confirmed!\n\nThis list only contains unconfirmed events older than 24 hours.\n\n\n".format(method.internaldescription))
@@ -69,7 +70,7 @@ class Command(BaseCommand):
         # got the first step of confirmation. The ones that were never started are uninteresting.
         UNFINISHED_THRESHOLD = 3
 
-        lines = list(TrustlyTransaction.objects.filter(completedat__isnull=True, pendingat__isnull=False, pendingat__lt=datetime.now() - timedelta(days=UNFINISHED_THRESHOLD), paymentmethod=method).order_by('pendingat'))
+        lines = list(TrustlyTransaction.objects.filter(completedat__isnull=True, pendingat__isnull=False, pendingat__lt=timezone.now() - timedelta(days=UNFINISHED_THRESHOLD), paymentmethod=method).order_by('pendingat'))
         if len(lines):
             sio = StringIO()
             sio.write("The following payments have been authorized for %s, but not finished for more than %s days.\nThese probably need to be verified manually.\n\n\n" % (method.internaldescription, UNFINISHED_THRESHOLD))

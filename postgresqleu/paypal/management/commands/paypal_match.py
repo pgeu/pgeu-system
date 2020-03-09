@@ -13,8 +13,7 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.conf import settings
-
-from datetime import datetime
+from django.utils import timezone
 
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.util import is_managed_bank_account
@@ -137,7 +136,7 @@ class Command(BaseCommand):
                 # Log things to the db
                 def payment_logger(msg):
                     # Write the log output to somewhere interesting!
-                    ErrorLog(timestamp=datetime.now(),
+                    ErrorLog(timestamp=timezone.now(),
                              sent=False,
                              message='Paypal %s by %s (%s) on %s: %s' % (
                                  trans.paypaltransid,

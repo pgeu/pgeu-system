@@ -3,8 +3,7 @@ from django.shortcuts import get_object_or_404, render
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
-
-from datetime import datetime
+from django.utils import timezone
 
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 
@@ -64,7 +63,7 @@ def invoicepayment_secret(request, paymentmethod, invoiceid, secret):
         # Trustly request was successful, so we have an url to send the user to. Let's set up
         # the transaction on our end.
 
-        TrustlyTransaction(createdat=datetime.now(),
+        TrustlyTransaction(createdat=timezone.now(),
                            invoiceid=invoice.id,
                            amount=invoice.total_amount,
                            orderid=r['data']['orderid'],

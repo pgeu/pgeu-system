@@ -11,6 +11,7 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction, connection
 from django.conf import settings
+from django.utils import timezone
 
 from datetime import datetime, timedelta
 import dateutil.parser
@@ -34,7 +35,7 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
-        synctime = datetime.now()
+        synctime = timezone.now()
 
         # There may be multiple accounts, so loop over them
         for method in InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.paypal.Paypal'):
@@ -47,7 +48,7 @@ class Command(BaseCommand):
                 lastsync -= timedelta(days=1)
             except KeyError:
                 # Status not set yet, so just assumed we synced a month ago (silly, I know..)
-                lastsync = datetime.now() - timedelta(days=31)
+                lastsync = timezone.now() - timedelta(days=31)
 
             api = PaypalAPI(method.get_implementation())
 

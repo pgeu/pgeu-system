@@ -7,8 +7,8 @@ from django.db.models import Q
 from django.contrib import messages
 from django.conf import settings
 from django.template.defaultfilters import slugify
+from django.utils import timezone
 
-from datetime import datetime
 from io import StringIO
 import difflib
 
@@ -311,7 +311,7 @@ def signup(request, urlname, signupid):
     else:
         current = None
 
-    if signup.deadline and signup.deadline < datetime.now():
+    if signup.deadline and signup.deadline < timezone.now():
         # This one is closed
         return render_conference_response(request, conference, 'wiki', 'confwiki/signup.html', {
             'closed': True,

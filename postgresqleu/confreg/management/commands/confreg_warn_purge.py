@@ -8,8 +8,9 @@
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.db import transaction
+from django.utils import timezone
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from postgresqleu.mailqueue.util import send_simple_mail
 
@@ -26,7 +27,7 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         for conference in Conference.objects.filter(personal_data_purged__isnull=True,
-                                                    enddate__lt=datetime.now() - timedelta(days=30)) \
+                                                    enddate__lt=timezone.now() - timedelta(days=30)) \
                                             .extra(where=["EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=confreg_conference.id)"]):
             send_simple_mail(conference.notifyaddr,
                              conference.notifyaddr,

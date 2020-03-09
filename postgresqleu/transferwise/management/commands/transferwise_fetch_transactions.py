@@ -6,6 +6,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.conf import settings
+from django.utils import timezone
 
 from postgresqleu.accounting.util import create_accounting_entry
 from postgresqleu.invoices.util import is_managed_bank_account
@@ -87,7 +88,7 @@ class Command(BaseCommand):
 
                     # Flag this one as done!
                     twrefund.refundtransaction = trans
-                    twrefund.completedat = datetime.now()
+                    twrefund.completedat = timezone.now()
                     twrefund.save()
 
                     invoicemanager = InvoiceManager()
@@ -109,7 +110,7 @@ class Command(BaseCommand):
                     except TransferwisePayout.DoesNotExist:
                         raise Exception("Could not find transferwise payout object for {0}".format(trans.paymentref))
 
-                    po.completedat = datetime.now()
+                    po.completedat = timezone.now()
                     po.completedtrans = trans
                     po.save()
 
@@ -139,7 +140,7 @@ class Command(BaseCommand):
                     if po.amount != -(trans.amount + trans.feeamount):
                         raise Exception("Transferwise payout {0} returned transaction with amount {1} instead of {2}".format(refno, -(trans.amount + trans.feeamount), po.amount))
 
-                    po.completedat = datetime.now()
+                    po.completedat = timezone.now()
                     po.completedtrans = trans
                     po.save()
 

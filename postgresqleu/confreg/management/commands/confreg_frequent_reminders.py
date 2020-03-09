@@ -8,6 +8,7 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction, connection
 from django.conf import settings
+from django.utils import timezone
 
 import sys
 from datetime import datetime, timedelta
@@ -58,8 +59,8 @@ class Command(BaseCommand):
                 # step here, but that will likely fall apart later with more integrations anyway)
                 for s in ConferenceSession.objects.select_related('room') \
                                                   .filter(conference=conference,
-                                                          starttime__gt=datetime.now() - timedelta(hours=conference.timediff),
-                                                          starttime__lt=datetime.now() - timedelta(hours=conference.timediff) + timedelta(minutes=15),
+                                                          starttime__gt=timezone.now() - timedelta(hours=conference.timediff),
+                                                          starttime__lt=timezone.now() - timedelta(hours=conference.timediff) + timedelta(minutes=15),
                                                           status=1,
                                                           reminder_sent=False):
                     for reg in ConferenceRegistration.objects.filter(

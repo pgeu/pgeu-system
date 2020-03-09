@@ -1,6 +1,7 @@
 from django.conf import settings
 from django import forms
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 from urllib.parse import urlencode
 from datetime import datetime, timedelta
@@ -330,13 +331,13 @@ making a payment from outside the Euro-zone.
     # automatically canceled in less than 4 working days.
     def available(self, invoice):
         if invoice.canceltime:
-            if diff_workdays(datetime.now(), invoice.canceltime) < 5:
+            if diff_workdays(timezone.now(), invoice.canceltime) < 5:
                 return False
         return True
 
     def unavailable_reason(self, invoice):
         if invoice.canceltime:
-            if diff_workdays(datetime.now(), invoice.canceltime) < 5:
+            if diff_workdays(timezone.now(), invoice.canceltime) < 5:
                 return "Since this invoice will be automatically canceled in less than 5 working days, it requires the use of a faster payment method."
 
     def used_method_details(self, invoice):

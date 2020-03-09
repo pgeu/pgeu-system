@@ -7,6 +7,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.template.defaultfilters import slugify
 from django.db import connection
 from django.conf import settings
+from django.utils import timezone
 
 from datetime import datetime, timedelta
 import sys
@@ -19,7 +20,7 @@ from postgresqleu.util.messaging.twitter import Twitter
 
 
 def news_tweets_queryset():
-    return News.objects.filter(tweeted=False, datetime__gt=datetime.now() - timedelta(days=7), datetime__lt=datetime.now())
+    return News.objects.filter(tweeted=False, datetime__gt=timezone.now() - timedelta(days=7), datetime__lt=timezone.now())
 
 
 def conferences_with_tweets_queryset():
@@ -77,7 +78,7 @@ class Command(BaseCommand):
         for c in conferences_with_tweets_queryset():
             tw = Twitter(c)
 
-            for t in ConferenceTweetQueue.objects.filter(conference=c, approved=True, sent=False, datetime__lte=datetime.now()).order_by('datetime'):
+            for t in ConferenceTweetQueue.objects.filter(conference=c, approved=True, sent=False, datetime__lte=timezone.now()).order_by('datetime'):
                 id, msg = tw.post_tweet(t.contents, t.image, t.replytotweetid)
                 if id:
                     t.sent = True

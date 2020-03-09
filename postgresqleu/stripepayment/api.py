@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils import timezone
 
 import datetime
 from decimal import Decimal
@@ -107,7 +108,7 @@ class StripeApi(object):
                 raise StripeException("Found balance transaction with exchange rate set!")
 
             co.fee = Decimal(t['fee']) / 100
-            co.completedat = datetime.datetime.now()
+            co.completedat = timezone.now()
             co.save()
 
             return True

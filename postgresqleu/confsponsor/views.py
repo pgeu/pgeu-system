@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from datetime import datetime, timedelta
 import random
@@ -329,7 +330,7 @@ def sponsor_signup(request, confurlname, levelurlname):
                 if twname and twname[0] != '@':
                     twname = '@{0}'.format(twname)
                 sponsor = Sponsor(conference=conference,
-                                  signupat=datetime.now(),
+                                  signupat=timezone.now(),
                                   name=form.cleaned_data['name'],
                                   displayname=form.cleaned_data['displayname'],
                                   url=form.cleaned_data['url'],
@@ -399,7 +400,7 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
         if form.is_valid():
             # Always create a new claim here - we might support editing an existing one
             # sometime in the future, but not yet...
-            claim = SponsorClaimedBenefit(sponsor=sponsor, benefit=benefit, claimedat=datetime.now(), claimedby=request.user)
+            claim = SponsorClaimedBenefit(sponsor=sponsor, benefit=benefit, claimedat=timezone.now(), claimedby=request.user)
             claim.save()  # generate an id
 
             send_mail = benefitclass.save_form(form, claim, request)
@@ -640,7 +641,7 @@ def sponsor_shipment_receiver_shipment(request, token, addresstoken):
                     # Already done, so concurrent edit most likely. Just ignore.
                     messages.warning(request, "Shipment was already marked as arrived")
                 else:
-                    shipment.arrived_at = datetime.now()
+                    shipment.arrived_at = timezone.now()
                     shipment.arrived_parcels = request.POST['arrived_parcels']
                     shipment.save()
                     _send_shipment_mail(shipment,

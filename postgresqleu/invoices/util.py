@@ -1,5 +1,6 @@
 from django.db import transaction
 from django.conf import settings
+from django.utils import timezone
 
 from collections import defaultdict
 from datetime import datetime, date
@@ -363,7 +364,7 @@ class InvoiceManager(object):
             return (self.RESULT_INVALIDAMOUNT, None, None)
 
         # Things look good, flag this invoice as paid
-        invoice.paidat = datetime.now()
+        invoice.paidat = timezone.now()
         invoice.paymentdetails = transdetails[:100]
         invoice.paidusing = method
 
@@ -446,7 +447,7 @@ class InvoiceManager(object):
                 settings.CURRENCY_ABBREV,
                 invoice.pk,
                 invoice.title),
-            timestamp=datetime.now()
+            timestamp=timezone.now()
         ).save()
 
         return (self.RESULT_OK, invoice, processor)
@@ -490,7 +491,7 @@ class InvoiceManager(object):
         wrapper = InvoiceWrapper(invoice)
         wrapper.email_cancellation(reason)
 
-        InvoiceLog(timestamp=datetime.now(), message="Deleted invoice %s (deleted by %s): %s" % (invoice.id, who, invoice.deletion_reason)).save()
+        InvoiceLog(timestamp=timezone.now(), message="Deleted invoice %s (deleted by %s): %s" % (invoice.id, who, invoice.deletion_reason)).save()
 
     def refund_invoice(self, invoice, reason, amount, vatamount, vatrate):
         # Initiate a refund of an invoice if there is a payment provider that supports it.
@@ -510,7 +511,7 @@ class InvoiceManager(object):
             # Accounting record is created when we send the API call to the
             # provider.
 
-            InvoiceLog(timestamp=datetime.now(),
+            InvoiceLog(timestamp=timezone.now(),
                        message="Initiated refund of {0}{1} of invoice {2}: {3}".format(settings.CURRENCY_SYMBOL, amount + vatamount, invoice.id, reason),
                    ).save()
         else:
@@ -541,7 +542,7 @@ class InvoiceManager(object):
                            txt='Flagged refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount + vatamount)).save()
 
             wrapper.email_refund_sent(r)
-            InvoiceLog(timestamp=datetime.now(),
+            InvoiceLog(timestamp=timezone.now(),
                        message="Flagged invoice {0} as refunded by {1}{2}: {3}".format(invoice.id, settings.CURRENCY_SYMBOL, amount + vatamount, reason),
                        ).save()
 
@@ -550,7 +551,7 @@ class InvoiceManager(object):
     def autorefund_invoice(self, refund):
         # Send an API call to initiate a refund
         if refund.invoice.autorefund(refund):
-            refund.issued = datetime.now()
+            refund.issued = timezone.now()
             refund.save()
 
             InvoiceHistory(invoice=refund.invoice, txt='Sent refund request to provider').save()
@@ -598,7 +599,7 @@ class InvoiceManager(object):
         create_accounting_entry(date.today(), accrows, leaveopen, urls)
 
         # Also flag the refund as done
-        refund.completed = datetime.now()
+        refund.completed = timezone.now()
         refund.save()
 
         wrapper = InvoiceWrapper(invoice)
@@ -674,12 +675,12 @@ class InvoiceManager(object):
             return False
         if not invoice.canceltime:
             return False
-        if invoice.canceltime > datetime.now() + mintime:
+        if invoice.canceltime > timezone.now() + mintime:
             return False
 
         # Else we need to extend it, so do it
         oldtime = invoice.canceltime
-        invoice.canceltime = datetime.now() + mintime
+        invoice.canceltime = timezone.now() + mintime
         invoice.save()
 
         InvoiceHistory(invoice=invoice, txt='Extended until {0}: {1}'.format(invoice.canceltime, reason)).save()
@@ -852,7 +853,7 @@ def register_bank_transaction(method, methodidentifier, amount, transtext, sende
                 # pending transaction, and have the operator clean it up.
                 PendingBankTransaction(method=method,
                                        methodidentifier=methodidentifier,
-                                       created=datetime.now(),
+                                       created=timezone.now(),
                                        amount=amount,
                                        transtext=transtext,
                                        sender=sender,
@@ -892,7 +893,7 @@ def register_bank_transaction(method, methodidentifier, amount, transtext, sende
     # it until we know.
     trans = PendingBankTransaction(method=method,
                                    methodidentifier=methodidentifier,
-                                   created=datetime.now(),
+                                   created=timezone.now(),
                                    amount=amount,
                                    transtext=transtext,
                                    sender=sender,

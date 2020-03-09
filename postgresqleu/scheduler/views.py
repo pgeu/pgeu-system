@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.db import connection
 from django.db.models import F
 from django.apps import apps
+from django.utils import timezone
 
 from datetime import datetime, timedelta
 
@@ -39,7 +40,7 @@ def index(request):
 
             if what == 2:
                 # Re-schedule all pending jobs
-                for job in ScheduledJob.objects.filter(enabled=True, nextrun__lte=datetime.now()):
+                for job in ScheduledJob.objects.filter(enabled=True, nextrun__lte=timezone.now()):
                     reschedule_job(job, save=True)
             config.hold_all_jobs = False
             config.save()
@@ -67,7 +68,7 @@ def index(request):
     return render(request, 'scheduler/index.html', {
         'jobs': jobs,
         'lastjob': lastjobtime,
-        'lastjob_recent': (datetime.now() - lastjobtime) < timedelta(hours=6),
+        'lastjob_recent': (timezone.now() - lastjobtime) < timedelta(hours=6),
         'runner_active': runner_active,
         'holdall': config.hold_all_jobs,
         'history': history,
@@ -84,7 +85,7 @@ def job(request, jobid):
 
     if request.method == 'POST':
         if request.POST.get('schedule-now', '') == '1':
-            job.nextrun = datetime.now()
+            job.nextrun = timezone.now()
             job.save()
             notify_job_change()
             messages.info(request, "Scheduled immediate run of '{0}'".format(job.description))

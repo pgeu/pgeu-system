@@ -6,9 +6,10 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.urls import reverse
+from django.utils import timezone
 from django.conf import settings
 
-from datetime import datetime, timedelta, time
+from datetime import timedelta, time
 from io import StringIO
 
 from postgresqleu.invoices.models import InvoicePaymentMethod
@@ -53,7 +54,7 @@ class Command(BaseCommand):
                              sio.getvalue())
 
     def report_unconfirmed_notifications(self, method, pm):
-        lines = list(Notification.objects.filter(confirmed=False, receivedat__lt=datetime.now() - timedelta(days=1), rawnotification__paymentmethod=method).order_by('eventDate'))
+        lines = list(Notification.objects.filter(confirmed=False, receivedat__lt=timezone.now() - timedelta(days=1), rawnotification__paymentmethod=method).order_by('eventDate'))
         if len(lines):
             sio = StringIO()
             sio.write("The following notifications have not been confirmed in the Adyen integration for %s.\nThese need to be manually processed and then flagged as confirmed!\n\nThis list only contains unconfirmed events older than 24 hours.\n\n\n" % method.internaldescription)
@@ -69,7 +70,7 @@ class Command(BaseCommand):
         # Number of days until we start reporting unsettled transactions
 
         UNSETTLED_THRESHOLD = 15
-        lines = list(TransactionStatus.objects.filter(settledat__isnull=True, authorizedat__lt=datetime.now() - timedelta(days=UNSETTLED_THRESHOLD), paymentmethod=method).order_by('authorizedat'))
+        lines = list(TransactionStatus.objects.filter(settledat__isnull=True, authorizedat__lt=timezone.now() - timedelta(days=UNSETTLED_THRESHOLD), paymentmethod=method).order_by('authorizedat'))
         if len(lines):
             sio = StringIO()
             sio.write("The following payments have been authorized for %s, but not captured for more than %s days.\nThese probably need to be verified manually.\n\n\n" % (method.internaldescription, UNSETTLED_THRESHOLD))

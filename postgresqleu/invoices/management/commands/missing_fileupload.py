@@ -7,8 +7,9 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.conf import settings
+from django.utils import timezone
 
-from datetime import datetime, timedelta, time
+from datetime import timedelta, time
 
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.models import BankFileUpload, InvoicePaymentMethod
@@ -30,7 +31,7 @@ class Command(BaseCommand):
         accounts = []
         for pm in InvoicePaymentMethod.objects.filter(active=True, config__has_key='file_upload_interval', config__file_upload_interval__gt=0):
             if not BankFileUpload.objects.filter(method=pm,
-                                                 created__gt=datetime.now() - timedelta(days=pm.config['file_upload_interval'])
+                                                 created__gt=timezone.now() - timedelta(days=pm.config['file_upload_interval'])
             ).exists():
                 accounts.append(pm.internaldescription)
 

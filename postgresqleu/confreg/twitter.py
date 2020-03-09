@@ -5,6 +5,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.utils import timezone
 
 import datetime
 import io
@@ -19,7 +20,7 @@ from .models import Conference, ConferenceRegistration
 
 def post_conference_tweet(conference, contents, approved=False, posttime=None, author=None):
     if not posttime:
-        posttime = datetime.datetime.now()
+        posttime = timezone.now()
 
     # Adjust the start time to be inside the configured window
     if posttime.time() < conference.twitter_timewindow_start:
@@ -97,7 +98,7 @@ def volunteer_twitter(request, urlname, token):
 
             # Check if we have *exactly the same tweet* in the queue already, in the past 5 minutes.
             # in which case it's most likely a clicked-too-many-times.
-            if ConferenceTweetQueue.objects.filter(conference=conference, contents=request.POST['txt'][:280], author=reg.attendee, datetime__gt=datetime.datetime.now() - datetime.timedelta(minutes=5)):
+            if ConferenceTweetQueue.objects.filter(conference=conference, contents=request.POST['txt'][:280], author=reg.attendee, datetime__gt=timezone.now() - datetime.timedelta(minutes=5)):
                 return _json_response({'error': 'Duplicate post detected'})
 
             # Now insert it in the queue, bypassing time validation since it's not an automatically
@@ -140,7 +141,7 @@ def volunteer_twitter(request, urlname, token):
 
             t.save()
             if request.POST.get('replyid', None):
-                ConferenceIncomingTweet.objects.filter(conference=conference, statusid=get_int_or_error(request.POST, 'replyid')).update(processedat=datetime.datetime.now(), processedby=reg.attendee)
+                ConferenceIncomingTweet.objects.filter(conference=conference, statusid=get_int_or_error(request.POST, 'replyid')).update(processedat=timezone.now(), processedby=reg.attendee)
 
             return _json_response({})
         elif request.POST.get('op', None) in ('approve', 'discard'):
@@ -183,7 +184,7 @@ def volunteer_twitter(request, urlname, token):
                     return _json_response({'error': 'Tweet is already discarded or replied'})
 
                 t.processedby = reg.attendee
-                t.processedat = datetime.datetime.now()
+                t.processedat = timezone.now()
                 t.save(update_fields=['processedby', 'processedat'])
             else:
                 if t.retweetstate > 0:

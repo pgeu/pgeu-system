@@ -7,8 +7,9 @@
 #
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils import timezone
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from postgresqleu.mailqueue.util import send_simple_mail
 
@@ -34,7 +35,7 @@ class Command(BaseCommand):
         # Any entries that actually have an invoice will be canceled by the invoice
         # system, as the expiry time of the invoice is set synchronized. In this
         # run, we only care about offers that have not been picked up at all.
-        wlentries = RegistrationWaitlistEntry.objects.filter(registration__payconfirmedat__isnull=True, registration__invoice__isnull=True, offerexpires__lt=datetime.now())
+        wlentries = RegistrationWaitlistEntry.objects.filter(registration__payconfirmedat__isnull=True, registration__invoice__isnull=True, offerexpires__lt=timezone.now())
 
         for w in wlentries:
             reg = w.registration
@@ -68,6 +69,6 @@ class Command(BaseCommand):
             w.offerexpires = None
             # Move the user to the back of the waitlist (we have a history entry for the
             # initial registration date, so it's still around)
-            w.enteredon = datetime.now()
+            w.enteredon = timezone.now()
 
             w.save()

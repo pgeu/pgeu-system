@@ -1,10 +1,9 @@
 from django.contrib.syndication.views import Feed
 from django.conf import settings
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
 from .models import Conference
-
-import datetime
 
 from postgresqleu.util.db import exec_to_dict
 
@@ -16,7 +15,7 @@ class LatestEvents(Feed):
     description_template = "events/rssevent.html"
 
     def items(self):
-        return Conference.objects.filter(promoactive=True, enddate__gte=datetime.datetime.now())
+        return Conference.objects.filter(promoactive=True, enddate__gte=timezone.now())
 
     def item_link(self, conference):
         return "%s/events/%s/" % (settings.SITEBASE, conference.urlname)

@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.db import transaction
+from django.utils import timezone
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from decimal import Decimal
 
 from postgresqleu.mailqueue.util import send_simple_mail
@@ -49,7 +50,7 @@ class Trustly(TrustlyWrapper):
                 pass
 
             n = TrustlyNotification(
-                receivedat=datetime.now(),
+                receivedat=timezone.now(),
                 rawnotification=raw,
                 method=method,
                 notificationid=data['notificationid'],
@@ -99,7 +100,7 @@ class Trustly(TrustlyWrapper):
                 # Pending is just an incremental state, so we collect it but don't do anything with
                 # it.
                 if not trans.pendingat:
-                    trans.pendingat = datetime.now()
+                    trans.pendingat = timezone.now()
                     trans.save()
 
                 try:
@@ -118,12 +119,12 @@ class Trustly(TrustlyWrapper):
                 # Credit! The payment is completed!
                 if not trans.pendingat:
                     # We set pending in case it never showed up
-                    trans.pendingat = datetime.now()
+                    trans.pendingat = timezone.now()
                 if trans.completedat:
                     self.log_and_email("Duplicate completed notification ({0}) received for transaction {1}!".format(notification.id, notification.orderid), method)
                     return False
 
-                trans.completedat = datetime.now()
+                trans.completedat = timezone.now()
                 try:
                     self.process_completed_payment(trans)
                 except TrustlyException as e:

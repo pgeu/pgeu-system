@@ -1,11 +1,10 @@
+from django.utils import timezone
 from django.conf import settings
 
 from .models import ConferenceRegistration, BulkPayment, PendingAdditionalOrder
 from .models import RegistrationWaitlistHistory, PrepaidVoucher
 from .util import notify_reg_confirmed, expire_additional_options
 from .util import send_conference_mail
-
-from datetime import datetime
 
 
 class InvoiceProcessor(object):
@@ -28,7 +27,7 @@ class InvoiceProcessor(object):
         if reg.payconfirmedat:
             raise Exception("Registration already paid")
 
-        reg.payconfirmedat = datetime.now()
+        reg.payconfirmedat = timezone.now()
         reg.payconfirmedby = "Invoice paid"
         reg.save()
         notify_reg_confirmed(reg)
@@ -63,7 +62,7 @@ class InvoiceProcessor(object):
                                         text="Invoice was cancelled, moving back to waitlist").save()
             wl.offeredon = None
             wl.offerexpires = None
-            wl.enteredon = datetime.now()
+            wl.enteredon = timezone.now()
             wl.save()
 
         # If the registration was attached to a discount code, remove it so that it is no
@@ -116,11 +115,11 @@ class BulkInvoiceProcessor(object):
         if bp.paidat:
             raise Exception("Bulk payment already paid")
 
-        bp.paidat = datetime.now()
+        bp.paidat = timezone.now()
 
         # Confirm all related ones
         for r in bp.conferenceregistration_set.all():
-            r.payconfirmedat = datetime.now()
+            r.payconfirmedat = timezone.now()
             r.payconfirmedby = "Bulk paid"
             r.save()
             notify_reg_confirmed(r)
@@ -232,7 +231,7 @@ class AddonInvoiceProcessor(object):
         if order.payconfirmedat:
             raise Exception("Additional options already paid")
 
-        order.payconfirmedat = datetime.now()
+        order.payconfirmedat = timezone.now()
         if order.newregtype:
             order.reg.regtype = order.newregtype
 

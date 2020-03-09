@@ -12,8 +12,9 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.conf import settings
+from django.utils import timezone
 
-from datetime import time, datetime, timedelta
+from datetime import time, timedelta
 from io import StringIO
 
 from postgresqleu.invoices.models import InvoicePaymentMethod
@@ -49,7 +50,7 @@ class Command(BaseCommand):
     def expire_sessions(self, method, pm):
         # If there are any sessions that have not been touched for 48+ hours, then clearly something
         # went wrong, so just get rid of them.
-        for co in StripeCheckout.objects.filter(paymentmethod=method, completedat__isnull=True, createdat__lt=datetime.now() - timedelta(hours=48)):
+        for co in StripeCheckout.objects.filter(paymentmethod=method, completedat__isnull=True, createdat__lt=timezone.now() - timedelta(hours=48)):
             StripeLog(message="Expired checkout session {0} (id {1}), not completed for 48 hours.".format(co.id, co.sessionid),
                       paymentmethod=method).save()
             co.delete()
@@ -76,7 +77,7 @@ Better go check manually!
     def check_refunds(self, method, pm):
         for r in StripeRefund.objects.filter(paymentmethod=method,
                                              completedat__isnull=True,
-                                             invoicerefundid__issued__lt=datetime.now() - timedelta(hours=6)):
+                                             invoicerefundid__issued__lt=timezone.now() - timedelta(hours=6)):
 
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                              pm.config('notification_receiver'),

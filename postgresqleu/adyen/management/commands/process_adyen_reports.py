@@ -6,6 +6,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.db.models import Q
+from django.utils import timezone
 from django.conf import settings
 
 import re
@@ -62,7 +63,7 @@ class Command(BaseCommand):
                     elif len(resp.text) == 0:
                         self.stderr.write("Downloaded report {0} and got zero bytes (no header). Not storing, will try again.".format(report.url))
                     else:
-                        report.downloadedat = datetime.now()
+                        report.downloadedat = timezone.now()
                         report.contents = resp.text
                         report.save()
                         AdyenLog(message='Downloaded report {0}'.format(report.url), error=False, paymentmethod=report.paymentmethod).save()
@@ -259,7 +260,7 @@ class Command(BaseCommand):
                         raise CommandError('Unknown report type in file "{0}"'.format(filename))
 
                     # If successful, flag as processed and add the log
-                    report.processedat = datetime.now()
+                    report.processedat = timezone.now()
                     report.save()
                     AdyenLog(message='Processed report %s' % report.url, error=False, paymentmethod=report.paymentmethod).save()
             except Exception as ex:

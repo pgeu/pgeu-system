@@ -4,8 +4,7 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 import django.db.models.deletion
-
-import datetime
+from django.utils import timezone
 
 
 class Migration(migrations.Migration):
@@ -20,7 +19,7 @@ class Migration(migrations.Migration):
             name='ConferenceNews',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('datetime', models.DateTimeField(default=datetime.datetime.now)),
+                ('datetime', models.DateTimeField(default=timezone.now)),
                 ('title', models.CharField(max_length=128)),
                 ('summary', models.TextField()),
                 ('inrss', models.BooleanField(default=True, verbose_name='Include in RSS feed')),

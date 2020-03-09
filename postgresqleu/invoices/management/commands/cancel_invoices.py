@@ -6,8 +6,9 @@
 #
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils import timezone
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.util import InvoiceManager
@@ -22,11 +23,11 @@ class Command(BaseCommand):
 
         @classmethod
         def should_run(self):
-            return Invoice.objects.filter(finalized=True, deleted=False, paidat__isnull=True, canceltime__lt=datetime.now()).exists()
+            return Invoice.objects.filter(finalized=True, deleted=False, paidat__isnull=True, canceltime__lt=timezone.now()).exists()
 
     @transaction.atomic
     def handle(self, *args, **options):
-        invoices = Invoice.objects.filter(finalized=True, deleted=False, paidat__isnull=True, canceltime__lt=datetime.now())
+        invoices = Invoice.objects.filter(finalized=True, deleted=False, paidat__isnull=True, canceltime__lt=timezone.now())
 
         manager = InvoiceManager()
 
