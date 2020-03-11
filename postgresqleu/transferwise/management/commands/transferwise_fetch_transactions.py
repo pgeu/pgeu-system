@@ -94,7 +94,7 @@ class Command(BaseCommand):
                     invoicemanager.complete_refund(
                         twrefund.refundid,
                         -(trans.amount + trans.feeamount),
-                        trans.feeamount,
+                        -trans.feeamount,
                         pm.config('bankaccount'),
                         pm.config('feeaccount'),
                         [],  # urls
