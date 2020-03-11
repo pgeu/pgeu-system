@@ -93,7 +93,7 @@ class Command(BaseCommand):
                     invoicemanager = InvoiceManager()
                     invoicemanager.complete_refund(
                         twrefund.refundid,
-                        trans.amount + trans.feeamount,
+                        -(trans.amount + trans.feeamount),
                         trans.feeamount,
                         pm.config('bankaccount'),
                         pm.config('feeaccount'),
