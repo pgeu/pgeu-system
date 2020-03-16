@@ -276,7 +276,7 @@ def sponsor_purchase_discount(request, sponsorid):
 
 @login_required
 def sponsor_signup_dashboard(request, confurlname):
-    conference = get_conference_or_404(urlname)
+    conference = get_conference_or_404(confurlname)
     if not conference.callforsponsorsopen:
         # This one is not open. But if we're an admin, we may bypass
         get_authenticated_conference(request, confurlname)
