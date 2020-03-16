@@ -134,6 +134,11 @@ def edit_registration(request, urlname, regid):
                                 BackendRegistrationForm,
                                 regid,
                                 allow_new=False,
+                                breadcrumbs=(
+                                    ('/events/admin/{}/regdashboard/'.format(urlname), 'Registration dashboard'),
+                                    ('/events/admin/{}/regdashboard/list/'.format(urlname), 'Registration list'),
+                                    ('/events/admin/{}/regdashboard/list/{}/'.format(urlname, regid), 'Registration'),
+                                ),
                                 allow_delete=False)
 
 
