@@ -19,6 +19,11 @@ from postgresqleu.confreg.jinjapdf import render_jinja_ticket
 from .models import PrepaidVoucher, DiscountCode, RegistrationWaitlistHistory
 from .models import ConferenceRegistration, Conference
 from .models import AttendeeMail
+from .models import ConferenceRegistrationLog
+
+
+def reglog(reg, txt, user=None):
+    ConferenceRegistrationLog(reg=reg, txt=txt, user=user).save()
 
 
 #
@@ -180,6 +185,8 @@ def send_welcome_email(reg):
 
 
 def notify_reg_confirmed(reg, updatewaitlist=True):
+    reglog(reg, "Registration confirmed")
+
     # This one was off the waitlist, so generate a history entry
     if updatewaitlist and hasattr(reg, 'registrationwaitlistentry'):
         RegistrationWaitlistHistory(waitlist=reg.registrationwaitlistentry,
@@ -244,7 +251,7 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
     send_welcome_email(reg)
 
 
-def cancel_registration(reg, is_unconfirmed=False, reason=None):
+def cancel_registration(reg, is_unconfirmed=False, reason=None, user=None):
     if reg.canceledat:
         raise Exception("Registration is already canceled")
 
@@ -293,6 +300,8 @@ def cancel_registration(reg, is_unconfirmed=False, reason=None):
     # Flag canceled and save
     reg.canceledat = timezone.now()
     reg.save()
+
+    reglog(reg, "Canceled registration", user)
 
     if reg.conference.notifyregs and not is_unconfirmed:
         send_conference_mail(reg.conference,

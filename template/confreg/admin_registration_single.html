@@ -212,6 +212,34 @@
  </tr>
 {%endif%}
 
+<tr>
+  <th colspan="2" class="col-md-12">Log</th>
+</tr>
+
+<tr>
+  <td>Log</td>
+  <td>
+    <table class="table table-condensed">
+      <tr>
+	<th>Time</th>
+	<th>Message</th>
+	<th>User</th>
+      </tr>
+{%for l in log%}
+      <tr>
+{%if forloop.counter <= maxlogrows %}
+	<td>{{l.ts}}</td>
+        <td>{{l.txt}}</td>
+        <td>{{l.user|default:"&lt;system&gt;"}}</td>
+{%else%}
+        <td colspan="3"><a class="btn btn-default btn-block" href="log/">View full log</a></td>
+{%endif%}
+      </tr>
+{%endfor%}
+    </table>
+  </td>
+</tr>
+
 </table>
 
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/edit/">Edit registration</a>

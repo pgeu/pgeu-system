@@ -17,6 +17,7 @@ from django.forms import ValidationError
 from django.utils import timezone
 
 from .models import Conference, ConferenceRegistration, ConferenceSession, ConferenceSeries
+from .models import ConferenceRegistrationLog
 from .models import ConferenceSessionSlides, ConferenceSessionVote, GlobalOptOut
 from .models import ConferenceSessionFeedback, Speaker
 from .models import ConferenceSessionTag
@@ -41,6 +42,7 @@ from .util import invoicerows_for_registration, notify_reg_confirmed, Invoicerow
 from .util import get_invoice_autocancel, cancel_registration, send_welcome_email
 from .util import attendee_cost_from_bulk_payment
 from .util import send_conference_mail
+from .util import reglog
 
 from .models import get_status_string, get_status_string_short, valid_status_transitions
 from .regtypes import confirm_special_reg_type, validate_special_reg_type
@@ -103,12 +105,12 @@ def render_conference_response(request, conference, pagemagic, templatename, dic
 def _get_registration_signups(conference, reg):
     # Left join is hard to do efficiently with the django ORM, so let's do a query instead
     cursor = connection.cursor()
-    cursor.execute("SELECT s.id, s.title, s.deadline, s.deadline < CURRENT_TIMESTAMP, ats.saved FROM confwiki_signup s LEFT JOIN confwiki_attendeesignup ats ON (s.id=ats.signup_id AND ats.attendee_id=%(regid)s) WHERE s.conference_id=%(confid)s AND (s.deadline IS NULL OR s.deadline > CURRENT_TIMESTAMP OR ats.saved IS NOT NULL) AND (s.public OR EXISTS (SELECT 1 FROM confwiki_signup_attendees sa WHERE sa.signup_id=s.id AND sa.conferenceregistration_id=%(regid)s) OR EXISTS (SELECT 1 FROM confwiki_signup_regtypes sr WHERE sr.signup_id=s.id AND sr.registrationtype_id=%(regtypeid)s)) ORDER  BY 4 DESC, 3, 2", {
+    cursor.execute("SELECT s.id, s.title, s.deadline, s.deadline < CURRENT_TIMESTAMP, ats.saved, ats.id FROM confwiki_signup s LEFT JOIN confwiki_attendeesignup ats ON (s.id=ats.signup_id AND ats.attendee_id=%(regid)s) WHERE s.conference_id=%(confid)s AND (s.deadline IS NULL OR s.deadline > CURRENT_TIMESTAMP OR ats.saved IS NOT NULL) AND (s.public OR EXISTS (SELECT 1 FROM confwiki_signup_attendees sa WHERE sa.signup_id=s.id AND sa.conferenceregistration_id=%(regid)s) OR EXISTS (SELECT 1 FROM confwiki_signup_regtypes sr WHERE sr.signup_id=s.id AND sr.registrationtype_id=%(regtypeid)s)) ORDER  BY 4 DESC, 3, 2", {
         'confid': conference.id,
         'regid': reg.id,
         'regtypeid': reg.regtype_id,
         })
-    return [dict(list(zip(['id', 'title', 'deadline', 'closed', 'savedat'], r))) for r in cursor.fetchall()]
+    return [dict(list(zip(['id', 'title', 'deadline', 'closed', 'savedat', 'respid'], r))) for r in cursor.fetchall()]
 
 
 # Return a queryset with all the emails this attendee has permissions to see.
@@ -173,6 +175,7 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
         changeform = RegistrationChangeForm(conference.allowedit, instance=reg, data=request.POST)
         if changeform.is_valid():
             changeform.save()
+            reglog(reg, "Registration details updated", request.user)
             messages.info(request, "Registration updated.")
             return HttpResponseRedirect("../")
     else:
@@ -333,8 +336,11 @@ def register(request, confname, whatfor=None):
 
             # Figure out if the user clicked a "magic save button"
             if request.POST['submit'] == 'Confirm and finish' or request.POST['submit'] == 'Save and finish':
+                reglog(reg, "Saved and clicked finish", request.user)
                 # Complete registration!
                 return HttpResponseRedirect("{0}confirm/".format(redir_root))
+
+            reglog(reg, "Saved regform", request.user)
 
             # Or did they save but we're on the "wrong" url
             if redir_root:
@@ -456,6 +462,7 @@ def multireg(request, confname, regid=None):
                 reg.attendee = None
                 reg.save()
                 regform.save_m2m()
+                reglog(reg, "Saved multireg form", request.user)
                 return HttpResponseRedirect(redir_root)
             else:
                 return render_conference_response(request, conference, 'reg', 'confreg/regmulti_form.html', {
@@ -500,6 +507,7 @@ def _create_and_assign_bulk_payment(user, conference, regs, invoicerows, recipie
     for r in regs:
         r.bulkpayment = bp
         r.save()
+        reglog(reg, "Assigned to bulk payment {}".format(bp.id), request.user)
 
         autocancel_hours.append(r.regtype.invoice_autocancel_hours)
         autocancel_hours.extend([a.invoice_autocancel_hours for a in r.additionaloptions.filter(invoice_autocancel_hours__isnull=False)])
@@ -645,6 +653,7 @@ def multireg_newinvoice(request, confname):
                 r.payconfirmedat = timezone.now()
                 r.payconfirmedby = "Multireg/nopay"
                 r.save()
+                reglog(r, "Confirmed by multireg not requiring payment", request.user)
                 notify_reg_confirmed(r)
             return HttpResponseRedirect("../z/")
 
@@ -724,6 +733,7 @@ def multireg_attach(request, token):
     if request.method == "POST" and request.POST['submit'] == 'Confirm and attach account':
         reg.attendee = request.user
         reg.save()
+        reglog(reg, "Attached registration to account", request.user)
         return HttpResponseRedirect('/events/register/{0}/'.format(conference.urlname))
     else:
         return render_conference_response(request, conference, 'reg', 'confreg/regmulti_attach.html', {
@@ -856,6 +866,7 @@ def reg_add_options(request, confname):
             for o in options:
                 reg.additionaloptions.add(o)
             reg.save()
+            reglog(reg, "Added additional options (no payment needed)", request.user)
             messages.info(request, 'Additional options added to registration')
             return HttpResponseRedirect('../')
 
@@ -868,6 +879,8 @@ def reg_add_options(request, confname):
         order.save()  # So we get a PK and can add m2m values
         for o in options:
             order.options.add(o)
+
+        reglog(reg, "Created additional options order {}".format(order.id), request.user)
 
         manager = InvoiceManager()
         processor = InvoiceProcessor.objects.get(processorname='confreg addon processor')
@@ -1904,6 +1917,7 @@ def confirmreg(request, confname):
                 reg.payconfirmedat = timezone.now()
                 reg.payconfirmedby = "no payment reqd"
                 reg.save()
+                reglog(reg, "Copmleted registraiton not requiring payment", request.user)
                 notify_reg_confirmed(reg)
                 return HttpResponseRedirect("../")
 
@@ -1942,6 +1956,7 @@ def confirmreg(request, confname):
 
             reg.invoice.save()
             reg.save()
+            reglog(reg, "Confirmed reg details, invoice created", request.user)
             return HttpResponseRedirect("../invoice/%s/" % reg.pk)
 
         # Else this is some random button we haven't heard of, so just
@@ -3117,6 +3132,8 @@ def admin_registration_single(request, urlname, regid):
 
     reg = get_object_or_404(ConferenceRegistration, id=regid, conference=conference)
 
+    maxlogrows = 20
+
     if reg.attendee:
         sessions = ConferenceSession.objects.filter(conference=conference, speaker__user=reg.attendee)
     else:
@@ -3124,11 +3141,31 @@ def admin_registration_single(request, urlname, regid):
     return render(request, 'confreg/admin_registration_single.html', {
         'conference': conference,
         'reg': reg,
+        'log': ConferenceRegistrationLog.objects.select_related('user').order_by('-ts').filter(reg=reg)[:maxlogrows + 1],
+        'maxlogrows': maxlogrows,
         'sessions': sessions,
         'signups': _get_registration_signups(conference, reg),
         'breadcrumbs': (
             ('/events/admin/{0}/regdashboard/'.format(urlname), 'Registration dashboard'),
             ('/events/admin/{0}/regdashboard/list/'.format(urlname), 'Registration list'),
+        ),
+        'helplink': 'registrations',
+    })
+
+
+def admin_registration_log(request, urlname, regid):
+    conference = get_authenticated_conference(request, urlname)
+
+    reg = get_object_or_404(ConferenceRegistration, id=regid, conference=conference)
+
+    return render(request, 'confreg/admin_registration_log.html', {
+        'conference': conference,
+        'reg': reg,
+        'log': ConferenceRegistrationLog.objects.select_related('user').order_by('-ts').filter(reg=reg),
+        'breadcrumbs': (
+            ('/events/admin/{0}/regdashboard/'.format(urlname), 'Registration dashboard'),
+            ('/events/admin/{0}/regdashboard/list/'.format(urlname), 'Registration list'),
+            ('/events/admin/{0}/regdashboard/list/{1}/'.format(urlname, reg.id), 'Registration'),
         ),
         'helplink': 'registrations',
     })
@@ -3166,7 +3203,7 @@ def admin_registration_cancel(request, urlname, regid):
                 # Registration that did not have an invoice.
                 # This is either a confirmed registration with no payment required,
                 # or an unconfirmed registration.
-                cancel_registration(reg, reg.payconfirmedat is None, reason)
+                cancel_registration(reg, reg.payconfirmedat is None, reason, request.user)
             elif method == form.Methods.CANCEL_INVOICE:
                 # An invoice exists and should be canceled. Since it's not paid yet,
                 # this is easy.
@@ -3183,7 +3220,7 @@ def admin_registration_cancel(request, urlname, regid):
                     reg.save()
                 else:
                     raise Exception("Can't cancel this without refund")
-                cancel_registration(reg, reason=reason)
+                cancel_registration(reg, reason=reason, user=request.user)
             elif method >= 0:
                 # Refund using a pattern!
                 try:
@@ -3216,7 +3253,7 @@ def admin_registration_cancel(request, urlname, regid):
                     # OK, looks good. Start by refunding the invoice.
                     manager.refund_invoice(invoice, reason, to_refund, to_refund_vat, conference.vat_registrations)
                     # Then cancel the actual registration
-                    cancel_registration(reg, reason=reason)
+                    cancel_registration(reg, reason=reason, user=request.user)
 
                     messages.info(request, "Invoice refunded and registration canceled.")
                     return HttpResponseRedirect("../../")
@@ -3268,6 +3305,7 @@ def admin_registration_confirm(request, urlname, regid):
             reg.payconfirmedat = timezone.now()
             reg.payconfirmedby = "Manual/{0}".format(request.user.username)[:16]
             reg.save()
+            reglog(reg, "Manually confirmed registration", request.user)
             notify_reg_confirmed(reg)
             messages.info(request, "Registration marked confirmed.")
             return HttpResponseRedirect("../")
@@ -3342,6 +3380,7 @@ def admin_registration_clearcode(request, urlname, regid):
     else:
         messages.info(request, "Removed voucher code '{0}'".format(reg.vouchercode))
         reg.vouchercode = ""
+        reglog(reg, "Removed voucher code", request.user)
         reg.save()
     return HttpResponseRedirect("../")
 
@@ -3751,6 +3790,7 @@ def transfer_reg(request, urlname):
         toreg.payconfirmedat = fromreg.payconfirmedat
         toreg.payconfirmedby = "{0}(x)".format(fromreg.payconfirmedby)[:16]
         toreg.save()
+        reglog(toreg, "Transfered registration from {}".format(fromreg.user.username), request.user)
 
         yield "Sending notification to target registration"
         notify_reg_confirmed(toreg, False)

@@ -1,0 +1,25 @@
+{%extends "confreg/confadmin_base.html" %}
+{%load date_or_string%}
+{%block title%}Conference registration log{%endblock%}
+
+{%block layoutblock%}
+<h1>Conference registration log</h1>
+<h2>{{reg.fullname}}</h2>
+<table class="table table-condensed">
+  <tr>
+    <th>Time</th>
+    <th>Message</th>
+    <th>User</th>
+  </tr>
+{%for l in log%}
+  <tr>
+    <td>{{l.ts}}</td>
+    <td>{{l.txt}}</td>
+    <td>{{l.user|default:"&lt;system&gt;"}}</td>
+  </tr>
+{%endfor%}
+</table>
+
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/">Back to registration</a>
+
+{%endblock%}

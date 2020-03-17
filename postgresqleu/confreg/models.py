@@ -747,6 +747,18 @@ class ConferenceRegistration(models.Model):
         return d
 
 
+class ConferenceRegistrationLog(models.Model):
+    reg = models.ForeignKey(ConferenceRegistration, null=False, blank=False)
+    user = models.ForeignKey(User, null=True, blank=True)
+    ts = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+    txt = models.CharField(max_length=8000, null=False, blank=False)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['reg', '-ts']),
+        ]
+
+
 class RegistrationWaitlistEntry(models.Model):
     registration = models.OneToOneField(ConferenceRegistration, primary_key=True, on_delete=models.CASCADE)
     enteredon = models.DateTimeField(null=False, blank=False, auto_now_add=True)

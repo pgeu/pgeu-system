@@ -17,7 +17,7 @@ from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.confreg.models import Conference, ConferenceRegistration
 from postgresqleu.confreg.views import render_conference_response
 from postgresqleu.confreg.util import get_authenticated_conference, get_conference_or_404
-from postgresqleu.confreg.util import send_conference_mail
+from postgresqleu.confreg.util import send_conference_mail, reglog
 
 from postgresqleu.util.db import exec_to_scalar, exec_to_list
 from postgresqleu.util.request import get_int_or_error
@@ -341,6 +341,7 @@ def signup(request, urlname, signupid):
                                              receivername=conference.conferencename,
                         )
                     attendee_signup.delete()
+                    reglog(reg, "Deleted response to signup {}".format(signup.id), request.user)
                     messages.info(request, "Your response has been deleted.")
                 # If it did not exist, don't bother deleting it
             else:
@@ -362,6 +363,7 @@ def signup(request, urlname, signupid):
                                              sender=conference.notifyaddr,
                                              receivername=conference.conferencename,
                         )
+                    reglog(reg, "Updated response to signup {}".format(signup.id), request.user)
                 else:
                     attendee_signup = AttendeeSignup(attendee=reg,
                                                      signup=signup,
@@ -379,6 +381,7 @@ def signup(request, urlname, signupid):
                                              sender=conference.notifyaddr,
                                              receivername=conference.conferencename,
                         )
+                    reglog(reg, "Recorded response to signup {}".format(signup.id), request.user)
                 attendee_signup.save()
                 messages.info(request, "Your response has been stored. Thank you!")
 
@@ -476,7 +479,10 @@ def signup_admin_editsignup(request, urlname, signupid, id):
     else:
         attendeesignup = get_object_or_404(AttendeeSignup, signup=signup, pk=id)
 
+    reg = attendeesignup.attendee
+
     if request.method == 'POST' and request.POST['submit'] == 'Delete':
+        reglog(reg, "Admin removed response to signup {}".format(signup.id), request.user)
         attendeesignup.delete()
         return HttpResponseRedirect('../../')
     elif request.method == 'POST':
@@ -485,9 +491,11 @@ def signup_admin_editsignup(request, urlname, signupid, id):
             if (not signup.options) and (not form.cleaned_data['choice']):
                 # Yes/no signup changed to no means we actually delete the
                 # record completeliy.
+                reglog(reg, "Admin removed response to signup {}".format(signup.id), request.user)
                 attendeesignup.delete()
             else:
                 form.save()
+                reglog(reg, "Admin updated response to signup {}".format(signup.id), request.user)
             return HttpResponseRedirect('../../')
     else:
         form = SignupAdminEditSignupForm(signup, isnew=(id == 'new'), instance=attendeesignup)

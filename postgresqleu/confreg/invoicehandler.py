@@ -5,6 +5,7 @@ from .models import ConferenceRegistration, BulkPayment, PendingAdditionalOrder
 from .models import RegistrationWaitlistHistory, PrepaidVoucher
 from .util import notify_reg_confirmed, expire_additional_options
 from .util import send_conference_mail
+from .util import reglog
 
 
 class InvoiceProcessor(object):
@@ -30,6 +31,7 @@ class InvoiceProcessor(object):
         reg.payconfirmedat = timezone.now()
         reg.payconfirmedby = "Invoice paid"
         reg.save()
+        reglog(reg, "Confirmed registraiton by invoice")
         notify_reg_confirmed(reg)
 
     # Process an invoice being canceled. This means we need to unlink
@@ -50,6 +52,7 @@ class InvoiceProcessor(object):
         # Unlink this invoice from the registration. This will automatically
         # "unlock" the registration
         reg.invoice = None
+        reglog(reg, "Invoice canceled, unlinking from reg")
         reg.save()
 
         # If this registration holds any additional options that are about to expire, release
@@ -125,6 +128,7 @@ class BulkInvoiceProcessor(object):
             r.payconfirmedat = timezone.now()
             r.payconfirmedby = "Bulk paid"
             r.save()
+            reglog(r, "Confirmed registraiton by bulk paid")
             notify_reg_confirmed(r)
 
         bp.save()
@@ -146,6 +150,7 @@ class BulkInvoiceProcessor(object):
         for r in bp.conferenceregistration_set.all():
             r.bulkpayment = None
             r.save()
+            relog(r, "Unlinked from bulk payment by cancel")
 
             if r.attendee:
                 # Only notify if this attendee actually knows about the
