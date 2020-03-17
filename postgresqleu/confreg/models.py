@@ -276,7 +276,7 @@ class Conference(models.Model):
 
         # Any registrations that are completed, has an invoice, or has a
         # bulk payment will count against the total.
-        num = ConferenceRegistration.objects.filter(Q(conference=self) & (Q(payconfirmedat__isnull=False) | Q(invoice__isnull=False) | Q(bulkpayment__isnull=False))).count()
+        num = ConferenceRegistration.objects.filter(Q(conference=self) & (Q(payconfirmedat__isnull=False, canceledat__isnull=True) | Q(invoice__isnull=False) | Q(bulkpayment__isnull=False))).count()
         if num >= self.attendees_before_waitlist:
             return True
 
@@ -531,9 +531,10 @@ class ConferenceRegistration(models.Model):
     photoconsent = models.NullBooleanField(null=True, blank=False, verbose_name="Consent to having your photo taken at the event by the organisers")
 
     # Admin fields!
-    payconfirmedat = models.DateTimeField(null=True, blank=True, verbose_name="Payment confirmed")
+    payconfirmedat = models.DateTimeField(null=True, blank=True, verbose_name="Payment confirmed at")
     payconfirmedby = models.CharField(max_length=16, null=True, blank=True, verbose_name="Payment confirmed by")
     created = models.DateTimeField(null=False, blank=False, verbose_name="Registration created")
+    canceledat = models.DateTimeField(null=True, blank=True, verbose_name="Canceled at")
     lastmodified = models.DateTimeField(null=False, blank=False, auto_now=True)
     checkedinat = models.DateTimeField(null=True, blank=True, verbose_name="Checked in at")
     checkedinby = models.ForeignKey('ConferenceRegistration', null=True, blank=True, verbose_name="Checked by by")
@@ -583,7 +584,9 @@ class ConferenceRegistration(models.Model):
 
     @property
     def invoice_status(self):
-        if self.payconfirmedat:
+        if self.canceledat:
+            return "registratoin canceled"
+        elif self.payconfirmedat:
             return "paid and confirmed"
         elif self.invoice:
             return "invoice generated, not paid"

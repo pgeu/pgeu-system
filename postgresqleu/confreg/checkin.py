@@ -86,15 +86,15 @@ def _get_statistics(conference):
     return [
         (
             ('Registration types', 'Done', 'Left'),
-            exec_to_list("SELECT regtype, count(1) FILTER (WHERE checkedinat IS NOT NULL), count(1) FILTER (WHERE checkedinat IS NULL) FROM confreg_conferenceregistration r INNER JOIN confreg_registrationtype rt ON rt.id=r.regtype_id WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL GROUP BY ROLLUP(1) ORDER BY 1", {'confid': conference.id})
+            exec_to_list("SELECT regtype, count(1) FILTER (WHERE checkedinat IS NOT NULL), count(1) FILTER (WHERE checkedinat IS NULL) FROM confreg_conferenceregistration r INNER JOIN confreg_registrationtype rt ON rt.id=r.regtype_id WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND canceledat IS NULL GROUP BY ROLLUP(1) ORDER BY 1", {'confid': conference.id})
         ),
         (
             ('Check in users', 'Done', ''),
-            exec_to_list("SELECT username, count(1), NULL FROM confreg_conferenceregistration r INNER JOIN confreg_conferenceregistration r2 ON r2.id=r.checkedinby_id INNER JOIN auth_user u ON u.id=r2.attendee_id WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.checkedinat IS NOT NULL GROUP BY 1 ORDER BY 2 DESC", {'confid': conference.id})
+            exec_to_list("SELECT username, count(1), NULL FROM confreg_conferenceregistration r INNER JOIN confreg_conferenceregistration r2 ON r2.id=r.checkedinby_id INNER JOIN auth_user u ON u.id=r2.attendee_id WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL AND r.checkedinat IS NOT NULL GROUP BY 1 ORDER BY 2 DESC", {'confid': conference.id})
         ),
         (
             ('Latest checkins', 'By', 'Who'),
-            exec_to_list("SELECT to_char(r.checkedinat, 'ddth hh24:mi:ss'), username, r.firstname || ' ' || r.lastname FROM confreg_conferenceregistration r INNER JOIN confreg_conferenceregistration r2 ON r2.id=r.checkedinby_id INNER JOIN auth_user u ON u.id=r2.attendee_id WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.checkedinat IS NOT NULL ORDER BY r.checkedinat DESC LIMIT 10", {"confid": conference.id})
+            exec_to_list("SELECT to_char(r.checkedinat, 'ddth hh24:mi:ss'), username, r.firstname || ' ' || r.lastname FROM confreg_conferenceregistration r INNER JOIN confreg_conferenceregistration r2 ON r2.id=r.checkedinby_id INNER JOIN auth_user u ON u.id=r2.attendee_id WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL AND r.checkedinat IS NOT NULL ORDER BY r.checkedinat DESC LIMIT 10", {"confid": conference.id})
         ),
     ]
 
@@ -143,14 +143,14 @@ def api(request, urlname, regtoken, what):
         if not (token.startswith('ID$') and token.endswith('$ID')):
             raise Http404()
         token = token[3:-3]
-        r = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, idtoken=token)
+        r = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, idtoken=token)
         return _json_response({'reg': _get_reg_json(r)})
     elif what == 'search':
         s = request.GET.get('search').strip()
         return _json_response({
             'regs': [_get_reg_json(r) for r in ConferenceRegistration.objects.filter(
                 Q(firstname__icontains=s) | Q(lastname__icontains=s),
-                conference=conference, payconfirmedat__isnull=False
+                conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True,
             )],
         })
     elif is_admin and what == 'stats':
@@ -159,7 +159,7 @@ def api(request, urlname, regtoken, what):
         if not conference.checkinactive:
             return HttpResponse("Check-in not open", status=412)
 
-        reg = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, pk=get_int_or_error(request.POST, 'reg'))
+        reg = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, pk=get_int_or_error(request.POST, 'reg'))
         if reg.checkedinat:
             return HttpResponse("Already checked in.", status=412)
         reg.checkedinat = timezone.now()

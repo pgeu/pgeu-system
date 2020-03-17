@@ -19,7 +19,7 @@ class RegisteredUsersLookup(LookupBase):
         return [{'id': r.id, 'value': r.fullname}
                 for r in ConferenceRegistration.objects.filter(
                     conference=conference,
-                    payconfirmedat__isnull=False).filter(
+                    payconfirmedat__isnull=False, canceledat__isnull=True).filter(
                         Q(firstname__icontains=query) | Q(lastname__icontains=query) | Q(email__icontains=query)
                     )[:30]]
 

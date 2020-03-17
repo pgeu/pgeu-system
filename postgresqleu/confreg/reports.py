@@ -139,6 +139,7 @@ attendee_report_fields = [
     AdditionalOptionsReportField(),
     ReportField('created', 'Registration created'),
     ReportField('payconfirmedat', 'Payment confirmed'),
+    ReportField('canceledat', 'Canceled at'),
     DerivedReportField('publictoken', 'Public token', "'AT$' || publictoken || '$AT'"),
     DerivedReportField('idtoken', 'ID token', "'ID$' || idtoken || '$ID'"),
 ]
@@ -312,6 +313,7 @@ def attendee_report_filters(conference):
         ReportFilter('shareemail', 'Share email with sponsors', ReportFilter.booleanoptions),
         ReportFilter('photoconsent', 'Photo consent', ReportFilter.booleanoptions),
         ReportFilter('payconfirmedat', 'Payment confirmed', emptyasnull=False),
+        ReportFilter('canceledat', 'Canceled at', emptyasnull=False),
         ReportFilter('additionaloptions', 'Additional options', ConferenceAdditionalOption.objects.filter(conference=conference), 'name', False, True),
         ReportFilter('shirtsize', 'T-Shirt size', ShirtSize.objects.all()),
         ReportSpeakerFilter(conference),
@@ -543,6 +545,7 @@ WHERE s.conference_id=%(confid)s AND
       NOT EXISTS (SELECT * FROM confreg_conferenceregistration r
                   WHERE r.conference_id=%(confid)s
                   AND r.payconfirmedat IS NOT NULL
+                  AND r.canceledat IS NULL
                   AND r.attendee_id=spk.user_id)
 ORDER BY fullname""",
     'unregstaff': """SELECT
@@ -555,6 +558,7 @@ WHERE s.conference_id=%(confid)s AND
       u.id NOT IN (SELECT attendee_id FROM confreg_conferenceregistration r
                    WHERE r.conference_id=%(confid)s AND
                          payconfirmedat IS NOT NULL AND
+                         canceledat IS NULL
                          attendee_id IS NOT NULL
                   )
 ORDER BY last_name, first_name""",
@@ -604,7 +608,7 @@ ORDER BY 1""",
    round(count(*)*100/sum(count(*)) over ()) AS "Percent"
 FROM confreg_conferenceregistration r
 INNER JOIN confreg_shirtsize s ON s.id=r.shirtsize_id
-WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL
+WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND canceledat IS NULL
 GROUP BY shirtsize_id, shirtsize
 ORDER BY shirtsize_id""",
     'tshirtsizes__anon': """SELECT
@@ -620,7 +624,7 @@ ORDER BY size_id""",
    count(*) AS "Registrations"
 FROM confreg_conferenceregistration
 LEFT JOIN country ON country.iso=country_id
-WHERE payconfirmedat IS NOT NULL AND conference_id=%(confid)s
+WHERE payconfirmedat IS NOT NULL AND canceledat IS NULL AND conference_id=%(confid)s
 GROUP BY printable_name
 ORDER BY 2 DESC""",
 
@@ -630,7 +634,7 @@ ORDER BY 2 DESC""",
    INNER JOIN confreg_registrationtype rt ON rt.id=r.regtype_id
    INNER JOIN confreg_registrationtype_days rtd ON rtd.registrationtype_id=rt.id
    INNER JOIN confreg_registrationday rd ON rd.id=rtd.registrationday_id
-   WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL
+   WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL
  UNION
    SELECT r.id, rd.day
    FROM confreg_conferenceregistration r
@@ -638,7 +642,7 @@ ORDER BY 2 DESC""",
    INNER JOIN confreg_conferenceadditionaloption ao ON ao.id=rao.conferenceadditionaloption_id
    INNER JOIN confreg_conferenceadditionaloption_additionaldays aoad ON aoad.conferenceadditionaloption_id=ao.id
    INNER JOIN confreg_registrationday rd ON rd.id=aoad.registrationday_id
-   WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL
+   WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL
 )
 SELECT
    day,count(*)
@@ -690,6 +694,7 @@ INNER JOIN confreg_registrationtype rt ON rt.id=r.regtype_id
 LEFT JOIN country c ON c.iso=r.country_id
 WHERE r.conference_id=%(confid)s AND
       payconfirmedat IS NOT NULL AND
+      canceledat IS NULL AND
       checkedinat IS NULL
 ORDER BY lastname, firstname""",
 
@@ -706,6 +711,8 @@ INNER JOIN confreg_conferenceregistration r ON r.attendee_id=spk.user_id
 INNER JOIN confreg_status_strings stat ON stat.id=s.status
 LEFT JOIN confreg_track track ON track.id=s.track_id
 WHERE s.conference_id=%(confid)s AND s.status=1
-AND r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.checkedinat IS NULL
+AND r.conference_id=%(confid)s
+AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL
+AND r.checkedinat IS NULL
 ORDER BY lastname, firstname""",
 }

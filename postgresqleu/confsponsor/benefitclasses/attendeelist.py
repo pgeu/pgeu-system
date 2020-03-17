@@ -50,6 +50,7 @@ class AttendeeList(BaseBenefit):
                 c = csv.writer(data, delimiter=';')
                 for r in ConferenceRegistration.objects.filter(conference=self.level.conference,
                                                                payconfirmedat__isnull=False,
+                                                               canceledat__isnull=True,
                                                                shareemail=True).order_by('lastname', 'firstname'):
                     c.writerow([r.lastname,
                                 r.firstname,

@@ -245,6 +245,9 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
 
 
 def cancel_registration(reg, is_unconfirmed=False, reason=None):
+    if reg.canceledat:
+        raise Exception("Registration is already canceled")
+
     # Verify that we're only canceling a real registration
     if not reg.payconfirmedat:
         # If we don't allow canceling an unpaid registration, and the registration
@@ -266,7 +269,9 @@ def cancel_registration(reg, is_unconfirmed=False, reason=None):
                              receivername=reg.fullname,
         )
 
-    # Now actually delete the reg. Start by unlinking things that might be there.
+    # Now actually cancel the reg.
+
+    # If the reg used a voucher or a discount code, return it to the pool.
     if reg.vouchercode:
         if PrepaidVoucher.objects.filter(user=reg).exists():
             v = PrepaidVoucher.objects.get(user=reg)
@@ -277,9 +282,16 @@ def cancel_registration(reg, is_unconfirmed=False, reason=None):
             d = DiscountCode.objects.get(registrations=reg)
             d.registrations.remove(reg)
             d.save()
-    reg.invoice = None
-    reg.payconfirmedat = None
-    reg.payconfirmedby = None
+        reg.vouchercode = ""
+
+    # If the registration has any additional options, remove them
+    reg.additionaloptions.clear()
+
+    # Volunteer assignments are simply deleted
+    reg.volunteerassignment_set.all().delete()
+
+    # Flag canceled and save
+    reg.canceledat = timezone.now()
     reg.save()
 
     if reg.conference.notifyregs and not is_unconfirmed:
@@ -294,12 +306,6 @@ def cancel_registration(reg, is_unconfirmed=False, reason=None):
                              sender=reg.conference.notifyaddr,
                              receivername=reg.conference.conferencename,
         )
-
-    # Once unlinked, remove the registration as well. If we don't
-    # do this, the user will get notifications to remember to
-    # complete their registration in the future, and that will be
-    # confusing.
-    reg.delete()
 
 
 def get_invoice_autocancel(*args):

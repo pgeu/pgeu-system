@@ -173,7 +173,9 @@ class BackendRegistrationForm(BackendForm):
                   'regtype', 'additionaloptions']
 
     def fix_fields(self):
-        if self.instance.payconfirmedat:
+        if self.instance.canceledat:
+            self.warning_text = "WARNING! This registration has already been CANCELED! Edit with caution!"
+        elif self.instance.payconfirmedat:
             self.warning_text = "WARNING! This registration has already been completed! Edit with caution!"
 
         self.fields['additionaloptions'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference)
@@ -1057,6 +1059,9 @@ class CancelRegistrationForm(django.forms.Form):
         self.totalnovat = totalnovat
         self.totalvat = totalvat
         super(CancelRegistrationForm, self).__init__(*args, **kwargs)
+
+        if reg.canceledat:
+            raise ValidationError("This registration has already been canceled!")
 
         if reg.payconfirmedat:
             if reg.payconfirmedby in ("no payment reqd", "Multireg/nopay") or reg.payconfirmedby.startswith("Manual/"):

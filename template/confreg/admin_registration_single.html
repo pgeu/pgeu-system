@@ -6,7 +6,9 @@
 <h1>Conference registration</h1>
 <h2>{{reg.fullname}}</h2>
 
-{%if not reg.payconfirmedat%}
+{%if reg.canceledat%}
+<div class="alert alert-danger">NOTE! This registration has been <strong>canceled</strong>!</div>
+{%elif not reg.payconfirmedat%}
 <div class="alert alert-danger">NOTE! This registration is not completed!</div>
 {%endif%}
 
@@ -112,6 +114,12 @@
   <td>Registration completed</td>
   <td>{%if reg.payconfirmedat%}{{reg.payconfirmedat}}{%elif reg.invoice%}Invoice generated, <b>not</b> paid{%elif reg.bulkpayment%}Bulk payment generated, NOT paid{%else%}registration <b>not</b> paid{%endif%}</td>
  </tr>
+{%if reg.canceledat%}
+<tr>
+  <td>Registration <strong>canceled</strong></td>
+  <td>{{reg.canceledat}}</td>
+</tr>
+{%endif%}
  <tr>
   <td>Registration account</td>
   <td>{%if reg.attendee%}{{reg.attendee}} ({{reg.attendee.first_name}} {{reg.attendee.last_name}} &lt;{{reg.attendee.email}}&gt;){%else%}Not connected to account{%endif%}</td>
@@ -207,6 +215,7 @@
 </table>
 
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/edit/">Edit registration</a>
+{%if not reg.canceledat%}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/cancel/">Cancel registration</a>
 {%if reg.regtype and reg.can_edit and not reg.payconfirmedat %}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/confirm/">Confirm registration</a>
@@ -218,6 +227,7 @@
 {%if conference.sendwelcomemail and reg.payconfirmedat %}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/resendwelcome/">Re-send welcome email</a>
 {%endif%}
+{%endif%}{# not canceled #}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/sendmail/?idlist={{reg.id}}">Send email to attendee</a>
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/">Back to list</a>
 

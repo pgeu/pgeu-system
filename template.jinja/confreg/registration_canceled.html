@@ -1,0 +1,80 @@
+{%extends "base.html" %}
+{%block title%}Your Registration - {{conference}}{%endblock%}
+{%block content%}
+{% if messages %}
+<ul style="background-color: yellow;" class="regdashboardmessage">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<h1>Your Registration</h1>
+
+<p>
+  <strong>Your registration (for {{reg.firstname}} {{reg.lastname}}) was
+    canceled on {{reg.canceledat|datetimeformat("%Y-%m-%d %H:%M")}}.
+  </strong>
+</p>
+<p>
+  Prior to this, the registration was completed on 
+  {{reg.payconfirmedat|datetimeformat("%Y-%m-%d %H:%M")}}.
+</p>
+
+{%if not has_other_multiregs%}
+<p>
+If you wish to make another registration for somebody else, please
+<a href="{{redir_root}}other/">click here</a>.
+</p>
+{%else%}
+<h2>Other registrations</h2>
+<p>
+  You are also managing registrations for other attendees.
+  <a href="{{redir_root}}other/">click here</a> to view details about them
+  or register more attendees.
+</p>
+{%endif%}
+
+<a name="summary"></a>
+<h2>Registration summary</h2>
+<dl>
+ <dt>Registration type</dt>
+ <dd>Your registration type was <i>{{reg.regtype}}</i>.
+ <dt>Registration details</dt>
+ <dd>
+   <p>
+     This registration was made for <i>{{reg.firstname}} {{reg.lastname}}</i> with email address <i>{{reg.email}}</i>.
+   </p>
+   <ul>
+{%for k,v in displayfields%}
+    <li>{{k}}: {{v}}</li>
+{%endfor%}
+   </ul>
+ </dd>
+
+{%if reg.additionaloptions.all()%}
+ <dt>Additional options</dt>
+ <dd>You are registered for the following additional options:
+   <ul>
+{%for a in reg.additionaloptions.all()%}
+    <li>{{a.name}}</li>
+{%endfor%}
+   </ul>
+ </dd>
+{%endif%}
+
+{%if invoices%}
+ <dt>Invoice and receipts</dt>
+ <dd>You can download a copy of your invoices and receipts:<ul>
+{%for t,i in invoices%}
+  <li><a href="/invoices/{{i.id}}/{{i.recipient_secret}}/">{{t}}</a></li>
+{%endfor%}
+</ul>
+If you have made any additional orders, you can always find a copy of all
+invoices and receipts in the <a href="/invoices/">invoice section</a>.
+ </dd>
+{%endif%}
+
+</dl>
+
+{%endblock%}

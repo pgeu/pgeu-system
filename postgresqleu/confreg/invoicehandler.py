@@ -44,6 +44,9 @@ class InvoiceProcessor(object):
         if reg.payconfirmedat:
             raise Exception("Registration already paid")
 
+        if reg.canceledat:
+            raise Exception("Registration already canceled")
+
         # Unlink this invoice from the registration. This will automatically
         # "unlock" the registration
         reg.invoice = None

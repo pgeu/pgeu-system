@@ -32,7 +32,7 @@ from .forms import SignupAdminEditSignupForm
 
 def _check_wiki_permissions(request, page, readwrite=False):
     try:
-        reg = ConferenceRegistration.objects.get(conference=page.conference, attendee=request.user, payconfirmedat__isnull=False)
+        reg = ConferenceRegistration.objects.get(conference=page.conference, attendee=request.user, payconfirmedat__isnull=False, canceledat__isnull=True)
     except ConferenceRegistration.DoesNotExist:
         raise PermissionDenied("You must be registered for the conference in order to view this page")
 
@@ -53,7 +53,7 @@ def _check_wiki_permissions(request, page, readwrite=False):
 
 def _check_signup_permissions(request, signup):
     try:
-        reg = ConferenceRegistration.objects.get(conference=signup.conference, attendee=request.user, payconfirmedat__isnull=False)
+        reg = ConferenceRegistration.objects.get(conference=signup.conference, attendee=request.user, payconfirmedat__isnull=False, canceledat__isnull=True)
     except ConferenceRegistration.DoesNotExist:
         raise PermissionDenied("You must be registered for the conference in order to view this page")
 
@@ -304,7 +304,7 @@ def signup(request, urlname, signupid):
     if signup.visible and attendee_signup:
         # Include the results
         cursor = connection.cursor()
-        cursor.execute("SELECT firstname || ' ' || lastname FROM confreg_conferenceregistration r INNER JOIN confwiki_attendeesignup a ON a.attendee_id=r.id WHERE a.signup_id=%(signup)s AND r.payconfirmedat IS NOT NULL ORDER BY lastname, firstname", {
+        cursor.execute("SELECT firstname || ' ' || lastname FROM confreg_conferenceregistration r INNER JOIN confwiki_attendeesignup a ON a.attendee_id=r.id WHERE a.signup_id=%(signup)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL ORDER BY lastname, firstname", {
             'signup': signup.id,
         })
         current = [r[0] for r in cursor.fetchall()]
@@ -437,7 +437,7 @@ def signup_admin_edit(request, urlname, signupid):
         # If we have a limited number of attendees, then we can generate
         # a list of pending users. We don't even try if it's set for public.
         if not signup.public:
-            cursor.execute("SELECT firstname || ' ' || lastname FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND (regtype_id IN (SELECT registrationtype_id FROM confwiki_signup_regtypes srt WHERE srt.signup_id=%(signup)s) OR id IN (SELECT conferenceregistration_id FROM confwiki_signup_attendees WHERE signup_id=%(signup)s)) AND id NOT IN (SELECT attendee_id FROM confwiki_attendeesignup WHERE signup_id=%(signup)s) ORDER BY lastname, firstname", {
+            cursor.execute("SELECT firstname || ' ' || lastname FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND canceledat IS NULL AND (regtype_id IN (SELECT registrationtype_id FROM confwiki_signup_regtypes srt WHERE srt.signup_id=%(signup)s) OR id IN (SELECT conferenceregistration_id FROM confwiki_signup_attendees WHERE signup_id=%(signup)s)) AND id NOT IN (SELECT attendee_id FROM confwiki_attendeesignup WHERE signup_id=%(signup)s) ORDER BY lastname, firstname", {
                 'signup': signup.id,
             })
             results['awaiting'] = [dict(list(zip(['name', ], r))) for r in cursor.fetchall()]
@@ -520,9 +520,9 @@ def signup_admin_sendmail(request, urlname, signupid):
         params = {'confid': conference.id, 'signup': signup.id}
         rr = request.POST['recipients']
         if signup.public:
-            qq = "FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND conference_id=%(confid)s"
+            qq = "FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND canceledat IS NULL AND conference_id=%(confid)s"
         else:
-            qq = "FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND conference_id=%(confid)s AND (regtype_id IN (SELECT registrationtype_id FROM confwiki_signup_regtypes srt WHERE srt.signup_id=%(signup)s) OR id IN (SELECT conferenceregistration_id FROM confwiki_signup_attendees WHERE signup_id=%(signup)s))"
+            qq = "FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND canceledat IS NULL AND conference_id=%(confid)s AND (regtype_id IN (SELECT registrationtype_id FROM confwiki_signup_regtypes srt WHERE srt.signup_id=%(signup)s) OR id IN (SELECT conferenceregistration_id FROM confwiki_signup_attendees WHERE signup_id=%(signup)s))"
 
         if rr == 'responded':
             qq += " AND EXISTS (SELECT 1 FROM confwiki_attendeesignup was WHERE was.signup_id=%(signup)s AND was.attendee_id=r.id)"

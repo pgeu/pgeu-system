@@ -131,6 +131,13 @@ OR
 
 # Not a view in itself, only called from other views
 def _registration_dashboard(request, conference, reg, has_other_multiregs, redir_root):
+    if reg.canceledat:
+        return render_conference_response(request, conference, 'reg', 'confreg/registration_canceled.html', {
+            'redir_root': redir_root,
+            'reg': reg,
+            'has_other_multiregs': has_other_multiregs,
+        })
+
     mails = _attendeemail_queryset(conference, reg)
 
     wikipagesQ = Q(publicview=True) | Q(viewer_attendee__attendee=request.user) | Q(viewer_regtype__conferenceregistration__attendee=request.user)
@@ -161,8 +168,8 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
     for pao in PendingAdditionalOrder.objects.filter(reg=reg, invoice__isnull=False):
         invoices.append(('Additional options invoice and receipt', InvoicePresentationWrapper(pao.invoice, '.')))
 
-    # Form for changeable fields
-    if request.method == 'POST':
+    # Form for changeable fields (only available unless canceled, so make doubly sure)
+    if request.method == 'POST' and not reg.canceledat:
         changeform = RegistrationChangeForm(conference.allowedit, instance=reg, data=request.POST)
         if changeform.is_valid():
             changeform.save()
@@ -741,6 +748,10 @@ def reg_add_options(request, confname):
         messages.warning(request, "Registration not confirmed, should not get here")
         return HttpResponseRedirect('../')
 
+    if reg.canceledat:
+        messages.warning(request, "Registration canceled, should not get here")
+        return HttpResponseRedirect('../')
+
     if request.POST.get('submit', '') == 'Back':
         return HttpResponseRedirect('../')
 
@@ -905,6 +916,9 @@ def feedback(request, confname):
     if not r.payconfirmedat:
         if r.regtype.cost != 0:
             return HttpResponse('You are not a confirmed attendee of this conference.')
+
+    if r.canceledat:
+        return HttpResponse("Your registration has been canceled.")
 
     # Generate a list of all feedback:able sessions, meaning all sessions that have already started,
     # since you can't give feedback on something that does not yet exist.
@@ -1794,6 +1808,7 @@ def confirmreg(request, confname):
 
     # If the registration is *already* confirmed (e.g. somebody went directly to the confirmed page),
     # redirect instead of canceling off waitlist.
+    # Same if ethe registration is canceled -- send them back to the dashboard
     if reg.payconfirmedat:
         return HttpResponseRedirect("../")
 
@@ -2924,15 +2939,15 @@ def admin_dashboard_single(request, urlname):
         'conference': conference,
         'pending_session_notifications': conference.pending_session_notifications,
         'pending_waitlist': RegistrationWaitlistEntry.objects.filter(registration__conference=conference, offeredon__isnull=True).exists(),
-        'unregistered_staff': exec_to_scalar("SELECT EXISTS (SELECT user_id FROM confreg_conference_staff s WHERE s.conference_id=%(confid)s AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND attendee_id=s.user_id))", {'confid': conference.id}),
-        'unregistered_speakers': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id WHERE s.conference_id=%(confid)s AND s.status=1 AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.attendee_id=spk.user_id))", {'confid': conference.id}),
+        'unregistered_staff': exec_to_scalar("SELECT EXISTS (SELECT user_id FROM confreg_conference_staff s WHERE s.conference_id=%(confid)s AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND canceledat IS NULL AND attendee_id=s.user_id))", {'confid': conference.id}),
+        'unregistered_speakers': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id WHERE s.conference_id=%(confid)s AND s.status=1 AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL AND r.attendee_id=spk.user_id))", {'confid': conference.id}),
         'unconfirmed_speakers': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession_speaker css INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id WHERE s.conference_id=%(confid)s AND s.status=3)", {'confid': conference.id}),
         'sessions_noroom': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=1 AND s.room_id IS NULL AND NOT cross_schedule)", {'confid': conference.id}),
         'sessions_notrack': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=1 AND s.track_id IS NULL)", {'confid': conference.id}),
         'sessions_roomoverlap': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s INNER JOIN confreg_room r ON r.id=s.room_id WHERE s.conference_id=%(confid)s AND r.conference_id=%(confid)s AND status=1 AND EXISTS (SELECT 1 FROM confreg_conferencesession s2 WHERE s2.conference_id=%(confid)s AND s2.status=1 AND s2.room_id=s.room_id AND s.id != s2.id AND tstzrange(s.starttime, s.endtime) && tstzrange(s2.starttime, s2.endtime)))", {'confid': conference.id}),
         'pending_sessions': conditional_exec_to_scalar(conference.scheduleactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=0)", {'confid': conference.id}),
-        'uncheckedin_attendees': conditional_exec_to_scalar(conference.checkinactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND checkedinat IS NULL)", {'confid': conference.id}),
-        'uncheckedin_speakers': conditional_exec_to_scalar(conference.checkinactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferenceregistration r INNER JOIN confreg_speaker spk ON spk.user_id=r.attendee_id INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id INNER JOIN confreg_conferencesession s ON s.id=css.conferencesession_id WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.checkedinat IS NULL AND s.conference_id=%(confid)s AND s.status=1)", {'confid': conference.id}),
+        'uncheckedin_attendees': conditional_exec_to_scalar(conference.checkinactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND canceledat IS NULL AND checkedinat IS NULL)", {'confid': conference.id}),
+        'uncheckedin_speakers': conditional_exec_to_scalar(conference.checkinactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferenceregistration r INNER JOIN confreg_speaker spk ON spk.user_id=r.attendee_id INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id INNER JOIN confreg_conferencesession s ON s.id=css.conferencesession_id WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL AND r.checkedinat IS NULL AND s.conference_id=%(confid)s AND s.status=1)", {'confid': conference.id}),
         'pending_sponsors': conditional_exec_to_scalar(conference.callforsponsorsopen, "SELECT EXISTS (SELECT 1 FROM confsponsor_sponsor WHERE conference_id=%(confid)s AND invoice_id IS NULL AND NOT confirmed)", {'confid': conference.id}),
         'pending_sponsor_benefits': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confsponsor_sponsorclaimedbenefit b INNER JOIN confsponsor_sponsor s ON s.id=b.sponsor_id WHERE s.conference_id=%(confid)s AND NOT (b.confirmed OR b.declined))", {'confid': conference.id}),
         'pending_tweets': ConferenceTweetQueue.objects.filter(conference=conference, sent=False).exists(),
@@ -2949,10 +2964,11 @@ def admin_registration_dashboard(request, urlname):
 
     # Registrations by reg type
     curs.execute("""SELECT regtype,
- count(payconfirmedat) AS confirmed,
+ count(payconfirmedat) - count(canceledat) AS confirmed,
  count(r.id) FILTER (WHERE payconfirmedat IS NULL AND (r.invoice_id IS NOT NULL OR bp.invoice_id IS NOT NULL)) AS invoiced,
  count(r.id) FILTER (WHERE payconfirmedat IS NULL AND (r.invoice_id IS NULL AND bp.invoice_id IS NULL)) AS unconfirmed,
- count(r.id) AS total,
+ count(r.id) - count(canceledat) AS total,
+ count(canceledat) AS canceled,
  invoice_autocancel_hours
 FROM confreg_conferenceregistration r
 RIGHT JOIN confreg_registrationtype rt ON rt.id=r.regtype_id
@@ -2960,7 +2976,7 @@ LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id
 WHERE rt.conference_id={0}
 GROUP BY rt.id ORDER BY rt.sortkey""".format(conference.id))
     tables.append({'title': 'Registration types',
-                   'columns': ['Type', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total', 'Inv. autoc'],
+                   'columns': ['Type', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total', 'Canceled', 'Inv. autoc'],
                    'fixedcols': 1,
                    'fixedcolsend': 1,
                    'hidecols': 0,
@@ -3078,6 +3094,7 @@ def admin_registration_list(request, urlname):
         'company': 'company',
         'type': 'regtype__sortkey',
         'date': 'payconfirmedat',
+        'cancel': 'canceledat',
     }
     if skey not in sortmap:
         return HttpResponse("Bad sort key.")
@@ -3089,7 +3106,7 @@ def admin_registration_list(request, urlname):
         'regs': ConferenceRegistration.objects.select_related('regtype', 'registrationwaitlistentry', 'invoice', 'bulkpayment').extra(select={
             'waitlist_offers_made': """CASE WHEN "confreg_registrationwaitlistentry"."registration_id" IS NULL THEN 0 ELSE (SELECT count(*) FROM confreg_registrationwaitlisthistory h WHERE h.waitlist_id="confreg_registrationwaitlistentry"."registration_id" AND h.text LIKE 'Made offer%%')  END""",
         }).filter(conference=conference).order_by((revsort and '-' or '') + sortmap[skey], '-created'),
-        'regsummary': exec_to_dict("SELECT count(1) FILTER (WHERE payconfirmedat IS NOT NULL) AS confirmed, count(1) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed FROM confreg_conferenceregistration WHERE conference_id=%(confid)s", {'confid': conference.id})[0],
+        'regsummary': exec_to_dict("SELECT count(1) FILTER (WHERE payconfirmedat IS NOT NULL AND canceledat IS NULL) AS confirmed, count(1) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed, count(1) FILTER (WHERE canceledat IS NOT NULL) AS canceled FROM confreg_conferenceregistration WHERE conference_id=%(confid)s", {'confid': conference.id})[0],
         'breadcrumbs': (('/events/admin/{0}/regdashboard/'.format(urlname), 'Registration dashboard'),),
         'helplink': 'registrations',
     })
@@ -3121,6 +3138,10 @@ def admin_registration_single(request, urlname, regid):
 def admin_registration_cancel(request, urlname, regid):
     conference = get_authenticated_conference(request, urlname)
     reg = get_object_or_404(ConferenceRegistration, id=regid, conference=conference)
+
+    if reg.canceledat:
+        messages.warning(request, "Registration already canceled")
+        return HttpResponseRedirect("../")
 
     if reg.pendingadditionalorder_set.exists():
         messages.error(request, "Sorry, can't refund invoices that have post-purchased additional options yet")
@@ -3231,6 +3252,9 @@ def admin_registration_confirm(request, urlname, regid):
     if reg.payconfirmedat:
         messages.error(request, "Registration already confirmed")
         return HttpResponseRedirect("../")
+    if reg.canceledat:
+        messages.error(request, "Registration is canceled")
+        return HttpResponseRedirect("../")
     if not reg.can_edit:
         messages.error(request, "Cannot confirm a registration with active invoice or multireg")
         return HttpResponseRedirect("../")
@@ -3275,6 +3299,10 @@ def admin_registration_resendwelcome(request, urlname, regid):
 
     if not reg.payconfirmedat:
         messages.error(request, "Registration not confirmed")
+        return HttpResponseRedirect("../")
+
+    if reg.canceledat:
+        messages.error(request, "Registration is canceled")
         return HttpResponseRedirect("../")
 
     if request.method == 'POST':
@@ -3341,7 +3369,7 @@ def admin_waitlist(request, urlname):
         except (paginator.EmptyPage, paginstor.InvalidPage):
             return p.page(paginator.num_pages), num
 
-    num_confirmedregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False).count()
+    num_confirmedregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True).count()
     num_invoicedregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True, invoice__isnull=False, registrationwaitlistentry__isnull=True).count()
     num_invoicedbulkpayregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True, bulkpayment__isnull=False, bulkpayment__paidat__isnull=True).count()
     num_waitlist_offered = RegistrationWaitlistEntry.objects.filter(registration__conference=conference, offeredon__isnull=False, registration__payconfirmedat__isnull=True).count()
@@ -3544,9 +3572,9 @@ def admin_attendeemail(request, urlname):
             msg.save()
 
             # Now also send the email out to the currently registered attendees
-            attendees = set(ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, regtype__regclass__in=form.data.getlist('regclasses')))
+            attendees = set(ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, regtype__regclass__in=form.data.getlist('regclasses')))
             if form.data.getlist('addopts'):
-                attendees.update(ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, additionaloptions__in=form.data.getlist('addopts')))
+                attendees.update(ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, additionaloptions__in=form.data.getlist('addopts')))
             if msg.tovolunteers:
                 attendees.update(conference.volunteers.all())
             if msg.tocheckin:
@@ -3629,8 +3657,12 @@ def transfer_reg(request, urlname):
 
     def _make_transfer(fromreg, toreg):
         yield "Initiating transfer from %s to %s" % (fromreg.fullname, toreg.fullname)
+        if fromreg.canceledat:
+            raise ValidationError("Source registration is canceled!")
         if toreg.payconfirmedat:
             raise ValidationError("Destination registration is already confirmed!")
+        if toreg.canceledat:
+            raise ValidationError("Destination registration is canceled!")
         if toreg.bulkpayment:
             raise ValidationError("Destination registration is part of a bulk payment")
         if toreg.invoice:
@@ -3810,7 +3842,7 @@ def crossmail(request):
             (t, v) = filt.split(':')
             if t == 'rt':
                 # Regtype
-                q = "SELECT attendee_id, email, firstname || ' ' || lastname, regtoken FROM confreg_conferenceregistration WHERE conference_id={0} AND payconfirmedat IS NOT NULL".format(conf)
+                q = "SELECT attendee_id, email, firstname || ' ' || lastname, regtoken FROM confreg_conferenceregistration WHERE conference_id={0} AND payconfirmedat IS NOT NULL AND canceledat IS NULL".format(conf)
                 if v != '*':
                     q += ' AND regtype_id={0}'.format(int(v))
                 if optout_filter:

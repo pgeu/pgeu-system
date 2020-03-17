@@ -44,19 +44,19 @@ $(document).ready(function() {
   <th><a href="?sort={%if sortkey == "first" %}-{%endif%}first">First name</a></th>
   <th><a href="?sort={%if sortkey == "company" %}-{%endif%}company">Company</a></th>
   <th><a href="?sort={%if sortkey == "typ" %}-{%endif%}type">Registration type</a></th>
-  <th class="coltype-nosearch"><a href="?sort={%if sortkey == "date" %}-{%endif%}date">Confirmed</a></th>
+  <th class="coltype-nosearch"><a href="?sort={%if sortkey == "date" %}-{%endif%}date">Confirmed</a> / <a href="?sort={%if sortkey == "cancel" %}-{%endif%}cancel">Canceled</a></th>
   {%if waitlist_active%}<th>Waitlist status</th>{%endif%}
   <th><i id="mailcheckboxtoggler" class="glyphicon glyphicon-envelope" title="Select all registrations"></i></th>
  </tr>
 </thead>
 <tbody>
 {%for r in regs%}
- <tr {%if not r.payconfirmedat%}class="warning"{%endif%}>
+ <tr class="{%if not r.payconfirmedat%}warning {%endif%}{%if r.canceledat%}sthrough {%endif%}">
   <td><a class="nocolor" href="{{r.id}}/"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a> {{r.lastname}}</td>
   <td>{{r.firstname}}</td>
   <td>{{r.company}}</td>
   <td>{{r.regtype.regtype}}</td>
-  <td>{%if r.payconfirmedat%}{{r.payconfirmedat}}{%elif r.invoice%}Invoice generated{%elif r.bulkpayment%}Bulk payment generated{%endif%}</td>
+  <td>{%if r.payconfirmedat%}{{r.payconfirmedat}}{%elif r.invoice%}Invoice generated{%elif r.bulkpayment%}Bulk payment generated{%endif%}{%if r.canceledat%}<br/>Canceled {{r.canceledat}}{%endif%}</td>
 {%if waitlist_active %}
   <td>{%if r.registrationwaitlistentry %}
    {%if r.payconfirmedat%}Accepted{%else%}

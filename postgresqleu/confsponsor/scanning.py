@@ -49,6 +49,9 @@ def sponsor_scanning(request, sponsorid):
                 if not reg.payconfirmedat:
                     messages.error(request, "Attendee is not confirmed")
                     return HttpResponseRedirect(".")
+                if reg.canceledat:
+                    messages.error(request, "Attendee registration is canceled")
+                    return HttpResponseRedirect(".")
                 if sponsor.sponsorscanner_set.filter(scanner=reg).exists():
                     messages.warning(request, "Attendee already registered as a scanner")
                     return HttpResponseRedirect(".")
@@ -205,6 +208,9 @@ def scanning_api(request, scannertoken):
 
             if not attendee.badgescan:
                 return HttpResponse("Attendee has not authorized badge scanning", status=403)
+
+            if attendee.canceledat:
+                return HttpResponse("Attendee registration is canceled", status=403)
 
             if request.method == 'GET':
                 # Mark the badge as scanned already on search. The POST later can change the note,

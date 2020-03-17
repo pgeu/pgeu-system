@@ -58,7 +58,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
         yield (None, 'Prefer not to say')
 
         def _common_countries():
-            for iso, prn in exec_to_list("WITH t AS (SELECT iso, printable_name FROM country c INNER JOIN (SELECT country_id FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND country_id IS NOT NULL UNION ALL SELECT country_id FROM confreg_conference_initial_common_countries WHERE conference_id=%(confid)s) x ON c.iso=x.country_id GROUP BY c.iso ORDER BY count(iso) DESC LIMIT 8) SELECT iso, printable_name FROM t ORDER BY printable_name", {
+            for iso, prn in exec_to_list("WITH t AS (SELECT iso, printable_name FROM country c INNER JOIN (SELECT country_id FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND canceledat IS NULL AND country_id IS NOT NULL UNION ALL SELECT country_id FROM confreg_conference_initial_common_countries WHERE conference_id=%(confid)s) x ON c.iso=x.country_id GROUP BY c.iso ORDER BY count(iso) DESC LIMIT 8) SELECT iso, printable_name FROM t ORDER BY printable_name", {
                     'confid': self.instance.conference.id,
             }):
                 yield (iso, prn)
@@ -657,6 +657,7 @@ class AttendeeMailForm(forms.ModelForm):
             ", ".join([t.regtype for t in obj.registrationtype_set.all()]),
             ConferenceRegistration.objects.filter(conference=self.conference,
                                                   payconfirmedat__isnull=False,
+                                                  confirmedat__isnull=True,
                                                   regtype__regclass=obj).count(),
         )
 
@@ -665,6 +666,7 @@ class AttendeeMailForm(forms.ModelForm):
             obj.name,
             ConferenceRegistration.objects.filter(conference=self.conference,
                                                   payconfirmedat__isnull=False,
+                                                  confirmedat__isnull=True,
                                                   additionaloptions=obj).count()
         )
 
@@ -774,8 +776,8 @@ class TransferRegForm(forms.Form):
     def __init__(self, conference, *args, **kwargs):
         self.conference = conference
         super(TransferRegForm, self).__init__(*args, **kwargs)
-        self.fields['transfer_from'].queryset = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False)
-        self.fields['transfer_to'].queryset = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True)
+        self.fields['transfer_from'].queryset = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True)
+        self.fields['transfer_to'].queryset = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True, canceledat__isnull=True)
         if not ('transfer_from' in self.data and 'transfer_to' in self.data):
             del self.fields['confirm']
 

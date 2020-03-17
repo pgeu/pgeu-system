@@ -2,6 +2,9 @@
   white-space:nowrap;
 }
 
+.sthrough {
+    text-decoration: line-through;
+}
 .overflow-clip {
     overflow: hidden;
 }

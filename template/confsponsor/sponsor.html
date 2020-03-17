@@ -282,7 +282,7 @@ be invoiced to you once the code is used.
    <td>{{c.validuntil}}</td>
    <td>{{c.count}}</td>
    <td><ul>
-{%for r in c.registrations.all%}{%if r.payconfirmedat%}
+{%for r in c.registrations.all%}{%if r.payconfirmedat and not r.canceledat%}
 <li>{{r.fullname}}</li>
 {%endif%}{%endfor%}
    </ul></td>
