@@ -206,7 +206,7 @@
  <tr>
   <td>Signups</td>
   <td><ul>{%for s in signups %}
-    <li>{{s.title}} ({%if s.savedat%}responded {{s.savedat}}{%else%}did not respond{%endif%})</li>
+    <li>{{s.title}} ({%if s.savedat%}<a href="/events/admin/{{conference.urlname}}/signups/{{s.id}}/edit/{{s.respid}}/">responded</a> {{s.savedat}}{%else%}did not respond{%endif%})</li>
 {%endfor%}
   </ul></td>
  </tr>
