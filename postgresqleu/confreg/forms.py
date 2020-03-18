@@ -657,7 +657,7 @@ class AttendeeMailForm(forms.ModelForm):
             ", ".join([t.regtype for t in obj.registrationtype_set.all()]),
             ConferenceRegistration.objects.filter(conference=self.conference,
                                                   payconfirmedat__isnull=False,
-                                                  confirmedat__isnull=True,
+                                                  canceledat__isnull=True,
                                                   regtype__regclass=obj).count(),
         )
 
@@ -666,7 +666,7 @@ class AttendeeMailForm(forms.ModelForm):
             obj.name,
             ConferenceRegistration.objects.filter(conference=self.conference,
                                                   payconfirmedat__isnull=False,
-                                                  confirmedat__isnull=True,
+                                                  canceledat__isnull=True,
                                                   additionaloptions=obj).count()
         )
 
