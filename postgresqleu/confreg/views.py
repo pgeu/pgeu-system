@@ -507,7 +507,7 @@ def _create_and_assign_bulk_payment(user, conference, regs, invoicerows, recipie
     for r in regs:
         r.bulkpayment = bp
         r.save()
-        reglog(reg, "Assigned to bulk payment {}".format(bp.id), request.user)
+        reglog(r, "Assigned to bulk payment {}".format(bp.id), user)
 
         autocancel_hours.append(r.regtype.invoice_autocancel_hours)
         autocancel_hours.extend([a.invoice_autocancel_hours for a in r.additionaloptions.filter(invoice_autocancel_hours__isnull=False)])

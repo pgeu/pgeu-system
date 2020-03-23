@@ -150,7 +150,7 @@ class BulkInvoiceProcessor(object):
         for r in bp.conferenceregistration_set.all():
             r.bulkpayment = None
             r.save()
-            relog(r, "Unlinked from bulk payment by cancel")
+            reglog(r, "Unlinked from bulk payment by cancel")
 
             if r.attendee:
                 # Only notify if this attendee actually knows about the
