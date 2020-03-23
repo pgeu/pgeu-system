@@ -297,7 +297,14 @@ def cancel_registration(reg, is_unconfirmed=False, reason=None, user=None):
     # Volunteer assignments are simply deleted
     reg.volunteerassignment_set.all().delete()
 
-    # Flag canceled and save
+    # If this registration was never paid, we're done now - just delete
+    # the record completely. We don't care about keeping registrations
+    # that never completed around in history.
+    if not reg.payconfirmedat:
+        reg.delete()
+        return
+
+    # Else, flag canceled and save
     reg.canceledat = timezone.now()
     reg.save()
 
