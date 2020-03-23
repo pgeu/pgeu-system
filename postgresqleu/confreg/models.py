@@ -677,6 +677,14 @@ class ConferenceRegistration(models.Model):
         return "Payment details not available"
 
     @property
+    def paymenticon(self):
+        if self.invoice:
+            return 'euro'
+        if self.bulkpayment:
+            return 'list-alt'
+        return 'ban-circle'
+
+    @property
     def alldays(self):
         if self.regtype:
             days = set(self.regtype.days.all())

@@ -1,5 +1,6 @@
 {%extends "confreg/confadmin_base.html" %}
 {%load date_or_string%}
+{%load miscutil%}
 {%block title%}Conference registrations{%endblock%}
 {%block extrahead%}
 <link rel="stylesheet" type="text/css" href="/media/datatables/datatables.min.css"/>
@@ -56,7 +57,7 @@ $(document).ready(function() {
   <td>{{r.firstname}}</td>
   <td>{{r.company}}</td>
   <td>{{r.regtype.regtype}}</td>
-  <td>{%if r.payconfirmedat%}{{r.payconfirmedat}}{%elif r.invoice%}Invoice generated{%elif r.bulkpayment%}Bulk payment generated{%endif%}{%if r.canceledat%}<br/>Canceled {{r.canceledat}}{%endif%}</td>
+  <td>{%if r.payconfirmedat%}{{r.payconfirmedat}} <i class="small glyphicon glyphicon-{{r.paymenticon}}" title="{{r.payment_method_description|striplinebreaks}}"></i>{%elif r.invoice%}Invoice generated{%elif r.bulkpayment%}Bulk payment generated{%endif%}{%if r.canceledat%}<br/>Canceled {{r.canceledat}}{%endif%}</td>
 {%if waitlist_active %}
   <td>{%if r.registrationwaitlistentry %}
    {%if r.payconfirmedat%}Accepted{%else%}

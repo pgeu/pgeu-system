@@ -11,3 +11,8 @@ def isboolean(value):
 @register.filter(name='vartypename')
 def vartypename(value):
     return type(value).__name__
+
+
+@register.filter(name='striplinebreaks')
+def stripnewline(value):
+    return value.replace("\n", " ")
