@@ -3323,8 +3323,8 @@ def _admin_registration_cancel(request, conference, redirurl, regs):
                                 reg.bulkpayment = None
                                 reg.save()
                                 reglog(reg, "Unlinked from bulk payment for no refund cancellation", request.user)
-                            else:
-                                raise RegCancelException(reg, "Can't cancel this without refund")
+                            elif reg.payconfirmedby not in ("no payment reqd", "Multireg/nopay") and not reg.payconfirmedby.startswith("Manual/"):
+                                raise RegCancelException(reg, "Can't cancel this registration without refund")
                             cancel_registration(reg, False, reason=reason, user=request.user)
                         else:
                             # Payment is not confirmed yet, meaning we just need to get rid of
