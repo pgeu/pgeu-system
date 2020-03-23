@@ -1,21 +1,30 @@
 {%extends "confreg/confadmin_base.html" %}
 {%load date_or_string%}
+{%load dictutil%}
 {%block title%}Cancel registration{%endblock%}
 
 {%block layoutblock%}
 <h1>Cancel registration</h1>
 
 <table class="table">
+{%for r in regs%}
   <tr>
-    <th>Name</th>
-    <td>{{reg.fullname}}</td>
+    <th colspan="2">Name</th>
+    <td>{{r.fullname}}</td>
   </tr>
   <tr>
+    <th></th>
     <th>Payment information</th>
-    <td>{{reg.payment_method_description|linebreaksbr}}</td>
+    <td>{{r.payment_method_description|linebreaksbr}}</td>
   </tr>
   <tr>
+    <th></th>
     <th>Total paid for attendee</th>
+    <td>{{currency_symbol}}{{regtotalnovat|dictlookup:r.id}}{%if regtotalvat|dictlookup:r.id%} + VAT {{currency_symbol}}{{regtotalvat|dictlookup:r.id}} = {{currency_symbol}}{{regtotalwithvat|dictlookup:r.id}}{%endif%}</td>
+  </tr>
+{%endfor%}
+  <tr>
+    <th colspan="2">Grand total</th>
     <td>{{currency_symbol}}{{totalnovat}}{%if totalvat%} + VAT {{currency_symbol}}{{totalvat}} = {{currency_symbol}}{{totalwithvat}}{%endif%}</td>
   </tr>
 </table>
@@ -23,7 +32,7 @@
 <h3>Cancel</h3>
 
 <div class="row">
-  <form method="post" action="." class="form-horizontal">{% csrf_token %}
+  <form method="post" action=".{%if regidlist%}?idlist={{regidlist}}{%endif%}" class="form-horizontal">{% csrf_token %}
 {%include "confreg/admin_backend_form_content.html" with savebutton="Cancel registration" cancelurl="../" cancelname="Return without canceling" %}
   </form>
 </div>

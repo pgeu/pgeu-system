@@ -84,6 +84,17 @@ $(document).ready(function() {
        }
    });
 
+   $('a.multiaction').click(function(e) {
+       var nodes = $($('#datatable').data('datatable').rows().nodes()).find('input.assigncheckbox:checked');
+       if (nodes.length == 0) return;
+
+       var idlist = nodes.map(function() {
+           return this.id.substring(4); // Remove ass_ at the beginning
+       }).get().join(',');
+
+       document.location.href = $(this).data('href') + '?idlist=' + idlist;
+   });
+
    $('a.preview-pdf-link').click(function(e) {
        var w = window.open("");
        w.document.write('<iframe width="100%" height="100%" src="data:application/pdf;base64, ' + $(e.target).data('pdf') + '"></iframe>');

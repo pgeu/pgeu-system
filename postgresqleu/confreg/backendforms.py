@@ -1050,71 +1050,16 @@ class CancelRegistrationForm(django.forms.Form):
     confirm = django.forms.BooleanField(help_text="Confirm that you want to cancel this registration!")
 
     class Methods:
-        NO_INVOICE = -1
-        CANCEL_INVOICE = -2
-        NO_REFUND = -3
+        NO_REFUND = -1
 
-    def __init__(self, reg, totalnovat, totalvat, *args, **kwargs):
-        self.reg = reg
+    def __init__(self, totalnovat, totalvat, refundchoices, *args, **kwargs):
         self.totalnovat = totalnovat
         self.totalvat = totalvat
         super(CancelRegistrationForm, self).__init__(*args, **kwargs)
-
-        if reg.canceledat:
-            raise ValidationError("This registration has already been canceled!")
-
-        if reg.payconfirmedat:
-            if reg.payconfirmedby in ("no payment reqd", "Multireg/nopay") or reg.payconfirmedby.startswith("Manual/"):
-                choices = [(self.Methods.NO_INVOICE, 'Registration did not require payment, just cancel'), ]
-            elif reg.payconfirmedby in ("Invoice paid", 'Bulk paid'):
-                choices = [
-                    (pattern.id, self.get_text_for_pattern(pattern))
-                    for pattern in RefundPattern.objects.filter(conference=self.reg.conference).order_by(F('fromdate').asc(nulls_first=True), 'todate', 'percent')
-                ]
-                choices += [(self.Methods.NO_REFUND, 'Cancel without refund'), ]
-            else:
-                choices = [(self.Methods.NO_REFUND, 'Cancel without refund'), ]
-        else:
-            # Registration not paid yet. Does it have an invoice?
-            if reg.invoice:
-                choices = [(self.Methods.CANCEL_INVOICE, 'Cancel unpaid invoice'), ]
-            elif reg.bulkpayment:
-                # Part of unpaid bulk payment, can't deal with that yet
-                choices = []
-            else:
-                choices = [(self.Methods.NO_INVOICE, 'No invoice created, just cancel'), ]
-
-        self.fields['refund'].choices = [(None, '-- Select method'), ] + choices
+        self.fields['refund'].choices = [(None, '-- Select method'), ] + refundchoices
 
         if 'refund' not in self.data:
             del self.fields['confirm']
-
-    def get_text_for_pattern(self, pattern):
-        # First figure out if this pattern is suggested today
-        today = datetime.date.today()
-        if (pattern.fromdate is None or pattern.fromdate <= today) and \
-           (pattern.todate is None or pattern.todate >= today):
-            suggest = "***"
-        else:
-            suggest = ""
-
-        to_refund = (self.totalnovat * pattern.percent / Decimal(100) - pattern.fees).quantize(Decimal('0.01'))
-        if self.reg.conference.vat_registrations:
-            to_refund_vat = (self.totalvat * pattern.percent / Decimal(100) - pattern.fees * self.reg.conference.vat_registrations.vatpercent / Decimal(100)).quantize(Decimal('0.01'))
-        else:
-            to_refund_vat = Decimal(0)
-
-        return "{} Refund {}%{} ({}{}{}){}{} {}".format(
-            suggest,
-            pattern.percent,
-            pattern.fees and ' minus {0}{1} in fees'.format(settings.CURRENCY_SYMBOL, pattern.fees) or '',
-            settings.CURRENCY_SYMBOL,
-            to_refund,
-            to_refund_vat and ' +{}{} VAT'.format(settings.CURRENCY_SYMBOL, to_refund_vat) or '',
-            pattern.fromdate and ' from {0}'.format(pattern.fromdate) or '',
-            pattern.todate and ' until {0}'.format(pattern.todate) or '',
-            suggest,
-        )
 
 
 #

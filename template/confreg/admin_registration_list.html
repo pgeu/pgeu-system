@@ -67,6 +67,8 @@ $(document).ready(function() {
   <td>
     <input class="skincheckbox mailcheckbox" type="checkbox" name="em_{{r.id}}" id="em_{{r.id}}">
     <label for="em_{{r.id}}"><i class="glyphicon glyphicon-envelope"></i></label>
+    <input class="skincheckbox assigncheckbox" type="checkbox" name="ass_{{r.id}}" id="ass_{{r.id}}">
+    <label for="ass_{{r.id}}"><i class="glyphicon glyphicon-tasks" title="Select entry for action"></i></label>
   </td>
  </tr>
 {%endfor%}
@@ -75,7 +77,13 @@ $(document).ready(function() {
 </div>
 
 <div class="row buttonrow">
-  <div class="col-md-2 col-md-offset-10"><button id="sendmailbutton" class="btn btn-default" disabled data-template="Send mail to {} attendees"></button></div>
+  <div class="col-md-3 col-md-offset-6"><button id="sendmailbutton" class="btn btn-default" disabled data-template="Send mail to {} attendees"></button></div>
+  <div class="col-md-3 dropdown">
+    <button id="assignbutton" class="btn btn-default btn-block dropdown-toggle" disabled data-toggle="dropdown" data-template="Action on {} registrations"></button>
+    <ul class="dropdown-menu">
+      <li><a class="multiaction" data-assignid="cancel" data-href="multicancel" href="#">Cancel registration</a></li>
+    </ul>
+  </div>
 </div>
 
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/">Back to registration dashboard</a>
