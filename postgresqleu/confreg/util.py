@@ -262,8 +262,10 @@ def cancel_registration(reg, is_unconfirmed=False, reason=None, user=None):
         if not is_unconfirmed:
             raise Exception("Registration not paid, data is out of sync!")
 
-    # If we sent a welcome mail, also send a goodbye mail
-    if reg.conference.sendwelcomemail:
+    # If we sent a welcome mail, also send a goodbye mail. Except when this is an
+    # unfinished part of a multiregistration, in which case it would probably just
+    # be confusing to the user.
+    if reg.conference.sendwelcomemail and not (reg.attendee != reg.registrator and not reg.payconfirmedat):
         send_conference_mail(reg.conference,
                              reg.email,
                              "Registration canceled",
