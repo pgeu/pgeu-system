@@ -288,7 +288,7 @@ class InvoiceRow(models.Model):
 class InvoiceHistory(models.Model):
     invoice = models.ForeignKey(Invoice, null=False, on_delete=models.CASCADE)
     time = models.DateTimeField(null=False, blank=False, auto_now_add=True)
-    txt = models.CharField(max_length=100, null=False, blank=False)
+    txt = models.CharField(max_length=2000, null=False, blank=False)
 
     class Meta:
         ordering = ['time', ]

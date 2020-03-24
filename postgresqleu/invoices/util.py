@@ -554,7 +554,7 @@ class InvoiceManager(object):
             r = refund.invoice.autorefund(refund)
         except Exception as e:
             r = False
-            InvoiceHistory(invoice=refund.invoice, txt='Exception trying to refund: {}'.format(e)).save()
+            InvoiceHistory(invoice=refund.invoice, txt='Exception trying to refund: {}'.format(e)[:1000]).save()
 
         if r:
             refund.issued = timezone.now()
