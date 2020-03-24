@@ -550,7 +550,13 @@ class InvoiceManager(object):
 
     def autorefund_invoice(self, refund):
         # Send an API call to initiate a refund
-        if refund.invoice.autorefund(refund):
+        try:
+            r = refund.invoice.autorefund(refund)
+        except Exception as e:
+            r = False
+            InvoiceHistory(invoice=refund.invoice, txt='Exception trying to refund: {}'.format(e)).save()
+
+        if r:
             refund.issued = timezone.now()
             refund.save()
 
