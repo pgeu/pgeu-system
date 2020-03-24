@@ -70,7 +70,7 @@ class Command(BaseCommand):
                         msg = """Hello! We'd like to remind you that your session "{0}" is starting soon (at {1}) in room {2}.""".format(
                             s.title,
                             s.starttime.strftime("%H:%M"),
-                            s.room.roomname,
+                            s.room and s.room.roomname or 'unknown',
                         )
                         if reg.twittername:
                             # Twitter name registered, so send reminder
