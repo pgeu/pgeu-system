@@ -135,11 +135,11 @@ class ConfirmedRegistrationsReport(MultiConferenceReport):
         super(ConfirmedRegistrationsReport, self).__init__(title, 'Number of registrations', conferences)
 
     def maxmin(self):
-        self.curs.execute("SELECT max(startdate-payconfirmedat::date), min(startdate-payconfirmedat::date) FROM confreg_conference c INNER JOIN confreg_conferenceregistration r ON c.id=r.conference_id WHERE c.id=ANY(%(idlist)s) AND r.payconfirmedat IS NOT NULL", {'idlist': [c.id for c in self.conferences]})
+        self.curs.execute("SELECT max(startdate-payconfirmedat::date), min(startdate-payconfirmedat::date) FROM confreg_conference c INNER JOIN confreg_conferenceregistration r ON c.id=r.conference_id WHERE c.id=ANY(%(idlist)s) AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL", {'idlist': [c.id for c in self.conferences]})
         return self.curs.fetchone()
 
     def fetch_all_data(self, conference, min, max):
-        self.curs.execute("WITH t AS (SELECT startdate-payconfirmedat::date AS d, count(*) AS num FROM confreg_conferenceregistration r INNER JOIN confreg_conference c ON c.id=r.conference_id WHERE c.id=%(id)s AND r.payconfirmedat IS NOT NULL GROUP BY d), tt AS (SELECT g.g, num FROM t RIGHT JOIN generate_series (%(min)s, %(max)s) g(g) ON g.g=t.d) SELECT COALESCE(sum(num) OVER (ORDER BY g DESC),0)::integer FROM tt ORDER BY g DESC", {
+        self.curs.execute("WITH t AS (SELECT startdate-payconfirmedat::date AS d, count(*) AS num FROM confreg_conferenceregistration r INNER JOIN confreg_conference c ON c.id=r.conference_id WHERE c.id=%(id)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL GROUP BY d), tt AS (SELECT g.g, num FROM t RIGHT JOIN generate_series (%(min)s, %(max)s) g(g) ON g.g=t.d) SELECT COALESCE(sum(num) OVER (ORDER BY g DESC),0)::integer FROM tt ORDER BY g DESC", {
             'id': conference.id,
             'min': min,
             'max': max,
@@ -148,6 +148,48 @@ class ConfirmedRegistrationsReport(MultiConferenceReport):
 
 
 reporttypes.append(('Confirmed registrations', ConfirmedRegistrationsReport))
+
+
+class CanceledRegistrationsReport(MultiConferenceReport):
+    def __init__(self, title, conferences):
+        super(CanceledRegistrationsReport, self).__init__(title, 'Number of registrations', conferences)
+
+    def maxmin(self):
+        self.curs.execute("SELECT max(startdate-canceledat::date), min(startdate-canceledat::date) FROM confreg_conference c INNER JOIN confreg_conferenceregistration r ON c.id=r.conference_id WHERE c.id=ANY(%(idlist)s) AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NOT NULL", {'idlist': [c.id for c in self.conferences]})
+        return self.curs.fetchone()
+
+    def fetch_all_data(self, conference, min, max):
+        self.curs.execute("WITH t AS (SELECT startdate-canceledat::date AS d, count(*) AS num FROM confreg_conferenceregistration r INNER JOIN confreg_conference c ON c.id=r.conference_id WHERE c.id=%(id)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NOT NULL GROUP BY d), tt AS (SELECT g.g, num FROM t RIGHT JOIN generate_series (%(min)s, %(max)s) g(g) ON g.g=t.d) SELECT COALESCE(sum(num) OVER (ORDER BY g DESC),0)::integer FROM tt ORDER BY g DESC", {
+            'id': conference.id,
+            'min': min,
+            'max': max,
+        })
+        return self.curs.fetchall()
+
+
+reporttypes.append(('Canceled registrations', CanceledRegistrationsReport))
+
+
+class RegistrationsAndCancelesReport(SingleConferenceReport):
+    def fetch_all_data(self, min, max, startdate):
+        self.curs.execute("WITH t AS (SELECT %(startdate)s-payconfirmedat::date AS d, count(*) AS num FROM confreg_conferenceregistration r WHERE r.conference_id=%(cid)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL GROUP BY d), tt AS (SELECT g.g, num FROM t RIGHT JOIN generate_series (%(min)s, %(max)s) g(g) ON g.g=t.d) SELECT COALESCE(sum(num) OVER (ORDER BY g DESC),0)::integer FROM tt ORDER BY g DESC", {
+            'cid': self.conference.id,
+            'min': min,
+            'max': max,
+            'startdate': startdate,
+        })
+        yield ('Confirmed', self.curs.fetchall())
+
+        self.curs.execute("WITH t AS (SELECT %(startdate)s-payconfirmedat::date AS d, count(*) AS num FROM confreg_conferenceregistration r WHERE r.conference_id=%(cid)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NOT NULL GROUP BY d), tt AS (SELECT g.g, num FROM t RIGHT JOIN generate_series (%(min)s, %(max)s) g(g) ON g.g=t.d) SELECT COALESCE(sum(num) OVER (ORDER BY g DESC),0)::integer FROM tt ORDER BY g DESC", {
+            'cid': self.conference.id,
+            'min': min,
+            'max': max,
+            'startdate': startdate,
+        })
+        yield ('Canceled', self.curs.fetchall())
+
+
+reporttypes.append(('Registrations and cancels', RegistrationsAndCancelesReport))
 
 
 class SubmittedSessionsReport(MultiConferenceReport):
