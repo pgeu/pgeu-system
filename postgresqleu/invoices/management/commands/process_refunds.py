@@ -37,6 +37,8 @@ class Command(BaseCommand):
             return False
 
     def handle(self, *args, **options):
+        anyerror = False
+
         refunds = InvoiceRefund.objects.filter(issued__isnull=True)
         for r in refunds:
             manager = InvoiceManager()
@@ -57,6 +59,8 @@ class Command(BaseCommand):
                     self.stdout.write("Issued API refund of invoice {0}.".format(rr.invoice.pk))
                 else:
                     self.stdout.write("Failed to issue API refund for invoice {0}, will keep trying.".format(rr.invoice.pk))
+                    # Just store the error and proceed to issue any other refunds before giving up
+                    anyerror = True
 
         # Send alerts for any refunds that have been issued but that have not completed within
         # 3 days (completely arbitrary, but normally it happens within seconds/minutes/hours).
@@ -76,3 +80,6 @@ The following invoices have stalled refunds:
 
 Better go check!
 """.format("\n".join([r.invoice.invoicestr for r in stalledrefunds])))
+
+        if anyerror:
+            raise Exception("Failed to issue one or more refunds")
