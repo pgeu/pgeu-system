@@ -112,11 +112,14 @@ class SingleConferenceReport(object):
         self.headers = None
         self.curs = connection.cursor()
 
-    def run(self):
+    def maxmin(self):
         self.curs.execute("SELECT max(startdate-payconfirmedat::date), min(startdate-payconfirmedat::date),max(startdate) FROM confreg_conferenceregistration r INNER JOIN confreg_conference c ON r.conference_id=c.id WHERE r.conference_id=%(id)s AND r.payconfirmedat IS NOT NULL", {
             'id': self.conference.id
         })
-        (maxday, minday, startdate) = self.curs.fetchone()
+        return self.curs.fetchone()
+
+    def run(self):
+        (maxday, minday, startdate) = self.maxmin()
         if not maxday:
             raise ReportException("There are no %s at this conference." % self.title.lower())
         allvals = [list(range(maxday, minday - 1, -1)), ]
@@ -171,6 +174,12 @@ reporttypes.append(('Canceled registrations', CanceledRegistrationsReport))
 
 
 class RegistrationsAndCancelesReport(SingleConferenceReport):
+    def maxmin(self):
+        self.curs.execute("SELECT max(greatest(startdate-payconfirmedat::date, startdate-canceledat::date)), min(least(startdate-payconfirmedat::date, startdate-canceledat::date)),max(startdate) FROM confreg_conferenceregistration r INNER JOIN confreg_conference c ON r.conference_id=c.id WHERE r.conference_id=%(id)s AND r.payconfirmedat IS NOT NULL", {
+            'id': self.conference.id
+        })
+        return self.curs.fetchone()
+
     def fetch_all_data(self, min, max, startdate):
         self.curs.execute("WITH t AS (SELECT %(startdate)s-payconfirmedat::date AS d, count(*) AS num FROM confreg_conferenceregistration r WHERE r.conference_id=%(cid)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL GROUP BY d), tt AS (SELECT g.g, num FROM t RIGHT JOIN generate_series (%(min)s, %(max)s) g(g) ON g.g=t.d) SELECT COALESCE(sum(num) OVER (ORDER BY g DESC),0)::integer FROM tt ORDER BY g DESC", {
             'cid': self.conference.id,
