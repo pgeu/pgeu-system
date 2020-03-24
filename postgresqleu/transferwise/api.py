@@ -130,7 +130,7 @@ class TransferwiseApi(object):
             {
                 'profile': self.get_profile(),
                 'currency': settings.CURRENCY_ABBREV,
-                'accountHolderName': re.sub(r'\d+', '', counterpart_name),
+                'accountHolderName': re.sub(r'\d+', '', counterpart_name.replace(',', ' ')),
                 'type': 'iban',
                 'details': {
                     'IBAN': counterpart_account,
