@@ -180,7 +180,7 @@ class RegistrationsAndCancelesReport(SingleConferenceReport):
         })
         yield ('Confirmed', self.curs.fetchall())
 
-        self.curs.execute("WITH t AS (SELECT %(startdate)s-payconfirmedat::date AS d, count(*) AS num FROM confreg_conferenceregistration r WHERE r.conference_id=%(cid)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NOT NULL GROUP BY d), tt AS (SELECT g.g, num FROM t RIGHT JOIN generate_series (%(min)s, %(max)s) g(g) ON g.g=t.d) SELECT COALESCE(sum(num) OVER (ORDER BY g DESC),0)::integer FROM tt ORDER BY g DESC", {
+        self.curs.execute("WITH t AS (SELECT %(startdate)s-canceledat::date AS d, count(*) AS num FROM confreg_conferenceregistration r WHERE r.conference_id=%(cid)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NOT NULL GROUP BY d), tt AS (SELECT g.g, num FROM t RIGHT JOIN generate_series (%(min)s, %(max)s) g(g) ON g.g=t.d) SELECT COALESCE(sum(num) OVER (ORDER BY g DESC),0)::integer FROM tt ORDER BY g DESC", {
             'cid': self.conference.id,
             'min': min,
             'max': max,
