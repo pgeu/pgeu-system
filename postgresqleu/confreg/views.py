@@ -4119,6 +4119,10 @@ def crossmailoptions(request):
     # We can safely get the conference directly here, since we won't be using any
     # date/time information and thus don't need the timezone to be set.
     conf = get_object_or_404(Conference, id=get_int_or_error(request.GET, 'conf'))
+    if not request.user.is_superuser:
+        # Need to verify conference series permissions for non-superuser
+        if not conf.series.administrators.filter(pk=request.user.id).exists():
+            return HttpResponseForbidden()
 
     # Get a list of different crossmail options for this conference. Note that
     # each of them must have an implementation in _get_one_filter() or bad things
