@@ -344,7 +344,7 @@ urlpatterns.extend([
 if settings.ENABLE_NEWS:
     urlpatterns.extend([
         url(r'^news/archive/$', postgresqleu.newsevents.views.newsarchive),
-        url(r'news/[^/]+-(\d+)/$', postgresqleu.newsevents.views.newsitem),
+        url(r'^news/[^/]+-(\d+)/$', postgresqleu.newsevents.views.newsitem),
         # Feeds
         url(r'^feeds/(?P<what>(news|user/[^/]+))/$', LatestNews()),
         url(r'^feeds/conf/(?P<what>[^/]+)/$', ConferenceNewsFeed()),
