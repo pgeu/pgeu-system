@@ -19,10 +19,11 @@ def template_to_string(templatename, attrs={}):
     return get_template(templatename).render(context)
 
 
-def send_template_mail(sender, receiver, subject, templatename, templateattr={}, attachments=None, bcc=None, sendername=None, receivername=None):
+def send_template_mail(sender, receiver, subject, templatename, templateattr={}, attachments=None, bcc=None, sendername=None, receivername=None, suppress_auto_replies=True, is_auto_reply=False):
     send_simple_mail(sender, receiver, subject,
                      template_to_string(templatename, templateattr),
-                     attachments, bcc, sendername, receivername)
+                     attachments, bcc, sendername, receivername,
+                     suppress_auto_replies, is_auto_reply)
 
 
 def _encoded_email_header(name, email):
@@ -31,7 +32,7 @@ def _encoded_email_header(name, email):
     return email
 
 
-def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=None, sendername=None, receivername=None):
+def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=None, sendername=None, receivername=None, suppress_auto_replies=True, is_auto_reply=False):
     # attachment format, each is a tuple of (name, mimetype,contents)
     # content should be *binary* and not base64 encoded, since we need to
     # use the base64 routines from the email library to get a properly
@@ -41,6 +42,14 @@ def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=No
     msg['To'] = _encoded_email_header(receivername, receiver)
     msg['From'] = _encoded_email_header(sendername, sender)
     msg['Date'] = formatdate(localtime=True)
+    if suppress_auto_replies:
+        # Do our best to set some headers to indicate that auto-replies like out of office
+        # messages should not be sent to this email.
+        msg['X-Auto-Response-Suppress'] = 'All'
+        if is_auto_reply:
+            msg['Auto-Submitted'] = 'auto-replied'
+        else:
+            msg['Auto-Submitted'] = 'auto-generated'
 
     msg.attach(MIMEText(msgtxt, _charset='utf-8'))
 
