@@ -44,27 +44,32 @@ class LatestNews(Feed):
             }
 
         return exec_to_dict("""WITH main AS (
-  SELECT id, NULL::text as link, datetime, title, summary
+  SELECT id, NULL::text as urlname, datetime, title, summary
   FROM newsevents_news
   WHERE datetime<CURRENT_TIMESTAMP AND inrss {0}
   ORDER BY datetime DESC LIMIT 10),
 conf AS (
-  SELECT n.id, c.confurl AS link, datetime, c.conferencename || ' - ' || title AS title, summary
+  SELECT n.id, c.urlname, datetime, c.conferencename || ' - ' || title AS title, summary
   FROM confreg_conferencenews n
   INNER JOIN confreg_conference c ON c.id=conference_id
   WHERE datetime<CURRENT_TIMESTAMP AND inrss {0}
   ORDER BY datetime DESC LIMIT 10)
-SELECT id, link, datetime, title, summary, true AS readmore FROM main
+SELECT id, urlname, datetime, title, summary, true AS readmore FROM main
 UNION ALL
-SELECT id, link, datetime, title, summary, false FROM conf
+SELECT id, urlname, datetime, title, summary, false FROM conf
 ORDER BY datetime DESC LIMIT 10""".format(extrafilter), params)
 
     def item_title(self, news):
         return news['title']
 
     def item_link(self, news):
-        if news['link']:
-            return '{0}##{1}'.format(news['link'], news['id'])
+        if news['urlname']:
+            return '{0}/events/{1}/news/{2}-{3}/'.format(
+                settings.SITEBASE,
+                news['urlname'],
+                slugify(news['title']),
+                news['id'],
+            )
         else:
             return '{0}/news/{1}-{2}/'.format(
                 settings.SITEBASE,

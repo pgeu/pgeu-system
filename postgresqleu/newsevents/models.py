@@ -13,6 +13,8 @@ class NewsPosterProfile(models.Model):
     def __str__(self):
         return "{0} ({1})".format(self.fullname, self.urlname)
 
+    _safe_attributes = ['id', 'author', 'urlname', 'fullname']
+
 
 class News(models.Model):
     title = models.CharField(max_length=128, blank=False)

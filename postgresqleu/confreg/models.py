@@ -1320,6 +1320,8 @@ class ConferenceNews(models.Model):
         ordering = ['-datetime', ]
         verbose_name_plural = 'Conference News'
 
+    _safe_attributes = ('id', 'datetime', 'title', 'summary', 'author', 'inrss')
+
 
 class ConferenceHashtag(models.Model):
     conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)

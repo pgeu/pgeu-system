@@ -39,7 +39,7 @@ class ConferenceNewsFeed(Feed):
         return obj.confurl
 
     def items(self, obj):
-        return exec_to_dict("""SELECT n.id, c.confurl AS link, datetime, c.conferencename || ' - ' || title AS title, summary
+        return exec_to_dict("""SELECT n.id, c.urlname, datetime, c.conferencename || ' - ' || title AS title, summary
 FROM confreg_conferencenews n
 INNER JOIN confreg_conference c ON c.id=conference_id
 WHERE datetime<CURRENT_TIMESTAMP AND inrss AND conference_id=%(cid)s
@@ -51,7 +51,12 @@ ORDER BY datetime DESC LIMIT 10""", {
         return news['title']
 
     def item_link(self, news):
-        return '{0}##{1}'.format(news['link'], news['id'])
+        return '{0}/events/{1}/news/{2}-{3}/'.format(
+            settings.SITEBASE,
+            news['urlname'],
+            slugify(news['title']),
+            news['id'],
+        )
 
     def item_pubdate(self, news):
         return news['datetime']

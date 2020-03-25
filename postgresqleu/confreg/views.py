@@ -15,6 +15,7 @@ from django.db.models.expressions import F
 from django import forms
 from django.forms import ValidationError
 from django.utils import timezone
+from django.template.defaultfilters import slugify
 
 from .models import Conference, ConferenceRegistration, ConferenceSession, ConferenceSeries
 from .models import ConferenceRegistrationLog
@@ -230,6 +231,7 @@ def news_json(request, confname):
         [{
             'id': n.id,
             'title': n.title,
+            'titleslug': slugify(n.title),
             'datetime': n.datetime,
             'authorname': n.author.fullname,
             'summary': markdown.markdown(n.summary),
@@ -239,6 +241,25 @@ def news_json(request, confname):
 
     r['Access-Control-Allow-Origin'] = '*'
     return r
+
+
+def news_index(request, confname):
+    conference = get_conference_or_404(confname)
+    news = ConferenceNews.objects.select_related('author').filter(conference__urlname=confname,
+                                                                  datetime__lt=timezone.now())
+
+    return render_conference_response(request, conference, 'news', 'confreg/newsindex.html', {
+        'news': news,
+    })
+
+
+def news_page(request, confname, newsid):
+    conference = get_conference_or_404(confname)
+    news = get_object_or_404(ConferenceNews, pk=newsid, conference=conference, datetime__lt=timezone.now())
+
+    return render_conference_response(request, conference, 'news', 'confreg/newsitem.html', {
+        'news': news,
+    })
 
 
 @login_required

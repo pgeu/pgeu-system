@@ -1,0 +1,10 @@
+{%extends "base.html" %}
+{%block title%}News - {{conference}}{%endblock%}
+{%block content%}
+<h1>News - {{conference}}</h1>
+<ul>
+{%for n in news%}
+  <li>{{n.datetime}} - <a href="/events/{{conference.urlname}}/news/{{n.title|slugify}}-{{n.id}}/">{{n.title}}</a></li>
+{%endfor%}
+</ul>
+{%endblock%}

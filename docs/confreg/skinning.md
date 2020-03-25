@@ -94,6 +94,9 @@ pagemagic
     cfp
 :     Call for papers and related pages
 
+    news
+:     News related pages
+
 username
 : Contains the current logged in users username
 
