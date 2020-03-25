@@ -14,7 +14,7 @@ something that is currently created globally in the server (and be an
 administrator for the conference).
 
 The news posts made will all post to the conference RSS feed (at
-/feeds/conf/&lt;confurl&gt/).
+/feeds/conf/&lt;confurl&gt;/).
 
 There is also a per-user RSS feed (at /feeds/user/&lt;userurl&gt;/ where the
 userurl is configured in the users News Poster Profile). The per user
