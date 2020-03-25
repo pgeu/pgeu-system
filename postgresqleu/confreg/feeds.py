@@ -2,6 +2,7 @@ from django.contrib.syndication.views import Feed
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.template.defaultfilters import slugify
 
 from .models import Conference
 from .util import get_conference_or_404
