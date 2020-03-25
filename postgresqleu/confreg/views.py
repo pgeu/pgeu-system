@@ -4103,6 +4103,19 @@ def crossmailoptions(request):
 
     if not (request.user.is_superuser or ConferenceSeries.objects.filter(administrators=request.user).exists()):
         return HttpResponseForbidden()
+
+    if request.GET['conf'] == '-1':
+        # Requesting a list of conferences
+        if request.user.is_superuser:
+            conferences = list(Conference.objects.all())
+        else:
+            conferences = list(Conference.objects.filter(series__administrators=request.user))
+
+        return HttpResponse(json.dumps([
+            {'id': c.id, 'title': str(c)}
+            for c in conferences]
+        ), content_type="application/json")
+
     # We can safely get the conference directly here, since we won't be using any
     # date/time information and thus don't need the timezone to be set.
     conf = get_object_or_404(Conference, id=get_int_or_error(request.GET, 'conf'))

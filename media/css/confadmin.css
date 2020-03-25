@@ -198,3 +198,22 @@ div.waitlisttbl div.header-row div {
         border-top: none;
     }
 }
+
+
+/*
+ * Cross conferece emails
+ */
+#crossconfform div.inclexclwrapper div.selectize-control {
+   margin-right: 10px;
+   margin-bottom: 3px;
+}
+#crossconfform .selectize-control { display: inline-block; }
+#crossconfform .confselect {
+   width: 200px;
+}
+#crossconfform .conffilter {
+   width: 300px;
+}
+#crossconfform span.secspan label {
+   margin-left: 5px;
+}
