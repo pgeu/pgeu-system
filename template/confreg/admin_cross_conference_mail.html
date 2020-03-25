@@ -21,10 +21,15 @@ function add_conference_picker(type, default_conf, default_filt) {
    maxused[type]++;
 
    var sel = $('<select style="width: 200px" class="noexpand" id="' + type + '_' + num + '">');
+   var secspan = $('<span/>');
    var sel2 = $('<select class="noexpand" style="width: 300px" id="' + type + 't_' + num +'">');
+   var cbcancel = $('<input type="checkbox" class="noexpand" id="' + type + '_c' + num + '">');
+   var lbcancel = $('<label for="' + type + '_c' + num + '">Incl. canceled</label>');
+   secspan.append(sel2).append(cbcancel).append(lbcancel);
+
    var el = $('<div id="' + type + 'wrap_' + num + '" class="inclexclwrapper">').append(
       sel,
-      sel2,
+      secspan,
       $('<button class="btn btn-xs" style="float:right" onclick="return removeFilter(\'' + type + '\',' + num + ')"><span class="glyphicon glyphicon-remove-sign"></span></button>'),
       );
    $('#' + type + '_btn').before(el);
@@ -36,7 +41,7 @@ function add_conference_picker(type, default_conf, default_filt) {
 
    var filtersel = sel2[0].selectize;
    if (!default_conf) {
-      filtersel.$wrapper.hide();
+      secspan.hide();
    }
 
    sel[0].selectize.load(function(callback) {
@@ -51,9 +56,12 @@ function add_conference_picker(type, default_conf, default_filt) {
             url: '/events/admin/crossmail/options/?conf=' + v,
             success: function(r) {
                callback(r);
-               filtersel.$wrapper.show();
+               secspan.show();
                if (current_default_filt) {
-                  filtersel.setValue(current_default_filt);
+                  /* Parts 0-1 are the value for the select, part 2 controls the checkbox */
+                  var pieces = current_default_filt.split(':');
+                  filtersel.setValue(pieces[0] + ':' + pieces[1]);
+                  cbcancel.prop('checked', pieces[2] == '1');
                   current_default_filt = null;
                }
                filtersel.enable();
@@ -87,8 +95,9 @@ function submit_form() {
       $('select[id^=' + type + '_]').each(function(i, e) {
          var conf = $(e).val();
          var filt = $('#' + e.id.replace('_', 't_')).val();
+         var canc = $('#' + e.id.replace('_', '_c')).is(':checked') ? 1 : 0;
          if (conf != null && conf != '' && filt != null && filt != '') {
-            items.push(conf + '@' + filt);
+            items.push(conf + '@' + filt + ':' + canc);
          }
       });
       $('#id_' + type).val(items.join(';'));

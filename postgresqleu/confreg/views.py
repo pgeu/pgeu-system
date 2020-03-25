@@ -4006,12 +4006,16 @@ def crossmail(request):
             if conf not in conferenceids:
                 raise ValidationError("Invalid conference selected")
 
-            (t, v) = filt.split(':')
+            (t, v, c) = filt.split(':')
+            c = c == "1"
             if t == 'rt':
                 # Regtype
-                q = "SELECT attendee_id, email, firstname || ' ' || lastname, regtoken FROM confreg_conferenceregistration WHERE conference_id={0} AND payconfirmedat IS NOT NULL AND canceledat IS NULL".format(conf)
+                q = "SELECT attendee_id, email, firstname || ' ' || lastname, regtoken FROM confreg_conferenceregistration WHERE conference_id={0} AND payconfirmedat IS NOT NULL".format(conf)
                 if v != '*':
                     q += ' AND regtype_id={0}'.format(int(v))
+                if not c:
+                    # Exclude canceled registrations
+                    q += ' AND canceledat IS NULL'
                 if optout_filter:
                     q += " AND NOT EXISTS (SELECT 1 FROM confreg_conferenceseriesoptout INNER JOIN confreg_conference ON confreg_conference.series_id=confreg_conferenceseriesoptout.series_id WHERE user_id=attendee_id AND confreg_conference.id={0})".format(int(conf))
             elif t == 'sp':
