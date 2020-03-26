@@ -1,0 +1,55 @@
+{%extends "confreg/confadmin_base.html" %}
+{%load markup%}
+{%block title%}Refund sponsor - {{sponsor}}{%endblock%}
+{%block layoutblock%}
+<h1>Refund sponsor - {{sponsor}}</h1>
+
+{%include "confsponsor/admin_sponsor_details.html" %}
+
+{%if sponsor.invoice%}
+<h2>Invoice</h2>
+<table class="table table-condensed">
+  <tr>
+    <th class="col-md-2">Invoice number</th>
+    <td>#{{sponsor.invoice.id}}</td>
+  </tr>
+  <tr>
+    <th class="col-md-2">Title</th>
+    <td>{{sponsor.invoice.title}}</td>
+  </tr>
+  <tr>
+    <th class="col-md-2">Recipient</th>
+    <td>{{sponsor.invoice.recipient_name}} &lt;{{sponsor.invoice.recipient_email}}&gt;</td>
+  </tr>
+  <tr>
+    <th class="col-md-2">Invoice date</th>
+    <td>{{sponsor.invoice.invoicedate}}</td>
+  </tr>
+  <tr>
+    <th class="col-md-2">Payment date</th>
+    <td>{{sponsor.invoice.paidat}}</td>
+  </tr>
+  <tr>
+    <th class="col-md-2">Payment method</th>
+    <td>{{sponsor.invoice.payment_method_description}}</td>
+  </tr>
+  <tr>
+    <th class="col-md-2">Total amount</th>
+    <td>{{currency_symbol}} {{sponsor.invoice.total_amount}}{%if eu_vat %} ({{currency_symbol}} {{sponsor.invoice.total.amount_without_vat}} + {{currency_symbol}} {{sponsor.invoice.total_vat}} VAT){%endif%}</td>
+  </tr>
+{%if sponsor.invoice.total_refunds.amount%}
+  <tr>
+    <th class="col-md-2">Already refunded</th>
+    <td>{{currency_symbol}} {{sponsor.invoice.total_refunds.amount}}{%if eu_vat %} ({{currency_symbol}} {{sponsor.invoice.total_refunds.vatamount}} VAT){%endif%}</td>
+  </tr>
+{%endif%}
+</table>
+{%endif%}
+
+<h2>Issue refund and cancel</h2>
+<form class="form-horizontal backend-form" method="POST" action="." enctype="multipart/form-data">{%csrf_token%}
+{%include "confreg/admin_backend_form_content.html" %}
+</form>
+
+<a class="btn btn-default btn-block" href="../">Return to sponsor</a>
+{%endblock%}
