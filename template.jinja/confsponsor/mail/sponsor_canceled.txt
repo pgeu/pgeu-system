@@ -1,0 +1,9 @@
+Hello!
+
+This is a notification to inform you that your sponsorship of the
+event {{conference.conferencename}}
+for sponsor {{sponsor.displayname}}
+has been canceled.
+
+If you believe this was in error, please contact the organizers of the
+conference as soon as you can by replying to this email!

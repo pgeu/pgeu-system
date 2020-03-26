@@ -96,6 +96,26 @@ sponsor handling address, and administrators are expected to either
 confirm or unclaim those benefits "reasonably quickly".
 
 
+## Refunding and canceling
+
+Before a sponsorship is paid, it's easy to cancel -- just cancel the
+invoice and the process aborts.
+
+Once a sponsorship is confirmed, the process of cancellation is
+coupled to that of refunding, but can be controlled independently.
+
+Refunding is initialized by clicking the refund/cancel button. Refunds
+can be either done for the whole sponsorship invoice, parts thereof
+(if VAT is enabled, be careful to calculate the VAT amount properly!)
+or not at all. Combined with this, the sponsorship can either be
+canceled or not.
+
+That means a single sponsorship can be refunded more than once, if
+partial refunds are made. This applies as long as the sponsorship is
+not canceled -- as soon as it is canceled, further refunds can no
+longer be made, and all records concerning the sponsorship are removed
+from the system.
+
 ## Benefit classes <a name="classes"></a>
 
 The following benefit classes are available:

@@ -18,6 +18,7 @@ from postgresqleu.util.widgets import Bootstrap4CheckboxSelectMultiple, EmailTex
 from postgresqleu.util.widgets import Bootstrap4HtmlDateTimeInput
 
 from datetime import date, timedelta
+from decimal import Decimal
 
 
 def _int_with_default(s, default):
@@ -205,6 +206,44 @@ class SponsorDetailsForm(forms.ModelForm):
     class Meta:
         model = Sponsor
         fields = ('extra_cc', )
+
+
+class SponsorRefundForm(forms.Form):
+    refundamount = forms.ChoiceField(choices=(
+        (0, "Refund full invoice cost"),
+        (1, "Refund custom amount"),
+        (2, "Don't refund"),
+    ), label="Refund amonut")
+    customrefundamount = forms.DecimalField(decimal_places=2, required=False, label="Custom refund amount (ex VAT)")
+    customrefundamountvat = forms.DecimalField(decimal_places=2, required=False, label="Custom VAT refund amount")
+    cancelmethod = forms.ChoiceField(choices=(
+        (0, "Cancel sponsorship"),
+        (1, "Leave sponsorship active"),
+    ), label="Cancel method")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not settings.EU_VAT:
+            self.fields['customrefundamount'].label = 'Custom refund amount'
+            del self.fields['customrefundamountvat']
+
+    def clean(self):
+        d = super().clean()
+        if int(d['refundamount']) == 1:
+            # Custom amount, so make sure both those fields are set
+            if d['customrefundamount'] is None:
+                self.add_error('customrefundamount', 'This field is required when doing custom amount refund')
+            elif Decimal(d['customrefundamount'] <= 0):
+                self.add_error('customrefundamount', 'Must be >0 when performing custom refund')
+            if settings.EU_VAT and d['customrefundamountvat'] is None:
+                self.add_error('customrefundamountvat', 'This field is required when doing custom amount refund')
+        else:
+            if d['customrefundamount'] is not None:
+                self.add_error('customrefundamount', 'This field must be left empty when doing non-custom refund')
+            if settings.EU_VAT and d['customrefundamountvat'] is not None:
+                self.add_error('customrefundamountvat', 'This field must be left empty when doing non-custom refund')
+
+        return d
 
 
 class SponsorShipmentForm(forms.ModelForm):

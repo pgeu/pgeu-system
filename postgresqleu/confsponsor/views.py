@@ -10,12 +10,13 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 from datetime import datetime, timedelta
+import io
 import random
 from collections import OrderedDict
 
 from postgresqleu.auth import user_search, user_import
 
-from postgresqleu.confreg.models import Conference, PrepaidVoucher, DiscountCode
+from postgresqleu.confreg.models import Conference, PrepaidVoucher, PrepaidBatch, DiscountCode
 from postgresqleu.confreg.util import get_authenticated_conference, get_conference_or_404
 from postgresqleu.confreg.jinjafunc import render_sandboxed_template
 from postgresqleu.confreg.util import send_conference_mail
@@ -24,7 +25,7 @@ from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.request import get_int_or_error
-from postgresqleu.invoices.util import InvoiceWrapper
+from postgresqleu.invoices.util import InvoiceWrapper, InvoiceManager
 
 from .models import Sponsor, SponsorshipLevel, SponsorshipBenefit
 from .models import SponsorClaimedBenefit, SponsorMail, SponsorshipContract
@@ -33,6 +34,7 @@ from .models import ShipmentAddress, Shipment
 from .forms import SponsorSignupForm, SponsorSendEmailForm, SponsorDetailsForm
 from .forms import PurchaseVouchersForm, PurchaseDiscountForm
 from .forms import SponsorShipmentForm, ShipmentReceiverForm
+from .forms import SponsorRefundForm
 
 from .benefits import get_benefit_class
 from .invoicehandler import create_sponsor_invoice, confirm_sponsor, get_sponsor_invoice_address
@@ -624,7 +626,8 @@ def _send_shipment_mail(shipment, subject, mailtemplate):
                                  },
                                  sender=shipment.conference.sponsoraddr,
                                  bcc=shipment.conference.sponsoraddr,
-                                 receivername='{0} {1}'.format(manager.first_name, manager.last_name))
+                                 receivername='{0} {1}'.format(manager.first_name, manager.last_name),
+                                 sendername=shipment.conference.conferencename)
 
 
 @transaction.atomic
@@ -1140,3 +1143,190 @@ def sponsor_admin_test_vat(request, confurlname):
     if r:
         return HttpResponse("VAT validation error: %s" % r)
     return HttpResponse("VAT number is valid")
+
+
+@login_required
+@transaction.atomic
+def sponsor_admin_refund(request, confurlname, sponsorid):
+    conference = get_authenticated_conference(request, confurlname)
+    sponsor = get_object_or_404(Sponsor, id=sponsorid, conference=conference)
+    invoice = sponsor.invoice
+    sponsorname = sponsor.name
+
+    if invoice:
+        if not invoice.paidat:
+            messages.error(request, "Sponsorship invoice has not been paid, not refundable")
+            return HttpResponseRedirect("../")
+
+        if len(invoice.invoicerow_set.values('vatrate').distinct()) > 1:
+            messages.error(request, "Invoice is using a mix of VAT rates, cannot refund")
+            return HttpResponseRedirect("../")
+
+    if request.method == 'POST':
+        form = SponsorRefundForm(data=request.POST)
+        if form.is_valid():
+            class _AbortValidation(Exception):
+                pass
+
+            try:
+                # Additional validations based on which type of review (basic form
+                # validation has already been done in the form class and passed)
+                if form.cleaned_data['refundamount'] != "2":
+                    if not invoice:
+                        form.add_error('refundamount', "Sponsorship does not have an invoice! There is nothing to refund!")
+                        raise _AbortValidation()
+                    if not invoice.can_autorefund:
+                        form.add_error('refundamount', "Invoice paid with a method that cannot be automatically refunded")
+                        raise _AbortValidation()
+
+                if invoice:
+                    total_refunds = invoice.total_refunds
+                else:
+                    total_refunds = None
+
+                if form.cleaned_data['refundamount'] == "0":
+                    # Refund the full invoice
+                    if total_refunds['amount']:
+                        form.add_error('refundamount', "Parts of this invoice has already been refunded, can't do a full refund any longer")
+                elif form.cleaned_data['refundamount'] == "1":
+                    # Custom amount
+                    if form.cleaned_data['customrefundamount'] > total_refunds['remaining']['amount']:
+                        form.add_error('customrefundamount', "Only {} {} non-vat remains to be refunded on this invoice".format(settings.CURRENCY_SYMBOL, total_refunds['remaining']['amount']))
+                    if settings.EU_VAT and form.cleaned_data['customrefundamountvat'] > total_refunds['remaining']['vatamount']:
+                        form.add_error('customrefundamountvat', "Only {} {} VAT remains to be refunded on this invoice".format(settings.CURRENCY_SYMBOL, total_refunds['remaining']['vatamount']))
+                elif form.cleaned_data['refundamount'] == "2":
+                    # No refund, just cancel
+                    if form.cleaned_data['cancelmethod'] == "1":
+                        form.add_error('refundamount', "When not issuing a refund, also not canceling becomes a no-op")
+                        form.add_error('cancelmethod', "When not issuing a refund, also not canceling becomes a no-op")
+                else:
+                    form.add_error('refundamount', 'Invalid option selected')
+
+                if form.errors:
+                    raise _AbortValidation()
+
+                spoint = transaction.savepoint()
+                try:
+                    oplog = io.StringIO()
+
+                    # Start by canceling the sponsorship, if set to
+                    if form.cleaned_data['cancelmethod'] == "0":
+                        managers = [(m.email, '{0} {1}'.format(m.first_name, m.last_name)) for m in sponsor.managers.all()]
+
+                        oplog.write("Canceling sponsorship for {}.\n".format(sponsorname))
+
+                        # Start by sending a notification email before we start removing things. If
+                        # something goes wrong it's just inserts into the database so it will get
+                        # rolled back.
+                        for e, n in managers:
+                            send_conference_mail(sponsor.conference,
+                                                 e,
+                                                 'Conference sponsorship for {} canceled'.format(sponsor.name),
+                                                 'confsponsor/mail/sponsor_canceled.txt',
+                                                 {
+                                                     'sponsor': sponsor,
+                                                 },
+                                                 sender=sponsor.conference.sponsoraddr,
+                                                 bcc=sponsor.conference.sponsoraddr,
+                                                 receivername=n,
+                                                 sendername=sponsor.conference.conferencename)
+
+                        # Notify about any confirmed benefits, and automatically remove them,
+                        # but don't bother tracking downstream benefits from them, the operator
+                        # will deal with that.
+                        for b in SponsorClaimedBenefit.objects.filter(sponsor=sponsor, declined=False, confirmed=True):
+                            oplog.write(" * Already confirmed benefit {} now removed.\n".format(b.benefit.benefitname))
+
+                        # Re-assign any voucher orders, batches and discount codes to be without a sponsor
+                        for v in PurchasedVoucher.objects.filter(sponsor=sponsor):
+                            v.sponsor = None
+                            v.save()
+                            oplog.write(" * Prepaid voucher order {} unassigned, but batch *NOT* deleted.\n".format(v.batch))
+
+                        for b in PrepaidBatch.objects.filter(sponsor=sponsor):
+                            b.sponsor = None
+                            b.save()
+                            oplog.write(" * Prepaid batch {} unassigned, but vouchers *NOT* deleted.\n".format(b.id))
+
+                        for c in DiscountCode.objects.filter(sponsor=sponsor):
+                            d.sponsor = None
+                            d.save()
+                            oplog.write(" * Discount code {} unassigned, but usage *NOT* deleted.\n".format(d.code))
+
+                        # Delete any shipments
+                        for s in Shipment.objects.filter(sponsor=sponsor):
+                            s.sponsor = None
+                            s.save()
+                            oplog.write(" * Shipment {} reassigned to conference organizers, remove manually\n".format(s.addresstoken))
+
+                        # Automatically delete, without logging, sponsor scanners, sponsor
+                        # managers and scanned attendees.
+
+                        oplog.write("Sponsorship canceled, notifications sent to {} managers.\n".format(len(managers)))
+
+                        sponsor.delete()
+                        messages.info(request, "Canceled and removed sponsor {}".format(sponsorname))
+                    else:
+                        oplog.write("Refunding sponsorship for {} WITHOUT canceling the sponsorship.\n".format(sponsorname))
+
+                    oplog.write("\n")
+
+                    # Now issue the refund of the invoice
+                    to_refund = to_refund_vat = 0
+                    if form.cleaned_data['refundamount'] == "0":
+                        # Refund the full invoice
+                        to_refund = invoice.total_amount - invoice.total_vat
+                        to_retund_vat = invoice.total_vat
+                        oplog.write("Preparing refund of the full invoice.\n")
+                    elif form.cleaned_data['refundamount'] == "1":
+                        # Refund the specific amount
+                        to_refund = form.cleaned_data['customrefundamount']
+                        if settings.EU_VAT:
+                            to_refund_vat = form.cleaned_data['customrefundamountvat']
+                        else:
+                            to_refund_vat = 0
+                        oplog.write("Preparing refund of {} {} + {} {} VAT.\n".format(settings.CURRENCY_SYMBOL, to_refund, settings.CURRENCY_SYMBOL, to_refund_vat))
+                    else:
+                        # No refund
+                        oplog.write("NO REFUND issued for this cancelation.\n")
+
+                    if to_refund:
+                        manager = InvoiceManager()
+                        manager.refund_invoice(invoice, 'Sponsorship canceled', to_refund, to_refund_vat, conference.vat_sponsorship)
+                        oplog.write("Issued refund of {} {} + {} {} VAT for invoice #{}.\n".format(settings.CURRENCY_SYMBOL, to_refund, settings.CURRENCY_SYMBOL, to_refund_vat, invoice.id))
+
+                    # Send a notification email to the organizers with the full details
+                    # of the cancelation.
+                    send_simple_mail(conference.sponsoraddr,
+                                     conference.sponsoraddr,
+                                     "Sponsor {} canceled by {}".format(sponsorname, request.user.username),
+                                     oplog.getvalue(),
+                                     sendername=conference.conferencename)
+
+                    transaction.savepoint_commit(spoint)
+
+                    if form.cleaned_data['cancelmethod'] == "0":
+                        # Sponsorship canceled, so we need to redirect to sponsorship dashboard
+                        return HttpResponseRedirect("../../")
+                    else:
+                        # Sponsorship not actually canceled, so redirect back to sponsor
+                        return HttpResponseRedirect("../")
+
+                except Exception as e:
+                    form.add_error(None, "Error trying to refund/cancel: {}".format(e))
+                    transaction.savepoint_rollback(spoint)
+
+            except _AbortValidation:
+                # Fall through and re-render form
+                pass
+    else:
+        form = SponsorRefundForm()
+
+    return render(request, 'confsponsor/admin_sponsor_refund.html', {
+        'conference': conference,
+        'sponsor': sponsor,
+        'form': form,
+        'savebutton': 'Refund and cancel sponsorship',
+        'breadcrumbs': [('../../', 'Sponsors'), ('../', sponsor.name), ],
+        'helplink': 'sponsors',
+    })
