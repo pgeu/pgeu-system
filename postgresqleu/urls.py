@@ -283,6 +283,7 @@ urlpatterns.extend([
     url(r'^invoices/adyen_bank/(\d+)/(\d+)/(\w+)/$', postgresqleu.adyen.views.invoicepayment_secret),
     url(r'^admin/invoices/vatrates/(.*/)?$', postgresqleu.invoices.backendviews.edit_vatrate),
     url(r'^admin/invoices/vatcache/(.*/)?$', postgresqleu.invoices.backendviews.edit_vatvalidationcache),
+    url(r'^admin/invoices/refunds/$', postgresqleu.invoices.backendviews.refunds),
     url(r'^admin/invoices/banktransactions/$', postgresqleu.invoices.backendviews.banktransactions),
     url(r'^admin/invoices/banktransactions/(\d+)/$', postgresqleu.invoices.backendviews.banktransactions_match),
     url(r'^admin/invoices/banktransactions/(\d+)/(\d+)/$', postgresqleu.invoices.backendviews.banktransactions_match_invoice),

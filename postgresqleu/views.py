@@ -8,6 +8,7 @@ from django.conf import settings
 from postgresqleu.newsevents.models import News
 from postgresqleu.confreg.models import Conference, ConferenceSeries
 from postgresqleu.invoices.models import PendingBankTransaction, BankFileUpload, InvoicePaymentMethod
+from postgresqleu.invoices.models import InvoiceRefund
 
 from postgresqleu.util.db import exec_to_dict, conditional_exec_to_scalar
 
@@ -141,6 +142,7 @@ def admin_dashboard(request):
 
     if permissions['invoices']:
         pending_bank = PendingBankTransaction.objects.all().exists()
+        pending_refunds = InvoiceRefund.objects.filter(completed__isnull=True).exists()
         ipm = list(InvoicePaymentMethod.objects.filter(active=True, config__has_key='file_upload_interval'))
         if ipm:
             # At least one payment method exists that *should* get uploads checked
@@ -164,6 +166,7 @@ def admin_dashboard(request):
     return render(request, 'adm/index.html', {
         'permissions': permissions,
         'pending_bank': pending_bank,
+        'pending_refunds': pending_refunds,
         'bank_file_uploads': bank_file_uploads,
         'schedalert': conditional_exec_to_scalar(request.user.is_superuser, "SELECT NOT EXISTS (SELECT 1 FROM pg_stat_activity WHERE application_name='pgeu scheduled job runner' AND datname=current_database())"),
         'mailqueuealert': conditional_exec_to_scalar(request.user.is_superuser, "SELECT EXISTS (SELECT 1 FROM mailqueue_queuedmail LIMIT 1)"),

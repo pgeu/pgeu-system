@@ -1,0 +1,32 @@
+{%extends "adm/admin_base.html" %}
+{%load humanize%}
+{%block title%}Refunds{%endblock%}
+{%block layoutblock %}
+<h1>Invoices</h1>
+
+<div class="row">
+<table class="table table-sm table-striped table-hover">
+<tr>
+ <th>Num</th>
+ <th>Invoice</th>
+ <th>Registered</th>
+ <th>Issued</th>
+ <th>Completed</th>
+ <th>Reason</th>
+</tr>
+{%for refund in refunds.object_list %}
+<tr>
+ <td>{{refund.id}}</td>
+ <td><a href="/invoiceadmin/{{refund.invoice_id}}/">#{{refund.invoice_id}}</a></td>
+ <td>{{refund.registered|default:""}}</td>
+ <td>{{refund.issued|default:""}}</td>
+ <td>{{refund.completed|default:""}}</td>
+ <td>{{refund.reason}}</td>
+{%endfor%}
+</table>
+
+{%include "adm/include/paginator.html" with pageobjects=refunds %}
+
+</div>{#row#}
+
+{%endblock%}

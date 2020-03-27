@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect, Http404
 from django.utils.html import escape
 from django.shortcuts import get_object_or_404, render
 from django.contrib import messages
-from django.db.models import Max, Q
+from django.db.models import Max, Q, F
 from django.db import transaction
 from django.conf import settings
 
@@ -17,6 +17,7 @@ from postgresqleu.invoices.util import InvoiceManager
 
 from postgresqleu.accounting.models import Account
 from postgresqleu.invoices.models import InvoicePaymentMethod, Invoice, InvoiceLog
+from postgresqleu.invoices.models import InvoiceRefund
 from postgresqleu.invoices.models import PendingBankTransaction
 from postgresqleu.invoices.models import PendingBankMatcher
 from postgresqleu.invoices.models import BankTransferFees
@@ -603,3 +604,18 @@ def edit_paymentmethod(request, rest):
                                topadmin='Invoices',
                                return_url='/admin/',
     )
+
+
+def refunds(request):
+    authenticate_backend_group(request, 'Invoice managers')
+
+    refund_objects = InvoiceRefund.objects.only('id', 'invoice_id', 'completed', 'issued', 'registered', 'reason').order_by(F('completed').desc(nulls_first=True), F('issued').desc(nulls_first=True), F('registered').desc())
+
+    (refunds, paginator, page_range) = simple_pagination(request, refund_objects, 20)
+
+    return render(request, 'invoices/refunds.html', {
+        'refunds': refunds,
+        'page_range': page_range,
+        'breadcrumbs': [('/admin/invoices/refunds/', 'Refunds'), ],
+        'helplink': 'payment',
+    })
