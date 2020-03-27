@@ -1,7 +1,7 @@
 {%extends "adm/admin_base.html" %}
 {%load formutil%}
 {%load util %}
-{%block title%}Invoice administration{%endblock%}
+{%block title%}{%if invoice.id%}Invoice #{{invoice.id}}{%else%}New invoice{%endif%}{%endblock%}
 {%block jquery%}
 <script type="text/javascript" src="/media/jq/jquery-1.9.1.min.js"></script>
 {%endblock%}
