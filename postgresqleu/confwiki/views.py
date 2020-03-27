@@ -349,7 +349,7 @@ def signup(request, urlname, signupid):
                 if attendee_signup:
                     oldchoice = attendee_signup.choice
                     attendee_signup.choice = form.cleaned_data['choice']
-                    if signup.notify_changes:
+                    if signup.notify_changes and oldchoice != attendee_signup.choice:
                         send_conference_mail(conference,
                                              conference.notifyaddr,
                                              'Signup response updated for {}'.format(signup.title),
@@ -363,7 +363,11 @@ def signup(request, urlname, signupid):
                                              sender=conference.notifyaddr,
                                              receivername=conference.conferencename,
                         )
-                    reglog(reg, "Updated response to signup {}".format(signup.id), request.user)
+                    reglog(reg, "Updated response to signup {} from {} to {}".format(
+                        signup.id,
+                        oldchoice,
+                        attendee_signup.choice,
+                    ), request.user)
                 else:
                     attendee_signup = AttendeeSignup(attendee=reg,
                                                      signup=signup,
