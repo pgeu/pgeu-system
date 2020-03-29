@@ -3,7 +3,6 @@ from django.urls import reverse
 from django.db import transaction
 from django.utils import timezone
 
-from datetime import datetime, date
 from decimal import Decimal
 
 import requests
@@ -76,7 +75,7 @@ def process_authorization(notification):
                 (pm.config('accounting_authorized'), accstr, trans.amount, None),
             ]
 
-            create_accounting_entry(date.today(), accrows, True, urls)
+            create_accounting_entry(accrows, True, urls)
             return
 
         # Process a payment on the primary account
@@ -134,7 +133,7 @@ def process_authorization(notification):
                 accrows = [
                     (pm.config('accounting_authorized'), "Incorrect payment for invoice #{0}".format(invoice.id), notification.amount, None),
                 ]
-                create_accounting_entry(date.today(), accrows, True, urls)
+                create_accounting_entry(accrows, True, urls)
 
                 send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                                  pm.config('notification_receiver'),
@@ -273,7 +272,7 @@ def process_refund(notification):
                                  'Adyen refund received',
                                  "A refund of %s%s for transaction %s was processed on %s\n\nNOTE! You must complete the accounting system entry manually as it was not API generated!!" % (settings.CURRENCY_ABBREV, notification.amount, method.internaldescription, notification.originalReference))
 
-                create_accounting_entry(date.today(), accrows, True, urls)
+                create_accounting_entry(accrows, True, urls)
 
         except TransactionStatus.DoesNotExist:
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,

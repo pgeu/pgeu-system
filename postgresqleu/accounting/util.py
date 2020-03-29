@@ -7,6 +7,7 @@ from django.db.models import Max
 from django.conf import settings
 
 from decimal import Decimal
+import datetime
 
 from postgresqleu.mailqueue.util import send_simple_mail
 
@@ -18,8 +19,7 @@ class AccountingException(Exception):
     pass
 
 
-def create_accounting_entry(date,
-                            items,
+def create_accounting_entry(items,
                             leaveopen=False,
                             urllist=None):
     # items must be an array of tuples in the format:
@@ -32,6 +32,8 @@ def create_accounting_entry(date,
 
     if not settings.ENABLE_AUTO_ACCOUNTING:
         return
+
+    date = datetime.date.today()
 
     sid = transaction.savepoint()
     try:

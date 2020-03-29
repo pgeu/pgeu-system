@@ -5,7 +5,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.conf import settings
 
-from datetime import datetime, timedelta, date
 import json
 import hmac
 import hashlib
@@ -237,7 +236,7 @@ def webhook(request, methodid):
             ]
 
             if is_managed_bank_account(pm.config('accounting_payout')):
-                entry = create_accounting_entry(date.today(), acctrows, True)
+                entry = create_accounting_entry(acctrows, True)
 
                 # Stripe payouts include a "magic number", but unfortunately this magic number
                 # is not available through the APIs so there is no way to match on it.

@@ -4,7 +4,6 @@ from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 from django.utils import timezone
 
-from datetime import datetime, date
 from decimal import Decimal
 from urllib.parse import urlencode, unquote_plus
 import requests
@@ -152,7 +151,7 @@ def paypal_return_handler(request, methodid):
                 (pm.config('accounting_fee'), accstr, ti.fee, None),
                 (settings.ACCOUNTING_DONATIONS_ACCOUNT, accstr, -ti.amount, None),
                 ]
-            create_accounting_entry(date.today(), accrows, True, urls)
+            create_accounting_entry(accrows, True, urls)
 
             return render(request, 'paypal/noinvoice.html', {
             })

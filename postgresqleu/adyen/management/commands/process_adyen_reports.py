@@ -15,7 +15,7 @@ import io
 import requests
 from requests.auth import HTTPBasicAuth
 from base64 import standard_b64encode
-from datetime import datetime, date, timedelta
+from datetime import timedelta
 from decimal import Decimal
 
 from postgresqleu.adyen.models import AdyenLog, Report, TransactionStatus
@@ -132,7 +132,7 @@ class Command(BaseCommand):
                         (pm.config('accounting_payable'), accstr, trans.settledamount, None),
                         (pm.config('accounting_fee'), accstr, trans.amount - trans.settledamount, trans.accounting_object),
                         ]
-                    create_accounting_entry(date.today(), accrows, False)
+                    create_accounting_entry(accrows, False)
 
     def process_received_payments_report(self, report):
         # We don't currently do anything with this report, but we store the contents
@@ -211,7 +211,7 @@ class Command(BaseCommand):
             # just close it right away.
             is_managed = is_managed_bank_account(pm.config('accounting_payout'))
             if is_managed and payout_amount > 0:
-                entry = create_accounting_entry(date.today(), acctrows, True)
+                entry = create_accounting_entry(acctrows, True)
 
                 # Register a pending bank transfer using the syntax that Adyen are
                 # currently using. We only match the most important keywords, just
@@ -223,13 +223,13 @@ class Command(BaseCommand):
                 msg = "A settlement batch with Adyen has completed for merchant account %s. A summary of the entries are:\n\n%s\n\nAccounting entry %s was created and will automatically be closed once the payout has arrived." % (acct, msg, entry)
             else:
                 # Close immediately
-                create_accounting_entry(date.today(), acctrows, False)
+                create_accounting_entry(acctrows, False)
 
                 msg = "A settlement batch with Adyen has completed for merchant account %s. A summary of the entries are:\n\n%s\n\n" % (acct, msg)
         else:
             # All entries were not processed, so we write what we know to the
             # db, and then just leave the entry open.
-            create_accounting_entry(date.today(), acctrows, True)
+            create_accounting_entry(acctrows, True)
 
             msg = "A settlement batch with Adyen has completed for merchant account %s. At least one entry in this was UNKNOWN, and therefor the accounting record has been left open, and needs to be adjusted manually!\nA summary of the entries are:\n\n%s\n\n" % (acct, msg)
 

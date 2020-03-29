@@ -28,7 +28,6 @@ from postgresqleu.invoices.backendforms import BackendInvoicePaymentMethodForm
 from postgresqleu.invoices.backendforms import BankfilePaymentMethodChoiceForm
 from postgresqleu.invoices.util import register_bank_transaction
 
-from datetime import date
 import re
 import base64
 from io import BytesIO
@@ -84,7 +83,7 @@ def banktransactions(request):
                 accrows = [
                     (pm.config('bankaccount'), trans.transtext, trans.amount, None),
                 ]
-                entry = create_accounting_entry(date.today(), accrows, True)
+                entry = create_accounting_entry(accrows, True)
 
                 InvoiceLog(message="Created manual accounting entry for transaction of {0}{1} with text {2}".format(trans.amount, settings.CURRENCY_ABBREV, trans.transtext)).save()
 

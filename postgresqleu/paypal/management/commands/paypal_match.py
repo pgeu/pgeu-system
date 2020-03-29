@@ -66,7 +66,7 @@ class Command(BaseCommand):
                         (pm.config('accounting_fee'), accstr, trans.fee, None),
                         (settings.ACCOUNTING_DONATIONS_ACCOUNT, accstr, -trans.amount, None),
                         ]
-                    create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
+                    create_accounting_entry(accrows, True, urls)
                     continue
                 # Record type: payment, but with no notice (auto-generated elsewhere, the text is
                 # hard-coded in paypal_fetch.py
@@ -81,7 +81,7 @@ class Command(BaseCommand):
                         accrows.append(
                             (pm.config('accounting_fee'), accstr, trans.fee, None),
                         )
-                    create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
+                    create_accounting_entry(accrows, True, urls)
                     continue
                 # Record type: transfer
                 if trans.amount < 0 and trans.transtext == 'Transfer from Paypal to bank':
@@ -93,7 +93,7 @@ class Command(BaseCommand):
                         (pm.config('accounting_income'), accstr, trans.amount, None),
                         (pm.config('accounting_transfer'), accstr, -trans.amount, None),
                         ]
-                    entry = create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
+                    entry = create_accounting_entry(accrows, True, urls)
                     if is_managed_bank_account(pm.config('accounting_transfer')):
                         register_pending_bank_matcher(pm.config('accounting_transfer'),
                                                       '.*PAYPAL.*',
@@ -127,7 +127,7 @@ class Command(BaseCommand):
                     ]
                     if trans.fee != 0:
                         accrows.append((pm.config('accounting_fee'), trans.transtext[:200], trans.fee, None),)
-                    create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
+                    create_accounting_entry(accrows, True, urls)
                     continue
 
                 # Otherwise, it's an incoming payment. In this case, we try to
@@ -175,7 +175,7 @@ class Command(BaseCommand):
                         accrows.append(
                             (pm.config('accounting_fee'), accstr, trans.fee, None),
                         )
-                    create_accounting_entry(trans.timestamp.date(), accrows, True, urls)
+                    create_accounting_entry(accrows, True, urls)
                 else:
                     # Logging is done by the invoice manager callback
                     pass

@@ -3,7 +3,6 @@ from django.conf import settings
 from django.utils import timezone
 
 from collections import defaultdict
-from datetime import datetime, date
 from dateutil import rrule
 from decimal import Decimal
 import importlib
@@ -433,7 +432,7 @@ class InvoiceManager(object):
         if extraurls:
             urls.extend(extraurls)
 
-        create_accounting_entry(date.today(), accrows, leaveopen, urls)
+        create_accounting_entry(accrows, leaveopen, urls)
 
         # Send the receipt to the user if possible - that should make
         # them happy :)
@@ -536,7 +535,7 @@ class InvoiceManager(object):
                     )
 
                 urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk), ]
-                create_accounting_entry(date.today(), accrows, True, urls)
+                create_accounting_entry(accrows, True, urls)
 
             InvoiceHistory(invoice=invoice,
                            txt='Flagged refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount + vatamount)).save()
@@ -602,7 +601,7 @@ class InvoiceManager(object):
         if extraurls:
             urls.extend(extraurls)
 
-        create_accounting_entry(date.today(), accrows, leaveopen, urls)
+        create_accounting_entry(accrows, leaveopen, urls)
 
         # Also flag the refund as done
         refund.completed = timezone.now()

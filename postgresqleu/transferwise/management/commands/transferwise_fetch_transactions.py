@@ -16,7 +16,7 @@ from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.transferwise.models import TransferwiseTransaction, TransferwiseRefund
 from postgresqleu.transferwise.models import TransferwisePayout
 
-from datetime import datetime, timedelta, date
+from datetime import timedelta
 import re
 
 
@@ -127,7 +127,7 @@ class Command(BaseCommand):
                         (pm.config('feeaccount'), accountingtxt, trans.feeamount, None),
                         (pm.config('bankaccount'), accountingtxt, -(trans.amount + trans.feeamount), None),
                     ]
-                    create_accounting_entry(date.today(), accrows)
+                    create_accounting_entry(accrows)
                 elif trans.transtype == 'TRANSFER' and trans.paymentref.startswith('TW payout'):
                     # Payout. Create an appropriate accounting record and a pending matcher.
                     try:
@@ -153,13 +153,13 @@ class Command(BaseCommand):
                         (pm.config('accounting_payout'), trans.paymentref, -(trans.amount + trans.feeamount), None),
                     ]
                     if is_managed_bank_account(pm.config('accounting_payout')):
-                        entry = create_accounting_entry(date.today(), accrows, True)
+                        entry = create_accounting_entry(accrows, True)
                         register_pending_bank_matcher(pm.config('accounting_payout'),
                                                       '.*TW.*payout.*{0}.*'.format(refno),
                                                       -(trans.amount + trans.feeamount),
                                                       entry)
                     else:
-                        create_accounting_entry(date.today(), accrows)
+                        create_accounting_entry(accrows)
                 else:
                     # Else register a pending bank transaction. This may immediately match an invoice
                     # if it was an invoice payment, in which case the entire process will copmlete.

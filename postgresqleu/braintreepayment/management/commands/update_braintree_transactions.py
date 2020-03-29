@@ -7,7 +7,7 @@
 #
 
 import logging
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -86,7 +86,7 @@ class Command(BaseCommand):
                             (pm.config('accounting_authorized'), accstr, -t.amount, None),
                             (pm.config('accounting_payable'), accstr, t.amount, None),
                         ]
-                        create_accounting_entry(date.today(), accrows, False)
+                        create_accounting_entry(accrows, False)
 
                     if t.settledat and not t.disbursedat:
                         # Settled but not disbursed yet. But maybe it is now?
@@ -116,7 +116,7 @@ class Command(BaseCommand):
                             if t.amount - t.disbursedamount > 0:
                                 accrows.append((pm.config('accounting_fee'), accstr, t.amount - t.disbursedamount, t.accounting_object))
 
-                            create_accounting_entry(date.today(), accrows, False)
+                            create_accounting_entry(accrows, False)
                         elif datetime.today() - t.settledat > timedelta(days=10):
                             BraintreeLog(transid=t.transid,
                                          error=True,
