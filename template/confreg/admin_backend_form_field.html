@@ -12,7 +12,7 @@
 {%if field|fieldtype == "PasswordInput"%}
 <div class="input-group input-group-password">
 {%endif%}
-{%if not field.name in form.selectize_multiple_fields and not field|ischeckbox%}
+{%if not field.name in form.selectize_multiple_fields and not field.name in form.selectize_single_fields and not field|ischeckbox%}
 {{field|field_class:"form-control"}}
 {%else%}
 {{field}}

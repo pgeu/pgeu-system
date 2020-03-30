@@ -93,6 +93,9 @@ $(function() {
       }
    });
 {%endfor%}
+{%for f, lookup in form.selectize_single_fields.items %}
+   $('#id_{{f}}').selectize();
+{%endfor%}
 
 {%for f in form.markdown_fields%}
    backend_showdown_preview('id_{{f}}');
