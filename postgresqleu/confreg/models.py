@@ -153,6 +153,7 @@ class Conference(models.Model):
     promopicurl = models.URLField(blank=True, null=False, verbose_name="URL to promo picture", validators=[PictureUrlValidator(aspect=2.3)])
     promotext = models.TextField(null=False, blank=True, max_length=1000, verbose_name="Promotion text")
     timediff = models.IntegerField(null=False, blank=False, default=0)
+    tzname = models.CharField(max_length=100, blank=False, null=False, verbose_name="Time zone")
     contactaddr = LowercaseEmailField(blank=False, null=False, verbose_name="Contact address")
     sponsoraddr = LowercaseEmailField(blank=False, null=False, verbose_name="Sponsor address")
     notifyaddr = LowercaseEmailField(blank=False, null=False, verbose_name="Notification address")

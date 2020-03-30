@@ -12,8 +12,9 @@ import datetime
 from collections import OrderedDict
 from psycopg2.extras import DateTimeTZRange
 from decimal import Decimal
+import pytz
 
-from postgresqleu.util.db import exec_to_single_list
+from postgresqleu.util.db import exec_to_single_list, exec_to_scalar
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget, MonospaceTextarea
 from postgresqleu.util.widgets import TagOptionsTextWidget
@@ -105,10 +106,19 @@ class BackendConferenceForm(BackendForm):
         return cleaned_data
 
 
+def _timezone_choices():
+    return [(z, z) for z in pytz.all_timezones]
+
+
 class BackendSuperConferenceForm(BackendForm):
+    tzname = django.forms.ChoiceField(choices=_timezone_choices(), label='Time zone')
+
     helplink = 'super_conference#conferenceform'
     selectize_multiple_fields = {
         'administrators': GeneralAccountLookup(),
+    }
+    selectize_single_fields = {
+        'tzname': None,
     }
     accounting_object = django.forms.ChoiceField(choices=[], required=False)
     exclude_date_validators = ['startdate', 'enddate']
@@ -116,7 +126,7 @@ class BackendSuperConferenceForm(BackendForm):
     class Meta:
         model = Conference
         fields = ['conferencename', 'urlname', 'series', 'startdate', 'enddate', 'location',
-                  'timediff', 'contactaddr', 'sponsoraddr', 'notifyaddr', 'confurl', 'administrators',
+                  'tzname', 'timediff', 'contactaddr', 'sponsoraddr', 'notifyaddr', 'confurl', 'administrators',
                   'jinjadir', 'accounting_object', 'vat_registrations', 'vat_sponsorship',
                   'paymentmethods', ]
         widgets = {
@@ -134,6 +144,17 @@ class BackendSuperConferenceForm(BackendForm):
         (obj, created) = postgresqleu.accounting.models.Object.objects.get_or_create(name=self.instance.urlname,
                                                                                      defaults={'active': True})
         self.instance.accounting_object = obj
+
+    def clean_tzname(self):
+        # The entry for timezone is already validated against the pytz setup which should
+        # normally be the same as the one in PostgreSQL, but we verify it against the
+        # database side as well to be safe.
+        if not exec_to_scalar("SELECT name FROM pg_timezone_names WHERE name=%(name)s", {
+                'name': self.cleaned_data['tzname'],
+        }):
+            raise ValidationError("This timezone does not to exist in the database")
+
+        return self.cleaned_data['tzname']
 
 
 class BackendConferenceSeriesForm(BackendForm):
