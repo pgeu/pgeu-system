@@ -608,7 +608,10 @@ def edit_paymentmethod(request, rest):
 def refunds(request):
     authenticate_backend_group(request, 'Invoice managers')
 
-    refund_objects = InvoiceRefund.objects.only('id', 'invoice_id', 'completed', 'issued', 'registered', 'reason').order_by(F('completed').desc(nulls_first=True), F('issued').desc(nulls_first=True), F('registered').desc())
+    refund_objects = InvoiceRefund.objects.\
+        select_related('invoice', 'invoice__paidusing').\
+        only('id', 'invoice_id', 'completed', 'issued', 'registered', 'reason', 'invoice__paidusing__internaldescription').\
+        order_by(F('completed').desc(nulls_first=True), F('issued').desc(nulls_first=True), F('registered').desc())
 
     (refunds, paginator, page_range) = simple_pagination(request, refund_objects, 20)
 

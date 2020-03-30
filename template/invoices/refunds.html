@@ -12,6 +12,7 @@
  <th>Registered</th>
  <th>Issued</th>
  <th>Completed</th>
+ <th>Provider</th>
  <th>Reason</th>
 </tr>
 {%for refund in refunds.object_list %}
@@ -21,6 +22,7 @@
  <td>{{refund.registered|default:""}}</td>
  <td>{{refund.issued|default:""}}</td>
  <td>{{refund.completed|default:""}}</td>
+ <td>{{refund.invoice.paidusing.internaldescription}}</td>
  <td>{{refund.reason}}</td>
 {%endfor%}
 </table>
