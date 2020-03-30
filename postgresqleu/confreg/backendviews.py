@@ -76,11 +76,13 @@ def edit_conference(request, urlname):
 def superedit_conference(request, urlname):
     if not request.user.is_superuser:
         raise PermissionDenied("Superuser only")
+    conference = get_conference_or_404(urlname)
 
     return backend_process_form(request,
                                 urlname,
                                 BackendSuperConferenceForm,
-                                get_conference_or_404(urlname).pk,
+                                conference.pk,
+                                conference=conference,
                                 bypass_conference_filter=True,
                                 allow_new=False,
                                 allow_delete=False)
