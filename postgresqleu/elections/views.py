@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect, Http404
 from django.contrib.auth.decorators import login_required
 from django.db import connection
 
-from postgresqleu.utils.time import today_global
+from postgresqleu.util.time import today_global
 from .models import Election, Member, Candidate, Vote
 from .forms import VoteForm
 from datetime import timedelta
