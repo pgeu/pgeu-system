@@ -7,10 +7,11 @@ from django.db.models import Max
 from django.db import connection, transaction
 from django.core.paginator import Paginator
 
-from datetime import datetime, date
+from datetime import datetime
 
 from postgresqleu.util.request import get_int_or_error
 from postgresqleu.util.auth import authenticate_backend_group
+from postgresqleu.util.time import today_global
 
 from .models import JournalEntry, JournalItem, JournalUrl, Year, Object
 from .models import IncomingBalance, Account
@@ -21,7 +22,7 @@ from .forms import CloseYearForm
 def index(request):
     authenticate_backend_group(request, 'Accounting managers')
     # Always redirect to the current year
-    return HttpResponseRedirect("%s/" % datetime.today().year)
+    return HttpResponseRedirect("%s/" % today_global().year)
 
 
 def _setup_search(request, term):
@@ -75,7 +76,7 @@ def year(request, year):
         year = Year.objects.get(year=int(year))
     except Year.DoesNotExist:
         # Year does not exist, but what do we do about it?
-        if int(year) == date.today().year:
+        if int(year) == today_global().year:
             # For current year, we automatically create the year and move on
             year = Year(year=int(year), isopen=True)
             year.save()

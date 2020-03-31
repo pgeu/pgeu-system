@@ -58,6 +58,7 @@ from .backendforms import ResendWelcomeMailForm
 from postgresqleu.util.request import get_int_or_error
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.random import generate_random_token
+from postgresqleu.util.time import today_conference
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod, InvoiceRow
 from postgresqleu.invoices.util import InvoiceWrapper
 from postgresqleu.confwiki.models import Wikipage
@@ -307,7 +308,7 @@ def register(request, confname, whatfor=None):
             # Render the dashboard.
             return _registration_dashboard(request, conference, reg, has_other_multiregs, redir_root)
         else:
-            if datetime.now().date() < conference.startdate:
+            if today_conference() < conference.startdate:
                 return render_conference_response(request, conference, 'reg', 'confreg/not_yet_open.html')
             else:
                 return render_conference_response(request, conference, 'reg', 'confreg/closed.html')
@@ -420,7 +421,7 @@ def multireg(request, confname, regid=None):
     is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
     if not is_active:
         # Registration not open.
-        if datetime.now().date() < conference.startdate:
+        if today_conference() < conference.startdate:
             return render_conference_response(request, conference, 'reg', 'confreg/not_yet_open.html')
         else:
             return render_conference_response(request, conference, 'reg', 'confreg/closed.html')
@@ -585,7 +586,7 @@ def multireg_newinvoice(request, confname):
     is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
     if not is_active:
         # Registration not open.
-        if datetime.now().date() < conference.startdate:
+        if today_conference() < conference.startdate:
             return render_conference_response(request, conference, 'reg', 'confreg/not_yet_open.html')
         else:
             return render_conference_response(request, conference, 'reg', 'confreg/closed.html')
@@ -617,7 +618,7 @@ def multireg_newinvoice(request, confname):
             errors.append('{0} has no registration type specified'.format(r.email))
         elif not r.regtype.active:
             errors.append('{0} uses registration type {1} which is not active'.format(r.email, r.regtype))
-        elif r.regtype.activeuntil and r.regtype.activeuntil < date.today():
+        elif r.regtype.activeuntil and r.regtype.activeuntil < today_conference():
             errors.append('{0} uses registration type {1} which is not active'.format(r.email, r.regtype))
         else:
             try:
@@ -702,7 +703,7 @@ def multireg_bulkview(request, confname, bulkid):
     is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
     if not is_active:
         # Registration not open.
-        if datetime.now().date() < conference.startdate:
+        if today_conference() < conference.startdate:
             return render_conference_response(request, conference, 'reg', 'confreg/not_yet_open.html')
         else:
             return render_conference_response(request, conference, 'reg', 'confreg/closed.html')
@@ -822,7 +823,7 @@ def reg_add_options(request, confname):
         if a and reg.regtype not in a:
             # New regtype is required. Figure out if there is an upsellable
             # one available.
-            upsellable = o.requires_regtype.filter(Q(upsell_target=True, active=True, specialtype__isnull=True) & (Q(activeuntil__isnull=True) | Q(activeuntil__lt=datetime.today().date())))
+            upsellable = o.requires_regtype.filter(Q(upsell_target=True, active=True, specialtype__isnull=True) & (Q(activeuntil__isnull=True) | Q(activeuntil__lt=today_conference())))
             num = len(upsellable)
             if num == 0:
                 messages.warning(request, "Option {0} requires a registration type that's not available.".format(o.name))
@@ -2954,9 +2955,9 @@ def admin_dashboard(request):
     current = []
     upcoming = []
     for c in conferences:
-        if abs((date.today() - c.startdate).days) < 14 or abs((date.today() - c.enddate).days) < 14:
+        if abs((today_conference() - c.startdate).days) < 14 or abs((today_conference() - c.enddate).days) < 14:
             current.insert(0, c)
-        elif c.startdate > date.today():
+        elif c.startdate > today_conference():
             upcoming.insert(0, c)
 
     return render(request, 'confreg/admin_dashboard.html', {
@@ -3289,7 +3290,7 @@ def _admin_registration_cancel(request, conference, redirurl, regs):
                 if conference.vat_registrations:
                     this_to_refund_vat += (regtotalvat[rid] * pattern.percent / Decimal(100) - pattern.fees * conference.vat_registrations.vatpercent / Decimal(100)).quantize(Decimal('0.01'))
 
-            today = date.today()
+            today = today_conference()
             if (pattern.fromdate is None or pattern.fromdate <= today) and \
                (pattern.todate is None or pattern.todate >= today):
                 suggest = "***"

@@ -16,8 +16,9 @@ from postgresqleu.util.validators import BeforeValidator, AfterValidator, Twitte
 from postgresqleu.util.validators import Http200Validator
 from postgresqleu.util.widgets import Bootstrap4CheckboxSelectMultiple, EmailTextWidget
 from postgresqleu.util.widgets import Bootstrap4HtmlDateTimeInput
+from postgresqleu.util.time import today_conference
 
-from datetime import date, timedelta
+from datetime import timedelta
 from decimal import Decimal
 
 
@@ -140,7 +141,7 @@ class PurchaseVouchersForm(forms.Form):
     def __init__(self, conference, *args, **kwargs):
         self.conference = conference
         super(PurchaseVouchersForm, self).__init__(*args, **kwargs)
-        activeQ = Q(activeuntil__isnull=True) | Q(activeuntil__gt=date.today())
+        activeQ = Q(activeuntil__isnull=True) | Q(activeuntil__gte=today_conference())
         if self.data and self.data.get('regtype', None) and self.data.get('num', None) and _int_with_default(self.data['num'], 0) > 0:
             RegistrationType.objects.get(pk=self.data['regtype'])
             self.fields['confirm'].help_text = 'Check this box to confirm that you will pay the generated invoice'
@@ -175,7 +176,7 @@ class PurchaseDiscountForm(forms.Form):
         self.fields['requiredoptions'].queryset = ConferenceAdditionalOption.objects.filter(conference=conference, public=True)
         self.fields['expires'].initial = conference.startdate - timedelta(days=2)
         self.fields['expires'].validators.append(BeforeValidator(conference.startdate - timedelta(days=1)))
-        self.fields['expires'].validators.append(AfterValidator(date.today() - timedelta(days=1)))
+        self.fields['expires'].validators.append(AfterValidator(today_conference() - timedelta(days=1)))
         if not showconfirm:
             del self.fields['confirm']
 

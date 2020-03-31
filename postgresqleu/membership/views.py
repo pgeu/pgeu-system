@@ -12,11 +12,12 @@ from .forms import MemberForm, ProxyVoterForm
 
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.random import generate_random_token
+from postgresqleu.util.time import today_global
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
 from postgresqleu.mailqueue.util import send_simple_mail
 
-from datetime import date, datetime, timedelta
+from datetime import timedelta
 import json
 import base64
 import os
@@ -31,7 +32,7 @@ def home(request):
 
         # We have a batch job that expires members, but do it here as well to make sure
         # the web is up to date with information if necessary.
-        if member.paiduntil and member.paiduntil < date.today():
+        if member.paiduntil and member.paiduntil < today_global():
             MemberLog(member=member,
                       timestamp=timezone.now(),
                       message="Membership expired").save()
@@ -135,7 +136,7 @@ def meetings(request):
         } for m in meetings]
 
     return render(request, 'membership/meetings.html', {
-        'active': member.paiduntil and member.paiduntil >= datetime.today().date(),
+        'active': member.paiduntil and member.paiduntil >= today_global(),
         'member': member,
         'meetings': meetinginfo,
         })
@@ -143,7 +144,7 @@ def meetings(request):
 
 @transaction.atomic
 def _meeting(request, member, meeting, isproxy):
-    if not (member.paiduntil and member.paiduntil >= datetime.today().date()):
+    if not (member.paiduntil and member.paiduntil >= today_global()):
         return HttpResponse("Your membership is not active")
 
     if not meeting.allmembers:
@@ -197,7 +198,7 @@ def meeting_proxy(request, meetingid):
     meeting = get_object_or_404(Meeting, pk=meetingid)
     member = get_object_or_404(Member, user=request.user)
 
-    if not (member.paiduntil and member.paiduntil >= datetime.today().date()):
+    if not (member.paiduntil and member.paiduntil >= today_global()):
         return HttpResponse("Your membership is not active")
 
     if not meeting.allmembers:

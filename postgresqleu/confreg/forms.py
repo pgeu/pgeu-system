@@ -21,10 +21,11 @@ from postgresqleu.util.widgets import EmailTextWidget, MonospaceTextarea
 from postgresqleu.util.db import exec_to_list
 from postgresqleu.util.magic import magicdb
 from postgresqleu.util.backendlookups import GeneralAccountLookup
+from postgresqleu.util.time import today_conference
 
 from postgresqleu.countries.models import Country
 
-from datetime import datetime, date, timedelta
+from datetime import timedelta
 import requests
 
 
@@ -84,7 +85,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
         if newval and not newval.active:
             raise forms.ValidationError('Registration type "%s" is currently not available.' % newval)
 
-        if newval and newval.activeuntil and newval.activeuntil < datetime.today().date():
+        if newval and newval.activeuntil and newval.activeuntil <= today_conference():
             raise forms.ValidationError('Registration type "%s" was only available until %s.' % (newval, newval.activeuntil))
 
         if self.instance and self.instance.payconfirmedat:
@@ -133,7 +134,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
                 c = DiscountCode.objects.get(code=newval, conference=self.instance.conference)
                 if c.is_invoiced:
                     raise forms.ValidationError('This discount code is not valid anymore.')
-                if c.validuntil and c.validuntil < date.today():
+                if c.validuntil and c.validuntil < today_conference():
                     raise forms.ValidationError('This discount code has expired.')
                 if c.maxuses > 0:
                     if c.registrations.count() >= c.maxuses:

@@ -7,9 +7,9 @@ from django.db.models import Max
 from django.conf import settings
 
 from decimal import Decimal
-import datetime
 
 from postgresqleu.mailqueue.util import send_simple_mail
+from postgresqleu.util.time import today_global
 
 from .models import JournalEntry, JournalItem, JournalUrl
 from .models import Object, Account, Year
@@ -33,7 +33,7 @@ def create_accounting_entry(items,
     if not settings.ENABLE_AUTO_ACCOUNTING:
         return
 
-    date = datetime.date.today()
+    date = today_global()
 
     sid = transaction.savepoint()
     try:

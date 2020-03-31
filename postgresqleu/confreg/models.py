@@ -19,6 +19,7 @@ from postgresqleu.util.validators import TwitterValidator
 from postgresqleu.util.validators import PictureUrlValidator
 from postgresqleu.util.forms import ChoiceArrayField
 from postgresqleu.util.fields import LowercaseEmailField, ImageBinaryField
+from postgresqleu.util.time import today_conference
 
 import base64
 import datetime
@@ -267,10 +268,10 @@ class Conference(models.Model):
         # conference. Note that this will always be zero if the conference
         # is in the past (so we don't end up with unnecessary db queries)
         if self.enddate:
-            if self.enddate < datetime.datetime.today().date():
+            if self.enddate < today_conference():
                 return 0
         else:
-            if self.startdate < datetime.datetime.today().date():
+            if self.startdate < tday_conference():
                 return 0
         return self.conferencesession_set.exclude(status=F('lastnotifiedstatus')).exclude(speaker__isnull=True).count()
 
@@ -289,7 +290,7 @@ class Conference(models.Model):
 
     @property
     def needs_data_purge(self):
-        return self.enddate < datetime.date.today() and not self.personal_data_purged
+        return self.enddate < today_conference() and not self.personal_data_purged
 
     def clean(self):
         cc = super(Conference, self).clean()

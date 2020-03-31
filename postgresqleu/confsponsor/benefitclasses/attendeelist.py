@@ -2,7 +2,6 @@ from django import forms
 from django.core.exceptions import ValidationError
 from postgresqleu.confsponsor.backendforms import BackendSponsorshipLevelBenefitForm
 
-from datetime import datetime
 import base64
 import io as StringIO
 import csv
@@ -10,6 +9,7 @@ import csv
 from .base import BaseBenefit, BaseBenefitForm
 
 from postgresqleu.confreg.models import ConferenceRegistration
+from postgresqleu.util.time import today_conference
 
 
 class AttendeeListForm(BaseBenefitForm):
@@ -45,7 +45,7 @@ class AttendeeList(BaseBenefit):
         if claimedbenefit.declined:
             return ""
         if claimedbenefit.confirmed:
-            if self.level.conference.enddate < datetime.today().date():
+            if self.level.conference.enddate < today_conference():
                 data = StringIO.StringIO()
                 c = csv.writer(data, delimiter=';')
                 for r in ConferenceRegistration.objects.filter(conference=self.level.conference,

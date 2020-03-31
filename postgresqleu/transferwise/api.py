@@ -8,6 +8,7 @@ import json
 import re
 import uuid
 
+from postgresqleu.util.time import today_global
 from .models import TransferwiseRefund
 
 
@@ -82,7 +83,7 @@ class TransferwiseApi(object):
 
     def get_transactions(self, startdate=None, enddate=None):
         if not enddate:
-            enddate = (datetime.today() + timedelta(days=1)).date()
+            enddate = today_global() + timedelta(days=1)
 
         if not startdate:
             startdate = enddate - timedelta(days=60)

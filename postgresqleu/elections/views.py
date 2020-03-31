@@ -3,16 +3,17 @@ from django.http import HttpResponseRedirect, Http404
 from django.contrib.auth.decorators import login_required
 from django.db import connection
 
+from postgresqleu.utils.time import today_global
 from .models import Election, Member, Candidate, Vote
 from .forms import VoteForm
-from datetime import date, timedelta
+from datetime import timedelta
 
 
 def home(request):
     elections = Election.objects.filter(isopen=True).order_by('startdate')
-    open_elections = [e for e in elections if e.startdate <= date.today() and e.enddate >= date.today()]
-    past_elections = [e for e in elections if e.startdate < date.today() and e.enddate < date.today()]
-    upcoming_elections = [e for e in elections if e.startdate > date.today()]
+    open_elections = [e for e in elections if e.startdate <= today_global() and e.enddate >= today_global()]
+    past_elections = [e for e in elections if e.startdate < today_global() and e.enddate < today_global()]
+    upcoming_elections = [e for e in elections if e.startdate > today_global()]
 
     return render(request, 'elections/home.html', {
         'open': open_elections,
@@ -26,10 +27,10 @@ def election(request, electionid):
     if not election.isopen:
         raise Http404("This election is not open (yet)")
 
-    if election.startdate > date.today():
+    if election.startdate > today_global():
         raise Http404("This election has not started yet")
 
-    if election.enddate < date.today():
+    if election.enddate < today_global():
         # Election is closed, consider publishing the results
         if not election.resultspublic:
             # If user is an admin, show anyway, otherwise throw an error
@@ -67,7 +68,7 @@ def election(request, electionid):
             return render(request, 'elections/mustbemember.html', {})
 
         # Make sure that the membership hasn't expired
-        if member.paiduntil < date.today():
+        if member.paiduntil < today_global():
             return render(request, 'elections/mustbemember.html', {})
 
         # Verify that the user has been a member for at least 28 days.
@@ -110,7 +111,7 @@ def ownvotes(request, electionid):
     if not election.isopen:
         raise Http404("This election is not open (yet)")
 
-    if election.enddate >= date.today():
+    if election.enddate >= today_global():
         raise Http404("This election has not ended yet")
 
     member = get_object_or_404(Member, user=request.user)

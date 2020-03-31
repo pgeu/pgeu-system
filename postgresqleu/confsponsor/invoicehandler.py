@@ -1,12 +1,13 @@
 from django.utils import timezone
 from django.conf import settings
 
-from datetime import datetime, timedelta, date
+from datetime import timedelta
 import base64
 import os
 
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager
+from postgresqleu.util.time import today_conference
 
 from .models import Sponsor, PurchasedVoucher
 from postgresqleu.confreg.models import PrepaidBatch, PrepaidVoucher
@@ -141,10 +142,10 @@ def create_sponsor_invoice(user, sponsor):
     invoicerows = [
         ['%s %s sponsorship' % (conference, level), 1, level.levelcost, vatlevel],
     ]
-    if conference.startdate < date.today() + timedelta(days=5):
+    if conference.startdate < today_conference() + timedelta(days=5):
         # If conference happens in the next 5 days, invoice is due immediately
-        duedate = date.today()
-    elif conference.startdate < date.today() + timedelta(days=30):
+        duedate = today_conferece()
+    elif conference.startdate < today_conference() + timedelta(days=30):
         # Less than 30 days before the conference, set the due date to
         # 5 days before the conference
         duedate = conference.startdate - timedelta(days=5)
@@ -274,8 +275,8 @@ def create_voucher_invoice(conference, invoiceaddr, user, rt, num):
         user.first_name + ' ' + user.last_name,
         invoiceaddr,
         'Prepaid vouchers for %s' % conference.conferencename,
-        datetime.now(),
-        date.today(),
+        timezone.now(),
+        today_conference(),
         invoicerows,
         processor=processor,
         accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,

@@ -11,12 +11,13 @@ from django.conf import settings
 from django.utils import timezone
 
 import sys
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from postgresqleu.confreg.models import Conference, ConferenceSession
 from postgresqleu.confreg.models import ConferenceRegistration
 
 from postgresqleu.util.messaging.twitter import Twitter
+from postgresqleu.util.time import today_global
 
 
 class Command(BaseCommand):
@@ -28,8 +29,8 @@ class Command(BaseCommand):
         @classmethod
         def should_run(self):
             return Conference.objects.filter(twitterreminders_active=True,
-                                             startdate__lte=datetime.today() + timedelta(days=1),
-                                             enddate__gte=datetime.today() - timedelta(days=1)) \
+                                             startdate__lte=today_global() + timedelta(days=1),
+                                             enddate__gte=today_global() - timedelta(days=1)) \
                                      .exclude(twitter_token='') \
                                      .exclude(twitter_secret='').exists()
 
@@ -49,8 +50,8 @@ class Command(BaseCommand):
         # more plugins.
         has_error = False
         for conference in Conference.objects.filter(twitterreminders_active=True,
-                                                    startdate__lte=datetime.today() + timedelta(days=1),
-                                                    enddate__gte=datetime.today() - timedelta(days=1)) \
+                                                    startdate__lte=today_global() + timedelta(days=1),
+                                                    enddate__gte=today_global() - timedelta(days=1)) \
                                             .exclude(twitter_token='') \
                                             .exclude(twitter_secret=''):
             tw = Twitter(conference)

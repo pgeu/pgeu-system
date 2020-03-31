@@ -9,10 +9,11 @@ from django.db import transaction
 
 from collections import defaultdict
 from io import StringIO
-from datetime import timedelta, date
+from datetime import timedelta
 
 
 from postgresqleu.mailqueue.util import send_simple_mail
+from postgresqleu.util.time import today_global
 
 from postgresqleu.confreg.util import expire_additional_options
 from postgresqleu.confreg.models import ConferenceRegistration
@@ -31,7 +32,7 @@ class Command(BaseCommand):
             # that have additional options with autocancel set
             return Conference.objects.filter(active=True,
                                              conferenceadditionaloption__invoice_autocancel_hours__isnull=False,
-                                             enddate__gt=date.today() + timedelta(days=1),
+                                             enddate__gt=today_global() + timedelta(days=1),
             ).exists()
 
     @transaction.atomic

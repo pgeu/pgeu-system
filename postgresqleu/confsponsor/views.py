@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 import io
 import random
 from collections import OrderedDict
@@ -25,6 +25,7 @@ from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.request import get_int_or_error
+from postgresqleu.util.time import today_global
 from postgresqleu.invoices.util import InvoiceWrapper, InvoiceManager
 
 from .models import Sponsor, SponsorshipLevel, SponsorshipBenefit
@@ -45,9 +46,9 @@ from .vatutil import validate_eu_vat_number
 @login_required
 def sponsor_dashboard(request):
     # We define "past sponsors" as those older than a month - because we have to pick something.
-    currentsponsors = Sponsor.objects.filter(managers=request.user, conference__enddate__gte=datetime.today() - timedelta(days=31)).order_by('conference__startdate')
-    pastsponsors = Sponsor.objects.filter(managers=request.user, conference__enddate__lt=datetime.today() - timedelta(days=31)).order_by('conference__startdate')
-    conferences = Conference.objects.filter(callforsponsorsopen=True, startdate__gt=datetime.today()).order_by('startdate')
+    currentsponsors = Sponsor.objects.filter(managers=request.user, conference__enddate__gte=today_global() - timedelta(days=31)).order_by('conference__startdate')
+    pastsponsors = Sponsor.objects.filter(managers=request.user, conference__enddate__lt=today_global() - timedelta(days=31)).order_by('conference__startdate')
+    conferences = Conference.objects.filter(callforsponsorsopen=True, startdate__gt=today_blobal()).order_by('startdate')
 
     return render(request, 'confsponsor/dashboard.html', {
         "currentsponsors": currentsponsors,

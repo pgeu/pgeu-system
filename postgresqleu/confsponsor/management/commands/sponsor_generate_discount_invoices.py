@@ -3,10 +3,11 @@
 #
 
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 from django.db import transaction
 from django.conf import settings
 
-from datetime import date, datetime, timedelta, time
+from datetime import timedelta
 
 from django.db.models import Q, F, Count
 
@@ -15,6 +16,7 @@ from postgresqleu.confreg.util import send_conference_mail
 from postgresqleu.confsponsor.models import Sponsor
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager, InvoiceWrapper
+from postgresqleu.util.time import today_global
 
 
 class Command(BaseCommand):
@@ -32,7 +34,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # We're always going to process all conferences, since most will not have any
         # open discount codes.
-        filt = Q(sponsor__isnull=False, is_invoiced=False) & (Q(validuntil__lt=date.today()) | Q(num_uses__gte=F('maxuses')))
+        filt = Q(sponsor__isnull=False, is_invoiced=False) & (Q(validuntil__lte=today_global()) | Q(num_uses__gte=F('maxuses')))
         codes = DiscountCode.objects.annotate(num_uses=Count('registrations')).filter(filt)
         for code in codes:
             # Either the code has expired, or it is fully used by now. Time to generate the invoice. We'll also
@@ -84,8 +86,8 @@ class Command(BaseCommand):
                     "{0} {1}".format(code.sponsor_rep.first_name, code.sponsor_rep.last_name),
                     '%s\n%s' % (code.sponsor.name, code.sponsor.invoiceaddr),
                     '{0} discount code {1}'.format(code.conference, code.code),
-                    datetime.now(),
-                    date.today() + timedelta(days=1),
+                    timezone.now(),
+                    today_global() + timedelta(days=1),
                     invoicerows,
                     accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
                     accounting_object=code.conference.accounting_object,
@@ -122,7 +124,7 @@ class Command(BaseCommand):
                                              'sponsor': code.sponsor,
                                              'invoice': code.invoice,
                                              'curr': settings.CURRENCY_ABBREV,
-                                             'expired_time': code.validuntil < date.today(),
+                                             'expired_time': code.validuntil < today_global(),
                                          },
                                          sender=code.conference.sponsoraddr,
                                          receivername='{0} {1}'.format(manager.first_name, manager.last_name)

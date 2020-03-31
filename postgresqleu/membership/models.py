@@ -5,11 +5,12 @@ from django.conf import settings
 from django.utils import timezone
 
 from postgresqleu.util.fields import LowercaseEmailField
+from postgresqleu.util.time import today_global
 from postgresqleu.countries.models import Country
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.membership.util import country_validator_choices
 
-from datetime import date, datetime, timedelta
+from datetime import timedelta
 
 
 class MembershipConfiguration(models.Model):
@@ -59,7 +60,7 @@ class Member(models.Model):
     @property
     def expiressoon(self):
         if self.paiduntil:
-            if self.paiduntil < date.today() + timedelta(60):
+            if self.paiduntil < today_global() + timedelta(days=60):
                 return True
             else:
                 return False

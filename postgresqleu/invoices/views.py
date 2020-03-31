@@ -10,12 +10,13 @@ from django.conf import settings
 
 import base64
 import io
-from datetime import datetime, timedelta
+from datetime import timedelta
 from decimal import Decimal
 
 from postgresqleu.util.auth import authenticate_backend_group
 from postgresqleu.util.pagination import simple_pagination
 from postgresqleu.util.request import get_int_or_error
+from postgresqleu.util.time import today_global
 from .models import Invoice, InvoiceRow, InvoiceHistory, InvoicePaymentMethod, VatRate
 from .models import InvoiceRefund
 from .forms import InvoiceForm, InvoiceRowForm, RefundForm
@@ -116,8 +117,8 @@ def oneinvoice(request, invoicenum):
     # since they're all based on the same model and form.
     if invoicenum == 'new':
         invoice = Invoice(
-            invoicedate=datetime.today(),
-            duedate=datetime.today() + timedelta(days=30),
+            invoicedate=today_global(),
+            duedate=today_global() + timedelta(days=30),
         )
     else:
         invoice = get_object_or_404(Invoice, pk=invoicenum)

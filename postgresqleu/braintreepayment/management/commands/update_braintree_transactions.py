@@ -7,7 +7,7 @@
 #
 
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -117,7 +117,7 @@ class Command(BaseCommand):
                                 accrows.append((pm.config('accounting_fee'), accstr, t.amount - t.disbursedamount, t.accounting_object))
 
                             create_accounting_entry(accrows, False)
-                        elif datetime.today() - t.settledat > timedelta(days=10):
+                        elif timezone.now() - t.settledat > timedelta(days=10):
                             BraintreeLog(transid=t.transid,
                                          error=True,
                                          paymentmethod=method,

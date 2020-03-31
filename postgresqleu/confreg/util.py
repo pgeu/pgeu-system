@@ -13,6 +13,7 @@ import re
 
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.middleware import RedirectException
+from postgresqleu.util.time import today_conference
 from postgresqleu.confreg.jinjafunc import JINJA_TEMPLATE_ROOT, render_jinja_conference_template
 from postgresqleu.confreg.jinjapdf import render_jinja_ticket
 
@@ -83,7 +84,7 @@ def invoicerows_for_registration(reg, update_used_vouchers):
             # Nonexistant voucher code means discount code was used
             try:
                 d = DiscountCode.objects.get(code=reg.vouchercode, conference=reg.conference)
-                if d.validuntil and d.validuntil < date.today():
+                if d.validuntil and d.validuntil < today_conference():
                     raise InvoicerowsException("Discount code is no longer valid")
                 elif d.maxuses > 0 and d.registrations.count() >= d.maxuses:
                     raise InvoicerowsException("Discount code does not have enough remaining instances")

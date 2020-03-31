@@ -11,6 +11,7 @@ from postgresqleu.invoices.models import PendingBankTransaction, BankFileUpload,
 from postgresqleu.invoices.models import InvoiceRefund
 
 from postgresqleu.util.db import exec_to_dict, conditional_exec_to_scalar
+from postgresqleu.util.time import today_global
 
 import datetime
 import markdown
@@ -18,7 +19,7 @@ import markdown
 
 # Handle the frontpage
 def index(request):
-    events = Conference.objects.filter(promoactive=True, enddate__gte=datetime.datetime.today()).order_by('startdate')
+    events = Conference.objects.filter(promoactive=True, enddate__gte=today_global()).order_by('startdate')
     series = ConferenceSeries.objects.filter(visible=True).extra(
         where=["EXISTS (SELECT 1 FROM confreg_conference c WHERE c.series_id=confreg_conferenceseries.id AND c.promoactive)"]
     )
@@ -58,8 +59,8 @@ ORDER BY priosort DESC, datetime DESC LIMIT 5""")
 
 # Handle the events frontpage
 def eventsindex(request):
-    events = list(Conference.objects.filter(promoactive=True, enddate__gte=datetime.datetime.today()).order_by('startdate'))
-    past = Conference.objects.filter(promoactive=True, enddate__lt=datetime.datetime.today()).order_by('-startdate')[:5]
+    events = list(Conference.objects.filter(promoactive=True, enddate__gte=today_global()).order_by('startdate'))
+    past = Conference.objects.filter(promoactive=True, enddate__lt=today_global()).order_by('-startdate')[:5]
     series = ConferenceSeries.objects.filter(visible=True).extra(
         where=["EXISTS (SELECT 1 FROM confreg_conference c WHERE c.series_id=confreg_conferenceseries.id AND c.promoactive)"]
     )
@@ -76,8 +77,8 @@ def eventsindex(request):
 
 # Handle past events list
 def pastevents(request):
-    events = list(Conference.objects.filter(promoactive=True, enddate__gte=datetime.datetime.today()).order_by('startdate'))
-    past = Conference.objects.filter(promoactive=True, enddate__lt=datetime.datetime.today()).order_by('-startdate')
+    events = list(Conference.objects.filter(promoactive=True, enddate__gte=today_global()).order_by('startdate'))
+    past = Conference.objects.filter(promoactive=True, enddate__lt=today_global()).order_by('-startdate')
     series = ConferenceSeries.objects.filter(visible=True).extra(
         where=["EXISTS (SELECT 1 FROM confreg_conference c WHERE c.series_id=confreg_conferenceseries.id AND c.promoactive)"]
     )
@@ -96,15 +97,15 @@ def eventseries(request, id):
 
     return render(request, 'events/series.html', {
         'series': series,
-        'upcoming': [e for e in events if e.enddate >= datetime.datetime.today().date()],
-        'past': [e for e in events if e.enddate < datetime.datetime.today().date()],
+        'upcoming': [e for e in events if e.enddate >= today_global()],
+        'past': [e for e in events if e.enddate < today_global()],
     })
 
 
 # Handle a users list of previous events
 @login_required
 def attendee_events(request):
-    events = list(Conference.objects.filter(promoactive=True, enddate__gte=datetime.datetime.today()).order_by('startdate'))
+    events = list(Conference.objects.filter(promoactive=True, enddate__gte=today_global()).order_by('startdate'))
     series = ConferenceSeries.objects.filter(visible=True).extra(
         where=["EXISTS (SELECT 1 FROM confreg_conference c WHERE c.series_id=confreg_conferenceseries.id AND c.promoactive)"]
     )

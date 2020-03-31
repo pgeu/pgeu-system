@@ -1,8 +1,10 @@
 from django.conf import settings
+from django.utils import timezone
 
+from postgresqleu.util.time import today_global
 from .models import Member, MemberLog, get_config
 
-from datetime import datetime, timedelta, date
+from datetime import timedelta
 
 
 class InvoiceProcessor(object):
@@ -28,21 +30,21 @@ class InvoiceProcessor(object):
 
         # Extend the membership. If already paid to a date in the future,
         # extend from that date. Otherwise, from today.
-        if member.paiduntil and member.paiduntil > date.today():
+        if member.paiduntil and member.paiduntil > today_global():
             member.paiduntil = member.paiduntil + timedelta(days=cfg.membership_years * 365)
         else:
-            member.paiduntil = date.today() + timedelta(days=cfg.membership_years * 365)
+            member.paiduntil = today_global() + timedelta(days=cfg.membership_years * 365)
         member.expiry_warning_sent = None
 
         # If the member isn't already a member, set todays date as the
         # starting date.
         if not member.membersince:
-            member.membersince = date.today()
+            member.membersince = today_global()
 
         member.save()
 
         # Create a log record too, and save it
-        MemberLog(member=member, timestamp=datetime.now(), message="Payment for %s years received, membership extended to %s" % (cfg.membership_years, member.paiduntil)).save()
+        MemberLog(member=member, timestamp=timezone.now(), message="Payment for %s years received, membership extended to %s" % (cfg.membership_years, member.paiduntil)).save()
 
     # Process an invoice being canceled. This means we need to unlink
     # it from the membership.
