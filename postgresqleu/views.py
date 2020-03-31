@@ -30,23 +30,27 @@ def index(request):
     # field to order by first. To make sure we capture all such things, we need to get at least the
     # same number of items from each subset and then LIMIT it once again for the total limit.
     news = exec_to_dict("""WITH main AS (
-  SELECT id, NULL::text AS confurl, CASE WHEN highpriorityuntil > CURRENT_TIMESTAMP THEN 1 ELSE 0 END AS priosort, datetime, title, summary
+  SELECT id, NULL::text AS confurl, NULL::text AS urlname, CASE WHEN highpriorityuntil > CURRENT_TIMESTAMP THEN 1 ELSE 0 END AS priosort, datetime, title, summary
   FROM newsevents_news
   WHERE datetime<CURRENT_TIMESTAMP ORDER BY datetime DESC LIMIT 5),
 conf AS (
-  SELECT n.id, c.confurl, 0 AS priosort, datetime, c.conferencename || ': ' || title AS title, summary
+  SELECT n.id, c.confurl, c.urlname, 0 AS priosort, datetime, c.conferencename || ': ' || title AS title, summary
   FROM confreg_conferencenews n
   INNER JOIN confreg_conference c ON c.id=conference_id
   WHERE datetime<CURRENT_TIMESTAMP
   ORDER BY datetime DESC LIMIT 5)
-SELECT id, confurl, datetime, title, summary, priosort FROM main
+SELECT id, confurl, urlname, datetime, title, summary, priosort FROM main
 UNION ALL
-SELECT id, confurl, datetime, title, summary, priosort FROM conf
+SELECT id, confurl, urlname, datetime, title, summary, priosort FROM conf
 ORDER BY priosort DESC, datetime DESC LIMIT 5""")
     for n in news:
         n['summaryhtml'] = markdown.markdown(n['summary'])
         if n['confurl']:
-            n['itemlink'] = n['confurl']
+            n['itemlink'] = '/events/{0}/news/{1}-{2}/'.format(
+                n['urlname'],
+                slugify(n['title']),
+                n['id'],
+            )
         else:
             n['itemlink'] = '/news/{0}-{1}/'.format(slugify(n['title']), n['id'])
 
