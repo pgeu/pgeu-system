@@ -545,6 +545,15 @@ class InvoiceManager(object):
                        message="Flagged invoice {0} as refunded by {1}{2}: {3}".format(invoice.id, settings.CURRENCY_SYMBOL, amount + vatamount, reason),
                        ).save()
 
+            send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+                             settings.INVOICE_NOTIFICATION_RECEIVER,
+                             "Manual invoice flagged as refunded",
+                             """Invoice {} has been flagged as (possibly partially) refunded.
+This invoice does not have an automatic refund processor attached to it,
+which means it has to be *manually* refunded.
+""".format(invoice.id),
+            )
+
         return r
 
     def autorefund_invoice(self, refund):
