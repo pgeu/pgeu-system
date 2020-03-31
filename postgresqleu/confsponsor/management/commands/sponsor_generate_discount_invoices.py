@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.db import transaction
 from django.conf import settings
 
-from datetime import timedelta
+from datetime import timedelta, time
 
 from django.db.models import Q, F, Count
 
