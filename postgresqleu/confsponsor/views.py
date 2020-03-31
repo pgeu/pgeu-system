@@ -1175,9 +1175,6 @@ def sponsor_admin_refund(request, confurlname, sponsorid):
                     if not invoice:
                         form.add_error('refundamount', "Sponsorship does not have an invoice! There is nothing to refund!")
                         raise _AbortValidation()
-                    if not invoice.can_autorefund:
-                        form.add_error('refundamount', "Invoice paid with a method that cannot be automatically refunded")
-                        raise _AbortValidation()
 
                 if invoice:
                     total_refunds = invoice.total_refunds
