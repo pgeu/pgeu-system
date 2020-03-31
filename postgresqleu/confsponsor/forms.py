@@ -220,12 +220,16 @@ class SponsorRefundForm(forms.Form):
         (0, "Cancel sponsorship"),
         (1, "Leave sponsorship active"),
     ), label="Cancel method")
+    confirm = forms.BooleanField(help_text="Confirm that you want to cancel or refund this sponsorship!")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not settings.EU_VAT:
             self.fields['customrefundamount'].label = 'Custom refund amount'
             del self.fields['customrefundamountvat']
+
+        if 'refundamount' not in self.data or 'cancelmethod' not in self.data:
+            del self.fields['confirm']
 
     def clean(self):
         d = super().clean()
