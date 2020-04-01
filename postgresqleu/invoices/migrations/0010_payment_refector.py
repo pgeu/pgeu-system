@@ -127,12 +127,12 @@ AND NOT EXISTS (SELECT 1 FROM invoices_invoice_allowedmethods m WHERE m.invoicep
         migrations.AddField(
             model_name='invoicepaymentmethod',
             name='config',
-            field=django.contrib.postgres.fields.jsonb.JSONField(default={}),
+            field=django.contrib.postgres.fields.jsonb.JSONField(default=dict),
         ),
         migrations.AddField(
             model_name='invoicepaymentmethod',
             name='status',
-            field=django.contrib.postgres.fields.jsonb.JSONField(default={}, encoder=DjangoJSONEncoder),
+            field=django.contrib.postgres.fields.jsonb.JSONField(default=dict, encoder=DjangoJSONEncoder),
         ),
         migrations.AlterField(
             model_name='invoicepaymentmethod',

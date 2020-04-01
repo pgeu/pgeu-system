@@ -38,8 +38,8 @@ class InvoicePaymentMethod(models.Model):
     # Python class name (full path) to the class that implements
     # this payment method.
     classname = models.CharField(max_length=200, null=False, blank=False, verbose_name="Implementation class")
-    config = JSONField(blank=False, null=False, default={})
-    status = JSONField(blank=False, null=False, default={}, encoder=DjangoJSONEncoder)
+    config = JSONField(blank=False, null=False, default=dict)
+    status = JSONField(blank=False, null=False, default=dict, encoder=DjangoJSONEncoder)
 
     def __str__(self):
         return self.name
@@ -361,7 +361,7 @@ class BankStatementRow(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
     description = models.CharField(max_length=300, null=False, blank=False)
     balance = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    other = JSONField(blank=False, null=False, default={}, encoder=DjangoJSONEncoder)
+    other = JSONField(blank=False, null=False, default=dict, encoder=DjangoJSONEncoder)
 
     class Meta:
         unique_together = (
