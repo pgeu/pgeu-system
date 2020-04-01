@@ -52,13 +52,12 @@ STATICFILES_DIRS = (
 # Must always be overridden in local_settings!
 SECRET_KEY = ''
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'postgresqleu.util.middleware.FilterPersistMiddleware',
     'postgresqleu.util.middleware.RedirectMiddleware',
 ]
 
@@ -88,6 +87,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'postgresqleu.util.apps.UtilAppConfig',  # Must be *before* admin
+    'django.contrib.messages',
     'django.contrib.admin',
     'django_markwhat',
     'django.contrib.staticfiles',
@@ -245,7 +245,7 @@ INVOICE_FILENAME_PREFIX = ORG_SHORTNAME.lower()
 
 
 if GLOBAL_LOGIN_USER:
-    MIDDLEWARE_CLASSES.append('postgresqleu.util.middleware.GlobalLoginMiddleware')
+    MIDDLEWARE.append('postgresqleu.util.middleware.GlobalLoginMiddleware')
 
 if ENABLE_PG_COMMUNITY_AUTH:
     AUTHENTICATION_BACKENDS = (

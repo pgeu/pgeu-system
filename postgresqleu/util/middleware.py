@@ -5,48 +5,13 @@ from django.conf import settings
 import base64
 
 
-class FilterPersistMiddleware(object):
-    def process_request(self, request):
-
-        path = request.path
-        if path.find('/admin/django/') != -1:  # Dont waste time if we are not in admin
-            query_string = request.META['QUERY_STRING']
-            if 'HTTP_REFERER' not in request.META:
-                return None
-
-            session = request.session
-            if session.get('redirected', False):  # so that we dont loop once redirected
-                del session['redirected']
-                return None
-
-            referrer = request.META['HTTP_REFERER'].split('?')[0]
-            referrer = referrer[referrer.find('/admin/django'):len(referrer)]
-            key = 'key' + path.replace('/', '_')
-
-            if path == referrer:  # We are in same page as before
-                if query_string == '':  # Filter is empty, delete it
-                    if session.get(key, False):
-                        del session[key]
-                    return None
-                request.session[key] = query_string
-            elif '_directlink=1' in query_string:  # Direct link to a filter, by ourselves, so remove it
-                redirect_to = path + '?' + query_string.replace('&_directlink=1', '')
-                if key in session:
-                    del session[key]
-                return http.HttpResponseRedirect(redirect_to)
-            else:  # We are are coming from another page, restore filter if available
-                if session.get(key, False):
-                    query_string = request.session.get(key)
-                    redirect_to = path + '?' + query_string
-                    request.session['redirected'] = True
-                    return http.HttpResponseRedirect(redirect_to)
-                else:
-                    return None
-        else:
-            return None
-
-
 class GlobalLoginMiddleware(object):
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        return self.get_response(request)
+
     def process_view(self, request, callback, callback_args, callback_kwargs):
         if not settings.GLOBAL_LOGIN_USER or not settings.GLOBAL_LOGIN_PASSWORD:
             # Not configured to do global auth
@@ -79,6 +44,12 @@ class RedirectException(Exception):
 
 
 class RedirectMiddleware(object):
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        return self.get_response(request)
+
     def process_exception(self, request, exception):
         if isinstance(exception, RedirectException):
             return shortcuts.redirect(exception.url)
