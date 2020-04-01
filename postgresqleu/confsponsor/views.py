@@ -177,7 +177,7 @@ def sponsor_view_mail(request, sponsorid, mailid):
 
     mail = get_object_or_404(SponsorMail, Q(levels=sponsor.level) | Q(sponsors=sponsor), conference=sponsor.conference, id=mailid)
 
-    return render(request, 'confsponsor/sent_mail.html', {
+    return render(request, 'confsponsor/sent_mail_user.html', {
         'conference': sponsor.conference,
         'mail': mail,
         })

@@ -1,4 +1,4 @@
-{%extends "confreg/confadmin_base.html" %}
+{%extends "nav_events.html" %}
 {%block title%}Conference Sponsor Email - {{conference}}{%endblock%}
 {%block extrahead%}
 <style>
@@ -7,7 +7,7 @@ tr.error {
 }
 </style>
 {%endblock%}
-{%block layoutblock%}
+{%block content%}
 <h1>Conference Sponsor Email - {{conference}}</h1>
 <table class="table">
  <tr>
@@ -22,21 +22,12 @@ tr.error {
    <th>Subject:</th>
    <td>{{mail.subject}}</td>
  </tr>
- <tr>
-   <th>To:</th>
-   <td>
-     <ul>
-{%if mail.levels.all%}<li>{{mail.levels.all|join:", "}}</li>{%endif%}
-{%if mail.sponsors.all%}<li>{{mail.sponsors.all|join:", "}}</li>{%endif%}
-     </ul>
-   </td>
- </tr>
 </table>
 
 <pre>
 {{mail.message}}
 </pre>
 
-<a href="/events/sponsor/admin/{{conference.urlname}}/" class="btn btn-default btn-block">Back to sponsors</a>
+<a href="../../" class="btn btn-outline-dark">Back to sponsorship</a>
 
 {%endblock%}
