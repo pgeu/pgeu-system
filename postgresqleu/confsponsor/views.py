@@ -48,7 +48,7 @@ def sponsor_dashboard(request):
     # We define "past sponsors" as those older than a month - because we have to pick something.
     currentsponsors = Sponsor.objects.filter(managers=request.user, conference__enddate__gte=today_global() - timedelta(days=31)).order_by('conference__startdate')
     pastsponsors = Sponsor.objects.filter(managers=request.user, conference__enddate__lt=today_global() - timedelta(days=31)).order_by('conference__startdate')
-    conferences = Conference.objects.filter(callforsponsorsopen=True, startdate__gt=today_blobal()).order_by('startdate')
+    conferences = Conference.objects.filter(callforsponsorsopen=True, startdate__gt=today_global()).order_by('startdate')
 
     return render(request, 'confsponsor/dashboard.html', {
         "currentsponsors": currentsponsors,
