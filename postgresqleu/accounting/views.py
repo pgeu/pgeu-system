@@ -7,7 +7,7 @@ from django.db.models import Max
 from django.db import connection, transaction
 from django.core.paginator import Paginator
 
-from datetime import datetime
+from datetime import datetime, date
 
 from postgresqleu.util.request import get_int_or_error
 from postgresqleu.util.auth import authenticate_backend_group
