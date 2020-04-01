@@ -32,7 +32,7 @@ if settings.ENABLE_MEMBERSHIP:
 
 def member_context(request=None):
     def _member():
-        if not request.user.is_authenticated():
+        if not request.user.is_authenticated:
             return None
 
         try:

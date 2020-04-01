@@ -296,7 +296,7 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
         'messages': get_messages(request),
     }
 
-    if request.user and request.user.is_authenticated():
+    if request.user and request.user.is_authenticated:
         d.update({
             'username': request.user.username,
             'userfullname': '{0} {1}'.format(request.user.first_name, request.user.last_name),

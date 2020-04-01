@@ -216,7 +216,7 @@ def confhome(request, confname):
 
     # If there is a registration, redirect to the registration dashboard.
     # If not, or if the user is not logged in, redirect to the conference homepage.
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         if ConferenceRegistration.objects.filter(conference=conference, attendee=request.user).exists():
             return HttpResponseRedirect('register/')
 

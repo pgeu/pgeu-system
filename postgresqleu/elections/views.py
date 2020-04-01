@@ -57,7 +57,7 @@ def election(request, electionid):
         raise Http404("This election has no candidates!")
 
     # Otherwise, we show up the form. This part requires login
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         return HttpResponseRedirect("/login/?next=%s" % request.path)
 
     try:
