@@ -1,3 +1,0 @@
-This app exists explicitly to make sure it's loaded first. That way,
-putting monkey patching and other evil things in the __init__.py for
-it should work.
