@@ -527,7 +527,7 @@ class InvoiceManager(object):
             if invoice.accounting_account:
                 accountingtxt = 'Refund of invoice #{0}: {1}'.format(invoice.id, invoice.title)
                 accrows = [
-                    (invoice.accounting_account, accountingtxt, invoice.total_amount - vatamount, invoice.accounting_object),
+                    (invoice.accounting_account, accountingtxt, amount, invoice.accounting_object),
                 ]
                 if vatamount:
                     accrows.append(
