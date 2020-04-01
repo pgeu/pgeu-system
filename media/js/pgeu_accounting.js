@@ -41,7 +41,7 @@ $(function() {
    $('input.datepicker').datepicker({
       'dateFormat': 'yy-mm-dd',
    });
-   $('.dropdownbox').selectize({selectOnTab: true});
+   $('.dropdownbox').selectize({selectOnTab: false});
    $('.debitbox, .creditbox').change(function() {
       if ($(this).val() != '') {
          $(this).val(Number($(this).val()).toFixed(2));
