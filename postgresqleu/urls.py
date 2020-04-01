@@ -390,9 +390,6 @@ if settings.ENABLE_ELECTIONS:
 
 # Now extend with some fallback URLs as well
 urlpatterns.extend([
-    # Selectable, only used on admin site for now
-    url(r'^admin/selectable/', include('selectable.urls')),
-
     # Admin site
     url(r'^admin/django/', admin.site.urls),
 

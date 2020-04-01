@@ -1,8 +1,5 @@
 from django.contrib import admin
 
-from selectable.forms.widgets import AutoCompleteSelectMultipleWidget
-from postgresqleu.confreg.lookups import RegistrationLookup
-from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
 from postgresqleu.confreg.models import Conference, ConferenceRegistration, RegistrationType
@@ -10,23 +7,17 @@ from .models import Wikipage, WikipageHistory, WikipageSubscriber
 from .models import AttendeeSignup
 
 
-class WikipageAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
+class WikipageAdminForm(ConcurrentProtectedModelForm):
     class Meta:
         model = Wikipage
         exclude = []
-        widgets = {
-            'viewer_attendee': AutoCompleteSelectMultipleWidget(lookup_class=RegistrationLookup),
-            'editor_attendee': AutoCompleteSelectMultipleWidget(lookup_class=RegistrationLookup),
-        }
 
     def __init__(self, *args, **kwargs):
         super(WikipageAdminForm, self).__init__(*args, **kwargs)
         try:
             self.fields['author'].queryset = ConferenceRegistration.objects.filter(conference=self.instance.conference)
             self.fields['viewer_attendee'].queryset = ConferenceRegistration.objects.filter(conference=self.instance.conference)
-            self.fields['viewer_attendee'].widget.widget.update_query_parameters({'conference': self.instance.conference.id})
             self.fields['editor_attendee'].queryset = ConferenceRegistration.objects.filter(conference=self.instance.conference)
-            self.fields['editor_attendee'].widget.widget.update_query_parameters({'conference': self.instance.conference.id})
 
             self.fields['viewer_regtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference)
             self.fields['editor_regtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference)

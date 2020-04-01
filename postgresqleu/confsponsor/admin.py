@@ -5,9 +5,6 @@ from django.forms.utils import ErrorList
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
-from selectable.forms.widgets import AutoCompleteSelectMultipleWidget
-from postgresqleu.accountinfo.lookups import UserLookup
-from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
 from .models import SponsorshipContract, SponsorshipLevel, Sponsor
@@ -60,14 +57,7 @@ class SponsorshipLevelAdmin(admin.ModelAdmin):
     copy_sponsorshiplevel.short_description = "Copy sponsorship level"
 
 
-class SponsorAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
-    class Meta:
-        model = Sponsor
-        exclude = []
-        widgets = {
-            'managers': AutoCompleteSelectMultipleWidget(lookup_class=UserLookup),
-        }
-
+class SponsorAdminForm(ConcurrentProtectedModelForm):
     def __init__(self, *args, **kwargs):
         super(SponsorAdminForm, self).__init__(*args, **kwargs)
         if 'instance' in kwargs:

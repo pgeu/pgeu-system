@@ -1,22 +1,16 @@
 from django.contrib import admin
 from django.forms import ValidationError
 
-from selectable.forms.widgets import AutoCompleteSelectWidget
-from postgresqleu.accountinfo.lookups import UserLookup
-from postgresqleu.util.admin import SelectableWidgetAdminFormMixin
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
 from .models import Invoice, InvoiceLog, InvoiceProcessor, InvoicePaymentMethod
 from .models import InvoiceRefund, VatRate
 
 
-class InvoiceAdminForm(SelectableWidgetAdminFormMixin, ConcurrentProtectedModelForm):
+class InvoiceAdminForm(ConcurrentProtectedModelForm):
     class Meta:
         model = Invoice
         exclude = []
-        widgets = {
-            'recipient_user': AutoCompleteSelectWidget(lookup_class=UserLookup),
-        }
 
     def __init__(self, *args, **kwargs):
         super(InvoiceAdminForm, self).__init__(*args, **kwargs)
