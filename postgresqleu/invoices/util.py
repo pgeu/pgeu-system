@@ -76,7 +76,7 @@ class InvoiceWrapper(object):
         self.invoice.recipient_secret = generate_random_token()
 
         # Generate pdf
-        self.invoice.pdf_invoice = base64.b64encode(self.render_pdf_invoice())
+        self.invoice.pdf_invoice = base64.b64encode(self.render_pdf_invoice()).decode('ascii')
 
         # Indicate that we're finalized
         self.invoice.finalized = True
@@ -213,7 +213,7 @@ class InvoiceWrapper(object):
 
     def email_refund_sent(self, refund):
         # Generate the refund notice so we have something to send
-        refund.refund_pdf = base64.b64encode(self.render_pdf_refund(refund))
+        refund.refund_pdf = base64.b64encode(self.render_pdf_refund(refund)).decode('ascii')
         refund.save()
 
         self._email_something('invoice_refund.txt',
@@ -385,7 +385,7 @@ class InvoiceManager(object):
 
         # Generate a PDF receipt for this, since it's now paid
         wrapper = InvoiceWrapper(invoice)
-        invoice.pdf_receipt = base64.b64encode(wrapper.render_pdf_receipt())
+        invoice.pdf_receipt = base64.b64encode(wrapper.render_pdf_receipt()).decode('ascii')
 
         # Save and we're done!
         invoice.save()

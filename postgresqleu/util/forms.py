@@ -26,7 +26,7 @@ class ConcurrentProtectedModelForm(forms.ModelForm):
         return {k: v for k, v in list(self.initial.items()) if k in list(self.fields.keys()) and k not in self.exclude_fields_from_validation}
 
     def update_protected_fields(self):
-        self.fields['_validator'].initial = Signer().sign(base64.urlsafe_b64encode(pickle.dumps(self._filter_initial(), -1)))
+        self.fields['_validator'].initial = Signer().sign(base64.urlsafe_b64encode(pickle.dumps(self._filter_initial(), -1)).decode('ascii'))
 
     def __init__(self, *args, **kwargs):
         r = super(ConcurrentProtectedModelForm, self).__init__(*args, **kwargs)
