@@ -679,7 +679,7 @@ which means it has to be *manually* refunded.
             ), bulk=False)
 
         # Add the ways it can be paid
-        invoice.allowedmethods = paymentmethods
+        invoice.allowedmethods.set(paymentmethods)
         invoice.save()
 
         # That should be it. Finalize so we get a PDF, and then
