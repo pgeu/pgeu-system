@@ -13,7 +13,7 @@ class BraintreeTransaction(models.Model):
     disbursedamount = models.DecimalField(null=True, blank=True, decimal_places=2, max_digits=20)
     method = models.CharField(max_length=100, null=True, blank=True)
     accounting_object = models.CharField(max_length=30, null=True, blank=True)
-    paymentmethod = models.ForeignKey(InvoicePaymentMethod, null=False, blank=False)
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, null=False, blank=False, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.transid
@@ -25,4 +25,4 @@ class BraintreeLog(models.Model):
     message = models.TextField(null=False, blank=False)
     error = models.BooleanField(null=False, blank=False, default=False)
     sent = models.BooleanField(null=False, blank=False, default=False)
-    paymentmethod = models.ForeignKey(InvoicePaymentMethod, null=False, blank=False)
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, null=False, blank=False, on_delete=models.CASCADE)

@@ -4,7 +4,7 @@ from postgresqleu.invoices.models import InvoicePaymentMethod, InvoiceRefund
 
 
 class StripeCheckout(models.Model):
-    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False, on_delete=models.CASCADE)
     createdat = models.DateTimeField(null=False, blank=False)
     invoiceid = models.IntegerField(null=False, blank=False, unique=True)
     amount = models.DecimalField(decimal_places=2, max_digits=20, null=False)
@@ -18,16 +18,16 @@ class StripeCheckout(models.Model):
 
 
 class StripeRefund(models.Model):
-    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False, on_delete=models.CASCADE)
     chargeid = models.CharField(max_length=200, null=False, blank=False)
     refundid = models.CharField(max_length=200, null=False, blank=False, unique=True)
-    invoicerefundid = models.OneToOneField(InvoiceRefund, null=False, blank=False, unique=True)
+    invoicerefundid = models.OneToOneField(InvoiceRefund, null=False, blank=False, unique=True, on_delete=models.CASCADE)
     amount = models.DecimalField(decimal_places=2, max_digits=20, null=False)
     completedat = models.DateTimeField(null=True, blank=True)
 
 
 class StripePayout(models.Model):
-    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False, on_delete=models.CASCADE)
     payoutid = models.CharField(max_length=200, null=False, blank=False, unique=True)
     amount = models.DecimalField(decimal_places=2, max_digits=20, null=False)
     sentat = models.DateTimeField(null=False, blank=False)
@@ -44,7 +44,7 @@ class StripeLog(models.Model):
     message = models.TextField(null=False, blank=False)
     error = models.BooleanField(null=False, blank=False, default=False)
     sent = models.BooleanField(null=False, blank=False, default=False)
-    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ('-id', )

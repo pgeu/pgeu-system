@@ -4,7 +4,7 @@ from postgresqleu.util.validators import validate_urlname
 
 
 class NewsPosterProfile(models.Model):
-    author = models.OneToOneField(User, primary_key=True)
+    author = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
     urlname = models.CharField(max_length=50, null=False, blank=False, unique=True, verbose_name="URL name",
                                validators=[validate_urlname, ])
     fullname = models.CharField(max_length=100, null=False, blank=False, verbose_name="Full name")
@@ -20,7 +20,7 @@ class News(models.Model):
     title = models.CharField(max_length=128, blank=False)
     datetime = models.DateTimeField(blank=False)
     summary = models.TextField(blank=False)
-    author = models.ForeignKey(NewsPosterProfile, null=True)
+    author = models.ForeignKey(NewsPosterProfile, null=True, on_delete=models.CASCADE)
     highpriorityuntil = models.DateTimeField(null=True, blank=True, verbose_name="High priority until")
     inrss = models.BooleanField(null=False, default=True, verbose_name="Include in RSS feed")
     inarchive = models.BooleanField(null=False, default=True, verbose_name="Include in archives")

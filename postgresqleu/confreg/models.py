@@ -543,7 +543,7 @@ class ConferenceRegistration(models.Model):
     canceledat = models.DateTimeField(null=True, blank=True, verbose_name="Canceled at")
     lastmodified = models.DateTimeField(null=False, blank=False, auto_now=True)
     checkedinat = models.DateTimeField(null=True, blank=True, verbose_name="Checked in at")
-    checkedinby = models.ForeignKey('ConferenceRegistration', null=True, blank=True, verbose_name="Checked by by")
+    checkedinby = models.ForeignKey('ConferenceRegistration', null=True, blank=True, verbose_name="Checked by by", on_delete=models.CASCADE)
 
     # If an invoice is generated, link to it here so we can find our
     # way back easily.
@@ -767,8 +767,8 @@ class ConferenceRegistration(models.Model):
 
 
 class ConferenceRegistrationLog(models.Model):
-    reg = models.ForeignKey(ConferenceRegistration, null=False, blank=False)
-    user = models.ForeignKey(User, null=True, blank=True)
+    reg = models.ForeignKey(ConferenceRegistration, null=False, blank=False, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
     ts = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     txt = models.CharField(max_length=8000, null=False, blank=False)
 
@@ -1205,7 +1205,7 @@ class DiscountCode(models.Model):
 
 
 class SavedReportDefinition(models.Model):
-    conference = models.ForeignKey(Conference, null=False, blank=False)
+    conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     title = models.CharField(max_length=100, null=False, blank=False)
     definition = JSONField(blank=False, null=False, encoder=DjangoJSONEncoder)
 
@@ -1315,7 +1315,7 @@ class ConferenceNews(models.Model):
     datetime = models.DateTimeField(blank=False, default=timezone.now)
     title = models.CharField(max_length=128, blank=False)
     summary = models.TextField(blank=False)
-    author = models.ForeignKey(NewsPosterProfile)
+    author = models.ForeignKey(NewsPosterProfile, on_delete=models.CASCADE)
     inrss = models.BooleanField(null=False, default=True, verbose_name="Include in RSS feed")
     tweeted = models.BooleanField(null=False, blank=False, default=False)
 
@@ -1352,8 +1352,8 @@ class ConferenceTweetQueue(models.Model):
     image = ImageBinaryField(null=True, blank=True, max_length=1000000)
     imagethumb = ImageBinaryField(null=True, blank=True, max_length=100000)
     approved = models.BooleanField(null=False, default=False, blank=False)
-    author = models.ForeignKey(User, null=True, blank=True)
-    approvedby = models.ForeignKey(User, null=True, blank=True, related_name="tweetapprovals")
+    author = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+    approvedby = models.ForeignKey(User, null=True, blank=True, related_name="tweetapprovals", on_delete=models.CASCADE)
     sent = models.BooleanField(null=False, default=False, blank=False)
     tweetid = models.BigIntegerField(null=False, blank=False, default=0, db_index=True)
     replytotweetid = models.BigIntegerField(null=True, blank=True, verbose_name="Reply to tweet")
@@ -1369,7 +1369,7 @@ class ConferenceIncomingTweet(models.Model):
     statusid = models.BigIntegerField(null=False, blank=False, unique=True)
     created = models.DateTimeField(null=False, blank=False)
     processedat = models.DateTimeField(null=True, blank=True)
-    processedby = models.ForeignKey(User, null=True, blank=True)
+    processedby = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
     text = models.CharField(max_length=512, null=False, blank=False)
     replyto_statusid = models.BigIntegerField(null=True, blank=True, db_index=True)
     author_id = models.BigIntegerField(null=False, blank=False)
@@ -1383,6 +1383,6 @@ class ConferenceIncomingTweet(models.Model):
 
 
 class ConferenceIncomingTweetMedia(models.Model):
-    incomingtweet = models.ForeignKey(ConferenceIncomingTweet, null=False, blank=False)
+    incomingtweet = models.ForeignKey(ConferenceIncomingTweet, null=False, blank=False, on_delete=models.CASCADE)
     sequence = models.IntegerField(null=False, blank=False)
     mediaurl = models.URLField(max_length=1024, null=False, blank=False)

@@ -59,7 +59,7 @@ class InvoicePaymentMethod(models.Model):
 
 
 class InvoiceRefund(models.Model):
-    invoice = models.ForeignKey("Invoice", null=False, blank=False)
+    invoice = models.ForeignKey("Invoice", null=False, blank=False, on_delete=models.CASCADE)
     reason = models.CharField(max_length=500, null=False, blank=True, default='', help_text="Reason for refunding of invoice")
 
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=False)
@@ -311,7 +311,7 @@ class InvoiceLog(models.Model):
 
 
 class PendingBankTransaction(models.Model):
-    method = models.ForeignKey(InvoicePaymentMethod, null=False, blank=False)
+    method = models.ForeignKey(InvoicePaymentMethod, null=False, blank=False, on_delete=models.CASCADE)
     methodidentifier = models.IntegerField(null=False, blank=False)
     created = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=False)
@@ -325,17 +325,17 @@ class PendingBankMatcher(models.Model):
     created = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     pattern = models.CharField(max_length=200, null=False, blank=False)
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=False)
-    foraccount = models.ForeignKey(Account, null=False, blank=False)
-    journalentry = models.ForeignKey(JournalEntry, null=False, blank=False)
+    foraccount = models.ForeignKey(Account, null=False, blank=False, on_delete=models.CASCADE)
+    journalentry = models.ForeignKey(JournalEntry, null=False, blank=False, on_delete=models.CASCADE)
 
 
 class BankTransferFees(models.Model):
-    invoice = models.ForeignKey(Invoice, null=False, blank=False)
+    invoice = models.ForeignKey(Invoice, null=False, blank=False, on_delete=models.CASCADE)
     fee = models.DecimalField(max_digits=10, decimal_places=2, null=False)
 
 
 class BankFileUpload(models.Model):
-    method = models.ForeignKey(InvoicePaymentMethod, null=False, blank=False)
+    method = models.ForeignKey(InvoicePaymentMethod, null=False, blank=False, on_delete=models.CASCADE)
     created = models.DateTimeField(null=False, blank=False, auto_now_add=True, db_index=True)
     parsedrows = models.IntegerField(null=False, blank=False)
     newtrans = models.IntegerField(null=False, blank=False)
@@ -352,9 +352,9 @@ class BankFileUpload(models.Model):
 
 
 class BankStatementRow(models.Model):
-    method = models.ForeignKey(InvoicePaymentMethod, null=False, blank=False)
+    method = models.ForeignKey(InvoicePaymentMethod, null=False, blank=False, on_delete=models.CASCADE)
     created = models.DateTimeField(null=False, blank=False, auto_now_add=True, db_index=True)
-    fromfile = models.ForeignKey(BankFileUpload, null=True, blank=True)
+    fromfile = models.ForeignKey(BankFileUpload, null=True, blank=True, on_delete=models.CASCADE)
 
     uniqueid = models.TextField(null=True, blank=True)
     date = models.DateField(null=False, blank=False)

@@ -15,7 +15,7 @@ class TransactionInfo(models.Model):
     transtext = models.CharField(max_length=1000, null=False, blank=False)
     matched = models.BooleanField(null=False, blank=False)
     matchinfo = models.CharField(max_length=1000, null=True, blank=True)
-    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False, on_delete=models.CASCADE)
 
     def setmatched(self, msg):
         self.matched = True
@@ -27,4 +27,4 @@ class ErrorLog(models.Model):
     timestamp = models.DateTimeField(null=False, blank=False)
     message = models.TextField(null=False, blank=False)
     sent = models.BooleanField(null=False, blank=False)
-    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=True, null=True)
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=True, null=True, on_delete=models.CASCADE)

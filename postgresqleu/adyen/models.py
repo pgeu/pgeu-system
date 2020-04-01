@@ -10,7 +10,7 @@ class RawNotification(models.Model):
     dat = models.DateTimeField(null=False, blank=False, auto_now_add=True, unique=True)
     contents = models.TextField(null=False, blank=False)
     confirmed = models.BooleanField(null=False, default=False)
-    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False, on_delete=models.CASCADE)
 
     def __str__(self):
         return "%s" % self.dat
@@ -48,7 +48,7 @@ class Report(models.Model):
     downloadedat = models.DateTimeField(null=True, blank=True)
     contents = models.TextField(null=True, blank=True)
     processedat = models.DateTimeField(null=True, blank=True)
-    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False, on_delete=models.CASCADE)
 
 
 class TransactionStatus(models.Model):
@@ -62,7 +62,7 @@ class TransactionStatus(models.Model):
     method = models.CharField(max_length=100, null=True, blank=True)
     notes = models.CharField(max_length=1000, null=True, blank=True)
     accounting_object = models.CharField(max_length=30, null=True, blank=True)
-    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.pspReference
@@ -92,4 +92,4 @@ class AdyenLog(models.Model):
     message = models.TextField(null=False, blank=False)
     error = models.BooleanField(null=False, blank=False, default=False)
     sent = models.BooleanField(null=False, blank=False, default=False)
-    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False, on_delete=models.CASCADE)

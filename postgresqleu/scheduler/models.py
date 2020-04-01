@@ -62,7 +62,7 @@ class ScheduledJob(models.Model):
 
 
 class JobHistory(models.Model):
-    job = models.ForeignKey(ScheduledJob, null=False, blank=False)
+    job = models.ForeignKey(ScheduledJob, null=False, blank=False, on_delete=models.CASCADE)
     time = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     success = models.BooleanField(null=False)
     runtime = models.DurationField(null=False)

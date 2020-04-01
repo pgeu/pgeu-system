@@ -12,7 +12,7 @@ class TrustlyTransaction(models.Model):
     invoiceid = models.IntegerField(null=False, blank=False)
     redirecturl = models.CharField(max_length=2000, null=False, blank=False)
     orderid = models.BigIntegerField(null=False, blank=False)
-    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False, on_delete=models.CASCADE)
 
     def __str__(self):
         return "%s" % self.orderid
@@ -22,7 +22,7 @@ class TrustlyRawNotification(models.Model):
     dat = models.DateTimeField(null=False, blank=False, auto_now_add=True, unique=True)
     contents = models.TextField(null=False, blank=False)
     confirmed = models.BooleanField(null=False, default=False)
-    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False, on_delete=models.CASCADE)
 
     def __str__(self):
         return "%s" % self.dat
@@ -48,7 +48,7 @@ class TrustlyLog(models.Model):
     message = models.TextField(null=False, blank=False)
     error = models.BooleanField(null=False, blank=False, default=False)
     sent = models.BooleanField(null=False, blank=False, default=False)
-    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False, on_delete=models.CASCADE)
 
 
 class ReturnAuthorizationStatus(models.Model):
@@ -57,7 +57,7 @@ class ReturnAuthorizationStatus(models.Model):
 
 
 class TrustlyWithdrawal(models.Model):
-    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False)
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False, on_delete=models.CASCADE)
     gluepayid = models.BigIntegerField(null=False, blank=False)
     amount = models.DecimalField(decimal_places=2, max_digits=20, null=False, blank=False)
     message = models.CharField(max_length=200, null=False, blank=True)

@@ -148,8 +148,8 @@ class SponsorMail(models.Model):
 
 
 class SponsorScanner(models.Model):
-    sponsor = models.ForeignKey(Sponsor, null=False, blank=False)
-    scanner = models.ForeignKey(ConferenceRegistration, null=False, blank=False)
+    sponsor = models.ForeignKey(Sponsor, null=False, blank=False, on_delete=models.CASCADE)
+    scanner = models.ForeignKey(ConferenceRegistration, null=False, blank=False, on_delete=models.CASCADE)
     token = models.TextField(null=False, blank=False, unique=True)
 
     class Meta:
@@ -161,9 +161,9 @@ class SponsorScanner(models.Model):
 
 
 class ScannedAttendee(models.Model):
-    sponsor = models.ForeignKey(Sponsor, null=False, blank=False)
-    scannedby = models.ForeignKey(ConferenceRegistration, null=False, blank=False, related_name='scanned_attendees')
-    attendee = models.ForeignKey(ConferenceRegistration, null=False, blank=False, related_name='scanned_by')
+    sponsor = models.ForeignKey(Sponsor, null=False, blank=False, on_delete=models.CASCADE)
+    scannedby = models.ForeignKey(ConferenceRegistration, null=False, blank=False, related_name='scanned_attendees', on_delete=models.CASCADE)
+    attendee = models.ForeignKey(ConferenceRegistration, null=False, blank=False, related_name='scanned_by', on_delete=models.CASCADE)
     scannedat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     note = models.TextField(null=False, blank=True)
 
