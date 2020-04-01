@@ -115,6 +115,18 @@ class SponsorAdmin(admin.ModelAdmin):
     invoice_link.short_description = 'Invoice'
 
 
-admin.site.register(SponsorshipContract)
+class SponsorshipContractAdminForm(ConcurrentProtectedModelForm):
+    exclude_fields_from_validation = ['contractpdf', ]
+
+    class Meta:
+        model = SponsorshipContract
+        exclude = []
+
+
+class SponsorshipContractAdmin(admin.ModelAdmin):
+    form = SponsorshipContractAdminForm
+
+
+admin.site.register(SponsorshipContract, SponsorshipContractAdmin)
 admin.site.register(SponsorshipLevel, SponsorshipLevelAdmin)
 admin.site.register(Sponsor, SponsorAdmin)
