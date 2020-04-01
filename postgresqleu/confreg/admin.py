@@ -79,6 +79,10 @@ class AdditionalOptionListFilter(admin.SimpleListFilter):
 #
 # General admin classes
 #
+class ConferenceSeriesAdmin(admin.ModelAdmin):
+    autocomplete_fields = ('administrators', )
+
+
 class ConferenceAdminForm(ConcurrentProtectedModelForm):
     class Meta:
         model = Conference
@@ -101,6 +105,7 @@ class ConferenceAdmin(admin.ModelAdmin):
     form = ConferenceAdminForm
     list_display = ('conferencename', 'active', 'callforpapersopen', 'callforsponsorsopen', 'feedbackopen', 'startdate', 'enddate')
     ordering = ('-startdate', )
+    autocomplete_fields = ('administrators', 'testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', )
 
 
 class ConferenceRegistrationForm(ConcurrentProtectedModelForm):
@@ -126,6 +131,7 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
     filter_horizontal = ('additionaloptions',)
     exclude = ('invoice', 'bulkpayment', )
     readonly_fields = ('invoice_link', 'bulkpayment_link', 'lastmodified', )
+    autocomplete_fields = ('attendee', 'registrator', )
 
     def payconfirmedat_short(self, inst):
         return inst.payconfirmedat
@@ -187,6 +193,7 @@ class ConferenceSessionAdmin(admin.ModelAdmin):
     list_filter = ['conference', TrackListFilter, 'status', ]
     search_fields = ['title', ]
     filter_horizontal = ('speaker',)
+    autocomplete_fields = ('speaker', )
 
 
 class ConferenceSessionScheduleSlotAdmin(admin.ModelAdmin):
@@ -248,6 +255,7 @@ class ConferenceAdditionalOptionAdminForm(ConcurrentProtectedModelForm):
         try:
             self.fields['requires_regtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference)
             self.fields['mutually_exclusive'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.instance.conference)
+            self.fields['additionaldays'].queryset = RegistrationDay.objects.filter(conference=self.instance.conference)
         except Conference.DoesNotExist:
             # If we don't have a conference yet, we can just ignore the fact
             # that we couldn't list it.
@@ -258,6 +266,7 @@ class ConferenceAdditionalOptionAdmin(admin.ModelAdmin):
     list_display = ['conference', 'name', 'maxcount', 'cost', 'used_count', 'confirmed_count', 'unconfirmed_count']
     list_filter = ['conference', ]
     ordering = ['conference', 'name', ]
+    search_fields = ['name', ]
     filter_horizontal = ('requires_regtype', 'mutually_exclusive', )
     form = ConferenceAdditionalOptionAdminForm
 
@@ -292,6 +301,7 @@ class SpeakerAdminForm(ConcurrentProtectedModelForm):
 class SpeakerAdmin(admin.ModelAdmin):
     list_display = ['user', 'email', 'fullname', 'has_abstract', 'has_photo']
     search_fields = ['fullname', 'user__email']
+    autocomplete_fields = ('user', )
     ordering = ['fullname']
     form = SpeakerAdminForm
 
@@ -333,6 +343,7 @@ class PrepaidBatchAdminForm(ConcurrentProtectedModelForm):
         super(PrepaidBatchAdminForm, self).__init__(*args, **kwargs)
         try:
             self.fields['sponsor'].queryset = Sponsor.objects.filter(conference=self.instance.conference)
+            self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference)
         except Conference.DoesNotExist:
             pass
 
@@ -340,6 +351,7 @@ class PrepaidBatchAdminForm(ConcurrentProtectedModelForm):
 class PrepaidBatchAdmin(admin.ModelAdmin):
     list_display = ['id', 'conference', 'buyer', 'buyername', 'total_num', 'used_num', ]
     list_filter = ['conference', ]
+    autocomplete_fields = ('buyer', )
     inlines = [PrepaidVoucherInline, ]
     form = PrepaidBatchAdminForm
 
@@ -437,12 +449,14 @@ class DiscountCodeAdminForm(ConcurrentProtectedModelForm):
 class DiscountCodeAdmin(admin.ModelAdmin):
     list_display = ['code', 'conference', 'maxuses', 'count', ]
     list_filter = ['conference', ]
+    autocomplete_fields = ('registrations', 'sponsor_rep', )
     form = DiscountCodeAdminForm
 
 
 class BulkPaymentAdmin(admin.ModelAdmin):
     list_display = ['adminstring', 'conference', 'user', 'numregs', 'paidat', 'ispaid', ]
     list_filter = ['conference', ]
+    autocomplete_fields = ['user', ]
 
 
 class AttendeeMailAdminForm(ConcurrentProtectedModelForm):
@@ -454,11 +468,13 @@ class AttendeeMailAdminForm(ConcurrentProtectedModelForm):
         super(AttendeeMailAdminForm, self).__init__(*args, **kwargs)
         if 'instance' in kwargs:
             self.fields['regclasses'].queryset = RegistrationClass.objects.filter(conference=self.instance.conference)
+            self.fields['addopts'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.instance.conference)
 
 
 class AttendeeMailAdmin(admin.ModelAdmin):
     form = AttendeeMailAdminForm
     filter_horizontal = ('regclasses', )
+    autocomplete_fields = ('registrations', 'pending_regs', )
 
 
 class PendingAdditionalOrderAdminForm(ConcurrentProtectedModelForm):
@@ -477,6 +493,7 @@ class PendingAdditionalOrderAdminForm(ConcurrentProtectedModelForm):
 class PendingAdditionalOrderAdmin(admin.ModelAdmin):
     form = PendingAdditionalOrderAdminForm
     list_display = ('reg', 'createtime', 'payconfirmedat')
+    autocomplete_fields = ('invoice', )
 
 
 class VolunteerSlotAdminForm(ConcurrentProtectedModelForm):
@@ -501,7 +518,7 @@ class VolunteerSlotAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'title')
 
 
-admin.site.register(ConferenceSeries)
+admin.site.register(ConferenceSeries, ConferenceSeriesAdmin)
 admin.site.register(Conference, ConferenceAdmin)
 admin.site.register(RegistrationClass, RegistrationClassAdmin)
 admin.site.register(RegistrationDay, RegistrationDayAdmin)

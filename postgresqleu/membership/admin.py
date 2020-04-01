@@ -30,6 +30,8 @@ class MemberAdmin(admin.ModelAdmin):
     list_display = ('user', 'fullname', 'country', 'membersince', 'paiduntil', )
     ordering = ('user',)
     list_filter = (ActiveMemberFilter, )
+    search_fields = ('fullname', )
+    autocomplete_fields = ('user', 'activeinvoice', )
 
     def change_view(self, request, object_id, extra_context=None):
         member = Member(pk=object_id)
@@ -41,11 +43,13 @@ class MemberAdmin(admin.ModelAdmin):
 class MemberLogAdmin(admin.ModelAdmin):
     list_display = ('member', 'timestamp', 'message', )
     ordering = ('-timestamp', )
+    autocomplete_fields = ('member', )
 
 
 class MeetingAdmin(admin.ModelAdmin):
     list_display = ('name', 'dateandtime', )
     filter_horizontal = ('members', )
+    autocomplete_fields = ('members', )
 
 
 admin.site.register(Member, MemberAdmin)

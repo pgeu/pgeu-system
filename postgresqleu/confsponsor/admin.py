@@ -95,6 +95,7 @@ class SponsorAdmin(admin.ModelAdmin):
     inlines = [SponsorClaimedBenefitInline, ]
     list_filter = ['conference', LevelListFilter, ]
     list_display = ['name', 'level', 'conference', ]
+    autocomplete_fields = ('managers', )
 
     def invoice_link(self, inst):
         if inst.invoice:

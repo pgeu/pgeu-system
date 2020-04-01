@@ -45,6 +45,7 @@ class WikipageSubscriberInline(admin.TabularInline):
 class WikipageAdmin(admin.ModelAdmin):
     form = WikipageAdminForm
     inlines = [WikipageHistoryInline, WikipageSubscriberInline]
+    autocomplete_fields = ('author', 'viewer_attendee', 'editor_attendee')
 
 
 class AttendeeSignupAdminForm(ConcurrentProtectedModelForm):

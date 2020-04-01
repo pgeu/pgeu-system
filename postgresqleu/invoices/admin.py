@@ -58,6 +58,7 @@ class InvoiceAdmin(admin.ModelAdmin):
     form = InvoiceAdminForm
     exclude = ['pdf_invoice', 'pdf_receipt', ]
     filter_horizontal = ['allowedmethods', ]
+    search_fields = ['title', 'id', ]
 
 
 class InvoiceLogAdmin(admin.ModelAdmin):

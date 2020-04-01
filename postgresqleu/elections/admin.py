@@ -15,6 +15,7 @@ class VoteAdminForm(ModelForm):
 
 class VoteAdmin(admin.ModelAdmin):
     list_display = ('election', 'voter', 'candidate', 'score')
+    autocomplete_fields = ('voter', )
     ordering = ['election', ]
     form = VoteAdminForm
 
