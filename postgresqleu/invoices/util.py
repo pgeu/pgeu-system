@@ -1,4 +1,6 @@
 from django.db import transaction
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
 from django.conf import settings
 from django.utils import timezone
 
@@ -495,6 +497,13 @@ class InvoiceManager(object):
     def refund_invoice(self, invoice, reason, amount, vatamount, vatrate):
         # Initiate a refund of an invoice if there is a payment provider that supports it.
         # Otherwise, flag the invoice as refunded, and assume the user took care of it manually.
+
+        # Validate that we're not refunding more than there should be
+        already = invoice.invoicerefund_set.all().aggregate(amount=Coalesce(Sum('amount'), 0), vatamount=Coalesce(Sum('vatamount'), 0))
+        if vatamount > invoice.total_vat - already['vatamount']:
+            raise Exception("Trying to refund more VAT than what remains on invoice!")
+        if amount > invoice.total_amount - invoice.total_vat - already['amount']:
+            raise Exception("Trying to refund more non-VAT than what remains on invoice!")
 
         r = InvoiceRefund(invoice=invoice, reason=reason, amount=amount, vatamount=vatamount, vatrate=vatrate)
         r.save()
