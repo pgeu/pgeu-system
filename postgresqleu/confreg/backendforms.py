@@ -1106,6 +1106,36 @@ class PurchasedVoucherRefundForm(django.forms.Form):
 
 
 #
+# Form for refunding a multi registration
+#
+class BulkPaymentRefundForm(django.forms.Form):
+    amount = django.forms.DecimalField(decimal_places=2, required=False, label="Refund amount (ex VAT)")
+    vatamount = django.forms.DecimalField(decimal_places=2, required=False, label="Refund VAT amount")
+    confirm = django.forms.BooleanField(label="Confirm", required=True)
+
+    def __init__(self, invoice, *args, **kwargs):
+        self.invoice = invoice
+        super().__init__(*args, **kwargs)
+
+        total = invoice.total_refunds
+
+        self.fields['amount'].validators = [MinValueValidator(0), MaxValueValidator(total['remaining']['amount'])]
+        if total['amount'] > 0:
+            self.fields['amount'].help_text = '{}{} of {}{} remains to be refunded on this invoice.'.format(settings.CURRENCY_SYMBOL, total['remaining']['amount'], settings.CURRENCY_SYMBOL, invoice.total_amount - invoice.total_vat)
+        else:
+            self.fields['amount'].help_text = 'Invoice total value is {}{}'.format(settings.CURRENCY_SYMBOL, invoice.total_amount - invoice.total_vat)
+
+        if not settings.EU_VAT:
+            del self.fields['vatamount']
+        else:
+            self.fields['vatamount'].validators = [MinValueValidator(0), MaxValueValidator(total['remaining']['vatamount'])]
+            if total['vatamount'] > 0:
+                self.fields['vatamount'].help_text = '{}{} of {}{} remains to be refunded on this invoice.'.format(settings.CURRENCY_SYMBOL, total['remaining']['vatamount'], settings.CURRENCY_SYMBOL, invoice.total_vat)
+            else:
+                self.fields['vatamount'].help_text = 'Invoice total value is {}{}'.format(settings.CURRENCY_SYMBOL, invoice.total_vat)
+
+
+#
 # Form for sending email
 #
 class BackendSendEmailForm(django.forms.Form):

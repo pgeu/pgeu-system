@@ -16,7 +16,7 @@
   <tr{%if b.id == highlight%} class="success"{%endif%}>
     <td>{{b.user.first_name}} {{b.user.last_name}} ({{b.user.username}})</td>
     <td>{{b.createdat}}</td>
-    <td>#{%if user.is_superuser%}<a href="/invoiceadmin/{{b.invoice.id}}/">{{b.invoice.id}}</a>{%else%}{{b.invoice.id}}{%endif%}</td>
+    <td>#{%if user.is_superuser%}<a href="/invoiceadmin/{{b.invoice.id}}/">{{b.invoice.id}}</a>{%else%}{{b.invoice.id}}{%endif%}{%if not b.conferenceregistration_set.exists%}<br/><a href="{{b.id}}/refund/" class="btn btn-xs btn-default">Refund</a>{%endif%}</td>
     <td>{{b.payment_method_description|linebreaksbr}}</td>
     <td>
       <ul class="nopad">

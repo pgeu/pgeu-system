@@ -56,6 +56,7 @@ from .backendforms import BackendSendEmailForm
 from .backendforms import BackendRefundPatternForm
 from .backendforms import ConferenceInvoiceCancelForm
 from .backendforms import PurchasedVoucherRefundForm
+from .backendforms import BulkPaymentRefundForm
 
 from .campaigns import get_campaign_from_id
 
@@ -363,6 +364,55 @@ def multiregs(request, urlname):
         'conference': conference,
         'bulkpays': BulkPayment.objects.select_related('user', 'invoice__paidusing').prefetch_related('conferenceregistration_set').filter(conference=conference).order_by('-paidat', '-createdat'),
         'highlight': get_int_or_error(request.GET, 'b', -1),
+        'helplink': 'registrations',
+    })
+
+
+@transaction.atomic
+def multireg_refund(request, urlname, bulkid):
+    conference = get_authenticated_conference(request, urlname)
+
+    bulkpay = get_object_or_404(BulkPayment, pk=bulkid, conference=conference)
+    if bulkpay.conferenceregistration_set.exists():
+        messages.error(request, "This bulk payment has registrations, cannot be canceled!")
+        return HttpResponseRedirect("../../")
+
+    invoice = bulkpay.invoice
+    if not invoice:
+        messages.error(request, "This bulk payment does not have an invoice!")
+        return HttpResonseRedirect("../../")
+    if not invoice.paidat:
+        messages.error(request, "This bulk payment invoice has not been paid!")
+        return HttpResonseRedirect("../../")
+
+    if request.method == 'POST':
+        form = BulkPaymentRefundForm(invoice, data=request.POST)
+        if form.is_valid():
+            manager = InvoiceManager()
+            manager.refund_invoice(invoice, 'Multi registration refunded', form.cleaned_data['amount'], form.cleaned_data['vatamount'], conference.vat_registrations)
+
+            send_simple_mail(conference.notifyaddr,
+                             conference.notifyaddr,
+                             'Multi registration {} refunded'.format(bulkpay.id),
+                             'Multi registration {} purchased by {} {} has been refunded.\nNo registrations were active in this multi registration, and the multi registration has now been deleted.\n'.format(bulkpay.id, bulkpay.user.first_name, bulkpay.user.last_name),
+                             sendername=conference.conferencename)
+
+            bulkpay.delete()
+
+            messages.info(request, 'Multi registration has been refunded and deleted.')
+            return HttpResponseRedirect("../../")
+    else:
+        form = BulkPaymentRefundForm(invoice, initial={'amount': invoice.total_amount - invoice.total_vat, 'vatamount': invoice.total_vat})
+
+    return render(request, 'confreg/admin_backend_form.html', {
+        'conference': conference,
+        'basetemplate': 'confreg/confadmin_base.html',
+        'form': form,
+        'whatverb': 'Refund',
+        'what': 'multi registration',
+        'savebutton': 'Refund',
+        'cancelurl': '../../',
+        'breadcrumbs': [('/events/admin/{}/multiregs/'.format(conference.urlname), 'Multi Registrations'), ],
         'helplink': 'registrations',
     })
 
