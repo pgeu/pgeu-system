@@ -403,6 +403,9 @@ def prepaidorder_refund(request, urlname, orderid):
     if not invoice:
         messages.error(request, 'Order does not have an invoice, there is nothing to refund!')
         return HttpResponseRedirect("../../")
+    if not invoice.paidat:
+        messages.error(request, 'Invoice for this order has not been paid, there is nothing to refund!')
+        return HttpResponseRedirect("../../")
 
     if request.method == 'POST':
         form = PurchasedVoucherRefundForm(data=request.POST)
