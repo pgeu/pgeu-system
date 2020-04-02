@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.utils.html import escape
 from django.db import transaction
+from django.db.models import Count
 from django.core.exceptions import PermissionDenied
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse, HttpResponseRedirect, Http404
@@ -378,7 +379,7 @@ def prepaidorders(request, urlname):
 
     return render(request, 'confreg/admin_prepaidorders_list.html', {
         'conference': conference,
-        'orders': PurchasedVoucher.objects.select_related('sponsor', 'user', 'regtype', 'invoice', 'batch').filter(conference=conference).order_by('-invoice__paidat'),
+        'orders': PurchasedVoucher.objects.select_related('sponsor', 'user', 'invoice', 'batch').filter(conference=conference).annotate(num_used=Count('batch__prepaidvoucher__user')).order_by('-invoice__paidat', '-invoice__id'),
         'helplink': 'vouchers',
     })
 

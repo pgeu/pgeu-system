@@ -9,6 +9,7 @@
     <th>Buyer</th>
     <th>Sponsor</th>
     <th>Batch</th>
+    <th>Used</th>
     <th>Invoice</th>
     <th>Paid at</th>
     <th>Paid by</th>
@@ -18,6 +19,7 @@
     <td>{{o.user.first_name}} {{o.user.last_name}} ({{o.user.username}} &lt;{{o.user.email}}&gt;)</td>
     <td>{%if o.sponsor%}<a href="/events/sponsor/admin/{{conference.urlname}}/{{o.sponsor.id}}/">{{o.sponsor}}</a>{%endif%}</td>
     <td><a href="../prepaid/{{o.batch.id}}/">{{o.batch.id}}</a></td>
+    <td>{%if o.batch%}{{o.num_used}}/{{o.num}}{%endif%}</td>
     <td>#{%if user.is_superuser%}<a href="/invoiceadmin/{{o.invoice.id}}/">{{o.invoice.id}}</a>{%else%}{{o.invoice.id}}{%endif%}</td>
     <td>{%if o.invoice.paidat %}{{o.invoice.paidat}}{%else%}<strong>not</strong> paid{%endif%}</td>
     <td>{%if o.invoice.paidat %}{{o.invoice.payment_method_description}}{%else%}<strong>not</strong> paid{%endif%}</td>
