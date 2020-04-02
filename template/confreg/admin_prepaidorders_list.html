@@ -20,7 +20,7 @@
     <td>{%if o.sponsor%}<a href="/events/sponsor/admin/{{conference.urlname}}/{{o.sponsor.id}}/">{{o.sponsor}}</a>{%endif%}</td>
     <td><a href="../prepaid/{{o.batch.id}}/">{{o.batch.id}}</a></td>
     <td>{%if o.batch%}{{o.num_used}}/{{o.num}}{%endif%}</td>
-    <td>#{%if user.is_superuser%}<a href="/invoiceadmin/{{o.invoice.id}}/">{{o.invoice.id}}</a>{%else%}{{o.invoice.id}}{%endif%}</td>
+    <td>#{%if user.is_superuser%}<a href="/invoiceadmin/{{o.invoice.id}}/">{{o.invoice.id}}</a>{%else%}{{o.invoice.id}}{%endif%}{%if o.batch and not o.num_used%} <a href="{{o.id}}/refund/" class="btn btn-xs btn-default">Refund</a>{%endif%}</td>
     <td>{%if o.invoice.paidat %}{{o.invoice.paidat}}{%else%}<strong>not</strong> paid{%endif%}</td>
     <td>{%if o.invoice.paidat %}{{o.invoice.payment_method_description}}{%else%}<strong>not</strong> paid{%endif%}</td>
   </tr>

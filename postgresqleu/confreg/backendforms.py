@@ -1099,6 +1099,13 @@ class ConferenceInvoiceCancelForm(django.forms.Form):
 
 
 #
+# Form for refunding a purchased order
+#
+class PurchasedVoucherRefundForm(django.forms.Form):
+    confirm = django.forms.BooleanField(label="Confirm", required=True)
+
+
+#
 # Form for sending email
 #
 class BackendSendEmailForm(django.forms.Form):

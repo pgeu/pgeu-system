@@ -19,6 +19,7 @@ from postgresqleu.util.messaging.twitter import Twitter, TwitterSetup
 from postgresqleu.util.backendviews import backend_list_editor, backend_process_form
 from postgresqleu.util.request import get_int_or_error
 from postgresqleu.confreg.util import get_authenticated_conference
+from postgresqleu.mailqueue.util import send_simple_mail
 
 from .jinjafunc import JINJA_TEMPLATE_ROOT
 from .jinjapdf import render_jinja_ticket, render_jinja_badges
@@ -26,6 +27,7 @@ from .util import send_conference_mail, get_conference_or_404
 
 from .models import Conference, ConferenceSeries
 from .models import ConferenceRegistration, Speaker
+from .models import PrepaidBatch
 from .models import BulkPayment
 from .models import AccessToken
 from .models import ShirtSize
@@ -53,6 +55,7 @@ from .backendforms import TweetCampaignSelectForm
 from .backendforms import BackendSendEmailForm
 from .backendforms import BackendRefundPatternForm
 from .backendforms import ConferenceInvoiceCancelForm
+from .backendforms import PurchasedVoucherRefundForm
 
 from .campaigns import get_campaign_from_id
 
@@ -380,6 +383,62 @@ def prepaidorders(request, urlname):
     return render(request, 'confreg/admin_prepaidorders_list.html', {
         'conference': conference,
         'orders': PurchasedVoucher.objects.select_related('sponsor', 'user', 'invoice', 'batch').filter(conference=conference).annotate(num_used=Count('batch__prepaidvoucher__user')).order_by('-invoice__paidat', '-invoice__id'),
+        'helplink': 'vouchers',
+    })
+
+
+@transaction.atomic
+def prepaidorder_refund(request, urlname, orderid):
+    conference = get_authenticated_conference(request, urlname)
+
+    order = get_object_or_404(PurchasedVoucher, pk=orderid, conference=conference)
+
+    if PrepaidBatch.objects.filter(pk=order.batch_id).aggregate(used=Count('prepaidvoucher__user'))['used'] > 0:
+        # This link should not exist in the first place, but double check if someone
+        # used the voucher in between the click.
+        messages.error(request, 'Cannot refund order, there are used vouchers in the batch!')
+        return HttpResponseRedirect("../../")
+
+    invoice = order.invoice
+    if not invoice:
+        messages.error(request, 'Order does not have an invoice, there is nothing to refund!')
+        return HttpResponseRedirect("../../")
+
+    if request.method == 'POST':
+        form = PurchasedVoucherRefundForm(data=request.POST)
+        if form.is_valid():
+            # Actually issue the refund
+            manager = InvoiceManager()
+            manager.refund_invoice(invoice, 'Prepaid order refunded', invoice.total_amount - invoice.total_vat, invoice.total_vat, conference.vat_registrations)
+
+            send_simple_mail(conference.notifyaddr,
+                             conference.notifyaddr,
+                             'Prepaid order {} refunded'.format(order.id),
+                             'Prepaid order {} purchased by {} {} has been refunded.\nNo vouchers were in use, and the order and batch have both been deleted.\n'.format(order.id, order.user.first_name, order.user.last_name),
+                             sendername=conference.conferencename)
+            order.batch.delete()
+            order.delete()
+
+            messages.info(request, 'Order has been refunded and deleted.')
+            return HttpResponseRedirect("../../")
+    else:
+        form = PurchasedVoucherRefundForm()
+
+    if settings.EU_VAT:
+        note = 'You are about to refund {}{} ({}{} + {}{} VAT) for invoice {}. Please confirm that this is what you want!'.format(settings.CURRENCY_SYMBOL, invoice.total_amount, settings.CURRENCY_SYMBOL, invoice.total_amount - invoice.total_vat, settings.CURRENCY_SYMBOL, invoice.total_vat, invoice.id)
+    else:
+        note = 'You are about to refund {}{} for invoice {}. Please confirm that this is what you want!'.format(settings.CURRENCY_SYMBOL, invoice.total_amount, invoice.id)
+
+    return render(request, 'confreg/admin_backend_form.html', {
+        'conference': conference,
+        'basetemplate': 'confreg/confadmin_base.html',
+        'form': form,
+        'note': note,
+        'whatverb': 'Refund',
+        'what': 'repaid vouchers',
+        'savebutton': 'Refund',
+        'cancelurl': '../../',
+        'breadcrumbs': [('/events/admin/{}/prepaidorders/'.format(conference.urlname), 'Prepaid Voucher Orders'), ],
         'helplink': 'vouchers',
     })
 
