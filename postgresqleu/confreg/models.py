@@ -674,9 +674,9 @@ class ConferenceRegistration(models.Model):
                 return "Paid by individual invoice, since canceled without refund"
         if self.payconfirmedby == "Bulk paid":
             if self.bulkpayment:
-                return "Paid by bulk payment #{0}.\n Bulk {1}".format(self.bulkpayment.id, self.bulkpayment.payment_method_description)
+                return "Paid by bulk payment #{0} ({1} total registrations).\n Bulk {2}".format(self.bulkpayment.id, self.bulkpayment.numregs, self.bulkpayment.payment_method_description)
             else:
-                return "Paid by bulk payment, since canceled without refund"
+                return "Paid by bulk payment, which has since been canceled"
         if self.payconfirmedby.startswith("Manual/"):
             return "Manually confirmed"
 
