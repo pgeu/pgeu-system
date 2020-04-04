@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
                 ('duedate', models.DateTimeField()),
                 ('canceltime', models.DateTimeField(help_text='Invoice will automatically be canceled at this time', null=True, blank=True)),
                 ('total_amount', models.IntegerField()),
-                ('finalized', models.BooleanField(default=False, help_text='Invoice is finalized, should not ever be changed again')),
+                ('finalized', models.BooleanField(default=False, blank=True, help_text='Invoice is finalized, should not ever be changed again')),
                 ('deleted', models.BooleanField(default=False, help_text='This invoice has been deleted')),
                 ('deletion_reason', models.CharField(default='', help_text='Reason for deletion of invoice', max_length=500, blank=True)),
                 ('refunded', models.BooleanField(default=False, help_text='This invoice has been refunded')),
