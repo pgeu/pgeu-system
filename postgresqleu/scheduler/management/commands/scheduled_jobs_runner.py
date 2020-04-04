@@ -10,7 +10,6 @@ from django.core.management.base import BaseCommand, CommandError
 from django.core.management import load_command_class
 from django.db import connection
 from django.utils import autoreload, timezone
-from django.utils.six.moves import _thread as thread
 from django.conf import settings
 
 from datetime import timedelta
@@ -19,6 +18,7 @@ import io
 import sys
 import os
 import subprocess
+import threading
 import select
 
 from postgresqleu.mailqueue.util import send_simple_mail
@@ -35,21 +35,16 @@ class Command(BaseCommand):
         # and need to be updated in a future version of django
 
         # Start our work in a background thread
-        thread.start_new_thread(self.inner_handle, ())
+        bthread = threading.Thread(target=self.inner_handle)
+        bthread.setDaemon(True)
+        bthread.start()
 
-        try:
-            while True:
-                if autoreload.USE_INOTIFY:
-                    change = autoreload.inotify_code_changed()
-                else:
-                    change = autoreload.code_changed()
-                if change == autoreload.FILE_MODIFIED:
-                    self.stderr.write("Underlying code changed, exiting for a restart")
-                    sys.exit(0)
-                # Poll for changes every 10 seconds if the inotify method doesn't work
-                time.sleep(10)
-        except KeyboardInterrupt:
-            pass
+        reloader = autoreload.get_reloader()
+        while not reloader.should_stop:
+            reloader.run(bthread)
+
+        self.stderr.write("Underlying code changed, exiting for a restart")
+        sys.exit(0)
 
     def inner_handle(self):
         with connection.cursor() as curs:
