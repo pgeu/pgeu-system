@@ -863,7 +863,7 @@ def register_bank_transaction(method, methodidentifier, amount, transtext, sende
             (status, _invoice, _processor) = manager.process_incoming_payment_for_invoice(
                 invoice,
                 amount,
-                "Bank transfer from {0} with id {1}".format(method.internaldescription, methodidentifier),
+                "Bank transfer from method {0} with id {1}".format(method.id, methodidentifier),
                 0,  # No fees on bank transfers supported
                 pm.config('bankaccount'),
                 0,   # No fees, so no fees account

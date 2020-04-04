@@ -379,7 +379,7 @@ def _flag_invoices(request, trans, invoices, pm, fee_account):
         (status, _invoice, _processor) = manager.process_incoming_payment_for_invoice(
             invoice,
             invoice.total_amount,
-            "Bank transfer from {0} with id {1}, manually matched".format(trans.method.internaldescription, trans.methodidentifier),
+            "Bank transfer from method {0} with id {1}, manually matched".format(trans.method.id, trans.methodidentifier),
             fee,
             pm.config('bankaccount'),
             fee_account and fee_account.num,
