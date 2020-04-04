@@ -17,9 +17,7 @@
  {%endif%}
 {%endfor%}
     dataTable.addRows([
-{%autoescape off%}
 {%for r in graphdata%}[{{r|join:","}}],{%endfor%}
-{%endautoescape%}
   ]);
 
     var options = {
