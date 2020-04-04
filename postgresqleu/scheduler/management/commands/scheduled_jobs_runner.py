@@ -190,6 +190,7 @@ class Command(BaseCommand):
 
         try:
             cmd.execute(no_color=True,
+                        force_color=False,
                         stdout=output,
                         stderr=output)
             success = True
