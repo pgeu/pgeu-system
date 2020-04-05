@@ -3118,31 +3118,12 @@ WHERE dc.conference_id={0} AND (r.conference_id={0} OR r.conference_id IS NULL) 
 def admin_registration_list(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
-    skey = request.GET.get('sort', '-date')
-    if skey[0] == '-':
-        revsort = True
-        skey = skey[1:]
-    else:
-        revsort = False
-
-    sortmap = {
-        'last': 'lastname',
-        'first': 'firstname',
-        'company': 'company',
-        'type': 'regtype__sortkey',
-        'date': 'payconfirmedat',
-        'cancel': 'canceledat',
-    }
-    if skey not in sortmap:
-        return HttpResponse("Bad sort key.")
-
     return render(request, 'confreg/admin_registration_list.html', {
         'conference': conference,
         'waitlist_active': conference.waitlist_active(),
-        'sortkey': (revsort and '-' or '') + skey,
         'regs': ConferenceRegistration.objects.select_related('regtype', 'registrationwaitlistentry', 'invoice', 'bulkpayment').extra(select={
             'waitlist_offers_made': """CASE WHEN "confreg_registrationwaitlistentry"."registration_id" IS NULL THEN 0 ELSE (SELECT count(*) FROM confreg_registrationwaitlisthistory h WHERE h.waitlist_id="confreg_registrationwaitlistentry"."registration_id" AND h.text LIKE 'Made offer%%')  END""",
-        }).filter(conference=conference).order_by((revsort and '-' or '') + sortmap[skey], '-created'),
+        }).filter(conference=conference),
         'regsummary': exec_to_dict("SELECT count(1) FILTER (WHERE payconfirmedat IS NOT NULL AND canceledat IS NULL) AS confirmed, count(1) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed, count(1) FILTER (WHERE canceledat IS NOT NULL) AS canceled FROM confreg_conferenceregistration WHERE conference_id=%(confid)s", {'confid': conference.id})[0],
         'breadcrumbs': (('/events/admin/{0}/regdashboard/'.format(urlname), 'Registration dashboard'),),
         'helplink': 'registrations',

@@ -17,14 +17,20 @@ a.nocolor {
 <script language="javascript">
 $(document).ready(function() {
    var dtable = $('#datatable').DataTable({
-      'paging': false,
-      'info': false,
-      'ordering': false,
+      'paging': true,
+      'lengthMenu': [[50, 100, 200, -1], [50, 100, 200, "All"]],
+      'info': true,
+      'orderCellsTop': true,
       'columnDefs': [
          { targets: 'coltype-nosort', orderable: false},
          { targets: 'coltype-nosearch', searchable: false},
-
+         { targets: [0], orderData: [0,1]},         /* Firstname sorts with lastname */
+         { targets: [1], orderData: [1,0]},         /* Firstname sorts with lastname */
+         { targets: [4], orderData: [4],    orderSequence: ['desc', 'asc']},        /* Registration date */
+         { targets: [5], orderData: [5, 4], orderSequence: ['desc', 'asc']},        /* Cancel date */
+         { targets: [6], orderData: [6, 4]},        /* Waitlist */
       ],
+      'order': [[4, 'desc']],
    });
    $('#datatable').data('datatable', dtable);
 });
@@ -41,13 +47,14 @@ $(document).ready(function() {
 <table class="table table-bordered table-striped table-hover table-condensed datatable-tbl" id="datatable">
 <thead>
  <tr>
-  <th><a href="?sort={%if sortkey == "last" %}-{%endif%}last">Last name</a></th>
-  <th><a href="?sort={%if sortkey == "first" %}-{%endif%}first">First name</a></th>
-  <th><a href="?sort={%if sortkey == "company" %}-{%endif%}company">Company</a></th>
-  <th><a href="?sort={%if sortkey == "typ" %}-{%endif%}type">Registration type</a></th>
-  <th class="coltype-nosearch"><a href="?sort={%if sortkey == "date" %}-{%endif%}date">Confirmed</a> / <a href="?sort={%if sortkey == "cancel" %}-{%endif%}cancel">Canceled</a></th>
-  {%if waitlist_active%}<th>Waitlist status</th>{%endif%}
-  <th><i id="mailcheckboxtoggler" class="glyphicon glyphicon-envelope" title="Select all registrations"></i></th>
+  <th>Last name</th>
+  <th>First name</th>
+  <th>Company</th>
+  <th>Registration type</th>
+  <th class="coltype-nosearce">Confirmed</th>
+  <th title="Canceled">Canc.</th>
+  {%if waitlist_active%}<th class="coltype-nosort">Waitlist status</th>{%endif%}
+  <th class="coltype-nosort coltype-nosearch"><i id="mailcheckboxtoggler" class="glyphicon glyphicon-envelope" title="Select all registrations"></i></th>
  </tr>
 </thead>
 <tbody>
@@ -56,8 +63,9 @@ $(document).ready(function() {
   <td><a class="nocolor" href="{{r.id}}/"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a> {{r.lastname}}</td>
   <td>{{r.firstname}}</td>
   <td>{{r.company}}</td>
-  <td>{{r.regtype.regtype}}</td>
-  <td>{%if r.payconfirmedat%}{{r.payconfirmedat}} <i class="small glyphicon glyphicon-{{r.paymenticon}}" title="{{r.payment_method_description|striplinebreaks}}"></i>{%elif r.invoice%}Invoice generated{%elif r.bulkpayment%}Bulk payment generated{%endif%}{%if r.canceledat%}<br/>Canceled {{r.canceledat}}{%endif%}</td>
+  <td data-order="{{r.regtype.sortkey}}">{{r.regtype.regtype}}</td>
+  <td class="nobr" {%if not r.payconfirmedat%} title="Registration created {{r.created}}"{%endif%} data-order="{%if r.payconfirmedat%}1:{{r.payconfirmedat}}{%elif r.invoice%}2:{{r.invoice.issuedat}}{%elif r.bulkpay%}3:{{r.bulkpay.invoice.issuedat}}{%else%}9:{{r.created}}{%endif%}">{%if r.payconfirmedat%}{{r.payconfirmedat}} <i class="small glyphicon glyphicon-{{r.paymenticon}}" title="{{r.payment_method_description|striplinebreaks}}"></i>{%elif r.invoice%}Invoice generated{%elif r.bulkpayment%}Bulk payment generated{%endif%}</td>
+  <td class="nobr">{%if r.canceledat%}{{r.canceledat}}{%endif%}</td>
 {%if waitlist_active %}
   <td>{%if r.registrationwaitlistentry %}
    {%if r.payconfirmedat%}Accepted{%else%}
