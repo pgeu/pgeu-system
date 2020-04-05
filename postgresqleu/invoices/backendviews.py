@@ -251,7 +251,7 @@ def bankfiles(request):
                     'hasvaluefor': hasvaluefor,
                     'anyerror': anyerror,
                     'filename': f.name,
-                    'fc': base64.b64encode(f.read()),
+                    'fc': base64.b64encode(f.read()).decode('ascii'),
                     'topadmin': 'Invoices',
                     'helplink': 'payment',
                     'breadcrumbs': [('../../', 'Bank files'), ],
