@@ -628,7 +628,7 @@ def refundexposure(request):
     authenticate_backend_group(request, 'Invoice managers')
 
     data = exec_to_dict("""WITH t AS (
- SELECT c.conferencename as confname, coalesce(r.invoice_id, b.invoice_id) as invoiceid
+ SELECT DISTINCT c.conferencename as confname, coalesce(r.invoice_id, b.invoice_id) as invoiceid
  FROM confreg_conferenceregistration r
  INNER JOIN confreg_conference c ON c.id=r.conference_id
  LEFT JOIN confreg_bulkpayment b on b.id=r.bulkpayment_id

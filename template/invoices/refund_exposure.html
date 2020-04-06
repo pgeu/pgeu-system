@@ -6,7 +6,8 @@
 <p>
   This view shows the refund exposure if upcoming conferences. Refund exposure is
   defined as any attendee invoices that have been paid but might need to be
-  refunded in case the event is canceled.
+  refunded in case the event is canceled. Note that partial invoice refunds
+  are <em>not</em> counted, those invoices are counted at full value.
 </p>
 <p>
   The calculation includes all upcoming conferences as well as any conference that
@@ -18,7 +19,7 @@
 <tr>
   <th>Conference</th>
   <th>Payment provider</th>
-  <th>Registrations</th>
+  <th>Invoices</th>
   <th>Total exposure</th>
 </tr>
 {%for d in data %}
