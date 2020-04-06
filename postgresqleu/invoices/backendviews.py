@@ -12,6 +12,7 @@ from postgresqleu.util.auth import authenticate_backend_group
 from postgresqleu.util.payment import payment_implementations
 from postgresqleu.util.pagination import simple_pagination
 from postgresqleu.util.request import get_int_or_error
+from postgresqleu.util.db import exec_to_dict
 from postgresqleu.accounting.util import create_accounting_entry, get_account_choices
 from postgresqleu.invoices.util import InvoiceManager
 
@@ -619,5 +620,31 @@ def refunds(request):
         'refunds': refunds,
         'page_range': page_range,
         'breadcrumbs': [('/admin/invoices/refunds/', 'Refunds'), ],
+        'helplink': 'payment',
+    })
+
+
+def refundexposure(request):
+    authenticate_backend_group(request, 'Invoice managers')
+
+    data = exec_to_dict("""WITH t AS (
+ SELECT c.conferencename as confname, coalesce(r.invoice_id, b.invoice_id) as invoiceid
+ FROM confreg_conferenceregistration r
+ INNER JOIN confreg_conference c ON c.id=r.conference_id
+ LEFT JOIN confreg_bulkpayment b on b.id=r.bulkpayment_id
+ WHERE c.enddate > CURRENT_DATE-'1 month'::interval
+  and payconfirmedat is not null and canceledat is null
+  and (r.invoice_id is not null or b.invoice_id is not null)
+)
+SELECT confname, internaldescription, count(*), sum(total_amount)
+FROM invoices_invoice i
+INNER JOIN t on i.id=t.invoiceid
+INNER JOIN invoices_invoicepaymentmethod m on m.id=paidusing_id
+GROUP BY rollup(confname), rollup(internaldescription)
+ORDER BY 1,2;
+""")
+
+    return render(request, 'invoices/refund_exposure.html', {
+        'data': data,
         'helplink': 'payment',
     })

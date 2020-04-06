@@ -1,0 +1,39 @@
+{%extends "adm/admin_base.html" %}
+{%load humanize%}
+{%block title%}Refund exposure{%endblock%}
+{%block layoutblock %}
+<h1>Refund exposure</h1>
+<p>
+  This view shows the refund exposure if upcoming conferences. Refund exposure is
+  defined as any attendee invoices that have been paid but might need to be
+  refunded in case the event is canceled.
+</p>
+<p>
+  The calculation includes all upcoming conferences as well as any conference that
+  finished in the past month.
+</p>
+
+<div class="row">
+<table class="table table-sm table-striped table-hover">
+<tr>
+  <th>Conference</th>
+  <th>Payment provider</th>
+  <th>Registrations</th>
+  <th>Total exposure</th>
+</tr>
+{%for d in data %}
+{%if d.confname is null %}{%ifchanged d.confname%}<tr><th class="success" colspan="4">Totals per payment provider</th></tr>{%endifchanged%}{%endif%}
+<tr{%if d.internaldescription is null%} class="info bold"{%endif%}>
+  <td>{%ifchanged d.confname%}{{d.confname|default:""}}{%endifchanged%}</td>
+  <td>{{d.internaldescription|default:"Total"}}</td>
+  <td align="right">{{d.count}}</td>
+  <td align="right">{{d.sum|default:"0"|intcomma}}</td>
+</tr>
+{%endfor%}
+</table>
+
+{%include "adm/include/paginator.html" with pageobjects=refunds %}
+
+</div>{#row#}
+
+{%endblock%}

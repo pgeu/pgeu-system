@@ -2,6 +2,10 @@
   white-space:nowrap;
 }
 
+.bold {
+  font-weight: bold;
+}
+
 .sthrough {
     text-decoration: line-through;
 }
