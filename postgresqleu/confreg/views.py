@@ -1392,7 +1392,7 @@ def session_slides(request, confname, sessionid, slideid):
 
     session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False, status=1)
     slides = get_object_or_404(ConferenceSessionSlides, session=session, id=slideid)
-    return HttpResponse(slides.content,
+    return HttpResponse(bytes(slides.content),
                         content_type='application/pdf')
 
 
