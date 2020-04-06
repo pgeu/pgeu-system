@@ -2,7 +2,7 @@
 {%load humanize%}
 {%block title%}Refunds{%endblock%}
 {%block layoutblock %}
-<h1>Invoices</h1>
+<h1>Refunds</h1>
 
 <div class="row">
 <table class="table table-sm table-striped table-hover">
@@ -24,6 +24,7 @@
  <td>{{refund.completed|default:""}}</td>
  <td>{{refund.invoice.paidusing.internaldescription}}</td>
  <td>{{refund.reason}}</td>
+</tr>
 {%endfor%}
 </table>
 
