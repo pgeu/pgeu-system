@@ -103,6 +103,14 @@ class PaypalAPI(object):
                 yield r
                 continue
 
+            if code == 'T0303':
+                # Bank deposit, doesn't have normal details
+                r['EMAIL'] = self.pm.config('email')
+                r['NAME'] = self.pm.config('email')
+                r['SUBJECT'] = 'Bank deposit to paypal'
+                yield r
+                continue
+
             if code == 'T1201':
                 # Chargeback, also doesn't have normal details
                 r['EMAIL'] = self.pm.config('email')
