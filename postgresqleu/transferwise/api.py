@@ -126,12 +126,18 @@ class TransferwiseApi(object):
 
     def make_transfer(self, counterpart_name, counterpart_account, amount, reference, xuuid):
         # Create a recipient account
+        name = re.sub(r'\d+', '', counterpart_name.replace(',', ' '))
+        if ' ' not in name:
+            # Transferwise requires at least a two part name. Since the recipient name
+            # isn't actually important, just duplicate it...
+            name = name + ' ' + name
+
         acc = self.post(
             'accounts',
             {
                 'profile': self.get_profile(),
                 'currency': settings.CURRENCY_ABBREV,
-                'accountHolderName': re.sub(r'\d+', '', counterpart_name.replace(',', ' ')),
+                'accountHolderName': name,
                 'type': 'iban',
                 'details': {
                     'IBAN': counterpart_account,
