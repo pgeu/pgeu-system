@@ -103,6 +103,14 @@ class PaypalAPI(object):
                 yield r
                 continue
 
+            if code == 'T0300':
+                # General funding of paypal account, such as a direct debit
+                r['EMAIL'] = self.pm.config('email')
+                r['NAME'] = self.pm.config('email')
+                r['SUBJECT'] = 'Funding of Paypal account'
+                yield r
+                continue
+
             if code == 'T0303':
                 # Bank deposit, doesn't have normal details
                 r['EMAIL'] = self.pm.config('email')
