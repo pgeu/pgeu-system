@@ -24,7 +24,7 @@ class Command(BaseCommand):
     help = 'Send API-based refunds to providers'
 
     class ScheduledJob:
-        scheduled_interval = timedelta(hours=4)
+        scheduled_interval = timedelta(hours=1)
 
         @classmethod
         def should_run(self):
