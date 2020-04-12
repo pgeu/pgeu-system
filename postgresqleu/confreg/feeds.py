@@ -7,7 +7,7 @@ from django.template.defaultfilters import slugify
 from .models import Conference
 from .util import get_conference_or_404
 
-from postgresqleu.util.db import exec_to_dict
+from postgresqleu.util.db import exec_to_dict, ensure_conference_timezone
 
 
 class LatestEvents(Feed):
@@ -39,13 +39,14 @@ class ConferenceNewsFeed(Feed):
         return obj.confurl
 
     def items(self, obj):
-        return exec_to_dict("""SELECT n.id, c.urlname, datetime, c.conferencename || ' - ' || title AS title, summary
+        with ensure_conference_timezone(None):
+            return exec_to_dict("""SELECT n.id, c.urlname, datetime, c.conferencename || ' - ' || title AS title, summary
 FROM confreg_conferencenews n
 INNER JOIN confreg_conference c ON c.id=conference_id
 WHERE datetime<CURRENT_TIMESTAMP AND inrss AND conference_id=%(cid)s
 ORDER BY datetime DESC LIMIT 10""", {
-            'cid': obj.id,
-        })
+                'cid': obj.id,
+            })
 
     def item_title(self, news):
         return news['title']

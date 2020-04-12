@@ -197,6 +197,8 @@ def filter_float_str(f, n):
 # string, assume it's iso format and convert it to a date first.
 def filter_datetimeformat(value, fmt):
     if isinstance(value, date) or isinstance(value, datetime) or isinstance(value, time):
+        if isinstance(value, datetime) and timezone.is_aware(value):
+            value = timezone.localtime(value)
         return value.strftime(fmt)
     else:
         return dateutil.parser.parse(value).strftime(fmt)

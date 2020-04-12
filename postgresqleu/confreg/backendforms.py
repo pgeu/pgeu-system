@@ -6,6 +6,7 @@ import django.forms
 import django.forms.widgets
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
+from django.utils import timezone
 from django.conf import settings
 
 import datetime
@@ -126,7 +127,7 @@ class BackendSuperConferenceForm(BackendForm):
     class Meta:
         model = Conference
         fields = ['conferencename', 'urlname', 'series', 'startdate', 'enddate', 'location',
-                  'tzname', 'timediff', 'contactaddr', 'sponsoraddr', 'notifyaddr', 'confurl', 'administrators',
+                  'tzname', 'contactaddr', 'sponsoraddr', 'notifyaddr', 'confurl', 'administrators',
                   'jinjadir', 'accounting_object', 'vat_registrations', 'vat_sponsorship',
                   'paymentmethods', ]
         widgets = {

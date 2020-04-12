@@ -28,9 +28,15 @@ class Command(BaseCommand):
 
         @classmethod
         def should_run(self):
+            if not settings.TWITTER_CLIENT or not settings.TWITTER_CLIENTSECRET:
+                # If we don't have twitter set up, don't run.
+                return False
+
+            # We check for conferences to run at two days before and two days after to cover
+            # any extreme timezone differences.
             return Conference.objects.filter(twitterreminders_active=True,
-                                             startdate__lte=today_global() + timedelta(days=1),
-                                             enddate__gte=today_global() - timedelta(days=1)) \
+                                             startdate__lte=today_global() + timedelta(days=2),
+                                             enddate__gte=today_global() - timedelta(days=2)) \
                                      .exclude(twitter_token='') \
                                      .exclude(twitter_secret='').exists()
 
@@ -46,22 +52,26 @@ class Command(BaseCommand):
         # Only conferences that are actually running right now need to be considered.
         # Normally this is likely just one.
         # We can also filter for conferences that actually have reminders active.
-        # Right now that's only twitter reminders, butin the future there cna be
+        # Right now that's only twitter reminders, but in the future there can be
         # more plugins.
         has_error = False
         for conference in Conference.objects.filter(twitterreminders_active=True,
-                                                    startdate__lte=today_global() + timedelta(days=1),
-                                                    enddate__gte=today_global() - timedelta(days=1)) \
+                                                    startdate__lte=today_global() + timedelta(days=2),
+                                                    enddate__gte=today_global() - timedelta(days=2)) \
                                             .exclude(twitter_token='') \
                                             .exclude(twitter_secret=''):
+
+            # Re-get the conference object to switch the timezone for django
+            conference = get_conference_or_404(conference.urlname)
+
             tw = Twitter(conference)
             with transaction.atomic():
                 # Sessions that can take reminders (yes we could make a more complete join at one
                 # step here, but that will likely fall apart later with more integrations anyway)
                 for s in ConferenceSession.objects.select_related('room') \
                                                   .filter(conference=conference,
-                                                          starttime__gt=timezone.now() - timedelta(hours=conference.timediff),
-                                                          starttime__lt=timezone.now() - timedelta(hours=conference.timediff) + timedelta(minutes=15),
+                                                          starttime__gt=timezone.now(),
+                                                          starttime__lt=timezone.now() + timedelta(minutes=15),
                                                           status=1,
                                                           reminder_sent=False):
                     for reg in ConferenceRegistration.objects.filter(
@@ -70,7 +80,7 @@ class Command(BaseCommand):
 
                         msg = """Hello! We'd like to remind you that your session "{0}" is starting soon (at {1}) in room {2}.""".format(
                             s.title,
-                            s.starttime.strftime("%H:%M"),
+                            timezone.localtime(s.starttime).strftime("%H:%M"),
                             s.room and s.room.roomname or 'unknown',
                         )
                         if reg.twittername:

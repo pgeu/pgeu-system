@@ -16,6 +16,7 @@ import json
 from .jinjapdf import render_jinja_badges
 
 from postgresqleu.util.db import exec_to_dict
+from postgresqleu.util.db import ensure_conference_timezone
 from postgresqleu.countries.models import Country
 from .models import ConferenceRegistration, RegistrationType, ConferenceAdditionalOption, ShirtSize
 from .models import STATUS_CHOICES
@@ -493,7 +494,8 @@ WHERE r.conference_id=%(conference_id)s {}
 GROUP BY r.id, conference.id, rt.id, rc.id, country.iso, s.id
 ORDER BY {}""".format(where, ", ".join([o.get_orderby_field() for o in ofields]))
 
-    result = exec_to_dict(query, params)
+    with ensure_conference_timezone(conference):
+        result = exec_to_dict(query, params)
 
     if format == 'html':
         writer = ReportWriterHtml(request, conference, title, borders)

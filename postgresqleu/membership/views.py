@@ -152,10 +152,10 @@ def _meeting(request, member, meeting, isproxy):
             return HttpResponse("Access denied.")
 
     # Allow four hours in the past, just in case
-    if meeting.dateandtime + timedelta(hours=4) < datetime.now():
+    if meeting.dateandtime + timedelta(hours=4) < timezone.now():
         return HttpResponse("Meeting is in the past.")
 
-    if member.paiduntil < meeting.dateandtime.date():
+    if member.paiduntil < timezone.localdate(meeting.dateandtime):
         return HttpResponse("Your membership expires before the meeting")
 
     if not meeting.joining_active:
@@ -205,7 +205,7 @@ def meeting_proxy(request, meetingid):
         if not meeting.members.filter(pk=member.pk).exists():
             return HttpResponse("Access denied.")
 
-    if member.paiduntil < meeting.dateandtime.date():
+    if member.paiduntil < timezone.localdate(meeting.dateandtime):
         return HttpResponse("Your membership expires before the meeting")
 
     # Do we have one already?

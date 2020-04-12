@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django import forms
 from django.http import HttpResponse
 from django.db.models import Q
+from django.utils import timezone
 from django.conf import settings
 
 from datetime import timedelta
@@ -102,11 +103,11 @@ def build_linear_pdf_schedule(conference, room, tracks, day, colored, pagesize, 
         canvas.showPage()
 
     for s in sessions:
-        if s.starttime.date() != lastdate:
+        if timezone.localdate(s.starttime) != lastdate:
             if lastdate is not None:
                 # New page for a new day!
                 _finalize_page()
-            lastdate = s.starttime.date()
+            lastdate = timezone.localdate(s.starttime)
             tbldata = []
             tblstyle = copy.copy(default_tbl_style)
 
@@ -115,7 +116,7 @@ def build_linear_pdf_schedule(conference, room, tracks, day, colored, pagesize, 
         else:
             st_title.textColor = st_speakers.textColor = colors.black
 
-        tstr = Paragraph("%s - %s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")), st_time)
+        tstr = Paragraph("%s - %s" % (timezone.localtime(s.starttime).strftime("%H:%M"), timezone.localtime(s.endtime).strftime("%H:%M")), st_time)
         if s.cross_schedule:
             # Just add a blank row for cross schedule things, so we get the time on there
             tbldata.extend([(tstr, '')])
@@ -146,7 +147,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
     groupedbyday = defaultdict(dict)
     lastday = None
     for s in sessions:
-        d = s.starttime.date()
+        d = timezone.localdate(s.starttime)
         if lastday != d:
             # New day!
             groupedbyday[d] = {
@@ -260,7 +261,7 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
                         canvas.setFillColor(colors.white)
                 canvas.rect(s_left, s_top, thisroomwidth, s_height, stroke=1, fill=colored)
 
-                timestampstr = "%s-%s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M"))
+                timestampstr = "%s-%s" % (timezone.localtime(s.starttime).strftime("%H:%M"), timezone.localtime(s.endtime).strftime("%H:%M"))
                 if colored and s.track and s.track.fgcolor:
                     timestampstyle.textColor = s.track.fgcolor
                 ts = Paragraph(timestampstr, timestampstyle)

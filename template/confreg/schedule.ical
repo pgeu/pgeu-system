@@ -1,11 +1,13 @@
-BEGIN:VCALENDAR
+{% load tz %}{% timezone "UTC" %}BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//postgresqleu/confreg//NONSGML v1.0//EN
 {%for session in sessions%}BEGIN:VEVENT
-DTSTART:{{session.utcstarttime|date:"Ymd"}}T{{session.utcstarttime|time:"His"}}Z
-DTEND:{{session.utcendtime|date:"Ymd"}}T{{session.utcendtime|time:"His"}}Z
+UID:{{session.id}}@{{conference.urlname}}
+DTSTART:{{session.starttime|date:"Ymd"}}T{{session.starttime|time:"His"}}Z
+DTEND:{{session.endtime|date:"Ymd"}}T{{session.endtime|time:"His"}}Z
+DTSTAMP:{{session.lastmodified|date:"Ymd"}}T{{session.lastmodified|time:"His"}}Z
 SUMMARY:{{session.title}} ({{session.speaker_list}})
 LOCATION:{{session.room.roomname}}
 URL:https://{{servername}}/events/{{conference.urlname}}/schedule/session/{{session.id}}/
 END:VEVENT
-{%endfor%}END:VCALENDAR
+{%endfor%}END:VCALENDAR{%endtimezone%}

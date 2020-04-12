@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.utils.dateformat import DateFormat
 from django.utils.functional import cached_property
+from django.utils import timezone
 from django.template.defaultfilters import slugify
 from django.contrib.postgres.fields import DateTimeRangeField, JSONField
 from django.core.serializers.json import DjangoJSONEncoder
@@ -153,7 +154,6 @@ class Conference(models.Model):
     promoactive = models.BooleanField(default=False, verbose_name="Promotion active")
     promopicurl = models.URLField(blank=True, null=False, verbose_name="URL to promo picture", validators=[PictureUrlValidator(aspect=2.3)])
     promotext = models.TextField(null=False, blank=True, max_length=1000, verbose_name="Promotion text")
-    timediff = models.IntegerField(null=False, blank=False, default=0)
     tzname = models.CharField(max_length=100, blank=False, null=False, verbose_name="Time zone")
     contactaddr = LowercaseEmailField(blank=False, null=False, verbose_name="Contact address")
     sponsoraddr = LowercaseEmailField(blank=False, null=False, verbose_name="Sponsor address")
@@ -236,6 +236,13 @@ class Conference(models.Model):
 
     class Meta:
         ordering = ['-startdate', ]
+
+    @cached_property
+    def tzobj(self):
+        return pytz.timezone(self.tzname)
+
+    def localize_datetime(self, dt):
+        return self.tzobj.localize(dt)
 
     @property
     def conferencedatestr(self):
@@ -368,7 +375,7 @@ class RegistrationType(models.Model):
     regclass = models.ForeignKey(RegistrationClass, null=True, blank=True, on_delete=models.CASCADE, verbose_name="Registration class")
     cost = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0, help_text="Cost excluding VAT.")
     active = models.BooleanField(null=False, blank=False, default=True)
-    activeuntil = models.DateField(null=True, blank=True, verbose_name="Active until")
+    activeuntil = models.DateField(null=True, blank=True, verbose_name="Active until", help_text="Registration available up to and including this date.")
     inlist = models.BooleanField(null=False, blank=False, default=True)
     sortkey = models.IntegerField(null=False, blank=False, default=10)
     specialtype = models.CharField(max_length=5, blank=True, null=True, choices=special_reg_types, verbose_name="Special type")
@@ -1017,19 +1024,6 @@ class ConferenceSession(models.Model):
             self.starttime,
         )
 
-    @property
-    def utcstarttime(self):
-        return self._utc_time(self.starttime + datetime.timedelta(hours=self.conference.timediff))
-
-    @property
-    def utcendtime(self):
-        return self._utc_time(self.endtime + datetime.timedelta(hours=self.conference.timediff))
-
-    def _utc_time(self, time):
-        if not hasattr(self, '_localtz'):
-            self._localtz = pytz.timezone(settings.TIME_ZONE)
-        return self._localtz.localize(time).astimezone(pytz.utc)
-
     class Meta:
         ordering = ['starttime', ]
 
@@ -1111,7 +1105,7 @@ class VolunteerSlot(models.Model):
         return self._display_timerange()
 
     def _display_timerange(self):
-        return "{0} - {1}".format(self.timerange.lower, self.timerange.upper)
+        return "{0} - {1}".format(timezone.localtime(self.timerange.lower), timezone.localtime(self.timerange.upper))
 
     @property
     def countvols(self):
@@ -1119,20 +1113,7 @@ class VolunteerSlot(models.Model):
 
     @property
     def weekday(self):
-        return self.timerange.lower.strftime('%Y-%m-%d (%A)')
-
-    @property
-    def utcstarttime(self):
-        return self._utc_time(self.timerange.lower + datetime.timedelta(hours=self.conference.timediff))
-
-    @property
-    def utcendtime(self):
-        return self._utc_time(self.timerange.upper + datetime.timedelta(hours=self.conference.timediff))
-
-    def _utc_time(self, time):
-        if not hasattr(self, '_localtz'):
-            self._localtz = pytz.timezone(settings.TIME_ZONE)
-        return self._localtz.localize(time).astimezone(pytz.utc)
+        return timezone.localtime(self.timerange.lower).strftime('%Y-%m-%d (%A)')
 
 
 class VolunteerAssignment(models.Model):
@@ -1179,7 +1160,7 @@ class DiscountCode(models.Model):
     discountamount = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0, verbose_name="Discount amount")
     discountpercentage = models.IntegerField(null=False, blank=False, default=0, verbose_name="Discount percentage")
     regonly = models.BooleanField(null=False, blank=False, default=False, verbose_name="Registration only", help_text="Apply percentage discount only to the registration cost, not additional options. By default, it's applied to both.")
-    validuntil = models.DateField(blank=True, null=True, verbose_name="Valid until")
+    validuntil = models.DateField(blank=True, null=True, verbose_name="Valid until", help_text="Valid up to and including this date.")
     maxuses = models.IntegerField(null=False, blank=False, default=0, verbose_name="Max uses")
     requiresoption = models.ManyToManyField(ConferenceAdditionalOption, blank=True, verbose_name="Requires option", help_text='Requires this option to be set in order to be valid')
     requiresregtype = models.ManyToManyField(RegistrationType, blank=True, verbose_name="Requires registration type", help_text='Require a specific registration type to be valid')
@@ -1229,7 +1210,7 @@ class AttendeeMail(models.Model):
     message = models.TextField(max_length=8000, null=False, blank=False)
 
     def __str__(self):
-        return "%s: %s" % (self.sentat.strftime("%Y-%m-%d %H:%M"), self.subject)
+        return "%s: %s" % (timezone.localtime(self.sentat).strftime("%Y-%m-%d %H:%M"), self.subject)
 
     class Meta:
         ordering = ('-sentat', )

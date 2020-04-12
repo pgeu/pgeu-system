@@ -70,6 +70,7 @@ from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.jsonutil import JsonSerializer
 from postgresqleu.util.db import exec_to_dict, exec_to_grouped_dict, exec_to_keyed_dict
 from postgresqleu.util.db import exec_no_result, exec_to_list, exec_to_scalar, conditional_exec_to_scalar
+from postgresqleu.util.db import ensure_conference_timezone
 from postgresqleu.util.qr import generate_base64_qr
 
 from decimal import Decimal
@@ -106,11 +107,11 @@ def render_conference_response(request, conference, pagemagic, templatename, dic
 
 def _get_registration_signups(conference, reg):
     # Left join is hard to do efficiently with the django ORM, so let's do a query instead
-    cursor = connection.cursor()
-    cursor.execute("SELECT s.id, s.title, s.deadline, s.deadline < CURRENT_TIMESTAMP, ats.saved, ats.id FROM confwiki_signup s LEFT JOIN confwiki_attendeesignup ats ON (s.id=ats.signup_id AND ats.attendee_id=%(regid)s) WHERE s.conference_id=%(confid)s AND (s.deadline IS NULL OR s.deadline > CURRENT_TIMESTAMP OR ats.saved IS NOT NULL) AND (s.public OR EXISTS (SELECT 1 FROM confwiki_signup_attendees sa WHERE sa.signup_id=s.id AND sa.conferenceregistration_id=%(regid)s) OR EXISTS (SELECT 1 FROM confwiki_signup_regtypes sr WHERE sr.signup_id=s.id AND sr.registrationtype_id=%(regtypeid)s)) ORDER  BY 4 DESC, 3, 2", {
-        'confid': conference.id,
-        'regid': reg.id,
-        'regtypeid': reg.regtype_id,
+    with ensure_conference_timezone(conference) as cursor:
+        cursor.execute("SELECT s.id, s.title, s.deadline, s.deadline < CURRENT_TIMESTAMP, ats.saved, ats.id FROM confwiki_signup s LEFT JOIN confwiki_attendeesignup ats ON (s.id=ats.signup_id AND ats.attendee_id=%(regid)s) WHERE s.conference_id=%(confid)s AND (s.deadline IS NULL OR s.deadline > CURRENT_TIMESTAMP OR ats.saved IS NOT NULL) AND (s.public OR EXISTS (SELECT 1 FROM confwiki_signup_attendees sa WHERE sa.signup_id=s.id AND sa.conferenceregistration_id=%(regid)s) OR EXISTS (SELECT 1 FROM confwiki_signup_regtypes sr WHERE sr.signup_id=s.id AND sr.registrationtype_id=%(regtypeid)s)) ORDER  BY 4 DESC, 3, 2", {
+            'confid': conference.id,
+            'regid': reg.id,
+            'regtypeid': reg.regtype_id,
         })
     return [dict(list(zip(['id', 'title', 'deadline', 'closed', 'savedat', 'respid'], r))) for r in cursor.fetchall()]
 
@@ -224,7 +225,8 @@ def confhome(request, confname):
 
 
 def news_json(request, confname):
-    news = ConferenceNews.objects.select_related('author').filter(conference__urlname=confname,
+    conference = get_conference_or_404(confname)
+    news = ConferenceNews.objects.select_related('author').filter(conference=conference,
                                                                   datetime__lt=timezone.now(),
     )[:5]
 
@@ -233,7 +235,7 @@ def news_json(request, confname):
             'id': n.id,
             'title': n.title,
             'titleslug': slugify(n.title),
-            'datetime': n.datetime,
+            'datetime': timezone.localtime(n.datetime),
             'authorname': n.author.fullname,
             'summary': markdown.markdown(n.summary),
             'inrss': n.inrss,
@@ -246,7 +248,7 @@ def news_json(request, confname):
 
 def news_index(request, confname):
     conference = get_conference_or_404(confname)
-    news = ConferenceNews.objects.select_related('author').filter(conference__urlname=confname,
+    news = ConferenceNews.objects.select_related('author').filter(conference=conference,
                                                                   datetime__lt=timezone.now())
 
     return render_conference_response(request, conference, 'news', 'confreg/newsindex.html', {
@@ -1144,15 +1146,16 @@ class SessionSet(object):
 
 
 def _scheduledata(request, conference):
-    tracks = exec_to_dict("SELECT id, color, fgcolor, incfp, trackname, sortkey, showcompany FROM confreg_track t WHERE conference_id=%(confid)s AND EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.track_id=t.id AND s.status=1) ORDER BY sortkey", {
-        'confid': conference.id,
-    })
+    with ensure_conference_timezone(conference):
+        tracks = exec_to_dict("SELECT id, color, fgcolor, incfp, trackname, sortkey, showcompany FROM confreg_track t WHERE conference_id=%(confid)s AND EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.track_id=t.id AND s.status=1) ORDER BY sortkey", {
+            'confid': conference.id,
+        })
 
-    allrooms = exec_to_keyed_dict("SELECT id, sortkey, roomname, comment AS roomcomment FROM confreg_room r WHERE conference_id=%(confid)s", {
-        'confid': conference.id,
-    })
+        allrooms = exec_to_keyed_dict("SELECT id, sortkey, roomname, comment AS roomcomment FROM confreg_room r WHERE conference_id=%(confid)s", {
+            'confid': conference.id,
+        })
 
-    day_rooms = exec_to_keyed_dict("""WITH t AS (
+        day_rooms = exec_to_keyed_dict("""WITH t AS (
   SELECT s.starttime::date AS day, room_id
    FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND status=1 AND s.room_id IS NOT NULL AND s.starttime IS NOT NULL
  UNION
@@ -1162,10 +1165,10 @@ def _scheduledata(request, conference):
 SELECT day, array_agg(room_id ORDER BY r.sortkey, r.roomname) AS rooms FROM t
 INNER JOIN confreg_room r ON r.id=t.room_id GROUP BY day
 """, {
-        'confid': conference.id,
-    })
+            'confid': conference.id,
+        })
 
-    raw = exec_to_grouped_dict("""SELECT
+        raw = exec_to_grouped_dict("""SELECT
     s.starttime::date AS day,
     s.id, s.starttime,
     s.endtime,
@@ -1198,8 +1201,8 @@ WHERE
 GROUP BY s.id, t.id, r.id
 WINDOW days AS (PARTITION BY s.starttime::date)
 ORDER BY day, s.starttime, r.sortkey""", {
-        'confid': conference.id,
-    })
+            'confid': conference.id,
+        })
 
     days = []
     roomsinuse = set()
@@ -1299,8 +1302,8 @@ def schedule_xcal(request, confname):
         s = ET.SubElement(v, 'vevent')
         ET.SubElement(s, 'method').text = 'PUBLISH'
         ET.SubElement(s, 'uid').text = '{0}@{1}'.format(sess.id, conference.urlname)
-        ET.SubElement(s, 'dtstart').text = sess.utcstarttime.strftime('%Y%m%dT%H%M%SZ')
-        ET.SubElement(s, 'dtend').text = sess.utcendtime.strftime('%Y%m%dT%H%M%SZ')
+        ET.SubElement(s, 'dtstart').text = sess.starttime.strftime('%Y%m%dT%H%M%SZ')
+        ET.SubElement(s, 'dtend').text = sess.endtime.strftime('%Y%m%dT%H%M%SZ')
         ET.SubElement(s, 'summary').text = sess.title
         ET.SubElement(s, 'description').text = sess.abstract
         ET.SubElement(s, 'class').text = 'PUBLIC'
@@ -1313,6 +1316,12 @@ def schedule_xcal(request, confname):
     ET.ElementTree(x).write(resp, encoding='utf-8', xml_declaration=True)
     resp['Content-Disposition'] = 'attachment; filename="{}.xcs"'.format(conference.urlname)
     return resp
+
+
+def _timedelta_minutes(td):
+    hours, remainder = divmod(td.total_seconds(), 3600)
+    minutes, seconds = divmod(remainder, 60)
+    return "{:02}:{:02}".format(int(hours), int(minutes))
 
 
 def schedule_xml(request, confname):
@@ -1332,8 +1341,8 @@ def schedule_xml(request, confname):
     lastday = None
     lastroom = None
     for sess in ConferenceSession.objects.filter(conference=conference).filter(status=1).filter(starttime__isnull=False).order_by('starttime', 'cross_schedule', 'room__sortkey'):
-        if lastday != sess.starttime.date():
-            lastday = sess.starttime.date()
+        if lastday != timezone.localdate(sess.starttime):
+            lastday = timezone.localdate(sess.starttime)
             lastroom = None
             xday = ET.SubElement(x, 'day', date=lastday.strftime("%Y-%m-%d"))  # START/END!
         thisroom = sess.cross_schedule and 'Other' or sess.room.roomname
@@ -1341,9 +1350,8 @@ def schedule_xml(request, confname):
             lastroom = thisroom
             xroom = ET.SubElement(xday, 'room', name=lastroom)
         e = ET.SubElement(xroom, 'event', id=str(sess.id))
-        ET.SubElement(e, 'date').text = sess.utcstarttime.strftime('%Y%m%dT%H%M%S+00:00')
-        ET.SubElement(e, 'start').text = sess.utcstarttime.strftime('%H:%M')
-        ET.SubElement(e, 'duration').text = str(sess.utcendtime - sess.utcstarttime)
+        ET.SubElement(e, 'start').text = timezone.localtime(sess.starttime).strftime('%H:%M')
+        ET.SubElement(e, 'duration').text = _timedelta_minutes(sess.endtime - sess.starttime)
         ET.SubElement(e, 'room').text = lastroom
         ET.SubElement(e, 'title').text = sess.title
         ET.SubElement(e, 'abstract').text = sess.abstract
@@ -1539,7 +1547,7 @@ def callforpapers_edit(request, confname, sessionid):
             'speakertoken': generate_random_token(),
         })
 
-        session = ConferenceSession(conference=conference, status=0, initialsubmit=datetime.now())
+        session = ConferenceSession(conference=conference, status=0, initialsubmit=timezone.now())
     else:
         # Find users speaker record (should always exist when we get this far)
         speaker = get_object_or_404(Speaker, user=request.user)
@@ -2684,14 +2692,15 @@ def createschedule(request, confname):
     if len(allrooms) == 0:
         return HttpResponse('No rooms defined for this conference, cannot create schedule yet.')
 
-    # Complete list of all available sessions
-    sessions = exec_to_dict("SELECT s.id, track_id, (status = 3) AS ispending, (row_number() over() +1)*75 AS top, title, string_agg(spk.fullname, ', ') AS speaker_list FROM confreg_conferencesession s LEFT JOIN confreg_conferencesession_speaker csp ON csp.conferencesession_id=s.id LEFT JOIN confreg_speaker spk ON spk.id=csp.speaker_id WHERE conference_id=%(confid)s AND status IN (1,3) AND NOT cross_schedule GROUP BY s.id ORDER BY starttime, id", {
-        'confid': conference.id,
-    })
+    with ensure_conference_timezone(conference):
+        # Complete list of all available sessions
+        sessions = exec_to_dict("SELECT s.id, track_id, (status = 3) AS ispending, (row_number() over() +1)*75 AS top, title, string_agg(spk.fullname, ', ') AS speaker_list FROM confreg_conferencesession s LEFT JOIN confreg_conferencesession_speaker csp ON csp.conferencesession_id=s.id LEFT JOIN confreg_speaker spk ON spk.id=csp.speaker_id WHERE conference_id=%(confid)s AND status IN (1,3) AND NOT cross_schedule GROUP BY s.id ORDER BY starttime, id", {
+            'confid': conference.id,
+        })
 
-    # Generate a sessionset with the slots only, but with one slot for
-    # each room when we have multiple rooms.
-    raw = exec_to_grouped_dict("""SELECT
+        # Generate a sessionset with the slots only, but with one slot for
+        # each room when we have multiple rooms.
+        raw = exec_to_grouped_dict("""SELECT
     s.starttime::date AS day,
     r.id * 1000000 + s.id AS id,
     s.starttime, s.endtime,
@@ -2712,8 +2721,8 @@ WHERE
     )
 WINDOW days AS (PARTITION BY s.starttime::date)
 ORDER BY day, s.starttime""", {
-        'confid': conference.id,
-    })
+            'confid': conference.id,
+        })
 
     if len(raw) == 0:
         return HttpResponse('No schedule slots defined for this conference, cannot create schedule yet.')
@@ -2904,8 +2913,9 @@ def simple_report(request, confname):
                 'savebutton': 'Generate report',
             })
 
-    curs = connection.cursor()
-    curs.execute(query, params)
+    with ensure_conference_timezone(conference) as curs:
+        curs.execute(query, params)
+
     d = curs.fetchall()
     collist = [dd[0] for dd in curs.description]
     # Get offsets of all columns that don't start with _
@@ -2976,24 +2986,25 @@ def admin_dashboard(request):
 def admin_dashboard_single(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
-    return render(request, 'confreg/admin_dashboard_single.html', {
-        'conference': conference,
-        'pending_session_notifications': conference.pending_session_notifications,
-        'pending_waitlist': RegistrationWaitlistEntry.objects.filter(registration__conference=conference, offeredon__isnull=True).exists(),
-        'unregistered_staff': exec_to_scalar("SELECT EXISTS (SELECT user_id FROM confreg_conference_staff s WHERE s.conference_id=%(confid)s AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND canceledat IS NULL AND attendee_id=s.user_id))", {'confid': conference.id}),
-        'unregistered_speakers': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id WHERE s.conference_id=%(confid)s AND s.status=1 AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL AND r.attendee_id=spk.user_id))", {'confid': conference.id}),
-        'unconfirmed_speakers': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession_speaker css INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id WHERE s.conference_id=%(confid)s AND s.status=3)", {'confid': conference.id}),
-        'sessions_noroom': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=1 AND s.room_id IS NULL AND NOT cross_schedule)", {'confid': conference.id}),
-        'sessions_notrack': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=1 AND s.track_id IS NULL)", {'confid': conference.id}),
-        'sessions_roomoverlap': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s INNER JOIN confreg_room r ON r.id=s.room_id WHERE s.conference_id=%(confid)s AND r.conference_id=%(confid)s AND status=1 AND EXISTS (SELECT 1 FROM confreg_conferencesession s2 WHERE s2.conference_id=%(confid)s AND s2.status=1 AND s2.room_id=s.room_id AND s.id != s2.id AND tstzrange(s.starttime, s.endtime) && tstzrange(s2.starttime, s2.endtime)))", {'confid': conference.id}),
-        'pending_sessions': conditional_exec_to_scalar(conference.scheduleactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=0)", {'confid': conference.id}),
-        'uncheckedin_attendees': conditional_exec_to_scalar(conference.checkinactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND canceledat IS NULL AND checkedinat IS NULL)", {'confid': conference.id}),
-        'uncheckedin_speakers': conditional_exec_to_scalar(conference.checkinactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferenceregistration r INNER JOIN confreg_speaker spk ON spk.user_id=r.attendee_id INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id INNER JOIN confreg_conferencesession s ON s.id=css.conferencesession_id WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL AND r.checkedinat IS NULL AND s.conference_id=%(confid)s AND s.status=1)", {'confid': conference.id}),
-        'pending_sponsors': conditional_exec_to_scalar(conference.callforsponsorsopen, "SELECT EXISTS (SELECT 1 FROM confsponsor_sponsor WHERE conference_id=%(confid)s AND invoice_id IS NULL AND NOT confirmed)", {'confid': conference.id}),
-        'pending_sponsor_benefits': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confsponsor_sponsorclaimedbenefit b INNER JOIN confsponsor_sponsor s ON s.id=b.sponsor_id WHERE s.conference_id=%(confid)s AND NOT (b.confirmed OR b.declined))", {'confid': conference.id}),
-        'pending_tweets': ConferenceTweetQueue.objects.filter(conference=conference, sent=False).exists(),
-        'pending_tweet_approvals': ConferenceTweetQueue.objects.filter(conference=conference, approved=False).exists(),
-    })
+    with ensure_conference_timezone(conference):
+        return render(request, 'confreg/admin_dashboard_single.html', {
+            'conference': conference,
+            'pending_session_notifications': conference.pending_session_notifications,
+            'pending_waitlist': RegistrationWaitlistEntry.objects.filter(registration__conference=conference, offeredon__isnull=True).exists(),
+            'unregistered_staff': exec_to_scalar("SELECT EXISTS (SELECT user_id FROM confreg_conference_staff s WHERE s.conference_id=%(confid)s AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND canceledat IS NULL AND attendee_id=s.user_id))", {'confid': conference.id}),
+            'unregistered_speakers': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id WHERE s.conference_id=%(confid)s AND s.status=1 AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL AND r.attendee_id=spk.user_id))", {'confid': conference.id}),
+            'unconfirmed_speakers': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession_speaker css INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id WHERE s.conference_id=%(confid)s AND s.status=3)", {'confid': conference.id}),
+            'sessions_noroom': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=1 AND s.room_id IS NULL AND NOT cross_schedule)", {'confid': conference.id}),
+            'sessions_notrack': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=1 AND s.track_id IS NULL)", {'confid': conference.id}),
+            'sessions_roomoverlap': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s INNER JOIN confreg_room r ON r.id=s.room_id WHERE s.conference_id=%(confid)s AND r.conference_id=%(confid)s AND status=1 AND EXISTS (SELECT 1 FROM confreg_conferencesession s2 WHERE s2.conference_id=%(confid)s AND s2.status=1 AND s2.room_id=s.room_id AND s.id != s2.id AND tstzrange(s.starttime, s.endtime) && tstzrange(s2.starttime, s2.endtime)))", {'confid': conference.id}),
+            'pending_sessions': conditional_exec_to_scalar(conference.scheduleactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=0)", {'confid': conference.id}),
+            'uncheckedin_attendees': conditional_exec_to_scalar(conference.checkinactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND canceledat IS NULL AND checkedinat IS NULL)", {'confid': conference.id}),
+            'uncheckedin_speakers': conditional_exec_to_scalar(conference.checkinactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferenceregistration r INNER JOIN confreg_speaker spk ON spk.user_id=r.attendee_id INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id INNER JOIN confreg_conferencesession s ON s.id=css.conferencesession_id WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL AND r.checkedinat IS NULL AND s.conference_id=%(confid)s AND s.status=1)", {'confid': conference.id}),
+            'pending_sponsors': conditional_exec_to_scalar(conference.callforsponsorsopen, "SELECT EXISTS (SELECT 1 FROM confsponsor_sponsor WHERE conference_id=%(confid)s AND invoice_id IS NULL AND NOT confirmed)", {'confid': conference.id}),
+            'pending_sponsor_benefits': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confsponsor_sponsorclaimedbenefit b INNER JOIN confsponsor_sponsor s ON s.id=b.sponsor_id WHERE s.conference_id=%(confid)s AND NOT (b.confirmed OR b.declined))", {'confid': conference.id}),
+            'pending_tweets': ConferenceTweetQueue.objects.filter(conference=conference, sent=False).exists(),
+            'pending_tweet_approvals': ConferenceTweetQueue.objects.filter(conference=conference, approved=False).exists(),
+        })
 
 
 def admin_registration_dashboard(request, urlname):

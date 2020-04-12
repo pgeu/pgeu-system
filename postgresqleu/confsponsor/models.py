@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.utils.functional import cached_property
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
+from django.utils import timezone
 
 from postgresqleu.confreg.models import Conference, RegistrationType, PrepaidBatch
 from postgresqleu.confreg.models import ConferenceRegistration
@@ -141,7 +142,7 @@ class SponsorMail(models.Model):
     message = models.TextField(max_length=8000, null=False, blank=False)
 
     def __str__(self):
-        return "%s: %s" % (self.sentat.strftime("%Y-%m-%d %H:%M"), self.subject)
+        return "%s: %s" % (timezone.localtime(self.sentat).strftime("%Y-%m-%d %H:%M"), self.subject)
 
     class Meta:
         ordering = ('-sentat',)

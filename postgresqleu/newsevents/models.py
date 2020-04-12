@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import User
 from postgresqleu.util.validators import validate_urlname
 
@@ -31,7 +32,7 @@ class News(models.Model):
 
     @property
     def pretty_date(self):
-        return self.datetime.strftime("%d %B %Y")
+        return timezone.localtime(self.datetime).strftime("%d %B %Y")
 
     class Meta:
         ordering = ['-datetime', 'title', ]

@@ -6,6 +6,9 @@ from django.db import connection
 
 from postgresqleu.confreg.models import ConferenceSeries
 
+# XXX: How to handle timezones when two different conferences are involved (in time reports)?
+# XXX: Probably need to show the timezone on the output as well somehow!
+
 
 class ReportException(Exception):
     pass

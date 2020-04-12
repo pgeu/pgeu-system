@@ -15,6 +15,7 @@ from reportlab.pdfbase.pdfmetrics import registerFont, getFont
 from reportlab.pdfbase.ttfonts import TTFont
 from io import BytesIO
 
+from django.utils import timezone
 from django.conf import settings
 
 from postgresqleu.util.reporttools import cm
@@ -156,7 +157,7 @@ class BaseInvoice(PDFBase):
                 if self.receipt:
                     self.canvas.drawCentredString(cm(10.5), cm(18.5), "Receipt for invoice number %s%s" % (self.invoicenum, suffix))
                 else:
-                    self.canvas.drawCentredString(cm(10.5), cm(18.5), "Invoice number %s - %s%s" % (self.invoicenum, self.invoicedate.strftime("%B %d, %Y"), suffix))
+                    self.canvas.drawCentredString(cm(10.5), cm(18.5), "Invoice number %s - %s%s" % (self.invoicenum, timezone.localtime(self.invoicedate).strftime("%B %d, %Y"), suffix))
                 self.canvas.setFont('DejaVu Serif Bold', 10)
                 if self.receipt:
                     self.canvas.drawString(cm(15), cm(28), "Receipt #%s" % self.invoicenum)
@@ -166,7 +167,7 @@ class BaseInvoice(PDFBase):
                         self.canvas.setFont('DejaVu Serif Bold', 8)
                         self.canvas.drawString(cm(15), cm(27.5), "Payment ref: %s" % self.paymentref)
             else:
-                self.canvas.drawCentredString(cm(10.5), cm(18.5), "Receipt - %s%s" % (self.invoicedate.strftime("%B %d, %Y"), suffix))
+                self.canvas.drawCentredString(cm(10.5), cm(18.5), "Receipt - %s%s" % (timezone.localtime(self.invoicedate).strftime("%B %d, %Y"), suffix))
 
             if pagenum == 0:
                 firstcol = "Item"
@@ -268,9 +269,9 @@ class BaseInvoice(PDFBase):
 
             self.canvas.setFont('DejaVu Serif Bold', 10)
             if self.receipt:
-                self.canvas.drawCentredString(cm(10.5), cm(17.3) - h, "This invoice was paid %s" % self.duedate.strftime("%B %d, %Y"))
+                self.canvas.drawCentredString(cm(10.5), cm(17.3) - h, "This invoice was paid %s" % timezone.localtime(self.duedate).strftime("%B %d, %Y"))
             else:
-                self.canvas.drawCentredString(cm(10.5), cm(17.3) - h, "This invoice is due: %s" % self.duedate.strftime("%B %d, %Y"))
+                self.canvas.drawCentredString(cm(10.5), cm(17.3) - h, "This invoice is due: %s" % timezone.localtime(self.duedate).strftime("%B %d, %Y"))
                 if self.bankinfo:
                     self.canvas.setFont('DejaVu Serif', 8)
                     self.canvas.drawCentredString(cm(10.5), cm(16.8) - h, "If paying with bank transfer, use payment reference %s" % self.paymentref)
@@ -431,7 +432,7 @@ class BaseRefund(PDFBase):
         w, h = t.wrapOn(self.canvas, cm(10), cm(10))
         t.drawOn(self.canvas, (self.canvas._pagesize[0] - w) // 2, cm(17) - h * 2 - cm(1) - extraofs)
 
-        self.canvas.drawCentredString(cm(10.5), cm(16.3) - h * 2 - cm(2) - extraofs, "This refund was issued {0}".format(self.refunddate.strftime("%B %d, %Y")))
+        self.canvas.drawCentredString(cm(10.5), cm(16.3) - h * 2 - cm(2) - extraofs, "This refund was issued {0}".format(timezone.localtime(self.refunddate).strftime("%B %d, %Y")))
 
         if self.paymentmethod:
             self.canvas.drawCentredString(cm(10.5), cm(16.3) - h * 2 - cm(3) - extraofs, "Refunded to the original form of payment: {0}.".format(self.paymentmethod))

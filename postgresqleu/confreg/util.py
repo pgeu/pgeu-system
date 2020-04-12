@@ -388,6 +388,8 @@ def get_authenticated_conference(request, urlname=None, confid=None):
     else:
         c = get_object_or_404(Conference, urlname=urlname)
 
+    timezone.activate(c.tzname)
+
     if request.user.is_superuser:
         return c
     else:
@@ -400,4 +402,7 @@ def get_authenticated_conference(request, urlname=None, confid=None):
 
 def get_conference_or_404(urlname):
     conference = get_object_or_404(Conference, urlname=urlname)
+
+    timezone.activate(conference.tzname)
+
     return conference

@@ -1,12 +1,12 @@
-BEGIN:VCALENDAR
+{% load tz %}{% timezone "UTC" %}BEGIN:VCALENDAR
 PRODID:-//postgresqleu/confreg//NONSGML v1.0//EN
 VERSION:2.0
 X-WR-CALNAME:{{conference}} volunteer schedule
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 {%for assignment in assignments%}BEGIN:VEVENT
-DTSTART:{{assignment.slot.utcstarttime|date:"Ymd"}}T{{assignment.slot.utcstarttime|time:"His"}}Z
-DTEND:{{assignment.slot.utcendtime|date:"Ymd"}}T{{assignment.slot.utcendtime|time:"His"}}Z
+DTSTART:{{assignment.slot.timerange.lower|date:"Ymd"}}T{{assignment.slot.timerange.lower|time:"His"}}Z
+DTEND:{{assignment.slot.timerange.upper|date:"Ymd"}}T{{assignment.slot.timerange.upper|time:"His"}}Z
 DTSTAMP:{{now|date:"Ymd"}}T{{now|date:"His"}}Z
 UID:{{conference.urlname}}-{{assignment.id}}
 CREATED:19000101T120000Z
@@ -28,4 +28,4 @@ DESCRIPTION:30 minute reminder!
 TRIGGER:-P0DT0H30M0S
 END:VALARM
 END:VEVENT
-{%endfor%}END:VCALENDAR
+{%endfor%}END:VCALENDAR{%endtimezone%}

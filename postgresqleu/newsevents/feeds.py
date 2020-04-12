@@ -8,7 +8,7 @@ from .models import News, NewsPosterProfile
 
 import datetime
 
-from postgresqleu.util.db import exec_to_dict
+from postgresqleu.util.db import exec_to_dict, ensure_conference_timezone
 
 
 class LatestNews(Feed):
@@ -43,7 +43,8 @@ class LatestNews(Feed):
                 'authorid': obj.pk,
             }
 
-        return exec_to_dict("""WITH main AS (
+        with ensure_conference_timezone(None):
+            return exec_to_dict("""WITH main AS (
   SELECT id, NULL::text as urlname, datetime, title, summary
   FROM newsevents_news
   WHERE datetime<CURRENT_TIMESTAMP AND inrss {0}

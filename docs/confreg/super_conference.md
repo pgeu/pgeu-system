@@ -55,13 +55,7 @@ Location
 :  The physical location (e.g. City, Country) of the conference
 
 Time zone
-:  The time zone this conference is held in. Not currently used, but will replace
-the timediff field at a later time.
-
-Timediff
-:  The number of hours away from the system standard time this conference
-is. Used for schedule rendering and ical. Currently used as an ugly hack but will
-be replaced with the Time zone field as support for it is completed.
+:  The time zone this conference is held in.
 
 Contact address
 :  Email address to contact the conference organisers on. This address is

@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.conf import settings
 
 from postgresqleu.util.db import exec_to_list, exec_to_dict
+from postgresqleu.util.db import ensure_conference_timezone
 from postgresqleu.util.qr import generate_base64_qr
 from postgresqleu.util.decorators import global_login_exempt
 from postgresqleu.util.request import get_int_or_error
@@ -154,7 +155,8 @@ def api(request, urlname, regtoken, what):
             )],
         })
     elif is_admin and what == 'stats':
-        return _json_response(_get_statistics(conference))
+        with ensure_conference_timezone(conference):
+            return _json_response(_get_statistics(conference))
     elif request.method == 'POST' and what == 'checkin':
         if not conference.checkinactive:
             return HttpResponse("Check-in not open", status=412)

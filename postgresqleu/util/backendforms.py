@@ -86,8 +86,8 @@ class BackendForm(ConcurrentProtectedModelForm):
             if self.conference:
                 if isinstance(v, django.forms.fields.DateTimeField) and k not in self.exclude_date_validators:
                     v.validators.extend([
-                        MinValueValidator(datetime.datetime.combine(self.conference.startdate, datetime.time(0, 0, 0))),
-                        MaxValueValidator(datetime.datetime.combine(self.conference.enddate + datetime.timedelta(days=1), datetime.time(0, 0, 0))),
+                        MinValueValidator(conference.localize_datetime(datetime.datetime.combine(self.conference.startdate, datetime.time(0, 0, 0)))),
+                        MaxValueValidator(conference.localize_datetime(datetime.datetime.combine(self.conference.enddate + datetime.timedelta(days=1), datetime.time(0, 0, 0)))),
                     ])
                 elif isinstance(v, django.forms.fields.DateField) and k not in self.exclude_date_validators:
                     v.validators.extend([
