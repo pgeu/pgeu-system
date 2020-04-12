@@ -244,8 +244,10 @@ def ical(request, urlname, token):
     conference = get_conference_or_404(urlname)
     reg = get_object_or_404(ConferenceRegistration, regtoken=token)
     assignments = VolunteerAssignment.objects.filter(reg=reg).order_by('slot__timerange')
-    return render(request, 'confreg/volunteer_schedule.ical', {
+    resp = render(request, 'confreg/volunteer_schedule.ical', {
         'conference': conference,
         'assignments': assignments,
         'now': datetime.utcnow(),
     }, content_type='text/calendar')
+    resp['Content-Disposition'] = 'attachment; filename="{}_volunteer.ical"'.format(conference.urlname)
+    return resp

@@ -1275,11 +1275,13 @@ def schedule_ical(request, confname):
         sessions = None
     else:
         sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).filter(starttime__isnull=False).order_by('starttime')
-    return render(request, 'confreg/schedule.ical', {
+    resp = render(request, 'confreg/schedule.ical', {
         'conference': conference,
         'sessions': sessions,
         'servername': request.META['SERVER_NAME'],
     }, content_type='text/calendar')
+    resp['Content-Disposition'] = 'attachment; filename="{}.ical"'.format(conference.urlname)
+    return resp
 
 
 def schedule_xcal(request, confname):
@@ -1309,6 +1311,7 @@ def schedule_xcal(request, confname):
             ET.SubElement(s, 'attendee').text = spk.name
     resp = HttpResponse(content_type='text/xml; charset=utf-8')
     ET.ElementTree(x).write(resp, encoding='utf-8', xml_declaration=True)
+    resp['Content-Disposition'] = 'attachment; filename="{}.xcs"'.format(conference.urlname)
     return resp
 
 
@@ -1353,6 +1356,7 @@ def schedule_xml(request, confname):
 
     resp = HttpResponse(content_type='text/xml; charset=utf-8')
     ET.ElementTree(x).write(resp, encoding='utf-8', xml_declaration=True)
+    resp['Content-Disposition'] = 'attachment; filename="{}.xml"'.format(conference.urlname)
     return resp
 
 
