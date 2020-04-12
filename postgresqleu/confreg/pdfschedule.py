@@ -113,7 +113,7 @@ def build_linear_pdf_schedule(conference, room, tracks, day, colored, pagesize, 
         if colored and s.track and s.track.fgcolor:
             st_title.textColor = st_speakers.textColor = s.track.fgcolor
         else:
-            st_title.textColor = st_speakers.textColor = color.black
+            st_title.textColor = st_speakers.textColor = colors.black
 
         tstr = Paragraph("%s - %s" % (s.starttime.strftime("%H:%M"), s.endtime.strftime("%H:%M")), st_time)
         if s.cross_schedule:
