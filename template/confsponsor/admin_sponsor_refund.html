@@ -35,7 +35,7 @@
   </tr>
   <tr>
     <th class="col-md-2">Total amount</th>
-    <td>{{currency_symbol}} {{sponsor.invoice.total_amount}}{%if eu_vat %} ({{currency_symbol}} {{sponsor.invoice.total.amount_without_vat}} + {{currency_symbol}} {{sponsor.invoice.total_vat}} VAT){%endif%}</td>
+    <td>{{currency_symbol}} {{sponsor.invoice.total_amount}}{%if eu_vat %} ({{currency_symbol}} {{sponsor.invoice.amount_without_vat}} + {{currency_symbol}} {{sponsor.invoice.total_vat}} VAT){%endif%}</td>
   </tr>
 {%if sponsor.invoice.total_refunds.amount%}
   <tr>
