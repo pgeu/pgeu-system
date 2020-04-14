@@ -166,6 +166,7 @@ def admin_dashboard(request):
             bank_file_uploads = None
     else:
         pending_bank = False
+        pending_refunds = False
         bank_file_uploads = None
 
     return render(request, 'adm/index.html', {
