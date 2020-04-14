@@ -1,5 +1,6 @@
 from django import http
 from django import shortcuts
+from django.utils import timezone
 from django.conf import settings
 
 import base64
@@ -53,3 +54,15 @@ class RedirectMiddleware(object):
     def process_exception(self, request, exception):
         if isinstance(exception, RedirectException):
             return shortcuts.redirect(exception.url)
+
+
+# Enforce that we deactivate the timezone before each request to make the
+# thread return back to the default timezone, since django does *not*
+# reset this on a per-thread basis.
+class TzMiddleware(object):
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        timezone.deactivate()
+        return self.get_response(request)

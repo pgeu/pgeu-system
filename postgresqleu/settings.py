@@ -62,6 +62,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'postgresqleu.util.middleware.RedirectMiddleware',
+    'postgresqleu.util.middleware.TzMiddleware',
 ]
 
 CSRF_FAILURE_VIEW = 'postgresqleu.views.csrf_failure'
