@@ -90,6 +90,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='conference',
             name='tzname',
-            field=models.CharField(max_length=100, verbose_name='Time zone'),
+            field=models.CharField(max_length=100, verbose_name='Time zone', default=settings.TIME_ZONE),
         ),
     ]

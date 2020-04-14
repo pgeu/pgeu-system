@@ -154,7 +154,7 @@ class Conference(models.Model):
     promoactive = models.BooleanField(default=False, verbose_name="Promotion active")
     promopicurl = models.URLField(blank=True, null=False, verbose_name="URL to promo picture", validators=[PictureUrlValidator(aspect=2.3)])
     promotext = models.TextField(null=False, blank=True, max_length=1000, verbose_name="Promotion text")
-    tzname = models.CharField(max_length=100, blank=False, null=False, verbose_name="Time zone")
+    tzname = models.CharField(max_length=100, blank=False, null=False, verbose_name="Time zone", default=settings.TIME_ZONE)
     contactaddr = LowercaseEmailField(blank=False, null=False, verbose_name="Contact address")
     sponsoraddr = LowercaseEmailField(blank=False, null=False, verbose_name="Sponsor address")
     notifyaddr = LowercaseEmailField(blank=False, null=False, verbose_name="Notification address")
