@@ -101,7 +101,7 @@ class ensure_conference_timezone():
             self.tzname = conference.tzname
 
     def __enter__(self):
-        c = connection.cursor()
+        c = get_native_cursor()
         c.execute("SET TIMEZONE=%(tz)s", {
             'tz': self.tzname,
         })
