@@ -39,7 +39,7 @@
 {%if sponsor.invoice%}
   <tr>
     <th>Payment status:</th>
-    <td>{%if sponsor.invoice.paidat%}Paid {{sponsor.invoice.paidat}}{%elif sponsor.invoice.isexpired%}Overdue{%else%}Invoiced{%endif%}
+    <td>{%if sponsor.invoice.paidat%}Paid {{sponsor.invoice.paidat}} ({{sponsor.invoice.payment_method_description}}){%elif sponsor.invoice.isexpired%}Overdue{%else%}Invoiced{%endif%}
       <a href="/invoiceadmin/{{sponsor.invoice.id}}/" class="btn btn-sm btn-default">View invoice</a>
 </td>
   </tr>
