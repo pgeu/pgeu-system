@@ -62,8 +62,10 @@ _specialregtypes['staff'] = {
 
 def validate_manual_registration(reg):
     # Always validates so we can save the record, and then we just block
-    # it at confirmation.
-    pass
+    # it at confirmation. This doesn't work well with multiregs, so just
+    # block them for multireg for now.
+    if reg.ismultireg:
+        raise ValidationError('This registration type can only be used for individually made registrations')
 
 
 def confirm_manual_registration(reg):

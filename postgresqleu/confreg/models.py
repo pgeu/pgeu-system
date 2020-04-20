@@ -625,6 +625,10 @@ class ConferenceRegistration(models.Model):
         return ",\n".join([a.name for a in self.additionaloptions.all()])
 
     @property
+    def ismultireg(self):
+        return self.registrator_id != self.attendee_id
+
+    @property
     def is_volunteer(self):
         return self.volunteers_set.exists()
 
