@@ -44,6 +44,7 @@ from postgresqleu.util.backendlookups import GeneralAccountLookup, CountryLookup
 from postgresqleu.confreg.backendlookups import RegisteredUsersLookup, SpeakerLookup, SessionTagLookup
 
 from postgresqleu.confreg.campaigns import allcampaigns
+from postgresqleu.confreg.regtypes import validate_special_reg_type_setup
 
 
 class BackendConferenceForm(BackendForm):
@@ -293,6 +294,11 @@ class BackendRegistrationTypeForm(BackendForm):
                 raise ValidationError("This registration type has been used, so the cost can no longer be changed")
 
         return self.cleaned_data['cost']
+
+    def clean_specialtype(self):
+        if self.cleaned_data['specialtype']:
+            validate_special_reg_type_setup(self.cleaned_data['specialtype'], self.cleaned_data)
+        return self.cleaned_data['specialtype']
 
     @classmethod
     def copy_from_conference(self, targetconf, sourceconf, idlist):

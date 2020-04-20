@@ -96,7 +96,9 @@ used. The following types are currently available:
 
 Manually confirmed
 : If this is picked, the registration cannot be completed by the
-attendee. It requires the administrator to confirm it manually.
+attendee. It requires the administrator to confirm it manually. As this
+will not generate an invoice, this can only be used for unpaid registration
+types, and will not be allowed in multi-registrations.
 
 Confirmed speaker
 : The attendee registering must, with the same account, have

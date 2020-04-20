@@ -72,10 +72,16 @@ def confirm_manual_registration(reg):
     return "This registration type needs to be manually confirmed. Please await notification from the conference organizers."
 
 
+def confirm_manual_registration_setup(cleaned_data):
+    if cleaned_data['cost'] > 0:
+        raise ValidationError('This special type cannot be used for paid registrations.')
+
+
 _specialregtypes['man'] = {
     'name': 'Manually confirmed',
     'func': validate_manual_registration,
     'confirmfunc': confirm_manual_registration,
+    'confirmsetupfunc': confirm_manual_registration_setup,
     }
 
 
@@ -96,3 +102,11 @@ def confirm_special_reg_type(regtypename, reg):
         return _specialregtypes[regtypename]['confirmfunc'](reg)
     else:
         return None
+
+
+def validate_special_reg_type_setup(regtypename, cleaned_data):
+    if regtypename not in _specialregtypes:
+        raise ValidationError('Invalid registration type record. Internal error.')
+
+    if 'confirmsetupfunc' in _specialregtypes[regtypename]:
+        _specialregtypes[regtypename]['confirmsetupfunc'](cleaned_data)
