@@ -598,7 +598,7 @@ class ConferenceRegistration(models.Model):
     @property
     def invoice_status(self):
         if self.canceledat:
-            return "registratoin canceled"
+            return "registration canceled"
         elif self.payconfirmedat:
             return "paid and confirmed"
         elif self.invoice:
