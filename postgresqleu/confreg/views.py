@@ -292,7 +292,7 @@ def register(request, confname, whatfor=None):
             return render_conference_response(request, conference, 'reg', 'confreg/prompt_regfor.html')
 
         # No previous registration, grab some data from the user profile
-        reg = ConferenceRegistration(conference=conference, attendee=request.user)
+        reg = ConferenceRegistration(conference=conference, attendee=request.user, registrator=request.user)
         reg.email = request.user.email.lower()
         reg.firstname = request.user.first_name
         reg.lastname = request.user.last_name
