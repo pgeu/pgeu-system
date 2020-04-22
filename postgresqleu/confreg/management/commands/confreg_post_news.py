@@ -10,6 +10,8 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
+from django.template.defaultfilters import slugify
+from django.conf import settings
 
 from datetime import timedelta
 
@@ -33,9 +35,13 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         for n in ConferenceNews.objects.filter(tweeted=False, conference__twittersync_active=True, datetime__lt=timezone.now(), datetime__gt=timezone.now() - timedelta(days=7)):
-            statusstr = "{0} {1}##{2}".format(n.title[:250 - 40],
-                                              n.conference.confurl,
-                                              n.id)
+            statusstr = "{0} {1}/events/{2}/news/{3}-{4}/".format(
+                n.title[:250 - 40],
+                settings.SITEBASE,
+                n.conference.urlname,
+                slugify(n.title),
+                n.id,
+            )
             post_conference_tweet(n.conference, statusstr, approved=True)
             n.tweeted = True
             n.save()
