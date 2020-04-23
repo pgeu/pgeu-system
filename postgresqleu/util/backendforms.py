@@ -41,6 +41,8 @@ class BackendForm(ConcurrentProtectedModelForm):
     fieldsets = []
     allow_email = False
     force_insert = False
+    verbose_name = None
+    verbose_name_plural = None
     helplink = None
 
     def __init__(self, conference, *args, **kwargs):
@@ -161,6 +163,14 @@ class BackendForm(ConcurrentProtectedModelForm):
         if f in self.verbose_field_names:
             return self.verbose_field_names[f]
         return self.Meta.model._meta.get_field(f).verbose_name.capitalize()
+
+    @classmethod
+    def _verbose_name(self):
+        return self.verbose_name or self.Meta.model._meta.verbose_name
+
+    @classmethod
+    def _verbose_name_plural(self):
+        return self.verbose_name_plural or self.Meta.model._meta.verbose_name_plural
 
     @classmethod
     def numeric_defaultsort(cls):

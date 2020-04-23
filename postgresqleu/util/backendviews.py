@@ -69,7 +69,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                         'topadmin': topadmin,
                         'form': newform,
                         'whatverb': 'Create new',
-                        'what': formclass.Meta.model._meta.verbose_name,
+                        'what': formclass._verbose_name(),
                         'savebutton': 'Create',
                         'cancelurl': cancel_url,
                         'helplink': newform.helplink,
@@ -128,13 +128,13 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                     pass
                 elif to_delete:
                     pieces = [str(to_delete[n]) for n in range(0, min(5, len(to_delete))) if not isinstance(to_delete[n], list)]
-                    extra_error = "This {0} cannot be deleted. It would have resulted in the following other objects also being deleted: {1}".format(formclass.Meta.model._meta.verbose_name, ', '.join(pieces))
+                    extra_error = "This {0} cannot be deleted. It would have resulted in the following other objects also being deleted: {1}".format(formclass._verbose_name(), ', '.join(pieces))
                 else:
-                    messages.info(request, "{0} {1} deleted.".format(formclass.Meta.model._meta.verbose_name.capitalize(), instance))
+                    messages.info(request, "{0} {1} deleted.".format(formclass._verbose_name().capitalize(), instance))
                     instance.delete()
                     return HttpResponseRedirect(deleted_url)
             else:
-                messages.warning(request, "New {0} not deleted, object was never saved.".format(formclass.Meta.model._meta.verbose_name.capitalize()))
+                messages.warning(request, "New {0} not deleted, object was never saved.".format(formclass._verbose_name().capitalize()))
                 return HttpResponseRedirect(cancel_url)
 
         form = formclass(conference, instance=instance, data=request.POST, files=request.FILES, newformdata=newformdata)
@@ -173,10 +173,10 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
             adminurl = reverse('admin:{0}_{1}_change'.format(instance._meta.app_label, instance._meta.model_name), args=(instance.pk,))
         except NoReverseMatch:
             adminurl = None
-        what = formclass.Meta.model._meta.verbose_name
+        what = formclass._verbose_name()
     else:
         adminurl = None
-        what = 'new {0}'.format(formclass.Meta.model._meta.verbose_name)
+        what = 'new {0}'.format(formclass._verbose_name())
 
     return render(request, 'confreg/admin_backend_form.html', {
         'conference': conference,
@@ -263,9 +263,9 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
             'basetemplate': basetemplate,
             'topadmin': topadmin,
             'values': values,
-            'title': formclass.Meta.model._meta.verbose_name_plural.capitalize(),
-            'singular_name': formclass.Meta.model._meta.verbose_name,
-            'plural_name': formclass.Meta.model._meta.verbose_name_plural,
+            'title': formclass._verbose_name_plural().capitalize(),
+            'singular_name': formclass._verbose_name(),
+            'plural_name': formclass._verbose_name_plural(),
             'headers': [formclass.get_field_verbose_name(f) for f in formclass.list_fields],
             'coltypes': formclass.coltypes,
             'filtercolumns': formclass.get_column_filters(conference),
@@ -288,7 +288,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
                                     None,
                                     allow_new=True,
                                     allow_delete=allow_delete,
-                                    breadcrumbs=breadcrumbs + [('../', formclass.Meta.model._meta.verbose_name_plural.capitalize()), ],
+                                    breadcrumbs=breadcrumbs + [('../', formclass._verbose_name_plural().capitalize()), ],
                                     conference=conference,
                                     bypass_conference_filter=bypass_conference_filter,
                                     instancemaker=instancemaker,
@@ -336,7 +336,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
                                     handler.get_form(subobj, request.POST),
                                     subid,
                                     breadcrumbs=breadcrumbs + [
-                                        ('../../../', formclass.Meta.model._meta.verbose_name_plural.capitalize()),
+                                        ('../../../', formclass._verbose_name_plural().capitalize()),
                                         ('../../', masterobj),
                                     ],
                                     cancel_url='../../',
@@ -355,7 +355,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
                                 formclass,
                                 id,
                                 allow_delete=allow_delete,
-                                breadcrumbs=breadcrumbs + [('../', formclass.Meta.model._meta.verbose_name_plural.capitalize()), ],
+                                breadcrumbs=breadcrumbs + [('../', formclass._verbose_name_plural().capitalize()), ],
                                 conference=conference,
                                 bypass_conference_filter=bypass_conference_filter,
                                 topadmin=topadmin,
@@ -374,10 +374,10 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
         return render(request, 'confreg/admin_backend_copy_select_conf.html', {
             'conference': conference,
             'form': form,
-            'what': formclass.Meta.model._meta.verbose_name,
+            'what': formclass._verbose_name(),
             'savebutton': 'Copy',
             'cancelurl': '../',
-            'breadcrumbs': [('../', formclass.Meta.model._meta.verbose_name_plural.capitalize()), ],
+            'breadcrumbs': [('../', formclass._verbose_name_plural().capitalize()), ],
             'helplink': formclass.helplink,
         })
     elif len(restpieces) == 2:
@@ -436,9 +436,9 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
             'conference': conference,
             'basetemplate': 'confreg/confadmin_base.html',
             'values': values,
-            'title': formclass.Meta.model._meta.verbose_name_plural.capitalize(),
-            'singular_name': formclass.Meta.model._meta.verbose_name,
-            'plural_name': formclass.Meta.model._meta.verbose_name_plural,
+            'title': formclass._verbose_name_plural().capitalize(),
+            'singular_name': formclass._verbose_name(),
+            'plural_name': formclass._verbose_name_plural(),
             'headers': [formclass.get_field_verbose_name(f) for f in formclass.list_fields],
             'coltypes': formclass.coltypes,
             'filtercolumns': formclass.get_column_filters(conference),
@@ -454,8 +454,8 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
             'transform_example': confirmed_transform_example,
             'noeditlinks': True,
             'breadcrumbs': [
-                ('../../', formclass.Meta.model._meta.verbose_name_plural.capitalize()),
-                ('../', 'Copy {0}'.format(formclass.Meta.model._meta.verbose_name_plural.capitalize())),
+                ('../../', formclass._verbose_name_plural().capitalize()),
+                ('../', 'Copy {0}'.format(formclass._verbose_name_plural().capitalize())),
             ],
             'helplink': formclass.helplink,
         })
