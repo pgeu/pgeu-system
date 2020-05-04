@@ -697,7 +697,7 @@ def sponsor_contract(request, contractid):
 
     resp = HttpResponse(content_type='application/pdf')
     resp['Content-disposition'] = 'attachment; filename="%s.pdf"' % contract.contractname
-    resp.write(contract.contractpdf)
+    resp.write(bytes(contract.contractpdf))
     return resp
 
 
