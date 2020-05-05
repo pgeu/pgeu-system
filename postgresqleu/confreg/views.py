@@ -1730,7 +1730,7 @@ def callforpapers_copy(request, confname):
                                       submissionnote=submissionnote,
                                       )
                 n.save()
-                n.speaker = s.speaker.all()
+                n.speaker.set(s.speaker.all())
             return HttpResponseRedirect('../')
     else:
         form = CallForPapersCopyForm(conference, speaker)
