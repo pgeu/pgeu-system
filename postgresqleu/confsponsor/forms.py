@@ -214,7 +214,7 @@ class SponsorRefundForm(forms.Form):
         (0, "Refund full invoice cost"),
         (1, "Refund custom amount"),
         (2, "Don't refund"),
-    ), label="Refund amonut")
+    ), label="Refund amount")
     customrefundamount = forms.DecimalField(decimal_places=2, required=False, label="Custom refund amount (ex VAT)")
     customrefundamountvat = forms.DecimalField(decimal_places=2, required=False, label="Custom VAT refund amount")
     cancelmethod = forms.ChoiceField(choices=(
