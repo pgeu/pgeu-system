@@ -41,6 +41,7 @@ from .benefits import get_benefit_class
 from .invoicehandler import create_sponsor_invoice, confirm_sponsor, get_sponsor_invoice_address
 from .invoicehandler import create_voucher_invoice
 from .vatutil import validate_eu_vat_number
+from .util import send_conference_sponsor_notification
 
 
 @login_required
@@ -489,11 +490,11 @@ def _sender_shipment_new(request, conference, sponsor):
                 shipment.save()
 
                 sname = sponsor and 'Sponsor {0}'.format(sponsor) or 'Conference organizers'
-                send_simple_mail(conference.sponsoraddr,
-                                 conference.sponsoraddr,
-                                 "{0} requested a new shipment".format(sname),
-                                 "New shipment with description '{0}' requested for destination\n{1}\nNot sent yet.".format(shipment.description, shipment.address.title),
-                                 sendername=conference.conferencename)
+                send_conference_sponsor_notification(
+                    conference,
+                    "{0} requested a new shipment".format(sname),
+                    "New shipment with description '{0}' requested for destination\n{1}\nNot sent yet.".format(shipment.description, shipment.address.title),
+                )
 
                 return HttpResponseRedirect("../{0}/".format(shipment.addresstoken))
 
@@ -539,11 +540,11 @@ def _sender_shipment(request, conference, sponsor, shipmentid):
                 return HttpResponseRedirect(".")
 
             sname = sponsor and 'Sponsor {0}'.format(sponsor) or 'Conference organizers'
-            send_simple_mail(conference.sponsoraddr,
-                             conference.sponsoraddr,
-                             "{0} deleted a shipment".format(sname),
-                             "Shipment with id {0} and description '{1}' was deleted.\nIt had not been marked as sent yet.\n".format(shipment.addresstoken, shipment.description),
-                             sendername=conference.conferencename)
+            send_conference_sponsor_notification(
+                conference,
+                "{0} deleted a shipment".format(sname),
+                "Shipment with id {0} and description '{1}' was deleted.\nIt had not been marked as sent yet.\n".format(shipment.addresstoken, shipment.description),
+            )
             shipment.delete()
             messages.info(request, "Shipment {0} deleted".format(shipmentid))
             return HttpResponseRedirect("../../#shipment")
@@ -575,11 +576,11 @@ def _sender_shipment(request, conference, sponsor, shipmentid):
                     form.instance.trackinglink,
                 )
                 sname = sponsor and 'Sponsor {0}'.format(sponsor) or 'Conference organizers'
-                send_simple_mail(conference.sponsoraddr,
-                                 conference.sponsoraddr,
-                                 "{0} {1}".format(sname, subject),
-                                 mailstr,
-                                 sendername=conference.conferencename)
+                send_conference_sponsor_notification(
+                    conference,
+                    "{0} {1}".format(sname, subject),
+                    mailstr,
+                )
             return HttpResponseRedirect("../../#shipment")
     else:
         form = SponsorShipmentForm(instance=shipment)
@@ -800,12 +801,11 @@ def _confirm_benefit(request, benefit):
                                  },
                                  sender=conference.sponsoraddr,
                                  receivername='{0} {1}'.format(manager.first_name, manager.last_name))
-        send_simple_mail(conference.sponsoraddr,
-                         conference.sponsoraddr,
-                         "Sponsorship benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor),
-                         "Sponsorship benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor),
-                         sendername=conference.conferencename,
-                         )
+        send_conference_sponsor_notification(
+            conference,
+            "Sponsorship benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor),
+            "Sponsorship benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor),
+        )
 
         # Potentially send tweet
         if benefit.benefit.tweet_template:
@@ -844,12 +844,11 @@ def _unclaim_benefit(request, claimed_benefit):
                                  },
                                  sender=conference.sponsoraddr,
                                  receivername='{0} {1}'.format(manager.first_name, manager.last_name))
-        send_simple_mail(conference.sponsoraddr,
-                         conference.sponsoraddr,
-                         "Sponsorship benefit {0} for {1} has been unclaimed".format(benefit, sponsor),
-                         "Sponsorship benefit {0} for {1} has been unclaimed".format(benefit, sponsor),
-                         sendername=conference.conferencename,
-                         )
+        send_conference_sponsor_notification(
+            conference,
+            "Sponsorship benefit {0} for {1} has been unclaimed".format(benefit, sponsor),
+            "Sponsorship benefit {0} for {1} has been unclaimed".format(benefit, sponsor),
+        )
 
 
 @login_required
@@ -913,11 +912,11 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
                 messages.error(request, "Cannot reject sponsorship without reason!")
                 return HttpResponseRedirect(".")
             # Else actually reject it
-            send_simple_mail(conference.sponsoraddr,
-                             conference.sponsoraddr,
-                             "Sponsor %s rejected" % sponsor.name,
-                             "The sponsor {0} has been rejected by {1}.\nThe reason given was: {2}".format(sponsor.name, request.user, reason),
-                             sendername=conference.conferencename)
+            send_conference_sponsor_notification(
+                conference,
+                "Sponsor %s rejected" % sponsor.name,
+                "The sponsor {0} has been rejected by {1}.\nThe reason given was: {2}".format(sponsor.name, request.user, reason),
+            )
             for manager in sponsor.managers.all():
                 send_conference_mail(conference,
                                      manager.email,
@@ -1049,10 +1048,10 @@ def sponsor_admin_send_mail(request, confurlname):
                                          sender=conference.sponsoraddr,
                     )
 
-            send_simple_mail(conference.sponsoraddr,
-                             conference.sponsoraddr,
-                             "Email sent to sponsors",
-                             """An email was sent to sponsors of {0}
+            send_conference_sponsor_notification(
+                conference,
+                "Email sent to sponsors",
+                """An email was sent to sponsors of {0}
 with subject '{1}'.
 
 It was sent to {2}.
@@ -1062,15 +1061,15 @@ It was sent to {2}.
 ------
 
 To view it on the site, go to {4}/events/sponsor/admin/{5}/viewmail/{6}/""".format(
-                                 conference,
-                                 msg.subject,
-                                 deststr,
-                                 msg.message,
-                                 settings.SITEBASE,
-                                 conference.urlname,
-                                 msg.id),
-                             sendername=conference.conferencename,
-                             receivername=conference.conferencename)
+                    conference,
+                    msg.subject,
+                    deststr,
+                    msg.message,
+                    settings.SITEBASE,
+                    conference.urlname,
+                    msg.id,
+                ),
+            )
 
             messages.info(request, "Email sent to %s sponsors, and added to their sponsor pages" % len(sponsors))
             return HttpResponseRedirect("../")
@@ -1294,11 +1293,11 @@ def sponsor_admin_refund(request, confurlname, sponsorid):
 
                     # Send a notification email to the organizers with the full details
                     # of the cancelation.
-                    send_simple_mail(conference.sponsoraddr,
-                                     conference.sponsoraddr,
-                                     "Sponsor {} canceled by {}".format(sponsorname, request.user.username),
-                                     oplog.getvalue(),
-                                     sendername=conference.conferencename)
+                    send_conference_sponsor_notification(
+                        conference,
+                        "Sponsor {} canceled by {}".format(sponsorname, request.user.username),
+                        oplog.getvalue(),
+                    )
 
                     transaction.savepoint_commit(spoint)
 

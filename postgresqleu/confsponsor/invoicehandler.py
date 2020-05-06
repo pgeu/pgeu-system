@@ -10,6 +10,7 @@ from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.util.time import today_conference
 
 from .models import Sponsor, PurchasedVoucher
+from .util import send_conference_sponsor_notification
 from postgresqleu.confreg.models import PrepaidBatch, PrepaidVoucher
 from postgresqleu.confreg.util import send_conference_mail
 import postgresqleu.invoices.models as invoicemodels
@@ -56,11 +57,11 @@ class InvoiceProcessor(object):
 
         conference = sponsor.conference
 
-        send_simple_mail(conference.sponsoraddr,
-                         conference.sponsoraddr,
-                         "Confirmed sponsor: %s" % sponsor.name,
-                         "The sponsor\n%s\nhas completed payment of the sponsorship invoice,\nfor level %s and is now activated.\nBenefits are not claimed yet." % (sponsor.name, sponsor.level),
-                         sendername=conference.conferencename)
+        send_conference_sponsor_notification(
+            conference,
+            "Confirmed sponsor: %s" % sponsor.name,
+            "The sponsor\n%s\nhas completed payment of the sponsorship invoice,\nfor level %s and is now activated.\nBenefits are not claimed yet." % (sponsor.name, sponsor.level),
+        )
 
     # An invoice was canceled.
     def process_invoice_cancellation(self, invoice):
@@ -206,11 +207,11 @@ class VoucherInvoiceProcessor(object):
         pv.save()
 
         if pv.sponsor:
-            send_simple_mail(pv.conference.sponsoraddr,
-                             pv.conference.sponsoraddr,
-                             "Sponsor %s purchased vouchers" % pv.sponsor.name,
-                             "The sponsor\n%s\nhas purchased %s vouchers of type \"%s\".\n\n" % (pv.sponsor.name, pv.num, pv.regtype.regtype),
-                             sendername=pv.sponsor.conference.conferencename)
+            send_conference_sponsor_notification(
+                pv.conference,
+                "Sponsor %s purchased vouchers" % pv.sponsor.name,
+                "The sponsor\n%s\nhas purchased %s vouchers of type \"%s\".\n\n" % (pv.sponsor.name, pv.num, pv.regtype.regtype),
+            )
         else:
             # For non-sponsors, there is no dashboard available, so we send the actual vouchers in an
             # email directly.

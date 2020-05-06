@@ -14,6 +14,7 @@ from django.db.models import Q, F, Count
 from postgresqleu.confreg.models import DiscountCode
 from postgresqleu.confreg.util import send_conference_mail
 from postgresqleu.confsponsor.models import Sponsor
+from postgresqleu.confsponsor.util import send_conference_sponsor_notification
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager, InvoiceWrapper
 from postgresqleu.util.time import today_global
@@ -47,11 +48,11 @@ class Command(BaseCommand):
                 # invoiced in the system so we don't try again.
                 code.is_invoiced = True
                 code.save()
-                send_simple_mail(code.conference.sponsoraddr,
-                                 code.conference.sponsoraddr,
-                                 "[{0}] Discount code expired".format(code.conference),
-                                 "Discount code {0} has expired without any uses.".format(code.code),
-                                 sendername=code.conference.conferencename)
+                send_conference_sponsor_notification(
+                    code.conference,
+                    "[{0}] Discount code expired".format(code.conference),
+                    "Discount code {0} has expired without any uses.".format(code.code),
+                )
 
                 for manager in code.sponsor.managers.all():
                     send_conference_mail(code.conference,
@@ -102,16 +103,16 @@ class Command(BaseCommand):
 
                 # Now also fire off emails, both to the admins and to all the managers of the sponsor
                 # (so they know where the invoice was sent).
-                send_simple_mail(code.conference.sponsoraddr,
-                                 code.conference.sponsoraddr,
-                                 "[{0}] Discount code {1} has been invoiced".format(code.conference, code.code),
-                                 "The discount code {0} has been closed,\nand an invoice has been sent to {1}.\n\nA total of {2} registrations used this code, and the total amount was {3}.\n".format(
-                                     code.code,
-                                     code.sponsor,
-                                     len(invoicerows),
-                                     code.invoice.total_amount,
-                                 ),
-                                 sendername=code.conference.conferencename)
+                send_conference_sponsor_notification(
+                    code.conference,
+                    "[{0}] Discount code {1} has been invoiced".format(code.conference, code.code),
+                    "The discount code {0} has been closed,\nand an invoice has been sent to {1}.\n\nA total of {2} registrations used this code, and the total amount was {3}.\n".format(
+                        code.code,
+                        code.sponsor,
+                        len(invoicerows),
+                        code.invoice.total_amount,
+                    ),
+                )
 
                 for manager in code.sponsor.managers.all():
                     send_conference_mail(code.conference,
