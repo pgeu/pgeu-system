@@ -1,4 +1,5 @@
 from postgresqleu.util.db import exec_to_list
+from postgresqleu.mailqueue.util import send_simple_mail
 
 
 def get_sponsor_dashboard_data(conference):
