@@ -19,11 +19,10 @@ from postgresqleu.util.messaging.twitter import Twitter, TwitterSetup
 from postgresqleu.util.backendviews import backend_list_editor, backend_process_form
 from postgresqleu.util.request import get_int_or_error
 from postgresqleu.confreg.util import get_authenticated_conference
-from postgresqleu.mailqueue.util import send_simple_mail
 
 from .jinjafunc import JINJA_TEMPLATE_ROOT
 from .jinjapdf import render_jinja_ticket, render_jinja_badges
-from .util import send_conference_mail, get_conference_or_404
+from .util import send_conference_mail, get_conference_or_404, send_conference_notification
 
 from .models import Conference, ConferenceSeries
 from .models import ConferenceRegistration, Speaker
@@ -391,12 +390,11 @@ def multireg_refund(request, urlname, bulkid):
             manager = InvoiceManager()
             manager.refund_invoice(invoice, 'Multi registration refunded', form.cleaned_data['amount'], form.cleaned_data['vatamount'], conference.vat_registrations)
 
-            send_simple_mail(conference.notifyaddr,
-                             conference.notifyaddr,
-                             'Multi registration {} refunded'.format(bulkpay.id),
-                             'Multi registration {} purchased by {} {} has been refunded.\nNo registrations were active in this multi registration, and the multi registration has now been deleted.\n'.format(bulkpay.id, bulkpay.user.first_name, bulkpay.user.last_name),
-                             sendername=conference.conferencename)
-
+            send_conference_notification(
+                conference,
+                'Multi registration {} refunded'.format(bulkpay.id),
+                'Multi registration {} purchased by {} {} has been refunded.\nNo registrations were active in this multi registration, and the multi registration has now been deleted.\n'.format(bulkpay.id, bulkpay.user.first_name, bulkpay.user.last_name),
+            )
             bulkpay.delete()
 
             messages.info(request, 'Multi registration has been refunded and deleted.')
@@ -464,11 +462,11 @@ def prepaidorder_refund(request, urlname, orderid):
             manager = InvoiceManager()
             manager.refund_invoice(invoice, 'Prepaid order refunded', invoice.total_amount - invoice.total_vat, invoice.total_vat, conference.vat_registrations)
 
-            send_simple_mail(conference.notifyaddr,
-                             conference.notifyaddr,
-                             'Prepaid order {} refunded'.format(order.id),
-                             'Prepaid order {} purchased by {} {} has been refunded.\nNo vouchers were in use, and the order and batch have both been deleted.\n'.format(order.id, order.user.first_name, order.user.last_name),
-                             sendername=conference.conferencename)
+            send_conference_notification(
+                conference,
+                'Prepaid order {} refunded'.format(order.id),
+                'Prepaid order {} purchased by {} {} has been refunded.\nNo vouchers were in use, and the order and batch have both been deleted.\n'.format(order.id, order.user.first_name, order.user.last_name),
+            )
             order.batch.delete()
             order.delete()
 

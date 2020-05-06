@@ -12,10 +12,9 @@ from io import StringIO
 from datetime import timedelta
 
 
-from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.time import today_global
 
-from postgresqleu.confreg.util import expire_additional_options
+from postgresqleu.confreg.util import expire_additional_options, send_conference_notification
 from postgresqleu.confreg.models import ConferenceRegistration
 
 
@@ -75,8 +74,8 @@ autocancel hours, to make room for other attendees:
                 for name, option in expired:
                     s.write("{0:<40}{1}\n".format(name, option))
                 s.write("\n\n")
-                send_simple_mail(conference.notifyaddr,
-                                 conference.notifyaddr,
-                                 'Additional options removed from pending registrations',
-                                 s.getvalue(),
-                                 sendername=conference.conferencename)
+                send_conference_notification(
+                    conference,
+                    'Additional options removed from pending registrations',
+                    s.getvalue(),
+                )

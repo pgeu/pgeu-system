@@ -12,11 +12,9 @@ from django.utils import timezone
 from io import StringIO
 from datetime import timedelta, time
 
-from postgresqleu.mailqueue.util import send_simple_mail
-
 from postgresqleu.confreg.models import Conference, Speaker, ConferenceSession
 from postgresqleu.confreg.models import ConferenceRegistration
-from postgresqleu.confreg.util import send_conference_mail
+from postgresqleu.confreg.util import send_conference_mail, send_conference_notification
 
 
 class Command(BaseCommand):
@@ -45,13 +43,11 @@ class Command(BaseCommand):
                 if whatstr.tell():
                     # More than one character, so we have done something. Send
                     # a report to the conference organizers about it.
-                    send_simple_mail(conference.notifyaddr,
-                                     conference.notifyaddr,
-                                     "Reminders sent",
-                                     whatstr.getvalue(),
-                                     sendername=conference.conferencename,
-                                     receivername=conference.conferencename,
-                                     )
+                    send_conference_notification(
+                        conference,
+                        "Reminders sent",
+                        whatstr.getvalue(),
+                    )
 
         for conference in Conference.objects.filter(callforpapersopen=True):
             # One transaction for each conference with call for papers open, to send reminders
@@ -62,13 +58,11 @@ class Command(BaseCommand):
                 self.remind_empty_speakers(whatstr, conference)
 
                 if whatstr.tell():
-                    send_simple_mail(conference.notifyaddr,
-                                     conference.notifyaddr,
-                                     "CfP reminders sent",
-                                     whatstr.getvalue(),
-                                     sendername=conference.conferencename,
-                                     receivername=conference.conferencename,
-                                 )
+                    send_conference_notification(
+                        conference,
+                        "CfP reminders sent",
+                        whatstr.getvalue(),
+                    )
 
     def remind_pending_speakers(self, whatstr, conference):
         # Remind speakers that are in pending status. But only the ones

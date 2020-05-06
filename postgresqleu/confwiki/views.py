@@ -328,17 +328,15 @@ def signup(request, urlname, signupid):
                 # Remove instead!
                 if attendee_signup:
                     if signup.notify_changes:
-                        send_conference_mail(conference,
-                                             conference.notifyaddr,
-                                             'Signup response removed from {}'.format(signup.title),
-                                             'confwiki/mail/admin_notify_signup_delete.txt',
-                                             {
-                                                 'conference': conference,
-                                                 'signup': signup,
-                                                 'attendeesignup': attendee_signup,
-                                             },
-                                             sender=conference.notifyaddr,
-                                             receivername=conference.conferencename,
+                        send_conference_notification_template(
+                            conference,
+                            'Signup response removed from {}'.format(signup.title),
+                            'confwiki/mail/admin_notify_signup_delete.txt',
+                            {
+                                'conference': conference,
+                                'signup': signup,
+                                'attendeesignup': attendee_signup,
+                            },
                         )
                     attendee_signup.delete()
                     reglog(reg, "Deleted response to signup {}".format(signup.id), request.user)
@@ -350,18 +348,16 @@ def signup(request, urlname, signupid):
                     oldchoice = attendee_signup.choice
                     attendee_signup.choice = form.cleaned_data['choice']
                     if signup.notify_changes and oldchoice != attendee_signup.choice:
-                        send_conference_mail(conference,
-                                             conference.notifyaddr,
-                                             'Signup response updated for {}'.format(signup.title),
-                                             'confwiki/mail/admin_notify_signup_modify.txt',
-                                             {
-                                                 'conference': conference,
-                                                 'signup': signup,
-                                                 'attendeesignup': attendee_signup,
-                                                 'oldchoice': oldchoice,
-                                             },
-                                             sender=conference.notifyaddr,
-                                             receivername=conference.conferencename,
+                        send_conference_notification_template(
+                            conference,
+                            'Signup response updated for {}'.format(signup.title),
+                            'confwiki/mail/admin_notify_signup_modify.txt',
+                            {
+                                'conference': conference,
+                                'signup': signup,
+                                'attendeesignup': attendee_signup,
+                                'oldchoice': oldchoice,
+                            },
                         )
                     reglog(reg, "Updated response to signup {} from {} to {}".format(
                         signup.id,
@@ -373,17 +369,15 @@ def signup(request, urlname, signupid):
                                                      signup=signup,
                                                      choice=form.cleaned_data['choice'])
                     if signup.notify_changes:
-                        send_conference_mail(conference,
-                                             conference.notifyaddr,
-                                             'Attendee signed up for {}'.format(signup.title),
-                                             'confwiki/mail/admin_notify_signup.txt',
-                                             {
-                                                 'conference': conference,
-                                                 'signup': signup,
-                                                 'attendeesignup': attendee_signup,
-                                             },
-                                             sender=conference.notifyaddr,
-                                             receivername=conference.conferencename,
+                        send_conference_notification_template(
+                            conference,
+                            'Attendee signed up for {}'.format(signup.title),
+                            'confwiki/mail/admin_notify_signup.txt',
+                            {
+                                'conference': conference,
+                                'signup': signup,
+                                'attendeesignup': attendee_signup,
+                            },
                         )
                     reglog(reg, "Recorded response to signup {}".format(signup.id), request.user)
                 attendee_signup.save()

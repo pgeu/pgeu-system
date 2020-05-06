@@ -238,15 +238,13 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
             m.registrations.add(reg)
 
     if reg.conference.notifyregs:
-        send_conference_mail(reg.conference,
-                             reg.conference.notifyaddr,
-                             "New registration",
-                             'confreg/mail/admin_notify_reg.txt',
-                             {
-                                 'reg': reg,
-                             },
-                             sender=reg.conference.notifyaddr,
-                             receivername=reg.conference.conferencename,
+        send_conference_notification_template(
+            reg.conference,
+            "New registration",
+            'confreg/mail/admin_notify_reg.txt',
+            {
+                'reg': reg,
+            },
         )
 
     send_welcome_email(reg)
@@ -314,16 +312,14 @@ def cancel_registration(reg, is_unconfirmed=False, reason=None, user=None):
     reglog(reg, "Canceled registration", user)
 
     if reg.conference.notifyregs and not is_unconfirmed:
-        send_conference_mail(reg.conference,
-                             reg.conference.notifyaddr,
-                             "Canceled registration",
-                             'confreg/mail/admin_notify_cancel.txt',
-                             {
-                                 'reg': reg,
-                                 'reason': reason,
-                             },
-                             sender=reg.conference.notifyaddr,
-                             receivername=reg.conference.conferencename,
+        send_conference_notification_template(
+            reg.conference,
+            "Canceled registration",
+            'confreg/mail/admin_notify_cancel.txt',
+            {
+                'reg': reg,
+                'reason': reason,
+            },
         )
 
 
@@ -406,3 +402,20 @@ def get_conference_or_404(urlname):
     timezone.activate(conference.tzname)
 
     return conference
+
+
+def send_conference_notification(conference, subject, message):
+    if conference.notifyaddr:
+        send_simple_mail(conference.notifyaddr,
+                         conference.notifyaddr,
+                         subject,
+                         message,
+                         sendername=conference.conferencename)
+
+
+def send_conference_notification_template(conference, subject, templatename, templateattr):
+    if not ((conference and conference.jinjadir) or os.path.exists(os.path.join(JINJA_TEMPLATE_ROOT, templatename))):
+        raise Exception("Mail template not found")
+    message = render_jinja_conference_template(conference, templatename, templateattr)
+
+    send_conference_notification(conference, subject, message)

@@ -11,10 +11,8 @@ from django.utils import timezone
 
 from datetime import timedelta
 
-from postgresqleu.mailqueue.util import send_simple_mail
-
 from postgresqleu.confreg.models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
-from postgresqleu.confreg.util import send_conference_mail
+from postgresqleu.confreg.util import send_conference_mail, send_conference_notification
 
 
 class Command(BaseCommand):
@@ -45,11 +43,11 @@ class Command(BaseCommand):
                                         text="Offer expired at {0}".format(w.offerexpires)).save()
 
             # Notify conference organizers
-            send_simple_mail(reg.conference.notifyaddr,
-                             reg.conference.notifyaddr,
-                             'Waitlist expired',
-                             'User {0} {1} <{2}> did not complete the registration before the waitlist offer expired.'.format(reg.firstname, reg.lastname, reg.email),
-                             sendername=reg.conference.conferencename)
+            send_conference_notification(
+                reg.conference,
+                'Waitlist expired',
+                'User {0} {1} <{2}> did not complete the registration before the waitlist offer expired.'.format(reg.firstname, reg.lastname, reg.email),
+            )
 
             # Also send an email to the user
             send_conference_mail(reg.conference,

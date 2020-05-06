@@ -42,7 +42,7 @@ from .forms import SessionSlidesUrlForm, SessionSlidesFileForm
 from .util import invoicerows_for_registration, notify_reg_confirmed, InvoicerowsException
 from .util import get_invoice_autocancel, cancel_registration, send_welcome_email
 from .util import attendee_cost_from_bulk_payment
-from .util import send_conference_mail
+from .util import send_conference_mail, send_conference_notification, send_conference_notification_template
 from .util import reglog
 
 from .models import get_status_string, get_status_string_short, valid_status_transitions
@@ -1819,16 +1819,14 @@ def callforpapers_confirm(request, confname, sessionid):
 
             if conference.notifysessionstatus:
                 # Send notification to the administrators as well
-                send_conference_mail(conference,
-                                     conference.notifyaddr,
-                                     "Session confirmation",
-                                     'confreg/mail/admin_notify_session.txt',
-                                     {
-                                         'conference': conference,
-                                         'session': session,
-                                     },
-                                     sender=conference.notifyaddr,
-                                     receivername=conference.conferencename,
+                send_conference_notification_template(
+                    conference,
+                    "Session confirmation",
+                    'confreg/mail/admin_notify_session.txt',
+                    {
+                        'conference': conference,
+                        'session': session,
+                    },
                 )
 
             return HttpResponseRedirect(".")
@@ -1890,11 +1888,11 @@ def confirmreg(request, confname):
 
                 messages.warning(request, "We're sorry, but your registration was not completed in time before the offer expired, and has been moved back to the waitlist.")
 
-                send_simple_mail(reg.conference.notifyaddr,
-                                 reg.conference.notifyaddr,
-                                 'Waitlist expired',
-                                 'User {0} {1} <{2}> did not complete the registration before the waitlist offer expired.'.format(reg.firstname, reg.lastname, reg.email),
-                                 sendername=reg.conference.conferencename)
+                send_conference_notification(
+                    conference,
+                    'Waitlist expired',
+                    'User {0} {1} <{2}> did not complete the registration before the waitlist offer expired.'.format(reg.firstname, reg.lastname, reg.email),
+                )
 
                 return render_conference_response(request, conference, 'reg', 'confreg/waitlist_status.html', {
                     'reg': reg,
@@ -2059,11 +2057,11 @@ def waitlist_signup(request, confname):
     RegistrationWaitlistHistory(waitlist=waitlist, text="Signed up for waitlist").save()
 
     # Notify the conference organizers
-    send_simple_mail(reg.conference.notifyaddr,
-                     reg.conference.notifyaddr,
-                     'Waitlist signup',
-                     'User {0} {1} <{2}> signed up for the waitlist.'.format(reg.firstname, reg.lastname, reg.email),
-                     sendername=reg.conference.conferencename)
+    send_conference_notification(
+        conference,
+        'Waitlist signup',
+        'User {0} {1} <{2}> signed up for the waitlist.'.format(reg.firstname, reg.lastname, reg.email),
+    )
 
     # Once on the waitlist, redirect back to the registration form page
     # which will show the waitlist information.
@@ -2089,11 +2087,11 @@ def waitlist_cancel(request, confname):
     reg.registrationwaitlistentry.delete()
 
     # Notify the conference organizers
-    send_simple_mail(reg.conference.notifyaddr,
-                     reg.conference.notifyaddr,
-                     'Waitlist cancel',
-                     'User {0} {1} <{2}> canceled from the waitlist.'.format(reg.firstname, reg.lastname, reg.email),
-                     sendername=reg.conference.conferencename)
+    send_conference_notification(
+        conference,
+        'Waitlist cancel',
+        'User {0} {1} <{2}> canceled from the waitlist.'.format(reg.firstname, reg.lastname, reg.email),
+    )
 
     messages.info(request, "Your registration has been removed from the waitlist. You may re-enter it if you change your mind.")
 
@@ -3631,11 +3629,11 @@ def admin_waitlist_cancel(request, urlname, wlid):
         wl.enteredon = timezone.now()
         wl.save()
 
-        send_simple_mail(reg.conference.notifyaddr,
-                         reg.conference.notifyaddr,
-                         'Waitlist offer cancel',
-                         'Waitlist offer for user {0} {1} <{2}> canceled by {3}. User remains on waitlist.'.format(reg.firstname, reg.lastname, reg.email, request.user),
-                         sendername=reg.conference.conferencename)
+        send_conferece_notification(
+            reg.conference,
+            'Waitlist offer cancel',
+            'Waitlist offer for user {0} {1} <{2}> canceled by {3}. User remains on waitlist.'.format(reg.firstname, reg.lastname, reg.email, request.user),
+        )
 
         send_conference_mail(reg.conference,
                              reg.email,
@@ -3653,11 +3651,11 @@ def admin_waitlist_cancel(request, urlname, wlid):
         # No active offer means we are canceling the entry completely
         wl.delete()
 
-        send_simple_mail(reg.conference.notifyaddr,
-                         reg.conference.notifyaddr,
-                         'Waitlist cancel',
-                         'User {0} {1} <{2}> removed from the waitlist by {3}.'.format(reg.firstname, reg.lastname, reg.email, request.user),
-                         sendername=reg.conference.conferencename)
+        send_conference_notification(
+            reg.conference,
+            'Waitlist cancel',
+            'User {0} {1} <{2}> removed from the waitlist by {3}.'.format(reg.firstname, reg.lastname, reg.email, request.user),
+        )
 
         send_conference_mail(reg.conference,
                              reg.email,
@@ -3950,12 +3948,10 @@ def transfer_reg(request, urlname):
                              },
                              receivername=fromreg.fullname)
 
-        send_simple_mail(fromreg.conference.notifyaddr,
-                         fromreg.conference.notifyaddr,
-                         "Transferred registration",
-                         "Registration for {0} transferred to {1}.\n".format(fromreg.email, toreg.email),
-                         sendername=fromreg.conference.conferencename,
-                         receivername=fromreg.conference.conferencename,
+        send_conference_notification(
+            fromreg.conference,
+            "Transferred registration",
+            "Registration for {0} transferred to {1}.\n".format(fromreg.email, toreg.email),
         )
 
         yield "Deleting old registration"

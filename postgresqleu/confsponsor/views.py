@@ -19,7 +19,7 @@ from postgresqleu.auth import user_search, user_import
 from postgresqleu.confreg.models import Conference, PrepaidVoucher, PrepaidBatch, DiscountCode
 from postgresqleu.confreg.util import get_authenticated_conference, get_conference_or_404
 from postgresqleu.confreg.jinjafunc import render_sandboxed_template
-from postgresqleu.confreg.util import send_conference_mail
+from postgresqleu.confreg.util import send_conference_mail, send_conference_notification
 from postgresqleu.confreg.twitter import post_conference_tweet
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.storage import InlineEncodedStorage
@@ -355,11 +355,11 @@ def sponsor_signup(request, confurlname, levelurlname):
                 else:
                     mailstr += "No invoice has been generated as for this level\na signed contract is required first. The sponsor\nhas been instructed to sign and send the contract."
 
-                send_simple_mail(conference.sponsoraddr,
-                                 conference.sponsoraddr,
-                                 "Sponsor %s signed up for %s" % (sponsor.name, conference),
-                                 mailstr,
-                                 sendername=conference.conferencename)
+                send_conference_notification(
+                    conference,
+                    "Sponsor %s signed up for %s" % (sponsor.name, conference),
+                    mailstr,
+                )
                 # Redirect back to edit the actual sponsorship entry
                 return HttpResponseRedirect('/events/sponsor/%s/' % sponsor.id)
     else:
@@ -423,12 +423,11 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
                         benefit,
                         settings.SITEBASE,
                         sponsor.conference.urlname)
-                send_simple_mail(sponsor.conference.sponsoraddr,
-                                 sponsor.conference.sponsoraddr,
-                                 "Sponsor %s %s sponsorship benefit %s" % (sponsor, claim.declined and 'declined' or 'claimed', benefit),
-                                 mailstr,
-                                 sendername=sponsor.conference.conferencename,
-                                 )
+                send_conference_notification(
+                    sponsor.conference,
+                    "Sponsor %s %s sponsorship benefit %s" % (sponsor, claim.declined and 'declined' or 'claimed', benefit),
+                    mailstr,
+                )
 
             messages.info(request, "Benefit \"%s\" has been %s." % (benefit, claim.declined and 'declined' or 'claimed'))
             return HttpResponseRedirect("/events/sponsor/%s/" % sponsor.id)

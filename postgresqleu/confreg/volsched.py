@@ -15,7 +15,7 @@ from postgresqleu.util.request import get_int_or_error
 
 from .models import Conference, ConferenceRegistration
 from .models import VolunteerSlot, VolunteerAssignment
-from .util import send_conference_mail, get_conference_or_404
+from .util import send_conference_notification_template, get_conference_or_404
 
 
 def _check_admin(request, conference):
@@ -48,16 +48,14 @@ def send_volunteer_notification(conference, assignment, subject, template):
         'confid': conference.id,
     })[0]
 
-    send_conference_mail(conference,
-                         conference.notifyaddr,
-                         subject,
-                         'confreg/mail/{}'.format(template), {
-                             'conference': conference,
-                             'assignment': assignment,
-                             'pending': pending,
-                         },
-                         sender=conference.notifyaddr,
-                         receivername=conference.conferencename,
+    send_conference_notification_template(
+        conference,
+        subject,
+        'confreg/mail/{}'.format(template), {
+            'conference': conference,
+            'assignment': assignment,
+            'pending': pending,
+        },
     )
 
 
