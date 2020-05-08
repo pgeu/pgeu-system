@@ -12,7 +12,7 @@ class InlineEncodedStorage(object):
         rows = curs.fetchall()
         if len(rows) != 1:
             return None
-        return rows[0][0]
+        return bytes(rows[0][0])
 
     def save(self, name, content):
         content.seek(0)
