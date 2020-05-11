@@ -203,7 +203,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
     })
 
 
-def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, allow_delete=True, conference=None, breadcrumbs=[], bypass_conference_filter=False, instancemaker=None, return_url='../', topadmin=None):
+def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, allow_delete=True, conference=None, breadcrumbs=[], bypass_conference_filter=False, instancemaker=None, return_url='../', topadmin=None, object_queryset=None):
     if not conference and not bypass_conference_filter:
         conference = get_authenticated_conference(request, urlname)
 
@@ -217,7 +217,10 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
     if resturl == '' or resturl is None:
         # Render the list of objects
         if bypass_conference_filter:
-            objects = formclass.Meta.model.objects.all()
+            if object_queryset is not None:
+                objects = object_queryset.all()
+            else:
+                objects = formclass.Meta.model.objects.all()
         else:
             if hasattr(formclass.Meta, 'conference_queryset'):
                 objects = formclass.Meta.conference_queryset(conference).all()
