@@ -6,3 +6,8 @@ register = template.Library()
 @register.filter(name='dictlookup')
 def dictlookup(value, key):
     return value.get(key, None)
+
+
+@register.filter(name='arrayelement')
+def arrayelement(value, key):
+    return value[key]

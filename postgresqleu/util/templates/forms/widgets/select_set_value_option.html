@@ -1,0 +1,1 @@
+{%load dictutil%}<option value="{{ widget.value|stringformat:'s' }}"{% include "django/forms/widgets/attrs.html" %} data-value="{{setmap|dictlookup:widget.value|arrayelement:0}}" data-lock="{{setmap|dictlookup:widget.value|arrayelement:1|yesno:"1,0"}}">{{ widget.label }}</option>

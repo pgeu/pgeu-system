@@ -16,6 +16,13 @@ $(document).ready(function() {
        $('#singleuploadformfile').trigger('click');
    });
 
+   $('select[data-set-form-field]').on('change', function(e) {
+       const fld = $('#' + $(this).data('set-form-field'));
+       const opt = $(this).find("option:selected");
+       fld.val(opt.data('value'));
+       fld.prop('readonly', opt.data('lock') == '1');
+   }).trigger('change');
+
    $('.dropdown-submenu a').on("click", function(e){
        $(this).next('ul').toggle();
        e.stopPropagation();

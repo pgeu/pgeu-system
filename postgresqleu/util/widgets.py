@@ -136,3 +136,16 @@ class Bootstrap4CheckboxSelectMultiple(forms.CheckboxSelectMultiple):
 
 class Bootstrap4HtmlDateTimeInput(forms.DateTimeInput):
     template_name = 'forms/widgets/bs4_datetime_input.html'
+
+
+class SelectSetValueWidget(forms.Select):
+    option_template_name = 'forms/widgets/select_set_value_option.html'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def get_context(self, name, value, attrs):
+        attrs['data-set-form-field'] = 'id_{}'.format(self.setvaluefield)
+        context = super().get_context(name, value, attrs)
+        context['setmap'] = self.setvalues
+        return context
