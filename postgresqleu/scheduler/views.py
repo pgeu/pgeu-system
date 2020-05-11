@@ -91,13 +91,13 @@ def job(request, jobid):
             messages.info(request, "Scheduled immediate run of '{0}'".format(job.description))
             return HttpResponseRedirect('../')
 
-        form = ScheduledJobForm(conference=None, instance=job, data=request.POST)
+        form = ScheduledJobForm(request, conference=None, instance=job, data=request.POST)
         if form.is_valid():
             form.save()
             reschedule_job(job, notify=True)
             return HttpResponseRedirect("../")
     else:
-        form = ScheduledJobForm(conference=None, instance=job)
+        form = ScheduledJobForm(request, conference=None, instance=job)
 
     history_objects = JobHistory.objects.filter(job=job).order_by('-time')
     (history, paginator, page_range) = simple_pagination(request, history_objects, 15)

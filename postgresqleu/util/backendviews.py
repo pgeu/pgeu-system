@@ -137,7 +137,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                 messages.warning(request, "New {0} not deleted, object was never saved.".format(formclass._verbose_name().capitalize()))
                 return HttpResponseRedirect(cancel_url)
 
-        form = formclass(conference, instance=instance, data=request.POST, files=request.FILES, newformdata=newformdata)
+        form = formclass(request, conference, instance=instance, data=request.POST, files=request.FILES, newformdata=newformdata)
         if extra_error:
             form.add_error(None, extra_error)
 
@@ -175,7 +175,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 
                 return HttpResponseRedirect(saved_url)
     else:
-        form = formclass(conference, instance=instance, newformdata=newformdata)
+        form = formclass(request, conference, instance=instance, newformdata=newformdata)
 
     if instance.pk:
         try:

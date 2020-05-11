@@ -45,7 +45,8 @@ class BackendForm(ConcurrentProtectedModelForm):
     verbose_name_plural = None
     helplink = None
 
-    def __init__(self, conference, *args, **kwargs):
+    def __init__(self, request, conference, *args, **kwargs):
+        self.request = request
         self.conference = conference
 
         if 'newformdata' in kwargs:
