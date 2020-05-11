@@ -3,12 +3,14 @@ from django.forms import ValidationError
 from django.core.signing import Signer, BadSignature
 from django.contrib.postgres.fields import ArrayField
 from django.forms.widgets import FILE_INPUT_CONTRADICTION
+from django.forms.fields import CallableChoiceIterator
 
 import pickle
 import base64
 from itertools import groupby
 
 from .widgets import InlineImageUploadWidget, InlinePdfUploadWidget
+from .widgets import SelectSetValueWidget
 
 
 class _ValidatorField(forms.Field):
@@ -141,3 +143,24 @@ class ImageBinaryFormField(forms.Field):
 
 class PdfBinaryFormField(ImageBinaryFormField):
     widget = InlinePdfUploadWidget
+
+
+class SelectSetValueField(forms.ChoiceField):
+    widget = SelectSetValueWidget
+
+    def __init__(self, *args, **kwargs):
+        setvaluefield = kwargs.pop('setvaluefield')
+        self.__choices = kwargs.pop('choices')
+        if callable(self.__choices):
+            self.__choices = CallableChoiceIterator(self.__choices)
+        else:
+            self.__choices = list(self.__choices)
+
+        kwargs['choices'] = self._choices_slicer
+        super().__init__(*args, **kwargs)
+        self.widget.setvalues = {r[0]: (r[2], r[3]) for r in self.__choices}
+        self.widget.setvaluefield = setvaluefield
+
+    def _choices_slicer(self):
+        for r in self.__choices:
+            yield (r[0], r[1])
