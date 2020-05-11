@@ -41,6 +41,8 @@ def handle_post_migrate(sender, **kwargs):
                 if dirty:
                     job.full_clean()
                     if created:
+                        if getattr(cmd.ScheduledJob, 'default_notify_on_success', None):
+                            job.notifyonsuccess = True
                         reschedule_job(job, save=False)
                     job.save()
                     if created:
