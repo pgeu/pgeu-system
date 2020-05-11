@@ -6,7 +6,7 @@ python modules. If using distribution packaged python modules most of them won't
 be necessary, but then things usually just work out of the box and no need for
 this script.
 
-* virtualenv corresponding to python 3.5 (in path)
+* virtualenv corresponding to python 3.7 (in path)
 	* On debian, for example, this means virtualenv and python3-virtualenv packages
 * c compiler and libs (typically build-essential)
 * python development libraries (typically python-dev) -- for modules
