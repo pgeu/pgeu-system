@@ -108,7 +108,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 
     if request.method == 'POST' and not nopostprocess:
         extra_error = None
-        if allow_delete and request.POST['submit'] == 'Delete':
+        if allow_delete and request.POST.get('submit', None) == 'Delete':
             if instance.pk:
                 if hasattr(instance, 'validate_object_delete'):
                     try:
@@ -140,6 +140,15 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
         form = formclass(conference, instance=instance, data=request.POST, files=request.FILES, newformdata=newformdata)
         if extra_error:
             form.add_error(None, extra_error)
+
+        # Figure out if a custom submit button was pressed
+        for k, v in request.POST.items():
+            if k.startswith('submit_id_'):
+                # We do!
+                f = form.fields[k[10:]]
+                if f.callback:
+                    f.callback(request)
+                return HttpResponseRedirect(".")
 
         if form.is_valid():
             # We don't want to use form.save(), because it actually saves all

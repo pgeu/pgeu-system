@@ -138,6 +138,16 @@ class Bootstrap4HtmlDateTimeInput(forms.DateTimeInput):
     template_name = 'forms/widgets/bs4_datetime_input.html'
 
 
+class SubmitButtonWidget(forms.Widget):
+    template_name = 'forms/widgets/submitbutton_widget.html'
+
+    def get_context(self, name, value, attrs):
+        d = super().get_context(name, value, attrs)
+        d['label'] = self.label
+        d['prefixparagraph'] = self.prefixparagraph
+        return d
+
+
 class SelectSetValueWidget(forms.Select):
     option_template_name = 'forms/widgets/select_set_value_option.html'
 

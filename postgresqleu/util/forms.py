@@ -10,7 +10,7 @@ import base64
 from itertools import groupby
 
 from .widgets import InlineImageUploadWidget, InlinePdfUploadWidget
-from .widgets import SelectSetValueWidget
+from .widgets import SubmitButtonWidget, SelectSetValueWidget
 
 
 class _ValidatorField(forms.Field):
@@ -143,6 +143,18 @@ class ImageBinaryFormField(forms.Field):
 
 class PdfBinaryFormField(ImageBinaryFormField):
     widget = InlinePdfUploadWidget
+
+
+class SubmitButtonField(forms.Field):
+    def __init__(self, *args, **kwargs):
+        if not kwargs:
+            kwargs = {}
+        self.callback = kwargs.pop('callback', None)
+        kwargs['widget'] = SubmitButtonWidget
+        prefixparagraph = kwargs.pop('prefixparagraph', None)
+        super().__init__(*args, **kwargs)
+        self.widget.label = kwargs.get('label', 'Unknown label')
+        self.widget.prefixparagraph = prefixparagraph
 
 
 class SelectSetValueField(forms.ChoiceField):
