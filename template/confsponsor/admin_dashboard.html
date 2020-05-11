@@ -32,9 +32,15 @@ The following sponsors are confirmed:
   <tr>
     <th colspan="2" class="text-center active">{{level.grouper}}</th>
   </tr>
+  <tr>
+    <th class="col-md-5">Sponsor</th>
+    <th>Confirmed</th>
+    <th>Status</th>
+  </tr>
 {%for s in level.list%}
   <tr>
     <td class="col-md-5"><a href="{{s.id}}/">{{s}}</a></td>
+    <td>{{s.confirmedat}}</td>
     <td>
       {%if s.invoice%}
        {%if s.invoice.paidat%}<span class="label label-success">Paid</span>
