@@ -1272,7 +1272,7 @@ def sponsor_admin_refund(request, confurlname, sponsorid):
                     if form.cleaned_data['refundamount'] == "0":
                         # Refund the full invoice
                         to_refund = invoice.total_amount - invoice.total_vat
-                        to_retund_vat = invoice.total_vat
+                        to_refund_vat = invoice.total_vat
                         oplog.write("Preparing refund of the full invoice.\n")
                     elif form.cleaned_data['refundamount'] == "1":
                         # Refund the specific amount
