@@ -656,13 +656,13 @@ def tweetcampaign(request, urlname, typeid):
     if request.method == 'POST':
         form = campaign.form(conference, request.POST)
         if form.is_valid():
-            with transaction.atomic():
-                try:
+            try:
+                with transaction.atomic():
                     form.generate_tweets(request.user)
-                    messages.info(request, "Campaign tweets generated")
-                    return HttpResponseRedirect("../../queue/")
-                except Exception as e:
-                    form.add_error('content_template', 'Exception rendering template: {}'.format(e))
+                messages.info(request, "Campaign tweets generated")
+                return HttpResponseRedirect("../../queue/")
+            except Exception as e:
+                form.add_error('content_template', 'Exception rendering template: {}'.format(e))
     else:
         form = campaign.form(conference)
 
