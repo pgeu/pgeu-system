@@ -22,21 +22,23 @@ def post_conference_tweet(conference, contents, approved=False, posttime=None, a
     if not posttime:
         posttime = timezone.now()
 
+    localtime = timezone.localtime(posttime, conference.tzobj).time()
+
     # Adjust the start time to be inside the configured window
-    if posttime.time() < conference.twitter_timewindow_start:
+    if localtime < conference.twitter_timewindow_start:
         # Trying to post before the first allowed time, so just adjust it forward until we
         # get to the allowed time.
-        posttime = posttime.replace(hour=conference.twitter_timewindow_start.hour,
-                                    minute=conference.twitter_timewindow_start.minute,
-                                    second=conference.twitter_timewindow_start.second,
-                                    microsecond=0)
-    elif posttime.time() > conference.twitter_timewindow_end:
+        posttime = timezone.make_aware(
+            datetime.datetime.combine(posttime, conference.twitter_timewindow_start),
+            conference.tzobj,
+        )
+    elif localtime > conference.twitter_timewindow_end:
         # Trying to post after the last allowed time, so adjust it forward until the first
         # allowed time *the next day*
-        posttime = posttime.replace(hour=conference.twitter_timewindow_start.hour,
-                                    minute=conference.twitter_timewindow_start.minute,
-                                    second=conference.twitter_timewindow_start.second,
-                                    microsecond=0) + datetime.timedelta(days=1)
+        posttime = timezone.make_aware(
+            datetime.datetime.combine(posttime + datetime.timedelta(days=1), conference.twitter_timewindow_start),
+            conference.tzobj,
+        )
 
     t = ConferenceTweetQueue(conference=conference,
                              contents=contents,
