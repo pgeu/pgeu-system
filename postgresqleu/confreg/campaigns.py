@@ -18,6 +18,8 @@ def _timestamps_for_tweets(conference, starttime, interval, randint, num):
         t = starttime
     else:
         t = parse_datetime(starttime)
+    if not timezone.is_aware(t):
+        t = timezone.make_aware(t, conference.tzobj)
 
     if isinstance(interval, datetime.time):
         ival = datetime.timedelta(hours=interval.hour, minutes=interval.minute, seconds=interval.second)
@@ -34,7 +36,11 @@ def _timestamps_for_tweets(conference, starttime, interval, randint, num):
         t += ival
         t += datetime.timedelta(seconds=rsec * random.random())
         if t.time() > conference.twitter_timewindow_end:
-            t = datetime.datetime.combine(t.date() + datetime.timedelta(days=1), conference.twitter_timewindow_start)
+            # Past the end of the day, so move it to the start time the next day
+            t = timezone.make_aware(
+                datetime.datetime.combine(t + datetime.timedelta(days=1), conference.twitter_timewindow_start),
+                conference.tzobj,
+            )
 
 
 class BaseCampaignForm(forms.Form):
