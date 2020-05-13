@@ -540,11 +540,22 @@ class InvoiceManager(object):
                 ]
                 if vatamount:
                     accrows.append(
-                        (r.vatrate.vataccount.num, accountingtxt, vatamount, None),
+                        (r.vatrate.vataccount.num, accountingtxt, vatamount, None)
+                    )
+                if 'bankaccount' in invoice.paidusing.config:
+                    accrows.append(
+                        (invoice.paidusing.config['bankaccount'], accountingtxt, -(amount + vatamount), None)
                     )
 
                 urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk), ]
-                create_accounting_entry(accrows, True, urls)
+                entry = create_accounting_entry(accrows, True, urls)
+                if 'bankaccount' in invoice.paidusing.config:
+                    # See is_managed_bank_account(), if 'bankaccount' is present then this is
+                    # a managed bank account, and we can create a pending matcher.
+                    register_pending_bank_matcher(invoice.paidusing.config['bankaccount'],
+                                                  '.*Refund.*{}.+{}.*'.format(r.id, invoice.id),
+                                                  -(amount + vatamount),
+                                                  entry)
 
             InvoiceHistory(invoice=invoice,
                            txt='Flagged refund of {0}{1}'.format(settings.CURRENCY_SYMBOL, amount + vatamount)).save()
@@ -559,8 +570,12 @@ class InvoiceManager(object):
                              "Manual invoice flagged as refunded",
                              """Invoice {} has been flagged as (possibly partially) refunded.
 This invoice does not have an automatic refund processor attached to it,
-which means it has to be *manually* refunded.
-""".format(invoice.id),
+which means it has to be *manually* refunded. Make sure the transfer
+of the refund is of {}{} and has the text
+Refund {} of invoice {}
+as payment reference if possible (to facilitate automatic matching
+if available).
+""".format(invoice.id, settings.CURRENCY_SYMBOL, amount + vatamount, r.id, invoice.id),
             )
 
         return r
