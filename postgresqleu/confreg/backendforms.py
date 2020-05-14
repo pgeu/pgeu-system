@@ -1000,6 +1000,10 @@ class BackendTweetQueueForm(BackendForm):
     def __init__(self, *args, **kwargs):
         super(BackendTweetQueueForm, self).__init__(*args, **kwargs)
         self.fields['contents'].widget = TagOptionsTextWidget([h.hashtag for h in ConferenceHashtag.objects.filter(conference=self.conference)])
+        if 'class' in self.fields['contents'].widget.attrs:
+            self.fields['contents'].widget.attrs['class'] += " textarea-with-charcount"
+        else:
+            self.fields['contents'].widget.attrs['class'] = "textarea-with-charcount"
 
     def clean_datetime(self):
         if self.instance:

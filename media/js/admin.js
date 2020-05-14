@@ -107,6 +107,21 @@ $(document).ready(function() {
        w.document.write('<iframe width="100%" height="100%" src="data:application/pdf;base64, ' + $(e.target).data('pdf') + '"></iframe>');
    });
 
+   $('textarea.textarea-with-charcount').on('input', function(e) {
+       let n = $(this).next();
+       if (!n[0].classList.contains('textarea-charcount-div')) {
+           n = $('<div class="textarea-charcount-div"></div>');
+           n.insertAfter(this);
+       }
+       let l = 0;
+       if ($(this).data('length-function')) {
+           l = eval($(this).data('length-function'))($(this).val());
+       } else {
+           l = $(this).val().length;
+       }
+       n.text("Current length: " + l);
+   }).trigger('input');
+
    $('div.textarea-tagoptions-list span.tagoption').click(function (e) {
        /* Insert the text from the list of options */
        var t = $(this).text();
