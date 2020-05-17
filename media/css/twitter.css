@@ -22,7 +22,7 @@ div.sectionwell {
     background-color: #b0b0f5;
 }
 
-button.approve-button, button.discard-button, button.reply-button, button.discard-incoming-button, button.view-twitter-button, button.retweet-button {
+button.approve-button, button.discard-button, button.reply-button, button.dismiss-incoming-button, button.view-twitter-button, button.retweet-button {
     margin-top: 1rem;
     margin-right: 2rem;
 }

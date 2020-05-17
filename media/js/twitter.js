@@ -45,7 +45,7 @@ function add_queue_entry_html(row, d, modbuttons, panelstyle) {
 }
 
 
-function add_incoming_entry_html(row, d, discardbutton, panelstyle) {
+function add_incoming_entry_html(row, d, dismissbutton, panelstyle) {
     var e = $('<div/>').addClass('incomingentry panel panel-' + panelstyle).data('replyid', d['id']).data('replyto', d['author']);
     e.append($('<div/>').addClass('panel-heading').text('Posted by @' + d['author'] + ' (' + d['authorfullname'] + ') at ' + d['time']));
     var cdiv = $('<div/>').addClass('panel-body').text(d['txt']);
@@ -57,8 +57,8 @@ function add_incoming_entry_html(row, d, discardbutton, panelstyle) {
     e.append(cdiv);
     fdiv = $('<div/>').addClass('panel-footer');
     fdiv.append($('<button/>').data('tid', d['id']).addClass('btn btn-primary btn-sm reply-button').text('Reply'));
-    if (discardbutton) {
-       fdiv.append($('<button/>').data('tid', d['id']).addClass('btn btn-default btn-sm discard-incoming-button').text('Discard'));
+    if (dismissbutton) {
+       fdiv.append($('<button/>').data('tid', d['id']).addClass('btn btn-default btn-sm dismiss-incoming-button').text('Dismiss'));
     }
     var rtbtn = $('<button/>').data('tid', d['id']).addClass('btn btn-default btn-sm retweet-button');
     if (d['rt'] == 0) {
@@ -321,10 +321,10 @@ $(function() {
 	});
     });
 
-    $(document).on('click', 'button.discard-incoming-button', function(e) {
+    $(document).on('click', 'button.dismiss-incoming-button', function(e) {
 	var btn = $(this);
 
-	if (!confirm('Are you sure you want to discard this tweet without a reply?')) {
+	if (!confirm('Are you sure you want to dismiss this tweet without a reply?')) {
 	    return;
 	}
 
@@ -333,7 +333,7 @@ $(function() {
 	    "dataType": "json",
 	    "url": ".",
 	    "data": {
-		"op": 'discardincoming',
+		"op": 'dismissincoming',
 		"id": $(this).data('tid'),
 	    },
 	    success: function(data, status, xhr) {

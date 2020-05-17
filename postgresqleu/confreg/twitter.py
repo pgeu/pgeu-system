@@ -170,7 +170,7 @@ def volunteer_twitter(request, urlname, token):
             else:
                 t.delete()
             return _json_response({})
-        elif request.POST.get('op', None) in ('discardincoming', 'retweet'):
+        elif request.POST.get('op', None) in ('dismissincoming', 'retweet'):
             if not is_admin:
                 # Admins can always approve, but volunteers only if policy allows
                 if conference.twitter_postpolicy != 3:
@@ -181,9 +181,9 @@ def volunteer_twitter(request, urlname, token):
             except ConferenceIncomingTweet.DoesNotExist:
                 return _json_response({'error': 'Tweet does not exist'})
 
-            if request.POST.get('op', None) == 'discardincoming':
+            if request.POST.get('op', None) == 'dismissincoming':
                 if t.processedat:
-                    return _json_response({'error': 'Tweet is already discarded or replied'})
+                    return _json_response({'error': 'Tweet is already dismissed or replied'})
 
                 t.processedby = reg.attendee
                 t.processedat = timezone.now()
