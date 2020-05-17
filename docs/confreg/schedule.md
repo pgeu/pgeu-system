@@ -214,7 +214,7 @@ Fullname
 :    The full name of the speaker, as shown on the schedule.
 
 Twittername
-:    The twitter handle fo the speaker, if any.
+:    The twitter handle of the speaker, if any.
 
 Company
 :    The company of the speaker.

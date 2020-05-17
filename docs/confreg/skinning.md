@@ -203,7 +203,7 @@ If a file called `.deploystaticmap` exists in the `/templates/pages`
 directory, this file will be used to control which files are deployed
 instead of deploying all files. The full contents of the `/static/`
 directory is always deployed, but this allows the control of which
-pages are. The file format is a series of source:destination paris
+pages are. The file format is a series of source:destination pairs
 separated by colons. For example, a file with:
 
     home.html:
@@ -216,7 +216,7 @@ in the destination directory.
 
 # Cards <a name="cards"></a>
 
-Cards are (small?) imagse published in SVG and PNG format that can be
+Cards are (small?) images published in SVG and PNG format that can be
 referenced for example to generate automatic images when links are
 posted to Twitter or other social networks. Cards are generated for
 speakers and sessions.
@@ -250,7 +250,7 @@ is applied to a source JSON file, generating a complete JSON
 definition of the badge. Then this JSON is parsed and turned into an
 actual PDF format.
 
-To use the PDF genereation system, create one or more `json` files in the
+To use the PDF generation system, create one or more `json` files in the
 in the `/templates` directory. This is the `jinja2` template, and it will be
 passed the same context as the regular pages (so this can be used to
 add conference-global things) as well as a structure called `reg` that

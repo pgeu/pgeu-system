@@ -129,13 +129,13 @@ tracking system.
 Queue partitioning
 :  Enable queue partitioning. This will generate information for each
 attendee about which queue t stand in based on either first or last
-name (pick wihch one). Information about this partitioning will be
+name (pick which one). Information about this partitioning will be
 written on the tickets (if included in the templates), so should
 normally not be changed after the first tickets have been issued.
 
 Initial common countries
 : Initial list of countries to show under *common countries* on the registration
-form. Each o these counttries will count as one when the list of most
+form. Each o these countries will count as one when the list of most
 common countries is populated. Once registrations start arriving, they
 will get replaced by actual countries used as they show up.
 

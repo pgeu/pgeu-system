@@ -98,5 +98,5 @@ VAT rate for sponsorship
 Invoice payment options
 :  The payment options available for invoices for registrations and
 addons to this conference. This does not include sponsorship invoices,
-but it does include the invoiecs that sponsors will get if they for
+but it does include the invoices that sponsors will get if they for
 example buy extra vouchers.

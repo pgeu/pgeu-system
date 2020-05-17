@@ -24,7 +24,7 @@ connected in the database.
 
 Sending email to all attendees matching a specific criteria is
 done by clicking the *Attendee email* button on the dashboard. Emails
-based on criteriaare always stored for future attendees matching the
+based on criteria are always stored for future attendees matching the
 same criteria to see.
 
 From
@@ -43,7 +43,7 @@ To volunteers
 :  Check this box to send to everybody listed as a volunteer at the conference.
 
 To check-in processors
-:  Check this box to send to everybody listead as a check-in processor at th conference.
+:  Check this box to send to everybody listed as a check-in processor at th conference.
 
 Subject
 :  The subject of the email

@@ -52,7 +52,7 @@ Discount percentage
 : The percent discount that this code gives. Can't be specified at
 the same time as discount amount.
 
-Registation only
+Registration only
 : The percent applies only to the registration, not the full cost
 including additional options (only available if the type of
 discount code is percentage)

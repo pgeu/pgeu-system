@@ -61,7 +61,7 @@ sponsorship details.
 In manual sponsors, the order of processing for the administrators
 once the signup is complete becomes:
 
-1. Wait for the signed contract. Counstersign and send back.
+1. Wait for the signed contract. Countersign and send back.
 1. Generate an invoice by going to the sponsorship and click the
    button for it.
 1. Optionally, also confirm the sponsorship, unless this is from a
