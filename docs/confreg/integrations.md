@@ -299,7 +299,9 @@ To create a bot, look up *Botfather* in the global directory and send
 a private chat with the text `/newbot`. Give the bot a name
 representative of the conference series, and a username that makes
 sense under the same rules (and ending in *_bot* per the requirements
-of bots).
+of bots). If you want the bot to be able to work in groups (and not just
+chats), you need to disable privacy so that the bot can see all messages
+posted in the channel.
 
 When you have entered these two the bot is created and the *Botfather*
 will give you an access token. Create the Messaging Provider in the

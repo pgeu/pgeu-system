@@ -238,8 +238,12 @@ class Telegram(object):
             # ignore it.
             return
 
-        # Does it look like a token? If so, try to attach!
+        # Does it look like a token? If so, try to attach this channel
         for m in re_token.findall(p['text']):
+            if self.process_token_match(m, p):
+                return
+
+    def process_token_match(self, m, p):
             # Found a match.
             # Now try to find if this is an actual token, and assign the channel
             # as required.
@@ -285,10 +289,22 @@ class Telegram(object):
                 pass
 
     def process_incoming_chat_structure(self, u):
+        # We can get messages for things that aren't actually messages, such as "you're invited to
+        # a channel".
+        if 'text' not in u['message']:
+            return
+
         msgid = int(u['update_id'])
         if IncomingDirectMessage.objects.filter(provider_id=self.providerid, postid=msgid).exists():
             # We've already seen this one
             return
+
+        # Does it look like a token? If so, try to attach to this channel
+        for m in re_token.findall(u['message']['text']):
+            if self.process_token_match(m, u['message']):
+                return
+
+        # Else it's a regular message, so store it.
 
         msg = IncomingDirectMessage(
             provider_id=self.providerid,
