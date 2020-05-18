@@ -233,6 +233,11 @@ class Telegram(object):
             return HttpResponse("Internal error", status=500)
 
     def process_channel_post(self, p):
+        if 'text' not in p:
+            # This is some kind of channel post that is not text, so we just
+            # ignore it.
+            return
+
         # Does it look like a token? If so, try to attach!
         for m in re_token.findall(p['text']):
             # Found a match.
