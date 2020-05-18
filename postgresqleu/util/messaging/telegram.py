@@ -33,9 +33,9 @@ class TelegramBackendForm(BackendSeriesMessagingForm):
 
     @property
     def config_fields(self):
-        f = ['telegramtoken', 'webhookenabler']
+        f = ['telegramtoken', ]
         if self.instance.config.get('telegramtoken', None):
-            f.extend(['telegramstatus'])
+            f.extend(['telegramstatus', 'webhookenabler'])
         return f
 
     @property
