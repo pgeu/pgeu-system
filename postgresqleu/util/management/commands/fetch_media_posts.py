@@ -23,7 +23,7 @@ class Command(BaseCommand):
     help = 'Fetch from social media'
 
     class ScheduledJob:
-        scheduled_interval = timedelta(minutes=5)
+        scheduled_interval = timedelta(minutes=15)
 
         @classmethod
         def should_run(self):
