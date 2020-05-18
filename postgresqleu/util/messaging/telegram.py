@@ -306,6 +306,11 @@ class Telegram(object):
             if self.process_token_match(m, u['message']):
                 return
 
+        # If the message has no sender, we're going to ignore it. This could for
+        # exaple be an automatically forwarded message internally in Telegram.
+        if 'username' not in u['message']['from'] or 'id' not in u['message']['from']:
+            return
+
         # Else it's a regular message, so store it.
 
         msg = IncomingDirectMessage(
