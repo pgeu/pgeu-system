@@ -108,4 +108,4 @@ def send_pending_posts(providers):
             self.stderr.write("Failed to repost on {}: {}\n".format(t.provider, msg))
             err = True
 
-    return err, numposts, numreposts
+    return not err, numposts, numreposts
