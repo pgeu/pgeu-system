@@ -21,6 +21,9 @@ from postgresqleu.confreg.models import ConferenceMessaging, ConferenceRegistrat
 
 from .util import send_reg_direct_message, send_channel_message
 
+import logging
+log = logging.getLogger(__name__)
+
 
 class TelegramBackendForm(BackendSeriesMessagingForm):
     telegramtoken = forms.CharField(required=True, label="Telegram token",
@@ -226,6 +229,7 @@ class Telegram(object):
             # All other types we just ignore for now
             return HttpResponse("OK")
         except Exception as e:
+            log.error("Exception processing Telegram webhook: {}".format(e))
             return HttpResponse("Internal error", status=500)
 
     def process_channel_post(self, p):
