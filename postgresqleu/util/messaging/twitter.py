@@ -434,6 +434,8 @@ class Twitter(object):
                 state['global_webhook_checked'] = True
                 if msg:
                     retmsg += msg + "\n"
+            else:
+                env = state['env']
 
             # Global webhook has been abled by this or previous run. Now check our subscription.
             r = self.tw.get('https://api.twitter.com/1.1/account_activity/all/{}/subscriptions.json'.format(env))
