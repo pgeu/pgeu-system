@@ -13,11 +13,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 from postgresqleu.newsevents.models import News
-from postgresqleu.confreg.models import ConferenceTweetQueue
-
-
-def news_tweets_queryset():
-    return News.objects.filter(tweeted=False, datetime__gt=timezone.now() - timedelta(days=7), datetime__lt=timezone.now())
+from postgresqleu.confreg.models import ConferenceTweetQueue, MessagingProvider
 
 
 class Command(BaseCommand):

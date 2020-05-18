@@ -12,6 +12,7 @@ import sys
 
 from postgresqleu.util.messaging import ProviderCache
 from postgresqleu.util.messaging.sender import send_pending_messages
+from postgresqleu.confreg.models import NotificationQueue
 
 
 class Command(BaseCommand):
@@ -22,7 +23,7 @@ class Command(BaseCommand):
 
         @classmethod
         def should_run(self):
-            return Notification.objects.filter(time__lte=timezone.now()).exists()
+            return NotificationQueue.objects.filter(time__lte=timezone.now()).exists()
 
     def handle(self, *args, **options):
         curs = connection.cursor()
