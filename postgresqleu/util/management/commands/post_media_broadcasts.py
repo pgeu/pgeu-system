@@ -14,6 +14,7 @@ import sys
 
 from postgresqleu.util.messaging import ProviderCache
 from postgresqleu.util.messaging.sender import send_pending_posts
+from postgresqleu.confreg.models import ConferenceTweetQueue, ConferenceIncomingTweet
 
 
 class Command(BaseCommand):
