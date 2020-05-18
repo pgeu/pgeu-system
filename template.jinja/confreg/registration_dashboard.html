@@ -241,6 +241,39 @@ Your registration can no longer be modified.
 </form>
 {%endif%}
 
+{%if messaging%}
+<h2>Notifications</h2>
+<a name="notifications"></a>
+<p>
+  You can connect your registration to a specific messaging system, which will allow
+  us to send you direct notifications, reminders, and other similar information. Depending
+  on the platform, it may also allow you to participate in conference related chats
+  (participation is always optional).
+</p>
+{%if current_messaging_info %}
+<p>
+  Your registration is currently configured to send notifications using {{reg.messaging}}.
+{%if reg.messaging_copiedfrom %}
+  This configuration was copied from {{reg.messaging_copiedfrom}}.
+{%endif%}
+</p>
+{{current_messaging_info}}
+<form method="post" action="{{redir_root}}msgconfig/">{{ csrf_input }}
+  <input type="hidden" name="op" value="deactivate">
+  <input type="submit" value="Deactivate {{reg.messaging}}">
+</form>
+{%else%}
+<form method="post" action="{{redir_root}}msgconfig/">{{ csrf_input}}
+  Platform: <select name="messagingid">
+{%for m in messaging%}
+    <option value="{{m.id}}">{{m.full_info}}</option>
+{%endfor%}
+  </select>
+  <input type="submit" value="Configure notifications">
+</form>
+{%endif%}
+{%endif%}
+
 {%if scanned_by_sponsors%}
 <h2>Scanned by sponsors</h2>
 <p>

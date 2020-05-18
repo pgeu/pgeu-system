@@ -36,6 +36,7 @@ class BackendForm(ConcurrentProtectedModelForm):
     filtercolumns = {}
     defaultsort = []
     readonly_fields = []
+    nosave_fields = []
     linked_objects = {}
     auto_cascade_delete_to = []
     fieldsets = []

@@ -138,6 +138,15 @@ class Bootstrap4HtmlDateTimeInput(forms.DateTimeInput):
     template_name = 'forms/widgets/bs4_datetime_input.html'
 
 
+class LinkForCodeWidget(TextInput):
+    template_name = 'forms/widgets/linkforcode_widget.html'
+
+    def get_context(self, name, value, attrs):
+        d = super().get_context(name, value, attrs)
+        d['authurl'] = self.authurl
+        return d
+
+
 class SubmitButtonWidget(forms.Widget):
     template_name = 'forms/widgets/submitbutton_widget.html'
 

@@ -1,4 +1,4 @@
-This directory contains a sample service file for the
-jobs runner. It should normally be installed in
+This directory contains two sample service files for the
+jobs runner and media poster. They should normally be installed in
 /etc/systemd/system and have its contents in the form of
 pathnames and users adjusted.

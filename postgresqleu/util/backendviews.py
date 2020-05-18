@@ -11,6 +11,11 @@ from postgresqleu.util.lists import flatten_list
 from postgresqleu.confreg.util import get_authenticated_conference
 from postgresqleu.confreg.backendforms import BackendCopySelectConferenceForm
 
+from .models import OAuthApplication
+from .backendforms import BackendForm
+from .forms import SelectSetValueField
+from .oauthapps import oauth_application_choices, oauth_application_create
+
 
 def backend_process_form(request, urlname, formclass, id, cancel_url='../', saved_url='../', allow_new=True, allow_delete=True, breadcrumbs=None, permissions_already_checked=False, conference=None, bypass_conference_filter=False, instancemaker=None, deleted_url=None, topadmin=None):
     if not conference and not bypass_conference_filter:
@@ -160,7 +165,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                     form.pre_create_item()
                     form.save()
                 form._save_m2m()
-                all_excludes = ['_validator', '_newformdata'] + form.readonly_fields
+                all_excludes = ['_validator', '_newformdata'] + list(form.readonly_fields) + form.nosave_fields
                 if form.json_form_fields:
                     for fn, ffields in form.json_form_fields.items():
                         all_excludes.extend(ffields)
@@ -170,7 +175,9 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                 # Merge fields stored in json
                 if form.json_form_fields:
                     for fn, ffields in form.json_form_fields.items():
-                        setattr(form.instance, fn, {fld: form.cleaned_data[fld] for fld in ffields})
+                        d = getattr(form.instance, fn, {})
+                        d.update({fld: form.cleaned_data[fld] for fld in ffields})
+                        setattr(form.instance, fn, d)
                     form.instance.save(update_fields=form.json_form_fields.keys())
 
                 return HttpResponseRedirect(saved_url)
@@ -471,3 +478,75 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
             ],
             'helplink': formclass.helplink,
         })
+
+
+#
+# Special direct views
+#
+class BackendOAuthappNewForm(forms.Form):
+    helplink = 'oauth'
+    apptype = forms.CharField()  # Field type will be changed dynamically
+    baseurl = forms.URLField(label='Base URL')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # We have to set this dynamically, otherwise the system won't start up enough to
+        # run the migrations, for some reason.
+        self.fields['apptype'] = SelectSetValueField(choices=oauth_application_choices,
+                                                     setvaluefield='baseurl', label='Type of application')
+
+    def get_newform_data(self):
+        return "{}:{}".format(self.cleaned_data['apptype'], self.cleaned_data['baseurl'])
+
+    def clean_baseurl(self):
+        b = self.cleaned_data['baseurl'].rstrip('/')
+        if OAuthApplication.objects.filter(baseurl=b).exists():
+            raise ValidationError("An OAuth provider with this base URL is already configured!")
+        return b
+
+
+class BackendOAuthappForm(BackendForm):
+    helplink = 'oauth'
+    list_fields = ['name', 'baseurl']
+    readonly_fields = ['name', 'baseurl']
+    form_before_new = BackendOAuthappNewForm
+
+    class Meta:
+        model = OAuthApplication
+        fields = ['name', 'baseurl', 'client', 'secret']
+
+    def fix_fields(self):
+        super().fix_fields()
+        if self.newformdata:
+            (name, baseurl) = self.newformdata.split(':', 1)
+            self.instance.name = name
+            self.initial['name'] = name
+            self.instance.baseurl = baseurl
+            self.initial['baseurl'] = baseurl
+            if self.request.method == 'POST' and '_validator' not in self.request.POST:
+                try:
+                    (client, secret) = oauth_application_create(name, baseurl)
+                except Exception as e:
+                    messages.error(self.request, str(e))
+                    return
+                if client:
+                    self.instance.client = client
+                    self.initial['client'] = client
+                    self.instance.secret = secret
+                    self.initial['secret'] = secret
+                    messages.info(self.request, "OAuth client and secret automaticaly created, just hit save!")
+
+
+def edit_oauthapps(request, rest):
+    if not request.user.is_superuser:
+        raise PermissionDenied("Access denied")
+
+    return backend_list_editor(request,
+                               None,
+                               BackendOAuthappForm,
+                               rest,
+                               bypass_conference_filter=True,
+                               topadmin='OAuth',
+                               return_url='/admin/',
+    )

@@ -5,6 +5,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.db import transaction
 from django.utils import timezone
 
 import datetime
@@ -14,11 +15,12 @@ from PIL import Image, ImageFile
 
 from postgresqleu.scheduler.util import trigger_immediate_job_run
 from postgresqleu.util.request import get_int_or_error
-from .models import ConferenceTweetQueue, ConferenceIncomingTweet
+from postgresqleu.util.messaging import ProviderCache
+from .models import ConferenceTweetQueue, ConferenceIncomingTweet, ConferenceMessaging
 from .models import Conference, ConferenceRegistration
 
 
-def post_conference_tweet(conference, contents, approved=False, posttime=None, author=None):
+def post_conference_social(conference, contents, approved=False, posttime=None, author=None):
     if not posttime:
         posttime = timezone.now()
 
@@ -54,13 +56,14 @@ def _json_response(d):
 
 
 @csrf_exempt
+@transaction.atomic
 def volunteer_twitter(request, urlname, token):
     try:
         conference = Conference.objects.select_related('series').get(urlname=urlname)
     except Conference.DoesNotExist:
         raise Http404()
 
-    if not conference.twittersync_active:
+    if not conference.has_social_broadcast:
         raise Http404()
 
     reg = get_object_or_404(ConferenceRegistration, conference=conference, regtoken=token)
@@ -76,6 +79,8 @@ def volunteer_twitter(request, urlname, token):
         canpost = conference.twitter_postpolicy >= 2
         canpostdirect = conference.twitter_postpolicy == 4
         canmoderate = conference.twitter_postpolicy == 3
+
+    providers = ProviderCache()
 
     if request.method == 'POST':
         if request.POST.get('op', '') == 'post':
@@ -100,7 +105,7 @@ def volunteer_twitter(request, urlname, token):
 
             # Check if we have *exactly the same tweet* in the queue already, in the past 5 minutes.
             # in which case it's most likely a clicked-too-many-times.
-            if ConferenceTweetQueue.objects.filter(conference=conference, contents=request.POST['txt'][:280], author=reg.attendee, datetime__gt=timezone.now() - datetime.timedelta(minutes=5)):
+            if ConferenceTweetQueue.objects.filter(conference=conference, contents=request.POST['txt'], author=reg.attendee, datetime__gt=timezone.now() - datetime.timedelta(minutes=5)):
                 return _json_response({'error': 'Duplicate post detected'})
 
             # Now insert it in the queue, bypassing time validation since it's not an automatically
@@ -143,7 +148,12 @@ def volunteer_twitter(request, urlname, token):
 
             t.save()
             if request.POST.get('replyid', None):
-                ConferenceIncomingTweet.objects.filter(conference=conference, statusid=get_int_or_error(request.POST, 'replyid')).update(processedat=timezone.now(), processedby=reg.attendee)
+                orig = ConferenceIncomingTweet.objects.select_related('provider').get(conference=conference, statusid=get_int_or_error(request.POST, 'replyid'))
+                orig.processedat = timezone.now()
+                orig.processedby = reg.attendee
+                orig.save()
+                # When when replying to a tweet, it goes to the original provider *only*
+                t.remainingtosend.set([orig.provider])
 
             return _json_response({})
         elif request.POST.get('op', None) in ('approve', 'discard'):
@@ -216,7 +226,14 @@ def volunteer_twitter(request, urlname, token):
 
         def _postdata(objs):
             return [
-                {'id': t.id, 'txt': t.contents, 'author': t.author and t.author.username or '', 'time': t.datetime, 'hasimage': t.hasimage}
+                {
+                    'id': t.id,
+                    'txt': t.contents,
+                    'author': t.author and t.author.username or '',
+                    'time': t.datetime,
+                    'hasimage': t.hasimage,
+                    'delivered': t.sent,
+                }
                 for t in objs]
 
         return _json_response({
@@ -224,15 +241,23 @@ def volunteer_twitter(request, urlname, token):
             'latest': _postdata(latest),
         })
     elif request.GET.get('op', None) == 'incoming':
-        if conference.twitterincoming_active:
-            incoming = ConferenceIncomingTweet.objects.filter(conference=conference, processedat__isnull=True).order_by('created')
-            latest = ConferenceIncomingTweet.objects.filter(conference=conference, processedat__isnull=False).order_by('-processedat')[:5]
-        else:
-            incoming = latest = []
+        incoming = ConferenceIncomingTweet.objects.select_related('provider').filter(conference=conference, processedat__isnull=True).order_by('created')
+        latest = ConferenceIncomingTweet.objects.select_related('provider').filter(conference=conference, processedat__isnull=False).order_by('-processedat')[:5]
 
         def _postdata(objs):
             return [
-                {'id': str(t.statusid), 'txt': t.text, 'author': t.author_screenname, 'authorfullname': t.author_name, 'time': t.created, 'rt': t.retweetstate, 'media': [m for m in t.media if m is not None]}
+                {
+                    'id': str(t.statusid),
+                    'txt': t.text,
+                    'author': t.author_screenname,
+                    'authorfullname': t.author_name,
+                    'time': t.created,
+                    'rt': t.retweetstate,
+                    'provider': t.provider.publicname,
+                    'media': [m for m in t.media if m is not None],
+                    'url': providers.get(t.provider).get_public_url(t),
+                    'replymaxlength': providers.get(t.provider).max_post_length,
+                }
                 for t in objs.annotate(media=ArrayAgg('conferenceincomingtweetmedia__mediaurl'))]
         return _json_response({
             'incoming': _postdata(incoming),
@@ -258,7 +283,18 @@ def volunteer_twitter(request, urlname, token):
             t.imagethumb = b.getvalue()
             t.save()
 
-        return HttpResponse(t.imagethumb, content_type='image/png')
+        resp = HttpResponse(content_type='image/png')
+        resp.write(bytes(t.imagethumb))
+        return resp
+
+    # Maximum length from any of the configured providers
+    providermaxlength = {
+        m.provider.publicname: providers.get(m.provider).max_post_length
+        for m in
+        ConferenceMessaging.objects.select_related('provider').filter(conference=conference,
+                                                                      broadcast=True,
+                                                                      provider__active=True)
+    }
 
     return render(request, 'confreg/twitter.html', {
         'conference': conference,
@@ -266,4 +302,6 @@ def volunteer_twitter(request, urlname, token):
         'poster': canpost and 1 or 0,
         'directposter': canpostdirect and 1 or 0,
         'moderator': canmoderate and 1 or 0,
+        'providerlengths': ", ".join(["{}: {}".format(k, v) for k, v in providermaxlength.items()]),
+        'maxlength': max((v for k, v in providermaxlength.items())),
     })

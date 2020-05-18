@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Q
 from django.db.models.expressions import F
+from django.contrib import messages
 import django.forms
 import django.forms.widgets
 from django.utils.safestring import mark_safe
@@ -16,11 +17,13 @@ from decimal import Decimal
 import pytz
 
 from postgresqleu.util.db import exec_to_single_list, exec_to_scalar
-from postgresqleu.util.forms import ConcurrentProtectedModelForm
+from postgresqleu.util.forms import ConcurrentProtectedModelForm, SelectSetValueField
 from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget, MonospaceTextarea
 from postgresqleu.util.widgets import TagOptionsTextWidget
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.backendforms import BackendForm
+from postgresqleu.util.messaging import messaging_implementation_choices, get_messaging, get_messaging_class
+from postgresqleu.util.messaging.util import get_shortened_post_length
 
 import postgresqleu.accounting.models
 
@@ -35,6 +38,8 @@ from postgresqleu.confreg.models import ConferenceNews
 from postgresqleu.confreg.models import ConferenceTweetQueue, ConferenceHashtag
 from postgresqleu.confreg.models import ShirtSize
 from postgresqleu.confreg.models import RefundPattern
+from postgresqleu.confreg.models import ConferenceMessaging
+from postgresqleu.confreg.models import MessagingProvider
 from postgresqleu.newsevents.models import NewsPosterProfile
 
 from postgresqleu.confreg.models import valid_status_transitions, get_status_string
@@ -948,6 +953,165 @@ class BackendNewsForm(BackendForm):
         self.fields['title'].help_text = 'Note! Title will be prefixed with "{0} - " on shared frontpage and RSS!'.format(self.conference.conferencename)
 
 
+class BackendMessagingForm(BackendForm):
+    helplink = 'integrations#messaging'
+    list_fields = ['providername', 'broadcast', 'privatebcast', 'notification', 'orgnotification']
+    verbose_field_names = {
+        'providername': 'Provider name',
+    }
+    queryset_extra_fields = {
+        'providername': '(SELECT internalname FROM confreg_messagingprovider WHERE id=confreg_conferencemessaging.provider_id)',
+    }
+
+    @property
+    def fieldsets(self):
+        fs = [
+            {'id': 'provider', 'legend': 'Provider', 'fields': ['provider', ]},
+            {'id': 'actions', 'legend': 'Actions', 'fields': ['broadcast', 'privatebcast', 'notification', 'orgnotification']},
+        ]
+        cf = list(self._channel_fields())
+        if cf:
+            fs.append(
+                {'id': 'channels', 'legend': 'Channels/Groups', 'fields': list(self._channel_fields())}
+            )
+        return fs
+
+    class Meta:
+        model = ConferenceMessaging
+        fields = ['provider', 'broadcast', 'privatebcast', 'notification', 'orgnotification', ]
+
+    def _channel_fields(self):
+        for fld in ('privatebcast', 'orgnotification'):
+            if getattr(self.impl, 'can_{}'.format(fld), False):
+                yield '{}channel'.format(fld)
+
+    @property
+    def readonly_fields(self):
+        yield 'provider'
+        for fld in ('broadcast', 'privatebcast', 'notification', 'orgnotification'):
+            if not getattr(self.impl, 'can_{}'.format(fld), False):
+                yield fld
+        yield from self._channel_fields()
+
+    def __init__(self, *args, **kwargs):
+        self.impl = get_messaging(kwargs['instance'].provider)
+        if hasattr(self.impl, 'refresh_messaging_config'):
+            if self.impl.refresh_messaging_config(kwargs['instance'].config):
+                kwargs['instance'].save(update_fields=['config'])
+        super().__init__(*args, **kwargs)
+
+    _channel_fieldnames = {
+        'privatebcast': 'Private broadcast channel',
+        'orgnotification': 'Organisation notification channel',
+    }
+
+    def fix_fields(self):
+        super().fix_fields()
+        self.fields['provider'].widget.attrs['disabled'] = True
+        self.fields['provider'].required = False
+
+        # Update the different types of supported fields
+        for fld in ('broadcast', 'privatebcast', 'notification', 'orgnotification'):
+            if not getattr(self.impl, 'can_{}'.format(fld), False):
+                self.fields[fld].widget.attrs['disabled'] = True
+                self.fields[fld].help_text = 'Action is not supported by this provider'
+
+        for fld in ('privatebcast', 'orgnotification'):
+            if getattr(self.impl, 'can_{}'.format(fld), False):
+                self.fields['{}channel'.format(fld)] = self.impl.get_channel_field(self.instance, fld)
+                self.fields['{}channel'.format(fld)].label = self._channel_fieldnames[fld]
+                self.fields['{}channel'.format(fld)].required = False
+
+
+class BackendSeriesMessagingNewForm(django.forms.Form):
+    helplink = 'integrations#provider'
+    classname = SelectSetValueField(choices=messaging_implementation_choices(),
+                                    setvaluefield='baseurl', label='Implementation class')
+    baseurl = django.forms.URLField(label='Base URL')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def get_newform_data(self):
+        return '{}:{}'.format(self.cleaned_data['classname'], self.cleaned_data['baseurl'])
+
+    def clean_baseurl(self):
+        return self.cleaned_data['baseurl'].rstrip('/')
+
+    def clean(self):
+        d = super().clean()
+        if 'classname' in d and 'baseurl' in d:
+            # Both fields specified, so verify they're an allowed combination
+            r = get_messaging_class(d['classname']).validate_baseurl(d['baseurl'])
+            if r:
+                self.add_error('baseurl', r)
+        return d
+
+
+class BackendSeriesMessagingForm(BackendForm):
+    helplink = 'integrations#provider'
+    list_fields = ['internalname', 'publicname', 'active', 'route_incoming', 'classname_short', ]
+    queryset_select_related = ['route_incoming', ]
+    form_before_new = BackendSeriesMessagingNewForm
+    verbose_field_names = {
+        'classname_short': 'Implementation',
+    }
+    queryset_extra_fields = {
+        'classname_short': r"substring(classname, '[^\.]+$')",
+    }
+    auto_cascade_delete_to = ['conferencemessaging', ]
+
+    config_fields = []
+    config_fieldsets = []
+    config_readonly_fields = []
+
+    process_incoming = False
+    no_incoming_processing = False
+
+    class Meta:
+        model = MessagingProvider
+        fields = ['internalname', 'publicname', 'active', 'classname', 'route_incoming']
+
+    @property
+    def readonly_fields(self):
+        return ['classname', ] + self.config_readonly_fields
+
+    @property
+    def json_form_fields(self):
+        return {
+            'config': self.config_fields,
+        }
+
+    @property
+    def fieldsets(self):
+        fs = [
+            {'id': 'common', 'legend': 'Common', 'fields': ['internalname', 'publicname', 'active', 'classname'], },
+        ]
+        if self.process_incoming:
+            fs.append(
+                {'id': 'incoming', 'legend': 'Incoming', 'fields': ['route_incoming', ], }
+            )
+
+        return fs + self.config_fieldsets
+
+    def fix_fields(self):
+        super().fix_fields()
+        if self.newformdata:
+            classname, baseurl = self.newformdata.split(':', 1)
+            self.instance.classname = classname
+            self.initial['classname'] = classname
+            self.baseurl = baseurl
+
+        impl = get_messaging_class(self.instance.classname)
+        if getattr(impl, 'can_process_incoming', False) and not self.no_incoming_processing:
+            self.process_incoming = True
+            self.fields['route_incoming'].queryset = Conference.objects.filter(series=self.instance.series)
+            self.fields['route_incoming'].help_text = 'Incoming messages from this provider will be added to the specified conference'
+        else:
+            del self.fields['route_incoming']
+            self.update_protected_fields()
+
+
 #
 # Form to pick a conference to copy from
 #
@@ -964,19 +1128,8 @@ class BackendCopySelectConferenceForm(django.forms.Form):
 #
 # Form for twitter integration
 #
-class TwitterForm(ConcurrentProtectedModelForm):
-    class Meta:
-        model = Conference
-        fields = ['twittersync_active', 'twitterincoming_active', 'twitterreminders_active', 'twitter_postpolicy']
-
-
-class TwitterTestForm(django.forms.Form):
-    recipient = django.forms.CharField(max_length=64)
-    message = django.forms.CharField(max_length=200)
-
-
 class BackendTweetQueueForm(BackendForm):
-    helplink = 'integrations#twitter'
+    helplink = 'integrations#broadcast'
     list_fields = ['datetime', 'contents', 'author', 'approved', 'approvedby', 'sent', 'hasimage', ]
     verbose_field_names = {
         'hasimage': 'Has image',
@@ -989,6 +1142,7 @@ class BackendTweetQueueForm(BackendForm):
     queryset_extra_fields = {
         'hasimage': "image is not null and image != ''",
     }
+    auto_cascade_delete_to = ['conferencetweetqueue_remainingtosend', ]
 
     class Meta:
         model = ConferenceTweetQueue
@@ -1004,17 +1158,31 @@ class BackendTweetQueueForm(BackendForm):
             self.fields['contents'].widget.attrs['class'] += " textarea-with-charcount"
         else:
             self.fields['contents'].widget.attrs['class'] = "textarea-with-charcount"
+        self.fields['contents'].widget.attrs['data-length-function'] = 'shortened_post_length'
+
+        lengthstr = 'Maximum lengths are: {}'.format(', '.join(['{}: {}'.format(mess.provider.internalname, get_messaging(mess.provider).max_post_length) for mess in self.conference.conferencemessaging_set.select_related('provider').filter(broadcast=True, provider__active=True)]))
+
+        self.fields['contents'].help_text = lengthstr
 
     def clean_datetime(self):
         if self.instance:
             t = self.cleaned_data['datetime'].time()
-            if self.conference.twitter_timewindow_start and self.conference.twitter_timewindow_start != datetime.time(0, 0, 0):
+            if self.conference and self.conference.twitter_timewindow_start and self.conference.twitter_timewindow_start != datetime.time(0, 0, 0):
                 if t < self.conference.twitter_timewindow_start:
                     raise ValidationError("Tweets for this conference cannot be scheduled before {}".format(self.conference.twitter_timewindow_start))
-            if self.conference.twitter_timewindow_end:
+            if self.conference and self.conference.twitter_timewindow_end:
                 if t > self.conference.twitter_timewindow_end and self.conference.twitter_timewindow_end != datetime.time(0, 0, 0):
                     raise ValidationError("Tweets for this conference cannot be scheduled after {}".format(self.conference.twitter_timewindow_end))
             return self.cleaned_data['datetime']
+
+    def clean_contents(self):
+        d = self.cleaned_data['contents']
+        shortlen = get_shortened_post_length(d)
+        for mess in self.conference.conferencemessaging_set.select_related('provider').filter(broadcast=True, provider__active=True):
+            impl = get_messaging(mess.provider)
+            if shortlen > impl.max_post_length:
+                messages.warning(self.request, "Post will be truncated to {} characters on {}".format(impl.max_post_length, mess.provider.internalname))
+        return d
 
     @classmethod
     def get_assignable_columns(cls, conference):
@@ -1034,16 +1202,24 @@ class BackendTweetQueueForm(BackendForm):
 
     @classmethod
     def get_column_filters(cls, conference):
-        return {
-            'Author': exec_to_single_list('SELECT DISTINCT username FROM confreg_conferencetweetqueue q INNER JOIN auth_user u ON u.id=q.author_id WHERE q.conference_id=%(confid)s', {'confid': conference.id, }),
-            'Approved': ['true', 'false'],
-            'Approved by': exec_to_single_list('SELECT DISTINCT username FROM confreg_conferencetweetqueue q INNER JOIN auth_user u ON u.id=q.approvedby_id WHERE q.conference_id=%(confid)s', {'confid': conference.id, }),
-            'Sent': ['true', 'false'],
-        }
+        if conference:
+            return {
+                'Author': exec_to_single_list('SELECT DISTINCT username FROM confreg_conferencetweetqueue q INNER JOIN auth_user u ON u.id=q.author_id WHERE q.conference_id=%(confid)s', {'confid': conference.id, }),
+                'Approved': ['true', 'false'],
+                'Approved by': exec_to_single_list('SELECT DISTINCT username FROM confreg_conferencetweetqueue q INNER JOIN auth_user u ON u.id=q.approvedby_id WHERE q.conference_id=%(confid)s', {'confid': conference.id, }),
+                'Sent': ['true', 'false'],
+            }
+        else:
+            return {
+                'Author': exec_to_single_list('SELECT DISTINCT username FROM confreg_conferencetweetqueue q INNER JOIN auth_user u ON u.id=q.author_id WHERE q.conference_id IS NULL'),
+                'Approved': ['true', 'false'],
+                'Approved by': exec_to_single_list('SELECT DISTINCT username FROM confreg_conferencetweetqueue q INNER JOIN auth_user u ON u.id=q.approvedby_id WHERE q.conference_id IS NULL'),
+                'Sent': ['true', 'false'],
+            }
 
 
 class BackendHashtagForm(BackendForm):
-    helplink = 'integrations#twitter'
+    helplink = 'integrations#broadcast'
     list_fields = ['hashtag', ]
 
     class Meta:
@@ -1182,3 +1358,13 @@ class BackendSendEmailForm(django.forms.Form):
             raise ValidationError("Maximum length of subject is {}, to leave room for prefix. You entered {} characters.".format(maxlen, len(self.cleaned_data['subject'])))
 
         return self.cleaned_data['subject']
+
+
+class BackendRegistrationDmForm(django.forms.Form):
+    message = django.forms.CharField(max_length=500, required=True)
+
+    def __init__(self, maxlength, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if maxlength:
+            self.fields['message'].max_length = maxlength
+            self.fields['message'].help_text = 'Maximum message length for this provider is {} characters.'.format(maxlength)

@@ -31,6 +31,7 @@ from .models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
 from .models import STATUS_CHOICES
 from .models import ConferenceNews, ConferenceTweetQueue
 from .models import SavedReportDefinition
+from .models import ConferenceMessaging
 from .forms import ConferenceRegistrationForm, RegistrationChangeForm, ConferenceSessionFeedbackForm
 from .forms import ConferenceFeedbackForm, SpeakerProfileForm
 from .forms import CallForPapersForm
@@ -59,6 +60,7 @@ from postgresqleu.util.request import get_int_or_error
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.time import today_conference
+from postgresqleu.util.messaging import get_messaging
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod, InvoiceRow
 from postgresqleu.invoices.util import InvoiceWrapper
 from postgresqleu.confwiki.models import Wikipage
@@ -194,6 +196,16 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
     else:
         scanned_by_sponsors = None
 
+    messaging = ConferenceMessaging.objects.filter(Q(notification=True) | Q(privatebcast=True), conference=conference)
+    if reg.messaging:
+        t, c = get_messaging(reg.messaging.provider).get_attendee_string(reg.regtoken, reg.messaging, reg.messaging_config)
+        if c is None:
+            current_messaging_info = t
+        else:
+            current_messaging_info = render_jinja_conference_template(conference, 'confreg/messaging/{}'.format(t), c)
+    else:
+        current_messaging_info = ''
+
     return render_conference_response(request, conference, 'reg', 'confreg/registration_dashboard.html', {
         'redir_root': redir_root,
         'reg': reg,
@@ -209,6 +221,8 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
         'scanned_by_sponsors': scanned_by_sponsors,
         'changeform': changeform,
         'displayfields': displayfields,
+        'current_messaging_info': current_messaging_info,
+        'messaging': messaging,
     })
 
 
@@ -413,6 +427,30 @@ def changereg(request, confname):
     reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
 
     return _registration_dashboard(request, conference, reg, False, '../')
+
+
+@login_required
+@transaction.atomic
+def reg_config_messaging(request, confname):
+    conference = get_conference_or_404(confname)
+    reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user, payconfirmedat__isnull=False)
+
+    if request.method != 'POST':
+        raise Http404()
+
+    if request.POST.get('op', None) == 'deactivate':
+        reg.messaging = None
+        reg.messaging_copiedfrom = None
+        reg.messaging_config = {}
+    else:
+        # Else we're at the setup one
+        reg.messaging = get_object_or_404(ConferenceMessaging, Q(id=request.POST['messagingid'], conference=conference) & (Q(privatebcast=True) | Q(notification=True)))
+        reg.messaging_copiedfrom = None
+        reg.messaging_config = {}
+
+    reg.save(update_fields=['messaging', 'messaging_copiedfrom', 'messaging_config'])
+
+    return HttpResponseRedirect('../#notifications')
 
 
 @login_required

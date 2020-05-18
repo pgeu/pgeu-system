@@ -20,7 +20,7 @@ from postgresqleu.confreg.models import Conference, PrepaidVoucher, PrepaidBatch
 from postgresqleu.confreg.util import get_authenticated_conference, get_conference_or_404
 from postgresqleu.confreg.jinjafunc import render_sandboxed_template
 from postgresqleu.confreg.util import send_conference_mail, send_conference_notification
-from postgresqleu.confreg.twitter import post_conference_tweet
+from postgresqleu.confreg.twitter import post_conference_social
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.decorators import superuser_required
@@ -809,14 +809,14 @@ def _confirm_benefit(request, benefit):
 
         # Potentially send tweet
         if benefit.benefit.tweet_template:
-            post_conference_tweet(conference,
-                                  render_sandboxed_template(benefit.benefit.tweet_template, {
-                                      'benefit': benefit.benefit,
-                                      'level': benefit.benefit.level,
-                                      'conference': conference,
-                                      'sponsor': benefit.sponsor
-                                  }),
-                                  approved=True)
+            post_conference_social(conference,
+                                   render_sandboxed_template(benefit.benefit.tweet_template, {
+                                       'benefit': benefit.benefit,
+                                       'level': benefit.benefit.level,
+                                       'conference': conference,
+                                       'sponsor': benefit.sponsor
+                                   }),
+                                   approved=True)
 
 
 def _unclaim_benefit(request, claimed_benefit):

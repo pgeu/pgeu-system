@@ -257,6 +257,9 @@
 {%endif%}
 {%endif%}{# not canceled #}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/sendmail/?idlist={{reg.id}}">Send email to attendee</a>
+{%if reg.messaging%}
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/senddm/">Send direct message to attendee</a>
+{%endif%}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/">Back to list</a>
 
 {%endblock%}

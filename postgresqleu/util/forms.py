@@ -10,7 +10,7 @@ import base64
 from itertools import groupby
 
 from .widgets import InlineImageUploadWidget, InlinePdfUploadWidget
-from .widgets import SubmitButtonWidget, SelectSetValueWidget
+from .widgets import LinkForCodeWidget, SubmitButtonWidget, SelectSetValueWidget
 
 
 class _ValidatorField(forms.Field):
@@ -143,6 +143,10 @@ class ImageBinaryFormField(forms.Field):
 
 class PdfBinaryFormField(ImageBinaryFormField):
     widget = InlinePdfUploadWidget
+
+
+class LinkForCodeField(forms.Field):
+    widget = LinkForCodeWidget
 
 
 class SubmitButtonField(forms.Field):

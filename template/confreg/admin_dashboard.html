@@ -4,7 +4,6 @@
 
 <h1>Conferences</h1>
 {%if cross_conference %}
-<h3>Cross-conference</h3>
 <div>
   <a class="btn btn-default" href="/events/admin/reports/time/">Time reports</a>
   <a class="btn btn-default" href="/events/admin/crossmail/">Cross conference email</a>
@@ -13,7 +12,7 @@
 {%endif%}
 
 {%if current%}
-<h3>Current conferences</h3>
+<h2>Current conferences</h2>
 <div class="row">
 {%for c in current %}
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow">
@@ -24,7 +23,7 @@
 {%endif%}
 
 {%if upcoming%}
-<h3>Upcoming conferences</h3>
+<h2>Upcoming conferences</h2>
 <div class="row">
 {%for c in upcoming %}
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow">
@@ -35,14 +34,14 @@
 {%endif%}
 
 {%if past%}
-<h3>All conferences{%if singleseries%} in {{singleseries.name}}{%endif%}</h3>
+<h2>All conferences{%if singleseries%} in {{singleseries.name}}{%endif%}</h2>
 {%regroup past by seriesid as past_series%}
 {%for series in past_series%}
 
 {%for c in series.list %}
 {%if forloop.first %}
 {%if not singleseries%}
-<h5>{{c.seriesname}}</h5>
+<h4>{{c.seriesname}}{%if c.seriesperm and not singleseries%} (<a href="?series={{c.seriesid}}">View all in series</a>){%endif%}</h4>
 {%endif%}
 <div class="row">
 {%endif%}
@@ -51,10 +50,10 @@
  </div>
 {%if forloop.last%}
 </div>
-{%if c.seriesperm and not singleseries%}
+{%if c.seriesperm or singleseries%}
 <div class="row">
- <div class="col-md-6 col-sm-9 col-xs-12 buttonrow">
-  <a class="btn btn-default btn-block" href="?series={{c.seriesid}}">All conferences in series {{c.seriesname}}</a>
+ <div class="col-md-3 col-sm-6 buttonrow">
+   <a class="btn btn-default btn-block" href="_series/{{c.seriesid}}/">Manage series</a>
  </div>
 </div>
 {%endif%}
@@ -71,7 +70,7 @@
 {%endif%}
 
 {%if user.is_superuser%}
-<h3>Superuser operations</h3>
+<h2>Superuser operations</h2>
 <div class="row">
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow">
     <a class="btn btn-default btn-block" href="/events/admin/newconference/">Create new conference</a>

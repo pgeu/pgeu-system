@@ -170,3 +170,16 @@ function update_assign_count() {
       $(this).html($('#assignbutton').data('template').replace('{}', n) + ' <span class="caret"></span>');
    });
 }
+
+
+/*
+ * Functions to check length of social media posts, by adjusting for size of
+ * URLs.
+ * Number and regex should be kept in sync with js/twitter.js and util/messaging/util.py
+ */
+const _re_urlmatcher = new RegExp('\\bhttps?://\\S+', 'ig');
+const _url_shortened_len = 23;
+
+function shortened_post_length(p) {
+    return p.replace(_re_urlmatcher, 'x'.repeat(_url_shortened_len)).length;
+}

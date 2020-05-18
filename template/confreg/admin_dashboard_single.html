@@ -58,7 +58,7 @@
 <h2>News</h2>
 <div class="row">
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/news/">News</a></div>
-{%if c.twittersync_active%}
+{%if c.has_social_broadcast %}
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block {%if pending_tweet_approvals%}btn-danger{%elif pending_tweets%}btn-warning{%endif%}" href="/events/admin/{{c.urlname}}/tweet/queue/">Twitter post queue</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/tweet/campaign/">Create campaign</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/tweet/hashtag/">Hashtags</a></div>
@@ -100,8 +100,8 @@
 {%if user.is_superuser%}
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/superedit/">Superuser conference entry</a></div>
 {%endif%}
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/messaging/">Messaging</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/accesstokens/">Access tokens</a></div>
-  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/feedbackquestions/">Feedback questions</a></div>
 </div>
 <div class="row">
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/tracks/">Tracks</a></div>
@@ -120,16 +120,12 @@
 </div>
 <div class="row">
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/addopts/">Additional options</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/feedbackquestions/">Feedback questions</a></div>
 </div>
 <div class="row">
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/sponsor/admin/{{c.urlname}}/levels/">Sponsorship levels</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/sponsor/admin/{{c.urlname}}/contracts/">Sponsorship contracts</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/sponsor/admin/{{c.urlname}}/addresses/">Shipment addresses</a></div>
-</div>
-
-<h2>Integrations</h2>
-<div class="row">
-  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/integ/twitter/">Twitter</a></div>
 </div>
 
 <h2>User links</h2>

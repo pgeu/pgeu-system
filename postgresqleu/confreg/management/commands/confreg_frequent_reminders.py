@@ -1,5 +1,5 @@
 #
-# Send frequent reminders using interfaces like twitter DMs
+# Send frequent reminders using direct message
 #
 # For now this only means sending a reminder to speakers 10-15 minutes
 # before their session begins.
@@ -10,14 +10,14 @@ from django.db import transaction, connection
 from django.conf import settings
 from django.utils import timezone
 
-import sys
 from datetime import timedelta
 
 from postgresqleu.confreg.models import Conference, ConferenceSession
 from postgresqleu.confreg.models import ConferenceRegistration
+from postgresqleu.confreg.util import get_conference_or_404
 
-from postgresqleu.util.messaging.twitter import Twitter
 from postgresqleu.util.time import today_global
+from postgresqleu.util.messaging.util import send_reg_direct_message, send_private_broadcast
 
 
 class Command(BaseCommand):
@@ -25,55 +25,42 @@ class Command(BaseCommand):
 
     class ScheduledJob:
         scheduled_interval = timedelta(minutes=5)
+        internal = True
 
         @classmethod
         def should_run(self):
-            if not settings.TWITTER_CLIENT or not settings.TWITTER_CLIENTSECRET:
-                # If we don't have twitter set up, don't run.
-                return False
-
             # We check for conferences to run at two days before and two days after to cover
             # any extreme timezone differences.
-            return Conference.objects.filter(twitterreminders_active=True,
-                                             startdate__lte=today_global() + timedelta(days=2),
-                                             enddate__gte=today_global() - timedelta(days=2)) \
-                                     .exclude(twitter_token='') \
-                                     .exclude(twitter_secret='').exists()
+            return Conference.objects.filter(startdate__lte=today_global() + timedelta(days=2),
+                                             enddate__gte=today_global() - timedelta(days=2)).exists()
 
     def handle(self, *args, **options):
-        if not settings.TWITTER_CLIENT or not settings.TWITTER_CLIENTSECRET:
-            return
-
-        curs = connection.cursor()
-        curs.execute("SELECT pg_try_advisory_lock(94012426)")
-        if not curs.fetchall()[0][0]:
-            raise CommandError("Failed to get advisory lock, existing frequent reminder process stuck?")
-
         # Only conferences that are actually running right now need to be considered.
         # Normally this is likely just one.
-        # We can also filter for conferences that actually have reminders active.
-        # Right now that's only twitter reminders, but in the future there can be
-        # more plugins.
-        has_error = False
-        for conference in Conference.objects.filter(twitterreminders_active=True,
-                                                    startdate__lte=today_global() + timedelta(days=2),
-                                                    enddate__gte=today_global() - timedelta(days=2)) \
-                                            .exclude(twitter_token='') \
-                                            .exclude(twitter_secret=''):
+        for conference in Conference.objects.filter(startdate__lte=today_global() + timedelta(days=2),
+                                                    enddate__gte=today_global() - timedelta(days=2)):
 
             # Re-get the conference object to switch the timezone for django
             conference = get_conference_or_404(conference.urlname)
 
-            tw = Twitter(conference)
             with transaction.atomic():
-                # Sessions that can take reminders (yes we could make a more complete join at one
-                # step here, but that will likely fall apart later with more integrations anyway)
+                # Sessions that can take reminders
                 for s in ConferenceSession.objects.select_related('room') \
                                                   .filter(conference=conference,
                                                           starttime__gt=timezone.now(),
                                                           starttime__lt=timezone.now() + timedelta(minutes=15),
                                                           status=1,
                                                           reminder_sent=False):
+
+                    send_private_broadcast(conference,
+                                           'The session "{0}" will start soon (at {1}){2}'.format(
+                                               s.title,
+                                               timezone.localtime(s.starttime).strftime("%H:%M"),
+                                               s.room and " in room {}".format(s.room) or '',
+                                           ),
+                                           expiry=timedelta(minutes=15))
+
+                    # Now also send DM reminders out to the speakers who have registered to get one
                     for reg in ConferenceRegistration.objects.filter(
                             conference=conference,
                             attendee__speaker__conferencesession=s):
@@ -83,18 +70,10 @@ class Command(BaseCommand):
                             timezone.localtime(s.starttime).strftime("%H:%M"),
                             s.room and s.room.roomname or 'unknown',
                         )
-                        if reg.twittername:
-                            # Twitter name registered, so send reminder
-                            ok, code, err = tw.send_message(reg.twittername, msg)
-                            if not ok and code != 150:
-                                # Code 150 means trying to send DM to user not following us, so just
-                                # ignore that one. Other errors should be shown.
-                                self.stderr.write("Failed to send twitter DM to {0}: {1}".format(reg.twittername, err))
-                                has_error = True
+
+                        # Send the message. Make it expire in 15 minutes, because that's after
+                        # the session started anyway.
+                        send_reg_direct_message(reg, msg, expiry=timedelta(minutes=15))
 
                     s.reminder_sent = True
                     s.save()
-
-        if has_error:
-            self.stderr.write("One or more messages failed to send. They will *not* be retried!")
-            sys.exit(1)

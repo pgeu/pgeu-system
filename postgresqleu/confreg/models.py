@@ -12,6 +12,7 @@ from django.utils.functional import cached_property
 from django.utils import timezone
 from django.template.defaultfilters import slugify
 from django.contrib.postgres.fields import DateTimeRangeField, JSONField
+from django.contrib.postgres.indexes import GinIndex
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
 
@@ -21,6 +22,7 @@ from postgresqleu.util.validators import PictureUrlValidator
 from postgresqleu.util.forms import ChoiceArrayField
 from postgresqleu.util.fields import LowercaseEmailField, ImageBinaryField
 from postgresqleu.util.time import today_conference
+from postgresqleu.util.db import exec_no_result
 
 import base64
 import datetime
@@ -121,6 +123,8 @@ class ConferenceSeries(models.Model):
     visible = models.BooleanField(null=False, default=True)
     administrators = models.ManyToManyField(User, blank=True)
 
+    _safe_attributes = ('name', 'intro', 'visible')
+
     def __str__(self):
         return self.name
 
@@ -174,12 +178,6 @@ class Conference(models.Model):
     schedulewidth = models.IntegerField(blank=False, default=600, null=False, verbose_name="Width of HTML schedule")
     pixelsperminute = models.FloatField(blank=False, default=1.5, null=False, verbose_name="Vertical pixels per minute")
     confurl = models.CharField(max_length=128, blank=False, null=False, validators=[validate_lowercase, ], verbose_name="Conference URL")
-    twittersync_active = models.BooleanField(null=False, default=False, verbose_name='Twitter posting active')
-    twitterincoming_active = models.BooleanField(null=False, default=False, verbose_name='Twitter incoming polling active')
-    twitterreminders_active = models.BooleanField(null=False, default=False, verbose_name='Twitter reminder DMs active')
-    twitter_user = models.CharField(max_length=32, blank=True, null=False)
-    twitter_token = models.CharField(max_length=128, blank=True, null=False)
-    twitter_secret = models.CharField(max_length=128, blank=True, null=False)
     twitter_timewindow_start = models.TimeField(null=False, blank=False, default='00:00', verbose_name="Don't post tweets before")
     twitter_timewindow_end = models.TimeField(null=False, blank=False, default='23:59:59', verbose_name="Don't post tweets after")
     twitter_postpolicy = models.IntegerField(null=False, blank=False, default=0, choices=TWITTER_POST_CHOICES,
@@ -225,7 +223,9 @@ class Conference(models.Model):
                         'callforpapersintro', 'callforpapersopen', 'callforpaperstags', 'allowedit',
                         'conferencefeedbackopen', 'confurl', 'contactaddr', 'tickets',
                         'conferencedatestr', 'location', 'welcomemail',
-                        'feedbackopen', 'skill_levels', 'urlname', 'conferencename')
+                        'feedbackopen', 'skill_levels', 'urlname', 'conferencename',
+                        'series',
+    )
 
     def safe_export(self):
         d = dict((a, getattr(self, a) and str(getattr(self, a))) for a in self._safe_attributes)
@@ -294,6 +294,10 @@ class Conference(models.Model):
             return True
 
         return False
+
+    @cached_property
+    def has_social_broadcast(self):
+        return self.conferencemessaging_set.filter(broadcast=True, provider__active=True).exists()
 
     @property
     def needs_data_purge(self):
@@ -574,6 +578,11 @@ class ConferenceRegistration(models.Model):
     # as a QR code on a badge, for others to scan.
     publictoken = models.TextField(null=False, blank=False, unique=True)
 
+    # Messaging configuration
+    messaging = models.ForeignKey('ConferenceMessaging', null=True, blank=True, on_delete=models.SET_NULL)
+    messaging_copiedfrom = models.ForeignKey(Conference, null=True, blank=True, on_delete=models.SET_NULL, related_name='reg_messaging_copiedfrom')
+    messaging_config = JSONField(null=False, blank=False, default=dict)
+
     @property
     def fullname(self):
         return "%s %s" % (self.firstname, self.lastname)
@@ -649,7 +658,7 @@ class ConferenceRegistration(models.Model):
 
     @cached_property
     def is_tweeter(self):
-        if self.conference.twittersync_active:
+        if self.conference.has_social_broadcast:
             if self.conference.twitter_postpolicy != 0:
                 if self.conference.administrators.filter(pk=self.attendee_id).exists():
                     return True
@@ -1329,29 +1338,98 @@ class ConferenceHashtag(models.Model):
         ordering = ['hashtag', ]
 
 
-class ConferenceTweetQueue(models.Model):
+class MessagingProvider(models.Model):
+    series = models.ForeignKey(ConferenceSeries, null=True, blank=True, on_delete=models.CASCADE)
+    internalname = models.CharField(max_length=100, null=False, blank=False, verbose_name='Internal name')
+    publicname = models.CharField(max_length=100, null=False, blank=False, verbose_name='Public name')
+    classname = models.CharField(max_length=200, null=False, blank=False, verbose_name="Implementation class")
+    active = models.BooleanField(null=False, blank=False, default=False)
+    config = JSONField(blank=False, null=False, default=dict, encoder=DjangoJSONEncoder)
+    route_incoming = models.ForeignKey(Conference, null=True, blank=True, verbose_name="Route incoming messages to", on_delete=models.SET_NULL, related_name='incoming_messaging_route_for')
+    private_checkpoint = models.BigIntegerField(null=False, blank=False, default=0)
+    private_lastpoll = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+    public_checkpoint = models.BigIntegerField(null=False, blank=False, default=0)
+    public_lastpoll = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+
+    def __str__(self):
+        return self.internalname
+
+    class Meta:
+        ordering = ('internalname', )
+
+
+class ConferenceMessaging(models.Model):
     conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
+    provider = models.ForeignKey(MessagingProvider, null=False, blank=False, on_delete=models.CASCADE)
+
+    broadcast = models.BooleanField(null=False, blank=False, default=False, verbose_name='Broadcasts')
+    privatebcast = models.BooleanField(null=False, blank=False, default=False, verbose_name='Attendee only broadcasts')
+    notification = models.BooleanField(null=False, blank=False, default=False, verbose_name='Private notifications')
+    orgnotification = models.BooleanField(null=False, blank=False, default=False, verbose_name='Organizer notifications')
+    config = JSONField(blank=False, null=False, default=dict)
+
+    class Meta:
+        verbose_name = 'messaging configuration'
+        ordering = ('provider__name', )
+        unique_together = (
+            ('conference', 'provider'),
+        )
+
+    def __str__(self):
+        return self.provider.publicname
+
+    @property
+    def full_info(self):
+        if self.notification and self.privatebcast:
+            return "{} - personal notifications and announcements".format(self)
+        elif self.notification:
+            return "{} - personal notifications only".format(self)
+        elif self.privatebcast:
+            return "{} - announcements only".format(self)
+        else:
+            return str(self)
+
+
+class ConferenceTweetQueue(models.Model):
+    conference = models.ForeignKey(Conference, null=True, on_delete=models.CASCADE)
     datetime = models.DateTimeField(blank=False, default=timezone.now, verbose_name="Date and time",
                                     help_text="Date and time to send tweet")
-    contents = models.CharField(max_length=250, null=False, blank=False)
+    contents = models.CharField(max_length=1000, null=False, blank=False)
     image = ImageBinaryField(null=True, blank=True, max_length=1000000)
     imagethumb = ImageBinaryField(null=True, blank=True, max_length=100000)
     approved = models.BooleanField(null=False, default=False, blank=False)
     author = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
     approvedby = models.ForeignKey(User, null=True, blank=True, related_name="tweetapprovals", on_delete=models.CASCADE)
     sent = models.BooleanField(null=False, default=False, blank=False)
-    tweetid = models.BigIntegerField(null=False, blank=False, default=0, db_index=True)
+    postids = JSONField(null=False, blank=False, default=dict)
     replytotweetid = models.BigIntegerField(null=True, blank=True, verbose_name="Reply to tweet")
+    remainingtosend = models.ManyToManyField(MessagingProvider, blank=True)
 
     class Meta:
         ordering = ['sent', 'datetime', ]
         verbose_name_plural = 'Conference Tweets'
         verbose_name = 'Conference Tweet'
+        indexes = [
+            GinIndex(name='tweetqueue_postids_idx', fields=['postids'], opclasses=['jsonb_path_ops']),
+        ]
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        # When we are saving, *if* we have not yet been sent, materialize a list of
+        # which providers to send to.
+        if self.approved and not self.sent:
+            if self.conference:
+                self.remainingtosend.set(MessagingProvider.objects.filter(active=True, conferencemessaging__conference=self.conference, conferencemessaging__broadcast=True))
+            else:
+                self.remainingtosend.set(MessagingProvider.objects.filter(active=True, series__isnull=True))
+            exec_no_result("NOTIFY pgeu_broadcast")
 
 
 class ConferenceIncomingTweet(models.Model):
     conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
-    statusid = models.BigIntegerField(null=False, blank=False, unique=True)
+    provider = models.ForeignKey(MessagingProvider, null=True, on_delete=models.SET_NULL)
+    statusid = models.BigIntegerField(null=False, blank=False)
     created = models.DateTimeField(null=False, blank=False)
     processedat = models.DateTimeField(null=True, blank=True)
     processedby = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
@@ -1366,8 +1444,42 @@ class ConferenceIncomingTweet(models.Model):
     quoted_permalink = models.URLField(max_length=1024, null=True, blank=True)
     retweetstate = models.IntegerField(null=False, blank=False, default=0, choices=((0, 'No retweet'), (1, 'Scheduled'), (2, 'Retweeted')))
 
+    class Meta:
+        unique_together = (
+            ('statusid', 'provider'),
+        )
+
 
 class ConferenceIncomingTweetMedia(models.Model):
     incomingtweet = models.ForeignKey(ConferenceIncomingTweet, null=False, blank=False, on_delete=models.CASCADE)
     sequence = models.IntegerField(null=False, blank=False)
     mediaurl = models.URLField(max_length=1024, null=False, blank=False)
+
+    class Meta:
+        unique_together = (
+            ('incomingtweet', 'sequence'),
+        )
+
+
+# Either reg *or* channel is set!
+class NotificationQueue(models.Model):
+    time = models.DateTimeField(null=False, blank=False)
+    expires = models.DateTimeField(null=False, blank=False)
+    messaging = models.ForeignKey(ConferenceMessaging, null=False, blank=False, on_delete=models.CASCADE)
+    reg = models.ForeignKey(ConferenceRegistration, null=True, blank=True, on_delete=models.CASCADE)
+    channel = models.CharField(max_length=50, null=True, blank=True)
+    msg = models.TextField(null=False, blank=False)
+
+
+class IncomingDirectMessage(models.Model):
+    provider = models.ForeignKey(MessagingProvider, null=False, blank=False, on_delete=models.CASCADE)
+    time = models.DateTimeField(null=False, blank=False)
+    postid = models.BigIntegerField(null=False, blank=False)
+    internallyprocessed = models.BooleanField(null=False, blank=False, default=False)
+    sender = JSONField(null=False, blank=False, default=dict)
+    txt = models.TextField(null=False, blank=True)
+
+    class Meta:
+        unique_together = (
+            ('postid', 'provider', ),
+        )

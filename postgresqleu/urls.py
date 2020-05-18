@@ -33,6 +33,8 @@ import postgresqleu.accountinfo.views
 import postgresqleu.util.docsviews
 import postgresqleu.mailqueue.backendviews
 import postgresqleu.util.monitor
+import postgresqleu.util.views
+import postgresqleu.util.backendviews
 
 from postgresqleu.newsevents.feeds import LatestNews
 from postgresqleu.confreg.feeds import LatestEvents, ConferenceNewsFeed
@@ -81,6 +83,8 @@ urlpatterns.extend([
     # News
     url(r'^admin/news/news/(.*/)?$', postgresqleu.newsevents.backendviews.edit_news),
     url(r'^admin/news/authors/(.*/)?$', postgresqleu.newsevents.backendviews.edit_author),
+    url(r'^admin/news/postqueue/(.*/?)$', postgresqleu.newsevents.backendviews.edit_postqueue),
+    url(r'^admin/news/messagingproviders/(.*/?)$', postgresqleu.newsevents.backendviews.edit_messagingproviders),
 
     # Conference management
     url(r'^events/(?P<confname>[^/]+)/register/(?P<whatfor>(self)/)?$', postgresqleu.confreg.views.register),
@@ -90,6 +94,7 @@ urlpatterns.extend([
     url(r'^events/(?P<confname>[^/]+)/register/other/b(?P<bulkid>(\d+))/cancel/$', postgresqleu.confreg.views.multireg_bulk_cancel),
     url(r'^events/(?P<confname>[^/]+)/register/other/z/$', postgresqleu.confreg.views.multireg_zeropay),
     url(r'^events/(?P<confname>[^/]+)/register/change/$', postgresqleu.confreg.views.changereg),
+    url(r'^events/(?P<confname>[^/]+)/register/msgconfig/$', postgresqleu.confreg.views.reg_config_messaging),
     url(r'^events/register/attach/([a-z0-9]{64})/$', postgresqleu.confreg.views.multireg_attach),
     url(r'^events/([^/]+)/prepaid/(\d+)/$', postgresqleu.confreg.views.viewvouchers_user),
 
@@ -153,6 +158,7 @@ urlpatterns.extend([
     url(r'^events/admin/crossmail/$', postgresqleu.confreg.views.crossmail),
     url(r'^events/admin/crossmail/options/$', postgresqleu.confreg.views.crossmailoptions),
     url(r'^events/admin/reports/time/$', postgresqleu.confreg.reporting.timereport),
+    url(r'^events/admin/_series/(\d+)/$', postgresqleu.confreg.backendviews.manage_series),
     url(r'^events/admin/([^/]+)/reports/$', postgresqleu.confreg.views.reports),
     url(r'^events/admin/([^/]+)/reports/simple/$', postgresqleu.confreg.views.simple_report),
     url(r'^events/admin/([^/]+)/reports/feedback/$', postgresqleu.confreg.feedback.feedback_report),
@@ -183,6 +189,7 @@ urlpatterns.extend([
     url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/ticket/$', postgresqleu.confreg.backendviews.view_registration_ticket),
     url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/badge/$', postgresqleu.confreg.backendviews.view_registration_badge),
     url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/resendwelcome/$', postgresqleu.confreg.views.admin_registration_resendwelcome),
+    url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/senddm/$', postgresqleu.confreg.backendviews.registration_dashboard_send_dm),
     url(r'^events/admin/(\w+)/regdashboard/list/sendmail/$', postgresqleu.confreg.backendviews.registration_dashboard_send_email),
     url(r'^events/admin/(\w+)/prepaid/$', postgresqleu.confreg.views.createvouchers),
     url(r'^events/admin/(\w+)/prepaid/list/$', postgresqleu.confreg.views.listvouchers),
@@ -223,6 +230,7 @@ urlpatterns.extend([
     url(r'^events/admin/(\w+)/volunteerslots/(.*/)?$', postgresqleu.confreg.backendviews.edit_volunteerslots),
     url(r'^events/admin/(\w+)/feedbackquestions/(.*/)?$', postgresqleu.confreg.backendviews.edit_feedbackquestions),
     url(r'^events/admin/(\w+)/discountcodes/(.*/)?$', postgresqleu.confreg.backendviews.edit_discountcodes),
+    url(r'^events/admin/(\w+)/messaging/(.*/)?$', postgresqleu.confreg.backendviews.edit_messaging),
     url(r'^events/admin/(\w+)/accesstokens/(.*/)?$', postgresqleu.confreg.backendviews.edit_accesstokens),
     url(r'^events/admin/(\w+)/news/(.*/)?$', postgresqleu.confreg.backendviews.edit_news),
     url(r'^events/admin/(\w+)/tweet/queue/(.*/)?$', postgresqleu.confreg.backendviews.edit_tweetqueue),
@@ -235,7 +243,7 @@ urlpatterns.extend([
     url(r'^events/admin/(\w+)/multiregs/(\d+)/refund/$', postgresqleu.confreg.backendviews.multireg_refund),
     url(r'^events/admin/(\w+)/addoptorders/$', postgresqleu.confreg.backendviews.addoptorders),
     url(r'^events/admin/(\w+)/purgedata/$', postgresqleu.confreg.backendviews.purge_personal_data),
-    url(r'^events/admin/(\w+)/integ/twitter/$', postgresqleu.confreg.backendviews.twitter_integration),
+    url(r'^events/admin/_series/(\d+)/messaging/(.*/)?$', postgresqleu.confreg.backendviews.edit_series_messaging),
     url(r'^events/admin/([^/]+)/talkvote/$', postgresqleu.confreg.views.talkvote),
     url(r'^events/admin/([^/]+)/talkvote/changestatus/$', postgresqleu.confreg.views.talkvote_status),
     url(r'^events/admin/([^/]+)/talkvote/vote/$', postgresqleu.confreg.views.talkvote_vote),
@@ -329,6 +337,10 @@ urlpatterns.extend([
     # Mail queue
     url(r'^admin/mailqueue/(.*/)?$', postgresqleu.mailqueue.backendviews.edit_mailqueue),
 
+    # Webhooks for messaging
+    url(r'^wh/(\d+)/([a-z0-9]+)/$', postgresqleu.util.views.messaging_webhook),
+    url(r'^wh/twitter/', postgresqleu.util.views.twitter_webhook),
+
     # Handle paypal data returns
     url(r'^p/paypal_return/(\d+)/$', postgresqleu.paypal.views.paypal_return_handler),
 
@@ -339,6 +351,9 @@ urlpatterns.extend([
     # Account info callbacks
     url(r'^accountinfo/search/$', postgresqleu.accountinfo.views.search),
     url(r'^accountinfo/import/$', postgresqleu.accountinfo.views.importuser),
+
+    # OAuth application registry
+    url(r'^admin/oauthapps/(.*/)?$', postgresqleu.util.backendviews.edit_oauthapps),
 
     # Monitoring endpoints
     url(r'^monitor/git/$', postgresqleu.util.monitor.gitinfo),

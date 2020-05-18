@@ -1,0 +1,13 @@
+{%extends "confreg/confadmin_base.html" %}
+{%block title%}{{series.name}} - series dashboard{%endblock%}
+{%block layoutblock%}
+{%with s=series%}
+
+<h1>{{s.name}}</h1>
+
+<div class="row">
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/_series/{{s.id}}/messaging/">Messaging providers</a></div>
+</div>
+
+{%endwith%}
+{%endblock%}

@@ -1,8 +1,8 @@
 #
-# Post tweets about news.
+# Post social media broadcast about news.
 #
-# This doesn't actually post the tweets -- it just places them in the
-# outbound queue for the global twitter posting script to handle.
+# This doesn't actually make a post -- it just places them in the
+# outbound queue for the global social media script to handle.
 #
 
 # Copyright (C) 2019, PostgreSQL Europe
@@ -16,25 +16,25 @@ from django.conf import settings
 from datetime import timedelta
 
 from postgresqleu.confreg.models import ConferenceNews
-from postgresqleu.confreg.twitter import post_conference_tweet
+from postgresqleu.confreg.twitter import post_conference_social
 
 
 class Command(BaseCommand):
-    help = 'Schedule tweets about conference news'
+    help = 'Schedule social media posts about conference news'
 
     class ScheduledJob:
-        scheduled_interval = timedelta(minutes=10)
+        scheduled_interval = timedelta(minutes=5)
         internal = True
 
         @classmethod
         def should_run(self):
-            # Any untweeted news from a conference with twitter active where the news is dated in the past (so that it
+            # Any unposted news from a conference where the news is dated in the past (so that it
             # is actually visible), but not more than 7 days in the past (in which case we skip it).
-            return ConferenceNews.objects.filter(tweeted=False, conference__twittersync_active=True, datetime__lt=timezone.now(), datetime__gt=timezone.now() - timedelta(days=7)).exists()
+            return ConferenceNews.objects.filter(tweeted=False, datetime__lt=timezone.now(), datetime__gt=timezone.now() - timedelta(days=7)).exists()
 
     @transaction.atomic
     def handle(self, *args, **options):
-        for n in ConferenceNews.objects.filter(tweeted=False, conference__twittersync_active=True, datetime__lt=timezone.now(), datetime__gt=timezone.now() - timedelta(days=7)):
+        for n in ConferenceNews.objects.filter(tweeted=False, datetime__lt=timezone.now(), datetime__gt=timezone.now() - timedelta(days=7)):
             statusstr = "{0} {1}/events/{2}/news/{3}-{4}/".format(
                 n.title[:250 - 40],
                 settings.SITEBASE,
@@ -42,6 +42,6 @@ class Command(BaseCommand):
                 slugify(n.title),
                 n.id,
             )
-            post_conference_tweet(n.conference, statusstr, approved=True)
+            post_conference_social(n.conference, statusstr, approved=True)
             n.tweeted = True
             n.save()

@@ -12,7 +12,7 @@
   <script type="text/javascript" src="/media/js/bootstrap.min.js"></script>
   <script type="text/javascript" src="/media/js/twitter.js"></script>
  </head>
- <body data-poster="{{poster}}" data-directposter = "{{directposter}}" data-moderator="{{moderator}}" data-confname="{{conference}}">
+ <body data-poster="{{poster}}" data-directposter = "{{directposter}}" data-moderator="{{moderator}}" data-confname="{{conference}}" data-maxlength="{{maxlength}}">
    <nav class="navbar navbar-default navbar-fixed-top" id="topnavbar">
      <div id="loading">
        <div class="spinner-ring"><div></div><div></div><div></div><div></div></div>
@@ -39,11 +39,9 @@
 	 <button id="newTweetButton" class="btn btn-primary btn-block btn-lg">Post tweet</button>
        </div>
 {%endif%}
-{%if conference.twitterincoming_active %}
        <div class="col-md-12 buttonrow">
 	 <button id="incomingTweetsButton" class="btn btn-primary btn-block btn-lg">Incoming tweets</button>
        </div>
-{%endif%}
        <div class="col-md-12 buttonrow">
 	 <button id="tweetQueueButton" class="btn btn-primary btn-block btn-lg">Outgoing queue</button>
        </div>
@@ -71,12 +69,13 @@
            <h4 class="modal-title">Post new tweet</h4>
          </div>
          <div class="modal-body">
-	   <textarea id="newTweetText" maxlength="280" class="disableonpost"></textarea>
+	   <textarea id="newTweetText" maxlength="1000" class="disableonpost"></textarea>
 	   Length: <span id="tweetLength">0</span><br/> Attach
 	   image: <input type="file" id="newTweetUpload" class="disableonpost"
 	   accept="image/jpeg, image/png"><br/> {%if directposter %}
 	   <input type="checkbox" id="tweetBypassApproval" class="disableonpost"/> Bypass
-	   approval {%endif%}
+	   approval<br/> {%endif%}
+	   Provider max length: {{providerlengths}}<br/>
          </div>
          <div class="modal-footer">
            <button type="button" class="btn btn-default btn-primary disableonpost" id="posttweetbutton">Post tweet</button>

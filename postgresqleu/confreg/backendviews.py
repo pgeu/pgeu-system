@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.utils.html import escape
-from django.db import transaction
+from django.db import transaction, connection
 from django.db.models import Count
 from django.core.exceptions import PermissionDenied
 from django.core.serializers.json import DjangoJSONEncoder
@@ -16,9 +16,11 @@ from collections import OrderedDict
 from postgresqleu.util.db import exec_to_list, exec_to_dict, exec_no_result, exec_to_scalar
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.messaging.twitter import Twitter, TwitterSetup
+from postgresqleu.util.messaging import messaging_implementations, get_messaging_class
+from postgresqleu.util.messaging.util import send_reg_direct_message
 from postgresqleu.util.backendviews import backend_list_editor, backend_process_form
+from postgresqleu.confreg.util import get_authenticated_conference, get_authenticated_series
 from postgresqleu.util.request import get_int_or_error
-from postgresqleu.confreg.util import get_authenticated_conference
 
 from .jinjafunc import JINJA_TEMPLATE_ROOT
 from .jinjapdf import render_jinja_ticket, render_jinja_badges
@@ -32,6 +34,7 @@ from .models import AccessToken
 from .models import ShirtSize
 from .models import PendingAdditionalOrder
 from .models import ConferenceTweetQueue
+from .models import MessagingProvider
 
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.util import InvoiceManager
@@ -49,13 +52,16 @@ from .backendforms import BackendAccessTokenForm
 from .backendforms import BackendConferenceSeriesForm
 from .backendforms import BackendTshirtSizeForm
 from .backendforms import BackendNewsForm
-from .backendforms import TwitterForm, TwitterTestForm, BackendTweetQueueForm, BackendHashtagForm
+from .backendforms import BackendTweetQueueForm, BackendHashtagForm
 from .backendforms import TweetCampaignSelectForm
 from .backendforms import BackendSendEmailForm
 from .backendforms import BackendRefundPatternForm
 from .backendforms import ConferenceInvoiceCancelForm
 from .backendforms import PurchasedVoucherRefundForm
 from .backendforms import BulkPaymentRefundForm
+from .backendforms import BackendMessagingForm
+from .backendforms import BackendSeriesMessagingForm
+from .backendforms import BackendRegistrationDmForm
 
 from .campaigns import get_campaign_from_id
 
@@ -281,6 +287,76 @@ def edit_hashtags(request, urlname, rest):
                                BackendHashtagForm,
                                rest,
                                return_url='../../',
+    )
+
+
+def edit_messaging(request, urlname, rest):
+    conference = get_authenticated_conference(request, urlname)
+    # How about this for ugly :) Make sure this conference has an instance for every
+    # available messaging on the series.
+    with connection.cursor() as curs:
+        curs.execute(
+            """INSERT INTO confreg_conferencemessaging (conference_id, provider_id, broadcast, privatebcast, notification, orgnotification, config)
+SELECT %(confid)s, id, false, false, false, false, '{}'
+FROM confreg_messagingprovider mp
+WHERE mp.series_id=%(seriesid)s AND NOT EXISTS (
+ SELECT 1 FROM confreg_conferencemessaging m2 WHERE m2.conference_id=%(confid)s AND m2.provider_id=mp.id
+)""",
+            {
+                'confid': conference.id,
+                'seriesid': conference.series_id,
+            })
+
+    return backend_list_editor(request,
+                               urlname,
+                               BackendMessagingForm,
+                               rest,
+                               conference=conference,
+                               allow_new=False,
+                               allow_delete=False,
+    )
+
+
+def edit_series_messaging(request, seriesid, rest):
+    series = get_authenticated_series(request, seriesid)
+
+    def _load_messaging_formclass(classname):
+        return getattr(get_messaging_class(classname), 'provider_form_class', BackendSeriesMessagingForm)
+
+    formclass = BackendSeriesMessagingForm
+    u = rest and rest.rstrip('/') or rest
+    if u and u != '' and u.isdigit():
+        # Editing an existing one, so pick the correct subclass!
+        provider = get_object_or_404(MessagingProvider, pk=u, series=series)
+        formclass = _load_messaging_formclass(provider.classname)
+    elif u == 'new':
+        if '_newformdata' in request.POST or 'classname' in request.POST:
+            if '_newformdata' in request.POST:
+                c = request.POST['_newformdata'].split(':')[0]
+            else:
+                c = request.POST['classname']
+
+            if c not in messaging_implementations:
+                raise PermissionDenied()
+
+            formclass = _load_messaging_formclass(c)
+
+    # Note! Sync with newsevents/backendviews.py
+    formclass.no_incoming_processing = False
+    formclass.verbose_name = 'messaging provider'
+    formclass.verbose_name_plural = 'messaging providers'
+
+    return backend_list_editor(request,
+                               None,
+                               formclass,
+                               rest,
+                               bypass_conference_filter=True,
+                               object_queryset=MessagingProvider.objects.filter(series=series),
+                               instancemaker=lambda: MessagingProvider(series=series),
+                               breadcrumbs=[
+                                   ('/events/admin/', 'Series'),
+                                   ('/events/admin/_series/{}/'.format(series.id), series.name),
+                               ]
     )
 
 
@@ -525,102 +601,6 @@ FROM confreg_conferenceregistration WHERE conference_id=%(confid)s""", {
     })
 
 
-@transaction.atomic
-def twitter_integration(request, urlname):
-    conference = get_authenticated_conference(request, urlname)
-
-    if request.method == 'POST':
-        if request.POST.get('activate_twitter', '') == '1':
-            # Fetch the oauth codes and re-render the form
-            try:
-                (auth_url, ownerkey, ownersecret) = TwitterSetup.get_authorization_data()
-                request.session['ownerkey'] = ownerkey
-                request.session['ownersecret'] = ownersecret
-            except Exception as e:
-                messages.error(request, 'Failed to talk to twitter: %s' % e)
-                return HttpResponseRedirect('.')
-
-            return render(request, 'confreg/admin_integ_twitter.html', {
-                'conference': conference,
-                'twitter_token_url': auth_url,
-                'helplink': 'integrations#twitter',
-            })
-        elif request.POST.get('pincode', ''):
-            if not ('ownerkey' in request.session and 'ownersecret' in request.session):
-                messages.error(request, 'Missing data in session, cannot continue')
-                return HttpResponseRedirect('.')
-            try:
-                tokens = TwitterSetup.authorize(request.session.pop('ownerkey'),
-                                                request.session.pop('ownersecret'),
-                                                request.POST.get('pincode'),
-                )
-            except Exception as e:
-                messages.error(request, 'Failed to get tokens from twitter.')
-                return HttpResponseRedirect('.')
-
-            conference.twitter_token = tokens.get('oauth_token')
-            conference.twitter_secret = tokens.get('oauth_token_secret')
-            conference.twittersync_active = False
-            conference.twitterincoming_active = False
-            tw = Twitter(conference)
-            try:
-                conference.twitter_user = tw.get_own_screen_name()
-            except Exception as e:
-                messages.error(request, 'Failed to verify account credentials and get username: {}'.format(e))
-                return HttpResponseRedirect('.')
-
-            conference.save()
-            messages.info(request, 'Twitter integration enabled')
-            return HttpResponseRedirect('.')
-        elif request.POST.get('deactivate_twitter', '') == '1':
-            conference.twitter_user = ''
-            conference.twitter_token = ''
-            conference.twitter_secret = ''
-            conference.twittersync_active = False
-            conference.twitterincoming_active = False
-            conference.save()
-            messages.info(request, 'Twitter integration disabled')
-            return HttpResponseRedirect('.')
-        elif request.POST.get('test_twitter', '') == '1':
-            testform = TwitterTestForm(data=request.POST)
-            if testform.is_valid():
-                tw = Twitter(conference)
-                recipient = testform.cleaned_data['recipient']
-                message = testform.cleaned_data['message']
-
-                ok, code, msg = tw.send_message(recipient, message)
-                if ok:
-                    messages.info(request, 'Message successfully sent to {0}'.format(recipient))
-                elif code == 150:
-                    messages.warning(request, 'Cannot send message to users not being followed')
-                else:
-                    messages.error(request, 'Failed to send to {0}: {1}'.format(recipient, msg))
-                return HttpResponseRedirect('.')
-            form = TwitterForm(instance=conference)
-        else:
-            form = TwitterForm(instance=conference, data=request.POST)
-            if form.is_valid():
-                form.save()
-                return HttpResponseRedirect('.')
-    else:
-        form = TwitterForm(instance=conference)
-        testform = TwitterTestForm()
-
-    if conference.twitter_user:
-        sameuser = Conference.objects.filter(twitterincoming_active=True, twitter_user=conference.twitter_user).exclude(pk=conference.pk).order_by('urlname')
-    else:
-        sameuser = []
-
-    return render(request, 'confreg/admin_integ_twitter.html', {
-        'conference': conference,
-        'form': form,
-        'testform': testform,
-        'conferences_with_same_user': sameuser,
-        'twitter_app_configured': settings.TWITTER_CLIENT != '' and settings.TWITTER_CLIENTSECRET != '',
-        'helplink': 'integrations#twitter',
-    })
-
-
 def tweetcampaignselect(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
@@ -675,6 +655,15 @@ def tweetcampaign(request, urlname, typeid):
         'cancelurl': '../../../',
         'note': campaign.note,
         'helplink': 'integrations#campaigns',
+    })
+
+
+def manage_series(request, seriesid):
+    series = get_authenticated_series(request, seriesid)
+
+    return render(request, 'confreg/admin_dashboard_series.html', {
+        'series': series,
+        'breadcrumbs': (('/events/admin/', 'Series'),),
     })
 
 
@@ -907,3 +896,34 @@ WHERE EXISTS (
  AND speaker_id=s.id)""",
                                 [('../', 'Conference sessions'), ],
                                 )
+
+
+@transaction.atomic
+def registration_dashboard_send_dm(request, urlname, regid):
+    conference = get_authenticated_conference(request, urlname)
+    reg = get_object_or_404(ConferenceRegistration, conference=conference, pk=regid)
+
+    if not reg.messaging:
+        # Should never have the link, but just in case
+        messages.warning(request, 'This registration has no direct messaging configured')
+        return HttpResponseRedirect("../")
+
+    maxlength = get_messaging_class(reg.messaging.provider.classname).direct_message_max_length
+    if request.method == 'POST':
+        form = BackendRegistrationDmForm(maxlength, data=request.POST)
+        if form.is_valid():
+            send_reg_direct_message(reg, form.cleaned_data['message'])
+            messages.info(request, "Direct message sent.")
+            return HttpResponseRedirect("../")
+    else:
+        form = BackendRegistrationDmForm(maxlength)
+
+    return render(request, 'confreg/admin_backend_form.html', {
+        'conference': conference,
+        'basetemplate': 'confreg/confadmin_base.html',
+        'form': form,
+        'what': 'new direct message',
+        'savebutton': 'Send direct message',
+        'cancelurl': '../',
+        'breadcrumbs': [('../../', 'Registration list'), ('../', reg.fullname)],
+    })

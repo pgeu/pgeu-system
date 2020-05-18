@@ -14,11 +14,12 @@ import re
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.middleware import RedirectException
 from postgresqleu.util.time import today_conference
+from postgresqleu.util.messaging.util import send_org_notification
 from postgresqleu.confreg.jinjafunc import JINJA_TEMPLATE_ROOT, render_jinja_conference_template
 from postgresqleu.confreg.jinjapdf import render_jinja_ticket
 
 from .models import PrepaidVoucher, DiscountCode, RegistrationWaitlistHistory
-from .models import ConferenceRegistration, Conference
+from .models import ConferenceRegistration, Conference, ConferenceSeries
 from .models import AttendeeMail
 from .models import ConferenceRegistrationLog
 
@@ -396,6 +397,19 @@ def get_authenticated_conference(request, urlname=None, confid=None):
         raise PermissionDenied()
 
 
+def get_authenticated_series(request, seriesid):
+    if not request.user.is_authenticated:
+        raise RedirectException("{0}?{1}".format(settings.LOGIN_URL, urllib.parse.urlencode({'next': request.build_absolute_uri()})))
+
+    s = get_object_or_404(ConferenceSeries, pk=seriesid)
+    if request.user.is_superuser:
+        return s
+    else:
+        if s.administrators.filter(pk=request.user.id).exists():
+            return s
+        raise PermissionDenied()
+
+
 def get_conference_or_404(urlname):
     conference = get_object_or_404(Conference, urlname=urlname)
 
@@ -411,6 +425,7 @@ def send_conference_notification(conference, subject, message):
                          subject,
                          message,
                          sendername=conference.conferencename)
+    send_org_notification(conference, message)
 
 
 def send_conference_notification_template(conference, subject, templatename, templateattr):

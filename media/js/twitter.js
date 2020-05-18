@@ -34,7 +34,8 @@ function add_queue_entry_html(row, d, modbuttons, panelstyle) {
     }
     e.append(cdiv);
     fdiv = $('<div/>').addClass('panel-footer');
-    fdiv.append($('<p/>').text('Queued by ' + d['author'] + ' at ' + d['time']));
+    let dstr = d['delivered'] ? ' Delivery complete.':'';
+    fdiv.append($('<p/>').text('Queued by ' + d['author'] + ' at ' + d['time'] + '.' + dstr));
     if (modbuttons) {
        fdiv.append($('<button/>').data('tid', d['id']).addClass('btn btn-primary btn-sm approve-button').text('Approve'));
        fdiv.append($('<button/>').data('tid', d['id']).addClass('btn btn-default btn-sm discard-button').text('Discard'));
@@ -46,7 +47,7 @@ function add_queue_entry_html(row, d, modbuttons, panelstyle) {
 
 
 function add_incoming_entry_html(row, d, dismissbutton, panelstyle) {
-    var e = $('<div/>').addClass('incomingentry panel panel-' + panelstyle).data('replyid', d['id']).data('replyto', d['author']);
+    var e = $('<div/>').addClass('incomingentry panel panel-' + panelstyle).data('replyid', d['id']).data('replyto', d['author']).data('replymaxlength', d['replymaxlength']);
     e.append($('<div/>').addClass('panel-heading').text('Posted by @' + d['author'] + ' (' + d['authorfullname'] + ') at ' + d['time']));
     var cdiv = $('<div/>').addClass('panel-body').text(d['txt']);
     if (d['media']) {
@@ -62,14 +63,14 @@ function add_incoming_entry_html(row, d, dismissbutton, panelstyle) {
     }
     var rtbtn = $('<button/>').data('tid', d['id']).addClass('btn btn-default btn-sm retweet-button');
     if (d['rt'] == 0) {
-	rtbtn.text('Retweet');
+	rtbtn.text('Repost');
     }
     else {
-	rtbtn.text('Retweeted');
+	rtbtn.text('Reposted');
 	rtbtn.attr('disabled', 'disabled');
     }
     fdiv.append(rtbtn);
-    fdiv.append($('<button/>').data('tid', d['id']).data('author', d['author']).addClass('btn btn-default btn-sm view-twitter-button').text('View on twitter'));
+    fdiv.append($('<button/>').data('url', d['url']).addClass('btn btn-default btn-sm view-twitter-button').text('View on ' + d['provider']));
     e.append(fdiv);
 
     row.append(e);
@@ -135,6 +136,7 @@ $(function() {
     var is_poster = $('body').data('poster');
     var is_directposter = $('body').data('directposter');
     var is_moderator = $('body').data('moderator');
+    var global_maxlength = parseInt($('body').data('maxlength'));
 
     $('#loading').hide();
     reset_state();
@@ -165,11 +167,21 @@ $(function() {
 	$('#tweetBypassApproval').prop('checked', false);
 	$('#tweetLength').text('0');
 	$('#newTweetModal').data('replyid', '');
+	$('#newTweetModal').data('maxlength', global_maxlength);
 	$('#newTweetModal').modal({});
     });
 
     $('#newTweetText').on('input', function() {
-       $('#tweetLength').text($.trim($(this).val()).length);
+       let maxlength = parseInt($('#newTweetModal').data('maxlength'));
+
+       /* Unfortunatley the input event cannot be canceled, so we have to backwards try to cut the text down */
+       let l = shortened_post_length($(this).val());
+       $('#tweetLength').text(l + ' of ' + maxlength);
+       while (l > maxlength) {
+          $(this).val($.trim($(this).val()).slice(0, -1));
+	  l = shortened_post_length($(this).val());
+          $('#tweetLength').text(l);
+       }
     });
 
     $('#posttweetbutton').click(function() {
@@ -354,7 +366,7 @@ $(function() {
     $(document).on('click', 'button.retweet-button', function(e) {
 	var btn = $(this);
 
-	if (!confirm('Are you sure you want to retweet this?')) {
+	if (!confirm('Are you sure you want to repost this?')) {
 	    return;
 	}
 
@@ -372,7 +384,7 @@ $(function() {
 		    return;
 		}
 
-		btn.text('Retweeted');
+		btn.text('Reposted');
 		btn.attr('disabled', 'disabled');
 	    },
 	    error: function(xhr, status, thrown) {
@@ -382,7 +394,7 @@ $(function() {
     });
 
     $(document).on('click', 'button.view-twitter-button', function(e) {
-	window.open('https://twitter.com/' + $(this).data('author') + '/status/' + $(this).data('tid'));
+	window.open($(this).data('url'));
 
     });
 
@@ -395,6 +407,7 @@ $(function() {
 	$('#tweetBypassApproval').prop('checked', false);
 	$('#tweetLength').text('0');
 	$('#newTweetModal').data('replyid', $(this).parent().parent().data('replyid'));
+	$('#newTweetModal').data('maxlength', $(this).parent().parent().data('replymaxlength'));
 	$('#newTweetModal').modal({});
     });
 
@@ -419,3 +432,15 @@ $(function() {
     /* Update the buttons every 60 seconds */
     setInterval(check_queue, 60*1000);
 });
+
+/*
+ * Functions to check length of social media posts, by adjusting for size of
+ * URLs.
+ * Number and regex should be kept in sync with js/admin.js
+ */
+const _re_urlmatcher = new RegExp('\\bhttps?://\\S+', 'ig');
+const _url_shortened_len = 23;
+
+function shortened_post_length(p) {
+    return p.replace(_re_urlmatcher, 'x'.repeat(_url_shortened_len)).length;
+}

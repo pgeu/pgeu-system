@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 from postgresqleu.util.backendforms import BackendForm
 from postgresqleu.newsevents.models import News, NewsPosterProfile
+from postgresqleu.confreg.backendforms import BackendTweetQueueForm
 
 
 class BackendNewsForm(BackendForm):
@@ -49,3 +50,8 @@ class BackendAuthorForm(BackendForm):
             # We must force the system to do an insert at this point. Since we set 'pk',
             # it will otherwise think it's an edit, do an UPDATE, and fail.
             self.force_insert = True
+
+
+class BackendPostQueueForm(BackendTweetQueueForm):
+    verbose_name = 'news social media post'
+    verbose_name_plural = 'news social media posts'

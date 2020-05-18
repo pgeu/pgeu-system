@@ -7,7 +7,7 @@ from postgresqleu.confreg.jinjafunc import JinjaTemplateValidator, render_sandbo
 
 from postgresqleu.util.widgets import MonospaceTextarea
 from postgresqleu.confreg.models import ConferenceSession, Track
-from postgresqleu.confreg.twitter import post_conference_tweet
+from postgresqleu.confreg.twitter import post_conference_social
 
 import datetime
 import random
@@ -113,11 +113,11 @@ class ApprovedSessionsCampaignForm(BaseCampaignForm):
     def generate_tweets(self, author):
         sessions = list(self.get_queryset().order_by('?'))
         for ts, session in zip(_timestamps_for_tweets(self.conference, self.cleaned_data['starttime'], self.cleaned_data['timebetween'], self.cleaned_data['timerandom'], len(sessions)), sessions):
-            post_conference_tweet(self.conference,
-                                  self.generate_tweet(self.conference, session, self.cleaned_data['content_template']),
-                                  approved=False,
-                                  posttime=ts,
-                                  author=author)
+            post_conference_social(self.conference,
+                                   self.generate_tweet(self.conference, session, self.cleaned_data['content_template']),
+                                   approved=False,
+                                   posttime=ts,
+                                   author=author)
 
 
 class ApprovedSessionsCampaign(object):

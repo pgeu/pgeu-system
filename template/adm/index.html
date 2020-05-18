@@ -17,6 +17,7 @@
 {%if user.is_superuser %}
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/news/authors/">News author profiles</a></div>
 {%endif%}
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/news/postqueue/">Social media queue</a></div>
 </div>
 {%endif%}
 
@@ -80,6 +81,10 @@
 {%if modules.membership%}
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/membership/config/">Membership configuration</a></div>
 {%endif%}
+</div>
+<div class="row">
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/oauthapps/">OAuth Applications</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/admin/news/messagingproviders/">News messaging providers</a></div>
 </div>
 
 <h1>Django admin</h1>

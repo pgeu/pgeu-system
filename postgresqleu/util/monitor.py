@@ -61,8 +61,17 @@ def nagios(request):
     if exec_to_scalar("SELECT NOT EXISTS (SELECT 1 FROM pg_stat_activity WHERE application_name='pgeu scheduled job runner' AND datname=current_database())"):
         errors.append('No job scheduler connected to database')
 
+    # Check that there are no outbound emails in the queue
     if exec_to_scalar("SELECT EXISTS (SELECT 1 FROM mailqueue_queuedmail WHERE sendtime < now() - '2 minutes'::interval)"):
         errors.append('Unsent emails are present in the outbound mailqueue')
+
+    # Check that there are no outbound notifications in the queue
+    if exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_notificationqueue WHERE time < now() - '10 minutes'::interval)"):
+        errors.append('Unsent notifications are present in the outbound queue')
+
+    # Check that there are no outbound social media broadcasts in the queue
+    if exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencetweetqueue tq WHERE datetime < now() - '10 minutes'::interval AND approved AND EXISTS (SELECT 1 FROM confreg_conferencetweetqueue_remainingtosend rts WHERE rts.conferencetweetqueue_id=tq.id))"):
+        errors.append('Unsent social media broadcasts are present in the outbound queue')
 
     # Check for email addresses not configured
     errors.extend(check_all_emails(['DEFAULT_EMAIL', 'INVOICE_SENDER_EMAIL', 'INVOICE_NOTIFICATION_RECEIVER', 'SCHEDULED_JOBS_EMAIL', 'SCHEDULED_JOBS_EMAIL_SENDER', 'INVOICE_NOTIFICATION_RECEIVER', 'TREASURER_EMAIL', 'SERVER_EMAIL']))

@@ -9,6 +9,7 @@ import types
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
 from .auth import PERMISSION_GROUPS
+from .oauthapps import connect_oauth_signals
 
 
 #
@@ -39,6 +40,8 @@ class UtilAppConfig(AppConfig):
     name = 'postgresqleu.util'
 
     def ready(self):
+        connect_oauth_signals()
+
         post_migrate.connect(handle_post_migrate, sender=self)
 
         # Override the default ModelAdmin in django to add our validation fields
