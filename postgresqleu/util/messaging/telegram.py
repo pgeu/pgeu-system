@@ -27,7 +27,7 @@ class TelegramBackendForm(BackendSeriesMessagingForm):
                                     widget=forms.widgets.PasswordInput(render_value=True, attrs={'autocomplete': 'new-password'}),
                                     help_text='Create a new bot in the Telegram Botfather, and copy/paste the access token here')
     telegramstatus = forms.CharField(widget=StaticTextWidget, label="Telegram information", required=False)
-    webhookenabler = SubmitButtonField(label="Enable webhook")
+    webhookenabler = SubmitButtonField(label="Enable webhook", required=False)
 
     exclude_fields_from_validation = ['telegramstatus', 'webhookenabler', ]
 

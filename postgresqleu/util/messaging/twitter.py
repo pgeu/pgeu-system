@@ -30,7 +30,7 @@ _cached_twitter_users = {}
 class TwitterBackendForm(BackendSeriesMessagingForm):
     initialconfig = LinkForCodeField(label='Get PIN code')
     twitterinfo = forms.CharField(widget=StaticTextWidget, label="Account information", required=False)
-    webhookenabler = SubmitButtonField(label="Enable webhook")
+    webhookenabler = SubmitButtonField(label="Enable webhook", required=False)
 
     def fix_fields(self):
         super().fix_fields()
