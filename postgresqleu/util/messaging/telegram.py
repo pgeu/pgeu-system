@@ -220,8 +220,9 @@ class Telegram(object):
             return timezone.now(), checkpoint
 
     def process_webhook(self, request):
+        body = request.body.decode('utf8', errors='ignore')
         try:
-            j = json.loads(request.body.decode('utf8', errors='ignore'))
+            j = json.loads(body)
             if 'channel_post' in j:
                 self.process_channel_post(j['channel_post'])
             elif 'message' in j:
@@ -230,6 +231,7 @@ class Telegram(object):
             return HttpResponse("OK")
         except Exception as e:
             log.error("Exception processing Telegram webhook: {}".format(e))
+            log.error("Telegram data was: {}".format(body))
             return HttpResponse("Internal error", status=500)
 
     def process_channel_post(self, p):
