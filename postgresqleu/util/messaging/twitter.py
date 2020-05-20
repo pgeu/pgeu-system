@@ -593,6 +593,6 @@ def process_twitter_webhook(request):
             if mp:
                 tw.process_incoming_tweet_create_event(mp, tce)
             else:
-                log.error("Could not find provider for incoming tweet: {}".format(tce))
+                log.error("Could not find provider for incoming tweet: {}".format(j))
 
     return HttpResponse("OK")
