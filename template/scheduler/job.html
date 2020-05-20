@@ -47,6 +47,13 @@ $(function() {
 </form>
 
 <h2>History</h2>
+{%if job.lastrun and not job.lastrunsuccess%}
+<form method="post" action="." class="form-horizontal">{% csrf_token%}
+  <input type="hidden" name="reset-failure" value="1">
+  <input type="submit" class="btn btn-default" value="Reset last run failure state">
+</form>
+<p></p>
+{%endif%}
 <table class="table table-sm table-striped table-hover">
 <tr>
   <th>Time</th>

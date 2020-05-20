@@ -90,6 +90,12 @@ def job(request, jobid):
             notify_job_change()
             messages.info(request, "Scheduled immediate run of '{0}'".format(job.description))
             return HttpResponseRedirect('../')
+        elif request.POST.get('reset-failure', '') == '1':
+            job.lastrun = None
+            job.lastrunsuccess = False
+            job.save()
+            messages.info(request, "Reset last run failure state of '{0}'".format(job.description))
+            return HttpResponseRedirect('../')
 
         form = ScheduledJobForm(request, conference=None, instance=job, data=request.POST)
         if form.is_valid():
