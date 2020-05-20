@@ -73,7 +73,7 @@ def send_pending_posts(providers):
         for p in t.remainingtosend.all():
             impl = providers.get(p)
             (id, err) = impl.post(
-                truncate_shortened_post(t.contents, t.max_post_length),
+                truncate_shortened_post(t.contents, impl.max_post_length),
                 t.image,
                 t.replytotweetid,
             )
