@@ -301,7 +301,7 @@ class Twitter(object):
         if tj['is_quote_status'] and 'quoted_status_id' in tj:
             d['quoted'] = {
                 'id': int(tj['quoted_status_id']),
-                'text': tj['quoted_status']['full_text'],
+                'text': tj['quoted_status'].get('full_text', tj['quoted_status'].get('text', '')),
                 'permalink': tj['quoted_status_permalink'],
             }
         return d
