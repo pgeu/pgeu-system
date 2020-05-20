@@ -24,6 +24,9 @@ from postgresqleu.util.messaging.util import send_reg_direct_message, store_inco
 from postgresqleu.confreg.models import ConferenceRegistration, MessagingProvider, IncomingDirectMessage
 from postgresqleu.confreg.backendforms import BackendSeriesMessagingForm
 
+import logging
+log = logging.getLogger(__name__)
+
 _cached_twitter_users = {}
 
 
@@ -567,7 +570,7 @@ def process_twitter_webhook(request):
                 )
                 _cached_messaging[uid] = (mp, get_messaging(mp))
             except MessagingProvider.DoesNotExist:
-                return None
+                return None, None
         return _cached_messaging[uid]
 
     for dme in j.get('direct_message_events', []):
@@ -580,11 +583,16 @@ def process_twitter_webhook(request):
                 if tw:
                     dt = datetime.fromtimestamp(int(dme['created_timestamp']) / 1000, tz=django.utils.timezone.utc)
                     tw.process_incoming_message_create_struct(dme['id'], dt, dme['message_create'])
+                else:
+                    log.error("Could not find provider for direct message event: {}".format(dme))
 
     for tce in j.get('tweet_create_events', []):
         with transaction.atomic():
             recipient = int(j['for_user_id'])
             mp, tw = _get_messaging_from_uid(recipient)
-            tw.process_incoming_tweet_create_event(mp, tce)
+            if mp:
+                tw.process_incoming_tweet_create_event(mp, tce)
+            else:
+                log.error("Could not find provider for incoming tweet: {}".format(tce))
 
     return HttpResponse("OK")
