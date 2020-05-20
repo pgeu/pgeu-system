@@ -52,7 +52,7 @@ class TwitterBackendForm(BackendSeriesMessagingForm):
             ]
             self.config_readonly_fields = ['twitterinfo', ]
 
-            if 'screen_name' not in self.instance.config:
+            if 'screen_name' not in self.instance.config or 'accountid' not in self.instance.config:
                 try:
                     ai = Twitter(self.instance.id, self.instance.config).get_account_info()
                     self.instance.config.update(ai)
