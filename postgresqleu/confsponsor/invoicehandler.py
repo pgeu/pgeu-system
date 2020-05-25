@@ -145,7 +145,7 @@ def create_sponsor_invoice(user, sponsor):
     ]
     if conference.startdate < today_conference() + timedelta(days=5):
         # If conference happens in the next 5 days, invoice is due immediately
-        duedate = today_conferece()
+        duedate = today_conference()
     elif conference.startdate < today_conference() + timedelta(days=30):
         # Less than 30 days before the conference, set the due date to
         # 5 days before the conference
