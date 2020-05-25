@@ -101,9 +101,12 @@ settings, so be careful to only use for active or recent events!
 ## Cross conference email <a name="crossconference"></a>
 
 Cross conference emails are different from attendee emails in that
-they are a one-off sending of email. They are not stored server-side
-anywhere, and are not viewable in the system after they've been sent
-(even for administrators).
+they are not accessible to attendees after they have been sent. A
+record of the email is stored in the database, including all the
+recipients, and can be viewed by the administrator for tracing
+purposes, but not by the attendee. These emails respect the
+opt-out settings, as they are normally used to send email to
+"non-current" conferences.
 
 Multiple criteria can be set for each email, both including and
 excluding. Include criteria are applied first, and then exclude

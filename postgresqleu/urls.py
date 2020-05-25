@@ -156,6 +156,8 @@ urlpatterns.extend([
     # Backend/admin urls
     url(r'^events/admin/$', postgresqleu.confreg.views.admin_dashboard),
     url(r'^events/admin/crossmail/$', postgresqleu.confreg.views.crossmail),
+    url(r'^events/admin/crossmail/(\d+)/$', postgresqleu.confreg.views.crossmail_view),
+    url(r'^events/admin/crossmail/send/$', postgresqleu.confreg.views.crossmail_send),
     url(r'^events/admin/crossmail/options/$', postgresqleu.confreg.views.crossmailoptions),
     url(r'^events/admin/reports/time/$', postgresqleu.confreg.reporting.timereport),
     url(r'^events/admin/_series/(\d+)/$', postgresqleu.confreg.backendviews.manage_series),

@@ -1,0 +1,58 @@
+{%extends "confreg/confadmin_base.html" %}
+{%block title%}Cross conference emails{%endblock%}
+{%block layoutblock%}
+<h1>Cross conference emails</h1>
+
+<table class="table">
+  <tr>
+    <th class="col-md-1">Sent by</th>
+    <td>{{email.sentby}}</td>
+  </tr>
+  <tr>
+    <th class="col-md-1">Sent at</th>
+    <td>{{email.sentat}}</td>
+  </tr>
+  <tr>
+    <th class="col-md-1">Subject</th>
+    <td>{{email.subject}}</td>
+  </tr>
+  <tr>
+    <th class="col-md-1">Text</th>
+    <td><pre>{{email.text}}</pre>
+    </td>
+  </tr>
+  <tr>
+    <th class="col-md-1">Included</th>
+    <td>
+      <ul>
+{%for r in email.rules_included%}
+<li>{{r.displaystr}}</li>
+{%endfor%}
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th class="col-md-1">Excluded</th>
+    <td>
+      <ul>
+{%for r in email.rules_excluded%}
+<li>{{r.displaystr}}</li>
+{%endfor%}
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <th class="col-md-1">Recipients</th>
+    <td>
+      <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#recipientList">View</button>
+      <ul id="recipientList" class="collapse">
+{%for r in recipients%}<li>{{r.address}}</li>{%endfor%}
+      </ul>
+    </td>
+  </tr>
+</table>
+
+
+<a href="../" class="btn btn-default btn-block">Back</a>
+
+{%endblock%}

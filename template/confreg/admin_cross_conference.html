@@ -1,0 +1,32 @@
+{%extends "confreg/confadmin_base.html" %}
+{%block title%}Cross conference emails{%endblock%}
+{%block layoutblock%}
+<h1>Cross conference emails</h1>
+<p>
+  Cross conference emails are emails that are sent to attendees of one or more
+  conferences based on dynamic rules.
+</p>
+
+<p>
+  <a href="send/" class="btn btn-default">Send new email</a>
+</p>
+
+<table class="table table-striped table-small table-hover">
+  <tr>
+    <th>Time</th>
+    <th>Sender</th>
+    <th>Subject</th>
+  </tr>
+{%for e in emails %}
+  <tr>
+    <td><a href="{{e.id}}/">{{e.sentat}}</a></td>
+    <td>{{e.sendername}} &lt;{{e.senderaddr}}&gt;</td>
+    <td>{{e.subject}}</td>
+  </tr>
+{%endfor%}
+</table>
+{%include "adm/include/paginator.html" with pageobjects=emails %}
+
+<a href="../" class="btn btn-default btn-block">Back</a>
+
+{%endblock%}

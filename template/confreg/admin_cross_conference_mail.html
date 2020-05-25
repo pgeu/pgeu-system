@@ -1,5 +1,5 @@
 {%extends "confreg/confadmin_base.html" %}
-{%block title%}Conference emails{%endblock%}
+{%block title%}Send cross conference email{%endblock%}
 {%block extrahead%}
 <script type="text/javascript" src="/media/js/selectize.min.js"></script>
 <script type="text/javascript" src="/media/js/crossconfmail.js"></script>
@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="/media/css/selectize.default.css" />
 {%endblock%}
 {%block layoutblock%}
-<h1>Send conference email</h1>
+<h1>Send cross conference email</h1>
 <form class="form-horizontal" method="post" action="." id="crossconfform">{%csrf_token%}
 <div class="form-group">
   <label class="control-label col-lg-3">Include:</label>

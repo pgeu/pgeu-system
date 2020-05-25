@@ -1483,3 +1483,65 @@ class IncomingDirectMessage(models.Model):
         unique_together = (
             ('postid', 'provider', ),
         )
+
+
+class CrossConferenceEmail(models.Model):
+    sentat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+    sentby = models.ForeignKey(User, null=False, blank=False, on_delete=models.CASCADE)
+    senderaddr = LowercaseEmailField(null=False, blank=False, verbose_name='Sender address')
+    sendername = models.CharField(max_length=100, null=False, blank=False, verbose_name='Sender name')
+    subject = models.CharField(max_length=80, null=False, blank=False)
+    text = models.TextField(blank=False, null=False)
+
+    @property
+    def rules_included(self):
+        return CrossConferenceEmailRule.objects.filter(email=self, isexclude=False)
+
+    @property
+    def rules_excluded(self):
+        return CrossConferenceEmailRule.objects.filter(email=self, isexclude=True)
+
+
+class CrossConferenceEmailRule(models.Model):
+    email = models.ForeignKey(CrossConferenceEmail, null=False, blank=False, on_delete=models.CASCADE)
+    conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
+    isexclude = models.BooleanField(null=False, blank=False)
+    ruletype = models.CharField(max_length=10, null=False, blank=False)
+    ruleref = models.IntegerField(null=False, blank=False)
+    canceled = models.BooleanField(null=False)
+
+    @property
+    def displaystr(self):
+        if self.ruletype == 'rt':
+            if self.ruleref == -1:
+                ruledetails = 'All registrations'
+            else:
+                ruledetails = 'Registrations of type {}'.format(RegistrationType.objects.get(conference=self.conference, id=self.ruleref).regtype)
+
+        elif self.ruletype == 'sp':
+            if self.ruleref == -1:
+                ruledetails = 'All speakers'
+            elif self.ruleref == -2:
+                ruledetails = 'All speakers with sessions in status accepted and reserve'
+            else:
+                ruledetails = 'Speakers with sessions in status {}'.format(get_status_string(self.ruleref))
+        else:
+            return 'Unknown rule type'
+
+        if self.canceled:
+            ruledetails += ' (including canceled registrations)'
+
+        return "{}: {}".format(
+            self.conference,
+            ruledetails,
+        )
+
+
+class CrossConferenceEmailRecipient(models.Model):
+    email = models.ForeignKey(CrossConferenceEmail, null=False, blank=False, on_delete=models.CASCADE)
+    address = LowercaseEmailField(null=False, blank=False)
+
+    class Meta:
+        unique_together = (
+            ('email', 'address'),
+        )

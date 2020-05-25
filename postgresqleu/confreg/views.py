@@ -32,6 +32,7 @@ from .models import STATUS_CHOICES
 from .models import ConferenceNews, ConferenceTweetQueue
 from .models import SavedReportDefinition
 from .models import ConferenceMessaging
+from .models import CrossConferenceEmail, CrossConferenceEmailRule, CrossConferenceEmailRecipient
 from .forms import ConferenceRegistrationForm, RegistrationChangeForm, ConferenceSessionFeedbackForm
 from .forms import ConferenceFeedbackForm, SpeakerProfileForm
 from .forms import CallForPapersForm
@@ -61,6 +62,7 @@ from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.time import today_conference
 from postgresqleu.util.messaging import get_messaging
+from postgresqleu.util.pagination import simple_pagination
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod, InvoiceRow
 from postgresqleu.invoices.util import InvoiceWrapper
 from postgresqleu.confwiki.models import Wikipage
@@ -4041,8 +4043,48 @@ def transfer_reg(request, urlname):
 
 # Send email to attendees of mixed conferences
 @login_required
-@transaction.atomic
 def crossmail(request):
+    if not (request.user.is_superuser or ConferenceSeries.objects.filter(administrators=request.user).exists()):
+        return HttpResponseForbidden()
+
+    if request.user.is_superuser:
+        emails = CrossConferenceEmail.objects.all()
+    else:
+        emails = CrossConferenceEmail.objects.filter(sentby=request.user)
+    email_objects = emails.order_by('-sentat')
+
+    (emails, paginator, page_range) = simple_pagination(request, email_objects, 25)
+
+    return render(request, 'confreg/admin_cross_conference.html', {
+        'emails': emails,
+        'page_range': page_range,
+        'helplink': 'emails#crossconference',
+    })
+
+
+@login_required
+def crossmail_view(request, mailid):
+    if not (request.user.is_superuser or ConferenceSeries.objects.filter(administrators=request.user).exists()):
+        return HttpResponseForbidden()
+
+    if request.user.is_superuser:
+        email = get_object_or_404(CrossConferenceEmail, pk=mailid)
+    else:
+        email = get_object_or_404(CrossConferenceEmail, pk=mailid, sentby=request.user)
+
+    return render(request, 'confreg/admin_cross_conference_view.html', {
+        'email': email,
+        'recipients': CrossConferenceEmailRecipient.objects.filter(email=email).order_by('address'),
+        'breadcrumbs': [
+            ('/events/admin/crossmail/', 'Cross conference email'),
+        ],
+        'helplink': 'emails#crossconference',
+    })
+
+
+@login_required
+@transaction.atomic
+def crossmail_send(request):
     if not (request.user.is_superuser or ConferenceSeries.objects.filter(administrators=request.user).exists()):
         return HttpResponseForbidden()
 
@@ -4063,7 +4105,7 @@ def crossmail(request):
             if t == 'rt':
                 # Regtype
                 q = "SELECT attendee_id, email, firstname || ' ' || lastname, regtoken FROM confreg_conferenceregistration WHERE conference_id={0} AND payconfirmedat IS NOT NULL".format(conf)
-                if v != '*':
+                if v != '-1':
                     q += ' AND regtype_id={0}'.format(int(v))
                 if not c:
                     # Exclude canceled registrations
@@ -4072,9 +4114,9 @@ def crossmail(request):
                     q += " AND NOT EXISTS (SELECT 1 FROM confreg_conferenceseriesoptout INNER JOIN confreg_conference ON confreg_conference.series_id=confreg_conferenceseriesoptout.series_id WHERE user_id=attendee_id AND confreg_conference.id={0})".format(int(conf))
             elif t == 'sp':
                 # Speaker
-                if v == '*':
+                if v == '-1':
                     sf = ""
-                elif v == '?':
+                elif v == '-2':
                     sf = " AND status IN (1,3)"
                 else:
                     sf = " AND status = {0}".format(int(v))
@@ -4120,7 +4162,36 @@ def crossmail(request):
             recipients = None
 
         if form.is_valid() and recipients:
+            # Store the email itself and all the recipients
+            def _addrule(email, ruledef, isexclude):
+                (confid, parts) = ruledef.split('@')
+                (t, ref, canc) = parts.split(':')
+                CrossConferenceEmailRule(
+                    email=email,
+                    conference=Conference.objects.get(pk=confid),
+                    isexclude=isexclude,
+                    ruletype=t,
+                    ruleref=ref,
+                    canceled=canc,
+                ).save()
+
+            email = CrossConferenceEmail(
+                sentby=request.user,
+                senderaddr=form.data['senderaddr'],
+                sendername=form.data['sendername'],
+                subject=form.data['subject'],
+                text=form.data['text'],
+            )
+            email.save()
+
+            for r in request.POST['include'].split(';'):
+                _addrule(email, r, False)
+            for r in request.POST['exclude'].split(';'):
+                _addrule(email, r, True)
+
             for r in recipients:
+                CrossConferenceEmailRecipient(email=email, address=r['email']).save()
+
                 send_simple_mail(form.data['senderaddr'],
                                  r['email'],
                                  form.data['subject'],
@@ -4144,7 +4215,10 @@ def crossmail(request):
         'recipients': recipients,
         'conferences': conferences,
         'helplink': 'emails#crossconference',
-        })
+        'breadcrumbs': [
+            ('/events/admin/crossmail/', 'Cross conference email'),
+        ],
+    })
 
 
 @login_required
@@ -4180,14 +4254,14 @@ def crossmailoptions(request):
     # each of them must have an implementation in _get_one_filter() or bad things
     # will happen.
     r = [
-        {'id': 'rt:*', 'title': 'Reg: all'},
+        {'id': 'rt:-1', 'title': 'Reg: all'},
     ]
     r.extend([
         {'id': 'rt:{0}'.format(rt.id), 'title': 'Reg: {0}'.format(rt.regtype)}
         for rt in RegistrationType.objects.filter(conference=conf)])
     r.extend([
-        {'id': 'sp:*', 'title': 'Speaker: all'},
-        {'id': 'sp:?', 'title': 'Speaker: accept+reserve'},
+        {'id': 'sp:-1', 'title': 'Speaker: all'},
+        {'id': 'sp:-2', 'title': 'Speaker: accept+reserve'},
     ])
     r.extend([
         {'id': 'sp:{0}'.format(k), 'title': 'Speaker: {0}'.format(v)}
