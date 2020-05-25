@@ -40,5 +40,6 @@ urlpatterns = [
     url(r'^admin/(\w+)/shipments/new/$', views.admin_shipment_new),
     url(r'^admin/(\w+)/shipments/(\d+)/$', views.admin_shipment),
     url(r'^admin/(\w+)/(\d+)/refund/$', views.sponsor_admin_refund),
+    url(r'^admin/(\w+)/(\d+)/reissue/$', views.sponsor_admin_reissue),
     url(r'^admin/(\w+)/badgescanstatus/$', scanning.admin_scan_status),
 ]

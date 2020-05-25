@@ -101,11 +101,7 @@ def get_sponsor_invoice_address(name, invoiceaddr, vatnumber):
         return "{0}\n{1}".format(name, invoiceaddr)
 
 
-# Generate an invoice for sponsorship
-def create_sponsor_invoice(user, sponsor):
-    conference = sponsor.conference
-    level = sponsor.level
-
+def _invoicerows_for_sponsor(sponsor):
     if settings.EU_VAT:
         # If a sponsor has an EU VAT Number, we do *not* charge VAT.
         # For any sponsor without a VAT number, charge VAT.
@@ -121,7 +117,7 @@ def create_sponsor_invoice(user, sponsor):
                 raise Exception("Cannot happen")
             if sponsor.vatnumber.startswith(settings.EU_VAT_HOME_COUNTRY):
                 # Home country, so we charge vat
-                vatlevel = conference.vat_sponsorship
+                vatlevel = sponsor.conference.vat_sponsorship
                 reverse_vat = False
             else:
                 # Not home country but has VAT number
@@ -129,7 +125,7 @@ def create_sponsor_invoice(user, sponsor):
                 reverse_vat = True
         elif sponsor.vatstatus == 1:
             # Sponsor inside EU but no VAT number
-            vatlevel = conference.vat_sponsorship
+            vatlevel = sponsor.conference.vat_sponsorship
             reverse_vat = False
         else:
             # Sponsor outside EU
@@ -137,13 +133,30 @@ def create_sponsor_invoice(user, sponsor):
             reverse_vat = False
     else:
         # Not caring about EU VAT, so assign whatever the conference said
-        vatlevel = conference.vat_sponsorship
+        vatlevel = sponsor.conference.vat_sponsorship
         reverse_vat = False
 
     invoicerows = [
-        ['%s %s sponsorship' % (conference, level), 1, level.levelcost, vatlevel],
+        ['%s %s sponsorship' % (sponsor.conference, sponsor.level), 1, sponsor.level.levelcost, vatlevel],
     ]
-    if conference.startdate < today_conference() + timedelta(days=5):
+
+    return invoicerows, reverse_vat
+
+
+def get_sponsor_invoice_rows(sponsor):
+    return _invoicerows_for_sponsor(sponsor)[0]
+
+
+# Generate an invoice for sponsorship
+def create_sponsor_invoice(user, sponsor, override_duedate=None):
+    conference = sponsor.conference
+    level = sponsor.level
+
+    invoicerows, reverse_vat = _invoicerows_for_sponsor(sponsor)
+
+    if override_duedate:
+        duedate = override_duedate
+    elif conference.startdate < today_conference() + timedelta(days=5):
         # If conference happens in the next 5 days, invoice is due immediately
         duedate = today_conference()
     elif conference.startdate < today_conference() + timedelta(days=30):

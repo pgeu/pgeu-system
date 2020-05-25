@@ -24,4 +24,6 @@ digraph sponsorsignup {
 	invoice -> confirm [label="Invoice\ncanceled", color=blue];
 	confirm -> rejected [label="Reject", color=blue];
 	contract -> rejected [label="Reject", color=blue];
+
+	invoice -> invoice [label="Invoice reissued", color=blue];
 }

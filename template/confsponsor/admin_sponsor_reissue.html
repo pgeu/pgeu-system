@@ -1,0 +1,54 @@
+{%extends "confreg/confadmin_base.html" %}
+{%load humanize%}
+{%block title%}Reissue sponsor invoice - {{sponsor}}{%endblock%}
+{%block layoutblock%}
+<h1>Reissue sponsor invoice - {{sponsor}}</h1>
+
+<h2>Invoice details</h2>
+<div class="row">
+  <div class="col-md-2"></div>
+  <div class="col-md-5"><strong>Old</strong></div>
+  <div class="col-md-5"><strong>New</strong></div>
+</div>
+<div class="row">
+  <div class="col-md-2"><strong>Recipient</strong></div>
+  {%for i in both %}
+  <div class="col-md-5">{{i.recipient.first_name}} {{i.recipient.last_name}}</div>
+  {%endfor%}
+</div>
+<div class="row">
+  <div class="col-md-2"><strong>Invoice address</strong></div>
+  {%for i in both %}
+  <div class="col-md-5">{{i.invoiceaddr|linebreaks}}</div>
+  {%endfor%}
+</div>
+<div class="row">
+  <div class="col-md-2"><strong>Invoice details</strong></div>
+  {%for i in both %}
+  <div class="col-md-5">
+    <table class="table table-condensed">
+      <thead>
+	<tr>
+	  <th>Text</th>
+	  <th>Excl VAT</th>
+{%if eu_vat %}
+	  <th>VAT</th>
+	  <th>Incl VAT</th>
+{%endif%}
+	</tr>
+      </thead>
+      <tbody>
+	<tr>{%for c in i.invoiceinfo%}<td>{{c|default:""|intcomma}}</td>{%endfor%}</tr>
+      </tbody>
+    </table>
+  </div>
+{%endfor%}
+</div>
+
+<h2>Reissue</h2>
+<form class="form-horizontal backend-form" method="POST" action="." enctype="multipart/form-data">{%csrf_token%}
+{%include "confreg/admin_backend_form_content.html" %}
+</form>
+
+<a class="btn btn-default btn-block" href="../">Return to sponsor</a>
+{%endblock%}

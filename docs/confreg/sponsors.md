@@ -95,6 +95,23 @@ benefits. As soon as benefits are claimed an email is sent to the
 sponsor handling address, and administrators are expected to either
 confirm or unclaim those benefits "reasonably quickly".
 
+## Changing invoice details
+
+Once a sponsorship invoice has been paid, it can no longer be modified
+in any way, like all invoices.
+
+If an invoice has been issued but not paid, it still cannot be
+modified, but it can be re-issued. By doing this all the details for
+the sponsor remains, including signup dates and benefits. The current
+invoice is canceled (and a cancellation notice is sent), and a new
+invoice (with a new invoice number) is generated and sent to the
+sponsor. The internal connections in the system between the sponsor
+record and the invoice record remains.
+
+To re-issue an invoice, start by editing the sponsor details (for
+example invoice address or VAT information), and save that. Once this
+is modified, press the button to re-issue the invoice, review the
+changes and confirm.
 
 ## Refunding and canceling
 

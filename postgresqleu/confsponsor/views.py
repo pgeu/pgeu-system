@@ -13,6 +13,7 @@ from datetime import timedelta
 import io
 import random
 from collections import OrderedDict
+from decimal import Decimal
 
 from postgresqleu.auth import user_search, user_import
 
@@ -35,10 +36,11 @@ from .models import ShipmentAddress, Shipment
 from .forms import SponsorSignupForm, SponsorSendEmailForm, SponsorDetailsForm
 from .forms import PurchaseVouchersForm, PurchaseDiscountForm
 from .forms import SponsorShipmentForm, ShipmentReceiverForm
-from .forms import SponsorRefundForm
+from .forms import SponsorRefundForm, SponsorReissueForm
 
 from .benefits import get_benefit_class
-from .invoicehandler import create_sponsor_invoice, confirm_sponsor, get_sponsor_invoice_address
+from .invoicehandler import create_sponsor_invoice, confirm_sponsor
+from .invoicehandler import get_sponsor_invoice_address, get_sponsor_invoice_rows
 from .invoicehandler import create_voucher_invoice
 from .vatutil import validate_eu_vat_number
 from .util import send_conference_sponsor_notification
@@ -1323,6 +1325,100 @@ def sponsor_admin_refund(request, confurlname, sponsorid):
         'sponsor': sponsor,
         'form': form,
         'savebutton': 'Refund and cancel sponsorship',
+        'breadcrumbs': [('../../', 'Sponsors'), ('../', sponsor.name), ],
+        'helplink': 'sponsors',
+    })
+
+
+@login_required
+@transaction.atomic
+def sponsor_admin_reissue(request, confurlname, sponsorid):
+    conference = get_authenticated_conference(request, confurlname)
+    sponsor = get_object_or_404(Sponsor, id=sponsorid, conference=conference)
+    invoice = sponsor.invoice
+
+    if not invoice:
+        messages.error(request, 'This sponsorship does not have an invoice, there is nothing to reissue!')
+        return HttpResponseRedirect('../')
+
+    if invoice.paidat:
+        messages.error(request, 'This sponsorship is already paid. Invoice cannot be reissued.')
+        return HttpResponseRedirect('../')
+
+    old = {
+        'invoiceaddr': invoice.recipient_address,
+        'invoicerows': [[i.rowtext, i.rowcount, i.rowamount, i.vatrate] for i in invoice.invoicerow_set.all()],
+        'recipient': invoice.recipient_user,
+    }
+    new = {
+        'invoiceaddr': get_sponsor_invoice_address(sponsor.name, sponsor.invoiceaddr, sponsor.vatnumber),
+        'invoicerows': get_sponsor_invoice_rows(sponsor),
+        'recipient': sponsor.managers.all()[0],
+    }
+    if len(old['invoicerows']) != 1:
+        messages.error(request, 'Old set of invoice rows is not 1 row, unsupported.')
+        return HttpResponseRedirect('../')
+    if len(new['invoicerows']) != 1:
+        messages.error(request, 'New set of invoice rows is not 1 row, unsupported.')
+        return HttpResponseRedirect('../')
+
+    if old == new:
+        messages.warning(request, 'No invoice details changed, not reissuing invoice. Change invoice information first and try again.')
+        return HttpResponseRedirect('../')
+
+    def _get_rowinfo(r):
+        if settings.EU_VAT:
+            return (
+                r[0],
+                Decimal(r[2]).quantize(Decimal('0.01')),
+                r[3] and "{}%".format(r[3].vatpercent) or None,
+                Decimal(r[3] and r[2] + r[2] * r[3].vatpercent / 100 or r[2]).quantize(Decimal('0.01')),
+            )
+        else:
+            return (r[0], r[2])
+
+    old['invoiceinfo'] = _get_rowinfo(old['invoicerows'][0])
+    new['invoiceinfo'] = _get_rowinfo(new['invoicerows'][0])
+    print(new['invoiceinfo'])
+
+    if request.method == 'POST':
+        form = SponsorReissueForm(data=request.POST)
+        if form.is_valid():
+            # Create the new invoice, overwriting the existing one
+            manager = sponsor.managers.all()[0]
+            sponsor.invoice = create_sponsor_invoice(manager, sponsor, override_duedate=invoice.duedate)
+            sponsor.invoice.save()
+            sponsor.save()
+            # Send email with the new invoice
+            InvoiceWrapper(sponsor.invoice).email_invoice()
+            # Now cancel the previous invoice, which will automatically send another email. Before we do
+            # that we have to unhook the invoice.
+            invoice.processor = None
+            invoice.processorid = None
+            invoice.save()
+            im = InvoiceManager()
+            im.cancel_invoice(invoice, 'Invoice is being reissued as #{}'.format(sponsor.invoice.id), request.user)
+
+            # Generate a separate notice to the organizers
+            send_conference_sponsor_notification(
+                conference,
+                "Sponsor {} invoice reissued".format(sponsor.name),
+                "The invoice for sponsor {} has been reissued by {}, with changed details.".format(sponsor.name, request.user),
+            )
+
+            messages.info(request, "Sponsor invoice reissued.")
+            return HttpResponseRedirect("../")
+    else:
+        form = SponsorReissueForm()
+
+    return render(request, 'confsponsor/admin_sponsor_reissue.html', {
+        'conference': conference,
+        'sponsor': sponsor,
+        'form': form,
+        'old': old,
+        'new': new,
+        'both': [old, new],
+        'savebutton': 'Reissue sponsorship invoice',
         'breadcrumbs': [('../../', 'Sponsors'), ('../', sponsor.name), ],
         'helplink': 'sponsors',
     })

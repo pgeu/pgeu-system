@@ -251,6 +251,11 @@ class SponsorRefundForm(forms.Form):
         return d
 
 
+class SponsorReissueForm(forms.Form):
+    confirm = forms.BooleanField(required=True, label='Confirm reissuing of invoice',
+                                 help_text='New invoice will be automatically sent to the sponsor')
+
+
 class SponsorShipmentForm(forms.ModelForm):
     sent_parcels = forms.ChoiceField(choices=[], required=True)
 

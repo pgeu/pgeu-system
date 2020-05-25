@@ -41,6 +41,7 @@
     <th>Payment status:</th>
     <td>{%if sponsor.invoice.paidat%}Paid {{sponsor.invoice.paidat}} ({{sponsor.invoice.payment_method_description}}){%elif sponsor.invoice.isexpired%}Overdue{%else%}Invoiced{%endif%}
       <a href="/invoiceadmin/{{sponsor.invoice.id}}/" class="btn btn-sm btn-default">View invoice</a>
+      {%if not sponsor.invoice.paidat%}<a href="reissue/" class="btn btn-sm btn-default" title="Reissue invoice with new details">Reissue invoice</a>{%endif%}
 </td>
   </tr>
 {%endif%}
