@@ -15,11 +15,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='sponsor',
             name='vatnumber',
-            field=models.CharField(blank=True, max_length=100, null=True),
+            field=models.CharField(blank=True, max_length=100, null=True, verbose_name='VAT number'),
         ),
         migrations.AlterField(
             model_name='sponsor',
             name='vatstatus',
-            field=models.IntegerField(choices=[(0, 'Company is from inside EU and has VAT number'), (1, 'Company is from inside EU, but does not have VAT number'), (2, 'Company is from outside EU')], null=True),
+            field=models.IntegerField(choices=[(0, 'Company is from inside EU and has VAT number'), (1, 'Company is from inside EU, but does not have VAT number'), (2, 'Company is from outside EU')], null=True, verbose_name='VAT status'),
         ),
     ]

@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=100)),
-                ('invoiceaddr', models.TextField(max_length=500, blank=True)),
+                ('invoiceaddr', models.TextField(max_length=500, blank=True, verbose_name='Invoice address')),
                 ('twittername', models.CharField(max_length=100, blank=True)),
                 ('confirmed', models.BooleanField(default=False)),
                 ('confirmedat', models.DateTimeField(null=True, blank=True)),

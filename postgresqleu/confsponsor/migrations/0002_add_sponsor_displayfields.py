@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='sponsor',
             name='displayname',
-            field=models.CharField(max_length=100),
+            field=models.CharField(max_length=100, verbose_name='Display name'),
         ),
         migrations.AddField(
             model_name='sponsor',
