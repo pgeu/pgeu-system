@@ -111,7 +111,7 @@ criteria, so exclude ones take precedence.
 
 First pick the conference, and then either the
 [registration class](registrations#typesandclasses) or
-[speaker state](callforpaper#states). This can be done for both
+[speaker state](callforpapers#states). This can be done for both
 include and exclude.
 
 To add multiple either include or exclude filters, click the *+*
