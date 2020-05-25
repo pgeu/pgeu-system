@@ -1,0 +1,14 @@
+[Unit]
+Description=PGEU Media Poster
+After=postgresql.service
+
+[Service]
+ExecStart=/usr/local/www/www.postgresql.eu/postgresqleu/python -u manage.py social_media_poster
+WorkingDirectory=/usr/local/www/www.postgresql.eu/postgresqleu
+Restart=always
+RestartSec=30
+User=pgeuweb
+Group=pgeuweb
+
+[Install]
+WantedBy=multi-user.target
