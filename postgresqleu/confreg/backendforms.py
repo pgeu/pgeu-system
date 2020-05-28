@@ -454,7 +454,7 @@ class BackendRoomForm(BackendForm):
 
     class Meta:
         model = Room
-        fields = ['roomname', 'sortkey', 'availabledays', 'comment']
+        fields = ['roomname', 'sortkey', 'url', 'availabledays', 'comment']
 
     def fix_fields(self):
         if RegistrationDay.objects.filter(conference=self.conference).exists():

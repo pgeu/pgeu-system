@@ -53,7 +53,7 @@ changes occur.
 <div class="schedwrap" style="height: {{day.schedule_height}}px; width: {{day.schedule_width}}px;">
 {%for room in day.rooms%}
  <div class="sessblock roomheader" style="left: {{room.leftpos}}px; width: {{room.widthpos}}px; height: {{room.heightpos}}px;">
- {{room.name}}
+ {%if room.url%}<a href="{{room.url}}">{{room.name}}</a>{%else%}{{room.name}}{%endif%}
  </div>
 {%endfor%}
 {%for session in day.sessions%}

@@ -1166,6 +1166,7 @@ class SessionSet(object):
         return [{
             'id': id,
             'name': self.available_rooms[id]['roomname'],
+            'url': self.available_rooms[id]['url'],
             'comment': self.available_rooms[id]['roomcomment'],
             'leftpos': self.roomwidth() * self.rooms[id],
             'widthpos': self.roomwidth() - 2,
@@ -1191,7 +1192,7 @@ def _scheduledata(request, conference):
             'confid': conference.id,
         })
 
-        allrooms = exec_to_keyed_dict("SELECT id, sortkey, roomname, comment AS roomcomment FROM confreg_room r WHERE conference_id=%(confid)s", {
+        allrooms = exec_to_keyed_dict("SELECT id, sortkey, url, roomname, comment AS roomcomment FROM confreg_room r WHERE conference_id=%(confid)s", {
             'confid': conference.id,
         })
 

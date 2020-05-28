@@ -125,6 +125,10 @@ Sortkey
 :   An integer representing how to sort the room. Lower values sorts
 earlier.
 
+URL
+:   A link to more information about the room, such a a link to a map or
+in the case of a streamed conference, a link to the stream.
+
 Available days
 :   List the days that this room is available. If no day is specified, the
 room is made available on all days. If there are no registration days defined

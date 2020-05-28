@@ -842,6 +842,8 @@ class Room(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     roomname = models.CharField(max_length=20, null=False, blank=False, verbose_name="Room name")
     sortkey = models.IntegerField(null=False, blank=False, default=100)
+    url = models.URLField(max_length=200, null=False, blank=True, verbose_name='URL',
+                          help_text="Link to information about the room")
     comment = models.CharField(max_length=200, null=False, blank=True,
                                help_text='Internal comment for planning')
     availabledays = models.ManyToManyField(RegistrationDay, blank=True, verbose_name='Available days',
