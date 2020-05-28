@@ -80,7 +80,7 @@ def sendmail(request):
                                      sendername=settings.ORG_NAME,
                                      receivername=r.fullname,
                     )
-                messages.info(request, "Email sent to %s attendees" % len(recipients))
+                messages.info(request, "Email sent to %s members" % len(recipients))
 
             return HttpResponseRedirect("../")
     else:
