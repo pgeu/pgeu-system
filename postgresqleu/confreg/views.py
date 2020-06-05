@@ -1322,7 +1322,6 @@ def schedule_ical(request, confname):
     resp = render(request, 'confreg/schedule.ical', {
         'conference': conference,
         'sessions': sessions,
-        'servername': request.META['SERVER_NAME'],
     }, content_type='text/calendar')
     resp['Content-Disposition'] = 'attachment; filename="{}.ical"'.format(conference.urlname)
     return resp

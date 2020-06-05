@@ -8,6 +8,6 @@ DTEND:{{session.endtime|date:"Ymd"}}T{{session.endtime|time:"His"}}Z
 DTSTAMP:{{session.lastmodified|date:"Ymd"}}T{{session.lastmodified|time:"His"}}Z
 SUMMARY:{{session.title}} ({{session.speaker_list}})
 LOCATION:{{session.room.roomname}}
-URL:https://{{servername}}/events/{{conference.urlname}}/schedule/session/{{session.id}}/
+URL:{{sitebase}}/events/{{conference.urlname}}/schedule/session/{{session.id}}/
 END:VEVENT
 {%endfor%}END:VCALENDAR{%endtimezone%}
