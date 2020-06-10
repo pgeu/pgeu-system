@@ -560,7 +560,7 @@ WHERE s.conference_id=%(confid)s AND
       u.id NOT IN (SELECT attendee_id FROM confreg_conferenceregistration r
                    WHERE r.conference_id=%(confid)s AND
                          payconfirmedat IS NOT NULL AND
-                         canceledat IS NULL
+                         canceledat IS NULL AND
                          attendee_id IS NOT NULL
                   )
 ORDER BY last_name, first_name""",
