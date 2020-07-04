@@ -39,7 +39,7 @@ def invoicepayment_secret(request, paymentmethod, invoiceid, secret):
     t = Trustly(pm)
 
     try:
-        if request.user and not request.user.is_anonymous():
+        if request.user and not request.user.is_anonymous:
             enduserid = request.user.username
             first = request.user.first_name
             last = request.user.last_name
