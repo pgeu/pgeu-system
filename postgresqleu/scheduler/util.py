@@ -9,11 +9,14 @@ def notify_job_change():
         curs.execute("NOTIFY pgeu_scheduled_job")
 
 
-def trigger_immediate_job_run(command):
+def trigger_immediate_job_run(command, delay=None):
     from .models import ScheduledJob
 
     j = ScheduledJob.objects.get(command=command)
-    j.nextrun = timezone.now()
+    if delay:
+        j.nextrun = timezone.now() + delay
+    else:
+        j.nextrun = timezone.now()
     j.save(update_fields=['nextrun'])
     notify_job_change()
 
