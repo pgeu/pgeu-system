@@ -27,6 +27,7 @@ import postgresqleu.adyen.views
 import postgresqleu.trustlypayment.views
 import postgresqleu.braintreepayment.views
 import postgresqleu.stripepayment.views
+import postgresqleu.transferwise.views
 import postgresqleu.accountinfo.views
 import postgresqleu.util.docsviews
 import postgresqleu.mailqueue.backendviews
@@ -347,6 +348,9 @@ urlpatterns.extend([
     # Handle adyen data returns
     url(r'^p/adyen_return/(\d+)/$', postgresqleu.adyen.views.adyen_return_handler),
     url(r'^p/adyen_notify/(\d+)/$', postgresqleu.adyen.views.adyen_notify_handler),
+
+    # Transferwise webhooks
+    url(r'^wh/tw/(\d+)/(\w+)/$', postgresqleu.transferwise.views.webhook),
 
     # Account info callbacks
     url(r'^accountinfo/search/$', postgresqleu.accountinfo.views.search),

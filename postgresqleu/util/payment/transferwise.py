@@ -11,7 +11,7 @@ from io import StringIO
 from postgresqleu.util.payment.banktransfer import BaseManagedBankPayment
 from postgresqleu.util.payment.banktransfer import BaseManagedBankPaymentForm
 from postgresqleu.util.forms import SubmitButtonField
-from postgresqleu.util.widgets import MonospaceTextarea
+from postgresqleu.util.widgets import MonospaceTextarea, StaticTextWidget
 from postgresqleu.util.crypto import validate_pem_public_key, validate_pem_private_key
 from postgresqleu.util.crypto import generate_rsa_keypair
 from postgresqleu.accounting.util import get_account_choices
@@ -44,11 +44,12 @@ class BackendTransferwiseForm(BaseManagedBankPaymentForm):
                                          help_text="Send monthly PDF statements by email")
     accounting_payout = forms.ChoiceField(required=True, choices=get_account_choices,
                                           label="Payout account")
+    webhookurl = forms.CharField(label="Webhook URL", widget=StaticTextWidget)
 
     exclude_fields_from_validation = ('generatekey', )
     managed_fields = ['apikey', 'canrefund', 'notification_receiver', 'autopayout', 'autopayouttrigger',
                       'autopayoutlimit', 'autopayoutname', 'autopayoutiban', 'accounting_payout',
-                      'send_statements', 'public_key', 'private_key', 'generatekey']
+                      'send_statements', 'public_key', 'private_key', 'generatekey', 'returnurl', ]
     managed_fieldsets = [
         {
             'id': 'tw',
@@ -60,12 +61,25 @@ class BackendTransferwiseForm(BaseManagedBankPaymentForm):
             'legend': 'Automatic Payouts',
             'fields': ['autopayout', 'autopayouttrigger', 'autopayoutlimit',
                        'autopayoutname', 'autopayoutiban', 'accounting_payout'],
-        }
+        },
+        {
+            'id': 'twconf',
+            'legend': 'TransferWise configuration',
+            'fields': ['webhookurl', ],
+        },
     ]
 
     def fix_fields(self):
         super().fix_fields()
         self.fields['generatekey'].callback = self.generate_keypair
+        self.initial['webhookurl'] = """
+On the TransferWise account, go into <i>Settings</i> and click
+<i>Create new webhook</i>. Give it a reasonable name, set it to
+receive <i>Balance deposit events</i>, and specify the URL
+<code>{}/wh/tw/{}/balance/</code>.""".format(
+            settings.SITEBASE,
+            self.instance.id,
+        )
 
     def generate_keypair(self, request):
         (private, public) = generate_rsa_keypair()

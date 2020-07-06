@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 
 from Cryptodome.PublicKey import RSA
-from Cryptodome.Hash import SHA256
+from Cryptodome.Hash import SHA256, SHA1
 from Cryptodome.Signature import pkcs1_15
 
 
@@ -40,3 +40,14 @@ def rsa_sign_string_sha256(privatekeystr, msg):
     h = SHA256.new(msg.encode('ascii'))
     sig = pkcs1_15.new(key).sign(h)
     return sig
+
+
+def rsa_verify_string_sha1(publickeystr, msg, sig):
+    key = RSA.importKey(publickeystr)
+    h = SHA1.new(msg)
+    try:
+        pkcs1_15.new(key).verify(h, sig)
+        return True
+    except ValueError:
+        # Raises ValueError if the signature is wrong
+        return False

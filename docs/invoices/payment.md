@@ -278,6 +278,9 @@ Transactions are fetched on a regular basis by a scheduled job. These
 transactions are then matched in the same way as any other
 transactions.
 
+If wanted, a webhook can be configured that will be triggered automatically
+upon payments, thereby allowing for faster response times.
+
 If the API token used to talk to TransferWise has *Full Access*, it
 will also be possible to issue refunds. If it only has Read Only
 access, payments can still be processed, but refunds will not work.
