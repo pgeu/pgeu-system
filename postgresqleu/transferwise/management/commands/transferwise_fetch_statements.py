@@ -48,12 +48,14 @@ class Command(BaseCommand):
 
         # Else we don't have it, so download it
         api = pm.get_api()
-        r = api.get_binary('borderless-accounts/{0}/statement.pdf'.format(api.get_account()['id']), {
-            'currency': settings.CURRENCY_ABBREV,
-            'intervalStart': api.format_date(d),
-            'intervalEnd': api.format_date(datetime.date.today().replace(day=1)),
-
-        })
+        r = api.get_binary(
+            'profiles/{}/borderless-accounts/{}/statement.pdf'.format(api.get_profile(), api.get_account()['id']), {
+                'currency': settings.CURRENCY_ABBREV,
+                'intervalStart': api.format_date(d),
+                'intervalEnd': api.format_date(datetime.date.today().replace(day=1)),
+            },
+            version='v3',
+        )
         statement = TransferwiseMonthlyStatement(
             paymentmethod=method,
             month=d,

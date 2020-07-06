@@ -1,6 +1,6 @@
 from django import forms
-from django.forms import ValidationError
 from django.core.validators import MinValueValidator
+from django.contrib import messages
 from django.shortcuts import render
 from django.conf import settings
 
@@ -10,15 +10,21 @@ from io import StringIO
 
 from postgresqleu.util.payment.banktransfer import BaseManagedBankPayment
 from postgresqleu.util.payment.banktransfer import BaseManagedBankPaymentForm
+from postgresqleu.util.forms import SubmitButtonField
+from postgresqleu.util.widgets import MonospaceTextarea
+from postgresqleu.util.crypto import validate_pem_public_key, validate_pem_private_key
+from postgresqleu.util.crypto import generate_rsa_keypair
 from postgresqleu.accounting.util import get_account_choices
 from postgresqleu.transferwise.api import TransferwiseApi
 
-from postgresqleu.invoices.models import Invoice
 from postgresqleu.transferwise.models import TransferwiseTransaction, TransferwisePayout
 
 
 class BackendTransferwiseForm(BaseManagedBankPaymentForm):
     apikey = forms.CharField(required=True, widget=forms.widgets.PasswordInput(render_value=True))
+    public_key = forms.CharField(required=False, widget=MonospaceTextarea, validators=[validate_pem_public_key, ])
+    private_key = forms.CharField(required=False, widget=MonospaceTextarea, validators=[validate_pem_private_key, ])
+    generatekey = SubmitButtonField(label="Generate new keypair", required=False)
     canrefund = forms.BooleanField(required=False, label='Can refund',
                                    help_text='Process automatic refunds. This requires an API key with full access to make transfers to any accounts')
     autopayout = forms.BooleanField(required=False, label='Automatic payouts',
@@ -39,14 +45,15 @@ class BackendTransferwiseForm(BaseManagedBankPaymentForm):
     accounting_payout = forms.ChoiceField(required=True, choices=get_account_choices,
                                           label="Payout account")
 
+    exclude_fields_from_validation = ('generatekey', )
     managed_fields = ['apikey', 'canrefund', 'notification_receiver', 'autopayout', 'autopayouttrigger',
                       'autopayoutlimit', 'autopayoutname', 'autopayoutiban', 'accounting_payout',
-                      'send_statements']
+                      'send_statements', 'public_key', 'private_key', 'generatekey']
     managed_fieldsets = [
         {
             'id': 'tw',
             'legend': 'TransferWise',
-            'fields': ['notification_receiver', 'send_statements', 'canrefund', 'apikey', ],
+            'fields': ['notification_receiver', 'send_statements', 'canrefund', 'apikey', 'generatekey', 'public_key', 'private_key'],
         },
         {
             'id': 'twautopayout',
@@ -55,6 +62,19 @@ class BackendTransferwiseForm(BaseManagedBankPaymentForm):
                        'autopayoutname', 'autopayoutiban', 'accounting_payout'],
         }
     ]
+
+    def fix_fields(self):
+        super().fix_fields()
+        self.fields['generatekey'].callback = self.generate_keypair
+
+    def generate_keypair(self, request):
+        (private, public) = generate_rsa_keypair()
+        self.instance.config['public_key'] = public
+        self.instance.config['private_key'] = private
+        self.instance.save(update_fields=['config'])
+
+        messages.info(request, "New RSA keypair generated")
+        return True
 
     def clean(self):
         cleaned_data = super(BackendTransferwiseForm, self).clean()

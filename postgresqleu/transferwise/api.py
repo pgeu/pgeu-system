@@ -7,8 +7,10 @@ from decimal import Decimal
 import json
 import re
 import uuid
+from base64 import b64encode
 
 from postgresqleu.util.time import today_global
+from postgresqleu.util.crypto import rsa_sign_string_sha256
 from .models import TransferwiseRefund
 
 
@@ -19,6 +21,7 @@ class TransferwiseApi(object):
         self.session.headers.update({
             'Authorization': 'Bearer {}'.format(self.pm.config('apikey')),
         })
+        self.privatekey = self.pm.config('private_key')
 
         self.profile = self.account = None
 
@@ -28,33 +31,64 @@ class TransferwiseApi(object):
     def parse_datetime(self, s):
         return datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    def _get(self, suburl, params=None, stream=False):
+    def _sign_2fa_token(self, token):
+        if not self.privatekey:
+            raise Exception("Two factor authentication required but no private key configured")
+        return b64encode(rsa_sign_string_sha256(self.privatekey, token))
+
+    def _get(self, suburl, params=None, stream=False, version='v1'):
+        fullurl = 'https://api.transferwise.com/{}/{}'.format(version, suburl)
         r = self.session.get(
-            'https://api.transferwise.com/v1/{}'.format(suburl),
+            fullurl,
             params=params,
             stream=stream,
         )
+        if r.status_code == 403 and 'X-2FA-Approval' in r.headers:
+            # This was a request for 2FA authenticated access
+            token = r.headers['X-2FA-Approval']
+            r = self.session.get(
+                fullurl,
+                params=params,
+                stream=stream,
+                headers={
+                    'x-2fa-approval': token,
+                    'x-signature': self._sign_2fa_token(token),
+                },
+            )
         if r.status_code != 200:
             r.raise_for_status()
         return r
 
-    def get(self, suburl, params=None):
-        return self._get(suburl, params, False).json()
+    def get(self, suburl, params=None, version='v1'):
+        return self._get(suburl, params, False, version).json()
 
-    def get_binary(self, suburl, params=None):
-        r = self._get(suburl, params, True)
+    def get_binary(self, suburl, params=None, version='v1'):
+        r = self._get(suburl, params, True, version)
         r.raw.decode_content = True
         return r.raw
 
-    def post(self, suburl, params):
+    def post(self, suburl, params, version='v1'):
         j = json.dumps(params, cls=DjangoJSONEncoder)
+        fullurl = 'https://api.transferwise.com/{}/{}'.format(version, suburl)
         r = self.session.post(
-            'https://api.transferwise.com/v1/{}'.format(suburl),
+            fullurl,
             data=j,
             headers={
                 'Content-Type': 'application/json',
             },
         )
+        if r.status_code == 403 and 'X-2FA-Approval' in r.headers:
+            # This was a request for 2FA authenticated access
+            token = r.headers['X-2FA-Approval']
+            r = self.session.post(
+                fullurl,
+                data=j,
+                headers={
+                    'Content-Type': 'application/json',
+                    'x-2fa-approval': token,
+                    'x-signature': self._sign_2fa_token(token),
+                },
+            )
         r.raise_for_status()
         return r.json()
 
@@ -89,12 +123,13 @@ class TransferwiseApi(object):
             startdate = enddate - timedelta(days=60)
 
         return self.get(
-            'borderless-accounts/{0}/statement.json'.format(self.get_account()['id']),
+            'profiles/{}/borderless-accounts/{}/statement.json'.format(self.get_profile(), self.get_account()['id']),
             {
                 'currency': settings.CURRENCY_ABBREV,
                 'intervalStart': self.format_date(startdate),
                 'intervalEnd': self.format_date(enddate),
             },
+            version='v3',
         )['transactions']
 
     def validate_iban(self, iban):
@@ -176,10 +211,11 @@ class TransferwiseApi(object):
 
         # Fund the transfer from our account
         fund = self.post(
-            'transfers/{0}/payments'.format(transferid),
+            'profiles/{}/transfers/{}/payments'.format(self.get_profile(), transferid),
             {
                 'type': 'BALANCE',
             },
+            version='v3',
         )
 
         return (accid, quoteid, transferid)
