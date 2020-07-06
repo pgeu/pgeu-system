@@ -2,8 +2,6 @@ from django.conf.urls import include, url
 from django.conf import settings
 from django.contrib import admin
 
-import sys
-
 import postgresqleu.static.views
 import postgresqleu.newsevents.views
 import postgresqleu.newsevents.backendviews
