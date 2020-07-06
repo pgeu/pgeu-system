@@ -7,6 +7,7 @@ from postgresqleu.invoices.backendforms import BackendInvoicePaymentMethodForm
 from postgresqleu.accounting.util import get_account_choices
 from postgresqleu.util.forms import CharToArrayField
 from postgresqleu.util.widgets import MonospaceTextarea
+from postgresqleu.util.crypto import validate_pem_public_key, validate_pem_private_key
 
 from postgresqleu.trustlypayment.models import TrustlyTransaction, TrustlyLog
 
@@ -16,29 +17,6 @@ from postgresqleu.trustlypayment.api import TrustlyException
 from . import BasePayment
 
 import collections
-from Cryptodome.PublicKey import RSA
-
-
-def validate_pem_public_key(value):
-    try:
-        k = RSA.importKey(value)
-        if k.has_private():
-            raise ValidationError("This should be a public key, but contains a private key")
-    except ValidationError:
-        raise
-    except Exception as e:
-        raise ValidationError("Could not validate public key: {}".format(e))
-
-
-def validate_pem_private_key(value):
-    try:
-        k = RSA.importKey(value)
-        if not k.has_private():
-            raise ValidationError("This should be a private key, but doesn't contain one")
-    except ValidationError:
-        raise
-    except Exception as e:
-        raise ValidationError("Could not validate private key: {}".format(e))
 
 
 def validate_country_list(value):
