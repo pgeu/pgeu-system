@@ -282,6 +282,11 @@ If the API token used to talk to TransferWise has *Full Access*, it
 will also be possible to issue refunds. If it only has Read Only
 access, payments can still be processed, but refunds will not work.
 
+A private/public RSA keypair is required to implement customer strong
+authentication, which is mandatory for most operations. Generate the
+keypair in the configuration page, save the contents of the public
+key to a file, and upload it to the TransferWise website.
+
 Refunds also require that the sending bank included the IBAN
 information required to issue a transfer back. This information may or
 may not be included depending on sending bank, but the system will
