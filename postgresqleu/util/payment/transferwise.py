@@ -47,9 +47,10 @@ class BackendTransferwiseForm(BaseManagedBankPaymentForm):
     webhookurl = forms.CharField(label="Webhook URL", widget=StaticTextWidget)
 
     exclude_fields_from_validation = ('generatekey', )
+    config_readonly = ['webhookurl', ]
     managed_fields = ['apikey', 'canrefund', 'notification_receiver', 'autopayout', 'autopayouttrigger',
                       'autopayoutlimit', 'autopayoutname', 'autopayoutiban', 'accounting_payout',
-                      'send_statements', 'public_key', 'private_key', 'generatekey', 'returnurl', ]
+                      'send_statements', 'public_key', 'private_key', 'generatekey', ]
     managed_fieldsets = [
         {
             'id': 'tw',
