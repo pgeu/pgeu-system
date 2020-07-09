@@ -5,11 +5,10 @@
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection, transaction
-from django.utils import timezone
+from django.db.models import Q
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 import sys
-import time
 
 from postgresqleu.util.messaging import get_messaging
 
