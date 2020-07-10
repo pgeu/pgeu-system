@@ -387,7 +387,7 @@ if __name__ == "__main__":
     fmap = source.readfile('templates/pages/.deploystaticmap')
     if fmap:
         for l in fmap.splitlines():
-            (src, dest) = l.split(':')
+            (src, dest) = l.decode('utf8').split(':')
             if not os.path.isdir(os.path.join(args.destpath, dest)):
                 os.makedirs(os.path.join(args.destpath, dest))
             context['page'] = dest
