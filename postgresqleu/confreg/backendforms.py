@@ -31,6 +31,7 @@ from postgresqleu.confreg.models import Conference, ConferenceRegistration, Conf
 from postgresqleu.confreg.models import RegistrationClass, RegistrationType, RegistrationDay
 from postgresqleu.confreg.models import ConferenceFeedbackQuestion, Speaker
 from postgresqleu.confreg.models import ConferenceSession, Track, Room, ConferenceSessionTag
+from postgresqleu.confreg.models import ConferenceSessionSlides
 from postgresqleu.confreg.models import ConferenceSessionScheduleSlot, VolunteerSlot
 from postgresqleu.confreg.models import DiscountCode, AccessToken, AccessTokenPermissions
 from postgresqleu.confreg.models import ConferenceSeries
@@ -529,6 +530,70 @@ class BackendRefundPatternForm(BackendForm):
             s.todate, s.todate + xform)
 
 
+class ConferenceSessionSlideForm(BackendForm):
+    helplink = 'callforpapers#slides'
+    exclude_fields_from_validation = ['content', ]
+    formnote = 'Either enter an URL or upload a PDF file (not both)'
+
+    class Meta:
+        model = ConferenceSessionSlides
+        fields = ['url', 'content', ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.override_filename = 'unknown_pdf.pdf'
+        if 'files' in kwargs:
+            if 'content' in kwargs['files']:
+                self.override_filename = kwargs['files']['content'].name
+
+    def clean(self):
+        d = super().clean()
+        url = d.get('url', None)
+        pdf = d.get('content', None)
+
+        if url and pdf:
+            self.add_error('url', 'Cannot both specify URL and upload PDF!')
+            self.add_error('content', 'Cannot both specify URL and upload PDF!')
+        elif not (url or pdf):
+            self.add_error('url', 'Must either specify URL or upload PDF')
+            self.add_error('content', 'Must either specify URL or upload PDF')
+
+        if url:
+            self.override_name = url
+        else:
+            self.override_name = self.override_filename
+        print("Set override to %s" % self.override_name)
+
+        return d
+
+    def post_save(self):
+        if self.instance.name != self.override_name:
+            self.instance.name = self.override_name
+            self.instance.save(update_fields=['name', ])
+
+
+class ConferenceSessionSlideManager(object):
+    title = 'Slides'
+    singular = 'slide'
+    can_add = True
+
+    def get_list(self, instance):
+        return [(s.id, s.name, '') for s in instance.conferencesessionslides_set.all()]
+
+    def get_form(self, obj, POST):
+        return ConferenceSessionSlideForm
+
+    def get_object(self, masterobj, subid):
+        try:
+            return ConferenceSessionSlides.objects.get(session=masterobj, pk=subid)
+        except ConferenceSessionSlides.DoesNotExist:
+            return None
+
+    def get_instancemaker(self, masterobj):
+        return lambda: ConferenceSessionSlides(session=masterobj)
+
+
 class BackendConferenceSessionForm(BackendForm):
     helplink = 'schedule#sessions'
     list_fields = ['title', 'q_speaker_list', 'q_status_string', 'starttime', 'track', 'room', 'cross_schedule']
@@ -545,6 +610,9 @@ class BackendConferenceSessionForm(BackendForm):
         'speaker': SpeakerLookup(),
         'tags': SessionTagLookup(None),
     }
+    linked_objects = OrderedDict({
+        'slides': ConferenceSessionSlideManager(),
+    })
     markdown_fields = ['abstract', ]
     allow_copy_previous = True
     copy_transform_form = BackendTransformConferenceDateTimeForm
