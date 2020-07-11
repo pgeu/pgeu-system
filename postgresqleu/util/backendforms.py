@@ -138,6 +138,9 @@ class BackendForm(ConcurrentProtectedModelForm):
     def fix_fields(self):
         pass
 
+    def post_save(self):
+        pass
+
     @classmethod
     def get_column_filters(cls, conference):
         return {}

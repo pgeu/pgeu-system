@@ -181,6 +181,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                         setattr(form.instance, fn, d)
                     form.instance.save(update_fields=form.json_form_fields.keys())
 
+                form.post_save()
                 return HttpResponseRedirect(saved_url)
     else:
         form = formclass(request, conference, instance=instance, newformdata=newformdata)
