@@ -45,6 +45,7 @@ class BackendForm(ConcurrentProtectedModelForm):
     verbose_name = None
     verbose_name_plural = None
     helplink = None
+    formnote = ''
 
     def __init__(self, request, conference, *args, **kwargs):
         self.request = request
