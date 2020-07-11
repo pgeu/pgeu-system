@@ -20,7 +20,7 @@ from postgresqleu.util.validators import validate_lowercase, validate_urlname
 from postgresqleu.util.validators import TwitterValidator
 from postgresqleu.util.validators import PictureUrlValidator
 from postgresqleu.util.forms import ChoiceArrayField
-from postgresqleu.util.fields import LowercaseEmailField, ImageBinaryField
+from postgresqleu.util.fields import LowercaseEmailField, ImageBinaryField, PdfBinaryField
 from postgresqleu.util.time import today_conference
 from postgresqleu.util.db import exec_no_result
 
@@ -1046,10 +1046,16 @@ class ConferenceSession(models.Model):
 class ConferenceSessionSlides(models.Model):
     session = models.ForeignKey(ConferenceSession, null=False, blank=False, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, null=False, blank=False)
-    url = models.URLField(max_length=1000, null=False, blank=True)
-    content = models.BinaryField(null=True, blank=False)
+    url = models.URLField(max_length=1000, null=False, blank=True, verbose_name='URL')
+    content = PdfBinaryField(null=True, blank=True, max_length=20000000000, verbose_name='Upload PDF')
 
     _safe_attributes = ('id', 'name', 'url', 'content')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ('session', 'name', )
 
 
 class ConferenceSessionVote(models.Model):
