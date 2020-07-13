@@ -8,7 +8,7 @@ from django.conf import settings
 
 from postgresqleu.util.backendviews import backend_list_editor, backend_process_form
 from postgresqleu.util.auth import authenticate_backend_group
-from postgresqleu.mailqueue.util import send_mail, send_simple_mail
+from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.membership.models import MembershipConfiguration, get_config, Member
 from postgresqleu.membership.backendforms import BackendMemberForm, BackendMeetingForm
 from postgresqleu.membership.backendforms import BackendConfigForm

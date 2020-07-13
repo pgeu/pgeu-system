@@ -1,9 +1,7 @@
 from django.contrib import admin
 from django import forms
-from django.http import HttpResponseRedirect
 from django.forms import ValidationError
 from django.forms.utils import ErrorList
-from django.db.models.fields.files import ImageFieldFile
 from django.db.models import Count
 from django.urls import reverse
 from django.utils.safestring import mark_safe
@@ -23,12 +21,8 @@ from .models import ConferenceNews
 
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
-from .util import notify_reg_confirmed
-
 from postgresqleu.accounting.models import Object
 from postgresqleu.confsponsor.models import Sponsor
-
-from datetime import datetime
 
 
 #

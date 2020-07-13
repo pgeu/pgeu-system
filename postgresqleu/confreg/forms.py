@@ -7,8 +7,6 @@ from django.utils.safestring import mark_safe
 from django.utils.html import escape
 from django.utils import timezone
 
-from django.db.models.fields.files import ImageFieldFile
-
 from postgresqleu.confsponsor.models import ScannedAttendee
 from .models import Conference
 from .models import ConferenceRegistration, RegistrationType, Speaker

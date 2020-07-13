@@ -1,8 +1,6 @@
 from django import forms
 from django.conf import settings
 
-import re
-
 from postgresqleu.util.widgets import StaticTextWidget
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.backendforms import BackendInvoicePaymentMethodForm

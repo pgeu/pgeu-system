@@ -1,6 +1,4 @@
 from django.db import models
-from django.db.models.signals import pre_delete
-from django.core.exceptions import ValidationError
 from django.utils.functional import cached_property
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
@@ -14,8 +12,6 @@ from postgresqleu.util.validators import validate_lowercase, validate_urlname
 from postgresqleu.util.random import generate_random_token
 
 from .benefits import benefit_choices
-
-from django.db.models import FileField
 
 vat_status_choices = (
     (0, 'Company is from inside EU and has VAT number'),

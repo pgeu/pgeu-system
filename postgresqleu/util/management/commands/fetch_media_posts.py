@@ -7,15 +7,12 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import connection, transaction
 from django.utils import timezone
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 import sys
-import time
 
 from postgresqleu.util.messaging import get_messaging
 from postgresqleu.util.messaging.util import store_incoming_post
 
-from postgresqleu.confreg.models import ConferenceTweetQueue
-from postgresqleu.confreg.models import ConferenceIncomingTweet, ConferenceIncomingTweetMedia
 from postgresqleu.confreg.models import MessagingProvider
 
 

@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 
-from datetime import datetime, timedelta, time
+from datetime import timedelta, time
 
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.util import InvoiceWrapper

@@ -36,7 +36,7 @@ import postgresqleu.util.views
 import postgresqleu.util.backendviews
 
 from postgresqleu.newsevents.feeds import LatestNews
-from postgresqleu.confreg.feeds import LatestEvents, ConferenceNewsFeed
+from postgresqleu.confreg.feeds import ConferenceNewsFeed
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin

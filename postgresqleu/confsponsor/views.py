@@ -22,7 +22,6 @@ from postgresqleu.confreg.util import get_authenticated_conference, get_conferen
 from postgresqleu.confreg.jinjafunc import render_sandboxed_template
 from postgresqleu.confreg.util import send_conference_mail, send_conference_notification
 from postgresqleu.confreg.twitter import post_conference_social
-from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.request import get_int_or_error

@@ -7,11 +7,9 @@
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.conf import settings
 
 from datetime import time, datetime, timedelta
 from decimal import Decimal
-import dateutil
 
 from postgresqleu.accounting.util import create_accounting_entry
 from postgresqleu.invoices.util import is_managed_bank_account

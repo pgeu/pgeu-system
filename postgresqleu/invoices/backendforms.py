@@ -3,7 +3,6 @@ import django.forms
 from postgresqleu.util.backendforms import BackendForm
 from postgresqleu.util.widgets import TestButtonWidget
 from postgresqleu.invoices.models import VatRate, VatValidationCache, InvoicePaymentMethod
-from postgresqleu.accounting.models import Account
 
 from postgresqleu.util.payment import payment_implementation_choices
 

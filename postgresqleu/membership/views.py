@@ -1,7 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
@@ -10,12 +9,10 @@ from django.utils import timezone
 from .models import Member, MemberLog, Meeting, MemberMeetingKey, get_config
 from .forms import MemberForm, ProxyVoterForm
 
-from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.time import today_global
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
-from postgresqleu.mailqueue.util import send_simple_mail
 
 from datetime import timedelta
 import json

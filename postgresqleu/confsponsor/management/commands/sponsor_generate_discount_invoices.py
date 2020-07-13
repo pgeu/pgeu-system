@@ -13,9 +13,7 @@ from django.db.models import Q, F, Count
 
 from postgresqleu.confreg.models import DiscountCode
 from postgresqleu.confreg.util import send_conference_mail
-from postgresqleu.confsponsor.models import Sponsor
 from postgresqleu.confsponsor.util import send_conference_sponsor_notification
-from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager, InvoiceWrapper
 from postgresqleu.util.time import today_global
 

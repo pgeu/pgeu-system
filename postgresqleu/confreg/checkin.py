@@ -9,13 +9,13 @@ from django.contrib import messages
 from django.utils import timezone
 from django.conf import settings
 
-from postgresqleu.util.db import exec_to_list, exec_to_dict
+from postgresqleu.util.db import exec_to_list
 from postgresqleu.util.db import ensure_conference_timezone
 from postgresqleu.util.qr import generate_base64_qr
 from postgresqleu.util.decorators import global_login_exempt
 from postgresqleu.util.request import get_int_or_error
 
-from .models import Conference, ConferenceRegistration
+from .models import ConferenceRegistration
 from .views import render_conference_response
 from .util import send_conference_mail, get_conference_or_404
 

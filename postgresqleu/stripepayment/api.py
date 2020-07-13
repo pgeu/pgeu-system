@@ -6,7 +6,7 @@ from decimal import Decimal
 import requests
 from requests.auth import HTTPBasicAuth
 
-from .models import StripeCheckout, StripeRefund
+from .models import StripeRefund
 
 
 class StripeException(Exception):

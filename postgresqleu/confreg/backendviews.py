@@ -15,7 +15,6 @@ from collections import OrderedDict
 
 from postgresqleu.util.db import exec_to_list, exec_to_dict, exec_no_result, exec_to_scalar
 from postgresqleu.util.decorators import superuser_required
-from postgresqleu.util.messaging.twitter import Twitter, TwitterSetup
 from postgresqleu.util.messaging import messaging_implementations, get_messaging_class
 from postgresqleu.util.messaging.util import send_reg_direct_message
 from postgresqleu.util.backendviews import backend_list_editor, backend_process_form
@@ -27,7 +26,7 @@ from .jinjapdf import render_jinja_ticket, render_jinja_badges
 from .util import send_conference_mail, get_conference_or_404, send_conference_notification
 
 from .models import Conference, ConferenceSeries
-from .models import ConferenceRegistration, Speaker
+from .models import ConferenceRegistration
 from .models import PrepaidBatch
 from .models import BulkPayment
 from .models import AccessToken

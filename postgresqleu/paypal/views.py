@@ -5,7 +5,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from decimal import Decimal
-from urllib.parse import urlencode, unquote_plus
+from urllib.parse import unquote_plus
 import requests
 
 from postgresqleu.invoices.util import InvoiceManager

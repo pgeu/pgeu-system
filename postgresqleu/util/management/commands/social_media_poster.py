@@ -2,18 +2,11 @@
 # Daemon to post all queued up notifications and social media posts
 #
 
-from django.core.management.base import BaseCommand, CommandError
-from django.core.management import load_command_class
+from django.core.management.base import BaseCommand
 from django.db import connection
-from django.utils import autoreload, timezone
-from django.conf import settings
+from django.utils import autoreload
 
-from datetime import timedelta
-import time
-import io
 import sys
-import os
-import subprocess
 import threading
 import select
 

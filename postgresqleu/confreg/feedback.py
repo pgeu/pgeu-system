@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.db.models import Count
 from django.db import connection
 
-from .models import ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
+from .models import ConferenceFeedbackAnswer
 from postgresqleu.confreg.util import get_authenticated_conference
 from postgresqleu.util.request import get_int_or_error
 

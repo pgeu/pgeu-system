@@ -1,8 +1,6 @@
 # Some very simple models used by utilities
 from django.db import models
 
-from .oauthapps import oauth_application_choices
-
 
 class Storage(models.Model):
     key = models.CharField(max_length=16, null=False, blank=False)

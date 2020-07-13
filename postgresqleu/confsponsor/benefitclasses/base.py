@@ -1,7 +1,5 @@
 from django import forms
 
-from postgresqleu.util.validators import validate_json_structure
-
 
 class BaseBenefit(object):
     def __init__(self, level, params):

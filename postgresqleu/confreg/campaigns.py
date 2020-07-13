@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.http import Http404, HttpResponse
 from django.utils.dateparse import parse_datetime, parse_duration
 from django.utils import timezone
-from postgresqleu.confreg.jinjafunc import JinjaTemplateValidator, render_sandboxed_template
+from postgresqleu.confreg.jinjafunc import render_sandboxed_template
 
 from postgresqleu.util.widgets import MonospaceTextarea
 from postgresqleu.confreg.models import ConferenceSession, Track

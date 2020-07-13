@@ -17,7 +17,7 @@ import base64
 from postgresqleu.util.widgets import StaticTextWidget
 from postgresqleu.util.forms import SubmitButtonField
 from postgresqleu.util.forms import LinkForCodeField
-from postgresqleu.util.oauthapps import get_oauth_client, get_oauth_secret, has_oauth_data
+from postgresqleu.util.oauthapps import get_oauth_client, get_oauth_secret
 from postgresqleu.util.messaging import re_token, get_messaging
 from postgresqleu.util.messaging.util import send_reg_direct_message, store_incoming_post
 

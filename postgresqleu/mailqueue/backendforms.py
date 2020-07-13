@@ -1,5 +1,4 @@
 from django import forms
-from django.utils.text import Truncator
 
 from email.parser import Parser
 

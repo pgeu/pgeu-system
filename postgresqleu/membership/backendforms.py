@@ -6,7 +6,6 @@ from collections import OrderedDict
 
 from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget
 from postgresqleu.util.backendforms import BackendForm
-from postgresqleu.util.backendlookups import GeneralAccountLookup
 from postgresqleu.membership.models import Member, MemberLog, Meeting, MembershipConfiguration
 from postgresqleu.membership.backendlookups import MemberLookup
 

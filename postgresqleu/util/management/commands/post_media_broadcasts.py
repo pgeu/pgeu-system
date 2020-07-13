@@ -4,12 +4,10 @@
 
 
 from django.core.management.base import BaseCommand, CommandError
-from django.template.defaultfilters import slugify
-from django.db import connection, transaction
-from django.conf import settings
+from django.db import connection
 from django.utils import timezone
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 import sys
 
 from postgresqleu.util.messaging import ProviderCache

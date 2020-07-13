@@ -1,9 +1,6 @@
 from django.contrib import admin
 from django.db.models import Q
-from django.http import HttpResponseRedirect
 from django.utils import timezone
-
-import urllib.parse
 
 from .models import Member, MemberLog, Meeting
 

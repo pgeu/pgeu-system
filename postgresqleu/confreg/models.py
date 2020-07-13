@@ -14,7 +14,6 @@ from django.template.defaultfilters import slugify
 from django.contrib.postgres.fields import DateTimeRangeField, JSONField
 from django.contrib.postgres.indexes import GinIndex
 from django.core.serializers.json import DjangoJSONEncoder
-from django.utils import timezone
 
 from postgresqleu.util.validators import validate_lowercase, validate_urlname
 from postgresqleu.util.validators import TwitterValidator
@@ -25,7 +24,6 @@ from postgresqleu.util.time import today_conference
 from postgresqleu.util.db import exec_no_result
 
 import base64
-import datetime
 import pytz
 from decimal import Decimal
 

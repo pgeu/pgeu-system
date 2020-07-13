@@ -1,7 +1,5 @@
 from django.db import models
 
-from datetime import datetime
-
 from postgresqleu.invoices.models import InvoicePaymentMethod
 
 

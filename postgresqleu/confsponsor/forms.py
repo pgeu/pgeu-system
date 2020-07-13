@@ -8,7 +8,7 @@ from django.conf import settings
 from .models import Sponsor, SponsorMail, SponsorshipLevel
 from .models import vat_status_choices
 from .models import Shipment
-from postgresqleu.confreg.models import Conference, RegistrationType, DiscountCode
+from postgresqleu.confreg.models import RegistrationType, DiscountCode
 from postgresqleu.countries.models import EuropeCountry
 
 from postgresqleu.confreg.models import ConferenceAdditionalOption

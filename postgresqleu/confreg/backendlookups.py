@@ -1,7 +1,7 @@
 from django.db.models import Q
 
 from postgresqleu.util.backendlookups import LookupBase
-from postgresqleu.confreg.models import Conference, ConferenceRegistration, Speaker
+from postgresqleu.confreg.models import ConferenceRegistration, Speaker
 from postgresqleu.confreg.models import ConferenceSessionTag
 
 

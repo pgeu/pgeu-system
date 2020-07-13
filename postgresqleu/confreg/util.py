@@ -6,7 +6,7 @@ from django.utils import timezone
 
 import os
 from decimal import Decimal
-from datetime import datetime, date, timedelta
+from datetime import timedelta
 import urllib.parse
 from io import BytesIO
 import re

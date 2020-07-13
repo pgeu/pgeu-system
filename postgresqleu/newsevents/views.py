@@ -2,8 +2,6 @@ from django.shortcuts import render, get_object_or_404
 from django.core import paginator
 from django.utils import timezone
 
-import datetime
-
 from postgresqleu.newsevents.models import News
 
 

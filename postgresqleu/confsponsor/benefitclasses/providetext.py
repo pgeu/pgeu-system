@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django import forms
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MinValueValidator
 
 from postgresqleu.confsponsor.backendforms import BackendSponsorshipLevelBenefitForm
 

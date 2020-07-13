@@ -7,7 +7,7 @@ from decimal import Decimal
 
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager
-from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
+from postgresqleu.invoices.models import Invoice
 
 from .api import TrustlyWrapper, TrustlyException
 from .models import TrustlyTransaction, TrustlyLog

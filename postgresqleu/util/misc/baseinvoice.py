@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 from decimal import Decimal
 
 from reportlab.pdfgen.canvas import Canvas

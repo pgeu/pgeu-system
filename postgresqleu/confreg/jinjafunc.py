@@ -8,7 +8,6 @@ from django.utils.timesince import timesince
 from django.utils import timezone
 from django.conf import settings
 
-import json
 import os.path
 import random
 from itertools import groupby

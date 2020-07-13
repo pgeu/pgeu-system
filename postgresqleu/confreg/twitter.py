@@ -1,8 +1,7 @@
-from django.contrib.auth.decorators import login_required
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import HttpResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import transaction

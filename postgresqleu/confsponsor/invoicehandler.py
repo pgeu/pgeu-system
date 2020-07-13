@@ -5,7 +5,6 @@ from datetime import timedelta
 import base64
 import os
 
-from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.util.time import today_conference
 

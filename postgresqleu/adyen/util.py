@@ -7,7 +7,6 @@ from decimal import Decimal
 
 import requests
 from requests.auth import HTTPBasicAuth
-from base64 import standard_b64encode
 
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager

@@ -12,7 +12,6 @@ from django.conf import settings
 from django.db import transaction, connection
 from django.db.models import Q, Count, Avg
 from django.db.models.expressions import F
-from django import forms
 from django.forms import ValidationError
 from django.utils import timezone
 from django.template.defaultfilters import slugify
@@ -58,12 +57,10 @@ from .backendforms import CancelRegistrationForm, ConfirmRegistrationForm
 from .backendforms import ResendWelcomeMailForm
 
 from postgresqleu.util.request import get_int_or_error
-from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.time import today_conference
 from postgresqleu.util.messaging import get_messaging
 from postgresqleu.util.pagination import simple_pagination
-from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod, InvoiceRow
 from postgresqleu.invoices.util import InvoiceWrapper
 from postgresqleu.confwiki.models import Wikipage
 from postgresqleu.confsponsor.models import ScannedAttendee, PurchasedVoucher
@@ -79,11 +76,10 @@ from postgresqleu.util.qr import generate_base64_qr
 
 from decimal import Decimal
 from operator import itemgetter
-from datetime import datetime, timedelta, date
+from datetime import timedelta
 import base64
 import re
 import os
-from email.mime.text import MIMEText
 from Cryptodome.Hash import SHA256
 from io import StringIO
 import xml.etree.ElementTree as ET

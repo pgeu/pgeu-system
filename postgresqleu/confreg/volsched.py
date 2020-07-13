@@ -1,11 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
-from django.contrib import messages
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import HttpResponse, Http404
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import Count, Sum, F, Func
-from django.conf.urls import url
 
 from datetime import datetime
 import json
@@ -13,7 +11,7 @@ import json
 from postgresqleu.util.db import exec_to_dict
 from postgresqleu.util.request import get_int_or_error
 
-from .models import Conference, ConferenceRegistration
+from .models import ConferenceRegistration
 from .models import VolunteerSlot, VolunteerAssignment
 from .util import send_conference_notification_template, get_conference_or_404
 

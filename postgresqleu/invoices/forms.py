@@ -5,8 +5,6 @@ from django.forms import widgets
 from django.contrib.auth.models import User
 from django.conf import settings
 
-from decimal import Decimal
-
 from postgresqleu.util.widgets import HtmlDateInput
 
 from .models import Invoice, InvoiceRow, InvoicePaymentMethod

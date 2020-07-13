@@ -1,7 +1,6 @@
 from django.http import HttpResponse
 from django.db.models import Q
 from django.db import transaction
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 
 

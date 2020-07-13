@@ -1,7 +1,5 @@
-from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render
-from django import forms
 
 from reportlab.lib import colors
 from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph

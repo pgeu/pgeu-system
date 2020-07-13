@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages

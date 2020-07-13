@@ -4,7 +4,7 @@
 # (actually just writes it to the queue for the next job to pick up)
 #
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.template.defaultfilters import slugify
 from django.db import transaction
 from django.conf import settings

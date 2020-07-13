@@ -3,17 +3,13 @@
 # Copyright (C) 2019, PostgreSQL Europe
 #
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.conf import settings
 from django.utils import timezone
 
-from postgresqleu.invoices.models import InvoicePaymentMethod
-from postgresqleu.transferwise.models import TransferwiseTransaction, TransferwiseRefund
 from postgresqleu.transferwise.models import TransferwisePayout
 
 from datetime import timedelta
-import re
 
 
 class Command(BaseCommand):

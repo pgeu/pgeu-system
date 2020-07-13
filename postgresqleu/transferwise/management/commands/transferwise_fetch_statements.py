@@ -8,7 +8,6 @@
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.db.models import Sum
 from django.conf import settings
 
 import datetime

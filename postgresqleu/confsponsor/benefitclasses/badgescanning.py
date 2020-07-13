@@ -2,14 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from postgresqleu.confsponsor.backendforms import BackendSponsorshipLevelBenefitForm
 
-from datetime import datetime
-import base64
-import io as StringIO
-import csv
-
 from .base import BaseBenefit, BaseBenefitForm
-
-from postgresqleu.confreg.models import ConferenceRegistration
 
 
 class BadgeScanningForm(BaseBenefitForm):

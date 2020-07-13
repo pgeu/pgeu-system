@@ -1,7 +1,6 @@
 from django import forms
 from django.utils import timezone
 from django.utils.html import strip_tags
-from django.conf import settings
 
 import requests_oauthlib
 import requests
@@ -9,7 +8,7 @@ import dateutil.parser
 
 from postgresqleu.util.widgets import StaticTextWidget
 from postgresqleu.util.forms import LinkForCodeField
-from postgresqleu.util.oauthapps import get_oauth_client, get_oauth_secret, has_oauth_data
+from postgresqleu.util.oauthapps import get_oauth_client, get_oauth_secret
 from postgresqleu.util.models import OAuthApplication
 from postgresqleu.util.messaging import re_token
 

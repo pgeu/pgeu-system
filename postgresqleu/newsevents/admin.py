@@ -1,7 +1,5 @@
 from django.contrib import admin
 
-from postgresqleu.util.forms import ConcurrentProtectedModelForm
-
 from postgresqleu.newsevents.models import News, NewsPosterProfile
 
 

@@ -1,5 +1,3 @@
-from django import forms
-
 from postgresqleu.util.backendforms import BackendForm
 from .models import ScheduledJob
 

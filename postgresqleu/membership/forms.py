@@ -1,6 +1,4 @@
 from django import forms
-from django.core.exceptions import ValidationError
-from django.conf import settings
 
 from .models import Member, get_config
 from .util import validate_country

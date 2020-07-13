@@ -4,9 +4,7 @@ from django.template.defaultfilters import slugify
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 
-from .models import News, NewsPosterProfile
-
-import datetime
+from .models import NewsPosterProfile
 
 from postgresqleu.util.db import exec_to_dict, ensure_conference_timezone
 

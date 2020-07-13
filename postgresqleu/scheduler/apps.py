@@ -2,7 +2,6 @@ from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 from django.db import transaction, connection
 from django.core.management import get_commands, load_command_class
-from django.conf import settings
 
 from .util import reschedule_job
 

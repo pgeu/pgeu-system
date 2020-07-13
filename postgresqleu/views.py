@@ -5,7 +5,6 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.conf import settings
 
-from postgresqleu.newsevents.models import News
 from postgresqleu.confreg.models import Conference, ConferenceSeries
 from postgresqleu.invoices.models import PendingBankTransaction, BankFileUpload, InvoicePaymentMethod
 from postgresqleu.invoices.models import InvoiceRefund

@@ -1,5 +1,4 @@
 from django.http import HttpResponseRedirect, Http404, HttpResponse
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404
 from django.forms.models import inlineformset_factory

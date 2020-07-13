@@ -14,7 +14,6 @@ import csv
 import io
 import requests
 from requests.auth import HTTPBasicAuth
-from base64 import standard_b64encode
 from datetime import timedelta
 from decimal import Decimal
 

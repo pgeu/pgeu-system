@@ -1,7 +1,5 @@
 from django import forms
 from django.http import HttpResponse
-from django.db import models
-from django.utils.functional import cached_property
 from django.utils import timezone
 from django.contrib import messages
 from django.conf import settings

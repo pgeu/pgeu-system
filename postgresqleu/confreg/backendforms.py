@@ -7,17 +7,15 @@ import django.forms
 import django.forms.widgets
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
-from django.utils import timezone
 from django.conf import settings
 
 import datetime
 from collections import OrderedDict
 from psycopg2.extras import DateTimeTZRange
-from decimal import Decimal
 import pytz
 
 from postgresqleu.util.db import exec_to_single_list, exec_to_scalar
-from postgresqleu.util.forms import ConcurrentProtectedModelForm, SelectSetValueField
+from postgresqleu.util.forms import SelectSetValueField
 from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget, MonospaceTextarea
 from postgresqleu.util.widgets import TagOptionsTextWidget
 from postgresqleu.util.random import generate_random_token

@@ -4,10 +4,8 @@
 #
 
 from django.core.management.base import BaseCommand
-from django.db import transaction
-from django.conf import settings
 
-from datetime import time, datetime, timedelta
+from datetime import timedelta
 
 from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.stripepayment.models import StripeCheckout
