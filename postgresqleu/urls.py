@@ -56,6 +56,7 @@ if settings.ENABLE_PG_COMMUNITY_AUTH:
         url(r'^accounts/login/$', postgresqleu.auth.login),
         url(r'^accounts/logout/$', postgresqleu.auth.logout),
         url(r'^auth_receive/$', postgresqleu.auth.auth_receive),
+        url(r'^auth_api/$', postgresqleu.auth.auth_api),
     ])
 elif settings.ENABLE_OAUTH_AUTH:
     from postgresqleu.oauthlogin.urls import oauthurlpatterns
