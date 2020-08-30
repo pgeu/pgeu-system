@@ -7,6 +7,9 @@ Membership is a simple registry of paying members.
 Sender email
 : The email address used to send all membership related emails.
 
+Sender name
+: The name used as sender name for all membership related emails.
+
 Membership years
 : The number of years a membership is active for, after payment has completed.
 

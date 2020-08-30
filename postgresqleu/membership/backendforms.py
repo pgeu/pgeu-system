@@ -15,7 +15,7 @@ class BackendConfigForm(BackendForm):
 
     class Meta:
         model = MembershipConfiguration
-        fields = ['sender_email', 'membership_years', 'membership_cost', 'country_validator',
+        fields = ['sender_email', 'sender_name', 'membership_years', 'membership_cost', 'country_validator',
                   'paymentmethods', ]
         widgets = {
             'paymentmethods': django.forms.CheckboxSelectMultiple,

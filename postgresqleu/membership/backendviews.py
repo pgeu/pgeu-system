@@ -60,7 +60,7 @@ def sendmail(request):
     recipients = Member.objects.filter(pk__in=idlist)
 
     initial = {
-        '_from': '{0} <{1}>'.format(settings.ORG_NAME, cfg.sender_email),
+        '_from': '{0} <{1}>'.format(cfg.sender_name, cfg.sender_email),
         'recipients': escape(", ".join(['{0} <{1}>'.format(x.fullname, x.user.email) for x in recipients])),
         'idlist': ",".join(map(str, idlist)),
     }
@@ -77,7 +77,7 @@ def sendmail(request):
                                      r.user.email,
                                      form.cleaned_data['subject'],
                                      msgtxt,
-                                     sendername=settings.ORG_NAME,
+                                     sendername=cfg.sender_name,
                                      receivername=r.fullname,
                     )
                 messages.info(request, "Email sent to %s members" % len(recipients))

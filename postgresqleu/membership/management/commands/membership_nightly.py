@@ -42,6 +42,8 @@ class Command(BaseCommand):
                                {
                                    'member': m,
                                },
+                               sendername=cfg.sender_name,
+                               receivername=m.fullname,
             )
             self.stdout.write("Expired member {0} (paid until {1})".format(m, m.paiduntil))
             # An expired member has no membersince and no paiduntil.
@@ -71,6 +73,8 @@ class Command(BaseCommand):
                                {
                                    'member': m,
                                },
+                               sendername=cfg.sender_name,
+                               receivername=m.fullname,
                            )
             self.stdout.write("Sent warning to member {0} (paid until {1}, last warned {2})".format(m, m.paiduntil, m.expiry_warning_sent))
             m.expiry_warning_sent = timezone.now()

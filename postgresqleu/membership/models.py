@@ -14,7 +14,10 @@ from datetime import timedelta
 
 class MembershipConfiguration(models.Model):
     id = models.IntegerField(null=False, blank=False, primary_key=True)
-    sender_email = LowercaseEmailField(null=False, blank=False)
+    sender_email = LowercaseEmailField(null=False, blank=False,
+                                       help_text="Email address to use as sender on outgoing email")
+    sender_name = models.CharField(max_length=100, null=False, blank=False,
+                                   help_text='Name to use as sender on outgoing email')
     membership_years = models.IntegerField(null=False, blank=False, default=1,
                                            validators=[MinValueValidator(1), MaxValueValidator(10)],
                                            verbose_name="Membership length",
