@@ -9,6 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('util', '0001_initial'),
+        ('confsponsor', '0018_contract_storage_inline')
     ]
 
     operations = [
