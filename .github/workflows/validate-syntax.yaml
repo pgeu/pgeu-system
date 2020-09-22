@@ -1,6 +1,6 @@
 name: Validate python syntax
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   validate:
