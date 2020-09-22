@@ -185,3 +185,4 @@ def csrf_failure(request, reason=''):
         })
     resp.status_code = 403  # Forbidden
     return resp
+
