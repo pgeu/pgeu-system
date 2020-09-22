@@ -3,6 +3,18 @@
 from django.db import migrations, models
 from django.conf import settings
 
+from postgresqleu.membership.models import MembershipConfiguration
+
+
+def migrate_membership_config(apps, schema_editor):
+    config = MembershipConfiguration(
+        id=1,
+        sender_email=getattr(settings, 'MEMBERSHIP_SENDER_EMAIL', settings.DEFAULT_EMAIL),
+        membership_years=getattr(settings, 'MEMBERSHIP_LENGTH', 1),
+        membership_cost=getattr(settings, 'MEMBERSHIP_COST', 10),
+    )
+    config.save()
+
 
 class Migration(migrations.Migration):
 
@@ -17,4 +29,5 @@ class Migration(migrations.Migration):
             field=models.CharField(default=settings.ORG_NAME, help_text='Name to use as sender on outgoing email', max_length=100),
             preserve_default=False,
         ),
+        migrations.RunPython(migrate_membership_config),
     ]

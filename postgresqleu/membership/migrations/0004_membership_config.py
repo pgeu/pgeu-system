@@ -3,21 +3,9 @@
 from __future__ import unicode_literals
 
 import django.core.validators
-from django.conf import settings
 from django.db import migrations, models
 
 from postgresqleu.util.fields import LowercaseEmailField
-from postgresqleu.membership.models import MembershipConfiguration
-
-
-def migrate_membership_config(apps, schema_editor):
-    config = MembershipConfiguration(
-        id=1,
-        sender_email=getattr(settings, 'MEMBERSHIP_SENDER_EMAIL', settings.DEFAULT_EMAIL),
-        membership_years=getattr(settings, 'MEMBERSHIP_LENGTH', 1),
-        membership_cost=getattr(settings, 'MEMBERSHIP_COST', 10),
-    )
-    config.save()
 
 
 class Migration(migrations.Migration):
@@ -40,6 +28,5 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.RunSQL("ALTER TABLE membership_membershipconfiguration ADD CONSTRAINT highlander CHECK (id=1)"),
-        migrations.RunPython(migrate_membership_config),
         migrations.RunSQL("INSERT INTO membership_membershipconfiguration_paymentmethods (membershipconfiguration_id, invoicepaymentmethod_id) SELECT 1, id FROM invoices_invoicepaymentmethod WHERE active AND auto"),
     ]
