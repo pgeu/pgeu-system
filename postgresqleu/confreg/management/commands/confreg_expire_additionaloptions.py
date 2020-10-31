@@ -15,7 +15,7 @@ from datetime import timedelta
 from postgresqleu.util.time import today_global
 
 from postgresqleu.confreg.util import expire_additional_options, send_conference_notification
-from postgresqleu.confreg.models import ConferenceRegistration
+from postgresqleu.confreg.models import Conference, ConferenceRegistration
 
 
 class Command(BaseCommand):
