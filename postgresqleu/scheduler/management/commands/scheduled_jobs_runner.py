@@ -20,6 +20,7 @@ import os
 import subprocess
 import threading
 import select
+import traceback
 
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.scheduler.util import reschedule_job
@@ -35,7 +36,7 @@ class Command(BaseCommand):
         # and need to be updated in a future version of django
 
         # Start our work in a background thread
-        bthread = threading.Thread(target=self.inner_handle)
+        bthread = threading.Thread(target=self.wrapped_inner_handle)
         bthread.setDaemon(True)
         bthread.start()
 
@@ -45,6 +46,14 @@ class Command(BaseCommand):
 
         self.stderr.write("Underlying code changed, exiting for a restart")
         sys.exit(0)
+
+    def wrapped_inner_handle(self):
+        try:
+            self.inner_handle()
+        except Exception:
+            self.stderr.write("Exception in main thread:")
+            traceback.print_exc(file=self.stderr)
+            os._exit(1)
 
     def inner_handle(self):
         with connection.cursor() as curs:
