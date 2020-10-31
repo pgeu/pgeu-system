@@ -6,7 +6,7 @@
 # handler that automaticaly restarts (after some delay)
 #
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.core.management import load_command_class
 from django.db import connection
 from django.utils import autoreload, timezone
