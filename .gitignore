@@ -4,3 +4,5 @@ python
 .idea/
 tools/devsetup/venv_dev/
 devserver-uwsgi.ini
+.env
+.venv
