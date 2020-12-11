@@ -56,3 +56,27 @@ idea.  Once a feature has been discussed and the general concept agreed to, a
 feature issue can be opened to work on the details of the implementation.
 
 The mailing list for discussing pgeu-system is <pgeu-system@lists.postgresql.eu>.
+
+### dev environment
+
+A sugested way to get started developing
+
+#### virtualenv
+
+This will setup a venv that has the requirements installed.
+
+```sh
+python3 -m venv .venv
+.venv/bin/activate
+pip install -r requirements.txt
+```
+
+#### pipenv
+
+A alternative that uses Pipfile and Pipfile.lock
+
+```sh
+python3 -m pip install pipenv
+python3 -m pipenv install
+python3 -m pipenv shell
+```
