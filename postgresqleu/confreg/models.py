@@ -1376,7 +1376,7 @@ class ConferenceMessaging(models.Model):
 
     class Meta:
         verbose_name = 'messaging configuration'
-        ordering = ('provider__name', )
+        ordering = ('provider__publicname', )
         unique_together = (
             ('conference', 'provider'),
         )
