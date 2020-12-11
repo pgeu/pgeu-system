@@ -84,8 +84,23 @@ python3 -m pipenv install
 python3 -m pipenv shell
 ```
 
+Keep `requirements.txt` upto date for those without `pipenv`
+
+```sh
+jq -r '.default
+        | to_entries[]
+        | .key + .value.version' \
+    Pipfile.lock > requirements.txt
+```
+
 ### Database migrations
 
 ```sh
 python manage.py migrate
+```
+
+### Run django
+
+```sh
+python manage.py runserver
 ```

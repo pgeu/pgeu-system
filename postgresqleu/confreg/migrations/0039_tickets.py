@@ -57,10 +57,10 @@ class Migration(migrations.Migration):
             field=models.TextField(blank=True, null=True, unique=True),
         ),
         migrations.RunSQL(
-            "UPDATE confreg_conferenceregistration SET idtoken=encode({PGCRYPTO_SCHEMA}.digest({PGCRYPTO_SCHEMA}.gen_random_bytes(250), 'sha256'), 'hex') WHERE idtoken IS NULL".format(PGCRYPTO_SCHEMA=PGCRYPTO_SCHEMA)
+            "UPDATE confreg_conferenceregistration SET idtoken=encode({PGCRYPTO_SCHEMA}.digest({PGCRYPTO_SCHEMA}.gen_random_bytes(250), 'sha256'), 'hex') WHERE idtoken IS NULL".format(PGCRYPTO_SCHEMA = PGCRYPTO_SCHEMA)
         ),
         migrations.RunSQL(
-            "UPDATE confreg_conferenceregistration SET publictoken=encode({PGCRYPTO_SCHEMA}.digest({PGCRYPTO_SCHEMA}.gen_random_bytes(250), 'sha256'), 'hex') WHERE publictoken IS NULL".format(PGCRYPTO_SCHEMA=PGCRYPTO_SCHEMA)
+            "UPDATE confreg_conferenceregistration SET publictoken=encode({PGCRYPTO_SCHEMA}.digest({PGCRYPTO_SCHEMA}.gen_random_bytes(250), 'sha256'), 'hex') WHERE publictoken IS NULL".format(PGCRYPTO_SCHEMA = PGCRYPTO_SCHEMA)
         ),
         migrations.AlterField(
             model_name='conferenceregistration',
