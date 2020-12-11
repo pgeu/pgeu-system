@@ -21,8 +21,9 @@ ADMINS = (
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgresqleu',
-        'USER': 'postgresqleu',
+        'HOST': os.getenv('PGHOST', 'postgresqleu'),
+        'NAME': os.getenv('PGDATABASE', 'postgresqleu'),
+        'USER': os.getenv('PGUSER', 'postgresqleu'),
     }
 }
 

@@ -83,3 +83,9 @@ python3 -m pip install pipenv
 python3 -m pipenv install
 python3 -m pipenv shell
 ```
+
+### Database migrations
+
+```sh
+python manage.py migrate
+```
