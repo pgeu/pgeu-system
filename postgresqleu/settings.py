@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import json
 import os
 import sys
 
@@ -9,7 +10,7 @@ PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 # Django settings for postgresqleu project.
 
-DEBUG = False
+DEBUG = json.loads(os.getenv("DEBUG", "False").lower())
 
 DEFAULT_EMAIL = 'webmaster@localhost'
 
@@ -53,7 +54,7 @@ STATICFILES_DIRS = (
 )
 
 # Must always be overridden in local_settings!
-SECRET_KEY = ''
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',

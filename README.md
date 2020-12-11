@@ -59,7 +59,9 @@ The mailing list for discussing pgeu-system is <pgeu-system@lists.postgresql.eu>
 
 ### dev environment
 
-A sugested way to get started developing
+A suggested way to get started developing is to have create a `.env` based on `environment.env` and change your secrets. `.env` is in the `.gitignore` to help you keep these secret.
+
+Also choose 1 of the following.
 
 #### virtualenv
 
@@ -69,6 +71,7 @@ This will setup a venv that has the requirements installed.
 python3 -m venv .venv
 .venv/bin/activate
 pip install -r requirements.txt
+export $(grep -v '^#' .env | xargs -d '\r\n');
 ```
 
 #### pipenv
