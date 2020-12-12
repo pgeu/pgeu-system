@@ -73,7 +73,6 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                         'basetemplate': basetemplate,
                         'topadmin': topadmin,
                         'form': newform,
-                        'note': form.formnote,
                         'whatverb': 'Create new',
                         'what': formclass._verbose_name(),
                         'savebutton': 'Create',
