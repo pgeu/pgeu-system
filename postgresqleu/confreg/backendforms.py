@@ -1247,10 +1247,16 @@ class BackendTweetQueueForm(BackendForm):
     def clean_contents(self):
         d = self.cleaned_data['contents']
         shortlen = get_shortened_post_length(d)
-        for mess in self.conference.conferencemessaging_set.select_related('provider').filter(broadcast=True, provider__active=True):
-            impl = get_messaging(mess.provider)
+
+        if self.conference:
+            providers = [mess.provider for mess in self.conference.conferencemessaging_set.select_related('provider').filter(broadcast=True, provider__active=True)]
+        else:
+            providers = MessagingProvider.objects.filter(series__isnull=True, active=True)
+
+        for provider in providers:
+            impl = get_messaging(provider)
             if shortlen > impl.max_post_length:
-                messages.warning(self.request, "Post will be truncated to {} characters on {}".format(impl.max_post_length, mess.provider.internalname))
+                messages.warning(self.request, "Post will be truncated to {} characters on {}".format(impl.max_post_length, provider.internalname))
         return d
 
     @classmethod
