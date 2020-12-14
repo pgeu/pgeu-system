@@ -1226,7 +1226,10 @@ class BackendTweetQueueForm(BackendForm):
             self.fields['contents'].widget.attrs['class'] = "textarea-with-charcount"
         self.fields['contents'].widget.attrs['data-length-function'] = 'shortened_post_length'
 
-        lengthstr = 'Maximum lengths are: {}'.format(', '.join(['{}: {}'.format(mess.provider.internalname, get_messaging(mess.provider).max_post_length) for mess in self.conference.conferencemessaging_set.select_related('provider').filter(broadcast=True, provider__active=True)]))
+        if self.conference:
+            lengthstr = 'Maximum lengths are: {}'.format(', '.join(['{}: {}'.format(mess.provider.internalname, get_messaging(mess.provider).max_post_length) for mess in self.conference.conferencemessaging_set.select_related('provider').filter(broadcast=True, provider__active=True)]))
+        else:
+            lengthstr = 'Maximum lengths are: {}'.format(', '.join(['{}: {}'.format(provider.internalname, get_messaging(provider).max_post_length) for provider in MessagingProvider.objects.filter(series__isnull=True, active=True)]))
 
         self.fields['contents'].help_text = lengthstr
 
