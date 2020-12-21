@@ -69,7 +69,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'verbose_name': 'messaging configuration',
-                'ordering': ('provider__name',),
+                'ordering': ('provider__publicname',),
             },
         ),
         migrations.AlterUniqueTogether(
