@@ -4181,9 +4181,11 @@ def crossmail_send(request):
             email.save()
 
             for r in request.POST['include'].split(';'):
-                _addrule(email, r, False)
+                if r:
+                    _addrule(email, r, False)
             for r in request.POST['exclude'].split(';'):
-                _addrule(email, r, True)
+                if r:
+                    _addrule(email, r, True)
 
             for r in recipients:
                 CrossConferenceEmailRecipient(email=email, address=r['email']).save()
