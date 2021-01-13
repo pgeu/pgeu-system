@@ -1480,7 +1480,7 @@ def speaker_card(request, confname, speakerid, cardformat):
 
 def speakerphoto(request, speakerid):
     speaker = get_object_or_404(Speaker, pk=speakerid)
-    return HttpResponse(speaker.photo, content_type='image/jpg')
+    return HttpResponse(bytes(speaker.photo), content_type='image/jpg')
 
 
 @login_required
