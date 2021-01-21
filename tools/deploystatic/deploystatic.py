@@ -355,8 +355,9 @@ if __name__ == "__main__":
         remove_unknown(knownfiles, args.destpath)
 
         # Generate a githash file
-        with open(os.path.join(args.destpath, ".deploystatic_githash"), "w") as f:
-            f.write(git_revision)
+        if git_revision:
+            with open(os.path.join(args.destpath, ".deploystatic_githash"), "w") as f:
+                f.write(git_revision)
 
         sys.exit(0)
 
