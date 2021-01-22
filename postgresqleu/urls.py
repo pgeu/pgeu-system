@@ -1,4 +1,5 @@
 from django.conf.urls import include, url
+from django.urls import path
 from django.conf import settings
 from django.contrib import admin
 
@@ -409,6 +410,13 @@ if settings.ENABLE_ELECTIONS:
         url(r'^elections/(\d+)/ownvotes/$', postgresqleu.elections.views.ownvotes),
         url(r'^admin/elections/election/(.*/)?$', postgresqleu.elections.backendviews.edit_election),
     ])
+
+if settings.DEBUG_TOOLBAR:
+    import debug_toolbar
+    urlpatterns = [
+        path('__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
+
 
 # Now extend with some fallback URLs as well
 urlpatterns.extend([

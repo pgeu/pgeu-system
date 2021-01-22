@@ -10,6 +10,10 @@ PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 # Django settings for postgresqleu project.
 
 DEBUG = False
+DEBUG_TOOLBAR = False
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
 
 DEFAULT_EMAIL = 'webmaster@localhost'
 
@@ -262,3 +266,7 @@ if 'INVOICE_NOTIFICATION_RECEIVER' not in globals():
 
 if 'SCHEDULED_JOBS_EMAIL_SENDER' not in globals():
     SCHEDULED_JOBS_EMAIL_SENDER = SCHEDULED_JOBS_EMAIL
+
+if DEBUG and DEBUG_TOOLBAR:
+    MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
+    INSTALLED_APPS.append('debug_toolbar')
