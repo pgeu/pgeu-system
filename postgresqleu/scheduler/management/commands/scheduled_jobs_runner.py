@@ -6,10 +6,9 @@
 # handler that automaticaly restarts (after some delay)
 #
 
-from django.core.management.base import BaseCommand
 from django.core.management import load_command_class
 from django.db import connection
-from django.utils import autoreload, timezone
+from django.utils import timezone
 from django.conf import settings
 
 from datetime import timedelta
@@ -18,36 +17,19 @@ import io
 import sys
 import os
 import subprocess
-import threading
 import select
 import traceback
 
+from postgresqleu.util.reload import ReloadCommand
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.scheduler.util import reschedule_job
 from postgresqleu.scheduler.models import ScheduledJob, JobHistory, get_config
 
 
-class Command(BaseCommand):
+class Command(ReloadCommand):
     help = 'Run all scheduled jobs'
 
-    def handle(self, *args, **options):
-        # Automatically exit if our own code changes.
-        # This is not based on a published API, so quite likely will fail
-        # and need to be updated in a future version of django
-
-        # Start our work in a background thread
-        bthread = threading.Thread(target=self.wrapped_inner_handle)
-        bthread.setDaemon(True)
-        bthread.start()
-
-        reloader = autoreload.get_reloader()
-        while not reloader.should_stop:
-            reloader.run(bthread)
-
-        self.stderr.write("Underlying code changed, exiting for a restart")
-        sys.exit(0)
-
-    def wrapped_inner_handle(self):
+    def handle_with_reload(self, *args, **options):
         try:
             self.inner_handle()
         except Exception:

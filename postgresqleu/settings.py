@@ -196,6 +196,11 @@ SCHEDULED_JOBS_EMAIL = DEFAULT_EMAIL
 # end-user reference, and never actually by the system to send and receive.
 TREASURER_EMAIL = DEFAULT_EMAIL
 
+# List of directories to watch for changes for reloadable services. If none
+# is specified, then the django autoreloader (which can be pretty high in
+# performance overhead) is used.
+RELOAD_WATCH_DIRECTORIES = []
+
 # If there is a local_settings.py, let it override our settings
 try:
     from .local_settings import *
