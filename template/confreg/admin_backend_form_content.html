@@ -1,4 +1,5 @@
 {%load dictutil%}
+{%load miscutil%}
 {%if form.warning_text %}
 <div class="alert alert-danger">{{form.warning_text}}</div>
 {%endif%}
@@ -33,7 +34,7 @@
 {%for id,title,description in entries%}
     <tr>
       <td>{%if id%}<a href="{{url}}/{{id}}/">{{title}}</a>{%else%}{{title}}{%endif%}</td>
-      <td>{{description}}</td>
+      <td>{%if description|isboolean%}{%if description%}&check;{%endif%}{%else%}{{description}}{%endif%}</td>
     </tr>
 {%endfor%}
     </table>
