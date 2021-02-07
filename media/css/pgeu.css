@@ -1,5 +1,5 @@
 /** CUSTOM FONTS */
-@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,800');
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600,800');
 @import url('https://fonts.googleapis.com/css?family=Maven+Pro');
 
 body {
@@ -13,7 +13,7 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Maven Pro', sans-serif;
-    font-weight: 500;
+    font-weight: 600;
     text-transform: uppercase;
     color: #515151;
     margin-top: 0.5em;
@@ -21,7 +21,7 @@ h1, h2, h3, h4, h5, h6 {
 
 a {
     color: #336791;
-    font-weight: 500;
+    font-weight: 600;
     text-decoration: none;
     -moz-transition: color .2s ease-in-out;
     -webkit-transition: color .2s ease-in-out;
