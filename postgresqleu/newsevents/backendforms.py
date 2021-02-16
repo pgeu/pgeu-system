@@ -31,6 +31,9 @@ class UserModelChoiceField(django.forms.ModelChoiceField):
 class BackendNewAuthorForm(django.forms.Form):
     helplink = 'news#authors'
     user = UserModelChoiceField(queryset=User.objects.order_by('username'))
+    selectize_single_fields = {
+        'user': None,
+    }
 
     def get_newform_data(self):
         return self.cleaned_data['user'].pk
