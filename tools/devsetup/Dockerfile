@@ -1,5 +1,5 @@
-# Download base image ubuntu 18.04
-FROM ubuntu:18.04
+# Download base image Debian Buster as the biggest installations run there
+FROM  debian:buster-slim
 
 # LABEL the image
 LABEL maintainer="pgeu-system@lists.postgresql.eu"
@@ -7,10 +7,15 @@ LABEL version="0.1"
 LABEL description="This is a base development environment for the \
 PostgreSQL Europe Conference Management System"
 
+# Arguments to create user for file mounting
+ARG USER_ID
+ARG GROUP_ID
+
 # Avoid interactive packages
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Update to the latest version and install basic packages
+RUN apt-get update && apt-get -y install apt-utils
 RUN apt-get update && apt-get -y install wget \
 										 sudo \
 										 apt-utils \
@@ -45,20 +50,22 @@ RUN apt-get update && apt-get install -y \
 	libqrencode-dev \
 	uwsgi \
 	uwsgi-plugin-python3 \
-	python3-pip
+	python3-pip \
+	python3-cairosvg \
+	python3-qrencode \
+	ttf-dejavu
 
 # Create the user to be used with bash for interactive sessions
-RUN useradd -s /bin/bash -U -G sudo,postgres,root pgeusystem
+RUN addgroup --gid $GROUP_ID pgeusystem
+RUN useradd -s /bin/bash --gid $GROUP_ID -G sudo,postgres,root --uid $USER_ID pgeusystem
 
-# Install the pip requirements
+# Create the directories to be used and adjust the ownership
 WORKDIR /opt/pgeusystem/setup
-COPY ./tools/devsetup/dev_requirements.txt .
-RUN pip3 install -r dev_requirements.txt
+WORKDIR /opt/pgeusystem/pgdata
+WORKDIR /opt/pgeusystem/app
+RUN chown -R pgeusystem.pgeusystem /opt/pgeusystem
 
 # Create the datadir, db and user for out app
-USER root
-WORKDIR /opt/pgeusystem/pgdata
-RUN chown -R pgeusystem.pgeusystem /opt/pgeusystem/pgdata
 USER pgeusystem
 RUN pg_ctl -D /opt/pgeusystem/pgdata initdb
 RUN pg_ctl -D /opt/pgeusystem/pgdata -l /opt/pgeusystem/pgdata/logfile start \
@@ -66,27 +73,18 @@ RUN pg_ctl -D /opt/pgeusystem/pgdata -l /opt/pgeusystem/pgdata/logfile start \
 	&& psql -c 'GRANT ALL PRIVILEGES ON DATABASE pgeusystem TO pgeusystem' pgeusystem \
 	&& pg_ctl -D /opt/pgeusystem/pgdata stop
 
-# Get the app in place
-USER root
-WORKDIR /opt/pgeusystem/app
-RUN chown -R pgeusystem.pgeusystem /opt/pgeusystem/app
-USER pgeusystem
-COPY . /opt/pgeusystem/app
-
-# Create the ini files using the scripts
-WORKDIR /opt/pgeusystem/app
-USER pgeusystem
-RUN pg_ctl -D /opt/pgeusystem/pgdata -l /opt/pgeusystem/pgdata/logfile start \
-	&& ./tools/devsetup/dev_setup.sh localhost 5432 pgeusystem pgeusystem \
-	&& pg_ctl -D /opt/pgeusystem/pgdata stop
-
-# Create a file to run the app
-WORKDIR /opt/pgeusystem/app
+# Create a file to run the app, expects that the volume is mounted
+WORKDIR /opt/pgeusystem/setup
 USER pgeusystem
 RUN echo "#!/bin/bash\n\
+		  set -e\n\
 		  pg_ctl -D /opt/pgeusystem/pgdata -l /opt/pgeusystem/pgdata/logfile start\n\
-		  uwsgi --ini devserver-uwsgi.ini\n" > startup.sh
+		  pushd /opt/pgeusystem/app/\n\
+	      ./tools/devsetup/dev_setup.sh localhost 5432 pgeusystem pgeusystem\n\
+		  uwsgi --ini ./devserver-uwsgi.ini\n" > startup.sh
 RUN chmod +x startup.sh
 
-# Launch it
-CMD ["./startup.sh"]
+# Set the workdirectory
+WORKDIR /opt/pgeusystem/app
+
+CMD ["../setup/startup.sh"]
