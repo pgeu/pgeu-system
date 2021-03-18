@@ -36,3 +36,28 @@ macOS support
 -------------
 All required dependencies except virtualenv can be installed via Homebrew,
 virtualenv is installed with pip.
+
+
+Dockerfile
+----------
+
+A Dockerfile is present to showcase the needed installation and how to run the
+app. The base image is based on ubuntu 18.04 LTS, which can also be used for
+development should one wishes to. The admin name for the app and the database,
+as well as the name of the database itself is set to 'pgeusystem'.
+
+A typical usecase would be to build the docker image via:
+	$ docker build -t pgeusystem-image -f ./tools/devsetup/Dockerfile .
+from the base directory.
+
+Then run said image in the background using the host's network via:
+	$ docker run --name pgeusystem-image  --network host -d  pgeusystem-image
+
+If the above commands are successfull then one can reach the index page of the
+app in http://localhost:8012
+
+If the user so wishes, can reach the database in the running container via:
+	$ psql -h localhost -U pgeusystem pgeusystem
+
+Finally to stop the running image from running, issue:
+	$ docker container stop pgeusystem-image
