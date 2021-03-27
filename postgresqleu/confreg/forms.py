@@ -25,6 +25,8 @@ from postgresqleu.countries.models import Country
 
 from datetime import timedelta
 import requests
+from PIL import Image
+import io
 
 
 class ConferenceRegistrationForm(forms.ModelForm):
@@ -478,6 +480,17 @@ class SpeakerProfileForm(forms.ModelForm):
         if not self.cleaned_data['fullname'].strip():
             raise ValidationError("Your full name must be given. This will be used both in the speaker profile and in communications with the conference organizers.")
         return self.cleaned_data['fullname']
+
+    def clean_photo(self):
+        if self.cleaned_data['photo']:
+            image = Image.open(io.BytesIO(self.cleaned_data.get('photo')))
+            if image.height > 128 or image.width > 128:
+                image.thumbnail((128, 128))
+                byte_arr = io.BytesIO()
+                image.save(byte_arr, format='JPEG')
+                byte_arr = byte_arr.getvalue()
+                self.cleaned_data['photo'] = byte_arr
+        return self.cleaned_data['photo']
 
 
 class CallForPapersForm(forms.ModelForm):
