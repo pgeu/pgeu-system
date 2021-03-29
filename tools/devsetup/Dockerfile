@@ -80,7 +80,7 @@ RUN echo "#!/bin/bash\n\
 		  set -e\n\
 		  pg_ctl -D /opt/pgeusystem/pgdata -l /opt/pgeusystem/pgdata/logfile start\n\
 		  pushd /opt/pgeusystem/app/\n\
-	      ./tools/devsetup/dev_setup.sh localhost 5432 pgeusystem pgeusystem\n\
+		  ./tools/devsetup/dev_setup.sh localhost 5432 pgeusystem pgeusystem\n\
 		  uwsgi --ini ./devserver-uwsgi.ini\n" > startup.sh
 RUN chmod +x startup.sh
 
