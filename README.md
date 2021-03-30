@@ -34,7 +34,7 @@ membership, and invoice systems.
 
 ### Membership
 
-Simple membership tracking and membership dues are suppoerted.
+Simple membership tracking and membership dues are supported.
 
 ### Elections
 
