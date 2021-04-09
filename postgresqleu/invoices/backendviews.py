@@ -482,6 +482,10 @@ def banktransactions_match_multiple(request, transid):
 
     invoices = [get_object_or_404(Invoice, pk=invoiceid) for invoiceid in request.GET.getlist('invoiceid')]
     if not invoices:
+        if not request.POST.get('invoiceidlist'):
+            messages.error(request, 'Cannot match multiple invoices without selecting any invoices!')
+            return HttpResponseRedirect("../")
+
         invoices = [get_object_or_404(Invoice, pk=invoiceid) for invoiceid in request.POST.get('invoiceidlist').split(',')]
 
     if len(invoices) == 0:
