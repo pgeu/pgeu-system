@@ -19,7 +19,7 @@ def edit_config(request):
     if not request.user.is_superuser:
         raise PermissionDenied("Access denied")
 
-    cfg = MembershipConfiguration.objects.get(id=1)
+    cfg, created = MembershipConfiguration.objects.get_or_create(id=1)
     return backend_process_form(request,
                                 None,
                                 BackendConfigForm,
