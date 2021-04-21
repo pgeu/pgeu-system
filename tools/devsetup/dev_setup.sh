@@ -26,7 +26,7 @@ psql -w "host=$PGH port=$PGP dbname=$PGD user=$PGU" -c "CREATE SCHEMA IF NOT EXI
 # Start from script directory to be safe!
 cd "${0%/*}"
 
-virtualenv --no-site-packages --python=python3 venv_dev
+virtualenv --python=python3 venv_dev
 venv_dev/bin/pip install -r dev_requirements.txt
 
 cd ../..
