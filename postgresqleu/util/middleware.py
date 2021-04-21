@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.conf import settings
 
 import base64
+from urllib.parse import urlparse
 
 
 class GlobalLoginMiddleware(object):
@@ -34,7 +35,7 @@ class GlobalLoginMiddleware(object):
 
         response = http.HttpResponse()
         response.status_code = 401
-        response['WWW-Authenticate'] = 'Basic realm={0}'.format(settings.SITEBASE)
+        response['WWW-Authenticate'] = 'Basic realm={0}'.format(urlparse(settings.SITEBASE).netloc)
         return response
 
 
