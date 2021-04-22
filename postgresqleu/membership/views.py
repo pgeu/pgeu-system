@@ -15,7 +15,7 @@ from postgresqleu.util.time import today_global
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 import json
 import base64
 import os
@@ -232,6 +232,22 @@ def webmeeting(request, meetingid):
 def webmeeting_by_key(request, meetingid, token):
     key = get_object_or_404(MemberMeetingKey, proxyaccesskey=token)
     return _webmeeting(request, key)
+
+
+def meeting_ical(request, meetingid):
+    # Get the ical info about a meeting
+    meeting = get_object_or_404(Meeting, pk=meetingid)
+    member = get_object_or_404(Member, user=request.user)
+
+    resp = render(request, 'membership/meeting.ical', {
+        'meeting': meeting,
+        'member': member,
+        'starttime': meeting.dateandtime,
+        'endtime': meeting.dateandtime + timedelta(hours=1),  # We don't track length of meetings
+        'now': datetime.now(),
+    }, content_type='text/calendar')
+    resp['Content-Disposition'] = 'attachment; filename="meeting.ical"'
+    return resp
 
 
 @login_required

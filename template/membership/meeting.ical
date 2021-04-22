@@ -1,0 +1,12 @@
+{% load tz %}{% timezone "UTC" %}BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//postgresqleu/meetings//NONSGML v1.0//EN
+BEGIN:VEVENT
+UID:MEETING{{meeting.id}}@{{org_short_name}}
+DTSTART:{{starttime|date:"Ymd"}}T{{starttime|time:"His"}}Z
+DTEND:{{endtime|date:"Ymd"}}T{{endtime|time:"His"}}Z
+DTSTAMP:{{now|date:"Ymd"}}T{{now|time:"His"}}Z
+SUMMARY:{{meeting.name}}
+URL:{{sitebase}}/membership/meetings/{{meeting.id}}/
+END:VEVENT
+END:VCALENDAR{%endtimezone%}

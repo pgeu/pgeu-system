@@ -388,6 +388,7 @@ if settings.ENABLE_MEMBERSHIP:
         url(r'^membership/$', postgresqleu.membership.views.home),
         url(r'^membership/meetings/$', postgresqleu.membership.views.meetings),
         url(r'^membership/meetings/(\d+)/$', postgresqleu.membership.views.meeting),
+        url(r'^membership/meetings/(\d+)/ical/$', postgresqleu.membership.views.meeting_ical),
         url(r'^membership/meetings/(\d+)/([a-z0-9]{64})/$', postgresqleu.membership.views.meeting_by_key),
         url(r'^membership/meetings/(\d+)/proxy/$', postgresqleu.membership.views.meeting_proxy),
         url(r'^membership/meetings/(\d+)/join/$', postgresqleu.membership.views.webmeeting),
