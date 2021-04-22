@@ -273,6 +273,9 @@ def meeting_proxy(request, meetingid):
     if member.paiduntil < timezone.localdate(meeting.dateandtime):
         return membership_error_response(request, "Your membership expires before the meeting")
 
+    if meeting.dateandtime <= timezone.now():
+        return membership_error_response(request, "This meeting has already started, you can no longer edit the proxy")
+
     # Do we have one already?
     try:
         key = MemberMeetingKey.objects.get(member=member, meeting=meeting)
