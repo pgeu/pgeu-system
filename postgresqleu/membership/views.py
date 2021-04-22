@@ -139,21 +139,27 @@ def meetings(request):
         })
 
 
+def membership_error_response(request, msg):
+    return render(request, 'membership/error.html', {
+        'message': msg,
+    })
+
+
 @transaction.atomic
 def _meeting(request, member, meeting, isproxy):
     if not (member.paiduntil and member.paiduntil >= today_global()):
-        return HttpResponse("Your membership is not active")
+        return membership_error_response(request, "Your membership is not active")
 
     if not meeting.allmembers:
         if not meeting.members.filter(pk=member.pk).exists():
-            return HttpResponse("Access denied.")
+            return membership_error_response(request, "Access denied.")
 
     # Allow four hours in the past, just in case
     if meeting.dateandtime + timedelta(hours=4) < timezone.now():
-        return HttpResponse("Meeting is in the past.")
+        return membership_error_response(request, "Meeting is in the past.")
 
     if member.paiduntil < timezone.localdate(meeting.dateandtime):
-        return HttpResponse("Your membership expires before the meeting")
+        return membership_error_response(request, "Your membership expires before the meeting")
 
     # All is well with this member. Generate a key if necessary
     (key, created) = MemberMeetingKey.objects.get_or_create(member=member, meeting=meeting)
@@ -163,7 +169,7 @@ def _meeting(request, member, meeting, isproxy):
         key.save()
 
     if key.proxyname and not isproxy:
-        return HttpResponse("You have assigned a proxy attendee for this meeting ({0}). This means you cannot attend the meeting yourself.".format(key.proxyname))
+        return membership_error_response(request, "You have assigned a proxy attendee for this meeting ({0}). This means you cannot attend the meeting yourself.".format(key.proxyname))
 
     if meeting.meetingtype == MeetingType.WEB:
         return render(request, 'membership/webmeeting.html', {
@@ -258,14 +264,14 @@ def meeting_proxy(request, meetingid):
     member = get_object_or_404(Member, user=request.user)
 
     if not (member.paiduntil and member.paiduntil >= today_global()):
-        return HttpResponse("Your membership is not active")
+        return membership_error_response(request, "Your membership is not active")
 
     if not meeting.allmembers:
         if not meeting.members.filter(pk=member.pk).exists():
-            return HttpResponse("Access denied.")
+            return membership_error_response(request, "Access denied.")
 
     if member.paiduntil < timezone.localdate(meeting.dateandtime):
-        return HttpResponse("Your membership expires before the meeting")
+        return membership_error_response(request, "Your membership expires before the meeting")
 
     # Do we have one already?
     try:
