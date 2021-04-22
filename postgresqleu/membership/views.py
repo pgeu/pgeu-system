@@ -302,7 +302,9 @@ def meeting_proxy(request, meetingid):
                 ).save()
                 return HttpResponseRedirect('.')
             else:
-                key.delete()
+                key.proxyname = None
+                key.proxyaccesskey = None
+                key.save()
                 MemberLog(member=member,
                           timestamp=timezone.now(),
                           message="Canceled proxy voting in {0}".format(meeting.name)
