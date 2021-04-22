@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from .models import Member, MemberLog, Meeting, MemberMeetingKey, get_config
+from .models import MeetingType
 from .forms import MemberForm, ProxyVoterForm
 
 from postgresqleu.util.random import generate_random_token
@@ -127,7 +128,6 @@ def meetings(request):
     meetinginfo = [{
         'id': m.id,
         'name': m.name,
-        'joining_active': m.joining_active,
         'dateandtime': m.dateandtime,
         'key': m.get_key_for(member),
         } for m in meetings]
@@ -155,9 +155,6 @@ def _meeting(request, member, meeting, isproxy):
     if member.paiduntil < timezone.localdate(meeting.dateandtime):
         return HttpResponse("Your membership expires before the meeting")
 
-    if not meeting.joining_active:
-        return HttpResponse("This meeting is not open for joining yet")
-
     # All is well with this member. Generate a key if necessary
     (key, created) = MemberMeetingKey.objects.get_or_create(member=member, meeting=meeting)
     if created:
@@ -168,11 +165,21 @@ def _meeting(request, member, meeting, isproxy):
     if key.proxyname and not isproxy:
         return HttpResponse("You have assigned a proxy attendee for this meeting ({0}). This means you cannot attend the meeting yourself.".format(key.proxyname))
 
-    return render(request, 'membership/meeting.html', {
-        'member': member,
-        'meeting': meeting,
-        'key': key,
+    if meeting.meetingtype == MeetingType.WEB:
+        return render(request, 'membership/webmeeting.html', {
+            'member': member,
+            'meeting': meeting,
+            'key': key,
+            'is_admin': request.user.is_superuser,
         })
+    elif meeting.meetingtype == MeetingType.IRC:
+        return render(request, 'membership/meeting.html', {
+            'member': member,
+            'meeting': meeting,
+            'key': key,
+        })
+    else:
+        raise Exception("Unknown meeting type")
 
 
 @login_required
@@ -186,6 +193,45 @@ def meeting(request, meetingid):
 def meeting_by_key(request, meetingid, token):
     key = get_object_or_404(MemberMeetingKey, proxyaccesskey=token)
     return _meeting(request, key.member, key.meeting, True)
+
+
+def _webmeeting(request, key):
+    if not settings.MEETINGS_WS_BASE_URL:
+        raise Http404
+
+    is_admin = key.meeting.meetingadmins.filter(pk=key.member.pk).exists()
+
+    return render(request, 'membership/webmeeting_implementation.html', {
+        'meeting': key.meeting,
+        'member': key.member,
+        'key': key,
+        'is_admin': is_admin,
+        'wsbaseurl': settings.MEETINGS_WS_BASE_URL.rstrip("/"),
+    })
+
+
+@login_required
+def webmeeting(request, meetingid):
+    meeting = get_object_or_404(Meeting, pk=meetingid)
+    member = get_object_or_404(Member, user=request.user)
+
+    # At this point the user must have a key for this meeting. If not, we redirect them back to
+    # get one. And if they have a key, the permissions checks have been done there.
+    try:
+        key = MemberMeetingKey.objects.get(member=member, meeting=meeting)
+    except MemberMeetingKey.DoesNotExist:
+        return HttpResponseRedirect("../")
+
+    # If a proxy is assigned, the original member is not allowed to join
+    if key.proxyaccesskey:
+        return HttpResponseRedirect("../")
+
+    return _webmeeting(request, key)
+
+
+def webmeeting_by_key(request, meetingid, token):
+    key = get_object_or_404(MemberMeetingKey, proxyaccesskey=token)
+    return _webmeeting(request, key)
 
 
 @login_required

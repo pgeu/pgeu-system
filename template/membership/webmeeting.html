@@ -1,0 +1,52 @@
+{%extends "nav_account.html"%}
+{%block title%}Meeting{%endblock%}
+{%block content%}
+<h1>{{meeting.name}}</h1>
+
+{%if meeting.is_finsihed%}
+<p>
+ This meeting has finished.
+</p>
+{%else%}
+{%if meeting.is_open %}
+{%if meeting.is_started %}
+ <p>
+  This meeting has started and is no longer allowing new attendees. If you were already connected
+  and got disconnected, you may re-join the room.
+ </p>
+{%else%}
+<p>
+ This meeting is open and you can now join.
+</p>
+{%endif%}
+
+<p>
+ <a href="join/" class="btn btn-primary btn-large">{%if meeting.is_started%}Re-join{%else%}Join{%endif%} meeting</a>
+</p>
+
+<h3>Join from another device</h3>
+<p>
+ You can only be joined to the meeting from once device at a time. You
+ can join from a different device by logging in on that device, or you
+ can use <a href="join/{{key.key}}/">this</a> link. Be very careful when
+ using this link, as it will automatically log you in to the meeting
+ as yourself, so <em>never</em> share this link with somebody else!
+</p>
+
+{%else%}
+<p>
+ This meeting is not yet open. It will start on
+ {{meeting.dateandtime|date:"Y-m-d H:i"}}, in
+ {{meeting.dateandtime|timeuntil}}.
+</p>
+<p>
+ You will be able to enter the meeting room ahead of it starting at
+ {{meeting.opentime|date:"Y-m-d H:i"}}, in
+ {{meeting.opentime|timeuntil}}.
+</p>
+{%endif%}
+{%endif%}
+
+<a href="../" class="btn btn-outline-dark">Return to list of meetings</a>
+
+{%endblock%}

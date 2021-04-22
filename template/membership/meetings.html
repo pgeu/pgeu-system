@@ -17,11 +17,9 @@ already generated), and then follow the instructions on that page.
 </p>
 <ul>
 {%for m in meetings%}
- <li>{%if m.joining_active%}
-   <a href="{{m.id}}/">{{m.name}}</a> ({%if m.key%}Edit{%else%}Assign{%endif%} <a href="{{m.id}}/proxy/">proxy</a> voter)
-   {%else%}
-   {{m.name}} (not open yet. {%if m.key%}Edit{%else%}Assign{%endif%} <a href="{{m.id}}/proxy/">proxy</a> voter)
-   {%endif%} ({{m.dateandtime}})</li>
+ <li>
+   <a href="{{m.id}}/">{{m.name}}</a> ({%if m.key%}Edit{%else%}Assign{%endif%} <a href="{{m.id}}/proxy/">proxy</a> voter) ({{m.dateandtime}})
+ </li>
 {%endfor%}
 </ul>
 {%else%}

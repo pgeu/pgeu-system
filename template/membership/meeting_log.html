@@ -1,0 +1,39 @@
+{%extends "adm/admin_base.html" %}
+{%block title%}Meeting log - {{meeting.name}}{%endblock%}
+
+{%block layoutblock%}
+<h1>Meeting log - {{meeting.name}}</h1>
+{%if meeting.state == 0 %}
+<h2>This meeting is not open yet!</h2>
+{%elif meeting.state == 1%}
+<h2>This meeting is in progress!</h2>
+{%elif meeting.state == 2%}
+<h2>This meeting is finished (but has not been closed)</h2>
+{%endif%}
+<p>
+ <a class="btn btn-default" href="?format=csv">Download csv</a>
+{%if numextra%}
+<form method="post" action=".">{% csrf_token %}<input type="hidden" name="op" value="removeextra">
+ <input type="submit" class="btn btn-primary confirm-btn" data-confirm="This will remove all entries prior to the meeting opening and past the meeting closing ({{numextra}} entries)" value="Remove extra entries">
+</form>
+{%endif%}
+</p>
+<table class="table table-bordered table-striped table-hover table-condensed">
+ <thead>
+  <tr>
+   <th>Time</th>
+   <th>Sender</th>
+   <th>Message</th>
+  </tr>
+ </thead>
+ <tbody>
+{%for l in log %}
+  <tr{%if not l.inmeeting%} class="warning"{%endif%}>
+   <td>{{l.t}}</td>
+   <td>{{l.sender.fullname}}</td>
+   <td>{{l.message}}</td>
+  </tr>
+{%endfor%}
+ </tbody>
+</table>
+{%endblock%}

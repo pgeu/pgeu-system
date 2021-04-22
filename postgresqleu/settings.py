@@ -201,6 +201,15 @@ TREASURER_EMAIL = DEFAULT_EMAIL
 # performance overhead) is used.
 RELOAD_WATCH_DIRECTORIES = []
 
+# If using the web based meetings, base URL for the web sockets server that
+# handles the messages.
+# Typically something like wss://some.domain.org/ws/meeting
+MEETINGS_WS_BASE_URL = None
+# If using the web based meetings, base URL to retrieve the status for the
+# meeting server. If it starts with /, a unix socket in that location will
+# be used instead of TCP.
+MEETINGS_STATUS_BASE_URL = None
+
 # If there is a local_settings.py, let it override our settings
 try:
     from .local_settings import *

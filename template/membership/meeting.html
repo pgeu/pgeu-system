@@ -4,11 +4,22 @@
 <h2>{{meeting.name}}</h2>
 <table class="table table-small">
   <tr><th>Date and time:</th><td>{{meeting.dateandtime|date:"Y-m-d H:i"}}</td></tr>
+{%if meeting.is_open%}
   <tr><th>Your personal authentication key:</th><td><code>{{key.key}}</code></td></tr>
   <tr><th>IRC network:</th><td> irc.freenode.net</td></tr>
   <tr><th>Bot name:</th><td> {{meeting.botname}}</td></tr>
+{%endif%}
 </table>
 </p>
+
+{%if not meeting.is_open%}
+<h3>Meeting not open yet</h3>
+<p>
+ This meeting is not open for joining yet. Once it is, this page will
+ list the connection information and the key reqired to connect. Until
+ then, please preview the instructions below.
+</p>
+{%endif%}
 
 <h3>Joining this meeting</h3>
 <p>
@@ -22,6 +33,7 @@ invite to the channel.
    choose an appropriate nickname - once you have joined the channel
    our bot will not allow you to change it, so that we can properly track
    votes.</li>
+{%if meeting.is_open%}
  <li>Send a message to the bot <i>{{meeting.botname}}</i> with your code
    in it, like this:
    <blockquote>
@@ -35,6 +47,10 @@ invite to the channel.
  <li>Await response from the bot which will tell you how to join the
    channel.
  </li>
+{%else%}
+ <li>Authenticate yourself to the meeting bot. Instructions will be
+  posted once the channel is open.</li>
+{%endif%}
 </ol>
 
 <p>

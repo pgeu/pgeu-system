@@ -1,0 +1,339 @@
+body {
+    margin: 0px;
+    overflow: hidden;
+    min-height: 100%;
+    font-size: 1rem;
+    font-family: 'Open Sans', sans-serif;
+    background-color: #c6dbeb;
+}
+
+h1 {
+    background-color: #336791;
+    padding: 0.5em;
+    color: white;
+    margin-top: -1px !important;
+}
+
+
+@media (min-width: 768px) {
+    .grid-wrapper {
+	height: calc(100vh - 2rem);
+	display: grid;
+	grid-gap: 1rem;
+	grid-template-areas:
+	    "header header"
+		"chat   status"
+		"chat   poll"
+		"chat   attendees"
+		"chat   control"
+		"input  control";
+	grid-template-columns: 1fr 0.2fr;
+	grid-template-rows: auto auto auto 1fr auto auto;
+    }
+}
+
+@media (max-width: 767px) {
+    .grid-wrapper {
+	height: calc(100vh - 2rem);
+	display: grid;
+	grid-gap: 0.2rem;
+	grid-template-areas:
+	    "header"
+	    "status"
+	    "poll"
+	    "chat"
+	    "input";
+	grid-template-rows: auto auto auto 1fr auto;
+    }
+    .meeting-attendees {
+	display: none;
+    }
+    #meeting-control {
+	display: none;
+    }
+    tr.meeting-row {
+	display: inline-grid;
+	grid-template-columns: auto 1fr auto;
+	width: 100%;
+    }
+    tr.meeting-row .meeting-col-name {
+        border: none;
+	white-space: inherit;
+    }
+    tr.meeting-row td.meeting-col-text {
+	grid-column: span 2;
+	margin-left: 1rem;
+    }
+
+    .slideuponsmall {
+	margin-top: -300px;
+	transition: margin 0.5s ease;
+    }
+}
+
+textarea {
+    resize: none;
+    white-space: nowrap;
+    height: 75%;
+}
+
+.meeting-header {
+    grid-area: header;
+    text-align: center;
+}
+.meeting-header h1 {
+    margin-block-start: 0.1rem;
+    margin-bottom: auto;
+}
+.meeting-header div.toggles {
+    text-align: left;
+    margin-left: 1.5em;
+    margin-top: 1.5em;
+    margin-bottom: -1.5em;
+}
+#meeting-status-wrap {
+    grid-area: status;
+    text-align: center;
+    margin-right: 2em;
+    margin-top: 1.5em;
+    align-content: center;
+    padding-right: 1.5em;
+    padding-left: 1.25em;
+}
+#meeting-status {
+    padding: 0.5rem;
+    border-radius: 0.4rem;
+    font-size: 0.9rem;
+}
+#meeting-disconnect-button {
+    width: 100%;
+    margin-top: 0.3rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+}
+#spacer {
+    height: 0.5em;
+}
+.status-error {
+    background-color: #ffad99;
+    color: #990000;
+}
+.status-warning {
+    background-color: #ffffb3;
+    color: #999900;
+}
+.status-normal {
+    background-color: #99ffbb;
+    color: #009900;
+}
+
+.meeting-chat {
+    grid-area: chat;
+    overflow-y: scroll;
+    border: 1px solid black;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 0.25rem;
+    margin: 1.5rem;
+    background-color: white !important;
+}
+.meeting-chat table {
+    width: 100%;
+}
+
+#meeting-poll {
+    grid-area: poll;
+    display: none;
+    overflow-y: scroll;
+    text-align: center;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    align-content: center;
+}
+#meeting-poll button {
+    width: 80%;
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+}
+#meeting-poll meter {
+    width: 100%;
+}
+#meeting-poll p {
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+}
+input[id^=new_poll_] {
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+}
+button[id^=poll-button-] {
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+    width: 90% !important;
+    margin: 0.1em;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+.meeting-attendees {
+    grid-area: attendees;
+    overflow-y: scroll;
+    font-size: 1rem;
+    background-color: white;
+    margin-left: 1.45em;
+    margin-right: 3.3em;
+    margin-bottom: -1em;
+    padding-top: 1em;
+    padding-bottom: 0.5em;
+    color: #336791;
+}
+.meeting-attendees ul {
+    padding-left: 2.5rem;
+}
+.meeting-attendees ul li {
+    padding-bottom: 0.3rem;
+}
+.meeting-attendees h2 {
+    margin-block-start: 0px;
+    text-align: center;
+    font-size: 2vmin;
+}
+.meeting-attendees .admin-user-checkmark {
+    display: none;
+    margin-left: 0.5rem;
+}
+.meeting-attendees .admin-user-button {
+  display: inline-block;
+  margin-left: 1rem;
+  cursor: pointer;
+}
+#meeting-control {
+    grid-area: control;
+}
+
+.meeting-input {
+    grid-area: input;
+    margin-left: 1.5em;
+    margin-right: 1.5em;
+    margin-top: -1em !important;
+    margin-bottom: -1em !important;
+}
+.meeting-row {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    color: #333333;
+}
+.meeting-row:hover {
+    background-color: #ecf3f8;
+}
+.meeting-row td {
+    display: table-cell;
+    vertical-align: top;
+    padding-left: 0.5rem;
+    padding: 0.4em;
+}
+.meeting-col-time {
+    padding-right: 1rem;
+    border-right: 1px solid white;
+    white-space: nowrap;
+}
+.meeting-col-name {
+    padding-right: 2rem;
+    border-right: 1px solid white;
+}
+
+.meeting-col-text {
+    width: 80%;
+}
+.meeting-input {
+    display: grid;
+    grid-template-columns: 1fr auto;
+}
+.meeting-row-date td {
+    font-family: 'Inter', sans-serif !important;
+    background-color: #8eb6d7;
+    text-align: center;
+    height: 2rem;
+}
+#meeting-input-text {
+    margin-right: 1rem;
+    font-family: 'Inter', sans-serif !important;
+}
+#meeting-send-button {
+    font-family: 'Inter', sans-serif !important;
+    height: 80%;
+}
+.meeting-row-sys {
+    color: gray;
+    font-family: 'Inter', sans-serif !important;
+}
+
+#meeting-control div {
+    width: 100%;
+    margin-right: 1.5em;
+}
+#meeting-control button {
+    width: 100%;
+}
+#controls-finished {
+    display: none;
+}
+#controls-in-open {
+    display: none;
+}
+#poll_time {
+    width: 3rem;
+    font-family: 'Inter', sans-serif;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+#new_poll_question {
+    font-family: 'Inter', sans-serif;
+    width: 95%;
+}
+#btn-finish-meeting {
+    width: 90% !important;
+    margin-top: 0.3rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    margin-right: 5em !important;
+}
+#btn-open-meeting {
+    width: 90% !important;
+    margin-top: 0.3rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    margin-right: 5em !important;
+}
+#btn-new-poll {
+    width: 90% !important;
+    margin-top: 0.3rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+}
+#btn-abort-poll {
+    width: 90% !important;
+    margin-top: 0.3rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+}
+
+
+/* Toggle:able user color styles */
+.usercolors .user-color-1 {
+    color: #439A86;
+}
+.usercolors .user-color-2 {
+    color: #5b2333;
+}
+.usercolors .user-color-3 {
+    color: #ff006e;
+}
+.usercolors .user-color-4 {
+    color: #8338ec;
+}
+.usercolors .user-color-5 {
+    color: #3a86ff;
+}

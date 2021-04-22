@@ -175,6 +175,7 @@ def admin_dashboard(request):
         'bank_file_uploads': bank_file_uploads,
         'schedalert': conditional_exec_to_scalar(request.user.is_superuser, "SELECT NOT EXISTS (SELECT 1 FROM pg_stat_activity WHERE application_name='pgeu scheduled job runner' AND datname=current_database())"),
         'mailqueuealert': conditional_exec_to_scalar(request.user.is_superuser, "SELECT EXISTS (SELECT 1 FROM mailqueue_queuedmail LIMIT 1)"),
+        'meetingserver': settings.ENABLE_MEMBERSHIP and settings.MEETINGS_STATUS_BASE_URL,
     })
 
 

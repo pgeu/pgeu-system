@@ -1,8 +1,8 @@
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.utils.html import escape
-from django.db import transaction
-from django.http import HttpResponseRedirect
+from django.db import transaction, connection
+from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.contrib import messages
 from django.conf import settings
 
@@ -10,9 +10,14 @@ from postgresqleu.util.backendviews import backend_list_editor, backend_process_
 from postgresqleu.util.auth import authenticate_backend_group
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.membership.models import MembershipConfiguration, get_config, Member
+from postgresqleu.membership.models import Meeting, MeetingMessageLog
+from postgresqleu.membership.models import MeetingType
 from postgresqleu.membership.backendforms import BackendMemberForm, BackendMeetingForm
 from postgresqleu.membership.backendforms import BackendConfigForm
 from postgresqleu.membership.backendforms import BackendMemberSendEmailForm
+
+import csv
+import requests
 
 
 def edit_config(request):
@@ -107,3 +112,75 @@ def edit_meeting(request, rest):
                                topadmin='Membership',
                                return_url='/admin/',
     )
+
+
+def meeting_log(request, meetingid):
+    authenticate_backend_group(request, 'Membership administrators')
+
+    meeting = get_object_or_404(Meeting, pk=meetingid)
+
+    if meeting.meetingtype != MeetingType.WEB:
+        messages.warning(request, "Meeting log is only available for web meetings")
+        return HttpResponseRedirect("../")
+
+    log = MeetingMessageLog.objects.select_related('sender').only('t', 'message', 'sender__fullname').filter(meeting=meeting)
+
+    if request.method == 'POST':
+        with transaction.atomic():
+            curs = connection.cursor()
+            curs.execute("""DELETE FROM membership_meetingmessagelog l WHERE meeting_id=%(meetingid)s AND (
+ t < (SELECT min(t) FROM membership_meetingmessagelog l2 WHERE l2.meeting_id=%(meetingid)s AND l2.message='This meeting is now open.')
+OR
+ t > (SELECT max(t) FROM membership_meetingmessagelog l3 WHERE l3.meeting_id=%(meetingid)s AND l3.message='This meeting is now finished.')
+)""", {'meetingid': meetingid})
+            messages.info(request, 'Removed {} entries from meeting {}.'.format(curs.rowcount, meetingid))
+            return HttpResponseRedirect(".")
+
+    if request.GET.get('format', None) == 'csv':
+        response = HttpResponse(content_type='text/csv; charset=utf8')
+        response['Content-Disposition'] = 'attachment;filename={} log.csv'.format(meeting.name)
+        c = csv.writer(response, delimiter=';')
+        c.writerow(['Time', 'Sender', 'Text'])
+        for l in log:
+            c.writerow([l.t, l.sender.fullname if l.sender else '', l.message])
+        return response
+    else:
+        log = list(log.extra(select={
+            'inmeeting': "CASE WHEN t < (SELECT min(t) FROM membership_meetingmessagelog l2 WHERE l2.meeting_id=membership_meetingmessagelog.meeting_id AND message='This meeting is now open.') OR t > (SELECT max(t) FROM membership_meetingmessagelog l3 WHERE l3.meeting_id=membership_meetingmessagelog.meeting_id AND message='This meeting is now finished.') THEN false ELSE true END",
+        }))
+        return render(request, 'membership/meeting_log.html', {
+            'meeting': meeting,
+            'log': log,
+            'numextra': sum(0 if l.inmeeting else 1 for l in log),
+            'topadmin': 'Membership',
+            'breadcrumbs': (
+                ('/admin/membership/meetings/', 'Meetings'),
+                ('/admin/membership/meetings/{}/'.format(meeting.pk), meeting.name),
+            ),
+        })
+
+
+def meetingserverstatus(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied("Access denied")
+
+    if not settings.MEETINGS_STATUS_BASE_URL:
+        raise Http404()
+
+    try:
+        if settings.MEETINGS_STATUS_BASE_URL.startswith('/'):
+            import requests_unixsocket
+            with requests_unixsocket.Session() as s:
+                r = s.get("http+unix://{}/__meetingstatus".format(settings.MEETINGS_STATUS_BASE_URL.replace('/', '%2F')), timeout=5)
+        else:
+            r = requests.get("{}/__meetingstatus".format(settings.MEETINGS_STATUS_BASE_URL), timeout=5)
+        r.raise_for_status()
+        error = None
+    except Exception as e:
+        error = str(e)
+
+    return render(request, 'membership/meeting_server_status.html', {
+        'status': None if error else r.json(),
+        'error': error,
+        'topadmin': 'Membership',
+    })

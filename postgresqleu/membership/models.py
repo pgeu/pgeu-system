@@ -9,7 +9,26 @@ from postgresqleu.countries.models import Country
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.membership.util import country_validator_choices
 
+from collections import OrderedDict
 from datetime import timedelta
+
+
+class MeetingType:
+    IRC = 0
+    WEB = 1
+
+    CHOICES = OrderedDict((
+        (IRC, "IRC"),
+        (WEB, "Web"),
+    ))
+
+
+STATE_CHOICES = OrderedDict((
+    (0, 'Pending'),
+    (1, 'Started'),
+    (2, 'Finished'),
+    (3, 'Closed'),
+))
 
 
 class MembershipConfiguration(models.Model):
@@ -87,7 +106,10 @@ class Meeting(models.Model):
     dateandtime = models.DateTimeField(null=False, blank=False, verbose_name="Date and time")
     allmembers = models.BooleanField(null=False, blank=False, verbose_name="Open to all members")
     members = models.ManyToManyField(Member, blank=True, verbose_name="Open to specific members")
-    botname = models.CharField(max_length=50, null=False, blank=True)
+    meetingtype = models.IntegerField(null=False, blank=False, default=0, choices=MeetingType.CHOICES.items(), verbose_name="Meeting type")
+    meetingadmins = models.ManyToManyField(Member, blank=True, related_name='admin_of_meetings', verbose_name="Meeting administrators")
+    state = models.IntegerField(null=False, blank=False, default=0, choices=STATE_CHOICES.items())
+    botname = models.CharField(max_length=50, null=False, blank=True, verbose_name='Bot name')
 
     def __str__(self):
         return "%s (%s)" % (self.name, self.dateandtime)
@@ -96,16 +118,40 @@ class Meeting(models.Model):
         ordering = ['-dateandtime', ]
 
     @property
-    def joining_active(self):
-        if timezone.now() > self.dateandtime - timedelta(hours=4):
+    def is_open(self):
+        # Is this meeting open for joining (doesn't mean it has started!)
+        if timezone.now() > self.opentime:
             return True
         return False
+
+    @property
+    def opentime(self):
+        return self.dateandtime - timedelta(hours=2)
+
+    @property
+    def is_started(self):
+        return self.state == 1
+
+    @property
+    def is_finished(self):
+        return self.state == 2
 
     def get_key_for(self, member):
         try:
             return MemberMeetingKey.objects.get(meeting=self, member=member)
         except MemberMeetingKey.DoesNotExist:
             return None
+
+    @property
+    def _display_meetingtype(self):
+        return MeetingType.CHOICES.get(self.meetingtype, 'Unknown')
+
+    @property
+    def _display_state(self):
+        if self.meetingtype == MeetingType.WEB:
+            return STATE_CHOICES.get(self.state, 'Unknown')
+        else:
+            return ''
 
 
 class MemberMeetingKey(models.Model):
@@ -114,6 +160,20 @@ class MemberMeetingKey(models.Model):
     key = models.CharField(max_length=100, null=False, blank=False)
     proxyname = models.CharField(max_length=200, null=True, blank=False)
     proxyaccesskey = models.CharField(max_length=100, null=True, blank=False)
+    allowrejoin = models.BooleanField(null=False, blank=False, default=False)
 
     class Meta:
         unique_together = (('member', 'meeting'), )
+
+
+class MeetingMessageLog(models.Model):
+    t = models.DateTimeField(null=False, blank=False)
+    meeting = models.ForeignKey(Meeting, null=False, blank=False, on_delete=models.CASCADE)
+    sender = models.ForeignKey(Member, null=True, blank=True, on_delete=models.PROTECT)
+    message = models.TextField()
+
+    class Meta:
+        indexes = (
+            models.Index(fields=('meeting', 't')),
+        )
+        ordering = ('meeting', 't', )

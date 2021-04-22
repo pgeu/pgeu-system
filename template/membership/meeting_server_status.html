@@ -1,0 +1,41 @@
+{%extends "adm/admin_base.html" %}
+{%block title%}Meeting server status{%endblock%}
+
+{%block layoutblock%}
+<h1>Meeting server status</h1>
+{%if error%}
+<h2>Error</h2>
+<p>{{error}}</p>
+{%else%}
+<p>
+ Connected to meeting server, running since {{status.upsince}}.
+</p>
+{%for m in status.meetings%}
+<h2>Meeting {{m.id}}</h2>
+<p><strong>State:</strong> {{m.state}}</p>
+<h4>{{m.members|length}} active members</h4>
+<ul>
+{%for a in m.members%}
+ <li>{{a.name}}{%if a.admin%} (<strong>ADMIN</strong>){%endif%}</li>
+{%endfor%}
+</ul>
+<h4>{{m.disconnectedmembers|length}} disconnected members</h4>
+<ul>
+{%for a in m.disconnectedmembers%}
+ <li>{{a.name}}{%if a.admin%} (<strong>ADMIN</strong>){%endif%}</li>
+{%endfor%}
+</ul>
+{%endfor%}
+{%if status.runtime%}
+<h3 style="margin-top: 6rem">Server runtime statistics</h3>
+<table class="table table-sm">
+{%for k,v in status.runtime.items %}
+<tr>
+ <td>{{k}}</td>
+ <td>{{v}}</td>
+</tr>
+{%endfor%}
+</table>
+{%endif%}
+{%endif%}
+{%endblock%}

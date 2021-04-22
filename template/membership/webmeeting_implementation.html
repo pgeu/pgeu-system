@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script type="text/javascript" src="/media/js/webmeeting.js" async defer></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/media/css/webmeeting.css" />
+  </head>
+  <body class="usercolors">
+    <div class="grid-wrapper meeting-content" data-meetingid="{{meeting.id}}" data-key="{{key.key}}" data-wsbaseurl="{{wsbaseurl}}" data-userid="{{user.id}}">
+      <div class="meeting-header">
+       <h1>
+          <img src="/media/img/transparent-logo.png" height="1.5%" width="1.5%">
+          &nbsp;{{meeting.name}}
+        </h1>
+        <div class="toggles">
+         <input type="checkbox" id="cb_usercolors" CHECKED> Colored names
+        </div>
+      </div>
+
+      <div id="meeting-status-wrap">
+       <div id="meeting-status">
+        STATUS
+       </div>
+       <div id="spacer"></div>
+       <button id="meeting-disconnect-button">Disconnect</button>
+      </div>
+
+      <div class="meeting-chat">
+        <table>
+        </table>
+      </div>
+
+      <div class="meeting-input">
+        <textarea id="meeting-input-text"></textarea>
+        <button id="meeting-send-button">Send</button>
+      </div>
+
+      <div id="meeting-poll">
+       <h2>Active poll</h2>
+       <p id="poll-question"></p>
+{%for o in "01234"|make_list %}
+       <button class="poll-button" id="poll-button-{{o}}"></button>
+{%endfor%}
+       <meter id="poll-meter" min="0" max="0"></meter>
+      </div>
+
+      <div class="meeting-attendees">
+        <h2>Meeting attendees</h2>
+        <ul class="meeting-attendee-list">
+        </ul>
+      </div>
+
+{%if is_admin%}
+      <div id="meeting-control">
+        <h2>Meeting controls</h2>
+	<div class="controls-in-open">
+         <div id="controls-new-poll">
+          <h3>Create poll</h3>
+          <table border="0">
+           <tr>
+            <td>Q</td>
+            <td><input type="text" id="new_poll_question" placeholder="Enter question"></td>
+           </tr>
+{%for o in "01234"|make_list %}
+           <tr>
+            <td>A{{forloop.counter}}</td>
+            <td><input type="text" id="new_poll_{{o}}" placeholder="Enter answer {{forloop.counter}}"></td>
+           </tr>
+{%endfor%}
+          </table>
+          <div>Active for: <input type="number" id="poll_time" value="5"> minutes</div>
+          <button id="btn-new-poll">Start poll</button>
+         </div>
+	 <div id="controls-abort-poll">
+	  <button id="btn-abort-poll">Abort poll</button>
+	 </div>
+	</div>
+        <div id="controls-closed">
+          <button id="btn-open-meeting">Open meeting</button>
+        </div>
+        <div class="controls-in-open">
+          <button id="btn-finish-meeting">Finish meeting</button>
+        </div>
+	<div id="controls-finished">
+	 This meeting is finished, no more controls.
+	</div>
+      </div>
+{%endif%}
+
+    </div>
+  </body>
+</html>
