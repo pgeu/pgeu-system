@@ -1,13 +1,16 @@
 import django.forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 from collections import OrderedDict
+from datetime import timedelta
 
+from postgresqleu.util.time import time_sinceoruntil, datetime_string
 from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget
 from postgresqleu.util.backendforms import BackendForm
 from postgresqleu.membership.models import Member, MemberLog, Meeting, MembershipConfiguration
-from postgresqleu.membership.models import MeetingType
+from postgresqleu.membership.models import MeetingType, MeetingReminder
 from postgresqleu.membership.backendlookups import MemberLookup
 
 
@@ -66,9 +69,62 @@ class BackendMemberForm(BackendForm):
         }
 
 
+class BackendMeetingReminderForm(BackendForm):
+    helplink = 'meetings'
+    list_fields = ['sendat', 'sentat', ]
+    readonly_fields = ['sentat', ]
+
+    class Meta:
+        model = MeetingReminder
+        fields = ['sendat', 'sentat', ]
+
+    def clean_sendat(self):
+        if self.cleaned_data.get('sendat', None):
+            print("FOO: %s" % self.cleaned_data.get('sendat', None))
+            print("FOO2: %s" % self.instance.meeting.dateandtime)
+            if self.cleaned_data.get('sendat') > self.instance.meeting.dateandtime - timedelta(minutes=30):
+                raise ValidationError("Reminder must be set at least 30 minutes before the meeting starts!")
+            if self.cleaned_data.get('sendat') < timezone.now():
+                raise ValidationError("This timestamp is in the past!")
+        else:
+            print("BAR")
+        return self.cleaned_data.get('sendat', None)
+
+    def clean(self):
+        d = super().clean()
+        if self.instance.sentat:
+            raise ValidationError("Cannot edit a reminder that has already been sent")
+        return d
+
+
+class MeetingReminderManager(object):
+    title = 'Reminders'
+    singular = 'Reminder'
+    can_add = True
+
+    def get_list(self, instance):
+        return [
+            (r.id, "{} ({})".format(datetime_string(r.sendat),
+                                    time_sinceoruntil(r.sendat)),
+             r.sentat is not None
+            ) for r in MeetingReminder.objects.filter(meeting=instance)]
+
+    def get_form(self, obj, POST):
+        return BackendMeetingReminderForm
+
+    def get_object(self, masterobj, subid):
+        return MeetingReminder.objects.get(meeting=masterobj, pk=subid)
+
+    def get_instancemaker(self, masterobj):
+        return lambda: MeetingReminder(meeting=masterobj)
+
+
 class BackendMeetingForm(BackendForm):
     helplink = 'meetings'
     list_fields = ['name', 'dateandtime', 'meetingtype', 'state']
+    linked_objects = OrderedDict({
+        'reminders': MeetingReminderManager(),
+    })
     extrabuttons = [
         ('View meeting log', 'log/'),
     ]

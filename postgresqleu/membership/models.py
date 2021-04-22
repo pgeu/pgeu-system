@@ -153,6 +153,30 @@ class Meeting(models.Model):
         else:
             return ''
 
+    def get_all_attendees(self):
+        if self.allmembers:
+            return Member.objects.filter(paiduntil__gte=self.dateandtime)
+        else:
+            # Specific members only, but we still require them to be active
+            return self.members.filter(paiduntil__gte=self.dateandtime)
+
+
+class MeetingReminder(models.Model):
+    meeting = models.ForeignKey(Meeting, null=False, blank=False, on_delete=models.CASCADE)
+    sendat = models.DateTimeField(null=False, blank=False, verbose_name='Send reminder at',
+                                  help_text="Reminder will be sent within approximately 15-20 minutes of this timestamp")
+    sentat = models.DateTimeField(null=True, blank=True, verbose_name='Reminder sent at')
+
+    class Meta:
+        ordering = ('meeting', 'sendat', )
+        indexes = [
+            models.Index(
+                name='idx_membership_reminder_unsent',
+                fields=('sendat', ),
+                condition=models.Q(sentat__isnull=True)
+            ),
+        ]
+
 
 class MemberMeetingKey(models.Model):
     member = models.ForeignKey(Member, null=False, blank=False, on_delete=models.CASCADE)
