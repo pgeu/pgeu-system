@@ -19,8 +19,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=100)),
-                ('dateandtime', models.DateTimeField()),
-                ('allmembers', models.BooleanField()),
+                ('dateandtime', models.DateTimeField(verbose_name='Date and time')),
+                ('allmembers', models.BooleanField(verbose_name='Open to all members')),
                 ('botname', models.CharField(max_length=50)),
             ],
             options={
@@ -61,7 +61,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='meeting',
             name='members',
-            field=models.ManyToManyField(to='membership.Member', blank=True),
+            field=models.ManyToManyField(to='membership.Member', blank=True, verbose_name='Open to specific members'),
         ),
         migrations.AlterUniqueTogether(
             name='membermeetingkey',

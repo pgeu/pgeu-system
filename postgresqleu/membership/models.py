@@ -84,10 +84,10 @@ class MemberLog(models.Model):
 
 class Meeting(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)
-    dateandtime = models.DateTimeField(null=False, blank=False)
-    allmembers = models.BooleanField(null=False, blank=False)
-    members = models.ManyToManyField(Member, blank=True)
-    botname = models.CharField(max_length=50, null=False, blank=False)
+    dateandtime = models.DateTimeField(null=False, blank=False, verbose_name="Date and time")
+    allmembers = models.BooleanField(null=False, blank=False, verbose_name="Open to all members")
+    members = models.ManyToManyField(Member, blank=True, verbose_name="Open to specific members")
+    botname = models.CharField(max_length=50, null=False, blank=True)
 
     def __str__(self):
         return "%s (%s)" % (self.name, self.dateandtime)
