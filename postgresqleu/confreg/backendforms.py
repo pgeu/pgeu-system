@@ -139,6 +139,15 @@ class BackendSuperConferenceForm(BackendForm):
             'paymentmethods': django.forms.CheckboxSelectMultiple,
         }
 
+    fieldsets = [
+        {'id': 'base_info', 'legend': 'Basic information', 'fields': ['conferencename', 'urlname', 'series', 'location', 'confurl',
+                                                                      'jinjadir', 'administrators']},
+        {'id': 'time', 'legend': 'Timing information', 'fields': ['startdate', 'enddate', 'tzname']},
+        {'id': 'contact', 'legend': 'Contact information', 'fields': ['contactaddr', 'sponsoraddr', 'notifyaddr']},
+        {'id': 'financial', 'legend': 'Financial information', 'fields': ['accounting_object', 'vat_registrations',
+                                                                          'vat_sponsorship', 'paymentmethods']},
+    ]
+
     def fix_fields(self):
         self.fields['paymentmethods'].label_from_instance = lambda x: "{0}{1}".format(x.internaldescription, x.active and " " or " (INACTIVE)")
         self.fields['accounting_object'].choices = [('', '----'), ] + [(o.name, o.name) for o in postgresqleu.accounting.models.Object.objects.filter(active=True)]
