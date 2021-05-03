@@ -281,6 +281,8 @@ if 'INVOICE_NOTIFICATION_RECEIVER' not in globals():
 if 'SCHEDULED_JOBS_EMAIL_SENDER' not in globals():
     SCHEDULED_JOBS_EMAIL_SENDER = SCHEDULED_JOBS_EMAIL
 
+# NOTE! Turning on the debug toolbar *breaks* manual queries for conferences due to how the
+# timezones are handled. Access through the django ORM still works.
 if DEBUG and DEBUG_TOOLBAR:
     MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
     INSTALLED_APPS.append('debug_toolbar')
