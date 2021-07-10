@@ -153,6 +153,13 @@ class BackendSuperConferenceForm(BackendForm):
         self.fields['accounting_object'].choices = [('', '----'), ] + [(o.name, o.name) for o in postgresqleu.accounting.models.Object.objects.filter(active=True)]
         if not self.instance.id:
             self.remove_field('accounting_object')
+        else:
+            # Ensure accounting object is actually in the fieldset (yes, this is an ugly workaround)
+            for fs in self.fieldsets:
+                if fs['id'] == 'api':
+                    if 'accounting_object' not in fs['fields']:
+                        fs['fields'] += ['accounting_object', ]
+                    break
 
     def pre_create_item(self):
         # Create a new accounting object automatically if one does not exist already
