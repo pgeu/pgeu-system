@@ -418,6 +418,10 @@ def get_conference_or_404(urlname):
     return conference
 
 
+def activate_conference_timezone(conference):
+    timezone.activate(conference.tzname)
+
+
 def send_conference_notification(conference, subject, message):
     if conference.notifyaddr:
         send_simple_mail(conference.notifyaddr,

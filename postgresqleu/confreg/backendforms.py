@@ -11,10 +11,12 @@ from django.conf import settings
 
 import datetime
 from collections import OrderedDict
+from urllib.parse import urlparse
 from psycopg2.extras import DateTimeTZRange
 import pytz
 
 from postgresqleu.util.db import exec_to_single_list, exec_to_scalar
+from postgresqleu.util.crypto import generate_rsa_keypair
 from postgresqleu.util.forms import SelectSetValueField
 from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget, MonospaceTextarea
 from postgresqleu.util.widgets import TagOptionsTextWidget
@@ -134,7 +136,7 @@ class BackendSuperConferenceForm(BackendForm):
         fields = ['conferencename', 'urlname', 'series', 'startdate', 'enddate', 'location',
                   'tzname', 'contactaddr', 'sponsoraddr', 'notifyaddr', 'confurl', 'administrators',
                   'jinjadir', 'accounting_object', 'vat_registrations', 'vat_sponsorship',
-                  'paymentmethods', ]
+                  'paymentmethods', 'web_origins']
         widgets = {
             'paymentmethods': django.forms.CheckboxSelectMultiple,
         }
@@ -146,6 +148,7 @@ class BackendSuperConferenceForm(BackendForm):
         {'id': 'contact', 'legend': 'Contact information', 'fields': ['contactaddr', 'sponsoraddr', 'notifyaddr']},
         {'id': 'financial', 'legend': 'Financial information', 'fields': ['accounting_object', 'vat_registrations',
                                                                           'vat_sponsorship', 'paymentmethods']},
+        {'id': 'api', 'legend': 'API access', 'fields': ['web_origins', ]}
     ]
 
     def fix_fields(self):
@@ -167,6 +170,12 @@ class BackendSuperConferenceForm(BackendForm):
                                                                                      defaults={'active': True})
         self.instance.accounting_object = obj
 
+    def post_save(self):
+        # If we haven't got an RSA key for this conference yet, create it here
+        if not self.instance.key_public:
+            self.instance.key_private, self.instance.key_public = generate_rsa_keypair()
+            self.instance.save(update_fields=['key_private', 'key_public'])
+
     def clean_tzname(self):
         # The entry for timezone is already validated against the pytz setup which should
         # normally be the same as the one in PostgreSQL, but we verify it against the
@@ -177,6 +186,20 @@ class BackendSuperConferenceForm(BackendForm):
             raise ValidationError("This timezone does not to exist in the database")
 
         return self.cleaned_data['tzname']
+
+    def clean_web_origins(self):
+        for o in self.cleaned_data['web_origins'].split(','):
+            if o == '':
+                continue
+            try:
+                p = urlparse(o.strip())
+            except Exception:
+                raise ValidationError("Could not parse url {}".format(o))
+            if not p.scheme or not p.netloc:
+                raise ValidationError("Incomplete url {}".format(o))
+
+        # Re-join string without any spaces
+        return ",".join(o.strip() for o in self.cleaned_data['web_origins'].split(','))
 
 
 class BackendConferenceSeriesForm(BackendForm):

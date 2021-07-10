@@ -44,6 +44,7 @@ work from here.
         * [Campaigns](integrations#campaigns)
     * [Copying from another conference](copyfromother)
     * [Skinning the conference pages](skinning)
+	* [Providing registration data](regprovider)
 
 
 ## Membership

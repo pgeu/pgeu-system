@@ -3,6 +3,9 @@ from django.core.exceptions import ValidationError
 from Cryptodome.PublicKey import RSA
 from Cryptodome.Hash import SHA256, SHA1
 from Cryptodome.Signature import pkcs1_15
+from Cryptodome.Util.number import long_to_bytes
+
+import base64
 
 
 def validate_pem_public_key(value):
@@ -51,3 +54,15 @@ def rsa_verify_string_sha1(publickeystr, msg, sig):
     except ValueError:
         # Raises ValueError if the signature is wrong
         return False
+
+
+def rsa_get_jwk_struct(publickeystr, kid):
+    key = RSA.importKey(publickeystr)
+    return {
+        'use': 'sig',
+        'alg': 'RS256',
+        'kty': 'RSA',
+        'kid': kid,
+        'n': base64.urlsafe_b64encode(long_to_bytes(key.publickey().n)).strip(b'=').decode(),
+        'e': base64.urlsafe_b64encode(long_to_bytes(key.publickey().e)).strip(b'=').decode(),
+    }

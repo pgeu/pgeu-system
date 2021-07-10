@@ -17,6 +17,7 @@ import postgresqleu.confreg.pdfschedule
 import postgresqleu.confreg.volsched
 import postgresqleu.confreg.checkin
 import postgresqleu.confreg.twitter
+import postgresqleu.confreg.api
 import postgresqleu.confwiki.views
 import postgresqleu.account.views
 import postgresqleu.invoices.views
@@ -150,6 +151,9 @@ urlpatterns.extend([
     url(r'^events/([^/]+)/register/signup/(?:.*)-(\d+)/$', postgresqleu.confwiki.views.signup),
     url(r'^events/([^/]+)/register/ticket/$', postgresqleu.confreg.views.download_ticket),
     url(r'^events/([^/]+)/register/viewticket/$', postgresqleu.confreg.views.view_ticket),
+    url(r'^events/([^/]+)/\.well-known/jwks\.json', postgresqleu.confreg.api.jwk_json),
+    url(r'^events/([^/]+)/register/access/', postgresqleu.confreg.api.conference_temp_token),
+    url(r'^events/([^/]+)/register/token/', postgresqleu.confreg.api.conference_jwt),
 
     # Opt out of communications
     url(r'^events/optout/$', postgresqleu.confreg.views.optout),

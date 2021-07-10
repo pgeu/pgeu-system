@@ -100,3 +100,9 @@ Invoice payment options
 addons to this conference. This does not include sponsorship invoices,
 but it does include the invoices that sponsors will get if they for
 example buy extra vouchers.
+
+Allowed web origins for API calls
+:  A list of allowed web origins for making [API calls](regprovider).
+This will be used both for validating a redirect URL and for
+controlling what must be in the Origin header when making an API
+call to get the JWT token.

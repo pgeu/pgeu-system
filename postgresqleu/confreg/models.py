@@ -215,6 +215,9 @@ class Conference(models.Model):
     series = models.ForeignKey(ConferenceSeries, null=False, blank=False, on_delete=models.CASCADE)
     personal_data_purged = models.DateTimeField(null=True, blank=True, help_text="Personal data for registrations for this conference have been purged")
     initial_common_countries = models.ManyToManyField(Country, blank=True, help_text="Initial set of common countries")
+    key_public = models.TextField(null=False, blank=True, verbose_name="Public RSA key for signatures")
+    key_private = models.TextField(null=False, blank=True, verbose_name="Private RSA key for signatures")
+    web_origins = models.CharField(null=False, blank=True, max_length=1000, verbose_name="Allowed web origins for API calls (comma separated list)")
 
     # Attributes that are safe to access in jinja templates
     _safe_attributes = ('active', 'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
@@ -638,6 +641,14 @@ class ConferenceRegistration(models.Model):
     @property
     def is_volunteer(self):
         return self.volunteers_set.exists()
+
+    @property
+    def is_admin(self):
+        if self.attendee_id is None:
+            return False
+        if self.conference.administrators.filter(id=self.attendee_id).exists():
+            return True
+        return False
 
     @property
     def is_checkinprocessor(self):
@@ -1551,3 +1562,9 @@ class CrossConferenceEmailRecipient(models.Model):
         unique_together = (
             ('email', 'address'),
         )
+
+
+class ConferenceRegistrationTemporaryToken(models.Model):
+    reg = models.OneToOneField(ConferenceRegistration, null=False, blank=False, unique=True, on_delete=models.CASCADE)
+    token = models.TextField(null=False, blank=False, unique=True)
+    expires = models.DateTimeField(null=False, blank=False)
