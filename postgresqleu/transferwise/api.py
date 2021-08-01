@@ -133,7 +133,16 @@ class TransferwiseApi(object):
         )['transactions']
 
     def validate_iban(self, iban):
-        return self.get('validators/iban?iban={}'.format(iban))['validation'] == 'success'
+        try:
+            return self.get('validators/iban?iban={}'.format(iban))['validation'] == 'success'
+        except requests.exceptions.HTTPError as e:
+            # API returns http 400 on (some?) failed validations that are just not validating.
+            # In those cases, just set it to not being valid.
+            if e.response.status_code == 400:
+                return False
+
+            # Bubble any other exceptions
+            raise
 
     def get_structured_amount(self, amount):
         if amount['currency'] != settings.CURRENCY_ABBREV:
