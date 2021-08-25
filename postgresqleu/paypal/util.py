@@ -181,38 +181,22 @@ class PaypalAPI(object):
             yield r
 
     def get_primary_balance(self):
-        # The new Paypal APIs don't offer a way to get the balance other than to check
-        # transactions. So we do that. Start at todays date going back week by week until we find
-        # a transaction, and then use the ending balance from that.
-        d = timezone.now()
-        while True:
-            r = self._rest_api_call('v1/reporting/transactions/', {
-                'start_date': self._dateformat(d - timedelta(days=8)),
-                'end_date': self._dateformat(d + timedelta(days=1)),
-                'fields': 'transaction_info',
-                'page_size': 500,
-            })
-            if r.status_code != 200:
-                raise Exception("Failed to get transactions: %s" % r.json()['message'])
-            if len(r.json()['transaction_details']) == 0:
-                # No transactions found, so move back
-                d -= timedelta(days=6)
-                if d < timezone.now() - timedelta(days=180):
-                    raise Exception("No transactions found going back 180 days, giving up")
-                continue
-            maxdate = None
-            balance = None
-            for t in r.json()['transaction_details']:
-                d = datetime.strptime(t['transaction_info']['transaction_updated_date'], '%Y-%m-%dT%H:%M:%S%z')
-                if maxdate is None or d > maxdate:
-                    maxdate = d
-                    if t['transaction_info']['ending_balance']['currency_code'] != settings.CURRENCY_ISO:
-                        raise Exception("Invalid currency {0}, expected {1}".format(
-                            t['transaction_info']['ending_balance']['currency_code'],
-                            settings.CURRENCY_ISO
-                        ))
-                    balance = Decimal(t['transaction_info']['ending_balance']['value'])
-            return balance
+        r = self._rest_api_call('v1/reporting/balances', {
+            'currency_code': settings.CURRENCY_ISO,
+        })
+        if r.status_code != 200:
+            raise Exception("Failed to get paypal balance: %s" % r.json()['message'])
+        j = r.json()
+
+        for b in j['balances']:
+            if b['primary']:
+                if b['currency'] != settings.CURRENCY_ISO:
+                    raise Exception("Mismatched currency on primary account: %s" % j['balances'])
+                if b['total_balance']['currency_code'] != settings.CURRENCY_ISO:
+                    raise Exception("Mismatched currency on total balance: %s" % b)
+                return Decimal(b['total_balance']['value'])
+
+        raise Exception("No primary balance found in %s" % j['balances'])
 
     def refund_transaction(self, paypaltransid, amount, isfull, refundnote):
         r = self._rest_api_post(
