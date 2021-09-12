@@ -51,6 +51,15 @@ class Command(BaseCommand):
         # Download all currently pending reports (that we can)
         for report in Report.objects.filter(downloadedat=None).order_by('receivedat'):
             pm = report.paymentmethod.get_implementation()
+            if not report.url.endswith('.csv'):
+                with transaction.atomic():
+                    report.downloadedat = timezone.now()
+                    report.processedat = timezone.now()
+                    report.save()
+                    AdyenLog(message="Report {} is not of type csv, ignoring but flagging as downloaded and processed".format(report.url), error=True, paymentmethod=report.paymentmethod).save()
+                continue
+
+            # Now that we know it's a CSV, download the contents of the report
             try:
                 with transaction.atomic():
                     if self.verbose:
