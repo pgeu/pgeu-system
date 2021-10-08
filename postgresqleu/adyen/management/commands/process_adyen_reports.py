@@ -56,7 +56,12 @@ class Command(BaseCommand):
                     report.downloadedat = timezone.now()
                     report.processedat = timezone.now()
                     report.save()
-                    AdyenLog(message="Report {} is not of type csv, ignoring but flagging as downloaded and processed".format(report.url), error=True, paymentmethod=report.paymentmethod).save()
+                    if report.url.endswith('.pdf') or report.url.endswith('.xlsx'):
+                        # For known file-types, just log it and not as an error.
+                        AdyenLog(message="Report {} is not of type csv, ignoring but flagging as downloaded and processed".format(report.url), error=False, paymentmethod=report.paymentmethod).save()
+                    else:
+                        # For unknown types, log as an error in case this is something broken.
+                        AdyenLog(message="Report {} is of unknown type, ignoring but flagging as downloaded and processed".format(report.url), error=True, paymentmethod=report.paymentmethod).save()
                 continue
 
             # Now that we know it's a CSV, download the contents of the report
