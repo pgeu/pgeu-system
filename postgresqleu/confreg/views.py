@@ -2228,7 +2228,7 @@ def download_ticket(request, confname):
     reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
 
     resp = HttpResponse(content_type='application/pdf')
-    render_jinja_ticket(reg, resp, systemroot=JINJA_TEMPLATE_ROOT)
+    render_jinja_ticket(reg, resp, JINJA_TEMPLATE_ROOT, settings.FONTROOT)
     return resp
 
 

@@ -26,10 +26,12 @@ Access to the PostgreSQL database must work without password.
 
 Other dependencies
 ------------------
-For invoice generation to work, DejaVu needs to be installed in
-/usr/share/fonts/truetype/ttf-dejavu/
+For invoice generation and tickets/badges to work, the DejaVu fonts
+need to be installed. The default location is
+  /usr/share/fonts/truetype/ttf-dejavu/
+but it can be overriden by setting FONTROOT in local_settings.py f necessary.
 
-On debian, just install ttf-dejavu.
+On debian, just install the ttf-dejavu package (fonts-dejavu on Bullseye and newer).
 
 
 macOS support

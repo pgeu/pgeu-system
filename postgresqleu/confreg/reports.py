@@ -1,5 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.conf import settings
 
 from reportlab.lib import colors
 from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph
@@ -368,7 +369,7 @@ class ReportWriterPdf(ReportWriterBase):
     def render(self):
         resp = HttpResponse(content_type='application/pdf')
 
-        registerFont(TTFont('DejaVu Serif', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf"))
+        registerFont(TTFont('DejaVu Serif', "{}/DejaVuSerif.ttf".format(settings.FONTROOT)))
         pagesize = self.orientation == 'portrait' and A4 or landscape(A4)
         doc = SimpleDocTemplate(resp, pagesize=pagesize)
 
@@ -509,7 +510,7 @@ ORDER BY {}""".format(where, ", ".join([o.get_orderby_field() for o in ofields])
     elif format == 'badge':
         try:
             resp = HttpResponse(content_type='application/pdf')
-            render_jinja_badges(conference, result, resp, borders, pagebreaks)
+            render_jinja_badges(conference, settings.FONTROOT, result, resp, borders, pagebreaks)
             return resp
         except Exception as e:
             return HttpResponse("Exception occured: %s" % e, content_type='text/plain')

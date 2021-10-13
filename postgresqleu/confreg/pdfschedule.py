@@ -41,7 +41,7 @@ def _get_pagesize(size, orient):
 
 def _setup_canvas(pagesize, orientation):
     resp = HttpResponse(content_type='application/pdf')
-    registerFont(TTFont('DejaVu Serif', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf"))
+    registerFont(TTFont('DejaVu Serif', "{}/DejaVuSerif.ttf".format(settings.FONTROOT)))
     ps = _get_pagesize(pagesize, orientation)
     (width, height) = ps
     canvas = Canvas(resp, pagesize=ps)

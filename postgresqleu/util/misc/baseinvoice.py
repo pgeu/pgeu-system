@@ -38,9 +38,9 @@ class PDFBase(object):
         self.canvas.setAuthor(settings.ORG_NAME)
         self.canvas._doc.info.producer = "{0} Invoicing System".format(settings.ORG_NAME)
 
-        registerFont(TTFont('DejaVu Serif', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf"))
-        registerFont(TTFont('DejaVu Serif Italic', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif-Italic.ttf"))
-        registerFont(TTFont('DejaVu Serif Bold', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif-Bold.ttf"))
+        registerFont(TTFont('DejaVu Serif', "{}/DejaVuSerif.ttf".format(settings.FONTROOT)))
+        registerFont(TTFont('DejaVu Serif Italic', "{}/DejaVuSerif-Italic.ttf".format(settings.FONTROOT)))
+        registerFont(TTFont('DejaVu Serif Bold', "{}/DejaVuSerif-Bold.ttf".format(settings.FONTROOT)))
 
     def trimstring(self, s, maxlen, fontname, fontsize):
         while len(s) > 5:

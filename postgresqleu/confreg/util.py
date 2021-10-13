@@ -165,7 +165,7 @@ def send_welcome_email(reg):
 
     if reg.conference.tickets:
         buf = BytesIO()
-        render_jinja_ticket(reg, buf, systemroot=JINJA_TEMPLATE_ROOT)
+        render_jinja_ticket(reg, buf, JINJA_TEMPLATE_ROOT, settings.FONTROOT)
         attachments = [
             ('{0}_ticket.pdf'.format(reg.conference.urlname), 'application/pdf', buf.getvalue()),
         ]

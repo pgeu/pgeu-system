@@ -201,7 +201,7 @@ def test_inlist(v, l):
 
 
 class JinjaRenderer(object):
-    def __init__(self, rootdir, templatefile, debug=False, systemroot=None):
+    def __init__(self, rootdir, templatefile, fontroot, debug=False, systemroot=None):
         if rootdir:
             self.templatedir = os.path.join(rootdir, 'templates')
         else:
@@ -211,8 +211,8 @@ class JinjaRenderer(object):
 
         self.border = self.pagebreaks = False
 
-        registerFont(TTFont('DejaVu Serif', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif.ttf"))
-        registerFont(TTFont('DejaVu Serif Bold', "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSerif-Bold.ttf"))
+        registerFont(TTFont('DejaVu Serif', "{}/DejaVuSerif.ttf".format(fontroot)))
+        registerFont(TTFont('DejaVu Serif Bold', "{}/DejaVuSerif-Bold.ttf".format(fontroot)))
 
         if self.templatedir and os.path.exists(os.path.join(self.templatedir, templatefile)):
             template = os.path.join(self.templatedir, templatefile)
@@ -281,8 +281,8 @@ class JinjaRenderer(object):
 
 
 class JinjaBadgeRenderer(JinjaRenderer):
-    def __init__(self, rootdir, debug=False, border=False, pagebreaks=False, systemroot=None):
-        super(JinjaBadgeRenderer, self).__init__(rootdir, 'badge.json', debug, systemroot=systemroot)
+    def __init__(self, rootdir, fontroot, debug=False, border=False, pagebreaks=False, systemroot=None):
+        super(JinjaBadgeRenderer, self).__init__(rootdir, 'badge.json', fontroot, debug=debug, systemroot=systemroot)
 
         self.border = border
         self.pagebreaks = pagebreaks
@@ -295,8 +295,8 @@ class JinjaBadgeRenderer(JinjaRenderer):
 
 
 class JinjaTicketRenderer(JinjaRenderer):
-    def __init__(self, rootdir, debug=False, systemroot=None):
-        super(JinjaTicketRenderer, self).__init__(rootdir, 'ticket.json', debug, systemroot=systemroot)
+    def __init__(self, rootdir, fontroot, debug=False, systemroot=None):
+        super(JinjaTicketRenderer, self).__init__(rootdir, 'ticket.json', fontroot, debug=debug, systemroot=systemroot)
 
     def add_reg(self, reg, conference):
         self.add_to_story({
@@ -307,8 +307,8 @@ class JinjaTicketRenderer(JinjaRenderer):
 
 # Render badges from within the website scope, meaning we have access to the
 # django objects here.
-def render_jinja_badges(conference, registrations, output, border, pagebreaks):
-    renderer = JinjaBadgeRenderer(conference.jinjadir, border=border, pagebreaks=pagebreaks)
+def render_jinja_badges(conference, fontroot, registrations, output, border, pagebreaks):
+    renderer = JinjaBadgeRenderer(conference.jinjadir, fontroot, border=border, pagebreaks=pagebreaks)
 
     for reg in registrations:
         renderer.add_badge(reg, conference.safe_export())
@@ -316,8 +316,8 @@ def render_jinja_badges(conference, registrations, output, border, pagebreaks):
     renderer.render(output)
 
 
-def render_jinja_ticket(registration, output, systemroot):
-    renderer = JinjaTicketRenderer(registration.conference.jinjadir, systemroot=systemroot)
+def render_jinja_ticket(registration, output, systemroot, fontroot):
+    renderer = JinjaTicketRenderer(registration.conference.jinjadir, fontroot, systemroot=systemroot)
     renderer.add_reg(registration.safe_export(), registration.conference.safe_export())
     renderer.render(output)
 
@@ -344,11 +344,11 @@ if __name__ == "__main__":
         a = json.load(f)
 
     if args.what == 'badge':
-        renderer = JinjaBadgeRenderer(args.repopath, debug=True, border=args.borders, pagebreaks=args.pagebreaks)
+        renderer = JinjaBadgeRenderer(args.repopath, fontroot, debug=True, border=args.borders, pagebreaks=args.pagebreaks)
         for reg in a:
             renderer.add_badge(reg, conference)
     else:
-        renderer = JinjaTicketRenderer(args.repopath, debug=True)
+        renderer = JinjaTicketRenderer(args.repopath, fontroot, debug=True)
         renderer.add_reg(a[0], conference)
 
     with open(args.outputfile, 'wb') as output:

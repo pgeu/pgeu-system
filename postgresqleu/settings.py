@@ -119,6 +119,9 @@ INSTALLED_APPS = [
     'postgresqleu.membership',
 ]
 
+# Root directory for truetype fonts
+FONTROOT = "/usr/share/fonts/truetype/ttf-dejavu"
+
 # List of IP addresses (v4 and v6) that is allowed to access monitoring urls
 MONITOR_SERVER_IPS = []
 
