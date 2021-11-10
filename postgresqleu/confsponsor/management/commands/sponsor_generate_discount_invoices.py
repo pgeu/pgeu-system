@@ -86,7 +86,7 @@ class Command(BaseCommand):
                     '%s\n%s' % (code.sponsor.name, code.sponsor.invoiceaddr),
                     '{0} discount code {1}'.format(code.conference, code.code),
                     timezone.now(),
-                    today_global() + timedelta(days=1),
+                    timezone.now() + timedelta(days=1),
                     invoicerows,
                     accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
                     accounting_object=code.conference.accounting_object,

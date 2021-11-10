@@ -1,7 +1,7 @@
 from django.utils import timezone
 from django.conf import settings
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 import base64
 import os
 
@@ -157,11 +157,14 @@ def create_sponsor_invoice(user, sponsor, override_duedate=None):
         duedate = override_duedate
     elif conference.startdate < today_conference() + timedelta(days=5):
         # If conference happens in the next 5 days, invoice is due immediately
-        duedate = today_conference()
+        duedate = timezone.now()
     elif conference.startdate < today_conference() + timedelta(days=30):
         # Less than 30 days before the conference, set the due date to
         # 5 days before the conference
-        duedate = conference.startdate - timedelta(days=5)
+        duedate = timezone.make_aware(datetime.combine(
+            conference.startdate - timedelta(days=5),
+            timezone.now().time()
+        ))
     else:
         # More than 30 days before the conference, set the due date
         # to 30 days from now.
@@ -289,7 +292,7 @@ def create_voucher_invoice(conference, invoiceaddr, user, rt, num):
         invoiceaddr,
         'Prepaid vouchers for %s' % conference.conferencename,
         timezone.now(),
-        today_conference(),
+        timezone.now(),
         invoicerows,
         processor=processor,
         accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
