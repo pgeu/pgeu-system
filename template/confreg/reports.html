@@ -109,6 +109,10 @@ input#dlgSelectFieldCountText {
 	  <td><select name="orientation" id="selOrientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></td>
 	</tr>
 	<tr>
+	  <td>PDF pagesize:</td>
+	  <td><select name="pagesize" id="selPagesize"><option value="A4">A4</option><option value="letter">Letter</option></td>
+	</tr>
+	<tr>
 	  <td>Borders</td>
 	  <td><input type="checkbox" name="border" CHECKED id="cbBorders"> include table and badge borders</td>
 	<tr>
@@ -212,6 +216,7 @@ function getReportDefinition() {
     orderby2: $('#selOrderby2').val(),
     format: $('#selFormat').val(),
     orientation: $('#selOrientation').val(),
+    pagesize: $('#selPagesize').val(),
     borders: $('#cbBorders').is(":checked"),
     pagebreaks: $('#cbPagebreaks').is(":checked"),
   };
@@ -374,6 +379,7 @@ $(function() {
           $('#selOrderby2').val(data.orderby2);
           $('#selFormat').val(data.format);
           $('#selOrientation').val(data.orientation);
+          $('#selPagesize').val(data.pagesize);
           $('#cbBorders').prop('checked', data.borders);
           $('#cbPagebreaks').prop('checked', data.pagebreaks);
 

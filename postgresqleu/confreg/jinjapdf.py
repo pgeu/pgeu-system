@@ -8,7 +8,7 @@ import re
 import operator
 
 from reportlab.lib.units import mm
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, LETTER, landscape
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.pdfbase.pdfmetrics import registerFont
@@ -201,11 +201,15 @@ def test_inlist(v, l):
 
 
 class JinjaRenderer(object):
-    def __init__(self, rootdir, templatefile, fontroot, debug=False, systemroot=None):
+    def __init__(self, rootdir, templatefile, fontroot, debug=False, systemroot=None, orientation='portrait', pagesize='A4'):
         if rootdir:
             self.templatedir = os.path.join(rootdir, 'templates')
         else:
             self.templatedir = None
+
+        self.pagesize = LETTER if pagesize == 'letter' else A4
+        if orientation != 'portrait':
+            self.pagesize = landscape(self.pagesize)
 
         self.debug = debug
 
@@ -276,13 +280,13 @@ class JinjaRenderer(object):
             self.story.append(PageBreak())
 
     def render(self, output):
-        doc = SimpleDocTemplate(output, pagesize=A4, leftMargin=10 * mm, topMargin=5 * mm, rightMargin=10 * mm, bottomMargin=5 * mm)
+        doc = SimpleDocTemplate(output, pagesize=self.pagesize, leftMargin=10 * mm, topMargin=5 * mm, rightMargin=10 * mm, bottomMargin=5 * mm)
         doc.build(self.story)
 
 
 class JinjaBadgeRenderer(JinjaRenderer):
-    def __init__(self, rootdir, fontroot, debug=False, border=False, pagebreaks=False, systemroot=None):
-        super(JinjaBadgeRenderer, self).__init__(rootdir, 'badge.json', fontroot, debug=debug, systemroot=systemroot)
+    def __init__(self, rootdir, fontroot, debug=False, border=False, pagebreaks=False, systemroot=None, orientation='portrait', pagesize='A4'):
+        super(JinjaBadgeRenderer, self).__init__(rootdir, 'badge.json', fontroot, debug=debug, systemroot=systemroot, orientation=orientation, pagesize=pagesize)
 
         self.border = border
         self.pagebreaks = pagebreaks
@@ -307,8 +311,8 @@ class JinjaTicketRenderer(JinjaRenderer):
 
 # Render badges from within the website scope, meaning we have access to the
 # django objects here.
-def render_jinja_badges(conference, fontroot, registrations, output, border, pagebreaks):
-    renderer = JinjaBadgeRenderer(conference.jinjadir, fontroot, border=border, pagebreaks=pagebreaks)
+def render_jinja_badges(conference, fontroot, registrations, output, border, pagebreaks, orientation, pagesize):
+    renderer = JinjaBadgeRenderer(conference.jinjadir, fontroot, border=border, pagebreaks=pagebreaks, orientation=orientation, pagesize=pagesize)
 
     for reg in registrations:
         renderer.add_badge(reg, conference.safe_export())

@@ -15,7 +15,7 @@ from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib import colors
 from reportlab.platypus import Table, TableStyle, Paragraph
 from reportlab.lib.styles import ParagraphStyle
-from reportlab.lib.pagesizes import A3, A4, landscape
+from reportlab.lib.pagesizes import A3, A4, LETTER, landscape
 from reportlab.pdfbase.pdfmetrics import registerFont
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.styles import getSampleStyleSheet
@@ -36,6 +36,10 @@ def _get_pagesize(size, orient):
         return A3
     if so == ('a3', 'l'):
         return landscape(A3)
+    if so == ('letter', 'p'):
+        return LETTER
+    if so == ('letter', 'l'):
+        return landscape(LETTER)
     raise Exception("Unknown papersize")
 
 
@@ -332,7 +336,7 @@ class PdfScheduleForm(forms.Form):
     day = forms.ModelChoiceField(label='Days to include', queryset=None, empty_label='(all days)', required=False)
     tracks = forms.ModelMultipleChoiceField(label='Tracks to include', queryset=None, required=True, help_text="Filter for some tracks. By default, all tracks are included.")
     colored = forms.BooleanField(label='Colored tracks', required=False)
-    pagesize = forms.ChoiceField(label='Page size', choices=(('a4', 'A4'), ('a3', 'A3')))
+    pagesize = forms.ChoiceField(label='Page size', choices=(('a4', 'A4'), ('a3', 'A3'), ('letter', 'Letter')))
     orientation = forms.ChoiceField(label='Orientation', choices=(('p', 'Portrait'), ('l', 'Landscape')))
     pagesperday = forms.ChoiceField(label='Pages per day', choices=((1, 1), (2, 2), (3, 3)), help_text="Not used for per-room schedules. Page breaks happen only at cross - schedule sessions.")
     titledatefmt = forms.CharField(label='Title date format', help_text="strftime format specification used to print the date in the title of the first page for each day")

@@ -4,7 +4,7 @@ from django.conf import settings
 
 from reportlab.lib import colors
 from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph
-from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.pagesizes import A4, LETTER, landscape
 from reportlab.pdfbase.pdfmetrics import registerFont
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.styles import getSampleStyleSheet
@@ -363,14 +363,17 @@ class ReportWriterCsv(ReportWriterBase):
 
 
 class ReportWriterPdf(ReportWriterBase):
-    def set_orientation(self, orientation):
+    def set_orientation_and_size(self, orientation, pagesize):
         self.orientation = orientation
+        self.pagesize = pagesize
 
     def render(self):
         resp = HttpResponse(content_type='application/pdf')
 
         registerFont(TTFont('DejaVu Serif', "{}/DejaVuSerif.ttf".format(settings.FONTROOT)))
-        pagesize = self.orientation == 'portrait' and A4 or landscape(A4)
+        pagesize = LETTER if self.pagesize == 'letter' else A4
+        if self.orientation != 'portrait':
+            pagesize = landscape(pagesize)
         doc = SimpleDocTemplate(resp, pagesize=pagesize)
 
         story = []
@@ -400,6 +403,7 @@ def build_attendee_report(request, conference, data):
     title = data['title']
     format = data['format']
     orientation = data['orientation']
+    pagesize = data.get('pagesize', 'A4')
     borders = data['borders']
     pagebreaks = data['pagebreaks']
     fields = data['fields']
@@ -500,7 +504,7 @@ ORDER BY {}""".format(where, ", ".join([o.get_orderby_field() for o in ofields])
         writer = ReportWriterHtml(request, conference, title, borders)
     elif format == 'pdf':
         writer = ReportWriterPdf(request, conference, title, borders)
-        writer.set_orientation(orientation)
+        writer.set_orientation_and_size(orientation, pagesize)
     elif format == 'csv':
         writer = ReportWriterCsv(request, conference, title, borders)
     elif format == 'json':
@@ -510,7 +514,7 @@ ORDER BY {}""".format(where, ", ".join([o.get_orderby_field() for o in ofields])
     elif format == 'badge':
         try:
             resp = HttpResponse(content_type='application/pdf')
-            render_jinja_badges(conference, settings.FONTROOT, result, resp, borders, pagebreaks)
+            render_jinja_badges(conference, settings.FONTROOT, result, resp, borders, pagebreaks, orientation, pagesize)
             return resp
         except Exception as e:
             return HttpResponse("Exception occured: %s" % e, content_type='text/plain')
