@@ -79,7 +79,7 @@ class LevelListFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         cid = request.GET.get('conference__id__exact', -1)
-        if cid >= 0:
+        if int(cid) >= 0:
             return ((l.id, l.levelname) for l in SponsorshipLevel.objects.filter(conference__id=cid))
 
     def queryset(self, request, queryset):
