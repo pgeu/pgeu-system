@@ -14,7 +14,7 @@ def validate_eu_vat_number(number):
     numberonly = number[2:]
 
     try:
-        r = requests.post('http://ec.europa.eu/taxation_customs/vies/vatResponse.html', data={
+        r = requests.post('https://ec.europa.eu/taxation_customs/vies/vatResponse.html', data={
             'memberStateCode': country,
             'number': numberonly,
             'traderName': '',
