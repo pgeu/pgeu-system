@@ -129,9 +129,9 @@ def meeting_log(request, meetingid):
         with transaction.atomic():
             curs = connection.cursor()
             curs.execute("""DELETE FROM membership_meetingmessagelog l WHERE meeting_id=%(meetingid)s AND (
- t < (SELECT min(t) FROM membership_meetingmessagelog l2 WHERE l2.meeting_id=%(meetingid)s AND l2.message='This meeting is now open.')
+ t < (SELECT min(t) FROM membership_meetingmessagelog l2 WHERE l2.meeting_id=%(meetingid)s AND l2.message='This meeting is now open')
 OR
- t > (SELECT max(t) FROM membership_meetingmessagelog l3 WHERE l3.meeting_id=%(meetingid)s AND l3.message='This meeting is now finished.')
+ t > (SELECT max(t) FROM membership_meetingmessagelog l3 WHERE l3.meeting_id=%(meetingid)s AND l3.message='This meeting is now finished')
 )""", {'meetingid': meetingid})
             messages.info(request, 'Removed {} entries from meeting {}.'.format(curs.rowcount, meetingid))
             return HttpResponseRedirect(".")
@@ -146,7 +146,7 @@ OR
         return response
     else:
         log = list(log.extra(select={
-            'inmeeting': "CASE WHEN t < (SELECT min(t) FROM membership_meetingmessagelog l2 WHERE l2.meeting_id=membership_meetingmessagelog.meeting_id AND message='This meeting is now open.') OR t > (SELECT max(t) FROM membership_meetingmessagelog l3 WHERE l3.meeting_id=membership_meetingmessagelog.meeting_id AND message='This meeting is now finished.') THEN false ELSE true END",
+            'inmeeting': "CASE WHEN t < (SELECT min(t) FROM membership_meetingmessagelog l2 WHERE l2.meeting_id=membership_meetingmessagelog.meeting_id AND message='This meeting is now open') OR t > (SELECT max(t) FROM membership_meetingmessagelog l3 WHERE l3.meeting_id=membership_meetingmessagelog.meeting_id AND message='This meeting is now finished') THEN false ELSE true END",
         }))
         return render(request, 'membership/meeting_log.html', {
             'meeting': meeting,
