@@ -2,6 +2,7 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, get_object_or_404
 from django.utils.html import escape
 from django.db import transaction, connection
+from django.db.models import Count
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.contrib import messages
 from django.conf import settings
@@ -158,6 +159,35 @@ OR
                 ('/admin/membership/meetings/{}/'.format(meeting.pk), meeting.name),
             ),
         })
+
+
+def meeting_attendees(request, meetingid):
+    authenticate_backend_group(request, 'Membership administrators')
+
+    meeting = get_object_or_404(Meeting, pk=meetingid)
+
+    if meeting.meetingtype != MeetingType.WEB:
+        messages.warning(request, "Meeting log is only available for web meetings")
+        return HttpResponseRedirect("../")
+
+    # Django and multi-colun joins.. *sigh*. Let's make it a manual subquery instead
+    # because SQL is way easier than the django ORM...
+    attendees = Member.objects.only('fullname', 'user__username').select_related('user').filter(
+        membermeetingkey__meeting=meetingid,
+        membermeetingkey__allowrejoin=True,
+    ).extra(select={
+        'messagecount': '(SELECT count(*) FROM membership_meetingmessagelog l WHERE l.meeting_id=membership_membermeetingkey.meeting_id AND l.sender_id=membership_member.user_id)',
+    }).order_by('fullname')
+
+    return render(request, 'membership/meeting_attendees.html', {
+        'meeting': meeting,
+        'attendees': attendees,
+        'topadmin': 'Membership',
+        'breadcrumbs': (
+            ('/admin/membership/meetings/', 'Meetings'),
+            ('/admin/membership/meetings/{}/'.format(meeting.pk), meeting.name),
+        ),
+    })
 
 
 def meetingserverstatus(request):

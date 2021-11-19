@@ -403,6 +403,7 @@ if settings.ENABLE_MEMBERSHIP:
         url(r'^admin/membership/members/sendmail/$', postgresqleu.membership.backendviews.sendmail),
         url(r'^admin/membership/members/(.*/)?$', postgresqleu.membership.backendviews.edit_member),
         url(r'^admin/membership/meetings/(\d+)/log/$', postgresqleu.membership.backendviews.meeting_log),
+        url(r'^admin/membership/meetings/(\d+)/attendees/$', postgresqleu.membership.backendviews.meeting_attendees),
         url(r'^admin/membership/meetings/serverstatus/$', postgresqleu.membership.backendviews.meetingserverstatus),
         url(r'^admin/membership/meetings/(.*/)?$', postgresqleu.membership.backendviews.edit_meeting),
         url(r'^admin/membership/lookups/member/$', postgresqleu.membership.backendlookups.MemberLookup.lookup),

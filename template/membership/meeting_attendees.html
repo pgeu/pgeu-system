@@ -1,0 +1,27 @@
+{%extends "adm/admin_base.html" %}
+{%block title%}Meeting attendees - {{meeting.name}}{%endblock%}
+
+{%block layoutblock%}
+<h1>Meeting attendees - {{meeting.name}}</h1>
+<p>
+  Number of attendees: <strong>{{attendees|length}}</strong>
+</p>
+<table class="table table-bordered table-striped table-hover table-condensed">
+ <thead>
+  <tr>
+   <th>Name</th>
+   <th>username</th>
+   <th>Message count</th>
+  </tr>
+ </thead>
+ <tbody>
+{%for a in attendees %}
+  <tr>
+   <td>{{a.fullname}}</td>
+   <td>{{a.user.username}}</td>
+   <td>{{a.messagecount}}</td>
+  </tr>
+{%endfor%}
+ </tbody>
+</table>
+{%endblock%}

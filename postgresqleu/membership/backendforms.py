@@ -127,6 +127,7 @@ class BackendMeetingForm(BackendForm):
     })
     extrabuttons = [
         ('View meeting log', 'log/'),
+        ('View attendees', 'attendees/'),
     ]
 
     class Meta:
