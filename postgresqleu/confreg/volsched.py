@@ -150,7 +150,7 @@ def volunteerschedule_api(request, urlname, adm=False):
             status=code,
         )
 
-    # Req-query the database to pick up any changes, and return the complete object
+    # Re-query the database to pick up any changes, and return the complete object
     slot = VolunteerSlot.objects.prefetch_related('volunteerassignment_set', 'volunteerassignment_set__reg').filter(conference=conference, pk=slot.pk)[0]
     return HttpResponse(json.dumps({
         'err': None,
