@@ -127,18 +127,19 @@ def volunteerschedule_api(request, urlname, adm=False):
     # We should always have a valid slot
     slot = get_object_or_404(VolunteerSlot, conference=conference, pk=slotid)
 
+    code = None
     err = None
 
     if request.POST['op'] == 'signup':
         if volid != 0:
             raise PermissionDenied("Invalid post data")
-        err = _signup(request, conference, reg, is_admin, slot)
+        code, err = _signup(request, conference, reg, is_admin, slot)
     elif request.POST['op'] == 'remove':
-        err = _remove(request, conference, reg, is_admin, slot, volid)
+        code, err = _remove(request, conference, reg, is_admin, slot, volid)
     elif request.POST['op'] == 'confirm':
-        err = _confirm(request, conference, reg, is_admin, slot, volid)
+        code, err = _confirm(request, conference, reg, is_admin, slot, volid)
     elif request.POST['op'] == 'add':
-        err = _add(request, conference, reg, is_admin, slot, volid)
+        code, err = _add(request, conference, reg, is_admin, slot, volid)
     else:
         raise Http404()
 
@@ -146,7 +147,7 @@ def volunteerschedule_api(request, urlname, adm=False):
         return HttpResponse(
             json.dumps({'err': err}),
             content_type='application/json',
-            status=500,
+            status=code,
         )
 
     # Req-query the database to pick up any changes, and return the complete object
@@ -182,27 +183,29 @@ def volunteerschedule(request, urlname, adm=False):
 
 def _signup(request, conference, reg, adm, slot):
     if VolunteerAssignment.objects.filter(slot=slot, reg=reg).exists():
-        return "Already a volunteer for selected slot"
+        return 409, "Already a volunteer for selected slot"
     elif slot.countvols >= slot.max_staff:
-        return "Volunteer slot is already full"
+        return 409, "Volunteer slot is already full"
     elif VolunteerAssignment.objects.filter(reg=reg, slot__timerange__overlap=slot.timerange).exists():
-        return "Cannot sign up for an overlapping slot"
+        return 400, "Cannot sign up for an overlapping slot"
     else:
         a = VolunteerAssignment(slot=slot, reg=reg, vol_confirmed=True, org_confirmed=False)
         a.save()
         send_volunteer_notification(conference, a, 'Volunteer signed up', 'admin_notify_volunteer_signup.txt')
+        return 200, None
 
 
 def _add(request, conference, reg, adm, slot, volid):
     addreg = get_object_or_404(ConferenceRegistration, conference=conference, id=volid)
     if VolunteerAssignment.objects.filter(slot=slot, reg=addreg).exists():
-        return "Already a volunteer for selected slot"
+        return 409, "Already a volunteer for selected slot"
     elif slot.countvols >= slot.max_staff:
-        return "Volunteer slot is already full"
+        return 409, "Volunteer slot is already full"
     elif VolunteerAssignment.objects.filter(reg=addreg, slot__timerange__overlap=slot.timerange).exists():
-        return "Cannot add to an overlapping slot"
+        return 400, "Cannot add to an overlapping slot"
     else:
         VolunteerAssignment(slot=slot, reg=addreg, vol_confirmed=False, org_confirmed=True).save()
+        return 200, None
 
 
 def _remove(request, conference, reg, is_admin, slot, aid):
@@ -210,10 +213,12 @@ def _remove(request, conference, reg, is_admin, slot, aid):
         a = get_object_or_404(VolunteerAssignment, slot=slot, id=aid)
     else:
         a = get_object_or_404(VolunteerAssignment, slot=slot, reg=reg, id=aid)
+
     if a.org_confirmed and not is_admin:
-        return "Cannot remove a confirmed assignment. Please contact the volunteer schedule coordinator for manual processing."
+        return 403, "Cannot remove a confirmed assignment. Please contact the volunteer schedule coordinator for manual processing."
     else:
         a.delete()
+        return 200, None
 
 
 def _confirm(request, conference, reg, is_admin, slot, aid):
@@ -221,19 +226,21 @@ def _confirm(request, conference, reg, is_admin, slot, aid):
         # Admins can make organization confirms
         a = get_object_or_404(VolunteerAssignment, slot=slot, id=aid)
         if a.org_confirmed:
-            return "Assignment already confirmed"
+            return 209, "Assignment already confirmed"
         else:
             a.org_confirmed = True
             a.save()
+            return 200, None
     else:
         # Regular users can confirm their own sessions only
         a = get_object_or_404(VolunteerAssignment, slot=slot, reg=reg, id=aid)
         if a.vol_confirmed:
-            return "Assignment already confirmed"
+            return 209, "Assignment already confirmed"
         else:
             a.vol_confirmed = True
             a.save()
             send_volunteer_notification(conference, a, 'Volunteer slot confirmed', 'admin_notify_volunteer_confirmed.txt')
+            return 200, None
 
 
 def ical(request, urlname, token):
