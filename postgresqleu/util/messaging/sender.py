@@ -6,6 +6,7 @@ from django.db import transaction
 
 from datetime import timedelta
 import time
+import sys
 
 from postgresqleu.confreg.models import NotificationQueue
 from postgresqleu.confreg.models import ConferenceTweetQueue, ConferenceIncomingTweet
@@ -105,7 +106,7 @@ def send_pending_posts(providers):
             t.save(update_fields=['retweetstate'])
             numreposts += 1
         else:
-            self.stderr.write("Failed to repost on {}: {}\n".format(t.provider, msg))
+            sys.stderr.write("Failed to repost on {}: {}\n".format(t.provider, msg))
             err = True
 
     return not err, numposts, numreposts
