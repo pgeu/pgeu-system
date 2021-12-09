@@ -184,7 +184,7 @@ class Mastodon(object):
     def poll_public_posts(self, lastpoll, checkpoint):
         p = {
             'limit': 200,  # If it's this many, we should give up
-            'exclude_types': ['follow', 'favourite', 'reblog', 'poll'],
+            'exclude_types[]': ['follow', 'favourite', 'reblog', 'poll'],
         }
         if checkpoint:
             p['since_id'] = checkpoint
