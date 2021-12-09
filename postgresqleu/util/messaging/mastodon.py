@@ -184,7 +184,7 @@ class Mastodon(object):
     def poll_public_posts(self, lastpoll, checkpoint):
         p = {
             'limit': 200,  # If it's this many, we should give up
-            'exclude_types[]': ['follow', 'favourite', 'reblog', 'poll'],
+            'exclude_types[]': ['follow', 'favourite', 'reblog', 'poll', 'follow_request'],
         }
         if checkpoint:
             p['since_id'] = checkpoint
@@ -193,6 +193,11 @@ class Mastodon(object):
         r.raise_for_status()
 
         for n in r.json():
+            if n['type'] != 'mention':
+                # Sometimes  Mastodon may include a type that we don't know about, since it hadn't yet
+                # been added to the exclude_types. So ignore them if they show up.
+                continue
+
             s = n['status']
             d = {
                 'id': int(s['id']),
