@@ -546,7 +546,7 @@ class ConferenceRegistration(models.Model):
     nick = models.CharField(max_length=100, null=False, blank=True, verbose_name="Nickname")
     badgescan = models.BooleanField(null=False, blank=False, default=True, verbose_name="Allow sponsors get contact information by scanning badge")
     shareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Share e-mail address with sponsors")
-    photoconsent = models.NullBooleanField(null=True, blank=False, verbose_name="Consent to having your photo taken at the event by the organisers")
+    photoconsent = models.BooleanField(null=True, blank=False, verbose_name="Consent to having your photo taken at the event by the organisers")
 
     # Admin fields!
     payconfirmedat = models.DateTimeField(null=True, blank=True, verbose_name="Payment confirmed at")

@@ -19,6 +19,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conferenceregistration',
             name='photoconsent',
-            field=models.NullBooleanField(verbose_name='Consent to having your photo taken at the event by the organisers'),
+            field=models.BooleanField(null=True, verbose_name='Consent to having your photo taken at the event by the organisers'),
         ),
     ]
