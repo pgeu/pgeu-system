@@ -116,8 +116,8 @@ def banktransactions(request):
         else:
             raise Http404("Invalid request")
 
-    pendingtransactions = PendingBankTransaction.objects.order_by('created')
-    pendingmatchers = PendingBankMatcher.objects.order_by('created')
+    pendingtransactions = PendingBankTransaction.objects.select_related('method').order_by('created')
+    pendingmatchers = PendingBankMatcher.objects.select_related('foraccount', 'journalentry', 'journalentry__year').order_by('created')
 
     return render(request, 'invoices/banktransactions.html', {
         'transactions': pendingtransactions,
