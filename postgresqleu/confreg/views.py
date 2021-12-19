@@ -3771,7 +3771,7 @@ def admin_waitlist_sendmail(request, urlname):
 def admin_attendeemail(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
-    mails = AttendeeMail.objects.filter(conference=conference)
+    mails = AttendeeMail.objects.prefetch_related('regclasses', 'registrations', 'pending_regs', 'addopts').filter(conference=conference)
 
     if request.method == 'POST':
         form = AttendeeMailForm(conference, data=request.POST)
