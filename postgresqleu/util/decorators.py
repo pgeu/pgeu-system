@@ -21,10 +21,11 @@ def user_passes_test_or_error(test_func):
 
 # Exclude an URL from global logins, if they are enabled at all
 def global_login_exempt(view_func):
-    def wrapped_view(*args, **kwargs):
-        return view_func(*args, **kwargs)
+    @wraps(view_func)
+    def wrapped_view(request, *args, **kwargs):
+        return view_func(request, *args, **kwargs)
     wrapped_view.global_login_exempt = True
-    return wraps(view_func)
+    return wrapped_view
 
 
 # Require superuser
