@@ -1,5 +1,4 @@
 from functools import wraps
-from django.utils.decorators import available_attrs
 from django.http import HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 
@@ -10,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 # with the community auth system.
 def user_passes_test_or_error(test_func):
     def decorator(view_func):
-        @wraps(view_func, assigned=available_attrs(view_func))
+        @wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
             if test_func(request.user):
                 return view_func(request, *args, **kwargs)
@@ -25,7 +24,7 @@ def global_login_exempt(view_func):
     def wrapped_view(*args, **kwargs):
         return view_func(*args, **kwargs)
     wrapped_view.global_login_exempt = True
-    return wraps(view_func, assigned=available_attrs(view_func))(wrapped_view)
+    return wraps(view_func)
 
 
 # Require superuser
