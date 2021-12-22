@@ -39,7 +39,7 @@ class ScheduledJob(models.Model):
         )
 
     def __str__(self):
-        return self.classname
+        return "{}.{}".format(self.app, self.command)
 
     def clean(self):
         if self.scheduled_times and self.scheduled_interval:
