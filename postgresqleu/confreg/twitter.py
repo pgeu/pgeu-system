@@ -23,17 +23,18 @@ def post_conference_social(conference, contents, approved=False, posttime=None, 
     if not posttime:
         posttime = timezone.now()
 
-    localtime = timezone.localtime(posttime, conference.tzobj).time()
+    localtime = timezone.localtime(posttime, conference.tzobj)
+    localtimeonly = localtime.time()
 
     # Adjust the start time to be inside the configured window
-    if localtime < conference.twitter_timewindow_start:
+    if localtimeonly < conference.twitter_timewindow_start:
         # Trying to post before the first allowed time, so just adjust it forward until we
         # get to the allowed time.
         posttime = timezone.make_aware(
-            datetime.datetime.combine(posttime, conference.twitter_timewindow_start),
+            datetime.datetime.combine(localtime, conference.twitter_timewindow_start),
             conference.tzobj,
         )
-    elif localtime > conference.twitter_timewindow_end:
+    elif localtimeonly > conference.twitter_timewindow_end:
         # Trying to post after the last allowed time, so adjust it forward until the first
         # allowed time *the next day*
         posttime = timezone.make_aware(
