@@ -182,6 +182,7 @@ class Command(ReloadCommand):
         try:
             cmd.execute(no_color=True,
                         force_color=False,
+                        skip_checks=True,
                         stdout=output,
                         stderr=output)
             success = True
