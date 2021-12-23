@@ -926,7 +926,9 @@ class Speaker(models.Model):
         r = super(Speaker, self).__reduce_ex__(protocol)
         # Ooh, this is ugly. But this is to ensure that the 'photo' part of the
         # pickled value works (because memoryviews can't be pickled)
-        if isinstance(r[2]['photo'], memoryview):
+        # NOTE! This appears to have been fixed in Django 3.2.10 (yes, minor release!), thus breaking
+        # our fix. So make the fix conditional until we have 3.2.10 everywhere so we can throw it away
+        if 'photo' in r[2] and isinstance(r[2]['photo'], memoryview):
             r[2]['photo'] = bytes(r[2]['photo'])
         return r
 
