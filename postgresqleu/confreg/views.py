@@ -120,7 +120,7 @@ def _get_registration_signups(conference, reg):
 # Should then be extended with whatever other requirements there are to limit
 # what's actually returned.
 def _attendeemail_queryset(conference, reg):
-    return AttendeeMail.objects.filter(conference=conference).extra(where=["""
+    return AttendeeMail.objects.select_related('conference').filter(conference=conference).extra(where=["""
  EXISTS (SELECT 1 FROM confreg_attendeemail_regclasses rc WHERE rc.attendeemail_id=confreg_attendeemail.id AND registrationclass_id=%s)
 OR
  EXISTS (SELECT 1 FROM confreg_attendeemail_addopts ao INNER JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceadditionaloption_id=ao.conferenceadditionaloption_id WHERE ao.attendeemail_id=confreg_attendeemail.id AND rao.conferenceregistration_id=%s)
@@ -146,11 +146,11 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
     mails = _attendeemail_queryset(conference, reg)
 
     wikipagesQ = Q(publicview=True) | Q(viewer_attendee__attendee=request.user) | Q(viewer_regtype__conferenceregistration__attendee=request.user)
-    wikipages = Wikipage.objects.filter(Q(conference=conference) & wikipagesQ).distinct()
+    wikipages = Wikipage.objects.select_related('conference').filter(Q(conference=conference) & wikipagesQ).distinct()
 
     signups = _get_registration_signups(conference, reg)
 
-    is_speaker = ConferenceSession.objects.filter(conference=conference, status=1, speaker__user=request.user).exists()
+    is_speaker = ConferenceSession.objects.select_related('conference').filter(conference=conference, status=1, speaker__user=request.user).exists()
 
     # Options available for buy-up. Option must be for this conference,
     # not already picked by this user, and not mutually exclusive to
@@ -158,7 +158,7 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
     # Also exclude any option that has a maxcount, and already has too
     # many registrations.
     optionsQ = Q(conference=conference, upsellable=True, public=True) & (Q(maxcount=0) | Q(num_regs__lt=F('maxcount'))) & ~Q(conferenceregistration=reg) & ~Q(mutually_exclusive__conferenceregistration=reg)
-    availableoptions = list(ConferenceAdditionalOption.objects.annotate(num_regs=Count('conferenceregistration')).filter(optionsQ))
+    availableoptions = list(ConferenceAdditionalOption.objects.select_related('conference').annotate(num_regs=Count('conferenceregistration')).filter(optionsQ))
     try:
         pendingadditional = PendingAdditionalOrder.objects.get(reg=reg, payconfirmedat__isnull=True)
         pendingadditionalinvoice = InvoicePresentationWrapper(pendingadditional.invoice, '.')
@@ -294,8 +294,8 @@ def register(request, confname, whatfor=None):
 
     # Either not specifying or registering for self.
     try:
-        reg = ConferenceRegistration.objects.get(conference=conference,
-                                                 attendee=request.user)
+        reg = ConferenceRegistration.objects.select_related('conference', 'regtype__conference').get(conference=conference,
+                                                                                                     attendee=request.user)
     except ConferenceRegistration.DoesNotExist:
         # No previous registration exists. Let the user choose what to
         # do. If already under "self" suburl, copy the data from the
