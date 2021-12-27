@@ -1,7 +1,6 @@
 from django.db import models
 from django.utils.functional import cached_property
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import JSONField
 from django.utils import timezone
 
 from postgresqleu.confreg.models import Conference, RegistrationType, PrepaidBatch
@@ -82,7 +81,7 @@ class SponsorshipBenefit(models.Model):
     benefitdescription = models.TextField(null=False, blank=True, verbose_name="Benefit description")
     claimprompt = models.TextField(null=False, blank=True, verbose_name="Claim prompt")
     benefit_class = models.IntegerField(null=True, blank=True, default=None, choices=benefit_choices)
-    class_parameters = JSONField(blank=True, null=False)
+    class_parameters = models.JSONField(blank=True, null=False)
     tweet_template = models.TextField(null=False, blank=True)
 
     def __str__(self):

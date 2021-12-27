@@ -11,7 +11,7 @@ from django.utils.dateformat import DateFormat
 from django.utils.functional import cached_property
 from django.utils import timezone
 from django.template.defaultfilters import slugify
-from django.contrib.postgres.fields import DateTimeRangeField, JSONField
+from django.contrib.postgres.fields import DateTimeRangeField
 from django.contrib.postgres.indexes import GinIndex
 from django.core.serializers.json import DjangoJSONEncoder
 
@@ -582,7 +582,7 @@ class ConferenceRegistration(models.Model):
     # Messaging configuration
     messaging = models.ForeignKey('ConferenceMessaging', null=True, blank=True, on_delete=models.SET_NULL)
     messaging_copiedfrom = models.ForeignKey(Conference, null=True, blank=True, on_delete=models.SET_NULL, related_name='reg_messaging_copiedfrom')
-    messaging_config = JSONField(null=False, blank=False, default=dict)
+    messaging_config = models.JSONField(null=False, blank=False, default=dict)
 
     @property
     def fullname(self):
@@ -1220,7 +1220,7 @@ class DiscountCode(models.Model):
 class SavedReportDefinition(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     title = models.CharField(max_length=100, null=False, blank=False)
-    definition = JSONField(blank=False, null=False, encoder=DjangoJSONEncoder)
+    definition = models.JSONField(blank=False, null=False, encoder=DjangoJSONEncoder)
 
     class Meta:
         ordering = ('title', )
@@ -1363,7 +1363,7 @@ class MessagingProvider(models.Model):
     publicname = models.CharField(max_length=100, null=False, blank=False, verbose_name='Public name')
     classname = models.CharField(max_length=200, null=False, blank=False, verbose_name="Implementation class")
     active = models.BooleanField(null=False, blank=False, default=False)
-    config = JSONField(blank=False, null=False, default=dict, encoder=DjangoJSONEncoder)
+    config = models.JSONField(blank=False, null=False, default=dict, encoder=DjangoJSONEncoder)
     route_incoming = models.ForeignKey(Conference, null=True, blank=True, verbose_name="Route incoming messages to", on_delete=models.SET_NULL, related_name='incoming_messaging_route_for')
     private_checkpoint = models.BigIntegerField(null=False, blank=False, default=0)
     private_lastpoll = models.DateTimeField(null=False, blank=False, auto_now_add=True)
@@ -1385,7 +1385,7 @@ class ConferenceMessaging(models.Model):
     privatebcast = models.BooleanField(null=False, blank=False, default=False, verbose_name='Attendee only broadcasts')
     notification = models.BooleanField(null=False, blank=False, default=False, verbose_name='Private notifications')
     orgnotification = models.BooleanField(null=False, blank=False, default=False, verbose_name='Organizer notifications')
-    config = JSONField(blank=False, null=False, default=dict)
+    config = models.JSONField(blank=False, null=False, default=dict)
 
     class Meta:
         verbose_name = 'messaging configuration'
@@ -1420,7 +1420,7 @@ class ConferenceTweetQueue(models.Model):
     author = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
     approvedby = models.ForeignKey(User, null=True, blank=True, related_name="tweetapprovals", on_delete=models.CASCADE)
     sent = models.BooleanField(null=False, default=False, blank=False)
-    postids = JSONField(null=False, blank=False, default=dict)
+    postids = models.JSONField(null=False, blank=False, default=dict)
     replytotweetid = models.BigIntegerField(null=True, blank=True, verbose_name="Reply to tweet")
     remainingtosend = models.ManyToManyField(MessagingProvider, blank=True)
 
@@ -1495,7 +1495,7 @@ class IncomingDirectMessage(models.Model):
     time = models.DateTimeField(null=False, blank=False)
     postid = models.BigIntegerField(null=False, blank=False)
     internallyprocessed = models.BooleanField(null=False, blank=False, default=False)
-    sender = JSONField(null=False, blank=False, default=dict)
+    sender = models.JSONField(null=False, blank=False, default=dict)
     txt = models.TextField(null=False, blank=True)
 
     class Meta:
