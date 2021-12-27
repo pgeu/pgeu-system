@@ -17,10 +17,6 @@ from postgresqleu.mailqueue.models import QueuedMail
 class Command(BaseCommand):
     help = 'Send queued mail'
 
-    # Prevent warnings during startup on Django 3.2, until we can apply a migration to remove the
-    # deprecated JSONField.
-    requires_system_checks = False
-
     def handle(self, *args, **options):
         # Grab advisory lock, if available. Lock id is just a random number
         # since we only need to interlock against ourselves. The lock is
