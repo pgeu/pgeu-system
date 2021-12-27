@@ -126,6 +126,25 @@ def invoicerows_for_registration(reg, update_used_vouchers):
     return r
 
 
+def summarize_registration_invoicerows(invoicerows):
+    # Add a VAT column and calculate totals
+    totalcost = 0
+    totalwithvat = 0
+    for r in invoicerows:
+        if r[1] != 1:
+            raise Exception("Registration invoicerows should always have count=1!")
+
+        # Note! Should always be the same as invoices/models.py, InvoiceRow.totalvat otherwise weird discrepancies
+        # can show up between previews and invoices!
+        if r[3]:
+            r.append((r[2] + r[2] * r[3].vatpercent / Decimal(100)).quantize(Decimal('.01')))
+        else:
+            r.append(r[2])
+        totalcost += r[2]
+        totalwithvat += r[4]
+    return (totalcost, totalwithvat)
+
+
 def attendee_cost_from_bulk_payment(reg):
     re_email_dash = re.compile(r"^[^\s]+@[^\s]+ - [^\s]")
     if not reg.bulkpayment:

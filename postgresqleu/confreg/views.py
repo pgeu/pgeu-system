@@ -40,7 +40,7 @@ from .forms import CrossConferenceMailForm
 from .forms import AttendeeMailForm, WaitlistOfferForm, WaitlistSendmailForm, TransferRegForm
 from .forms import NewMultiRegForm, MultiRegInvoiceForm
 from .forms import SessionSlidesUrlForm, SessionSlidesFileForm
-from .util import invoicerows_for_registration, notify_reg_confirmed, InvoicerowsException
+from .util import invoicerows_for_registration, summarize_registration_invoicerows, notify_reg_confirmed, InvoicerowsException
 from .util import get_invoice_autocancel, cancel_registration, send_welcome_email
 from .util import attendee_cost_from_bulk_payment
 from .util import send_conference_mail, send_conference_notification, send_conference_notification_template
@@ -664,14 +664,7 @@ def multireg_newinvoice(request, confname):
             except InvoicerowsException as ex:
                 errors.append('{0}: {1}'.format(r.email, ex))
 
-    for r in invoicerows:
-        # Calculate the with-vat information for this row
-        if r[3]:
-            r.append(r[2] * (100 + r[3].vatpercent) / Decimal(100))
-        else:
-            r.append(r[2])
-    totalcost = sum([r[2] for r in invoicerows])
-    totalwithvat = sum([r[4] for r in invoicerows])
+    (totalcost, totalwithvat) = summarize_registration_invoicerows(invoicerows)
 
     if finalize:
         form = MultiRegInvoiceForm(data=request.POST)
@@ -897,16 +890,7 @@ def reg_add_options(request, confname):
         if o.invoice_autocancel_hours:
             autocancel_hours.append(o.invoice_autocancel_hours)
 
-    # Add VAT information to invoice rows
-    for r in invoicerows:
-        # Calculate the with-vat information for this row
-        if r[3]:
-            r.append(r[2] * (100 + r[3].vatpercent) / Decimal(100))
-        else:
-            r.append(r[2])
-
-    totalcost = sum([r[2] for r in invoicerows])
-    totalwithvat = sum([r[4] for r in invoicerows])
+    (totalcost, totalwithvat) = summarize_registration_invoicerows(invoicerows)
 
     if not request.POST.get('confirm', None) == 'yes':
         # Generate a preview
@@ -1973,7 +1957,7 @@ def confirmreg(request, confname):
                 # so just redirect back to the page for retry.
                 return HttpResponseRedirect("../")
 
-            totalcost = sum([r[2] * (1 + (r[3] and r[3].vatpercent or 0) / Decimal(100.0)) for r in invoicerows])
+            (totalcost, totalwithvat) = summarize_registration_invoicerows(invoicerows)
 
             if len(invoicerows) <= 0:
                 return HttpResponseRedirect("../")
@@ -2039,15 +2023,7 @@ def confirmreg(request, confname):
         # so if it does just redirect back for retry.
         return HttpResponseRedirect("../")
 
-    for r in invoicerows:
-        # Calculate the with-vat information for this row
-        if r[3]:
-            r.append(r[2] * (100 + r[3].vatpercent) / Decimal(100))
-        else:
-            r.append(r[2])
-
-    totalcost = sum([r[2] for r in invoicerows])
-    totalwithvat = sum([r[4] for r in invoicerows])
+    (totalcost, totalwithvat) = summarize_registration_invoicerows(invoicerows)
 
     # It should be impossible to end up with zero invoice rows, so just
     # redirect back if that happens
