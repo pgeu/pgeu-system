@@ -95,6 +95,10 @@ class PaypalAPI(object):
                 # Some things are better left ignored
                 continue
 
+            if code in ('T2101', 'T2102'):
+                # General hold and release of general hold. Ignore those.
+                continue
+
             if code == 'T0400':
                 # General withdrawal, doesn't have normal details
                 r['EMAIL'] = self.pm.config('email')
