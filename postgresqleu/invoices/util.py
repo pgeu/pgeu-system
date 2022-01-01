@@ -737,6 +737,15 @@ keep getting extended until the process is manually stopped. A new notification
 will be sent after each extension.
 """.format(invoice.id, oldtime, invoice.canceltime, reason))
 
+    def get_invoice_return_url(self, invoice):
+        if invoice.processor:
+            return self.get_invoice_processor(invoice).get_return_url(invoice)
+        else:
+            if invoice.recipient_user:
+                return "%s/invoices/%s/" % (settings.SITEBASE, invoice.pk)
+            else:
+                return "%s/invoices/%s/%s/" % (settings.SITEBASE, invoice.pk, invoice.recipient_secret)
+
 
 # This is purely for testing, obviously
 class TestProcessor(object):

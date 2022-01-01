@@ -42,15 +42,7 @@ def adyen_return_handler(request, methodid):
         return render(request, 'adyen/invalidreference.html', {
             'reference': request.GET['merchantReturnData'],
         })
-    manager = InvoiceManager()
-    if invoice.processor:
-        processor = manager.get_invoice_processor(invoice)
-        returnurl = processor.get_return_url(invoice)
-    else:
-        if invoice.recipient_user:
-            returnurl = "%s/invoices/%s/" % (settings.SITEBASE, invoice.pk)
-        else:
-            returnurl = "%s/invoices/%s/%s/" % (settings.SITEBASE, invoice.pk, invoice.recipient_secret)
+    returnurl = InvoiceManager().get_invoice_return_url(invoice)
 
     AdyenLog(pspReference='', message='Return handler received %s result for %s' % (request.GET['authResult'], request.GET['merchantReturnData']), error=False, paymentmethod=method).save()
     if request.GET['authResult'] == 'REFUSED':

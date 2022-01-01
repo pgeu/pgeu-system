@@ -24,15 +24,7 @@ def payment_post(request):
     method = get_object_or_404(InvoicePaymentMethod, pk=get_int_or_error(request.POST, 'method'), active=True)
     pm = method.get_implementation()
 
-    if invoice.processor:
-        manager = InvoiceManager()
-        processor = manager.get_invoice_processor(invoice)
-        returnurl = processor.get_return_url(invoice)
-    else:
-        if invoice.recipient_user:
-            returnurl = "%s/invoices/%s/" % (settings.SITEBASE, invoice.pk)
-        else:
-            returnurl = "%s/invoices/%s/%s/" % (settings.SITEBASE, invoice.pk, invoice.recipient_secret)
+    returnurl = InvoiceManager().get_invoice_return_url(invoice)
 
     # Generate the transaction
     result = pm.braintree_sale({

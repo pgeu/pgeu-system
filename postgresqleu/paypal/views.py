@@ -173,25 +173,9 @@ def paypal_return_handler(request, methodid):
             ti.matchinfo = 'Matched standard invoice (auto)'
             ti.save()
 
-            # Now figure out where to return the user. This comes from the
-            # invoice processor, assuming we have one
-            if p:
-                url = p.get_return_url(i)
-            else:
-                # No processor, so redirect the user back to the basic
-                # invoice page.
-                if i.recipient_user:
-                    # Registered to a specific user, so request that users
-                    # login on redirect
-                    url = "%s/invoices/%s/" % (settings.SITEBASE, i.pk)
-                else:
-                    # No user account registered, so send back to the secret
-                    # url version
-                    url = "%s/invoices/%s/%s/" % (settings.SITEBASE, i.pk, i.recipient_secret)
-
             return render(request, 'paypal/complete.html', {
                 'invoice': i,
-                'url': url,
+                'url': invoicemanager.get_invoice_return_url(i),
             })
         else:
             # Did not match an invoice anywhere!
