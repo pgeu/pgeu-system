@@ -401,7 +401,7 @@ def process_raw_adyen_notification(raw, POST):
             notification.live = (POST['live'] == 'true')
             notification.success = (POST['success'] == 'true')
             notification.pspReference = POST['pspReference']
-            notification.originalReference = POST['originalReference']
+            notification.originalReference = POST.get('originalReference', '')
             notification.merchantReference = POST['merchantReference']
             notification.merchantAccountCode = POST['merchantAccountCode']
             notification.paymentMethod = POST['paymentMethod']
