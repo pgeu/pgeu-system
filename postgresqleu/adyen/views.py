@@ -115,7 +115,7 @@ def adyen_notify_handler(request, methodid):
 
     # Store the raw notification at this point, so we have it around in
     # case something breaks in a way we couldn't handle
-    raw = RawNotification(contents=request.body, paymentmethod=method)
+    raw = RawNotification(contents=request.body.decode(), paymentmethod=method)
     raw.save()
 
     if process_raw_adyen_notification(raw, request.POST):
