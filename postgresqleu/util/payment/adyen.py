@@ -3,17 +3,6 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from urllib.parse import urlencode
-from datetime import datetime, timedelta
-from decimal import Decimal
-import hmac
-import hashlib
-import base64
-import gzip
-import io
-import binascii
-from collections import OrderedDict
-
 import re
 
 from postgresqleu.util.db import exec_to_list, exec_to_scalar
@@ -28,31 +17,18 @@ from postgresqleu.adyen.util import AdyenAPI
 from . import BasePayment
 
 
-def _escapeVal(val):
-    return val.replace('\\', '\\\\').replace(':', '\\:')
-
-
-def _gzip_string(str):
-    # Compress a string using gzip including header data
-    s = io.BytesIO()
-    g = gzip.GzipFile(fileobj=s, mode='w')
-    g.write(str)
-    g.close()
-    return s.getvalue()
-
-
 class BackendAdyenCreditCardForm(BackendInvoicePaymentMethodForm):
     merchantaccount = forms.CharField(required=True, label="Merchant account")
     test = forms.BooleanField(required=False, label="Testing system")
-    skincode = forms.CharField(required=True, label="Skin code")
 
     apibaseurl = forms.CharField(required=True, label="API Base URL",
                                  help_text="For test, use https://pal-test.adyen.com/. For prod, find in Adyen CA -> Account -> API Urls")
-    signkey = forms.CharField(required=True, label="HMAC key", widget=forms.widgets.PasswordInput(render_value=True),
-                              help_text="HMAC key from Adyen Skin configuration")
+    checkoutbaseurl = forms.CharField(required=False, label="Checkout API Base Url",
+                                      help_text="For test, use https://checkout-test.adyen.com/. For prod, find in Adyen CA -> Developers -> API URLs")
     ws_user = forms.CharField(required=True, label="Web Service user",
                               help_text="Web Service user with Merchant PAL Webservice role")
     ws_password = forms.CharField(required=True, label="Web Service user password", widget=forms.widgets.PasswordInput(render_value=True))
+    ws_apikey = forms.CharField(required=True, label="Web Service API key", widget=forms.widgets.PasswordInput(render_value=True))
     report_user = forms.CharField(required=True, label="Report user",
                                   help_text="Report user with Merchant Report Download role")
     report_password = forms.CharField(required=True, label="Report user password", widget=forms.widgets.PasswordInput(render_value=True))
@@ -82,8 +58,9 @@ class BackendAdyenCreditCardForm(BackendInvoicePaymentMethodForm):
     notifications = forms.CharField(widget=StaticTextWidget)
     returnurl = forms.CharField(label="Return URL", widget=StaticTextWidget)
 
-    config_fields = ['merchantaccount', 'test', 'skincode',
-                     'apibaseurl', 'signkey', 'ws_user', 'ws_password', 'report_user', 'report_password',
+    config_fields = ['merchantaccount', 'test',
+                     'apibaseurl', 'checkoutbaseurl', 'ws_user', 'ws_password', 'ws_apikey',
+                     'report_user', 'report_password',
                      'notify_user', 'notify_password',
                      'notification_receiver', 'merchantref_prefix', 'merchantref_refund_prefix',
                      'accounting_authorized', 'accounting_payable', 'accounting_merchant',
@@ -95,12 +72,12 @@ class BackendAdyenCreditCardForm(BackendInvoicePaymentMethodForm):
         {
             'id': 'adyen',
             'legend': 'Adyen',
-            'fields': ['merchantaccount', 'test', 'skincode', ],
+            'fields': ['merchantaccount', 'test', ],
         },
         {
             'id': 'api',
             'legend': 'API and users',
-            'fields': ['signkey', 'apibaseurl', 'ws_user', 'ws_password', 'report_user', 'report_password',
+            'fields': ['apibaseurl', 'checkoutbaseurl', 'ws_user', 'ws_password', 'ws_apikey', 'report_user', 'report_password',
                        'notify_user', 'notify_password', ],
         },
         {
@@ -173,48 +150,12 @@ class BackendAdyenBanktransferForm(BackendInvoicePaymentMethodForm):
 
 
 class _AdyenBase(BasePayment):
-    ADYEN_COMMON = {
-        'currencyCode': settings.CURRENCY_ABBREV,
-        'shopperLocale': 'en_GB',
-        }
-
-    def get_baseurl(self):
-        if self.config('test'):
-            return 'https://test.adyen.com/'
-        return 'https://live.adyen.com/'
-
-    def calculate_signature(self, param):
-        param = OrderedDict(sorted(list(param.items()), key=lambda t: t[0]))
-        if 'merchantSig' in param:
-            del param['merchantSig']
-        str = ':'.join(map(_escapeVal, list(param.keys()) + list(param.values())))
-        hm = hmac.new(binascii.a2b_hex(self.config('signkey')),
-                      str.encode('utf8'),
-                      hashlib.sha256)
-        return base64.b64encode(hm.digest()).decode('utf8')
-
-    def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl, allowedMethods, additionalparam):
-        param = self.ADYEN_COMMON
-        orderdata = "<p>%s</p>" % invoicestr
-        param.update({
-            'merchantAccount': self.config('merchantaccount'),
-            'skinCode': self.config('skincode'),
-            'merchantReference': '%s%s' % (self.config('merchantref_prefix'), invoiceid),
-            'paymentAmount': '%s' % (int(invoiceamount * Decimal(100.0)),),
-            'orderData': base64.encodestring(_gzip_string(orderdata.encode('utf-8'))).strip().replace(b"\n", b'').decode('utf8'),
-            'merchantReturnData': '%s%s' % (self.config('merchantref_prefix'), invoiceid),
-            'sessionValidity': (datetime.utcnow() + timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%M:%SZ'),
-            'allowedMethods': allowedMethods,
-            })
-        param.update(additionalparam)
-
-        param['merchantSig'] = self.calculate_signature(param)
-
-        # use pay.shtml for one-page, or select.shtml for multipage
-        return "%shpp/select.shtml?%s" % (
-            self.get_baseurl(),
-            urlencode(param),
-            )
+    def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl=None):
+        i = Invoice.objects.get(pk=invoiceid)
+        if i.recipient_secret:
+            return "/invoices/adyenpayment/{0}/{1}/{2}/".format(self.id, invoiceid, i.recipient_secret)
+        else:
+            return "/invoices/adyenpayment/{0}/{1}/".format(self.id, invoiceid)
 
     _re_adyen = re.compile('^Adyen id ([A-Z0-9]+)$')
 
@@ -276,9 +217,6 @@ class AdyenCreditcard(_AdyenBase):
 Pay using your credit card, including Mastercard, VISA and American Express.
 """
 
-    def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl=None):
-        return super(AdyenCreditcard, self).build_payment_url(invoicestr, invoiceamount, invoiceid, returnurl, 'card', {})
-
     def used_method_details(self, invoice):
         # For credit card payments we try to figure out which type of
         # card it is as well.
@@ -322,10 +260,7 @@ making a payment from outside the Euro-zone.
             return "/invoices/adyen_bank/{0}/{1}/".format(self.id, invoiceid)
 
     def build_adyen_payment_url(self, invoicestr, invoiceamount, invoiceid):
-        return super(AdyenBanktransfer, self).build_payment_url(invoicestr, invoiceamount, invoiceid, None, 'bankTransfer_IBAN', {
-            'countryCode': 'FR',
-            'skipSelection': 'true',
-        })
+        return super(AdyenBanktransfer, self).build_payment_url(invoicestr, invoiceamount, invoiceid) + 'iban/'
 
     # Override availability for direct bank transfers. We hide it if the invoice will be
     # automatically canceled in less than 4 working days.

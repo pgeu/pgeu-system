@@ -297,6 +297,8 @@ urlpatterns.extend([
     url(r'^invoices/dummy/(\d+)/([a-z0-9]{64})/$', postgresqleu.invoices.views.dummy_payment),
     url(r'^invoices/$', postgresqleu.invoices.views.userhome),
     url(r'^invoices/banktransfer/$', postgresqleu.invoices.views.banktransfer),
+    url(r'^invoices/adyenpayment/(\d+)/(\d+)/(return/|iban/)?$', postgresqleu.adyen.views.invoicepayment),
+    url(r'^invoices/adyenpayment/(\d+)/(\d+)/(\w+)/(return/|iban/)?$', postgresqleu.adyen.views.invoicepayment_secret),
     url(r'^invoices/adyen_bank/(\d+)/(\d+)/$', postgresqleu.adyen.views.bankpayment),
     url(r'^invoices/adyen_bank/(\d+)/(\d+)/(\w+)/$', postgresqleu.adyen.views.bankpayment_secret),
     url(r'^admin/invoices/vatrates/(.*/)?$', postgresqleu.invoices.backendviews.edit_vatrate),
@@ -353,7 +355,6 @@ urlpatterns.extend([
     url(r'^p/paypal_return/(\d+)/$', postgresqleu.paypal.views.paypal_return_handler),
 
     # Handle adyen data returns
-    url(r'^p/adyen_return/(\d+)/$', postgresqleu.adyen.views.adyen_return_handler),
     url(r'^p/adyen_notify/(\d+)/$', postgresqleu.adyen.views.adyen_notify_handler),
 
     # Transferwise webhooks

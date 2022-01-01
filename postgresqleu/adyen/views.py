@@ -1,11 +1,12 @@
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
-from django.db import transaction
 from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 
 import base64
+from decimal import Decimal
+import requests
 
 from postgresqleu.util.auth import authenticate_backend_group
 from postgresqleu.util.decorators import global_login_exempt
@@ -14,76 +15,6 @@ from postgresqleu.invoices.util import InvoiceManager
 
 from .models import RawNotification, AdyenLog, ReturnAuthorizationStatus
 from .util import process_raw_adyen_notification
-
-
-@transaction.atomic
-def adyen_return_handler(request, methodid):
-    method = get_object_or_404(InvoicePaymentMethod, pk=methodid, active=True)
-    pm = method.get_implementation()
-
-    sig = pm.calculate_signature(request.GET)
-
-    if sig != request.GET['merchantSig']:
-        return render(request, 'adyen/sigerror.html')
-
-    # We're going to need the invoice for pretty much everything,
-    # so attempt to find it.
-    if request.GET['merchantReturnData'] != request.GET['merchantReference'] or not request.GET['merchantReturnData'].startswith(pm.config('merchantref_prefix')):
-        AdyenLog(pspReference='', message='Return handler received invalid reference %s/%s' % (request.GET['merchantReturnData'], request.GET['merchantReference']), error=True, paymentmethod=method).save()
-        return render(request, 'adyen/invalidreference.html', {
-            'reference': "%s//%s" % (request.GET['merchantReturnData'], request.GET['merchantReference']),
-        })
-
-    invoiceid = int(request.GET['merchantReturnData'][len(pm.config('merchantref_prefix')):])
-    try:
-        invoice = Invoice.objects.get(pk=invoiceid)
-    except Invoice.DoesNotExist:
-        AdyenLog(pspReference='', message='Return handler could not find invoice for reference %s' % request.GET['merchantReturnData'], error=True, paymentmethod=method).save()
-        return render(request, 'adyen/invalidreference.html', {
-            'reference': request.GET['merchantReturnData'],
-        })
-    returnurl = InvoiceManager().get_invoice_return_url(invoice)
-
-    AdyenLog(pspReference='', message='Return handler received %s result for %s' % (request.GET['authResult'], request.GET['merchantReturnData']), error=False, paymentmethod=method).save()
-    if request.GET['authResult'] == 'REFUSED':
-        return render(request, 'adyen/refused.html', {
-            'url': returnurl,
-            })
-    elif request.GET['authResult'] == 'CANCELLED':
-        return HttpResponseRedirect(returnurl)
-    elif request.GET['authResult'] == 'ERROR':
-        return render(request, 'adyen/transerror.html', {
-            'url': returnurl,
-            })
-    elif request.GET['authResult'] == 'PENDING':
-        return render(request, 'adyen/pending.html', {
-            'url': returnurl,
-            })
-    elif request.GET['authResult'] == 'AUTHORISED':
-        # NOTE! Adyen strongly recommends not reacting on
-        # authorized values, but deal with them from the
-        # notifications instead. So we'll do that.
-        # However, if we reach this point and it's actually
-        # already dealt with by the notification arriving
-        # asynchronously, redirect the user properly.
-        if invoice.paidat:
-            # Yup, it's paid, so send the user off to the page
-            # that they came from.
-            return HttpResponseRedirect(returnurl)
-
-        # Show the user a pending message. The refresh time is dependent
-        # on how many times we've seen this one before.
-        status, created = ReturnAuthorizationStatus.objects.get_or_create(pspReference=request.GET['pspReference'])
-        status.seencount += 1
-        status.save()
-        return render(request, 'adyen/authorized.html', {
-            'refresh': 3**status.seencount,
-            'url': returnurl,
-            })
-    else:
-        return render(request, 'adyen/invalidresult.html', {
-            'result': request.GET['authResult'],
-            })
 
 
 @global_login_exempt
@@ -122,6 +53,87 @@ def adyen_notify_handler(request, methodid):
         return HttpResponse('[accepted]', content_type='text/plain')
     else:
         return HttpResponse('[internal error]', content_type='text/plain')
+
+
+# Handle an Adyen payment (both credit card primary step and iban secondary step)
+def _invoice_payment(request, methodid, invoice, trailer):
+    method = get_object_or_404(InvoicePaymentMethod, active=True, pk=methodid)
+    pm = method.get_implementation()
+
+    if trailer == 'return/':
+        # This is a payment return URL, so we wait for the status to be posted.
+        if invoice.ispaid:
+            # Success, this invoice is paid!
+            return HttpResponseRedirect(InvoiceManager().get_invoice_return_url(invoice))
+
+        # Else we wait for it to be. Return the pending page which will auto-refresh itself.
+        # We sneakily use the "pspReference" field and put the invoice id in it, because that will never
+        # conflict with an actual Adyen pspReference.
+        status, created = ReturnAuthorizationStatus.objects.get_or_create(pspReference='INVOICE{}'.format(invoice.id))
+        status.seencount += 1
+        status.save()
+        return render(request, 'adyen/authorized.html', {
+            'refresh': 3**status.seencount,
+            'returnurl': InvoiceManager().get_invoice_return_url(invoice),
+        })
+
+    if trailer == 'iban/':
+        methods = ['bankTransfer_IBAN']
+    else:
+        methods = ['card']
+
+    # Not the return handler, so use the Adyen checkout API to build a payment link.
+    p = {
+        'reference': '{}{}'.format(pm.config('merchantref_prefix'), invoice.id),
+        'amount': {
+            'value': int(invoice.total_amount * Decimal(100.0)),
+            'currency': 'EUR',
+        },
+        'description': invoice.invoicestr,
+        'merchantAccount': pm.config('merchantaccount'),
+        'allowedPaymentMethods': methods,
+        'returnUrl': '{}/invoices/adyenpayment/{}/{}/{}/return/'.format(settings.SITEBASE, methodid, invoice.id, invoice.recipient_secret),
+    }
+
+    try:
+        r = requests.post(
+            '{}/v68/paymentLinks'.format(pm.config('checkoutbaseurl').rstrip('/')),
+            json=p,
+            headers={
+                'x-api-key': pm.config('ws_apikey'),
+            },
+            timeout=10,
+        )
+        if r.status_code != 201:
+            AdyenLog(pspReference='', message='Status code {} when trying to create a payment link. Response: {}'.format(r.status_code, r.text), error=True, paymentmethod=method).save()
+            return HttpResponse('Failed to create payment link. Please try again later.')
+
+        j = r.json()
+
+        AdyenLog(pspReference='', message='Created payment link {} for invoice {}'.format(j['id'], invoice.id), error=False, paymentmethod=method).save()
+
+        # Then redirect the user to the payment link we received
+        return HttpResponseRedirect(j['url'])
+    except requests.exceptions.ReadTimeout:
+        AdyenLog(pspReference='', message='timeout when trying to create a payment link', error=True, paymentmethod=method).save()
+        return HttpResponse('Failed to create payment link. Please try again later.')
+    except Exception as e:
+        AdyenLog(pspReference='', message='Exception when trying to create a payment link:{}'.format(e), error=True, paymentmethod=method).save()
+        return HttpResponse('Failed to create payment link. Please try again later.')
+
+
+@login_required
+def invoicepayment(request, methodid, invoiceid, isreturn=None):
+    invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True)
+    if invoice.recipient_user != request.user:
+        authenticate_backend_group(request, 'Invoice managers')
+
+    return _invoice_payment(request, methodid, invoice, isreturn)
+
+
+def invoicepayment_secret(request, methodid, invoiceid, secret, isreturn=None):
+    invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True, recipient_secret=secret)
+    return _invoice_payment(request, methodid, invoice, isreturn)
 
 
 # Rendered views to do bank payment

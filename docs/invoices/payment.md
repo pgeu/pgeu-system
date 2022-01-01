@@ -212,7 +212,7 @@ notifications, and downloaded reports to track all the stages of a
 payment. It's particularly suitable if a fairly large number of
 transactions are expected.
 
-The system is using Adyens "Hosted Payment Pages" service, which means
+The system is using Adyens "Payment Link" service, which means
 that all the actual processing happens at Adyen, thus not requiring a
 PCI certified installation.
 
