@@ -125,7 +125,7 @@ def adyen_notify_handler(request, methodid):
 
 
 # Rendered views to do bank payment
-def _invoice_payment(request, methodid, invoice):
+def _bank_payment(request, methodid, invoice):
     method = get_object_or_404(InvoicePaymentMethod, active=True, pk=methodid)
     pm = method.get_implementation()
     paymenturl = pm.build_adyen_payment_url(invoice.invoicestr, invoice.total_amount, invoice.pk)
@@ -137,14 +137,14 @@ def _invoice_payment(request, methodid, invoice):
 
 
 @login_required
-def invoicepayment(request, methodid, invoiceid):
+def bankpayment(request, methodid, invoiceid):
     invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True)
     if invoice.recipient_user != request.user:
         authenticate_backend_group(request, 'Invoice managers')
 
-    return _invoice_payment(request, methodid, invoice)
+    return _bank_payment(request, methodid, invoice)
 
 
-def invoicepayment_secret(request, methodid, invoiceid, secret):
+def bankpayment_secret(request, methodid, invoiceid, secret):
     invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True, recipient_secret=secret)
-    return _invoice_payment(request, methodid, invoice)
+    return _bank_payment(request, methodid, invoice)
