@@ -31,7 +31,7 @@ def _replaceSvgInline(m, section):
 
 
 @login_required
-def docspage(request, page):
+def docspage(request, page=None):
     # Allow a person who has *any* permissions on a conference to read the docs,
     # because, well, they are docs.
     # Since we also have docs for non-conference things, check for membership
