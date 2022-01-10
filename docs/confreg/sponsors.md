@@ -144,7 +144,10 @@ Require uploaded image
 
 Requires explicit claiming
 :  This benefit class requires the sponsor to explicitly claim, but does not
-   require any extra information.
+   require any extra information. The benefit can be configured to automatically
+   confirm when claimed (for cases where it will always be possible to deliver,
+   and you just want to know if the sponsors wants it) or to require manual
+   confirmation (default).
 
 Claim entry vouchers
 :  This benefit class gives the sponsor the ability to order free attendee
