@@ -54,9 +54,11 @@ def index(request):
     try:
         lastjob = ScheduledJob.objects.only('lastrun').filter(lastrun__isnull=False).order_by('-lastrun')[0]
         lastjobtime = lastjob.lastrun
+        lastjob_recent = (timezone.now() - lastjobtime) < timedelta(hours=6)
     except IndexError:
         # No job has run yet, can happen on brand new installation
-        lastjobtime = datetime(1900, 1, 1)
+        lastjobtime = None
+        lastjob_recent = False
 
     history = JobHistory.objects.only('time', 'job__description', 'success', 'runtime').select_related('job').order_by('-time')[:20]
 
@@ -68,7 +70,7 @@ def index(request):
     return render(request, 'scheduler/index.html', {
         'jobs': jobs,
         'lastjob': lastjobtime,
-        'lastjob_recent': (timezone.now() - lastjobtime) < timedelta(hours=6),
+        'lastjob_recent': lastjob_recent,
         'runner_active': runner_active,
         'holdall': config.hold_all_jobs,
         'history': history,
