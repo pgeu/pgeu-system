@@ -1208,7 +1208,8 @@ INNER JOIN confreg_room r ON r.id=t.room_id GROUP BY day
        'id', spk.id,
        'name', spk.fullname,
        'company', spk.company,
-       'twittername', spk.twittername
+       'twittername', spk.twittername,
+        'hasphoto', spk.photo IS NOT NULL AND spk.photo != ''::bytea
     ) ORDER BY spk.fullname) FILTER (WHERE spk.id IS NOT NULL), '[]') AS speakers
 FROM confreg_conferencesession s
 LEFT JOIN confreg_track t ON t.id=s.track_id
