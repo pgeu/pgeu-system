@@ -1772,6 +1772,27 @@ def callforpapers_delslides(request, confname, sessionid, slideid):
     return HttpResponseRedirect('../../')
 
 
+def _send_session_notification(session):
+    num = 0
+    for spk in session.speaker.all():
+        send_conference_mail(session.conference,
+                             spk.user.email,
+                             "Your session '{0}'".format(session.title),
+                             'confreg/mail/session_notify_{}.txt'.format(session.status_string_short),
+                             {
+                                 'conference': session.conference,
+                                 'session': session,
+                                 'speaker': spk,
+                             },
+                             receivername=spk.fullname,
+        )
+        num += 1
+    session.lastnotifiedstatus = session.status
+    session.lastnotifiedtime = timezone.now()
+    session.save(update_fields=['lastnotifiedstatus', 'lastnotifiedtime'])
+    return num
+
+
 @login_required
 @transaction.atomic
 def callforpapers_confirm(request, confname, sessionid):
@@ -1823,21 +1844,7 @@ def callforpapers_confirm(request, confname, sessionid):
                 return HttpResponseRedirect("../..")
             session.save()
             # We can generate the email for this right away, so let's do that
-            for spk in session.speaker.all():
-                send_conference_mail(conference,
-                                     spk.user.email,
-                                     "Your session '{0}'".format(session.title),
-                                     'confreg/mail/session_notify_{}.txt'.format(get_status_string_short(session.status)),
-                                     {
-                                         'conference': conference,
-                                         'session': session,
-                                         'speaker': spk,
-                                     },
-                                     receivername=spk.fullname,
-                )
-            session.lastnotifiedstatus = session.status
-            session.lastnotifiedtime = timezone.now()
-            session.save()
+            _send_session_notification(session)
 
             if conference.notifysessionstatus:
                 # Send notification to the administrators as well
@@ -3823,22 +3830,7 @@ def session_notify_queue(request, urlname):
         # Ok, it would appear we should actually send them...
         num = 0
         for s in notifysessions:
-            for spk in s.speaker.all():
-                send_conference_mail(conference,
-                                     spk.user.email,
-                                     "Your session '{0}'".format(s.title),
-                                     'confreg/mail/session_notify_{0}.txt'.format(s.status_string_short),
-                                     {
-                                         'conference': conference,
-                                         'session': s,
-                                         'speaker': spk,
-                                     },
-                                     receivername=spk.fullname,
-                )
-                num += 1
-            s.lastnotifiedstatus = s.status
-            s.lastnotifiedtime = timezone.now()
-            s.save()
+            num += _send_session_notification(s)
         messages.info(request, 'Sent email to %s recipients, for %s sessions' % (num, len(notifysessions)))
         return HttpResponseRedirect('.')
 
