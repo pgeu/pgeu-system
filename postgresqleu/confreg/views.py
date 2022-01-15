@@ -1831,6 +1831,7 @@ def callforpapers_confirm(request, confname, sessionid):
                                      {
                                          'conference': conference,
                                          'session': session,
+                                         'speaker': spk,
                                      },
                                      receivername=spk.fullname,
                 )
@@ -3830,6 +3831,7 @@ def session_notify_queue(request, urlname):
                                      {
                                          'conference': conference,
                                          'session': s,
+                                         'speaker': spk,
                                      },
                                      receivername=spk.fullname,
                 )
