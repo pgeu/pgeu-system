@@ -269,6 +269,8 @@ class Conference(models.Model):
             yield 'shareemail'
         if not self.askphotoconsent:
             yield 'photoconsent'
+        if not self.askfood:
+            yield 'dietary'
 
     @property
     def pending_session_notifications(self):
