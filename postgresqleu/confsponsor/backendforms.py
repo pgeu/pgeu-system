@@ -173,6 +173,12 @@ class BackendSponsorshipLevelForm(BackendForm):
 
         return cleaned_data
 
+    def clean_urlname(self):
+        val = self.cleaned_data['urlname']
+        if val and SponsorshipLevel.objects.filter(conference=self.conference, urlname=val).exclude(pk=self.instance.pk).exists():
+                raise ValidationError("A sponsorship level with this URL name already exists")
+        return val
+
     @classmethod
     def copy_from_conference(self, targetconf, sourceconf, idlist):
         for id in idlist:
