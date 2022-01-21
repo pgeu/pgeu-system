@@ -2827,11 +2827,15 @@ def publishschedule(request, confname):
     if request.method == 'POST' and request.POST.get('doit', 0) == '1':
         transaction.commit()
         return render(request, 'confreg/schedule_publish.html', {
+            'conference': conference,
+            'breadcrumbs': (('/events/admin/{0}/schedule/create/'.format(conference.urlname), 'Create schedule'),),
             'done': 1,
         })
     else:
         transaction.rollback()
         return render(request, 'confreg/schedule_publish.html', {
+            'conference': conference,
+            'breadcrumbs': (('/events/admin/{0}/schedule/create/'.format(conference.urlname), 'Create schedule'),),
             'changes': changes,
         })
 
