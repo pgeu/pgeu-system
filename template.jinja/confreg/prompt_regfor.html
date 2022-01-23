@@ -3,10 +3,10 @@
 {%block content%}
 <h1>Conference Registration - {{conference}}</h1>
 <p>
-Hello {{userfullname}}! Who would you like to make a registration
+Hello {{userfullname|escape}}! Who would you like to make a registration
 for?
 </p>
-<a class="confreg-button-link" href="self/">Register yourself ({{userfullname}})</a>
+<a class="confreg-button-link" href="self/">Register yourself ({{userfullname|escape}})</a>
 <br/>
 <a class="confreg-button-link" href="other/">Register somebody else</a>
 {%endblock%}
