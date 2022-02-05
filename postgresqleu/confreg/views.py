@@ -2457,6 +2457,7 @@ def talkvote(request, confname):
     if not isvoter and not isadmin:
         raise PermissionDenied('You are not a talk voter or administrator for this conference!')
 
+    hasvoters = conference.talkvoters.exists()
     alltracks = [{'id': t.id, 'trackname': t.trackname} for t in Track.objects.filter(conference=conference)]
     alltracks.insert(0, {'id': 0, 'trackname': 'No track'})
     alltrackids = [t['id'] for t in alltracks]
@@ -2556,6 +2557,7 @@ def talkvote(request, confname):
         'conference': conference,
         'isvoter': isvoter,
         'isadmin': isadmin,
+        'hasvoters': hasvoters,
         'status_choices': STATUS_CHOICES,
         'tracks': alltracks,
         'selectedtracks': selectedtracks,

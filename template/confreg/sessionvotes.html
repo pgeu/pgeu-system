@@ -220,6 +220,9 @@ width: 100%;
 
 <div id="ajaxStatus" class="alert alert-success" style="position: fixed; width: 100%;opacity: .8; text-align: center; font-weight: bold; font-size: 1.2em;">Loading submissions</div>
 
+{%if not hasvoters%}
+<div class="alert alert-warning">There are no talkvoters configured on this conference! List of talks will be empty!</div>
+{%endif%}
 <table id="votetable" class="table table-bordered table-condensed" style="display:none">
  <tr>
   <th style="width: 1%">Seq</th>
