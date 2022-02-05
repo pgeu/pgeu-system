@@ -32,7 +32,7 @@ def reglog(reg, txt, user=None):
 # Send an email using a conference template
 #
 def send_conference_mail(conference, receiver, subject, templatename, templateattr={}, attachments=None, bcc=None, receivername=None, sender=None, sendername=None):
-    if not ((conference and conference.jinjadir) or os.path.exists(os.path.join(JINJA_TEMPLATE_ROOT, templatename))):
+    if not ((conference and conference.jinjaenabled and conference.jinjadir) or os.path.exists(os.path.join(JINJA_TEMPLATE_ROOT, templatename))):
         raise Exception("Mail template not found")
 
     send_simple_mail(sender or conference.contactaddr,
@@ -452,7 +452,7 @@ def send_conference_notification(conference, subject, message):
 
 
 def send_conference_notification_template(conference, subject, templatename, templateattr):
-    if not ((conference and conference.jinjadir) or os.path.exists(os.path.join(JINJA_TEMPLATE_ROOT, templatename))):
+    if not ((conference and conference.jinjaenabled and conference.jinjadir) or os.path.exists(os.path.join(JINJA_TEMPLATE_ROOT, templatename))):
         raise Exception("Mail template not found")
     message = render_jinja_conference_template(conference, templatename, templateattr)
 

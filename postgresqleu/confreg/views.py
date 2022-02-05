@@ -93,8 +93,7 @@ import markdown
 # if the conference is configured for jinja templates.
 #
 def render_conference_response(request, conference, pagemagic, templatename, dictionary=None):
-    if conference and conference.jinjadir:
-        # If a jinjadir is defined, then *always* use jinja.
+    if conference and conference.jinjaenabled and conference.jinjadir:
         return render_jinja_conference_response(request, conference, pagemagic, templatename, dictionary)
 
     # At this point all conference templates are in jinja except the admin ones, and admin does not render

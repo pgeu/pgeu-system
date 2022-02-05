@@ -196,6 +196,7 @@ class Conference(models.Model):
     askphotoconsent = models.BooleanField(null=False, blank=False, default=True, verbose_name="Field: photo consent", help_text="Include field for getting photo consent")
     skill_levels = models.BooleanField(blank=False, null=False, default=True)
     additionalintro = models.TextField(blank=True, null=False, verbose_name="Additional options intro", help_text="Additional text shown just before the list of available additional options")
+    jinjaenabled = models.BooleanField(null=False, blank=False, verbose_name="Jinja templates enabled")
     jinjadir = models.CharField(max_length=200, blank=True, null=True, default=None, help_text="Full path to new style jinja repository root", verbose_name="Jinja directory")
     callforpapersintro = models.TextField(blank=True, null=False, verbose_name="Call for papers intro")
     callforpaperstags = models.BooleanField(blank=False, null=False, default=False, verbose_name='Use tags')

@@ -268,6 +268,12 @@ Check-in processors
 : List of registered users who work with [checking in users](tickets)
 on arrival. This must be registered users.
 
+Jinja templates enabled
+: Indicate if jinja templating is active for this conference. This can only
+  be enabled if the *jinja directory* setting is enabled in the
+  [superuser settings](super_conference), but can then be independently
+  turned on and off by a non-superuser.
+
 Width of HTML schedule
 : Width in pixels of the built-in HTML schedule. This only controls
 the "old style" HTML schedule, which is normally overridden by the

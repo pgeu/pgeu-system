@@ -75,7 +75,7 @@ class ConfTemplateLoader(jinja2.FileSystemLoader):
         self.conference = conference
         self.roottemplate = roottemplate
         pathlist = []
-        if conference and conference.jinjadir:
+        if conference and conference.jinjaenabled and conference.jinjadir:
             pathlist.append(os.path.join(conference.jinjadir, 'templates'))
         if getattr(settings, 'SYSTEM_SKIN_DIRECTORY', False):
             pathlist.append(os.path.join(settings.SYSTEM_SKIN_DIRECTORY, 'template.jinja'))
@@ -89,7 +89,7 @@ class ConfTemplateLoader(jinja2.FileSystemLoader):
         # loading a template with the wrong parameters passed to it.
         # If no conference is specified, then we allow loading all entries from the root,
         # for obvious reasons.
-        if self.conference and self.conference.jinjadir and template != self.roottemplate:
+        if self.conference and self.conference.jinjaenabled and self.conference.jinjadir and template != self.roottemplate:
             if not os.path.exists(os.path.join(self.conference.jinjadir, 'templates', template)):
                 # This template may exist in pgeu, so reject it unless it's specifically
                 # whitelisted as something we want to load.
@@ -245,7 +245,7 @@ extra_filters = {
 def render_jinja_conference_template(conference, templatename, dictionary):
     # It all starts from the base template for this conference. If it
     # does not exist, just throw a 404 early.
-    if conference and conference.jinjadir and not os.path.exists(os.path.join(conference.jinjadir, 'templates/base.html')):
+    if conference and conference.jinjaenabled and conference.jinjadir and not os.path.exists(os.path.join(conference.jinjadir, 'templates/base.html')):
         raise Http404()
 
     env = ConfSandbox(loader=ConfTemplateLoader(conference, templatename),
@@ -255,7 +255,7 @@ def render_jinja_conference_template(conference, templatename, dictionary):
     t = env.get_template(templatename)
 
     # Optionally load the JSON context with template-specific data
-    if conference and conference.jinjadir:
+    if conference and conference.jinjaenabled and conference.jinjadir:
         try:
             c = load_base_context(conference.jinjadir)
         except ValueError as e:
@@ -268,13 +268,13 @@ def render_jinja_conference_template(conference, templatename, dictionary):
         'now': timezone.now(),
         'conference': conference,
     })
-    if conference and conference.jinjadir:
+    if conference and conference.jinjaenabled and conference.jinjadir:
         c['githash'] = find_git_revision(conference.jinjadir)
 
     if dictionary:
         c.update(dictionary)
 
-    if conference and conference.jinjadir:
+    if conference and conference.jinjaenabled and conference.jinjadir:
         update_with_override_context(c, conference.jinjadir)
 
     c.update(settings_context())

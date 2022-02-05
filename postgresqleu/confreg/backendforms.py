@@ -76,7 +76,7 @@ class BackendConferenceForm(BackendForm):
                   'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent',
                   'skill_levels', 'additionalintro', 'callforpapersintro', 'callforpaperstags', 'sendwelcomemail', 'welcomemail',
                   'tickets', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist',
-                  'initial_common_countries']
+                  'initial_common_countries', 'jinjaenabled']
         widgets = {
             'welcomemail': EmailTextWidget,
         }
@@ -97,6 +97,7 @@ class BackendConferenceForm(BackendForm):
         {'id': 'steps', 'legend': 'Steps', 'fields': ['active', 'allowedit', 'callforpapersopen', 'callforsponsorsopen', 'scheduleactive', 'sessionsactive', 'cardsactive', 'checkinactive', 'conferencefeedbackopen', 'feedbackopen']},
         {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpaperstags', 'callforpapersintro']},
         {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', ]},
+        {'id': 'display', 'legend': 'Display', 'fields': ['jinjaenabled', ]},
         {'id': 'legacy', 'legend': 'Legacy', 'fields': ['schedulewidth', 'pixelsperminute']},
     ]
 
@@ -112,6 +113,13 @@ class BackendConferenceForm(BackendForm):
             self.add_error('checkinactive', 'Check-in cannot be activated if tickets are not used!')
 
         return cleaned_data
+
+    def clean_jinjaenabled(self):
+        je = self.cleaned_data.get('jinjaenabled', False)
+        if je:
+            if not self.instance.jinjadir:
+                raise ValidationError("Jinja templates cannot be enabled since there is no Jinja directory configured in superuser sesttings")
+        return je
 
 
 def _timezone_choices():
