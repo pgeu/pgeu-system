@@ -990,6 +990,7 @@ class ConferenceSession(models.Model):
     lastnotifiedstatus = models.IntegerField(null=False, default=0, choices=STATUS_CHOICES)
     lastnotifiedtime = models.DateTimeField(null=True, blank=True, verbose_name="Notification last sent")
     submissionnote = models.TextField(null=False, blank=True, verbose_name="Submission notes")
+    internalnote = models.TextField(null=False, blank=True, verbose_name="Internal notes")
     initialsubmit = models.DateTimeField(null=True, blank=True, verbose_name="Submitted")
     tentativescheduleslot = models.ForeignKey(ConferenceSessionScheduleSlot, null=True, blank=True, on_delete=models.CASCADE)
     tentativeroom = models.ForeignKey(Room, null=True, blank=True, related_name='tentativeroom', on_delete=models.CASCADE)

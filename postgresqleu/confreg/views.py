@@ -1737,9 +1737,12 @@ def callforpapers_copy(request, confname):
             for s in form.cleaned_data['sessions']:
                 # The majority of all fields should just be blank in the new submission, so create
                 # a new session object instead of trying to copy the old one.
-                submissionnote = "Submission copied from {0}.".format(s.conference)
-                if s.submissionnote:
-                    submissionnote += " Original note:\n\n" + s.submissionnote
+                internalnote = "Submission copied from {0} (where it had status {1}).".format(
+                    s.conference,
+                    s.status_string,
+                )
+                if s.internalnote:
+                    internalnote += "\nPrevious notes:\n" + s.internalnote
 
                 n = ConferenceSession(conference=conference,
                                       title=s.title,
@@ -1747,7 +1750,8 @@ def callforpapers_copy(request, confname):
                                       skill_level=s.skill_level,
                                       status=0,
                                       initialsubmit=timezone.now(),
-                                      submissionnote=submissionnote,
+                                      submissionnote=s.submissionnote,
+                                      internalnote=internalnote,
                                       )
                 n.save()
                 n.speaker.set(s.speaker.all())
@@ -2484,7 +2488,7 @@ def talkvote(request, confname):
 
     # Render the form. Need to do this with a manual query, can't figure
     # out the right way to do it with the django ORM.
-    curs.execute("SELECT s.id, s.title, s.status, s.lastnotifiedstatus, s.abstract, s.submissionnote, (SELECT string_agg(spk.fullname, ',') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers, (SELECT string_agg(spk.fullname || '(' || spk.company || ')', ',') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers_full, (SELECT string_agg('####' || spk.fullname || ' [speaker id: ' || spk.id || ']' || '\n' || spk.abstract, '\n\n') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers_long, u.username, v.vote, v.comment, avg(v.vote) OVER (PARTITION BY s.id)::numeric(3,2) AS avg, trackname FROM (confreg_conferencesession s CROSS JOIN auth_user u) LEFT JOIN confreg_track track ON track.id=s.track_id LEFT JOIN confreg_conferencesessionvote v ON v.session_id=s.id AND v.voter_id=u.id WHERE s.conference_id=%(confid)s AND u.id IN (SELECT user_id FROM confreg_conference_talkvoters tv WHERE tv.conference_id=%(confid)s) AND (COALESCE(s.track_id,0)=ANY(%(tracks)s)) AND status=ANY(%(statuses)s) ORDER BY " + order + "s.title,s.id, u.id=%(userid)s DESC, u.username", {
+    curs.execute("SELECT s.id, s.title, s.status, s.lastnotifiedstatus, s.abstract, s.submissionnote, s.internalnote, (SELECT string_agg(spk.fullname, ',') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers, (SELECT string_agg(spk.fullname || '(' || spk.company || ')', ',') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers_full, (SELECT string_agg('####' || spk.fullname || ' [speaker id: ' || spk.id || ']' || '\n' || spk.abstract, '\n\n') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers_long, u.username, v.vote, v.comment, avg(v.vote) OVER (PARTITION BY s.id)::numeric(3,2) AS avg, trackname FROM (confreg_conferencesession s CROSS JOIN auth_user u) LEFT JOIN confreg_track track ON track.id=s.track_id LEFT JOIN confreg_conferencesessionvote v ON v.session_id=s.id AND v.voter_id=u.id WHERE s.conference_id=%(confid)s AND u.id IN (SELECT user_id FROM confreg_conference_talkvoters tv WHERE tv.conference_id=%(confid)s) AND (COALESCE(s.track_id,0)=ANY(%(tracks)s)) AND status=ANY(%(statuses)s) ORDER BY " + order + "s.title,s.id, u.id=%(userid)s DESC, u.username", {
         'confid': conference.id,
         'userid': request.user.id,
         'tracks': selectedtracks,
@@ -2496,7 +2500,7 @@ def talkvote(request, confname):
             return
 
         firstid = all[0][0]
-        for id, title, status, laststatus, abstract, submissionnote, speakers, speakers_full, speakers_long, username, vote, comment, avgvote, track in all:
+        for id, title, status, laststatus, abstract, submissionnote, internalnote, speakers, speakers_full, speakers_long, username, vote, comment, avgvote, track in all:
             if id != firstid:
                 return
             yield username
@@ -2507,7 +2511,7 @@ def talkvote(request, confname):
 
         lastid = -1
         rd = {}
-        for id, title, status, laststatus, abstract, submissionnote, speakers, speakers_full, speakers_long, username, vote, comment, avgvote, track in all:
+        for id, title, status, laststatus, abstract, submissionnote, internalnote, speakers, speakers_full, speakers_long, username, vote, comment, avgvote, track in all:
             if id != lastid:
                 if lastid != -1:
                     yield rd
@@ -2519,6 +2523,7 @@ def talkvote(request, confname):
                     'laststatusid': laststatus,
                     'abstract': abstract,
                     'submissionnote': submissionnote,
+                    'internalnote': internalnote,
                     'speakers': speakers,
                     'speakers_full': speakers_full,
                     'speakers_long': speakers_long,

@@ -201,7 +201,13 @@ description pages. Any text here is public.
 
 Submission notes
 :   These are notes given by the submitter in the call for papers
-form, that are only visible to the conference organisers.
+form, that are only visible to the conference organisers and the
+speakers of the session.
+
+Internal notes
+:   These are notes that are auto-created by the system, or that are
+made by the administrators. These notes are only bisible to the
+conference organisers, and *not* to the speakers themselves.
 
 ### Speakers <a name="speakers"></a>
 

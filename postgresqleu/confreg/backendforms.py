@@ -667,7 +667,8 @@ class BackendConferenceSessionForm(BackendForm):
     class Meta:
         model = ConferenceSession
         fields = ['title', 'htmlicon', 'speaker', 'status', 'starttime', 'endtime', 'cross_schedule',
-                  'track', 'room', 'can_feedback', 'skill_level', 'tags', 'abstract', 'submissionnote']
+                  'track', 'room', 'can_feedback', 'skill_level', 'tags', 'abstract', 'submissionnote',
+                  'internalnote', ]
 
     def fix_fields(self):
         self.fields['track'].queryset = Track.objects.filter(conference=self.conference)
@@ -774,6 +775,7 @@ class BackendConferenceSessionForm(BackendForm):
                                       skill_level=source.skill_level,
                                       status=0,
                                       submissionnote=source.submissionnote,
+                                      internalnote=source.internalnote,
                                       initialsubmit=source.initialsubmit,
                                       htmlicon=source.htmlicon,
                 )
