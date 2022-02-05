@@ -1140,7 +1140,18 @@ class VolunteerSlot(models.Model):
         return self._display_timerange()
 
     def _display_timerange(self):
-        return "{0} - {1}".format(timezone.localtime(self.timerange.lower), timezone.localtime(self.timerange.upper))
+        start = timezone.localtime(self.timerange.lower)
+        end = timezone.localtime(self.timerange.upper)
+        if start.date() == end.date():
+            return "{0} - {1}".format(
+                DateFormat(start).format(settings.DATETIME_FORMAT),
+                DateFormat(end).format(settings.TIME_FORMAT),
+            )
+        else:
+            return "{0} - {1}".format(
+                DateFormat(start).format(settings.DATETIME_FORMAT),
+                DateFormat(end).format(settings.DATETIME_FORMAT),
+            )
 
     @property
     def countvols(self):
