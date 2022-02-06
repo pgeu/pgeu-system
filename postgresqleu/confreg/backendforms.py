@@ -1116,7 +1116,7 @@ class BackendMessagingForm(BackendForm):
         super().__init__(*args, **kwargs)
 
     _channel_fieldnames = {
-        'privatebcast': 'Private broadcast channel',
+        'privatebcast': 'Attendee only broadcast channel',
         'orgnotification': 'Organisation notification channel',
     }
 
