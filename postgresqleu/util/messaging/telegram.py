@@ -136,7 +136,7 @@ class Telegram(object):
         return mod
 
     def get_channel_field(self, instance, fieldname):
-        commontxt = "<br/><br/>To set or edit this, please invite the bot @{} to the selected channel as an administrator, and after that's done, plaste the token {} in the channel to associated. Then wait a bit and refresh this page (you will also be notified in the channel).".format(self.providerconfig['botname'], instance.config['channeltoken'][fieldname])
+        commontxt = "<br/><br/>To set or edit this, please invite the bot @{} to the selected channel as an administrator, and after that's done, paste the token {} in the channel to associated. Then wait a bit and refresh this page (you will also be notified in the channel).".format(self.providerconfig['botname'], instance.config['channeltoken'][fieldname])
         if 'channels' in instance.config and fieldname in instance.config['channels']:
             txt = 'Configured to talk in channel with id {} and title "{}".'.format(
                 instance.config['channels'][fieldname]['id'],
