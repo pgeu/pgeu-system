@@ -2242,6 +2242,10 @@ def optout(request, token=None):
             reg = ConferenceRegistration.objects.get(regtoken=token)
             userid = reg.attendee_id
             email = reg.email
+            if userid is None:
+                # Registrations (unlike speakers) can be made without having an account (that is, person X
+                # can make a registration for person Y, and person Y will later opt out of communications)
+                return _optout_single(request, reg)
         except ConferenceRegistration.DoesNotExist:
             try:
                 speaker = Speaker.objects.get(speakertoken=token)
@@ -2284,6 +2288,17 @@ def optout(request, token=None):
         'email': email,
         'globaloptout': GlobalOptOut.objects.filter(user=userid).exists(),
         'series': series,
+    })
+
+
+def _optout_single(request, reg):
+    if request.method == 'POST':
+        reg.localoptout = request.POST.get('optout', '0') == '1'
+        reg.save(update_fields=['localoptout'])
+        return HttpResponse("Your opt-out settings have been updated.")
+
+    return render(request, 'confreg/optout_single.html', {
+        'reg': reg,
     })
 
 
@@ -4088,7 +4103,7 @@ def crossmail_send(request):
                     # Exclude canceled registrations
                     q += ' AND canceledat IS NULL'
                 if optout_filter:
-                    q += " AND NOT EXISTS (SELECT 1 FROM confreg_conferenceseriesoptout INNER JOIN confreg_conference ON confreg_conference.series_id=confreg_conferenceseriesoptout.series_id WHERE user_id=attendee_id AND confreg_conference.id={0})".format(int(conf))
+                    q += " AND NOT localoptout AND NOT EXISTS (SELECT 1 FROM confreg_conferenceseriesoptout INNER JOIN confreg_conference ON confreg_conference.series_id=confreg_conferenceseriesoptout.series_id WHERE user_id=attendee_id AND confreg_conference.id={0})".format(int(conf))
             elif t == 'sp':
                 # Speaker
                 if v == '-1':

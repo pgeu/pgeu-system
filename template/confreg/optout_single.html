@@ -1,0 +1,37 @@
+{%extends "nav_events.html"%}
+{%block title%}Conference Opt-Out{%endblock%}
+{%block content%}
+<h1>Conference Opt-Out</h1>
+<p>
+ {{org_name}} will occasionally send emails related to different events
+ based on events that you have previously attended. If you do not wish
+ to receive this information, you can opt out using this page.
+</p>
+<p>
+  Note that even if you opt out, you will still receive information
+  directly related to an event that you have registered for, such as
+  your registration confirmation email. You will also keep receiving
+  information regarding payments you make, such as they payment
+  receipts!
+</p>
+<p>
+  Note that since your registration is not connected to an account in our
+  systems, we are only able to opt you out to communications referencing
+  this particular registration. If you have attended multiple events, you
+  may need to opt out of each of them individually.
+</p>
+
+<h2>Opt-out settings for {{reg.email}} in {{reg.conference}}</h2>
+<form method="post" action=".">{%csrf_token%}
+<table border="0" cellspacing="1" cellpadding="0">
+  <tr>
+    <td><select name="optout">
+	<option value="0"{%if not reg.localoptout%} SELECTED{%endif%}>Receive emails</option>
+	<option value="1"{%if reg.localoptout%} SELECTED{%endif%}>Receive no emails</option>
+    </select></td>
+  </tr>
+</table>
+<input type="submit" value="Save">
+</form>
+
+{%endblock%}

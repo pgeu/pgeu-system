@@ -550,6 +550,7 @@ class ConferenceRegistration(models.Model):
     badgescan = models.BooleanField(null=False, blank=False, default=True, verbose_name="Allow sponsors get contact information by scanning badge")
     shareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Share e-mail address with sponsors")
     photoconsent = models.BooleanField(null=True, blank=False, verbose_name="Consent to having your photo taken at the event by the organisers")
+    localoptout = models.BooleanField(null=False, blank=False, default=False, verbose_name="Opt out of emails (when not connected to an account)")
 
     # Admin fields!
     payconfirmedat = models.DateTimeField(null=True, blank=True, verbose_name="Payment confirmed at")
