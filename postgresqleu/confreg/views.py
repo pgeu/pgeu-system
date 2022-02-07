@@ -1388,7 +1388,7 @@ def schedule_xml(request, confname):
     return resp
 
 
-def session(request, confname, sessionid):
+def session(request, confname, section, sessionid, slug=None):
     conference = get_conference_or_404(confname)
 
     if not conference.sessionsactive:
@@ -1396,6 +1396,12 @@ def session(request, confname, sessionid):
             return render_conference_response(request, conference, 'schedule', 'confreg/sessionsclosed.html')
 
     session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False, status=1)
+
+    # Redirect to page with slug if there is one
+    sessionslug = slugify(session.title)
+    if slug is None or slug.lstrip('-') != sessionslug:
+        return HttpResponseRedirect("/events/{}/{}/session/{}-{}/".format(confname, section, sessionid, sessionslug))
+
     return render_conference_response(request, conference, 'schedule', 'confreg/session.html', {
         'session': session,
         'slides': ConferenceSessionSlides.objects.filter(session=session),
