@@ -3,7 +3,6 @@ from django.shortcuts import render, get_object_or_404
 from django.utils.html import escape
 from django.utils import timezone
 from django.db import transaction, connection
-from django.db.models import Count
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.contrib import messages
 from django.conf import settings
