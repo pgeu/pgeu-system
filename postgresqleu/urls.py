@@ -390,6 +390,7 @@ if settings.ENABLE_MEMBERSHIP:
     urlpatterns.extend([
         # Membership management
         url(r'^membership/$', postgresqleu.membership.views.home),
+        url(r'^membership/mail/(\d+)/$', postgresqleu.membership.views.mail),
         url(r'^membership/meetings/$', postgresqleu.membership.views.meetings),
         url(r'^membership/meetings/(\d+)/$', postgresqleu.membership.views.meeting),
         url(r'^membership/meetings/(\d+)/ical/$', postgresqleu.membership.views.meeting_ical),
@@ -406,6 +407,8 @@ if settings.ENABLE_MEMBERSHIP:
         url(r'^admin/membership/meetings/(\d+)/attendees/$', postgresqleu.membership.backendviews.meeting_attendees),
         url(r'^admin/membership/meetings/serverstatus/$', postgresqleu.membership.backendviews.meetingserverstatus),
         url(r'^admin/membership/meetings/(.*/)?$', postgresqleu.membership.backendviews.edit_meeting),
+        url(r'^admin/membership/emails/$', postgresqleu.membership.backendviews.member_email_list),
+        url(r'^admin/membership/emails/(\d+)/$', postgresqleu.membership.backendviews.member_email),
         url(r'^admin/membership/lookups/member/$', postgresqleu.membership.backendlookups.MemberLookup.lookup),
     ])
 

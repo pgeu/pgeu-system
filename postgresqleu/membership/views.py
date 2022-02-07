@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from .models import Member, MemberLog, Meeting, MemberMeetingKey, get_config
-from .models import MeetingType
+from .models import MeetingType, MemberMail
 from .forms import MemberForm, ProxyVoterForm
 
 from postgresqleu.util.random import generate_random_token
@@ -106,8 +106,19 @@ def home(request):
         'invoice': InvoicePresentationWrapper(member.activeinvoice, "%s/membership/" % settings.SITEBASE),
         'registration_complete': registration_complete,
         'logdata': logdata,
+        'mails': member.membermail_set.all().order_by('-sentat'),
         'amount': cfg.membership_cost,
         'cancelurl': '/account/',
+    })
+
+
+def mail(request, mailid):
+    member = get_object_or_404(Member, user=request.user)
+    mail = get_object_or_404(MemberMail, pk=mailid, sentto=member)
+
+    return render(request, 'membership/mail.html', {
+        'member': member,
+        'mail': mail,
     })
 
 

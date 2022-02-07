@@ -1,0 +1,34 @@
+{%extends "adm/admin_base.html" %}
+{%block title%}Member emails{%endblock%}
+
+{%block layoutblock %}
+<h1>Member emails</h1>
+
+<p>
+  From this page you can send an email to all active members, and also view all previously sent emails.
+  If yuo want to send email to individual membesr, yuo can do it from the <a href="/admin/membership/members/">member list</a>.
+</p>
+
+<p>
+  <a class="btn btn-default btn-block" href="/admin/membership/members/sendmail/?idlist=allactive">New email to active members</a>
+</p>
+
+<h2>Emails</h2>
+
+<table class="table table-striped table-hover">
+  <thead>
+    <tr>
+      <th>Sent at</th>
+      <th>Subject</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for m in mails %}
+    <tr>
+      <td><a href="{{m.id}}/">{{m.sentat}}</a></td>
+      <td>{{m.subject}}</td>
+    </tr>
+{%endfor%}
+  </tbody>
+</table>
+{%endblock%}

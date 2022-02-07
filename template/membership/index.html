@@ -68,5 +68,20 @@ invoice. You will then be able to pay this invoice using several different metho
  </table>
 {%endif%}
 
+{%if mails%}
+ <h3>Membership emails</h3>
+ <p>
+  The following emails have been sent to you during your membership.
+ </p>
+ <table class="table table-sm">
+  {%for m in mails%}
+   <tr>
+    <td><a href="mail/{{m.id}}/">{{m.sentat}}</a></td>
+    <td>{{m.subject}}</td>
+   </tr>
+  {%endfor%}
+ </table>
+{%endif%}
+
 
 {%endblock%}

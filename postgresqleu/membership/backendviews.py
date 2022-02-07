@@ -1,6 +1,7 @@
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, get_object_or_404
 from django.utils.html import escape
+from django.utils import timezone
 from django.db import transaction, connection
 from django.db.models import Count
 from django.http import HttpResponseRedirect, HttpResponse, Http404
@@ -11,11 +12,13 @@ from postgresqleu.util.backendviews import backend_list_editor, backend_process_
 from postgresqleu.util.auth import authenticate_backend_group
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.membership.models import MembershipConfiguration, get_config, Member
+from postgresqleu.membership.models import MemberMail
 from postgresqleu.membership.models import Meeting, MeetingMessageLog
 from postgresqleu.membership.models import MeetingType
 from postgresqleu.membership.backendforms import BackendMemberForm, BackendMeetingForm
 from postgresqleu.membership.backendforms import BackendConfigForm
 from postgresqleu.membership.backendforms import BackendMemberSendEmailForm
+from postgresqleu.util.time import today_global
 
 import csv
 import requests
@@ -53,22 +56,51 @@ def edit_member(request, rest):
     )
 
 
+def member_email_list(request):
+    authenticate_backend_group(request, 'Membership administrators')
+
+    return render(request, 'membership/admin_email_list.html', {
+        'mails': MemberMail.objects.only('sentat', 'subject').order_by('-sentat'),
+        'helplink': 'membership',
+        'breadcrumbs': [('../../', 'Membership'), ],
+    })
+
+
+def member_email(request, mailid):
+    authenticate_backend_group(request, 'Membership administrators')
+
+    mail = get_object_or_404(MemberMail, pk=mailid)
+    recipients = Member.objects.select_related('user').filter(membermail=mail)
+
+    return render(request, 'membership/admin_email_view.html', {
+        'mail': mail,
+        'recipients': recipients,
+        'helplink': 'membership',
+        'breadcrumbs': [('/admin/', 'Membership'), ('/admin/membership/emails/', 'Member emails')],
+    })
+
+
 def sendmail(request):
     authenticate_backend_group(request, 'Membership administrators')
 
-    if request.method == 'POST':
-        idlist = list(map(int, request.POST['idlist'].split(',')))
-    else:
-        idlist = list(map(int, request.GET['idlist'].split(',')))
-
     cfg = get_config()
 
-    recipients = Member.objects.filter(pk__in=idlist)
+    if request.method == 'POST':
+        idl = request.POST['idlist']
+    else:
+        idl = request.GET['idlist']
+
+    if idl == 'allactive':
+        recipients = list(Member.objects.filter(paiduntil__gte=today_global()))
+        idlist = [m.user_id for m in recipients]
+    else:
+        idlist = list(map(int, idl.split(',')))
+        recipients = Member.objects.filter(pk__in=idlist)
 
     initial = {
         '_from': '{0} <{1}>'.format(cfg.sender_name, cfg.sender_email),
         'recipients': escape(", ".join(['{0} <{1}>'.format(x.fullname, x.user.email) for x in recipients])),
-        'idlist': ",".join(map(str, idlist)),
+        'idlist': idl,
     }
 
     if request.method == 'POST':
@@ -77,8 +109,17 @@ def sendmail(request):
         form = BackendMemberSendEmailForm(data=p, initial=initial)
         if form.is_valid():
             with transaction.atomic():
+                msgtxt = "{0}\n\n-- \nThis message was sent to members of {1}\n".format(form.cleaned_data['message'], settings.ORG_NAME)
+                mail = MemberMail(
+                    sentat=timezone.now(),
+                    sentfrom="{} <{}>".format(cfg.sender_name, cfg.sender_email),
+                    subject=form.cleaned_data['subject'],
+                    message=msgtxt,
+                )
+                mail.save()
+                mail.sentto.set(recipients)
+
                 for r in recipients:
-                    msgtxt = "{0}\n\n-- \nThis message was sent to members of {1}\n".format(form.cleaned_data['message'], settings.ORG_NAME)
                     send_simple_mail(cfg.sender_email,
                                      r.user.email,
                                      form.cleaned_data['subject'],
@@ -88,7 +129,7 @@ def sendmail(request):
                     )
                 messages.info(request, "Email sent to %s members" % len(recipients))
 
-            return HttpResponseRedirect("../")
+            return HttpResponseRedirect('/admin/membership/emails/')
     else:
         form = BackendMemberSendEmailForm(initial=initial)
 
@@ -97,7 +138,7 @@ def sendmail(request):
         'form': form,
         'what': 'new email',
         'savebutton': 'Send email',
-        'cancelurl': '../',
+        'cancelurl': '/admin/membership/emails/' if idl == 'allactive' else '../',
         'breadcrumbs': [('../', 'Members'), ],
     })
 

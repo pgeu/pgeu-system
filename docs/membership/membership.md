@@ -48,3 +48,17 @@ Expiry warning sent
 
 Log
 : A log of all membership events for this member
+
+## Emails
+
+Emails to members can either be sent by using the button for *New
+email to active members* found under the *Email* button, or by
+individually selecting one or more emails in the membership list and
+targeting them.
+
+Emails are sent immediately, and also stored in the database. The
+stored emails can be viewed both by administrators, and by the
+specific members who received them. The system keeps track of which
+members received an email, but does *not* keep track of the exact
+email address used, so if the member changes email address they will
+still see both old and new emails on their membership page.

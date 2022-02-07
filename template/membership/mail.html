@@ -1,0 +1,31 @@
+{%extends "nav_account.html"%}
+{%block title%}Membership{%endblock%}
+{%block content%}
+<h1>Membership email</h1>
+
+<p>
+  The following email has been sent to you during your membership.
+</p>
+
+<table class="table">
+  <tr>
+    <th class="col-md-1">From:</th>
+    <td>{{mail.sentfrom}}</td>
+  </tr>
+  <tr>
+    <th class="col-md-1">Date:</th>
+    <td>{{mail.sentat}}</td>
+  </tr>
+  <tr>
+    <th class="col-md-1">Subject:</th>
+    <td>{{mail.subject}}</td>
+  </tr>
+</table>
+
+<pre>
+{{mail.message}}
+</pre>
+
+<a href="/membership/" class="btn btn-outline-dark">Back</a>
+
+{%endblock%}

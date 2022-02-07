@@ -1,0 +1,38 @@
+{%extends "adm/admin_base.html" %}
+{%block title%}Member email{%endblock%}
+
+{%block layoutblock %}
+<h1>Member email</h1>
+
+<table class="table">
+  <tr>
+    <th class="col-md-1">From:</th>
+    <td>{{mail.sentfrom}}</td>
+  </tr>
+  <tr>
+    <th class="col-md-1">Date:</th>
+    <td>{{mail.sentat}}</td>
+  </tr>
+  <tr>
+    <th class="col-md-1">Subject:</th>
+    <td>{{mail.subject}}</td>
+  </tr>
+  <tr>
+    <th class="col-md-1">To:</th>
+    <td><ul>
+{%for m in recipients %}
+      <li><a href="/admin/membership/members/{{m.user_id}}/">{{m}}</a></li>
+{%endfor%}
+    </ul></td>
+  </tr>
+</table>
+
+<pre>
+{{mail.message}}
+</pre>
+
+
+<p>
+  <a href="../" class="btn btn-default btn-block">Return to email list</a>
+</p>
+{%endblock%}
