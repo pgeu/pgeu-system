@@ -8,6 +8,8 @@ from postgresqleu.confreg.jinjafunc import render_sandboxed_template
 from postgresqleu.util.widgets import MonospaceTextarea
 from postgresqleu.confreg.models import ConferenceSession, Track
 from postgresqleu.confreg.twitter import post_conference_social
+from postgresqleu.util.messaging import get_messaging
+from postgresqleu.util.messaging.util import get_shortened_post_length
 
 import datetime
 import random
@@ -105,7 +107,7 @@ class ApprovedSessionsCampaignForm(BaseCampaignForm):
         return render_sandboxed_template(s, {
             'conference': conference,
             'session': session,
-        }).strip()[:249]
+        }).strip()
 
     def get_queryset(self):
         return ConferenceSession.objects.filter(conference=self.conference, status=1, cross_schedule=False, track__in=self.data.getlist('tracks'))
@@ -127,12 +129,19 @@ class ApprovedSessionsCampaign(object):
 
     @classmethod
     def get_dynamic_preview(self, conference, fieldname, s):
+        maxlens = "Max lengths are: {}".format(', '.join(['{}: {}'.format(mess.provider.internalname, get_messaging(mess.provider).max_post_length) for mess in conference.conferencemessaging_set.select_related('provider').filter(broadcast=True, provider__active=True)]))
         if fieldname == 'content_template':
             # Generate a preview of 3 (an arbitrary number) sessions
-            return HttpResponse("\n\n-------------------------------\n\n".join([
-                self.form.generate_tweet(conference, session, s)
-                for session in ConferenceSession.objects.filter(conference=conference, status=1, cross_schedule=False)[:3]
-            ]), content_type='text/plain')
+            posts = [self.form.generate_tweet(conference, session, s) for session in ConferenceSession.objects.filter(conference=conference, status=1, cross_schedule=False)[:3]]
+            longest = max((get_shortened_post_length(self.form.generate_tweet(conference, session, s)) for session in ConferenceSession.objects.filter(conference=conference, status=1, cross_schedule=False)))
+            previews = "\n\n".join([
+                "{}\n\n------------------------------- (length {})".format(
+                    p,
+                    get_shortened_post_length(p),
+                )
+                for p in posts
+            ])
+            return HttpResponse("{}\n\nLongest to generate: {} ({})\n".format(previews, longest, maxlens), content_type='text/plain')
 
 
 allcampaigns = (

@@ -43,7 +43,7 @@ def post_conference_social(conference, contents, approved=False, posttime=None, 
         )
 
     t = ConferenceTweetQueue(conference=conference,
-                             contents=contents,
+                             contents=contents[:1000],
                              approved=approved,
                              datetime=posttime,
                              author=author)
