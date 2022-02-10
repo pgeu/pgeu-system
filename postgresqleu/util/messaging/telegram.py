@@ -187,6 +187,11 @@ class Telegram(object):
         })
 
     def post_channel_message(self, messagingconfig, channelname, msg):
+        if channelname not in messagingconfig['channels']:
+            # Don't crash when there is no channel configured, instead just ignore the message
+            print("Channel {} not found in provider {}, dropping message", messagingconfig.get('botname', '*unnamed bot*'))
+            return
+
         self.post('sendMessage', {
             'chat_id': messagingconfig['channels'][channelname]['id'],
             'text': msg,
