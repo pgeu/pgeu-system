@@ -1413,7 +1413,7 @@ def session_card(request, confname, sessionid, cardformat):
 
     if not (conference.sessionsactive and conference.cardsactive):
         if not conference.testers.filter(pk=request.user.id):
-            raise HttpResponseForbidden()
+            return HttpResponseForbidden()
 
     session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False, status=1)
     return render_jinja_conference_svg(request, conference, cardformat, 'confreg/cards/session.svg', {
