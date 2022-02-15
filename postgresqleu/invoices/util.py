@@ -498,7 +498,7 @@ class InvoiceManager(object):
         # Otherwise, flag the invoice as refunded, and assume the user took care of it manually.
 
         # Validate that we're not refunding more than there should be
-        already = invoice.invoicerefund_set.all().aggregate(amount=Coalesce(Sum('amount'), 0), vatamount=Coalesce(Sum('vatamount'), 0))
+        already = invoice.invoicerefund_set.all().aggregate(amount=Coalesce(Sum('amount'), Decimal(0)), vatamount=Coalesce(Sum('vatamount'), Decimal(0)))
         if vatamount > invoice.total_vat - already['vatamount']:
             raise Exception("Trying to refund more VAT than what remains on invoice!")
         if amount > invoice.total_amount - invoice.total_vat - already['amount']:
