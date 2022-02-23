@@ -211,6 +211,21 @@
  </tr>
 {%endif%}
 
+{%if emails%}
+ <tr>
+  <th colspan="2" class="col-md-12">Emails</th>
+ </tr>
+
+ <tr>
+  <td>Emails</td>
+  <td>
+    <ul>{%for e in emails %}
+      <li>{{e.date}} <a href="/events/admin/{{conference.urlname}}/mail/{{e.id}}/">{{e.subject}}</a></li>
+{%endfor%}
+  </ul></td>
+ </tr>
+{%endif%}
+
 <tr>
   <th colspan="2" class="col-md-12">Log</th>
 </tr>
