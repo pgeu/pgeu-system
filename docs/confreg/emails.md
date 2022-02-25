@@ -147,6 +147,18 @@ sending to all attendees.
 All emails will automatically get a footer that says where it was sent
 from and that also includes an opt-out link.
 
+### Example
+
+Example for sending a CfP reminder to all speakers from previous year(s)
+without including speakers who already submitted a talk this year:
+
+* Go to "Send cross conference email"
+* Select the previous conference(s) for "Include"
+* Select "Speaker: all"
+* Select this year's conference for "Exclude"
+* Select "Speaker: all"
+
+Fill out all the other details, and send the email.
 
 ### Opt-out <a name="optout"></a>
 
