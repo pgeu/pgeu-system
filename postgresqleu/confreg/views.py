@@ -3153,10 +3153,21 @@ WHERE dc.conference_id={0} AND (r.conference_id={0} OR r.conference_id IS NULL) 
                    'rows': curs.fetchall()})
 
     # Voucher batches
-    curs.execute("SELECT b.id, b.buyername, s.name as sponsorname, count(v.user_id) AS used, count(*) FILTER (WHERE v.user_id IS NULL) AS unused, count(*) AS total FROM confreg_prepaidbatch b INNER JOIN confreg_prepaidvoucher v ON v.batch_id=b.id LEFT JOIN confreg_conferenceregistration r ON r.id=v.user_id LEFT JOIN confsponsor_sponsor s ON s.id = b.sponsor_id WHERE b.conference_id={0} GROUP BY b.id, s.name ORDER BY buyername".format(conference.id))
+    curs.execute("""SELECT b.id, b.buyername, s.name as sponsorname,
+    CASE WHEN EXISTS (SELECT 1 FROM confsponsor_purchasedvoucher pv WHERE pv.batch_id=b.id) THEN 'Purchased' ELSE 'Given' END AS source,
+    count(v.user_id) AS used,
+    count(*) FILTER (WHERE v.user_id IS NULL) AS unused,
+    count(*) AS total
+FROM confreg_prepaidbatch b
+INNER JOIN confreg_prepaidvoucher v ON v.batch_id=b.id
+LEFT JOIN confreg_conferenceregistration r ON r.id=v.user_id
+LEFT JOIN confsponsor_sponsor s ON s.id = b.sponsor_id
+WHERE b.conference_id={0}
+GROUP BY b.id, s.name
+ORDER BY buyername""".format(conference.id))
     tables.append({'title': 'Prepaid vouchers',
-                   'columns': ['id', 'Buyer', 'Sponsor', 'Used', 'Unused', 'Total'],
-                   'fixedcols': 3,
+                   'columns': ['id', 'Buyer', 'Sponsor', 'Source', 'Used', 'Unused', 'Total', ],
+                   'fixedcols': 4,
                    'fixedcolsend': 0,
                    'hidecols': 1,
                    'linker': lambda x: '../prepaid/{0}/'.format(x[0]),
