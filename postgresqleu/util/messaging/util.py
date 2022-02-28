@@ -137,7 +137,7 @@ def truncate_shortened_post(txt, maxlen):
         return txt[:maxlen]
 
     firststart, firstend = matches[0].span()
-    if firstend > maxlen:
+    if firststart + _url_shortened_len > maxlen:
         # We hit the size limit before the url or in the middle of it, so skip the whole url
         return txt[:firststart]
 
