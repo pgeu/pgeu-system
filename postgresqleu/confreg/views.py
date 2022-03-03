@@ -3983,7 +3983,7 @@ def transfer_reg(request, urlname):
         toreg.payconfirmedat = fromreg.payconfirmedat
         toreg.payconfirmedby = "{0}(x)".format(fromreg.payconfirmedby)[:16]
         toreg.save()
-        reglog(toreg, "Transfered registration from {}".format(fromreg.user.username), request.user)
+        reglog(toreg, "Transfered registration from {}".format(fromreg.fullname), request.user)
 
         yield "Sending notification to target registration"
         notify_reg_confirmed(toreg, False)
