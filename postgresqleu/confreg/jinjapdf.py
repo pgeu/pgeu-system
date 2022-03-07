@@ -22,8 +22,10 @@ from PIL import Image
 import jinja2
 import jinja2.sandbox
 
-from .contextutil import load_base_context, update_with_override_context
-
+try:
+    import postgresqleu.confreg.contextutil as contextutil
+except ImportError:
+    import contextutil
 
 alignments = {
     'left': TA_LEFT,
@@ -238,8 +240,8 @@ class JinjaRenderer(object):
             self.template = env.from_string(f.read())
 
         if rootdir:
-            self.context = load_base_context(rootdir)
-            update_with_override_context(self.context, rootdir)
+            self.context = contextutil.load_base_context(rootdir)
+            contextutil.update_with_override_context(self.context, rootdir)
         else:
             self.context = {}
 
