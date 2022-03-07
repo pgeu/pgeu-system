@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.conf import settings
+from django.contrib import messages
 
 from reportlab.lib import colors
 from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph
@@ -206,6 +207,10 @@ class ReportFilter(object):
         else:
             if val != '':
                 # Limit by value
+                # First try to case it to the appropriate format, so we get a formatting error rather than
+                # a later runtime error crash if the format is bad.
+                fval = self.field.get_prep_value(val[1:])
+
                 if val.startswith('>'):
                     return (
                         "{} > %({})s".format(self.db_colname, self.id),
@@ -422,14 +427,21 @@ def build_attendee_report(request, conference, data):
     allBlockQs = []
     for blockno, fltblock in enumerate(data['filters']):
         if fltblock:
-            blockQs = reduce(_reduce_Q,
-                             [filtermap[flt['filter']].build_SQL(flt, blockno) for flt in fltblock],
-                             ([], {})
-            )
-            allBlockQs.append((
-                "(" + "\n      AND ".join(blockQs[0]) + ")",
-                blockQs[1],
-            ), )
+            try:
+                blockQs = reduce(_reduce_Q,
+                                 [filtermap[flt['filter']].build_SQL(flt, blockno) for flt in fltblock],
+                                 ([], {})
+                )
+                allBlockQs.append((
+                    "(" + "\n      AND ".join(blockQs[0]) + ")",
+                    blockQs[1],
+                ), )
+            except Exception as e:
+                if format == 'html':
+                    messages.warning(request, "Could not process filter: {}".format(e))
+                else:
+                    return HttpResponse("Could not process filter: {}".format(e))
+
     if allBlockQs:
         (allblocks, params) = reduce(_reduce_Q, allBlockQs, ([], {}))
         where = "AND (\n    {}\n)".format(
