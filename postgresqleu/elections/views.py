@@ -1,9 +1,9 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, Http404
 from django.contrib.auth.decorators import login_required
-from django.db import connection
 
 from postgresqleu.util.time import today_global
+from postgresqleu.util.db import exec_to_dict
 from .models import Election, Member, Candidate, Vote
 from .forms import VoteForm
 from datetime import timedelta
@@ -39,8 +39,7 @@ def election(request, electionid):
 
         # Ok, so we do have the results. Use a custom query to make sure we get decently formatted data
         # and no client-side ORM aggregation
-        curs = connection.cursor()
-        curs.execute("""WITH t AS (
+        scores = exec_to_dict("""WITH t AS (
  SELECT c.name, sum(v.score) AS score
  FROM elections_candidate c
  INNER JOIN elections_vote v ON c.id=v.candidate_id
@@ -54,6 +53,7 @@ SELECT
  FROM t
 )
 SELECT name, score,
+ %(barwidth)s * score / first_value(score) OVER (ORDER BY score DESC) AS width,
  CASE WHEN rank+numingroup-2 < %(slots)s THEN 'Elected'
       WHEN rank+numingroup-2 = %(slots)s AND numingroup>1 THEN 'Tied'
       ELSE 'Lost' END AS elected
@@ -61,15 +61,14 @@ FROM tt
 ORDER BY 2 DESC""", {
             'election': election.pk,
             'slots': election.slots,
+            'barwidth': 300,
         })
-        res = curs.fetchall()
-        if len(res) == 0:
+        if len(scores) == 0:
             raise Http404('No results found for this election')
 
         return render(request, 'elections/results.html', {
             'election': election,
-            'topscore': res[0][1],
-            'scores': [{'name': r[0], 'score': r[1], 'width': 300 * r[1] // res[0][1], 'elected': r[2]} for r in res],
+            'scores': scores,
         })
 
     if len(election.candidate_set.all()) <= 0:
