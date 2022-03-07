@@ -40,8 +40,27 @@ def election(request, electionid):
         # Ok, so we do have the results. Use a custom query to make sure we get decently formatted data
         # and no client-side ORM aggregation
         curs = connection.cursor()
-        curs.execute("SELECT c.name, sum(v.score) AS score FROM elections_candidate c INNER JOIN elections_vote v ON c.id=v.candidate_id WHERE v.election_id=%(election)s AND c.election_id=%(election)s GROUP BY c.name ORDER BY 2 DESC", {
+        curs.execute("""WITH t AS (
+ SELECT c.name, sum(v.score) AS score
+ FROM elections_candidate c
+ INNER JOIN elections_vote v ON c.id=v.candidate_id
+ WHERE v.election_id=%(election)s AND c.election_id=%(election)s
+ GROUP BY c.id
+ ), tt AS (
+SELECT
+ name, score,
+ rank() OVER (ORDER BY score DESC) AS rank,
+ count(1) OVER (PARTITION BY score) AS numingroup
+ FROM t
+)
+SELECT name, score,
+ CASE WHEN rank+numingroup-2 < %(slots)s THEN 'Elected'
+      WHEN rank+numingroup-2 = %(slots)s AND numingroup>1 THEN 'Tied'
+      ELSE 'Lost' END AS elected
+FROM tt
+ORDER BY 2 DESC""", {
             'election': election.pk,
+            'slots': election.slots,
         })
         res = curs.fetchall()
         if len(res) == 0:
@@ -50,7 +69,7 @@ def election(request, electionid):
         return render(request, 'elections/results.html', {
             'election': election,
             'topscore': res[0][1],
-            'scores': [{'name': r[0], 'score': r[1], 'width': 300 * r[1] // res[0][1]} for r in res],
+            'scores': [{'name': r[0], 'score': r[1], 'width': 300 * r[1] // res[0][1], 'elected': r[2]} for r in res],
         })
 
     if len(election.candidate_set.all()) <= 0:

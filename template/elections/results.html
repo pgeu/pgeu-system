@@ -3,8 +3,7 @@
 {%block content%}
 <h2>Results - {{election.name}}</h2>
 <p>
-This election is closed, and these are the results. Candidates shown above the red line
-were voted into office.
+This election is closed, and these are the results.
 If you voted in this election, you can review <a href="ownvotes/">your votes</a>.
 </p>
 {%if not election.resultspublic%}
@@ -21,17 +20,19 @@ results, and should be verified and then published!
   <div class="electionResultCol1">Name</div>
   <div class="electionResultCol2">Score</div>
   <div class="electionResultCol3Hdr">Relative score</div>
+  <div class="electionResultCol4">Result</div>
  </div>
 
 {%for score in scores%}
+ {%ifchanged score.elected%}{%if not forloop.first%}
+ <div><div class="electionSeparator">&nbsp;</div></div>
+ {%endif%}{%endifchanged%}
  <div class="electionResultRow">
   <div class="electionResultCol1">{{score.name}}</div>
   <div class="electionResultCol2">{{score.score}}</div>
-  <div class="electionResultCol3" style="width: {{score.width}}px;">&nbsp;</div>
+  <div class="electionResultCol3"><div class="electionResultBar"  style="width: {{score.width}}px;">&nbsp;</div></div>
+  <div class="electionResultCol4">{{score.elected}}</div>
  </div>
- {%ifequal forloop.counter election.slots %}
- <div><div class="electionSeparator">&nbsp;</div></div>
- {%endifequal%}
 {%endfor%}
 </div>
 

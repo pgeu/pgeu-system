@@ -132,11 +132,11 @@ div.eventCarouselCfsBadge {
 
 /* Elections */
 div.electionResultRow {
-    padding: 2px 2px 2px 2px;
+    padding: 2px 2px 2px 2px 2px;
 }
 div.electionHeaderRow {
     font-weight: bold;
-    padding: 2px 2px 2px 2px;
+    padding: 2px 2px 2px 2px 2px;
 }
 div.electionResultCol1 {
     display: inline-block;
@@ -149,17 +149,26 @@ div.electionResultCol2 {
 }
 div.electionResultCol3 {
     display: inline-block;
+    width: 320px;
+    padding: 2px;
+}
+div.electionResultCol3 div.electionResultBar {
+    display: inline-block;
     background-color: #0091c1;
+}
+div.electionResultCol4 {
+    display: inline-block;
+    width: 50px;
 }
 div.electionResultCol3Hdr {
     display: inline-block;
-    width: 300px;
+    width: 320px;
 }
 div.electionSeparator {
     display: inline-block;
     background-color: red;
     height: 2px;
-    width: 510px;
+    width: 590px;
 }
 tr.electionError {
     background-color: #ffb6b6;
