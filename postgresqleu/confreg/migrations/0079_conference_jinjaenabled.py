@@ -14,7 +14,6 @@ class Migration(migrations.Migration):
             model_name='conference',
             name='jinjaenabled',
             field=models.BooleanField(default=False, verbose_name='Jinja templates enabled'),
-            preserve_default=False,
         ),
         migrations.RunSQL(
             "UPDATE confreg_conference SET jinjaenabled=true WHERE jinjadir IS NOT NULL AND jinjadir != ''",
