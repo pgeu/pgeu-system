@@ -491,7 +491,7 @@ def signup_admin_editsignup(request, urlname, signupid, id):
                 reg = attendeesignup.attendee
             if (not signup.options) and (not form.cleaned_data['choice']):
                 # Yes/no signup changed to no means we actually delete the
-                # record completeliy.
+                # record completely.
                 reglog(reg, "Admin removed response to signup {}".format(signup.id), request.user)
                 attendeesignup.delete()
             else:
