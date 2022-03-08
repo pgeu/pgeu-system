@@ -160,6 +160,10 @@ tweets can be posted. If an automated tweet is queued outside this
 window, it will be posted once the window is entered. Manual tweets
 can be queued for any time.
 
+Posting policy
+: Set the policy fo rusing the [mobile](integrations#mobilesite)
+  posting interface.
+
 Field t-shirt
 : Should the field asking for t-shirt size be displayed on
 registration form. Only used if t-shirts are given out.
