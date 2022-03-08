@@ -112,7 +112,7 @@ class SignupAdminEditSignupForm(ConcurrentProtectedModelForm):
 
         if self.isnew:
             self.fields['attendee'].queryset = ConferenceRegistration.objects.filter(conference=signup.conference).filter(
-                Q(user_attendees=signup) | Q(regtype__user_regtypes=signup)).exclude(attendeesignup__signup=signup).distinct()
+                Q(user_attendees=signup) | Q(regtype__user_regtypes=signup)).exclude(canceledat__isnull=False).exclude(attendeesignup__signup=signup).distinct()
         else:
             del self.fields['attendee']
             self.update_protected_fields()
