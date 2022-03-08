@@ -474,10 +474,10 @@ def signup_admin_editsignup(request, urlname, signupid, id):
 
     if id == 'new':
         attendeesignup = AttendeeSignup(signup=signup)
+        reg = None
     else:
         attendeesignup = get_object_or_404(AttendeeSignup, signup=signup, pk=id)
-
-    reg = attendeesignup.attendee
+        reg = attendeesignup.attendee
 
     if request.method == 'POST' and request.POST['submit'] == 'Delete':
         reglog(reg, "Admin removed response to signup {}".format(signup.id), request.user)
@@ -486,6 +486,9 @@ def signup_admin_editsignup(request, urlname, signupid, id):
     elif request.method == 'POST':
         form = SignupAdminEditSignupForm(signup, isnew=(id == 'new'), instance=attendeesignup, data=request.POST)
         if form.is_valid():
+            if id == 'new':
+                # Pick the registration that was selected in the form.
+                reg = attendeesignup.attendee
             if (not signup.options) and (not form.cleaned_data['choice']):
                 # Yes/no signup changed to no means we actually delete the
                 # record completeliy.
