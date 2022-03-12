@@ -143,7 +143,11 @@ class JinjaFlowable(Flowable):
         try:
             import qrencode
         except ImportError:
-            # No qrcode library -> no qrcode image!
+            o2 = o.copy()
+            o2['stroke'] = True
+            o2['text'] = "qrencode library\nnot found"
+            self.draw_box(o2)
+            self.draw_paragraph(o2)
             return
 
         (ver, size, qrimage) = qrencode.encode(s, version=ver, level=qrencode.QR_ECLEVEL_M)
