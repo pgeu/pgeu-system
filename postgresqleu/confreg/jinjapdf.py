@@ -337,6 +337,7 @@ if __name__ == "__main__":
     parser.add_argument('--confjson', type=str, help='JSON representing conference')
     parser.add_argument('--borders', action='store_true', help='Enable borders on written file')
     parser.add_argument('--pagebreaks', action='store_true', help='Enable pagebreaks on written file')
+    parser.add_argument('--fontroot', type=str, help='fontroot')
 
     args = parser.parse_args()
 
@@ -350,11 +351,11 @@ if __name__ == "__main__":
         a = json.load(f)
 
     if args.what == 'badge':
-        renderer = JinjaBadgeRenderer(args.repopath, fontroot, debug=True, border=args.borders, pagebreaks=args.pagebreaks)
+        renderer = JinjaBadgeRenderer(args.repopath, args.fontroot, debug=True, border=args.borders, pagebreaks=args.pagebreaks)
         for reg in a:
             renderer.add_badge(reg, conference)
     else:
-        renderer = JinjaTicketRenderer(args.repopath, fontroot, debug=True)
+        renderer = JinjaTicketRenderer(args.repopath, args.fontroot, debug=True)
         renderer.add_reg(a[0], conference)
 
     with open(args.outputfile, 'wb') as output:
