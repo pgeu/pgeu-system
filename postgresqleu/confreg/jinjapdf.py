@@ -86,10 +86,19 @@ class JinjaFlowable(Flowable):
                        fill=fill)
 
     def draw_line(self, o):
-        self.canv.line(getmm(o, 'x'),
-                       self.calc_y(o),
-                       getmm(o, 'x') + getmm(o, 'width'),
-                       self.calc_y(o) + getmm(o, 'height'))
+        if 'x2' in o and 'y2' in o:
+            self.canv.line(getmm(o, 'x'),
+                           self.height - getmm(o, 'y'),
+                           getmm(o, 'x2'),
+                           self.height - getmm(o, 'y2'))
+        elif 'width' in o and 'height' in o:
+            # Draw a line between the corners of a rectangle
+            self.canv.line(getmm(o, 'x'),
+                           self.calc_y(o),
+                           getmm(o, 'x') + getmm(o, 'width'),
+                           self.calc_y(o) + getmm(o, 'height'))
+        else:
+            raise Exception("Must specify x2/y2 or width/height")
 
     def resolve_image_path(self, src):
         p = os.path.normpath(os.path.join(self.imgpath, src))

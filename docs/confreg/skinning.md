@@ -283,6 +283,9 @@ The currently supported element types are:
 box
 :  draws an empty or filled rectangle
 
+line
+   draws a straight line
+
 image
 :  draws an image (which must be in the /static subdirectory)
 
@@ -293,7 +296,8 @@ paragraph
 :  draws a dynamically sized paragraph of text
 
 All elements require that the parameters `x`, `y`, `width` and
-`height` are specified. Further attributes depend on the element:
+`height` are specified, except for `line` where `width` and
+`height` can be optional. Further attributes depend on the element:
 
 box
 :    fill
@@ -301,6 +305,10 @@ box
 
 	 stroke
 	 : Set to true to draw a line around the box (and not just fill)
+
+line
+:    x2, y2
+     : Can be specified *instead of* `width` and `height`, but not together with.
 
 image
 :    src
