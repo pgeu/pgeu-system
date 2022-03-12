@@ -3221,7 +3221,7 @@ def admin_registration_single(request, urlname, regid):
         'conference': conference,
         'reg': reg,
         'log': ConferenceRegistrationLog.objects.select_related('user').order_by('-ts').filter(reg=reg)[:maxlogrows + 1],
-        'emails': _attendeemail_queryset(conference, reg),
+        'emails': _attendeemail_queryset(conference, reg) if reg.regtype else None,
         'maxlogrows': maxlogrows,
         'sessions': sessions,
         'signups': _get_registration_signups(conference, reg),
