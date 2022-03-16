@@ -789,7 +789,7 @@ class ConferenceRegistration(models.Model):
 
     # For exporting "safe attributes" to external systems
     def safe_export(self):
-        attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'countryname', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'badgescan', 'shareemail', 'fullidtoken', 'fullpublictoken', 'queuepartition', 'alldays', 'regdatestr', ]
+        attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'countryname', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'badgescan', 'shareemail', 'fullidtoken', 'fullpublictoken', 'queuepartition', 'alldays', 'regdatestr', 'vouchercode']
         d = dict((a, getattr(self, a) and str(getattr(self, a))) for a in attribs)
         if self.regtype:
             d['regtype'] = self.regtype.safe_export()

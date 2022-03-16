@@ -499,7 +499,7 @@ def build_attendee_report(request, conference, data):
                 'confreg_shirtsize': 's',
             }.get(table, table), _f)
 
-        query = """SELECT r.id, firstname, lastname, email, company, address, phone, dietary, twittername, nick, badgescan, shareemail,
+        query = """SELECT r.id, firstname, lastname, email, company, address, phone, dietary, twittername, nick, badgescan, shareemail, vouchercode,
   country.name AS countryname, country.printable_name AS country,
   s.shirtsize,
   'ID$' || idtoken || '$ID' AS fullidtoken,
