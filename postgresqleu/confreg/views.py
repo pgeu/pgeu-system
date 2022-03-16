@@ -3612,7 +3612,7 @@ def admin_waitlist(request, urlname):
             page = 1
         try:
             return p.page(page), num
-        except (paginator.EmptyPage, paginstor.InvalidPage):
+        except (paginator.EmptyPage, paginator.InvalidPage):
             return p.page(paginator.num_pages), num
 
     num_confirmedregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True).count()
