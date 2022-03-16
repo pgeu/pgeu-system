@@ -5,6 +5,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 from postgresqleu.util.widgets import HtmlDateInput
 
+import copy
 import datetime
 from functools import reduce
 
@@ -57,6 +58,12 @@ class BackendForm(ConcurrentProtectedModelForm):
             del kwargs['newformdata']
 
         super(BackendForm, self).__init__(*args, **kwargs)
+
+        if hasattr(self.Meta, 'fieldsets'):
+            # If fieldsets are specified in the Meta model, copy them to our instance, so we can go ahead
+            # and modify them.
+            # If they are not in the Meta model, we rely on the one that's in the base model.
+            self.fieldsets = copy.deepcopy(self.Meta.fieldsets)
 
         if self.newformdata:
             self.fields['_newformdata'].initial = self.newformdata

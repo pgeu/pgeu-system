@@ -148,29 +148,21 @@ class BackendSuperConferenceForm(BackendForm):
         widgets = {
             'paymentmethods': django.forms.CheckboxSelectMultiple,
         }
-
-    fieldsets = [
-        {'id': 'base_info', 'legend': 'Basic information', 'fields': ['conferencename', 'urlname', 'series', 'location', 'confurl',
-                                                                      'jinjadir', 'administrators']},
-        {'id': 'time', 'legend': 'Timing information', 'fields': ['startdate', 'enddate', 'tzname']},
-        {'id': 'contact', 'legend': 'Contact information', 'fields': ['contactaddr', 'sponsoraddr', 'notifyaddr']},
-        {'id': 'financial', 'legend': 'Financial information', 'fields': ['accounting_object', 'vat_registrations',
-                                                                          'vat_sponsorship', 'paymentmethods']},
-        {'id': 'api', 'legend': 'API access', 'fields': ['web_origins', ]}
-    ]
+        fieldsets = [
+            {'id': 'base_info', 'legend': 'Basic information', 'fields': ['conferencename', 'urlname', 'series', 'location', 'confurl',
+                                                                          'jinjadir', 'administrators']},
+            {'id': 'time', 'legend': 'Timing information', 'fields': ['startdate', 'enddate', 'tzname']},
+            {'id': 'contact', 'legend': 'Contact information', 'fields': ['contactaddr', 'sponsoraddr', 'notifyaddr']},
+            {'id': 'financial', 'legend': 'Financial information', 'fields': ['accounting_object', 'vat_registrations',
+                                                                              'vat_sponsorship', 'paymentmethods']},
+            {'id': 'api', 'legend': 'API access', 'fields': ['web_origins', ]}
+        ]
 
     def fix_fields(self):
         self.fields['paymentmethods'].label_from_instance = lambda x: "{0}{1}".format(x.internaldescription, x.active and " " or " (INACTIVE)")
         self.fields['accounting_object'].choices = [('', '----'), ] + [(o.name, o.name) for o in postgresqleu.accounting.models.Object.objects.filter(active=True)]
         if not self.instance.id:
             self.remove_field('accounting_object')
-        else:
-            # Ensure accounting object is actually in the fieldset (yes, this is an ugly workaround)
-            for fs in self.fieldsets:
-                if fs['id'] == 'api':
-                    if 'accounting_object' not in fs['fields']:
-                        fs['fields'] += ['accounting_object', ]
-                    break
 
     def pre_create_item(self):
         # Create a new accounting object automatically if one does not exist already
@@ -234,17 +226,17 @@ class BackendTshirtSizeForm(BackendForm):
 
 class BackendRegistrationForm(BackendForm):
     helplink = "registrations"
-    fieldsets = [
-        {'id': 'personal_info', 'legend': 'Personal information', 'fields': ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'twittername', 'nick']},
-        {'id': 'reg_info', 'legend': 'Registration information', 'fields': ['regtype', 'additionaloptions', 'badgescan', 'shareemail']},
-        {'id': 'attendee_specifics', 'legend': 'Attendee specifics', 'fields': ['shirtsize', 'dietary', ]},
-    ]
 
     class Meta:
         model = ConferenceRegistration
         fields = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone',
                   'shirtsize', 'dietary', 'twittername', 'nick', 'badgescan', 'shareemail',
                   'regtype', 'additionaloptions']
+        fieldsets = [
+            {'id': 'personal_info', 'legend': 'Personal information', 'fields': ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'twittername', 'nick']},
+            {'id': 'reg_info', 'legend': 'Registration information', 'fields': ['regtype', 'additionaloptions', 'badgescan', 'shareemail']},
+            {'id': 'attendee_specifics', 'legend': 'Attendee specifics', 'fields': ['shirtsize', 'dietary', ]},
+        ]
 
     def fix_fields(self):
         if self.instance.canceledat:
