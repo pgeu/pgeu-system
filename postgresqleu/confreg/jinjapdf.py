@@ -326,7 +326,7 @@ class JinjaTicketRenderer(JinjaRenderer):
 
 # Render badges from within the website scope, meaning we have access to the
 # django objects here.
-def render_jinja_badges(conference, fontroot, registrations, output, border, pagebreaks, orientation, pagesize):
+def render_jinja_badges(conference, fontroot, registrations, output, border, pagebreaks, orientation='portrait', pagesize='A4'):
     renderer = JinjaBadgeRenderer(conference.jinjadir, fontroot, border=border, pagebreaks=pagebreaks, orientation=orientation, pagesize=pagesize)
 
     for reg in registrations:
