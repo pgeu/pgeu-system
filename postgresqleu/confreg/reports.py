@@ -483,6 +483,22 @@ def build_attendee_report(request, conference, data):
         # above.
         # We do this hardcoded because the django ORM can't even begin to understand what we're
         # doing here, and generates a horrible loop of queries.
+        def _get_table_aliased_field(fieldname):
+            # If we have aliased a table, we have to map it in the orderby field as well. So the list of
+            # table aliases here has to match that in the below query
+            if '.' not in fieldname:
+                return fieldname
+            (table, _f) = fieldname.split('.')
+            return '{}.{}'.format({
+                'confreg_conferenceregistration': 'r',
+                'confreg_conference': 'conference',
+                'confreg_registrationtype': 'rt',
+                'confreg_registrationclass': 'rc',
+                'confreg_conferenceregistration_additionaloptions': 'crao',
+                'confreg_conferenceadditionaloption': 'ao',
+                'confreg_shirtsize': 's',
+            }.get(table, table), _f)
+
         query = """SELECT r.id, firstname, lastname, email, company, address, phone, dietary, twittername, nick, badgescan, shareemail,
   country.name AS countryname, country.printable_name AS country,
   s.shirtsize,
@@ -507,7 +523,7 @@ LEFT JOIN country ON country.iso=r.country_id
 LEFT JOIN confreg_shirtsize s ON s.id=r.shirtsize_id
 WHERE r.conference_id=%(conference_id)s {}
 GROUP BY r.id, conference.id, rt.id, rc.id, country.iso, s.id
-ORDER BY {}""".format(where, ", ".join([o.get_orderby_field() for o in ofields]))
+ORDER BY {}""".format(where, ", ".join([_get_table_aliased_field(o.get_orderby_field()) for o in ofields]))
 
     with ensure_conference_timezone(conference):
         result = exec_to_dict(query, params)
