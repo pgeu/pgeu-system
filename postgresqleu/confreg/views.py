@@ -3628,14 +3628,17 @@ def admin_waitlist(request, urlname):
         if form.is_valid():
             regs = ConferenceRegistration.objects.filter(conference=conference, id__in=form.reg_list)
             if len(regs) != len(form.reg_list):
-                raise Exception("Database lookup mismatch")
+                messages.error(request, "Database lookup mismatch")
+                return HttpResponseRedirect(".")
             if len(regs) < 1:
-                raise Exception("Somehow got through with zero!")
+                messages.error(request, "Somehow got through with zero!")
+                return HttpResponseRedirect(".")
 
             for r in regs:
                 wl = r.registrationwaitlistentry
                 if wl.offeredon:
-                    raise Exception("One or more already offered!")
+                    messages.warning(request, "Waitlist offer already given to {}, ignoring".format(r.fullname))
+                    continue
                 wl.offeredon = timezone.now()
                 if request.POST.get('submit') == 'Make offer for hours':
                     wl.offerexpires = timezone.now() + timedelta(hours=form.cleaned_data['hours'])
