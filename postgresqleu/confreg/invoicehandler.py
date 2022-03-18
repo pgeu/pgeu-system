@@ -4,7 +4,7 @@ from django.conf import settings
 from .models import ConferenceRegistration, BulkPayment, PendingAdditionalOrder
 from .models import RegistrationWaitlistHistory, PrepaidVoucher
 from .util import notify_reg_confirmed, expire_additional_options
-from .util import send_conference_mail
+from .util import send_conference_mail, send_conference_notification
 from .util import reglog
 
 
@@ -70,6 +70,12 @@ class InvoiceProcessor(object):
             wl.offerexpires = None
             wl.enteredon = timezone.now()
             wl.save()
+
+            send_conference_notification(
+                reg.conference,
+                'Waitlist invoice canceled',
+                'Invoice for user {0} {1} <{2}> was canceled, and the offer has expired.'.format(reg.firstname, reg.lastname, reg.email),
+            )
 
         # If the registration was attached to a discount code, remove it so that it is no
         # longer counted against it. Also clear out the field, in case others want to use
