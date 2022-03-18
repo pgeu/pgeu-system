@@ -34,7 +34,7 @@ enable the individual conference messaging features for the
 conferences.
 
 If any [messaging configuration](#messaging) is enabled for a
-conference that supports wither [Private
+conference that supports either [Private
 notifications](#notifications) or [Attendee only
 broadcasts](#attendeebroadcast), attendees will have the option of
 connecting their registration with a messaging system in order to

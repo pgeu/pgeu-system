@@ -238,7 +238,7 @@ session.svg
 
 Unlike some other templates, the included SVG templates in the default
 system are *not* meant to be used for anything other than an
-example. They should always be overriden, and until that is done, card
+example. They should always be overridden, and until that is done, card
 publishing should not be
 [enabled on the conference](configuring#conferenceform).
 
