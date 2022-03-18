@@ -46,7 +46,7 @@ from .util import attendee_cost_from_bulk_payment
 from .util import send_conference_mail, send_conference_notification, send_conference_notification_template
 from .util import reglog
 
-from .models import get_status_string, get_status_string_short, valid_status_transitions
+from .models import get_status_string, valid_status_transitions
 from .regtypes import confirm_special_reg_type, validate_special_reg_type
 from .jinjafunc import render_jinja_conference_response, JINJA_TEMPLATE_ROOT
 from .jinjafunc import render_jinja_conference_template
