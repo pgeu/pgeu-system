@@ -3696,7 +3696,7 @@ def admin_waitlist_cancel(request, urlname, wlid):
         wl.enteredon = timezone.now()
         wl.save()
 
-        send_conferece_notification(
+        send_conference_notification(
             reg.conference,
             'Waitlist offer cancel',
             'Waitlist offer for user {0} {1} <{2}> canceled by {3}. User remains on waitlist.'.format(reg.firstname, reg.lastname, reg.email, request.user),
