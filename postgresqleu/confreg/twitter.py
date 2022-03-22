@@ -176,7 +176,7 @@ def volunteer_twitter(request, urlname, token):
                 t.approved = True
                 t.approvedby = reg.attendee
                 t.save()
-                trigger_immediate_job_run('twitter_post')
+                trigger_immediate_job_run('post_media_broadcasts')
             else:
                 t.delete()
             return _json_response({})
@@ -203,7 +203,7 @@ def volunteer_twitter(request, urlname, token):
                     return _json_response({'error': 'Tweet '})
                 t.retweetstate = 1
                 t.save(update_fields=['retweetstate'])
-                trigger_immediate_job_run('twitter_post')
+                trigger_immediate_job_run('post_media_broadcasts')
 
             return _json_response({})
         else:
