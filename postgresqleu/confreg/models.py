@@ -1102,10 +1102,12 @@ class ConferenceSessionFeedback(models.Model):
 class ConferenceFeedbackQuestion(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     question = models.CharField(max_length=100, null=False, blank=False)
-    isfreetext = models.BooleanField(blank=False, null=False, default=False)
-    textchoices = models.CharField(max_length=500, null=False, blank=True)
-    sortkey = models.IntegerField(null=False, default=100)
-    newfieldset = models.CharField(max_length=100, null=False, blank=True)
+    isfreetext = models.BooleanField(blank=False, null=False, default=False, verbose_name='Text field',
+                                     help_text='Text field (instead of rate 1-5)')
+    textchoices = models.CharField(max_length=500, null=False, blank=True, verbose_name='Text choices')
+    sortkey = models.IntegerField(null=False, default=100, verbose_name='Sort key')
+    newfieldset = models.CharField(max_length=100, null=False, blank=True,
+                                   verbose_name='Start new fieldset')
 
     def __str__(self):
         return "%s: %s" % (self.conference, self.question)

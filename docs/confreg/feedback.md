@@ -44,21 +44,21 @@ question, the following fields are available:
 Question
 :  The actual question
 
-Isfreetext
+Text field
 :  If the response to the question is textual. If this box is not
 checked, the question will be a rating from 1-5.
 
-Textchoices
+Text choices
 : If the response is freetext per above, this field can contain a set
 of options separated by semicolons. If it does, the form will contain
 a list of options. If the field is freetext and has nothing in the
 textchoices field, a regular textbox is used.
 
-Sortkey
+Sort key
 :  An integer representing the sort order of this field. Lower numbers
 sort earlier.
 
-Newfieldset
+Start new fieldset
 :  If specified, this question will create a new fieldset (section) on
 the form, and the string in this field will be used as the title. If
 left empty, this field will belong to the same fieldset as the
