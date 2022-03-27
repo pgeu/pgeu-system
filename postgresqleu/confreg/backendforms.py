@@ -918,6 +918,16 @@ class BackendFeedbackQuestionForm(BackendForm):
                 self.add_error('textchoices', 'Textchoices can only be specified for freetext fields')
         return cleaned_data
 
+    def clean_textchoices(self):
+        val = self.cleaned_data['textchoices']
+        if val:
+            if ';' not in val:
+                if ':' in val:
+                    raise ValidationError('When choices are used, more than one option must be specified! It looks like you may have used colon instead of semicolon to separate values.')
+                else:
+                    raise ValidationError('When choices are used, than one must be specified!')
+        return val
+
     @classmethod
     def copy_from_conference(self, targetconf, sourceconf, idlist):
         # Conference feedback questions are copied straight over, but we disallow duplicates
