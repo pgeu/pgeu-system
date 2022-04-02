@@ -331,6 +331,11 @@ def cancel_registration(reg, is_unconfirmed=False, reason=None, user=None):
 
     reglog(reg, "Canceled registration", user)
 
+    # If the registration is on any signups, remove it from there
+    for s in reg.attendeesignup_set.all():
+        reglog(reg, "Removed from signup {}".format(s.signup.title))
+        s.delete()
+
     if reg.conference.notifyregs and not is_unconfirmed:
         send_conference_notification_template(
             reg.conference,
