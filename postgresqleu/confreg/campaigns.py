@@ -133,7 +133,13 @@ class ApprovedSessionsCampaign(object):
         if fieldname == 'content_template':
             # Generate a preview of 3 (an arbitrary number) sessions
             posts = [self.form.generate_tweet(conference, session, s) for session in ConferenceSession.objects.filter(conference=conference, status=1, cross_schedule=False)[:3]]
-            longest = max((get_shortened_post_length(self.form.generate_tweet(conference, session, s)) for session in ConferenceSession.objects.filter(conference=conference, status=1, cross_schedule=False)))
+
+            sesslist = list(ConferenceSession.objects.filter(conference=conference, status=1, cross_schedule=False))
+            if sesslist:
+                longest = max((get_shortened_post_length(self.form.generate_tweet(conference, session, s)) for session in sesslist))
+            else:
+                longest = 0
+
             previews = "\n\n".join([
                 "{}\n\n------------------------------- (length {})".format(
                     p,
