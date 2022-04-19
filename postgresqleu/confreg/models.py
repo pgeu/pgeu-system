@@ -282,7 +282,7 @@ class Conference(models.Model):
             if self.enddate < today_conference():
                 return 0
         else:
-            if self.startdate < tday_conference():
+            if self.startdate < today_conference():
                 return 0
         return self.conferencesession_set.exclude(status=F('lastnotifiedstatus')).exclude(speaker__isnull=True).count()
 
