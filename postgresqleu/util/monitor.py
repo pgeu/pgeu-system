@@ -10,7 +10,7 @@ from postgresqleu.util.db import exec_to_scalar
 
 
 def _validate_monitor_request(request):
-    if request.META['REMOTE_ADDR'] not in settings.MONITOR_SERVER_IPS:
+    if request.META['HTTP_X_FORWARDED_FOR'] not in settings.MONITOR_SERVER_IPS:
         raise PermissionDenied("Invalid IP")
 
 
