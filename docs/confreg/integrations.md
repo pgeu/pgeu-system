@@ -128,7 +128,9 @@ A sample template for this campaign that shows some variables used:
 {%macro speaker(s)%}{{s}}{%if s.twittername%} ({{s.twittername}}){%endif%}{%endmacro%}
 Come see {{session.speaker.all()|map("applymacro", "speaker")|join(" and ")}} talk about {{session.title}}
 
-#awesome #conference #pgeu
+Details: https://www.postgresql.eu/events/{{conference.urlname}}/session/{{session.id}}--{{session.title|slugify}}/
+
+#awesome #postgresql #conference #pgeu
 ~~~
 
 
