@@ -56,6 +56,10 @@ Decide if you want skill level prompts in the
 [schedule](schedule), and set the intro text used on the
 [call for papers](callforpapers).
 
+You can also decide if you want talkvoters to be able to see how others
+voted and the overall average vote.  Usually this would be off until
+everyone has finished voting.
+
 ### Roles
 
 There are four types of roles that can be configured at the level of
