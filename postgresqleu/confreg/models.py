@@ -200,6 +200,7 @@ class Conference(models.Model):
     jinjadir = models.CharField(max_length=200, blank=True, null=True, default=None, help_text="Full path to new style jinja repository root", verbose_name="Jinja directory")
     callforpapersintro = models.TextField(blank=True, null=False, verbose_name="Call for papers intro")
     callforpaperstags = models.BooleanField(blank=False, null=False, default=False, verbose_name='Use tags')
+    showvotes = models.BooleanField(blank=False, null=False, default=False, verbose_name="Show votes", help_text="Show other people's votes on the talkvote page")
 
     sendwelcomemail = models.BooleanField(blank=False, null=False, default=False, verbose_name="Send welcome email", help_text="Send an email to attendees once their registration is completed.")
     welcomemail = models.TextField(blank=True, null=False, verbose_name="Welcome email contents")

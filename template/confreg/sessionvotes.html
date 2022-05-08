@@ -228,10 +228,17 @@ width: 100%;
   <th style="width: 1%">Seq</th>
   <th class="col-md-6"><a href="?{{urlfilter}}sort=session">Session</a> | <a href="?{{urlfilter}}sort=speakers">Speakers</a></th>
   <th>Status</th>
+
   {%for u in users%}
+  {% if conference.showvotes or isadmin or forloop.first and isvoter %}
   <th>{{u}}</th>
+  {% endif %}
   {%endfor%}
+
+  {% if conference.showvotes or isadmin %}
   <th><a href="?{{urlfilter}}sort=avg">Average</a></th>
+  {% endif %}
+
   <th>Comments</th>
  </tr>
 {%for s in sessionvotes%}
@@ -279,19 +286,27 @@ width: 100%;
 {%else%}
    <td>{{s.status}}</td>
 {%endif%}
-   {%for u in s.users%}
-   <td{%if u|default_if_none:0 == 0%} style="background-color:red"{%endif%}>{%if forloop.first and isvoter %}
-     <select id="sv_{{s.id}}" onChange="castVote({{s.id}})">
-       {%for opt in "0123456789"|make_list%}
-       <option value="{{opt}}"{%if opt|add:0 == u|add:0%} SELECTED{%endif%}>{{opt}}</option>
-       {%endfor%}
-     </select>
-     {%else%}
-     {{u|default_if_none:''}}
-     {%endif%}
-   </td>
-   {%endfor%}
-   <td class="avgbox">{{s.avg|default_if_none:''}}</td>
+
+  {%for u in s.users%}
+    {%if forloop.first and isvoter %}
+      <td{%if u|default_if_none:0 == 0%} style="background-color:red"{%endif%}>
+        <select id="sv_{{s.id}}" onChange="castVote({{s.id}})">
+          {%for opt in "0123456789"|make_list%}
+            <option value="{{opt}}"{%if opt|add:0 == u|add:0%} SELECTED{%endif%}>{{opt}}</option>
+          {%endfor%}
+        </select>
+      </td>
+    {%else%}
+      {% if conference.showvotes or isadmin %}
+        <td>{{u|default_if_none:''}}</td>
+      {%endif%}
+    {%endif%}
+  {%endfor%}
+
+  {% if conference.showvotes or isadmin %}
+  <td class="avgbox">{{s.avg|default_if_none:''}}</td>
+  {% endif %}
+
    <td>
 {%if isvoter%}
      <div style="margin-right: 0.5em; float:left;">
