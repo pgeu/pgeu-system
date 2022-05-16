@@ -1145,6 +1145,7 @@ class SessionSet(object):
         return [{
             'id': id,
             'name': self.available_rooms[id]['roomname'],
+            'sortkey': self.available_rooms[id]['sortkey'],
             'url': self.available_rooms[id]['url'],
             'comment': self.available_rooms[id]['roomcomment'],
             'leftpos': self.roomwidth() * self.rooms[id],
