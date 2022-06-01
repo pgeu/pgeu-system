@@ -43,6 +43,7 @@ Your existing sponsorships are:
 The following sponsorship levels are available for this conference:
 </p>
 {%for level in levels%}
+{%if level.can_signup %}
 <h2>{{level}}</h2>
 <p>
 The following benefits are available at this level (click for details):
@@ -85,13 +86,11 @@ A full specification of all the levels can be found in the
 If there is a difference, the version listed in the contract takes precedence.
 </p>
 {%endif%}
-{%if level.can_signup %}
+
 <p><a class="btn btn-primary" href="{{level.urlname}}/">Sign Up</a></p>
-{%else%}
-<p><i>This level is not currently available for signup.</i></p>
-{%endif%}
 
 <hr/>
+{%endif%}
 {%endfor%}
 
 <a href="/events/sponsor/" class="btn btn-outline-dark">Back to sponsor event list</a>
