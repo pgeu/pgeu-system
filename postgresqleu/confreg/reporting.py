@@ -244,6 +244,51 @@ class SubmittingSpeakersReport(MultiConferenceReport):
 reporttypes.append(('Submitting speakers', SubmittingSpeakersReport))
 
 
+class ConfirmedSponsorsReport(MultiConferenceReport):
+    def __init__(self, title, conferences):
+        super(ConfirmedSponsorsReport, self).__init__(title, 'Confirmed sponsors', conferences)
+
+    def maxmin(self):
+        self.curs.execute("SELECT max(extract(days FROM startdate-confirmedat)::integer), min(extract(days FROM startdate-confirmedat)::integer) FROM confreg_conference c INNER JOIN confsponsor_sponsor s ON c.id=s.conference_id WHERE c.id=ANY(%(idlist)s) AND confirmedat IS NOT NULL", {'idlist': [c.id for c in self.conferences]})
+        return self.curs.fetchone()
+
+    def fetch_all_data(self, conference, min, max):
+        self.curs.execute("WITH t AS (SELECT extract(days FROM startdate-confirmedat)::integer AS d, count(*) AS num FROM confreg_conference c INNER JOIN confsponsor_sponsor s ON c.id=s.conference_id WHERE c.id=%(id)s AND confirmedat IS NOT NULL GROUP BY d), tt AS (SELECT g.g, num FROM t RIGHT JOIN generate_series(%(min)s, %(max)s) g(g) ON g.g=t.d) SELECT COALESCE(sum(num) OVER (ORDER BY g DESC)::integer, 0) FROM tt ORDER BY g DESC", {
+            'id': conference.id,
+            'min': min,
+            'max': max,
+        })
+        return self.curs.fetchall()
+
+
+reporttypes.append(('Confirmed sponsors', ConfirmedSponsorsReport))
+
+
+class SponsorLevelsReport(SingleConferenceReport):
+    def maxmin(self):
+        self.curs.execute("SELECT max(extract(days FROM startdate-confirmedat)::integer)+1, min(extract(days FROM startdate-confirmedat)::integer), max(startdate) FROM confreg_conference c INNER JOIN confsponsor_sponsor s ON c.id=s.conference_id WHERE c.id=%(id)s AND confirmedat IS NOT NULL", {
+            'id': self.conference.id
+        })
+        return self.curs.fetchone()
+
+    def fetch_all_data(self, min, max, startdate):
+        self.curs.execute("SELECT id, levelname FROM confsponsor_sponsorshiplevel l WHERE l.conference_id=%(id)s AND EXISTS (SELECT 1 FROM confsponsor_sponsor s WHERE s.level_id=l.id AND confirmedat IS NOT NULL AND s.conference_id=%(id)s)", {
+            'id': self.conference.id,
+        })
+        for levelid, levelname in self.curs.fetchall():
+            self.curs.execute("WITH t AS (SELECT %(startdate)s-confirmedat::date AS d, count(*) AS num FROM confsponsor_sponsor s WHERE s.conference_id=%(cid)s AND s.confirmedat IS NOT NULL AND s.level_id=%(lid)s GROUP BY d), tt AS (SELECT g.g, num FROM t RIGHT JOIN generate_series(%(min)s, %(max)s) g(g) ON g.g=t.d) SELECT COALESCE(sum(num) OVER (ORDER BY g DESC), 0)::integer FROM tt ORDER BY g DESC", {
+                'cid': self.conference.id,
+                'min': min,
+                'max': max,
+                'lid': levelid,
+                'startdate': startdate,
+            })
+            yield (levelname, self.curs.fetchall())
+
+
+reporttypes.append(('Sponsor levels', SponsorLevelsReport))
+
+
 class RegistrationTypesReport(SingleConferenceReport):
     def fetch_all_data(self, min, max, startdate):
         self.curs.execute("SELECT id, regtype FROM confreg_registrationtype rt WHERE EXISTS (SELECT * FROM confreg_conferenceregistration r WHERE r.regtype_id=rt.id AND r.payconfirmedat IS NOT NULL AND r.conference_id=%(id)s)", {
