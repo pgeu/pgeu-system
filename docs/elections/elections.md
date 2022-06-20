@@ -9,10 +9,10 @@ the highest score.
 Name
 : Name of the election
 
-Startdate
+Start date
 : The date when the election opens for *voting*.
 
-Enddate
+End date
 : The date when the election closes for voting (at midnight).
 
 Slots

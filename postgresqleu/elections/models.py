@@ -5,8 +5,8 @@ from postgresqleu.membership.models import Member
 
 class Election(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)
-    startdate = models.DateField(null=False, blank=False)
-    enddate = models.DateField(null=False, blank=False)
+    startdate = models.DateField(null=False, blank=False, verbose_name="Start date")
+    enddate = models.DateField(null=False, blank=False, verbose_name="End date")
     slots = models.IntegerField(null=False, default=1)
     isactive = models.BooleanField(null=False, default=False, verbose_name='Election active')
     resultspublic = models.BooleanField(null=False, default=False, verbose_name='Results public')
