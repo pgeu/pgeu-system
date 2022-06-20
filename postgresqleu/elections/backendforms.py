@@ -38,11 +38,11 @@ class ElectionCandidateManager(object):
 
 class BackendElectionForm(BackendForm):
     helplink = 'elections#election'
-    list_fields = ['name', 'startdate', 'enddate', 'isopen', 'resultspublic']
+    list_fields = ['name', 'startdate', 'enddate', 'isactive', 'resultspublic']
     linked_objects = OrderedDict({
         'candidates': ElectionCandidateManager(),
     })
 
     class Meta:
         model = Election
-        fields = ['name', 'startdate', 'enddate', 'slots', 'isopen', 'resultspublic', ]
+        fields = ['name', 'startdate', 'enddate', 'slots', 'isactive', 'resultspublic', ]

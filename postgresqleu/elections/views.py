@@ -10,7 +10,7 @@ from datetime import timedelta
 
 
 def home(request):
-    elections = Election.objects.filter(isopen=True).order_by('startdate')
+    elections = Election.objects.filter(isactive=True).order_by('startdate')
     open_elections = [e for e in elections if e.startdate <= today_global() and e.enddate >= today_global()]
     past_elections = [e for e in elections if e.startdate < today_global() and e.enddate < today_global()]
     upcoming_elections = [e for e in elections if e.startdate > today_global()]
@@ -24,8 +24,8 @@ def home(request):
 
 def election(request, electionid):
     election = get_object_or_404(Election, pk=electionid)
-    if not election.isopen:
-        raise Http404("This election is not open (yet)")
+    if not election.isactive:
+        raise Http404("This election is not active")
 
     if election.startdate > today_global():
         raise Http404("This election has not started yet")
@@ -126,8 +126,8 @@ def candidate(request, election, candidate):
 @login_required
 def ownvotes(request, electionid):
     election = get_object_or_404(Election, pk=electionid)
-    if not election.isopen:
-        raise Http404("This election is not open (yet)")
+    if not election.isactive:
+        raise Http404("This election is not active")
 
     if election.enddate >= today_global():
         raise Http404("This election has not ended yet")

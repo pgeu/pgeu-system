@@ -18,8 +18,10 @@ Enddate
 Slots
 : Number of people who can be voted in in the election
 
-Voting open
-: If voting is actually open (not just controlled by dates!)
+Election active
+: If this election is active. If this is not enabled, there will be
+no voting (regardless of dates), the results will never be published,
+and the election is not listed on the frontpage.
 
 Results public
 : If the results should be made public

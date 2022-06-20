@@ -8,7 +8,7 @@ class Election(models.Model):
     startdate = models.DateField(null=False, blank=False)
     enddate = models.DateField(null=False, blank=False)
     slots = models.IntegerField(null=False, default=1)
-    isopen = models.BooleanField(null=False, default=False, verbose_name='Voting open')
+    isactive = models.BooleanField(null=False, default=False, verbose_name='Election active')
     resultspublic = models.BooleanField(null=False, default=False, verbose_name='Results public')
 
     def __str__(self):
