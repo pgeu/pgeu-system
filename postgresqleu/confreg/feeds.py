@@ -9,19 +9,6 @@ from .util import get_conference_or_404
 from postgresqleu.util.db import exec_to_dict, ensure_conference_timezone
 
 
-class LatestEvents(Feed):
-    title = "Events - %s" % settings.ORG_NAME
-    link = "/"
-    description = "Upcoming events from %s" % settings.ORG_NAME
-    description_template = "events/rssevent.html"
-
-    def items(self):
-        return Conference.objects.filter(promoactive=True, enddate__gte=timezone.now())
-
-    def item_link(self, conference):
-        return "%s/events/%s/" % (settings.SITEBASE, conference.urlname)
-
-
 class ConferenceNewsFeed(Feed):
     description_template = "pieces/news_description.html"
 
