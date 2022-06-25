@@ -582,9 +582,9 @@ WHERE s.conference_id=%(confid)s AND
                   AND r.attendee_id=spk.user_id)
 ORDER BY fullname""",
     'unregstaff': """SELECT
-   last_name,
-   first_name,
-   email
+   last_name AS "Last name",
+   first_name AS "First name",
+   email AS "E-mail"
 FROM auth_user u
 INNER JOIN confreg_conference_staff s ON s.user_id=u.id
 WHERE s.conference_id=%(confid)s AND
@@ -678,7 +678,7 @@ ORDER BY 2 DESC""",
    WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL
 )
 SELECT
-   day,count(*)
+   day AS "Day", count(*) AS "Count"
 FROM t
 GROUP BY day
 ORDER BY day""",
