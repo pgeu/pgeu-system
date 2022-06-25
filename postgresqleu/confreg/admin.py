@@ -97,7 +97,7 @@ class ConferenceAdminForm(ConcurrentProtectedModelForm):
 
 class ConferenceAdmin(admin.ModelAdmin):
     form = ConferenceAdminForm
-    list_display = ('conferencename', 'active', 'callforpapersopen', 'callforpaperstimerange',
+    list_display = ('conferencename', 'registrationopen', 'callforpapersopen', 'callforpaperstimerange',
                     'callforsponsorsopen', 'callforsponsorstimerange', 'feedbackopen', 'startdate', 'enddate')
     ordering = ('-startdate', )
     autocomplete_fields = ('administrators', 'testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', )

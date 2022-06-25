@@ -163,7 +163,7 @@ class Conference(models.Model):
     notifyregs = models.BooleanField(blank=False, null=False, default=False, verbose_name="Notify about registrations")
     notifysessionstatus = models.BooleanField(blank=False, null=False, default=False, verbose_name="Notify about session status changes by speakers")
     notifyvolunteerstatus = models.BooleanField(blank=False, null=False, default=False, verbose_name="Notify about volunteer schedule changes")
-    active = models.BooleanField(blank=False, null=False, default=False, verbose_name="Registration open")
+    registrationopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Registration open")
     callforpapersopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Call for papers open")
     callforpaperstimerange = DateTimeRangeField(null=True, blank=True, verbose_name="Call for papers open between", help_text='Call for papers open between these times (if checkbox is also enabled).')
     callforsponsorsopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Call for sponsors open")
@@ -224,7 +224,7 @@ class Conference(models.Model):
     web_origins = models.CharField(null=False, blank=True, max_length=1000, verbose_name="Allowed web origins for API calls (comma separated list)")
 
     # Attributes that are safe to access in jinja templates
-    _safe_attributes = ('active', 'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
+    _safe_attributes = ('registrationopen', 'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
                         'callforpapersintro', 'callforpapersopen', 'callforpaperstimerange', 'callforpaperstags', 'allowedit',
                         'conferencefeedbackopen', 'confurl', 'contactaddr', 'tickets',
                         'conferencedatestr', 'location', 'welcomemail',

@@ -67,7 +67,7 @@ class BackendConferenceForm(BackendForm):
 
     class Meta:
         model = Conference
-        fields = ['active', 'callforpapersopen', 'callforpaperstimerange',
+        fields = ['registrationopen', 'callforpapersopen', 'callforpaperstimerange',
                   'callforsponsorsopen', 'callforsponsorstimerange', 'feedbackopen', 'checkinactive',
                   'conferencefeedbackopen', 'scheduleactive', 'sessionsactive', 'cardsactive', 'allowedit',
                   'promoactive', 'promotext', 'promopicurl',
@@ -95,7 +95,7 @@ class BackendConferenceForm(BackendForm):
         {'id': 'promo', 'legend': 'Website promotion', 'fields': ['promoactive', 'promotext', 'promopicurl']},
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', 'twitter_postpolicy', ]},
         {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent', 'additionalintro', ]},
-        {'id': 'steps', 'legend': 'Steps', 'fields': ['active', 'allowedit', 'callforpapersopen', 'callforpaperstimerange', 'callforsponsorsopen', 'callforsponsorstimerange', 'scheduleactive', 'sessionsactive', 'cardsactive', 'checkinactive', 'conferencefeedbackopen', 'feedbackopen']},
+        {'id': 'steps', 'legend': 'Steps', 'fields': ['registrationopen', 'allowedit', 'callforpapersopen', 'callforpaperstimerange', 'callforsponsorsopen', 'callforsponsorstimerange', 'scheduleactive', 'sessionsactive', 'cardsactive', 'checkinactive', 'conferencefeedbackopen', 'feedbackopen']},
         {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpaperstags', 'callforpapersintro', 'showvotes']},
         {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', ]},
         {'id': 'display', 'legend': 'Display', 'fields': ['jinjaenabled', ]},

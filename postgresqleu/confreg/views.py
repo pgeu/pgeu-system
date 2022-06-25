@@ -312,7 +312,7 @@ def register(request, confname, whatfor=None):
         reg.idtoken = generate_random_token()
         reg.publictoken = generate_random_token()
 
-    is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
+    is_active = conference.registrationopen or conference.testers.filter(pk=request.user.id).exists()
 
     if not is_active:
         # Registration not open.
@@ -455,7 +455,7 @@ def reg_config_messaging(request, confname):
 def multireg(request, confname, regid=None):
     # "Register for somebody else" functionality.
     conference = get_conference_or_404(confname)
-    is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
+    is_active = conference.registrationopen or conference.testers.filter(pk=request.user.id).exists()
     if not is_active:
         # Registration not open.
         if today_conference() < conference.startdate:
@@ -620,7 +620,7 @@ def _create_and_assign_bulk_payment(user, conference, regs, invoicerows, recipie
 @transaction.atomic
 def multireg_newinvoice(request, confname):
     conference = get_conference_or_404(confname)
-    is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
+    is_active = conference.registrationopen or conference.testers.filter(pk=request.user.id).exists()
     if not is_active:
         # Registration not open.
         if today_conference() < conference.startdate:
@@ -730,7 +730,7 @@ def multireg_zeropay(request, confname):
 @transaction.atomic
 def multireg_bulkview(request, confname, bulkid):
     conference = get_conference_or_404(confname)
-    is_active = conference.active or conference.testers.filter(pk=request.user.id).exists()
+    is_active = conference.registrationopen or conference.testers.filter(pk=request.user.id).exists()
     if not is_active:
         # Registration not open.
         if today_conference() < conference.startdate:
@@ -1835,7 +1835,7 @@ def callforpapers_confirm(request, confname, sessionid):
         return HttpResponseRedirect("../..")
 
     if session.status in (1, 4):
-        if not conference.active:
+        if not conference.registrationopen:
             can_register = False
         elif session.status == 1:
             # If a "speaker" or a "speaker or reserve speaker" regtype exists
