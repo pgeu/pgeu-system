@@ -1994,7 +1994,7 @@ def confirmreg(request, confname):
                 reg.payconfirmedat = timezone.now()
                 reg.payconfirmedby = "no payment reqd"
                 reg.save()
-                reglog(reg, "Copmleted registraiton not requiring payment", request.user)
+                reglog(reg, "Completed registraiton not requiring payment", request.user)
                 notify_reg_confirmed(reg)
                 return HttpResponseRedirect("../")
 
