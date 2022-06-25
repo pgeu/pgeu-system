@@ -214,8 +214,22 @@ printed (in case some of this information is used on the badges).
 Call for papers open
 : If the call for papers is open
 
+Call for papers open between
+: Timestamp to open and close the call for papers. If these fields are
+left empty, call for papers is opened and closed based on the checkbox.
+If they are specified, the call for papers will be closed before and
+after this range even if the checkbox for open is enabled. Both fields
+need ot be satisfied for the call for papers to be open.
+
 Call for sponsors open
 : If the call for sponsors is open
+
+Call for sponsors open between
+: Timestamp to open and close the call for sponsors. If these fields are
+left empty, call for sponsors is opened and closed based on the checkbox.
+If they are specified, the call for sponsors will be closed before and
+after this range even if the checkbox for open is enabled. Both fields
+need ot be satisfied for the call for sponsors to be open.
 
 Schedule publishing active
 : If the schedule is published, including times, and rooms.

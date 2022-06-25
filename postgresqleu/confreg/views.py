@@ -1485,7 +1485,10 @@ def speakerprofile(request, confurlname=None):
     try:
         speaker = get_object_or_404(Speaker, user=request.user)
         conferences = Conference.objects.filter(conferencesession__speaker=speaker).distinct()
-        callforpapers = Conference.objects.filter(callforpapersopen=True).order_by('startdate')
+        callforpapers = Conference.objects.filter(Q(callforpapersopen=True),
+                                                  Q(callforpaperstimerange__contains=timezone.now()) |
+                                                  Q(callforpaperstimerange__isnull=True)
+        ).order_by('startdate')
     except Speaker.DoesNotExist:
         speaker = None
         conferences = []
@@ -1545,7 +1548,10 @@ def callforpaperslist(request):
     speaker = callforpapers = None
     try:
         speaker = get_object_or_404(Speaker, user=request.user)
-        callforpapers = Conference.objects.filter(callforpapersopen=True).order_by('startdate')
+        callforpapers = Conference.objects.filter(Q(callforpapersopen=True),
+                                                  Q(callforpaperstimerange__contains=timezone.now()) |
+                                                  Q(callforpaperstimerange__isnull=True)
+        ).order_by('startdate')
     except Speaker.DoesNotExist:
         speaker = None
         callforpapers = None
@@ -1564,7 +1570,7 @@ def callforpapers_edit(request, confname, sessionid):
     is_tester = conference.testers.filter(pk=request.user.id).exists()
 
     if sessionid == 'new':
-        if not (conference.callforpapersopen or is_tester):
+        if not (conference.IsCallForPapersOpen or is_tester):
             # Should never happen, so just redirect the user
             return HttpResponseRedirect("../")
 
@@ -1584,7 +1590,7 @@ def callforpapers_edit(request, confname, sessionid):
                                     speaker=speaker, pk=sessionid)
 
     # If the user is a tester, it overrides the callforpapersopen check
-    isopen = conference.callforpapersopen or is_tester
+    isopen = conference.IsCallForPapersOpen or is_tester
     if (isopen and session.status != 0) or not isopen:
         # Anything that's not "open and in status submitted" renders
         # a view of the session instead of the actual session.
@@ -3051,7 +3057,7 @@ def admin_dashboard_single(request, urlname):
             'pending_sessions': conditional_exec_to_scalar(conference.scheduleactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=0)", {'confid': conference.id}),
             'uncheckedin_attendees': conditional_exec_to_scalar(conference.checkinactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND canceledat IS NULL AND checkedinat IS NULL)", {'confid': conference.id}),
             'uncheckedin_speakers': conditional_exec_to_scalar(conference.checkinactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferenceregistration r INNER JOIN confreg_speaker spk ON spk.user_id=r.attendee_id INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id INNER JOIN confreg_conferencesession s ON s.id=css.conferencesession_id WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL AND r.checkedinat IS NULL AND s.conference_id=%(confid)s AND s.status=1)", {'confid': conference.id}),
-            'pending_sponsors': conditional_exec_to_scalar(conference.callforsponsorsopen, "SELECT EXISTS (SELECT 1 FROM confsponsor_sponsor WHERE conference_id=%(confid)s AND invoice_id IS NULL AND NOT confirmed)", {'confid': conference.id}),
+            'pending_sponsors': conditional_exec_to_scalar(conference.IsCallForSponsorsOpen, "SELECT EXISTS (SELECT 1 FROM confsponsor_sponsor WHERE conference_id=%(confid)s AND invoice_id IS NULL AND NOT confirmed)", {'confid': conference.id}),
             'pending_sponsor_benefits': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confsponsor_sponsorclaimedbenefit b INNER JOIN confsponsor_sponsor s ON s.id=b.sponsor_id WHERE s.conference_id=%(confid)s AND NOT (b.confirmed OR b.declined))", {'confid': conference.id}),
             'pending_tweets': ConferenceTweetQueue.objects.filter(conference=conference, sent=False).exists(),
             'pending_tweet_approvals': ConferenceTweetQueue.objects.filter(conference=conference, approved=False).exists(),

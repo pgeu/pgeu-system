@@ -165,7 +165,9 @@ class Conference(models.Model):
     notifyvolunteerstatus = models.BooleanField(blank=False, null=False, default=False, verbose_name="Notify about volunteer schedule changes")
     active = models.BooleanField(blank=False, null=False, default=False, verbose_name="Registration open")
     callforpapersopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Call for papers open")
+    callforpaperstimerange = DateTimeRangeField(null=True, blank=True, verbose_name="Call for papers open between", help_text='Call for papers open between these times (if checkbox is also enabled).')
     callforsponsorsopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Call for sponsors open")
+    callforsponsorstimerange = DateTimeRangeField(null=True, blank=True, verbose_name="Call for sponsors open between", help_text='Call for sponsors open between these times (if checkbox is also enabled).')
     feedbackopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Session feedback open")
     conferencefeedbackopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Conference feedback open")
     allowedit = models.BooleanField(blank=False, null=False, default=True, verbose_name="Allow editing registrations")
@@ -223,7 +225,7 @@ class Conference(models.Model):
 
     # Attributes that are safe to access in jinja templates
     _safe_attributes = ('active', 'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
-                        'callforpapersintro', 'callforpapersopen', 'callforpaperstags', 'allowedit',
+                        'callforpapersintro', 'callforpapersopen', 'callforpaperstimerange', 'callforpaperstags', 'allowedit',
                         'conferencefeedbackopen', 'confurl', 'contactaddr', 'tickets',
                         'conferencedatestr', 'location', 'welcomemail',
                         'feedbackopen', 'skill_levels', 'urlname', 'conferencename',
@@ -256,6 +258,24 @@ class Conference(models.Model):
             )
         else:
             return self.startdate.strftime("%Y-%m-%d")
+
+    @property
+    def IsCallForPapersOpen(self):
+        # Check if the call for papers is open, including verifying against time range
+        if not self.callforpapersopen:
+            return False
+        # It's open, but what does the time range say?
+        if self.callforpaperstimerange is None:
+            return True
+        return timezone.now() in self.callforpaperstimerange
+
+    @property
+    def IsCallForSponsorsOpen(self):
+        if not self.callforsponsorsopen:
+            return False
+        if self.callforsponsorstimerange is None:
+            return True
+        return timezone.now() in self.callforsponsorstimerange
 
     @property
     def remove_fields(self):

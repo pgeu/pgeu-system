@@ -10,7 +10,7 @@
 </ul>
 {%endif%}
 
-{%if conference.callforpapersopen%}
+{%if conference.IsCallForPapersOpen%}
 <p>
 {{conference.callforpapersintro|safe}}
 </p>
@@ -40,7 +40,7 @@ You have made the following submission{%if sessions|length > 1%}s{%endif%} to th
 {%endfor%}
 {%endif%}
 
-{%if conference.callforpapersopen or is_tester%}
+{%if conference.IsCallForPapersOpen or is_tester%}
 <h2>New submission</h2>
 <p>
   Click <a href="new/">here</a> to make a new submission to {{conference}}.

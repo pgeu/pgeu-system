@@ -50,7 +50,11 @@ def sponsor_dashboard(request):
     # We define "past sponsors" as those older than a month - because we have to pick something.
     currentsponsors = Sponsor.objects.filter(managers=request.user, conference__enddate__gte=today_global() - timedelta(days=31)).order_by('conference__startdate')
     pastsponsors = Sponsor.objects.filter(managers=request.user, conference__enddate__lt=today_global() - timedelta(days=31)).order_by('conference__startdate')
-    conferences = Conference.objects.filter(callforsponsorsopen=True, startdate__gt=today_global()).order_by('startdate')
+    conferences = Conference.objects.filter(Q(callforsponsorsopen=True),
+                                            Q(startdate__gt=today_global()),
+                                            Q(callforsponsorstimerange__contains=timezone.now()) |
+                                            Q(callforsponsorstimerange__isnull=True)
+                                            ).order_by('startdate')
 
     return render(request, 'confsponsor/dashboard.html', {
         "currentsponsors": currentsponsors,
@@ -282,7 +286,7 @@ def sponsor_purchase_discount(request, sponsorid):
 @login_required
 def sponsor_signup_dashboard(request, confurlname):
     conference = get_conference_or_404(confurlname)
-    if not conference.callforsponsorsopen:
+    if not conference.IsCallForSponsorsOpen:
         # This one is not open. But if we're an admin, we may bypass
         get_authenticated_conference(request, confurlname)
 
@@ -300,7 +304,7 @@ def sponsor_signup_dashboard(request, confurlname):
 @transaction.atomic
 def sponsor_signup(request, confurlname, levelurlname):
     conference = get_conference_or_404(confurlname)
-    if not conference.callforsponsorsopen:
+    if not conference.IsCallForSponsorsOpen:
         # This one is not open. But if we're an admin, we may bypass
         get_authenticated_conference(request, confurlname)
 

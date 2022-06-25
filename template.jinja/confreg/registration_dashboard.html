@@ -82,7 +82,7 @@ news!
 {%if availableoptions%}
   <li><a href="#options">Additional options</a> &bull;</li>
 {%endif%}
-{%if conference.callforpapersopen%}
+{%if conference.IsCallForPapersOpen%}
   <li><a href="/events/{{conference.urlname}}/callforpapers/">Call for papers</a> &bull;</li>
 {%elif is_speaker%}
   <li><a href="/events/{{conference.urlname}}/callforpapers/">Your speaker profile</a> &bull;</li>

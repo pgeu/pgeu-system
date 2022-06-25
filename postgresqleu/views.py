@@ -73,8 +73,8 @@ def eventsindex(request):
         'past': past,
         'series': series,
         'regopen': [e for e in events if e.active],
-        'cfpopen': [e for e in events if e.callforpapersopen],
-        'cfsopen': [e for e in events if e.callforsponsorsopen],
+        'cfpopen': [e for e in events if e.IsCallForPapersOpen],
+        'cfsopen': [e for e in events if e.IsCallForSponsorsOpen],
     })
 
 
