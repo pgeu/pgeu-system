@@ -204,6 +204,13 @@ are. Can contain markdown.
 Registration open
 : If regular registration is open.
 
+Registration open between
+: Timestamp to open and close the registration. If these fields are
+left empty, the registration is opened and closed based on the checkbox.
+If they are specified, the registration will be closed before and
+after this range even if the checkbox for open is enabled. Both fields
+need ot be satisfied for the registration to be open.
+
 Allow editing registrations
 : If a user is allowed to edit an existing registration. Only some
 limited fields can be edited, things like t-shirt size and dietary

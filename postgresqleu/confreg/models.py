@@ -164,6 +164,7 @@ class Conference(models.Model):
     notifysessionstatus = models.BooleanField(blank=False, null=False, default=False, verbose_name="Notify about session status changes by speakers")
     notifyvolunteerstatus = models.BooleanField(blank=False, null=False, default=False, verbose_name="Notify about volunteer schedule changes")
     registrationopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Registration open")
+    registrationtimerange = DateTimeRangeField(null=True, blank=True, verbose_name="Registration open between", help_text='Registration open between these times (if checkbox is also enabled).')
     callforpapersopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Call for papers open")
     callforpaperstimerange = DateTimeRangeField(null=True, blank=True, verbose_name="Call for papers open between", help_text='Call for papers open between these times (if checkbox is also enabled).')
     callforsponsorsopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Call for sponsors open")
@@ -224,7 +225,7 @@ class Conference(models.Model):
     web_origins = models.CharField(null=False, blank=True, max_length=1000, verbose_name="Allowed web origins for API calls (comma separated list)")
 
     # Attributes that are safe to access in jinja templates
-    _safe_attributes = ('registrationopen', 'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
+    _safe_attributes = ('registrationopen', 'registrationtimerange', 'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
                         'callforpapersintro', 'callforpapersopen', 'callforpaperstimerange', 'callforpaperstags', 'allowedit',
                         'conferencefeedbackopen', 'confurl', 'contactaddr', 'tickets',
                         'conferencedatestr', 'location', 'welcomemail',
@@ -258,6 +259,16 @@ class Conference(models.Model):
             )
         else:
             return self.startdate.strftime("%Y-%m-%d")
+
+    @property
+    def IsRegistrationOpen(self):
+        # Check if the registration is open, including verifying against time range
+        if not self.registrationopen:
+            return False
+        # It's open, but what does the time range say?
+        if self.registrationtimerange is None:
+            return True
+        return timezone.now() in self.registrationtimerange
 
     @property
     def IsCallForPapersOpen(self):

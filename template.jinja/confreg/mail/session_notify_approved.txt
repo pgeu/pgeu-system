@@ -7,7 +7,7 @@ This email is sent to you because the status of your session
 submitted to {{conference}} has been updated.
 
 Your session has now been fully approved, and we look forward to
-seeing you at {{conference}}!{%if conference.registrationopen%}
+seeing you at {{conference}}!{%if conference.IsRegistrationOpen%}
 If you have not already done so, please proceed to register for
 the conference as soon as you get a chance, at
 
