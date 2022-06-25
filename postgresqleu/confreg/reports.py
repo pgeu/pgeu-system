@@ -11,6 +11,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.styles import getSampleStyleSheet
 
 import csv
+from datetime import datetime
 import json
 
 from .jinjapdf import render_jinja_badges
@@ -42,6 +43,8 @@ class ReportField(object):
             return ''
         elif type(val) == bool:
             return val and 'Yes' or 'No'
+        elif type(val) == datetime:
+            return val.strftime("%Y-%m-%d %H:%M")
         elif type(val) != str:
             return str(val)
         return val
@@ -688,21 +691,21 @@ ORDER BY day""",
     'sessnoroom': """SELECT
    title AS \"Title\",
    trackname AS \"Track\",
-   starttime || ' - ' || endtime AS \"Timeslot\"
+   to_char(starttime, 'YYYY-MM-DD HH24:MI') || ' - ' || to_char(endtime, 'YYYY-MM-DD HH24:MI') AS \"Timeslot\"
 FROM confreg_conferencesession s
 LEFT JOIN confreg_track t ON t.id=s.track_id
 WHERE s.conference_id=%(confid)s AND status=1 AND room_id IS NULL AND NOT cross_schedule""",
     'sessnotrack': """SELECT
    title AS \"Title\",
    roomname AS \"Room\",
-   starttime || ' - ' || endtime AS \"Timeslot\"
+   to_char(starttime, 'YYYY-MM-DD HH24:MI') || ' - ' || to_char(endtime, 'YYYY-MM-DD HH24:MI') AS \"Timeslot\"
 FROM confreg_conferencesession s
 LEFT JOIN confreg_room r ON r.id=s.room_id
 WHERE s.conference_id=%(confid)s AND status=1 AND track_id IS NULL""",
     'sessoverlaproom': """SELECT
    roomname AS \"Room\",
    title AS \"Title\",
-   starttime || ' - ' || endtime AS \"Timeslot\"
+   to_char(starttime, 'YYYY-MM-DD HH24:MI') || ' - ' || to_char(endtime, 'YYYY-MM-DD HH24:MI') AS \"Timeslot\"
 FROM confreg_conferencesession s
 INNER JOIN confreg_room r ON r.id=s.room_id
 WHERE s.conference_id=%(confid)s AND
