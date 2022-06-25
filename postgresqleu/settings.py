@@ -99,7 +99,6 @@ INSTALLED_APPS = [
     'postgresqleu.util.apps.UtilAppConfig',  # Must be *before* admin
     'django.contrib.messages',
     'django.contrib.admin',
-    'django_markwhat',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'postgresqleu.static',

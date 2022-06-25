@@ -82,6 +82,7 @@ urlpatterns.extend([
     # Global admin
     url(r'^admin/$', postgresqleu.views.admin_dashboard),
     url(r'^admin/docs/(?P<page>\w+/)?$', postgresqleu.util.docsviews.docspage),
+    url(r'^admin/mdpreview/$', postgresqleu.util.views.markdown_preview),
 
     # News
     url(r'^admin/news/news/(.*/)?$', postgresqleu.newsevents.backendviews.edit_news),

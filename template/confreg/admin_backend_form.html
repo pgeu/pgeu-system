@@ -5,9 +5,6 @@
 <script type="text/javascript" src="/media/ace/ace.js"></script>
 <link rel="stylesheet" href="/media/css/selectize.css" />
 <link rel="stylesheet" href="/media/css/selectize.default.css" />
-{%if form.markdown_fields%}
-<script type="text/javascript" src="/media/showdown/showdown.js"></script>
-{%endif%}
 
 <style>
 div.admin_markdownpreview {
@@ -21,22 +18,80 @@ div.admin_markdownpreview {
 
 <script language="javascript">
 {%if form.markdown_fields%}
-mdconverter = new Showdown.converter();
-function backend_showdown_preview(id) {
-   var e = $('#' + id);
+function backend_markdown_preview(id) {
+    let obj = document.getElementById(id);
 
-   var w = $('<div class="admin_markdownpreview"><legend>Markdown preview</legend><div class="admin_markdownpreview_contents"></div></div>').insertAfter(e);
-   var p = w.find('div.admin_markdownpreview_contents');
+    let newdiv = document.createElement('div');
+    newdiv.className = 'admin_markdownpreview';
 
-   function update() {
-      p.html(mdconverter.makeHtml(e.val()));
-   }
+    obj.preview_div = newdiv;
+    obj.parentNode.insertBefore(newdiv, obj.nextSibling);
 
-   update();
-   e.keyup(function() {
-      update();
-   });
+    obj.infospan_html_base = "Markdown Preview";
+
+    obj.infospan = document.createElement('span');
+    obj.infospan.innerHTML = obj.infospan_html_base;
+    obj.parentNode.insertBefore(obj.infospan, newdiv);
+
+    _do_update_markdown(obj);
+    obj.addEventListener('keyup', function(e) {
+	update_markdown(this);
+    });
 }
+
+var __update_queue = {};
+var __interval_setup = false;
+function update_markdown(obj) {
+    if (!__interval_setup) {
+        __interval_setup = true;
+
+        /* Global interval ticker running the update queue */
+        setInterval(function() {
+            /* This is where we actually update things */
+            for (var id in __update_queue) {
+                /* First remove it from the queue, so we can absorb another request while we run */
+                delete __update_queue[id];
+                obj = document.getElementById(id);
+
+                _do_update_markdown(obj);
+            }
+        }, 2000); /* Maximum update interval is 2 seconds */
+    }
+
+    if (obj.value == obj.preview_div.value)
+        return;
+
+    /* Just flag that this needs to be done, and the ticker will pick it up */
+    __update_queue[obj.id] = true;
+}
+
+
+function _do_update_markdown(obj) {
+    if (obj.value == '') {
+        /* Short-circuit the empty field case */
+        obj.preview_div.innerHTML = '';
+        return;
+    }
+
+    fetch('/admin/mdpreview/', {
+        method: 'POST',
+        body: obj.value,
+        headers: {
+            'x-preview': 'md',
+        },
+        credentials: 'same-origin', /* for older browsers */
+    }).then(function(response) {
+        if (response.ok) {
+            return response.text().then(function(text) {
+                obj.preview_div.innerHTML = text;
+            });
+        } else {
+            console.warn('md preview failed');
+        }
+    });
+}
+
+
 {%endif%}
 {%if form.dynamic_preview_fields%}
 function backend_dynamic_preview(id) {
@@ -98,7 +153,7 @@ $(function() {
 {%endfor%}
 
 {%for f in form.markdown_fields%}
-   backend_showdown_preview('id_{{f}}');
+   backend_markdown_preview('id_{{f}}');
 {%endfor%}
 
 {%for f in form.dynamic_preview_fields%}
