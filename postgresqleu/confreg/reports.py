@@ -38,7 +38,9 @@ class ReportField(object):
         return self.id
 
     def get_value(self, val):
-        if type(val) == bool:
+        if val is None:
+            return ''
+        elif type(val) == bool:
             return val and 'Yes' or 'No'
         elif type(val) != str:
             return str(val)
