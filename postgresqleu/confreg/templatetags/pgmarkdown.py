@@ -10,20 +10,6 @@ register = template.Library()
 
 @register.filter(is_safe=True)
 def markdown(value, args=''):
-    allow_images = False
-    allow_relative_links = False
-
-    if args:
-        for a in args.split(','):
-            if a == 'allowimages':
-                allow_images = True
-            elif a == 'allowrelativelinks':
-                allow_relative_links = True
-            else:
-                raise ValueError("Invalid argument to markdown: {}".format(a))
-
     return mark_safe(pgmarkdown(
         force_text(value),
-        allow_images=allow_images,
-        allow_relative_links=allow_relative_links,
     ))
