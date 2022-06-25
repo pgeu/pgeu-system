@@ -241,15 +241,12 @@
       </tr>
 {%for l in log%}
       <tr>
-{%if forloop.counter <= maxlogrows %}
 	<td>{{l.ts}}</td>
         <td>{{l.txt}}</td>
         <td>{{l.user|default:"&lt;system&gt;"}}</td>
-{%else%}
-        <td colspan="3"><a class="btn btn-default btn-block" href="log/">View full log</a></td>
-{%endif%}
       </tr>
 {%endfor%}
+      <tr><td colspan="3"><a class="btn btn-default btn-block" href="log/">View full log</a></td></tr>
     </table>
   </td>
 </tr>

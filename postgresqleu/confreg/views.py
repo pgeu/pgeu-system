@@ -176,9 +176,12 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
     if request.method == 'POST' and not reg.canceledat:
         changeform = RegistrationChangeForm(conference.allowedit, instance=reg, data=request.POST)
         if changeform.is_valid():
-            changeform.save()
-            reglog(reg, "Registration details updated", request.user)
-            messages.info(request, "Registration updated.")
+            if changeform.changed_data:
+                regcopy = ConferenceRegistration.objects.get(pk=reg.pk)
+                changes = {k: {'old': getattr(regcopy, k), 'new': changeform.cleaned_data[k]} for k in changeform.changed_data}
+                changeform.save()
+                reglog(reg, "Registration details updated", request.user, data=changes)
+                messages.info(request, "Registration updated.")
             return HttpResponseRedirect("../")
     else:
         changeform = RegistrationChangeForm(conference.allowedit, instance=reg)
@@ -361,6 +364,12 @@ def register(request, confname, whatfor=None):
 
         form = ConferenceRegistrationForm(request.user, data=request.POST, instance=reg)
         if form.is_valid():
+            if form.changed_data and reg.pk:
+                regcopy = ConferenceRegistration.objects.get(pk=reg.pk)
+                changes = {k: {'old': getattr(regcopy, k), 'new': form.cleaned_data[k]} for k in form.changed_data}
+            else:
+                changes = None
+
             reg = form.save(commit=False)
             reg.conference = conference
             reg.attendee = request.user
@@ -371,11 +380,11 @@ def register(request, confname, whatfor=None):
 
             # Figure out if the user clicked a "magic save button"
             if request.POST['submit'] == 'Confirm and finish' or request.POST['submit'] == 'Save and finish':
-                reglog(reg, "Saved and clicked finish", request.user)
+                reglog(reg, "Saved and clicked finish", request.user, data=changes)
                 # Complete registration!
                 return HttpResponseRedirect("{0}confirm/".format(redir_root))
 
-            reglog(reg, "Saved regform", request.user)
+            reglog(reg, "Saved regform", request.user, data=changes)
 
             # Or did they save but we're on the "wrong" url
             if redir_root:
@@ -515,13 +524,21 @@ def multireg(request, confname, regid=None):
             reg.email = request.POST.get('_email', '').lower()
             regform = ConferenceRegistrationForm(request.user, data=request.POST, instance=reg, regforother=True)
             if regform.is_valid():
+                if regform.changed_data and reg.pk:
+                    regcopy = ConferenceRegistration.objects.get(pk=reg.pk)
+                    # Email will always show up, but it's our key for looking up the entry when working
+                    # with multiregs, so we exclude it form the log.
+                    changes = {k: {'old': getattr(regcopy, k), 'new': regform.cleaned_data[k]} for k in regform.changed_data if k != 'email'}
+                else:
+                    changes = None
+
                 reg = regform.save(commit=False)
                 reg.conference = conference
                 reg.registrator = request.user
                 reg.attendee = None
                 reg.save()
                 regform.save_m2m()
-                reglog(reg, "Saved multireg form", request.user)
+                reglog(reg, "Saved multireg form", request.user, data=changes)
                 return HttpResponseRedirect(redir_root)
             else:
                 return render_conference_response(request, conference, 'reg', 'confreg/regmulti_form.html', {
@@ -3227,7 +3244,7 @@ def admin_registration_single(request, urlname, regid):
     return render(request, 'confreg/admin_registration_single.html', {
         'conference': conference,
         'reg': reg,
-        'log': ConferenceRegistrationLog.objects.select_related('user').order_by('-ts').filter(reg=reg)[:maxlogrows + 1],
+        'log': ConferenceRegistrationLog.objects.defer('changedata').select_related('user').order_by('-ts').filter(reg=reg)[:maxlogrows],
         'emails': _attendeemail_queryset(conference, reg) if reg.regtype else None,
         'maxlogrows': maxlogrows,
         'sessions': sessions,

@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 
+import json
 import os
 from decimal import Decimal
 from datetime import timedelta
@@ -24,8 +25,12 @@ from .models import AttendeeMail
 from .models import ConferenceRegistrationLog
 
 
-def reglog(reg, txt, user=None):
-    ConferenceRegistrationLog(reg=reg, txt=txt, user=user).save()
+def reglog(reg, txt, user=None, data=None):
+    if data:
+        jdata = json.dumps({k: str(v) for k, v in data.items()}, indent=1)
+    else:
+        jdata = ''
+    ConferenceRegistrationLog(reg=reg, txt=txt, user=user, changedata=jdata).save()
 
 
 #

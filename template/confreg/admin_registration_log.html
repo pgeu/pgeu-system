@@ -9,12 +9,14 @@
     <th>Time</th>
     <th>Message</th>
     <th>User</th>
+    <th>Changes</th>
   </tr>
 {%for l in log%}
   <tr>
     <td>{{l.ts}}</td>
     <td>{{l.txt}}</td>
     <td>{{l.user|default:"&lt;system&gt;"}}</td>
+    <td>{{l.changedata}}</td>
   </tr>
 {%endfor%}
 </table>

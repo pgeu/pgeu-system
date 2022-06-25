@@ -836,6 +836,7 @@ class ConferenceRegistrationLog(models.Model):
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
     ts = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     txt = models.CharField(max_length=8000, null=False, blank=False)
+    changedata = models.CharField(max_length=8000, null=False, blank=True)
 
     class Meta:
         indexes = [
