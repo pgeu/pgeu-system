@@ -288,7 +288,14 @@ def sponsor_signup_dashboard(request, confurlname):
     conference = get_conference_or_404(confurlname)
     if not conference.IsCallForSponsorsOpen:
         # This one is not open. But if we're an admin, we may bypass
-        get_authenticated_conference(request, confurlname)
+        try:
+            get_authenticated_conference(request, confurlname)
+        except PermissionDenied:
+            # Permission denied means we were not logged in as an admin,
+            # so render a nice page saying we're not open yet.
+            return render(request, 'confsponsor/notopen.html', {
+                'conference': conference,
+            })
 
     current_signups = Sponsor.objects.filter(managers=request.user, conference=conference)
     levels = SponsorshipLevel.objects.filter(conference=conference, public=True)
@@ -306,7 +313,14 @@ def sponsor_signup(request, confurlname, levelurlname):
     conference = get_conference_or_404(confurlname)
     if not conference.IsCallForSponsorsOpen:
         # This one is not open. But if we're an admin, we may bypass
-        get_authenticated_conference(request, confurlname)
+        try:
+            get_authenticated_conference(request, confurlname)
+        except PermissionDenied:
+            # Permission denied means we were not logged in as an admin,
+            # so render a nice page saying we're not open yet.
+            return render(request, 'confsponsor/notopen.html', {
+                'conference': conference,
+            })
 
     level = get_object_or_404(SponsorshipLevel, conference=conference, urlname=levelurlname, available=True, public=True)
     if not level.can_signup:
