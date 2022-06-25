@@ -94,6 +94,18 @@ class BackendForm(ConcurrentProtectedModelForm):
             if isinstance(v, django.forms.fields.DateField):
                 v.widget = HtmlDateInput()
 
+            # Add CSS classes and help texts to datetime ranges
+            if isinstance(v, django.contrib.postgres.forms.ranges.DateTimeRangeField):
+                v.widget.attrs['class'] = 'dtrangefield'
+                h = getattr(v, 'help_text', '')
+                if h:
+                    h += ' '
+                if v.required:
+                    h += 'Enter start and stop timestamp with both date and time.'
+                else:
+                    h += 'Enter start and stop timestamp with both date and time. Leaving either field empty menas "infinity".'
+                v.help_text = h
+
             # Any datetime or date fields that are not explicitly excluded will be forced to be within
             # the conference dates.
             if self.conference:
