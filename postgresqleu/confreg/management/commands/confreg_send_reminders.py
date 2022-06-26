@@ -25,7 +25,7 @@ class Command(BaseCommand):
         internal = True
 
     def handle(self, *args, **options):
-        for conference in Conference.objects.filter(active=True):
+        for conference in Conference.objects.filter(registrationopen=True):
             # One transaction for each open conference that has registration
             # open. If registration isn't open then there is nowhere to
             # register, so don't even try.
@@ -135,7 +135,7 @@ class Command(BaseCommand):
         # Only send reminders if attendee has a value, meaning we don't send
         # reminders to registrations that are managed by somebody else.
         regs = ConferenceRegistration.objects.filter(conference=conference,
-                                                     conference__active=True,
+                                                     conference__registrationopen=True,
                                                      conference__enddate__gt=timezone.now(),
                                                      attendee__isnull=False,
                                                      payconfirmedat__isnull=True,
@@ -170,7 +170,7 @@ class Command(BaseCommand):
         # are the same as remind_pending_registrations(), but we only consider
         # those that are managed by somebody else.
         regs = ConferenceRegistration.objects.filter(conference=conference,
-                                                     conference__active=True,
+                                                     conference__registrationopen=True,
                                                      conference__enddate__gt=timezone.now(),
                                                      attendee__isnull=True,
                                                      registrator__isnull=False,
