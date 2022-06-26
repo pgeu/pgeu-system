@@ -1,0 +1,37 @@
+{%extends "navbase.html"%}
+{%load markup%}
+{%block title%}News Archive{%endblock%}
+{%block navsection%}News{%endblock%}
+{%block content%}
+<h1>News archive</h1>
+
+{%for n in newspage%}
+<h3>{{n.title}}</h3>
+<i class="fa fa-clock-o"></i> {{n.datetime}}
+<div class="newscontent">
+{{n.summary|markdown|truncatewords_html:75}}
+</div>
+<a href="/news/{{n.title|slugify}}-{{n.id}}/" class="btn btn-primary btn-sm">Read more</a>
+{%endfor%}
+
+<br/><br/>
+
+<nav aria-label="News pages">
+<ul class="pagination pagination-sm">
+  <li class="page-item{%if not newspage.has_previous%} disabled{%endif%}"><a class="page-link" href="?page={%if newspage.has_previous%}{{newspage.previous_page_number}}{%else%}1{%endif%}">&laquo;</a></li>
+{%for p in newspage.paginator.page_range %}
+  <li class="page-item{%if newspage.number == p%} active{%endif%}"><a class="page-link" href="?page={{p}}">{{p}}</a></li>
+{%endfor%}
+  <li class="page-item{%if not newspage.has_next%} disabled{%endif%}"><a class="page-link" href="?page={%if newspage.has_next%}{{newspage.next_page_number}}{%else%}{{0}}{%endif%}">&raquo;</a></li>
+</ul>
+</nav>
+
+{%endblock%}
+
+{%block navblock%}
+{%for n in news %}
+ <li><a href="/news/{{n.title|slugify}}-{{n.id}}/">{{n.title}}</a></li>
+{%endfor%}
+<br/>
+<a href="/news/archive/" class="btn btn-primary btn-sm">Older news</a>
+{%endblock%}
