@@ -225,8 +225,10 @@ class Conference(models.Model):
     web_origins = models.CharField(null=False, blank=True, max_length=1000, verbose_name="Allowed web origins for API calls (comma separated list)")
 
     # Attributes that are safe to access in jinja templates
-    _safe_attributes = ('registrationopen', 'registrationtimerange', 'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
-                        'callforpapersintro', 'callforpapersopen', 'callforpaperstimerange', 'callforpaperstags', 'allowedit',
+    _safe_attributes = ('registrationopen', 'registrationtimerange', 'IsRegistrationOpen',
+                        'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
+                        'callforpapersintro', 'callforpapersopen', 'callforpaperstimerange', 'IsCallForPapersOpen',
+                        'callforpaperstags', 'allowedit',
                         'conferencefeedbackopen', 'confurl', 'contactaddr', 'tickets',
                         'conferencedatestr', 'location', 'welcomemail',
                         'feedbackopen', 'skill_levels', 'urlname', 'conferencename',
