@@ -233,4 +233,12 @@ Abstract
 :    An abstract for the speaker.
 
 Photo
-:    A photo of the speaker, JPEG format, max 128x128 pixels.
+:    A photo of the speaker, JPEG or PNG format, sized 512x512 pixels. Will
+automaticlaly be resized to 512x512 on upload and centered on a transparent
+background to keep the aspect ratio, and converted to PNG in order to support
+said transparency.
+
+
+Note that the speaker photo will also be stored in 128x128 format, to support
+both thumbnails and legacy templates. This is automatically updated whenever
+the main photo field is updated.

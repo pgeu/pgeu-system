@@ -462,10 +462,11 @@ class ConferenceFeedbackForm(forms.Form):
 class SpeakerProfileForm(forms.ModelForm):
     class Meta:
         model = Speaker
-        exclude = ('user', 'speakertoken')
+        exclude = ('user', 'speakertoken', 'photo')
 
     def __init__(self, *args, **kwargs):
         super(SpeakerProfileForm, self).__init__(*args, **kwargs)
+        self.fields['photo512'].help_text = 'Photo will be rescaled to 512x512 pixels. We reserve the right to make minor edits to speaker photos if necessary'
 
     def clean_twittername(self):
         if not self.cleaned_data['twittername']:
@@ -503,7 +504,7 @@ class CallForPapersForm(forms.ModelForm):
         if 'data' in kwargs and 'speaker' in kwargs['data']:
             vals.extend([int(x) for x in kwargs['data'].getlist('speaker')])
 
-        self.fields['speaker'].queryset = Speaker.objects.defer('photo').filter(pk__in=vals)
+        self.fields['speaker'].queryset = Speaker.objects.defer('photo', 'photo512').filter(pk__in=vals)
         self.fields['speaker'].label_from_instance = lambda x: "{0} <{1}>".format(x.fullname, x.email)
         self.fields['speaker'].required = True
         self.fields['speaker'].help_text = "Type the beginning of a speakers email address to add more speakers"

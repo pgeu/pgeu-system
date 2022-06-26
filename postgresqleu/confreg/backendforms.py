@@ -798,11 +798,14 @@ class BackendSpeakerForm(BackendForm):
     list_fields = ['fullname', 'user', 'company', ]
     markdown_fields = ['abstract', ]
     readonly_fields = ['user', ]
-    exclude_fields_from_validation = ['user', 'photo', ]
+    exclude_fields_from_validation = ['user', 'photo512', ]
+    # We must save the photo field as well, since it's being updaed in the pre_save signal,
+    # and we want to include that updating.
+    extra_update_fields = ['photo', ]
 
     class Meta:
         model = Speaker
-        fields = ['fullname', 'user', 'twittername', 'company', 'abstract', 'photo', ]
+        fields = ['fullname', 'user', 'twittername', 'company', 'abstract', 'photo512', ]
         widgets = {
             'user': StaticTextWidget,
         }

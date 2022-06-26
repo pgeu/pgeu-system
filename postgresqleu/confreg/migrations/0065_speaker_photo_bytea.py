@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='speaker',
             name='photo',
-            field=postgresqleu.util.fields.ImageBinaryField(blank=True, null=True, verbose_name='Photo', max_length=1000000),
+            field=postgresqleu.util.fields.ImageBinaryField(blank=True, null=True, verbose_name='Photo (low res)', max_length=1000000),
         ),
         migrations.RunSQL("UPDATE confreg_speaker SET photo=decode(confreg_speaker_photo.photo, 'base64') FROM confreg_speaker_photo WHERE confreg_speaker_photo.id=confreg_speaker.id"),
         migrations.DeleteModel(

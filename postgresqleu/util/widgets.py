@@ -94,6 +94,7 @@ class InlineImageUploadWidget(forms.ClearableFileInput):
         context = self.get_context(name, value, attrs)
         if value and not isinstance(value, UploadedFile):
             context['widget']['value'] = base64.b64encode(value).decode('ascii')
+            context['widget']['imagetype'] = 'image/png' if bytes(value[:8]) == b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A' else 'image/jpg'
         return mark_safe(loader.render_to_string('confreg/widgets/inline_photo_upload_widget.html', context))
 
 

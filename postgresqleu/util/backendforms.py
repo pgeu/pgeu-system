@@ -28,6 +28,7 @@ class BackendForm(ConcurrentProtectedModelForm):
     vat_fields = {}
     verbose_field_names = {}
     exclude_date_validators = []
+    extra_update_fields = []
     form_before_new = None
     newformdata = None
     _newformdata = _NewFormDataField()

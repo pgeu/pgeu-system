@@ -170,7 +170,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                     for fn, ffields in form.json_form_fields.items():
                         all_excludes.extend(ffields)
 
-                form.instance.save(update_fields=[f for f in form.fields.keys() if f not in all_excludes and not isinstance(form[f].field, forms.ModelMultipleChoiceField)])
+                form.instance.save(update_fields=[f for f in form.fields.keys() if f not in all_excludes and not isinstance(form[f].field, forms.ModelMultipleChoiceField)] + form.extra_update_fields)
 
                 # Merge fields stored in json
                 if form.json_form_fields:

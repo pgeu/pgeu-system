@@ -124,7 +124,7 @@ urlpatterns.extend([
     url(r'^events/([^/]+)/checkin/([a-z0-9]{64})/$', postgresqleu.confreg.checkin.checkin),
     url(r'^events/([^/]+)/checkin/([a-z0-9]{64})/api/(\w+)/$', postgresqleu.confreg.checkin.api),
     url(r'^events/([^/]+)/sessions/$', postgresqleu.confreg.views.sessionlist),
-    url(r'^events/speaker/(\d+)/photo/$', postgresqleu.confreg.views.speakerphoto),
+    url(r'^events/speaker/(\d+)/photo/(\d+/)?$', postgresqleu.confreg.views.speakerphoto),
     url(r'^events/speakerprofile/$', postgresqleu.confreg.views.speakerprofile),
     url(r'^events/([^/]+)/speakerprofile/$', postgresqleu.confreg.views.speakerprofile),
     url(r'^events/([^/]+)/callforpapers/$', postgresqleu.confreg.views.callforpapers),

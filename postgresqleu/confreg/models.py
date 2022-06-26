@@ -3,6 +3,7 @@
 from django.db import models
 from django.db.models import Q
 from django.db.models.expressions import F
+from django.db.models.signals import pre_save
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -14,6 +15,7 @@ from django.template.defaultfilters import slugify
 from django.contrib.postgres.fields import DateTimeRangeField
 from django.contrib.postgres.indexes import GinIndex
 from django.core.serializers.json import DjangoJSONEncoder
+from django.dispatch import receiver
 
 from postgresqleu.util.validators import validate_lowercase, validate_urlname
 from postgresqleu.util.validators import TwitterValidator
@@ -22,6 +24,7 @@ from postgresqleu.util.forms import ChoiceArrayField
 from postgresqleu.util.fields import LowercaseEmailField, ImageBinaryField, PdfBinaryField
 from postgresqleu.util.time import today_conference
 from postgresqleu.util.db import exec_no_result
+from postgresqleu.util.image import rescale_image_bytes
 
 import base64
 import pytz
@@ -917,11 +920,12 @@ class Speaker(models.Model):
                                    verbose_name='Twitter name')
     company = models.CharField(max_length=100, null=False, blank=True)
     abstract = models.TextField(null=False, blank=True, verbose_name="Bio")
-    photo = ImageBinaryField(blank=True, null=True, verbose_name="Photo", max_length=1000000, max_resolution=(128, 128))
+    photo = ImageBinaryField(blank=True, null=True, verbose_name="Photo (low res)", max_length=1000000, resolution=(128, 128))
+    photo512 = ImageBinaryField(blank=True, null=True, verbose_name="Photo", max_length=1000000, resolution=(512, 512), auto_scale=True)
     lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
     speakertoken = models.TextField(null=False, blank=False, unique=True)
 
-    _safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract', 'photo', 'has_photo', 'photo_data', 'lastmodified', )
+    _safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract', 'photo', 'photo512', 'has_photo', 'has_photo512', 'photo_data', 'photo_data512', 'lastmodified', )
     json_included_attributes = ['fullname', 'twittername', 'company', 'abstract', 'lastmodified']
 
     @property
@@ -946,17 +950,21 @@ class Speaker(models.Model):
         return len(self.abstract) > 0
     has_abstract.boolean = True
 
+    @property
     def has_photo(self):
         return (self.photo is not None and self.photo != "")
-    has_photo.boolean = True
+
+    @property
+    def has_photo512(self):
+        return (self.photo512 is not None and self.photo512 != "")
 
     @cached_property
     def photo_data(self):
         return base64.b64encode(self.photo).decode('ascii')
 
-    @property
-    def photofile(self):
-        return self.photo
+    @cached_property
+    def photo512_data(self):
+        return base64.b64encode(self.photo512).decode('ascii')
 
     def __str__(self):
         return self.name
@@ -969,10 +977,23 @@ class Speaker(models.Model):
         # our fix. So make the fix conditional until we have 3.2.10 everywhere so we can throw it away
         if 'photo' in r[2] and isinstance(r[2]['photo'], memoryview):
             r[2]['photo'] = bytes(r[2]['photo'])
+        if 'photo512' in r[2] and isinstance(r[2]['photo512'], memoryview):
+            r[2]['photo512'] = bytes(r[2]['photo512'])
         return r
 
     class Meta:
         ordering = ['fullname', ]
+
+
+@receiver(pre_save, sender=Speaker)
+def _speaker_photo_resizer(sender, instance, *args, **kwargs):
+    if instance.photo512:
+        instance.photo = rescale_image_bytes(instance.photo512, (128, 128))
+    else:
+        # If there is a photo, remove it but only if the photo512 entry has actually
+        # been deleted (which means it's not NULL anymore)
+        if instance.photo and instance.photo512 is not None:
+            instance.photo = None
 
 
 class DeletedItems(models.Model):

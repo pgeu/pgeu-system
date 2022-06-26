@@ -2,7 +2,9 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from .forms import ImageBinaryFormField, PdfBinaryFormField
 
-from PIL import ImageFile
+import io
+
+from PIL import Image, ImageFile
 
 from postgresqleu.util.magic import magicdb
 
@@ -19,7 +21,8 @@ class ImageBinaryField(models.Field):
     empty_values = [None, b'']
 
     def __init__(self, max_length, *args, **kwargs):
-        self.max_resolution = kwargs.pop('max_resolution', None)
+        self.resolution = kwargs.pop('resolution', None)
+        self.auto_scale = kwargs.pop('auto_scale', False)
         super(ImageBinaryField, self).__init__(*args, **kwargs)
         self.max_length = max_length
 
@@ -65,12 +68,34 @@ class ImageBinaryField(models.Field):
         except Exception as e:
             raise ValidationError("Could not parse image: %s" % e)
 
-        if img.format.upper() != 'JPEG':
-            raise ValidationError("Only JPEG files are allowed")
+        if img.format.upper() not in ('JPEG', 'PNG'):
+            raise ValidationError("Only JPEG or PNG files are allowed")
 
-        if self.max_resolution:
-            if img.size[0] > self.max_resolution[0] or img.size[1] > self.max_resolution[1]:
-                raise ValidationError("Maximum image size is {}x{}".format(*self.max_resolution))
+        if self.resolution:
+            if img.size[0] != self.resolution[0] or img.size[1] != self.resolution[1]:
+                if self.auto_scale:
+                    scale = min(
+                        float(self.resolution[0]) / float(img.size[0]),
+                        float(self.resolution[1]) / float(img.size[1]),
+                    )
+                    newimg = img.resize(
+                        (int(img.size[0] * scale), int(img.size[1] * scale)),
+                        Image.BICUBIC,
+                    )
+                    saver = io.BytesIO()
+                    if newimg.size[0] != newimg.size[1]:
+                        # This is not a square, so we have to roll it again
+                        centeredimg = Image.new('RGBA', self.resolution)
+                        centeredimg.paste(newimg, (
+                            (self.resolution[0] - newimg.size[0]) // 2,
+                            (self.resolution[1] - newimg.size[1]) // 2,
+                        ))
+                        centeredimg.save(saver, format='PNG')
+                    else:
+                        newimg.save(saver, format="PNG")
+                    value = saver.getvalue()
+                else:
+                    raise ValidationError("Image size must be {}x{}".format(*self.resolution))
 
         return value
 

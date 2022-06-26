@@ -1226,7 +1226,8 @@ INNER JOIN confreg_room r ON r.id=t.room_id GROUP BY day
        'name', spk.fullname,
        'company', spk.company,
        'twittername', spk.twittername,
-        'hasphoto', spk.photo IS NOT NULL AND spk.photo != ''::bytea
+       'hasphoto', spk.photo IS NOT NULL AND spk.photo != ''::bytea,
+       'hasphoto512', spk.photo512 IS NOT NULL AND spk.photo512 != ''::bytea
     ) ORDER BY spk.fullname) FILTER (WHERE spk.id IS NOT NULL), '[]') AS speakers
 FROM confreg_conferencesession s
 LEFT JOIN confreg_track t ON t.id=s.track_id
@@ -1486,9 +1487,20 @@ def speaker_card(request, confname, speakerid, cardformat):
     })
 
 
-def speakerphoto(request, speakerid):
+def speakerphoto(request, speakerid, phototype='1/'):
     speaker = get_object_or_404(Speaker, pk=speakerid)
-    return HttpResponse(bytes(speaker.photo), content_type='image/jpg')
+    if phototype is None or phototype == '1/':
+        if not speaker.photo:
+            raise Http404()
+        photo = bytes(speaker.photo)
+    elif phototype == '5/':
+        if not speaker.photo512:
+            raise Http404()
+        photo = bytes(speaker.photo512)
+    else:
+        raise Http404()
+    content_type = 'image/png' if photo[:8] == b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A' else 'image/jpg'
+    return HttpResponse(photo, content_type=content_type)
 
 
 @login_required
@@ -1511,7 +1523,8 @@ def speakerprofile(request, confurlname=None):
         conferences = []
         callforpapers = None
     except Exception:
-        pass
+        # We used to accept errors here. Why?
+        raise
 
     if request.method == 'POST':
         # Attempt to save

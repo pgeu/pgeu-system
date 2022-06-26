@@ -286,7 +286,7 @@ class ConferenceAdditionalOptionAdmin(admin.ModelAdmin):
 
 
 class SpeakerAdminForm(ConcurrentProtectedModelForm):
-    exclude_fields_from_validation = ['photo', ]
+    exclude_fields_from_validation = ['photo', 'photo512', ]
 
     class Meta:
         model = Speaker
@@ -294,7 +294,7 @@ class SpeakerAdminForm(ConcurrentProtectedModelForm):
 
 
 class SpeakerAdmin(admin.ModelAdmin):
-    list_display = ['user', 'email', 'fullname', 'has_abstract', 'has_photo']
+    list_display = ['user', 'email', 'fullname', 'has_abstract', 'has_photo', 'has_photo512']
     search_fields = ['fullname', 'user__email']
     autocomplete_fields = ('user', )
     ordering = ['fullname']
