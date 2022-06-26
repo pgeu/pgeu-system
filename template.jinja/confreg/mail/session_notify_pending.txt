@@ -14,7 +14,14 @@ can still attend the event. Please go to the website (as linked below)
 and confirm your attendance at the conference as soon as you can. Please
 also verify the contents of your submission, and let us know if there
 are any changes necessary *before* you confirm the talk.
-
+{%if not speaker.has_photo512%}
+We have also noticed that you do not appear to have a
+{%if speaker.has_photo%}high resolution {%endif%}photo on your speaker profile.
+{%if speaker.has_photo%}We recently added the ability to upload higher resolution
+photos, and your registration was probably made before this.{%endif%}
+Please consider uploading one to your speaker profile, on the same
+page as where you confirm your session.
+{%endif%}
 Thank you, and we look forward to seeing you at {{conference}}.
 
 If you have made more than one submission to the conference,
