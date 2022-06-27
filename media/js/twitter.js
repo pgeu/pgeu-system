@@ -6,7 +6,13 @@ function LeadingZero(s) {
     }
     return ss;
 }
-function DateString(date) {
+function DateString(origdate) {
+    /*
+      Get the date in the server timezone. Javascript is basically uncapable of this, but we can
+      add a fixed offset, so let's do that.
+      Also note that date.getTimezoneOffset() returns the inverse of the actual timezone offset.
+    */
+    let date = new Date(origdate.getTime() + (origdate.getTimezoneOffset()+parseInt(parseInt($('body').data('tzoffset'))))*60000);
     return date.getFullYear()+'-'+LeadingZero(date.getMonth()+1)+'-'+LeadingZero(date.getDate())+' '+LeadingZero(date.getHours())+':'+LeadingZero(date.getMinutes());
 }
 
@@ -262,7 +268,7 @@ $(function() {
 		"op": "queue",
 	    },
 	    success: function(data, status, xhr) {
-		var t = (new Date()).toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit', second: '2-digit', hour12: false});
+		var t = (new Date()).toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit', second: '2-digit', hour12: false}) + ' (' + Intl.DateTimeFormat().resolvedOptions().timeZone + ')';
 
 		/* Remove old entries */
 		$('#queuerow .queueentry').remove();
@@ -325,7 +331,7 @@ $(function() {
 		"op": "incoming",
 	    },
 	    success: function(data, status, xhr) {
-		var t = (new Date()).toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit', second: '2-digit', hour12: false});
+		var t = (new Date()).toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit', second: '2-digit', hour12: false}) + ' (' + Intl.DateTimeFormat().resolvedOptions().timeZone + ')';
 
 		/* Remove old entries */
 		$('#incomingrow .incomingentry').remove();

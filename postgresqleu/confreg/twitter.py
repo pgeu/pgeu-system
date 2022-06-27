@@ -313,4 +313,5 @@ def volunteer_twitter(request, urlname, token):
         'moderator': canmoderate and 1 or 0,
         'providerlengths': ", ".join(["{}: {}".format(k, v) for k, v in providermaxlength.items()]),
         'maxlength': max((v for k, v in providermaxlength.items())),
+        'tzoffset': int(timezone.localtime().utcoffset().total_seconds() / 60),
     })
