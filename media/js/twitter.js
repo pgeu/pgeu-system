@@ -437,10 +437,8 @@ $(function() {
 
     if ("Notification" in window) {
 	if (Notification.permission === "default") {
-	    console.log("B");
 	    /* Have not asked before, so ask now! */
 	    Notification.requestPermission().then(function (permission) {
-		console.log("C");
 		/* Nothing yet, but permission is persistent */
 	    });
 	}
