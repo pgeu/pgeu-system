@@ -966,6 +966,11 @@ class Speaker(models.Model):
     def photo512_data(self):
         return base64.b64encode(self.photo512).decode('ascii')
 
+    # Legacy compatibility with some old templates
+    @property
+    def photofile(self):
+        return self.photo
+
     def __str__(self):
         return self.name
 
