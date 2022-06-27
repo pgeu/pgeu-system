@@ -70,11 +70,12 @@
          </div>
          <div class="modal-body">
 	   <textarea id="newTweetText" maxlength="1000" class="disableonpost"></textarea>
-	   Length: <span id="tweetLength">0</span><br/> Attach
-	   image: <input type="file" id="newTweetUpload" class="disableonpost"
-	   accept="image/jpeg, image/png"><br/> {%if directposter %}
-	   <input type="checkbox" id="tweetBypassApproval" class="disableonpost"/> Bypass
-	   approval<br/> {%endif%}
+	   Length: <span id="tweetLength">0</span><br/>
+	   Schedule at: <input type="datetime-local" id="newTweetSchedule" class="disableonpost"><br/>
+	   Attach image: <input type="file" id="newTweetUpload" class="disableonpost" accept="image/jpeg, image/png"><br/>
+{%if directposter %}
+	   <input type="checkbox" id="tweetBypassApproval" class="disableonpost"/> Bypass approval<br/>
+{%endif%}
 	   Provider max length: {{providerlengths}}<br/>
          </div>
          <div class="modal-footer">

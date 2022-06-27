@@ -1,3 +1,15 @@
+/* Silly javascript lacks basic functionality */
+function LeadingZero(s) {
+    let ss = s;
+    while (ss.toString().length < 2) {
+        ss = '0' + ss;
+    }
+    return ss;
+}
+function DateString(date) {
+    return date.getFullYear()+'-'+LeadingZero(date.getMonth()+1)+'-'+LeadingZero(date.getDate())+' '+LeadingZero(date.getHours())+':'+LeadingZero(date.getMinutes());
+}
+
 function showstatus(msg, level) {
     $('#statusdiv').text(msg);
     $('#statusdiv').attr('class', 'alert alert-' + level);
@@ -35,7 +47,7 @@ function add_queue_entry_html(row, d, modbuttons, panelstyle) {
     e.append(cdiv);
     fdiv = $('<div/>').addClass('panel-footer');
     let dstr = d['delivered'] ? ' Delivery complete.':'';
-    fdiv.append($('<p/>').text('Queued by ' + d['author'] + ' at ' + d['time'] + '.' + dstr));
+    fdiv.append($('<p/>').text('Queued by ' + d['author'] + ' for ' + d['time'] + '.' + dstr));
     if (modbuttons) {
        fdiv.append($('<button/>').data('tid', d['id']).addClass('btn btn-primary btn-sm approve-button').text('Approve'));
        fdiv.append($('<button/>').data('tid', d['id']).addClass('btn btn-default btn-sm discard-button').text('Discard'));
@@ -162,7 +174,10 @@ $(function() {
     });
 
     $('#newTweetButton').click(function() {
+        let t = DateString(new Date());
         $('#newTweetText').val('');
+        $('#newTweetSchedule').val(t);
+        $('#newTweetSchedule').attr('min', t);
 	$('#newTweetUpload').val('');
 	$('#tweetBypassApproval').prop('checked', false);
 	$('#tweetLength').text('0');
@@ -194,6 +209,7 @@ $(function() {
 	var fd = new FormData();
 	fd.append("op", "post");
 	fd.append("txt", txt);
+	fd.append("at", $('#newTweetSchedule').val());
 	fd.append("bypass", (is_directposter && $('#tweetBypassApproval').is(':checked')) ? 1:0);
 	if ($('#newTweetUpload')[0].files[0]) {
 	    fd.append("image", $('#newTweetUpload')[0].files[0]);

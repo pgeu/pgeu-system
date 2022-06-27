@@ -103,9 +103,18 @@ def volunteer_twitter(request, urlname, token):
                     approved = True
                     approvedby = reg.attendee
 
+            when = request.POST.get('at', '')
+            if when:
+                try:
+                    when = datetime.datetime.strptime(when, '%Y-%m-%dT%H:%M')
+                except ValueError:
+                    return _json_response({'error': 'Could not parse posting date'})
+            else:
+                when = timezone.now()
+
             # Check if we have *exactly the same tweet* in the queue already, in the past 5 minutes.
             # in which case it's most likely a clicked-too-many-times.
-            if ConferenceTweetQueue.objects.filter(conference=conference, contents=request.POST['txt'], author=reg.attendee, datetime__gt=timezone.now() - datetime.timedelta(minutes=5)):
+            if ConferenceTweetQueue.objects.filter(conference=conference, contents=request.POST['txt'], author=reg.attendee, datetime__gt=when - datetime.timedelta(minutes=5)):
                 return _json_response({'error': 'Duplicate post detected'})
 
             # Now insert it in the queue, bypassing time validation since it's not an automatically
@@ -117,6 +126,7 @@ def volunteer_twitter(request, urlname, token):
                 approvedby=approvedby,
                 author=reg.attendee,
                 replytotweetid=request.POST.get('replyid', None),
+                datetime=when,
                 )
             if 'image' in request.FILES:
                 t.image = request.FILES['image'].read()
