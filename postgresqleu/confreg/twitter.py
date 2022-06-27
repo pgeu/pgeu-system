@@ -12,11 +12,13 @@ import io
 import json
 from PIL import Image, ImageFile
 
+from postgresqleu.confreg.util import get_conference_or_404
 from postgresqleu.scheduler.util import trigger_immediate_job_run
 from postgresqleu.util.request import get_int_or_error
 from postgresqleu.util.messaging import ProviderCache
+from postgresqleu.util.time import datetime_string
 from .models import ConferenceTweetQueue, ConferenceIncomingTweet, ConferenceMessaging
-from .models import Conference, ConferenceRegistration
+from .models import ConferenceRegistration
 
 
 def post_conference_social(conference, contents, approved=False, posttime=None, author=None):
@@ -58,10 +60,7 @@ def _json_response(d):
 @csrf_exempt
 @transaction.atomic
 def volunteer_twitter(request, urlname, token):
-    try:
-        conference = Conference.objects.select_related('series').get(urlname=urlname)
-    except Conference.DoesNotExist:
-        raise Http404()
+    conference = get_conference_or_404(urlname)
 
     if not conference.has_social_broadcast:
         raise Http404()
@@ -240,7 +239,7 @@ def volunteer_twitter(request, urlname, token):
                     'id': t.id,
                     'txt': t.contents,
                     'author': t.author and t.author.username or '',
-                    'time': t.datetime,
+                    'time': datetime_string(t.datetime),
                     'hasimage': t.hasimage,
                     'delivered': t.sent,
                 }
@@ -261,7 +260,7 @@ def volunteer_twitter(request, urlname, token):
                     'txt': t.text,
                     'author': t.author_screenname,
                     'authorfullname': t.author_name,
-                    'time': t.created,
+                    'time': datetime_string(t.created),
                     'rt': t.retweetstate,
                     'provider': t.provider.publicname,
                     'media': [m for m in t.media if m is not None],
