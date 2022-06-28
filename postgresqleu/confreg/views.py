@@ -2544,6 +2544,8 @@ def talkvote(request, confname):
             order = "speakers_full, avg DESC NULLS LAST,"
         elif request.GET["sort"] == "session":
             order = "s.title, avg DESC NULLS LAST,"
+    else:
+        order = "s.id,"
 
     # Render the form. Need to do this with a manual query, can't figure
     # out the right way to do it with the django ORM.
