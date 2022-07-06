@@ -87,7 +87,10 @@ If there is a difference, the version listed in the contract takes precedence.
 </p>
 {%endif%}
 
-<p><a class="btn btn-primary" href="{{level.urlname}}/">Sign Up</a></p>
+<p>
+  <a class="btn btn-primary" href="{{level.urlname}}/">Sign Up</a>
+  {%if level.contract%}&nbsp;&nbsp;<a class="btn btn-info" href="/events/sponsor/viewcontract/{{level.contract.id}}/">Download Contract</a>{%endif%}
+</p>
 
 <hr/>
 {%endif%}
