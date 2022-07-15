@@ -1512,7 +1512,7 @@ def speakerprofile(request, confurlname=None):
 
     speaker = conferences = callforpapers = None
     try:
-        speaker = get_object_or_404(Speaker, user=request.user)
+        speaker = Speaker.objects.get(user=request.user)
         conferences = Conference.objects.filter(conferencesession__speaker=speaker).distinct()
         callforpapers = Conference.objects.filter(Q(callforpapersopen=True),
                                                   Q(callforpaperstimerange__contains=timezone.now()) |
