@@ -186,7 +186,8 @@ set to cross session, the details for the session cannot be viewed, so
 it should not be used for regular sessions.
 
 Track
-:	The track selected for this schedule, if any.
+:	The track selected for this schedule. If no track is specified,
+the session will not be included in session lists and on the schedule.
 
 Room
 :	The room selected for this schedule, if any.

@@ -12,7 +12,7 @@ Note that they may not yet have been scheduled!
 </p>
 
 {%for track,sessionlist in sessions|groupby_sort('track', 'sortkey')%}
-<h2>{%if track is not none%}{{track}}{%else%}General{%endif%}</h2>
+<h2>{{track}}/h2>
 <ul>
 {%for session in sessionlist %}
  <li><a href="session/{{session.id}}-{{session.title|slugify}}/">{{session.title}}</a>{%if session.has_slides%} {{ icon("slides") }}{%endif%} ({{session.speaker_list}})</li>

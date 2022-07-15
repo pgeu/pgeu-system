@@ -1185,7 +1185,7 @@ class SessionSet(object):
 
 def _scheduledata(request, conference):
     with ensure_conference_timezone(conference):
-        tracks = exec_to_dict("SELECT id, color, fgcolor, incfp, trackname, sortkey, showcompany FROM confreg_track t WHERE conference_id=%(confid)s AND EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.track_id=t.id AND s.status=1) ORDER BY sortkey", {
+        tracks = exec_to_dict("SELECT id, color, fgcolor, incfp, trackname, sortkey, showcompany FROM confreg_track t WHERE conference_id=%(confid)s AND EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.track_id=t.id AND s.status=1 AND s.track_id IS NOT NULL) ORDER BY sortkey", {
             'confid': conference.id,
         })
 
@@ -1195,7 +1195,7 @@ def _scheduledata(request, conference):
 
         day_rooms = exec_to_keyed_dict("""WITH t AS (
   SELECT s.starttime::date AS day, room_id
-   FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND status=1 AND s.room_id IS NOT NULL AND s.starttime IS NOT NULL
+   FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND status=1 AND s.room_id IS NOT NULL AND s.starttime IS NOT NULL AND s.track_id IS NOT NULL
  UNION
   SELECT d.day, ad.room_id
    FROM confreg_room_availabledays ad INNER JOIN confreg_registrationday d ON d.id=ad.registrationday_id
@@ -1236,7 +1236,8 @@ LEFT JOIN confreg_conferencesession_speaker css ON css.conferencesession_id=s.id
 LEFT JOIN confreg_speaker spk ON spk.id=css.speaker_id
 WHERE
     s.conference_id=%(confid)s AND
-    s.status=1
+    s.status=1 AND
+    s.track_id IS NOT NULL
     AND (cross_schedule OR room_id IS NOT NULL)
 GROUP BY s.id, t.id, r.id
 WINDOW days AS (PARTITION BY s.starttime::date)
@@ -1302,7 +1303,7 @@ def sessionlist(request, confname):
 
     sessions = ConferenceSession.objects.filter(conference=conference).extra(select={
         'has_slides': 'EXISTS (SELECT 1 FROM confreg_conferencesessionslides WHERE session_id=confreg_conferencesession.id)',
-    }).filter(cross_schedule=False).filter(status=1).filter(Q(track__isnull=True) | Q(track__insessionlist=True)).order_by('track__sortkey', 'track', 'title')
+    }).filter(cross_schedule=False).filter(status=1).filter(track__insessionlist=True).order_by('track__sortkey', 'track', 'title')
 
     return render_conference_response(request, conference, 'sessions', 'confreg/sessionlist.html', {
         'sessions': sessions,
@@ -1317,7 +1318,7 @@ def schedule_ical(request, confname):
         # completely empty session list instead
         sessions = None
     else:
-        sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).filter(starttime__isnull=False).order_by('starttime')
+        sessions = ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).filter(starttime__isnull=False).filter(track__isnull=False).order_by('starttime')
     resp = render(request, 'confreg/schedule.ical', {
         'conference': conference,
         'sessions': sessions,
@@ -1337,7 +1338,7 @@ def schedule_xcal(request, confname):
     ET.SubElement(v, 'prodid').text = '//pgeusys//Schedule 1.0//EN'
     ET.SubElement(v, 'x-wr-caldesc')
     ET.SubElement(v, 'x-wr-calname').text = 'Schedule for {0}'.format(conference.conferencename)
-    for sess in ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).filter(starttime__isnull=False).order_by('starttime'):
+    for sess in ConferenceSession.objects.filter(conference=conference).filter(cross_schedule=False).filter(status=1).filter(starttime__isnull=False).filter(track__isnull=False).order_by('starttime'):
         s = ET.SubElement(v, 'vevent')
         ET.SubElement(s, 'method').text = 'PUBLISH'
         ET.SubElement(s, 'uid').text = '{0}@{1}'.format(sess.id, conference.urlname)
@@ -1379,7 +1380,7 @@ def schedule_xml(request, confname):
 
     lastday = None
     lastroom = None
-    for sess in ConferenceSession.objects.filter(conference=conference).filter(status=1).filter(starttime__isnull=False).order_by('starttime', 'cross_schedule', 'room__sortkey'):
+    for sess in ConferenceSession.objects.filter(conference=conference).filter(status=1).filter(starttime__isnull=False).filter(track__isnull=False).order_by('starttime', 'cross_schedule', 'room__sortkey'):
         if lastday != timezone.localdate(sess.starttime):
             lastday = timezone.localdate(sess.starttime)
             lastroom = None
@@ -1414,10 +1415,7 @@ def session(request, confname, section, sessionid, slug=None):
         if not conference.testers.filter(pk=request.user.id):
             return render_conference_response(request, conference, 'schedule', 'confreg/sessionsclosed.html')
 
-    session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False, status=1)
-
-    if session.track and not session.track.insessionlist:
-        raise Http404("Session not found")
+    session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False, status=1, track__insessionlist=True)
 
     # Redirect to page with slug if there is one
     sessionslug = slugify(session.title)
@@ -1437,10 +1435,7 @@ def session_card(request, confname, sessionid, cardformat):
         if not conference.testers.filter(pk=request.user.id):
             return HttpResponseForbidden()
 
-    session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False, status=1)
-
-    if session.track and not session.track.insessionlist:
-        raise Http404("Session not found")
+    session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False, status=1, track__insessionlist=True)
 
     return render_jinja_conference_svg(request, conference, cardformat, 'confreg/cards/session.svg', {
         'session': session,
@@ -1454,10 +1449,7 @@ def session_slides(request, confname, sessionid, slideid):
         if not conference.testers.filter(pk=request.user.id):
             return render_conference_response(request, conference, 'schedule', 'confreg/sessionsclosed.html')
 
-    session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False, status=1)
-
-    if session.track and not session.track.insessionlist:
-        raise Http404("Session not found")
+    session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False, status=1, track__insessionlist=True)
 
     slides = get_object_or_404(ConferenceSessionSlides, session=session, id=slideid)
     return HttpResponse(bytes(slides.content),
@@ -1471,7 +1463,7 @@ def speaker(request, confname, speakerid):
             return render_conference_response(request, conference, 'schedule', 'confreg/sessionsclosed.html')
 
     speaker = get_object_or_404(Speaker, pk=speakerid)
-    sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker, cross_schedule=False, status=1).filter(Q(track__isnull=True) | Q(track__insessionlist=True)).order_by('starttime')
+    sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker, cross_schedule=False, status=1).filter(track__insessionlist=True).order_by('starttime')
     if len(sessions) < 1:
         raise Http404("Speaker has no sessions at this conference")
     return render_conference_response(request, conference, 'schedule', 'confreg/speaker.html', {
@@ -1488,7 +1480,7 @@ def speaker_card(request, confname, speakerid, cardformat):
             return HttpResponseForbidden()
 
     speaker = get_object_or_404(Speaker, pk=speakerid)
-    sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker, cross_schedule=False, status=1).filter(Q(track__isnull=True) | Q(track__insessionlist=True)).order_by('starttime')
+    sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker, cross_schedule=False, status=1).filter(track__insessionlist=True).order_by('starttime')
     if len(sessions) < 1:
         raise Http404("Speaker has no sessions at this conference")
 
