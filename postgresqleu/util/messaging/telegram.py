@@ -249,49 +249,49 @@ class Telegram(object):
                 return
 
     def process_token_match(self, m, p):
-            # Found a match.
-            # Now try to find if this is an actual token, and assign the channel
-            # as required.
+        # Found a match.
+        # Now try to find if this is an actual token, and assign the channel
+        # as required.
+        try:
+            r = ConferenceMessaging.objects.get(
+                provider_id=self.providerid,
+                config__tokenchannel__has_key=m
+            )
+            chan = r.config['tokenchannel'][m]
+            hadprevchannel = 'channels' in r.config and chan in r.config['channels']
+            if 'channels' not in r.config:
+                r.config['channels'] = {}
+
+            # Export a channel invite link, so that we have one
+            self.post('exportChatInviteLink', {'chat_id': p['chat']['id']}, ignoreerrors=True)
+            chatobj = self.get('getChat', {'chat_id': p['chat']['id']})
+            r.config['channels'][chan] = {
+                'id': p['chat']['id'],
+                'title': p['chat']['title'],
+                'invitelink': chatobj.get('invite_link', None),
+            }
+            r.save(update_fields=['config'])
             try:
-                r = ConferenceMessaging.objects.get(
-                    provider_id=self.providerid,
-                    config__tokenchannel__has_key=m
-                )
-                chan = r.config['tokenchannel'][m]
-                hadprevchannel = 'channels' in r.config and chan in r.config['channels']
-                if 'channels' not in r.config:
-                    r.config['channels'] = {}
-
-                # Export a channel invite link, so that we have one
-                self.post('exportChatInviteLink', {'chat_id': p['chat']['id']}, ignoreerrors=True)
-                chatobj = self.get('getChat', {'chat_id': p['chat']['id']})
-                r.config['channels'][chan] = {
-                    'id': p['chat']['id'],
-                    'title': p['chat']['title'],
-                    'invitelink': chatobj.get('invite_link', None),
-                }
-                r.save(update_fields=['config'])
-                try:
-                    # Ignore if this fails, probably permissions
-                    self.post('deleteMessage', {
-                        'chat_id': p['chat']['id'],
-                        'message_id': p['message_id']
-                    })
-                except Exception as e:
-                    pass
-
-                # Send a reply, and this should not fail
-                send_channel_message(r, chan,
-                                     'Thank you, this channel has now been associated with {} channel {}'.format(
-                                         r.conference.conferencename,
-                                         chan
-                                     ))
-                if hadprevchannel:
-                    send_channel_message(r, chan, 'The previously existing channel association has been removed.')
-
-            except ConferenceMessaging.DoesNotExist:
-                # Just ignore it, since it wasn't an active token.
+                # Ignore if this fails, probably permissions
+                self.post('deleteMessage', {
+                    'chat_id': p['chat']['id'],
+                    'message_id': p['message_id']
+                })
+            except Exception as e:
                 pass
+
+            # Send a reply, and this should not fail
+            send_channel_message(r, chan,
+                                 'Thank you, this channel has now been associated with {} channel {}'.format(
+                                     r.conference.conferencename,
+                                     chan
+                                 ))
+            if hadprevchannel:
+                send_channel_message(r, chan, 'The previously existing channel association has been removed.')
+
+        except ConferenceMessaging.DoesNotExist:
+            # Just ignore it, since it wasn't an active token.
+            pass
 
     def process_incoming_chat_structure(self, u):
         # We can get messages for things that aren't actually messages, such as "you're invited to

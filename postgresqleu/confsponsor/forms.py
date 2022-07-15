@@ -124,7 +124,7 @@ class SponsorSendEmailForm(forms.ModelForm):
             del self.fields['levels']
 
         if not ((self.data.get('levels') or self.data.get('sponsors')) and self.data.get('subject') and self.data.get('message')):
-                del self.fields['confirm']
+            del self.fields['confirm']
 
     def clean_confirm(self):
         if not self.cleaned_data['confirm']:

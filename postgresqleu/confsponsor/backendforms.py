@@ -175,7 +175,7 @@ class BackendSponsorshipLevelForm(BackendForm):
     def clean_urlname(self):
         val = self.cleaned_data['urlname']
         if val and SponsorshipLevel.objects.filter(conference=self.conference, urlname=val).exclude(pk=self.instance.pk).exists():
-                raise ValidationError("A sponsorship level with this URL name already exists")
+            raise ValidationError("A sponsorship level with this URL name already exists")
         return val
 
     @classmethod
