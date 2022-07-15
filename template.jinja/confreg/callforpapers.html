@@ -42,9 +42,20 @@ You have made the following submission{%if sessions|length > 1%}s{%endif%} to th
 
 {%if conference.IsCallForPapersOpen or is_tester%}
 <h2>New submission</h2>
+{%if speaker%}
 <p>
   Click <a href="new/">here</a> to make a new submission to {{conference}}.
 </p>
+{%else%}
+<p>
+ Before you can make a submission, please create a
+ <a href="/events/{{conference.urlname}}/speakerprofile/">shared {{org_name}} speaker profile</a>,
+ which will be used for both this event and other events by {{org_name}}.
+</p>
+<p>
+ Once you have created your speaker profile, you can return to this page and make one or more submissions.
+</p>
+{%endif%}
 {%if other_submissions%}
 <p>
   If you have submitted to other conferences managed by {{org_name}} in the past, you can also
@@ -61,11 +72,13 @@ To remove a submission, please contact <a href="mailto:{{conference.contactaddr}
 
 {%endif%}
 
+{%if speaker%}
 <h2>Speaker profile</h2>
 <p>
 Your <a href="/events/{{conference.urlname}}/speakerprofile/">shared {{org_name}} speaker profile</a>
 will be used for all submissions.
 </p>
+{%endif%}
 
 {%endblock%}
 

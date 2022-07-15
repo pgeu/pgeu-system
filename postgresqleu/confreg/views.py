@@ -1564,10 +1564,12 @@ def callforpapers(request, confname):
         other_submissions = ConferenceSession.objects.filter(speaker=speaker).exclude(conference=conference).exists()
     except Speaker.DoesNotExist:
         other_submissions = False
+        speaker = None
         sessions = []
 
     return render_conference_response(request, conference, 'cfp', 'confreg/callforpapers.html', {
         'other_submissions': other_submissions,
+        'speaker': speaker,
         'sessions': sessions,
         'is_tester': is_tester,
     })
