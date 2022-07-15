@@ -455,7 +455,7 @@ class BackendAdditionalOptionForm(BackendForm):
 
 class BackendTrackForm(BackendForm):
     helplink = 'schedule#tracks'
-    list_fields = ['trackname', 'incfp', 'sortkey']
+    list_fields = ['trackname', 'incfp', 'insessionlist', 'sortkey']
     allow_copy_previous = True
     coltypes = {
         'Sortkey': ['nosearch', ],
@@ -464,7 +464,7 @@ class BackendTrackForm(BackendForm):
 
     class Meta:
         model = Track
-        fields = ['trackname', 'sortkey', 'color', 'fgcolor', 'incfp', 'showcompany', 'speakerreg']
+        fields = ['trackname', 'sortkey', 'color', 'fgcolor', 'incfp', 'insessionlist', 'showcompany', 'speakerreg']
 
     @classmethod
     def copy_from_conference(self, targetconf, sourceconf, idlist):

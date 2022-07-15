@@ -1302,7 +1302,7 @@ def sessionlist(request, confname):
 
     sessions = ConferenceSession.objects.filter(conference=conference).extra(select={
         'has_slides': 'EXISTS (SELECT 1 FROM confreg_conferencesessionslides WHERE session_id=confreg_conferencesession.id)',
-    }).filter(cross_schedule=False).filter(status=1).order_by('track__sortkey', 'track', 'title')
+    }).filter(cross_schedule=False).filter(status=1).filter(Q(track__isnull=True) | Q(track__insessionlist=True)).order_by('track__sortkey', 'track', 'title')
 
     return render_conference_response(request, conference, 'sessions', 'confreg/sessionlist.html', {
         'sessions': sessions,
@@ -1416,6 +1416,9 @@ def session(request, confname, section, sessionid, slug=None):
 
     session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False, status=1)
 
+    if session.track and not session.track.insessionlist:
+        raise Http404("Session not found")
+
     # Redirect to page with slug if there is one
     sessionslug = slugify(session.title)
     if slug is None or slug.lstrip('-') != sessionslug:
@@ -1435,6 +1438,10 @@ def session_card(request, confname, sessionid, cardformat):
             return HttpResponseForbidden()
 
     session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False, status=1)
+
+    if session.track and not session.track.insessionlist:
+        raise Http404("Session not found")
+
     return render_jinja_conference_svg(request, conference, cardformat, 'confreg/cards/session.svg', {
         'session': session,
     })
@@ -1448,6 +1455,10 @@ def session_slides(request, confname, sessionid, slideid):
             return render_conference_response(request, conference, 'schedule', 'confreg/sessionsclosed.html')
 
     session = get_object_or_404(ConferenceSession, conference=conference, pk=sessionid, cross_schedule=False, status=1)
+
+    if session.track and not session.track.insessionlist:
+        raise Http404("Session not found")
+
     slides = get_object_or_404(ConferenceSessionSlides, session=session, id=slideid)
     return HttpResponse(bytes(slides.content),
                         content_type='application/pdf')
@@ -1460,7 +1471,7 @@ def speaker(request, confname, speakerid):
             return render_conference_response(request, conference, 'schedule', 'confreg/sessionsclosed.html')
 
     speaker = get_object_or_404(Speaker, pk=speakerid)
-    sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker, cross_schedule=False, status=1).order_by('starttime')
+    sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker, cross_schedule=False, status=1).filter(Q(track__isnull=True) | Q(track__insessionlist=True)).order_by('starttime')
     if len(sessions) < 1:
         raise Http404("Speaker has no sessions at this conference")
     return render_conference_response(request, conference, 'schedule', 'confreg/speaker.html', {
@@ -1477,7 +1488,7 @@ def speaker_card(request, confname, speakerid, cardformat):
             return HttpResponseForbidden()
 
     speaker = get_object_or_404(Speaker, pk=speakerid)
-    sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker, cross_schedule=False, status=1).order_by('starttime')
+    sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker, cross_schedule=False, status=1).filter(Q(track__isnull=True) | Q(track__insessionlist=True)).order_by('starttime')
     if len(sessions) < 1:
         raise Http404("Speaker has no sessions at this conference")
 

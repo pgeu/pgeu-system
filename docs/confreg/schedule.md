@@ -105,6 +105,11 @@ In call for papers
 :   Whether this track should be available to choose in the
 [call for papers](callforpapers) submission form.
 
+In session list
+:   Whether sessions in this track are included in the session list. This can
+for example be used to pre-announce some tracks before the schedule is available,
+by setting only those tracks to be in the session list.
+
 Show company
 :   Whether sessions in this track should have the company name of the speaker
 	listed on the schedule.
