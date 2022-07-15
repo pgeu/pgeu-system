@@ -93,10 +93,10 @@ This is probably not normal and should be checked!
         if len(lines):
             sio = StringIO()
             sio.write("The following error events have been logged by the Stripe integration for {0}:\n\n".format(method.internaldescription))
-            for l in lines:
-                sio.write("%s: %s\n" % (l.timestamp, l.message))
-                l.sent = True
-                l.save()
+            for line in lines:
+                sio.write("%s: %s\n" % (line.timestamp, line.message))
+                line.sent = True
+                line.save()
             sio.write("\n\n\nAll these events have now been tagged as sent, and will no longer be\nprocessed by the system in any way.\n")
 
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,

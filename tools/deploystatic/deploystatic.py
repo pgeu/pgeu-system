@@ -39,13 +39,13 @@ def filter_groupby_sort(objects, keyfield, sortkey):
 
 
 # Shuffle the order in a list, for example to randomize the order of sponsors
-def filter_shuffle(l):
+def filter_shuffle(thelist):
     try:
-        r = list(l)
+        r = list(thelist)
         random.shuffle(r)
         return r
     except Exception as e:
-        return l
+        return thelist
 
 
 # Format a datetime. If it's a datetime, call strftime. If it's a
@@ -387,8 +387,8 @@ if __name__ == "__main__":
     # parsing everything.
     fmap = source.readfile('templates/pages/.deploystaticmap')
     if fmap:
-        for l in fmap.splitlines():
-            (src, dest) = l.decode('utf8').split(':')
+        for line in fmap.splitlines():
+            (src, dest) = line.decode('utf8').split(':')
             if not os.path.isdir(os.path.join(args.destpath, dest)):
                 os.makedirs(os.path.join(args.destpath, dest))
             context['page'] = dest

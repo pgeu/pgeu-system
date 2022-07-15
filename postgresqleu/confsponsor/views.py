@@ -1030,10 +1030,10 @@ def sponsor_admin_send_mail(request, confurlname):
                               message=form.data['message'])
             msg.save()
             if sendto == 'level':
-                for l in form.data.getlist('levels'):
-                    msg.levels.add(l)
+                for level in form.data.getlist('levels'):
+                    msg.levels.add(level)
                 sponsors = Sponsor.objects.filter(conference=conference, level__in=form.data.getlist('levels'), confirmed=True)
-                deststr = "sponsorship levels {0}".format(", ".join([l.levelname for l in msg.levels.all()]))
+                deststr = "sponsorship levels {0}".format(", ".join([level.levelname for level in msg.levels.all()]))
             else:
                 for s in form.data.getlist('sponsors'):
                     msg.sponsors.add(s)

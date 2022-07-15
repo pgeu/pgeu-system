@@ -36,7 +36,7 @@ class MemberLogManager(object):
     can_add = False
 
     def get_list(self, instance):
-        return [(None, l.timestamp, l.message) for l in MemberLog.objects.filter(member=instance).order_by('-timestamp')]
+        return [(None, line.timestamp, line.message) for line in MemberLog.objects.filter(member=instance).order_by('-timestamp')]
 
 
 class BackendMemberForm(BackendForm):

@@ -40,10 +40,10 @@ class Command(BaseCommand):
         if len(lines):
             sio = StringIO()
             sio.write("The following error events have been logged by the Trustly integration for {0}:\n\n".format(method.internaldescription))
-            for l in lines:
-                sio.write("%s: %s\n" % (l.timestamp, l.message))
-                l.sent = True
-                l.save()
+            for line in lines:
+                sio.write("%s: %s\n" % (line.timestamp, line.message))
+                line.sent = True
+                line.save()
             sio.write("\n\n\nAll these events have now been tagged as sent, and will no longer be\nprocessed by the system in any way.\n")
 
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
@@ -56,8 +56,8 @@ class Command(BaseCommand):
         if len(lines):
             sio = StringIO()
             sio.write("The following notifications have not been confirmed in the Trustly integration for {0}.\nThese need to be manually processed and then flagged as confirmed!\n\nThis list only contains unconfirmed events older than 24 hours.\n\n\n".format(method.internaldescription))
-            for l in lines:
-                sio.write("%s: %s\n" % (l.receivedat, l.method, ))
+            for line in lines:
+                sio.write("%s: %s\n" % (line.receivedat, line.method, ))
 
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                              pm.config('notification_receiver'),
@@ -75,8 +75,8 @@ class Command(BaseCommand):
             sio = StringIO()
             sio.write("The following payments have been authorized for %s, but not finished for more than %s days.\nThese probably need to be verified manually.\n\n\n" % (method.internaldescription, UNFINISHED_THRESHOLD))
 
-            for l in lines:
-                sio.write("%s at %s: %s\n" % (l.orderid, l.pendingat, l.amount))
+            for line in lines:
+                sio.write("%s at %s: %s\n" % (line.orderid, line.pendingat, line.amount))
 
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                              pm.config('notification_receiver'),

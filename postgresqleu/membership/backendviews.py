@@ -182,8 +182,8 @@ OR
         response['Content-Disposition'] = 'attachment;filename={} log.csv'.format(meeting.name)
         c = csv.writer(response, delimiter=';')
         c.writerow(['Time', 'Sender', 'Text'])
-        for l in log:
-            c.writerow([l.t, l.sender.fullname if l.sender else '', l.message])
+        for line in log:
+            c.writerow([line.t, line.sender.fullname if line.sender else '', line.message])
         return response
     else:
         log = list(log.extra(select={
@@ -192,7 +192,7 @@ OR
         return render(request, 'membership/meeting_log.html', {
             'meeting': meeting,
             'log': log,
-            'numextra': sum(0 if l.inmeeting else 1 for l in log),
+            'numextra': sum(0 if line.inmeeting else 1 for line in log),
             'topadmin': 'Membership',
             'breadcrumbs': (
                 ('/admin/membership/meetings/', 'Meetings'),

@@ -92,38 +92,38 @@ class Command(BaseCommand):
 
         sio = io.StringIO(report.contents)
         reader = csv.DictReader(sio, delimiter=',')
-        for l in reader:
+        for line in reader:
             # SentForSettle is what we call capture, so we track that
             # Settled is when we actually receive the money
             # Changes in Sep 2015 means Settled is sometimes SettledBulk
             # Everything else we ignore
-            if l['Record Type'] == 'SentForSettle' or l['Record Type'] == 'Settled' or l['Record Type'] == 'SettledBulk':
+            if line['Record Type'] == 'SentForSettle' or line['Record Type'] == 'Settled' or line['Record Type'] == 'SettledBulk':
                 # Find the actual payment
-                pspref = l['Psp Reference']
-                bookdate = l['Booking Date']
+                pspref = line['Psp Reference']
+                bookdate = line['Booking Date']
                 try:
                     trans = TransactionStatus.objects.get(pspReference=pspref, paymentmethod=method)
                 except TransactionStatus.DoesNotExist:
                     # Yes, for now we rollback the whole processing of this one
                     raise Exception('Transaction %s not found!' % pspref)
-                if l['Record Type'] == 'SentForSettle':
+                if line['Record Type'] == 'SentForSettle':
                     # If this is a POS transaction, it typically received a
                     # separate CAPTURE notification, in which case the capture
                     # date is already set. But if not, we'll set it to the
                     # sent for settle date.
                     if not trans.capturedat:
                         trans.capturedat = bookdate
-                        trans.method = l['Payment Method']
+                        trans.method = line['Payment Method']
                         trans.save()
                         AdyenLog(message='Transaction %s captured at %s' % (pspref, bookdate), error=False, paymentmethod=method).save()
                         if self.verbose:
                             self.stdout.write("Sent for settle on {0}".format(pspref))
-                elif l['Record Type'] in ('Settled', 'SettledBulk'):
+                elif line['Record Type'] in ('Settled', 'SettledBulk'):
                     if trans.settledat is not None:
                         # Transaction already settled. But we might be reprocessing
                         # the report, so verify if the previously settled one is
                         # *identical*.
-                        if trans.settledamount == Decimal(l['Main Amount']).quantize(Decimal('0.01')):
+                        if trans.settledamount == Decimal(line['Main Amount']).quantize(Decimal('0.01')):
                             self.stderr.write("Transaction {0} already settled at {2}, ignoring (NOT creating accounting record)!".format(pspref, trans.settledat))
                             continue
                         else:
@@ -132,7 +132,7 @@ class Command(BaseCommand):
                         trans.capturedat = bookdate
 
                     trans.settledat = bookdate
-                    trans.settledamount = Decimal(l['Main Amount']).quantize(Decimal('0.01'))
+                    trans.settledamount = Decimal(line['Main Amount']).quantize(Decimal('0.01'))
                     trans.save()
                     if self.verbose:
                         self.stdout.write("Settled {0}, total amount {1}".format(pspref, trans.settledamount))
@@ -165,15 +165,15 @@ class Command(BaseCommand):
         sio = io.StringIO(report.contents)
         reader = csv.DictReader(sio, delimiter=',')
         types = {}
-        for l in reader:
-            t = l['Type']
+        for line in reader:
+            t = line['Type']
             if t == 'Balancetransfer':
                 # Balance transfer is special -- we can have two of them that evens out,
                 # but we need to separate in and out
-                if Decimal(l['Net Debit (NC)'] or 0) > 0:
+                if Decimal(line['Net Debit (NC)'] or 0) > 0:
                     t = "Balancetransfer2"
 
-            lamount = Decimal(l['Net Credit (NC)'] or 0) - Decimal(l['Net Debit (NC)'] or 0)
+            lamount = Decimal(line['Net Credit (NC)'] or 0) - Decimal(line['Net Debit (NC)'] or 0)
             if t in types:
                 types[t] += lamount
             else:

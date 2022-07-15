@@ -175,13 +175,13 @@ def filter_groupby_sort(objects, keyfield, sortkey):
 
 
 # Shuffle the order in a list, for example to randomize the order of sponsors
-def filter_shuffle(l):
+def filter_shuffle(thelist):
     try:
-        r = list(l)
+        r = list(thelist)
         random.shuffle(r)
         return r
     except Exception as e:
-        return l
+        return thelist
 
 
 def filter_currency_format(v):

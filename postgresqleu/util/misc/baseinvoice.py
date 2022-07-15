@@ -54,8 +54,8 @@ class PDFBase(object):
         return face.ascent * size / 1000.0 - face.descent * size / 1000.0
 
     def textlines(self, t, lines):
-        for l in lines.splitlines():
-            t.textLine(l)
+        for line in lines.splitlines():
+            t.textLine(line)
 
     def _draw_multiline_aligned(self, txt, left, top, width, height):
         t = txt.replace("\n", "<br/>")

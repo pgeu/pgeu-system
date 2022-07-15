@@ -280,13 +280,13 @@ def _standard_logger(message):
     print(message)
 
 
-def _trunc_string(s, l):
+def _trunc_string(s, length):
     # Truncate a string to specified length, adding "..." at the end in case
     # it's truncated.
-    if len(s) <= l:
+    if len(s) <= length:
         return s
 
-    return s[:97] + "..."
+    return s[:length - 3] + "..."
 
 
 class InvoiceManager(object):

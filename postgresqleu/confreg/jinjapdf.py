@@ -183,7 +183,7 @@ class JinjaFlowable(Flowable):
         else:
             maxfontsize = maxfont_height
         for fontsize in range(4, maxfontsize):
-            maxwidth = max([self.canv.stringWidth(l, fontname, fontsize) for l in lines])
+            maxwidth = max([self.canv.stringWidth(line, fontname, fontsize) for line in lines])
             if maxwidth > getmm(o, 'width'):
                 fontsize -= 1
                 break
@@ -211,8 +211,8 @@ def escapejson_filter(v):
     return re.sub(r'^"|"$', '', json.dumps(v))
 
 
-def test_inlist(v, l):
-    return v in l
+def test_inlist(v, thelist):
+    return v in thelist
 
 
 class JinjaRenderer(object):
