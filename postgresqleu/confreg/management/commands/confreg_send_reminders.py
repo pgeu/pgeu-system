@@ -7,6 +7,7 @@
 #
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from io import StringIO
@@ -25,7 +26,12 @@ class Command(BaseCommand):
         internal = True
 
     def handle(self, *args, **options):
-        for conference in Conference.objects.filter(registrationopen=True):
+        for conference in Conference.objects.filter(
+                Q(registrationopen=True),
+                Q(registrationtimerange__contains=timezone.now()) |
+                Q(registrationtimerange__isnull=True)
+
+        ):
             # One transaction for each open conference that has registration
             # open. If registration isn't open then there is nowhere to
             # register, so don't even try.
@@ -49,7 +55,11 @@ class Command(BaseCommand):
                         whatstr.getvalue(),
                     )
 
-        for conference in Conference.objects.filter(callforpapersopen=True):
+        for conference in Conference.objects.filter(
+                Q(callforpapersopen=True),
+                Q(callforpaperstimerange__contains=timezone.now()) |
+                Q(callforpaperstimerange__isnull=True)
+        ):
             # One transaction for each conference with call for papers open, to send reminders
             # for things related to the cfp.
             with transaction.atomic():
