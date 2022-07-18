@@ -53,7 +53,10 @@ $(document).ready(function() {
   <th class="coltype-nosearch">Confirmed</th>
   <th title="Canceled" class="coltype-nosearch">Canc.</th>
   {%if waitlist_active%}<th class="coltype-nosort">Waitlist status</th>{%endif%}
-  <th class="coltype-nosort coltype-nosearch"><i id="mailcheckboxtoggler" class="glyphicon glyphicon-envelope" title="Select all registrations"></i></th>
+  <th class="coltype-nosort coltype-nosearch">
+    <i id="mailcheckboxtoggler" class="glyphicon glyphicon-envelope" title="Select all registrations for email"></i>
+    <i id="assigncheckboxtoggler" class="glyphicon glyphicon-tasks" title="Select all registrations for actions"></i>
+  </th>
  </tr>
 </thead>
 <tbody>

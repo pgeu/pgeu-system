@@ -71,6 +71,17 @@ $(document).ready(function() {
    });
 
    /* Set up assignment checkboxes */
+   $('#assigncheckboxtoggler').click(function() {
+      var root = $($('#datatable').data('datatable').rows( { filter : 'applied'} ).nodes());
+      if (root.find('input.assigncheckbox:checked').length == 0) {
+         root.find('input.assigncheckbox').prop('checked', true);
+      }
+      else {
+         root.find('input.assigncheckbox').prop('checked', false);
+      }
+      update_assign_count();
+   });
+
    $('input.assigncheckbox').change(function() {
       update_assign_count();
    });
