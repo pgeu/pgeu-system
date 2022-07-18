@@ -97,9 +97,12 @@ $(document).ready(function() {
 
        var idlist = nodes.map(function() {
            return this.id.substring(4); // Remove ass_ at the beginning
-       }).get().join(',');
+       }).get();
+       var idliststr = idlist.join(',');
 
-       document.location.href = $(this).data('href') + '?idlist=' + idlist;
+       if (confirm('Are you sure you want to "' + e.target.innerText + '" for ' + idlist.length + ' registrations')) {
+           document.location.href = $(this).data('href') + '?idlist=' + idliststr;
+       }
    });
 
    $('a.preview-pdf-link').click(function(e) {
