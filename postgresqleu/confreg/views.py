@@ -3322,7 +3322,7 @@ def admin_registration_multicancel(request, urlname):
     errs = list(_admin_registration_cancel_precheck(regs))
     if errs:
         if len(errs) > 10:
-            messages.warning(request, "Pre-check returned {} errors. Try with a smaller set.".format(len(e)))
+            messages.warning(request, "Pre-check returned {} errors. Try with a smaller set.".format(len(errs)))
         else:
             for r, e in errs:
                 messages.warning(request, "{}: {}".format(r, e))
