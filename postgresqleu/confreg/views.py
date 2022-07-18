@@ -3622,6 +3622,42 @@ def admin_registration_resendwelcome(request, urlname, regid):
 
 
 @transaction.atomic
+def admin_registration_multiresendwelcome(request, urlname):
+    regids = request.GET.get('idlist')
+    try:
+        ids = [int(i) for i in regids.split(',')]
+    except Exception:
+        raise Http404("Parameter idlist is not list of integers")
+
+    conference = get_authenticated_conference(request, urlname)
+    regs = list(ConferenceRegistration.objects.filter(conference=conference, id__in=ids))
+    errs = []
+    if not conference.sendwelcomemail:
+        errs.append('Welcome emails are not enabled for this conference')
+
+    for r in regs:
+        if not r.payconfirmedat:
+            errs.append('Registration for {} is not confirmed'.format(r.fullname))
+        elif r.canceledat:
+            errs.append('Registration for {} has been canceled'.format(r.fullname))
+
+    if errs:
+        if len(errs) > 10:
+            messages.warning(request, "Pre-check returned {} errors. Try with a smaller set.".format(len(errs)))
+        else:
+            for e in errs:
+                messages.warning(request, e)
+            messages.warning(request, 'No emails have been sent')
+        return HttpResponseRedirect("../")
+
+    for r in regs:
+        send_welcome_email(r)
+
+    messages.info(request, "Re-sent welcome emails to {} attendees".format(len(regs)))
+    return HttpResponseRedirect('../')
+
+
+@transaction.atomic
 def admin_registration_clearcode(request, urlname, regid):
     conference = get_authenticated_conference(request, urlname)
 
