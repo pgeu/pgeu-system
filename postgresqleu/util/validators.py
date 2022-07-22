@@ -60,6 +60,15 @@ def TwitterValidator(value):
         # This can only happen if it was '@' initially
         raise ValidationError("Enter twitter name or leave field empty")
 
+    # Twitter have broken our way of checking the username, by always returning 200 OK
+    # with an embedded (and not easy to find) error message. We need to re-do this with
+    # an authenticated API, but for now we just turn it into a simple regexp validaotor.
+    if not re.match('^[a-zA-Z0-9_]+$', value):
+        raise ValidationError('Valid Twitter names must contain only the characters a-z, the numbers 0-9, or underscore')
+
+    # Else we skip the check and just say it's fine
+    return
+
     try:
         r = requests.get('https://twitter.com/{0}'.format(value),
                          headers={'User-agent': 'Firefox/60'},
