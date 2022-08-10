@@ -819,7 +819,7 @@ def feedback_available(request):
 
 @login_required
 @transaction.atomic
-def reg_add_options(request, confname):
+def reg_add_options(request, confname, whatfor=None):
     conference = get_conference_or_404(confname)
     reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
 

@@ -142,7 +142,7 @@ urlpatterns.extend([
     url(r'^events/([^/]+)/register/invoice/(\d+)/$', postgresqleu.confreg.views.invoice),
     url(r'^events/([^/]+)/register/invoice/(\d+)/cancel/$', postgresqleu.confreg.views.invoice_cancel),
     url(r'^events/([^/]+)/register/mail/(\d+)/$', postgresqleu.confreg.views.attendee_mail),
-    url(r'^events/([^/]+)/register/addopt/$', postgresqleu.confreg.views.reg_add_options),
+    url(r'^events/(?P<confname>[^/]+)/register/(?P<whatfor>(self)/)?addopt/$', postgresqleu.confreg.views.reg_add_options),
     url(r'^events/([^/]+)/register/wiki/(.*)/edit/$', postgresqleu.confwiki.views.wikipage_edit),
     url(r'^events/([^/]+)/register/wiki/(.*)/history/$', postgresqleu.confwiki.views.wikipage_history),
     url(r'^events/([^/]+)/register/wiki/(.*)/sub/$', postgresqleu.confwiki.views.wikipage_subscribe),
