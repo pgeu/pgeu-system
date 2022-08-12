@@ -74,11 +74,11 @@ class ProvideText(BaseBenefit):
             claim.confirmed = True
             return True
 
-        claim.claimdata = form.cleaned_data['text']
+        claim.claimjson['text'] = form.cleaned_data['text']
         return True
 
     def render_claimdata(self, claimedbenefit):
-        return claimedbenefit.claimdata
+        return claimedbenefit.claimjson['text']
 
     def can_unclaim(self, claimedbenefit):
         return True

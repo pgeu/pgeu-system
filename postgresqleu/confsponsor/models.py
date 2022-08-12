@@ -121,7 +121,7 @@ class SponsorClaimedBenefit(models.Model):
     claimedat = models.DateTimeField(null=False, blank=False)
     claimedby = models.ForeignKey(User, null=False, blank=False, on_delete=models.CASCADE)
     declined = models.BooleanField(null=False, blank=False, default=False)
-    claimdata = models.TextField(max_length=500, blank=True, null=False)
+    claimjson = models.JSONField(blank=True, null=False)
     confirmed = models.BooleanField(null=False, blank=False, default=False)
 
     class Meta:

@@ -45,7 +45,7 @@ class EntryVouchers(BaseBenefit):
     def save_form(self, form, claim, request):
         if int(form.cleaned_data['vouchercount']) == 0:
             # No vouchers --> unclaim this benefit
-            claim.claimdata = "0"
+            claim.claimjson['batchid'] = 0
             claim.declined = True
             claim.confirmed = True
         else:
@@ -78,17 +78,17 @@ class EntryVouchers(BaseBenefit):
             )
 
             # Finally, finish the claim
-            claim.claimdata = batch.id
+            claim.claimjson['batchid'] = batch.id
             claim.confirmed = True  # Always confirmed, they're generated after all
         return True
 
     def render_claimdata(self, claimedbenefit):
         # Look up our batch
-        if claimedbenefit.claimdata == "0":
+        if claimedbenefit.claimjson['batchid'] == 0:
             # This benefit has been declined
             return "Benefit was declined."
 
-        batch = PrepaidBatch.objects.get(pk=int(claimedbenefit.claimdata))
+        batch = PrepaidBatch.objects.get(pk=claimedbenefit.claimjson['batchid'])
         vouchers = list(batch.prepaidvoucher_set.all())
 
         generated = len(vouchers)
@@ -103,11 +103,11 @@ class EntryVouchers(BaseBenefit):
         return s.getvalue()
 
     def can_unclaim(self, claimedbenefit):
-        if claimedbenefit.claimdata == "0":
+        if claimedbenefit.claimjson['batchid'] == 0:
             # It was declined, so we can unclaim that
             return True
 
-        batch = PrepaidBatch.objects.get(pk=int(claimedbenefit.claimdata))
+        batch = PrepaidBatch.objects.get(pk=claimedbenefit.claimjson['batchid'])
         if batch.prepaidvoucher_set.filter(user__isnull=False).exists():
             return False
         return True

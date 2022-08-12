@@ -423,7 +423,7 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
         if form.is_valid():
             # Always create a new claim here - we might support editing an existing one
             # sometime in the future, but not yet...
-            claim = SponsorClaimedBenefit(sponsor=sponsor, benefit=benefit, claimedat=timezone.now(), claimedby=request.user)
+            claim = SponsorClaimedBenefit(sponsor=sponsor, benefit=benefit, claimedat=timezone.now(), claimedby=request.user, claimjson={})
             claim.save()  # generate an id
 
             send_mail = benefitclass.save_form(form, claim, request)
