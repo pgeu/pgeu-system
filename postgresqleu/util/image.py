@@ -13,6 +13,10 @@ def rescale_image_bytes(origbytes, resolution):
     p.close()
     img = p.image
 
+    return rescale_image(img, resolution)
+
+
+def rescale_image(img, resolution, centered=False):
     scale = min(
         float(resolution[0]) / float(img.size[0]),
         float(resolution[1]) / float(img.size[1]),
@@ -23,6 +27,15 @@ def rescale_image_bytes(origbytes, resolution):
         Image.BICUBIC,
     )
     saver = io.BytesIO()
-    newimg.save(saver, format=img.format)
+    if centered and newimg.size[0] != newimg.size[1]:
+        # This is not a square, so we have to roll it again
+        centeredimg = Image.new('RGBA', resolution)
+        centeredimg.paste(newimg, (
+            (resolution[0] - newimg.size[0]) // 2,
+            (resolution[1] - newimg.size[1]) // 2,
+        ))
+        centeredimg.save(saver, format='PNG')
+    else:
+        newimg.save(saver, format=img.format)
 
     return saver.getvalue()

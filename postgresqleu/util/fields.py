@@ -7,6 +7,7 @@ import io
 from PIL import Image, ImageFile
 
 from postgresqleu.util.magic import magicdb
+from postgresqleu.util.image import rescale_image
 
 
 class LowercaseEmailField(models.EmailField):
@@ -74,26 +75,7 @@ class ImageBinaryField(models.Field):
         if self.resolution:
             if img.size[0] != self.resolution[0] or img.size[1] != self.resolution[1]:
                 if self.auto_scale:
-                    scale = min(
-                        float(self.resolution[0]) / float(img.size[0]),
-                        float(self.resolution[1]) / float(img.size[1]),
-                    )
-                    newimg = img.resize(
-                        (int(img.size[0] * scale), int(img.size[1] * scale)),
-                        Image.BICUBIC,
-                    )
-                    saver = io.BytesIO()
-                    if newimg.size[0] != newimg.size[1]:
-                        # This is not a square, so we have to roll it again
-                        centeredimg = Image.new('RGBA', self.resolution)
-                        centeredimg.paste(newimg, (
-                            (self.resolution[0] - newimg.size[0]) // 2,
-                            (self.resolution[1] - newimg.size[1]) // 2,
-                        ))
-                        centeredimg.save(saver, format='PNG')
-                    else:
-                        newimg.save(saver, format="PNG")
-                    value = saver.getvalue()
+                    value = rescale_image(img, self.resolution, centered=True)
                 else:
                     raise ValidationError("Image size must be {}x{}".format(*self.resolution))
 
