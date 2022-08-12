@@ -1533,7 +1533,7 @@ def speakerprofile(request, confurlname=None):
         # Attempt to save
         # If this is a new speaker, create an instance for it
         if not speaker:
-            speaker = Speaker(user=request.user, fullname=request.user.first_name)
+            speaker = Speaker(user=request.user, fullname="{} {}".format(request.user.first_name, request.user.last_name))
             speaker.speakertoken = generate_random_token()
             speaker.save()
 
