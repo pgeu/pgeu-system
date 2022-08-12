@@ -81,6 +81,8 @@ STATUS_CHOICES_SHORT = (
     (6, "withdrawn"),
 )
 
+PRIMARY_SPEAKER_PHOTO_RESOLUTION = (512, 512)
+
 
 def get_status_string(val):
     return next((t for v, t in STATUS_CHOICES if v == val))
@@ -922,7 +924,7 @@ class Speaker(models.Model):
     company = models.CharField(max_length=100, null=False, blank=True)
     abstract = models.TextField(null=False, blank=True, verbose_name="Bio")
     photo = ImageBinaryField(blank=True, null=True, verbose_name="Photo (low res)", max_length=1000000, resolution=(128, 128))
-    photo512 = ImageBinaryField(blank=True, null=True, verbose_name="Photo", max_length=1000000, resolution=(512, 512), auto_scale=True)
+    photo512 = ImageBinaryField(blank=True, null=True, verbose_name="Photo", max_length=1000000, resolution=PRIMARY_SPEAKER_PHOTO_RESOLUTION, auto_scale=True)
     lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
     speakertoken = models.TextField(null=False, blank=False, unique=True)
 

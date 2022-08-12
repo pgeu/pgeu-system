@@ -13,6 +13,7 @@ from .models import ConferenceRegistration, RegistrationType, Speaker
 from .models import ConferenceAdditionalOption, Track, RegistrationClass
 from .models import ConferenceSession, ConferenceSessionFeedback, ConferenceSessionTag
 from .models import PrepaidVoucher, DiscountCode, AttendeeMail
+from .models import PRIMARY_SPEAKER_PHOTO_RESOLUTION
 
 from .regtypes import validate_special_reg_type
 from postgresqleu.util.widgets import EmailTextWidget, MonospaceTextarea
@@ -466,7 +467,7 @@ class SpeakerProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(SpeakerProfileForm, self).__init__(*args, **kwargs)
-        self.fields['photo512'].help_text = 'Photo will be rescaled to 512x512 pixels. We reserve the right to make minor edits to speaker photos if necessary'
+        self.fields['photo512'].help_text = 'Photo will be rescaled to {}x{} pixels. We reserve the right to make minor edits to speaker photos if necessary'.format(*PRIMARY_SPEAKER_PHOTO_RESOLUTION)
 
     def clean_twittername(self):
         if not self.cleaned_data['twittername']:
