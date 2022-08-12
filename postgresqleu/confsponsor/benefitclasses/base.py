@@ -15,6 +15,9 @@ class BaseBenefit(object):
     def save_form(self, form, claim, request):
         raise Exception("Form saving not implemented!")
 
+    def process_confirm(self, claim):
+        pass
+
     def validate_parameters(self):
         pass
 

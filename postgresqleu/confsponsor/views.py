@@ -800,40 +800,43 @@ ORDER BY l.levelcost DESC, l.levelname, s.name, b.sortkey, b.benefitname""", {'c
         })
 
 
-def _confirm_benefit(request, benefit):
+def _confirm_benefit(request, claimed_benefit):
     with transaction.atomic():
-        benefit.confirmed = True
-        benefit.save()
+        benefit = claimed_benefit.benefit
+        benefitclass = get_benefit_class(benefit.benefit_class)(benefit.level, benefit.class_parameters)
+        benefitclass.process_confirm(claimed_benefit)
+        claimed_benefit.confirmed = True
+        claimed_benefit.save()
 
-        messages.info(request, "Benefit {0} for {1} confirmed.".format(benefit.benefit, benefit.sponsor))
+        messages.info(request, "Benefit {0} for {1} confirmed.".format(claimed_benefit.benefit, claimed_benefit.sponsor))
 
-        conference = benefit.sponsor.conference
+        conference = claimed_benefit.sponsor.conference
 
         # Send email
-        for manager in benefit.sponsor.managers.all():
+        for manager in claimed_benefit.sponsor.managers.all():
             send_conference_mail(conference,
                                  manager.email,
                                  "Sponsorship benefit confirmed",
                                  'confsponsor/mail/benefit_confirmed.txt',
                                  {
-                                     'benefit': benefit.benefit,
+                                     'benefit': claimed_benefit.benefit,
                                  },
                                  sender=conference.sponsoraddr,
                                  receivername='{0} {1}'.format(manager.first_name, manager.last_name))
         send_conference_sponsor_notification(
             conference,
-            "Sponsorship benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor),
-            "Sponsorship benefit {0} for {1} has been confirmed".format(benefit.benefit, benefit.sponsor),
+            "Sponsorship benefit {0} for {1} has been confirmed".format(claimed_benefit.benefit, claimed_benefit.sponsor),
+            "Sponsorship benefit {0} for {1} has been confirmed".format(claimed_benefit.benefit, claimed_benefit.sponsor),
         )
 
         # Potentially send tweet
-        if benefit.benefit.tweet_template:
+        if claimed_benefit.benefit.tweet_template:
             post_conference_social(conference,
-                                   render_sandboxed_template(benefit.benefit.tweet_template, {
-                                       'benefit': benefit.benefit,
-                                       'level': benefit.benefit.level,
+                                   render_sandboxed_template(claimed_benefit.benefit.tweet_template, {
+                                       'benefit': claimed_benefit.benefit,
+                                       'level': claimed_benefit.benefit.level,
                                        'conference': conference,
-                                       'sponsor': benefit.sponsor
+                                       'sponsor': claimed_benefit.sponsor
                                    }),
                                    approved=True)
 
