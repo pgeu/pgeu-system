@@ -419,7 +419,7 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
 
     # Are we trying to process incoming data yet?
     if request.method == 'POST':
-        form = formclass(benefit, request.POST, request.FILES)
+        form = formclass(benefit, sponsor, request.POST, request.FILES)
         if form.is_valid():
             # Always create a new claim here - we might support editing an existing one
             # sometime in the future, but not yet...
@@ -452,7 +452,7 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
             messages.info(request, "Benefit \"%s\" has been %s." % (benefit, claim.declined and 'declined' or 'claimed'))
             return HttpResponseRedirect("/events/sponsor/%s/" % sponsor.id)
     else:
-        form = formclass(benefit)
+        form = formclass(benefit, sponsor)
 
     return render(request, 'confsponsor/claim_form.html', {
         'conference': sponsor.conference,

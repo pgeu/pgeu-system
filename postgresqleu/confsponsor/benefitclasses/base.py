@@ -20,6 +20,7 @@ class BaseBenefit(object):
 
 
 class BaseBenefitForm(forms.Form):
-    def __init__(self, benefit, *args, **kwargs):
+    def __init__(self, benefit, sponsor, *args, **kwargs):
         self.params = benefit.class_parameters
+        self.sponsor = sponsor
         super(BaseBenefitForm, self).__init__(*args, **kwargs)
