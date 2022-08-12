@@ -177,6 +177,18 @@ Scanning of attendee badges
    Note that for this feature to work, the *Field: badge scanning*
    on the [conference configuration](configuring) must be enabled.
 
+Submit session
+:  This benefit class allows the sponsor to submit a session for the
+   conference that bypasses the regular call for papers. The class
+   will be configured to save to to a specific track, and this is not
+   choosable by the sponsor. The benefit will request title and abstract
+   for the session as well as name, company, bio and photo for the speaker.
+   Once the benefit is confirmed, a distinct speaker profile will be
+   created for this speaker, with no connected user account. A session
+   entry will be created with the specified information and automatically
+   flagged as approved (but not put on the schedule since it has no start
+   and end time yet).
+
 ## Shipments
 
 A shipment tracking system is built into the sponsorship system. It

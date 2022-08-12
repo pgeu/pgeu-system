@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='sponsorshipbenefit',
             name='benefit_class',
-            field=models.IntegerField(blank=True, choices=[(0, 'Automatically claimed'), (1, 'Require uploaded image'), (2, 'Requires explicit claiming'), (3, 'Claim entry vouchers'), (4, 'Provide text string'), (5, 'List of attendee email addresses'), (6, 'Scanning of attendee badges')], default=None, null=True),
+            field=models.IntegerField(blank=True, choices=[(0, 'Automatically claimed'), (1, 'Require uploaded image'), (2, 'Requires explicit claiming'), (3, 'Claim entry vouchers'), (4, 'Provide text string'), (5, 'List of attendee email addresses'), (6, 'Scanning of attendee badges'), (7, 'Submit session')], default=None, null=True),
         ),
         migrations.AlterUniqueTogether(
             name='sponsorscanner',
