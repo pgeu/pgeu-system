@@ -49,7 +49,12 @@ class SpeakerLookup(LookupBase):
 
     @property
     def label_from_instance(self):
-        return lambda x: "%s (%s)" % (x.fullname, x.user.username)
+        def _f(x):
+            if x.user:
+                return "%s (%s)" % (x.fullname, x.user.username)
+            else:
+                return x.fullname
+        return _f
 
     @classmethod
     def get_values(self, query):
