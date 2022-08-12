@@ -6,7 +6,7 @@ class BaseBenefit(object):
         self.level = level
         self.params = params
 
-    def render_claimdata(self, claimedbenefit):
+    def render_claimdata(self, claimedbenefit, isadmin):
         return ''
 
     def can_unclaim(self, claimedbenefit):

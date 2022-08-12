@@ -82,7 +82,7 @@ class EntryVouchers(BaseBenefit):
             claim.confirmed = True  # Always confirmed, they're generated after all
         return True
 
-    def render_claimdata(self, claimedbenefit):
+    def render_claimdata(self, claimedbenefit, isadmin):
         # Look up our batch
         if claimedbenefit.claimjson['batchid'] == 0:
             # This benefit has been declined

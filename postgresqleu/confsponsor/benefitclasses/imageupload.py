@@ -93,7 +93,7 @@ class ImageUpload(BaseBenefit):
         storage.save(str(claim.id), form.cleaned_data['image'])
         return True
 
-    def render_claimdata(self, claimedbenefit):
+    def render_claimdata(self, claimedbenefit, isadmin):
         # We don't use the datafield, just the id
         return 'Uploaded image: <img src="/events/sponsor/admin/imageview/%s/" />' % claimedbenefit.id
 

@@ -77,7 +77,7 @@ class ProvideText(BaseBenefit):
         claim.claimjson['text'] = form.cleaned_data['text']
         return True
 
-    def render_claimdata(self, claimedbenefit):
+    def render_claimdata(self, claimedbenefit, isadmin):
         return claimedbenefit.claimjson['text']
 
     def can_unclaim(self, claimedbenefit):

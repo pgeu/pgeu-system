@@ -102,7 +102,7 @@ def sponsor_conference(request, sponsorid):
 
     for b in claimedbenefits:
         if b.benefit.benefit_class and not b.declined:
-            b.claimhtml = get_benefit_class(b.benefit.benefit_class)(sponsor.level, b.benefit.class_parameters).render_claimdata(b)
+            b.claimhtml = get_benefit_class(b.benefit.benefit_class)(sponsor.level, b.benefit.class_parameters).render_claimdata(b, False)
 
     addresses = ShipmentAddress.objects.filter(conference=sponsor.conference, available_to=sponsor.level, active=True)
     shipments = Shipment.objects.filter(sponsor=sponsor)
@@ -966,7 +966,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
     for b in claimedbenefits:
         if b.benefit.benefit_class:
             c = get_benefit_class(b.benefit.benefit_class)(sponsor.level, b.benefit.class_parameters)
-            b.claimhtml = c.render_claimdata(b)
+            b.claimhtml = c.render_claimdata(b, True)
             if b.confirmed:
                 b.can_unclaim = c.can_unclaim(b)
             else:
@@ -990,7 +990,7 @@ def sponsor_admin_benefit(request, confurlname, benefitid):
 
     benefit = get_object_or_404(SponsorClaimedBenefit, id=benefitid, sponsor__conference=conference)
     if benefit.benefit.benefit_class:
-        claimdata = get_benefit_class(benefit.benefit.benefit_class)(benefit.benefit.level, benefit.benefit.class_parameters).render_claimdata(benefit)
+        claimdata = get_benefit_class(benefit.benefit.benefit_class)(benefit.benefit.level, benefit.benefit.class_parameters).render_claimdata(benefit, True)
     else:
         claimdata = None
 

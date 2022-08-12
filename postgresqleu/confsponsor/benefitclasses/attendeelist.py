@@ -41,7 +41,7 @@ class AttendeeList(BaseBenefit):
     def can_unclaim(self, claimedbenefit):
         return True
 
-    def render_claimdata(self, claimedbenefit):
+    def render_claimdata(self, claimedbenefit, isadmin):
         if claimedbenefit.declined:
             return ""
         if claimedbenefit.confirmed:
