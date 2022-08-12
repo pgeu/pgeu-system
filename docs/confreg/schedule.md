@@ -244,6 +244,10 @@ automaticlaly be resized to 512x512 on upload and centered on a transparent
 background to keep the aspect ratio, and converted to PNG in order to support
 said transparency.
 
+Attributes
+:    A json field that is normally for internal use only but made available
+     for arbitrary attributes if necessary. This can for example be automatically
+	 filled in when a speaker profile is auto-created.
 
 Note that the speaker photo will also be stored in 128x128 format, to support
 both thumbnails and legacy templates. This is automatically updated whenever

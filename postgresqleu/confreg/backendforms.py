@@ -805,7 +805,7 @@ class BackendSpeakerForm(BackendForm):
 
     class Meta:
         model = Speaker
-        fields = ['fullname', 'user', 'twittername', 'company', 'abstract', 'photo512', ]
+        fields = ['fullname', 'user', 'twittername', 'company', 'abstract', 'photo512', 'attributes', ]
         widgets = {
             'user': StaticTextWidget,
         }

@@ -927,9 +927,10 @@ class Speaker(models.Model):
     photo512 = ImageBinaryField(blank=True, null=True, verbose_name="Photo", max_length=1000000, resolution=PRIMARY_SPEAKER_PHOTO_RESOLUTION, auto_scale=True)
     lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
     speakertoken = models.TextField(null=False, blank=False, unique=True)
+    attributes = models.JSONField(blank=True, null=False, default=dict)
 
-    _safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract', 'photo', 'photo512', 'has_photo', 'has_photo512', 'photo_data', 'photo_data512', 'lastmodified', )
-    json_included_attributes = ['fullname', 'twittername', 'company', 'abstract', 'lastmodified']
+    _safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract', 'photo', 'photo512', 'has_photo', 'has_photo512', 'photo_data', 'photo_data512', 'lastmodified', 'attributes')
+    json_included_attributes = ['fullname', 'twittername', 'company', 'abstract', 'lastmodified', 'attributes']
 
     @property
     def name(self):
