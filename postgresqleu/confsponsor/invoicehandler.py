@@ -9,7 +9,7 @@ from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.util.time import today_conference
 
 from .models import Sponsor, PurchasedVoucher
-from .util import send_conference_sponsor_notification
+from .util import send_conference_sponsor_notification, send_sponsor_manager_email
 from postgresqleu.confreg.models import PrepaidBatch, PrepaidVoucher
 from postgresqleu.confreg.util import send_conference_mail
 import postgresqleu.invoices.models as invoicemodels
@@ -24,17 +24,15 @@ def confirm_sponsor(sponsor, who):
     sponsor.confirmedby = who
     sponsor.save()
 
-    for manager in sponsor.managers.all():
-        send_conference_mail(sponsor.conference,
-                             manager.email,
-                             "Sponsorship confirmed",
-                             'confsponsor/mail/sponsor_confirmed.txt',
-                             {
-                                 'sponsor': sponsor,
-                                 'conference': sponsor.conference,
-                             },
-                             sender=sponsor.conference.sponsoraddr,
-                             receivername='{0} {1}'.format(manager.first_name, manager.last_name))
+    send_sponsor_manager_email(
+        sponsor,
+        "Sponsorship confirmed",
+        'confsponsor/mail/sponsor_confirmed.txt',
+        {
+            'sponsor': sponsor,
+            'conference': sponsor.conference,
+        },
+    )
 
 
 class InvoiceProcessor(object):

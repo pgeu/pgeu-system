@@ -1,5 +1,6 @@
 from postgresqleu.util.db import exec_to_list
 from postgresqleu.mailqueue.util import send_simple_mail
+from postgresqleu.confreg.util import send_conference_mail
 
 
 def get_sponsor_dashboard_data(conference):
@@ -16,3 +17,17 @@ def send_conference_sponsor_notification(conference, subject, message):
                          subject,
                          message,
                          sendername=conference.conferencename)
+
+
+def send_sponsor_manager_email(sponsor, subject, template, context):
+    for manager in sponsor.managers.all():
+        send_conference_mail(
+            sponsor.conference,
+            manager.email,
+            subject,
+            template,
+            context,
+            sender=sponsor.conference.sponsoraddr,
+            sendername=sponsor.conference.conferencename,
+            receivername='{0} {1}'.format(manager.first_name, manager.last_name)
+        )

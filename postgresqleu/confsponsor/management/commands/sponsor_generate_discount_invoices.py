@@ -13,7 +13,7 @@ from django.db.models import Q, F, Count
 
 from postgresqleu.confreg.models import DiscountCode
 from postgresqleu.confreg.util import send_conference_mail
-from postgresqleu.confsponsor.util import send_conference_sponsor_notification
+from postgresqleu.confsponsor.util import send_conference_sponsor_notification, send_sponsor_manager_email
 from postgresqleu.invoices.util import InvoiceManager, InvoiceWrapper
 from postgresqleu.util.time import today_global
 
@@ -52,18 +52,16 @@ class Command(BaseCommand):
                     "Discount code {0} has expired without any uses.".format(code.code),
                 )
 
-                for manager in code.sponsor.managers.all():
-                    send_conference_mail(code.conference,
-                                         manager.email,
-                                         "Discount code {0} expired".format(code.code),
-                                         'confsponsor/mail/discount_expired.txt',
-                                         {
-                                             'code': code,
-                                             'sponsor': code.sponsor,
-                                             'conference': code.conference,
-                                         },
-                                         sender=code.conference.sponsoraddr,
-                                         receivername='{0} {1}'.format(manager.first_name, manager.last_name))
+                send_sponsor_manager_email(
+                    code.sponsor,
+                    "Discount code {0} expired".format(code.code),
+                    'confsponsor/mail/discount_expired.txt',
+                    {
+                        'code': code,
+                        'sponsor': code.sponsor,
+                        'conference': code.conference,
+                    },
+                )
             else:
                 # At least one use, so we generate the invoice
                 invoicerows = []
@@ -112,19 +110,16 @@ class Command(BaseCommand):
                     ),
                 )
 
-                for manager in code.sponsor.managers.all():
-                    send_conference_mail(code.conference,
-                                         manager.email,
-                                         "Discount code {0} has been invoiced".format(code.code),
-                                         'confsponsor/mail/discount_invoiced.txt',
-                                         {
-                                             'code': code,
-                                             'conference': code.conference,
-                                             'sponsor': code.sponsor,
-                                             'invoice': code.invoice,
-                                             'curr': settings.CURRENCY_ABBREV,
-                                             'expired_time': code.validuntil < today_global(),
-                                         },
-                                         sender=code.conference.sponsoraddr,
-                                         receivername='{0} {1}'.format(manager.first_name, manager.last_name)
-                    )
+                send_sponsor_manager_email(
+                    code.sponsor,
+                    "Discount code {0} has been invoiced".format(code.code),
+                    'confsponsor/mail/discount_invoiced.txt',
+                    {
+                        'code': code,
+                        'conference': code.conference,
+                        'sponsor': code.sponsor,
+                        'invoice': code.invoice,
+                        'curr': settings.CURRENCY_ABBREV,
+                        'expired_time': code.validuntil < today_global(),
+                    },
+                )

@@ -42,7 +42,7 @@ from .invoicehandler import create_sponsor_invoice, confirm_sponsor
 from .invoicehandler import get_sponsor_invoice_address, get_sponsor_invoice_rows
 from .invoicehandler import create_voucher_invoice
 from .vatutil import validate_eu_vat_number
-from .util import send_conference_sponsor_notification
+from .util import send_conference_sponsor_notification, send_sponsor_manager_email
 
 
 @login_required
@@ -635,19 +635,15 @@ def sponsor_shipment_receiver(request, token):
 
 def _send_shipment_mail(shipment, subject, mailtemplate):
     if shipment.sponsor:
-        for manager in shipment.sponsor.managers.all():
-            send_conference_mail(shipment.conference,
-                                 manager.email,
-                                 subject,
-                                 'confsponsor/mail/shipment_{0}.txt'.format(mailtemplate),
-                                 {
-                                     'shipment': shipment,
-                                     'sponsor': shipment.sponsor,
-                                 },
-                                 sender=shipment.conference.sponsoraddr,
-                                 bcc=shipment.conference.sponsoraddr,
-                                 receivername='{0} {1}'.format(manager.first_name, manager.last_name),
-                                 sendername=shipment.conference.conferencename)
+        send_sponsor_manager_email(
+            shipment.sponsor,
+            subject,
+            'confsponsor/mail/shipment_{0}.txt'.format(mailtemplate),
+            {
+                'shipment': shipment,
+                'sponsor': shipment.sponsor,
+            },
+        )
 
 
 @transaction.atomic
@@ -813,16 +809,15 @@ def _confirm_benefit(request, claimed_benefit):
         conference = claimed_benefit.sponsor.conference
 
         # Send email
-        for manager in claimed_benefit.sponsor.managers.all():
-            send_conference_mail(conference,
-                                 manager.email,
-                                 "Sponsorship benefit confirmed",
-                                 'confsponsor/mail/benefit_confirmed.txt',
-                                 {
-                                     'benefit': claimed_benefit.benefit,
-                                 },
-                                 sender=conference.sponsoraddr,
-                                 receivername='{0} {1}'.format(manager.first_name, manager.last_name))
+        send_sponsor_manager_email(
+            claimed_benefit.sponsor,
+            "Sponsorship benefit confirmed",
+            'confsponsor/mail/benefit_confirmed.txt',
+            {
+                'benefit': claimed_benefit.benefit,
+            },
+        )
+
         send_conference_sponsor_notification(
             conference,
             "Sponsorship benefit {0} for {1} has been confirmed".format(claimed_benefit.benefit, claimed_benefit.sponsor),
@@ -855,17 +850,15 @@ def _unclaim_benefit(request, claimed_benefit):
         messages.info(request, "Benefit {0} for {1} unclaimed.".format(benefit, sponsor))
         claimed_benefit.delete()
 
-        # Send email
-        for manager in sponsor.managers.all():
-            send_conference_mail(conference,
-                                 manager.email,
-                                 "Sponsorship benefit unclaimed",
-                                 'confsponsor/mail/benefit_unclaimed.txt',
-                                 {
-                                     'benefit': benefit,
-                                 },
-                                 sender=conference.sponsoraddr,
-                                 receivername='{0} {1}'.format(manager.first_name, manager.last_name))
+        send_sponsor_manager_email(
+            sponsor,
+            "Sponsorship benefit unclaimed",
+            'confsponsor/mail/benefit_unclaimed.txt',
+            {
+                'benefit': benefit,
+            },
+        )
+
         send_conference_sponsor_notification(
             conference,
             "Sponsorship benefit {0} for {1} has been unclaimed".format(benefit, sponsor),
@@ -939,18 +932,16 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
                 "Sponsor %s rejected" % sponsor.name,
                 "The sponsor {0} has been rejected by {1}.\nThe reason given was: {2}".format(sponsor.name, request.user, reason),
             )
-            for manager in sponsor.managers.all():
-                send_conference_mail(conference,
-                                     manager.email,
-                                     "Sponsorship removed",
-                                     'confsponsor/mail/sponsor_rejected.txt',
-                                     {
-                                         'sponsor': sponsor,
-                                         'conference': conference,
-                                         'reason': reason,
-                                     },
-                                     sender=conference.sponsoraddr,
-                                     receivername='{0} {1}'.format(manager.first_name, manager.last_name))
+            send_sponsor_manager_email(
+                sponsor,
+                "Sponsorship removed",
+                'confsponsor/mail/sponsor_rejected.txt',
+                {
+                    'sponsor': sponsor,
+                    'conference': conference,
+                    'reason': reason,
+                },
+            )
 
             messages.info(request, "Sponsor {0} rejected.".format(sponsor.name))
             sponsor.delete()
@@ -1046,17 +1037,16 @@ def sponsor_admin_send_mail(request, confurlname):
 
             # Now also send the email out to the *current* subscribers
             for sponsor in sponsors:
-                for manager in sponsor.managers.all():
-                    send_conference_mail(conference,
-                                         manager.email,
-                                         msg.subject,
-                                         'confsponsor/mail/sponsor_mail.txt',
-                                         {
-                                             'body': msg.message,
-                                             'sponsor': sponsor,
-                                         },
-                                         sender=conference.sponsoraddr,
-                                         receivername='{0} {1}'.format(manager.first_name, manager.last_name))
+                send_sponsor_manager_email(
+                    sponsor,
+                    msg.subject,
+                    'confsponsor/mail/sponsor_mail.txt',
+                    {
+                        'body': msg.message,
+                        'sponsor': sponsor,
+                    },
+                )
+
                 # And possibly send it out to the extra address for the sponsor
                 if sponsor.extra_cc:
                     send_conference_mail(conference,
