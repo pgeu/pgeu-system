@@ -837,6 +837,8 @@ def _confirm_benefit(request, claimed_benefit):
 
 
 def _unclaim_benefit(request, claimed_benefit):
+    reason = request.POST.get('unclaimreason', '')
+
     with transaction.atomic():
         benefit = claimed_benefit.benefit
         sponsor = claimed_benefit.sponsor
@@ -856,6 +858,7 @@ def _unclaim_benefit(request, claimed_benefit):
             'confsponsor/mail/benefit_unclaimed.txt',
             {
                 'benefit': benefit,
+                'reason': reason,
             },
         )
 

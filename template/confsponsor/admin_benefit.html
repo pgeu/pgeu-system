@@ -23,8 +23,9 @@ please do so!
 In case a sponsor has incorrectly claimed a benefit, you can unclaim it here.
 That means it goes back to being claimable. You should normally never do this...
 </p>
-<form method="post" action=".">{% csrf_token %}
+<form method="post" action="."  class="form-inline">{% csrf_token %}
 <input type="hidden" name="unclaim" value="1">
+<input type="text" name="unclaimreason" class="form-control" placeholder="Optional reason for unclaiming">
 <input type="submit" class="btn btn-default" value="Unclaim this benefit">
 </form>
 <form method="post" action=".">
