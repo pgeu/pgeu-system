@@ -991,9 +991,7 @@ def sponsor_admin_benefit(request, confurlname, benefitid):
         return HttpResponseRedirect('.')
 
     if request.method == 'POST' and request.POST.get('unclaim', '') == '1':
-        # Unclaim this benefit. That means we just remove the SponsorClaimedBenefit entry
-        benefit.delete()
-        messages.info(request, "The benefit {0} has been unclaimed from {1}".format(benefit.benefit, benefit.sponsor))
+        _unclaim_benefit(request, benefit)
         return HttpResponseRedirect('../../')
 
     return render(request, 'confsponsor/admin_benefit.html', {
