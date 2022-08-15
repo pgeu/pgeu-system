@@ -62,7 +62,16 @@ cat tools/devsetup/devserver-uwsgi.ini.tmpl | sed -e "s#%DJANGO%#$(pwd)/tools/de
 
 echo ""
 echo "Creating a django superuser, and setting password!"
-./python manage.py createsuperuser
+result=`psql -A -n -q -t -w -X -h $PGH -p $PGP -d $PGD -U $PGU -c "SELECT COUNT(*) FROM public.auth_user WHERE is_superuser IS true"`
+echo ""
+if [ $result -eq "0" ];
+then
+    echo "creating a Django superuser, and setting password!"
+    ./python manage.py createsuperuser
+else
+    echo "superuser already exists, skipping"
+fi
+
 
 echo "All ready to go. To start the development server, go to"
 pwd
