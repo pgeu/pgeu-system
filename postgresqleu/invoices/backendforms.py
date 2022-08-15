@@ -1,6 +1,6 @@
 import django.forms
 
-from postgresqleu.util.backendforms import BackendForm
+from postgresqleu.util.backendforms import BackendForm, BackendBeforeNewForm
 from postgresqleu.util.widgets import TestButtonWidget
 from postgresqleu.invoices.models import VatRate, VatValidationCache, InvoicePaymentMethod
 
@@ -25,7 +25,7 @@ class BackendVatValidationCacheForm(BackendForm):
         fields = ['vatnumber', ]
 
 
-class BackendInvoicePaymentMethodNewForm(django.forms.Form):
+class BackendInvoicePaymentMethodNewForm(BackendBeforeNewForm):
     helplink = 'payment'
     paymentclass = django.forms.ChoiceField(choices=payment_implementation_choices(), label="Payment implementation")
 

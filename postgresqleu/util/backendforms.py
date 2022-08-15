@@ -215,3 +215,9 @@ class BackendForm(ConcurrentProtectedModelForm):
     def get(self, name, default=None):
         # Implement the get operator, for template functions to get a field
         return self[name]
+
+
+class BackendBeforeNewForm(django.forms.Form):
+    def __init__(self, conference, *args, **kwargs):
+        self.conference = conference
+        super().__init__(*args, **kwargs)

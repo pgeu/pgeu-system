@@ -21,7 +21,7 @@ from postgresqleu.util.forms import SelectSetValueField
 from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget, MonospaceTextarea
 from postgresqleu.util.widgets import TagOptionsTextWidget
 from postgresqleu.util.random import generate_random_token
-from postgresqleu.util.backendforms import BackendForm
+from postgresqleu.util.backendforms import BackendForm, BackendBeforeNewForm
 from postgresqleu.util.messaging import messaging_implementation_choices, get_messaging, get_messaging_class
 from postgresqleu.util.messaging.util import get_shortened_post_length
 
@@ -949,7 +949,7 @@ class BackendFeedbackQuestionForm(BackendForm):
                                            ).save()
 
 
-class BackendNewDiscountCodeForm(django.forms.Form):
+class BackendNewDiscountCodeForm(BackendBeforeNewForm):
     helplink = 'vouchers#discountcodes'
     codetype = django.forms.ChoiceField(choices=((1, 'Fixed amount discount'), (2, 'Percentage discount')))
 
@@ -1144,7 +1144,7 @@ class BackendMessagingForm(BackendForm):
                 self.fields['{}channel'.format(fld)].required = False
 
 
-class BackendSeriesMessagingNewForm(django.forms.Form):
+class BackendSeriesMessagingNewForm(BackendBeforeNewForm):
     helplink = 'integrations#provider'
     classname = SelectSetValueField(choices=messaging_implementation_choices(),
                                     setvaluefield='baseurl', label='Implementation class')

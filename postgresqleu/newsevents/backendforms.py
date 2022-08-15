@@ -1,7 +1,7 @@
 import django.forms
 from django.contrib.auth.models import User
 
-from postgresqleu.util.backendforms import BackendForm
+from postgresqleu.util.backendforms import BackendForm, BackendBeforeNewForm
 from postgresqleu.newsevents.models import News, NewsPosterProfile
 from postgresqleu.confreg.backendforms import BackendTweetQueueForm
 
@@ -28,7 +28,7 @@ class UserModelChoiceField(django.forms.ModelChoiceField):
         return "{0} - {1} {2} <{3}>".format(obj.username, obj.first_name, obj.last_name, obj.email)
 
 
-class BackendNewAuthorForm(django.forms.Form):
+class BackendNewAuthorForm(BackendBeforeNewForm):
     helplink = 'news#authors'
     user = UserModelChoiceField(queryset=User.objects.order_by('username'))
     selectize_single_fields = {

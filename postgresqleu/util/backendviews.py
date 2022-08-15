@@ -12,7 +12,7 @@ from postgresqleu.confreg.util import get_authenticated_conference
 from postgresqleu.confreg.backendforms import BackendCopySelectConferenceForm
 
 from .models import OAuthApplication
-from .backendforms import BackendForm
+from .backendforms import BackendForm, BackendBeforeNewForm
 from .forms import SelectSetValueField
 from .oauthapps import oauth_application_choices, oauth_application_create
 
@@ -62,11 +62,11 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                 newinfo = False
                 if request.method == 'POST':
                     # Making the new one!
-                    newform = formclass.form_before_new(request.POST)
+                    newform = formclass.form_before_new(conference, request.POST)
                     if newform.is_valid():
                         newinfo = True
                 else:
-                    newform = formclass.form_before_new()
+                    newform = formclass.form_before_new(conference)
                 if not newinfo:
                     return render(request, 'confreg/admin_backend_form.html', {
                         'conference': conference,
@@ -485,7 +485,7 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
 #
 # Special direct views
 #
-class BackendOAuthappNewForm(forms.Form):
+class BackendOAuthappNewForm(BackendBeforeNewForm):
     helplink = 'oauth'
     apptype = forms.CharField()  # Field type will be changed dynamically
     baseurl = forms.URLField(label='Base URL')

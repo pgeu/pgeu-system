@@ -5,7 +5,7 @@ from django.conf import settings
 from collections import OrderedDict
 
 from postgresqleu.util.widgets import StaticTextWidget
-from postgresqleu.util.backendforms import BackendForm
+from postgresqleu.util.backendforms import BackendForm, BackendBeforeNewForm
 from postgresqleu.util.backendlookups import GeneralAccountLookup
 from postgresqleu.confreg.jinjafunc import JinjaTemplateValidator, render_sandboxed_template
 
@@ -37,7 +37,7 @@ class BackendSponsorForm(BackendForm):
                   'extra_cc', 'managers', ]
 
 
-class BackendSponsorshipNewBenefitForm(django.forms.Form):
+class BackendSponsorshipNewBenefitForm(BackendBeforeNewForm):
     helplink = 'sponsors#benefit'
     benefitclass = django.forms.ChoiceField(choices=benefit_choices)
 
