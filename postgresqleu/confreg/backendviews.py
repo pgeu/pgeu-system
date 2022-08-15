@@ -62,6 +62,7 @@ from .backendforms import BulkPaymentRefundForm
 from .backendforms import BackendMessagingForm
 from .backendforms import BackendSeriesMessagingForm
 from .backendforms import BackendRegistrationDmForm
+from .backendforms import BackendMergeSpeakerForm
 
 from .campaigns import get_campaign_from_id
 
@@ -939,4 +940,43 @@ def registration_dashboard_send_dm(request, urlname, regid):
         'savebutton': 'Send direct message',
         'cancelurl': '../',
         'breadcrumbs': [('../../', 'Registration list'), ('../', reg.fullname)],
+    })
+
+
+@superuser_required
+@transaction.atomic
+def merge_speakers(request, speakerid):
+    oldspeaker = get_object_or_404(Speaker, id=speakerid)
+
+    if request.method == 'POST':
+        form = BackendMergeSpeakerForm(oldspeaker, data=request.POST)
+        if form.is_valid():
+            newspeaker = form.cleaned_data['targetspeaker']
+
+            oldprofiletxt = "{} ({} - {})".format(oldspeaker.fullname, oldspeaker.user, oldspeaker.user.email if oldspeaker.user else '* no user/email*')
+            newprofiletxt = "{} ({} - {})".format(newspeaker.fullname, newspeaker.user, newspeaker.user.email if newspeaker.user else '* no user/email*')
+
+            sessions = list(oldspeaker.conferencesession_set.all())
+            for sess in sessions:
+                sess.speaker.add(newspeaker)
+
+            oldspeaker.delete()
+
+            messages.info(request, "Profile {} merged into {}, and {} has been deleted. {} sessions transferred.".format(
+                oldprofiletxt,
+                newprofiletxt,
+                oldprofiletxt,
+                len(sessions)
+            ))
+            return HttpResponseRedirect("../../{}/".format(newspeaker.id))
+    else:
+        form = BackendMergeSpeakerForm(oldspeaker)
+
+    return render(request, 'confreg/admin_backend_form.html', {
+        'basetemplate': 'confreg/confadmin_base.html',
+        'form': form,
+        'whatverb': 'Merge',
+        'what': 'speaker profiles',
+        'savebutton': 'Merge into speaker profile, deleting the source profile',
+        'cancelurl': '../',
     })

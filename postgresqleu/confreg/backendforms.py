@@ -839,6 +839,9 @@ class BackendGlobalSpeakerForm(BackendForm):
     linked_objects = OrderedDict({
         '../../sessions': None,
     })
+    extrabuttons = [
+        ('Merge into other speaker profile', 'merge/'),
+    ]
 
     class Meta:
         model = Speaker
@@ -869,6 +872,7 @@ class BackendConferenceSpeakerForm(BackendGlobalSpeakerForm):
     readonly_fields = ['user', ]
     exclude_fields_from_validation = ['user', 'photo512', ]
     form_before_new = BackendNewSpeakerForm
+    extrabuttons = []
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -912,6 +916,31 @@ class BackendConferenceSessionSlotForm(BackendForm):
         slotlist = [ConferenceSessionScheduleSlot.objects.get(conference=sourceconf, id=i) for i in idlist[:2]]
         xstr = " and ".join(["time {0} becomes {1}".format(s.starttime, s.starttime + xform) for s in slotlist])
         return xstr
+
+
+class BackendMergeSpeakerForm(django.forms.Form):
+    sourcespeaker = django.forms.CharField(
+        label='Source speaker profile',
+        widget=StaticTextWidget,
+        required=False,
+    )
+    targetspeaker = django.forms.ModelChoiceField(
+        label='Target speaker profile',
+        queryset=Speaker.objects.order_by('fullname'),
+        help_text='Pick the speaker profile to merge into. That profile will be kept, and the source profile will be deleted',
+    )
+    confirm = django.forms.BooleanField(label="Confirm", required=False)
+
+    def __init__(self, sourcespeaker, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['sourcespeaker'].initial = "{} ({} - {})".format(sourcespeaker.fullname, sourcespeaker.user, sourcespeaker.user.email if sourcespeaker.user else '*no user/email*')
+        self.fields['targetspeaker'].label_from_instance = lambda obj: "{} ({} - {})".format(obj.fullname, obj.user, obj.user.email if obj.user else '*no user/email*')
+
+    def clean_confirm(self):
+        if not self.cleaned_data['confirm']:
+            raise ValidationError("Please check this box to confirm that you really want to merge the speaker profile into this target profile, deleting the source profile.")
+        return self.cleaned_data['confirm']
 
 
 class BackendVolunteerSlotForm(BackendForm):
