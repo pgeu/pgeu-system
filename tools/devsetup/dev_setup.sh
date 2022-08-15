@@ -27,7 +27,14 @@ psql -w "host=$PGH port=$PGP dbname=$PGD user=$PGU" -c "CREATE SCHEMA IF NOT EXI
 cd "${0%/*}"
 
 virtualenv --python=python3 venv_dev
-venv_dev/bin/pip install -r dev_requirements.txt
+# Newer virtualenvs can't handle symlinks, so create a tiny binary
+rm -f python
+cat >../../python <<EOF
+#!/bin/sh
+exec $(dirname $(realpath $0))/../../tools/devsetup/venv_dev/bin/python "\$@"
+EOF
+chmod +x ../../python
+../../python -m pip install -r dev_requirements.txt
 
 cd ../..
 cat > postgresqleu/local_settings.py <<EOF
@@ -49,7 +56,6 @@ CSRF_COOKIE_SECURE=False
 SITEBASE="http://localhost:8012/"
 EOF
 
-ln -s tools/devsetup/venv_dev/bin/python .
 ./python manage.py migrate
 
 cat tools/devsetup/devserver-uwsgi.ini.tmpl | sed -e "s#%DJANGO%#$(pwd)/tools/devsetup/venv_dev#g" > devserver-uwsgi.ini
