@@ -27,6 +27,7 @@ from .util import send_conference_mail, get_conference_or_404, send_conference_n
 
 from .models import Conference, ConferenceSeries
 from .models import ConferenceRegistration
+from .models import Speaker
 from .models import PrepaidBatch
 from .models import BulkPayment
 from .models import AccessToken
@@ -44,7 +45,7 @@ from .backendforms import BackendConferenceForm, BackendSuperConferenceForm, Bac
 from .backendforms import BackendRegistrationTypeForm, BackendRegistrationClassForm
 from .backendforms import BackendRegistrationDayForm, BackendAdditionalOptionForm
 from .backendforms import BackendTrackForm, BackendRoomForm, BackendConferenceSessionForm
-from .backendforms import BackendSpeakerForm, BackendTagForm
+from .backendforms import BackendConferenceSpeakerForm, BackendGlobalSpeakerForm, BackendTagForm
 from .backendforms import BackendConferenceSessionSlotForm, BackendVolunteerSlotForm
 from .backendforms import BackendFeedbackQuestionForm, BackendDiscountCodeForm
 from .backendforms import BackendAccessTokenForm
@@ -219,10 +220,23 @@ def edit_sessions(request, urlname, rest):
 def edit_speakers(request, urlname, rest):
     return backend_list_editor(request,
                                urlname,
-                               BackendSpeakerForm,
+                               BackendConferenceSpeakerForm,
                                rest,
-                               allow_new=False,
+                               allow_new=True,
                                allow_delete=False,
+                               instancemaker=lambda: Speaker(),
+    )
+
+
+@superuser_required
+def edit_global_speakers(request, rest):
+    return backend_list_editor(request,
+                               None,
+                               BackendGlobalSpeakerForm,
+                               rest,
+                               allow_new=True,
+                               allow_delete=True,
+                               bypass_conference_filter=True,
     )
 
 

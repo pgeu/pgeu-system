@@ -3,6 +3,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Q
 from django.db.models.expressions import F
 from django.contrib import messages
+from django.contrib.auth.models import User
 import django.forms
 import django.forms.widgets
 from django.utils.safestring import mark_safe
@@ -793,22 +794,55 @@ class BackendConferenceSessionForm(BackendForm):
         return None
 
 
-class BackendSpeakerForm(BackendForm):
+class SpeakerSessionManager:
+    title = 'Sessions'
+    singular = 'Session'
+
+    def __init__(self, conference):
+        self.conference = conference
+
+    def get_list(self, instance):
+        if instance.id:
+            qs = instance.conferencesession_set.filter(conference=self.conference) if self.conference else instance.conferencesession_set.all()
+            return [(s.id if self.conference else None, s.title, s.status_string) for s in qs]
+
+    def get_form(self):
+        return None
+
+
+# When creating a speaker locally to a conference, it has to immediately be
+# attached to a session, otherwise it will simply disappear and only be accessible
+# from the global view.
+class BackendNewSpeakerForm(BackendBeforeNewForm):
+    helplink = 'schedule#speakers'
+    session = django.forms.ChoiceField(choices=(), help_text="Pick an initial session to assign this speaker to. Per-conferences speakers cannot exist without a session.")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['session'].choices = ((s.id, "{} ({})".format(s.title, s.status_string)) for s in ConferenceSession.objects.filter(conference=self.conference))
+
+    def get_newform_data(self):
+        return self.cleaned_data['session']
+
+
+class BackendGlobalSpeakerForm(BackendForm):
     helplink = 'schedule#speakers'
     list_fields = ['fullname', 'user', 'company', ]
     markdown_fields = ['abstract', ]
-    readonly_fields = ['user', ]
-    exclude_fields_from_validation = ['user', 'photo512', ]
+    exclude_fields_from_validation = ['photo512', ]
     # We must save the photo field as well, since it's being updaed in the pre_save signal,
     # and we want to include that updating.
     extra_update_fields = ['photo', ]
+    selectize_single_fields = {
+        'user': None,
+    }
+    linked_objects = OrderedDict({
+        '../../sessions': None,
+    })
 
     class Meta:
         model = Speaker
         fields = ['fullname', 'user', 'twittername', 'company', 'abstract', 'photo512', 'attributes', ]
-        widgets = {
-            'user': StaticTextWidget,
-        }
 
         @classmethod
         def conference_queryset(cls, conference):
@@ -818,8 +852,36 @@ class BackendSpeakerForm(BackendForm):
                 params=(conference.id, ),
             )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['user'].queryset = User.objects.order_by('username')
+        self.fields['user'].label_from_instance = lambda obj: "{0} - {1} {2} <{3}>".format(obj.username, obj.first_name, obj.last_name, obj.email)
+        self.linked_objects['../../sessions'] = SpeakerSessionManager(self.conference)
+
+    @classmethod
+    def get_initial(self):
+        return {
+            'speakertoken': generate_random_token()
+        }
+
+
+class BackendConferenceSpeakerForm(BackendGlobalSpeakerForm):
+    readonly_fields = ['user', ]
+    exclude_fields_from_validation = ['user', 'photo512', ]
+    form_before_new = BackendNewSpeakerForm
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['user'].widget = StaticTextWidget()
+
     def fix_fields(self):
         self.initial['user'] = escape(self.instance._display_user())
+
+    def post_save(self):
+        if self.newformdata:
+            # First one, so add this session
+            session = ConferenceSession.objects.get(pk=self.newformdata, conference=self.conference)
+            session.speaker.add(self.instance.id)
 
 
 class BackendConferenceSessionSlotForm(BackendForm):
