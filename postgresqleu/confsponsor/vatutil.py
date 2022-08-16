@@ -14,17 +14,12 @@ def validate_eu_vat_number(number):
     numberonly = number[2:]
 
     try:
-        r = requests.post('https://ec.europa.eu/taxation_customs/vies/vatResponse.html', data={
-            'memberStateCode': country,
-            'number': numberonly,
-            'traderName': '',
-            'traderCompanyType': '',
-            'traderStreet': '',
-            'traderPostalCode': '',
-        }, timeout=15)
-        if '<span class="validStyle">Yes, valid VAT number</span>' in r.text:
+        r = requests.get('https://ec.europa.eu/taxation_customs/vies/rest-api/ms/{}/vat/{}'.format(country, numberonly), timeout=15)
+        r.raise_for_status()
+        j = r.json()
+        if j.get('isValid', False):
             VatValidationCache(vatnumber=number).save()
             return None
-        return "Invalid VAT number according to validation service"
+        return "Invalid VAT number according to validation service: {}".format(j.get('userError', ''))
     except Exception as e:
         return "Unable to reach validation service"
