@@ -1827,18 +1827,20 @@ def callforpapers_delslides(request, confname, sessionid, slideid):
 def _send_session_notification(session):
     num = 0
     for spk in session.speaker.all():
-        send_conference_mail(session.conference,
-                             spk.user.email,
-                             "Your session '{0}'".format(session.title),
-                             'confreg/mail/session_notify_{}.txt'.format(session.status_string_short),
-                             {
-                                 'conference': session.conference,
-                                 'session': session,
-                                 'speaker': spk,
-                             },
-                             receivername=spk.fullname,
-        )
-        num += 1
+        if spk.user:
+            send_conference_mail(
+                session.conference,
+                spk.user.email,
+                "Your session '{0}'".format(session.title),
+                'confreg/mail/session_notify_{}.txt'.format(session.status_string_short),
+                {
+                    'conference': session.conference,
+                    'session': session,
+                    'speaker': spk,
+                },
+                receivername=spk.fullname,
+            )
+            num += 1
     session.lastnotifiedstatus = session.status
     session.lastnotifiedtime = timezone.now()
     session.save(update_fields=['lastnotifiedstatus', 'lastnotifiedtime'])
