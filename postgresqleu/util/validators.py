@@ -42,7 +42,9 @@ class AfterValidator(object):
 
 def Http200Validator(value):
     try:
-        r = requests.get(value, timeout=5)
+        r = requests.get(value, timeout=5, headers={
+            'User-Agent': 'pgeusys-link-validator/1.0',
+        })
         if r.status_code != 200:
             raise ValidationError("URL must return 200 OK, not {0}".format(r.status_code))
 
