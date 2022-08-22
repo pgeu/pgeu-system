@@ -1,13 +1,16 @@
 {%extends "base.html" %}
 {%block title%}Conference Schedule - {{conference}}{%endblock%}
+
+{% block ogpdescription -%}<meta property="og:description" content="{{ session.title }}" />{%- endblock %}
+
 {%block content%}
 <h1>Conference Schedule - {{conference}}</h1>
 <div class="sessionlistlink"><a href="../../">Back</a><br/></div>
 
 <h2>{{session.title}}</h2>
 <p>
-{%if session.starttime%}<b>Date:</b> {{session.starttime|datetimeformat("%Y-%m-%d")}}<br/>{%endif%}
-{%if session.starttime%}<b>Time:</b> {{session.starttime|datetimeformat("%H:%M")}} - {{session.endtime|datetimeformat("%H:%M")}}<br/>{%endif%}
+{%if session.starttime%}<b>Date:</b> {{session.starttime|datetimeformat("%A, %B %-d, %Y")}}<br/>{%endif%}
+{%if session.starttime%}<b>Time:</b> {{session.starttime|datetimeformat("%H:%M")}}&ndash;{{session.endtime|datetimeformat("%H:%M")}}<br/>{%endif%}
 {%if session.room%}
 <b>Room:</b> {%if session.room.url%}<a href="{{session.room.url}}">{{session.room.roomname}}</a>{%else%}{{session.room.roomname}}{%endif%}<br/>
 {%endif%}
