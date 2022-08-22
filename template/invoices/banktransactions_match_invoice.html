@@ -96,7 +96,7 @@
 {%else%}
     <form method="post" action=".">{%csrf_token%}
 <input type="hidden" name="invoiceidlist" value="{{invoices|join_on_attr:"id"}}">
-{%if fee%}
+{%if match.amountdiff%}
 {%if fee_account %}
       <input type="submit" value="Match invoice and book {{currency_symbol}} {{match.amountdiff}} on account '{{fee_account}}' as fees" class="btn btn-default btn-block">
 {%else%}
