@@ -463,7 +463,7 @@ class ConferenceFeedbackForm(forms.Form):
 class SpeakerProfileForm(forms.ModelForm):
     class Meta:
         model = Speaker
-        exclude = ('user', 'speakertoken', 'photo')
+        fields = ('fullname', 'twittername', 'company', 'abstract', 'photo512')
 
     def __init__(self, *args, **kwargs):
         super(SpeakerProfileForm, self).__init__(*args, **kwargs)
