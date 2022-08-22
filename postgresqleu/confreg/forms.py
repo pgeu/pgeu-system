@@ -413,7 +413,7 @@ class ConferenceSessionFeedbackForm(forms.ModelForm):
 
     class Meta:
         model = ConferenceSessionFeedback
-        exclude = ('conference', 'attendee', 'session', )
+        fields = ('topic_importance', 'content_quality', 'speaker_knowledge', 'speaker_quality', 'speaker_feedback', 'conference_feedback')
 
 
 class ConferenceFeedbackForm(forms.Form):
