@@ -60,6 +60,13 @@ class Command(BaseCommand):
                 trans.counterpart_name = t['details'].get('senderName', '')
                 trans.counterpart_account = t['details'].get('senderAccount', '').replace(' ', '')
 
+                # Sometimes (newer entries?) transferwise adds both the BIC and the IBAN code,
+                # and do so in the same field. This is undocumented and not even incuded in
+                # their examples, but seems to be persistent enough to process.
+                m = re.match(r'^\([A-Z0-9]{11}\)([A-Z0-9]+)$', trans.counterpart_account)
+                if m:
+                    trans.counterpart_account = m.group(1)
+
                 # Weird stuff that sometimes shows up
                 if trans.counterpart_account == 'Unknownbankaccount':
                     trans.counterpart_account = ''
