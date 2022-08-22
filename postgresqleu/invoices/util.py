@@ -395,6 +395,7 @@ class InvoiceManager(object):
         # information on the invoice, we can finalize it. If not, we will
         # need to create an open ended one.
 
+        leaveopen = False
         accountingtxt = 'Invoice #%s: %s' % (invoice.id, invoice.title)
         accrows = [
             (incomeaccount, accountingtxt, invoice.total_amount - transcost, None),
@@ -405,6 +406,15 @@ class InvoiceManager(object):
             accrows.append(
                 (costaccount, accountingtxt, transcost, invoice.accounting_object),
             )
+        elif transcost < 0:
+            # If the transaction cost is negative this means the invoice was *overpaid*.
+            # This can typically only happen with bank transfers.
+            # As we don't really know what to do here we will assign it a negative cost
+            # but leave the accounting record open for the treasurer to clean up manually.
+            accrows.append(
+                (costaccount, "Invoice overpayment", transcost, invoice.accounting_object),
+            )
+            leaveopen = True
         if invoice.total_vat:
             # If there was VAT on this invoice, create a separate accounting row for this
             # part. As there can in theory (though maybe not in practice?) be multiple different
@@ -426,7 +436,6 @@ class InvoiceManager(object):
             accrows.append(
                 (invoice.accounting_account, accountingtxt, -(invoice.total_amount - invoice.total_vat), invoice.accounting_object),
             )
-            leaveopen = False
         else:
             leaveopen = True
         urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk), ]
