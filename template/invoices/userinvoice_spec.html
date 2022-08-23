@@ -23,7 +23,7 @@
  </tr>
  <tr>
    <td style="white-space: nowrap">Due date:</td>
-   <td{%if invoice.isexpired%} style="color:red"{%endif%}>{{invoice.duedate}}</td>
+   <td{%if invoice.isexpired%} style="color:red"{%endif%}>{{invoice.duedate|date:"Y-m-d"}}</td>
 </tr>
 {%if invoice.isexpired and invoice.canceltime%}
  <tr>
