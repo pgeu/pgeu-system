@@ -804,7 +804,11 @@ class SpeakerSessionManager:
     def get_list(self, instance):
         if instance.id:
             qs = instance.conferencesession_set.filter(conference=self.conference) if self.conference else instance.conferencesession_set.all()
-            return [(s.id if self.conference else None, s.title, s.status_string) for s in qs]
+            return [(
+                s.id if self.conference else None,
+                s.title,
+                s.status_string if self.conference else '{} ({})'.format(s.status_string, s.conference),
+            ) for s in qs.select_related('conference').only('id', 'title', 'status', 'conference__conferencename')]
 
     def get_form(self):
         return None
