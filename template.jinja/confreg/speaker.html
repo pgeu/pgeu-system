@@ -5,7 +5,7 @@
 <div class="sessionlistlink"><a href="../../">Back</a><br/></div>
 
 {%if speaker.photo %}
-<img src="../../../../speaker/{{speaker.id}}/photo/" align="right" />
+<img class="speaker-photo" src="../../../../speaker/{{speaker.id}}/photo/" alt="Photo of {{ speaker.name }}" align="right" />
 {%endif%}
 <h2>{{speaker.name}}</h2>
 {%if speaker.company%}<div>Company: {{speaker.company}}</div>{%endif%}
