@@ -423,7 +423,7 @@ class AdditionalOptionPendingManager(object):
 
     def get_list(self, instance):
         if instance.id:
-            return [(None, p.reg.fullname, p.invoice_status) for p in instance.pendingadditionalorder_set.all()]
+            return [(None, p.reg.fullname, p.invoice_status) for p in instance.pendingadditionalorder_set.filter(payconfirmedat__isnull=True)]
 
     def get_form(self):
         return None
