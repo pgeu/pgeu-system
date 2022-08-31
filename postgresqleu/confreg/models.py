@@ -1506,6 +1506,7 @@ class ConferenceTweetQueue(models.Model):
     postids = models.JSONField(null=False, blank=False, default=dict)
     replytotweetid = models.BigIntegerField(null=True, blank=True, verbose_name="Reply to tweet")
     remainingtosend = models.ManyToManyField(MessagingProvider, blank=True)
+    comment = models.CharField(max_length=200, null=False, blank=True, verbose_name="Internal comment")
 
     class Meta:
         ordering = ['sent', 'datetime', ]

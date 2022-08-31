@@ -1346,7 +1346,7 @@ class BackendCopySelectConferenceForm(django.forms.Form):
 #
 class BackendTweetQueueForm(BackendForm):
     helplink = 'integrations#broadcast'
-    list_fields = ['datetime', 'contents', 'author', 'approved', 'approvedby', 'sent', 'hasimage', ]
+    list_fields = ['datetime', 'contents', 'author', 'approved', 'approvedby', 'sent', 'hasimage', 'comment', ]
     verbose_field_names = {
         'hasimage': 'Has image',
         'approvedby': 'Approved by',
@@ -1362,7 +1362,7 @@ class BackendTweetQueueForm(BackendForm):
 
     class Meta:
         model = ConferenceTweetQueue
-        fields = ['datetime', 'approved', 'contents', 'image']
+        fields = ['datetime', 'approved', 'contents', 'image', 'comment']
         widgets = {
             'contents': MonospaceTextarea,
         }
