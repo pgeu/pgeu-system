@@ -521,8 +521,13 @@ def paymentstats(request, urlname):
     innersql = """WITH t AS (
   SELECT
     r.id,
-    coalesce(r.invoice_id, bp.invoice_id, pv.invoice_id) AS invoiceid,
-    vouchervalue
+    coalesce(
+      r.invoice_id,
+      CASE WHEN v.vouchervalue IS NOT NULL THEN NULL ELSE bp.invoice_id END,
+      pv.invoice_id
+    ) AS invoiceid,
+    vouchervalue,
+    pv.batch_id IS NOT NULL AS purchasedvoucher
   FROM confreg_conferenceregistration r
   LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id
   LEFT JOIN confreg_prepaidvoucher v ON (v.vouchervalue=r.vouchercode and v.conference_id=r.conference_id)
