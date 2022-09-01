@@ -1,0 +1,22 @@
+{%load date_or_string%}
+{%for table in tables%}
+<h2>{{table.title}}</h2>
+<table class="table table-bordered table-striped table-hover table-condensed">
+<tr>
+{%for c in table.columns%}
+{%if forloop.counter > table.hidecols|default:0%}
+<th>{{c}}</th>
+{%endif%}
+{%endfor%}
+</tr>
+{%for row,link in table.rows %}
+<tr {%if forloop.last%}class="lastrow"{%endif%}>
+{%for c in row%}
+{%if forloop.counter > table.hidecols|default:0%}
+<td>{%if link and forloop.counter0 == table.hidecols%}<a href="{{link}}">{%endif%}{{c|date_or_string}}{%if link and forloop.counter0 == table.hidecols%}</a>{%endif%}</td>
+{%endif%}
+{%endfor%}
+</tr>
+{%endfor%}
+</table>
+{%endfor%}
