@@ -552,9 +552,9 @@ ORDER BY 2 DESC
 
     invoices_per_method = exec_to_list("""{}
 SELECT pm.internaldescription, count(*) AS "Number of invoices", avg(total_amount)::numeric(10,2) AS "Average invoice amount", sum(total_amount) AS "Total invoice amount"
-FROM t
-INNER JOIN invoices_invoice i ON i.id=t.invoiceid
+FROM invoices_invoice i
 INNER JOIN invoices_invoicepaymentmethod pm ON i.paidusing_id=pm.id
+WHERE i.id IN (SELECT invoiceid FROM t)
 GROUP BY pm.id
 ORDER BY 2 DESC""".format(innersql), {
         'confid': conference.id,
