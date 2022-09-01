@@ -544,8 +544,8 @@ def paymentstats(request, urlname):
 )
 SELECT method AS "Payment method", count(*) AS "Number of registrations"
 FROM t2
-GROUP BY method
-ORDER BY 2 DESC
+GROUP BY ROLLUP(method)
+ORDER BY GROUPING(method), 2 DESC
 """.format(innersql), {
         'confid': conference.id,
     })
@@ -555,8 +555,8 @@ SELECT pm.internaldescription, count(*) AS "Number of invoices", avg(total_amoun
 FROM invoices_invoice i
 INNER JOIN invoices_invoicepaymentmethod pm ON i.paidusing_id=pm.id
 WHERE i.id IN (SELECT invoiceid FROM t)
-GROUP BY pm.id
-ORDER BY 2 DESC""".format(innersql), {
+GROUP BY ROLLUP(pm.internaldescription)
+ORDER BY GROUPING(pm.internaldescription), 2 DESC""".format(innersql), {
         'confid': conference.id,
     })
 
@@ -566,11 +566,13 @@ ORDER BY 2 DESC""".format(innersql), {
             {
                 'title': 'Registrations per payment method',
                 'columns': ['Payment method', 'Number of registrations'],
+                'extraclasses': 'lastrowbold',
                 'rows': [(r, None) for r in regs_per_method],
             },
             {
                 'title': 'Invoices per payment method',
                 'columns': ['Payment method', 'Number of invoices', 'Average invoice amount', 'Total invoice amount'],
+                'extraclasses': 'lastrowbold',
                 'rows': [(r, None) for r in invoices_per_method],
             },
         ],
