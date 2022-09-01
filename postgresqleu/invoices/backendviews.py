@@ -139,6 +139,8 @@ def banktransactions_match(request, transid):
             matchinfos.append('Amount matches exact')
         if i.payment_reference in trans.transtext.replace(' ', ''):
             matchinfos.append('Payment reference found')
+        if str(i.id) in trans.transtext:
+            matchinfos.append('Invoice number found')
 
         return {
             'matchinfo': ",\n".join(matchinfos),
