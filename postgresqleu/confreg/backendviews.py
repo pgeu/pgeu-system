@@ -555,7 +555,6 @@ ORDER BY 2 DESC""".format(innersql), {
         'confid': conference.id,
     })
 
-    print(regs_per_method)
     return render(request, 'confreg/admin_payment_stats.html', {
         'conference': conference,
         'tables': [
