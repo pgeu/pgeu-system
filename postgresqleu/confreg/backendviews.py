@@ -515,6 +515,66 @@ def addoptorders(request, urlname):
     })
 
 
+def paymentstats(request, urlname):
+    conference = get_authenticated_conference(request, urlname)
+
+    innersql = """WITH t AS (
+  SELECT
+    r.id,
+    coalesce(r.invoice_id, bp.invoice_id, pv.invoice_id) AS invoiceid,
+    vouchervalue
+  FROM confreg_conferenceregistration r
+  LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id
+  LEFT JOIN confreg_prepaidvoucher v ON (v.vouchervalue=r.vouchercode and v.conference_id=r.conference_id)
+  LEFT JOIN confsponsor_purchasedvoucher pv ON pv.batch_id=v.batch_id
+  WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND canceledat IS NULL
+)"""
+
+    regs_per_method = exec_to_list("""{}
+,t2 AS (
+  SELECT
+    CASE WHEN t.invoiceid IS NULL AND vouchervalue IS NULL THEN 'Not paid' WHEN t.invoiceid IS NULL THEN 'Given voucher' ELSE pm.internaldescription END AS method
+  FROM t
+  LEFT JOIN (invoices_invoice i INNER JOIN invoices_invoicepaymentmethod pm ON pm.id=i.paidusing_id) ON i.id=t.invoiceid
+)
+SELECT method AS "Payment method", count(*) AS "Number of registrations"
+FROM t2
+GROUP BY method
+ORDER BY 2 DESC
+""".format(innersql), {
+        'confid': conference.id,
+    })
+
+    invoices_per_method = exec_to_list("""{}
+SELECT pm.internaldescription, count(*) AS "Number of invoices", avg(total_amount)::numeric(10,2) AS "Average invoice amount", sum(total_amount) AS "Total invoice amount"
+FROM t
+INNER JOIN invoices_invoice i ON i.id=t.invoiceid
+INNER JOIN invoices_invoicepaymentmethod pm ON i.paidusing_id=pm.id
+GROUP BY pm.id
+ORDER BY 2 DESC""".format(innersql), {
+        'confid': conference.id,
+    })
+
+    print(regs_per_method)
+    return render(request, 'confreg/admin_payment_stats.html', {
+        'conference': conference,
+        'tables': [
+            {
+                'title': 'Registrations per payment method',
+                'columns': ['Payment method', 'Number of registrations'],
+                'rows': [(r, None) for r in regs_per_method],
+            },
+            {
+                'title': 'Invoices per payment method',
+                'columns': ['Payment method', 'Number of invoices', 'Average invoice amount', 'Total invoice amount'],
+                'rows': [(r, None) for r in invoices_per_method],
+            },
+        ],
+        'regs_per_method': regs_per_method,
+        'invoices_per_method': invoices_per_method,
+    })
+
+
 def prepaidorders(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 

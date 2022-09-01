@@ -253,6 +253,7 @@ urlpatterns.extend([
     url(r'^events/admin/(\w+)/multiregs/$', postgresqleu.confreg.backendviews.multiregs),
     url(r'^events/admin/(\w+)/multiregs/(\d+)/refund/$', postgresqleu.confreg.backendviews.multireg_refund),
     url(r'^events/admin/(\w+)/addoptorders/$', postgresqleu.confreg.backendviews.addoptorders),
+    url(r'^events/admin/(\w+)/paymentstats/$', postgresqleu.confreg.backendviews.paymentstats),
     url(r'^events/admin/(\w+)/purgedata/$', postgresqleu.confreg.backendviews.purge_personal_data),
     url(r'^events/admin/_series/(\d+)/messaging/(.*/)?$', postgresqleu.confreg.backendviews.edit_series_messaging),
     url(r'^events/admin/([^/]+)/talkvote/$', postgresqleu.confreg.views.talkvote),
