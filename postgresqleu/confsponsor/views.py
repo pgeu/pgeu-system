@@ -865,7 +865,11 @@ def _unclaim_benefit(request, claimed_benefit):
         send_conference_sponsor_notification(
             conference,
             "Sponsorship benefit {0} for {1} has been unclaimed".format(benefit, sponsor),
-            "Sponsorship benefit {0} for {1} has been unclaimed".format(benefit, sponsor),
+            "Sponsorship benefit {0} for {1} has been unclaimed.\n{2}".format(
+                benefit,
+                sponsor,
+                "Reason: {}".format(reason) if reason else '',
+            ),
         )
 
 
