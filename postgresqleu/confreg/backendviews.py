@@ -597,7 +597,6 @@ ORDER BY levelcost desc, istotal, num desc""", {
             {
                 'title': 'Sponsors per payment method and level',
                 'columns': ['Level', 'Payment method', 'Number of sponsors'],
-                'extraclasses': 'lastrowbold',
                 'rows': [(r, None) for r in sponsors_per_method],
             },
         ],
