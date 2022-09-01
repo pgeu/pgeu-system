@@ -66,6 +66,10 @@ th.colfilter {
     padding: 3px !important;
 }
 
+table.lastrowbold tr.lastrow td {
+   font-weight: bold;
+}
+
 /* Special handling for dynamic preview results */
 .admin_dynamicpreview_contents {
     white-space: pre;

@@ -1,7 +1,7 @@
 {%load date_or_string%}
 {%for table in tables%}
 <h2>{{table.title}}</h2>
-<table class="table table-bordered table-striped table-hover table-condensed">
+<table class="table table-bordered table-striped table-hover table-condensed {{table.extraclasses}}">
 <tr>
 {%for c in table.columns%}
 {%if forloop.counter > table.hidecols|default:0%}

@@ -3230,6 +3230,7 @@ ORDER BY buyername""".format(conference.id))
         for cn in range(0, t['fixedcolsend']):
             sums.append('')
         t['rows'] = [(r, t.get('linker', lambda x: None)(r)) for r in t['rows']]
+        t['extraclasses'] = 'lastrowbold'
         t['rows'].append((sums, None))
     return render(request, 'confreg/admin_registration_dashboard.html', {
         'conference': conference,
