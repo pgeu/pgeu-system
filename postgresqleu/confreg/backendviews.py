@@ -469,10 +469,10 @@ def multireg_refund(request, urlname, bulkid):
     invoice = bulkpay.invoice
     if not invoice:
         messages.error(request, "This bulk payment does not have an invoice!")
-        return HttpResonseRedirect("../../")
+        return HttpResponseRedirect("../../")
     if not invoice.paidat:
         messages.error(request, "This bulk payment invoice has not been paid!")
-        return HttpResonseRedirect("../../")
+        return HttpResponseRedirect("../../")
 
     if request.method == 'POST':
         form = BulkPaymentRefundForm(invoice, data=request.POST)
