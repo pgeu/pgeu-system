@@ -560,6 +560,25 @@ ORDER BY GROUPING(pm.internaldescription), 2 DESC""".format(innersql), {
         'confid': conference.id,
     })
 
+    sponsors_per_method = exec_to_list("""
+WITH t AS (
+  SELECT l.levelname, l.levelcost, grouping(pm.internaldescription) as istotal, pm.internaldescription, count(*) AS num
+  FROM confsponsor_sponsor s
+  INNER JOIN confsponsor_sponsorshiplevel l ON s.level_id=l.id
+  INNER JOIN invoices_invoice i ON s.invoice_id=i.id
+  INNER JOIN invoices_invoicepaymentmethod pm ON pm.id=i.paidusing_id
+  WHERE confirmed AND s.conference_id=%(confid)s
+  GROUP BY l.levelcost, l.levelname, ROLLUP(pm.internaldescription)
+)
+SELECT
+  CASE WHEN row_number() OVER (PARTITION BY levelname ORDER BY istotal, num DESC) = 1 THEN levelname ELSE NULL END,
+  internaldescription,
+  num
+FROM t
+ORDER BY levelcost desc, istotal, num desc""", {
+        'confid': conference.id,
+    })
+
     return render(request, 'confreg/admin_payment_stats.html', {
         'conference': conference,
         'tables': [
@@ -574,6 +593,12 @@ ORDER BY GROUPING(pm.internaldescription), 2 DESC""".format(innersql), {
                 'columns': ['Payment method', 'Number of invoices', 'Average invoice amount', 'Total invoice amount'],
                 'extraclasses': 'lastrowbold',
                 'rows': [(r, None) for r in invoices_per_method],
+            },
+            {
+                'title': 'Sponsors per payment method and level',
+                'columns': ['Level', 'Payment method', 'Number of sponsors'],
+                'extraclasses': 'lastrowbold',
+                'rows': [(r, None) for r in sponsors_per_method],
             },
         ],
         'regs_per_method': regs_per_method,
