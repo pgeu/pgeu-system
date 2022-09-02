@@ -202,4 +202,5 @@ class SponsorSession(BaseBenefit):
         claim.claimjson['speaker'] = speaker.id
 
         # Delete the photo, to keep the size down
-        del claim.claimjson['photo']
+        if 'photo' in claim.claimjson:
+            del claim.claimjson['photo']
