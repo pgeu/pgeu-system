@@ -70,7 +70,7 @@ def volunteer_twitter(request, urlname, token):
         is_admin = True
         canpost = conference.twitter_postpolicy != 0
         canpostdirect = conference.twitter_postpolicy != 0
-        canmoderate = conference.twitter_postpolicy in (2, 3)
+        canmoderate = True
     elif not conference.volunteers.filter(pk=reg.pk).exists():
         raise Http404()
     else:
