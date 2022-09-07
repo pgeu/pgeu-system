@@ -5,7 +5,9 @@ from django.contrib import messages
 from django.conf import settings
 import django.utils.timezone
 
+import io
 import json
+import re
 import requests
 from datetime import datetime
 
@@ -13,9 +15,12 @@ from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.forms import SubmitButtonField
 from postgresqleu.util.widgets import StaticTextWidget
 from postgresqleu.util.messaging import re_token
+from postgresqleu.util.messaging.util import notify_twitter_moderation
 
 from postgresqleu.confreg.backendforms import BackendSeriesMessagingForm
 from postgresqleu.confreg.models import ConferenceMessaging, ConferenceRegistration, IncomingDirectMessage
+from postgresqleu.confreg.models import ConferenceTweetQueue
+from postgresqleu.scheduler.util import trigger_immediate_job_run
 
 from .util import send_reg_direct_message, send_channel_message
 
@@ -108,6 +113,7 @@ class Telegram(object):
     can_privatebcast = True
     can_notification = True
     can_orgnotification = True
+    can_socialmediamanagement = True
     direct_message_max_length = None
 
     @classmethod
@@ -126,7 +132,7 @@ class Telegram(object):
         if 'tokenchannel' not in config:
             config['tokenchannel'] = {}
 
-        for channel in ['privatebcast', 'orgnotification']:
+        for channel in ['privatebcast', 'orgnotification', 'socialmediamanagement']:
             if channel not in config['channeltoken']:
                 # Create a token!
                 t = generate_random_token()
@@ -165,10 +171,11 @@ class Telegram(object):
             raise Exception("OK was {}".format(j['ok']))
         return j['result']
 
-    def post(self, method, params={}, ignoreerrors=False):
+    def post(self, method, params={}, ignoreerrors=False, files=None):
         r = requests.post(
             'https://api.telegram.org/bot{}/{}'.format(self.providerconfig['telegramtoken'], method),
             data=params,
+            files=files,
             timeout=10
         )
         if ignoreerrors:
@@ -206,13 +213,15 @@ class Telegram(object):
         # We'll get up to 100 updates per run, which is the default
         res = self.get('getUpdates', {
             'offset': checkpoint + 1,
-            'allowed_updates': ['channel_post', 'message'],
+            'allowed_updates': ['channel_post', 'message', 'callback_query'],
         })
 
         # For now we don't store telegram input, we just do automated processing to figure
         # out if we're connected to something.
         for u in res:
-            if 'channel_post' in u:
+            if 'callback_query' in u:
+                self.process_callback_query(u['callback_query'])
+            elif 'channel_post' in u:
                 self.process_channel_post(u['channel_post'])
             elif 'message' in u:
                 self.process_incoming_chat_structure(u)
@@ -226,7 +235,9 @@ class Telegram(object):
         body = request.body.decode('utf8', errors='ignore')
         try:
             j = json.loads(body)
-            if 'channel_post' in j:
+            if 'callback_query' in j:
+                self.process_callback_query(j['callback_query'])
+            elif 'channel_post' in j:
                 self.process_channel_post(j['channel_post'])
             elif 'message' in j:
                 self.process_incoming_chat_structure(j)
@@ -373,3 +384,113 @@ class Telegram(object):
                 return True, 'Webhook resubscribed'
 
         return True, ''
+
+    def notify_twitter_moderation(self, messaging, tweet, completed, approved=False):
+        if 'socialmediamanagement' not in messaging.config['channels']:
+            # If we don't have a social media channel, then there is nothing to do!
+            return
+
+        chatid = messaging.config['channels']['socialmediamanagement']['id']
+        text = "A new tweet has been posted and needs moderation:\n```\n{}\n```\nPost date: `{}`\nAuthor: `{}`\n".format(tweet.contents, tweet.datetime, tweet.author.username)
+
+        if completed:
+            # Moderation is completed, so edit the existing entry (if there is one) to
+            # remove the buttons and indicate what happened.
+            messageid = tweet.metadata.get('telegram', {}).get(str(messaging.id), {}).get('moderator', None)
+            if messageid:
+                text = text + "\n\nThis tweet has been `{}` by `{}`\n".format(
+                    'approved' if approved else 'discarded',
+                    tweet.approvedby.username,
+                )
+                self.post('editMessageCaption' if tweet.image else 'editMessageText', {
+                    'chat_id': chatid,
+                    'message_id': messageid,
+                    'parse_mode': 'MarkdownV2',
+                    'caption' if tweet.image else 'text': text,
+                }, ignoreerrors=True)
+                self.post('editMessageReplyMarkup', {
+                    'chat_id': chatid,
+                    'message_id': messageid,
+                    'reply_markup': '',
+                }, ignoreerrors=True)
+        else:
+            # Post an entry to the channel with buttons to moderate
+
+            struct = {
+                'chat_id': chatid,
+                'parse_mode': 'MarkdownV2',
+                'reply_markup': json.dumps({
+                    'inline_keyboard': [
+                        [
+                            {'text': 'Approve', 'callback_data': 'sm:{}:approve'.format(tweet.id)},
+                            {'text': 'Discard', 'callback_data': 'sm:{}:discard'.format(tweet.id)},
+                        ],
+                    ],
+                }),
+            }
+            if tweet.image:
+                struct['caption'] = text
+                msg = self.post('sendPhoto', struct, files={
+                    'photo': io.BytesIO(tweet.image),
+                })
+            else:
+                struct['text'] = text
+                msg = self.post('sendMessage', struct)
+
+            if 'telegram' not in tweet.metadata:
+                tweet.metadata['telegram'] = {}
+            tweet.metadata['telegram'][str(messaging.id)] = {'moderator': msg['message_id']}
+            tweet.save()
+
+    def process_callback_query(self, cb):
+        if 'data' not in cb:
+            return
+
+        m = re.match(r'^sm:(\d+):(approve|discard)$', cb['data'])
+        if not m:
+            return
+
+        try:
+            tweet = ConferenceTweetQueue.objects.get(pk=int(m.group(1)))
+        except ConferenceTweetQueue.DoesNotExist:
+            return
+
+        if tweet.approved:
+            # Already approved, so ignore
+            self.post('answerCallbackQuery', {
+                'callback_query_id': cb['id'],
+                'text': 'Tweet has already been approved',
+                'show_alert': True,
+            })
+            return
+
+        fromid = cb['from']['id']
+        try:
+            reg = ConferenceRegistration.objects.get(conference=tweet.conference, messaging_config__contains={'userid': int(fromid)})
+            fromuser = reg.attendee
+        except ConferenceRegistration.DoesNotExist:
+            fromuser = None
+            self.post('answerCallbackQuery', {
+                'callback_query_id': cb['id'],
+                'text': 'Could not determine your username.',
+                'show_alert': True,
+            })
+
+        if m.group(2) == 'approve' and fromuser == tweet.author:
+            self.post('answerCallbackQuery', {
+                'callback_query_id': cb['id'],
+                'text': 'You cannot approve your own tweet',
+                'show_alert': True,
+            })
+            return
+
+        if m.group(2) == 'approve':
+            tweet.approved = True
+            tweet.approvedby = fromuser
+            tweet.save()
+            notify_twitter_moderation(tweet, completed=True, approved=True)
+            trigger_immediate_job_run('post_media_broadcasts')
+        else:
+            tweet.approvedby = fromuser
+            notify_twitter_moderation(tweet, completed=True, approved=False)
+            tweet.delete()

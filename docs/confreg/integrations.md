@@ -210,6 +210,11 @@ will be posted in this channel. Future enhancements may include being able
 to interact with such notifications directly, but for now it is a notify-only
 channel.
 
+## Social media management
+
+Supported only on Telegram, allows an interactive management of the
+social media integration such as moderation of posts.
+
 ## Setting up
 
 ### Messaging Providers <a name="provider"></a>
@@ -255,10 +260,10 @@ For simple providers, this just means checking the boxes for which
 features of the provider to enable, such as social broadcast or
 private notifications.
 
-For providers that support *attendee only broadcasts* or *organisation
-notifications*, it will also be possible to configure these specific
-channels. The exact details of what is configured and how depends on
-the provider.
+For providers that support *attendee only broadcasts*, *organisation
+notifications* or *social media management*, it will also be possible
+to configure these specific channels. The exact details of what is
+configured and how depends on the provider.
 
 ## Supported implementations <a name="implementation"></a>
 

@@ -7,6 +7,7 @@ from postgresqleu.confreg.models import NotificationQueue
 from postgresqleu.confreg.models import ConferenceIncomingTweet, ConferenceIncomingTweetMedia
 from postgresqleu.confreg.models import ConferenceTweetQueue
 from postgresqleu.util.db import exec_no_result
+from postgresqleu.util.messaging import get_messaging_class
 
 
 class _Notifier(object):
@@ -75,6 +76,11 @@ def send_channel_message(messaging, channel, msg, expiry=timedelta(hours=1)):
             msg=msg,
         ).save()
         n.notify()
+
+
+def notify_twitter_moderation(tweet, completed, approved):
+    for messaging in tweet.conference.conferencemessaging_set.filter(socialmediamanagement=True, provider__active=True):
+        get_messaging_class(messaging.provider.classname)(messaging.provider.id, messaging.provider.config).notify_twitter_moderation(messaging, tweet, completed, approved)
 
 
 def store_incoming_post(provider, post):

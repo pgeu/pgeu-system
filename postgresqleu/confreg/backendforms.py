@@ -1171,7 +1171,7 @@ class BackendNewsForm(BackendForm):
 
 class BackendMessagingForm(BackendForm):
     helplink = 'integrations#messaging'
-    list_fields = ['providername', 'broadcast', 'privatebcast', 'notification', 'orgnotification']
+    list_fields = ['providername', 'broadcast', 'privatebcast', 'notification', 'orgnotification', 'socialmediamanagement', ]
     verbose_field_names = {
         'providername': 'Provider name',
     }
@@ -1183,7 +1183,7 @@ class BackendMessagingForm(BackendForm):
     def fieldsets(self):
         fs = [
             {'id': 'provider', 'legend': 'Provider', 'fields': ['provider', ]},
-            {'id': 'actions', 'legend': 'Actions', 'fields': ['broadcast', 'privatebcast', 'notification', 'orgnotification']},
+            {'id': 'actions', 'legend': 'Actions', 'fields': ['broadcast', 'privatebcast', 'notification', 'orgnotification', 'socialmediamanagement', ]},
         ]
         cf = list(self._channel_fields())
         if cf:
@@ -1194,10 +1194,10 @@ class BackendMessagingForm(BackendForm):
 
     class Meta:
         model = ConferenceMessaging
-        fields = ['provider', 'broadcast', 'privatebcast', 'notification', 'orgnotification', ]
+        fields = ['provider', 'broadcast', 'privatebcast', 'notification', 'orgnotification', 'socialmediamanagement', ]
 
     def _channel_fields(self):
-        for fld in ('privatebcast', 'orgnotification'):
+        for fld in ('privatebcast', 'orgnotification', 'socialmediamanagement'):
             if getattr(self.impl, 'can_{}'.format(fld), False):
                 yield '{}channel'.format(fld)
 
@@ -1219,6 +1219,7 @@ class BackendMessagingForm(BackendForm):
     _channel_fieldnames = {
         'privatebcast': 'Attendee only broadcast channel',
         'orgnotification': 'Organisation notification channel',
+        'socialmediamanagement': 'Social media management',
     }
 
     def fix_fields(self):
@@ -1227,12 +1228,12 @@ class BackendMessagingForm(BackendForm):
         self.fields['provider'].required = False
 
         # Update the different types of supported fields
-        for fld in ('broadcast', 'privatebcast', 'notification', 'orgnotification'):
+        for fld in ('broadcast', 'privatebcast', 'notification', 'orgnotification', 'socialmediamanagement'):
             if not getattr(self.impl, 'can_{}'.format(fld), False):
                 self.fields[fld].widget.attrs['disabled'] = True
                 self.fields[fld].help_text = 'Action is not supported by this provider'
 
-        for fld in ('privatebcast', 'orgnotification'):
+        for fld in ('privatebcast', 'orgnotification', 'socialmediamanagement'):
             if getattr(self.impl, 'can_{}'.format(fld), False):
                 self.fields['{}channel'.format(fld)] = self.impl.get_channel_field(self.instance, fld)
                 self.fields['{}channel'.format(fld)].label = self._channel_fieldnames[fld]

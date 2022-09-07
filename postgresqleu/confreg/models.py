@@ -1468,6 +1468,7 @@ class ConferenceMessaging(models.Model):
     privatebcast = models.BooleanField(null=False, blank=False, default=False, verbose_name='Attendee only broadcasts')
     notification = models.BooleanField(null=False, blank=False, default=False, verbose_name='Private notifications')
     orgnotification = models.BooleanField(null=False, blank=False, default=False, verbose_name='Organizer notifications')
+    socialmediamanagement = models.BooleanField(null=False, blank=False, default=False, verbose_name='Social media management')
     config = models.JSONField(blank=False, null=False, default=dict)
 
     class Meta:
@@ -1507,6 +1508,7 @@ class ConferenceTweetQueue(models.Model):
     replytotweetid = models.BigIntegerField(null=True, blank=True, verbose_name="Reply to tweet")
     remainingtosend = models.ManyToManyField(MessagingProvider, blank=True)
     comment = models.CharField(max_length=200, null=False, blank=True, verbose_name="Internal comment")
+    metadata = models.JSONField(null=False, blank=False, default=dict)
 
     class Meta:
         ordering = ['sent', 'datetime', ]
@@ -1514,6 +1516,7 @@ class ConferenceTweetQueue(models.Model):
         verbose_name = 'Conference Tweet'
         indexes = [
             GinIndex(name='tweetqueue_postids_idx', fields=['postids'], opclasses=['jsonb_path_ops']),
+            GinIndex(name='tweetqueue_metadata_idx', fields=['metadata'], opclasses=['jsonb_path_ops']),
         ]
 
     def save(self, *args, **kwargs):

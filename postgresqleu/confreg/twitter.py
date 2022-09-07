@@ -16,6 +16,7 @@ from postgresqleu.confreg.util import get_conference_or_404
 from postgresqleu.scheduler.util import trigger_immediate_job_run
 from postgresqleu.util.request import get_int_or_error
 from postgresqleu.util.messaging import ProviderCache
+from postgresqleu.util.messaging.util import notify_twitter_moderation
 from postgresqleu.util.time import datetime_string
 from .models import ConferenceTweetQueue, ConferenceIncomingTweet, ConferenceMessaging
 from .models import ConferenceRegistration
@@ -50,6 +51,10 @@ def post_conference_social(conference, contents, approved=False, posttime=None, 
                              datetime=posttime,
                              author=author)
     t.save()
+
+    # There are no cases here where we want to moderate the post, so don't bother
+    # calling the moderation system. This may change in the future.
+
     return t
 
 
@@ -164,6 +169,8 @@ def volunteer_twitter(request, urlname, token):
                 # When when replying to a tweet, it goes to the original provider *only*
                 t.remainingtosend.set([orig.provider])
 
+            notify_twitter_moderation(t, False, False)
+
             return _json_response({})
         elif request.POST.get('op', None) in ('approve', 'discard'):
             if not is_admin:
@@ -185,8 +192,14 @@ def volunteer_twitter(request, urlname, token):
                 t.approved = True
                 t.approvedby = reg.attendee
                 t.save()
+                notify_twitter_moderation(t, completed=True, approved=True)
                 trigger_immediate_job_run('post_media_broadcasts')
             else:
+                # We have to flag is as handled before we remove it, so we can reference it
+                # still. And set it as approved by this user before deleting it, so we
+                # can also notify who it was (this never gets saved).
+                t.approvedby = reg.attendee
+                notify_twitter_moderation(t, completed=True, approved=False)
                 t.delete()
             return _json_response({})
         elif request.POST.get('op', None) in ('dismissincoming', 'retweet'):
