@@ -22,6 +22,7 @@ from postgresqleu.util.messaging import re_token, get_messaging
 from postgresqleu.util.messaging.util import send_reg_direct_message, store_incoming_post
 
 from postgresqleu.confreg.models import ConferenceRegistration, MessagingProvider, IncomingDirectMessage
+from postgresqleu.confreg.models import ConferenceTweetQueue
 from postgresqleu.confreg.backendforms import BackendSeriesMessagingForm
 
 import logging
@@ -282,7 +283,10 @@ class Twitter(object):
         r = self.tw.get('https://api.twitter.com/1.1/statuses/mentions_timeline.json?tweet_mode=extended{}'.format(sincestr))
         r.raise_for_status()
         for tj in r.json():
-            yield self._parse_tweet_struct(tj)
+            # If this is somebody retweeting one of our outgoing tweets we don't want to include
+            # it as an incoming, but every thing else counts.
+            if not tj.get('self_retweet', False):
+                yield self._parse_tweet_struct(tj)
 
     def _parse_tweet_struct(self, tj):
         d = {
@@ -304,6 +308,12 @@ class Twitter(object):
                 'text': tj['quoted_status'].get('full_text', tj['quoted_status'].get('text', '')),
                 'permalink': tj['quoted_status_permalink'],
             }
+
+        # Check if this is a retweet of something we posted
+        if 'retweeted_status' in tj:
+            d['self_retweet'] = ConferenceTweetQueue.objects.filter(postids__contains={tj['retweeted_status']['id']: self.providerid}).exists()
+        else:
+            d['self_retweet'] = False
         return d
 
     # This is delivered by the webhook if it's enabled
@@ -396,7 +406,11 @@ class Twitter(object):
 
     def process_incoming_tweet_create_event(self, mp, tce):
         d = self._parse_tweet_struct(tce)
-        store_incoming_post(mp, d)
+
+        # If this is somebody retweeting one of our outgoing tweets we don't want to include
+        # it as an incoming, but every thing else counts.
+        if not d.get('self_retweet', False):
+            store_incoming_post(mp, d)
 
     def get_public_url(self, post):
         return 'https://twitter.com/{}/status/{}'.format(post.author_screenname, post.statusid)
