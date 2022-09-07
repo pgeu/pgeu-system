@@ -10,9 +10,11 @@ from django.db import transaction
 from django.utils import timezone
 
 from datetime import timedelta
+from psycopg2.extras import DateTimeTZRange
 
 from postgresqleu.confreg.models import Conference, ConferenceSession
 from postgresqleu.confreg.models import ConferenceRegistration
+from postgresqleu.confreg.models import VolunteerAssignment
 from postgresqleu.confreg.util import get_conference_or_404
 
 from postgresqleu.util.time import today_global
@@ -76,3 +78,22 @@ class Command(BaseCommand):
 
                     s.reminder_sent = True
                     s.save()
+
+                # Volunteer reminders
+                for v in VolunteerAssignment.objects.select_related('slot', 'reg').filter(
+                        slot__conference=conference,
+                        vol_confirmed=True,
+                        org_confirmed=True,
+                        reminder_sent=False,
+                        slot__timerange__overlap=DateTimeTZRange(timezone.now(), timezone.now() + timedelta(minutes=15)),
+                ):
+                    send_reg_direct_message(
+                        v.reg,
+                        "Hello! We'd like to remind you that your volunteer slot for '{}' is starting soon (scheduled for {})!".format(
+                            v.slot.title,
+                            str(v.slot),
+                        ),
+                        expiry=timedelta(minutes=15),
+                    )
+                    v.reminder_sent = True
+                    v.save()

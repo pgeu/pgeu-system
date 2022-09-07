@@ -1236,6 +1236,7 @@ class VolunteerAssignment(models.Model):
     reg = models.ForeignKey(ConferenceRegistration, null=False, blank=False, on_delete=models.CASCADE)
     vol_confirmed = models.BooleanField(null=False, blank=False, default=False, verbose_name="Confirmed by volunteer")
     org_confirmed = models.BooleanField(null=False, blank=False, default=False, verbose_name="Confirmed by organizers")
+    reminder_sent = models.BooleanField(null=False, default=False, verbose_name='Volunteer reminder(s) sent')
 
     _safe_attributes = ('id', 'slot', 'reg', 'vol_confirmed', 'org_confirmed')
 

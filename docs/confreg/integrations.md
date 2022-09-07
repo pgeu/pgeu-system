@@ -199,9 +199,15 @@ direct message" or "telegram chat".
 ### Sending reminders to speaker just before their presentation
 
 If a speaker has registered and connected a messaging system, they will get a
-direct message sent between 10 and 15 minutes before their presentation
+direct message sent between 5 and 15 minutes before their presentation
 (depending on cronjob time) reminding them that their presentation
 will begin soon, and which room it's in.
+
+### Sending reminders to volunteers just before their slots
+
+If a volunteer has connected a messaging system, they will get a
+direct message sent between 5 and 15 minutes before their slot starts,
+similar to how speakers are notified.
 
 ## Organizer notifications <a name="orgnotifications"></a>
 
