@@ -12,6 +12,8 @@ from django.conf import settings
 import re
 import csv
 import io
+import os
+import sys
 import requests
 from requests.auth import HTTPBasicAuth
 from datetime import timedelta
@@ -277,5 +279,6 @@ class Command(BaseCommand):
                     report.save()
                     AdyenLog(message='Processed report %s' % report.url, error=False, paymentmethod=report.paymentmethod).save()
             except Exception as ex:
-                self.stderr.write("Failed to process report {0}: {1}".format(report.url, ex))
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                self.stderr.write("Failed to process report {0}: {1} at line {2} of {3}".format(report.url, ex, exc_tb.tb_lineno, os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]))
                 AdyenLog(message='Failed to process report %s: %s' % (report.url, ex), error=True, paymentmethod=report.paymentmethod).save()
