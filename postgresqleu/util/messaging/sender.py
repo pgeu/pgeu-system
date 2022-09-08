@@ -40,7 +40,7 @@ def send_pending_messages(providers):
                 if n.reg:
                     impl.send_direct_message(n.reg.messaging_config, n.msg)
                 else:
-                    impl.post_channel_message(n.messaging.config, n.channel, n.msg)
+                    impl.post_channel_message(n.messaging, n.channel, n.msg)
             except Exception as e:
                 print("Failed to send notification to {} using {}: {}. Will retry until {}.".format(
                     n.reg and n.reg or n.channel,

@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.conf import settings
 import django.utils.timezone
 
+import base64
 import io
 import json
 import re
@@ -193,16 +194,41 @@ class Telegram(object):
             'text': msg,
         })
 
-    def post_channel_message(self, messagingconfig, channelname, msg):
-        if channelname not in messagingconfig['channels']:
-            # Don't crash when there is no channel configured, instead just ignore the message
-            print("Channel {} not found in provider {}, dropping message", messagingconfig.get('botname', '*unnamed bot*'))
-            return
+    def post_channel_message(self, messaging, channelname, msg):
+        if channelname == '__telegram_internal':
+            # This is a telegram-to-telegram message, which means the message is actually a
+            # json blob telling us what to do. In this case we blindly trust it since it
+            # came from the same module, and just relay it over to Telegram.
+            struct = json.loads(msg)
+            msg = self.post(
+                struct['command'],
+                struct['param'],
+                files={k: io.BytesIO(base64.b64decode(v)) for k, v in struct['files'].items()} if struct.get('files', None) else None,
+                ignoreerrors=struct.get('ignoreerrors', False)
+            )
 
-        self.post('sendMessage', {
-            'chat_id': messagingconfig['channels'][channelname]['id'],
-            'text': msg,
-        })
+            # Not-so-generic functionality to store the messageid on a queued tweet
+            # if requested.
+            if struct.get('store_messageid_on_tweet', None):
+                try:
+                    tweet = ConferenceTweetQueue.objects.get(pk=struct['store_messageid_on_tweet'])
+                    if 'telegram' not in tweet.metadata:
+                        tweet.metadata['telegram'] = {}
+                    tweet.metadata['telegram'][str(messaging.id)] = {'moderator': msg['message_id']}
+                    tweet.save(update_fields=['metadata', ])
+                except ConferenceTweetQueue.DoesNotExist:
+                    # Ignore if it's for some reason gone
+                    pass
+
+        elif channelname not in messaging.config['channels']:
+            # Don't crash when there is no channel configured, instead just ignore the message
+            print("Channel {} not found in provider {}, dropping message", messaging.config.get('botname', '*unnamed bot*'))
+            return
+        else:
+            self.post('sendMessage', {
+                'chat_id': messaging.config['channels'][channelname]['id'],
+                'text': msg,
+            })
 
     def poll_incoming_private_messages(self, lastpoll, checkpoint):
         # If we are configured with a webhook, telegram will return an error if
@@ -402,45 +428,48 @@ class Telegram(object):
                     'approved' if approved else 'discarded',
                     tweet.approvedby.username,
                 )
-                self.post('editMessageCaption' if tweet.image else 'editMessageText', {
-                    'chat_id': chatid,
-                    'message_id': messageid,
-                    'parse_mode': 'MarkdownV2',
-                    'caption' if tweet.image else 'text': text,
-                }, ignoreerrors=True)
-                self.post('editMessageReplyMarkup', {
-                    'chat_id': chatid,
-                    'message_id': messageid,
-                    'reply_markup': '',
-                }, ignoreerrors=True)
+                send_channel_message(messaging, '__telegram_internal', json.dumps({
+                    'command': 'editMessageCaption' if tweet.image else 'editMessageText',
+                    'param': {
+                        'chat_id': chatid,
+                        'message_id': messageid,
+                        'parse_mode': 'MarkdownV2',
+                        'caption' if tweet.image else 'text': text,
+                    },
+                    'ignoreerrors': True,
+                }))
+                send_channel_message(messaging, '__telegram_internal', json.dumps({
+                    'command': 'editMessageReplyMarkup',
+                    'param': {
+                        'chat_id': chatid,
+                        'message_id': messageid,
+                        'reply_markup': '',
+                    },
+                    'ignoreerrors': True,
+                }))
         else:
             # Post an entry to the channel with buttons to moderate
 
-            struct = {
-                'chat_id': chatid,
-                'parse_mode': 'MarkdownV2',
-                'reply_markup': json.dumps({
-                    'inline_keyboard': [
-                        [
-                            {'text': 'Approve', 'callback_data': 'sm:{}:approve'.format(tweet.id)},
-                            {'text': 'Discard', 'callback_data': 'sm:{}:discard'.format(tweet.id)},
+            send_channel_message(messaging, '__telegram_internal', json.dumps({
+                'command': 'sendPhoto' if tweet.image else 'sendMessage',
+                'store_messageid_on_tweet': tweet.id,
+                'param': {
+                    'chat_id': chatid,
+                    'caption' if tweet.image else 'text': text,
+                    'parse_mode': 'MarkdownV2',
+                    'reply_markup': json.dumps({
+                        'inline_keyboard': [
+                            [
+                                {'text': 'Approve', 'callback_data': 'sm:{}:approve'.format(tweet.id)},
+                                {'text': 'Discard', 'callback_data': 'sm:{}:discard'.format(tweet.id)},
+                            ],
                         ],
-                    ],
-                }),
-            }
-            if tweet.image:
-                struct['caption'] = text
-                msg = self.post('sendPhoto', struct, files={
-                    'photo': io.BytesIO(tweet.image),
-                })
-            else:
-                struct['text'] = text
-                msg = self.post('sendMessage', struct)
-
-            if 'telegram' not in tweet.metadata:
-                tweet.metadata['telegram'] = {}
-            tweet.metadata['telegram'][str(messaging.id)] = {'moderator': msg['message_id']}
-            tweet.save()
+                    }),
+                },
+                'files': {
+                    'photo': base64.b64encode(tweet.image).decode(),
+                } if tweet.image else None,
+            }))
 
     def process_callback_query(self, cb):
         if 'data' not in cb:
@@ -455,13 +484,39 @@ class Telegram(object):
         except ConferenceTweetQueue.DoesNotExist:
             return
 
+        # Identify which messaging we're part of here, going through the channel id
+        # XXX: once we've migrated fully off postgres 11, replace with jsonpath:
+        # config @? '$.channels.*.id ? (@ == <id>)'
+        chatid = cb.get('message', {}).get('chat', {}).get('id', None)
+        if not chatid:
+            # No chat -> no process
+            return
+
+        messaging = None
+        for _m in ConferenceMessaging.objects.only('config').filter(conference=tweet.conference, provider=self.providerid):
+            for _cname, _cconf in _m.config.get('channels', {}).items():
+                if int(_cconf.get('id', None)) == int(chatid):
+                    messaging = _m
+                    break
+            if messaging:
+                break
+        else:
+            # Could not find a messaging for this, so just ignore it
+            return
+
+        def _answer_with_alert(msg):
+            send_channel_message(messaging, '__telegram_internal', json.dumps({
+                'command': 'answerCallbackQuery',
+                'param': {
+                    'callback_query_id': cb['id'],
+                    'text': msg,
+                    'show_alert': True,
+                }
+            }))
+
         if tweet.approved:
             # Already approved, so ignore
-            self.post('answerCallbackQuery', {
-                'callback_query_id': cb['id'],
-                'text': 'Tweet has already been approved',
-                'show_alert': True,
-            })
+            _answer_with_alert('Tweet has already been approved')
             return
 
         fromid = cb['from']['id']
@@ -470,18 +525,11 @@ class Telegram(object):
             fromuser = reg.attendee
         except ConferenceRegistration.DoesNotExist:
             fromuser = None
-            self.post('answerCallbackQuery', {
-                'callback_query_id': cb['id'],
-                'text': 'Could not determine your username.',
-                'show_alert': True,
-            })
+            _answer_with_alert('Could not determine your username.')
+            return
 
         if m.group(2) == 'approve' and fromuser == tweet.author:
-            self.post('answerCallbackQuery', {
-                'callback_query_id': cb['id'],
-                'text': 'You cannot approve your own tweet',
-                'show_alert': True,
-            })
+            _answer_with_alert('You cannot approve your own tweet')
             return
 
         if m.group(2) == 'approve':
