@@ -128,10 +128,10 @@ class Command(BaseCommand):
                         # the report, so verify if the previously settled one is
                         # *identical*.
                         if trans.settledamount == Decimal(line['Main Amount']).quantize(Decimal('0.01')):
-                            self.stderr.write("Transaction {0} already settled at {2}, ignoring (NOT creating accounting record)!".format(pspref, trans.settledat))
+                            self.stderr.write("Transaction {0} already settled at {1}, ignoring (NOT creating accounting record)!".format(pspref, trans.settledat))
                             continue
                         else:
-                            raise CommandError('Transaction {0} settled more than once?!'.format(pspref))
+                            raise CommandError('Transaction {0} settled more than once with a different amount?!'.format(pspref))
                     if not trans.capturedat:
                         trans.capturedat = bookdate
 
