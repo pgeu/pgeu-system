@@ -14,6 +14,8 @@ import csv
 import io
 import os
 import sys
+import traceback
+
 import requests
 from requests.auth import HTTPBasicAuth
 from datetime import timedelta
@@ -281,4 +283,5 @@ class Command(BaseCommand):
             except Exception as ex:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 self.stderr.write("Failed to process report {0}: {1} at line {2} of {3}".format(report.url, ex, exc_tb.tb_lineno, os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]))
+                self.stderr.write(traceback.format_exc())
                 AdyenLog(message='Failed to process report %s: %s' % (report.url, ex), error=True, paymentmethod=report.paymentmethod).save()
