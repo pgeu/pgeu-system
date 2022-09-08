@@ -524,13 +524,28 @@ class Telegram(object):
             reg = ConferenceRegistration.objects.get(conference=tweet.conference, messaging_config__contains={'userid': int(fromid)})
             fromuser = reg.attendee
         except ConferenceRegistration.DoesNotExist:
-            fromuser = None
             _answer_with_alert('Could not determine your username.')
             return
 
         if m.group(2) == 'approve' and fromuser == tweet.author:
             _answer_with_alert('You cannot approve your own tweet')
             return
+
+        # Admins can always approve tweets, but volunteers can only do so if that's enabled
+        if not reg.is_admin:
+            if tweet.conference.twitter_postpolicy == 0:
+                _answer_with_alert('Nobody is allowed to approve tweets')
+                return
+            if tweet.conference.twitter_postpolicy in (1, 2):
+                _answer_with_alert('Only administrators can approve tweets')
+                return
+            if tweet.conference.twitter_postpolicy in (3, 4):
+                if not reg.is_volunteer:
+                    _answer_with_alert('Only administrators or volunteers can approve tweets')
+                    return
+            else:
+                _answer_with_alert('Unknown twitter post policy')
+                return
 
         if m.group(2) == 'approve':
             tweet.approved = True
