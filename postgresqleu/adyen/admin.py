@@ -30,8 +30,41 @@ class NotificationAdmin(admin.ModelAdmin):
     rawnotification_link.short_description = 'Rawnotification'
 
 
+class MerchantAccountFilter(admin.SimpleListFilter):
+    title = 'Merchant account'
+    parameter_name = 'merchantaccount'
+
+    def lookups(self, request, model_admin):
+        return (('PostgreSqlEUCOM', 'PostgreSqlEUCOM'), ('PostgreSqlEUPOS', 'PostgreSqlEUPOS'), )
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(url__regex='/download/MerchantAccount/{}/'.format(self.value()))
+        return queryset
+
+
+class ReportTypeFilter(admin.SimpleListFilter):
+    title = 'Report type'
+    parameter_name = 'reporttype'
+
+    _types = {
+        'payments_accounting': ('Payments Accounting', r'/payments_accounting_report_\d+_\d+_\d+\.csv'),
+        'received_payments': ('Received payments', r'received_payments_report_\d+_\d+_\d+\.csv'),
+        'settlement_detail': ('Settlement detail', r'settlement_detail_report_batch_\d+\.csv'),
+    }
+
+    def lookups(self, request, model_admin):
+        return ((k, v[0]) for k, v in self._types.items())
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(url__regex=self._types[self.value()][1])
+        return queryset
+
+
 class ReportAdmin(admin.ModelAdmin):
     list_display = ('receivedat', 'downloadedat', 'processedat', 'url',)
+    list_filter = [MerchantAccountFilter, ReportTypeFilter, ]
 
 
 class TransactionStatusAdmin(admin.ModelAdmin):
