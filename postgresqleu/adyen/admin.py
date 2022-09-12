@@ -65,6 +65,14 @@ class ReportTypeFilter(admin.SimpleListFilter):
 class ReportAdmin(admin.ModelAdmin):
     list_display = ('receivedat', 'downloadedat', 'processedat', 'url',)
     list_filter = [MerchantAccountFilter, ReportTypeFilter, ]
+    readonly_fields = ('notification_link', )
+    exclude = ('notification', )
+
+    def notification_link(self, obj):
+        if obj.notification:
+            url = reverse("admin:adyen_notification_change", args=(obj.notification.id,))
+            return mark_safe('<a href="%s">%s</a>' % (url, obj.notification))
+    notification_link.short_description = 'Notification'
 
 
 class TransactionStatusAdmin(admin.ModelAdmin):
