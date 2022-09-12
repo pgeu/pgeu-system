@@ -3181,7 +3181,7 @@ WHERE ao.conference_id={0}
                    'rows': curs.fetchall()})
 
     # Discount codes
-    curs.execute("""SELECT dc.id, code, validuntil, maxuses,
+    curs.execute("""SELECT dc.id, code, validuntil, s.name, maxuses,
  count(payconfirmedat) AS confirmed,
  count(r.id) FILTER (WHERE payconfirmedat IS NULL AND (r.invoice_id IS NOT NULL OR bp.invoice_id IS NOT NULL)) AS invoiced,
  count(r.id) FILTER (WHERE payconfirmedat IS NULL AND (r.invoice_id IS NULL AND bp.invoice_id IS NULL)) AS unconfirmed,
@@ -3190,10 +3190,11 @@ WHERE ao.conference_id={0}
 FROM confreg_conferenceregistration r
 RIGHT JOIN confreg_discountcode dc ON dc.code=r.vouchercode
 LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id
-WHERE dc.conference_id={0} AND (r.conference_id={0} OR r.conference_id IS NULL) GROUP BY dc.id ORDER BY code""".format(conference.id))
+LEFT JOIN confsponsor_sponsor s ON s.id=dc.sponsor_id
+WHERE dc.conference_id={0} AND (r.conference_id={0} OR r.conference_id IS NULL) GROUP BY dc.id, s.name ORDER BY code""".format(conference.id))
     tables.append({'title': 'Discount codes',
-                   'columns': ['id', 'Code', 'Expires', 'Max uses', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total', 'Remaining', ],
-                   'fixedcols': 3,
+                   'columns': ['id', 'Code', 'Expires', 'Sponsor', 'Max uses', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total', 'Remaining', ],
+                   'fixedcols': 4,
                    'fixedcolsend': 0,
                    'hidecols': 1,
                    'linker': lambda x: '../discountcodes/{0}/'.format(x[0]),
