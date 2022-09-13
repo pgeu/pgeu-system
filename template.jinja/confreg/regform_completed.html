@@ -96,7 +96,7 @@ at {{conference.contactaddr}}.
  </table>
 </fieldset>
 {%endif%}
-{%if reg.additionaloptions.all %}
+{%if reg.additionaloptions.exists() %}
 <fieldset>
  <legend>Additional options</legend>
  <ul>{%for ao in reg.additionaloptions.all()%}<li>{{ao.name}}</li>{%endfor%}</ul>
