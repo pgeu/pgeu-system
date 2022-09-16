@@ -118,6 +118,9 @@ class SponsorSession(BaseBenefit):
         return True
 
     def render_claimdata(self, claimedbenefit, isadmin):
+        if claimedbenefit.declined:
+            return ""
+
         s = """
 <strong>Title:</strong> {}<br/>
 <strong>Abstract:</strong> {}<br/>
