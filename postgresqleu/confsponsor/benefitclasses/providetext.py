@@ -78,7 +78,7 @@ class ProvideText(BaseBenefit):
         return True
 
     def render_claimdata(self, claimedbenefit, isadmin):
-        return claimedbenefit.claimjson['text']
+        return claimedbenefit.claimjson.get('text', '')
 
     def can_unclaim(self, claimedbenefit):
         return True
