@@ -3,7 +3,7 @@ from django.conf import settings
 
 from .models import ConferenceRegistration, BulkPayment, PendingAdditionalOrder
 from .models import RegistrationWaitlistHistory, PrepaidVoucher
-from .util import notify_reg_confirmed, expire_additional_options
+from .util import notify_reg_confirmed
 from .util import send_conference_mail, send_conference_notification
 from .util import reglog
 
@@ -53,12 +53,14 @@ class InvoiceProcessor(object):
         # "unlock" the registration
         reg.invoice = None
         reglog(reg, "Invoice canceled, unlinking from reg")
-        reg.save()
 
         # If this registration holds any additional options that are about to expire, release
-        # them for others to use at this point. (This will send an additional email to the
-        # attendee automatically)
-        expire_additional_options(reg)
+        # them for others to use at this point.
+        for ao in reg.additionaloptions.filter(invoice_autocancel_hours__isnull=False, invoice_autocancel_hours__gt=0):
+            reglog(reg, "Expired additional option {}".format(ao.name))
+            reg.additionaloptions.remove(ao)
+
+        reg.save()
 
         # If the registration was on the waitlist, put it back in the
         # queue.
@@ -174,9 +176,10 @@ class BulkInvoiceProcessor(object):
                 )
 
             # If this registration holds any additional options that are about to expire, release
-            # them for others to use at this point. (This will send an additional email to the
-            # attendee automatically)
-            expire_additional_options(r)
+            # them for others to use at this point.
+            for ao in r.additionaloptions.filter(invoice_autocancel_hours__isnull=False, invoice_autocancel_hours__gt=0):
+                reglog(r, "Expired additional option {}".format(ao.name))
+                r.additionaloptions.remove(ao)
 
             # If the registration was attached to a discount code, remove it so that it is no
             # longer counted against it. Also clear out the field, in case others want to use
