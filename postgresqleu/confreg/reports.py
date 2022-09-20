@@ -573,11 +573,18 @@ ORDER BY {}""".format(where, ", ".join([_get_table_aliased_field(o.get_orderby_f
 simple_reports = {
     'unregspeaker': """SELECT DISTINCT
    fullname AS "Name",
-   u.email AS "E-mail"
+   u.email AS "E-mail",
+   spk.attributes->'sponsor'->>'name' AS "Sponsor",
+   CASE WHEN rsoft.id IS NOT NULL THEN 'Registration with same name exists' ELSE '' END AS "Other"
 FROM confreg_speaker spk
 INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id
 INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id
-INNER JOIN auth_user u ON u.id=spk.user_id
+LEFT JOIN auth_user u ON u.id=spk.user_id
+LEFT JOIN confreg_conferenceregistration rsoft
+   ON rsoft.conference_id=%(confid)s AND
+      rsoft.payconfirmedat IS NOT NULL AND
+      rsoft.canceledat IS NULL AND
+      lower(rsoft.firstname || ' ' || rsoft.lastname) = lower(spk.fullname)
 WHERE s.conference_id=%(confid)s AND
       s.status=1 AND
       NOT EXISTS (SELECT * FROM confreg_conferenceregistration r
