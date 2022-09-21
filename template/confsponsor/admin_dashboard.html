@@ -98,6 +98,9 @@ sponsor manually, you may want to confirm them manually as well...
 <p>
 The following emails have been sent to sponsors so far:
 </p>
+{%if mails|length > 4 %}
+<div class="partial-collapse" aria-expanded="false" id="collapsedMail">
+{%endif%}
 <table class="table table-condensed">
   <tr>
     <th>Sent at</th>
@@ -114,6 +117,11 @@ The following emails have been sent to sponsors so far:
   </tr>
 {%endfor%}
 </table>
+{%if mails|length > 4 %}
+</div>
+<a role="button" class="partial-collapse collapsed" data-toggle="collapse" href="#collapsedMail" aria-expanded="false" aria-controls="collapsedMail"></a>
+{%endif%}
+
 {%else%}
 <p>
 No sponsor emails have been sent yet.

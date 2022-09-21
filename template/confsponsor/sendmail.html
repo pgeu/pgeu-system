@@ -19,6 +19,9 @@ historically for any current or future managers of the sponsor.
 
 {%if mails%}
 <h2>Previous emails</h2>
+{%if mails|length > 4 %}
+<div class="partial-collapse" aria-expanded="false" id="collapsedMail">
+{%endif%}
 <table class="table table-condensed">
   <tr>
     <th>Sent at</th>
@@ -35,6 +38,11 @@ historically for any current or future managers of the sponsor.
   </tr>
 {%endfor%}
 </table>
+{%if mails|length > 4 %}
+</div>
+<a role="button" class="partial-collapse collapsed" data-toggle="collapse" href="#collapsedMail" aria-expanded="false" aria-controls="collapsedMail"></a>
+{%endif%}
+
 {%endif%}
 
 <h2>New email</h2>
