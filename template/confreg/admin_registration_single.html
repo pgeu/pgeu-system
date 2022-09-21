@@ -220,7 +220,7 @@
   <td>Emails</td>
   <td>
     <ul>{%for e in emails %}
-      <li>{{e.date}} <a href="/events/admin/{{conference.urlname}}/mail/{{e.id}}/">{{e.subject}}</a></li>
+      <li>{{e.sentat}} <a href="/events/admin/{{conference.urlname}}/mail/{{e.id}}/">{{e.subject}}</a></li>
 {%endfor%}
   </ul></td>
  </tr>
