@@ -696,36 +696,12 @@ class AttendeeMailForm(forms.ModelForm):
 class WaitlistOfferForm(forms.Form):
     hours = forms.IntegerField(min_value=1, max_value=240, label='Offer valid for (hours)', initial=48)
     until = forms.DateTimeField(label='Offer valid until', initial=(timezone.now() + timedelta(hours=48)).strftime('%Y-%m-%d %H:%M'))
-    confirm = forms.BooleanField(help_text='Confirm')
 
-    def __init__(self, *args, **kwargs):
-        super(WaitlistOfferForm, self).__init__(*args, **kwargs)
-        if self.data:
-            self.reg_list = self._get_id_list_from_data()
-            if len(self.reg_list) == 1:
-                self.fields['confirm'].help_text = "Confirm that you want to send an offer to an attendee on the waitlist"
-            else:
-                self.fields['confirm'].help_text = "Confirm that you want to send an offer to {0} attendees on the waitlist".format(len(self.reg_list))
-            if self.data.get('submit') == 'Make offer for hours':
-                del self.fields['until']
-            else:
-                del self.fields['hours']
-        else:
-            del self.fields['confirm']
 
-    def _get_id_list_from_data(self):
-        if not self.data:
-            return []
-        idlist = []
-        for k, v in list(self.data.items()):
-            if v == '1' and k.startswith('reg_'):
-                idlist.append(int(k[4:]))
-        return idlist
-
-    def clean(self):
-        if len(self.reg_list) == 0:
-            raise ValidationError("At least one registration must be selected to make an offer")
-        return self.cleaned_data
+class WaitlistConfirmForm(forms.Form):
+    timespec = forms.DateTimeField(widget=forms.HiddenInput)
+    reglist = forms.CharField(widget=forms.HiddenInput)
+    confirm = forms.BooleanField(required=True, label="Confirm", help_text="Confirm sending offer")
 
 
 class WaitlistSendmailForm(forms.Form):

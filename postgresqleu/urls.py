@@ -214,6 +214,7 @@ urlpatterns.extend([
     url(r'^events/admin/([^/]+)/schedule/jsonschedule/$', postgresqleu.confreg.views.schedulejson),
     url(r'^events/admin/([^/]+)/sessionnotifyqueue/$', postgresqleu.confreg.views.session_notify_queue),
     url(r'^events/admin/(\w+)/waitlist/$', postgresqleu.confreg.views.admin_waitlist),
+    url(r'^events/admin/(\w+)/waitlist/offer/$', postgresqleu.confreg.views.admin_waitlist_offer),
     url(r'^events/admin/(\w+)/waitlist/cancel/(\d+)/$', postgresqleu.confreg.views.admin_waitlist_cancel),
     url(r'^events/admin/(\w+)/waitlist/sendmail/$', postgresqleu.confreg.views.admin_waitlist_sendmail),
     url(r'^events/admin/(\w+)/wiki/$', postgresqleu.confwiki.views.admin),

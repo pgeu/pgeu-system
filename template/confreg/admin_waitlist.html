@@ -40,45 +40,7 @@ function cancelOffer(id) {
 {%block layoutblock%}
 <h1>Conference waitlist</h1>
 
-<h3>Registration status</h3>
-<div class="row">
-  <div class="col-md-4">
-    <table class="table">
-    <tr>
-      <td>Waitlist activates after</td>
-      <td>{{conference.attendees_before_waitlist}}</td>
-    </tr>
-    <tr>
-      <td>Confirmed registrations</td>
-      <td>{{num_confirmedregs}}</td>
-    </tr>
-    <tr>
-      <td>Attendees on the waitlist</td>
-      <td>{{num_waitlist}}</td>
-    </tr>
-    <tr>
-      <td>Pending registrations with invoice</td>
-      <td>{{num_invoicedregs}}</td>
-    </tr>
-    <tr>
-      <td>Pending registrations with bulk payment</td>
-      <td>{{num_invoicedbulkpayregs}}</td>
-    </tr>
-    <tr>
-      <td>Active offers from the waitlist</td>
-      <td>{{num_waitlist_offered}}</td>
-    </tr>
-    <tr>
-      <td>Offers accepted from the waitlist</td>
-      <td>{{num_waitlist_cleared}}</td>
-    </tr>
-    <tr>
-      <td>Total registrations including offered and invoiced</td>
-      <td>{{num_total}}</td>
-    </tr>
-    </table>
-  </div>
-</div>
+{%include "confreg/admin_waitlist_status.html"%}
 
 <h3>Waitlist</h3>
 {%if waitlist%}
@@ -86,7 +48,7 @@ function cancelOffer(id) {
 The current entries on the waitlist are:
 </p>
 <a name="form"></a>
-<form method="post" action=".#form" class="form-horizontal">{%csrf_token%}
+<form method="post" action="offer/" class="form-horizontal">{%csrf_token%}
 {%with waitlist_type="waitlist_active"%}
 {%include "confreg/admin_waitlist_list.inc.html"%}
 {%endwith%}

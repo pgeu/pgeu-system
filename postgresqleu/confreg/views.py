@@ -37,7 +37,7 @@ from .forms import ConferenceFeedbackForm, SpeakerProfileForm
 from .forms import CallForPapersForm
 from .forms import CallForPapersCopyForm, PrepaidCreateForm
 from .forms import CrossConferenceMailForm
-from .forms import AttendeeMailForm, WaitlistOfferForm, WaitlistSendmailForm, TransferRegForm
+from .forms import AttendeeMailForm, WaitlistOfferForm, WaitlistConfirmForm, WaitlistSendmailForm, TransferRegForm
 from .forms import NewMultiRegForm, MultiRegInvoiceForm
 from .forms import SessionSlidesUrlForm, SessionSlidesFileForm
 from .util import invoicerows_for_registration, summarize_registration_invoicerows, notify_reg_confirmed, InvoicerowsException
@@ -3677,6 +3677,33 @@ def admin_registration_clearcode(request, urlname, regid):
     return HttpResponseRedirect("../")
 
 
+def _waitlist_paginate(request, objs, objtype):
+    num = len(objs)
+    p = paginator.Paginator(objs, 20)
+    p.varsuffix = objtype
+    try:
+        page = get_int_or_error(request.GET, "page_{0}".format(objtype), 1)
+    except ValueError:
+        page = 1
+    try:
+        return p.page(page), num
+    except (paginator.EmptyPage, paginator.InvalidPage):
+        return p.page(paginator.num_pages), num
+
+
+def _waitlist_stats(request, conference):
+    r = {
+        'num_confirmedregs': ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True).count(),
+        'num_invoicedregs': ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True, invoice__isnull=False, registrationwaitlistentry__isnull=True).count(),
+        'num_invoicedbulkpayregs': ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True, bulkpayment__isnull=False, bulkpayment__paidat__isnull=True).count(),
+        'num_waitlist_offered': RegistrationWaitlistEntry.objects.filter(registration__conference=conference, offeredon__isnull=False, registration__payconfirmedat__isnull=True).count(),
+    }
+    r['num_total'] = r['num_confirmedregs'] + r['num_invoicedregs'] + r['num_invoicedbulkpayregs'] + r['num_waitlist_offered']
+    (r['waitlist'], r['num_waitlist']) = _waitlist_paginate(request, RegistrationWaitlistEntry.objects.filter(registration__conference=conference, registration__payconfirmedat__isnull=True).order_by('enteredon'), 'w')
+    (r['waitlist_cleared'], r['num_waitlist_cleared']) = _waitlist_paginate(request, RegistrationWaitlistEntry.objects.filter(registration__conference=conference, registration__payconfirmedat__isnull=False).order_by('-registration__payconfirmedat', 'enteredon'), 'cl')
+    return r
+
+
 @transaction.atomic
 def admin_waitlist(request, urlname):
     conference = get_authenticated_conference(request, urlname)
@@ -3687,83 +3714,101 @@ def admin_waitlist(request, urlname):
             'helplink': 'waitlist',
             })
 
-    def _waitlist_paginate(objs, objtype):
-        num = len(objs)
-        p = paginator.Paginator(objs, 50)
-        p.varsuffix = objtype
-        try:
-            page = get_int_or_error(request.GET, "page_{0}".format(objtype), 1)
-        except ValueError:
-            page = 1
-        try:
-            return p.page(page), num
-        except (paginator.EmptyPage, paginator.InvalidPage):
-            return p.page(paginator.num_pages), num
+    stats = _waitlist_stats(request, conference)
 
-    num_confirmedregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True).count()
-    num_invoicedregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True, invoice__isnull=False, registrationwaitlistentry__isnull=True).count()
-    num_invoicedbulkpayregs = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True, bulkpayment__isnull=False, bulkpayment__paidat__isnull=True).count()
-    num_waitlist_offered = RegistrationWaitlistEntry.objects.filter(registration__conference=conference, offeredon__isnull=False, registration__payconfirmedat__isnull=True).count()
-    waitlist, num_waitlist = _waitlist_paginate(RegistrationWaitlistEntry.objects.filter(registration__conference=conference, registration__payconfirmedat__isnull=True).order_by('enteredon'), 'w')
-    waitlist_cleared, num_waitlist_cleared = _waitlist_paginate(RegistrationWaitlistEntry.objects.filter(registration__conference=conference, registration__payconfirmedat__isnull=False).order_by('-registration__payconfirmedat', 'enteredon'), 'cl')
-
-    if request.method == 'POST':
-        # Attempting to make an offer
-        form = WaitlistOfferForm(data=request.POST)
-        if form.is_valid():
-            regs = ConferenceRegistration.objects.filter(conference=conference, id__in=form.reg_list)
-            if len(regs) != len(form.reg_list):
-                messages.error(request, "Database lookup mismatch")
-                return HttpResponseRedirect(".")
-            if len(regs) < 1:
-                messages.error(request, "Somehow got through with zero!")
-                return HttpResponseRedirect(".")
-
-            for r in regs:
-                wl = r.registrationwaitlistentry
-                if wl.offeredon:
-                    messages.warning(request, "Waitlist offer already given to {}, ignoring".format(r.fullname))
-                    continue
-                wl.offeredon = timezone.now()
-                if request.POST.get('submit') == 'Make offer for hours':
-                    wl.offerexpires = timezone.now() + timedelta(hours=form.cleaned_data['hours'])
-                    RegistrationWaitlistHistory(waitlist=wl,
-                                                text="Made offer valid for {0} hours by {1}".format(form.cleaned_data['hours'], request.user.username)).save()
-                else:
-                    wl.offerexpires = form.cleaned_data['until']
-                    RegistrationWaitlistHistory(waitlist=wl,
-                                                text="Made offer valid until {0} by {1}".format(form.cleaned_data['until'], request.user.username)).save()
-                wl.save()
-                send_conference_mail(conference,
-                                     r.email,
-                                     "Your waitlisted registration",
-                                     'confreg/mail/waitlist_offer.txt',
-                                     {
-                                         'conference': conference,
-                                         'reg': r,
-                                         'offerexpires': wl.offerexpires,
-                                     },
-                                     receivername=r.fullname,
-                )
-                messages.info(request, "Sent offer to {0}".format(r.email))
-            return HttpResponseRedirect(".")
-    else:
-        form = WaitlistOfferForm()
+    form = WaitlistOfferForm()
 
     return render(request, 'confreg/admin_waitlist.html', {
         'conference': conference,
-        'num_confirmedregs': num_confirmedregs,
-        'num_invoicedregs': num_invoicedregs,
-        'num_invoicedbulkpayregs': num_invoicedbulkpayregs,
-        'num_waitlist_offered': num_waitlist_offered,
-        'num_waitlist': num_waitlist,
-        'num_waitlist_cleared': num_waitlist_cleared,
-        'num_total': num_confirmedregs + num_invoicedregs + num_invoicedbulkpayregs + num_waitlist_offered,
-        'waitlist': waitlist,
-        'waitlist_cleared': waitlist_cleared,
         'form': form,
         'helplink': 'waitlist',
+        **stats
         })
+
+
+@transaction.atomic
+def admin_waitlist_offer(request, urlname):
+    if request.method != 'POST':
+        return HttpResponseRedirect("../")
+
+    conference = get_authenticated_conference(request, urlname)
+
+    if conference.attendees_before_waitlist <= 0:
+        return HttpResponseRedirect("../")
+
+    if request.POST['submit'] == 'Send offer(s)':
+        # reg_list means we are currently confirming, so do that
+        form = WaitlistConfirmForm(data=request.POST)
+    else:
+        # No reg_list means we generate the confirm form, after we've validated the submit form
+        sform = WaitlistOfferForm(data=request.POST)
+        if sform.is_valid():
+            reg_list = [int(k[4:]) for k, v in request.POST.items() if v == '1' and k.startswith('reg_')]
+            regs = ConferenceRegistration.objects.filter(conference=conference, id__in=reg_list)
+            if len(regs) < 1:
+                messages.error(request, "No registrations selected")
+                return HttpResponseRedirect("../")
+            if len(regs) != len(reg_list):
+                messages.error(request, "Database lookup mismatch")
+                return HttpResponseRedirect("../")
+
+            if request.POST['submit'] == 'Make offer for hours':
+                timespec = timezone.now() + timedelta(hours=sform.cleaned_data['hours'])
+            elif request.POST['submit'] == 'Make offer until':
+                timespec = sform.cleaned_data['until']
+            else:
+                messages.error(request, "Unknown submit button pressed")
+                return HttpResponseRedirect("../")
+
+            form = WaitlistConfirmForm(initial={
+                'reglist': ",".join(str(i) for i in reg_list),
+                'timespec': timespec,
+            })
+        else:
+            # Could we do this nicer? Maybe, but this should never happen.
+            messages.warning(request, "Invalid data in form, typically bad date format")
+            return HttpResponseRedirect("../")
+
+    if form.is_valid():
+        # Valid and confirmed, so generate the offer(s)
+        regs = ConferenceRegistration.objects.filter(conference=conference, id__in=form.cleaned_data['reglist'].split(','))
+
+        for r in regs:
+            wl = r.registrationwaitlistentry
+            if wl.offeredon:
+                messages.warning(request, "Waitlist offer already given to {}, ignoring".format(r.fullname))
+                continue
+            wl.offeredon = timezone.now()
+            wl.offerexpires = form.cleaned_data['timespec']
+            RegistrationWaitlistHistory(waitlist=wl,
+                                        text="Made offer valid until {0} by {1}".format(wl.offerexpires, request.user.username)).save()
+            wl.save()
+            send_conference_mail(conference,
+                                 r.email,
+                                 "Your waitlisted registration",
+                                 'confreg/mail/waitlist_offer.txt',
+                                 {
+                                     'conference': conference,
+                                     'reg': r,
+                                     'offerexpires': wl.offerexpires,
+                                 },
+                                 receivername=r.fullname,
+                                 )
+            messages.info(request, "Sent offer to {0}".format(r.email))
+        return HttpResponseRedirect("../")
+
+    stats = _waitlist_stats(request, conference)
+
+    regs = ConferenceRegistration.objects.filter(conference=conference, id__in=reg_list)
+
+    # Form is new or not confirmed
+    return render(request, 'confreg/admin_waitlist_confirm.html', {
+        'conference': conference,
+        'form': form,
+        'helplink': 'waitlist',
+        'regs': regs,
+        **stats,
+    })
 
 
 @transaction.atomic

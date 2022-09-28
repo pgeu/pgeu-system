@@ -1,0 +1,35 @@
+{%extends "confreg/confadmin_base.html" %}
+{%load formutil%}
+{%block title%}Conference waitlist - confirm{%endblock%}
+
+{%block layoutblock%}
+<h1>Conference waitlist</h1>
+
+{%include "confreg/admin_waitlist_status.html"%}
+
+<h2>Waitlist offer</h2>
+<p>
+  About to make the following offer:
+</p>
+<table class="table">
+  <tr>
+    <th>Offer until:</th>
+    <td>{{form.timespec.value}}</td>
+  </tr>
+  <tr>
+    <th>Offer to:</th>
+    <td><ul>
+{%for r in regs%}
+<li>{{r.fullname}}</li>
+{%endfor%}
+    </ul></td>
+  </tr>
+</table>
+
+<form method="post" action="." class="form-horizontal">{%csrf_token%}
+{%include "confreg/admin_backend_form_content.html" with cancelurl="../" savebutton="Send offer(s)" %}
+</form>
+
+<a class="btn btn-default btn-block" href="../">Back to waitlist</a>
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/">Back to dashboard</a>
+{%endblock%}
