@@ -3689,7 +3689,7 @@ def admin_waitlist(request, urlname):
 
     def _waitlist_paginate(objs, objtype):
         num = len(objs)
-        p = paginator.Paginator(objs, 20)
+        p = paginator.Paginator(objs, 50)
         p.varsuffix = objtype
         try:
             page = get_int_or_error(request.GET, "page_{0}".format(objtype), 1)
