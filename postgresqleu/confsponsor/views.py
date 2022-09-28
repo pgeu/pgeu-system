@@ -195,6 +195,10 @@ def sponsor_purchase_voucher(request, sponsorid):
     sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
     conference = sponsor.conference
 
+    if not sponsor.level.canbuyvoucher:
+        messages.error(request, "Vouchers cannot currently be purchased")
+        return HttpResponseRedirect("../../")
+
     if request.method == 'POST':
         form = PurchaseVouchersForm(conference, data=request.POST)
         if form.is_valid():
@@ -239,6 +243,10 @@ def sponsor_purchase_voucher(request, sponsorid):
 def sponsor_purchase_discount(request, sponsorid):
     sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
     conference = sponsor.conference
+
+    if not sponsor.level.canbuydiscountcoude:
+        messages.error(request, "Discount codes cannot currently be purchased")
+        return HttpResponseRedirect("../../")
 
     if request.method == 'POST':
         if 'confirm' in request.POST:
