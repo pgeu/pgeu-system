@@ -2277,7 +2277,7 @@ def view_ticket(request, confname):
     if not conference.tickets:
         raise Http404()
 
-    reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
+    reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True)
 
     return render_conference_response(request, conference, 'reg', 'confreg/view_ticket.html', {
         'conference': conference,
