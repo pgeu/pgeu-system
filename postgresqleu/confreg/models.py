@@ -895,6 +895,7 @@ class Track(models.Model):
 class Room(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     roomname = models.CharField(max_length=20, null=False, blank=False, verbose_name="Room name")
+    capacity = models.IntegerField(null=True)
     sortkey = models.IntegerField(null=False, blank=False, default=100)
     url = models.URLField(max_length=200, null=False, blank=True, verbose_name='URL',
                           help_text="Link to information about the room")
@@ -903,7 +904,7 @@ class Room(models.Model):
     availabledays = models.ManyToManyField(RegistrationDay, blank=True, verbose_name='Available days',
                                            help_text='Only used for schedule creation, not actual viewing!')
 
-    json_included_attributes = ['roomname', 'sortkey']
+    json_included_attributes = ['roomname', 'capacity', 'sortkey']
 
     def __str__(self):
         return self.roomname

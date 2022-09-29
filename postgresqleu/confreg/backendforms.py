@@ -486,7 +486,7 @@ class BackendTrackForm(BackendForm):
 
 class BackendRoomForm(BackendForm):
     helplink = 'schedule#rooms'
-    list_fields = ['roomname', 'comment', 'sortkey']
+    list_fields = ['roomname', 'capacity', 'comment', 'sortkey']
     coltypes = {
         'Sortkey': ['nosearch', ],
     }
@@ -494,7 +494,7 @@ class BackendRoomForm(BackendForm):
 
     class Meta:
         model = Room
-        fields = ['roomname', 'sortkey', 'url', 'availabledays', 'comment']
+        fields = ['roomname', 'sortkey', 'capacity', 'url', 'availabledays', 'comment']
 
     def fix_fields(self):
         if RegistrationDay.objects.filter(conference=self.conference).exists():

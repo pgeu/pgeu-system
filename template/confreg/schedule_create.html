@@ -277,8 +277,8 @@ the talk slot, if your schedule supports multiple different lengths.
 <h2>{{day.day|date:"l, F d"}}</h2>
 <div class="schedwrap" style="height: {{day.schedule_height}}px; width: {{day.schedule_width}}px;">
 {%for room in day.rooms%}
- <div class="sessblock roomheader" style="left: {{room.leftpos}}px; width: {{room.widthpos}}px; height: {{room.heightpos}}px;" title="{{room.name}}{%if room.comment%} - {{room.comment}}{%endif%}">
- {{room.name}}
+  <div class="sessblock roomheader" style="left: {{room.leftpos}}px; width: {{room.widthpos}}px; height: {{room.heightpos}}px;" title="{{room.name}}{%if room.capacity and room.capacity > 0%} ({{room.capacity}}){%endif%}{%if room.comment%} - {{room.comment}}{%endif%}">
+    {{room.name}}{%if room.capacity and room.capacity > 0%} ({{room.capacity}}){%endif%}
  </div>
 {%endfor%}
 {%for session in day.sessions%}

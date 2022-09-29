@@ -1162,6 +1162,7 @@ class SessionSet(object):
         return [{
             'id': id,
             'name': self.available_rooms[id]['roomname'],
+            'capacity': self.available_rooms[id]['capacity'],
             'sortkey': self.available_rooms[id]['sortkey'],
             'url': self.available_rooms[id]['url'],
             'comment': self.available_rooms[id]['roomcomment'],
@@ -1189,7 +1190,7 @@ def _scheduledata(request, conference):
             'confid': conference.id,
         })
 
-        allrooms = exec_to_keyed_dict("SELECT id, sortkey, url, roomname, comment AS roomcomment FROM confreg_room r WHERE conference_id=%(confid)s", {
+        allrooms = exec_to_keyed_dict("SELECT id, sortkey, url, roomname, capacity, comment AS roomcomment FROM confreg_room r WHERE conference_id=%(confid)s", {
             'confid': conference.id,
         })
 
@@ -2779,7 +2780,7 @@ def createschedule(request, confname):
 
     # Not post - so generate the page
 
-    allrooms = exec_to_keyed_dict("SELECT id, sortkey, url, roomname, comment AS roomcomment FROM confreg_room r WHERE conference_id=%(confid)s ORDER BY sortkey, roomname", {
+    allrooms = exec_to_keyed_dict("SELECT id, sortkey, url, roomname, capacity, comment AS roomcomment FROM confreg_room r WHERE conference_id=%(confid)s ORDER BY sortkey, roomname", {
         'confid': conference.id,
     })
     if len(allrooms) == 0:

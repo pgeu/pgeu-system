@@ -130,6 +130,9 @@ Sortkey
 :   An integer representing how to sort the room. Lower values sorts
 earlier.
 
+Capacity
+:   The maximum number of seats in this room.
+
 URL
 :   A link to more information about the room, such as a link to a map or
 in the case of a streamed conference, a link to the stream.
