@@ -3686,9 +3686,9 @@ def _waitlist_paginate(request, objs, objtype):
     except ValueError:
         page = 1
     try:
-        return p.page(page), num
+        return p.get_page(page), num
     except (paginator.EmptyPage, paginator.InvalidPage):
-        return p.page(paginator.num_pages), num
+        return 1, num
 
 
 def _waitlist_stats(request, conference):
