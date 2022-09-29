@@ -612,7 +612,8 @@ def _sender_shipment(request, conference, sponsor, shipmentid):
     else:
         form = SponsorShipmentForm(instance=shipment)
 
-    if shipment.sent_at or shipment.arrived_at:
+    # Temporarily disable ability to delete shipments, to see how it works out.
+    if shipment.sent_at or shipment.arrived_at or True:
         extrabutton = None
     else:
         extrabutton = 'Delete'
