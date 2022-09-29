@@ -23,7 +23,7 @@ rooms. Tracks are typically represented by different colors on the schedule.
 Session slot
 :    A session slot represents a start and an end time on the
 schedule. Most sessions are scheduled in a schedule slot, and it's
-what the drag-and-drop interface supports doing. However, it is
+what the interface supports doing. However, it is
 perfectly valid and possible to manually schedule a session that does
 not conform to a schedule slot.
 
@@ -89,17 +89,17 @@ make for an "almost A3".
 ### Tracks <a name="tracks"></a>
 
 Track name
-:	Name of the track
+:	Name of the track.
 
 Sort key
 :   An integer representing how to sort the track. Lower values sorts
 earlier.
 
 Background color
-:   Background color to use on schedule (and other places) for this track
+:   Background color to use on schedule (and other places) for this track.
 
 Foreground color
-:   Foreground color to use on schedule (and other places) for this track
+:   Foreground color to use on schedule (and other places) for this track.
 
 In call for papers
 :   Whether this track should be available to choose in the
@@ -124,20 +124,20 @@ registration exists.
 ### Rooms <a name="rooms"></a>
 
 Room name
-:   Name of the room
+:   Name of the room.
 
 Sortkey
 :   An integer representing how to sort the room. Lower values sorts
 earlier.
 
 URL
-:   A link to more information about the room, such a a link to a map or
+:   A link to more information about the room, such as a link to a map or
 in the case of a streamed conference, a link to the stream.
 
 Available days
 :   List the days that this room is available. If no day is specified, the
 room is made available on all days. If there are no registration days defined
-on the conference ,this field does not exist. This field is only used
+on the conference, this field does not exist. This field is only used
 when building a schedule graphically, not during regular viewing.
 
 Comment
@@ -148,21 +148,21 @@ organizers only.
 ### Schedule slots <a name="slots"></a>
 
 Start time
-:   When this slot starts
+:   When this slot starts.
 
 End time
-:   When this slot ends
+:   When this slot ends.
 
 ### Sessions <a name="sessions"></a>
 
 The form to edit session has the following fields:
 
 Title
-:	The title of the session
+:	The title of the session.
 
 Speakers
 :	One or more speakers. A speaker must have created a speaker
-profile before it can be used here, but it the same speaker
+profile before it can be used here, but the same speaker
 profile can be used across multiple conferences.
 
 HTML Icon
@@ -193,10 +193,10 @@ Room
 :	The room selected for this schedule, if any.
 
 Can feedback
-:   Indicates if feedback can be given on this session
+:   Indicates if feedback can be given on this session.
 
 Skill level
-:   Skill level of this session (if enabled at the conference level)
+:   Skill level of this session (if enabled at the conference level).
 
 Tags
 :   [Tags](#tags) for this session
@@ -212,7 +212,7 @@ speakers of the session.
 
 Internal notes
 :   These are notes that are auto-created by the system, or that are
-made by the administrators. These notes are only bisible to the
+made by the administrators. These notes are only visible to the
 conference organisers, and *not* to the speakers themselves.
 
 ### Speakers <a name="speakers"></a>
@@ -220,7 +220,7 @@ conference organisers, and *not* to the speakers themselves.
 Note that speakers are *shared* between all conferences. For each
 individual conference, it is possible to edit those speakers that have
 submitted one or more sessions for this conference, but not other
-conferences.This is, however, not a *security* boundary, as it is
+conferences. This is, however, not a *security* boundary, as it is
 possible to take another speaker and add them to a fake session, and
 then edit them. It's more a convenience feature.
 
@@ -240,7 +240,7 @@ Abstract
 
 Photo
 :    A photo of the speaker, JPEG or PNG format, sized 512x512 pixels. Will
-automaticlaly be resized to 512x512 on upload and centered on a transparent
+automatically be resized to 512x512 on upload and centered on a transparent
 background to keep the aspect ratio, and converted to PNG in order to support
 said transparency.
 
