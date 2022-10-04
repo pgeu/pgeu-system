@@ -73,12 +73,12 @@ class Command(BaseCommand):
         lines = list(TransactionStatus.objects.filter(settledat__isnull=True, authorizedat__lt=timezone.now() - timedelta(days=UNSETTLED_THRESHOLD), paymentmethod=method).order_by('authorizedat'))
         if len(lines):
             sio = StringIO()
-            sio.write("The following payments have been authorized for %s, but not captured for more than %s days.\nThese probably need to be verified manually.\n\n\n" % (method.internaldescription, UNSETTLED_THRESHOLD))
+            sio.write("The following payments have been authorized for %s, but not settled for more than %s days.\nThese probably need to be verified manually.\n\n\n" % (method.internaldescription, UNSETTLED_THRESHOLD))
 
             for line in lines:
                 sio.write("%s at %s: %s (%s%s)\n" % (line.pspReference, line.authorizedat, line.amount, settings.SITEBASE, reverse('admin:adyen_transactionstatus_change', args=(line.id,))))
 
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                              pm.config('notification_receiver'),
-                             'Adyen integration unconfirmed notifications',
+                             'Adyen integration unsettled transactions',
                              sio.getvalue())
