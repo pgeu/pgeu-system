@@ -1387,6 +1387,7 @@ AccessTokenPermissions = (
     ('vouchers', 'Voucher codes'),
     ('sponsors', 'Sponsors and counts'),
     ('addopts', 'Additional options and counts'),
+    ('schedule', 'Schedule JSON'),
 )
 
 

@@ -18,6 +18,7 @@ from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.messaging import messaging_implementations, get_messaging_class
 from postgresqleu.util.messaging.util import send_reg_direct_message
 from postgresqleu.util.backendviews import backend_list_editor, backend_process_form
+from postgresqleu.util.jsonutil import JsonSerializer
 from postgresqleu.confreg.util import get_authenticated_conference, get_authenticated_series
 from postgresqleu.util.request import get_int_or_error
 
@@ -63,6 +64,8 @@ from .backendforms import BackendMessagingForm
 from .backendforms import BackendSeriesMessagingForm
 from .backendforms import BackendRegistrationDmForm
 from .backendforms import BackendMergeSpeakerForm
+
+from .views import _scheduledata
 
 from .campaigns import get_campaign_from_id
 
@@ -891,6 +894,13 @@ SELECT direct.id, direct.name,
 FROM direct
 LEFT JOIN pending ON direct.id=pending.id
 ORDER BY name""", {'confid': conference.id})
+    elif datatype == 'schedule':
+        if dataformat != 'json':
+            raise Http404()
+        return HttpResponse(json.dumps(_scheduledata(request, conference),
+                                       cls=JsonSerializer,
+                                       indent=2),
+                            content_type='application/json')
     else:
         raise Http404()
 

@@ -1135,7 +1135,10 @@ class BackendAccessTokenForm(BackendForm):
     def _transformed_accesstoken_permissions(self):
         for k, v in AccessTokenPermissions:
             baseurl = '/events/admin/{0}/tokendata/{1}/{2}'.format(self.conference.urlname, self.instance.token, k)
-            formats = ['csv', 'tsv', 'json', ]
+            if k != 'schedule':
+                formats = ['csv', 'tsv', 'json', ]
+            else:
+                formats = ['json', ]
             yield k, mark_safe('{0} ({1})'.format(v, ", ".join(['<a href="{0}.{1}">{1}</a>'.format(baseurl, f) for f in formats])))
 
     def fix_fields(self):
