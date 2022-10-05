@@ -6,9 +6,8 @@ from psycopg2.tz import LocalTimezone
 
 
 def get_native_cursor():
-    # Remove djangos dumb prevention of us to change the timezone
-    curs = connection.cursor()
-    curs.cursor.tzinfo_factory = LocalTimezone
+    # Unwrap djangos many layers to get a raw psyopg2 cursor
+    curs = connection.cursor().cursor.connection.cursor()
     return curs
 
 
