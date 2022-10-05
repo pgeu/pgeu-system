@@ -593,8 +593,9 @@ def _sender_shipment(request, conference, sponsor, shipmentid):
             form.save()
 
             if subject:
-                mailstr = "Shipment id: {0}\nDescription: {1}\nSent date:   {2}\nParcels:     {3}\nShipper:     {4}\nTracking nr: {5}\nTracking link: {6}\n".format(
+                mailstr = "Shipment id: {0}\nDestination: {1}\nDescription: {2}\nSent date:   {3}\nParcels:     {4}\nShipper:     {5}\nTracking nr: {6}\nTracking link: {7}\n".format(
                     form.instance.addresstoken,
+                    shipment.address.title,
                     form.instance.description,
                     form.instance.sent_at,
                     form.instance.sent_parcels,
