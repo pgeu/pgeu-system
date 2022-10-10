@@ -22,6 +22,11 @@ smartphone model you may need to configure the camera before you scan
 (for example so that it doesn't use the front-facing camera, which
 some models do by default).
 
+NOTE! Due to an unknown change in a recent update to iOS, when using
+the web app from an iOS device such as an iPhone, the device must
+be held in landscape mode instead of portrait for the scan to
+complete correctly.
+
 To access your personal scanning page, go to:
 
 {{sitebase}}/events/sponsor/scanning/{{scanner.token}}/
