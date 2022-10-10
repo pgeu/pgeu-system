@@ -124,7 +124,7 @@ class ConferenceRegistrationAdmin(admin.ModelAdmin):
     search_fields = ['email', 'firstname', 'lastname', ]
     ordering = ['-payconfirmedat', '-created', 'lastname', 'firstname', ]
     filter_horizontal = ('additionaloptions',)
-    exclude = ('invoice', 'bulkpayment', )
+    exclude = ('invoice', 'bulkpayment', 'messaging_config', )
     readonly_fields = ('invoice_link', 'bulkpayment_link', 'lastmodified', )
     autocomplete_fields = ('attendee', 'registrator', )
 
