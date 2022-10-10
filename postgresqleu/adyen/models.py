@@ -74,7 +74,7 @@ class TransactionStatus(models.Model):
 class Refund(models.Model):
     receivedat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     notification = models.ForeignKey(Notification, null=False, blank=False, on_delete=models.CASCADE)
-    transaction = models.OneToOneField(TransactionStatus, on_delete=models.CASCADE)
+    transaction = models.ForeignKey(TransactionStatus, on_delete=models.CASCADE)
     refund_amount = models.DecimalField(decimal_places=2, max_digits=20, null=False)
 
     def __str__(self):
