@@ -76,7 +76,7 @@ class ReportAdmin(admin.ModelAdmin):
 
 
 class TransactionStatusAdmin(admin.ModelAdmin):
-    list_display = ('pspReference', 'amount', 'settledamount', 'authorizedat', 'capturedat', 'settledat', 'method', 'refund')
+    list_display = ('pspReference', 'amount', 'settledamount', 'authorizedat', 'capturedat', 'settledat', 'method')
     readonly_fields = ('notification_link', 'refund_link', )
     exclude = ('notification', )
     search_fields = ('pspReference', 'notes', )
@@ -88,9 +88,14 @@ class TransactionStatusAdmin(admin.ModelAdmin):
     notification_link.short_description = 'Notification'
 
     def refund_link(self, obj):
-        if obj.refund:
-            url = reverse("admin:adyen_refund_change", args=(obj.refund.id,))
-            return mark_safe('%s at <a href="%s">%s</a>' % (obj.refund.refund_amount, url, obj.refund.receivedat))
+        refunds = list(obj.refund_set.all())
+        if refunds:
+            return mark_safe(
+                "<br/>".join(
+                    '%s at <a href="%s">%s</a>' % (r.refund_amount, reverse("admin:adyen_refund_change", args=(r.id,)), r.receivedat)
+                    for r in refunds
+                )
+            )
         else:
             return "Not refunded"
     refund_link.short_description = 'Refund'
