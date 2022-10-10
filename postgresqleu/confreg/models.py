@@ -1357,7 +1357,7 @@ class PendingAdditionalOrder(models.Model):
 class RefundPattern(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     percent = models.IntegerField(null=False, verbose_name="Percent to refund", validators=[MinValueValidator(1), MaxValueValidator(100)])
-    fees = models.IntegerField(null=False, verbose_name="Fees not to refund", help_text="This amount will be deducted from the calculated refund amount. Amount should be entered *without* VAT.")
+    fees = models.DecimalField(decimal_places=2, max_digits=10, null=False, verbose_name="Fees not to refund", help_text="This amount will be deducted from the calculated refund amount. Amount should be entered *without* VAT.")
     fromdate = models.DateField(null=True, blank=True, verbose_name="From date", help_text="Suggest for refunds starting from this date")
     todate = models.DateField(null=True, blank=True, verbose_name="To date", help_text="Suggest for refunds until this date")
 

@@ -533,6 +533,7 @@ class BackendRefundPatternForm(BackendForm):
     exclude_date_validators = ['fromdate', 'todate', ]
     allow_copy_previous = True
     copy_transform_form = BackendTransformConferenceDateTimeForm
+    vat_fields = {'fees': 'reg'}
 
     class Meta:
         model = RefundPattern
