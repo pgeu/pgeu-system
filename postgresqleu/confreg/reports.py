@@ -586,7 +586,7 @@ LEFT JOIN confreg_conferenceregistration rsoft
       rsoft.canceledat IS NULL AND
       lower(rsoft.firstname || ' ' || rsoft.lastname) = lower(spk.fullname)
 WHERE s.conference_id=%(confid)s AND
-      s.status=1 AND
+      s.status IN (1, 4) AND
       NOT EXISTS (SELECT * FROM confreg_conferenceregistration r
                   WHERE r.conference_id=%(confid)s
                   AND r.payconfirmedat IS NOT NULL
