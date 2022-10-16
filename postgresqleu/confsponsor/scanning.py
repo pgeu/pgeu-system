@@ -76,7 +76,7 @@ def sponsor_scanning(request, sponsorid):
                             scanner.delete()
                             messages.info(request, "Attendee {0} removed from scanning".format(n))
                     except SponsorScanner.DoesNotExist:
-                        messges.error(request, "Attendee not found")
+                        messages.error(request, "Attendee not found")
                     return HttpResponseRedirect(".")
                 elif k.startswith('email-'):
                     rid = k[len('email-'):]
