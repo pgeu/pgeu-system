@@ -3,7 +3,6 @@ from django.forms import RadioSelect
 from django.forms import ValidationError
 from django.forms.utils import ErrorList
 from django.contrib.auth.models import User
-from django.db.models import Q
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
 from django.utils import timezone
@@ -39,11 +38,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
         self.regforother = kwargs.pop('regforother', None)
         super(ConferenceRegistrationForm, self).__init__(*args, **kwargs)
         self.user = user
-        self.fields['regtype'].queryset = RegistrationType.objects.select_related('conference').filter(
-                Q(activeuntil__gte=today_conference()) | Q(activeuntil__isnull=True),
-                conference=self.instance.conference,
-                active=True
-                ).order_by('sortkey')
+        self.fields['regtype'].queryset = RegistrationType.objects.select_related('conference').filter(conference=self.instance.conference).order_by('sortkey')
         self.fields['photoconsent'].required = True
         for f in self.instance.conference.remove_fields:
             del self.fields[f]
