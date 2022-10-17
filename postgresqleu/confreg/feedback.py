@@ -11,8 +11,9 @@ from collections import OrderedDict
 
 def build_graphdata(answers, options):
     optionhash = OrderedDict(list(zip(options, [0] * len(options))))
-    for a in answers:
-        optionhash[a] += 1
+    if answers:
+        for a in answers:
+            optionhash[a] += 1
     return iter(optionhash.items())
 
 
@@ -59,7 +60,10 @@ ORDER BY sortkey""", {
         else:
             r['graphdata'] = build_graphdata(rateanswers, list(range(0, 6)))
 
-        currentsection['questions'].append(r)
+        if 'questions' in currentsection:
+            currentsection['questions'].append(r)
+        else:
+            currentsection['questions'] = [r, ]
     else:
         sections.append(currentsection)
 
