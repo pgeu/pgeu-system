@@ -120,7 +120,7 @@ INSTALLED_APPS = [
     'postgresqleu.membership',
 ]
 
-# Root directory for truetype fonts
+# Root directory for DejaVu truetype fonts
 FONTROOT = "/usr/share/fonts/truetype/ttf-dejavu"
 
 # List of IP addresses (v4 and v6) that is allowed to access monitoring urls
@@ -255,6 +255,18 @@ ADMINS = (
     ('{0} webmaster'.format(ORG_NAME), DEFAULT_EMAIL),
 )
 MANAGERS = ADMINS
+
+
+# Fonts setup if not already done
+_dejavu_fonts = [
+    ('DejaVu Serif', '{}/DejaVuSerif.ttf'.format(FONTROOT)),
+    ('DejaVu Serif Italic', '{}/DejaVuSerif-Italic.ttf'.format(FONTROOT)),
+    ('DejaVu Serif Bold', '{}/DejaVuSerif-Bold.ttf'.format(FONTROOT)),
+]
+if 'REGISTER_FONTS' not in locals():
+    REGISTER_FONTS = _dejavu_fonts
+else:
+    REGISTER_FONTS = _dejavu_fonts + REGISTER_FONTS
 
 # Invoice module
 # --------------

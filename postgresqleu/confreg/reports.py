@@ -380,7 +380,9 @@ class ReportWriterPdf(ReportWriterBase):
     def render(self):
         resp = HttpResponse(content_type='application/pdf')
 
-        registerFont(TTFont('DejaVu Serif', "{}/DejaVuSerif.ttf".format(settings.FONTROOT)))
+        for font, fontfile in settings.REGISTER_FONTS:
+            registerFont(TTFont(font, fontfile))
+
         pagesize = LETTER if self.pagesize == 'letter' else A4
         if self.orientation != 'portrait':
             pagesize = landscape(pagesize)
@@ -547,7 +549,7 @@ ORDER BY {}""".format(where, ", ".join([_get_table_aliased_field(o.get_orderby_f
     elif format == 'badge':
         try:
             resp = HttpResponse(content_type='application/pdf')
-            render_jinja_badges(conference, settings.FONTROOT, result, resp, borders, pagebreaks, orientation, pagesize)
+            render_jinja_badges(conference, settings.REGISTER_FONTS, result, resp, borders, pagebreaks, orientation, pagesize)
             return resp
         except Exception as e:
             return HttpResponse("Exception occured: %s" % e, content_type='text/plain')
