@@ -40,6 +40,17 @@ between them. This is particularly useful if for example generating an
 attendee list to tick off people on -- make an empty column for the
 tick-mark!
 
+## Badges
+
+Select "Last name", "First name" and "E-mail", and include additional
+fields if your badge template uses them.
+
+For badges for all registered attendees you need a filter:
+
+"Payment confirmed" (leave the field empty)
+
+Select "Format: Badge", and generate the report.
+
 ## Time reports <a name="time"></a>
 
 The time reports can be used to draw graphs relative to the time of
