@@ -385,7 +385,10 @@ def view_registration_ticket(request, urlname, regid):
     reg = get_object_or_404(ConferenceRegistration, conference=conference, pk=regid)
 
     resp = HttpResponse(content_type='application/pdf')
-    render_jinja_ticket(reg, resp, JINJA_TEMPLATE_ROOT, settings.REGISTER_FONTS)
+    try:
+        render_jinja_ticket(reg, resp, JINJA_TEMPLATE_ROOT, settings.REGISTER_FONTS)
+    except Exception as e:
+        return HttpResponse("Exception rendering ticket: {}".format(e.__repr__()), content_type='text/plain')
     return resp
 
 
@@ -394,7 +397,10 @@ def view_registration_badge(request, urlname, regid):
     reg = get_object_or_404(ConferenceRegistration, conference=conference, pk=regid)
 
     resp = HttpResponse(content_type='application/pdf')
-    render_jinja_badges(conference, settings.REGISTER_FONTS, [reg.safe_export(), ], resp, False, False)
+    try:
+        render_jinja_badges(conference, settings.REGISTER_FONTS, [reg.safe_export(), ], resp, False, False)
+    except Exception as e:
+        return HttpResponse("Exception rendering badge: {}".format(e.__repr__()), content_type='text/plain')
     return resp
 
 
