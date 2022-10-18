@@ -53,6 +53,7 @@ class JinjaFlowable(Flowable):
         self.imgpath = imgpath
         self.width = getmm(js, 'width')
         self.height = getmm(js, 'height')
+        self.fontname = self.js.get('fontname', 'DejaVu Serif')
         if self.js.get('center', False):
             self.hAlign = 'CENTER'
 
@@ -167,7 +168,7 @@ class JinjaFlowable(Flowable):
     def draw_paragraph(self, o):
         # Attempt to draw a paragraph that can dynamically change the font size
         # as necessary.
-        fontname = 'DejaVu Serif{0}'.format(o.get('bold', False) and ' Bold' or '')
+        fontname = '{0}{1}'.format(self.fontname, o.get('bold', False) and ' Bold' or '')
         lines = o['text'].splitlines()
 
         if len(lines) == 0:

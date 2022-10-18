@@ -328,6 +328,9 @@ paragraph
 :    text
      : The actual text to write
 
+     font
+     : The font to use. This font must be regsitered in local_settings.py!
+
      color
 	 : The color to use (defaults to *black*)
 
