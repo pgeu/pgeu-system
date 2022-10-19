@@ -20,6 +20,7 @@ class RawNotificationAdmin(admin.ModelAdmin):
 
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ('receivedat', 'eventDate', 'merchantAccountCode', 'eventCode', 'live', 'success', 'confirmed', 'pspReference', )
+    list_filter = ('merchantAccountCode', )
     readonly_fields = ('rawnotification_link',)
     exclude = ('rawnotification', )
     search_fields = ('pspReference', 'merchantReference', 'reason', )
