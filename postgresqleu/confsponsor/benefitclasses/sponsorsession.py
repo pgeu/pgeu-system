@@ -150,6 +150,18 @@ class SponsorSession(BaseBenefit):
             ) + s
         return s
 
+    def render_reportinfo(self, claimedbenefit):
+        if 'session' in claimedbenefit.claimjson:
+            session = speaker = ""
+            try:
+                session = ConferenceSession.objects.get(pk=claimedbenefit.claimjson['session']).title
+                speaker = Speaker.objects.get(pk=claimedbenefit.claimjson['speaker']).fullname
+            except Exception:
+                pass
+            return '{} by {}'.format(session, speaker)
+        else:
+            return ''
+
     def can_unclaim(self, claimedbenefit):
         if 'session' in claimedbenefit.claimjson:
             # If we've already assigned a session to it, we can't unclaim it

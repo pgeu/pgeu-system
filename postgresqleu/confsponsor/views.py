@@ -1156,6 +1156,70 @@ def sponsor_admin_imageview(request, benefitid):
     return resp
 
 
+def _claimstatus(claim):
+    if claim.claimedat is None:
+        return 'Unclaimed'
+    elif claim.declined:
+        return 'Declined'
+    elif claim.confirmed:
+        return 'Confirmed'
+    else:
+        return 'Claimed (unconfirmed)'
+
+
+@login_required
+def sponsor_admin_benefit_reports(request, confurlname):
+    conference = get_authenticated_conference(request, confurlname)
+
+    if request.method == "POST":
+        benefitidlist = [int(v) for k, v in request.POST.items() if k.startswith('b_')]
+        claimedbenefits = SponsorClaimedBenefit.objects.select_related('sponsor', 'benefit', 'benefit__level').filter(benefit__level__conference=conference, benefit__pk__in=benefitidlist).order_by('-benefit__level__levelcost', 'benefit__level__levelname', 'benefit__sortkey', 'sponsor__name')
+
+        tables = []
+        lastbenefit = None
+        currentrows = None
+
+        def _appendrows():
+            if currentrows:
+                tables.append({
+                    'title': lastbenefit.benefitname,
+                    'extraclasses': 'print',
+                    'columns': ['Sponsor', 'Status', 'Info'],
+                    'rows': currentrows,
+                })
+        for cb in claimedbenefits:
+            print(cb)
+            if lastbenefit != cb.benefit:
+                _appendrows()
+                lastbenefit = cb.benefit
+                currentrows = []
+            currentrows.append([[
+                cb.sponsor.name,
+                _claimstatus(cb),
+                get_benefit_class(cb.benefit.benefit_class)(cb.sponsor.level, cb.benefit.class_parameters).render_reportinfo(cb) if cb.confirmed else '',
+            ], None])
+        _appendrows()
+
+        return render(request, 'confsponsor/admin_benefit_reports.html', {
+            'conference': conference,
+            'tables': tables,
+            'breadcrumbs': (
+                ('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),
+                ('/events/sponsor/admin/{0}/benefitreports/'.format(conference.urlname), 'Benefit reports')
+            ),
+            'helplink': 'sponsors',
+        })
+    else:
+        benefits = SponsorshipBenefit.objects.select_related('level').filter(level__conference=conference).order_by('-level__levelcost', 'level__levelname', 'sortkey')
+
+        return render(request, 'confsponsor/admin_benefit_reports.html', {
+            'conference': conference,
+            'benefits': benefits,
+            'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
+            'helplink': 'sponsors',
+        })
+
+
 @superuser_required
 def sponsor_admin_test_vat(request, confurlname):
     # Just verify the conference exists and we have permissions

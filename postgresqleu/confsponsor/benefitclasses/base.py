@@ -9,6 +9,9 @@ class BaseBenefit(object):
     def render_claimdata(self, claimedbenefit, isadmin):
         return ''
 
+    def render_reportinfo(self, claimedbenefit):
+        return ''
+
     def can_unclaim(self, claimedbenefit):
         return True
 

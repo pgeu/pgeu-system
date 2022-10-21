@@ -1,0 +1,26 @@
+{%extends "confreg/confadmin_base.html" %}
+{%block title%}Benefit reports{%endblock%}
+{%block layoutblock%}
+<h1 class="noprint">Benefit reports</h1>
+
+{%if tables%}
+{%include "adm/include/multi_tables.html" %}
+{%else%}
+<form method="post" action="."> {% csrf_token %}
+  <h2>Select benefits</h2>
+  <p>
+    Check the benefits for which to include the status.
+  </p>
+{%for benefit in benefits%}
+{%ifchanged benefit.level%}
+  <h3>{{benefit.level.levelname}}</h3>
+{%endifchanged%}
+  <input type="checkbox" name="b_{{benefit.id}}" value="{{benefit.id}}"> {{benefit.benefitname}}<br/>
+{%endfor%}
+  <input type="submit" value="Generate report">
+</form>
+<br/>
+{%endif%}
+
+<a class="btn btn-default btn-block" href="../">Return to sponsor dashboard</a>
+{%endblock%}

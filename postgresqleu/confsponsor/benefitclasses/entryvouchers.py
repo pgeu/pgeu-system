@@ -102,6 +102,17 @@ class EntryVouchers(BaseBenefit):
         s.write("</table>")
         return s.getvalue()
 
+    def render_reportinfo(self, claimedbenefit):
+        if claimedbenefit.claimjson['batchid'] == 0:
+            return ''
+        batch = PrepaidBatch.objects.get(pk=claimedbenefit.claimjson['batchid'])
+        vouchers = list(batch.prepaidvoucher_set.all())
+
+        return '{}/{} vouchers used'.format(
+            len([v for v in vouchers if v.user]),
+            len(vouchers),
+        )
+
     def can_unclaim(self, claimedbenefit):
         if claimedbenefit.claimjson['batchid'] == 0:
             # It was declined, so we can unclaim that
