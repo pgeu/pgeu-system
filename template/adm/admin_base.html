@@ -10,6 +10,7 @@
   <link rel="shortcut icon" href="/favicon.ico" />
   <link rel="stylesheet" media="screen" href="/media/css/bootstrap.min.css" />
   <link rel="stylesheet" media="screen" href="/media/css/confadmin.css" />
+  <link rel="stylesheet" type="text/css" media="print" href="/media/css/confadmin_print.css" />
   <script type="text/javascript" src="/media/jq/jquery-1.9.1.min.js"></script>
   <script type="text/javascript" src="/media/js/bootstrap.min.js"></script>
   <script type="text/javascript" src="/media/js/admin.js"></script>
@@ -17,7 +18,7 @@
  </head>
  <body>
 {%if debug %}
-  <div class="alert alert-danger text-center">This site has DEBUG enabled!</div>
+  <div class="alert alert-danger text-center noprint">This site has DEBUG enabled!</div>
 {%endif%}
 {%block fullnavcontents%}
    <nav class="navbar navbar-default">

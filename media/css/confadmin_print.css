@@ -1,0 +1,27 @@
+.noprint {
+    display: none;
+}
+nav {
+    display: none;
+}
+table.print {
+    width: 100%;
+    border-collapse: collapse;
+}
+div.tablewrap {
+    break-inside: avoid-page;
+    break-before: avoid;
+}
+table.print tr td {
+    border: 1px solid black;
+    padding: 2px;
+}
+
+table.print tr th {
+    border: 1px solid black;
+    padding: 2px;
+    background-color: lightgray;
+}
+a.btn {
+    display: none;
+}
