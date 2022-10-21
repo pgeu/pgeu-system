@@ -1,5 +1,6 @@
 {%load date_or_string%}
 {%for table in tables%}
+<div class="tablewrap">
 <h2>{{table.title}}</h2>
 <table class="table table-bordered table-striped table-hover table-condensed {{table.extraclasses}}">
 <tr>
@@ -20,3 +21,4 @@
 {%endfor%}
 </table>
 {%endfor%}
+</div>
