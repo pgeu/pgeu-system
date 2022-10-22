@@ -86,6 +86,14 @@
 {%endif%}
 
 <h2>Refund invoice</h2>
+{%if invoice.processor %}
+<p>
+  <strong>Warning!</strong> This invoice was created using an
+  automated system, and should normally be refunded from that
+  system. Manual refunds are allowed, but be careful as this can
+  create inconsistencies between the systems!
+</p>
+{%endif%}
 <form method="post" action="." class="form-horizontal">{% csrf_token %}
 {%include "confreg/admin_backend_form_content.html" with savebutton=invoice.can_autorefund|yesno:"Issue refund,Flag as refunded" cancelurl="../" %}
 </form>

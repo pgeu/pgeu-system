@@ -194,11 +194,14 @@ This invoice has been <b>paid</b>.
 {%if invoice.processor%}
 <div class="row">
   <div class="col-md-12">
-    This invoice was created using an automated system, and must also be refunded from
-    that system.
+    <strong>Warning!</strong> This invoice was created using an
+    automated system, and should normally be refunded from that
+    system. Manual refunds are allowed, but be careful as this can
+    create inconsistencies between the systems!
   </div>
 </div>
-{%else%}
+{%endif%}
+
 {%if invoice.total_refunds.remaining.amount%}
 <div class="row">
   <div class="col-md-2">
@@ -212,7 +215,6 @@ This invoice has been <b>paid</b>.
   </div>
 </div>
 {%endif%}{# remaining to refund#}
-{%endif%}{# automated or manual#}
 {%else%}{# paid#}
 {%if invoice.finalized%}
 <h2>Payment</h2>
