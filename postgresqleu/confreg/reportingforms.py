@@ -44,7 +44,7 @@ class QueuePartitionForm(forms.Form):
   CASE WHEN upper(substring({0}, 1, 1)) BETWEEN 'A' AND 'Z' THEN upper(substring({0}, 1, 1)) ELSE NULL END AS letter,
   count(*) AS num
  FROM confreg_conferenceregistration
- WHERE conference_id=%(confid)s AND payconfirmedat IS NOT NULL
+ WHERE conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND canceledat IS NULL
   GROUP BY 1
 ), t2 AS (
  SELECT letter,
