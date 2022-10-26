@@ -55,6 +55,9 @@ def sponsor_scanning(request, sponsorid):
                 if sponsor.sponsorscanner_set.filter(scanner=reg).exists():
                     messages.warning(request, "Attendee already registered as a scanner")
                     return HttpResponseRedirect(".")
+                if reg.attendee is None:
+                    messages.warning(request, "Attendee does not have a connected account and must connect one before they can become a scanner")
+                    return HttpResponseRedirect(".")
                 scanner = SponsorScanner(sponsor=sponsor, scanner=reg, token=generate_random_token())
                 scanner.save()
                 sponsor.sponsorscanner_set.add(scanner)
