@@ -547,6 +547,14 @@ class Telegram(object):
                 _answer_with_alert('Unknown twitter post policy')
                 return
 
+        # Schedule an answer to the callback query
+        send_channel_message(messaging, '__telegram_internal', json.dumps({
+            'command': 'answerCallbackQuery',
+            'param': {
+                'callback_query_id': cb['id'],
+            }
+        }))
+
         if m.group(2) == 'approve':
             tweet.approved = True
             tweet.approvedby = fromuser
