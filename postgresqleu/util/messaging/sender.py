@@ -51,7 +51,7 @@ def send_pending_messages(providers):
 
                 # Retry in 5 minutes
                 n.time += timedelta(minutes=5)
-                n.save()
+                n.save(update_fields=['time'])
             else:
                 # Successfully posted, so delete it
                 n.delete()

@@ -558,7 +558,7 @@ class Telegram(object):
         if m.group(2) == 'approve':
             tweet.approved = True
             tweet.approvedby = fromuser
-            tweet.save()
+            tweet.save(update_fields=['approved', 'approvedby'])
             notify_twitter_moderation(tweet, completed=True, approved=True)
             trigger_immediate_job_run('post_media_broadcasts')
         else:
