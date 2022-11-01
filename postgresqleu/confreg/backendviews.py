@@ -313,8 +313,8 @@ def edit_messaging(request, urlname, rest):
     # available messaging on the series.
     with connection.cursor() as curs:
         curs.execute(
-            """INSERT INTO confreg_conferencemessaging (conference_id, provider_id, broadcast, privatebcast, notification, orgnotification, config)
-SELECT %(confid)s, id, false, false, false, false, '{}'
+            """INSERT INTO confreg_conferencemessaging (conference_id, provider_id, broadcast, privatebcast, notification, orgnotification, socialmediamanagement, config)
+SELECT %(confid)s, id, false, false, false, false, false, '{}'
 FROM confreg_messagingprovider mp
 WHERE mp.series_id=%(seriesid)s AND NOT EXISTS (
  SELECT 1 FROM confreg_conferencemessaging m2 WHERE m2.conference_id=%(confid)s AND m2.provider_id=mp.id
