@@ -12,15 +12,22 @@ class RegisteredUsersLookup(LookupBase):
 
     @property
     def label_from_instance(self):
-        return lambda x: '{0} <{1}>'.format(x.fullname, x.email)
+        return self._label_from_instance()
+
+    def _label_from_instance(self):
+        return lambda x: '{0} {1}<{2}>'.format(
+            x.fullname,
+            '({}) '.format(x.attendee.username) if x.attendee else '',
+            x.email,
+        )
 
     @classmethod
     def get_values(self, query, conference):
-        return [{'id': r.id, 'value': r.fullname}
+        return [{'id': r.id, 'value': RegisteredUsersLookup._label_from_instance(self)(r)}
                 for r in ConferenceRegistration.objects.filter(
                     conference=conference,
                     payconfirmedat__isnull=False, canceledat__isnull=True).filter(
-                        Q(firstname__icontains=query) | Q(lastname__icontains=query) | Q(email__icontains=query)
+                        Q(attendee__username=query) | Q(firstname__icontains=query) | Q(lastname__icontains=query) | Q(email__icontains=query)
                     )[:30]]
 
 
