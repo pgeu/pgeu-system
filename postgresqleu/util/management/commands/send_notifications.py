@@ -29,7 +29,7 @@ class Command(BaseCommand):
         curs = connection.cursor()
         curs.execute("SELECT pg_try_advisory_lock(931779)")
         if not curs.fetchall()[0][0]:
-            raise CommandError("Failed to get advisory lock, existing post_media_broadcasts process stuck?")
+            raise CommandError("Failed to get advisory lock, existing send_notifications process stuck?")
 
         providers = ProviderCache()
 
