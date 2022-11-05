@@ -17,7 +17,7 @@ from .forms import SelectSetValueField
 from .oauthapps import oauth_application_choices, oauth_application_create
 
 
-def backend_process_form(request, urlname, formclass, id, cancel_url='../', saved_url='../', allow_new=True, allow_delete=True, breadcrumbs=None, permissions_already_checked=False, conference=None, bypass_conference_filter=False, instancemaker=None, deleted_url=None, topadmin=None):
+def backend_process_form(request, urlname, formclass, id, cancel_url='../', saved_url='../', allow_new=True, allow_delete=True, allow_save=True, breadcrumbs=None, permissions_already_checked=False, conference=None, bypass_conference_filter=False, instancemaker=None, deleted_url=None, topadmin=None):
     if not conference and not bypass_conference_filter:
         conference = get_authenticated_conference(request, urlname)
 
@@ -207,12 +207,13 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
         'breadcrumbs': breadcrumbs,
         'helplink': form.helplink,
         'allow_delete': allow_delete and instance.pk,
+        'allow_save': allow_save,
         'adminurl': adminurl,
         'linked': [(url, handler, handler.get_list(form.instance)) for url, handler in list(form.linked_objects.items()) if form.instance],
     })
 
 
-def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, allow_delete=True, conference=None, breadcrumbs=[], bypass_conference_filter=False, instancemaker=None, return_url='../', topadmin=None, object_queryset=None):
+def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, allow_delete=True, allow_save=True, conference=None, breadcrumbs=[], bypass_conference_filter=False, instancemaker=None, return_url='../', topadmin=None, object_queryset=None):
     if not conference and not bypass_conference_filter:
         conference = get_authenticated_conference(request, urlname)
 
@@ -309,6 +310,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
                                     None,
                                     allow_new=True,
                                     allow_delete=allow_delete,
+                                    allow_save=allow_save,
                                     breadcrumbs=breadcrumbs + [('../', formclass._verbose_name_plural().capitalize()), ],
                                     conference=conference,
                                     bypass_conference_filter=bypass_conference_filter,
@@ -376,6 +378,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
                                 formclass,
                                 id,
                                 allow_delete=allow_delete,
+                                allow_save=allow_save,
                                 breadcrumbs=breadcrumbs + [('../', formclass._verbose_name_plural().capitalize()), ],
                                 conference=conference,
                                 bypass_conference_filter=bypass_conference_filter,
