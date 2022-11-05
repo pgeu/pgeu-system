@@ -15,6 +15,7 @@ from postgresqleu.util.messaging.util import truncate_shortened_post
 
 def send_pending_messages(providers):
     err = False
+    numsent = 0
 
     # First delete any expired messages
     NotificationQueue.objects.filter(expires__lte=timezone.now()).delete()
@@ -55,6 +56,7 @@ def send_pending_messages(providers):
             else:
                 # Successfully posted, so delete it
                 n.delete()
+                numsent += 1
 
             # Rate limit us to one per second, that should usually be enough
             if first:
@@ -62,7 +64,7 @@ def send_pending_messages(providers):
             else:
                 time.sleep(1)
 
-    return not err
+    return not err, numsent
 
 
 def send_pending_posts(providers):

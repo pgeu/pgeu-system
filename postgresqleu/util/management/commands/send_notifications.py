@@ -33,5 +33,9 @@ class Command(BaseCommand):
 
         providers = ProviderCache()
 
-        if not send_pending_messages(providers):
+        ok, numsent = send_pending_messages(providers)
+        if numsent:
+            print("Sent {} notification messages".format(numsent))
+
+        if not ok:
             sys.exit(1)
