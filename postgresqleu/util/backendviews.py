@@ -207,7 +207,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
         'breadcrumbs': breadcrumbs,
         'helplink': form.helplink,
         'allow_delete': allow_delete and instance.pk,
-        'allow_save': allow_save,
+        'disallow_save': not allow_save,
         'adminurl': adminurl,
         'linked': [(url, handler, handler.get_list(form.instance)) for url, handler in list(form.linked_objects.items()) if form.instance],
     })
