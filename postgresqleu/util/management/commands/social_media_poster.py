@@ -23,8 +23,15 @@ class Command(ReloadCommand):
         while True:
             providers = ProviderCache()
 
-            send_pending_messages(providers)
-            send_pending_posts(providers)
+            ok, numsent = send_pending_messages(providers)
+            if numsent:
+                print("Sent {} notification messages".format(numsent))
+
+            ok, numposts, numreposts = send_pending_posts(providers)
+            if numposts:
+                print("Sent {} broadcast posts".format(numposts))
+            if numreposts:
+                print("Made {} broadcast reposts".format(numreposts))
 
             self.eat_notifications()
 
