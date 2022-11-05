@@ -36,7 +36,8 @@ class MerchantAccountFilter(admin.SimpleListFilter):
     parameter_name = 'merchantaccount'
 
     def lookups(self, request, model_admin):
-        return (('PostgreSqlEUCOM', 'PostgreSqlEUCOM'), ('PostgreSqlEUPOS', 'PostgreSqlEUPOS'), )
+        # This is painfully inefficient, but it's called infrequently, so meh.
+        return [(c['merchantAccountCode'], c['merchantAccountCode']) for c in Notification.objects.values('merchantAccountCode').distinct()]
 
     def queryset(self, request, queryset):
         if self.value():
