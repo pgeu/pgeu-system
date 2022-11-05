@@ -177,7 +177,14 @@ def wikipage_edit(request, confurl, wikiurl):
 
                 # Send notifications to admin and to any subscribers
                 subject = '[{0}] Wiki page {1} changed'.format(conference.conferencename, page.title)
-                body = "{0} has modified the page '{1}' with the following changes\n\n\n{2}\n".format(reg.fullname, page.title, diff)
+                body = "{0} has modified the page '{1}' with the following changes\n\n\n{2}\n\nPage: {3}/events/{4}/register/wiki/{5}/".format(
+                    reg.fullname,
+                    page.title,
+                    diff,
+                    settings.SITEBASE,
+                    conference.urlname,
+                    page.url,
+                )
                 send_simple_mail(conference.notifyaddr,
                                  conference.notifyaddr,
                                  subject,
@@ -268,6 +275,7 @@ def admin_edit_page(request, urlname, pageid):
                         to = v[1]
                     s.write("Changed {0} from {1} to {2}\n".format(k, fr, to))
                 if s.tell() > 0:
+                    s.write("\n\nPage admin: {}/events/admin/{}/wiki/{}/".format(settings.SITEBASE, conference.urlname, page.id))
                     # Something changed, so generate audit email
                     send_simple_mail(conference.notifyaddr,
                                      conference.notifyaddr,
