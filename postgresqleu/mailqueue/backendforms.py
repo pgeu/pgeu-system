@@ -12,6 +12,7 @@ class BackendMailqueueForm(BackendForm):
 
     list_fields = ['sendtime', 'sender', 'receiver', 'subject', ]
     helplink = 'mail'
+    readonly_fields = ['sender', 'receiver', 'subject', 'fullmsg', ]
 
     class Meta:
         model = QueuedMail

@@ -16,4 +16,5 @@ def edit_mailqueue(request, rest):
                                topadmin='Mailqueue',
                                return_url='/admin/',
                                allow_new=False,
+                               allow_save=False,
     )
