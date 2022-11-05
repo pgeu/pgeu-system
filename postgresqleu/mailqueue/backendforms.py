@@ -15,7 +15,7 @@ class BackendMailqueueForm(BackendForm):
 
     class Meta:
         model = QueuedMail
-        fields = ['sender', 'receiver', 'fullmsg', ]
+        fields = ['sender', 'receiver', 'subject', 'fullmsg', ]
 
     def fix_fields(self):
         self.initial['decoded'] = self.parsed_content().decode('utf8', errors='ignore').replace("\n", "<br/>")
