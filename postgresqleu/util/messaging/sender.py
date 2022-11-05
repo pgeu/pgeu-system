@@ -68,47 +68,75 @@ def send_pending_messages(providers):
 
 
 def send_pending_posts(providers):
+    errpost, numposts = _send_pending_posts(providers)
+    errrepost, numreposts = _send_pending_reposts(providers)
+
+    return not (errpost or errrepost), numposts, numreposts
+
+
+def _send_pending_posts(providers):
     err = False
-
     numposts = 0
-    for t in ConferenceTweetQueue.objects.prefetch_related('remainingtosend').filter(approved=True, sent=False, datetime__lte=timezone.now()).order_by('datetime'):
-        sentany = False
-        for p in t.remainingtosend.all():
-            impl = providers.get(p)
-            (id, err) = impl.post(
-                truncate_shortened_post(t.contents, impl.max_post_length),
-                t.image,
-                t.replytotweetid,
-            )
+    while True:
+        with transaction.atomic():
+            tlist = list(ConferenceTweetQueue.objects.
+                         select_for_update(of=('self', )).
+                         filter(approved=True, sent=False, datetime__lte=timezone.now()).
+                         order_by('datetime')[:1])
+            if len(tlist) == 0:
+                break
+            t = tlist[0]
+            sentany = False
+            for p in t.remainingtosend.select_for_update().all():
+                impl = providers.get(p)
+                (id, err) = impl.post(
+                    truncate_shortened_post(t.contents, impl.max_post_length),
+                    t.image,
+                    t.replytotweetid,
+                )
 
-            if id:
-                t.remainingtosend.remove(p)
-                # postids is a map of <provider status id> -> <provider id>. It's mapped
-                # "backwards" this way because the main check we do is if a key exists.
-                t.postids[id] = p.id
-                sentany = True
+                if id:
+                    t.remainingtosend.remove(p)
+                    # postids is a map of <provider status id> -> <provider id>. It's mapped
+                    # "backwards" this way because the main check we do is if a key exists.
+                    t.postids[id] = p.id
+                    sentany = True
+                else:
+                    sys.stderr.write("Failed to post to {}: {}".format(p, err))
+                    err = True
+            if sentany:
+                numposts += 1
+                if not t.remainingtosend.exists():
+                    t.sent = True
+                t.save(update_fields=['postids', 'sent'])
+
+    return err, numposts
+
+
+def _send_pending_reposts(providers):
+    err = False
+    numreposts = 0
+    while True:
+        with transaction.atomic():
+            tlist = list(ConferenceIncomingTweet.objects.
+                         select_for_update(of=('self', )).
+                         select_related('provider').
+                         filter(retweetstate=1)[:1])
+            if len(tlist) == 0:
+                break
+            t = tlist[0]
+
+            # These are tweets that should be retweeted. Retweets only happen on the same
+            # provider that they were posted on.
+            impl = providers.get(t.provider)
+
+            ok, msg = impl.repost(t.statusid)
+            if ok:
+                t.retweetstate = 2
+                t.save(update_fields=['retweetstate'])
+                numreposts += 1
             else:
                 sys.stderr.write("Failed to repost on {}: {}\n".format(t.provider, msg))
                 err = True
-        if sentany:
-            numposts += 1
-            if not t.remainingtosend.exists():
-                t.sent = True
-            t.save(update_fields=['postids', 'sent'])
 
-    numreposts = 0
-    for t in ConferenceIncomingTweet.objects.select_related('provider').filter(retweetstate=1):
-        # These are tweets that should be retweeted. Retweets only happen on the same
-        # provider that they were posted on.
-        impl = providers.get(t.provider)
-
-        ok, msg = impl.repost(t.statusid)
-        if ok:
-            t.retweetstate = 2
-            t.save(update_fields=['retweetstate'])
-            numreposts += 1
-        else:
-            sys.stderr.write("Failed to repost on {}: {}\n".format(t.provider, msg))
-            err = True
-
-    return not err, numposts, numreposts
+    return err, numreposts
