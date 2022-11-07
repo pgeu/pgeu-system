@@ -29,7 +29,7 @@ class Command(BaseCommand):
         def should_run(self):
             # Are there any conferences open for registration, conference is still in the future,
             # that have additional options with autocancel set
-            return Conference.objects.filter(active=True,
+            return Conference.objects.filter(registrationopen=True,
                                              conferenceadditionaloption__invoice_autocancel_hours__isnull=False,
                                              enddate__gt=today_global() + timedelta(days=1),
             ).exists()
