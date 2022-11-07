@@ -14,18 +14,13 @@ $(function() {
     valueField: 'id',
     labelField: 'value',
     searchField: 'value',
-    load: function(query, callback) {
+    load: async function(query, callback) {
        if (!query.length) return callback();
-       $.ajax({
-         'url': '/events/{{conference.urlname}}/callforpapers/lookups/speakers/',
-         'type': 'GET',
-         'dataType': 'json',
-         'data': {
-           'query': query,
-         },
-         'error': function() { callback(); },
-         'success': function(res) { callback(res.values);},
-       });
+       let url = new URL('/events/{{conference.urlname}}/callforpapers/lookups/speakers/', document.location.href);
+       url.searchParams.append('query', query);
+       let response = await fetch(url);
+       let data = await response.json();
+       callback(data.values);
     },
   });
 
@@ -35,18 +30,13 @@ $(function() {
     valueField: 'id',
     labelField: 'value',
     searchField: 'value',
-    load: function(query, callback) {
+    load: async function(query, callback) {
        if (!query.length) return callback();
-       $.ajax({
-         'url': '/events/{{conference.urlname}}/callforpapers/lookups/tags/',
-         'type': 'GET',
-         'dataType': 'json',
-         'data': {
-           'query': query,
-         },
-         'error': function() { callback(); },
-         'success': function(res) { callback(res.values);},
-       });
+       let url = new URL('/events/{{conference.urlname}}/callforpapers/lookups/tags/', document.location.href);
+       url.searchParams.append('query', query);
+       let response = await fetch(url);
+       let data = await response.json();
+       callback(data.values);
     },
   });
 });
