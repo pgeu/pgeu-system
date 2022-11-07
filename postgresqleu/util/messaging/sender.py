@@ -87,7 +87,15 @@ def _send_pending_posts(providers):
                 break
             t = tlist[0]
             sentany = False
-            for p in t.remainingtosend.select_for_update().all():
+            remaining = list(t.remainingtosend.select_for_update().all())
+            if not remaining:
+                # Nothing remaining for this tweet, so flag it as done. Normally this shouldn't happen,'
+                # but it can happen if news is posted prior to the twitter account being enabled.
+                t.sent = True
+                t.save(update_fields=['sent', ])
+                break
+
+            for p in remaining:
                 impl = providers.get(p)
                 (id, err) = impl.post(
                     truncate_shortened_post(t.contents, impl.max_post_length),
