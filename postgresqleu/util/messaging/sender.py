@@ -110,6 +110,8 @@ def _send_pending_posts(providers):
                     t.sent = True
                 t.save(update_fields=['postids', 'sent'])
 
+        # Sleep 1 second before continuing so we don't hammer the APIs
+        time.sleep(1)
     return err, numposts
 
 
@@ -138,5 +140,8 @@ def _send_pending_reposts(providers):
             else:
                 sys.stderr.write("Failed to repost on {}: {}\n".format(t.provider, msg))
                 err = True
+
+        # Sleep 1 second before continuing so we don't hammer the APIs
+        time.sleep(1)
 
     return err, numreposts
