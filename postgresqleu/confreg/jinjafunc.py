@@ -18,6 +18,7 @@ from Cryptodome.Hash import SHA
 
 from postgresqleu.util.context_processors import settings_context
 from postgresqleu.confreg.templatetags.leadingnbsp import leadingnbsp
+from postgresqleu.confreg.templatetags.formutil import field_class
 
 import jinja2
 import jinja2.sandbox
@@ -227,6 +228,7 @@ filter_applymacro.contextfilter = True
 extra_filters = {
     'currency_format': filter_currency_format,
     'escapejs': defaultfilters.escapejs_filter,
+    'field_class': field_class,
     'floatstr': filter_float_str,
     'datetimeformat': filter_datetimeformat,
     'timesince': timesince,
