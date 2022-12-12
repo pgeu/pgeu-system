@@ -220,7 +220,7 @@ class Telegram(object):
                     # Ignore if it's for some reason gone
                     pass
 
-        elif channelname not in messaging.config['channels']:
+        elif channelname not in messaging.config.get('channels', {}):
             # Don't crash when there is no channel configured, instead just ignore the message
             print("Channel {} not found in provider {}, dropping message", messaging.config.get('botname', '*unnamed bot*'))
             return
