@@ -322,18 +322,33 @@ button[id^=poll-button-] {
 
 
 /* Toggle:able user color styles */
+.usercolors .user-color-0 {
+    color: #224d43;
+}
 .usercolors .user-color-1 {
     color: #439A86;
 }
 .usercolors .user-color-2 {
-    color: #5b2333;
+    color: #ef8904;
 }
 .usercolors .user-color-3 {
-    color: #ff006e;
+    color: #ce4e2b;
 }
 .usercolors .user-color-4 {
-    color: #8338ec;
+    color: #ad1251;
 }
 .usercolors .user-color-5 {
+    color: #ff006e;
+}
+.usercolors .user-color-6 {
+    color: #c11cad;
+}
+.usercolors .user-color-7 {
+    color: #8338ec;
+}
+.usercolors .user-color-8 {
     color: #3a86ff;
+}
+.usercolors .user-color-9 {
+    color: #354345;
 }
