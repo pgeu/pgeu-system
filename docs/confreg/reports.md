@@ -42,12 +42,12 @@ tick-mark!
 
 ## Badges
 
-Select "Last name", "First name" and "E-mail", and include additional
-fields if your badge template uses them.
-
-For badges for all registered attendees you need a filter:
+To print badges for all registered attendees you need a filter:
 
 "Payment confirmed" (leave the field empty)
+
+This will filter all badges where attendees have completed the
+registration process.
 
 Select "Format: Badge", and generate the report.
 
