@@ -123,6 +123,52 @@ INSTALLED_APPS = [
 # Root directory for DejaVu truetype fonts
 FONTROOT = "/usr/share/fonts/truetype/ttf-dejavu"
 
+# Locations of static assets
+ASSETS = {
+    # Bootstrap 4 is used for the public default site, the default conference site,
+    # and in the shipment system frontend
+    "bootstrap4": {
+        "css": {"https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css": "sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"},
+        "js": {"https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js": "sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"},
+    },
+
+    # Bootstrap 3 is used in the backend
+    "bootstrap3": {
+        "css": "/media/css/bootstrap.min.css",
+        "js": "/media/js/bootstrap.min.js",
+    },
+
+    # JQuery 1.9 is used in the backend and in the twitter and scanning frontends
+    "jquery1": {
+        "js": "/media/jq/jquery-1.9.1.min.js",
+    },
+
+    # JQuery 3 is used on the default main site
+    "jquery3": {
+        "js": {"https://code.jquery.com/jquery-3.2.1.slim.min.js": "sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"},
+    },
+
+    # JQuery-ui is used in admin overrides and conference reports
+    "jqueryui1": {
+        "css": "/media/jq/jquery-ui.min.css",
+        "js": "/media/jq/jquery-ui.min.js",
+    },
+
+    "fontawesome4": {
+        "css": "/media/css/font-awesome.css",
+    },
+
+    "selectize": {
+        "css": [
+            "/media/css/selectize.css",
+            "/media/css/selectize.default.css",
+        ],
+        "js": "/media/js/selectize.min.js",
+    },
+}
+
+ASSETS_OVERRIDE = {}
+
 # List of IP addresses (v4 and v6) that is allowed to access monitoring urls
 MONITOR_SERVER_IPS = []
 
@@ -297,6 +343,8 @@ if 'INVOICE_NOTIFICATION_RECEIVER' not in globals():
 
 if 'SCHEDULED_JOBS_EMAIL_SENDER' not in globals():
     SCHEDULED_JOBS_EMAIL_SENDER = SCHEDULED_JOBS_EMAIL
+
+ASSETS.update(ASSETS_OVERRIDE)
 
 # NOTE! Turning on the debug toolbar *breaks* manual queries for conferences due to how the
 # timezones are handled. Access through the django ORM still works.

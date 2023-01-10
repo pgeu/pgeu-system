@@ -1,10 +1,10 @@
 {%extends "confreg/confadmin_base.html" %}
+{%load assets%}
 {%block title%}Send cross conference email{%endblock%}
 {%block extrahead%}
-<script type="text/javascript" src="/media/js/selectize.min.js"></script>
+{%asset "js" "selectize"%}
 <script type="text/javascript" src="/media/js/crossconfmail.js"></script>
-<link rel="stylesheet" href="/media/css/selectize.css" />
-<link rel="stylesheet" href="/media/css/selectize.default.css" />
+{%asset "css" "selectize"%}
 {%endblock%}
 {%block layoutblock%}
 <h1>Send cross conference email</h1>

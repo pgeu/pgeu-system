@@ -1,10 +1,10 @@
 {%extends basetemplate %}
+{%load assets%}
 {%block title%}{{whatverb|default:"Edit"}} {{what}}{%endblock%}
 {%block extrahead%}
-<script type="text/javascript" src="/media/js/selectize.min.js"></script>
+{%asset "js" "selectize" %}
 <script type="text/javascript" src="/media/ace/ace.js"></script>
-<link rel="stylesheet" href="/media/css/selectize.css" />
-<link rel="stylesheet" href="/media/css/selectize.default.css" />
+{%asset "css" "selectize" %}
 
 <style>
 div.admin_markdownpreview {

@@ -1,9 +1,8 @@
 {%extends "base.html" %}
 {%block title%}Call for Papers - {{conference}}{%endblock%}
 {%block pagescript%}
-<script type="text/javascript" src="/media/js/selectize.min.js"></script>
-<link rel="stylesheet" href="/media/css/selectize.css" />
-<link rel="stylesheet" href="/media/css/selectize.default.css" />
+{{asset("css", "selectize")}}
+{{asset("js", "selectize")}}
 
 <script language="javascript">
 $(function() {

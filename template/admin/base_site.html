@@ -1,13 +1,14 @@
 {%extends "admin/base.html"%}
+{%load assets%}
 {%block branding%}
 {%if is_debugging%}
 PGEU CODEBASE IN DEBUG MODE!
 {%endif%}
 {%endblock%}
 {%block extrahead%}
-<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" type="text/css">
-<script type="text/javascript" src="/media/jq/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="/media/jq/jquery-ui.min.js"></script>
+{%asset "css" "jqueryui1" %}
+{%asset "js" "jquery1" %}
+{%asset "js" "jqueryui1" %}
 <style>
 div.field-timerange div p.datetime {
    display: inline-block;

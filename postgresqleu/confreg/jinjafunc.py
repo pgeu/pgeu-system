@@ -19,6 +19,7 @@ from Cryptodome.Hash import SHA
 from postgresqleu.util.context_processors import settings_context
 from postgresqleu.confreg.templatetags.leadingnbsp import leadingnbsp
 from postgresqleu.confreg.templatetags.formutil import field_class
+from postgresqleu.util.templatetags.assets import do_render_asset
 
 import jinja2
 import jinja2.sandbox
@@ -244,6 +245,13 @@ extra_filters = {
 }
 
 
+# We can resolve assets only when the template is in our main site. Anything running with
+# deploystatic is going to have to solve this outside anyway. That means we can safely
+# reference internal functions.
+def _resolve_asset(assettype, assetname):
+    return do_render_asset(assettype, assetname)
+
+
 def render_jinja_conference_template(conference, templatename, dictionary):
     # It all starts from the base template for this conference. If it
     # does not exist, just throw a 404 early.
@@ -269,6 +277,7 @@ def render_jinja_conference_template(conference, templatename, dictionary):
         'pgeu_hosted': True,
         'now': timezone.now(),
         'conference': conference,
+        'asset': _resolve_asset,
     })
     if conference and conference.jinjaenabled and conference.jinjadir:
         c['githash'] = find_git_revision(conference.jinjadir)

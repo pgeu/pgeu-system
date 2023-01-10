@@ -1,11 +1,12 @@
 {%extends "confreg/confadmin_base.html" %}
+{%load assets%}
 {%load pgmarkdown%}
 {%block title%}Vote for sessions{%endblock%}
 {%block extrahead%}
-<link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
-<script type="text/javascript" src="/media/jq/jquery-ui.min.js"></script>
-<script type="text/javascript" src="/media/js/selectize.min.js"></script>
-<link rel="stylesheet" href="/media/css/selectize.default.css" />
+{%asset "css" "jqueryui1" %}
+{%asset "js" "jqueryui1" %}
+{%asset "js" "selectize" %}
+{%asset "css" "selectize" %}
 
 <script type="text/javascript">
 $(function() {

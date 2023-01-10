@@ -1,3 +1,4 @@
+{%load assets%}
 {%load alertmap%}
 {%load docslink%}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -8,11 +9,11 @@
   <meta http-equiv="Content-Type" content="text/xhtml; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="shortcut icon" href="/favicon.ico" />
-  <link rel="stylesheet" media="screen" href="/media/css/bootstrap.min.css" />
+  {%asset "css" "bootstrap3" %}
   <link rel="stylesheet" media="screen" href="/media/css/confadmin.css" />
   <link rel="stylesheet" type="text/css" media="print" href="/media/css/confadmin_print.css" />
-  <script type="text/javascript" src="/media/jq/jquery-1.9.1.min.js"></script>
-  <script type="text/javascript" src="/media/js/bootstrap.min.js"></script>
+  {%asset "js" "jquery1" %}
+  {%asset "js" "bootstrap3" %}
   <script type="text/javascript" src="/media/js/admin.js"></script>
 {%block extrahead%}{%endblock%}
  </head>

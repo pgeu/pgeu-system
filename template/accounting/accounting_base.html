@@ -1,13 +1,13 @@
 {%extends "adm/admin_base.html" %}
+{%load assets%}
 {%block containerextend%}-fluid{%endblock%}
 
 {%block extrahead%}
- <link rel="stylesheet" href="/media/jq/jquery-ui.min.css" />
- <link rel="stylesheet" href="/media/css/selectize.css" />
- <link rel="stylesheet" href="/media/css/selectize.default.css" />
+ {%asset "css" "jqueryui1" %}
+ {%asset "css" "selectize" %}
  <link rel="stylesheet" href="/media/css/pgeu_accounting.css" />
- <script type="text/javascript" src="/media/jq/jquery-ui.min.js"></script>
- <script type="text/javascript" src="/media/js/selectize.min.js"></script>
+ {%asset "js" "jqueryui1" %}
+ {%asset "js" "selectize" %}
  <script type="text/javascript" src="/media/js/pgeu_accounting.js"></script>
 {%endblock%}
 

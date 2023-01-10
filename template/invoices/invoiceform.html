@@ -1,4 +1,5 @@
 {%extends "adm/admin_base.html" %}
+{%load assets%}
 {%load formutil%}
 {%load util %}
 {%block title%}{%if invoice.id%}Invoice #{{invoice.id}}{%else%}New invoice{%endif%}{%endblock%}
@@ -6,9 +7,8 @@
 <script type="text/javascript" src="/media/jq/jquery-1.9.1.min.js"></script>
 {%endblock%}
 {%block extrahead%}
-<script type="text/javascript" src="/media/js/selectize.min.js"></script>
-<link rel="stylesheet" href="/media/css/selectize.css" />
-<link rel="stylesheet" href="/media/css/selectize.default.css" />
+{%asset "js" "selectize" %}
+{%asset "css" "selectize" %}
 
 <script type="text/javascript">
 function sendEmail(reason) {
