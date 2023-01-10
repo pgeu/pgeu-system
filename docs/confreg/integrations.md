@@ -329,7 +329,7 @@ configured.
 
 ### Mastodon
 
-The Twitter integration has one Messaging Provider mapping to one
+The Mastodon integration has one Messaging Provider mapping to one
 Mastodon account, thereby giving a conference series it's own Mastodon
 account, but having conferences in it share (by default).
 
@@ -337,12 +337,12 @@ The Mastodon integration supports multiple different Mastodon
 instances, but will default to https://mastodon.social/.
 
 To use the Mastodon integration, one must first set up an [OAuth
-application](oauth).
+application](oauth). This happens in "Administration" - "OAuth".
 
 Once this is done, you can create the Messaging Provider record for
 each conference series. Other than the normal fields, there will be a
 button to "Initiate login" which will open Mastodon in a new window. At
-this time, log in with the Twitter account of the conference series,
+this time, log in with the Mastodon account of the conference series,
 and authorize the just created app. This will give a PIN code back
 which should be copied and pasted into the field on the Messaging
 provider configuration.
