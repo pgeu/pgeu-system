@@ -3,9 +3,6 @@
 {%load formutil%}
 {%load util %}
 {%block title%}{%if invoice.id%}Invoice #{{invoice.id}}{%else%}New invoice{%endif%}{%endblock%}
-{%block jquery%}
-<script type="text/javascript" src="/media/jq/jquery-1.9.1.min.js"></script>
-{%endblock%}
 {%block extrahead%}
 {%asset "js" "selectize" %}
 {%asset "css" "selectize" %}
