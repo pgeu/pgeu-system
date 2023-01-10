@@ -12,8 +12,8 @@
 </p>
 {%else%}
 
-{%if callforpapers%}
 <h2>Call for papers</h2>
+{%if callforpapers%}
 <p>
 The following conferences currently have open call for papers:
 <ul>
@@ -21,6 +21,10 @@ The following conferences currently have open call for papers:
   <li><a href="/events/{{c.urlname}}/callforpapers/">{{c}}</a></li>
   {%endfor%}
 </ul>
+</p>
+{%else%}
+<p>
+  There are currently no conferences with open call for papers.
 </p>
 {%endif%}
 
