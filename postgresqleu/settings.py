@@ -158,6 +158,10 @@ ASSETS = {
         "css": "/media/css/font-awesome.css",
     },
 
+    "fontawesome6": {
+        "css": {"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css": "sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A=="},
+    },
+
     "selectize": {
         "css": [
             "/media/css/selectize.css",

@@ -10,7 +10,7 @@ You have attended the following events:
 <ul>
 {%for event in attended%}
 <li><h5><a href="/events/{{event.urlname}}/register/">{{event.conferencename}}</a></h5>
-  <span class="nobr"><i class="fa fa-calendar-o"></i> {{event.conferencedatestr}}</span>
+  <span class="nobr"><i class="fa fa-calendar-days fa-calendar-o"></i> {{event.conferencedatestr}}</span>
   <span class="nobr"><i class="fa fa-map-pin"></i> {{event.location}}</span>
 </li>
 {%endfor%}

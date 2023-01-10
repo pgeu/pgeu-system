@@ -2,7 +2,7 @@
 {%block title%}{{news.title}} - {{conference}}{%endblock%}
 {%block content%}
 <h1>{{news.title}}</h1>
-<i class="fa fa-clock-o"></i> {{news.datetime}}{%if news.author%} by {{news.author.fullname}}{%endif%}
+<i class="fa fa-clock fa-clock-o"></i> {{news.datetime}}{%if news.author%} by {{news.author.fullname}}{%endif%}
 <p></p>
 {{news.summary|markdown}}
 {%endblock%}
