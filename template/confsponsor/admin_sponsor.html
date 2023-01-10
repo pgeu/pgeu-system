@@ -22,7 +22,7 @@ div.panelwrap {
   <div class="panel panel-default">
     <div class="panel-heading" role="tab" id="claimed_h_{{b.id}}">
       <h4 class="panel-title">
-	<a class="collapsed" role="button" data-toggle="collapse" data-parent="#claimedbenefits" href="#claimed_{{b.id}}" aria-expanded="false" aria-controls="claimed_{{b.id}}">{{b.benefit}}{%if not b.confirmed%} <i>NOT CONFIRMED</i>{%endif%}{%if b.declined%} <b>DECLINED!</b>{%endif%}</a>
+	<a class="collapsed" role="button" data-toggle="collapse" href="#claimed_{{b.id}}" aria-expanded="false" aria-controls="claimed_{{b.id}}">{{b.benefit}}{%if not b.confirmed%} <i>NOT CONFIRMED</i>{%endif%}{%if b.declined%} <b>DECLINED!</b>{%endif%}</a>
       </h4>
     </div>
     <div id="claimed_{{b.id}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="claimed_h_{{b.id}}">
@@ -74,7 +74,7 @@ div.panelwrap {
   <div class="panel panel-default">
     <div class="panel-heading" role="tab" id="unclaimed_h_{{b.id}}">
       <h4 class="panel-title">
-	<a class="collapsed" role="button" data-toggle="collapse" data-parent="#unclaimedbenefits" href="#unclaimed_{{b.id}}" aria-expanded="false" aria-controls="unclaimed_{{b.id}}">{{b}}</a>
+	<a class="collapsed" role="button" data-toggle="collapse" href="#unclaimed_{{b.id}}" aria-expanded="false" aria-controls="unclaimed_{{b.id}}">{{b}}</a>
       </h4>
     </div>
     <div id="unclaimed_{{b.id}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="unclaimed_h_{{b.id}}">
@@ -97,7 +97,7 @@ div.panelwrap {
   <div class="panel panel-default">
     <div class="panel-heading" role="tab" id="noclaim_h_{{b.id}}">
       <h4 class="panel-title">
-	<a class="collapsed" role="button" data-toggle="collapse" data-parent="#noclaimbenefits" href="#noclaim_{{b.id}}" aria-expanded="false" aria-controls="noclaim_{{b.id}}">{{b}}</a>
+	<a class="collapsed" role="button" data-toggle="collapse" href="#noclaim_{{b.id}}" aria-expanded="false" aria-controls="noclaim_{{b.id}}">{{b}}</a>
       </h4>
     </div>
     <div id="noclaim_{{b.id}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="noclaim_h_{{b.id}}">

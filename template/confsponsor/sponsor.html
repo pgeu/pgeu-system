@@ -99,7 +99,7 @@ Click on the benefit in the list below to claim them or turn them down:
        <button class="btn btn-link" data-toggle="collapse" data-target="#unclaimed_b_{{b.id}}" aria-expanded="false" aria-controls="unclaimed_b_{{b.id}}">{{b}}</a>
      </h5>
    </div>
-   <div id="unclaimed_b_{{b.id}}" class="collapse" aria-labelledby="unclaimed_h_{{b.id}}" data-parent="unclaimedlist">
+   <div id="unclaimed_b_{{b.id}}" class="collapse" aria-labelledby="unclaimed_h_{{b.id}}">
      <div class="card-body">
        {{b.benefitdescription|markdown}}
        <a class="btn btn-primary" href="claim/{{b.id}}/">Claim / Turn down benefit</a>
@@ -123,7 +123,7 @@ The following benefits have already been claimed:
        <button class="btn btn-link" data-toggle="collapse" data-target="#claimed_b_{{b.id}}" aria-expanded="false" aria-controls="claimed_b_{{b.id}}">{{b.benefit}}{%if not b.confirmed%} <i>(Not yet confirmed by the organizers)</i>{%endif%}{%if b.declined%} <b>(This benefit has been declined)</b>{%endif%}</a>
      </h5>
    </div>
-   <div id="claimed_b_{{b.id}}" class="collapse" aria-labelledby="claimed_h_{{b.id}}" data-parent="claimedlist">
+   <div id="claimed_b_{{b.id}}" class="collapse" aria-labelledby="claimed_h_{{b.id}}">
      <div class="card-body">
   {{b.declined|yesno:"Declined,Claimed"}} by <i>{{b.claimedby}}</i> on <i>{{b.claimedat}}</i><br/>
   <p>{{b.benefit.benefitdescription|markdown}}</p>
@@ -142,7 +142,7 @@ The following benefits have already been claimed:
        <button class="btn btn-link" data-toggle="collapse" data-target="#unclaimed_b_{{b.id}}" aria-expanded="false" aria-controls="unclaimed_b_{{b.id}}">{{b}}</button>
      </h5>
    </div>
-   <div id="unclaimed_b_{{b.id}}" class="collapse" aria-labelledby="unclaimed_h_{{b.id}}" data-parent="unclaimedlist">
+   <div id="unclaimed_b_{{b.id}}" class="collapse" aria-labelledby="unclaimed_h_{{b.id}}">
      <div class="card-body">
        {{b.benefitdescription|markdown}}
      </div>
