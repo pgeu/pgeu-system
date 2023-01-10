@@ -31,14 +31,14 @@ def do_render_asset(assettype, assetname):
 def _render_asset(assettype, asset):
     if assettype == "css":
         if isinstance(asset, str):
-            return mark_safe('<link rel="stylesheet" crossorigin="anonymous" href="{}">'.format(asset))
+            return mark_safe('<link rel="stylesheet" crossorigin="anonymous" referrerpolicy="no-referrer" href="{}">'.format(asset))
         else:
-            return mark_safe('<link rel="stylesheet" crossorigin="anonymous" href="{}" integrity="{}">'.format(*list(asset.items())[0]))
+            return mark_safe('<link rel="stylesheet" crossorigin="anonymous" referrerpolicy="no-referrer" href="{}" integrity="{}">'.format(*list(asset.items())[0]))
     elif assettype == "js":
         if isinstance(asset, str):
-            return mark_safe('<script crossorigin="anonymous" src="{}"></script>'.format(asset))
+            return mark_safe('<script crossorigin="anonymous" referrerpolicy="no-referrer" src="{}"></script>'.format(asset))
         else:
-            return mark_safe('<script crossorigin="anonymous" src="{}" integrity="{}"></script>'.format(*list(asset.items())[0]))
+            return mark_safe('<script crossorigin="anonymous" referrerpolicy="no-referrer" src="{}" integrity="{}"></script>'.format(*list(asset.items())[0]))
 
     # Should never happen since we looked it up in settings
     raise Exception("Unknown asset type {}".format(assettype))
