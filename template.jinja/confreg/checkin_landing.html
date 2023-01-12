@@ -17,18 +17,35 @@
   device, to add functions like QR code scanning. To active it, you do
   not need to be logged in, you just need the secret URL.
 </p>
-<h2>Apps</h2>
+<h2>Native app</h2>
 <p>
-  The checkin system can be accessed either by a native app (currently
-  only available for Android) or a web based app (available for both
-  Android and iOS). The native app is recommended when available as it
-  is a bit faster and has better compatibility.
+  The fastest and easiest way to use the check-in system is to use a
+  native app (currently only available for Android).
 </p>
 <p>
 <a href="https://play.google.com/store/apps/details?id=eu.postgresql.android.conferencescanner&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1"><img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" style="max-width: 150px"/></a>
 </p>
 
-<h2>Open by link</h2>
+<p>
+  Once installed, open the link for the <i>web app</i> in the native
+  app and it will automatically detect the conference and configure
+  itself.
+</p>
+
+<h2>Web app</h2>
+<p>
+  If yuo do not have access to the native app, or if you are using a
+  different platform, you can also use the small web app to process
+  checkins.
+</p>
+<p>
+  This web app works on most modern phones, but has some compatibiliti
+  issues on some Android devices, and several compatibility quirks on
+  iOS devices. Nevertheless when it does work, it's the best choice if
+  the native app is not available.
+</p>
+
+<h3>Open by link</h3>
 <p>
   You can open the application by going to this link. If you are using the
   native app, make sure you install it first, and then click the link to
@@ -49,7 +66,7 @@
   <img src="data:image/png;base64,{{qrlink}}" />
 </p>
 
-<h2>Email link</h2>
+<h3>Email link</h3>
 <p>
   If you prefer, we can also email you the link.
 </p>
@@ -58,7 +75,20 @@
   <input type="submit" value="Send link in email">
 </form>
 
-<h2>Test</h2>
+<h2>Native scanning on device</h2>
+<p>
+  Finally, it is possible to scan the badges directly using any
+  scanner application on your device. As long as this application can
+  open a web browser to the URL that is present in the token, a
+  trimmed-down version of the web app will load and can be used.
+</p>
+<p>
+  Note taht for this method of checking in, you must be <i>logged
+  in</i> to the browser being used using the account connected to your
+  own registration.
+</p>
+
+<h3>Test</h3>
 <p>
   To test the app, start it up from the link, and then
   scan the below QR code.

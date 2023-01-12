@@ -65,12 +65,25 @@ app available in the
 (source available at [pgeu github](https://github.com/pgeu/android-ConferenceScanner).
 
 If a supported mobile device is used (which should include all
-reasonably modern android and modern iPhone), then the QR code present
+reasonably modern android and modern iOS), then the QR code present
 on the ticket can be scanned to immediately look up the user. If the
 scanning does not work, the attendee does not bring a ticket or the
 device is not supported, a regular search-by-text can of course also
 be done (which will then search both first and last name,
 independently).
+
+Finally, the tokens in the QR codes are valid URLs to the system. If
+this URL is visited by somebody who is registered as a check-in
+processor, it will be possible to check-in directly from that
+URL. Unlike the webapp, this requires the person doing the scanning to
+be logged into their account on the mobile device. Any user not being
+a check-in processor will just get an access denied error if they scan
+the URL. This way of scanning means the general QR scanner
+functionality of a mobile phone/browser can be used instead of the
+native app, which increases compatibility. In particular iOS devices
+can have strange problems with the webapp, in which case this becomes
+the preferred way to scan. For Android users, using the native app
+referenced above is generally preferred, but both will work.
 
 Once found, the information about the attendee will be shown, and
 check-in can be performed. Once the check-in is performed, it's stored
