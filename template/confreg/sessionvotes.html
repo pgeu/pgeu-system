@@ -92,8 +92,11 @@ function doUpdateStatus(id, statusval) {
 }
 
 function changeStatus(id) {
-   var currentstatus = $('#statusstr' + id).data('currstatus');
    var buttons = {};
+   var currentstatus = $('#statusstr' + id).data('currstatus');
+   var offset = $('#statusstr' + id).offset();
+   var height = $('#statusstr' + id).height();
+
    $.each(valid_status_transitions[currentstatus], function(k,v) {
       buttons[v] = function(event) {
          doUpdateStatus(id, k);
@@ -105,10 +108,15 @@ function changeStatus(id) {
    };
 
    $('#dlgStatus').dialog('option', {
-      'title': 'Change status',
+      'title': 'Change status [id: ' + id + ']',
       'modal': true,
    }).dialog('option', {
      buttons: buttons,
+   }).dialog('option', {
+     position: [
+       offset.left,
+       offset.top + height
+     ],
    }).dialog('open');
 }
 
