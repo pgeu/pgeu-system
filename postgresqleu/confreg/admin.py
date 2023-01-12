@@ -114,7 +114,7 @@ class ConferenceRegistrationForm(ConcurrentProtectedModelForm):
             self.fields['additionaloptions'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.instance.conference)
             self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference)
             self.fields['payconfirmedat'].help_text = self.fields['payconfirmedby'].help_text = "Don't edit this field here - instead, go back to the list of registrations and chose to approve from there!"
-            self.fields['checkedinby'].queryset = ConferenceRegistration.objects.filter(conference=self.instance.conference, payconfirmedat__isnull=True)
+            self.fields['checkedinby'].queryset = self.instance.conference.checkinprocessors
 
 
 class ConferenceRegistrationAdmin(admin.ModelAdmin):
