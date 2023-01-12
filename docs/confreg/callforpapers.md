@@ -56,11 +56,13 @@ requested. That way it's possible to perform extra review.
 
 A state of a session can be changed either from the voting page (by
 clicking the current state and picking a new one) or from the Edit
-Session page (by picking a new state in the drop down). In either case
-the new state is limited by valid state transitions. By repeating this
-process it is possible to "break the rules" and bypass states, but
-this should of course never be done. After having edited a session
-state, be sure not to forget to trigger the emails!
+Session page (by picking a new state in the drop down and then clicking
+save).  In either case the new state is limited by valid state
+transitions. By repeating this process it is possible to "break the
+rules" and bypass states, but this should of course never be done.
+After having edited a session state, be sure not to forget to trigger
+the emails by either clicking 'View and send pending emails' on the
+voting page or by visiting 'Pending notifications' from the dashboard!
 
 Once a session has entered the *approved* state, it will show up in
 the list of sessions, if that is enabled for the
