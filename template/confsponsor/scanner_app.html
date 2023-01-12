@@ -12,7 +12,9 @@
   <link rel="stylesheet" media="screen" href="/media/css/badgescan.css" />
   {%asset "js" "jquery1" %}
   {%asset "js" "bootstrap3" %}
+{%if not singletoken%}
   <script type="text/javascript" src="/media/js/instascan/instascan.min.js"></script>
+{%endif%}
   <script type="text/javascript" src="/media/js/badgescan.js"></script>
  </head>
  <body data-tokenbase="{{sitebase}}/t/" data-single="{%if singletoken%}1{%else%}0{%endif%}"{%if singletoken %} data-single-token="{{singletoken}}"{%endif%}>
