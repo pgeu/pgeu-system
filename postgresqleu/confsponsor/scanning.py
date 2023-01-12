@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from django.conf import settings
@@ -167,6 +168,28 @@ def scanning_page(request, scannertoken):
         'scanner': scanner,
         'sponsor': scanner.sponsor,
         'conference': scanner.sponsor.conference,
+    })
+
+
+@login_required
+def scanned_token(request, scanned_token):
+    foundreg = get_object_or_404(ConferenceRegistration, publictoken=scanned_token)
+    conference = foundreg.conference
+    reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
+
+    scanners = list(SponsorScanner.objects.filter(sponsor__conference=conference, scanner=reg))
+    if len(scanners) == 0:
+        raise Http404("Not a scanner")
+    elif len(scanners) > 1:
+        return HttpResponse("You are registered as a scanner for more than one sponsor. Unfortunately, that means you have to use the special scanning app and not the direct scan function of your device.")
+    scanner = scanners[0]
+
+    return render(request, 'confsponsor/scanner_app.html', {
+        'scanner': scanner,
+        'sponsor': scanner.sponsor,
+        'conference': scanner.sponsor.conference,
+        'singletoken': scanned_token,
+        'basehref': '{}/events/sponsor/scanning/{}/'.format(settings.SITEBASE, scanner.token),
     })
 
 

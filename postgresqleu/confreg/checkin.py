@@ -81,6 +81,23 @@ def checkin(request, urlname, regtoken):
     })
 
 
+@login_required
+def checkin_token(request, scanned_token):
+    # Tricky to not leak data, but we try.
+    foundreg = get_object_or_404(ConferenceRegistration, idtoken=scanned_token)
+    conference = foundreg.conference
+    reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
+
+    if not reg.checkinprocessors_set.filter(pk=conference.pk).exists():
+        raise PermissionDenied()
+
+    return render(request, 'confreg/checkin.html', {
+        'conference': conference,
+        'singletoken': scanned_token,
+        'basehref': '{}/events/{}/checkin/{}/'.format(settings.SITEBASE, conference.urlname, reg.regtoken),
+    })
+
+
 def _json_response(d):
     return HttpResponse(json.dumps(d, cls=DjangoJSONEncoder), content_type='application/json')
 

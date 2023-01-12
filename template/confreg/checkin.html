@@ -6,6 +6,7 @@
   <title>{{conference.conferencename}} - attendee checkin</title>
   <meta http-equiv="Content-Type" content="text/xhtml; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{%if basehref%}<base href="{{basehref}}" />{%endif%}
   <link rel="shortcut icon" href="/favicon.ico" />
   {%asset "css" "bootstrap3" %}
   <link rel="stylesheet" media="screen" href="/media/css/checkin.css" />
@@ -14,7 +15,7 @@
   <script type="text/javascript" src="/media/js/instascan/instascan.min.js"></script>
   <script type="text/javascript" src="/media/js/checkin.js"></script>
  </head>
- <body data-tokenbase="{{sitebase}}/t/">
+ <body data-tokenbase="{{sitebase}}/t/" data-single="{%if singletoken%}1{%else%}0{%endif%}"{%if singletoken %} data-single-token="{{singletoken}}"{%endif%}>
    <nav class="navbar navbar-default navbar-fixed-top" id="topnavbar">
      <div id="loading">
        <div class="spinner-ring"><div></div><div></div><div></div><div></div></div>
@@ -39,6 +40,7 @@
 	 </div>
        </div>
      </div>
+{%if not singletoken %}
      <div id="buttonrow" class="row approw">
        <div class="col-md-12 buttonrow">
          <button id="scanButton" class="btn btn-default btn-block btn-lg">Scan registration</button>
@@ -127,6 +129,8 @@
      </div>
    </div><!-- selectUserModal -->
 
+{%endif%} {# Above are sections not included in single-checkin mode #}
+
    <div class="modal fade" tabindex="-1" role="dialog" id="checkinModal">
      <div class="modal-dialog" role="document">
        <div class="modal-content">
@@ -146,6 +150,7 @@
      </div>
    </div><!-- selectUserModal -->
 
+{%if not singletoken %}
    <div class="modal fade" tabindex="-1" role="dialog" id="selectCameraModal">
      <div class="modal-dialog" role="document">
        <div class="modal-content">
@@ -162,6 +167,7 @@
      </div>
    </div><!-- selectCameraModal -->
 
+{%endif%} {# singletoken #}
 
  </body>
 </html>

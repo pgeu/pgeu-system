@@ -113,6 +113,28 @@ function show_checkin_dialog(reg) {
     $('#checkinModal').modal({});
 }
 
+function lookup_and_checkin_dialog(token) {
+    $('.cancelButton').attr('disabled', 'disabled');
+    $.ajax({
+        dataType: "json",
+        url: "api/lookup/",
+        data: {"lookup": token},
+        success: function(data, status, xhr) {
+            show_checkin_dialog(data['reg'])
+            reset_state();
+        },
+        error: function(xhr, status, thrown) {
+            if (xhr.status == 404) {
+                showstatus('Could not find matching attendee', 'warning');
+            }
+            else {
+                show_ajax_error('looking for reg', xhr);
+            }
+            reset_state();
+        }
+    });
+}
+
 function setup_instascan() {
     let scanner = new Instascan.Scanner({
         video: document.getElementById('qrpreview'),
@@ -162,26 +184,7 @@ function setup_instascan() {
             return;
         }
         /* Else we have a code, so look it up */
-        $('.cancelButton').attr('disabled', 'disabled');
-        $.ajax({
-            dataType: "json",
-            url: "api/lookup/",
-            data: {"lookup": content},
-            success: function(data, status, xhr) {
-                show_checkin_dialog(data['reg'])
-                reset_state();
-            },
-            error: function(xhr, status, thrown) {
-                if (xhr.status == 404) {
-                    showstatus('Could not find matching attendee', 'warning');
-                }
-                else {
-                    show_ajax_error('looking for reg', xhr);
-                }
-                reset_state();
-            }
-        });
-
+        lookup_and_checkin_dialog(content);
     });
 
     Instascan.Camera.getCameras().then(function(allcameras) {
@@ -281,7 +284,11 @@ $(function() {
     $('#loading').hide();
     reset_state();
 
-    setup_instascan();
+    const single = $('body').data('single') == "1";
+
+    if (!single) {
+        setup_instascan();
+    }
 
     $('#topnavbar').click(function() {
         reset_state();
@@ -408,5 +415,10 @@ $(function() {
         });
     });
 
-    updateStatus();
+    if (single) {
+        lookup_and_checkin_dialog($('body').data('tokenbase') + 'id/' + $('body').data('single-token') + '/');
+    }
+    else {
+        updateStatus();
+    }
 });

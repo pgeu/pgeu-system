@@ -48,6 +48,28 @@ function show_scan_dialog(token, data) {
     $('#badgescanModal').modal({});
 }
 
+function lookup_and_scan(token) {
+    $('.cancelButton').attr('disabled', 'disabled');
+    $.ajax({
+        dataType: "json",
+        url: "api/",
+        data: {"token": token},
+        success: function(data, status, xhr) {
+            show_scan_dialog(token, data);
+            reset_state();
+        },
+        error: function(xhr, status, thrown) {
+            if (xhr.status == 404) {
+                showstatus('Could not find attendee', 'warning');
+            }
+            else {
+                show_ajax_error('looking for attendee', xhr);
+            }
+            reset_state();
+        }
+    });
+}
+
 function setup_instascan() {
     let scanner = new Instascan.Scanner({
         video: document.getElementById('qrpreview'),
@@ -98,26 +120,7 @@ function setup_instascan() {
         }
 
         /* Else we have a code, so look it up */
-        $('.cancelButton').attr('disabled', 'disabled');
-        $.ajax({
-            dataType: "json",
-            url: "api/",
-            data: {"token": content},
-            success: function(data, status, xhr) {
-                show_scan_dialog(content, data);
-                reset_state();
-            },
-            error: function(xhr, status, thrown) {
-                if (xhr.status == 404) {
-                    showstatus('Could not find attendee', 'warning');
-                }
-                else {
-                    show_ajax_error('looking for attendee', xhr);
-                }
-                reset_state();
-            }
-        });
-
+        lookup_and_scan(content);
     });
 
     Instascan.Camera.getCameras().then(function(allcameras) {
@@ -188,7 +191,11 @@ $(function() {
     $('#loading').hide();
     reset_state();
 
-    setup_instascan();
+    const single = $('body').data('single') == "1";
+
+    if (!single) {
+        setup_instascan();
+    }
 
     $('#topnavbar').click(function() {
         reset_state();
@@ -258,4 +265,8 @@ $(function() {
             }
         });
     });
+
+    if (single) {
+        lookup_and_scan($('body').data('tokenbase') + 'at/' + $('body').data('single-token') + '/');
+    }
 });

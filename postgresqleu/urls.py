@@ -352,6 +352,10 @@ urlpatterns.extend([
     # Mail queue
     url(r'^admin/mailqueue/(.*/)?$', postgresqleu.mailqueue.backendviews.edit_mailqueue),
 
+    # Tokens (QR codes scanned)
+    url(r'^t/id/([a-z0-9]+)/$', postgresqleu.confreg.checkin.checkin_token),
+    url(r'^t/at/([a-z0-9]+)/$', postgresqleu.confsponsor.scanning.scanned_token),
+
     # Webhooks for messaging
     url(r'^wh/(\d+)/([a-z0-9]+)/$', postgresqleu.util.views.messaging_webhook),
     url(r'^wh/twitter/', postgresqleu.util.views.twitter_webhook),
