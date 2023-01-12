@@ -125,7 +125,30 @@ function setup_instascan() {
 
     scanner.addListener('scan', function(content) {
         scanner.stop();
-        if (!content.startsWith('ID$') || !content.endsWith('$ID')) {
+        const tokenbase = $('body').data('tokenbase');
+        if (content.startsWith(tokenbase) && content.endsWith('/')) {
+            /* New style token */
+            if (content.startsWith(tokenbase + 'id/')) {
+                /* Correct token, check for test token */
+                if (content == tokenbase + 'id/TESTTESTTESTTEST/') {
+                    showstatus('You successfully scanned the test code!', 'info');
+                    reset_state();
+                    return;
+                }
+                /* Else it's a valid token */
+            }
+            else {
+                if (content.startsWith(tokenbase + 'at/')) {
+                    showstatus('You appear to have scanned a badge instead of a ticket!', 'info');
+                }
+                else {
+                    showstatus('Scanned QR code is not from a correct ticket', 'danger');
+                }
+                reset_state();
+                return;
+            }
+        }
+        else if (!content.startsWith('ID$') || !content.endsWith('$ID')) {
             if (content.startsWith('AT$'))
                 showstatus('You appear to have scanned a badge instead of a ticket!', 'info');
             else

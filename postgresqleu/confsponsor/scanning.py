@@ -3,9 +3,11 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.db import transaction
+from django.conf import settings
 
 import csv
 import json
+import re
 
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.qr import generate_base64_qr
@@ -22,7 +24,7 @@ from .benefitclasses import get_benefit_id
 
 def testcode(request):
     return render(request, 'confsponsor/scanning_testcode.html', {
-        'qrtest': generate_base64_qr("AT$TESTTESTTESTTEST$AT", 2, 150),
+        'qrtest': generate_base64_qr('{}/t/at/TESTTESTTESTTEST/'.format(settings.SITEBASE), 2, 150),
     })
 
 
@@ -178,6 +180,9 @@ def _json_response(reg, status, existingnote=''):
     }), content_type='application/json', status=status)
 
 
+_tokenmatcher = re.compile('^{}/t/at/([^/]+)/$'.format(settings.SITEBASE))
+
+
 @csrf_exempt
 @global_login_exempt
 def scanning_api(request, scannertoken):
@@ -202,9 +207,16 @@ def scanning_api(request, scannertoken):
             token = request.GET.get('token', '') or request.POST.get('token', '')
             if not token:
                 return HttpResponse("No search specified", status=404, content_type='text/plain')
-            if not (token.startswith('AT$') and token.endswith('$AT')):
+            m = _tokenmatcher.match(token)
+            if m:
+                # New style token
+                token = m.group(1)
+            elif token.startswith('AT$') and token.endswith('$AT'):
+                # Old style token
+                token = token[3:-3]
+            else:
                 return HttpResponse("Invalid type of token specified", status=404, content_type='text/plain')
-            token = token[3:-3]
+
             try:
                 attendee = ConferenceRegistration.objects.get(conference=sponsor.conference, publictoken=token)
             except ConferenceRegistration.DoesNotExist:

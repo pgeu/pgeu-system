@@ -9,6 +9,8 @@ from django.contrib import messages
 from django.utils import timezone
 from django.conf import settings
 
+import re
+
 from postgresqleu.util.db import exec_to_list
 from postgresqleu.util.db import ensure_conference_timezone
 from postgresqleu.util.qr import generate_base64_qr
@@ -50,7 +52,7 @@ def landing(request, urlname):
         'reg': reg,
         'checkinlink': link,
         'qrlink': generate_base64_qr(link, 5, 200),
-        'qrtest': generate_base64_qr("ID$TESTTESTTESTTEST$ID", 2, 150),
+        'qrtest': generate_base64_qr('{}/t/id/TESTTESTTESTTEST/'.format(settings.SITEBASE), 2, 150),
     })
 
 
@@ -121,6 +123,9 @@ def _get_reg_json(r):
     return d
 
 
+_tokenmatcher = re.compile('^{}/t/id/([^/]+)/$'.format(settings.SITEBASE))
+
+
 @csrf_exempt
 @global_login_exempt
 def api(request, urlname, regtoken, what):
@@ -141,9 +146,15 @@ def api(request, urlname, regtoken, what):
 
     if what == 'lookup':
         token = request.GET.get('lookup')
-        if not (token.startswith('ID$') and token.endswith('$ID')):
+        m = _tokenmatcher.match(token)
+        if m:
+            # New style token
+            token = m.group(1)
+        elif token.startswith('ID$') and token.endswith('$ID'):
+            # Old style token
+            token = token[3:-3]
+        else:
             raise Http404()
-        token = token[3:-3]
         r = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, idtoken=token)
         return _json_response({'reg': _get_reg_json(r)})
     elif what == 'search':

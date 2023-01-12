@@ -146,8 +146,8 @@ attendee_report_fields = [
     ReportField('created', 'Registration created'),
     ReportField('payconfirmedat', 'Payment confirmed'),
     ReportField('canceledat', 'Canceled at'),
-    DerivedReportField('publictoken', 'Public token', "'AT$' || publictoken || '$AT'"),
-    DerivedReportField('idtoken', 'ID token', "'ID$' || idtoken || '$ID'"),
+    DerivedReportField('publictoken', 'Public token', "'{}/t/at/' || publictoken || '/'".format(settings.SITEBASE)),
+    DerivedReportField('idtoken', 'ID token', "'{}/t/id/' || idtoken || '/'".format(settings.SITEBASE)),
 ]
 
 
@@ -509,8 +509,8 @@ def build_attendee_report(request, conference, data):
         query = """SELECT r.id, firstname, lastname, email, company, address, phone, dietary, twittername, nick, badgescan, shareemail, vouchercode,
   country.name AS countryname, country.printable_name AS country,
   s.shirtsize,
-  'ID$' || idtoken || '$ID' AS fullidtoken,
-  'AT$' || publictoken || '$AT' AS fullpublictoken,
+  '{}/t/id/' || idtoken || '/' AS fullidtoken,
+  '{}/t/at/' || publictoken || '/' AS fullpublictoken,
   regexp_replace(upper(substring(CASE WHEN conference.queuepartitioning=1 THEN lastname WHEN conference.queuepartitioning=2 THEN firstname END, 1, 1)), '[^A-Z]', 'Other') AS queuepartition,
   json_build_object('regtype', rt.regtype, 'specialtype', rt.specialtype,
     'days', (SELECT array_agg(day) FROM confreg_registrationday rd INNER JOIN confreg_registrationtype_days rtd ON rtd.registrationday_id=rd.id WHERE rtd.registrationtype_id=rt.id),
@@ -530,7 +530,7 @@ LEFT JOIN country ON country.iso=r.country_id
 LEFT JOIN confreg_shirtsize s ON s.id=r.shirtsize_id
 WHERE r.conference_id=%(conference_id)s {}
 GROUP BY r.id, conference.id, rt.id, rc.id, country.iso, s.id
-ORDER BY {}""".format(where, ", ".join([_get_table_aliased_field(o.get_orderby_field()) for o in ofields]))
+ORDER BY {}""".format(settings.SITEBASE, settings.SITEBASE, where, ", ".join([_get_table_aliased_field(o.get_orderby_field()) for o in ofields]))
 
     with ensure_conference_timezone(conference):
         result = exec_to_dict(query, params)

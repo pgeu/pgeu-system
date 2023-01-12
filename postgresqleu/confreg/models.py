@@ -812,14 +812,14 @@ class ConferenceRegistration(models.Model):
     @property
     def fullidtoken(self):
         if self.idtoken:
-            return 'ID${0}$ID'.format(self.idtoken)
+            return "{}/t/id/{}/".format(settings.SITEBASE, self.idtoken)
         return ''
 
     # Public token including the identifier
     @property
     def fullpublictoken(self):
         if self.publictoken:
-            return 'AT${0}$AT'.format(self.publictoken)
+            return "{}/t/at/{}/".format(settings.SITEBASE, self.publictoken)
         return ''
 
     # For the admin interface (mainly)
