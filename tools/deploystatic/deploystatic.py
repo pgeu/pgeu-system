@@ -292,8 +292,8 @@ def remove_unknown(knownfiles, destpath):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Deploy jinja based static site')
-    parser.add_argument('sourcepath', type=str, help='Source path')
-    parser.add_argument('destpath', type=str, help='Destination path')
+    parser.add_argument('sourcepath', type=str, help='Source absolute path')
+    parser.add_argument('destpath', type=str, help='Destination absolute path')
     parser.add_argument('--branch', type=str, help='Deploy directly from branch')
     parser.add_argument('--templates', action='store_true', help='Deploy templates (except pages) and static instead of pages')
 
