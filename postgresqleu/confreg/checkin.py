@@ -83,6 +83,9 @@ def checkin(request, urlname, regtoken):
 
 @login_required
 def checkin_token(request, scanned_token):
+    if scanned_token == 'TESTTESTTESTTEST':
+        return HttpResponse("You have successfully scanned the test token.")
+
     # Tricky to not leak data, but we try.
     foundreg = get_object_or_404(ConferenceRegistration, idtoken=scanned_token)
     conference = foundreg.conference

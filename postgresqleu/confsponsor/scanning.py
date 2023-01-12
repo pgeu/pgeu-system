@@ -173,6 +173,9 @@ def scanning_page(request, scannertoken):
 
 @login_required
 def scanned_token(request, scanned_token):
+    if scanned_token == 'TESTTESTTESTTEST':
+        return HttpResponse("You have successfully scanned the test token.")
+
     foundreg = get_object_or_404(ConferenceRegistration, publictoken=scanned_token)
     conference = foundreg.conference
     reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
