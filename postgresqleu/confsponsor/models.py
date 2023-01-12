@@ -161,6 +161,7 @@ class ScannedAttendee(models.Model):
     scannedby = models.ForeignKey(ConferenceRegistration, null=False, blank=False, related_name='scanned_attendees', on_delete=models.CASCADE)
     attendee = models.ForeignKey(ConferenceRegistration, null=False, blank=False, related_name='scanned_by', on_delete=models.CASCADE)
     scannedat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+    firstscan = models.BooleanField(null=False, blank=False, default=True)
     note = models.TextField(null=False, blank=True)
 
     class Meta:

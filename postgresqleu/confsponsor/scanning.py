@@ -256,16 +256,32 @@ def scanning_api(request, scannertoken):
                 # but we record it regardless
                 scan, created = ScannedAttendee.objects.get_or_create(sponsor=sponsor, scannedby=scanner.scanner, attendee=attendee)
 
+                if not created and scan.firstscan:
+                    # An already existing entry which was flagged as first. That likely means that someone forgot the "save" button on the previous
+                    # scan. So we set it to no-longer-first, so we get the update information on the next try.
+                    scan.firstscan = False
+                    scan.save(update_fields=['firstscan'])
+
                 return _json_response(attendee, 200, scan.note)
             elif request.method == 'POST':
                 scan, created = ScannedAttendee.objects.get_or_create(sponsor=sponsor, scannedby=scanner.scanner, attendee=attendee, defaults={'note': request.POST.get('note')})
                 if created:
+                    # This would normally never happen anymore as we create the record on search. Only if someone deletes it in between.
                     return _json_response(attendee, 201)
                 else:
+                    update = []
+                    isfirst = scan.firstscan
+
                     if scan.note != request.POST.get('note'):
                         scan.note = request.POST.get('note')
-                        scan.save()
-                    return _json_response(attendee, 208, scan.note)
+                        update.append('note')
+
+                    if scan.firstscan:
+                        scan.firstscan = False
+                        update.append('firstscan')
+                    if update:
+                        scan.save(update_fields=update)
+                    return _json_response(attendee, 201 if isfirst else 208, scan.note)
     else:
         return HttpResponse("Invalid method", status=400)
 
