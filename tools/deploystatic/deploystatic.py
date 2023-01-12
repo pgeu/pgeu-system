@@ -314,6 +314,10 @@ if __name__ == "__main__":
         print("Destination directory does not exist!")
         sys.exit(1)
 
+    if os.path.exists(os.path.join(args.destpath, '.git')):
+        print("Destination directory seems to be version controlled!")
+        sys.exit(1)
+
     if args.branch:
         s = subprocess.Popen(['/usr/bin/git', 'archive', '--format=tar', args.branch],
                              stdout=subprocess.PIPE,
