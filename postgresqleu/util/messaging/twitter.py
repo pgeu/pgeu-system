@@ -513,6 +513,15 @@ class Twitter(object):
         r.raise_for_status()
         return True, env, "Global webhook has been registered"
 
+    def get_link(self, id):
+        return [
+            'twitter',
+            'https://twitter.com/{}/status/{}'.format(
+                self.providerconfig.get('screen_name', ''),
+                id,
+            )
+        ]
+
 
 class TwitterSetup(object):
     @classmethod

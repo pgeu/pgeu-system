@@ -59,7 +59,7 @@ from .backendforms import ResendWelcomeMailForm
 from postgresqleu.util.request import get_int_or_error
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.time import today_conference
-from postgresqleu.util.messaging import get_messaging
+from postgresqleu.util.messaging import get_messaging, ProviderCache
 from postgresqleu.util.pagination import simple_pagination
 from postgresqleu.invoices.util import InvoiceWrapper
 from postgresqleu.confwiki.models import Wikipage
@@ -240,12 +240,15 @@ def confhome(request, confname):
 
 def news_json(request, confname):
     conference = get_conference_or_404(confname)
-    news = ConferenceNews.objects.select_related('author').filter(conference=conference,
-                                                                  datetime__lt=timezone.now(),
-    )[:5]
+    parts = [p.strip() for p in request.GET.get('include', 'news').split(',')]
 
-    r = HttpResponse(json.dumps(
-        [{
+    ret = {}
+    if 'news' in parts:
+        news = ConferenceNews.objects.select_related('author').filter(
+            conference=conference,
+            datetime__lt=timezone.now(),
+        )[:5]
+        ret['news'] = [{
             'id': n.id,
             'title': n.title,
             'titleslug': slugify(n.title),
@@ -253,8 +256,41 @@ def news_json(request, confname):
             'authorname': n.author.fullname,
             'summary': markdown.markdown(n.summary),
             'inrss': n.inrss,
-        } for n in news],
-        cls=JsonSerializer), content_type='application/json')
+        } for n in news]
+
+    if 'posts' in parts:
+        providers = ProviderCache()
+
+        # Only include posts that are sent to all associated accounts, otherwise we can end up generating invalid links.
+        posts = ConferenceTweetQueue.objects.filter(
+            conference=conference,
+            approved=True,
+            sent=True,
+            datetime__lt=timezone.now(),
+        ).order_by('-datetime')[:5]
+
+        def _get_post_links(postids):
+            for postid, providerid in postids.items():
+                linkinfo = providers.get_by_id(providerid).get_link(postid)
+                if linkinfo:
+                    yield dict(zip(['type', 'url'], linkinfo))
+
+        ret['posts'] = [{
+            'id': p.id,
+            'text': p.contents,
+            'datetime': timezone.localtime(p.datetime),
+            'links': list(_get_post_links(p.postids)),
+        } for p in posts]
+
+    # Special case for legacy compatibility, returns news as top level object
+    if 'include' not in request.GET:
+        r = HttpResponse(json.dumps(
+            ret['news'],
+            cls=JsonSerializer), content_type='application/json')
+    else:
+        r = HttpResponse(json.dumps(
+            ret,
+            cls=JsonSerializer), content_type='application/json')
 
     r['Access-Control-Allow-Origin'] = '*'
     return r

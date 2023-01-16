@@ -1520,6 +1520,7 @@ class ConferenceTweetQueue(models.Model):
         indexes = [
             GinIndex(name='tweetqueue_postids_idx', fields=['postids'], opclasses=['jsonb_path_ops']),
             GinIndex(name='tweetqueue_metadata_idx', fields=['metadata'], opclasses=['jsonb_path_ops']),
+            models.Index(fields=['conference', '-datetime']),
         ]
 
     def save(self, *args, **kwargs):

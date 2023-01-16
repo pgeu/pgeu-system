@@ -267,3 +267,6 @@ class Mastodon(object):
 
     def check_messaging_config(self, state):
         return True, ''
+
+    def get_link(self, id):
+        return 'mastodon', '{}/@{}/{}'.format(self.providerconfig['baseurl'].rstrip('/'), self.providerconfig['username'], id)
