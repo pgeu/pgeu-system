@@ -735,7 +735,7 @@ def sponsor_admin_dashboard(request, confurlname):
 
     unconfirmed_benefits = SponsorClaimedBenefit.objects.filter(sponsor__conference=conference, confirmed=False).order_by('-sponsor__level__levelcost', 'sponsor', 'benefit__sortkey')
 
-    mails = SponsorMail.objects.prefetch_related('levels', 'sponsors').filter(conference=conference)
+    mails = SponsorMail.objects.prefetch_related('levels', 'sponsors').defer('message').filter(conference=conference)
 
     # Maybe we could do this with the ORM based on data we already have, but SQL is easier
     curs = connection.cursor()
@@ -1113,7 +1113,7 @@ To view it on the site, go to {4}/events/sponsor/admin/{5}/viewmail/{6}/""".form
         'conference': conference,
         'form': form,
         'sendto': sendto,
-        'mails': SponsorMail.objects.prefetch_related('levels', 'sponsors').filter(conference=conference).order_by('sentat'),
+        'mails': SponsorMail.objects.prefetch_related('levels', 'sponsors').defer('message').filter(conference=conference).order_by('sentat'),
         'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
         'helplink': 'sponsors',
     })
