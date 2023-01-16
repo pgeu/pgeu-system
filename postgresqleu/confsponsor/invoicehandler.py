@@ -10,6 +10,7 @@ from postgresqleu.util.time import today_conference
 
 from .models import Sponsor, PurchasedVoucher
 from .util import send_conference_sponsor_notification, send_sponsor_manager_email
+from .util import get_mails_for_sponsor
 from postgresqleu.confreg.models import PrepaidBatch, PrepaidVoucher
 from postgresqleu.confreg.util import send_conference_mail
 import postgresqleu.invoices.models as invoicemodels
@@ -33,6 +34,22 @@ def confirm_sponsor(sponsor, who):
             'conference': sponsor.conference,
         },
     )
+
+    mails = list(get_mails_for_sponsor(sponsor).defer('message'))
+    if mails:
+        # Emails have been sent to this sponsorship level (only the level
+        # will match for a brand new sponsor), so send off an email to the
+        # sponsor letting them know what has already been sent.
+        send_sponsor_manager_email(
+            sponsor,
+            "Previous sponsor emails sent",
+            'confsponsor/mail/sponsor_confirmed_oldemails.txt',
+            {
+                'sponsor': sponsor,
+                'conference': sponsor.conference,
+                'mails': mails,
+            },
+        )
 
 
 class InvoiceProcessor(object):
