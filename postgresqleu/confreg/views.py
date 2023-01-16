@@ -242,12 +242,18 @@ def news_json(request, confname):
     conference = get_conference_or_404(confname)
     parts = [p.strip() for p in request.GET.get('include', 'news').split(',')]
 
+    count = get_int_or_error(request.GET, 'count', 5)
+    if count < 1:
+        count = 1
+    elif count > 20:
+        count = 20
+
     ret = {}
     if 'news' in parts:
         news = ConferenceNews.objects.select_related('author').filter(
             conference=conference,
             datetime__lt=timezone.now(),
-        )[:5]
+        )[:count]
         ret['news'] = [{
             'id': n.id,
             'title': n.title,
@@ -267,7 +273,7 @@ def news_json(request, confname):
             approved=True,
             sent=True,
             datetime__lt=timezone.now(),
-        ).order_by('-datetime')[:5]
+        ).order_by('-datetime')[:count]
 
         def _get_post_links(postids):
             for postid, providerid in postids.items():
