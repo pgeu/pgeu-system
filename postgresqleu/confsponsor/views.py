@@ -43,6 +43,7 @@ from .invoicehandler import get_sponsor_invoice_address, get_sponsor_invoice_row
 from .invoicehandler import create_voucher_invoice
 from .vatutil import validate_eu_vat_number
 from .util import send_conference_sponsor_notification, send_sponsor_manager_email
+from .util import get_mails_for_sponsor
 
 
 @login_required
@@ -87,7 +88,7 @@ def sponsor_conference(request, sponsorid):
     unclaimedbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=False).exclude(sponsorclaimedbenefit__sponsor=sponsor)
     claimedbenefits = SponsorClaimedBenefit.objects.filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey')
     noclaimbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=True)
-    mails = SponsorMail.objects.filter(conference=sponsor.conference).filter(Q(levels=sponsor.level) | Q(sponsors=sponsor))
+    mails = get_mails_for_sponsor(sponsor).defer('message')
     vouchers = PrepaidVoucher.objects.filter(batch__sponsor=sponsor)
     pendingvouchers = PurchasedVoucher.objects.filter(sponsor=sponsor, batch__isnull=True)
     discountcodes = DiscountCode.objects.filter(sponsor=sponsor)
@@ -181,7 +182,10 @@ def sponsor_manager_add(request, sponsorid):
 def sponsor_view_mail(request, sponsorid, mailid):
     sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
 
-    mail = get_object_or_404(SponsorMail, Q(levels=sponsor.level) | Q(sponsors=sponsor), conference=sponsor.conference, id=mailid)
+    try:
+        mail = get_mails_for_sponsor(sponsor).get(id=mailid)
+    except SponsorMail.DoesNotExist:
+        raise Http404()
 
     return render(request, 'confsponsor/sent_mail_user.html', {
         'conference': sponsor.conference,
