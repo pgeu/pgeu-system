@@ -110,7 +110,7 @@ def _send_pending_posts(providers):
                     t.postids[id] = p.id
                     sentany = True
                 else:
-                    sys.stderr.write("Failed to post to {}: {}".format(p, err))
+                    sys.stderr.write("Failed to post to {}: {}\n".format(p, err))
                     err = True
             if sentany:
                 numposts += 1
