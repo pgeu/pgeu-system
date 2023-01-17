@@ -97,7 +97,7 @@ def _send_pending_posts(providers):
 
             for p in remaining:
                 impl = providers.get(p)
-                (id, err) = impl.post(
+                (id, errmsg) = impl.post(
                     truncate_shortened_post(t.contents, impl.max_post_length),
                     t.image,
                     t.replytotweetid,
@@ -110,7 +110,7 @@ def _send_pending_posts(providers):
                     t.postids[id] = p.id
                     sentany = True
                 else:
-                    sys.stderr.write("Failed to post to {}: {}\n".format(p, err))
+                    sys.stderr.write("Failed to post to {}: {}\n".format(p, errmsg))
                     err = True
             if sentany:
                 numposts += 1
