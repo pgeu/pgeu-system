@@ -119,7 +119,12 @@ def _send_pending_posts(providers):
                 t.save(update_fields=['postids', 'sent'])
 
         # Sleep 1 second before continuing so we don't hammer the APIs
-        time.sleep(1)
+        if err:
+            # On error, we sleep a minute instead, so we don't completely flood things
+            sys.stderr.write("One or more errors detected, sleeping 60 seconds before trying again.\n")
+            time.sleep(60)
+        else:
+            time.sleep(1)
     return err, numposts
 
 
