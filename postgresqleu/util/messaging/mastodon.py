@@ -157,7 +157,7 @@ class Mastodon(object):
                 'file': bytearray(image),
             })
             if r.status_code != 200:
-                return (False, 'Media upload: {}'.format(r.text))
+                return (None, 'Media upload: {}'.format(r.text))
             d['media_ids'] = [int(r.json()['id']), ]
 
         r = self._post('/api/v1/statuses', json=d)
