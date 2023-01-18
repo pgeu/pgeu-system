@@ -1,0 +1,14 @@
+{%extends "base.html" %}
+{%block title%}Badge Scanning - {{conference}}{%endblock%}
+{%block content%}
+<h1>Badge Scanning - {{conference}}</h1>
+<p>
+  You are registered as a badge scanner for more than one sponsor at {{conference}}.
+  Please pick the sponsor you currently wish to scan for in the list below.
+</p>
+<ul>
+{%for s in scanners%}
+  <li><a href="?token={{s.token}}">{{s.sponsor}}</a></li>
+{%endfor%}
+</ul>
+{%endblock%}

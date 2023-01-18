@@ -12,41 +12,9 @@ To scan a badge you will use your regular smartphone. The system has
 been tested with the most common models of smartphones, and should
 hopefully work with the one you have.
 
-For Android there is a native app available in Google Play to
-download from: https://play.google.com/store/apps/details?id=eu.postgresql.android.conferencescanner
-
-For both Android and iOS, there is a web app available that can also
-be used for the scanning. Note that you will need to grant
-the website permissions to use your camera, and depending on
-smartphone model you may need to configure the camera before you scan
-(for example so that it doesn't use the front-facing camera, which
-some models do by default).
-
-NOTE! Due to an unknown change in a recent update to iOS, when using
-the web app from an iOS device such as an iPhone, the device must
-be held in landscape mode instead of portrait for the scan to
-complete correctly.
-
-Finally, you can also scan the attendee badges directly with your browser
-in the smartphone. This will work around the issue with landscape mdoe
-on iPhones, but unlike the other methos to scan the badges you must be
-logged in with the same account you used for your registration in order
-to access them. If you choose to use this method, you scan the code
-directly and do *not* use the app link below.
-
-To access your personal scanning page, go to:
-
-{{sitebase}}/events/sponsor/scanning/{{scanner.token}}/
-
-If you go to this address and have the Android app installed, it will
-auto-activate. If it does not, copy this URL and paste it into the
-configuration of the app.
+For more information about the scanning, visit:
+{{sitebase}}/events/{{conference.urlname}}/badgescan/?token={{scanner.token}}
 
 Note that this is your *personal* link, so do not share it with
 others! Each person designated to perform badge scanning will have
 their own personal link!
-
-We also strongly recommend that you test the system before the
-conference. You can find a code to test with at
-
-{{sitebase}}/events/sponsor/scanning-test/

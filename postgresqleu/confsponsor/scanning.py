@@ -15,7 +15,7 @@ from postgresqleu.util.qr import generate_base64_qr
 from postgresqleu.util.db import exec_to_dict, exec_to_keyed_scalar
 from postgresqleu.util.decorators import global_login_exempt
 from postgresqleu.confreg.models import ConferenceRegistration
-from postgresqleu.confreg.util import send_conference_mail
+from postgresqleu.confreg.util import send_conference_mail, get_conference_or_404, render_conference_response
 
 from .views import _get_sponsor_and_admin, get_authenticated_conference
 from .models import SponsorScanner, ScannedAttendee
@@ -168,6 +168,36 @@ def scanning_page(request, scannertoken):
         'scanner': scanner,
         'sponsor': scanner.sponsor,
         'conference': scanner.sponsor.conference,
+    })
+
+
+@login_required
+def landing(request, urlname):
+    conference = get_conference_or_404(urlname)
+    reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
+
+    scanners = SponsorScanner.objects.filter(sponsor__conference=conference, scanner=reg)
+    if 'token' in request.GET:
+        scanners = scanners.filter(token=request.GET['token'])
+
+    scanners = list(scanners)
+    if len(scanners) == 0:
+        raise Http404()
+    elif len(scanners) > 1:
+        return render_conference_response(request, conference, 'reg', 'confsponsor/scanner_selectsponsor.html', {
+            'conference': conference,
+            'scanners': scanners,
+        })
+    else:
+        scanner = scanners[0]
+
+    link = '{}/events/sponsor/scanning/{}/'.format(settings.SITEBASE, scanner.token)
+    return render_conference_response(request, conference, 'reg', 'confsponsor/scanner_landing.html', {
+        'conference': conference,
+        'sponsor': scanner.sponsor,
+        'link': link,
+        'qrlink': generate_base64_qr(link, 5, 200),
+        'qrtest': generate_base64_qr('{}/t/at/TESTTESTTESTTEST/'.format(settings.SITEBASE), 2, 150),
     })
 
 

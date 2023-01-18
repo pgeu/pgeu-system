@@ -1,0 +1,83 @@
+{%extends "base.html" %}
+{%block title%}Badge Scanning - {{conference}}{%endblock%}
+{%block content%}
+<h1>Badge Scanning - {{conference}}</h1>
+<p>
+  You are registered as a badge scanner for {{sponsor}}.
+</p>
+<p>
+  To scan a badge you will use your regular smartphone. The system has
+  been tested with the most common models of smartphones, and should
+  hopefully work with the one you have.
+</p>
+
+<h2>Native app</h2>
+<p>
+  For Android there is a native app available in
+  <a href="https://play.google.com/store/apps/details?id=eu.postgresql.android.conferencescanner">Google Play</a>.
+</p>
+
+<h2>Web app</h2>
+<p>
+  For both Android and iOS, there is a web app available that can also
+  be used for the scanning. Note that you will need to grant
+  the website permissions to use your camera, and depending on
+  smartphone model you may need to configure the camera before you scan
+  (for example so that it doesn't use the front-facing camera, which
+  some models do by default).
+</p>
+<p>
+  <em>NOTE!</em> Due to an unknown change in a recent update to iOS,
+  when using the web app from an iOS device such as an iPhone, the
+  device must be held in landscape mode instead of portrait for the
+  scan to complete correctly.
+</p>
+
+<h3>Personal link</h3>
+<p>
+  To access your personal scanning page, go to:
+</p>
+
+<p>
+  <a href="{{link}}">{{link}}</a>
+</p>
+
+<p>
+  Or scan this QR code:
+</p>
+<p>
+  <img src="data:image/png;base64,{{qrlink}}" />
+</p>
+
+<p>
+  If you go to this address and have the Android app installed, it will
+  auto-activate. If it does not, copy this URL and paste it into the
+  configuration of the app.
+</p>
+
+<p>
+  Note that this is your <em>personal</em> link, so do not share it with
+  others! Each person designated to perform badge scanning will have
+  their own personal link!
+</p>
+
+
+<h2>Native scanning on device</h2>
+<p>
+  Finally, you can also scan the attendee badges directly with your browser
+  in the smartphone. This will work around the issue with landscape mdoe
+  on iPhones, but unlike the other methos to scan the badges you must be
+  logged in with the same account you used for your registration in order
+  to access them. If you choose to use this method, you scan the code
+  directly and do <em>not</em> use the app link below.
+</p>
+
+<h2>Test</h2>
+<p>
+  We also strongly recommend that you test the system before the
+  conference. You can find a code to test with at
+</p>
+<p>
+  <img src="data:image/png;base64,{{qrtest}}" />
+</p>
+{%endblock%}

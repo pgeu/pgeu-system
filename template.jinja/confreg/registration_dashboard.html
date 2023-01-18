@@ -94,7 +94,7 @@ news!
   <li><a href="/events/{{conference.urlname}}/checkin/">Checkin processing</a> &bull;</li>
 {%endif%}
 {%if reg.is_badgescanner %}
-  <li><a href="/events/sponsor/scanning/{{reg.sponsorscanner_token}}/">Sponsor badge scanning</a> &bull;</li>
+  <li><a href="/events/{{conference.urlname}}/badgescan/">Sponsor badge scanning</a> &bull;</li>
 {%endif%}
 {%if reg.is_tweeter %}
   <li><a href="/events/{{conference.urlname}}/volunteer/{{reg.regtoken}}/twitter/">Twitter posting</a> &bull;</li>

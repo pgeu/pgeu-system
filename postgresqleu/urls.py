@@ -18,6 +18,7 @@ import postgresqleu.confreg.volsched
 import postgresqleu.confreg.checkin
 import postgresqleu.confreg.twitter
 import postgresqleu.confreg.api
+import postgresqleu.confsponsor.scanning
 import postgresqleu.confwiki.views
 import postgresqleu.account.views
 import postgresqleu.invoices.views
@@ -120,6 +121,7 @@ urlpatterns.extend([
     url(r'^events/(?P<urlname>[^/]+)/volunteer/api/$', postgresqleu.confreg.volsched.volunteerschedule_api),
     url(r'^events/(?P<urlname>[^/]+)/volunteer/ical/(?P<token>[a-z0-9]{64})/$', postgresqleu.confreg.volsched.ical),
     url(r'^events/(?P<urlname>[^/]+)/volunteer/(?P<token>[a-z0-9]{64})/twitter/$', postgresqleu.confreg.twitter.volunteer_twitter),
+    url(r'^events/([^/]+)/badgescan/$', postgresqleu.confsponsor.scanning.landing),
     url(r'^events/([^/]+)/checkin/$', postgresqleu.confreg.checkin.landing),
     url(r'^events/([^/]+)/checkin/([a-z0-9]{64})/$', postgresqleu.confreg.checkin.checkin),
     url(r'^events/([^/]+)/checkin/([a-z0-9]{64})/api/(\w+)/$', postgresqleu.confreg.checkin.api),
