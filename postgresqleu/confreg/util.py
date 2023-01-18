@@ -16,7 +16,7 @@ from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.middleware import RedirectException
 from postgresqleu.util.time import today_conference
 from postgresqleu.util.messaging.util import send_org_notification
-from postgresqleu.confreg.jinjafunc import JINJA_TEMPLATE_ROOT, render_jinja_conference_template
+from postgresqleu.confreg.jinjafunc import JINJA_TEMPLATE_ROOT, render_jinja_conference_template, render_jinja_conference_response
 from postgresqleu.confreg.jinjapdf import render_jinja_ticket
 
 from .models import PrepaidVoucher, DiscountCode, RegistrationWaitlistHistory
@@ -467,3 +467,19 @@ def send_conference_notification_template(conference, subject, templatename, tem
     message = render_jinja_conference_template(conference, templatename, templateattr)
 
     send_conference_notification(conference, subject, message)
+
+
+#
+# Render a conference page. It will load the template using the jinja system
+# if the conference is configured for jinja templates.
+#
+def render_conference_response(request, conference, pagemagic, templatename, dictionary=None):
+    if conference and conference.jinjaenabled and conference.jinjadir:
+        return render_jinja_conference_response(request, conference, pagemagic, templatename, dictionary)
+
+    # At this point all conference templates are in jinja except the admin ones, and admin does not render
+    # through render_conference_response(). Thus, if it's not here now, we can 404.
+    if os.path.exists(os.path.join(JINJA_TEMPLATE_ROOT, templatename)):
+        return render_jinja_conference_response(request, conference, pagemagic, templatename, dictionary)
+
+    raise Http404("Template not found")

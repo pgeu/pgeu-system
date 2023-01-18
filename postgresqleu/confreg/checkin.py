@@ -18,7 +18,7 @@ from postgresqleu.util.decorators import global_login_exempt
 from postgresqleu.util.request import get_int_or_error
 
 from .models import ConferenceRegistration
-from .views import render_conference_response
+from .util import render_conference_response
 from .util import send_conference_mail, get_conference_or_404
 
 import json

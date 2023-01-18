@@ -40,6 +40,7 @@ from .forms import CrossConferenceMailForm
 from .forms import AttendeeMailForm, WaitlistOfferForm, WaitlistConfirmForm, WaitlistSendmailForm, TransferRegForm
 from .forms import NewMultiRegForm, MultiRegInvoiceForm
 from .forms import SessionSlidesUrlForm, SessionSlidesFileForm
+from .util import render_conference_response
 from .util import invoicerows_for_registration, summarize_registration_invoicerows, notify_reg_confirmed, InvoicerowsException
 from .util import get_invoice_autocancel, cancel_registration, send_welcome_email
 from .util import attendee_cost_from_bulk_payment
@@ -48,7 +49,7 @@ from .util import reglog
 
 from .models import get_status_string, valid_status_transitions
 from .regtypes import confirm_special_reg_type, validate_special_reg_type
-from .jinjafunc import render_jinja_conference_response, JINJA_TEMPLATE_ROOT
+from .jinjafunc import JINJA_TEMPLATE_ROOT
 from .jinjafunc import render_jinja_conference_template
 from .jinjafunc import render_jinja_conference_svg
 from .jinjapdf import render_jinja_ticket
@@ -86,22 +87,6 @@ import xml.etree.ElementTree as ET
 
 import json
 import markdown
-
-
-#
-# Render a conference page. It will load the template using the jinja system
-# if the conference is configured for jinja templates.
-#
-def render_conference_response(request, conference, pagemagic, templatename, dictionary=None):
-    if conference and conference.jinjaenabled and conference.jinjadir:
-        return render_jinja_conference_response(request, conference, pagemagic, templatename, dictionary)
-
-    # At this point all conference templates are in jinja except the admin ones, and admin does not render
-    # through render_conference_response(). Thus, if it's not here now, we can 404.
-    if os.path.exists(os.path.join(JINJA_TEMPLATE_ROOT, templatename)):
-        return render_jinja_conference_response(request, conference, pagemagic, templatename, dictionary)
-
-    raise Http404("Template not found")
 
 
 def _get_registration_signups(conference, reg):
