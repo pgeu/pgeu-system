@@ -7,7 +7,7 @@ Running a call for papers consists of a few clearly separated steps:
 ### 1. Collecting proposals
 
 To start collecting proposals, enable the call for papers on the
-[conference](configuring). As soon as this is done, speakers can start
+[conference](configuring.md). As soon as this is done, speakers can start
 submitting entries. Before doing that, make sure you configure the
 introductory text (if you want one), and decide if you want to ask for
 skill levels.
@@ -66,7 +66,7 @@ voting page or by visiting 'Pending notifications' from the dashboard!
 
 Once a session has entered the *approved* state, it will show up in
 the list of sessions, if that is enabled for the
-[conference](configuring).
+[conference](configuring.md).
 
 See below for a diagram of how a session moves through the different
 states.

@@ -29,7 +29,7 @@ same criteria to see.
 
 From
 :  The *from* address of the email will always be the
-[main contact address](super_conference) for the conference.
+[main contact address](super_conference.md) for the conference.
 
 Registration classes
 :  Select the registration classes that the email should be delivered to,

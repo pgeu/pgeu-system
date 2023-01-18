@@ -1,7 +1,7 @@
 # OAuth
 
 OAuth is currently used for two different things in the system -- for
-integrating with [messaging systems](integrations) and for performing
+integrating with [messaging systems](integrations.md) and for performing
 login in case the postgresql.org community authentication system is
 not used.
 

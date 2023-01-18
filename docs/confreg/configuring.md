@@ -8,7 +8,7 @@ completely new conference, see the [separate page](super_conference#new).
 
 There are a few base configuration steps to always perform.
 
-Set the maximum number of attendees before the [waitlist](waitlist)
+Set the maximum number of attendees before the [waitlist](waitlist.md)
 activates. This should always be set to a few below venue capacity, to
 make sure a multireg doesn't "break the bank".
 
@@ -28,10 +28,10 @@ Decide if you want a welcome email to be sent to all attendees when
 their registration is fully completed (payment confirmed), which is
 normally recommended. If you do, of course also set the text of that
 email. The email will be sent from the address configured as the
-contact address by the [superuser](super_conference).
+contact address by the [superuser](super_conference.md).
 
 If needed, add a text added as a prefix before the
-[additional options](registrations) listing on the registration form.
+[additional options](registrations.md) listing on the registration form.
 
 ### Registration fields
 
@@ -44,17 +44,17 @@ exists on all attendees.
 ### Workflow steps
 
 You can separately enable each of the different user workflow steps
-for [registration](registrations), [call for papers](callforpapers),
-[call for sponsors](sponsors), [schedule](schedule) and
-[feedback](feedback). Make sure you don't enable any steps until the
+for [registration](registrations.md), [call for papers](callforpapers.md),
+[call for sponsors](sponsors.md), [schedule](schedule.md) and
+[feedback](feedback.md). Make sure you don't enable any steps until the
 organisation is ready for it.
 
 ### Call for papers
 
 Decide if you want skill level prompts in the
-[call for papers](callforpapers) and visible in the
-[schedule](schedule), and set the intro text used on the
-[call for papers](callforpapers).
+[call for papers](callforpapers.md) and visible in the
+[schedule](schedule.md), and set the intro text used on the
+[call for papers](callforpapers.md).
 
 You can also decide if you want talkvoters to be able to see how others
 voted and the overall average vote.  Usually this would be off until
@@ -69,28 +69,28 @@ Testers are users that can bypass the restrictions on which parts of
 the workflow are open, e.g. they can perform a registration even if
 registrations are closed. The idea is that this can be used for
 example to test skinning functions, and to validate the setup of
-things like [registration types](registrations).
+things like [registration types](registrations.md).
 
 Talkvoters are users that can vote on talks in the
-[call for papers](callforpapers).
+[call for papers](callforpapers.md).
 
-Staff are users who are allowed to [register](registrations) with a
+Staff are users who are allowed to [register](registrations.md) with a
 registration that requires staff (basically intended for free or
 discounted registrations). This is assigned to users *before* they
 register, to gain access to this registration type.
 
 Volunteers are *registered* users who can participate in the
-[volunteer schedule](volunteers). Note that this requires the users to
+[volunteer schedule](volunteers.md). Note that this requires the users to
 actually be registered for the conference in order to be
 selected. This is a separate flag instead of a registration type so
 that it's easy to for example have attendees who are both speakers and
 on the volunteer schedule. If volunteers should get free entry as
 well, that is typically handled either with a
-[registration type](registrations) that requires manual validation, or
-with a custom [voucher or discount code](vouchers).
+[registration type](registrations.md) that requires manual validation, or
+with a custom [voucher or discount code](vouchers.md).
 
 The final role that exists in a conference is an administrator. This
-can only be assigned by a [superuser](super_conference).
+can only be assigned by a [superuser](super_conference.md).
 
 ## Reference
 
@@ -99,7 +99,7 @@ can only be assigned by a [superuser](super_conference).
 The form to edit a conference has the following fields:
 
 Attendees before waitlist
-: Number of confirmed attendees before the [waitlist](waitlist) is
+: Number of confirmed attendees before the [waitlist](waitlist.md) is
 activated. This should be below the venue maximum *with some margin*,
 as the number of attendees can "jump" with either multi-registrations
 or parallel registration processes by multiple users.
@@ -124,7 +124,7 @@ Welcome email contents
 : Contents of said welcome email
 
 Use tickets
-: Enable [tickets](tickets) and check-in. If this is enabled, then for
+: Enable [tickets](tickets.md) and check-in. If this is enabled, then for
 each user a ticket is generated and attached to the welcome
 email. This ticket is built from the `ticket.json` file in the
 template directory. Enabling tickets also enables the check-in
@@ -252,24 +252,24 @@ active, then [cards](skinning#cards) (small adapted images in SVG and
 PNG format) will be published for sessions and speakers.
 
 Check-in active
-: If the [check-in](tickets) system is active and attendees can be
+: If the [check-in](tickets.md) system is active and attendees can be
 checked in.
 
 Conference feedback open
 : If registered attendees of the conference can leave
-[feedback](feedback) on the full conference.
+[feedback](feedback.md) on the full conference.
 
 Session feedback open
 : If registered attendees of the conference can leave
-[feedback](feedback) on individual sessions.
+[feedback](feedback.md) on individual sessions.
 
 Skill levels
-: Should the [call for papers](callforpapers) ask for skill levels on
+: Should the [call for papers](callforpapers.md) ask for skill levels on
 all sessions, and should they be displayed on the schedule and session
 lists.
 
 Call for papers intro
-: Text shown on the [call for papers](callforpapers) page, above the
+: Text shown on the [call for papers](callforpapers.md) page, above the
 actual call for papers. Can contain HTML.
 
 Testers
@@ -280,27 +280,27 @@ registered users and not registered users.
 
 Talkvoters
 : List of users who can vote in the
-[call for papers](callforpapers). This can be both registered users
+[call for papers](callforpapers.md). This can be both registered users
 and not registered users.
 
 Staff
 : List of users who can register as staff using the special
-[registration type](registrations). This is typically users who have
+[registration type](registrations.md). This is typically users who have
 not registered when they are added, since they will later use the
 staff registration to become registered.
 
 Volunteers
 : List of registered users who participate in the
-[volunteer schedule](volunteers). This must be registered users.
+[volunteer schedule](volunteers.md). This must be registered users.
 
 Check-in processors
-: List of registered users who work with [checking in users](tickets)
+: List of registered users who work with [checking in users](tickets.md)
 on arrival. This must be registered users.
 
 Jinja templates enabled
 : Indicate if jinja templating is active for this conference. This can only
   be enabled if the *jinja directory* setting is enabled in the
-  [superuser settings](super_conference), but can then be independently
+  [superuser settings](super_conference.md), but can then be independently
   turned on and off by a non-superuser.
 
 Width of HTML schedule

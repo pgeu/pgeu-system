@@ -240,7 +240,7 @@ Unlike some other templates, the included SVG templates in the default
 system are *not* meant to be used for anything other than an
 example. They should always be overridden, and until that is done, card
 publishing should not be
-[enabled on the conference](configuring#conferenceform).
+[enabled on the conference](configuring.md#conferenceform).
 
 # Tickets and Badges <a name="badges"></a>
 
@@ -355,7 +355,7 @@ output format as `badge`.
 ## Tickets
 
 Tickets are automatically generated and emailed to users along with
-the welcome email as [configured](configuring).
+the welcome email as [configured](configuring.md).
 
 They can also be downloaded from the attendee registration dashboard,
 or be previewed from the administration view of an attendee. In both

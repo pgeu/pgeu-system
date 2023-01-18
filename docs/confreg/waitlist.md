@@ -2,7 +2,7 @@
 
 The waitlist is enabled automatically when the number of *confirmed*
 attendees to the conference exceeds the number of attendees
-[configured](configuring) for it. There is no way to manually enable
+[configured](configuring.md) for it. There is no way to manually enable
 the waitlist, other than to reduce the number of attendees before
 waitlist to a number below the current amount.
 
@@ -67,7 +67,7 @@ It is also possible to send email to all attendees on the
 waitlist. This can be filtered to be all on waitlist, or just the ones
 with or without offers.
 
-Unlike [attendee emails](emails) these are sent directly but are not
+Unlike [attendee emails](emails.md) these are sent directly but are not
 archived on the registration pages or similar, as these are to
 accounts that have not yet got a registration.
 

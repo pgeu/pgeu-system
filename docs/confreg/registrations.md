@@ -12,7 +12,7 @@ succeeds can always be discussed..):
    an account, or one can be created as part of the signup
    process.
 1. The exact fields to be filled out can be
-   [configured](configuring) at the conference level, for
+   [configured](configuring.md) at the conference level, for
    example if there should be a field about t-shirt size or not.
 1. The attendee can incrementally fill out and save in between if
    necessary. If they do that, they will at regular intervals receive
@@ -24,15 +24,15 @@ succeeds can always be discussed..):
 1. Once the invoice is generated, the registration data is
    locked. This invoice can then be paid by any of the configured
    payment methods, normally by credit card or PayPal. If the invoice
-   is not paid within the defined [autocancel](configuring) period,
+   is not paid within the defined [autocancel](configuring.md) period,
    the invoice is automatically canceled, and the registration is
    returned to unlocked state, and will again start receiving
    reminders to complete it.
 1. Once the invoice is paid, a receipt is sent to the user. If a
-   welcome email is [configured](configuring) for the conference, this
+   welcome email is [configured](configuring.md) for the conference, this
    email will be sent to the user.
 1. Certain fields are unlocked for editing again, until the *allow
-   editing* checkbox is [turned off](configuring). The registration is
+   editing* checkbox is [turned off](configuring.md). The registration is
    now fully complete.
 
 ![Regular registration workflow](graphs/regular_reg.svg)
@@ -48,7 +48,7 @@ registration for somebody else, the process is the same.
 1. For each of the attendees that should be registered, the email
    address is added and then the registration details are filled out
    for that attendee. Additional options can be added if necessary, as
-   well as [voucher and discount codes](vouchers). The same fields and
+   well as [voucher and discount codes](vouchers.md). The same fields and
    restrictions as regular registrations are used.
 1. Once all registrations have been made, the user picks *Create
    invoice*. At this point an invoice is created for all registrations
@@ -66,7 +66,7 @@ registration for somebody else, the process is the same.
       attendee can also create a new account at this point.
 
 The system for multiple payments is automatically disabled once the
-[waitlist](waitlist) is in force.
+[waitlist](waitlist.md) is in force.
 
 ## Registration types and classes <a name="typesandclasses"></a>
 
@@ -119,7 +119,7 @@ should be able to be substituted at the last moment.
 
 Confirmed staff
 : The attendee registering must use one of the accounts that
-are listed as staff in the [conference configuration](configuring).
+are listed as staff in the [conference configuration](configuring.md).
 
 ### Registration days <a name="days"></a>
 
@@ -129,7 +129,7 @@ used to limit certain registration types and additional options to certain days,
 typically used to render information on the badges or produce numbers to a venue.
 
 IN the system, registration days are simply a list of dates, that must fall
-between the [conference](configuring) start date and end date.
+between the [conference](configuring.md) start date and end date.
 
 ## Additional options <a name="options"></a>
 
@@ -137,7 +137,7 @@ Additional options represent things that can be added to a
 registration, such as training sessions, attendance to a separate
 event etc. An additional option can either be paid for, or it can be a
 free option. It is something that is normally done at registration
-time, and should not be confused with [signups](signups) which are
+time, and should not be confused with [signups](signups.md) which are
 normally used to handle things like signing up for a social event or a
 dinner or similar things.
 
@@ -168,7 +168,7 @@ To perform a registration transfer:
 
 1. Ensure the *new* person attending makes a registration in the
    system, but does *not* generate an invoice. If the
-   [waitlist](waitlist) is active, the registration should also *not*
+   [waitlist](waitlist.md) is active, the registration should also *not*
    be signed up on the waitlist (if it is, it has to be canceled
    first).
 2. Go to the transfer page, and pick the registrations to transfer to
@@ -228,7 +228,7 @@ requirements such as a student ID to access student discounts.
 
 Autocancel invoices
 : If registrations with this registration type should override the value for
-autocancel from the [conference](configuring). The lowest value of
+autocancel from the [conference](configuring.md). The lowest value of
 autocancel is always used.
 
 Requires option
@@ -277,7 +277,7 @@ completed.
 
 Autocancel invoices
 : If registrations with this option should override the value for
-autocancel from the [conference](configuring). The lowest value of
+autocancel from the [conference](configuring.md). The lowest value of
 autocancel is always used.
 
 Requires regtype
