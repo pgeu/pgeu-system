@@ -1,6 +1,9 @@
+from django.db.models import Q
+
 from postgresqleu.util.db import exec_to_list
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.confreg.util import send_conference_mail
+from postgresqleu.confsponsor.models import SponsorMail
 
 
 def get_sponsor_dashboard_data(conference):
@@ -31,3 +34,10 @@ def send_sponsor_manager_email(sponsor, subject, template, context):
             sendername=sponsor.conference.conferencename,
             receivername='{0} {1}'.format(manager.first_name, manager.last_name)
         )
+
+
+def get_mails_for_sponsor(sponsor):
+    return SponsorMail.objects.filter(
+        Q(conference=sponsor.conference),
+        Q(levels=sponsor.level) | Q(sponsors=sponsor)
+    )

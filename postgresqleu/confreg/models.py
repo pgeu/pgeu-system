@@ -1527,8 +1527,10 @@ class ConferenceTweetQueue(models.Model):
         super().save(*args, **kwargs)
 
         # When we are saving, *if* we have not yet been sent, materialize a list of
-        # which providers to send to.
-        if self.approved and not self.sent:
+        # which providers to send to. However, we *only* do this if there isn't something
+        # already in the list to be remaining -- if there is, then we just keep adding things
+        # back that have already been taken care of.
+        if self.approved and not self.sent and not self.remainingtosend.exists():
             if self.conference:
                 self.remainingtosend.set(MessagingProvider.objects.filter(active=True, conferencemessaging__conference=self.conference, conferencemessaging__broadcast=True))
             else:

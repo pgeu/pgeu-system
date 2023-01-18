@@ -1,0 +1,17 @@
+Hello!
+
+Welcome as a sponsor of {{conference}}!
+
+Prior to your sponsorship being confirmed, the following emails have
+been sent to all sponsors at the {{sponsor.level}} level.
+We recommend that you read through these emails to make sure you don't
+miss any important information!
+
+{%for m in mails -%}
+{{m.sentat|datetimeformat("%Y-%m-%d %H:%M")}} - {{m.subject}}
+View: {{sitebase}}/events/sponsor/{{sponsor.id}}/viewmail/{{m.id}}/
+
+{%endfor%}
+Any emails sent to {{sponsor.level}} sponsors in the future
+will be sent as an email to you and also made available on your
+sponsorship dashboard page linked from the footer of this email.

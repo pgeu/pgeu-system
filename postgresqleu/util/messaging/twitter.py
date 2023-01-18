@@ -232,7 +232,7 @@ class Twitter(object):
                 'media': bytearray(image),
             })
             if r.status_code != 200:
-                return (False, 'Media upload: {}'.format(r.text))
+                return (None, 'Media upload: {}'.format(r.text))
             d['media_ids'] = r.json()['media_id']
 
         r = self.tw.post('https://api.twitter.com/1.1/statuses/update.json', data=d)
