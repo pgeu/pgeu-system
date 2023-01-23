@@ -77,7 +77,7 @@ def sponsor_scanning(request, sponsorid):
                         scanner = SponsorScanner.objects.get(sponsor=sponsor, pk=rid)
                         n = scanner.scanner.fullname
                         if scanner.scanner.scanned_attendees.filter(sponsor=sponsor).exists():
-                            messages.warning(request, "Attende {0} has scanned badges already, cannot be removed".format(n))
+                            messages.warning(request, "Attendee {0} has scanned badges already, cannot be removed".format(n))
                         else:
                             scanner.delete()
                             messages.info(request, "Attendee {0} removed from scanning".format(n))
