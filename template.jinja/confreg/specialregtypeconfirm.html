@@ -1,7 +1,7 @@
 {%extends "base.html" %}
-{%block title%}Registration requires confirmation{%endblock%}
+{%block title%}Registration requires confirmation - {{conference}}{%endblock%}
 {%block content%}
-<h1>Registration requires confirmation</h1>
+<h1>Registration requires confirmation<span class="confheader"> - {{conference}}</span></h1>
 <p>
 {{reason}}
 </p>

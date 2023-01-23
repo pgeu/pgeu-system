@@ -1,7 +1,7 @@
 {%extends "base.html" %}
-{%block title%}Conference registration account{%endblock%}
+{%block title%}Conference registration account - {{conference}}{%endblock%}
 {%block content%}
-<h1>Conference registration account</h1>
+<h1>Conference registration account<span class="confheader"> - {{conference}}</span></h1>
 <p>
   The registration for <i>{{reg.fullname}} &lt;{{reg.email}}&gt;</i> is
   currently not attached to an account. By attaching it to an account

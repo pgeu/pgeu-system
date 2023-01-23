@@ -33,7 +33,7 @@ form input[type=submit] {
 </style>
 {%endblock%}
 {%block content%}
-<h1>Conference Registration - {{conference}}</h1>
+<h1>Conference Registration<span class="confheader"> - {{conference}}</span></h1>
 
 <form action="." method="post" class="pgeuregform">{{ csrf_input }}
 <input type="hidden" name="_email" value="{{_email}}">

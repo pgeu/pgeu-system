@@ -1,7 +1,7 @@
 {%extends "base.html" %}
 {%block title%}Call for Papers - {{conference}}{%endblock%}
 {%block content%}
-<h1>Call for Papers - {{conference}}</h1>
+<h1>Call for Papers<span class="confheader"> - {{conference}}</span></h1>
 {%if messages%}
 <ul style="background-color: yellow;" class="confreg_cfp_messages">
     {% for message in messages %}

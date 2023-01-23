@@ -1,7 +1,7 @@
 {%extends "base.html" %}
-{%block title%}Open Call for papers{%endblock%}
+{%block title%}Open Call for papers - {{conference}}{%endblock%}
 {%block content%}
-<h1>Open Call for papers</h1>
+<h1>Open Call for papers<span class="confheader"> - {{conference}}</span></h1>
 
 {%if not speaker %}
 <h2>New speaker</h2>
