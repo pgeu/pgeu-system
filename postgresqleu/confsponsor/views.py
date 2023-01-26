@@ -248,7 +248,7 @@ def sponsor_purchase_discount(request, sponsorid):
     sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
     conference = sponsor.conference
 
-    if not sponsor.level.canbuydiscountcoude:
+    if not sponsor.level.canbuydiscountcode:
         messages.error(request, "Discount codes cannot currently be purchased")
         return HttpResponseRedirect("../../")
 
