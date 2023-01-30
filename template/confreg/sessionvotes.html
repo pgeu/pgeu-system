@@ -96,6 +96,7 @@ function changeStatus(id) {
    var currentstatus = $('#statusstr' + id).data('currstatus');
    var offset = $('#statusstr' + id).offset();
    var height = $('#statusstr' + id).height();
+   var scrolldiff = document.body.scrollTop + document.documentElement.scrollTop;
 
    $.each(valid_status_transitions[currentstatus], function(k,v) {
       buttons[v] = function(event) {
@@ -115,7 +116,7 @@ function changeStatus(id) {
    }).dialog('option', {
      position: [
        offset.left,
-       offset.top + height
+       offset.top - scrolldiff + height
      ],
    }).dialog('open');
 }
