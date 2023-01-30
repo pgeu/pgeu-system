@@ -18,12 +18,18 @@ def _validate_monitor_request(request):
 def gitinfo(request):
     _validate_monitor_request(request)
 
+    # If the setup has us overriding the HOME variable for git operations, do so!
+    env = os.environ
+    if 'PGEUSYS_GIT_SET_HOME' in env:
+        env['HOME'] = env['PGEUSYS_GIT_SET_HOME']
+
     # Get information about our current position in the git structure
     def _run_git(*args, do_check=True):
         p = subprocess.run(
             ['git', ] + list(args),
             stdout=subprocess.PIPE,
             cwd=os.path.abspath(os.path.dirname(__file__)),
+            env=env,
             timeout=2,
             check=do_check,
             universal_newlines=True,
