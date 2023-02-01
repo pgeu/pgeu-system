@@ -93,8 +93,12 @@ function doUpdateStatus(id, statusval) {
 }
 
 function changeStatus(id) {
-   var currentstatus = $('#statusstr' + id).data('currstatus');
    var buttons = {};
+   var currentstatus = $('#statusstr' + id).data('currstatus');
+   var offset = $('#statusstr' + id).offset();
+   var height = $('#statusstr' + id).height();
+   var scrolldiff = document.body.scrollTop + document.documentElement.scrollTop;
+
    $.each(valid_status_transitions[currentstatus], function(k,v) {
       buttons[v] = function(event) {
          doUpdateStatus(id, k);
@@ -106,10 +110,15 @@ function changeStatus(id) {
    };
 
    $('#dlgStatus').dialog('option', {
-      'title': 'Change status',
+      'title': 'Change status [id: ' + id + ']',
       'modal': true,
    }).dialog('option', {
      buttons: buttons,
+   }).dialog('option', {
+     position: [
+       offset.left,
+       offset.top - scrolldiff + height
+     ],
    }).dialog('open');
 }
 
@@ -283,7 +292,7 @@ width: 100%;
      </div>
    </td>
    {%if isadmin%}
-   <td{%if s.speakers_full and not s.statusid == s.laststatusid %} bgcolor="yellow"{%endif%} onClick="changeStatus({{s.id}})" class="dlgClickable" id="statusstr{{s.id}}" data-currstatus="{{s.statusid}}"><a href="#">{{s.status}}</a></td>
+   <td{%if s.speakers_full and not s.statusid == s.laststatusid %} bgcolor="yellow"{%endif%} onClick="changeStatus({{s.id}})" class="dlgClickable" id="statusstr{{s.id}}" data-currstatus="{{s.statusid}}"><a href="#" onclick="return false;">{{s.status}}</a></td>
 {%else%}
    <td>{{s.status}}</td>
 {%endif%}
