@@ -1,6 +1,6 @@
 {%extends "base.html" %}
 {%if not icon%}{%macro icon(what)%}{%endmacro%}{%endif%}
-{%block title%}Conference Schedule - {{conference}}{%endblock%}
+{%block title%}Schedule - {{conference}}{%endblock%}
 {%block extrahead%}
 <style media="print">
 #pgHeaderContainer, #pgSideWrap { display:none; }
@@ -40,7 +40,7 @@ div.track{{track.id}} a {
 </style>
 {%endblock%}
 {%block content%}
-<h1>Conference Schedule<span class="confheader"> - {{conference}}</span></h1>
+<h1>Schedule<span class="confheader"> - {{conference}}</span></h1>
 <p>
 You can find the full conference information at the
 <a href="{{conference.confurl}}">conference website</a>.
