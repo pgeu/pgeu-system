@@ -3294,6 +3294,13 @@ def admin_registration_single(request, urlname, regid):
         sessions = ConferenceSession.objects.filter(conference=conference, speaker__user=reg.attendee)
     else:
         sessions = None
+
+    if reg.messaging:
+        provider = get_messaging(reg.messaging.provider)
+        messagingstr = "{}: {}".format(reg.messaging, provider.get_regdisplayname_from_config(reg.messaging_config))
+    else:
+        messagingstr = None
+
     return render(request, 'confreg/admin_registration_single.html', {
         'conference': conference,
         'reg': reg,
@@ -3302,6 +3309,7 @@ def admin_registration_single(request, urlname, regid):
         'maxlogrows': maxlogrows,
         'sessions': sessions,
         'signups': _get_registration_signups(conference, reg),
+        'messaging': messagingstr,
         'breadcrumbs': (
             ('/events/admin/{0}/regdashboard/'.format(urlname), 'Registration dashboard'),
             ('/events/admin/{0}/regdashboard/list/'.format(urlname), 'Registration list'),
