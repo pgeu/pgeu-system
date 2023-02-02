@@ -117,6 +117,7 @@ class Telegram(object):
     can_orgnotification = True
     can_socialmediamanagement = True
     direct_message_max_length = None
+    typename = 'Telegram'
 
     @classmethod
     def validate_baseurl(self, baseurl):

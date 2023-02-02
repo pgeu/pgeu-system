@@ -186,6 +186,7 @@ class Twitter(object):
     can_broadcast = True
     can_notification = True
     direct_message_max_length = None
+    typename = 'Twitter'
 
     @classmethod
     def validate_baseurl(self, baseurl):

@@ -19,7 +19,7 @@ def register_messaging_config(dm, messaging):
         try:
             reg = ConferenceRegistration.objects.get(regtoken=m)
             # Matched reg, so set it up
-            reg.messaging_config = messaging.get_regconfig_from_msg(dm)
+            reg.messaging_config = messaging.get_regconfig_from_dm(dm)
             reg.save(update_fields=['messaging_config'])
 
             send_reg_direct_message(reg, 'Hello! This account is now configured to receive notifications for {}'.format(reg.conference))
