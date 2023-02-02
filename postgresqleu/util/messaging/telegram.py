@@ -373,7 +373,7 @@ class Telegram(object):
         msg.save()
 
     def process_incoming_chat_message(self, msg):
-        register_messaging_config(msg.txt, lambda: msg.sender)
+        register_messaging_config(msg, self)
 
     def get_regconfig_from_dm(self, dm):
         # Return a structure to store in messaging_config corresponding to the dm

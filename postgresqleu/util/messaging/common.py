@@ -13,7 +13,7 @@ from .util import send_reg_direct_message
 #
 
 
-def register_messaging_config(messaging, dm):
+def register_messaging_config(dm, messaging):
     # Does it look like a token? If so, try to attach!
     for m in re_token.findall(dm.txt):
         try:
