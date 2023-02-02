@@ -349,8 +349,13 @@ class Telegram(object):
 
         # If the message has no sender, we're going to ignore it. This could for
         # exaple be an automatically forwarded message internally in Telegram.
-        if 'username' not in u['message']['from'] or 'id' not in u['message']['from']:
+        if 'id' not in u['message']['from']:
             return
+
+        # Some users don't have usernames. In those cases, fake it from the id, since we
+        # want the username for nicer messages.
+        if 'username' not in u['message']['from']:
+            u['message']['from']['username'] = 'id:{}'.format(u['message']['from']['id'])
 
         # Else it's a regular message, so store it.
 
