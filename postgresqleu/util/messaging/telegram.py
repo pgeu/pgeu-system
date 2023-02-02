@@ -24,6 +24,7 @@ from postgresqleu.confreg.models import ConferenceTweetQueue
 from postgresqleu.scheduler.util import trigger_immediate_job_run
 
 from .util import send_reg_direct_message, send_channel_message
+from .common import register_messaging_config
 
 import logging
 log = logging.getLogger(__name__)
@@ -367,20 +368,14 @@ class Telegram(object):
         msg.save()
 
     def process_incoming_chat_message(self, msg):
-        # Does it look like a token? If so, try to attach!
-        for m in re_token.findall(msg.txt):
-            try:
-                reg = ConferenceRegistration.objects.get(regtoken=m)
-                # Matched reg, so set it up
-                reg.messaging_config = msg.sender
-                reg.save(update_fields=['messaging_config'])
+        register_messaging_config(msg.txt, lambda: msg.sender)
 
-                send_reg_direct_message(reg, 'Hello! This account is now configured to receive notifications for {}'.format(reg.conference))
+    def get_regconfig_from_dm(self, dm):
+        # Return a structure to store in messaging_config corresponding to the dm
+        return dm.sender
 
-                msg.internallyprocessed = True
-                return
-            except ConferenceRegistration.DoesNotExist:
-                pass
+    def get_regdisplayname_from_config(self, config):
+        return config.get('username', '<unspecified>')
 
     def get_attendee_string(self, token, messaging, attendeeconfig):
         if 'userid' in attendeeconfig:

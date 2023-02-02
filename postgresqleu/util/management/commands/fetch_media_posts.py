@@ -11,7 +11,7 @@ from datetime import timedelta
 import sys
 
 from postgresqleu.util.messaging import get_messaging
-from postgresqleu.util.messaging.util import store_incoming_post
+from postgresqleu.util.messaging.common import store_incoming_post
 
 from postgresqleu.confreg.models import MessagingProvider
 

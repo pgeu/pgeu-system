@@ -19,11 +19,14 @@ from postgresqleu.util.forms import SubmitButtonField
 from postgresqleu.util.forms import LinkForCodeField
 from postgresqleu.util.oauthapps import get_oauth_client, get_oauth_secret
 from postgresqleu.util.messaging import re_token, get_messaging
-from postgresqleu.util.messaging.util import send_reg_direct_message, store_incoming_post
+from postgresqleu.util.messaging.util import send_reg_direct_message
+from postgresqleu.util.messaging.common import store_incoming_post
 
 from postgresqleu.confreg.models import ConferenceRegistration, MessagingProvider, IncomingDirectMessage
 from postgresqleu.confreg.models import ConferenceTweetQueue
 from postgresqleu.confreg.backendforms import BackendSeriesMessagingForm
+
+from .common import register_messaging_config
 
 import logging
 log = logging.getLogger(__name__)
@@ -382,27 +385,22 @@ class Twitter(object):
         return self._screen_names[uid]
 
     def process_incoming_dm(self, dm):
-        for m in re_token.findall(dm.txt):
-            try:
-                reg = ConferenceRegistration.objects.get(regtoken=m)
-                # We get the screen_name so we can be friendly to the user! And when we've
-                # done that, we might as well cache it in the message info.
+        if register_messaging_config(dm, self):
+            self.send_read_receipt(dm.sender['id'], dm.postid)
 
-                dm.sender['name'] = self.get_user_screen_name(dm.sender['id'])
-                reg.messaging_config = {
-                    'twitterid': dm.sender['id'],
-                    'screen_name': dm.sender['name'],
-                }
+    def get_regconfig_from_dm(self, dm):
+        # Return a structure to store in messaging_config corresponding to the dm
 
-                reg.save(update_fields=['messaging_config'])
+        # We get the screen_name so we can be friendly to the user! And when we've
+        # done that, we might as well cache it in the message info.
+        dm.sender['name'] = self.get_user_screen_name(dm.sender['id'])
+        return {
+            'twitterid': dm.sender['id'],
+            'screen_name': dm.sender['name'],
+        }
 
-                send_reg_direct_message(reg, 'Hello! This account is now configured to receive notifications for {}'.format(reg.conference))
-
-                dm.internallyprocessed = True
-                self.send_read_receipt(dm.sender['id'], dm.postid)
-                return
-            except ConferenceRegistration.DoesNotExist:
-                pass
+    def get_regdisplayname_from_config(self, config):
+        return config.get('screen_name', '<unspecified>')
 
     def process_incoming_tweet_create_event(self, mp, tce):
         d = self._parse_tweet_struct(tce)

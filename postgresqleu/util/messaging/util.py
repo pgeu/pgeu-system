@@ -9,6 +9,10 @@ from postgresqleu.confreg.models import ConferenceTweetQueue
 from postgresqleu.util.db import exec_no_result
 from postgresqleu.util.messaging import get_messaging_class
 
+#
+# This file holds methods callable from outside the "messaging framework"
+#
+
 
 class _Notifier(object):
     def __enter__(self):
@@ -81,40 +85,6 @@ def send_channel_message(messaging, channel, msg, expiry=timedelta(hours=1)):
 def notify_twitter_moderation(tweet, completed, approved):
     for messaging in tweet.conference.conferencemessaging_set.filter(socialmediamanagement=True, provider__active=True):
         get_messaging_class(messaging.provider.classname)(messaging.provider.id, messaging.provider.config).notify_twitter_moderation(messaging, tweet, completed, approved)
-
-
-def store_incoming_post(provider, post):
-    # Have we already seen this post?
-    if ConferenceIncomingTweet.objects.filter(provider=provider, statusid=post['id']).exists():
-        return False
-
-    # Is this one of our own outgoing posts?
-    if ConferenceTweetQueue.objects.filter(postids__contains={post['id']: provider.id}).exists():
-        return False
-
-    i = ConferenceIncomingTweet(
-        conference=provider.route_incoming,
-        provider=provider,
-        statusid=post['id'],
-        created=post['datetime'],
-        text=post['text'],
-        replyto_statusid=post['replytoid'],
-        author_name=post['author']['name'],
-        author_screenname=post['author']['username'],
-        author_id=post['author']['id'],
-        author_image_url=post['author']['imageurl'],
-    )
-    if post.get('quoted', None):
-        i.quoted_statusid = post['quoted']['id']
-        i.quoted_text = post['quoted']['text']
-        i.quoted_permalink = post['quoted']['permalink']
-    i.save()
-    for seq, m in enumerate(post['media']):
-        ConferenceIncomingTweetMedia(incomingtweet=i,
-                                     sequence=seq,
-                                     mediaurl=m).save()
-
-    return True
 
 
 # This does not appear to match everything in any shape or form, but we are only
