@@ -16,6 +16,7 @@ from postgresqleu.confreg.backendforms import BackendSeriesMessagingForm
 from postgresqleu.confreg.models import ConferenceRegistration
 
 from .util import send_reg_direct_message
+from .common import register_messaging_config
 
 
 # We always ask for this scope
@@ -240,18 +241,16 @@ class Mastodon(object):
             return timezone.now(), checkpoint
 
     def process_incoming_dm(self, msg):
-        for m in re_token.findall(msg['content']):
-            try:
-                reg = ConferenceRegistration.objects.get(regtoken=m)
+        register_messaging_config(msg, self)
 
-                reg.messaging_config = {
-                    'username': msg['account']['username'],
-                }
-                reg.save(update_fields=['messaging_config'])
+    def get_regconfig_from_dm(self, dm):
+        # Return a structure to store in messaging_config corresponding to the dm
+        return {
+            'username': dm['account']['username'],
+        }
 
-                send_reg_direct_message(reg, 'Hello! This account is now configured to receive notifications for {}'.format(reg.conference))
-            except ConferenceRegistration.DoesNotExist:
-                pass
+    def get_regdisplayname_from_config(self, config):
+        return config.get('username', '<unspecified>')
 
     def get_public_url(self, post):
         return '{}@{}/{}'.format(self.providerconfig['baseurl'], post.author_screenname, post.statusid)
