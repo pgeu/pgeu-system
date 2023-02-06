@@ -39,7 +39,10 @@ def send_pending_messages(providers):
             impl = providers.get(n.messaging.provider)
             try:
                 if n.reg:
-                    impl.send_direct_message(n.reg.messaging_config, n.msg)
+                    # If the user is part way through registering their messaging provider we will have a
+                    # messaging set, but messaging_config will be an empty dict.
+                    if n.reg.messaging_config != {}:
+                        impl.send_direct_message(n.reg.messaging_config, n.msg)
                 else:
                     impl.post_channel_message(n.messaging, n.channel, n.msg)
             except Exception as e:
