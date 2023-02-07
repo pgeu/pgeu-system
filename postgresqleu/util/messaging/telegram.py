@@ -525,7 +525,8 @@ class Telegram(object):
             reg = ConferenceRegistration.objects.get(conference=tweet.conference, messaging_config__contains={'userid': int(fromid)})
             fromuser = reg.attendee
         except ConferenceRegistration.DoesNotExist:
-            _answer_with_alert('Could not determine your username.')
+            # let the user know that they need to register their account first
+            _answer_with_alert('Could not determine your username. Please register your Telegram account in the conf system.')
             return
 
         if m.group(2) == 'approve' and fromuser == tweet.author:
