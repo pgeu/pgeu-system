@@ -108,7 +108,7 @@ class Command(BaseCommand):
 
     def remind_unregistered_speakers(self, whatstr, conference):
         # Get speakers that are approved but not registered
-        speakers = list(Speaker.objects.raw("SELECT s.* FROM confreg_speaker s WHERE EXISTS (SELECT 1 FROM confreg_conferencesession sess INNER JOIN confreg_conferencesession_speaker css ON css.conferencesession_id=sess.id WHERE sess.conference_id=%s AND css.speaker_id=s.id AND sess.status=1 and sess.lastnotifiedstatus=1 AND sess.lastnotifiedtime<%s) AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%s AND r.attendee_id=s.user_id AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL)",
+        speakers = list(Speaker.objects.raw("SELECT s.* FROM confreg_speaker s WHERE EXISTS (SELECT 1 FROM confreg_conferencesession sess INNER JOIN confreg_conferencesession_speaker css ON css.conferencesession_id=sess.id WHERE sess.conference_id=%s AND css.speaker_id=s.id AND sess.status=1 and sess.lastnotifiedstatus=1 AND sess.lastnotifiedtime<%s) AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%s AND r.attendee_id=s.user_id AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL) AND s.user_id IS NOT NULL",
                                             [conference.id, timezone.now() - timedelta(days=7), conference.id]))
         if speakers:
             whatstr.write("Found {0} unregistered speakers:\n".format(len(speakers)))
