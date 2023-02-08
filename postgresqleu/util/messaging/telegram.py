@@ -526,7 +526,7 @@ class Telegram(object):
             fromuser = reg.attendee
         except ConferenceRegistration.DoesNotExist:
             # let the user know that they need to register their account first
-            _answer_with_alert('Could not determine your username. Please register your Telegram account in the conf system.')
+            _answer_with_alert('Could not determine your username. This most commonly means your Telegram account is not linked to your conference attendance on the Your Registration page of the website.')
             return
 
         if m.group(2) == 'approve' and fromuser == tweet.author:
