@@ -405,7 +405,7 @@ class AdditionalOptionUserManager(object):
 
     def get_list(self, instance):
         if instance.id:
-            return [(r.id, r.fullname, "{} ({})".format(r.regtype.regtype, r.invoice_status)) for r in instance.conferenceregistration_set.all()]
+            return [(r.id, r.fullname, "{} ({})".format(r.regtype.regtype if r.regtype else '', r.invoice_status)) for r in instance.conferenceregistration_set.all()]
 
     def get_form(self):
         return None
@@ -1059,7 +1059,7 @@ class DiscountCodeUserManager(object):
 
     def get_list(self, instance):
         if instance.code:
-            return [(r.id, r.fullname, "{} ({})".format(r.regtype.regtype, r.invoice_status)) for r in ConferenceRegistration.objects.filter(conference=instance.conference, vouchercode=instance.code)]
+            return [(r.id, r.fullname, "{} ({})".format(r.regtype.regtype if r.regtype else '', r.invoice_status)) for r in ConferenceRegistration.objects.filter(conference=instance.conference, vouchercode=instance.code)]
         return []
 
     def get_form(self):
