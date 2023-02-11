@@ -156,9 +156,12 @@ class Command(BaseCommand):
                     # immediately.
                     accrows = [
                         (pm.config('bankaccount'), trans.paymentref, trans.amount, None),
-                        (pm.config('feeaccount'), trans.paymentref, trans.feeamount, None),
                         (pm.config('accounting_payout'), trans.paymentref, -(trans.amount + trans.feeamount), None),
                     ]
+                    if trans.feeamount:
+                        accrows.append(
+                            (pm.config('feeaccount'), trans.paymentref, trans.feeamount, None),
+                        )
                     if is_managed_bank_account(pm.config('accounting_payout')):
                         entry = create_accounting_entry(accrows, True)
                         register_pending_bank_matcher(pm.config('accounting_payout'),
