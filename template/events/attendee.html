@@ -2,6 +2,23 @@
 {%block title%}Past events{%endblock%}
 {%block fullcontent%}
 <div class="col-md-7 contentwrap">
+{%if upcoming%}
+<h1>Upcoming events</h1>
+<p>
+  You are currently registered for the following upcoming events:
+</p>
+
+<ul>
+{%for event in upcoming%}
+<li><h5><a href="/events/{{event.urlname}}/register/">{{event.conferencename}}</a></h5>
+  <span class="nobr"><i class="fa fa-calendar-days fa-calendar-o"></i> {{event.conferencedatestr}}</span>
+  <span class="nobr"><i class="fa fa-map-pin"></i> {{event.location}}</span>
+</li>
+{%endfor%}
+</ul>
+{%endif%}
+
+{%if attended%}
 <h1>Past events</h1>
 <p>
 You have attended the following events:
@@ -15,6 +32,7 @@ You have attended the following events:
 </li>
 {%endfor%}
 </ul>
+{%endif%}
 
 </div>
 

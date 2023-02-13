@@ -112,8 +112,10 @@ def attendee_events(request):
     series = ConferenceSeries.objects.filter(visible=True).extra(
         where=["EXISTS (SELECT 1 FROM confreg_conference c WHERE c.series_id=confreg_conferenceseries.id AND c.promoactive)"]
     )
-    attended = Conference.objects.only('urlname', 'conferencename', 'location').filter(conferenceregistration__attendee=request.user, conferenceregistration__payconfirmedat__isnull=False).distinct().order_by('-startdate')
+    upcoming = Conference.objects.only('urlname', 'conferencename', 'location').filter(enddate__gte=today_global(), conferenceregistration__attendee=request.user, conferenceregistration__payconfirmedat__isnull=False).distinct().order_by('-startdate')
+    attended = Conference.objects.only('urlname', 'conferencename', 'location').filter(enddate__lt=today_global(), conferenceregistration__attendee=request.user, conferenceregistration__payconfirmedat__isnull=False).distinct().order_by('-startdate')
     return render(request, 'events/attendee.html', {
+        'upcoming': upcoming,
         'attended': attended,
         'events': events,
         'series': series,
