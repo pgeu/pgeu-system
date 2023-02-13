@@ -241,8 +241,6 @@ class Mastodon(object):
             return timezone.now(), checkpoint
 
     def process_incoming_dm_struct(self, s):
-        s = s['last_status']
-
         if s['visibility'] != 'direct':
             # We're only supposed to collect direct messages. Which
             # isn't really direct messages when it comes to mastodon,
