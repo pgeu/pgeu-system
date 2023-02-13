@@ -109,6 +109,7 @@ class Mastodon(object):
     can_broadcast = True
     can_notification = True
     direct_message_max_length = 450  # 500 is lenght, draw down some to handle username
+    typename = 'Mastodon'
 
     @classmethod
     def validate_baseurl(self, baseurl):
