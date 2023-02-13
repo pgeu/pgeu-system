@@ -240,7 +240,7 @@ class Mastodon(object):
         else:
             return timezone.now(), checkpoint
 
-    def process_incoming_dm_s(self, s):
+    def process_incoming_dm_struct(self, s):
         s = s['last_status']
 
         if s['visibility'] != 'direct':
