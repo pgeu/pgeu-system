@@ -273,7 +273,7 @@ class Mastodon(object):
     def get_regconfig_from_dm(self, dm):
         # Return a structure to store in messaging_config corresponding to the dm
         return {
-            'username': dm.sender['account']['username'],
+            'username': dm.sender['username'],
         }
 
     def get_regdisplayname_from_config(self, config):
