@@ -13,7 +13,7 @@ from postgresqleu.util.models import OAuthApplication
 from postgresqleu.util.messaging import re_token
 
 from postgresqleu.confreg.backendforms import BackendSeriesMessagingForm
-from postgresqleu.confreg.models import ConferenceRegistration
+from postgresqleu.confreg.models import ConferenceRegistration, IncomingDirectMessage
 
 from .util import send_reg_direct_message
 from .common import register_messaging_config
@@ -232,13 +232,42 @@ class Mastodon(object):
                 # Can't handle group messages
                 continue
             ls = c['last_status']
-            self.process_incoming_dm(ls)
+            self.process_incoming_dm_struct(ls)
 
         if len(j):
             # For some reason, it paginates by last_status->id, and not by id. Go figure.
             return timezone.now(), max((c['last_status']['id'] for c in j))
         else:
             return timezone.now(), checkpoint
+
+    def process_incoming_dm_s(self, s):
+        s = s['last_status']
+
+        if s['visibility'] != 'direct':
+            # We're only supposed to collect direct messages. Which
+            # isn't really direct messages when it comes to mastodon,
+            # but they have a visibility of direct.
+            return
+
+        postid = int(s['id'])
+        if IncomingDirectMessage.objects.filter(provider_id=self.providerid, postid=postid).exists():
+            # Already seen this one, so ignore it
+            return
+
+        dm = IncomingDirectMessage(
+            provider_id=self.providerid,
+            postid=postid,
+            time=dateutil.parser.parse(s['created_at']),
+            sender={
+                'name': s['account']['display_name'] or s['account']['username'],
+                'username': s['account']['username'],
+                'id': s['account']['id'],
+                'imageurl': s['account']['avatar_static'],
+            },
+            txt=strip_tags(s['content']),
+        )
+        self.process_incoming_dm(dm)
+        dm.save()
 
     def process_incoming_dm(self, msg):
         register_messaging_config(msg, self)
