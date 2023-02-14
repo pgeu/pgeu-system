@@ -136,7 +136,7 @@ class SponsorMail(models.Model):
     subject = models.CharField(max_length=100, null=False, blank=False)
     message = models.TextField(max_length=8000, null=False, blank=False)
 
-    _safe_attributes = ('sentat', 'subject', 'message')
+    _safe_attributes = ('id', 'sentat', 'subject', 'message')
 
     def __str__(self):
         return "%s: %s" % (timezone.localtime(self.sentat).strftime("%Y-%m-%d %H:%M"), self.subject)
