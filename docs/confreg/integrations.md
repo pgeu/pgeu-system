@@ -122,7 +122,7 @@ conference
 
 #### Sample template
 
-A sample template for this campaign that shows some variables used:
+Sample templates for this campaign that shows some variables used:
 
 ~~~
 {%macro speaker(s)%}{{s}}{%if s.twittername%} ({{s.twittername}}){%endif%}{%endmacro%}
@@ -133,6 +133,15 @@ Come see {{session.speaker.all()|map("applymacro", "speaker")|join(" and ")}} ta
 https://www.postgresql.eu/events/{{conference.urlname}}/sessions/session/{{session.id}}-{{session.title|slugify}}/
 ~~~
 
+~~~
+The learning never stops!
+
+Sign up for training with {{session.speaker.first().company}} & learn all about "{{session.title|truncate(100, true, '...')}}".
+
+#PostgreSQL #Conference #Training
+
+https://www.postgresql.eu/events/{{conference.urlname}}/sessions/session/{{session.id}}-{{session.title|slugify}}/
+~~~
 
 ### Mobile site <a name="mobilesite"></a>
 
