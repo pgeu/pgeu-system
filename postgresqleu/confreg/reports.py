@@ -762,4 +762,12 @@ AND r.conference_id=%(confid)s
 AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL
 AND r.checkedinat IS NULL
 ORDER BY lastname, firstname""",
+
+    'speakercount': """SELECT
+    'Number of Speakers' AS "Status",
+    count(distinct(speaker_id)) AS "Count"
+FROM confreg_conferencesession_speaker sp
+INNER JOIN confreg_conferencesession cs ON cs.id=sp.conferencesession_id
+WHERE conference_id=%(confid)s""",
+
 }
