@@ -104,7 +104,7 @@ function backend_dynamic_preview(id) {
       $.get('?fieldpreview=' + id + '&previewval=' + encodeURIComponent(e.val()), function(v) {
          p.text(v);
       }).fail(function(xhr, status, err) {
-	 if (xhr.status == 500) {
+	 if (xhr.status == 500 || xhr.status == 400) {
              p.text('Error generating preview: ' + xhr.responseText);
          } else {
 	     p.text('Error generating preview: ' + xhr.status);
