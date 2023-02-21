@@ -63,7 +63,7 @@ class Command(BaseCommand):
                 # Sometimes (newer entries?) transferwise adds both the BIC and the IBAN code,
                 # and do so in the same field. This is undocumented and not even incuded in
                 # their examples, but seems to be persistent enough to process.
-                m = re.match(r'^\([A-Z0-9]{11}\)([A-Z0-9]+)$', trans.counterpart_account)
+                m = re.match(r'^\([A-Z0-9]{8,11}\)([A-Z0-9]+)$', trans.counterpart_account)
                 if m:
                     trans.counterpart_account = m.group(1)
 
