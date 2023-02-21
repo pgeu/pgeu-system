@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
@@ -135,7 +135,7 @@ def _invoice_payment(request, paymentmethodid, invoice):
     method = get_object_or_404(InvoicePaymentMethod, pk=paymentmethodid, active=True)
     pm = method.get_implementation()
     if not pm.braintree_ok:
-        return Http404("Braintree module not loaded")
+        raise Http404("Braintree module not loaded")
 
     token = pm.generate_client_token()
 
