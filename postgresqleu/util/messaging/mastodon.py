@@ -133,10 +133,10 @@ class Mastodon(object):
         return '{}{}'.format(self.providerconfig['baseurl'], url)
 
     def _get(self, url, *args, **kwargs):
-        return self.sess.get(self._api_url(url), *args, **kwargs)
+        return self.sess.get(self._api_url(url), timeout=30, *args, **kwargs)
 
     def _post(self, url, *args, **kwargs):
-        return self.sess.post(self._api_url(url), *args, **kwargs)
+        return self.sess.post(self._api_url(url), timeout=30, *args, **kwargs)
 
     def get_account_info(self):
         r = self._get('/api/v1/accounts/verify_credentials')

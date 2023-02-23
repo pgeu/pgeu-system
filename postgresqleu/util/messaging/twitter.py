@@ -213,7 +213,7 @@ class Twitter(object):
         return self._tw
 
     def get_account_info(self):
-        r = self.tw.get('https://api.twitter.com/1.1/account/verify_credentials.json?include_entities=false&skip_status=true&include_email=false')
+        r = self.tw.get('https://api.twitter.com/1.1/account/verify_credentials.json?include_entities=false&skip_status=true&include_email=false', timeout=30)
         if r.status_code != 200:
             raise Exception("http status {}".format(r.status_code))
         j = r.json()
@@ -234,18 +234,18 @@ class Twitter(object):
             # Images are separately uploaded as a first step
             r = self.tw.post('https://upload.twitter.com/1.1/media/upload.json', files={
                 'media': bytearray(image),
-            })
+            }, timeout=30)
             if r.status_code != 200:
                 return (None, 'Media upload: {}'.format(r.text))
             d['media_ids'] = r.json()['media_id']
 
-        r = self.tw.post('https://api.twitter.com/1.1/statuses/update.json', data=d)
+        r = self.tw.post('https://api.twitter.com/1.1/statuses/update.json', data=d, timeout=30)
         if r.status_code != 200:
             return (None, r.text)
         return (r.json()['id'], None)
 
     def repost(self, tweetid):
-        r = self.tw.post('https://api.twitter.com/1.1/statuses/retweet/{0}.json'.format(tweetid))
+        r = self.tw.post('https://api.twitter.com/1.1/statuses/retweet/{0}.json'.format(tweetid), timeout=30)
         if r.status_code != 200:
             # If the error is "you have already retweeted this", we just ignore it
             try:
@@ -269,7 +269,7 @@ class Twitter(object):
                     }
                 }
             }
-        })
+        }, timeout=30)
 
         if r.status_code != 200:
             try:
@@ -284,7 +284,7 @@ class Twitter(object):
             sincestr = "&since_id={}".format(checkpoint)
         else:
             sincestr = ""
-        r = self.tw.get('https://api.twitter.com/1.1/statuses/mentions_timeline.json?tweet_mode=extended{}'.format(sincestr))
+        r = self.tw.get('https://api.twitter.com/1.1/statuses/mentions_timeline.json?tweet_mode=extended{}'.format(sincestr), timeout=30)
         r.raise_for_status()
         for tj in r.json():
             # If this is somebody retweeting one of our outgoing tweets we don't want to include
@@ -334,7 +334,7 @@ class Twitter(object):
             if cursor:
                 p['cursor'] = cursor
 
-            r = self.tw.get('https://api.twitter.com/1.1/direct_messages/events/list.json', params=p)
+            r = self.tw.get('https://api.twitter.com/1.1/direct_messages/events/list.json', params=p, timeout=30)
             r.raise_for_status()
 
             j = r.json()
@@ -380,7 +380,7 @@ class Twitter(object):
 
     def get_user_screen_name(self, uid):
         if uid not in self._screen_names:
-            r = self.tw.get('https://api.twitter.com/1.1/users/show.json', params={'user_id': uid})
+            r = self.tw.get('https://api.twitter.com/1.1/users/show.json', params={'user_id': uid}, timeout=30)
             r.raise_for_status()
             self._screen_names[uid] = r.json()['screen_name']
         return self._screen_names[uid]
@@ -428,7 +428,7 @@ class Twitter(object):
         r = self.tw.post('https://api.twitter.com/1.1/direct_messages/mark_read.json', params={
             'last_read_event_id': maxval,
             'recipient_id': recipient,
-        })
+        }, timeout=30)
         # Ignore errors
 
     def check_messaging_config(self, state):
@@ -454,13 +454,13 @@ class Twitter(object):
                 env = state['env']
 
             # Global webhook has been abled by this or previous run. Now check our subscription.
-            r = self.tw.get('https://api.twitter.com/1.1/account_activity/all/{}/subscriptions.json'.format(env))
+            r = self.tw.get('https://api.twitter.com/1.1/account_activity/all/{}/subscriptions.json'.format(env), timeout=30)
             if r.status_code == 204:
                 # We are subscribed!
                 return True, retmsg
 
             # Attempt to re-subscribe
-            r = self.tw.post('https://api.twitter.com/1.1/account_activity/all/{}/subscriptions.json'.format(env), params={})
+            r = self.tw.post('https://api.twitter.com/1.1/account_activity/all/{}/subscriptions.json'.format(env), params={}, timeout=30)
             if r.status_code == 204:
                 return True, retmsg + 'Resubscribed user to webhook.'
 
@@ -474,7 +474,7 @@ class Twitter(object):
 
     def check_global_webhook(self):
         # Check if the global webhook is here, and enabled!
-        r = self.tw.get('https://api.twitter.com/1.1/account_activity/all/webhooks.json')
+        r = self.tw.get('https://api.twitter.com/1.1/account_activity/all/webhooks.json', timeout=30)
         r.raise_for_status()
         j = r.json()
 
@@ -494,7 +494,7 @@ class Twitter(object):
                     r = self.tw.put('https://api.twitter.com/1.1/account_activity/all/{}/webhooks/{}.json'.format(
                         env,
                         wh['id'],
-                    ))
+                    ), timeout=30)
                     if r.status_code != 204:
                         return False, None, "Webhook marked invalid, and was unable to re-enable!"
                     else:
@@ -505,7 +505,7 @@ class Twitter(object):
         # No matching webhook for us, so we go create it
         r = self.tw.post('https://api.twitter.com/1.1/account_activity/all/{}/webhooks.json'.format(env), params={
             'url': webhookurl,
-        })
+        }, timeout=30)
         jj = r.json()
         if 'errors' in jj:
             return False, None, "Error registering twitter webhook: {}".format(jj['errors'][0]['message'])
