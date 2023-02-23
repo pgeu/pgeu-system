@@ -5,7 +5,11 @@
 
 <h1>{{c.conferencename}}</h1>
 <div>
+{% if c.startdate != c.enddate %}
   <span class="label label-default">{{c.startdate}}</span> - <span class="label label-default">{{c.enddate}}</span>
+{% else %}
+  <span class="label label-default">{{c.startdate}}</span>
+{%endif%}
 </div>
 
 {%if c.needs_data_purge %}
