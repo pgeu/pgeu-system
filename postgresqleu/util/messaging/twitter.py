@@ -239,10 +239,32 @@ class Twitter(object):
                 return (None, 'Media upload: {}'.format(r.text))
             d['media_ids'] = r.json()['media_id']
 
-        r = self.tw.post('https://api.twitter.com/1.1/statuses/update.json', data=d, timeout=30)
-        if r.status_code != 200:
-            return (None, r.text)
-        return (r.json()['id'], None)
+        while d['status']:
+            r = self.tw.post('https://api.twitter.com/1.1/statuses/update.json', data=d, timeout=30)
+            if r.status_code == 200:
+                return (r.json()['id'], None)
+            else:
+                # Normally Twitter gives us a json result on errors as well, so let's try that first
+                try:
+                    errj = r.json()
+                    if errj['errors'][0]['code'] == 186:
+                        # Code for "tweet too long", so we try to truncate it a bit and try again.
+                        # We truncate by taking one word off at a time and hope that's enough.
+                        # (yes this is ugly, but figuring out exactly how twitter counts the length
+                        # of a tweet without documentation turns out to be very hard).
+                        pieces = d['status'].rsplit(None, 1)[0]
+                        if len(pieces) > 1:
+                            # If two pieces it means we managed to truncate it, so we try again
+
+                            # Sleep before we try again, but hopefully 1 second is enough here.
+                            time.sleep(1)
+                            continue
+                        else:
+                            return (None, "Unable to truncate tweet further, only a single word and Twitter still returns 186!")
+                    else:
+                        return (None, r.text())
+                except Exception as e:
+                    return (None, str(e))
 
     def repost(self, tweetid):
         r = self.tw.post('https://api.twitter.com/1.1/statuses/retweet/{0}.json'.format(tweetid), timeout=30)
