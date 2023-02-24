@@ -253,7 +253,7 @@ class Twitter(object):
                         # We truncate by taking one word off at a time and hope that's enough.
                         # (yes this is ugly, but figuring out exactly how twitter counts the length
                         # of a tweet without documentation turns out to be very hard).
-                        pieces = d['status'].rsplit(None, 1)[0]
+                        pieces = d['status'].rsplit(None, 1)
                         if len(pieces) > 1:
                             # If two pieces it means we managed to truncate it, so we try again
                             d['status'] = pieces[0]
