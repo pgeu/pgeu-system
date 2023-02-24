@@ -3444,7 +3444,11 @@ def _admin_registration_cancel(request, conference, redirurl, regs):
                 "{} Refund {}%{} ({}{}{}){}{} {}".format(
                     suggest,
                     pattern.percent,
-                    pattern.fees and ' minus {0}{1} in fees'.format(settings.CURRENCY_SYMBOL, pattern.fees) or '',
+                    pattern.fees and ' minus {0}{1}{2} in fees'.format(
+                        settings.CURRENCY_SYMBOL,
+                        pattern.fees,
+                        ' ({} incl VAT)'.format((pattern.fees * (Decimal(1) + (conference.vat_registrations.vatpercent * Decimal(0.01)))).quantize(Decimal('0.01'))) if conference.vat_registrations else '',
+                    ) or '',
                     settings.CURRENCY_SYMBOL,
                     this_to_refund,
                     this_to_refund_vat and ' +{}{} VAT'.format(settings.CURRENCY_SYMBOL, this_to_refund_vat) or '',
