@@ -3423,7 +3423,6 @@ def _admin_registration_cancel(request, conference, redirurl, regs):
             # Apply this pattern to each registration in turn, to figure out the total cost.
             this_to_refund = Decimal(0)
             this_to_refund_vat = Decimal(0)
-            this_to_refund_fees = Decimal(0)
             for rid in regtotalnovat.keys():
                 if regtotalnovat[rid] <= 0:
                     # If there was no cost, also don't apply the fixed fee
