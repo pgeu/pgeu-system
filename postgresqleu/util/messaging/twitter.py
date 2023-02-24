@@ -256,6 +256,7 @@ class Twitter(object):
                         pieces = d['status'].rsplit(None, 1)[0]
                         if len(pieces) > 1:
                             # If two pieces it means we managed to truncate it, so we try again
+                            d['status'] = pieces[0]
 
                             # Sleep before we try again, but hopefully 1 second is enough here.
                             time.sleep(1)
