@@ -16,6 +16,7 @@ $(function() {
   $('.history_popover').popover({
     container: 'body',
     html: true,
+    sanitize: false,
     content: function () {
          return $(this).find('.history_content').html();
     },
