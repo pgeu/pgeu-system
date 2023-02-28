@@ -487,6 +487,7 @@ class BackendTrackForm(BackendForm):
 class BackendRoomForm(BackendForm):
     helplink = 'schedule#rooms'
     list_fields = ['roomname', 'capacity', 'comment', 'sortkey']
+    allow_copy_previous = True
     coltypes = {
         'Sortkey': ['nosearch', ],
     }
@@ -502,6 +503,23 @@ class BackendRoomForm(BackendForm):
         else:
             self.remove_field('availabledays')
             self.update_protected_fields()
+
+    @classmethod
+    def copy_from_conference(self, targetconf, sourceconf, idlist):
+        # Rooms are copied straight over, but we disallow duplicates
+        # Available days are not copied over.
+        for id in idlist:
+            source = Room.objects.get(conference=sourceconf, pk=id)
+            if Room.objects.filter(conference=targetconf, roomname=source.roomname).exists():
+                yield 'A room with name {0} already exists.'.format(source.roomname)
+            else:
+                Room(conference=targetconf,
+                     roomname=source.roomname,
+                     capacity=source.capacity,
+                     sortkey=source.sortkey,
+                     url=source.url,
+                     comment=source.comment,
+                     ).save()
 
 
 class BackendTagForm(BackendForm):
