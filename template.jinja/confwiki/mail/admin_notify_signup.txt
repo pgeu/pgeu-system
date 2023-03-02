@@ -1,4 +1,4 @@
-Attendee {{attendeesignup.attendee.fullname}} has signed up for {{signup.title}}.
+Attendee {{attendeesignup.attendee.fullname}} has responded to signup {{signup.title}}.
 
 Attendee name:     {{attendeesignup.attendee.fullname}}
 Registration type: {{attendeesignup.attendee.regtype.regtype}}
