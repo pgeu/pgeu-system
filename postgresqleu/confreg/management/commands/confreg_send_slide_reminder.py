@@ -24,6 +24,15 @@ class Command(BaseCommand):
         scheduled_interval = timedelta(days=1)
         internal = True
 
+        @classmethod
+        def should_run(self):
+            valid_conferences = filter(lambda c: c.needs_reminder, Conference.objects.filter(
+                enddate__lte=timezone.now(),
+                slide_upload_reminder_days__gt=0,
+            ).extra(select={"needs_reminder": "EXISTS (SELECT 1 FROM confreg_conference WHERE enddate + slide_upload_reminder_days * interval '1 day' < now())"}))
+
+            return len(valid_conferences) > 0
+
     @transaction.atomic
     def handle(self, *args, **options):
 
