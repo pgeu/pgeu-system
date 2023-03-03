@@ -1,0 +1,17 @@
+Hello!
+
+We hope you're doing well. 
+We wanted to remind you that we are still waiting for you to upload the slides 
+used for your session titled "{{session.title}}" at the {{conference}}.
+
+We understand that it can be easy to forget with busy schedules, but having all p
+resentation materials uploaded is crucial for attendees to access them and benefit 
+from the content shared at the conference.
+
+To complete your upload, 
+please visit the link below and follow the instructions to upload your slides:
+
+
+
+Please ensure that your slides are uploaded as soon as possible so that attendees can access them in a timely manner. 
+If you have any issues or questions regarding the upload process, please do not hesitate to contact us

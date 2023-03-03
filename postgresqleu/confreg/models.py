@@ -188,6 +188,15 @@ class Conference(models.Model):
     twitter_timewindow_end = models.TimeField(null=False, blank=False, default='23:59:59', verbose_name="Don't post tweets after")
     twitter_postpolicy = models.IntegerField(null=False, blank=False, default=0, choices=TWITTER_POST_CHOICES,
                                              verbose_name="Posting policy")
+    slide_upload_reminder_days = models.IntegerField(
+        blank=False,
+        null=False,
+        default=0,
+        validators=[
+            MinValueValidator(0),
+        ],
+        help_text="Days to wait before sending speakers reminder to upload their slides",
+    )
 
     administrators = models.ManyToManyField(User, blank=True)
     testers = models.ManyToManyField(User, blank=True, related_name="testers_set", help_text="Users who can bypass the '<function> is open' check and access pages before they're open, in order to test")
