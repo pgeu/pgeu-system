@@ -17,6 +17,8 @@ from postgresqleu.confreg.models import Conference, Speaker, ConferenceSession
 from postgresqleu.confreg.models import ConferenceRegistration
 from postgresqleu.confreg.util import send_conference_mail, send_conference_notification
 
+from django.db.models import F
+
 
 class Command(BaseCommand):
     help = 'Send conference reminders'
@@ -71,6 +73,22 @@ class Command(BaseCommand):
                     send_conference_notification(
                         conference,
                         "CfP reminders sent",
+                        whatstr.getvalue(),
+                    )
+
+        for conference in Conference.objects.filter(enddate__lte=timezone.now(),
+                                                    slide_upload_reminder_days__gt=0,
+                                                    enddate=timezone.now().date() - F('slide_upload_reminder_days') * timedelta(days=1)):
+
+            # One transaction for each conference with sessions that have not uploaded slides, to send reminder
+            # relating to slides.
+            with transaction.atomic():
+                whatstr = StringIO()
+                self.remind_slides_submission(whatstr, conference)
+                if whatstr.tell():
+                    send_conference_notification(
+                        conference,
+                        "Slide upload reminders sent",
                         whatstr.getvalue(),
                     )
 
@@ -264,3 +282,38 @@ class Command(BaseCommand):
             spk.lastmodified = timezone.now()
             spk.save()
             whatstr.write("Reminded speaker {0} that their profile is empty\n".format(spk.name))
+
+    def remind_slides_submission(self, whatstr, conference):
+        # Send reminder to sessions speakers to upload their slides.
+        # after the conference ended.
+        sessions = (
+            ConferenceSession.objects.filter(conference=conference, status=1)
+            .extra(
+                select={
+                    "has_slides": "EXISTS (SELECT 1 FROM confreg_conferencesessionslides WHERE session_id=confreg_conferencesession.id)",
+                }
+            )
+
+        )
+
+        for session in sessions:
+            if not session.has_slides:
+                for speaker in session.speaker.all():
+                    send_conference_mail(
+                        conference,
+                        speaker.email,
+                        "Your Slides".format(conference),
+                        "confreg/mail/speaker_remind_slides.txt",
+                        {
+                            "conference": conference,
+                            "session": session,
+                        },
+                        receivername=speaker.fullname,
+                    )
+
+                    speaker.lastmodified = timezone.now()
+                    speaker.save()
+                    whatstr.write(
+                        "Reminded speaker {0} to submit slides for session {1}".format(speaker.name, session.title))
+                session.lastnotifiedtime = timezone.now()
+                session.save()
