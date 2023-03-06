@@ -211,6 +211,20 @@ def send_welcome_email(reg):
     )
 
 
+def send_attachment_email(reg):
+    send_conference_mail(
+        reg.conference,
+        reg.email,
+        "Your registration",
+        'confreg/mail/regmulti_attach.txt',
+        {
+            'conference': reg.conference,
+            'reg': reg,
+        },
+        receivername=reg.fullname,
+    )
+
+
 def notify_reg_confirmed(reg, updatewaitlist=True):
     reglog(reg, "Registration confirmed")
 
@@ -244,16 +258,7 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
         if not found:
             # User not found, so we use the random token and send it
             # to ask them to attach their account to this registration.
-            send_conference_mail(reg.conference,
-                                 reg.email,
-                                 "Your registration",
-                                 'confreg/mail/regmulti_attach.txt',
-                                 {
-                                     'conference': reg.conference,
-                                     'reg': reg,
-                                 },
-                                 receivername=reg.fullname,
-            )
+            send_attachment_email(reg)
 
     # If the registration has a user account, we may have email to connect
     # to this registration.
