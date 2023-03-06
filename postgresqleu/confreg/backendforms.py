@@ -1497,6 +1497,13 @@ class ResendWelcomeMailForm(django.forms.Form):
 
 
 #
+# Form for re-sending attachment email
+#
+class ResendAttachMailForm(django.forms.Form):
+    confirm = django.forms.BooleanField(help_text="Confirm that you want to re-send the attachment email for this registration!")
+
+
+#
 # Form for canceling a registration
 #
 class CancelRegistrationForm(django.forms.Form):

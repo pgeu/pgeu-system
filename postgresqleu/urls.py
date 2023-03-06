@@ -202,6 +202,7 @@ urlpatterns.extend([
     url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/ticket/$', postgresqleu.confreg.backendviews.view_registration_ticket),
     url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/badge/$', postgresqleu.confreg.backendviews.view_registration_badge),
     url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/resendwelcome/$', postgresqleu.confreg.views.admin_registration_resendwelcome),
+    url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/resendattach/$', postgresqleu.confreg.views.admin_registration_resendattach),
     url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/senddm/$', postgresqleu.confreg.backendviews.registration_dashboard_send_dm),
     url(r'^events/admin/(\w+)/regdashboard/list/sendmail/$', postgresqleu.confreg.backendviews.registration_dashboard_send_email),
     url(r'^events/admin/(\w+)/prepaid/$', postgresqleu.confreg.views.createvouchers),

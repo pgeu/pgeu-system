@@ -42,7 +42,7 @@ from .forms import NewMultiRegForm, MultiRegInvoiceForm
 from .forms import SessionSlidesUrlForm, SessionSlidesFileForm
 from .util import render_conference_response
 from .util import invoicerows_for_registration, summarize_registration_invoicerows, notify_reg_confirmed, InvoicerowsException
-from .util import get_invoice_autocancel, cancel_registration, send_welcome_email
+from .util import get_invoice_autocancel, cancel_registration, send_welcome_email, send_attachment_email
 from .util import attendee_cost_from_bulk_payment
 from .util import send_conference_mail, send_conference_notification, send_conference_notification_template
 from .util import reglog
@@ -55,7 +55,7 @@ from .jinjafunc import render_jinja_conference_svg
 from .jinjapdf import render_jinja_ticket
 from .util import get_authenticated_conference, get_conference_or_404
 from .backendforms import CancelRegistrationForm, ConfirmRegistrationForm
-from .backendforms import ResendWelcomeMailForm
+from .backendforms import ResendWelcomeMailForm, ResendAttachMailForm
 
 from postgresqleu.util.request import get_int_or_error
 from postgresqleu.util.random import generate_random_token
@@ -3662,6 +3662,50 @@ def admin_registration_resendwelcome(request, urlname, regid):
         'what': 'welcome email',
         'cancelurl': '../',
         'savebutton': 'Re-send welcome email',
+    })
+
+
+@transaction.atomic
+def admin_registration_resendattach(request, urlname, regid):
+    conference = get_authenticated_conference(request, urlname)
+    reg = get_object_or_404(ConferenceRegistration, id=regid, conference=conference)
+
+    if not reg.payconfirmedat:
+        messages.error(request, "Registration not confirmed")
+        return HttpResponseRedirect("../")
+
+    if reg.canceledat:
+        messages.error(request, "Registration is canceled")
+        return HttpResponseRedirect("../")
+
+    if reg.attendee:
+        messages.error(request, "Registration is already attached to an account")
+        return HttpResponseRedirect("../")
+
+    if request.method == 'POST':
+        form = ResendAttachMailForm(data=request.POST)
+        if form.is_valid():
+            send_attachment_email(reg)
+            messages.info(request, "Attachment email re-sent.")
+            return HttpResponseRedirect("../")
+    else:
+        form = ResendAttachMailForm()
+
+    return render(request, 'confreg/admin_backend_form.html', {
+        'basetemplate': 'confreg/confadmin_base.html',
+        'conference': conference,
+        'reg': reg,
+        'form': form,
+        'helplink': 'registrations',
+        'breadcrumbs': (
+            ('/events/admin/{0}/regdashboard/'.format(urlname), 'Registration dashboard'),
+            ('/events/admin/{0}/regdashboard/list/'.format(urlname), 'Registration list'),
+            ('/events/admin/{0}/regdashboard/list/{1}/'.format(urlname, reg.id), reg.fullname),
+        ),
+        'whatverb': 'Re-send',
+        'what': 'attachment email',
+        'cancelurl': '../',
+        'savebutton': 'Re-send attachment email',
     })
 
 

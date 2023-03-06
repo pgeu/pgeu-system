@@ -276,6 +276,9 @@
 {%if conference.sendwelcomemail and reg.payconfirmedat %}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/resendwelcome/">Re-send welcome email</a>
 {%endif%}
+{%if reg.payconfirmedat and not reg.attendee%}
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/resendattach/">Re-send account attachment email</a>
+{%endif%}
 {%endif%}{# not canceled #}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/sendmail/?idlist={{reg.id}}">Send email to attendee</a>
 {%if reg.messaging%}
