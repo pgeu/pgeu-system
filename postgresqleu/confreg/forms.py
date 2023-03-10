@@ -8,7 +8,7 @@ from django.utils.html import escape
 from django.utils import timezone
 
 from postgresqleu.confsponsor.models import ScannedAttendee
-from .models import Conference
+from .models import Conference, ConferenceSessionAnswer, ConferenceSessionQuestion
 from .models import ConferenceRegistration, RegistrationType, Speaker
 from .models import ConferenceAdditionalOption, Track, RegistrationClass
 from .models import ConferenceSession, ConferenceSessionFeedback, ConferenceSessionTag
@@ -792,3 +792,22 @@ class CrossConferenceMailForm(forms.Form):
     def remove_confirm(self):
         if 'confirm' in self.fields:
             del self.fields['confirm']
+
+
+class ConferenceSessionQuestionForm(forms.ModelForm):
+    class Meta:
+        model = ConferenceSessionQuestion
+        fields = ['question']
+        widgets = {
+            'question': forms.Textarea(attrs={'rows': 5}),
+        }
+
+
+class ConferenceSessionAnswerForm(forms.ModelForm):
+    class Meta:
+        model = ConferenceSessionAnswer
+        fields = ['answer']
+        widgets = {
+            'answer': forms.Textarea(attrs={'rows': 3}),
+        }
+

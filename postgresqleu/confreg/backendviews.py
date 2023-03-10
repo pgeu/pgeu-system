@@ -26,7 +26,7 @@ from .jinjafunc import JINJA_TEMPLATE_ROOT
 from .jinjapdf import render_jinja_ticket, render_jinja_badges
 from .util import send_conference_mail, get_conference_or_404, send_conference_notification
 
-from .models import Conference, ConferenceSeries
+from .models import Conference, ConferenceSeries, ConferenceSessionQuestion
 from .models import ConferenceRegistration
 from .models import Speaker
 from .models import PrepaidBatch
@@ -697,20 +697,23 @@ def purge_personal_data(request, urlname):
         exec_no_result("UPDATE confreg_conferenceregistration SET shirtsize_id=NULL, dietary='', phone='', address='' WHERE conference_id=%(confid)s", {'confid': conference.id, })
         conference.personal_data_purged = timezone.now()
         conference.save()
+        ConferenceSessionQuestion.objects.filter(conference_session__conference=conference, attendee__isnull=False).update(attendee=None)
         messages.info(request, "Personal data purged from conference")
         return HttpResponseRedirect('../')
 
     return render(request, 'confreg/admin_purge_personal_data.html', {
         'conference': conference,
         'helplink': 'personaldata',
-        'counts': exec_to_dict("""SELECT
+        'counts': {**exec_to_dict("""SELECT
   count(1) FILTER (WHERE shirtsize_id IS NOT NULL) AS "T-shirt size registrations",
   count(1) FILTER (WHERE dietary IS NOT NULL AND dietary != '') AS "Dietary needs",
   count(1) FILTER (WHERE phone IS NOT NULL AND phone != '') AS "Phone numbers",
   count(1) FILTER (WHERE address IS NOT NULL AND address != '') AS "Addresses"
 FROM confreg_conferenceregistration WHERE conference_id=%(confid)s""", {
             'confid': conference.id,
-        })[0],
+        })[0], **{
+            "Questioned Attendee References": ConferenceSessionQuestion.objects.filter(conference_session__conference=conference, attendee__isnull=False).count()
+        }},
     })
 
 

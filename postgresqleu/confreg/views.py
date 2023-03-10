@@ -16,7 +16,7 @@ from django.forms import ValidationError
 from django.utils import timezone
 from django.template.defaultfilters import slugify
 
-from .models import Conference, ConferenceRegistration, ConferenceSession, ConferenceSeries
+from .models import Conference, ConferenceRegistration, ConferenceSession, ConferenceSeries, ConferenceSessionAnswer, ConferenceSessionQuestion
 from .models import ConferenceRegistrationLog
 from .models import ConferenceSessionSlides, ConferenceSessionVote, GlobalOptOut
 from .models import ConferenceSessionFeedback, Speaker
@@ -32,7 +32,7 @@ from .models import ConferenceNews, ConferenceTweetQueue
 from .models import SavedReportDefinition
 from .models import ConferenceMessaging
 from .models import CrossConferenceEmail, CrossConferenceEmailRule, CrossConferenceEmailRecipient
-from .forms import ConferenceRegistrationForm, RegistrationChangeForm, ConferenceSessionFeedbackForm
+from .forms import ConferenceRegistrationForm, ConferenceSessionAnswerForm, ConferenceSessionQuestionForm, RegistrationChangeForm, ConferenceSessionFeedbackForm
 from .forms import ConferenceFeedbackForm, SpeakerProfileForm
 from .forms import CallForPapersForm
 from .forms import CallForPapersCopyForm, PrepaidCreateForm
@@ -4461,3 +4461,50 @@ def legacy_redirect(request, what, confname, resturl=None):
         return HttpResponsePermanentRedirect('/events/{0}/{1}/{2}'.format(confname, what, resturl))
     else:
         return HttpResponsePermanentRedirect('/events/{0}/{1}/'.format(confname, what))
+
+
+@login_required
+def qanda(request, confname, sessionid):
+    conference = get_conference_or_404(confname)
+    session = get_object_or_404(ConferenceSession, pk=sessionid, conference=conference, status=1)
+
+    if request.method == 'POST':
+        question_form = ConferenceSessionQuestionForm(request.POST)
+        answer_form = ConferenceSessionAnswerForm(request.POST)
+        if 'question_create' in request.POST and question_form.is_valid():
+            question = question_form.save(commit=False)
+            question.attendee = request.user
+            question.conference_session = session
+            question.save()
+        elif 'answer_create' in request.POST and answer_form.is_valid():
+            answer = answer_form.save(commit=False)
+            answer.question = ConferenceSessionQuestion.objects.get(id=request.POST.get('question_id'))
+            answer.speaker = Speaker.objects.get(user=request.user)
+            answer.save()
+        elif 'answer_update' in request.POST and answer_form.is_valid():
+            answer = ConferenceSessionAnswer.objects.get(question__id=request.POST.get('question_id'))
+            answer.answer = request.POST.get('answer')
+            answer.save()
+        elif 'delete_question' in request.POST:
+            ConferenceSessionQuestion.objects.filter(id=request.POST.get('question_id')).delete()
+        return HttpResponseRedirect(".")
+
+    else:
+        question_form = ConferenceSessionQuestionForm()
+        answer_form = ConferenceSessionAnswerForm()
+
+    questions = ConferenceSessionQuestion.objects.filter(conference_session=session).select_related('session_answer')
+
+    is_session_undergoing = bool(session.starttime <= timezone.now() <= session.endtime)
+    can_ask = is_session_undergoing & ConferenceRegistration.objects.filter(conference=conference, attendee=request.user).exists()
+    is_speaker = ConferenceSession.objects.filter(speaker__user=request.user).exists()
+
+    return render(request, 'confreg/qanda.html', {
+        "question_form": question_form,
+        "answer_form": answer_form,
+        "questions": questions,
+        "is_session_undergoing": is_session_undergoing,
+        "can_ask": can_ask,
+        "is_speaker": is_speaker,
+    })
+
