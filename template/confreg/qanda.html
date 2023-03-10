@@ -42,9 +42,12 @@
                 {% if is_session_undergoing %}
                     <p class="card-text">Asked {{ question.createdat|timesince }} ago</p>
                 {% endif %}
-                <p class="card-text">No answer yet</p>
+                {% if question.session_answer %}
+                    <p class="card-text">A: {{ question.session_answer.answer }}</p>
+                {% else %}
+                    <p class="card-text">No answer yet</p>
+                {% endif %}
             {% endif %}
-
         </div>
     </div>
 {% endfor %}
