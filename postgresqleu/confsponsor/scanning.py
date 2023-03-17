@@ -195,7 +195,7 @@ def landing(request, urlname):
     return render_conference_response(request, conference, 'reg', 'confsponsor/scanner_landing.html', {
         'conference': conference,
         'sponsor': scanner.sponsor,
-        'link': link,
+        'scannerlink': link,
         'qrlink': generate_base64_qr(link, 5, 200),
         'qrtest': generate_base64_qr('{}/t/at/TESTTESTTESTTEST/'.format(settings.SITEBASE), 2, 150),
     })
