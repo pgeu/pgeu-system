@@ -404,6 +404,36 @@ def view_registration_badge(request, urlname, regid):
     return resp
 
 
+def view_multi_registration_badge(request, urlname):
+    regids = request.GET.get('idlist')
+    try:
+        ids = [int(i) for i in regids.split(',')]
+    except Exception:
+        raise Http404("Parameter idlist is not list of integers")
+
+    conference = get_authenticated_conference(request, urlname)
+    regs = list(ConferenceRegistration.objects.filter(conference=conference, id__in=ids))
+    errs = []
+    for r in regs:
+        if r.canceledat:
+            errs.append('Registration for {} has been canceled'.format(r.fullname))
+    if errs:
+        if len(errs) > 10:
+            messages.warning(request, "Pre-check returned {} errors. Try with a smaller set.".format(len(errs)))
+        else:
+            for e in errs:
+                messages.warning(request, e)
+            messages.warning(request, 'No badges have been generated due to previous error(s)')
+        return HttpResponseRedirect("../")
+
+    resp = HttpResponse(content_type='application/pdf')
+    try:
+        render_jinja_badges(conference, settings.REGISTER_FONTS, [r.safe_export() for r in regs], resp, False, False)
+    except Exception as e:
+        return HttpResponse("Exception rendering badges: {}".format(e.__repr__()), content_type='text/plain')
+    return resp
+
+
 def pendinginvoices(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 

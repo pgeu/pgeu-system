@@ -51,6 +51,12 @@ registration process.
 
 Select "Format: Badge", and generate the report.
 
+You can also generate badges for individual registrations by clicking
+the Preview Badge button on the registration page, or for multiple
+manually selected badges by marking them on the registration list and
+generating from there. These are useful for smaller sets of badges,
+whereas the report method is more usable for large sets.
+
 ## Time reports <a name="time"></a>
 
 The time reports can be used to draw graphs relative to the time of
