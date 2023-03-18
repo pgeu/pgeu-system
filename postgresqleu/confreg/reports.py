@@ -210,7 +210,13 @@ class ReportFilter(object):
                     },
                 )
         else:
-            if val != '':
+            if val in ('\\N', '\\n'):
+                # Require field to be NULL
+                return (
+                    "{} IS NULL".format(self.db_colname),
+                    {}
+                )
+            elif val != '':
                 # Limit by value
                 # First try to case it to the appropriate format, so we get a formatting error rather than
                 # a later runtime error crash if the format is bad.
