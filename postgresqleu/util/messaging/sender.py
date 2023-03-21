@@ -50,16 +50,16 @@ def send_pending_messages(providers):
             except requests.exceptions.HTTPError as re:
                 # Special-case http errors coming out of requests, if we have any.
                 thiserr = True
-                print("Failed to send notification to {} using {}: HTTP error {}. Will retry until {}.".format(
+                sys.stderr.write("Failed to send notification to {} using {}: HTTP error {}. Will retry until {}.\n".format(
                     n.reg and n.reg or n.channel,
                     n.messaging.provider.internalname,
                     e, n.expires
                 ))
                 if re.response.text:
-                    print("Response text: {}".format(re.response.text))
+                    sys.stderr.write("Response text: {}\n".format(re.response.text))
             except Exception as e:
                 thiserr = True
-                print("Failed to send notification to {} using {}: {}. Will retry until {}.".format(
+                sys.stderr.write("Failed to send notification to {} using {}: {}. Will retry until {}.\n".format(
                     n.reg and n.reg or n.channel,
                     n.messaging.provider.internalname,
                     e, n.expires
