@@ -53,7 +53,7 @@ def send_pending_messages(providers):
                 sys.stderr.write("Failed to send notification to {} using {}: HTTP error {}. Will retry until {}.\n".format(
                     n.reg and n.reg or n.channel,
                     n.messaging.provider.internalname,
-                    e, n.expires
+                    re, n.expires
                 ))
                 if re.response.text:
                     sys.stderr.write("Response text: {}\n".format(re.response.text))
