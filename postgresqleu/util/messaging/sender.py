@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.db import transaction
 
 from datetime import timedelta
+import requests
 import time
 import sys
 
@@ -37,6 +38,7 @@ def send_pending_messages(providers):
 
             # Actually Send Message (TM)
             impl = providers.get(n.messaging.provider)
+            thiserr = False
             try:
                 if n.reg:
                     # If the user is part way through registering their messaging provider we will have a
@@ -45,12 +47,26 @@ def send_pending_messages(providers):
                         impl.send_direct_message(n.reg.messaging_config, n.msg)
                 else:
                     impl.post_channel_message(n.messaging, n.channel, n.msg)
+            except requests.exceptions.HTTPError as re:
+                # Special-case http errors coming out of requests, if we have any.
+                thiserr = True
+                print("Failed to send notification to {} using {}: HTTP error {}. Will retry until {}.".format(
+                    n.reg and n.reg or n.channel,
+                    n.messaging.provider.internalname,
+                    e, n.expires
+                ))
+                if re.response.text:
+                    print("Response text: {}".format(re.response.text))
             except Exception as e:
+                thiserr = True
                 print("Failed to send notification to {} using {}: {}. Will retry until {}.".format(
                     n.reg and n.reg or n.channel,
                     n.messaging.provider.internalname,
                     e, n.expires
                 ))
+
+            # Common path for all errors
+            if thiserr:
                 err = True
 
                 # Retry in 5 minutes
