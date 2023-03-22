@@ -413,6 +413,10 @@ class Telegram(object):
         return True, ''
 
     def notify_twitter_moderation(self, messaging, tweet, completed, approved=False):
+        if 'channels' not in messaging.config:
+            # If we don't have any channels configure d*at all*, then there is definitely
+            # nothing to do and we shouldn't crash.
+            return
         if 'socialmediamanagement' not in messaging.config['channels']:
             # If we don't have a social media channel, then there is nothing to do!
             return
