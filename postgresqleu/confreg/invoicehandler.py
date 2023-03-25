@@ -86,6 +86,11 @@ class InvoiceProcessor(object):
             reg.discountcode_set.clear()
             reg.save()
         if reg.vouchercode:
+            vc = PrepaidVoucher.objects.get(vouchervalue=reg.vouchercode)
+            vc.usedate = None
+            vc.user = None
+            vc.save(update_fields=['usedate', 'user'])
+
             reg.vouchercode = ''
             reg.save()
 
