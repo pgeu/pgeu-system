@@ -30,7 +30,7 @@ class InvoiceProcessor(object):
 
         reg.payconfirmedat = timezone.now()
         reg.payconfirmedby = "Invoice paid"
-        reg.save()
+        reg.save(update_fields=['payconfirmedat', 'payconfirmedby'])
         reglog(reg, "Confirmed registraiton by invoice")
         notify_reg_confirmed(reg)
 
@@ -60,7 +60,7 @@ class InvoiceProcessor(object):
             reglog(reg, "Expired additional option {}".format(ao.name))
             reg.additionaloptions.remove(ao)
 
-        reg.save()
+        reg.save(update_fields=['invoice'])
 
         # If the registration was on the waitlist, put it back in the
         # queue.
@@ -84,7 +84,6 @@ class InvoiceProcessor(object):
         # that discount code.
         if reg.discountcode_set.exists():
             reg.discountcode_set.clear()
-            reg.save()
         if reg.vouchercode:
             vc = PrepaidVoucher.objects.get(vouchervalue=reg.vouchercode)
             vc.usedate = None
@@ -92,7 +91,7 @@ class InvoiceProcessor(object):
             vc.save(update_fields=['usedate', 'user'])
 
             reg.vouchercode = ''
-            reg.save()
+            reg.save(update_fields=['vouchercode'])
 
     # Return the user to a page showing what happened as a result
     # of their payment. In our case, we just return the user directly
@@ -140,11 +139,11 @@ class BulkInvoiceProcessor(object):
         for r in bp.conferenceregistration_set.all():
             r.payconfirmedat = timezone.now()
             r.payconfirmedby = "Bulk paid"
-            r.save()
+            r.save(update_fields=['payconfirmedat', 'payconfirmedby'])
             reglog(r, "Confirmed registraiton by bulk paid")
             notify_reg_confirmed(r)
 
-        bp.save()
+        bp.save(update_fields=['paidat'])
 
     # Process an invoice being canceled. This means we need to unlink
     # it from the registration. We don't actually remove the registration,
@@ -162,7 +161,7 @@ class BulkInvoiceProcessor(object):
         # attendees that this happened.
         for r in bp.conferenceregistration_set.all():
             r.bulkpayment = None
-            r.save()
+            r.save(update_fields=['bulkpayment'])
             reglog(r, "Unlinked from bulk payment by cancel")
 
             if r.attendee:
@@ -197,7 +196,7 @@ class BulkInvoiceProcessor(object):
                 if dcodes[0].code == r.vouchercode:
                     r.vouchercode = ''
                 r.discountcode_set.clear()
-                r.save()
+                r.save(update_fields=['vouchercode'])
 
             # If there is still a voucher code, it must be referring to a regular voucher
             # and not a discount code.
@@ -206,10 +205,10 @@ class BulkInvoiceProcessor(object):
                 vc = PrepaidVoucher.objects.get(vouchervalue=r.vouchercode)
                 vc.usedate = None
                 vc.user = None
-                vc.save()
+                vc.save(update_fields=['usedate', 'user'])
 
                 r.vouchercode = ''
-                r.save()
+                r.save(update_fields=['vouchercode'])
 
         # Now actually *remove* the bulk payment record completely,
         # since it no longer contains anything interesting.
@@ -260,7 +259,7 @@ class AddonInvoiceProcessor(object):
         for o in order.options.all():
             order.reg.additionaloptions.add(o)
 
-        order.reg.save()
+        order.reg.save(update_fields=['regtype'])
         order.save()
 
     def process_invoice_cancellation(self, invoice):
