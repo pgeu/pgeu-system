@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.template.loader import render_to_string
 
 from postgresqleu.confsponsor.backendforms import BackendSponsorshipLevelBenefitForm
-from postgresqleu.confsponsor.models import ScannedAttendee
+from postgresqleu.confsponsor.models import SponsorScanner, ScannedAttendee
 
 from .base import BaseBenefit, BaseBenefitForm
 
@@ -51,7 +51,7 @@ class BadgeScanning(BaseBenefit):
         if claimedbenefit.declined or not claimedbenefit.confirmed:
             return None
 
-        scanners = [s.scanner.fullname for s in claimedbenefit.sponsor.sponsorscanner_set.all()]
+        scanners = [s.scanner.fullname for s in SponsorScanner.objects.select_related('scanner').filter(sponsor=claimedbenefit.sponsor)]
         return (
             "Badge Scanning",
             render_to_string('confsponsor/section_badgescanning.html', {

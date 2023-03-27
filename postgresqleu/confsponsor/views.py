@@ -66,9 +66,9 @@ def sponsor_dashboard(request):
 
 def _get_sponsor_and_admin(sponsorid, request, onlyconfirmed=True):
     if not onlyconfirmed:
-        sponsor = get_object_or_404(Sponsor, id=sponsorid)
+        sponsor = get_object_or_404(Sponsor.objects.select_related('level'), id=sponsorid)
     else:
-        sponsor = get_object_or_404(Sponsor, id=sponsorid, confirmed=True)
+        sponsor = get_object_or_404(Sponsor.objects.select_related('level'), id=sponsorid, confirmed=True)
     if not sponsor.managers.filter(pk=request.user.id).exists():
         if request.user.is_superuser:
             return sponsor, True
@@ -86,7 +86,7 @@ def sponsor_conference(request, sponsorid):
     sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request, False)
 
     unclaimedbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=False).exclude(sponsorclaimedbenefit__sponsor=sponsor)
-    claimedbenefits = SponsorClaimedBenefit.objects.filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey')
+    claimedbenefits = SponsorClaimedBenefit.objects.select_related('sponsor', 'claimedby').prefetch_related('benefit').filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey')
     noclaimbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=True)
     mails = get_mails_for_sponsor(sponsor).defer('message')
     vouchers = PrepaidVoucher.objects.filter(batch__sponsor=sponsor)
@@ -111,7 +111,7 @@ def sponsor_conference(request, sponsorid):
                 extra_sections.append(injectsection)
 
     addresses = ShipmentAddress.objects.filter(conference=sponsor.conference, available_to=sponsor.level, active=True)
-    shipments = Shipment.objects.filter(sponsor=sponsor)
+    shipments = Shipment.objects.select_related('address').filter(sponsor=sponsor)
 
     return render(request, 'confsponsor/sponsor.html', {
         'conference': sponsor.conference,
@@ -1183,7 +1183,7 @@ def sponsor_admin_benefit_reports(request, confurlname):
 
     if request.method == "POST":
         benefitidlist = [int(v) for k, v in request.POST.items() if k.startswith('b_')]
-        claimedbenefits = SponsorClaimedBenefit.objects.select_related('sponsor', 'benefit', 'benefit__level').filter(benefit__level__conference=conference, benefit__pk__in=benefitidlist).order_by('-benefit__level__levelcost', 'benefit__level__levelname', 'benefit__sortkey', 'sponsor__name')
+        claimedbenefits = SponsorClaimedBenefit.objects.select_related('sponsor', 'sponsor__level', 'benefit', 'benefit__level').filter(benefit__level__conference=conference, benefit__pk__in=benefitidlist).order_by('-benefit__level__levelcost', 'benefit__level__levelname', 'benefit__sortkey', 'sponsor__name')
 
         tables = []
         lastbenefit = None

@@ -88,8 +88,7 @@ class EntryVouchers(BaseBenefit):
             # This benefit has been declined
             return "Benefit was declined."
 
-        batch = PrepaidBatch.objects.get(pk=claimedbenefit.claimjson['batchid'])
-        vouchers = list(batch.prepaidvoucher_set.all())
+        vouchers = list(PrepaidVoucher.objects.filter(batch=claimedbenefit.claimjson['batchid']))
 
         generated = len(vouchers)
         used = len([1 for v in vouchers if v.usedate])
@@ -105,8 +104,8 @@ class EntryVouchers(BaseBenefit):
     def render_reportinfo(self, claimedbenefit):
         if claimedbenefit.claimjson['batchid'] == 0:
             return ''
-        batch = PrepaidBatch.objects.get(pk=claimedbenefit.claimjson['batchid'])
-        vouchers = list(batch.prepaidvoucher_set.all())
+
+        vouchers = list(PrepaidVoucher.objects.filter(batch=claimedbenefit.claimjson['batchid']))
 
         return '{}/{} vouchers used'.format(
             len([v for v in vouchers if v.user]),
