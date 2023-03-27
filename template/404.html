@@ -2,6 +2,10 @@
 {%block title%}Not found{%endblock%}
 {%block content%}
 <h1>Not found</h1>
+{%if exception%}
+<p>{{ exception }}</p>
+{%else%}
 <p>The specified URL was not found.</p>
+{%endif%}
 {%endblock%}
 
