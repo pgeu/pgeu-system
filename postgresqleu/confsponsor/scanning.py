@@ -174,15 +174,22 @@ def scanning_page(request, scannertoken):
 @login_required
 def landing(request, urlname):
     conference = get_conference_or_404(urlname)
-    reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
+    try:
+        reg = ConferenceRegistration.objects.get(conference=conference, attendee=request.user, payconfirmedat__isnull=False, canceledat__isnull=True)
+    except ConferenceRegistration.DoesNotExist:
+        raise Http404("You are not registered for this conference")
 
+    # If we have a token, use that to identify which sponsor is being represented.
+    # If we don't have a token, get all scanner setups for this user. If that is just
+    # one sponsor, send the user directly there. If it's >1, show the page to select
+    # which sponsor to represent, which will redirect to a token-included URL.
     scanners = SponsorScanner.objects.filter(sponsor__conference=conference, scanner=reg)
     if 'token' in request.GET:
         scanners = scanners.filter(token=request.GET['token'])
 
     scanners = list(scanners)
     if len(scanners) == 0:
-        raise Http404()
+        raise Http404("You are not registered as a scanner for any sponsor at this conference")
     elif len(scanners) > 1:
         return render_conference_response(request, conference, 'reg', 'confsponsor/scanner_selectsponsor.html', {
             'conference': conference,
