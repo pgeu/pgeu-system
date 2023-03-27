@@ -323,8 +323,10 @@ def register(request, confname, whatfor=None):
 
     # Either not specifying or registering for self.
     try:
-        reg = ConferenceRegistration.objects.select_related('conference', 'regtype__conference').get(conference=conference,
-                                                                                                     attendee=request.user)
+        reg = ConferenceRegistration.objects \
+                                    .select_related('conference', 'regtype__conference') \
+                                    .prefetch_related('additionaloptions') \
+                                    .get(conference=conference, attendee=request.user)
     except ConferenceRegistration.DoesNotExist:
         # No previous registration exists. Let the user choose what to
         # do. If already under "self" suburl, copy the data from the
