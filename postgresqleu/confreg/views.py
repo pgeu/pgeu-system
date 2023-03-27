@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.conf import settings
 from django.db import transaction, connection
-from django.db.models import Q, Count, Avg
+from django.db.models import Q, Count, Avg, Prefetch
 from django.db.models.expressions import F
 from django.forms import ValidationError
 from django.utils import timezone
@@ -1028,20 +1028,20 @@ def feedback(request, confname):
     # Generate a list of all feedback:able sessions, meaning all sessions that have already started,
     # since you can't give feedback on something that does not yet exist.
     if is_conf_tester:
-        sessions = ConferenceSession.objects.select_related().filter(conference=conference).filter(can_feedback=True).filter(status=1)
+        sessions = ConferenceSession.objects.filter(conference=conference).filter(can_feedback=True).filter(status=1)
     else:
-        sessions = ConferenceSession.objects.select_related().filter(conference=conference).filter(can_feedback=True).filter(starttime__lte=timezone.now()).filter(status=1)
+        sessions = ConferenceSession.objects.filter(conference=conference).filter(can_feedback=True).filter(starttime__lte=timezone.now()).filter(status=1)
 
-    # Then get a list of everything this user has feedbacked on
-    feedback = ConferenceSessionFeedback.objects.filter(conference=conference, attendee=request.user)
-
-    # Since we can't trick django to do a LEFT JOIN for us here, implement that part
-    # in code here. The number of sessions is always going to be low, so it won't
-    # be too big a performance issue.
-    for s in sessions:
-        fb = [f for f in feedback if f.session == s]
-        if len(fb):
-            s.has_given_feedback = True
+    sessions = sessions \
+        .select_related('conference') \
+        .prefetch_related(Prefetch('speaker', Speaker.objects.only('fullname'))) \
+        .only('title', 'conference__id', ) \
+        .extra(
+            select={
+                'has_given_feedback': 'EXISTS (SELECT 1 FROM confreg_conferencesessionfeedback csf WHERE csf.conference_id=confreg_conferencesession.conference_id AND csf.session_id=confreg_conferencesession.id AND csf.attendee_id=%s)',
+            },
+            select_params=[request.user.id, ],
+        )
 
     return render_conference_response(request, conference, 'feedback', 'confreg/feedback_index.html', {
         'sessions': sessions,
