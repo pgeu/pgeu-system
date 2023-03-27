@@ -1,6 +1,9 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.template.loader import render_to_string
+
 from postgresqleu.confsponsor.backendforms import BackendSponsorshipLevelBenefitForm
+from postgresqleu.confsponsor.models import ScannedAttendee
 
 from .base import BaseBenefit, BaseBenefitForm
 
@@ -43,3 +46,17 @@ class BadgeScanning(BaseBenefit):
             )
         else:
             return ""
+
+    def inject_summary_section(self, claimedbenefit):
+        if claimedbenefit.declined or not claimedbenefit.confirmed:
+            return None
+
+        scanners = [s.scanner.fullname for s in claimedbenefit.sponsor.sponsorscanner_set.all()]
+        return (
+            "Badge Scanning",
+            render_to_string('confsponsor/section_badgescanning.html', {
+                'sponsor': claimedbenefit.sponsor,
+                'scanners': scanners,
+                'scancount': ScannedAttendee.objects.filter(sponsor=claimedbenefit.sponsor).count(),
+            })
+        )

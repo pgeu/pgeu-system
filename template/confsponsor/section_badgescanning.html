@@ -1,0 +1,10 @@
+{%load join_and%}
+{%if scanners%}
+<p>The user{{ scanners | length | pluralize }} {{ scanners | join_and }} {{ scanners | length | pluralize:"is,are" }} registered to scan badges for {{sponsor.displayname}}.</p>
+{%else%}
+<p>There are currently no users registered to scan badges for {{sponsor.displayname}}.</p>
+{%endif%}
+
+<p>So far, {%if scancount%}{{ scancount }}{%else%}no{%endif%} badge{{ scancount | pluralize }} {{ scancount | pluralize:"has,have" }} been scanned.</p>
+
+<a href="scanning/" class="btn btn-primary">View and edit badge scanning details</a>
