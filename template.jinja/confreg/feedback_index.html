@@ -15,10 +15,13 @@ Feedback on the <a href="conference/">full conference</a> is currently open.
 {%endif%}
 
 <h2>Available sessions</h2>
+{%for d, sessions in sessions|groupby('date') %}
+{%if loop.length > 1 %}<h3>{{d}}</h3>{%endif%}
 <ul>
 {% for s in sessions %}
  <li><a href="{{s.id}}/">{{s.title}} ({{s.speaker_list}})</a>{%if s.has_given_feedback%} <img src="/media/img/green_tick.png" alt="green tickmark" />{%endif%}</li>
 {%endfor%}
 </ul>
+{%endfor%}
 
 {%endblock%}

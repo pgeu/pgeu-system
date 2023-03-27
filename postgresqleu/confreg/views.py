@@ -1038,6 +1038,7 @@ def feedback(request, confname):
         .only('title', 'conference__id', ) \
         .extra(
             select={
+                'date': 'starttime::date',
                 'has_given_feedback': 'EXISTS (SELECT 1 FROM confreg_conferencesessionfeedback csf WHERE csf.conference_id=confreg_conferencesession.conference_id AND csf.session_id=confreg_conferencesession.id AND csf.attendee_id=%s)',
             },
             select_params=[request.user.id, ],
