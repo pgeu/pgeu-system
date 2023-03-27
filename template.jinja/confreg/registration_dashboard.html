@@ -93,6 +93,9 @@ news!
 {%if reg.is_checkinprocessor %}
   <li><a href="/events/{{conference.urlname}}/checkin/">Checkin processing</a> &bull;</li>
 {%endif%}
+{%for s in sponsorships%}
+  <li><a href="/events/sponsor/{{s.id}}/">Manage {{s.displayname}} sponsorship</a> &bull;</li>
+{%endfor%}
 {%if reg.is_badgescanner %}
   <li><a href="/events/{{conference.urlname}}/badgescan/">Sponsor badge scanning</a> &bull;</li>
 {%endif%}

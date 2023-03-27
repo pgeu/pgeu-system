@@ -64,7 +64,7 @@ from postgresqleu.util.messaging import get_messaging, ProviderCache
 from postgresqleu.util.pagination import simple_pagination
 from postgresqleu.invoices.util import InvoiceWrapper
 from postgresqleu.confwiki.models import Wikipage
-from postgresqleu.confsponsor.models import ScannedAttendee, PurchasedVoucher
+from postgresqleu.confsponsor.models import Sponsor, ScannedAttendee, PurchasedVoucher
 from postgresqleu.confsponsor.invoicehandler import create_voucher_invoice
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor, InvoiceHistory
@@ -191,6 +191,8 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
     else:
         current_messaging_info = ''
 
+    sponsorships = Sponsor.objects.only('id', 'displayname', 'conference').filter(conference=conference, managers=request.user)
+
     return render_conference_response(request, conference, 'reg', 'confreg/registration_dashboard.html', {
         'redir_root': redir_root,
         'reg': reg,
@@ -208,6 +210,7 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
         'displayfields': displayfields,
         'current_messaging_info': current_messaging_info,
         'messaging': messaging,
+        'sponsorships': sponsorships,
     })
 
 
