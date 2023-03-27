@@ -24,6 +24,9 @@ class BaseBenefit(object):
     def validate_parameters(self):
         pass
 
+    def inject_summary_section(self, claimedbenefit):
+        return None
+
 
 class BaseBenefitForm(forms.Form):
     def __init__(self, benefit, sponsor, *args, **kwargs):

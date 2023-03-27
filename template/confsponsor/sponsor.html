@@ -303,6 +303,12 @@ be invoiced to you once the code is used.
 
 {%endif%}{%comment%}anything about discount codes{%endcomment%}
 
+{%comment%}Any extra injected sections from benefits{%endcomment%}
+{%for title, content in extrasections%}
+<h2>{{title}}</h2>
+{{content}}
+{%endfor%}
+
 <h2>Edit managers</h2>
 <p>
 If you want your sponsorship to be managed by more than one person, you can manage it here.

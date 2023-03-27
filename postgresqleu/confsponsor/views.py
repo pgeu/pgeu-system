@@ -101,9 +101,14 @@ def sponsor_conference(request, sponsorid):
     else:
         detailsform = SponsorDetailsForm(instance=sponsor)
 
+    extra_sections = []
     for b in claimedbenefits:
         if b.benefit.benefit_class and not b.declined:
-            b.claimhtml = get_benefit_class(b.benefit.benefit_class)(sponsor.level, b.benefit.class_parameters).render_claimdata(b, False)
+            c = get_benefit_class(b.benefit.benefit_class)(sponsor.level, b.benefit.class_parameters)
+            b.claimhtml = c.render_claimdata(b, False)
+            injectsection = c.inject_summary_section(b)
+            if injectsection:
+                extra_sections.append(injectsection)
 
     addresses = ShipmentAddress.objects.filter(conference=sponsor.conference, available_to=sponsor.level, active=True)
     shipments = Shipment.objects.filter(sponsor=sponsor)
@@ -122,6 +127,7 @@ def sponsor_conference(request, sponsorid):
         'detailsform': detailsform,
         'addresses': addresses,
         'shipments': shipments,
+        'extrasections': extra_sections,
         })
 
 
