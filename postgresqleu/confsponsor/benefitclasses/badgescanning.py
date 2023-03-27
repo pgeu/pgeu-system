@@ -47,6 +47,12 @@ class BadgeScanning(BaseBenefit):
         else:
             return ""
 
+    def render_reportinfo(self, claimedbenefit):
+        if claimedbenefit.declined or not claimedbenefit.confirmed:
+            return ''
+
+        return '{} badges scanned'.format(ScannedAttendee.objects.filter(sponsor=claimedbenefit.sponsor).count())
+
     def inject_summary_section(self, claimedbenefit):
         if claimedbenefit.declined or not claimedbenefit.confirmed:
             return None
