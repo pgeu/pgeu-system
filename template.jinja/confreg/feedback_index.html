@@ -17,7 +17,7 @@ Feedback on the <a href="conference/">full conference</a> is currently open.
 <h2>Available sessions</h2>
 <ul>
 {% for s in sessions %}
- <li><a href="{{s.id}}/">{{s}}</a>{%if s.has_given_feedback%} <img src="/media/img/green_tick.png" alt="green tickmark" />{%endif%}</li>
+ <li><a href="{{s.id}}/">{{s.title}} ({{s.speaker_list}})</a>{%if s.has_given_feedback%} <img src="/media/img/green_tick.png" alt="green tickmark" />{%endif%}</li>
 {%endfor%}
 </ul>
 
