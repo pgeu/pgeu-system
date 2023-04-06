@@ -164,7 +164,7 @@ the invoice is paid, the sponsorship will automatically become confirmed.
 {%endif%}
 <form method="post" action=".">{%csrf_token%}
 {%if sponsor.level.levelcost %}
-<input type="submit" name="submit" value="Generate invoice" class="btn btn-default">
+<input type="submit" name="submit" value="Confirm sponsorship and generate invoice" class="btn btn-default">
 {%else%}
 <input type="submit" name="submit" value="Confirm sponsorship without invoice" class="btn btn-default confirm-btn" data-confirm="Once confirmed, there is no going back!">
 {%endif%}
