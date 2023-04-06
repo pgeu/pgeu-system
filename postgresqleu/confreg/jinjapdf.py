@@ -372,7 +372,7 @@ if __name__ == "__main__":
     ]
 
     if args.font:
-        fonts.append([f.split(':') for f in args.font])
+        fonts.extend([f.split(':') for f in args.font])
 
     if args.what == 'badge':
         renderer = JinjaBadgeRenderer(args.repopath, fonts, debug=True, border=args.borders, pagebreaks=args.pagebreaks)
