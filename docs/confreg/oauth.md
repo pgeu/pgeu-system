@@ -23,6 +23,10 @@ Each OAuth application also has a `Client` and a `Secret`
 key. These keys are for *the application*, there will then be a
 separate set of keys for each individual account used.
 
+The `Callback URI` / `Redirect URL` / `redirect uri` for OAuth will be
+`https://<site>/accounts/login/<provider>/` where `provider` currently
+is "twitter" or "mastodon".
+
 ### Twitter
 
 The application is created on https://developer.twitter.com/ (logged
