@@ -45,6 +45,9 @@ Once all is set up, create the application by copying the
 `API key` and `API Secret Key` values from the application
 registration as `Client` and `Secret`.
 
+The `Callback URI` / `Redirect URL` / `redirect uri` for Twitter would be
+`https://<site>/accounts/login/twitter/`
+
 ### Mastodon
 
 The Mastodon integration supports multiple different Mastodon
