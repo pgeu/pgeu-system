@@ -329,7 +329,7 @@ paragraph
      : The actual text to write
 
      font
-     : The font to use. This font must be regsitered in local_settings.py!
+     : The font to use. This font must be registered in local_settings.py!
 
      color
 	 : The color to use (defaults to *black*)
@@ -344,7 +344,7 @@ paragraph
 	 : Alignment (*left* (default), *right*, *center*)
 
 Color are specified either by name (*white*, *black*) or by RGB value
-in the form of an array containing [r,b,g] color values (0-255).
+in the form of an array containing [r,g,b] color values (0-255).
 
 
 ## Badges
