@@ -85,10 +85,15 @@ class InvoiceProcessor(object):
         if reg.discountcode_set.exists():
             reg.discountcode_set.clear()
         if reg.vouchercode:
-            vc = PrepaidVoucher.objects.get(vouchervalue=reg.vouchercode)
-            vc.usedate = None
-            vc.user = None
-            vc.save(update_fields=['usedate', 'user'])
+            try:
+                vc = PrepaidVoucher.objects.get(vouchervalue=reg.vouchercode)
+                vc.usedate = None
+                vc.user = None
+                vc.save(update_fields=['usedate', 'user'])
+            except PrepaidVoucher.DoesNotExist:
+                # Vouchercode is set even if it's a discount code, since we use the same field.
+                # And in this case, there is no matching prepaid voucher.
+                pass
 
             reg.vouchercode = ''
             reg.save(update_fields=['vouchercode'])
@@ -202,10 +207,15 @@ class BulkInvoiceProcessor(object):
             # and not a discount code.
             if r.vouchercode:
                 # Also mark the voucher code as not used anymore
-                vc = PrepaidVoucher.objects.get(vouchervalue=r.vouchercode)
-                vc.usedate = None
-                vc.user = None
-                vc.save(update_fields=['usedate', 'user'])
+                try:
+                    vc = PrepaidVoucher.objects.get(vouchervalue=r.vouchercode)
+                    vc.usedate = None
+                    vc.user = None
+                    vc.save(update_fields=['usedate', 'user'])
+                except PrepaidVoucher.DoesNotExist:
+                    # Vouchercode is set even if it's a discount code, since we use the same field.
+                    # And in this case, there is no matching prepaid voucher.
+                    pass
 
                 r.vouchercode = ''
                 r.save(update_fields=['vouchercode'])
