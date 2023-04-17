@@ -94,7 +94,19 @@ class EntryVouchers(BaseBenefit):
         used = len([1 for v in vouchers if v.usedate])
 
         s = StringIO.StringIO()
-        s.write("<p>%s vouchers were generated, %s have been used.</p>" % (generated, used))
+        if generated == 0:
+            s.write("<p>No vouchers were generated.</p>")
+        elif generated == 1:
+            s.write("<p>%s voucher was generated, " % (generated))
+        else:
+            s.write("<p>%s vouchers were generated, " % (generated))
+        if generated != 0:
+            if used == 0:
+                s.write("none has been used.</p>")
+            elif used == 1:
+                s.write("%s has been used.</p>" % (used))
+            else
+                s.write("%s have been used.</p>" % (used))
         s.write("<table><tr><th>Voucher code</th><th>Used by</th><th>Used at</th></tr>")
         for v in vouchers:
             s.write("<tr><td><code>{0}</code></td><td>{1}</td><td>{2}</td></tr>".format(v.vouchervalue, v.user and v.user.fullname or '', v.usedate and v.usedate or ''))
