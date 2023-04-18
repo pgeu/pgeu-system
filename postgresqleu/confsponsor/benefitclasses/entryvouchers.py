@@ -105,7 +105,7 @@ class EntryVouchers(BaseBenefit):
                 s.write("none has been used.</p>")
             elif used == 1:
                 s.write("%s has been used.</p>" % (used))
-            else
+            else:
                 s.write("%s have been used.</p>" % (used))
         s.write("<table><tr><th>Voucher code</th><th>Used by</th><th>Used at</th></tr>")
         for v in vouchers:
