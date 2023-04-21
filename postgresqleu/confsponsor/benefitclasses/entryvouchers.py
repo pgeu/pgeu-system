@@ -107,7 +107,7 @@ class EntryVouchers(BaseBenefit):
                 s.write("%s has been used.</p>" % (used))
             else:
                 s.write("%s have been used.</p>" % (used))
-        s.write("<table><tr><th>Voucher code</th><th>Used by</th><th>Used at</th></tr>")
+        s.write('<table class="table"><tr><th>Voucher code</th><th>Used by</th><th>Used at</th></tr>')
         for v in vouchers:
             s.write("<tr><td><code>{0}</code></td><td>{1}</td><td>{2}</td></tr>".format(v.vouchervalue, v.user and v.user.fullname or '', v.usedate and v.usedate or ''))
         s.write("</table>")
