@@ -13,7 +13,7 @@ setting `ENABLE_OAUTH_LOGIN=True` and setting up the variable `OAUTH`.
 
 OAuth applications are uniquely identified by their base URL. For some
 providers these are unique URLs (such as Twitter) whereas other
-systems support multiple instances and therefor multiple OAuth
+systems support multiple instances and therefore multiple OAuth
 applications (such as Mastodon).
 
 OAuth applications are registered globally in the system, and can be
