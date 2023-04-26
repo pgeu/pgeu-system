@@ -188,11 +188,11 @@ div.newscontent h6
 
 /* Event listings */
 dl.eventlist {
-   padding-left: 1em;
+    padding-left: 1em;
 }
 dl.eventlist dd {
-   padding-left: 1em;
-   margin-bottom: 1em;
+    padding-left: 1em;
+    margin-bottom: 1em;
 }
 dt.eventtitle {
     font-size: 1.25em;
