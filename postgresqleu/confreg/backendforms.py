@@ -77,7 +77,7 @@ class BackendConferenceForm(BackendForm):
                   'testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors',
                   'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent',
                   'skill_levels', 'additionalintro', 'callforpapersintro', 'showvotes', 'callforpaperstags', 'sendwelcomemail', 'welcomemail',
-                  'tickets', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist',
+                  'tickets', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist', 'slide_upload_reminder_days',
                   'initial_common_countries', 'jinjaenabled']
         widgets = {
             'welcomemail': EmailTextWidget,
@@ -91,7 +91,7 @@ class BackendConferenceForm(BackendForm):
         self.fields['notifyvolunteerstatus'].help_text = 'Notifications will be sent to {} whenever a volunteer makes changes to a slot.'.format(self.conference.notifyaddr)
 
     fieldsets = [
-        {'id': 'base_info', 'legend': 'Basic information', 'fields': ['attendees_before_waitlist', 'invoice_autocancel_hours', 'notifyregs', 'notifysessionstatus', 'notifyvolunteerstatus', ]},
+        {'id': 'base_info', 'legend': 'Basic information', 'fields': ['attendees_before_waitlist', 'invoice_autocancel_hours', 'notifyregs', 'notifysessionstatus', 'notifyvolunteerstatus','slide_upload_reminder_days' ]},
         {'id': 'welcomeandreg', 'legend': 'Welcome and registration', 'fields': ['sendwelcomemail', 'welcomemail', 'tickets', 'queuepartitioning', 'initial_common_countries']},
         {'id': 'promo', 'legend': 'Website promotion', 'fields': ['promoactive', 'promotext', 'promopicurl']},
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', 'twitter_postpolicy', ]},

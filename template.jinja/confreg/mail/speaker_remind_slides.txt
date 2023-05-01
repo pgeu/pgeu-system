@@ -1,0 +1,16 @@
+Hello!
+
+We hope you're doing well. 
+
+We wanted to remind you that we are still waiting for you to upload the slides 
+used for your session titled "{{session.title}}" at the {{conference}}.
+
+We totally get it - life can get pretty hectic sometimes. But hey, we are sure
+attendees would love to have access to the killer content you shared at {{conference}}.
+
+
+If you intend to upload your slides , please try to do it as soon as possible so that 
+attendees can access them promptly.
+
+
+If you have any issues or questions regarding the upload process, please do not hesitate to contact us. 
