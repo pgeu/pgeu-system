@@ -22,7 +22,7 @@ vat_status_choices = (
 class SponsorshipContract(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     contractname = models.CharField(max_length=100, null=False, blank=False, verbose_name='Contract name')
-    contractpdf = PdfBinaryField(null=False, blank=False, max_length=1000000)
+    contractpdf = PdfBinaryField(null=False, blank=False, max_length=1000000, verbose_name='Contract PDF')
 
     def __str__(self):
         return self.contractname

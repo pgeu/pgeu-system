@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='sponsorshipcontract',
             name='contractpdf',
-            field=postgresqleu.util.fields.PdfBinaryField(max_length=1000000),
+            field=postgresqleu.util.fields.PdfBinaryField(max_length=1000000, verbose_name='Contract PDF'),
         ),
         migrations.RunSQL("UPDATE confsponsor_sponsorshipcontract SET contractpdf=decode(util_storage.data, 'base64') FROM util_storage WHERE key='sponsorcontract' AND storageid=confsponsor_sponsorshipcontract.id"),
         migrations.RunSQL("DELETE FROM util_storage WHERE key='sponsorcontract'"),
