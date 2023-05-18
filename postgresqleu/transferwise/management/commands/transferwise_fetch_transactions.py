@@ -131,9 +131,12 @@ class Command(BaseCommand):
                     accountingtxt = "TransferWise returned payment {0}".format(trans.twreference)
                     accrows = [
                         (pm.config('bankaccount'), accountingtxt, trans.amount, None),
-                        (pm.config('feeaccount'), accountingtxt, trans.feeamount, None),
                         (pm.config('bankaccount'), accountingtxt, -(trans.amount + trans.feeamount), None),
                     ]
+                    if trans.feeamount:
+                        accrows.append(
+                            (pm.config('feeaccount'), accountingtxt, trans.feeamount, None),
+                        )
                     create_accounting_entry(accrows)
                 elif trans.transtype == 'TRANSFER' and trans.paymentref.startswith('TW payout'):
                     # Payout. Create an appropriate accounting record and a pending matcher.
