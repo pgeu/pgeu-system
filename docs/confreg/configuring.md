@@ -268,6 +268,9 @@ Skill levels
 all sessions, and should they be displayed on the schedule and session
 lists.
 
+Use tags
+: Should the [call for papers](callforpapers) ask for tags on all sessions.
+
 Call for papers intro
 : Text shown on the [call for papers](callforpapers) page, above the
 actual call for papers. Can contain HTML.
