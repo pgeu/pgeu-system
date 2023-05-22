@@ -97,7 +97,7 @@ def paypal_return_handler(request, methodid):
         if d['mc_currency'] != settings.CURRENCY_ABBREV:
             return paypal_error('Received payment in %s, not %s. We cannot currently process this automatically.' % (d['mc_currency'], settings.CURRENCY_ABBREV))
     except KeyError as k:
-        return paypal_error('Mandatory field %s is missing from paypal data!', k)
+        return paypal_error('Mandatory field %s is missing from paypal data!' % (k, ))
 
     # Now let's find the state of the payment
     if 'payment_status' not in d:
