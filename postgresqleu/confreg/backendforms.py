@@ -76,7 +76,7 @@ class BackendConferenceForm(BackendForm):
                   'schedulewidth', 'pixelsperminute', 'notifyregs', 'notifysessionstatus', 'notifyvolunteerstatus',
                   'testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors',
                   'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent',
-                  'skill_levels', 'additionalintro', 'callforpapersintro', 'showvotes', 'callforpaperstags', 'sendwelcomemail', 'welcomemail',
+                  'skill_levels', 'additionalintro', 'callforpapersintro', 'showvotes', 'callforpaperstags', 'callforpapersrecording', 'sendwelcomemail', 'welcomemail',
                   'tickets', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist',
                   'initial_common_countries', 'jinjaenabled']
         widgets = {
@@ -97,7 +97,7 @@ class BackendConferenceForm(BackendForm):
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', 'twitter_postpolicy', ]},
         {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent', 'additionalintro', ]},
         {'id': 'steps', 'legend': 'Steps', 'fields': ['registrationopen', 'registrationtimerange', 'allowedit', 'callforpapersopen', 'callforpaperstimerange', 'callforsponsorsopen', 'callforsponsorstimerange', 'scheduleactive', 'sessionsactive', 'cardsactive', 'checkinactive', 'conferencefeedbackopen', 'feedbackopen']},
-        {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpaperstags', 'callforpapersintro', 'showvotes']},
+        {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpaperstags', 'callforpapersrecording', 'callforpapersintro', 'showvotes']},
         {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', ]},
         {'id': 'display', 'legend': 'Display', 'fields': ['jinjaenabled', ]},
         {'id': 'legacy', 'legend': 'Legacy', 'fields': ['schedulewidth', 'pixelsperminute']},
@@ -680,7 +680,7 @@ class BackendConferenceSessionForm(BackendForm):
     class Meta:
         model = ConferenceSession
         fields = ['title', 'htmlicon', 'speaker', 'status', 'starttime', 'endtime', 'cross_schedule',
-                  'track', 'room', 'can_feedback', 'skill_level', 'tags', 'abstract', 'submissionnote',
+                  'track', 'room', 'can_feedback', 'skill_level', 'tags', 'recordingconsent', 'abstract', 'submissionnote',
                   'internalnote', ]
 
     def fix_fields(self):
@@ -701,6 +701,12 @@ class BackendConferenceSessionForm(BackendForm):
             self.update_protected_fields()
         else:
             self.selectize_multiple_fields['tags'] = SessionTagLookup(self.conference)
+
+        if not self.conference.callforpapersrecording:
+            self.remove_field('recordingconsent')
+            self.update_protected_fields()
+        else:
+            self.fields['recordingconsent'].help_text = 'Whether this speaker has consented to being recorded or not for this session. This should NOT be updated manually in the normal cases, as it requires explicit consent from the speaker.'
 
     @classmethod
     def get_column_filters(cls, conference):

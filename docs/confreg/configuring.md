@@ -271,6 +271,10 @@ lists.
 Use tags
 : Should the [call for papers](callforpapers) ask for tags on all sessions.
 
+Ask for recording consent:
+: Should the [call for papers](callforpapers) ask for recording consent
+on all sessions.
+
 Call for papers intro
 : Text shown on the [call for papers](callforpapers) page, above the
 actual call for papers. Can contain HTML.

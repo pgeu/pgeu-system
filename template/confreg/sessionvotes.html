@@ -263,7 +263,9 @@ width: 100%;
 {%endif%}
 	 <div><strong>Speakers:</strong> {{s.speakers_full|default:""}}</div>
 	 <div><strong>Track:</strong> {{s.track|default:""}}</div>
-	 <br/>
+{%if conference.callforpapersrecording%}
+	 <div><strong>Recording consent:</strong> {{s.recordingconsent | yesno:"Yes,No" }}
+{%endif%}	 <br/>
 	 <p>
 {{s.abstract|markdown}}
 	 </p>

@@ -208,6 +208,7 @@ class Conference(models.Model):
     jinjadir = models.CharField(max_length=200, blank=True, null=True, default=None, help_text="Full path to new style jinja repository root", verbose_name="Jinja directory")
     callforpapersintro = models.TextField(blank=True, null=False, verbose_name="Call for papers intro")
     callforpaperstags = models.BooleanField(blank=False, null=False, default=False, verbose_name='Use tags')
+    callforpapersrecording = models.BooleanField(blank=False, null=False, default=False, verbose_name='Ask for recording consent')
     showvotes = models.BooleanField(blank=False, null=False, default=False, verbose_name="Show votes", help_text="Show other people's votes on the talkvote page")
 
     sendwelcomemail = models.BooleanField(blank=False, null=False, default=False, verbose_name="Send welcome email", help_text="Send an email to attendees once their registration is completed.")
@@ -233,7 +234,7 @@ class Conference(models.Model):
     _safe_attributes = ('registrationopen', 'registrationtimerange', 'IsRegistrationOpen',
                         'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
                         'callforpapersintro', 'callforpapersopen', 'callforpaperstimerange', 'IsCallForPapersOpen',
-                        'callforpaperstags', 'allowedit',
+                        'callforpaperstags', 'callforpapersrecording', 'allowedit',
                         'conferencefeedbackopen', 'confurl', 'contactaddr', 'tickets',
                         'conferencedatestr', 'location', 'welcomemail',
                         'feedbackopen', 'skill_levels', 'urlname', 'conferencename',
@@ -1059,6 +1060,7 @@ class ConferenceSession(models.Model):
     submissionnote = models.TextField(null=False, blank=True, verbose_name="Submission notes")
     internalnote = models.TextField(null=False, blank=True, verbose_name="Internal notes")
     initialsubmit = models.DateTimeField(null=True, blank=True, verbose_name="Submitted")
+    recordingconsent = models.BooleanField(null=False, blank=False, default=False, verbose_name="Consent to recording")
     tentativescheduleslot = models.ForeignKey(ConferenceSessionScheduleSlot, null=True, blank=True, on_delete=models.CASCADE)
     tentativeroom = models.ForeignKey(Room, null=True, blank=True, related_name='tentativeroom', on_delete=models.CASCADE)
     lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)

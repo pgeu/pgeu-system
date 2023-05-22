@@ -485,7 +485,7 @@ class SpeakerProfileForm(forms.ModelForm):
 class CallForPapersForm(forms.ModelForm):
     class Meta:
         model = ConferenceSession
-        fields = ('title', 'abstract', 'skill_level', 'track', 'tags', 'speaker', 'submissionnote')
+        fields = ('title', 'abstract', 'skill_level', 'track', 'tags', 'recordingconsent', 'speaker', 'submissionnote')
 
     def __init__(self, currentspeaker, *args, **kwargs):
         self.currentspeaker = currentspeaker
@@ -519,6 +519,11 @@ class CallForPapersForm(forms.ModelForm):
             self.fields['tags'].required = False
         else:
             del self.fields['tags']
+
+        if not self.instance.conference.callforpapersrecording:
+            del self.fields['recordingconsent']
+        else:
+            self.fields['recordingconsent'].help_text = "I give my consent for the conference organisers to record my presentation and give permission for them to distribute the recording under the license of their choice."
 
         if not self.instance.conference.track_set.filter(incfp=True).count() > 0:
             del self.fields['track']

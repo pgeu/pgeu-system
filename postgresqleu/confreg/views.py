@@ -1254,6 +1254,7 @@ INNER JOIN confreg_room r ON r.id=t.room_id GROUP BY day
     to_char(starttime, 'HH24:MI') || ' - ' || to_char(endtime, 'HH24:MI') AS timeslot,
     extract(epoch FROM endtime-starttime)/60 AS length, min(starttime) OVER days AS firsttime,
     max(endtime) OVER days AS lasttime, cross_schedule,
+    s.recordingconsent,
     EXISTS (SELECT 1 FROM confreg_conferencesessionslides sl WHERE sl.session_id=s.id) AS has_slides,
     COALESCE(json_agg(json_build_object(
        'id', spk.id,
@@ -2591,7 +2592,7 @@ def talkvote(request, confname):
 
     # Render the form. Need to do this with a manual query, can't figure
     # out the right way to do it with the django ORM.
-    curs.execute("SELECT s.id, s.title, s.status, s.lastnotifiedstatus, s.abstract, s.submissionnote, s.internalnote, (SELECT string_agg(spk.fullname, ',') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers, (SELECT string_agg(spk.fullname || '(' || spk.company || ')', ',') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers_full, (SELECT string_agg('####' || spk.fullname || ' [speaker id: ' || spk.id || ']' || '\n' || spk.abstract, '\n\n') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers_long, u.username, v.vote, v.comment, avg(v.vote) OVER (PARTITION BY s.id)::numeric(3,2) AS avg, trackname FROM (confreg_conferencesession s CROSS JOIN auth_user u) LEFT JOIN confreg_track track ON track.id=s.track_id LEFT JOIN confreg_conferencesessionvote v ON v.session_id=s.id AND v.voter_id=u.id WHERE s.conference_id=%(confid)s AND u.id IN (SELECT user_id FROM confreg_conference_talkvoters tv WHERE tv.conference_id=%(confid)s) AND (COALESCE(s.track_id,0)=ANY(%(tracks)s)) AND status=ANY(%(statuses)s) ORDER BY " + order + "s.title,s.id, u.id=%(userid)s DESC, u.username", {
+    curs.execute("SELECT s.id, s.title, s.status, s.lastnotifiedstatus, s.abstract, s.submissionnote, s.internalnote, (SELECT string_agg(spk.fullname, ',') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers, (SELECT string_agg(spk.fullname || '(' || spk.company || ')', ',') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers_full, (SELECT string_agg('####' || spk.fullname || ' [speaker id: ' || spk.id || ']' || '\n' || spk.abstract, '\n\n') FROM confreg_speaker spk INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id WHERE cs.conferencesession_id=s.id) AS speakers_long, u.username, v.vote, v.comment, avg(v.vote) OVER (PARTITION BY s.id)::numeric(3,2) AS avg, trackname, recordingconsent FROM (confreg_conferencesession s CROSS JOIN auth_user u) LEFT JOIN confreg_track track ON track.id=s.track_id LEFT JOIN confreg_conferencesessionvote v ON v.session_id=s.id AND v.voter_id=u.id WHERE s.conference_id=%(confid)s AND u.id IN (SELECT user_id FROM confreg_conference_talkvoters tv WHERE tv.conference_id=%(confid)s) AND (COALESCE(s.track_id,0)=ANY(%(tracks)s)) AND status=ANY(%(statuses)s) ORDER BY " + order + "s.title,s.id, u.id=%(userid)s DESC, u.username", {
         'confid': conference.id,
         'userid': request.user.id,
         'tracks': selectedtracks,
@@ -2603,7 +2604,7 @@ def talkvote(request, confname):
             return
 
         firstid = all[0][0]
-        for id, title, status, laststatus, abstract, submissionnote, internalnote, speakers, speakers_full, speakers_long, username, vote, comment, avgvote, track in all:
+        for id, title, status, laststatus, abstract, submissionnote, internalnote, speakers, speakers_full, speakers_long, username, vote, comment, avgvote, track, recordingconsent in all:
             if id != firstid:
                 return
             yield username
@@ -2614,7 +2615,7 @@ def talkvote(request, confname):
 
         lastid = -1
         rd = {}
-        for id, title, status, laststatus, abstract, submissionnote, internalnote, speakers, speakers_full, speakers_long, username, vote, comment, avgvote, track in all:
+        for id, title, status, laststatus, abstract, submissionnote, internalnote, speakers, speakers_full, speakers_long, username, vote, comment, avgvote, track, recordingconsent in all:
             if id != lastid:
                 if lastid != -1:
                     yield rd
@@ -2635,6 +2636,7 @@ def talkvote(request, confname):
                     'comments': '',
                     'owncomment': '',
                     'track': track,
+                    'recordingconsent': recordingconsent,
                     }
                 lastid = id
             rd['users'].append(vote)
@@ -2821,7 +2823,7 @@ def createschedule(request, confname):
 
     with ensure_conference_timezone(conference):
         # Complete list of all available sessions
-        sessions = exec_to_dict("SELECT s.id, track_id, (status = 3) AS ispending, (row_number() over() +1)*75 AS top, title, string_agg(spk.fullname, ', ') AS speaker_list FROM confreg_conferencesession s LEFT JOIN confreg_conferencesession_speaker csp ON csp.conferencesession_id=s.id LEFT JOIN confreg_speaker spk ON spk.id=csp.speaker_id WHERE conference_id=%(confid)s AND status IN (1,3) AND NOT cross_schedule GROUP BY s.id ORDER BY starttime, id", {
+        sessions = exec_to_dict("SELECT s.id, track_id, (status = 3) AS ispending, (row_number() over() +1)*75 AS top, title, string_agg(spk.fullname, ', ') AS speaker_list, recordingconsent FROM confreg_conferencesession s LEFT JOIN confreg_conferencesession_speaker csp ON csp.conferencesession_id=s.id LEFT JOIN confreg_speaker spk ON spk.id=csp.speaker_id WHERE conference_id=%(confid)s AND status IN (1,3) AND NOT cross_schedule GROUP BY s.id ORDER BY starttime, id", {
             'confid': conference.id,
         })
 
