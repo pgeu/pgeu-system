@@ -11,8 +11,8 @@ function update_stats(stats) {
     });
 }
 
-function makebutton(op, txt) {
-    return $('<button/>').addClass('btn btn-primary btn-xs assignment-status btn-op').data('op', op).text(txt ? txt : op);
+function makebutton(op, txt, style='primary') {
+    return $('<button/>').addClass(`btn btn-${style} btn-xs assignment-status btn-op`).data('op', op).text(txt ? txt : op);
 }
 
 function update_slot_info(slot, regid, is_admin) {
@@ -55,10 +55,10 @@ function update_slot_info(slot, regid, is_admin) {
         if (is_admin) {
             if (!assignment.org_confirmed) {
                 /* Can be confirmed if organizers haven't done so yet */
-                row.append(makebutton('confirm'));
+                row.append(makebutton('confirm', 'Confirm', 'success'));
             }
             /* Organizers can always remove an entry */
-            row.append(makebutton('remove'));
+            row.append(makebutton('remove', 'Remove', 'danger'));
         }
         else {
             if (assignment.volid == regid) {
@@ -67,11 +67,11 @@ function update_slot_info(slot, regid, is_admin) {
                 assigned_to_slot = true;
 
                 if (!assignment.vol_confirmed) {
-                    row.append(makebutton('confirm'));
+                    row.append(makebutton('confirm', 'Confirm', 'success'));
                 }
                 if (!assignment.org_confirmed) {
                     /* Can only remove if organizers have not yet confirmed */
-                    row.append(makebutton('remove'));
+                    row.append(makebutton('remove', 'Remove', 'danger'));
                 }
             }
         }
