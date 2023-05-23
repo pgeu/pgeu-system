@@ -1665,3 +1665,30 @@ class ConferenceRegistrationTemporaryToken(models.Model):
     reg = models.OneToOneField(ConferenceRegistration, null=False, blank=False, unique=True, on_delete=models.CASCADE)
     token = models.TextField(null=False, blank=False, unique=True)
     expires = models.DateTimeField(null=False, blank=False)
+
+
+class ConferenceSessionQuestion(models.Model):
+    conference_session = models.ForeignKey(ConferenceSession, on_delete=models.CASCADE)
+    question = models.TextField()
+    attendee = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+    createdat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+
+    def __str__(self):
+        return "%s: %s" % (self.conference_session.conference, self.question)
+
+    class Meta:
+        ordering = ['-createdat', ]
+
+
+class ConferenceSessionAnswer(models.Model):
+    question = models.OneToOneField(ConferenceSessionQuestion, on_delete=models.CASCADE, related_name='session_answer')
+    speaker = models.ForeignKey(Speaker, on_delete=models.CASCADE, related_name='session_answer')
+    answer = models.TextField()
+    createdat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+
+    def __str__(self):
+        return "%s - %s: %s" % (self.question.conference_session.conference, self.answer, self.question.question)
+
+    class Meta:
+        ordering = ['-createdat']
+

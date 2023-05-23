@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.contrib.postgres.forms.ranges import RangeWidget
 
-from .models import ConferenceSeries, Conference, ConferenceRegistration
+from .models import ConferenceSeries, Conference, ConferenceRegistration, ConferenceSessionAnswer, ConferenceSessionQuestion
 from .models import RegistrationType, Speaker
 from .models import ConferenceSession, Track, Room, ConferenceSessionScheduleSlot
 from .models import RegistrationClass, RegistrationDay, AttendeeMail
@@ -513,6 +513,18 @@ class VolunteerSlotAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'title')
 
 
+class ConferenceSessionQuestionAdmin(admin.ModelAdmin):
+    list_display = ('conference_session', 'question', 'attendee')
+    list_filter = ('conference_session__conference',)
+    search_fields = ('question',)
+
+
+class ConferenceSessionAnswerAdmin(admin.ModelAdmin):
+    list_display = ('answer', 'question', 'speaker',)
+    list_filter = ('question__conference_session__conference',)
+    search_fields = ('answer',)
+
+
 admin.site.register(ConferenceSeries, ConferenceSeriesAdmin)
 admin.site.register(Conference, ConferenceAdmin)
 admin.site.register(RegistrationClass, RegistrationClassAdmin)
@@ -536,3 +548,5 @@ admin.site.register(PendingAdditionalOrder, PendingAdditionalOrderAdmin)
 admin.site.register(VolunteerSlot, VolunteerSlotAdmin)
 admin.site.register(AccessToken)
 admin.site.register(ConferenceNews)
+admin.site.register(ConferenceSessionQuestion, ConferenceSessionQuestionAdmin)
+admin.site.register(ConferenceSessionAnswer, ConferenceSessionAnswerAdmin)

@@ -1,0 +1,54 @@
+{%extends "base.html"%}
+{%block title%}Conference Q/A's{%endblock%}
+{%block maincontent%}
+<h1>Conference Question</h1>
+
+{% if is_session_undergoing %}
+    <p>You can post the Question</p>
+    <form method="POST">
+        {% csrf_token %}
+        {{ question_form.as_p }}
+        <button name='question_create' type="submit">Submit</button>
+    </form>
+
+{% else %}
+    <p>Session is over!</p>
+{% endif %}
+
+
+{% for question in questions %}
+    <div class="card my-4">
+        <div class="card-body">
+            <p class="card-title font-weight-bold">Q: {{ question.question }}</p>
+            {% if is_speaker %}
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="question_id" value="{{ question.id }}">
+                    <button name='delete_question' class="btn btn-danger" type="submit">Delete</button>
+                </form>
+                <p class="card-text">Asked by {{ question.attendee.first_name }}: {{ question.createdat|timesince }} ago</p>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="question_id" value="{{ question.id }}">
+                    <label for="id_answer">Answer:</label>
+                    <textarea name="answer" cols="40" rows="3" id="id_answer">{% if question.session_answer %}{{ question.session_answer.answer }}{% endif %}</textarea>
+                    {% if question.session_answer %}
+                        <button name='answer_update' class='btn btn-info' type="submit">Update</button>
+                    {% else %}
+                        <button name='answer_create' class='btn btn-success' type="submit">Answer</button>
+                    {% endif %}
+                </form>
+            {% else %}
+                {% if is_session_undergoing %}
+                    <p class="card-text">Asked {{ question.createdat|timesince }} ago</p>
+                {% endif %}
+                {% if question.session_answer %}
+                    <p class="card-text">A: {{ question.session_answer.answer }}</p>
+                {% else %}
+                    <p class="card-text">No answer yet</p>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+{% endfor %}
+{%endblock%}
