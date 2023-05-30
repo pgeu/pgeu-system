@@ -926,7 +926,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
             # Actually generate the invoice!
             manager = sponsor.managers.all()[0]
             sponsor.invoice = create_sponsor_invoice(manager, sponsor)
-            sponsor.invoice.save()
+            sponsor.invoice.save(update_fields=['invoice'])
             sponsor.save()
             wrapper = InvoiceWrapper(sponsor.invoice)
             wrapper.email_invoice()
@@ -1486,7 +1486,7 @@ def sponsor_admin_reissue(request, confurlname, sponsorid):
             # Create the new invoice, overwriting the existing one
             manager = sponsor.managers.all()[0]
             sponsor.invoice = create_sponsor_invoice(manager, sponsor, override_duedate=invoice.duedate)
-            sponsor.invoice.save()
+            sponsor.invoice.save(update_fields=['invoice'])
             sponsor.save()
             # Send email with the new invoice
             InvoiceWrapper(sponsor.invoice).email_invoice()
