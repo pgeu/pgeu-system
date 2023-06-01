@@ -1,10 +1,21 @@
 from django import forms
 
-from email.parser import Parser
+from collections import OrderedDict
 
 from postgresqleu.util.widgets import StaticTextWidget
 from postgresqleu.util.backendforms import BackendForm
 from postgresqleu.mailqueue.models import QueuedMail
+from postgresqleu.mailqueue.util import parse_mail_content, recursive_parse_attachments_from_message
+
+
+class BackendMailqueueAttachmentManager:
+    title = 'Attachments'
+    singular = 'attachment'
+    can_add = False
+
+    def get_list(self, instance):
+        for id, name, ctype, content in recursive_parse_attachments_from_message(instance.parsed_msg):
+            yield id, name, ctype
 
 
 class BackendMailqueueForm(BackendForm):
@@ -13,6 +24,9 @@ class BackendMailqueueForm(BackendForm):
     list_fields = ['sendtime', 'sender', 'receiver', 'subject', ]
     helplink = 'mail'
     readonly_fields = ['sender', 'receiver', 'subject', 'fullmsg', ]
+    linked_objects = OrderedDict({
+        'attachments': BackendMailqueueAttachmentManager(),
+    })
 
     class Meta:
         model = QueuedMail
@@ -22,20 +36,7 @@ class BackendMailqueueForm(BackendForm):
         self.initial['decoded'] = self.parsed_content().decode('utf8', errors='ignore').replace("\n", "<br/>")
 
     def parsed_content(self):
-        # We only try to parse the *first* piece, because we assume
-        # all our emails are trivial.
-        try:
-            parser = Parser()
-            msg = parser.parsestr(self.instance.fullmsg)
-            b = msg.get_payload(decode=True)
-            if b:
-                return b
+        if not hasattr(self.instance, 'parsed_msg') or not hasattr(self.instance, 'parsed_txt'):
+            self.instance.parsed_msg, self.instance.parsed_txt = parse_mail_content(self.instance.fullmsg)
 
-            pl = msg.get_payload()
-            for p in pl:
-                b = p.get_payload(decode=True)
-                if b:
-                    return b
-            return "Could not find body"
-        except Exception as e:
-            return "Failed to get body: %s" % e
+        return self.instance.parsed_txt

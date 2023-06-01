@@ -354,6 +354,7 @@ urlpatterns.extend([
     url(r'^admin/jobs/history/$', postgresqleu.scheduler.views.history),
 
     # Mail queue
+    url(r'^admin/mailqueue/(\d+)/attachments/(.+)/$', postgresqleu.mailqueue.backendviews.view_attachment),
     url(r'^admin/mailqueue/(.*/)?$', postgresqleu.mailqueue.backendviews.edit_mailqueue),
 
     # Tokens (QR codes scanned)

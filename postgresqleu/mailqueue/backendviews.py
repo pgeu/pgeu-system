@@ -1,7 +1,11 @@
 from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404
+from django.http import Http404, HttpResponse
 
 from postgresqleu.util.backendviews import backend_list_editor
 from postgresqleu.mailqueue.backendforms import BackendMailqueueForm
+from postgresqleu.mailqueue.models import QueuedMail
+from postgresqleu.mailqueue.util import parse_mail_content, recursive_parse_attachments_from_message
 
 
 def edit_mailqueue(request, rest):
@@ -18,3 +22,16 @@ def edit_mailqueue(request, rest):
                                allow_new=False,
                                allow_save=False,
     )
+
+
+def view_attachment(request, queueid, attname):
+    if not request.user.is_superuser:
+        raise PermissionDenied("Access denied")
+
+    mail = get_object_or_404(QueuedMail, pk=queueid)
+
+    msg, body = parse_mail_content(mail.fullmsg)
+    for id, filename, contenttype, content in recursive_parse_attachments_from_message(msg):
+        if filename == attname:
+            return HttpResponse(bytes(content), content_type=contenttype)
+    raise Http404("Attachment not found")
