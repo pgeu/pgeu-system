@@ -259,21 +259,25 @@ $(document).ready(function() {
                 'Accept': 'application/json',
             },
             success: function(d) {
-                $('#pdf_fields_fontsize').val(d.fontsize);
-                style.text('div.pdf_fields_field { font-size: ' + d.fontsize + 'pt;}');
-                d.fields.forEach(function(f) {
-                    let elem = $('<div/>');
-                    elem.addClass('pdf_fields_field');
-                    elem.text(f.field);
-                    elem.css('background-color', 'blue');
-                    $('#pdf_fields_page_area').append(elem);
+                if (d.fontsize) {
+                    $('#pdf_fields_fontsize').val(d.fontsize);
+                    style.text('div.pdf_fields_field { font-size: ' + d.fontsize + 'pt;}');
+                }
+                if (d.fields) {
+                    d.fields.forEach(function(f) {
+                        let elem = $('<div/>');
+                        elem.addClass('pdf_fields_field');
+                        elem.text(f.field);
+                        elem.css('background-color', 'blue');
+                        $('#pdf_fields_page_area').append(elem);
 
-                    let page = $('#pdf_page_' + f.page);
-                    elem.offset({
-                        'top': page.offset().top + f.y,
-                        'left': page.offset().left + f.x,
+                        let page = $('#pdf_page_' + f.page);
+                        elem.offset({
+                            'top': page.offset().top + f.y,
+                            'left': page.offset().left + f.x,
+                        });
                     });
-                });
+                }
             },
             error: function(d) {
                 alert('Could not get current fields.');
