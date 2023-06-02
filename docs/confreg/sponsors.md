@@ -371,3 +371,26 @@ Contract PDF
 :  Upload a PDF with the contract. Take at least some level of care to
    with the size of it. There is no limit enforced by the system other
    than what is configured on the webserver as maximum request size.
+
+Edit field locations
+:  Allows editing of the location of fields to add to the contract when
+the sponsor downloads it. These fields will be automatically filled with
+things like the sponsor name and VAT number, to ensure they match what's
+in the registration.
+
+Preview with fields
+:  Previews the contract with example sponsor data
+
+Edit digital signage fields
+:  Opens an editor to place fields for digital signatures on the contract
+using the digial signature provider.
+
+Send test contract
+:  Sends a test contract (using the digital signatures provider) to specified
+address, to test that the field placements work.
+
+Copy fields from another contract
+:  When you have several contracts with the same fields, you can copy the field
+definitions from one contract to the other. When doing so, all the fields on the
+destination contract will be overwritten and replaced with those from the source
+contract. Both static fields and digital signage fields will be copied.

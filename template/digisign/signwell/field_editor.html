@@ -1,0 +1,52 @@
+{%extends "adm/admin_base.html" %}
+{%block title%}Edit SignWell fields - {{conference.name}}{%endblock%}
+
+{%block layoutblock%}
+<h2>Edit digisign fields</h2>
+{%if signwelledit%}
+<p>
+  Edit the fields in the popup. When done, press the <i>Close</i> button in the
+  editor. Specifically, do <strong>NOT</strong> press the Send button!!!
+</p>
+{%else%}
+<form id="dummyform" method="post" action=".">{%csrf_token%}
+  <input id="dummysubmit" type="submit" value="Click to start">
+</form>
+{%endif%}
+
+{%endblock%}
+
+{%block extrahead%}
+{%if signwelledit%}
+<script type="text/javascript" src="https://static.signwell.com/assets/embedded.js"></script>
+<script>
+$(function() {
+    let signWellEmbed = new SignWellEmbed({
+	url: '{{signwelledit.embeddedurl}}',
+	events: {
+	    completed: e => {
+		alert("You were not supposed to send it! Let's hope things didn't break!");
+	    },
+	    closed: e => {
+		console.log('closed event: ', e);
+		document.location.href = '?finished=1';
+	    }
+	}
+    });
+
+    signWellEmbed.open()
+});
+</script>
+{%else%}
+<script>
+$(function() {
+    $('#dummyform').submit(function(e) {
+        $("#dummysubmit").attr("disabled", true);
+	$("#dummysubmit").text("Loading Signwell...");
+        return true;
+    });
+    $('#dummyform').submit();
+});
+</script>
+{%endif%}
+{%endblock%}

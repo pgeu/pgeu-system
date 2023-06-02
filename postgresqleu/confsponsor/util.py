@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.conf import settings
 
 from postgresqleu.util.db import exec_to_list
 from postgresqleu.mailqueue.util import send_simple_mail
@@ -42,3 +43,15 @@ def get_mails_for_sponsor(sponsor):
         Q(conference=sponsor.conference),
         Q(levels=sponsor.level) | Q(sponsors=sponsor)
     )
+
+
+def get_pdf_fields_for_conference(conference, sponsor=None):
+    fields = [
+        ('static:sponsor', sponsor.name if sponsor else 'Sponsor company name'),
+    ]
+    if settings.EU_VAT:
+        fields.append(
+            ('static:euvat', sponsor.vatnumber if sponsor else 'Sponsor EU VAT number'),
+        )
+
+    return fields

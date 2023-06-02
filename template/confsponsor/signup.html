@@ -82,14 +82,14 @@ a slot if not all other sponsors complete their signup.
 {%if level.contract%}
 <p>
 A full specification of all the levels can be found in the
-<a href="/events/sponsor/viewcontract/{{level.contract.id}}/">contract</a>.
+<a href="/events/sponsor/previewcontract/{{level.contract.id}}/">contract</a>.
 If there is a difference, the version listed in the contract takes precedence.
 </p>
 {%endif%}
 
 <p>
   <a class="btn btn-primary" href="{{level.urlname}}/">Sign Up</a>
-  {%if level.contract%}&nbsp;&nbsp;<a class="btn btn-info" href="/events/sponsor/viewcontract/{{level.contract.id}}/">Download Contract</a>{%endif%}
+  {%if level.contract%}&nbsp;&nbsp;<a class="btn btn-info" href="/events/sponsor/previewcontract/{{level.contract.id}}/">Preview Contract</a>{%endif%}
 </p>
 
 <hr/>

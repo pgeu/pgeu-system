@@ -101,6 +101,31 @@ addons to this conference. This does not include sponsorship invoices,
 but it does include the invoices that sponsors will get if they for
 example buy extra vouchers.
 
+Signing provider
+:   The provider to use for digital signatures of sponsorship contrats. Leave empty
+to use manual contracts only.
+
+Contract sender name
+:   The name to use as the sender of digital contracts
+
+Contract sender email
+:   The email address to use as the sender of digital contracts
+
+Contract expiry time
+:   Number of days before a contract expires with the signing provider, if the
+provider supports it.
+
+Manual contracts
+:   Allow manual contract signing by downloading and signing a PDF. This must be
+enabled if there is no digital signature provider. If there is a digital signature
+provider, turning on manual contracts as well allows the sponsors to choose how they
+want to sign the contracts.
+
+Automated contract workflow
+:   Enable automatic workflow for digital signatures. This means that once a
+contract is signed, the sponsorship is automatically enabled and an invoice is created
+and sent. If disabled, that step has to be done manually.
+
 Allowed web origins for API calls
 :  A list of allowed web origins for making [API calls](regprovider).
 This will be used both for validating a redirect URL and for

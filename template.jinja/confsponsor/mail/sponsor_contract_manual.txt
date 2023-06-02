@@ -1,0 +1,20 @@
+Hello!
+
+You have been sent a sponsorship contract from
+{{conference.conferencename}}
+to be signed, for sponsorship level {{sponsor.level}}.
+
+Please print the attached PDF, sign it, and return it to the
+organisers by attaching it to a reply to this email.
+
+The company details are pre-filled on the contract based on the
+information you entered in your sponsorship registration. As they have
+to match they cannot be changed -- if they are incorrect, please
+let us know and we can cancel the pending sponsorship and you can sign
+up again using the corrected details.
+
+And finally, please be aware that your sponsorship is not confirmed
+until the signed contract has arrived and been confirmed, so please
+make sure you complete the signing process as soon as possible.
+
+Thank you for your support of {{conference.conferencename}}!

@@ -3,6 +3,7 @@ import django.forms
 from django.conf import settings
 
 from collections import OrderedDict
+import json
 
 from postgresqleu.util.widgets import StaticTextWidget
 from postgresqleu.util.backendforms import BackendForm, BackendBeforeNewForm
@@ -23,6 +24,7 @@ class BackendSponsorForm(BackendForm):
         {'id': 'base_info', 'legend': 'Basic information', 'fields': ['name', 'displayname', 'url', 'twittername']},
         {'id': 'financial', 'legend': 'Financial information', 'fields': ['invoiceaddr', 'vatstatus', 'vatnumber']},
         {'id': 'management', 'legend': 'Management', 'fields': ['extra_cc', 'managers']},
+        {'id': 'contract', 'legend': 'Contract', 'fields': ['autoapprovesigned', ]},
     ]
     selectize_multiple_fields = {
         'managers': GeneralAccountLookup(),
@@ -34,7 +36,14 @@ class BackendSponsorForm(BackendForm):
         model = Sponsor
         fields = ['name', 'displayname', 'url', 'twittername',
                   'invoiceaddr', 'vatstatus', 'vatnumber',
-                  'extra_cc', 'managers', ]
+                  'extra_cc', 'managers', 'autoapprovesigned', ]
+
+    def fix_fields(self):
+        if not self.instance.conference.contractprovider or not self.instance.conference.autocontracts:
+            del self.fields['autoapprovesigned']
+            # For now remove the whole fieldset as there is only one field in it
+            self.fieldsets = [fs for fs in self.fieldsets if fs['id'] != 'contract']
+            self.update_protected_fields()
 
 
 class BackendSponsorshipNewBenefitForm(BackendBeforeNewForm):
@@ -218,6 +227,16 @@ class BackendSponsorshipContractForm(BackendForm):
         model = SponsorshipContract
         fields = ['contractname', 'contractpdf', ]
 
+    @property
+    def extrabuttons(self):
+        yield ('Edit field locations', 'editfields/')
+        yield ('Preview with fields', 'previewfields/')
+        if self.conference.contractprovider:
+            yield ('Edit digital signage fields', 'editdigifields/')
+            if self.conference.contractprovider.get_implementation().can_send_preview:
+                yield ('Send test contract', 'sendtest/')
+        yield ('Copy fields from another contract', 'copyfields/')
+
     def fix_fields(self):
         # Field must be non-required so we can save things. The widget is still required,
         # so things cannot be removed. Yes, that's kind of funky.
@@ -242,3 +261,33 @@ class BackendShipmentAddressForm(BackendForm):
         self.fields['available_to'].queryset = SponsorshipLevel.objects.filter(conference=self.conference)
         self.fields['address'].help_text = "Full address. %% will be substituted with the unique address number, so don't forget to include it!"
         self.initial['receiverlink'] = 'The recipient should use the link <a href="{0}/events/sponsor/shipments/{1}/">{0}/events/sponsor/shipments/{1}/</a> to access the system.'.format(settings.SITEBASE, self.instance.token)
+
+
+class BackendSponsorshipSendTestForm(django.forms.Form):
+    recipientname = django.forms.CharField(max_length=100, label='Recipient name')
+    recipientemail = django.forms.EmailField(max_length=100, label='Recipient email')
+
+    def __init__(self, contract, user, *args, **kwargs):
+        self.contract = contract
+        self.user = user
+        super().__init__(*args, **kwargs)
+        self.initial = {
+            'recipientname': '{} {}'.format(user.first_name, user.last_name),
+            'recipientemail': user.email,
+        }
+
+
+class BackendCopyContractFieldsForm(django.forms.Form):
+    currentval = django.forms.CharField(required=False, label="Current fields", widget=StaticTextWidget(monospace=True),
+                                        help_text="NOTE! This value will be completely overwritten!")
+    copyfrom = django.forms.ChoiceField(choices=[], label="Copy from contract")
+
+    def __init__(self, contract, *args, **kwargs):
+        self.contract = contract
+        super().__init__(*args, **kwargs)
+        self.fields['copyfrom'].choices = [(c.id, c.contractname) for c in SponsorshipContract.objects.filter(conference=contract.conference).exclude(pk=contract.pk).order_by('contractname')]
+
+        if not contract.fieldjson:
+            del self.fields['currentval']
+        else:
+            self.initial['currentval'] = json.dumps(contract.fieldjson, indent=2)

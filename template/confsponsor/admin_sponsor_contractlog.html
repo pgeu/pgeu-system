@@ -1,0 +1,25 @@
+{%extends "confreg/confadmin_base.html" %}
+{%block title%}Contract log - {{sponsor}}{%endblock%}
+
+{%block layoutblock%}
+<h1>Digital contract log</h1>
+<p>
+  This shows the last 100 entries only.
+</p>
+
+<table class="table table-bordered table-striped table-condensed table-hover">
+<tr>
+  <th>Time</th>
+  <th>Event</th>
+  <th>Description</th>
+</tr>
+{%for l in log%}
+<tr>
+  <td>{{l.time}}</td>
+  <td>{{l.event}}</td>
+  <td>{{l.text}}</td>
+</tr>
+{%endfor%}
+</table>
+{%endblock%}
+

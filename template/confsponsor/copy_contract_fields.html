@@ -1,0 +1,12 @@
+{%extends "confreg/confadmin_base.html" %}
+{%load humanize%}
+{%block title%}Copy contract fields - {{sponsor}}{%endblock%}
+{%block layoutblock%}
+<h1>Copy contract fields</h1>
+
+<form class="form-horizontal backend-form" method="POST" action=".">{%csrf_token%}
+{%include "confreg/admin_backend_form_content.html" %}
+</form>
+
+<a class="btn btn-default btn-block" href="../">Return to contract</a>
+{%endblock%}

@@ -63,19 +63,17 @@
 </p>
 {%else%}
 <p>
-  Your sponsorship request has been submitted, and is currently waiting for you to send in
-  a signed contract. If you have not yet signed and sent in the contract, please
-  <a href="/events/sponsor/viewcontract/{{sponsor.level.contract.id}}/">download</a>
-  it, sign it, scan it and return to
-  <a href="mailto:{{conference.sponsoraddr}}">{{conference.sponsoraddr}}</a>. If you have
-  sent it, please wait a while for the conference organizers to process it. If you have not
-  received a response after a couple of days, please send an email to the above address for
-  a status update.
+  Your sponsorship request has been submitted, and is currently waiting for you to sign the contract.
+{%if sponsor.signmethod == 0%}{# using digital signatures #}
+
+{%else%}{# using manual signatures #}
+  This contract was sent to you by email, so you should find it in your mailbox. Please print, sign,
+  scan and send this in to the organizers at <a href="mailto:{{conference.sponsoraddr}}">{{conference.sponsoraddr}}</a>.
 </p>
 <p>
-  <strong>Next step</strong>: <a href="/events/sponsor/viewcontract/{{sponsor.level.contract.id}}/">Download</a>
-  the contract, sign it and send it back to
-  <a href="mailto:{{conference.sponsoraddr}}">{{conference.sponsoraddr}}</a>.
+  If you have not received the contract, check your spam folder. A reminder is also sent every
+  couple of days until expiry.
+{%endif%}{# type of signature #}
 </p>
 {%endif%}
 {%endif%}

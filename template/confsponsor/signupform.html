@@ -1,18 +1,5 @@
 {%extends "nav_events.html" %}
 {%block title%}Conference Sponsorship Signup - {{conference}}{%endblock%}
-{%block extrahead%}
-<style>
-tr.error {
-   background-color: #ffb6b6;
-}
-div#addresspreview {
-   border: 1px solid black;
-   border-radius: 5px;
-   padding: 3px;
-   margin-bottom: 2em;
-}
-</style>
-{%endblock%}
 {%block content%}
 <h1>Conference Sponsorship Signup - {{conference}}</h1>
 <p>
@@ -23,7 +10,7 @@ form below to initiate your sponsorship!
 {%if level.contract%}
 <p>
 Before you complete the signup form, please <em>make sure</em> you have read the
-<a href="/events/sponsor/viewcontract/{{level.contract.id}}/">contract</a>, and
+<a href="/events/sponsor/previewcontract/{{level.contract.id}}/">contract</a>, and
 agree with the contents in it.
 </p>
 {%endif%}
@@ -34,8 +21,8 @@ agree with the contents in it.
 </p>
 {%endif%}
 
-<form method="post" action=".">{% csrf_token %}
-<div id="fullform" {%if previewaddr%}style="display:none;"{%endif%}>
+<form method="post" action="." class="sponsorsignup">{% csrf_token %}
+<div id="fullform" {%if noform%}style="display:none;"{%endif%}>
 <table>
  <tr><th>Level</th><td>{{level}}</td><td></td></tr>
  <tr><th>Contact name *</th><td>{{user_name}}</td></tr>
@@ -53,27 +40,60 @@ are what will be included on the invoice when it's generated. Once generated,
 the invoice cannot be changed.
 </p>
 </div>
+
 {%if previewaddr%}
-<h4>Invoice address preview</h4>
+{%if needscontract%}
+<h4>Contract details</h4>
 <p>
-  Please verify that the address below is correct. Please note that it will
-  <strong>not</strong> be possible to modify the invoice once
-  generated, so make sure you verify the contents of the address
-  against any requirements of your organisation.
+  The contract for the sponsorship will be issued to the company name
+  <strong><em>{{sponsorname}}</em></strong>{%if vatnumber%} with VAT
+  number <strong><em>{{vatnumber}}</em></strong>{%endif%}.
 </p>
-<div id="addresspreview">
-{{previewaddr|linebreaks}}
-</div>
-<input type="hidden" name="confirm" value="1">
+<p>
+  It will <strong>not</strong> be possible to change this after this
+  step, so if anything about it is incorrect please click <i>Continue
+  editing</i> and correct it <i>before</i> proceeding.
+</p>
 {%endif%}
 
-{%if not level.instantbuy%}
+<h4>Invoice address preview</h4>
 <p>
-Please note that due to the level of this sponsorship contract, we will require a
-signed and scanned copy of the
-<a href="/events/sponsor/viewcontract/{{level.contract.id}}/">contract</a>, apart
-from the confirmation above. Please complete this form, and you will receive further
-instructions.
+  The address below will be used as the <i>exact</i> address on the
+  invoice for the sponsorship. Please verify that it is correct. It
+  will <strong>not</strong> be possible to modify the invoice once
+  generated, so make sure you verify the contents of the address
+  against any requirements of your organisation, such as department
+  details or PO number, <i>before</i> proceeding.
+</p>
+<div id="invoiceaddresspreview">
+{{previewaddr|linebreaks}}
+</div>
+
+<input type="hidden" name="stage" value="1">
+{%endif%}{# previewaddr #}
+
+{%if contractchoices%}
+<h4>Contract signing</h4>
+<p>
+  You can choose between the following methods for signing yous sponsorship
+  contract:
+</p>
+<dl class="sponsorcontractchoices">
+{%for id, title, description in contractchoices%}
+<dt><input type="radio" name="contractchoice" value="{{id}}" /> <span>{{title}}</span></dt>
+<dd>{{description|safe}}</dd>
+{%endfor%}
+</dl>
+
+<input type="hidden" name="stage" value="2">
+{%endif%}{# contractchoices #}
+
+{%if not level.instantbuy and not noform %}
+<p>
+Please note that due to the level of this sponsorship contract, we
+will require a signed contract, apart from the confirmation
+above. Please complete this form, and you will receive further
+instructions at the next step.
 </p>
 {%endif%}
 
@@ -90,7 +110,7 @@ a slot if not all other sponsors complete their signup.
 {%endif%}
 
 <input type="submit" value="Sign up!" class="btn btn-primary">
-{%if previewaddr%}
+{%if noform%}
 <input type="submit" name="submit" value="Continue editing" class="btn btn-secondary">
 {%endif%}
 </form>

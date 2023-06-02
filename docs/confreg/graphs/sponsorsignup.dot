@@ -10,13 +10,28 @@ digraph sponsorsignup {
 	type[shape=diamond label="Req contract?"];
 	confirm[shape=box label="Confirm details"];
 	invoice[shape=box label="Invoice generated"];
+	typeofcontract[shape=diamond label="Use digital contract"];
+	manualpdf[shape=box label="Auto-send PDF contract"];
+	digitalcontract[shape=box label="Auto-send digital contract"];
+	digitaltoorg[shape=box label="Signing request to org"];
+	verifydetails[shape=box label="Verify details"];
+	signcomplete[shape=box label="Signing complete"];
 	contract[shape=box label="Wait for contract"];
 	confirmed[shape=box label="Sponsorship confirmed"];
 	rejected[shape=box label="Sponsorship rejected"];
 
 	start -> type [label="Sponsor sign up", color=green];
-	type -> contract [label="Yes"];
+	type -> typeofcontract [label="Yes"];
 	type -> confirm [label="No"];
+	typeofcontract -> manualpdf [label="Manual"]
+	typeofcontract -> digitalcontract [label="Digital"]
+	digitalcontract -> digitaltoorg [label="Sponsor signs", color=green]
+	digitaltoorg -> verifydetails
+	verifydetails -> rejected [label="Reject invalid\ndetails", color=blue]
+	verifydetails -> signcomplete [label="Org\nsigns", color=blue]
+	signcomplete -> confirmed [label="Auto\nconfirm"]
+	signcomplete->invoice [label="Auto\ninvoice"]
+	manualpdf -> contract;
 	confirm -> invoice [label="Details\nconfirmed", color=blue];
 	contract -> confirm [label="Contract\nreceived", color=blue];
 	contract -> confirmed [label="Early\nconfirmation", color=blue];

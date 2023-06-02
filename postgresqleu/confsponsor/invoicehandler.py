@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import base64
 import os
 
-from postgresqleu.invoices.util import InvoiceManager
+from postgresqleu.invoices.util import InvoiceManager, InvoiceWrapper
 from postgresqleu.util.time import today_conference
 
 from .models import Sponsor, PurchasedVoucher
@@ -13,6 +13,7 @@ from .util import send_conference_sponsor_notification, send_sponsor_manager_ema
 from .util import get_mails_for_sponsor
 from postgresqleu.confreg.models import PrepaidBatch, PrepaidVoucher
 from postgresqleu.confreg.util import send_conference_mail
+from postgresqleu.digisign.util import DigisignHandlerBase
 import postgresqleu.invoices.models as invoicemodels
 
 
@@ -315,3 +316,90 @@ def create_voucher_invoice(conference, invoiceaddr, user, rt, num):
         paymentmethods=conference.paymentmethods.all(),
     )
     return i
+
+
+# Handle digital signatures on contracts
+class SponsorDigisignHandler(DigisignHandlerBase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        slist = list(self.doc.sponsor_set.all())
+        if len(slist) == 0:
+            raise Exception("No sponsor found for this document, something got unlinked?")
+        if len(slist) > 1:
+            # We have a unique index... But.. In case something weird happened.
+            raise Exception("More than one sponsor found for this document, can't happen!")
+
+        self.sponsor = slist[0]
+
+    def completed(self):
+        if self.sponsor.autoapprovesigned and self.sponsor.conference.autocontracts:
+            if self.sponsor.confirmed:
+                send_conference_sponsor_notification(
+                    self.sponsor.conference,
+                    "Already confirmed sponsor: %s" % self.sponsor.name,
+                    "The sponsor\n%s\nhas signed the digital contract. However, the sponsor was already confirmed!\n" % (self.sponsor.name),
+                )
+
+            confirm_sponsor(self.sponsor, 'Digital contract')
+
+            if not self.sponsor.invoice and self.sponsor.level.levelcost > 0:
+                # Contract signed, time to issue the invoice!
+                manager = self.sponsor.managers.all()[0]
+                self.sponsor.invoice = create_sponsor_invoice(manager, self.sponsor)
+                self.sponsor.invoice.save()
+                self.sponsor.save(update_fields=['invoice'])
+                wrapper = InvoiceWrapper(self.sponsor.invoice)
+                wrapper.email_invoice()
+
+    def expired(self):
+        if self.sponsor.autoapprovesigned and self.sponsor.conference.autocontracts:
+            if self.sponsor.confirmed:
+                send_conference_sponsor_notification(
+                    self.sponsor.conference,
+                    "Contract expired for already confirmed sponsor: %s" % self.sponsor.name,
+                    "The sponsor\n%s\nhas not signed the digital contract before it expired. However, the sponsor was already confirmed!\n" % (self.sponsor.name),
+                )
+                return
+
+            send_conference_sponsor_notification(
+                self.sponsor.conference,
+                "Contract expired for sponsor %s" % self.sponsor.name,
+                "The sponsor\n%s\nhas not signed the digital contract before it expired. The sponsorship has been rejected and the sponsor instructed to start over if they are still interested.\n" % (self.sponsor.name),
+                )
+            send_sponsor_manager_email(
+                self.sponsor,
+                "Sponsorship contract expired",
+                'confsponsor/mail/sponsor_digisign_expired.txt',
+                {
+                    'sponsor': self.sponsor,
+                    'conference': self.sponsor.conference,
+                },
+            )
+            self.sponsor.delete()
+
+    def declined(self):
+        if self.sponsor.autoapprovesigned and self.sponsor.conference.autocontracts:
+            if self.sponsor.confirmed:
+                send_conference_sponsor_notification(
+                    self.sponsor.conference,
+                    "Contract declined for already confirmed sponsor: %s" % self.sponsor.name,
+                    "The sponsor\n%s\nhas actively declined to sign the digital contract. However, the sponsor was already confirmed!\n" % (self.sponsor.name),
+                )
+                return
+
+            send_conference_sponsor_notification(
+                self.sponsor.conference,
+                "Contract declined for sponsor %s" % self.sponsor.name,
+                "The sponsor\n%s\nhas actively declined to sign the digital contract. The sponsorship has been rejected and the sponsor instructed to start over if they are still interested.\n" % (self.sponsor.name),
+                )
+            send_sponsor_manager_email(
+                self.sponsor,
+                "Sponsorship contract declined",
+                'confsponsor/mail/sponsor_digisign_declined.txt',
+                {
+                    'sponsor': self.sponsor,
+                    'conference': self.sponsor.conference,
+                },
+            )
+            self.sponsor.delete()

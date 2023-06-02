@@ -157,7 +157,149 @@ $(document).ready(function() {
 
    update_sendmail_count();
    update_assign_count();
+
+
+    /*
+     * PDF field editor
+     */
+    $('#pdf_fields_fieldlist').on('change', function(e) {
+        let fieldtoadd = $(this).val();
+
+        $('#pdf_fields_fieldlist').prop('selectedIndex', 0);
+
+        let elem = $('<div/>');
+        elem.addClass('pdf_fields_field');
+        elem.text(fieldtoadd);
+        $('#pdf_fields_page_area').append(elem);
+        elem.fadeOut(200).fadeIn(200).fadeOut(200).fadeIn(200);
+    });
+    $('#pdf_fields_page_area').on('contextmenu', '.pdf_fields_field', function(e) {
+        /* Sometihng nice for removal here */
+        e.preventDefault();
+    });
+    $('#pdf_fields_page_area').on('mousedown', '.pdf_fields_field', function(e) {
+        let initX = this.offsetLeft;
+        let initY = this.offsetTop;
+        let firstX = e.pageX;
+        let firstY = e.pageY;
+
+        e.preventDefault();
+        $(this).on('mousemove', function(e) {
+            $(this).css('left', initX+e.pageX-firstX + 'px');
+            $(this).css('top', initY+e.pageY-firstY + 'px');
+
+            $(this).css('background-color', _pdf_fields_overlaps_page($(this)) ? 'blue' : 'red');
+        });
+        $(this).on('mouseup', function(e) {
+            $(this).off('mousemove');
+            $(this).off('mouseup');
+            $(this).off('mouseleave');
+        });
+        $(this).on('mouseleave', function(e) {
+            $(this).off('mousemove');
+            $(this).off('mouseup');
+            $(this).off('mouseleave');
+        });
+    });
+    $('button#pdf_fields_save').on('click', function(e) {
+        let anyoutside = false;
+        let data = {
+            'fields': [],
+            'fontsize': $('#pdf_fields_fontsize').val(),
+        };
+        $('div.pdf_fields_field').each(function(i, e) {
+            let overlaps = _pdf_fields_overlaps_page($(e));
+            if (overlaps) {
+                data.fields.push({
+                    'field': $(e).text(),
+                    'page': $(overlaps).data('pagenum'),
+                    'x': $(e).offset().left - $(overlaps).offset().left,
+                    'y': $(e).offset().top - $(overlaps).offset().top,
+                });
+            }
+            else {
+                anyoutside = true;
+                $(e).fadeOut(200).fadeIn(200).fadeOut(200).fadeIn(200);
+            }
+        });
+        if (anyoutside) {
+            alert('One or more fields are outside the pages. Cannot save.');
+            return;
+        }
+        $.ajax({
+            type: 'POST',
+            url: '.',
+            data: JSON.stringify(data),
+            dataType: 'json',
+            contentType: "application/json; charset=utf-8",
+            headers: {
+                'x-csrftoken': $(this).data('csrf'),
+            },
+            success: function(d) {
+                alert('Saved.');
+            },
+            error: function(d) {
+                alert('Failed to save: \n' + d.responseText);
+            },
+        });
+    });
+    if ($('#pdf_fields_fieldlist').length) {
+        /* PDF field editor exists on htis page */
+        const style = $('<style type="text/css" />');
+        $('head').append(style);
+
+        $('#pdf_fields_fontsize').on('change', function(e) {
+            style.text('div.pdf_fields_field { font-size: ' + $(this).val() + 'pt;}');
+        });
+
+        $.ajax({
+            type: 'GET',
+            url: '?current=1',
+            headers: {
+                'Accept': 'application/json',
+            },
+            success: function(d) {
+                $('#pdf_fields_fontsize').val(d.fontsize);
+                style.text('div.pdf_fields_field { font-size: ' + d.fontsize + 'pt;}');
+                d.fields.forEach(function(f) {
+                    let elem = $('<div/>');
+                    elem.addClass('pdf_fields_field');
+                    elem.text(f.field);
+                    elem.css('background-color', 'blue');
+                    $('#pdf_fields_page_area').append(elem);
+
+                    let page = $('#pdf_page_' + f.page);
+                    elem.offset({
+                        'top': page.offset().top + f.y,
+                        'left': page.offset().left + f.x,
+                    });
+                });
+            },
+            error: function(d) {
+                alert('Could not get current fields.');
+            }
+        });
+    }
 });
+
+function _pdf_fields_overlaps_page(field) {
+    /* Check if we're overlapping with a point */
+    let overlapping = null;
+    let thispos = field.offset();
+    let thisheight = field.outerHeight();
+    let thiswidth = field.outerWidth();
+    $('div.pdf_fields_page img.pdf_page').each(function(i, e) {
+        let epos = $(e).offset();
+        let eheight = $(e).outerHeight();
+        let ewidth = $(e).outerWidth();
+        if (thispos.top > epos.top  && thispos.top+thisheight < epos.top+eheight &&
+            thispos.left > epos.left && thispos.left+thiswidth < epos.left+ewidth) {
+            overlapping = e;
+            return;
+        }
+    });
+    return overlapping;
+}
 
 function update_sendmail_count() {
    if ($('#datatable').data('datatable')) {

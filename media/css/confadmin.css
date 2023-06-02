@@ -232,3 +232,27 @@ div.waitlisttbl div.header-row div {
 #crossconfform span.secspan label {
    margin-left: 5px;
 }
+
+/*
+ * PDF field editor
+ */
+div.pdf_fields_page img.pdf_page {
+    border: 1px solid black;
+}
+
+div#pdf_fields_page_area {
+    position: relative;
+}
+div.pdf_fields_field {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    border: 0;
+    background-color: red;
+    color: white;
+
+    border-radius: 2px;
+
+    cursor: move;
+}

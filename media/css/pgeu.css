@@ -208,3 +208,32 @@ form.pgeuform fieldset legend {
     padding-left: 0.2rem;
     padding-right: 1rem;
 }
+
+/*
+ * Sponsor signup
+ */
+form.sponsorsignup tr.error {
+   background-color: #ffb6b6;
+}
+
+div#invoiceaddresspreview {
+   border: 1px solid black;
+   border-radius: 5px;
+   padding: 3px;
+   margin-bottom: 2em;
+}
+dl.sponsorcontractchoices dd {
+    max-width: 800px;
+}
+dl.sponsorcontractchoices dd,
+dl.sponsorcontractchoices dt {
+    margin-left: 2rem;
+}
+dl.sponsorcontractchoices dt input {
+    margin-left: -2rem;
+    width: 1rem;
+}
+dl.sponsorcontractchoices dt span {
+    margin-left: 1rem;
+}
+

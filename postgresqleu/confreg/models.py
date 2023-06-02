@@ -33,6 +33,7 @@ from decimal import Decimal
 from postgresqleu.countries.models import Country
 from postgresqleu.invoices.models import Invoice, VatRate, InvoicePaymentMethod
 from postgresqleu.newsevents.models import NewsPosterProfile
+from postgresqleu.digisign.models import DigisignProvider
 
 from .regtypes import special_reg_types
 
@@ -226,6 +227,12 @@ class Conference(models.Model):
     series = models.ForeignKey(ConferenceSeries, null=False, blank=False, on_delete=models.CASCADE)
     personal_data_purged = models.DateTimeField(null=True, blank=True, help_text="Personal data for registrations for this conference have been purged")
     initial_common_countries = models.ManyToManyField(Country, blank=True, help_text="Initial set of common countries")
+    contractprovider = models.ForeignKey(DigisignProvider, null=True, blank=True, verbose_name="Signing provider", on_delete=models.SET_NULL)
+    contractsendername = models.CharField(max_length=200, null=False, blank=True, verbose_name="Contract sender name", help_text="Name used to send digital contracts for this conference")
+    contractsenderemail = models.EmailField(max_length=200, null=False, blank=True, verbose_name="Contract sender email", help_text="E-mail address used to send digital contracts for this conference")
+    contractexpires = models.IntegerField(null=False, blank=False, default=7, verbose_name="Contract expiry time", help_text="Digital contracts will expire after this many days")
+    manualcontracts = models.BooleanField(null=False, blank=False, default=True, verbose_name="Manual contracts", help_text="Allow manually signed sponsorship contracts")
+    autocontracts = models.BooleanField(null=False, blank=False, default=True, verbose_name="Automated contract workflow", help_text="Default to automatically approving sponsorships when digital signature process completes")
     key_public = models.TextField(null=False, blank=True, verbose_name="Public RSA key for signatures")
     key_private = models.TextField(null=False, blank=True, verbose_name="Private RSA key for signatures")
     web_origins = models.CharField(null=False, blank=True, max_length=1000, verbose_name="Allowed web origins for API calls (comma separated list)")

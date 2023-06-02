@@ -1,0 +1,27 @@
+{%extends "adm/admin_base.html" %}
+{%block title%}Digital signatures log{%endblock%}
+
+{%block layoutblock%}
+<h1>Digital signatures log</h1>
+<p>
+  This shows the last 100 entries only.
+</p>
+
+<table class="table table-bordered table-striped table-condensed table-hover">
+<tr>
+  <th>Time</th>
+  <th>Event</th>
+  <th>Description</th>
+  <th>Document</th>
+</tr>
+{%for l in log%}
+<tr>
+  <td>{{l.time}}</td>
+  <td>{{l.event}}</td>
+  <td>{{l.text}}</td>
+  <td>{{l.document.id}}</td>
+</tr>
+{%endfor%}
+</table>
+{%endblock%}
+

@@ -1,0 +1,42 @@
+{%extends "adm/admin_base.html" %}
+{%block title%}Edit PDF fields- {{conference.name}}{%endblock%}
+
+{%block layoutblock%}
+<h2>Edit PDF fields</h2>
+<div class="pdf_fields_fieldlist">
+  <div>
+    Font size for static fields: <select id="pdf_fields_fontsize" class="form-control-inline">
+      <option value="10">10pt</option>
+      <option value="11">11pt</option>
+      <option value="12">12pt</option>
+      <option value="13">13pt</option>
+      <option value="14">14pt</option>
+      <option value="15">15pt</option>
+      <option value="16">16pt</option>
+      <option value="17">17pt</option>
+      <option value="18">18pt</option>
+    </select>
+  </div>
+  <br>
+  <select id="pdf_fields_fieldlist" class="form-control">
+    <option value="*">** Add another field</option>
+{%for val, txt in fields %}
+    <option value="{{val}}">{{txt}}</option>
+{%endfor%}
+  </select>
+</div>
+<div>
+  <br/>
+  <button id="pdf_fields_save" class="btn" data-csrf="{{csrf_token}}">Save fields</button>
+</div>
+
+<h3>PDF contents</h3>
+<div id="pdf_fields_page_area">
+  <div class="pdf_fields_page">
+{%for pagenum, pagedata in pages%}
+<h4>Page {{pagenum}}</h4>
+<img id="pdf_page_{{pagenum}}" data-pagenum="{{pagenum}}" class="pdf_page" src="data:image/png;base64,{{pagedata}}" />
+{%endfor%}
+  </div>
+</div>
+{%endblock%}

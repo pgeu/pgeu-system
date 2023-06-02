@@ -146,7 +146,8 @@ class BackendSuperConferenceForm(BackendForm):
         fields = ['conferencename', 'urlname', 'series', 'startdate', 'enddate', 'location',
                   'tzname', 'contactaddr', 'sponsoraddr', 'notifyaddr', 'confurl', 'administrators',
                   'jinjadir', 'accounting_object', 'vat_registrations', 'vat_sponsorship',
-                  'paymentmethods', 'web_origins']
+                  'paymentmethods', 'contractprovider', 'contractsendername', 'contractsenderemail',
+                  'contractexpires', 'manualcontracts', 'autocontracts', 'web_origins']
         widgets = {
             'paymentmethods': django.forms.CheckboxSelectMultiple,
         }
@@ -157,6 +158,7 @@ class BackendSuperConferenceForm(BackendForm):
             {'id': 'contact', 'legend': 'Contact information', 'fields': ['contactaddr', 'sponsoraddr', 'notifyaddr']},
             {'id': 'financial', 'legend': 'Financial information', 'fields': ['accounting_object', 'vat_registrations',
                                                                               'vat_sponsorship', 'paymentmethods']},
+            {'id': 'contracts', 'legend': 'Sponsorship contracts', 'fields': ['contractprovider', 'contractsendername', 'contractsenderemail', 'contractexpires', 'manualcontracts', 'autocontracts', ]},
             {'id': 'api', 'legend': 'API access', 'fields': ['web_origins', ]}
         ]
 
@@ -202,6 +204,22 @@ class BackendSuperConferenceForm(BackendForm):
 
         # Re-join string without any spaces
         return ",".join(o.strip() for o in self.cleaned_data['web_origins'].split(','))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get('autocontracts', False) and not cleaned_data['contractprovider']:
+            self.add_error('autocontracts', 'Automatic contract workflow can only be enabled if a digital signature provider is configured')
+        if not (cleaned_data.get('contractprovider', None) or cleaned_data.get('manualcontracts', False)):
+            self.add_error('contractprovider', 'Either a digital signing provider or manual contracts must be enabled')
+            self.add_error('manualcontracts', 'Either a digital signing provider or manual contracts must be enabled')
+
+        if cleaned_data.get('contractprovider', False):
+            if not self.cleaned_data.get('contractsendername', ''):
+                self.add_error('contractsendername', 'This field is required when digital contracts are enabled')
+            if not self.cleaned_data.get('contractsenderemail', ''):
+                self.add_error('contractsenderemail', 'This field is required when digital contracts are enabled')
+
+        return cleaned_data
 
 
 class BackendConferenceSeriesForm(BackendForm):

@@ -27,6 +27,8 @@ from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.request import get_int_or_error
 from postgresqleu.util.time import today_global
 from postgresqleu.invoices.util import InvoiceWrapper, InvoiceManager
+from postgresqleu.digisign.pdfutil import fill_pdf_fields, pdf_watermark_preview
+from postgresqleu.digisign.models import DigisignDocument, DigisignLog
 
 from .models import Sponsor, SponsorshipLevel, SponsorshipBenefit
 from .models import SponsorClaimedBenefit, SponsorMail, SponsorshipContract
@@ -44,6 +46,7 @@ from .invoicehandler import create_voucher_invoice
 from .vatutil import validate_eu_vat_number
 from .util import send_conference_sponsor_notification, send_sponsor_manager_email
 from .util import get_mails_for_sponsor
+from .util import get_pdf_fields_for_conference
 
 
 @login_required
@@ -349,7 +352,37 @@ def sponsor_signup(request, confurlname, levelurlname):
 
     if request.method == 'POST':
         form = SponsorSignupForm(conference, data=request.POST)
-        if not request.POST.get('confirm', '0') == '1':
+        stage = request.POST.get('stage', '0')
+        # Stage 0 = original form. When submitted, show preview address
+        # Stage 1 = preview address. When submitted, show contract choice
+        # Stage 2 = contract choice. When submitted, sign up.
+        # If there is no contract needed on this level, or there is no choice
+        # of contract because only one available, we bypass stage 1.
+        if stage == '1' and (level.instantbuy or not conference.contractprovider or not conference.manualcontracts):
+            stage = '2'
+
+        def _render_contract_choices():
+            contractchoices = []
+            if conference.contractprovider:
+                providerimpl = conference.contractprovider.get_implementation()
+                contractchoices.append(
+                    (0, 'Digital signatures', "Digitally sign the contract using {}. {}<br/><strong>NOTE!</strong> The signing process has to complete within {} days or the signup will be automatically canceled.".format(conference.contractprovider.displayname, providerimpl.description_text(request.user.email), conference.contractexpires)),
+                )
+            if conference.manualcontracts:
+                contractchoices.append(
+                    (1, 'Manual signing', 'Receive the contract as a PDF sent to {}, print it, sign it, scan it and send it back in to the conference organisers.'.format(request.user.email)),
+                )
+
+            return render(request, 'confsponsor/signupform.html', {
+                'user_name': user_name,
+                'conference': conference,
+                'level': level,
+                'form': form,
+                'noform': 1,
+                'contractchoices': contractchoices,
+            })
+
+        if stage == '0':
             if form.is_valid():
                 # Confirm not set, but form valid: show the address verification.
                 return render(request, 'confsponsor/signupform.html', {
@@ -357,16 +390,27 @@ def sponsor_signup(request, confurlname, levelurlname):
                     'conference': conference,
                     'level': level,
                     'form': form,
+                    'noform': 1,
+                    'needscontract': not (level.instantbuy or not conference.contractprovider),
+                    'sponsorname': form.cleaned_data['name'],
+                    'vatnumber': form.cleaned_data['vatnumber'] if settings.EU_VAT else None,
                     'previewaddr': get_sponsor_invoice_address(form.cleaned_data['name'],
                                                                form.cleaned_data['address'],
                                                                settings.EU_VAT and form.cleaned_data['vatnumber'] or None)
                 })
-                # Else fall through to re-render the full form
             # If form not valid, fall through to error below
-        elif form.is_valid():
-            # Confirm is set, but if the Continue editing button is selected we should go back
+        elif stage == "1":
+            if request.POST.get('submit', '') != 'Continue editing':
+                if form.is_valid():
+                    return _render_contract_choices()
+            # If form not valid, fall through to error below
+        elif stage == "2" and form.is_valid():
+            # If the Continue editing button is selected we should go back
             # to just rendering the normal form. Otherwise, go ahead and create the record.
             if request.POST.get('submit', '') != 'Continue editing':
+                if request.POST.get('contractchoice', '') not in ('0', '1'):
+                    return _render_contract_choices()
+
                 twname = form.cleaned_data.get('twittername', '')
                 if twname and twname[0] != '@':
                     twname = '@{0}'.format(twname)
@@ -377,7 +421,10 @@ def sponsor_signup(request, confurlname, levelurlname):
                                   url=form.cleaned_data['url'],
                                   level=level,
                                   twittername=twname,
-                                  invoiceaddr=form.cleaned_data['address'])
+                                  invoiceaddr=form.cleaned_data['address'],
+                                  signmethod=1 if request.POST['contractchoice'] == '1' or not conference.contractprovider else 0,
+                                  autoapprove=conference.autocontracts,
+                                  )
                 if settings.EU_VAT:
                     sponsor.vatstatus = int(form.cleaned_data['vatstatus'])
                     sponsor.vatnumber = form.cleaned_data['vatnumber']
@@ -387,19 +434,76 @@ def sponsor_signup(request, confurlname, levelurlname):
 
                 mailstr = "Sponsor %s signed up for conference\n%s at level %s.\n\n" % (sponsor.name, conference, level.levelname)
 
+                error = None
+
                 if level.instantbuy:
                     mailstr += "Level does not require a signed contract. Verify the details and approve\nthe sponsorship using:\n\n{0}/events/sponsor/admin/{1}/{2}/".format(
                         settings.SITEBASE, conference.urlname, sponsor.id)
                 else:
-                    mailstr += "No invoice has been generated as for this level\na signed contract is required first. The sponsor\nhas been instructed to sign and send the contract."
+                    pdf = fill_pdf_fields(
+                        level.contract.contractpdf,
+                        level.contract.fieldjson,
+                        get_pdf_fields_for_conference(conference, sponsor),
+                    )
 
-                send_conference_notification(
-                    conference,
-                    "Sponsor %s signed up for %s" % (sponsor.name, conference),
-                    mailstr,
-                )
-                # Redirect back to edit the actual sponsorship entry
-                return HttpResponseRedirect('/events/sponsor/%s/' % sponsor.id)
+                    if request.POST['contractchoice'] == '1' or not conference.contractprovider:
+                        # Either the user picked manual, or only manual is available
+                        mailstr += "No invoice has been generated as for this level\na signed contract is required first. The sponsor\nhas been instructed to sign and send the contract."
+
+                        send_sponsor_manager_email(
+                            sponsor,
+                            'Your contract for {}'.format(conference.conferencename),
+                            'confsponsor/mail/sponsor_contract_manual.txt',
+                            {
+                                'conference': conference,
+                                'sponsor': sponsor,
+                            },
+                            attachments=[
+                                ('{}_sponsorship_contract.pdf'.format(conference.urlname), 'application/pdf', pdf),
+                            ],
+                        )
+                    else:
+                        # Send a signing request using the configured provider
+                        mailstr += "No invoice has been generated as for this level\na signed contract is required first. The sponsor\nhas been sent a contract for digital signing."
+
+                        signer = conference.contractprovider.get_implementation()
+                        contractid, error = signer.send_contract(
+                            conference.contractsendername,
+                            conference.contractsenderemail,
+                            "{} {}".format(request.user.first_name, request.user.lasT_name),
+                            request.user.name,
+                            pdf,
+                            "{}_sponsorship_contract.pdf".format(conference.urlname),
+                            "{} {} sponsorship contract".format(conference.conferencename, sponsor.level.levelname),
+                            "Hello!\n\nYou have signed up as a {} sponsor of {}. Please use the link below to view and sign the sponsorship contract for the event. When you have signed the contract, the organisers will also sign it, and at that point your sponsorship will proceed to the next step.".format(level.levelname, conference.conferencename),
+                            {
+                                'type': 'sponsor',
+                                'sponsorid': str(sponsor.id),
+                            },
+                            level.contract.fieldjson,
+                            conference.contractexpires,
+                        )
+                        if error:
+                            form.add_error("Failed to send digital contract.")
+                        else:
+                            sponsor.contract = DigisignDocument(
+                                provider=conference.contractprovider,
+                                documentid=contractid,
+                                handler='confsponsor',
+                            )
+                            sponsor.contract.save()
+                            sponsor.save(update_fields=['contract', ])
+
+                if not error:
+                    send_conference_notification(
+                        conference,
+                        "Sponsor %s signed up for %s" % (sponsor.name, conference),
+                        mailstr,
+                    )
+
+                    # Redirect back to edit the actual sponsorship entry
+                    return HttpResponseRedirect('/events/sponsor/%s/' % sponsor.id)
+                # Else on error we fall through and re-render the form
     else:
         form = SponsorSignupForm(conference)
 
@@ -724,7 +828,7 @@ def sponsor_shipment_receiver_shipment(request, token, addresstoken):
 
 
 @login_required
-def sponsor_contract(request, contractid):
+def sponsor_contract_preview(request, contractid):
     # Our contracts are not secret, are they? Anybody can view them, we just require a login
     # to keep the load down and to make sure they are not spidered.
 
@@ -732,7 +836,7 @@ def sponsor_contract(request, contractid):
 
     resp = HttpResponse(content_type='application/pdf')
     resp['Content-disposition'] = 'attachment; filename="%s.pdf"' % contract.contractname
-    resp.write(bytes(contract.contractpdf))
+    resp.write(pdf_watermark_preview(bytes(contract.contractpdf)))
     return resp
 
 
@@ -1000,6 +1104,24 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
         'euvat': settings.EU_VAT,
         'helplink': 'sponsors',
         })
+
+
+@login_required
+@transaction.atomic
+def sponsor_admin_sponsor_contractlog(request, confurlname, sponsorid):
+    conference = get_authenticated_conference(request, confurlname)
+
+    sponsor = get_object_or_404(Sponsor, id=sponsorid, conference=conference)
+
+    return render(request, 'confsponsor/admin_sponsor_contractlog.html', {
+        'conference': conference,
+        'sponsor': sponsor,
+        'log': DigisignLog.objects.filter(document=sponsor.contract).order_by('-time')[:100],
+        'breadcrumbs': (
+            ('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),
+            ('/events/sponsor/admin/{0}/{1}/'.format(conference.urlname, sponsor.id), sponsor.name),
+        ),
+    })
 
 
 @login_required

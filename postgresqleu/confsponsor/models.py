@@ -1,11 +1,13 @@
 from django.db import models
 from django.utils.functional import cached_property
+from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.models import User
 from django.utils import timezone
 
 from postgresqleu.confreg.models import Conference, RegistrationType, PrepaidBatch
 from postgresqleu.confreg.models import ConferenceRegistration
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
+from postgresqleu.digisign.models import DigisignDocument
 from postgresqleu.util.fields import PdfBinaryField
 from postgresqleu.util.validators import validate_lowercase, validate_urlname
 from postgresqleu.util.random import generate_random_token
@@ -23,6 +25,7 @@ class SponsorshipContract(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     contractname = models.CharField(max_length=100, null=False, blank=False, verbose_name='Contract name')
     contractpdf = PdfBinaryField(null=False, blank=False, max_length=1000000, verbose_name='Contract PDF')
+    fieldjson = models.JSONField(blank=False, null=False, default=dict, encoder=DjangoJSONEncoder)
 
     def __str__(self):
         return self.contractname
@@ -108,6 +111,9 @@ class Sponsor(models.Model):
     confirmedby = models.CharField(max_length=50, null=False, blank=True)
     signupat = models.DateTimeField(null=False, blank=False)
     extra_cc = models.EmailField(null=False, blank=True, verbose_name="Extra information address")
+    signmethod = models.IntegerField(null=False, blank=False, default=1, choices=((0, 'Digital signatures'), (1, 'Manual signatures')), verbose_name='Signing method')
+    autoapprovesigned = models.BooleanField(null=False, blank=False, default=True, verbose_name="Approve on signing", help_text="Automatically approve once digital signatures are completed")
+    contract = models.OneToOneField(DigisignDocument, null=True, blank=True, help_text="Contract, when using digital signatures", on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.name

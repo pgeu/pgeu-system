@@ -35,6 +35,10 @@
     <th>Status:</th>
     <td>{%if sponsor.confirmed%}Confirmed ({{sponsor.confirmedat}}){%else%}<i>Awaiting confirmation (signed up {{sponsor.signupat}})</i>{%endif%}</td>
   </tr>
+  <tr>
+    <th>Contract:</th>
+    <td>{%if sponsor.signmethod == 0%}Digital contract. <a href="contractlog/" class="btn btn-sm btn-default">View contract log</a>{%else%}Manual contract{%endif%}</td>
+  </tr>
 {%if details%}
 {%if sponsor.invoice%}
   <tr>

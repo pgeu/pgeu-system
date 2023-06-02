@@ -136,17 +136,31 @@ for this sponsor, it can be confirmed before the invoice is paid.
   "instant buy" level sponsorship, so as soon as the sponsorship
   details above have been verified, an invoice should be generated.
 </p>
+<p>
+  Once generated, the invoice will automatically
+  be emailed to the sponsor, as well as show up on their dashboard. Once
+  the invoice is paid, the sponsorship will automatically become confirmed.
+</p>
+{%else%}{%comment%}no invoice, not instant, so awaiting contract{%endcomment%}
+{%if sponsor.signmethod == 0%}
+<p>
+  This sponsor is using digital contracts.
+{%if sponsor.contract and sponsor.contract.completed%}
+  The contract signing process has completed. The invoice has to be manually generated
+  as automatic processing is not enabled.
+{%elif sponsor.contract%}
+  The contract has been sent to the sponsor, but the signing process has not completed yet.
 {%else%}
+  The contract has not (yet) been issued to the sponsor.
+{%endif%}
+</p>
+{%else%}{%comment%}Manual (below)/digital (above) contracts{%endcomment%}
 <p>
 This sponsorship has not yet been issued an invoice. Once the contract
 has been received, go ahead and generate the invoice.
 </p>
+{%endif%}{%comment%}Digital contracts{%endcomment%}
 {%endif%}{%comment%}Instant buy{%endcomment%}
-<p>
-  Once generated, the invoice will automatically
-be emailed to the sponsor, as well as show up on their dashboard. Once
-the invoice is paid, the sponsorship will automatically become confirmed.
-</p>
 {%else%}{%comment%}levelcost != 0 {%endcomment%}
 <p>
   This sponsorship has zero cost, which means payment is handled manually.

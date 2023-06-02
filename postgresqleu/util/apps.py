@@ -61,6 +61,11 @@ class UtilAppConfig(AppConfig):
         except ImportError:
             logging.getLogger(__name__).warning("Could not load qrencode library. QR code based functionality will not be available")
 
+        try:
+            import fitz
+        except ImportError:
+            logging.getLogger(__name__).warning("Could not load fitz library, PDF editing and digital signatures won't be available")
+
     #
     # Define our own handling of registering a model for admin without
     # it's own class. The default is to set admin_class to ModelAdmin

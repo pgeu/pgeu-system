@@ -34,6 +34,8 @@ import postgresqleu.transferwise.views
 import postgresqleu.accountinfo.views
 import postgresqleu.util.docsviews
 import postgresqleu.mailqueue.backendviews
+import postgresqleu.digisign.backendviews
+import postgresqleu.digisign.views
 import postgresqleu.util.monitor
 import postgresqleu.util.views
 import postgresqleu.util.backendviews
@@ -353,6 +355,10 @@ urlpatterns.extend([
     url(r'^admin/jobs/(\d+)/$', postgresqleu.scheduler.views.job),
     url(r'^admin/jobs/history/$', postgresqleu.scheduler.views.history),
 
+    # Digial signatures
+    url(r'^admin/digisign/providers/(\d+)/log/$', postgresqleu.digisign.backendviews.view_provider_log),
+    url(r'^admin/digisign/providers/(.*/)?$', postgresqleu.digisign.backendviews.edit_providers),
+
     # Mail queue
     url(r'^admin/mailqueue/(\d+)/attachments/(.+)/$', postgresqleu.mailqueue.backendviews.view_attachment),
     url(r'^admin/mailqueue/(.*/)?$', postgresqleu.mailqueue.backendviews.edit_mailqueue),
@@ -373,6 +379,9 @@ urlpatterns.extend([
 
     # Transferwise webhooks
     url(r'^wh/tw/(\d+)/(\w+)/$', postgresqleu.transferwise.views.webhook),
+
+    # Digital signatures webhooks
+    url(r'^wh/(sw)/(\d+)/$', postgresqleu.digisign.views.webhook),
 
     # Account info callbacks
     url(r'^accountinfo/search/$', postgresqleu.accountinfo.views.search),
