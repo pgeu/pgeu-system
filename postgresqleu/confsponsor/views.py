@@ -423,7 +423,7 @@ def sponsor_signup(request, confurlname, levelurlname):
                                   twittername=twname,
                                   invoiceaddr=form.cleaned_data['address'],
                                   signmethod=1 if request.POST['contractchoice'] == '1' or not conference.contractprovider else 0,
-                                  autoapprove=conference.autocontracts,
+                                  autoapprovesigned=conference.autocontracts,
                                   )
                 if settings.EU_VAT:
                     sponsor.vatstatus = int(form.cleaned_data['vatstatus'])
