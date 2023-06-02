@@ -158,6 +158,11 @@ class Signwell(BaseProvider):
             fieldjson['signwellfields'] = r.json()['fields'][0]
             for f in fieldjson['signwellfields']:
                 f['type'] = f['type'].lower()
+                if f['type'] == 'textfield':
+                    f['type'] = 'text'
+                elif f['type'] == 'datefield':
+                    f['type'] = 'date'
+
             savecallback(fieldjson)
 
             # Delete the temporary document
