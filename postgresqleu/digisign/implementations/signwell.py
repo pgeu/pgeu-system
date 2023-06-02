@@ -94,7 +94,7 @@ class Signwell(BaseProvider):
             "files": [
                 {
                     "name": pdfname,
-                    "file_base64": base64.b64encode(pdf),
+                    "file_base64": base64.b64encode(pdf).decode(),
                 }
             ],
             "name": subject,
@@ -200,7 +200,7 @@ class Signwell(BaseProvider):
                 "files": [
                     {
                         "name": "editpreview_{}.pdf".format(name),
-                        "file_base64": base64.b64encode(pdf),
+                        "file_base64": base64.b64encode(pdf).decode(),
                     }
                 ],
                 "name": subject,
