@@ -9,7 +9,10 @@ from postgresqleu.util.reporttools import cm
 def fill_pdf_fields(pdf, available_fields, fielddata):
     import fitz
 
-    pagefields = {int(k): list(v) for k, v in itertools.groupby(fielddata['fields'], lambda x: x['page'])}
+    if 'fields' in fielddata:
+        pagefields = {int(k): list(v) for k, v in itertools.groupby(fielddata['fields'], lambda x: x['page'])}
+    else:
+        pagefields = {}
 
     pdf = fitz.open('pdf', bytes(pdf))
     for pagenum, page in enumerate(pdf.pages()):
