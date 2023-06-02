@@ -1,5 +1,7 @@
 from django.db import models
 
+import json
+
 
 class DigisignProvider(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False, unique=True)
@@ -47,3 +49,7 @@ class DigisignLog(models.Model):
         indexes = [
             models.Index(fields=('document', '-time'))
         ]
+
+    @property
+    def fulldata_pretty(self):
+        return json.dumps(self.fulldata, indent=2)

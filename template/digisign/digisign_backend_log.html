@@ -13,6 +13,9 @@
   <th>Event</th>
   <th>Description</th>
   <th>Document</th>
+{%if hasdetails %}
+  <th></th>
+{%endif%}
 </tr>
 {%for l in log%}
 <tr>
@@ -20,6 +23,9 @@
   <td>{{l.event}}</td>
   <td>{{l.text}}</td>
   <td>{{l.document.id}}</td>
+{%if hasdetails %}
+  <td><a href="{{l.id}}/" class="btn btn-sm btn-default">Details</a></td>
+{%endif%}
 </tr>
 {%endfor%}
 </table>

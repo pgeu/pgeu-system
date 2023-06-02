@@ -357,6 +357,7 @@ urlpatterns.extend([
 
     # Digial signatures
     url(r'^admin/digisign/providers/(\d+)/log/$', postgresqleu.digisign.backendviews.view_provider_log),
+    url(r'^admin/digisign/providers/(\d+)/log/(\d+)/$', postgresqleu.digisign.backendviews.view_provider_log_details),
     url(r'^admin/digisign/providers/(.*/)?$', postgresqleu.digisign.backendviews.edit_providers),
 
     # Mail queue

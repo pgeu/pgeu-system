@@ -61,9 +61,27 @@ def view_provider_log(request, providerid):
 
     return render(request, 'digisign/digisign_backend_log.html', {
         'log': DigisignLog.objects.filter(provider=provider).order_by('-id')[:100],
+        'hasdetails': provider.get_implementation().has_log_details,
         'breadcrumbs': [
             ('/admin/digisign/providers/', 'Digital signature providers'),
             ('/admin/digisign/providers/{}/'.format(provider.id), provider.name),
+        ]
+    })
+
+
+def view_provider_log_details(request, providerid, logid):
+    if not request.user.is_superuser:
+        raise PermissionDenied("Access denied")
+
+    provider = get_object_or_404(DigisignProvider, pk=providerid)
+    log = get_object_or_404(DigisignLog, provider=provider, pk=logid)
+
+    return render(request, 'digisign/digisign_backend_log_details.html', {
+        'log': log,
+        'breadcrumbs': [
+            ('/admin/digisign/providers/', 'Digital signature providers'),
+            ('/admin/digisign/providers/{}/'.format(provider.id), provider.name),
+            ('/admin/digisign/providers/{}/log/'.format(provider.id), "Log"),
         ]
     })
 

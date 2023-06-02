@@ -79,6 +79,7 @@ On the Signwell account, open up the API application and specify
 class Signwell(BaseProvider):
     backend_form_class = SignwellBackendForm
     can_send_preview = True
+    has_log_details = True
     webhookcode = "sw"
 
     def description_text(self, signeremail):

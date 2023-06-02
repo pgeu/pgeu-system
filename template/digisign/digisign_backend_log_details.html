@@ -1,0 +1,31 @@
+{%extends "adm/admin_base.html" %}
+{%block title%}Digital signatures log{%endblock%}
+
+{%block layoutblock%}
+<h1>Digital signatures log</h1>
+<table class="table table-bordered table-striped table-condensed table-hover">
+<tr>
+  <th>Time</th>
+  <td>{{log.time}}</td>
+</tr>
+<tr>
+  <th>Event</th>
+  <td>{{log.event}}</td>
+</tr>
+<tr>
+  <th>Description</th>
+  <td>{{log.text}}</td>
+</tr>
+<tr>
+  <th>Document</th>
+  <td>{{log.document.id}}</td>
+</tr>
+<tr>
+  <th>Full data</th>
+  <td><pre>
+{{log.fulldata_pretty}}
+  </pre></td>
+</tr>
+</table>
+{%endblock%}
+
