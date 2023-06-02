@@ -4,7 +4,7 @@
 {%block layoutblock%}
 <h2>Edit digisign fields</h2>
 {%if signwelledit%}
-<p>
+<p id="infopara">
   Edit the fields in the popup. When done, press the <i>Close</i> button in the
   editor. Specifically, do <strong>NOT</strong> press the Send button!!!
 </p>
@@ -29,6 +29,7 @@ $(function() {
 	    },
 	    closed: e => {
 		console.log('closed event: ', e);
+		$('#infopara').text('Saving your changes...');
 		document.location.href = '?finished=1';
 	    }
 	}
@@ -42,7 +43,7 @@ $(function() {
 $(function() {
     $('#dummyform').submit(function(e) {
         $("#dummysubmit").attr("disabled", true);
-	$("#dummysubmit").text("Loading Signwell...");
+	$("#dummysubmit").val("Loading Signwell...");
         return true;
     });
     $('#dummyform').submit();
