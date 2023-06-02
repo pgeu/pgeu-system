@@ -470,7 +470,7 @@ def sponsor_signup(request, confurlname, levelurlname):
                         contractid, error = signer.send_contract(
                             conference.contractsendername,
                             conference.contractsenderemail,
-                            "{} {}".format(request.user.first_name, request.user.lasT_name),
+                            "{} {}".format(request.user.first_name, request.user.last_name),
                             request.user.name,
                             pdf,
                             "{}_sponsorship_contract.pdf".format(conference.urlname),
