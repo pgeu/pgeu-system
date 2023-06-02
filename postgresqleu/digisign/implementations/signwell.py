@@ -132,7 +132,7 @@ class Signwell(BaseProvider):
         }, timeout=15)
         if r.status_code != 201:
             DigisignLog(
-                provider=self,
+                provider=self.provider,
                 document=None,
                 event='internal',
                 text='Could not create signing request: {}'.format(r.text),
