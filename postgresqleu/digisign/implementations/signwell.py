@@ -1,5 +1,6 @@
 from django import forms
 from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib import messages
 from django.shortcuts import render
 from django.utils import timezone
 from django.conf import settings
@@ -61,14 +62,16 @@ On the Signwell account, open up the API application and specify
             impl = self.instance.get_implementation()
 
             # There's no searching, we have to scan them all...
-            webhooks = impl.get_webhooks_for_application(self.cleaned_data['applicationid'])
-
-            if len(webhooks) == 0:
-                self.add_error('applicationid', 'This application has no webhooks defined')
-            elif len(webhooks) > 1:
-                self.add_error('applicationid', 'This application has more than one webhook defined')
-            else:
-                self.instance.config['webhookid'] = webhooks[0]['id']
+            try:
+                webhooks = impl.get_webhooks_for_application(self.cleaned_data['applicationid'])
+                if len(webhooks) == 0:
+                    self.add_error('applicationid', 'This application has no webhooks defined')
+                elif len(webhooks) > 1:
+                    self.add_error('applicationid', 'This application has more than one webhook defined')
+                else:
+                    self.instance.config['webhookid'] = webhooks[0]['id']
+            except Exception as e:
+                messages.warning(self.request, "Unable to get list of webhooks: {}".format(e))
 
         return cleaned_data
 
