@@ -172,7 +172,7 @@ class Signwell(BaseProvider):
             }, timeout=10)
             if r.status_code != 204:
                 DigisignLog(
-                    provider=self,
+                    provider=self.provider,
                     document=None,
                     event='internal',
                     text="Failed to delete preview document when complete, code {}, text {}".format(r.status_code, r.text),
@@ -193,7 +193,7 @@ class Signwell(BaseProvider):
                 }, timeout=10)
                 if r.status_code != 204:
                     DigisignLog(
-                        provider=self,
+                        provider=self.provider,
                         document=None,
                         event='internal',
                         text="Failed to delete existing preview document, code {}, text {}".format(r.status_code, r.text),
