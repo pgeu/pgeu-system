@@ -22,7 +22,7 @@ def send_conference_sponsor_notification(conference, subject, message):
                          sendername=conference.conferencename)
 
 
-def send_sponsor_manager_email(sponsor, subject, template, context):
+def send_sponsor_manager_email(sponsor, subject, template, context, attachments=None):
     for manager in sponsor.managers.all():
         send_conference_mail(
             sponsor.conference,
@@ -30,6 +30,7 @@ def send_sponsor_manager_email(sponsor, subject, template, context):
             subject,
             template,
             context,
+            attachments=attachments,
             sender=sponsor.conference.sponsoraddr,
             sendername=sponsor.conference.conferencename,
             receivername='{0} {1}'.format(manager.first_name, manager.last_name)
