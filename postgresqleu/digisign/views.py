@@ -36,4 +36,4 @@ def webhook(request, providershort, id):
                 provider.name,
                 e),
         )
-        return HttpResponse("ERROR", status=500)
+        return HttpResponse("ERROR", status=200)
