@@ -322,15 +322,9 @@ def create_voucher_invoice(conference, invoiceaddr, user, rt, num):
 class SponsorDigisignHandler(DigisignHandlerBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        slist = list(self.doc.sponsor_set.all())
-        if len(slist) == 0:
+        if not self.doc.sponsor:
             raise Exception("No sponsor found for this document, something got unlinked?")
-        if len(slist) > 1:
-            # We have a unique index... But.. In case something weird happened.
-            raise Exception("More than one sponsor found for this document, can't happen!")
-
-        self.sponsor = slist[0]
+        self.sponsor = self.doc.sponsor
 
     def completed(self):
         if self.sponsor.autoapprovesigned and self.sponsor.conference.autocontracts:
