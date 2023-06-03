@@ -322,7 +322,7 @@ def create_voucher_invoice(conference, invoiceaddr, user, rt, num):
 class SponsorDigisignHandler(DigisignHandlerBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not self.doc.sponsor:
+        if not hasattr(self.doc, 'sponsor'):
             raise Exception("No sponsor found for this document, something got unlinked?")
         self.sponsor = self.doc.sponsor
 
