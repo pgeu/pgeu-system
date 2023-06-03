@@ -471,7 +471,7 @@ def sponsor_signup(request, confurlname, levelurlname):
                             conference.contractsendername,
                             conference.contractsenderemail,
                             "{} {}".format(request.user.first_name, request.user.last_name),
-                            request.user.name,
+                            request.user.email,
                             pdf,
                             "{}_sponsorship_contract.pdf".format(conference.urlname),
                             "{} {} sponsorship contract".format(conference.conferencename, sponsor.level.levelname),
