@@ -329,15 +329,26 @@ class Signwell(BaseProvider):
                     text='Could not find handler {} for document.'.format(doc.handler),
                     fulldata={},
                 ).save()
+
             dhandler = digisign_handlers[doc.handler](doc)
-            if event == 'document_completed':
-                doc.completed = True
-                doc.save(update_fields=['completed'])
-                dhandler.completed()
-            elif event == 'document_expired':
-                dhandler.expired()
-            elif event == 'document_declined':
-                dhandler.declined()
+
+            try:
+                if event == 'document_completed':
+                    doc.completed = True
+                    doc.save(update_fields=['completed'])
+                    dhandler.completed()
+                elif event == 'document_expired':
+                    dhandler.expired()
+                elif event == 'document_declined':
+                    dhandler.declined()
+            except Exception as e:
+                DigisignLog(
+                    provider=self.provider,
+                    document=doc,
+                    event=event,
+                    text='Exception processing webhook: {}'.format(e),
+                    fulldata=j,
+                ).save()
 
         return HttpResponse("OK", status=200)
 
