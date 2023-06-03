@@ -86,10 +86,14 @@ class InvoiceProcessor(object):
             raise Exception("Could not find conference sponsor %s" % invoice.processorid)
 
         if sponsor.confirmed:
-            raise Exception("Cannot cancel this invoice, the sponsorship has already been marked as confirmed!")
+            send_conference_sponsor_notification(
+                sponsor.conference,
+                "Canceled invoice for sponsor: {}".format(sponsor.name),
+                "The sponsor\n{}\n has had their invoice canceled. As the sponsorship was already confirmed, it has NOT been canceled, and this needs do be done separately.".format(sponsor.name),
+            )
 
-        # Else the sponsor is not yet confirmed, so we can safely remove the invoice. We will leave the
-        # sponsorship registration in place, so we can create a new one if we have to.
+        # We leave the sponsorship registration in place, so we can
+        # create a new invoice if we have to.
         sponsor.invoice = None
         sponsor.save()
 
