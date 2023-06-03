@@ -442,8 +442,8 @@ def sponsor_signup(request, confurlname, levelurlname):
                 else:
                     pdf = fill_pdf_fields(
                         level.contract.contractpdf,
-                        level.contract.fieldjson,
                         get_pdf_fields_for_conference(conference, sponsor),
+                        level.contract.fieldjson,
                     )
 
                     if request.POST['contractchoice'] == '1' or not conference.contractprovider:
