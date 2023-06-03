@@ -65,7 +65,8 @@
 <p>
   Your sponsorship request has been submitted, and is currently waiting for you to sign the contract.
 {%if sponsor.signmethod == 0%}{# using digital signatures #}
-
+  An email with instructions for signing the document has been sent to {{sponsor.managers.all.0.email}}.
+  Please see this email for instructions on how to complete the signing.
 {%else%}{# using manual signatures #}
   This contract was sent to you by email, so you should find it in your mailbox. Please print, sign,
   scan and send this in to the organizers at <a href="mailto:{{conference.sponsoraddr}}">{{conference.sponsoraddr}}</a>.
