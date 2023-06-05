@@ -1030,8 +1030,8 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
             # Actually generate the invoice!
             manager = sponsor.managers.all()[0]
             sponsor.invoice = create_sponsor_invoice(manager, sponsor)
-            sponsor.invoice.save(update_fields=['invoice'])
-            sponsor.save()
+            sponsor.invoice.save()
+            sponsor.save(update_fields=['invoice'])
             wrapper = InvoiceWrapper(sponsor.invoice)
             wrapper.email_invoice()
             messages.info(request, "Invoice sent to {0}".format(manager.email))
@@ -1608,8 +1608,8 @@ def sponsor_admin_reissue(request, confurlname, sponsorid):
             # Create the new invoice, overwriting the existing one
             manager = sponsor.managers.all()[0]
             sponsor.invoice = create_sponsor_invoice(manager, sponsor, override_duedate=invoice.duedate)
-            sponsor.invoice.save(update_fields=['invoice'])
-            sponsor.save()
+            sponsor.invoice.save()
+            sponsor.save(update_fields=['invoice'])
             # Send email with the new invoice
             InvoiceWrapper(sponsor.invoice).email_invoice()
             # Now cancel the previous invoice, which will automatically send another email. Before we do
