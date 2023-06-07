@@ -8,6 +8,8 @@
 # * Make sure the view "login" from this module is used for login
 # * Map an url somwehere (typically /auth_receive/) to the auth_receive
 #   view.
+# * To get notified when a user is created from upstream, connect to the signal
+#   auth_user_created_from_upstream.
 # * To receive live updates (not just during login), map an url somewhere
 #   (typically /auth_api/) to the auth_api view.
 # * To receive live updates, also connect to the signal auth_user_data_received.
@@ -43,6 +45,9 @@ from Cryptodome.Hash import SHA
 from Cryptodome import Random
 import time
 
+
+# This signal fires when a user is created based on data from upstream.
+auth_user_created_from_upstream = Signal(providing_args=['user', ])
 
 # This signal fires whenever new user data has been received. Note that this
 # happens *after* first_name, last_name and email has been updated on the user
@@ -104,10 +109,15 @@ def auth_receive(request):
         return HttpResponse("Missing data in url!", status=400)
 
     # Set up an AES object and decrypt the data we received
-    decryptor = AES.new(base64.b64decode(settings.PGAUTH_KEY),
-                        AES.MODE_CBC,
-                        base64.b64decode(str(request.GET['i']), "-_"))
-    s = decryptor.decrypt(base64.b64decode(str(request.GET['d']), "-_")).rstrip(b' ').decode('utf8')
+    try:
+        decryptor = AES.new(base64.b64decode(settings.PGAUTH_KEY),
+                            AES.MODE_CBC,
+                            base64.b64decode(str(request.GET['i']), "-_"))
+        s = decryptor.decrypt(base64.b64decode(str(request.GET['d']), "-_")).rstrip(b' ').decode('utf8')
+    except UnicodeDecodeError:
+        return HttpResponse("Badly encoded data found", 400)
+    except Exception:
+        return HttpResponse("Could not decrypt data", status=400)
 
     # Now un-urlencode it
     try:
@@ -173,6 +183,8 @@ We apologize for the inconvenience.
                     password='setbypluginnotasha1',
                     )
         user.save()
+
+        auth_user_created_from_upstream.send(user)
 
     # Ok, we have a proper user record. Now tell django that
     # we're authenticated so it persists it in the session. Before
@@ -280,8 +292,8 @@ def auth_api(request):
 # it's a wildcard match.
 # Unlike the authentication, searching does not involve the browser - we just make
 # a direct http call.
-def user_search(searchterm=None, email=None, userid=None):
-    # If upsteam isn't responding quickly, it's not going to respond at all, and
+def user_search(searchterm=None, userid=None):
+    # If upstream isn't responding quickly, it's not going to respond at all, and
     # 10 seconds is already quite long.
     socket.setdefaulttimeout(10)
     if userid:
@@ -306,6 +318,30 @@ def user_search(searchterm=None, email=None, userid=None):
     j = json.loads(s)
 
     return j
+
+
+# Subscribe to any changes about this user on the community auth upstream
+def subscribe_to_user_changes(userid):
+    socket.setdefaulttimeout(10)
+
+    body = json.dumps({
+        'u': userid,
+    })
+
+    h = hmac.digest(
+        base64.b64decode(settings.PGAUTH_KEY),
+        msg=bytes(body, 'utf-8'),
+        digest='sha512',
+    )
+
+    # Ignore the result code, just post it
+    requests.post(
+        '{0}subscribe/'.format(settings.PGAUTH_REDIRECT),
+        data=body,
+        headers={
+            'X-pgauth-sig': base64.b64encode(h),
+        },
+    )
 
 
 # Import a user into the local authentication system. Will initially
@@ -334,5 +370,7 @@ def user_import(uid):
         password='setbypluginnotsha1',
     )
     u.save()
+
+    auth_user_created_from_upstream.send(user)
 
     return u
