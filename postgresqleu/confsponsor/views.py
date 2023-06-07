@@ -482,6 +482,7 @@ def sponsor_signup(request, confurlname, levelurlname):
                             },
                             level.contract.fieldjson,
                             conference.contractexpires,
+                            test=False,
                         )
                         if error:
                             form.add_error("Failed to send digital contract.")
