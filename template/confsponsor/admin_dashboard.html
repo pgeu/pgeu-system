@@ -86,7 +86,11 @@ sponsor manually, you may want to confirm them manually as well...
       <span class="label label-success">Invoiced</span>
         {%endif%}
       {%else%}
+        {%if s.signmethod == 0 and s.contract %}
+      <span class="label label-info">Pending with contract</span>
+        {%else%}
       <span class="label label-info">Pending</span>
+        {%endif%}
       {%endif%}
     </td>
   </tr>
