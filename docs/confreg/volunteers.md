@@ -5,7 +5,7 @@ The volunteer schedule system ties together attendees with
 
 To begin, create the slots as needed in the administrative interface,
 and assign the volunteers using the
-[conference configuration](configuring). Volunteers can also be added
+[conference configuration](configuring.md). Volunteers can also be added
 later on, in which case they will just have to sign up for what's
 left.
 

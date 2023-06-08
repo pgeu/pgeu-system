@@ -62,7 +62,7 @@ those of the permitted registration types) can sign up
 Using the send email functionality, it is possible to send an email to
 attendees for a signup. This is a one-time email that goes to their
 mailbox but is *not* visible on the registration page after the fact
-(unlike regular [attendee emails](emails)).
+(unlike regular [attendee emails](emails.md)).
 
 For each email a subject and a body can be specified (no formatting is
 done, so make sure to put reasonable linebreaks in place, and don't
@@ -75,7 +75,7 @@ sent to attendees with more than one response, the form has to be
 executed multiple time, once for each response.
 
 The emails will be sent from the main conference
-[contact address](super_conference).
+[contact address](super_conference.md).
 
 ## Results
 

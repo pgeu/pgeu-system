@@ -14,7 +14,7 @@ puts this secret key in the voucher field, which makes the
 registration free.
 
 If all that's wanted is to register for another user, it's better to
-use the [advanced registration flow](registrations). Vouchers are
+use the [advanced registration flow](registrations.md). Vouchers are
 appropriate if the vouchers are distributed to a different
 organisation, and where the person paying does not have access to the
 information about the attendee.
@@ -63,7 +63,7 @@ same time as discount percentage.
 
 Public
 :  If this discount code is public. If a code is made public it becomes
-available using a separate permission in the [access tokens](tokens)
+available using a separate permission in the [access tokens](tokens.md)
 feature, and can that way be used to for example update a website. For
 codes that need to remain secret for their use, obviously public
 should not be set as it could be leaked through the token interface.

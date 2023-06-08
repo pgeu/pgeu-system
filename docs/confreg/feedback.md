@@ -2,7 +2,7 @@
 
 The feedback systems consists of [session feedback](#session) and
 [conference feedback](#conference). They can be independently enabled
-in the [configuration](configuring), and some events will only use
+in the [configuration](configuring.md), and some events will only use
 some of them.
 
 ## Session feedback <a name="session"></a>

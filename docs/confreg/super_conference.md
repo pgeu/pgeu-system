@@ -3,7 +3,7 @@
 This documentation page covers how to edit the superuser only parameters
 for a conference, including [creating a new conference](#new). For
 information about how to edit the regular parameters for a conference, see
-the [separate page](configuring).
+the [separate page](configuring.md).
 
 ## Creating a new conference
 
@@ -127,7 +127,7 @@ contract is signed, the sponsorship is automatically enabled and an invoice is c
 and sent. If disabled, that step has to be done manually.
 
 Allowed web origins for API calls
-:  A list of allowed web origins for making [API calls](regprovider).
+:  A list of allowed web origins for making [API calls](regprovider.md).
 This will be used both for validating a redirect URL and for
 controlling what must be in the Origin header when making an API
 call to get the JWT token.

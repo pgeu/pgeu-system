@@ -39,7 +39,7 @@ To set up sponsorship for a conference, in order:
 1. Upload a [sponsorship contract](#contract). Normally just one is
    needed, but if different ones are used then upload them separately.
 1. Create one or more [sponsorship levels](#level).
-1. Open sponsorship on [the conference](configuring).
+1. Open sponsorship on [the conference](configuring.md).
 
 Note that the *benefits* should **never** be changed after sponsors
 have started to sign up, but there is nothing in the system actually
@@ -175,7 +175,7 @@ Scanning of attendee badges
    in which case the sponsor will get an error when they try to scan
    their badge.
    Note that for this feature to work, the *Field: badge scanning*
-   on the [conference configuration](configuring) must be enabled.
+   on the [conference configuration](configuring.md) must be enabled.
 
 Submit session
 :  This benefit class allows the sponsor to submit a session for the

@@ -14,7 +14,7 @@ The flow for getting the registration data is:
    an error message indicating so. If the registration is valid for
    the specified conference, the user is redirected back to the URL in
    the `redir` parameter (note! A list of allowed redirect URLs must
-   be provided in the [conference configuration](super_conference)). A
+   be provided in the [conference configuration](super_conference.md)). A
    temporary token valid for 5 minutes is generated, and appended to
    the redirection URL with the name `token`.
 1. The application intercepts this token, stores it somewhere

@@ -6,7 +6,7 @@ announcements. It does not support paging or archiving.
 All news posts will syndicate to the main website frontpage. For each
 post showing up there will link back to the front page of the
 conference website (as defined in the
-[conference metadata](super_conference). Thus it makes sense for the
+[conference metadata](super_conference.md). Thus it makes sense for the
 news to be published there.
 
 In order to post a news, the user must have a News Poster Profile,

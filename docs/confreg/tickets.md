@@ -11,7 +11,7 @@ ticketing.
 ## Tickets
 
 If nothing else is defined a very basic ticket is generated. In almost
-every case, the tickets should be [skinned](skinning) using the
+every case, the tickets should be [skinned](skinning.md) using the
 `ticket.json` file.
 
 Tickets will be attached to the conference *welcome email*, and also
@@ -113,7 +113,7 @@ fully safe.
 ### Enabling the check-in app
 
 The check-in app is disabled by default, and needs to be enabled with
-a checkbox on the [configuration page](configuring). The app itself
+a checkbox on the [configuration page](configuring.md). The app itself
 will function even when the system is disabled, but it will be unable
 to get or modify any information.
 

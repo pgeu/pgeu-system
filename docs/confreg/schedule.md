@@ -2,7 +2,7 @@
 
 ## Scheduling
 
-Once talks have been accepted in the [call for papers](callforpapers),
+Once talks have been accepted in the [call for papers](callforpapers.md),
 or sessions have been manually added, scheduling takes place.
 
 The following terms are in use for scheduling:
@@ -65,7 +65,7 @@ making changes to the schedule after it has been published. If the
 changes look OK, hit the confirm link to publish.
 
 The published schedule will immediately become available *if* schedule
-publishing has been activated on the [conference](configuring).
+publishing has been activated on the [conference](configuring.md).
 
 ## PDF Schedules
 
@@ -103,7 +103,7 @@ Foreground color
 
 In call for papers
 :   Whether this track should be available to choose in the
-[call for papers](callforpapers) submission form.
+[call for papers](callforpapers.md) submission form.
 
 In session list
 :   Whether sessions in this track are included in the session list. This can
@@ -117,7 +117,7 @@ Show company
 Allow speaker reg
 :   Speakers with approved talks in this track will be allowed to
 register for free *if* a registration type with one of the
-[special registration types](registrations#typesandclasses) for speaker
+[special registration types](registrations.md#typesandclasses) for speaker
 registration exists.
 
 

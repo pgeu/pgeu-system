@@ -44,6 +44,7 @@ def docspage(request, page=None):
             return HttpResponseForbidden("Access denied")
 
     if page:
+        page = page.replace(".md", "")
         page = page.rstrip('/')
         urlpage = page
     else:
@@ -61,7 +62,6 @@ def docspage(request, page=None):
             break
     else:
         raise Http404()
-
     with open(filename) as f:
         md = markdown.Markdown(extensions=['markdown.extensions.def_list', 'markdown.extensions.fenced_code'])
         contents = md.convert(f.read())

@@ -291,7 +291,7 @@ twitter account, thereby giving a conference series it's own twitter
 account, but having conferences in it share (by default).
 
 To use the Twitter integration, one must first set up twitter OAuth
-credentials. This is done by adding an [OAuth](oauth) application, after
+credentials. This is done by adding an [OAuth](oauth.md) application, after
 first registering a Twitter application in the Twitter systems.
 
 Once this is done, you can create the Messaging Provider record for
@@ -346,7 +346,7 @@ The Mastodon integration supports multiple different Mastodon
 instances, but will default to https://mastodon.social/.
 
 To use the Mastodon integration, one must first set up an [OAuth
-application](oauth). This happens in "Administration" - "OAuth".
+application](oauth.md). This happens in "Administration" - "OAuth".
 
 Once this is done, you can create the Messaging Provider record for
 each conference series. Other than the normal fields, there will be a
