@@ -408,7 +408,7 @@ def sponsor_signup(request, confurlname, levelurlname):
             # If the Continue editing button is selected we should go back
             # to just rendering the normal form. Otherwise, go ahead and create the record.
             if request.POST.get('submit', '') != 'Continue editing':
-                if request.POST.get('contractchoice', '') not in ('0', '1'):
+                if request.POST.get('contractchoice', '') not in ('0', '1') and not level.instantbuy:
                     return _render_contract_choices()
 
                 twname = form.cleaned_data.get('twittername', '')
@@ -422,7 +422,7 @@ def sponsor_signup(request, confurlname, levelurlname):
                                   level=level,
                                   twittername=twname,
                                   invoiceaddr=form.cleaned_data['address'],
-                                  signmethod=1 if request.POST['contractchoice'] == '1' or not conference.contractprovider else 0,
+                                  signmethod=1 if request.POST.get('contractchoice', '') == '1' or not conference.contractprovider or level.instantbuy else 0,
                                   autoapprovesigned=conference.autocontracts,
                                   )
                 if settings.EU_VAT:
