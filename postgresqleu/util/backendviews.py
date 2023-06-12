@@ -152,7 +152,12 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                 # We do!
                 f = form.fields[k[10:]]
                 if f.callback:
-                    f.callback(request)
+                    r = f.callback(request)
+                    # If the callback returns a HttpResponse
+                    # (typically a redirect), return that immediately
+                    # (without saving the form).
+                    if isinstance(r, HttpResponse):
+                        return r
                 return HttpResponseRedirect(".")
 
         if form.is_valid():
