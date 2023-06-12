@@ -1,4 +1,4 @@
 {%if prefixparagraph%}
 <p>{{prefixparagraph|safe}}</p>
 {%endif%}
-<input type="submit" class="btn btn-default" name="submit_{{widget.attrs.id}}" value="{{label}}" />
+<input type="submit" class="btn btn-default" {%if widget.attrs.disabled%}disabled="true" {%endif%}name="submit_{{widget.attrs.id}}" value="{{label}}" />
