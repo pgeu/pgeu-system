@@ -175,7 +175,7 @@ class Command(BaseCommand):
                         create_accounting_entry(accrows)
                 else:
                     # Else register a pending bank transaction. This may immediately match an invoice
-                    # if it was an invoice payment, in which case the entire process will copmlete.
+                    # if it was an invoice payment, in which case the entire process will complete.
                     register_bank_transaction(method,
                                               trans.id,
                                               trans.amount,
