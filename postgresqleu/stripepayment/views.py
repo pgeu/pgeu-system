@@ -14,6 +14,7 @@ from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.util import is_managed_bank_account
 from postgresqleu.invoices.util import register_pending_bank_matcher
+from postgresqleu.util.decorators import global_login_exempt
 from postgresqleu.accounting.util import create_accounting_entry
 from postgresqleu.mailqueue.util import send_simple_mail
 
@@ -125,6 +126,7 @@ def invoicepayment_cancel(request, paymentmethod, invoiceid, secret):
 
 
 @csrf_exempt
+@global_login_exempt
 def webhook(request, methodid):
     sig = request.META['HTTP_STRIPE_SIGNATURE']
     try:

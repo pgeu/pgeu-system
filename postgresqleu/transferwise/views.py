@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 
 from postgresqleu.util.crypto import rsa_verify_string_sha1
+from postgresqleu.util.decorators import global_login_exempt
 from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.scheduler.util import trigger_immediate_job_run
 
@@ -23,6 +24,7 @@ HwIDAQAB
 
 
 @csrf_exempt
+@global_login_exempt
 def webhook(request, methodid, hooktype):
     if request.method != 'POST':
         raise Http404()
