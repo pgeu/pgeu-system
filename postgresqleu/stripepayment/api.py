@@ -15,6 +15,7 @@ class StripeException(Exception):
 
 class StripeApi(object):
     APIBASE = "https://api.stripe.com/v1/"
+    APIVERSION = '2020-08-27'
 
     def __init__(self, pm):
         self.published_key = pm.config('published_key')
@@ -48,10 +49,16 @@ class StripeApi(object):
             r = requests.post(self.APIBASE + suburl,
                               list(self._api_encode(params)),
                               auth=HTTPBasicAuth(self.secret_key, ''),
+                              headers={
+                                  'Stripe-Version': self.APIVERSION,
+                              },
             )
         else:
             r = requests.get(self.APIBASE + suburl,
                              auth=HTTPBasicAuth(self.secret_key, ''),
+                             headers={
+                                 'Stripe-Version': self.APIVERSION,
+                             },
             )
         if raise_for_status:
             r.raise_for_status()
