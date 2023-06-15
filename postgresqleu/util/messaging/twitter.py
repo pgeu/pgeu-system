@@ -267,7 +267,7 @@ class Twitter(object):
                     else:
                         return (None, r.text)
                 except Exception as e:
-                    return (None, str(e))
+                    return (None, "{}\n\nContent was:\n{}".format(str(e), r.text))
 
     def repost(self, tweetid):
         raise Exception("No v2 support for reposts yet - need paid account")
