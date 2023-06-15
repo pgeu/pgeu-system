@@ -225,7 +225,7 @@ class Twitter(object):
 
     def post(self, tweet, image=None, replytotweetid=None):
         d = {
-            'status': tweet,
+            'text': tweet,
         }
         if replytotweetid:
             d['in_reply_to_status_id'] = replytotweetid
@@ -240,10 +240,10 @@ class Twitter(object):
                 return (None, 'Media upload: {}'.format(r.text))
             d['media_ids'] = r.json()['media_id']
 
-        while d['status']:
-            r = self.tw.post('https://api.twitter.com/1.1/statuses/update.json', data=d, timeout=30)
+        while d['text']:
+            r = self.tw.post('https://api.twitter.com/2/tweets', json=d, timeout=30)
             if r.status_code == 200:
-                return (r.json()['id'], None)
+                return (r.json()['data']['id'], None)
             else:
                 # Normally Twitter gives us a json result on errors as well, so let's try that first
                 try:
