@@ -264,7 +264,7 @@ class Twitter(object):
                         else:
                             return (None, "Unable to truncate tweet further, only a single word and Twitter still returns 186!")
                     else:
-                        return (None, r.text())
+                        return (None, r.text)
                 except Exception as e:
                     return (None, str(e))
 
