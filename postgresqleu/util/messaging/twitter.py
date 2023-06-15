@@ -549,7 +549,7 @@ class Twitter(object):
 class TwitterSetup(object):
     @classmethod
     def get_authorization_data(self):
-        oauth = requests_oauthlib.OAuth1Session(get_oauth_client('https://api.twitter.com'), get_oauth_secret('https://api.twitter.com'))
+        oauth = requests_oauthlib.OAuth1Session(get_oauth_client('https://api.twitter.com'), get_oauth_secret('https://api.twitter.com'), callback_uri='oob')
         fetch_response = oauth.fetch_request_token('https://api.twitter.com/oauth/request_token')
         auth_url = oauth.authorization_url('https://api.twitter.com/oauth/authorize')
 
