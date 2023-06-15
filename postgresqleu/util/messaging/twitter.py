@@ -183,9 +183,9 @@ class TwitterBackendForm(BackendSeriesMessagingForm):
 
 class Twitter(object):
     provider_form_class = TwitterBackendForm
-    can_process_incoming = True
+    can_process_incoming = False  # Temporarily(?) disabled due to paid API tiers
     can_broadcast = True
-    can_notification = True
+    can_notification = False  # Temporarily(?) disabled due to paid API tiers
     direct_message_max_length = None
     typename = 'Twitter'
 
@@ -228,6 +228,7 @@ class Twitter(object):
             'text': tweet,
         }
         if replytotweetid:
+            raise Exception("No v2 support for replies yet - need paid account")
             d['in_reply_to_status_id'] = replytotweetid
             d['auto_populate_reply_metadata'] = True
 
@@ -269,6 +270,7 @@ class Twitter(object):
                     return (None, str(e))
 
     def repost(self, tweetid):
+        raise Exception("No v2 support for reposts yet - need paid account")
         r = self.tw.post('https://api.twitter.com/1.1/statuses/retweet/{0}.json'.format(tweetid), timeout=30)
         if r.status_code != 200:
             # If the error is "you have already retweeted this", we just ignore it
@@ -281,6 +283,7 @@ class Twitter(object):
         return (True, None)
 
     def send_direct_message(self, recipient_config, msg):
+        raise Exception("No v2 support for DMs yet - need paid account")
         r = self.tw.post('https://api.twitter.com/1.1/direct_messages/events/new.json', json={
             'event': {
                 'type': 'message_create',
@@ -304,6 +307,7 @@ class Twitter(object):
                 r.raise_for_status()
 
     def poll_public_posts(self, lastpoll, checkpoint):
+        raise Exception("No v2 support for polling yet - need paid account")
         if checkpoint:
             sincestr = "&since_id={}".format(checkpoint)
         else:
@@ -346,6 +350,7 @@ class Twitter(object):
 
     # This is delivered by the webhook if it's enabled
     def poll_incoming_private_messages(self, lastpoll, checkpoint):
+        raise Exception("No v2 support for private messages yet - need paid account")
         # Ugh. Seems twitter always delivers the last 30 days. So we need to do some manual
         # checking and possibly page backwards. At least it seems they are coming back in
         # reverse chronological order (which is not documented)
@@ -572,6 +577,10 @@ class TwitterSetup(object):
 
 # Twitter needs a special webhook URL since it's global and not per provider
 def process_twitter_webhook(request):
+    # No support for the V2 stuff yet as it needs a paid account. So just accept
+    # the webhooks without doing anything.
+    return HttpResponse("OK")
+
     if 'crc_token' in request.GET:
         # This is a pingback from twitter to see if we are alive
         d = hmac.new(
