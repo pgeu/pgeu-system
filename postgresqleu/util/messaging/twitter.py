@@ -243,7 +243,7 @@ class Twitter(object):
 
         while d['text']:
             r = self.tw.post('https://api.twitter.com/2/tweets', json=d, timeout=30)
-            if r.status_code == 200:
+            if r.status_code == 201:
                 return (r.json()['data']['id'], None)
             else:
                 # Normally Twitter gives us a json result on errors as well, so let's try that first
