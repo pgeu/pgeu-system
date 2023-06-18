@@ -31,6 +31,8 @@ import postgresqleu.trustlypayment.views
 import postgresqleu.braintreepayment.views
 import postgresqleu.stripepayment.views
 import postgresqleu.transferwise.views
+import postgresqleu.plaid.backendviews
+import postgresqleu.plaid.views
 import postgresqleu.accountinfo.views
 import postgresqleu.util.docsviews
 import postgresqleu.mailqueue.backendviews
@@ -324,6 +326,7 @@ urlpatterns.extend([
     url(r'^admin/invoices/bankfiles/$', postgresqleu.invoices.backendviews.bankfiles),
     url(r'^admin/invoices/bankfiles/transactions/$', postgresqleu.invoices.backendviews.bankfile_transaction_methodchoice),
     url(r'^admin/invoices/bankfiles/transactions/(\d+)/$', postgresqleu.invoices.backendviews.bankfile_transactions),
+    url(r'^admin/invoices/paymentmethods/(\d+)/plaidconnect/$', postgresqleu.plaid.backendviews.connect_to_plaid),
     url(r'^admin/invoices/paymentmethods/(.*/)?$', postgresqleu.invoices.backendviews.edit_paymentmethod),
     url(r'^invoices/trustlypay/(\d+)/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.invoicepayment_secret),
     url(r'^trustly_notification/(\d+)/$', postgresqleu.trustlypayment.views.notification),
@@ -380,6 +383,9 @@ urlpatterns.extend([
 
     # Transferwise webhooks
     url(r'^wh/tw/(\d+)/(\w+)/$', postgresqleu.transferwise.views.webhook),
+
+    # Plaid webhooks
+    url(r'^wh/plaid/(\d+)/$', postgresqleu.plaid.views.webhook),
 
     # Digital signatures webhooks
     url(r'^wh/(sw)/(\d+)/$', postgresqleu.digisign.views.webhook),

@@ -29,6 +29,7 @@ payment_implementations = [
     'postgresqleu.util.payment.transferwise.Transferwise',
     'postgresqleu.util.payment.stripe.Stripe',
     'postgresqleu.util.payment.banktransfer.GenericManagedBankPayment',
+    'postgresqleu.util.payment.plaid.Plaid',
 ]
 
 

@@ -118,6 +118,7 @@ INSTALLED_APPS = [
     'postgresqleu.braintreepayment',
     'postgresqleu.stripepayment',
     'postgresqleu.transferwise',
+    'postgresqleu.plaid',
     'postgresqleu.membership',
 ]
 
@@ -256,6 +257,12 @@ TREASURER_EMAIL = DEFAULT_EMAIL
 # is specified, then the django autoreloader (which can be pretty high in
 # performance overhead) is used.
 RELOAD_WATCH_DIRECTORIES = []
+
+# If using plaid, control which countries are enable when adding accounts
+# (must match account cofig)
+PLAID_COUNTRIES = ['US', 'CA']
+# Plaid production level (sandbox, development or production)
+PLAID_LEVEL = 'development'
 
 # If using the web based meetings, base URL for the web sockets server that
 # handles the messages.

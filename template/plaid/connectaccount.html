@@ -1,0 +1,66 @@
+{%extends "adm/admin_base.html" %}
+{%load assets%}
+
+{%block title%}Connect plaid account{%endblock%}
+
+{%block extrahead%}
+{%asset "js" "jquery3"%}
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+{%endblock%}
+
+{%block layoutblock %}
+<h1>Connect plaid account</h1>
+<p>
+  To connect a plaid account, click the below button to start, and wait for
+  the javascript components to load. Once they have loaded, log in to the internet
+  banking and choose <strong>one</strong> account. If you want to track multiple
+  accounts, they must be registered as separate peyment providers - only pick one
+  account for each!
+</p>
+<p>
+  Make sure you grant access <strong>only</strong> to the transaction list, and no
+  other details about the accounts.
+</p>
+
+<button class="btn btn-primary" id="link-button">Link Account</button>
+
+<form method="post" action="." id="exchangeform"> {% csrf_token %}
+<input type="hidden" id="public_token" name="public_token">
+</form>
+
+<p>
+<a href="../" class="btn btn-default btn-block">Cancel</a>
+</p>
+
+<script type="text/javascript">
+(async function($) {
+    var handler = Plaid.create({
+	token: '{{token}}',
+	onLoad: function() {
+	},
+	onSuccess: function(public_token, metadata) {
+            console.log(public_token);
+            $('#public_token').val(public_token);
+            $('#exchangeform').submit();
+	},
+	onExit: function(err, metadata) {
+	    if (err != null) {
+		// The user encountered a Plaid API error prior to exiting.
+		alert('Error communicating with plaid.');
+		console.log(err);
+		document.location.href = '../';
+	    }
+	    console.log(metadata);
+	},
+	onEvent: function(eventName, metadata) {
+	}
+    });
+    
+    $('#link-button').on('click', function(e) {
+	$('#link-button').prop('disabled', true);
+	handler.open();
+    });
+})(jQuery);
+</script>
+
+{%endblock%}

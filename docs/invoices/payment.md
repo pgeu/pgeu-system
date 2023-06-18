@@ -303,6 +303,24 @@ certain limit, an IBAN transfer to a different bank account is
 generated. The payment will be made leaving a defined amount of money
 still in the account to handle things like refunds.
 
+#### Plaid
+
+Plaid is an aggregation service that can automatically download
+transaction lists from many different banks through their different
+open banking methods, and then provides a simple REST api to access
+those transactions.
+
+While plaid does support initiating transactions as well, this
+implementatino only supports downloading the list of transactions and
+turning them into pending bank transactions, the same way as uploading
+bank files works. Therefor, it's not a fully featured payment method,
+and does not support things like refunds.
+
+If you want to poll transactions for multiple bank accounts, even if
+they are within the same bank, you have to add multiple payment
+providers using the Plaid implementation class. Each of them should
+then be tied to one *item* in plaid.
+
 ## Currencies
 
 The system can only support one currency, globally, at any given

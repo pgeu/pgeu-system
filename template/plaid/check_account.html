@@ -1,0 +1,16 @@
+{%extends "adm/admin_base.html" %}
+{%load assets%}
+
+{%block title%}Connect plaid account{%endblock%}
+{%block extrahead%}
+<meta http-equiv="refresh" content="5;url=?check_account=1"></meta>
+{%endblock%}
+
+{%block layoutblock %}
+<h1>Connect plaid account</h1>
+<p>
+  The plaid account has been conneced, but we have not yet been able to verify the
+  contents of the connection. This page will refresh every 5 seconds until the
+  account(s) show up.
+</p>
+{%endblock%}
