@@ -20,11 +20,12 @@ class BackendPlaidForm(BaseManagedBankPaymentForm):
     secret = forms.CharField(required=True, widget=forms.widgets.PasswordInput(render_value=True))
     notification_receiver = forms.EmailField(required=True)
     notify_each_transaction = forms.BooleanField(required=False, help_text="Send an email notification for each transaction received")
+    verify_balances = forms.BooleanField(required=False, help_text="Regularly verify that the account balance matches the accounting system")
     connect = SubmitButtonField(label="Connect to plaid", required=False)
     connection = forms.CharField(label='Connection', required=False, widget=StaticTextWidget)
 
     config_readonly = ['connect', 'connection', ]
-    managed_fields = ['description', 'clientid', 'secret', 'connect', 'connection', 'notification_receiver', 'notify_each_transaction', ]
+    managed_fields = ['description', 'clientid', 'secret', 'connect', 'connection', 'notification_receiver', 'notify_each_transaction', 'verify_balances', ]
     managed_fieldsets = [
         {
             'id': 'plaid',
@@ -34,7 +35,7 @@ class BackendPlaidForm(BaseManagedBankPaymentForm):
         {
             'id': 'notifications',
             'legend': 'Notifications',
-            'fields': ['notification_receiver', 'notify_each_transaction', ],
+            'fields': ['notification_receiver', 'notify_each_transaction', 'verify_balances', ],
         },
         {
             'id': 'connection',
