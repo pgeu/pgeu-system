@@ -42,7 +42,7 @@ class BackendTransferwiseForm(BaseManagedBankPaymentForm):
     notification_receiver = forms.EmailField(required=True)
     send_statements = forms.BooleanField(required=False, label="Send statements",
                                          help_text="Send monthly PDF statements by email")
-    accounting_payout = forms.ChoiceField(required=True, choices=get_account_choices,
+    accounting_payout = forms.ChoiceField(required=False, choices=[(None, '---')] + get_account_choices(),
                                           label="Payout account")
     webhookurl = forms.CharField(label="Webhook URL", widget=StaticTextWidget)
 
