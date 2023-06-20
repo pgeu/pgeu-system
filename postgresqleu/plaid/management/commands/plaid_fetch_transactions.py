@@ -49,7 +49,7 @@ class Command(BaseCommand):
                 transactionid=t['transaction_id'],
                 defaults={
                     'datetime': parse_datetime(t['datetime']) if t['datetime'] else make_aware(datetime.combine(parse_date(t['date']), time(0, 0))),
-                    'amount': Decimal(-t['amount']),  # All plaid amounts are reported negative
+                    'amount': -Decimal(str(t['amount'])),  # All plaid amounts are reported negative
                     'paymentref': t['name'][:200],
                     'transactionobject': t,
                 }
