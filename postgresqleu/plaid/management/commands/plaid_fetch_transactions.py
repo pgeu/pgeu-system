@@ -60,7 +60,7 @@ class Command(BaseCommand):
                         settings.INVOICE_SENDER_EMAIL,
                         method.config['notification_receiver'],
                         "Plaid transaction received on {}".format(method.internaldescription),
-                        "A new plaid transaction has been registered for {}:\n\nDate:   {}\nAmonut: {}\nText:   {}\n".format(
+                        "A new plaid transaction has been registered for {}:\n\nDate:   {}\nAmount: {}\nText:   {}\n".format(
                             method.internaldescription,
                             trans.datetime,
                             trans.amount,
