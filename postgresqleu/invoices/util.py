@@ -872,7 +872,7 @@ def register_pending_bank_matcher(account, pattern, amount, journalentry):
 # no further processing.
 def register_bank_transaction(method, methodidentifier, amount, transtext, sender, canreturn=False):
     if not isinstance(amount, Decimal):
-        raise Exception("Amount must be specified as Decimal!")
+        raise Exception("Amount must be specified as Decimal, not {}!".format(type(amount)))
 
     # First try to match it against pending invoices.
     # We search by amount and then match by payment reference as our primary choice.
