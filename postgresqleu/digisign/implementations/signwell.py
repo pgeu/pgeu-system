@@ -339,6 +339,8 @@ class Signwell(BaseProvider):
                     dhandler.completed()
                 elif event == 'document_expired':
                     dhandler.expired()
+                elif event == 'document_canceled':
+                    dhandler.canceled()
                 elif event == 'document_declined':
                     dhandler.declined()
             except Exception as e:

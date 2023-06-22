@@ -26,3 +26,6 @@ class DigisignHandlerBase:
 
     def declined(self):
         pass
+
+    def canceled(self):
+        pass

@@ -1,0 +1,11 @@
+Hello!
+
+The digital contract sent to you for signing of a {{sponsor.level}}
+sponsorship for {{conference}} has been canceled by the organisers. Due
+to this, your sponsorship registration has been canceled.
+
+If you are still interested in sponsoring {{conference}},
+we ask you to restart the process and make a new registration, at
+which point you will receive a new contract to sign. Please note that
+the old contract being canceled means it should no longer be signed as
+it is connected to the deleted registration.

@@ -401,3 +401,29 @@ class SponsorDigisignHandler(DigisignHandlerBase):
                 },
             )
             self.sponsor.delete()
+
+    def canceled(self):
+        if self.sponsor.autoapprovesigned and self.sponsor.conference.autocontracts:
+            if self.sponsor.confirmed:
+                send_conference_sponsor_notification(
+                    self.sponsor.conference,
+                    "Contract canceled for already confirmed sponsor: %s" % self.sponsor.name,
+                    "The digital contract for sponsor\n%s\nhas been canceled. However, the sponsor was already confirmed!\n" % (self.sponsor.name),
+                )
+                return
+
+            send_conference_sponsor_notification(
+                self.sponsor.conference,
+                "Contract canceled for sponsor %s" % self.sponsor.name,
+                "The digital contract for sponsor\n%s\nhas been canceled. The sponsorship has been rejected and the sponsor instructed to start over if they are still interested.\n" % (self.sponsor.name),
+                )
+            send_sponsor_manager_email(
+                self.sponsor,
+                "Sponsorship contract cancled",
+                'confsponsor/mail/sponsor_digisign_canceled.txt',
+                {
+                    'sponsor': self.sponsor,
+                    'conference': self.sponsor.conference,
+                },
+            )
+            self.sponsor.delete()
