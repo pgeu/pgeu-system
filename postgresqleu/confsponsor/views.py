@@ -1018,7 +1018,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
         return HttpResponseRedirect('.')
 
     if request.method == 'POST':
-        if request.POST.get('submit', '') == 'Confirm sponsorship and generate invoice':
+        if request.POST.get('submit', '') == 'Generate sponsorship invoice':
             if sponsor.invoice:
                 # Existing invoice
                 messages.warning(request, "This sponsor already has an invoice!")
