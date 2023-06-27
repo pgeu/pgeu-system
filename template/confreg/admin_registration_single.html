@@ -261,6 +261,27 @@
   </td>
 </tr>
 
+{%if reg.registrationwaitlistentry %}
+<tr>
+  <td>Waitlist log</td>
+  <td>
+    <table class="table table-condensed">
+      <tr>
+	<th>Time</th>
+	<th>Message</th>
+      </tr>
+{%for l in reg.registrationwaitlistentry.registrationwaitlisthistory_set.all %}
+      <tr>
+	<td>{{l.time}}</td>
+        <td>{{l.text}}</td>
+      </tr>
+{%endfor%}
+      <tr><td colspan="3"><a class="btn btn-default btn-block" href="log/">View full log</a></td></tr>
+    </table>
+  </td>
+</tr>
+{%endif%}
+
 </table>
 
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/edit/">Edit registration</a>
