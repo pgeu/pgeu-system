@@ -19,7 +19,12 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         path = os.path.abspath(os.path.join(__file__, '../../../migrations'))
         with transaction.atomic():
-            scan_constraint_differences(path, kwargs['fix'])
+            errors = scan_constraint_differences(path, kwargs['fix'])
+            if errors:
+                print("There were errors:")
+                for e in errors:
+                    print(e)
+                print("There were errors! See above!")
             if kwargs['fix']:
                 while True:
                     r = input("Commit transaction? ")

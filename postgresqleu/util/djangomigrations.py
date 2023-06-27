@@ -43,9 +43,11 @@ def dump_expected_files(directory):
 def scan_constraint_differences(directory, fix=False):
     curs = connection.cursor()
 
+    errors = []
+
     def _print_cant_fix(msg):
         if fix:
-            print("CAN'T FIX: {}".format(msg))
+            errors.append("CAN'T FIX: {}".format(msg))
         else:
             print(msg)
 
@@ -90,3 +92,5 @@ def scan_constraint_differences(directory, fix=False):
     curs.execute("WITH t AS ({}) SELECT conname FROM _sync_constraints_expected e WHERE NOT EXISTS (SELECT 1 FROM t WHERE e.relname=t.relname AND e.frelname=t.frelname and e.attname=t.attname AND e.fattname=t.fattname)".format(_query_foreign_constraints))
     for current, in curs.fetchall():
         _print_cant_fix("Foreign key constraint {} is missing".format(current))
+
+    return errors
