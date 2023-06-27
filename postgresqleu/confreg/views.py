@@ -504,7 +504,7 @@ def multireg(request, confname, regid=None):
         else:
             return render_conference_response(request, conference, 'reg', 'confreg/closed.html')
 
-    allregs = ConferenceRegistration.objects.filter(conference=conference, registrator=request.user)
+    allregs = ConferenceRegistration.objects.filter(conference=conference, registrator=request.user).exclude(attendee_id=request.user)
     try:
         next((a for a in allregs if not (a.payconfirmedat or a.bulkpayment)))
         haspending = True
@@ -518,6 +518,8 @@ def multireg(request, confname, regid=None):
                                 pk=regid,
                                 conference=conference,
                                 registrator=request.user)
+        if reg.attendee:
+            raise Http404("Registration is connected to an account, can't be edited as multireg!")
         redir_root = '../'
     else:
         reg = ConferenceRegistration(conference=conference,
@@ -685,7 +687,8 @@ def multireg_newinvoice(request, confname):
                                                         registrator=request.user,
                                                         payconfirmedat__isnull=True,
                                                         invoice__isnull=True,
-                                                        bulkpayment__isnull=True)
+                                                        bulkpayment__isnull=True) \
+                                                .exclude(attendee=request.user)
     if not pendingregs.exists():
         # No pending registrations exist, so just send back (should not
         # happen scenario)
@@ -706,6 +709,8 @@ def multireg_newinvoice(request, confname):
             errors.append('{0} uses registration type {1} which is not active'.format(r.email, r.regtype))
         elif r.regtype.activeuntil and r.regtype.activeuntil < today_conference():
             errors.append('{0} uses registration type {1} which is not active'.format(r.email, r.regtype))
+        elif r.attendee:
+            errors.append('{0} is attached to an account, and cannot be a multireg. This should not happen, please contact the organisers for checking'.format(r.email))
         else:
             try:
                 invoicerows.extend(invoicerows_for_registration(r, finalize))
