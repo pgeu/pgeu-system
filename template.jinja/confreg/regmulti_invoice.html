@@ -19,6 +19,16 @@ table.invoiceconfirmtbl tr.totalrow td.cost {
 {%endblock%}
 {%block content%}
 <h1>Create Invoice<span class="confheader"> - {{conference}}</span></h1>
+{%if errors%}
+<p>
+  The following errors occured which prevents creation of an invoice:
+</p>
+<ul>
+{%for e in errors%}
+ <li>{{e}}</li>
+{%endfor%}
+</ul>
+{%else%}
 <p>
   Please enter invoice recipient information below. The contents of the
   recipient and address will be copied directly to the invoice, so make
@@ -63,6 +73,7 @@ table.invoiceconfirmtbl tr.totalrow td.cost {
 {%endif%}
 </tr>
 </table>
+{%endif%}
 
 {%endblock%}
 

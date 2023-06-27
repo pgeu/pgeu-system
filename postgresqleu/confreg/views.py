@@ -765,6 +765,7 @@ def multireg_newinvoice(request, confname):
         'invoicerows': invoicerows,
         'totalcost': totalcost,
         'totalwithvat': totalwithvat,
+        'errors': errors,
     })
 
 
