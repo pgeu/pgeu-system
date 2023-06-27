@@ -340,7 +340,7 @@ class Conference(models.Model):
 
         # Any registrations that are completed, has an invoice, or has a
         # bulk payment will count against the total.
-        num = ConferenceRegistration.objects.filter(Q(conference=self) & (Q(payconfirmedat__isnull=False, canceledat__isnull=True) | Q(invoice__isnull=False) | Q(bulkpayment__isnull=False))).count()
+        num = ConferenceRegistration.objects.filter(Q(conference=self, canceledat__isnull=True) & (Q(payconfirmedat__isnull=False) | Q(invoice__isnull=False) | Q(bulkpayment__isnull=False))).count()
         if num >= self.attendees_before_waitlist:
             return True
 
