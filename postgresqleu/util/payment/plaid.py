@@ -1,5 +1,6 @@
 from django import forms
 from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.conf import settings
 
 import io
@@ -87,6 +88,12 @@ class Plaid(BaseManagedBankPayment):
     @property
     def description(self):
         return self.config('description').replace("\n", '<br/>') if self.config('description') else ''
+
+    def render_page(self, request, invoice):
+        return render(request, 'invoices/genericbankpayment.html', {
+            'invoice': invoice,
+            'bankinfo': self.config('bankinfo'),
+        })
 
     def get_link_token(self):
         r = self.session.post('{}link/token/create'.format(self.ROOTURL), json={
