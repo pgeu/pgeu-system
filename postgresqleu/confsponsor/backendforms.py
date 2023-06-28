@@ -120,6 +120,10 @@ class BackendSponsorshipLevelBenefitManager(object):
     title = 'Benefits'
     singular = 'benefit'
     can_add = True
+    fieldset = {
+        'id': 'benefits',
+        'legend': 'Benefits',
+    }
 
     def get_list(self, instance):
         return [(b.id, b.benefitname, b.benefitdescription) for b in instance.sponsorshipbenefit_set.all()]
@@ -163,6 +167,29 @@ class BackendSponsorshipLevelForm(BackendForm):
         widgets = {
             'paymentmethods': django.forms.CheckboxSelectMultiple,
         }
+
+    fieldsets = [
+        {
+            'id': 'base_info',
+            'legend': 'Basic information',
+            'fields': ['levelname', 'urlname', 'levelcost', 'available', 'public', 'maxnumber', ]
+        },
+        {
+            'id': 'contract',
+            'legend': 'Contract information',
+            'fields': ['instantbuy', 'contract', ],
+        },
+        {
+            'id': 'payment',
+            'legend': 'Payment information',
+            'fields': ['paymentmethods', 'invoiceextradescription', ],
+        },
+        {
+            'id': 'services',
+            'legend': 'Services',
+            'fields': ['canbuyvoucher', 'canbuydiscountcode', ],
+        },
+    ]
 
     def fix_fields(self):
         self.fields['contract'].queryset = SponsorshipContract.objects.filter(conference=self.conference)
