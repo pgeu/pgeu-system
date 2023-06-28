@@ -86,7 +86,7 @@ class Plaid(BaseManagedBankPayment):
 
     @property
     def description(self):
-        return self.config('description').replace("\n", '<br/>')
+        return self.config('description').replace("\n", '<br/>') if self.config('description') else ''
 
     def get_link_token(self):
         r = self.session.post('{}link/token/create'.format(self.ROOTURL), json={
