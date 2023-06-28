@@ -157,7 +157,7 @@ must be exact and all fees covered by sender.
 """
 
     def render_page(self, request, invoice):
-        return render(request, 'transferwise/payment.html', {
+        return render(request, 'invoices/genericbankpayment.html', {
             'invoice': invoice,
             'bankinfo': self.config('bankinfo'),
         })
