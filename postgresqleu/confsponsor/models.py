@@ -44,6 +44,10 @@ class SponsorshipLevel(models.Model):
     maxnumber = models.IntegerField(null=False, blank=False, default=0, verbose_name="Maximum number of sponsors")
     instantbuy = models.BooleanField(null=False, blank=False, default=False, verbose_name="Instant buy available")
     paymentmethods = models.ManyToManyField(InvoicePaymentMethod, blank=False, verbose_name="Payment methods for generated invoices")
+    invoiceextradescription = models.TextField(
+        blank=True, null=False, verbose_name="Invoice extra description",
+        help_text="Extra description to be added to invoices, included in payment information and in the email sent.",
+    )
     contract = models.ForeignKey(SponsorshipContract, blank=True, null=True, on_delete=models.CASCADE)
     canbuyvoucher = models.BooleanField(null=False, blank=False, default=True, verbose_name="Can buy vouchers")
     canbuydiscountcode = models.BooleanField(null=False, blank=False, default=True, verbose_name="Can buy discount codes")

@@ -208,6 +208,7 @@ def create_sponsor_invoice(user, sponsor, override_duedate=None):
         reverse_vat=reverse_vat,
         extra_bcc_list=conference.sponsoraddr,
         paymentmethods=level.paymentmethods.all(),
+        extradescription=level.invoiceextradescription,
     )
     return i
 

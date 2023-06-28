@@ -319,6 +319,13 @@ Payment methods for generated invoices
    creditcard, but higher levels may only support manual bank
    transfers.
 
+Invoice extra description
+:  Text that's included as the invoice extra description, which is
+   included on the invoice payment page as well as in the email sent
+   to the sponsor with the invoice. This can typically be used to
+   suggest using specific payment methods, or to inform about special
+   terms.
+
 Can buy vouchers
 :  Can sponsors at this level buy extra vouchers that they can give to
    employees, customers or others. These vouchers are separate from

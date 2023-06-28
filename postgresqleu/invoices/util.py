@@ -670,12 +670,15 @@ if available).
                        accounting_object=None,
                        canceltime=None,
                        reverse_vat=False,
-                       extra_bcc_list=None):
+                       extra_bcc_list=None,
+                       extradescription='',
+                       ):
         invoice = Invoice(
             recipient_email=recipient_email,
             recipient_name=recipient_name,
             recipient_address=recipient_address,
             title=title,
+            extradescription=extradescription,
             invoicedate=invoicedate,
             duedate=duedate,
             total_amount=-1,

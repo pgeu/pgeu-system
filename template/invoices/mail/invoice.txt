@@ -11,7 +11,8 @@ You can view your invoice online, and also access information about
 payment options at:
 {{invoiceurl}}
 {%endif%}
-
+{%if invoice.extradescription%}{{invoice.extradescription}}
+{%endif%}
 If you have any questions, feel free to respond to this email and
 we'll try to respond as quickly as possible.
 
