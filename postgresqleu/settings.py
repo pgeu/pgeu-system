@@ -120,6 +120,7 @@ INSTALLED_APPS = [
     'postgresqleu.transferwise',
     'postgresqleu.plaid',
     'postgresqleu.membership',
+    'postgresqleu.elections',
 ]
 
 # Root directory for DejaVu truetype fonts
@@ -346,9 +347,6 @@ if ENABLE_ELECTIONS and not ENABLE_MEMBERSHIP:
 
 if ENABLE_MEMBERSHIP:
     TEMPLATES[0]['OPTIONS']['context_processors'].append('postgresqleu.util.context_processors.member_context')
-
-if ENABLE_ELECTIONS:
-    INSTALLED_APPS.append('postgresqleu.elections')
 
 if 'INVOICE_NOTIFICATION_RECEIVER' not in globals():
     INVOICE_NOTIFICATION_RECEIVER = INVOICE_SENDER_EMAIL
