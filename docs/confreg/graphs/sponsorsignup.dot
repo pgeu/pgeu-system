@@ -8,7 +8,7 @@ digraph sponsorsignup {
 
 	start[shape=circle label="Sign up"];
 	type[shape=diamond label="Req contract?"];
-	confirm[shape=box label="Confirm details\nand contract"];
+	confirm[shape=box label="Confirm details\nand sign contract"];
 	invoice[shape=box label="Invoice generated"];
 	typeofcontract[shape=diamond label="Use digital contract"];
 	manualpdf[shape=box label="Auto-send PDF contract"];
@@ -32,7 +32,7 @@ digraph sponsorsignup {
 	signcomplete -> confirmed [label="Auto\nconfirm"]
 	signcomplete->invoice [label="Auto\ninvoice"]
 	manualpdf -> contract;
-	confirm -> invoice [label="Details\nconfirmed", color=blue];
+	confirm -> invoice [label="Details\nconfirmed.\nGenerate\ninvoice.", color=blue];
 	contract -> confirm [label="Contract\nreceived", color=blue];
 	confirm -> confirmed [label="Early\nconfirmation\nbefore\npayment", color=blue];
 	invoice -> confirmed [label="Invoice\npaid", color=green];
