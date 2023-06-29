@@ -1045,7 +1045,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
             # Directly confirm the sponsorship, since the cost was zero (any payment is assumed
             # to have been handled manually in this case)
             if sponsor.level.levelcost > 0:
-                messages.error(request, "Cannot confirm a sponsor with non-zero cost without an inovice!")
+                messages.error(request, "Cannot confirm a sponsor with non-zero cost without an invoice!")
                 return HttpResponseRedirect(".")
             confirm_sponsor(sponsor, request.user.username)
             messages.info(request, "Sponsor {0} confirmed".format(sponsor.name))
