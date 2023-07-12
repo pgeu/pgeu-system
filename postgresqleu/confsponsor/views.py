@@ -1059,6 +1059,12 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
                 messages.error(request, "Cannot reject sponsorship without reason!")
                 return HttpResponseRedirect(".")
             # Else actually reject it
+
+            # If the sponsorship has a *digital* contract, we issue a cancellation of it if possible
+            if sponsor.signmethod == 0 and sponsor.contract:
+                conference.contractprovider.get_implementation().cancel_contract(sponsor.contract.documentid)
+                messages.info(request, "Digital contract for sponsor {} canceled.".format(sponsor.name))
+
             send_conference_sponsor_notification(
                 conference,
                 "Sponsor %s rejected" % sponsor.name,

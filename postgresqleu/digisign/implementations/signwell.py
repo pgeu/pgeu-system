@@ -142,6 +142,16 @@ class Signwell(BaseProvider):
 
         return r.json()['id'], None
 
+    def cancel_contract(self, contractid):
+        try:
+            r = requests.delete('https://www.signwell.com/api/v1/documents/{}/'.format(contractid), headers={
+                'X-Api-Key': self.provider.config.get('apikey'),
+            }, timeout=15)
+            r.raise_for_status()
+        except Exception as e:
+            return "Exception deleting contract: {}".format(e)
+        return None
+
     def edit_digital_fields(self, request, conference, name, pdf, fieldjson, savecallback, breadcrumbs):
         if request.method == 'GET' and 'finished' in request.GET:
             if 'signwelledit' not in fieldjson:
