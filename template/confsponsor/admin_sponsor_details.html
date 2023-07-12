@@ -37,7 +37,10 @@
   </tr>
   <tr>
     <th>Contract:</th>
-    <td>{%if sponsor.signmethod == 0%}Digital contract. <a href="/events/sponsor/admin/{{conference.urlname}}/{{sponsor.id}}/contractlog/" class="btn btn-sm btn-default">View contract log</a>{%else%}Manual contract{%endif%}</td>
+    <td>
+      {%if sponsor.signmethod == 0%}Digital contract. <a href="/events/sponsor/admin/{{conference.urlname}}/{{sponsor.id}}/contractlog/" class="btn btn-sm btn-default">View contract log</a>{%else%}Manual contract{%endif%}
+      {%if sponsor.signmethod != 0 or conference.contractprovider.implementation.can_resend%}<form class="inline-block-form" method="post" action="resendcontract/">{% csrf_token %}<input type="submit" class="btn btn-sm btn-default confirm-btn" value="Re-send contract" data-confirm="Are you sure you want to re-send a new contract to this sponsor?{%if sponsor.signmethod == 0%} {{conference.contractprovider.implementation.resendprompt}}{%endif%}"></form>{%endif%}
+    </td>
   </tr>
 {%if details%}
 {%if sponsor.invoice%}

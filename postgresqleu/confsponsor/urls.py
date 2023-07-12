@@ -31,6 +31,7 @@ urlpatterns = [
     url(r'^admin/(\w+)/(\d+)/$', views.sponsor_admin_sponsor),
     url(r'^admin/(\w+)/(\d+)/edit/$', backendviews.edit_sponsor),
     url(r'^admin/(\w+)/(\d+)/contractlog/$', views.sponsor_admin_sponsor_contractlog),
+    url(r'^admin/(\w+)/(\d+)/resendcontract/$', views.sponsor_admin_sponsor_resendcontract),
     url(r'^admin/(\w+)/benefit/(\d+)/$', views.sponsor_admin_benefit),
     url(r'^admin/(\w+)/sendmail/$', views.sponsor_admin_send_mail),
     url(r'^admin/(\w+)/viewmail/(\d+)/$', views.sponsor_admin_view_mail),

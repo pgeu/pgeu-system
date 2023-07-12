@@ -79,6 +79,11 @@ a.preview-pdf-link {
     cursor: pointer;
 }
 
+/* Form that displays inline-block */
+form.inline-block-form {
+    display: inline-block;
+}
+
 /*
  * Text-area styling for writing plaintext email
  */

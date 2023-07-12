@@ -23,6 +23,10 @@ class DigisignProvider(models.Model):
         mod = __import__(modname, fromlist=[classname, ])
         return getattr(mod, classname)(self.id, self)
 
+    @property
+    def implementation(self):
+        return self.get_implementation()
+
 
 class DigisignDocument(models.Model):
     provider = models.ForeignKey(DigisignProvider, null=False, blank=False, on_delete=models.CASCADE)

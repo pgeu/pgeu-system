@@ -79,8 +79,10 @@ On the Signwell account, open up the API application and specify
 class Signwell(BaseProvider):
     backend_form_class = SignwellBackendForm
     can_send_preview = True
+    can_resend = True
     has_log_details = True
     webhookcode = "sw"
+    resendprompt = "Note that re-sending the contract will issue a cancel for the old contract and create a new one, which will trigger multiple emails to the recipient."
 
     def description_text(self, signeremail):
         return 'Signing instructions will be delivered to {}. If necessary, you will be able to re-route the signing from the provider interface to somebody else in your organisation once the process is started.'.format(signeremail)

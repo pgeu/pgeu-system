@@ -328,6 +328,56 @@ def sponsor_signup_dashboard(request, confurlname):
         })
 
 
+def _generate_and_send_sponsor_contract(sponsor):
+    conference = sponsor.conference
+    level = sponsor.level
+
+    pdf = fill_pdf_fields(
+        level.contract.contractpdf,
+        get_pdf_fields_for_conference(conference, sponsor),
+        level.contract.fieldjson,
+    )
+
+    if sponsor.signmethod == 1:
+        # Either the user picked manual, or only manual is available
+        send_sponsor_manager_email(
+            sponsor,
+            'Your contract for {}'.format(conference.conferencename),
+            'confsponsor/mail/sponsor_contract_manual.txt',
+            {
+                'conference': conference,
+                'sponsor': sponsor,
+            },
+            attachments=[
+                ('{}_sponsorship_contract.pdf'.format(conference.urlname), 'application/pdf', pdf),
+            ],
+        )
+        return None, None
+    else:
+        manager = sponsor.managers.all()[0]
+
+        # Send a signing request using the configured provider
+        signer = conference.contractprovider.get_implementation()
+        contractid, error = signer.send_contract(
+            conference.contractsendername,
+            conference.contractsenderemail,
+            "{} {}".format(manager.first_name, manager.last_name),
+            manager.email,
+            pdf,
+            "{}_sponsorship_contract.pdf".format(conference.urlname),
+            "{} {} sponsorship contract".format(conference.conferencename, level.levelname),
+            "Hello!\n\nYou have signed up as a {} sponsor of {}. Please use the link below to view and sign the sponsorship contract for the event. When you have signed the contract, the organisers will also sign it, and at that point your sponsorship will proceed to the next step.".format(level.levelname, conference.conferencename),
+            {
+                'type': 'sponsor',
+                'sponsorid': str(sponsor.id),
+            },
+            level.contract.fieldjson,
+            conference.contractexpires,
+            test=False,
+        )
+        return contractid, error
+
+
 @login_required
 @transaction.atomic
 def sponsor_signup(request, confurlname, levelurlname):
@@ -440,60 +490,23 @@ def sponsor_signup(request, confurlname, levelurlname):
                     mailstr += "Level does not require a signed contract. Verify the details and approve\nthe sponsorship using:\n\n{0}/events/sponsor/admin/{1}/{2}/".format(
                         settings.SITEBASE, conference.urlname, sponsor.id)
                 else:
-                    pdf = fill_pdf_fields(
-                        level.contract.contractpdf,
-                        get_pdf_fields_for_conference(conference, sponsor),
-                        level.contract.fieldjson,
-                    )
+                    contractid, error = _generate_and_send_sponsor_contract(sponsor)
 
-                    if request.POST['contractchoice'] == '1' or not conference.contractprovider:
-                        # Either the user picked manual, or only manual is available
+                    if sponsor.signmethod == 1:
                         mailstr += "No invoice has been generated as for this level\na signed contract is required first. The sponsor\nhas been instructed to sign and send the contract."
-
-                        send_sponsor_manager_email(
-                            sponsor,
-                            'Your contract for {}'.format(conference.conferencename),
-                            'confsponsor/mail/sponsor_contract_manual.txt',
-                            {
-                                'conference': conference,
-                                'sponsor': sponsor,
-                            },
-                            attachments=[
-                                ('{}_sponsorship_contract.pdf'.format(conference.urlname), 'application/pdf', pdf),
-                            ],
-                        )
                     else:
-                        # Send a signing request using the configured provider
                         mailstr += "No invoice has been generated as for this level\na signed contract is required first. The sponsor\nhas been sent a contract for digital signing."
 
-                        signer = conference.contractprovider.get_implementation()
-                        contractid, error = signer.send_contract(
-                            conference.contractsendername,
-                            conference.contractsenderemail,
-                            "{} {}".format(request.user.first_name, request.user.last_name),
-                            request.user.email,
-                            pdf,
-                            "{}_sponsorship_contract.pdf".format(conference.urlname),
-                            "{} {} sponsorship contract".format(conference.conferencename, sponsor.level.levelname),
-                            "Hello!\n\nYou have signed up as a {} sponsor of {}. Please use the link below to view and sign the sponsorship contract for the event. When you have signed the contract, the organisers will also sign it, and at that point your sponsorship will proceed to the next step.".format(level.levelname, conference.conferencename),
-                            {
-                                'type': 'sponsor',
-                                'sponsorid': str(sponsor.id),
-                            },
-                            level.contract.fieldjson,
-                            conference.contractexpires,
-                            test=False,
+                    if error:
+                        form.add_error("Failed to send digital contract.")
+                    else:
+                        sponsor.contract = DigisignDocument(
+                            provider=conference.contractprovider,
+                            documentid=contractid,
+                            handler='confsponsor',
                         )
-                        if error:
-                            form.add_error("Failed to send digital contract.")
-                        else:
-                            sponsor.contract = DigisignDocument(
-                                provider=conference.contractprovider,
-                                documentid=contractid,
-                                handler='confsponsor',
-                            )
-                            sponsor.contract.save()
-                            sponsor.save(update_fields=['contract', ])
+                        sponsor.contract.save()
+                        sponsor.save(update_fields=['contract', ])
 
                 if not error:
                     send_conference_sponsor_notification(
@@ -504,7 +517,7 @@ def sponsor_signup(request, confurlname, levelurlname):
 
                     # Redirect back to edit the actual sponsorship entry
                     return HttpResponseRedirect('/events/sponsor/%s/' % sponsor.id)
-                # Else on error we fall through and re-render the form
+                # Else on error we fall through and re-render the form with the error
     else:
         form = SponsorSignupForm(conference)
 
@@ -1129,6 +1142,45 @@ def sponsor_admin_sponsor_contractlog(request, confurlname, sponsorid):
             ('/events/sponsor/admin/{0}/{1}/'.format(conference.urlname, sponsor.id), sponsor.name),
         ),
     })
+
+
+@login_required
+@transaction.atomic
+def sponsor_admin_sponsor_resendcontract(request, confurlname, sponsorid):
+    conference = get_authenticated_conference(request, confurlname)
+
+    sponsor = get_object_or_404(Sponsor, id=sponsorid, conference=conference)
+
+    if sponsor.confirmed:
+        messages.error(request, "Sponsor is already confirmed. Cannot re-send contract.")
+    else:
+        contractid, error = _generate_and_send_sponsor_contract(sponsor)
+        if error:
+            messages.error(request, "Failed to generate and send sponsor contract. Old contract still remains.")
+        else:
+            # If there is *already* a digital contract for this sponsor, it must be canceled.
+            if sponsor.contract:
+                err = conference.contractprovider.get_implementation().cancel_contract(sponsor.contract.documentid)
+                if err:
+                    messages.error(request, "Error occurred when canceling the old contract. New contract is still processed, old contract may be orphaned! Error: {}".format(err))
+                sponsor.contract = None
+
+            sponsor.contract = DigisignDocument(
+                provider=conference.contractprovider,
+                documentid=contractid,
+                handler='confsponsor',
+            )
+            sponsor.contract.save()
+            sponsor.save(update_fields=['contract', ])
+
+        send_conference_sponsor_notification(
+            conference,
+            "New contract sent to sponsor {} for {}".format(sponsor.name, conference),
+            "A new contract has been issued for {}. If an existing digital contract existed, it has been canceled.".format(sponsor.name),
+        )
+        messages.info(request, "Sponsorship contract has been re-generated and re-sent")
+
+    return HttpResponseRedirect("../")
 
 
 @login_required
