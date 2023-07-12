@@ -20,7 +20,7 @@ from postgresqleu.auth import user_search, user_import
 from postgresqleu.confreg.models import Conference, PrepaidVoucher, PrepaidBatch, DiscountCode
 from postgresqleu.confreg.util import get_authenticated_conference, get_conference_or_404
 from postgresqleu.confreg.jinjafunc import render_sandboxed_template
-from postgresqleu.confreg.util import send_conference_mail, send_conference_notification
+from postgresqleu.confreg.util import send_conference_mail
 from postgresqleu.confreg.twitter import post_conference_social
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.decorators import superuser_required
@@ -496,7 +496,7 @@ def sponsor_signup(request, confurlname, levelurlname):
                             sponsor.save(update_fields=['contract', ])
 
                 if not error:
-                    send_conference_notification(
+                    send_conference_sponsor_notification(
                         conference,
                         "Sponsor %s signed up for %s" % (sponsor.name, conference),
                         mailstr,
@@ -566,7 +566,7 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
                         benefit,
                         settings.SITEBASE,
                         sponsor.conference.urlname)
-                send_conference_notification(
+                send_conference_sponsor_notification(
                     sponsor.conference,
                     "Sponsor %s %s sponsorship benefit %s" % (sponsor, claim.declined and 'declined' or 'claimed', benefit),
                     mailstr,
