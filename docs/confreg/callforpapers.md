@@ -27,8 +27,7 @@ Voting is done by everybody who is listed as a talk voter in the
 conference configuration, by using the "view sessions and vote" page.
 
 Each person can give a score, 1-9 with 9 being the best, to a talk to
-rate it. If the score is left at 0 that means "no vote", it does *not*
-mean "really bad".
+rate it.
 
 Normally each person is not allowed to vote for any talks they
 submitted themselves, and need to exercise restraint when voting for

@@ -304,7 +304,7 @@ width: 100%;
       <td{%if u|default_if_none:0 == 0%} style="background-color:red"{%endif%}>
         <select id="sv_{{s.id}}" onChange="castVote({{s.id}})">
           {%for opt in "0123456789"|make_list%}
-            <option value="{{opt}}"{%if opt|add:0 == u|add:0%} SELECTED{%endif%}>{{opt}}</option>
+            <option value="{{opt}}"{%if opt|add:0 == u|add:0%} SELECTED{%endif%}>{%if opt == "0"%}No vote{%else%}{{opt}}{%endif%}</option>
           {%endfor%}
         </select>
       </td>
