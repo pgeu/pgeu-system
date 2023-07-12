@@ -1158,20 +1158,22 @@ def sponsor_admin_sponsor_resendcontract(request, confurlname, sponsorid):
         if error:
             messages.error(request, "Failed to generate and send sponsor contract. Old contract still remains.")
         else:
-            # If there is *already* a digital contract for this sponsor, it must be canceled.
-            if sponsor.contract:
-                err = conference.contractprovider.get_implementation().cancel_contract(sponsor.contract.documentid)
-                if err:
-                    messages.error(request, "Error occurred when canceling the old contract. New contract is still processed, old contract may be orphaned! Error: {}".format(err))
-                sponsor.contract = None
+            if sponsor.signmethod == 0:
+                # If there is *already* a digital contract for this sponsor, it must be canceled.
+                if sponsor.contract:
+                    err = conference.contractprovider.get_implementation().cancel_contract(sponsor.contract.documentid)
+                    if err:
+                        messages.error(request, "Error occurred when canceling the old contract. New contract is still processed, old contract may be orphaned! Error: {}".format(err))
+                    sponsor.contract = None
 
-            sponsor.contract = DigisignDocument(
-                provider=conference.contractprovider,
-                documentid=contractid,
-                handler='confsponsor',
-            )
-            sponsor.contract.save()
-            sponsor.save(update_fields=['contract', ])
+                # Store the new digital contract reference
+                sponsor.contract = DigisignDocument(
+                    provider=conference.contractprovider,
+                    documentid=contractid or '',
+                    handler='confsponsor',
+                )
+                sponsor.contract.save()
+                sponsor.save(update_fields=['contract', ])
 
         send_conference_sponsor_notification(
             conference,
