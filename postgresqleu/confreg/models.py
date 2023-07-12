@@ -542,7 +542,7 @@ class BulkPayment(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
 
     # Invoice, once one has been created
-    invoice = models.ForeignKey(Invoice, null=True, blank=True, on_delete=models.CASCADE)
+    invoice = models.OneToOneField(Invoice, null=True, blank=True, on_delete=models.CASCADE)
     numregs = models.IntegerField(null=False, blank=False)
 
     createdat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
@@ -610,7 +610,7 @@ class ConferenceRegistration(models.Model):
 
     # If an invoice is generated, link to it here so we can find our
     # way back easily.
-    invoice = models.ForeignKey(Invoice, null=True, blank=True, on_delete=models.CASCADE)
+    invoice = models.OneToOneField(Invoice, null=True, blank=True, on_delete=models.CASCADE)
     bulkpayment = models.ForeignKey(BulkPayment, null=True, blank=True, on_delete=models.CASCADE)
 
     # Any voucher codes. This is just used as temporary storage, and as
@@ -634,6 +634,12 @@ class ConferenceRegistration(models.Model):
     messaging = models.ForeignKey('ConferenceMessaging', null=True, blank=True, on_delete=models.SET_NULL)
     messaging_copiedfrom = models.ForeignKey(Conference, null=True, blank=True, on_delete=models.SET_NULL, related_name='reg_messaging_copiedfrom')
     messaging_config = models.JSONField(null=False, blank=False, default=dict)
+
+    class Meta:
+        unique_together = (
+            ('attendee_id', 'conference_id'),
+            ('email', 'conference_id'),
+        )
 
     @property
     def fullname(self):
@@ -896,6 +902,12 @@ class Track(models.Model):
 
     json_included_attributes = ['trackname', 'color', 'fgcolor', 'sortkey', 'incfp', 'showcompany']
 
+    class Meta:
+        ordering = ('sortkey', 'trackname')
+        unique_together = (
+            ('conference', 'trackname'),
+        )
+
     def __str__(self):
         return self.trackname
 
@@ -919,6 +931,9 @@ class Room(models.Model):
 
     class Meta:
         ordering = ['sortkey', 'roomname', ]
+        unique_together = (
+            ('conference', 'roomname'),
+        )
 
 
 def _get_upload_path(instance, filename):
@@ -1347,7 +1362,7 @@ class PendingAdditionalOrder(models.Model):
     options = models.ManyToManyField(ConferenceAdditionalOption, blank=False)
     newregtype = models.ForeignKey(RegistrationType, null=True, blank=True, on_delete=models.CASCADE)
     createtime = models.DateTimeField(null=False, blank=False)
-    invoice = models.ForeignKey(Invoice, null=True, blank=True, on_delete=models.CASCADE)
+    invoice = models.OneToOneField(Invoice, null=True, blank=True, on_delete=models.CASCADE)
     payconfirmedat = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):

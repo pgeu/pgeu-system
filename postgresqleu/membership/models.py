@@ -67,7 +67,7 @@ class Member(models.Model):
 
     # If there is a currently active invoice, link to it here so we can
     # easily render the information on the page.
-    activeinvoice = models.ForeignKey(Invoice, null=True, blank=True, on_delete=models.CASCADE)
+    activeinvoice = models.OneToOneField(Invoice, null=True, blank=True, on_delete=models.CASCADE)
 
     # When a membeship expiry warning was last sent, so we don't keep
     # sending them over and over again

@@ -369,6 +369,9 @@ class Migration(migrations.Migration):
                 ('incfp', models.BooleanField(default=False, verbose_name="In call for papers")),
                 ('conference', models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE)),
             ],
+            options={
+                'ordering': ('sortkey', 'trackname'),
+            },
         ),
         migrations.CreateModel(
             name='RegistrationWaitlistEntry',

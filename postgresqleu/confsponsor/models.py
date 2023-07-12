@@ -109,7 +109,7 @@ class Sponsor(models.Model):
     url = models.URLField(max_length=200, null=False, blank=True)
     twittername = models.CharField(max_length=100, null=False, blank=True)
     level = models.ForeignKey(SponsorshipLevel, null=False, blank=False, on_delete=models.CASCADE)
-    invoice = models.ForeignKey(Invoice, null=True, blank=True, on_delete=models.CASCADE)
+    invoice = models.OneToOneField(Invoice, null=True, blank=True, on_delete=models.CASCADE)
     confirmed = models.BooleanField(null=False, blank=False, default=False)
     confirmedat = models.DateTimeField(null=True, blank=True)
     confirmedby = models.CharField(max_length=50, null=False, blank=True)
@@ -191,7 +191,7 @@ class PurchasedVoucher(models.Model):
     user = models.ForeignKey(User, null=False, blank=False, on_delete=models.CASCADE)
     regtype = models.ForeignKey(RegistrationType, null=False, blank=False, on_delete=models.CASCADE)
     num = models.IntegerField(null=False, blank=False)
-    invoice = models.ForeignKey(Invoice, null=False, blank=False, on_delete=models.CASCADE)
+    invoice = models.OneToOneField(Invoice, null=False, blank=False, on_delete=models.CASCADE)
     batch = models.OneToOneField(PrepaidBatch, null=True, blank=True, on_delete=models.CASCADE)
 
 
