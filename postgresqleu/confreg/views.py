@@ -2661,6 +2661,13 @@ def talkvote(request, confname):
     if not isadmin:
         conference.nobreadcrumb = True
 
+    options_text = {
+        0: 'No vote',
+        1: '1 - Lowest',
+        9: '9 - Highest',
+    }
+    options = [(x, options_text.get(x, str(x))) for x in range(0, 10)]
+
     return render(request, 'confreg/sessionvotes.html', {
         'users': getusernames(all),
         'sessionvotes': transform(all),
@@ -2675,6 +2682,7 @@ def talkvote(request, confname):
         'valid_status_transitions': valid_status_transitions,
         'urlfilter': urltrackfilter + urlstatusfilter,
         'helplink': 'callforpapers',
+        'options': options,
     })
 
 

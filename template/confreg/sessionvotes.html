@@ -303,8 +303,8 @@ width: 100%;
     {%if forloop.first and isvoter %}
       <td{%if u|default_if_none:0 == 0%} style="background-color:red"{%endif%}>
         <select id="sv_{{s.id}}" onChange="castVote({{s.id}})">
-          {%for opt in "0123456789"|make_list%}
-            <option value="{{opt}}"{%if opt|add:0 == u|add:0%} SELECTED{%endif%}>{%if opt == "0"%}No vote{%else%}{{opt}}{%endif%}</option>
+          {%for val, opt in options%}
+            <option value="{{val}}"{%if val == u%} SELECTED{%endif%}>{{opt}}</option>
           {%endfor%}
         </select>
       </td>
