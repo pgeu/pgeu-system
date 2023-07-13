@@ -2614,7 +2614,7 @@ def talkvote(request, confname):
     ON cs.speaker_id=spk.id
     WHERE cs.conferencesession_id=s.id) AS speakers_long,
   u.username, v.vote, v.comment,
-  avg(v.vote) OVER (PARTITION BY s.id)::numeric(3,2) AS avg,
+  avg(v.vote) FILTER (WHERE v.vote > 0) OVER (PARTITION BY s.id)::numeric(3,2) AS avg,
   trackname, recordingconsent
 FROM (confreg_conferencesession s CROSS JOIN auth_user u)
 LEFT JOIN confreg_track track ON track.id=s.track_id
@@ -2687,11 +2687,12 @@ ORDER BY """ + order + "s.title,s.id, u.id=%(userid)s DESC, u.username", {
         conference.nobreadcrumb = True
 
     options_text = {
+        -1: 'Abstain',
         0: 'No vote',
         1: '1 - Lowest',
         9: '9 - Highest',
     }
-    options = [(x, options_text.get(x, str(x))) for x in range(0, 10)]
+    options = [(x, options_text.get(x, str(x))) for x in range(-1, 10)]
 
     return render(request, 'confreg/sessionvotes.html', {
         'users': getusernames(all),
@@ -2767,8 +2768,8 @@ def talkvote_vote(request, confname):
         raise Http404("No sessionid")
 
     session = get_object_or_404(ConferenceSession, conference=conference, id=get_int_or_error(request.POST, 'sessionid'))
-    v = get_int_or_error(request.POST, 'vote', 0)
-    if v > 0:
+    v = get_int_or_error(request.POST, 'vote', 0, allow_negative=True)
+    if v == -1 or (v > 0 and v < 10):
         vote, created = ConferenceSessionVote.objects.get_or_create(session=session, voter=request.user)
         vote.vote = v
         vote.save()
@@ -2776,7 +2777,7 @@ def talkvote_vote(request, confname):
         ConferenceSessionVote.objects.filter(session=session, voter=request.user).delete()
 
     # Re-calculate the average
-    avg = session.conferencesessionvote_set.all().aggregate(Avg('vote'))['vote__avg']
+    avg = session.conferencesessionvote_set.filter(vote__gt=0).aggregate(Avg('vote'))['vote__avg']
     if avg is None:
         return HttpResponse("", content_type='text/plain')
     return HttpResponse("{0:.2f}".format(avg), content_type='text/plain')

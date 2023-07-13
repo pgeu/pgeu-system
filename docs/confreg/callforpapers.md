@@ -27,12 +27,15 @@ Voting is done by everybody who is listed as a talk voter in the
 conference configuration, by using the "view sessions and vote" page.
 
 Each person can give a score, 1-9 with 9 being the best, to a talk to
-rate it.
+rate it. The person can also chose to Abstain from voting in which case
+their vote is not counted, but it's still marked as being voted (and
+not highlighted in red).
 
 Normally each person is not allowed to vote for any talks they
 submitted themselves, and need to exercise restraint when voting for
 colleagues. However, those rules are not in any way enforced in the
-system, but are handled manually by the people on the committee.
+system, but are handled manually by the people on the committee. If
+this rule is in force, that person should mark the talk as Abstain.
 
 Each voter can leave a comment for each talk in the text field, and
 view each others comments. All voting is open to all members of the
