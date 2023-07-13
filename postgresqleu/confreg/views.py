@@ -2778,7 +2778,7 @@ def talkvote_vote(request, confname):
     # Re-calculate the average
     avg = session.conferencesessionvote_set.all().aggregate(Avg('vote'))['vote__avg']
     if avg is None:
-        avg = 0
+        return HttpResponse("", content_type='text/plain')
     return HttpResponse("{0:.2f}".format(avg), content_type='text/plain')
 
 
