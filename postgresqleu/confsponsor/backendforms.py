@@ -67,8 +67,12 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
 
     @property
     def fieldsets(self):
+        basefields = ['benefitname', 'benefit_class_name', 'benefitdescription', 'sortkey', 'claimprompt']
+        if self.can_autoconfirm:
+            basefields.append('autoconfirm')
+
         return [
-            {'id': 'base', 'legend': 'Base', 'fields': ['benefitname', 'benefit_class_name', 'benefitdescription', 'sortkey', 'claimprompt']},
+            {'id': 'base', 'legend': 'Base', 'fields': basefields},
             {'id': 'marketing', 'legend': 'Marketing', 'fields': ['tweet_template', ]},
             {'id': 'params', 'legend': 'Parameters', 'fields': self.class_param_fields},
         ]
@@ -82,7 +86,15 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
     class Meta:
         model = SponsorshipBenefit
         fields = ['benefitname', 'benefitdescription', 'sortkey',
-                  'claimprompt', 'tweet_template', 'benefit_class_name']
+                  'claimprompt', 'tweet_template', 'benefit_class_name', 'autoconfirm']
+
+    _can_autoconfirm = None
+
+    @property
+    def can_autoconfirm(self):
+        if self._can_autoconfirm is None:
+            self._can_autoconfirm = get_benefit_class(self.instance.benefit_class).can_autoconfirm
+        return self._can_autoconfirm
 
     def fix_fields(self):
         if self.newformdata:
@@ -101,6 +113,10 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
                 'sponsor': Sponsor(name='TestName', displayname="TestDisplayName", twittername="@twittertest"),
             }),
         ]
+
+        if not self.can_autoconfirm:
+            del self.fields['autoconfirm']
+            self.update_protected_fields()
 
     @classmethod
     def get_dynamic_preview(self, fieldname, s, objid):

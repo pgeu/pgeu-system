@@ -93,9 +93,7 @@ class SponsorSession(BaseBenefit):
 
     def save_form(self, form, claim, request):
         if form.cleaned_data['decline']:
-            claim.declined = True
-            claim.confirmed = True
-            return True
+            return False
 
         for f in ['title', 'abstract', 'speakername', 'speakercompany', 'speakerbio']:
             claim.claimjson[f] = form.cleaned_data[f]
@@ -111,9 +109,6 @@ class SponsorSession(BaseBenefit):
                 claim.claimjson['photo'] = base64.b64encode(rescale_image(img, PRIMARY_SPEAKER_PHOTO_RESOLUTION, centered=True)).decode()
             else:
                 claim.claimjson['photo'] = base64.b64encode(imgdata).decode()
-
-        claim.declined = False
-        claim.confirmed = False
 
         return True
 
@@ -219,3 +214,6 @@ class SponsorSession(BaseBenefit):
         # Delete the photo, to keep the size down
         if 'photo' in claim.claimjson:
             del claim.claimjson['photo']
+
+        # Send the regular notification that the benefit is confirmed
+        return True

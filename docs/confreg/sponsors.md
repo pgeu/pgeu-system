@@ -357,6 +357,11 @@ Claim prompt
 :  A n optional popup prompt that will be shown to the user when
    claiming the benefit.
 
+Autoconfirm
+:  Indicates if this benefit should automatically confirm as soon as
+   the sponsor has claimed it (checked box) or if it shuld require the
+   organisers to explicitly confirm the benefit (unchecked box).
+
 Tweet template
 :  A template, in jinja2 format, used to generate tweets when this
 benefit is confirmed. If left empty, no tweet is posted. Can reference

@@ -562,28 +562,32 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
             claim = SponsorClaimedBenefit(sponsor=sponsor, benefit=benefit, claimedat=timezone.now(), claimedby=request.user, claimjson={})
             claim.save()  # generate an id
 
-            send_mail = benefitclass.save_form(form, claim, request)
+            if not benefitclass.save_form(form, claim, request):
+                # False from save_form means the benefit was declined
+                claim.declined = True
+                claim.confirmed = True
+            elif benefit.autoconfirm and benefitclass.can_autoconfirm:
+                benefitclass.process_confirm(claim)
+                claim.confirmed = True
+            claim.save()
 
-            claim.save()  # Just in case the claimdata field was modified
-
-            if send_mail:
-                if claim.declined:
-                    mailstr = "Sponsor %s for conference %s has declined benefit %s.\n" % (sponsor, sponsor.conference, benefit)
-                elif claim.confirmed:
-                    # Auto-confirmed, so nothing to do here
-                    mailstr = "Sponsor %s for conference %s has claimed benefit %s.\n\nThis has been automatically processed, so there is nothing more to do.\n" % (sponsor, sponsor.conference, benefit)
-                else:
-                    mailstr = "Sponsor %s for conference %s has claimed benefit %s\n\nThis benefit requires confirmation (and possibly some\nmore actions before that). Please go to\n%s/events/sponsor/admin/%s/\nand confirm as necessary!" % (
-                        sponsor,
-                        sponsor.conference,
-                        benefit,
-                        settings.SITEBASE,
-                        sponsor.conference.urlname)
-                send_conference_sponsor_notification(
+            if claim.declined:
+                mailstr = "Sponsor %s for conference %s has declined benefit %s.\n" % (sponsor, sponsor.conference, benefit)
+            elif claim.confirmed:
+                # Auto-confirmed, so nothing to do here
+                mailstr = "Sponsor %s for conference %s has claimed benefit %s.\n\nThis has been automatically processed, so there is nothing more to do.\n" % (sponsor, sponsor.conference, benefit)
+            else:
+                mailstr = "Sponsor %s for conference %s has claimed benefit %s\n\nThis benefit requires confirmation (and possibly some\nmore actions before that). Please go to\n%s/events/sponsor/admin/%s/\nand confirm as necessary!" % (
+                    sponsor,
                     sponsor.conference,
-                    "Sponsor %s %s sponsorship benefit %s" % (sponsor, claim.declined and 'declined' or 'claimed', benefit),
-                    mailstr,
-                )
+                    benefit,
+                    settings.SITEBASE,
+                    sponsor.conference.urlname)
+            send_conference_sponsor_notification(
+                sponsor.conference,
+                "Sponsor %s %s sponsorship benefit %s" % (sponsor, claim.declined and 'declined' or 'claimed', benefit),
+                mailstr,
+            )
 
             messages.info(request, "Benefit \"%s\" has been %s." % (benefit, claim.declined and 'declined' or 'claimed'))
             return HttpResponseRedirect("/events/sponsor/%s/" % sponsor.id)
@@ -938,7 +942,7 @@ def _confirm_benefit(request, claimed_benefit):
     with transaction.atomic():
         benefit = claimed_benefit.benefit
         benefitclass = get_benefit_class(benefit.benefit_class)(benefit.level, benefit.class_parameters)
-        benefitclass.process_confirm(claimed_benefit)
+        notify_sponsor = benefitclass.process_confirm(claimed_benefit)
         claimed_benefit.confirmed = True
         claimed_benefit.save()
 
@@ -947,14 +951,15 @@ def _confirm_benefit(request, claimed_benefit):
         conference = claimed_benefit.sponsor.conference
 
         # Send email
-        send_sponsor_manager_email(
-            claimed_benefit.sponsor,
-            "Sponsorship benefit confirmed",
-            'confsponsor/mail/benefit_confirmed.txt',
-            {
-                'benefit': claimed_benefit.benefit,
-            },
-        )
+        if notify_sponsor:
+            send_sponsor_manager_email(
+                claimed_benefit.sponsor,
+                "Sponsorship benefit confirmed",
+                'confsponsor/mail/benefit_confirmed.txt',
+                {
+                    'benefit': claimed_benefit.benefit,
+                },
+            )
 
         send_conference_sponsor_notification(
             conference,

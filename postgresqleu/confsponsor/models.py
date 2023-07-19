@@ -87,6 +87,9 @@ class SponsorshipBenefit(models.Model):
     sortkey = models.PositiveIntegerField(null=False, blank=False, default=100, verbose_name="Sort key")
     benefitdescription = models.TextField(null=False, blank=True, verbose_name="Benefit description")
     claimprompt = models.TextField(null=False, blank=True, verbose_name="Claim prompt")
+    autoconfirm = models.BooleanField(null=False, blank=False, default=False,
+                                      verbose_name="Automatically confirm",
+                                      help_text="Automatically confirm this benefit when it's claimed")
     benefit_class = models.IntegerField(null=True, blank=True, default=None, choices=benefit_choices)
     class_parameters = models.JSONField(blank=True, null=False)
     tweet_template = models.TextField(null=False, blank=True)

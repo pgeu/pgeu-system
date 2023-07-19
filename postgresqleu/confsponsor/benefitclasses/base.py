@@ -2,6 +2,8 @@ from django import forms
 
 
 class BaseBenefit(object):
+    can_autoconfirm = True
+
     def __init__(self, level, params):
         self.level = level
         self.params = params
@@ -16,10 +18,16 @@ class BaseBenefit(object):
         return True
 
     def save_form(self, form, claim, request):
+        # Return:
+        # True -> proceed normally
+        # False -> benefit declined
         raise Exception("Form saving not implemented!")
 
     def process_confirm(self, claim):
-        pass
+        # Return:
+        # True -> send the "benefit confirmed" for non-auto benefits
+        # False -> don't send it
+        return True
 
     def process_unclaim(self, claim):
         pass

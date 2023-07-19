@@ -14,29 +14,15 @@ class RequireClaimingForm(BaseBenefitForm):
         return self.cleaned_data['confirm']
 
 
-class RequireClaimingBackendForm(BackendSponsorshipLevelBenefitForm):
-    autoconfirm = forms.BooleanField(label="Automatically confirm", required=False,
-                                     help_text="Automatically confirm this benefit when it's claimed")
-
-    class_param_fields = ['autoconfirm', ]
-
-
 class RequireClaiming(BaseBenefit):
     @classmethod
     def get_backend_form(self):
-        return RequireClaimingBackendForm
+        return BackendSponsorshipLevelBenefitForm
 
     def generate_form(self):
         return RequireClaimingForm
 
     def save_form(self, form, claim, request):
         if int(form.cleaned_data['confirm']) == 2:
-            # This is actually a deny
-            claim.declined = True
-            claim.confirmed = True
-            return True
-        else:
-            # It's a claim! Should it be auto-confirmed automatically, or require an admin?
-            if self.params.get('autoconfirm', False):
-                claim.confirmed = True
-            return True
+            return False
+        return True

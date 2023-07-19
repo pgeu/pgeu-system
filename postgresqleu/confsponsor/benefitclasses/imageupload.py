@@ -86,9 +86,7 @@ class ImageUpload(BaseBenefit):
 
     def save_form(self, form, claim, request):
         if form.cleaned_data['decline']:
-            claim.declined = True
-            claim.confirmed = True
-            return True
+            return False
         storage = InlineEncodedStorage('benefit_image')
         storage.save(str(claim.id), form.cleaned_data['image'])
         return True

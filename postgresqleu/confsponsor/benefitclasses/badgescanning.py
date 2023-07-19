@@ -27,11 +27,7 @@ class BadgeScanning(BaseBenefit):
 
     def save_form(self, form, claim, request):
         if int(form.cleaned_data['confirm']) == 2:
-            # This is actually a deny
-            claim.declined = True
-            claim.confirmed = True
-            return True
-
+            return False
         return True
 
     def can_unclaim(self, claimedbenefit):

@@ -1,5 +1,6 @@
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator, ValidationError
+from django.contrib.auth.models import User
 
 import base64
 import os
@@ -44,50 +45,61 @@ class EntryVouchers(BaseBenefit):
         return EntryVouchersForm
 
     def save_form(self, form, claim, request):
+        claim.claimjson['batchid'] = 0
+        claim.claimjson['numvouchers'] = 0
+        claim.claimjson['requester'] = request.user.id
         if int(form.cleaned_data['vouchercount']) == 0:
-            # No vouchers --> unclaim this benefit
-            claim.claimjson['batchid'] = 0
-            claim.declined = True
-            claim.confirmed = True
+            # No vouchers --> decline this benefit
+            return False
         else:
-            # Actual number, form has been validated, so create the vouchers.
-            batch = PrepaidBatch(conference=self.level.conference,
-                                 regtype=RegistrationType.objects.get(conference=self.level.conference, regtype=self.params['type']),
-                                 buyer=request.user,
-                                 buyername="%s %s" % (request.user.first_name, request.user.last_name),
-                                 sponsor=claim.sponsor)
-            batch.save()
-            vouchers = []
-            for n in range(0, int(form.cleaned_data['vouchercount'])):
-                v = PrepaidVoucher(conference=self.level.conference,
-                                   vouchervalue=base64.b64encode(os.urandom(37)).rstrip(b'=').decode('utf8'),
-                                   batch=batch)
-                v.save()
-                vouchers.append(v)
-
-            # Send an email about the new vouchers
-            send_conference_mail(self.level.conference,
-                                 request.user.email,
-                                 "Entry vouchers",
-                                 'confreg/mail/prepaid_vouchers.txt',
-                                 {
-                                     'batch': batch,
-                                     'vouchers': vouchers,
-                                     'conference': self.level.conference,
-                                 },
-                                 sender=self.level.conference.sponsoraddr,
-            )
-
-            # Finally, finish the claim
-            claim.claimjson['batchid'] = batch.id
-            claim.confirmed = True  # Always confirmed, they're generated after all
+            claim.claimjson['numvouchers'] = int(form.cleaned_data['vouchercount'])
         return True
 
+    def process_confirm(self, claim):
+        # Actual number, form has been validated, so create the vouchers.
+        u = User.objects.get(id=claim.claimjson['requester'])
+        batch = PrepaidBatch(conference=self.level.conference,
+                             regtype=RegistrationType.objects.get(conference=self.level.conference, regtype=self.params['type']),
+                             buyer=u,
+                             buyername="%s %s" % (u.first_name, u.last_name),
+                             sponsor=claim.sponsor)
+        batch.save()
+
+        vouchers = []
+        for n in range(0, claim.claimjson['numvouchers']):
+            v = PrepaidVoucher(conference=self.level.conference,
+                               vouchervalue=base64.b64encode(os.urandom(37)).rstrip(b'=').decode('utf8'),
+                               batch=batch)
+            v.save()
+            vouchers.append(v)
+
+        # Send an email about the new vouchers
+        send_conference_mail(self.level.conference,
+                             u.email,
+                             "Entry vouchers",
+                             'confreg/mail/prepaid_vouchers.txt',
+                             {
+                                 'batch': batch,
+                                 'vouchers': vouchers,
+                                 'conference': self.level.conference,
+                             },
+                             sender=self.level.conference.sponsoraddr,
+        )
+
+        # Finally, finish the claim
+        claim.claimjson['batchid'] = batch.id
+
+        # Since we sent our own email, don't also send the standard confirmation one
+        return False
+
     def render_claimdata(self, claimedbenefit, isadmin):
-        # Look up our batch
-        if claimedbenefit.claimjson['batchid'] == 0:
-            # This benefit has been declined
+        if claimedbenefit.declined:
             return "Benefit was declined."
+        if not claimedbenefit.confirmed:
+            if isadmin:
+                return "{} vouchers requested by the sponsor".format(claimedbenefit.claimjson.get('numvouchers', 0))
+            else:
+                return "Not confirmed yet by the organisers. Once confirmed, your vouchers will show up here."
 
         vouchers = list(PrepaidVoucher.objects.filter(batch=claimedbenefit.claimjson['batchid']))
 

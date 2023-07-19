@@ -70,9 +70,7 @@ class ProvideText(BaseBenefit):
 
     def save_form(self, form, claim, request):
         if form.cleaned_data['decline']:
-            claim.declined = True
-            claim.confirmed = True
-            return True
+            return False
 
         claim.claimjson['text'] = form.cleaned_data['text']
         return True
