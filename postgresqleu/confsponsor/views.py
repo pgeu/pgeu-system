@@ -573,7 +573,7 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
                     # Auto-confirmed, so nothing to do here
                     mailstr = "Sponsor %s for conference %s has claimed benefit %s.\n\nThis has been automatically processed, so there is nothing more to do.\n" % (sponsor, sponsor.conference, benefit)
                 else:
-                    mailstr = "Sponsor %s for conference %s has claimed benefit %s\n\nThis benefit requires confirmation (and possibly some\nmore actions before that). Please go to\n%s/events/sponsor/admin/%s/\nand approve as necessary!" % (
+                    mailstr = "Sponsor %s for conference %s has claimed benefit %s\n\nThis benefit requires confirmation (and possibly some\nmore actions before that). Please go to\n%s/events/sponsor/admin/%s/\nand confirm as necessary!" % (
                         sponsor,
                         sponsor.conference,
                         benefit,
