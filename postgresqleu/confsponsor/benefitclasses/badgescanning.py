@@ -35,6 +35,9 @@ class BadgeScanning(BaseBenefit):
         return True
 
     def can_unclaim(self, claimedbenefit):
+        if ScannedAttendee.objects.filter(sponsor=claimedbenefit.sponsor).exists():
+            # If the sponsor has scanned something, we don't allow unclaiming anymore
+            return False
         return True
 
     def render_claimdata(self, claimedbenefit, isadmin):
