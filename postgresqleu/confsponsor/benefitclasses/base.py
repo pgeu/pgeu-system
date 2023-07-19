@@ -21,6 +21,9 @@ class BaseBenefit(object):
     def process_confirm(self, claim):
         pass
 
+    def process_unclaim(self, claim):
+        pass
+
     def validate_parameters(self):
         pass
 

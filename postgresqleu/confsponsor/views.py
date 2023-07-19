@@ -986,9 +986,13 @@ def _unclaim_benefit(request, claimed_benefit):
             messages.error(request, "Benefit {0} cannot be unclaimed".format(benefit))
             return
 
-        # To unclaim a benefit, we delete it, simple as that
-        messages.info(request, "Benefit {0} for {1} unclaimed.".format(benefit, sponsor))
+        # To unclaim a benefit, call the callback in it if the benefit
+        # has been confirmed, and *after* that, delete the claim
+        # itself.
+        if claimed_benefit.confirmed:
+            benefitclass.process_unclaim(claimed_benefit)
         claimed_benefit.delete()
+        messages.info(request, "Benefit {0} for {1} unclaimed.".format(benefit, sponsor))
 
         send_sponsor_manager_email(
             sponsor,

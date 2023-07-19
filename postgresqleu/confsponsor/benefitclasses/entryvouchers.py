@@ -126,14 +126,24 @@ class EntryVouchers(BaseBenefit):
         )
 
     def can_unclaim(self, claimedbenefit):
-        if claimedbenefit.claimjson['batchid'] == 0:
+        if claimedbenefit.claimjson.get('batchid', 0) == 0:
             # It was declined, so we can unclaim that
             return True
 
         batch = PrepaidBatch.objects.get(pk=claimedbenefit.claimjson['batchid'])
         if batch.prepaidvoucher_set.filter(user__isnull=False).exists():
+            # If any vouchers have been used, we can no longer unclaim.
             return False
         return True
+
+    def process_unclaim(self, claimedbenefit):
+        if claimedbenefit.claimjson['batchid'] == 0:
+            return
+
+        batch = PrepaidBatch.objects.get(pk=claimedbenefit.claimjson['batchid'])
+        if batch.prepaidvoucher_set.filter(user__isnull=False).exists():
+            raise Exception("An already used voucher exists in this batch!")
+        batch.delete()
 
     def validate_parameters(self):
         # Verify that the registration type being copied in actually exists
