@@ -96,6 +96,3 @@ class ImageUpload(BaseBenefit):
     def render_claimdata(self, claimedbenefit, isadmin):
         # We don't use the datafield, just the id
         return 'Uploaded image: <img src="/events/sponsor/admin/imageview/%s/" />' % claimedbenefit.id
-
-    def can_unclaim(self, claimedbenefit):
-        return True
