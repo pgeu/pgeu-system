@@ -1,6 +1,7 @@
 {%extends "confreg/confadmin_base.html" %}
 {%load assets%}
 {%load pgmarkdown%}
+{%load dictutil%}
 {%block title%}Vote for sessions{%endblock%}
 {%block extrahead%}
 {%asset "css" "jqueryui1" %}
@@ -145,7 +146,7 @@ function castVote(sessionid) {
 }
 
 function editComment(sessionid) {
-   var old = $('#owncomment_' + sessionid).text();
+   var old = $('#owncomment_' + sessionid + ' span.comment').text();
    $('#dlgCommentText').val(old);
 
    $('#dlgComment').dialog('option', {
@@ -167,8 +168,8 @@ function editComment(sessionid) {
               },
               function (data) {
                  dlg.dialog("close");
-                 $('#owncomment_' + sessionid).text(data);
-                 $('#owncommentwrap_' + sessionid).css('display', (data=='')?'none':'block');
+                 $('#owncomment_' + sessionid + ' span.comment').text(data);
+                 $('#owncomment_' + sessionid).css('display', (data=='')?'none':'block');
               }
               ).fail(function() {
                  alert('AJAX call failed');
@@ -198,6 +199,14 @@ div.filterButtonRow {
 /* Override bootstrap to make full screen */
 .container {
 width: 100%;
+}
+
+ul.comments {
+    list-style-type: none;
+    padding-left: 5px;
+}
+ul.comments span.username {
+    font-weight: bold;
 }
 </style>
 {%endblock%}
@@ -256,12 +265,12 @@ width: 100%;
    <td class="text-center">{{forloop.counter}}</td>
    <td>
      <div class="talkaccd">
-       <h3>{{s.title}}{%if s.speakers%} ({{s.speakers}}){%endif%} [id: {{s.id}}]</h3>
+       <h3>{{s.title}} ({{s.speakerdata|join_dictkeys:"fullname"}}) [id: {{s.id}}]</h3>
        <div>
 {%if isadmin%}
 	 <a class="btn btn-default" style="float:right" href="/events/admin/{{conference.urlname}}/sessions/{{s.id}}/" target="_blank">Edit submission</a>
 {%endif%}
-	 <div><strong>Speakers:</strong> {{s.speakers_full|default:""}}</div>
+	 <div><strong>Speakers:</strong> {%for sp in s.speakerdata%}{{sp.fullname}}{%if sp.company%} ({{sp.company}}){%endif%}{%if not forloop.last%}, {%endif%}{%endfor%}</div>
 	 <div><strong>Track:</strong> {{s.track|default:""}}</div>
 {%if conference.callforpapersrecording%}
 	 <div><strong>Recording consent:</strong> {{s.recordingconsent | yesno:"Yes,No" }}
@@ -284,33 +293,36 @@ width: 100%;
 	 </p>
 {%endif%}
 	 <hr/>
-{%if s.speakers_long%}
+{%if s.speakerdata %}
 	 <h3>Speaker profile</h3>
+{%for sp in s.speakerdata %}
+	 <h4>{{sp.fullname}} [speaker id: {{sp.id}}]</h4>
 	 <p>
-{{s.speakers_long|markdown}}
+	   {{sp.abstract|markdown}}
 	 </p>
+{%endfor%}
 {%endif%}
        </div>
      </div>
    </td>
    {%if isadmin%}
-   <td{%if s.speakers_full and not s.statusid == s.laststatusid %} bgcolor="yellow"{%endif%} onClick="changeStatus({{s.id}})" class="dlgClickable" id="statusstr{{s.id}}" data-currstatus="{{s.statusid}}"><a href="#" onclick="return false;">{{s.status}}</a></td>
+   <td{%if s.speakerdata and not s.statusid == s.laststatusid %} bgcolor="yellow"{%endif%} onClick="changeStatus({{s.id}})" class="dlgClickable" id="statusstr{{s.id}}" data-currstatus="{{s.statusid}}"><a href="#" onclick="return false;">{{s.status}}</a></td>
 {%else%}
    <td>{{s.status}}</td>
 {%endif%}
 
-  {%for u in s.users%}
-    {%if forloop.first and isvoter %}
-      <td{%if u|default_if_none:0 == 0%} style="background-color:red"{%endif%}>
+  {%for u in users%}
+   {%if u == user.username%}
+      <td{%if s.votes|dictlookup:u is None %} style="background-color:red"{%endif%}>
         <select id="sv_{{s.id}}" onChange="castVote({{s.id}})">
           {%for val, opt in options%}
-            <option value="{{val}}"{%if val == u|default_if_none:0%} SELECTED{%endif%}>{{opt}}</option>
+            <option value="{{val}}"{%if val == s.votes|dictlookup:u|default_if_none:0%} SELECTED{%endif%}>{{opt}}</option>
           {%endfor%}
         </select>
       </td>
     {%else%}
       {% if conference.showvotes or isadmin %}
-        <td>{{u|default_if_none:''}}</td>
+        <td>{%if s.votes|dictlookup:u == -1%}Abstain{%else%}{{s.votes|dictlookup:u|default_if_none:''}}{%endif%}</td>
       {%endif%}
     {%endif%}
   {%endfor%}
@@ -326,7 +338,11 @@ width: 100%;
      </div>
 {%endif%}
      <div style="display:inline-block;">
-       <span id="owncommentwrap_{{s.id}}" style="display:{%if s.owncomment%}block{%else%}none{%endif%}">{{user.username}}: <span id="owncomment_{{s.id}}">{{s.owncomment}}</span></span>{{s.comments|safe}}
+{%for u, c in s.comments.items%}
+<ul class="comments">
+  <li{%if u == user.username%} id="owncomment_{{s.id}}" {%if c == ""%} style="display:none"{%endif%}{%endif%}><span class="username">{{u}}:</span> <span class="comment">{{c}}</span></li>
+</ul>
+{%endfor%}
      </div>
    </td>
  </tr>

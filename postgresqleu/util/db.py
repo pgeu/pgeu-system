@@ -2,12 +2,14 @@ from django.db import connection
 from django.conf import settings
 import collections
 
+from psycopg2.extras import register_default_jsonb
 from psycopg2.tz import LocalTimezone
 
 
 def get_native_cursor():
     # Unwrap djangos many layers to get a raw psyopg2 cursor
     curs = connection.cursor().cursor.connection.cursor()
+    register_default_jsonb(curs, globally=False)
     return curs
 
 

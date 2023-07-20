@@ -2584,13 +2584,17 @@ def talkvote(request, confname):
         urlstatusfilter = ''
 
     curs = connection.cursor()
+    curs.execute("SELECT username FROM confreg_conference_talkvoters INNER JOIN auth_user ON user_id=auth_user.id WHERE conference_id=%(confid)s ORDER BY 1", {
+        'confid': conference.id,
+    })
+    allusers = [u for u, in curs.fetchall()]
 
     order = ""
     if 'sort' in request.GET:
         if request.GET["sort"] == "avg":
             order = "avg DESC NULLS LAST,"
         elif request.GET["sort"] == "speakers":
-            order = "speakers_full, avg DESC NULLS LAST,"
+            order = "speakerdata#>>'{0,fullname}', avg DESC NULLS LAST,"
         elif request.GET["sort"] == "session":
             order = "s.title, avg DESC NULLS LAST,"
     else:
@@ -2598,88 +2602,47 @@ def talkvote(request, confname):
 
     # Render the form. Need to do this with a manual query, can't figure
     # out the right way to do it with the django ORM.
-    curs.execute("""SELECT
-  s.id, s.title, s.status, s.lastnotifiedstatus, s.abstract, s.submissionnote, s.internalnote,
-  (SELECT string_agg(spk.fullname, ',')
-    FROM confreg_speaker spk
-    INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id
-    WHERE cs.conferencesession_id=s.id) AS speakers,
-  (SELECT string_agg(spk.fullname || '(' || spk.company || ')', ',')
-    FROM confreg_speaker spk
-    INNER JOIN confreg_conferencesession_speaker cs ON cs.speaker_id=spk.id
-    WHERE cs.conferencesession_id=s.id) AS speakers_full,
-  (SELECT string_agg('####' || spk.fullname || ' [speaker id: ' || spk.id || ']' || '\n' || spk.abstract, '\n\n')
+    sessiondata = exec_to_dict("""SELECT
+  s.id, s.title,
+  s.status AS statusid, status.statustext AS status, s.lastnotifiedstatus AS laststatusid,
+  s.abstract, s.submissionnote, s.internalnote,
+  speakers.speakerdata,
+  avg,
+  COALESCE(votes, '{{}}'::jsonb) AS votes,
+  jsonb_build_object(%(username)s, '') || COALESCE(comments, '{{}}'::jsonb) AS comments,
+  trackname, recordingconsent
+FROM confreg_conferencesession s
+INNER JOIN confreg_status_strings status ON status.id=s.status
+LEFT JOIN confreg_track track ON track.id=s.track_id
+LEFT JOIN LATERAL (
+    SELECT json_agg(json_build_object(
+       'id', spk.id,
+       'fullname', spk.fullname,
+       'company', spk.company,
+       'abstract', spk.abstract
+    )) AS speakerdata
     FROM confreg_speaker spk
     INNER JOIN confreg_conferencesession_speaker cs
     ON cs.speaker_id=spk.id
-    WHERE cs.conferencesession_id=s.id) AS speakers_long,
-  u.username, v.vote, v.comment,
-  avg(v.vote) FILTER (WHERE v.vote > 0) OVER (PARTITION BY s.id)::numeric(3,2) AS avg,
-  trackname, recordingconsent
-FROM (confreg_conferencesession s CROSS JOIN auth_user u)
-LEFT JOIN confreg_track track ON track.id=s.track_id
-LEFT JOIN confreg_conferencesessionvote v ON v.session_id=s.id AND v.voter_id=u.id
+    WHERE cs.conferencesession_id=s.id
+) speakers ON true
+LEFT JOIN LATERAL (
+    SELECT avg(vote) FILTER (WHERE vote > 0)::numeric(3,2) AS avg,
+           jsonb_object_agg(username, vote) AS votes,
+           jsonb_object_agg(username, comment) FILTER (WHERE comment IS NOT NULL AND comment != '') AS comments
+    FROM confreg_conferencesessionvote
+    INNER JOIN auth_user ON auth_user.id=voter_id
+    WHERE session_id=s.id
+) votes ON true
 WHERE s.conference_id=%(confid)s AND
-      u.id IN (SELECT user_id FROM confreg_conference_talkvoters tv WHERE tv.conference_id=%(confid)s) AND
       (COALESCE(s.track_id,0)=ANY(%(tracks)s)) AND
       status=ANY(%(statuses)s)
-ORDER BY """ + order + "s.title,s.id, u.id=%(userid)s DESC, u.username", {
+ORDER BY {}s.title,s.id""".format(order), {
         'confid': conference.id,
-        'userid': request.user.id,
+        'username': request.user.username,
         'tracks': selectedtracks,
         'statuses': selectedstatuses,
     })
-
-    def getusernames(all):
-        if not all:
-            return
-
-        firstid = all[0][0]
-        for id, title, status, laststatus, abstract, submissionnote, internalnote, speakers, speakers_full, speakers_long, username, vote, comment, avgvote, track, recordingconsent in all:
-            if id != firstid:
-                return
-            yield username
-
-    def transform(all):
-        if not all:
-            return
-
-        lastid = -1
-        rd = {}
-        for id, title, status, laststatus, abstract, submissionnote, internalnote, speakers, speakers_full, speakers_long, username, vote, comment, avgvote, track, recordingconsent in all:
-            if id != lastid:
-                if lastid != -1:
-                    yield rd
-                rd = {
-                    'id': id,
-                    'title': title,
-                    'statusid': status,
-                    'status': get_status_string(status),
-                    'laststatusid': laststatus,
-                    'abstract': abstract,
-                    'submissionnote': submissionnote,
-                    'internalnote': internalnote,
-                    'speakers': speakers,
-                    'speakers_full': speakers_full,
-                    'speakers_long': speakers_long,
-                    'avg': avgvote,
-                    'users': [],
-                    'comments': '',
-                    'owncomment': '',
-                    'track': track,
-                    'recordingconsent': recordingconsent,
-                    }
-                lastid = id
-            rd['users'].append(vote)
-            if comment:
-                if username == request.user.username:
-                    rd['owncomment'] = comment
-                else:
-                    rd['comments'] += "%s: %s<br/>" % (username, comment)
-
-        yield rd
-
-    all = curs.fetchall()
 
     # If the user is only talkvoter at the conference, and not an administrator,
     # don't generate a breadcrumbs link that goes to a permission denied error.
@@ -2695,8 +2658,8 @@ ORDER BY """ + order + "s.title,s.id, u.id=%(userid)s DESC, u.username", {
     options = [(x, options_text.get(x, str(x))) for x in range(-1, 10)]
 
     return render(request, 'confreg/sessionvotes.html', {
-        'users': getusernames(all),
-        'sessionvotes': transform(all),
+        'users': allusers,
+        'sessionvotes': sessiondata,
         'conference': conference,
         'isvoter': isvoter,
         'isadmin': isadmin,
