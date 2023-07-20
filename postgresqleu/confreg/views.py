@@ -2583,6 +2583,12 @@ def talkvote(request, confname):
         selectedstatuses = allstatusids
         urlstatusfilter = ''
 
+    nonvoted = request.GET.get('nonvoted', '0') == '1'
+    if nonvoted:
+        nonvotedquery = "AND NOT EXISTS (SELECT 1 FROM confreg_conferencesessionvote nv WHERE nv.session_id=s.id AND nv.voter_id=%(userid)s AND nv.vote <> 0)"
+    else:
+        nonvotedquery = ""
+
     curs = connection.cursor()
     curs.execute("SELECT username FROM confreg_conference_talkvoters INNER JOIN auth_user ON user_id=auth_user.id WHERE conference_id=%(confid)s ORDER BY 1", {
         'confid': conference.id,
@@ -2637,8 +2643,10 @@ LEFT JOIN LATERAL (
 WHERE s.conference_id=%(confid)s AND
       (COALESCE(s.track_id,0)=ANY(%(tracks)s)) AND
       status=ANY(%(statuses)s)
-ORDER BY {}s.title,s.id""".format(order), {
+      {}
+ORDER BY {}s.title,s.id""".format(nonvotedquery, order), {
         'confid': conference.id,
+        'userid': request.user.id,
         'username': request.user.username,
         'tracks': selectedtracks,
         'statuses': selectedstatuses,
@@ -2668,6 +2676,7 @@ ORDER BY {}s.title,s.id""".format(order), {
         'tracks': alltracks,
         'selectedtracks': selectedtracks,
         'selectedstatuses': selectedstatuses,
+        'nonvoted': nonvoted,
         'valid_status_transitions': valid_status_transitions,
         'urlfilter': urltrackfilter + urlstatusfilter,
         'helplink': 'callforpapers',
