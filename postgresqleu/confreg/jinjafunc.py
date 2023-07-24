@@ -83,7 +83,13 @@ class ConfTemplateLoader(jinja2.FileSystemLoader):
             pathlist.append(os.path.join(settings.SYSTEM_SKIN_DIRECTORY, 'template.jinja'))
         pathlist.append(JINJA_TEMPLATE_ROOT)
 
-        super(ConfTemplateLoader, self).__init__(pathlist)
+        # Process it all with os.fspath. That's what the inherited
+        # FileSystemLoader does, but we also need the ability to
+        # override it in get_source() so we do it as well.
+        self.pathlist = [os.fspath(p) for p in pathlist]
+        self.cutlevel = 0
+
+        super(ConfTemplateLoader, self).__init__(self.pathlist)
 
     def get_source(self, environment, template):
         # Only allow loading of the root template from confreg. Everything else we allow
@@ -97,6 +103,12 @@ class ConfTemplateLoader(jinja2.FileSystemLoader):
                 # whitelisted as something we want to load.
                 if template not in self.WHITELISTED_TEMPLATES:
                     raise jinja2.TemplateNotFound(template, "Rejecting attempt to load from incorrect location")
+        if self.conference and self.conference.jinjaenabled and self.conference.jinjadir and self.cutlevel:
+            # Override the searchpath to drop one or more levels, to
+            # handle inheritance of "the same template"
+            self.searchpath = self.pathlist[self.cutlevel:]
+        else:
+            self.searchpath = self.pathlist
         return super(ConfTemplateLoader, self).get_source(environment, template)
 
 
@@ -120,6 +132,22 @@ class ConfTemplateLoader(jinja2.FileSystemLoader):
 # For all other access, the jinja2 default sandbox rules apply.
 #
 class ConfSandbox(jinja2.sandbox.SandboxedEnvironment):
+    def __init__(self, *args, **kwargs):
+        # We have to disable the cache for our extend-from-parent support, since the cache key
+        # for confreg/foo.html would become the same regardless of if the template is from the
+        # base, from the skin or from the conference. Given that we currently recreate the
+        # environment once for each request, the caching doesn't really make any difference
+        # anyway. Should we in the future want to use the caching, we have to take this into
+        # account though.
+        super().__init__(*args, cache_size=0, **kwargs)
+
+    def get_template(self, name, parent=None, globals=None):
+        if name == parent:
+            self.loader.cutlevel += 1
+        else:
+            self.loader.cutlevel = 0
+        return super().get_template(name, parent, globals)
+
     def is_safe_attribute(self, obj, attr, value):
         modname = obj.__class__.__module__
 
