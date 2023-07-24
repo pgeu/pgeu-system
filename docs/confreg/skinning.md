@@ -122,6 +122,23 @@ called `context.json` in the templates directory. The contents of this
 hash will be added to all requests, both when deployed as static and
 when run under the main conference system.
 
+### Additional variables used by the system
+
+There are also some variables that can be set in the `context.json` that
+will be used by the central system if defined in a skin:
+
+system.cfp.intro
+: Text shown as a paragraph at the top of the call for papers pages.
+
+system.reg.additionalintro
+: Text shown as an introductory paragraph for the fieldset about additional
+options on a registration form. Typically introduces what the additional
+options are.
+
+system.reg.voucherintro
+: The text shown as an introductory paragraph for the fieldset about voucher
+usage on a registration form.
+
 ## Overriding variables
 
 For the static deployment process, any number of override context

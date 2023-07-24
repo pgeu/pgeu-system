@@ -12,6 +12,7 @@ from django.conf import settings
 
 import datetime
 from collections import OrderedDict
+import os
 from urllib.parse import urlparse
 from psycopg2.extras import DateTimeTZRange
 import pytz
@@ -76,12 +77,9 @@ class BackendConferenceForm(BackendForm):
                   'schedulewidth', 'pixelsperminute', 'notifyregs', 'notifysessionstatus', 'notifyvolunteerstatus',
                   'testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors',
                   'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent',
-                  'skill_levels', 'additionalintro', 'callforpapersintro', 'showvotes', 'callforpaperstags', 'callforpapersrecording', 'sendwelcomemail', 'welcomemail',
+                  'skill_levels', 'showvotes', 'callforpaperstags', 'callforpapersrecording', 'sendwelcomemail',
                   'tickets', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist',
                   'initial_common_countries', 'jinjaenabled']
-        widgets = {
-            'welcomemail': EmailTextWidget,
-        }
 
     def fix_fields(self):
         self.selectize_multiple_fields['volunteers'] = RegisteredUsersLookup(self.conference)
@@ -92,12 +90,12 @@ class BackendConferenceForm(BackendForm):
 
     fieldsets = [
         {'id': 'base_info', 'legend': 'Basic information', 'fields': ['attendees_before_waitlist', 'invoice_autocancel_hours', 'notifyregs', 'notifysessionstatus', 'notifyvolunteerstatus', ]},
-        {'id': 'welcomeandreg', 'legend': 'Welcome and registration', 'fields': ['sendwelcomemail', 'welcomemail', 'tickets', 'queuepartitioning', 'initial_common_countries']},
+        {'id': 'welcomeandreg', 'legend': 'Welcome and registration', 'fields': ['sendwelcomemail', 'tickets', 'queuepartitioning', 'initial_common_countries']},
         {'id': 'promo', 'legend': 'Website promotion', 'fields': ['promoactive', 'promotext', 'promopicurl']},
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', 'twitter_postpolicy', ]},
-        {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent', 'additionalintro', ]},
+        {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent', ]},
         {'id': 'steps', 'legend': 'Steps', 'fields': ['registrationopen', 'registrationtimerange', 'allowedit', 'callforpapersopen', 'callforpaperstimerange', 'callforsponsorsopen', 'callforsponsorstimerange', 'scheduleactive', 'sessionsactive', 'cardsactive', 'checkinactive', 'conferencefeedbackopen', 'feedbackopen']},
-        {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpaperstags', 'callforpapersrecording', 'callforpapersintro', 'showvotes']},
+        {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpaperstags', 'callforpapersrecording', 'showvotes']},
         {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', ]},
         {'id': 'display', 'legend': 'Display', 'fields': ['jinjaenabled', ]},
         {'id': 'legacy', 'legend': 'Legacy', 'fields': ['schedulewidth', 'pixelsperminute']},
@@ -105,8 +103,12 @@ class BackendConferenceForm(BackendForm):
 
     def clean(self):
         cleaned_data = super(BackendConferenceForm, self).clean()
-        if cleaned_data.get('sendwelcomemail') and not cleaned_data.get('welcomemail'):
-            self.add_error('welcomemail', 'When send welcome mail is specified, welcome mail contents are mandatory!')
+
+        if cleaned_data.get('sendwelcomemail'):
+            if not self.instance.jinjadir:
+                self.add_error("sendwelcomemail", "Welcome emails cannot be enabled since there is no Jinja directory configured in superuser settings")
+            elif not os.path.isfile(os.path.join(self.instance.jinjadir, 'templates/confreg/mail/welcomemail.txt')):
+                self.add_error("sendwelcomemail", "Welcome emails cannot be enabled since the file confreg/mail/welcomemail.txt does not exist in the jinja template directory")
 
         if cleaned_data.get('tickets') and not cleaned_data.get('sendwelcomemail'):
             self.add_error('tickets', 'If tickets should be generated and sent, welcome emails must be sent!')

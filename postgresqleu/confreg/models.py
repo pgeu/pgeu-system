@@ -204,16 +204,13 @@ class Conference(models.Model):
     askshareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: share email", help_text="Include field for sharing email with sponsors")
     askphotoconsent = models.BooleanField(null=False, blank=False, default=True, verbose_name="Field: photo consent", help_text="Include field for getting photo consent")
     skill_levels = models.BooleanField(blank=False, null=False, default=True)
-    additionalintro = models.TextField(blank=True, null=False, verbose_name="Additional options intro", help_text="Additional text shown just before the list of available additional options")
     jinjaenabled = models.BooleanField(null=False, blank=False, default=False, verbose_name="Jinja templates enabled")
     jinjadir = models.CharField(max_length=200, blank=True, null=True, default=None, help_text="Full path to new style jinja repository root", verbose_name="Jinja directory")
-    callforpapersintro = models.TextField(blank=True, null=False, verbose_name="Call for papers intro")
     callforpaperstags = models.BooleanField(blank=False, null=False, default=False, verbose_name='Use tags')
     callforpapersrecording = models.BooleanField(blank=False, null=False, default=False, verbose_name='Ask for recording consent')
     showvotes = models.BooleanField(blank=False, null=False, default=False, verbose_name="Show votes", help_text="Show other people's votes on the talkvote page")
 
     sendwelcomemail = models.BooleanField(blank=False, null=False, default=False, verbose_name="Send welcome email", help_text="Send an email to attendees once their registration is completed.")
-    welcomemail = models.TextField(blank=True, null=False, verbose_name="Welcome email contents")
     tickets = models.BooleanField(blank=False, null=False, default=False, verbose_name="Use tickets", help_text="Generate and send tickets to all attendees once their registration is completed.")
     queuepartitioning = models.IntegerField(blank=True, null=True, choices=((1, 'By last name'), (2, 'By first name'), ), verbose_name="Queue partitioning", help_text="If queue partitioning is used, partition by what?")
 
@@ -240,10 +237,10 @@ class Conference(models.Model):
     # Attributes that are safe to access in jinja templates
     _safe_attributes = ('registrationopen', 'registrationtimerange', 'IsRegistrationOpen',
                         'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
-                        'callforpapersintro', 'callforpapersopen', 'callforpaperstimerange', 'IsCallForPapersOpen',
+                        'callforpapersopen', 'callforpaperstimerange', 'IsCallForPapersOpen',
                         'callforpaperstags', 'callforpapersrecording', 'allowedit',
                         'conferencefeedbackopen', 'confurl', 'contactaddr', 'tickets',
-                        'conferencedatestr', 'location', 'welcomemail',
+                        'conferencedatestr', 'location',
                         'feedbackopen', 'skill_levels', 'urlname', 'conferencename',
                         'series',
     )
@@ -353,12 +350,6 @@ class Conference(models.Model):
     @property
     def needs_data_purge(self):
         return self.enddate < today_conference() and not self.personal_data_purged
-
-    def clean(self):
-        cc = super(Conference, self).clean()
-        if self.sendwelcomemail and not self.welcomemail:
-            raise ValidationError("Must specify an actual welcome mail if it's enabled!")
-        return cc
 
 
 class RegistrationClass(models.Model):
@@ -1687,3 +1678,15 @@ class ConferenceRegistrationTemporaryToken(models.Model):
     reg = models.OneToOneField(ConferenceRegistration, null=False, blank=False, unique=True, on_delete=models.CASCADE)
     token = models.TextField(null=False, blank=False, unique=True)
     expires = models.DateTimeField(null=False, blank=False)
+
+
+class ConferenceRemovedData(models.Model):
+    urlname = models.CharField(max_length=32, blank=False, null=False, validators=[validate_lowercase, validate_urlname, ], verbose_name="URL name")
+    description = models.CharField(max_length=100, blank=False, null=False)
+    value = models.TextField(blank=False, null=False)
+
+    class Meta:
+        unique_together = (
+            ('urlname', 'description'),
+        )
+        ordering = ('urlname', 'description')

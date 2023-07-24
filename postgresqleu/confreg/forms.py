@@ -324,13 +324,14 @@ class ConferenceRegistrationForm(forms.ModelForm):
         if conf.conferenceadditionaloption_set.filter(public=True).exists():
             yield {'id': 'additional_options',
                    'legend': 'Additional options',
-                   'intro': conf.additionalintro,
+                   'introproperty': 'system.reg.additionaloptionsintro',
                    'fields': [self['additionaloptions'], ],
                    }
 
         yield {'id': 'voucher_codes',
                'legend': 'Voucher codes',
                'intro': 'If you have a voucher or discount code, enter it in this field. If you do not have one, just leave the field empty.',
+               'introproperty': 'system.reg.voucherintro',
                'fields': [self['vouchercode'], ],
         }
 

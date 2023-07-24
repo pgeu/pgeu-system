@@ -18,6 +18,7 @@ from .models import PendingAdditionalOrder
 from .models import VolunteerSlot
 from .models import AccessToken
 from .models import ConferenceNews
+from .models import ConferenceRemovedData
 
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 
@@ -513,6 +514,11 @@ class VolunteerSlotAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'title')
 
 
+class ConferenceRemovedDataAdmin(admin.ModelAdmin):
+    list_filter = ['urlname', ]
+    list_display = ('urlname', 'description')
+
+
 admin.site.register(ConferenceSeries, ConferenceSeriesAdmin)
 admin.site.register(Conference, ConferenceAdmin)
 admin.site.register(RegistrationClass, RegistrationClassAdmin)
@@ -536,3 +542,4 @@ admin.site.register(PendingAdditionalOrder, PendingAdditionalOrderAdmin)
 admin.site.register(VolunteerSlot, VolunteerSlotAdmin)
 admin.site.register(AccessToken)
 admin.site.register(ConferenceNews)
+admin.site.register(ConferenceRemovedData, ConferenceRemovedDataAdmin)

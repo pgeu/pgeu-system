@@ -11,9 +11,7 @@
 {%endif%}
 
 {%if conference.IsCallForPapersOpen%}
-<p>
-{{conference.callforpapersintro|safe}}
-</p>
+{%block callforpapersintro%}<p>{{"system.cfp.intro"|lookup("")|safe}}</p>{%endblock%}
 {%endif%}
 
 <h2>Your submissions</h2>

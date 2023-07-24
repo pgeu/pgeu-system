@@ -58,9 +58,7 @@ tr#tr_speaker {
 {%block content%}
 <h1>Call for Papers<span class="confheader"> - {{conference}}</span></h1>
 
-<p>
-{{conference.callforpapersintro|safe}}
-</p>
+{%block callforpapersintro%}<p>{{"system.cfp.intro"|lookup("")|safe}}</p>{%endblock%}
 
 <p><a href="..">Return</a> to your submissions.</p>
 

@@ -118,10 +118,9 @@ registers or has their registration canceled.
 
 Send welcome mail
 : Should an email be sent to the attendee confirming that they have
-completed their registration.
-
-Welcome email contents
-: Contents of said welcome email
+completed their registration. For this to be enabled, jinja templating
+needs to be enabled, and the contents of the email to be sent should
+be stored in `templates/confreg/mail/welcomemail.txt`.
 
 Use tickets
 : Enable [tickets](tickets) and check-in. If this is enabled, then for
@@ -196,11 +195,6 @@ Field photo consent
 : Should the field asking the attendee to give (or not) consent to
 have their photograph taken at the event.
 
-Additional intro
-: Text shown on the registration page just above the list of
-additional options. Typically introduces what the additional options
-are. Can contain markdown.
-
 Registration open
 : If regular registration is open.
 
@@ -274,10 +268,6 @@ Use tags
 Ask for recording consent:
 : Should the [call for papers](callforpapers) ask for recording consent
 on all sessions.
-
-Call for papers intro
-: Text shown on the [call for papers](callforpapers) page, above the
-actual call for papers. Can contain HTML.
 
 Testers
 : List of users who are assigned as testers of the conference. These

@@ -48,7 +48,9 @@ correction.</p>
 {%for fieldset in form.fieldsets%}
  <fieldset id="{{fieldset.id}}">
   <legend>{{fieldset.legend}}</legend>
-  {%if fieldset.intro or fieldset.introhtml%}
+  {%if fieldset.introproperty|lookup("")%}
+  <div>{{fieldset.introproperty|lookup("")}}</div>
+  {%elif fieldset.intro or fieldset.introhtml%}
   <div>{%if fieldset.intro%}{{fieldset.intro|markdown}}{%endif%}{%if fieldset.introhtml%}{{fieldset.introhtml}}{%endif%}</div>
   {%endif%}
   {%for f in fieldset.fields%}
