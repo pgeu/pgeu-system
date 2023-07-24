@@ -122,7 +122,7 @@ class BackendConferenceForm(BackendForm):
         je = self.cleaned_data.get('jinjaenabled', False)
         if je:
             if not self.instance.jinjadir:
-                raise ValidationError("Jinja templates cannot be enabled since there is no Jinja directory configured in superuser sesttings")
+                raise ValidationError("Jinja templates cannot be enabled since there is no Jinja directory configured in superuser settings")
         return je
 
 
