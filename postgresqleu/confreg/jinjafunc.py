@@ -251,6 +251,25 @@ def filter_applymacro(context, obj, macroname):
     return context.resolve(macroname)(obj)
 
 
+@jinja2.contextfilter
+def filter_lookup(context, name, default=None):
+    if not name:
+        if default is not None:
+            return default
+        raise KeyError("No key specified")
+
+    c = context
+    parts = name.split('.')
+    while parts:
+        p = parts.pop(0)
+        if p not in c:
+            if default is not None:
+                return default
+            raise KeyError("Key {} not found".format(name))
+        c = c[p]
+    return str(c)
+
+
 filter_applymacro.contextfilter = True
 
 
@@ -270,6 +289,7 @@ extra_filters = {
     'wordwraptolist': lambda t, w: textwrap.wrap(t, width=w, expand_tabs=False),
     'svgparagraph': filter_svgparagraph,
     'applymacro': filter_applymacro,
+    'lookup': filter_lookup,
 }
 
 
