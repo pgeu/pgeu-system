@@ -231,8 +231,9 @@ class AdyenBanktransfer(_AdyenBase):
     description = """
 Pay using a direct IBAN bank transfer. Due to the unreliable and slow processing
 of these payments, this method is <b>not recommended</b> unless it is the only
-option possible. In particular, we strongly advice not using this method if
-making a payment from outside the Euro-zone.
+option possible. In particular, we strongly advise not using this method if
+making a payment from an account in a different currency, as amounts must be exact 
+and all fees covered by sender.
 """
 
     def __init__(self, id, method=None):
