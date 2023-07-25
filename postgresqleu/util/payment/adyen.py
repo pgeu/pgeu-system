@@ -232,7 +232,7 @@ class AdyenBanktransfer(_AdyenBase):
 Pay using a direct IBAN bank transfer. Due to the unreliable and slow processing
 of these payments, this method is <b>not recommended</b> unless it is the only
 option possible. In particular, we strongly advise not using this method if
-making a payment from an account in a different currency, as amounts must be exact 
+making a payment from an account in a different currency, as amounts must be exact
 and all fees covered by sender.
 """
 

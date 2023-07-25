@@ -152,7 +152,7 @@ class Transferwise(BaseManagedBankPayment):
     description = """
 Pay using a direct IBAN bank transfer in {}. We
 <strong>strongly advise</strong> not using this method if
-making a payment from an account in a different currency, 
+making a payment from an account in a different currency,
 as amounts must be exact and all fees covered by sender.
 """.format(settings.CURRENCY_ABBREV)
 

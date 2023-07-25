@@ -441,7 +441,7 @@ class RegistrationType(models.Model):
             return self.regtype
         else:
             return "%s (%s)" % (self.regtype,
-                                   format_currency(self.total_cost))
+                                format_currency(self.total_cost))
 
     @property
     def total_cost(self):
