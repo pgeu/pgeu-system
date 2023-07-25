@@ -193,6 +193,25 @@ CURRENCY_ABBREV = 'EUR'
 CURRENCY_SYMBOL = '€'
 CURRENCY_ISO = 'EUR'
 
+# Define how currency amounts should be formatted.
+# You can use SYMBOL and ABBREV to insert the respective values above.
+# AMOUNT should always be included of course, and will be the value to
+# two decimal places (cents/pennies/whatever).
+# Other text (spaces etc.) may be included as required.
+#
+# Euro format is "EUR nnnn" ('{ABBREV} {AMOUNT}') in English, Malteses,
+# and Irish text (should usually be the case until pgeu-system is localised).
+#
+# Other European languages should use  "nnnn EUR" ('{AMOUNT} {ABBREV}').
+#
+# Per: https://publications.europa.eu/code/en/en-370303.htm
+#
+# Pound Sterling (UK GBP) format is "£nnnn" ('{SYMBOL}{AMOUNT}').
+#
+# Per: https://www.imperial.ac.uk/brand-style-guide/writing/numbers/money-and-currencies/
+
+CURRENCY_FORMAT = '{ABBREV} {AMOUNT}'
+
 # Process EU-specific VAT rules
 EU_VAT = False
 # Home country prefix for EU VAT

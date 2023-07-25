@@ -1,4 +1,5 @@
 {%extends "adm/admin_base.html" %}
+{%load currency%}
 {%block title%}Match pending bank transaction to pending matcher{%endblock%}
 {%block layoutblock %}
 <h1>Match pending bank transaction to pending matcher</h1>
@@ -12,7 +13,7 @@
     </div>
     <div class="row">
       <div class="col-md-2"><strong>Amount</strong></div>
-      <div class="col-md-8">{{currency_symbol}} {{transaction.amount}}</div>
+      <div class="col-md-8">{{transaction.amount|format_currency}}</div>
     </div>
     <div class="row">
       <div class="col-md-2"><strong>Payment method</strong></div>
@@ -38,7 +39,7 @@
     </div>
     <div class="row">
       <div class="col-md-2"><strong>Amount</strong></div>
-      <div class="col-md-8">{{currency_symbol}} {{matcher.amount}}</div>
+      <div class="col-md-8">{{matcher.amount|format_currency}}</div>
     </div>
     <div class="row">
       <div class="col-md-2"><strong>Account</strong></div>

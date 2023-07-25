@@ -1,4 +1,5 @@
 {%extends "confreg/confadmin_base.html" %}
+{%load currency%}
 {%block title%}Refund sponsor - {{sponsor}}{%endblock%}
 {%block layoutblock%}
 <h1>Refund sponsor - {{sponsor}}</h1>
@@ -34,12 +35,12 @@
   </tr>
   <tr>
     <th class="col-md-2">Total amount</th>
-    <td>{{currency_symbol}} {{sponsor.invoice.total_amount}}{%if eu_vat %} ({{currency_symbol}} {{sponsor.invoice.amount_without_vat}} + {{currency_symbol}} {{sponsor.invoice.total_vat}} VAT){%endif%}</td>
+    <td>{{sponsor.invoice.total_amount|format_currency}}{%if eu_vat %} ({{sponsor.invoice.amount_without_vat|format_currency}} + {{sponsor.invoice.total_vat|format_currency}} VAT){%endif%}</td>
   </tr>
 {%if sponsor.invoice.total_refunds.amount%}
   <tr>
     <th class="col-md-2">Already refunded</th>
-    <td>{{currency_symbol}} {{sponsor.invoice.total_refunds.amount}}{%if eu_vat %} ({{currency_symbol}} {{sponsor.invoice.total_refunds.vatamount}} VAT){%endif%}</td>
+    <td>{{sponsor.invoice.total_refunds.amount|format_currency}}{%if eu_vat %} ({{sponsor.invoice.total_refunds.vatamount|format_currency}} VAT){%endif%}</td>
   </tr>
 {%endif%}
 </table>

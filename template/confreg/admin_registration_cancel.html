@@ -1,4 +1,5 @@
 {%extends "confreg/confadmin_base.html" %}
+{%load currency%}
 {%load dictutil%}
 {%block title%}Cancel registration{%endblock%}
 
@@ -19,12 +20,12 @@
   <tr>
     <th></th>
     <th>Total paid for attendee</th>
-    <td>{{currency_symbol}}{{regtotalnovat|dictlookup:r.id}}{%if regtotalvat|dictlookup:r.id%} + VAT {{currency_symbol}}{{regtotalvat|dictlookup:r.id}} = {{currency_symbol}}{{regtotalwithvat|dictlookup:r.id}}{%endif%}</td>
+    <td>{{regtotalnovat|dictlookup:r.id|format_currency}}{%if regtotalvat|dictlookup:r.id%} + VAT {{regtotalvat|dictlookup:r.id|format_currency}} = {{regtotalwithvat|dictlookup:r.id|format_currency}}{%endif%}</td>
   </tr>
 {%endfor%}
   <tr>
     <th colspan="2">Grand total</th>
-    <td>{{currency_symbol}}{{totalnovat}}{%if totalvat%} + VAT {{currency_symbol}}{{totalvat}} = {{currency_symbol}}{{totalwithvat}}{%endif%}</td>
+    <td>{{totalnovat|format_currency}}{%if totalvat%} + VAT {{totalvat|format_currency}} = {{totalwithvat|format_currency}}{%endif%}</td>
   </tr>
 </table>
 

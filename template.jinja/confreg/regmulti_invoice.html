@@ -57,19 +57,19 @@ table.invoiceconfirmtbl tr.totalrow td.cost {
 {%for r,num,amount,vatrate,total in invoicerows%}
 <tr>
   <td>{{r|leadingnbsp}}</td>
-  <td class="cost">{{amount|currency_format}}</td>
+  <td class="cost">{{amount|format_currency}}</td>
 {%if totalwithvat != totalcost%}
   <td class="cost">{{vatrate.vatpercent}}%</td>
-  <td class="cost">{{total|currency_format}}</td>
+  <td class="cost">{{total|format_currency}}</td>
 {%endif%}
 </tr>
 {%endfor%}
 <tr valign="top" class="totalrow">
   <td class="desc"></td>
-  <td class="cost">{{totalcost|currency_format}}</td>
+  <td class="cost">{{totalcost|format_currency}}</td>
 {%if totalwithvat != totalcost %}
   <td class="cost"></td>
-  <td class="cost">{{totalwithvat|currency_format}}</td>
+  <td class="cost">{{totalwithvat|format_currency}}</td>
 {%endif%}
 </tr>
 </table>

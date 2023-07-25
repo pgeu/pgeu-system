@@ -80,19 +80,19 @@ it.
 {%for r in invoicerows%}
 <tr valign="top">
   <td class="desc">{{r.0|leadingnbsp}}</td>
-  <td class="cost">{{r.2|currency_format}}</td>
+  <td class="cost">{{r.2|format_currency}}</td>
 {%if totalwithvat != totalcost %}
   <td class="cost">{{r.3.vatpercent}}%</td>
-  <td class="cost">{{r.4|currency_format}}</td>
+  <td class="cost">{{r.4|format_currency}}</td>
 {%endif%}
 </tr>
 {%endfor%}
 <tr valign="top" class="totalrow">
   <td class="desc"></td>
-  <td class="cost">{{totalcost|currency_format}}</td>
+  <td class="cost">{{totalcost|format_currency}}</td>
 {%if totalwithvat != totalcost %}
   <td class="cost"></td>
-  <td class="cost">{{totalwithvat|currency_format}}</td>
+  <td class="cost">{{totalwithvat|format_currency}}</td>
 {%endif%}
 </tr>
 </table>

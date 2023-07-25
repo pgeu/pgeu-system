@@ -10,6 +10,7 @@ from postgresqleu.util.request import get_int_or_error
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.mailqueue.util import send_simple_mail
+from postgresqleu.util.currency import format_currency
 
 from .models import BraintreeTransaction, BraintreeLog
 
@@ -100,9 +101,8 @@ def payment_post(request):
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                              pm.config('notification_receiver'),
                              'Braintree payment authorized',
-                             "A payment of %s%s with reference %s was authorized on the Braintree platform for %s.\nInvoice: %s\nRecipient name: %s\nRecipient user: %s\nBraintree reference: %s\n" % (
-                                 settings.CURRENCY_ABBREV,
-                                 trans.amount,
+                             "A payment of %s with reference %s was authorized on the Braintree platform for %s.\nInvoice: %s\nRecipient name: %s\nRecipient user: %s\nBraintree reference: %s\n" % (
+                                 format_currency(trans.amount),
                                  trans.id,
                                  method.internaldescription,
                                  invoice.title,

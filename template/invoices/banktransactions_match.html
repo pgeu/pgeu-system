@@ -1,4 +1,5 @@
 {%extends "adm/admin_base.html" %}
+{%load currency%}
 {%block title%}Match pending bank transaction{%endblock%}
 {%block layoutblock %}
 <h1>Match pending bank transaction</h1>
@@ -9,7 +10,7 @@
 </div>
 <div class="row">
   <div class="col-md-2"><strong>Amount</strong></div>
-  <div class="col-md-8">{{currency_symbol}} {{transaction.amount}}</div>
+  <div class="col-md-8">{{transaction.amount|format_currency}}</div>
 </div>
 <div class="row">
   <div class="col-md-2"><strong>Payment method</strong></div>
@@ -44,7 +45,7 @@
     <tr{%if im.matchlabel%} class="{{im.matchlabel}}"{%endif%}>
       <td>{{im.i.id}}</td>
       <td>{{im.i.title}}</td>
-      <td class="nobr">{{currency_symbol}} {{im.i.total_amount}}</td>
+      <td class="nobr">{{im.i.total_amount|format_currency}}</td>
       <td>{{im.i.recipient_name}}</td>
       <td>{{im.matchinfo|linebreaksbr}}</td>
       <td>
@@ -84,7 +85,7 @@
 {%for m in matchers%}
     <tr>
       <td>{{m.pattern}}</td>
-      <td class="nobr">{{currency_symbol}} {{m.amount}}</td>
+      <td class="nobr">{{m.amount|format_currency}}</td>
       <td><a href="/accounting/e/{{m.journalentry.id}}/">{{m.journalentry}}</a></td>
       <td><a href="m{{m.id}}/" class="btn btn-default btn-xs">Match this matcher</a></td>
     </tr>

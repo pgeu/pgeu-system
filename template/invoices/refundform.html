@@ -1,4 +1,5 @@
 {%extends "adm/admin_base.html" %}
+{%load currency%}
 {%block title%}Invoice Refund{%endblock%}
 {%block layoutblock %}
 <h1>Refund of invoice #{{invoice.id}}</h1>
@@ -10,7 +11,7 @@
   </tr>
   <tr>
     <th>Payment fees:</th>
-    <td class="text-right">{{currency_symbol}}{{invoice.payment_fees}}</td>
+    <td class="text-right">{{invoice.payment_fees|format_currency}}</td>
   </tr>
 </table>
 
@@ -80,7 +81,7 @@
     <td><i>Remaining to refund</i></td>
     <td class="text-right">{{invoice.total_refunds.remaining.amount}}</td>
     <td class="text-right">{{invoice.total_refunds.remaining.vatamount}}</td>
-    <td colspan="4">Not reduced with payment fees of {{currency_symbol}}{{invoice.payment_fees}}</td>
+    <td colspan="4">Not reduced with payment fees of {{invoice.payment_fees|format_currency}}</td>
   </tr>
 </table>
 {%endif%}

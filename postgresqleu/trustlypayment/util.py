@@ -8,6 +8,7 @@ from decimal import Decimal
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.models import Invoice
+from postgresqleu.util.currency import format_currency
 
 from .api import TrustlyWrapper, TrustlyException
 from .models import TrustlyTransaction, TrustlyLog
@@ -196,15 +197,14 @@ class Trustly(TrustlyWrapper):
                                                      invoice_logger,
                                                      method)
 
-        TrustlyLog(message="Completed payment for Trustly id {0} (order {1}), {2}{3}, invoice {4}".format(trans.id, trans.orderid, settings.CURRENCY_ABBREV, trans.amount, invoice.id), paymentmethod=method).save()
+        TrustlyLog(message="Completed payment for Trustly id {0} (order {1}), {2}, invoice {3}".format(trans.id, trans.orderid, format_currency(trans.amount), invoice.id), paymentmethod=method).save()
 
         send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                          pm.config('notification_receiver'),
                          "Trustly payment completed",
-                         "A Trustly payment for {0} of {1}{2} for invoice {3} was completed on the Trustly platform.\n\nInvoice: {4}\nRecipient name: {5}\nRecipient email: {6}\n".format(
+                         "A Trustly payment for {0} of {1} for invoice {2} was completed on the Trustly platform.\n\nInvoice: {3}\nRecipient name: {4}\nRecipient email: {5}\n".format(
                              method.internaldescription,
-                             settings.CURRENCY_ABBREV,
-                             trans.amount,
+                             format_currency(trans.amount),
                              invoice.id,
                              invoice.title,
                              invoice.recipient_name,

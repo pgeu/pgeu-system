@@ -1,5 +1,6 @@
 {%extends "adm/admin_base.html" %}
 {%load assets%}
+{%load currency%}
 {%load formutil%}
 {%load util %}
 {%block title%}{%if invoice.id%}Invoice #{{invoice.id}}{%else%}New invoice{%endif%}{%endblock%}
@@ -148,7 +149,7 @@ This invoice has been <b>paid</b>.
 </p>
 {%if invoice.paidusing%}
 <p>
- This invoice was paid using {{invoice.paidusing.internaldescription}}. The payment fees were {{currency_symbol}}{{invoice.payment_fees}}.
+ This invoice was paid using {{invoice.paidusing.internaldescription}}. The payment fees were {{invoice.payment_fees|format_currency}}.
 </p>
 {%else%}
 <p>This invoice was manually flagged as paid.</p>

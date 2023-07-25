@@ -1,4 +1,5 @@
 {%extends "adm/admin_base.html" %}
+{%load currency%}
 {%block title%}Pending bank transactions{%endblock%}
 {%block layoutblock %}
 <h1>Pending bank transactions</h1>
@@ -28,7 +29,7 @@
 {%for trans in transactions%}
     <tr>
       <td>{{trans.created}}</td>
-      <td class="nobr">{{currency_symbol}} {{trans.amount}}</td>
+      <td class="nobr">{{trans.amount|format_currency}}</td>
       <td>{{trans.transtext}}</td>
       <td>{{trans.method.internaldescription}}</td>
       <td>{{trans.comments}}</td>
@@ -70,7 +71,7 @@
       <td>{{matcher.created}}</td>
       <td>{{matcher.foraccount}}</td>
       <td>{{matcher.pattern}}</td>
-      <td class="nobr">{{currency_symbol}} {{matcher.amount}}</td>
+      <td class="nobr">{{matcher.amount|format_currency}}</td>
       <td><a href="/accounting/e/{{matcher.journalentry.id}}/">{{matcher.journalentry}}</a></td>
       <td>
 	<form action="." method="post">{% csrf_token %}

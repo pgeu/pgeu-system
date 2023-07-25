@@ -1,3 +1,4 @@
+{%load currency%}
 <table style="border: 1px solid black;">
  <tr>
   <td style="white-space: nowrap">Invoice number:</td>
@@ -19,7 +20,7 @@
  </tr>
  <tr>
    <td style="white-space: nowrap">Total amount:</td>
-   <td>{{currency_symbol}}{{invoice.total_amount}}</td>
+   <td>{{invoice.total_amount|format_currency}}</td>
  </tr>
  <tr>
    <td style="white-space: nowrap">Due date:</td>
@@ -88,7 +89,7 @@
        </tr>
 {%for r in invoice.invoicerefund_set.all %}
        <tr>
-	 <td>{{currency_symbol}}{{r.fullamount}}</td>
+	 <td>{{r.fullamount|format_currency}}</td>
 	 <td>{%if r.completed%}Refunded {{r.completed}}{%elif r.issued%}Submitted to payment provider {{r.issued}}{%else%}Pending since {{r.registered}}{%endif%}</td>
 	 <td><a href="/invoices/{{invoice.pk}}/{%if fromsecret or not invoice.has_recipient_user%}{{invoice.recipient_secret}}/{%endif%}refundnote/{{r.id}}/">View refund note</a></td>
        </tr>

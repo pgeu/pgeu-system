@@ -4,6 +4,7 @@ from django.db import transaction
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.models import Invoice
+from postgresqleu.util.currency import format_currency
 
 from .models import StripeLog
 from .api import StripeApi, StripeException
@@ -38,15 +39,14 @@ def process_stripe_checkout(co):
                                                          invoice_logger,
                                                          method)
 
-            StripeLog(message="Completed payment for Stripe id {0} ({1}{2}, invoice {3})".format(co.id, settings.CURRENCY_ABBREV, co.amount, invoice.id), paymentmethod=method).save()
+            StripeLog(message="Completed payment for Stripe id {0} ({1}, invoice {2})".format(co.id, format_currency(co.amount), invoice.id), paymentmethod=method).save()
 
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                              pm.config('notification_receiver'),
                              "Stripe payment completed",
-                             "A Stripe payment for {0} of {1}{2} for invoice {3} was completed.\n\nInvoice: {4}\nRecipient name: {5}\nRecipient email: {6}\n".format(
+                             "A Stripe payment for {0} of {1} for invoice {2} was completed.\n\nInvoice: {3}\nRecipient name: {4}\nRecipient email: {5}\n".format(
                                  method.internaldescription,
-                                 settings.CURRENCY_ABBREV,
-                                 co.amount,
+                                 format_currency(co.amount),
                                  invoice.id,
                                  invoice.title,
                                  invoice.recipient_name,

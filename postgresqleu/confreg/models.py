@@ -25,6 +25,7 @@ from postgresqleu.util.fields import LowercaseEmailField, ImageBinaryField, PdfB
 from postgresqleu.util.time import today_conference
 from postgresqleu.util.db import exec_no_result
 from postgresqleu.util.image import rescale_image_bytes
+from postgresqleu.util.currency import format_currency
 
 import base64
 import pytz
@@ -439,9 +440,8 @@ class RegistrationType(models.Model):
         if self.cost == 0:
             return self.regtype
         else:
-            return "%s (%s %s)" % (self.regtype,
-                                   settings.CURRENCY_ABBREV,
-                                   self.total_cost)
+            return "%s (%s)" % (self.regtype,
+                                   format_currency(self.total_cost))
 
     @property
     def total_cost(self):
@@ -510,9 +510,9 @@ class ConferenceAdditionalOption(models.Model):
         # it nice for the end user.
         if self.cost > 0:
             if self.conference.vat_registrations:
-                coststr = " (%s %.2f)" % (settings.CURRENCY_ABBREV, self.cost * (1 + self.conference.vat_registrations.vatpercent / Decimal(100.0)))
+                coststr = " (%s)" % (format_currency(self.cost * (1 + self.conference.vat_registrations.vatpercent / Decimal(100.0))))
             else:
-                coststr = " (%s %s)" % (settings.CURRENCY_ABBREV, self.cost)
+                coststr = " (%s)" % (format_currency(self.cost))
         else:
             coststr = ""
         if self.maxcount == -1:

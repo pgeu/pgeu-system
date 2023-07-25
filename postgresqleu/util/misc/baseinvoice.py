@@ -17,6 +17,7 @@ from io import BytesIO
 from django.utils import timezone
 from django.conf import settings
 
+from postgresqleu.util.currency import format_currency
 from postgresqleu.util.reporttools import cm
 
 
@@ -181,15 +182,15 @@ class BaseInvoice(PDFBase):
             if settings.EU_VAT:
                 tbldata.extend([(self.trimstring(title, cm(9.5), "DejaVu Serif", 8),
                                  count,
-                                 "%.2f %s" % (cost, settings.CURRENCY_SYMBOL),
+                                 format_currency(cost),
                                  vatrate and vatrate.shortstr or "No VAT",
-                                 "%.2f %s" % ((cost * count) * (1 + (vatpercent / Decimal(100))), settings.CURRENCY_SYMBOL))
+                                 format_currency((cost * count) * (1 + (vatpercent / Decimal(100)))))
                                 for title, cost, count, vatrate, vatpercent in self.rows[pagenum * self.ROWS_PER_PAGE:(pagenum + 1) * self.ROWS_PER_PAGE]])
             else:
                 tbldata.extend([(self.trimstring(title, cm(9.5), "DejaVu Serif", 8),
                                  count,
-                                 "%.2f %s" % (cost, settings.CURRENCY_SYMBOL),
-                                 "%.2f %s" % ((cost * count), settings.CURRENCY_SYMBOL))
+                                 format_currency(cost),
+                                 format_currency(cost * count))
                                 for title, cost, count, vatrate, vatpercent in self.rows[pagenum * self.ROWS_PER_PAGE:(pagenum + 1) * self.ROWS_PER_PAGE]])
 
             style = [
@@ -220,15 +221,15 @@ class BaseInvoice(PDFBase):
                         if totalvat != 0:
                             raise Exception("Can't use reverse VAT and specified VAT at the same time!")
                         vathdr = 'Total VAT *'
-                        vatstr = "0 %s *" % (settings.CURRENCY_SYMBOL, )
+                        vatstr = '{} *'.format(format_currency(0))
                     else:
                         vathdr = 'Total VAT'
-                        vatstr = '%.2f %s' % (totalvat, settings.CURRENCY_SYMBOL)
+                        vatstr = format_currency(totalvat)
 
                     tbldata.extend([
-                        ('Total excl VAT', '', '', '', '%.2f %s' % (totalexcl, settings.CURRENCY_SYMBOL)),
+                        ('Total excl VAT', '', '', '', format_currency(totalexcl)),
                         (vathdr, '', '', '', vatstr),
-                        ('Total incl VAT', '', '', '', '%.2f %s' % (totalincl, settings.CURRENCY_SYMBOL)),
+                        ('Total incl VAT', '', '', '', format_currency(totalincl)),
                     ])
 
                     style.extend([
@@ -244,7 +245,7 @@ class BaseInvoice(PDFBase):
                     # No EU vat, so just a simple total
                     tbldata.extend([
                         ('Total', '', '',
-                         '%.2f %s' % (totalexcl, settings.CURRENCY_SYMBOL)),
+                         format_currency(totalexcl)),
                     ])
 
                     # Merge the cells of the total line together, right-align them, and
@@ -372,30 +373,30 @@ class BaseRefund(PDFBase):
         tblpaid = [
             ["Amount paid"],
             ["Item", "Amount"],
-            ["Amount", "{0:.2f} {1}".format(self.invoiceamount, settings.CURRENCY_SYMBOL)],
+            ["Amount", format_currency(self.invoiceamount)],
         ]
         tblrefunded = [
             ["Amount refunded"],
             ["Item", "Amount"],
-            ["Amount", "{0:.2f} {1}".format(self.refundamount, settings.CURRENCY_SYMBOL)],
+            ["Amount", format_currency(self.refundamount)],
         ]
         tblprevious = [
             ["Amount previously refunded"],
             ["Item", "Amount"],
-            ["Amount", "{0:.2f} {1}".format(self.previousamount, settings.CURRENCY_SYMBOL)],
+            ["Amount", format_currency(self.previousamount)],
         ]
         if self.invoicevat:
             tblpaid.extend([
-                ["VAT", "{0:.2f} {1}".format(self.invoicevat, settings.CURRENCY_SYMBOL)],
-                ["", "{0:.2f} {1}".format(self.invoiceamount + self.invoicevat, settings.CURRENCY_SYMBOL)],
+                ["VAT", format_currency(self.invoicevat)],
+                ["", format_currency(self.invoiceamount + self.invoicevat)],
             ])
             tblrefunded.extend([
-                ["VAT", "{0:.2f} {1}".format(self.refundvat, settings.CURRENCY_SYMBOL)],
-                ["", "{0:.2f} {1}".format(self.refundamount + self.refundvat, settings.CURRENCY_SYMBOL)],
+                ["VAT", format_currency(self.refundvat)],
+                ["", format_currency(self.refundamount + self.refundvat)],
             ])
             tblprevious .extend([
-                ["VAT", "{0:.2f} {1}".format(self.previousvat, settings.CURRENCY_SYMBOL)],
-                ["", "{0:.2f} {1}".format(self.previousamount + self.previousvat, settings.CURRENCY_SYMBOL)],
+                ["VAT", format_currency(self.previousvat)],
+                ["", format_currency(self.previousamount + self.previousvat)],
             ])
 
         style = [

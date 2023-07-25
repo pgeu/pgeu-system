@@ -13,6 +13,7 @@ from postgresqleu.util.payment import payment_implementations
 from postgresqleu.util.pagination import simple_pagination
 from postgresqleu.util.request import get_int_or_error
 from postgresqleu.util.db import exec_to_dict
+from postgresqleu.util.currency import format_currency
 from postgresqleu.accounting.util import create_accounting_entry, get_account_choices
 from postgresqleu.invoices.util import InvoiceManager
 
@@ -72,7 +73,7 @@ def banktransactions(request):
             trans = get_object_or_404(PendingBankTransaction, id=get_int_or_error(request.POST, 'transid'))
 
             if request.POST['submit'] == 'Discard':
-                InvoiceLog(message="Discarded bank transaction of {0}{1} with text {2}".format(trans.amount, settings.CURRENCY_ABBREV, trans.transtext)).save()
+                InvoiceLog(message="Discarded bank transaction of {0} with text {1}".format(format_currency(trans.amount), trans.transtext)).save()
 
                 trans.delete()
 
@@ -86,7 +87,7 @@ def banktransactions(request):
                 ]
                 entry = create_accounting_entry(accrows, True)
 
-                InvoiceLog(message="Created manual accounting entry for transaction of {0}{1} with text {2}".format(trans.amount, settings.CURRENCY_ABBREV, trans.transtext)).save()
+                InvoiceLog(message="Created manual accounting entry for transaction of {0} with text {1}".format(format_currency(trans.amount), trans.transtext)).save()
 
                 trans.delete()
 
@@ -96,7 +97,7 @@ def banktransactions(request):
 
                 pm.return_payment(trans)
 
-                InvoiceLog(message="Scheduled transaction '{0}' ({1}{2}) for return to sender using {3}".format(trans.transtext, trans.amount, settings.CURRENCY_ABBREV, trans.method.internaldescription)).save()
+                InvoiceLog(message="Scheduled transaction '{0}' ({1}) for return to sender using {2}".format(trans.transtext, format_currency(trans.amount), trans.method.internaldescription)).save()
                 trans.delete()
 
                 return HttpResponseRedirect(".")
@@ -105,7 +106,7 @@ def banktransactions(request):
         elif 'matcherid' in request.POST:
             matcher = get_object_or_404(PendingBankMatcher, pk=get_int_or_error(request.POST, 'matcherid'))
             if request.POST['submit'] == 'Discard':
-                InvoiceLog(message="Discarded pending bank matcher {0} for {1} {2}".format(matcher.pattern, matcher.amount, settings.CURRENCY_ABBREV)).save()
+                InvoiceLog(message="Discarded pending bank matcher {0} for {1}".format(matcher.pattern, format_currency(matcher.amount))).save()
 
                 matcher.delete()
 
@@ -402,12 +403,11 @@ def _flag_invoices(request, trans, invoices, pm, fee_account):
 
         BankTransferFees(invoice=invoice, fee=fee).save()
 
-        InvoiceLog(message="Manually matched invoice {0} for {1} {2}, bank transaction {3} {2}, fees {4}".format(
+        InvoiceLog(message="Manually matched invoice {0} for {1}, bank transaction {2}, fees {3}".format(
             invoice.id,
-            invoice.total_amount,
-            settings.CURRENCY_ABBREV,
-            trans.amount,
-            fee,
+            format_currency(invoice.total_amount),
+            format_currency(trans.amount),
+            format_currency(fee),
         )).save()
 
     # Remove the pending transaction
@@ -544,9 +544,8 @@ def banktransactions_match_matcher(request, transid, matcherid):
         matcher.journalentry.closed = True
         matcher.journalentry.save()
 
-        InvoiceLog(message="Manually matched bank transaction of {0}{1} with text {2} to journal entry {3}.".format(
-            trans.amount,
-            settings.CURRENCY_ABBREV,
+        InvoiceLog(message="Manually matched bank transaction of {0} with text {1} to journal entry {2}.".format(
+            format_currency(trans.amount),
             trans.transtext,
             matcher.journalentry,
         )).save()

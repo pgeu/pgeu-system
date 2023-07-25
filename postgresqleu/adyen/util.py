@@ -12,6 +12,7 @@ from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.accounting.util import create_accounting_entry
+from postgresqleu.util.currency import format_currency
 
 from .models import TransactionStatus, Report, AdyenLog, Notification, Refund
 
@@ -56,9 +57,8 @@ def process_authorization(notification):
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                              pm.config('notification_receiver'),
                              'Manual Adyen payment authorized',
-                             "An Adyen payment of %s%s was authorized on the Adyen platform for %s.\nThis payment was not from the automated system, it was manually authorized, probably from a POS terminal.\nReference: %s\nAdyen reference: %s\nMerchant account: %s\n" % (
-                                 settings.CURRENCY_ABBREV,
-                                 notification.amount,
+                             "An Adyen payment of %s was authorized on the Adyen platform for %s.\nThis payment was not from the automated system, it was manually authorized, probably from a POS terminal.\nReference: %s\nAdyen reference: %s\nMerchant account: %s\n" % (
+                                 format_currency(notification.amount),
                                  method.internaldescription,
                                  notification.merchantReference,
                                  notification.pspReference,
@@ -159,8 +159,8 @@ def process_authorization(notification):
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                              pm.config('notification_receiver'),
                              'Adyen payment authorized',
-                             "An Adyen payment of %s%s with reference %s was authorized on the Adyen platform for %s.\nInvoice: %s\nRecipient name: %s\nRecipient user: %s\nPayment method: %s\nAdyen reference: %s\n" % (
-                                 settings.CURRENCY_ABBREV, notification.amount,
+                             "An Adyen payment of %s with reference %s was authorized on the Adyen platform for %s.\nInvoice: %s\nRecipient name: %s\nRecipient user: %s\nPayment method: %s\nAdyen reference: %s\n" % (
+                                 format_currency(notification.amount),
                                  notification.merchantReference,
                                  method.internaldescription,
                                  invoice.title,
@@ -269,7 +269,7 @@ def process_refund(notification):
                 send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                                  pm.config('notification_receiver'),
                                  'Adyen refund received',
-                                 "A refund of %s%s for transaction %s was processed on %s\n\nNOTE! You must complete the accounting system entry manually as it was not API generated!!" % (settings.CURRENCY_ABBREV, notification.amount, method.internaldescription, notification.originalReference))
+                                 "A refund of %s for transaction %s was processed on %s\n\nNOTE! You must complete the accounting system entry manually as it was not API generated!!" % (format_currency(notification.amount), method.internaldescription, notification.originalReference))
 
                 create_accounting_entry(accrows, True, urls)
 

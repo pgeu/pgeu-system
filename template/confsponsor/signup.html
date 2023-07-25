@@ -1,5 +1,6 @@
 {%extends "nav_events.html" %}
 {%load alertmap%}
+{%load currency%}
 {%load pgmarkdown%}
 {%block title%}Conference Sponsorship Signup - {{conference}}{%endblock%}
 {%block content%}
@@ -66,7 +67,7 @@ The following benefits are available at this level (click for details):
 {%endfor%}
 </div>
 <p>
-The price for this sponsorship level is {{currency_symbol}}{{level.levelcost}}.
+The price for this sponsorship level is {{level.levelcost|format_currency}}.
 </p>
 {%if level.maxnumber%}
 <p>

@@ -1,4 +1,5 @@
 {%extends "navbase.html" %}
+{%load currency%}
 {%block title%}Invoice payment{%endblock%}
 {%block extrahead%}
 <script type="text/javascript" src="https://js.braintreegateway.com/v2/braintree.js"></script>
@@ -13,7 +14,7 @@ braintree.setup('{{token}}', "dropin", {
 {%endblock%}
 {%block content%}
 <h1>Invoice payment</h1>
-<p>You are about to make a payment of <strong>{{currency_symbol}}{{invoice.total_amount}}</strong> for invoice #{{invoice.id}}.</p>
+<p>You are about to make a payment of <strong>{{invoice.total_amount|format_currency}}</strong> for invoice #{{invoice.id}}.</p>
 
 <form id="checkout" method="post" action="/p/braintree/">{%csrf_token%}
   <input type="hidden" name="invoice" value="{{invoice.id}}">

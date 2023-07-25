@@ -15,6 +15,7 @@ from postgresqleu.trustlypayment.util import Trustly
 from postgresqleu.trustlypayment.models import TrustlyTransaction, TrustlyLog
 from postgresqleu.invoices.models import InvoiceRefund, InvoicePaymentMethod
 from postgresqleu.invoices.util import InvoiceManager
+from postgresqleu.util.currency import format_currency
 
 from decimal import Decimal
 from datetime import timedelta
@@ -79,17 +80,14 @@ class Command(BaseCommand):
                         # it's not a real problem.
                         fees = (r.fullamount + Decimal(lr['amount']).quantize(Decimal('0.01')))
                         TrustlyLog(
-                            message="Refund for order {0}, invoice {1}, was made as {2} {3} instead of {4} {5}. Using ledger mapped to {6} {7} with difference of {8} {9} booked as fees".format(
+                            message="Refund for order {0}, invoice {1}, was made as {2} {3} instead of {4}. Using ledger mapped to {5} with difference of {6} booked as fees".format(
                                 trustlytrans.orderid,
                                 r.invoice.pk,
                                 Decimal(w['amount']),
                                 w['currency'],
-                                r.fullamount,
-                                settings.CURRENCY_ABBREV,
-                                Decimal(lr['amount']).quantize(Decimal('0.01')),
-                                settings.CURRENCY_ABBREV,
-                                fees,
-                                settings.CURRENCY_ABBREV,
+                                format_currency(r.fullamount),
+                                format_currency(Decimal(lr['amount']).quantize(Decimal('0.01'))),
+                                format_currency(fees),
                             ),
                             error=False,
                             paymentmethod=method,

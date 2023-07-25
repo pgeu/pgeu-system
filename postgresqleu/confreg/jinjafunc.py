@@ -17,6 +17,7 @@ import textwrap
 from Cryptodome.Hash import SHA
 
 from postgresqleu.util.context_processors import settings_context
+from postgresqleu.confreg.templatetags.currency import format_currency
 from postgresqleu.confreg.templatetags.leadingnbsp import leadingnbsp
 from postgresqleu.confreg.templatetags.formutil import field_class
 from postgresqleu.util.templatetags.assets import do_render_asset
@@ -214,10 +215,6 @@ def filter_shuffle(thelist):
         return thelist
 
 
-def filter_currency_format(v):
-    return "{0} {1:,.2f}".format(settings.CURRENCY_SYMBOL, v)
-
-
 def filter_float_str(f, n):
     return '{{0:.{0}f}}'.format(int(n)).format(f)
 
@@ -274,7 +271,7 @@ filter_applymacro.contextfilter = True
 
 
 extra_filters = {
-    'currency_format': filter_currency_format,
+    'format_currency': format_currency,
     'escapejs': defaultfilters.escapejs_filter,
     'field_class': field_class,
     'floatstr': filter_float_str,

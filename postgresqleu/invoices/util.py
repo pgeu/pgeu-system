@@ -14,6 +14,7 @@ import io
 
 from postgresqleu.mailqueue.util import send_template_mail, send_simple_mail
 from postgresqleu.accounting.util import create_accounting_entry
+from postgresqleu.util.currency import format_currency
 from postgresqleu.util.random import generate_random_token
 
 from .models import Invoice, InvoiceRow, InvoiceHistory, InvoiceLog
@@ -451,9 +452,8 @@ class InvoiceManager(object):
         # Write a log, because it's always nice..
         InvoiceHistory(invoice=invoice, txt='Processed payment').save()
         InvoiceLog(
-            message="Processed payment of %s %s for invoice %s (%s)" % (
-                invoice.total_amount,
-                settings.CURRENCY_ABBREV,
+            message="Processed payment of %s for invoice %s (%s)" % (
+                format_currency(invoice.total_amount),
                 invoice.pk,
                 invoice.title),
             timestamp=timezone.now()
@@ -813,16 +813,14 @@ def automatch_bank_transaction_rule(trans, matcher):
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
                              settings.INVOICE_NOTIFICATION_RECEIVER,
                              "Bank payment pattern match for closed entry received",
-                             "A bank tranksaction of {0}{1} with text\n{2}\nmatched journal entry {3}, but this entry was already closed!\n\nNeeds manual examination!".format(
-                                 trans.amount,
-                                 settings.CURRENCY_ABBREV,
+                             "A bank tranksaction of {0} with text\n{1}\nmatched journal entry {2}, but this entry was already closed!\n\nNeeds manual examination!".format(
+                                 format_currency(trans.amount),
                                  trans.transtext,
                                  matcher.journalentry,
                              ))
 
-            InvoiceLog(message="Bank transaction of {0}{1} with text {2} matched journal entry {3}, but this entry was already closed!".format(
-                trans.amount,
-                settings.CURRENCY_ABBREV,
+            InvoiceLog(message="Bank transaction of {0} with text {1} matched journal entry {2}, but this entry was already closed!".format(
+                format_currency(trans.amount),
                 trans.transtext,
                 matcher.journalentry,
             )).save()
@@ -830,9 +828,8 @@ def automatch_bank_transaction_rule(trans, matcher):
             matcher.journalentry.closed = True
             matcher.journalentry.save()
 
-            InvoiceLog(message="Matched bank transaction of {0}{1} with text {2} to journal entry {3}.".format(
-                trans.amount,
-                settings.CURRENCY_ABBREV,
+            InvoiceLog(message="Matched bank transaction of {0} with text {1} to journal entry {2}.".format(
+                format_currency(trans.amount),
                 trans.transtext,
                 matcher.journalentry,
             )).save()
