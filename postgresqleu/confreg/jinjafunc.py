@@ -219,7 +219,7 @@ def filter_float_str(f, n):
     return '{{0:.{0}f}}'.format(int(n)).format(f)
 
 
-# Format a datetime. If it'sa datetime, call strftime. If it's a
+# Format a datetime. If it's a datetime, call strftime. If it's a
 # string, assume it's iso format and convert it to a date first.
 def filter_datetimeformat(value, fmt):
     if isinstance(value, date) or isinstance(value, datetime) or isinstance(value, time):
