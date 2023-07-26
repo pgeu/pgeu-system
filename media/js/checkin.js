@@ -81,9 +81,14 @@ function add_dynamic_fields(reg, cl, regcompleted) {
 
     fields.forEach(function(a) {
         if (a[0]) {
-            cl.append($('<dt/>').text(a[1]).addClass('checkin_dyn'));;
+            cl.append($('<dt/>').text(a[1]).addClass('checkin_dyn'));
+
             if (typeof(a[0]) == 'string') {
-                cl.append($('<dd/>').text(a[0]).addClass('checkin_dyn'));
+                let e = $('<dd/>').text(a[0]).addClass('checkin_dyn');
+                if (a[0].includes(' NOT ')) {
+                    e = $(e).addClass('checkin_dyn_warn');
+                }
+                cl.append(e);
             }
             else {
                 cl.append($('<dd/>').html(a[0]).addClass('checkin_dyn'));
