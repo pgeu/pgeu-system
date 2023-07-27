@@ -185,8 +185,8 @@ class ReportFilter(object):
                 idlist = list(map(self.field.related_model._meta.pk.get_prep_value, val))
             if flt.get('mincount', None) is None:
                 return (
-                    '{}=ANY(%({}_ids)s)'.format(self.db_colname, self.id),
-                    {'{}_ids'.format(self.id): idlist},
+                    '{}=ANY(%(b{}_{}_ids)s)'.format(self.db_colname, blockno, self.id),
+                    {'b{}_{}_ids'.format(blockno, self.id): idlist},
                 )
             else:
                 # We have a minimum count, so we turn this into a subquery this time
@@ -224,18 +224,18 @@ class ReportFilter(object):
 
                 if val.startswith('>'):
                     return (
-                        "{} > %({})s".format(self.db_colname, self.id),
-                        {self.id: val[1:]}
+                        "{} > %(b{}_{})s".format(self.db_colname, blockno, self.id),
+                        {"b{}_{}".format(blockno, self.id): val[1:]}
                     )
                 elif val.startswith('<'):
                     return (
-                        "{} < %({})s".format(self.db_colname, self.id),
-                        {self.id: val[1:]}
+                        "{} < %(b{}_{})s".format(self.db_colname, blockno, self.id),
+                        {"b{}_{}".format(blockno, self.id): val[1:]}
                     )
                 else:
                     return (
-                        "{} ILIKE %({})s".format(self.db_colname, self.id),
-                        {self.id: '%{}%'.format(val)}
+                        "{} ILIKE %(b{}_{})s".format(self.db_colname, blockno, self.id),
+                        {"b{}_{}".format(blockno, self.id): val}
                     )
             else:
                 # Just make sure it exists
