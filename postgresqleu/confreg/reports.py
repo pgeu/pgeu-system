@@ -473,7 +473,7 @@ def build_attendee_report(request, conference, data):
         # Regular reports, so we control all fields
         rfields = [_attendee_report_field_map[f] for f in fields]
 
-        # Colums to actually select (including expressions)
+        # Columns to actually select (including expressions)
         cols = [f.get_select_name() for f in rfields]
 
         # Table to join in to get the required columns
