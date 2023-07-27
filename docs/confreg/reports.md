@@ -45,7 +45,7 @@ tick-mark!
 
 To print badges for all registered attendees you need a filter:
 
-* "Payment confirmed" (leave the field empty)
+* "Payment confirmed at" (leave the field empty)
 * "Canceled at" \N (to explicitly filter for non-canceled registrations)
 
 This will filter all badges where attendees have completed the
