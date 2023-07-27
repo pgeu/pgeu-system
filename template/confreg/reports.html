@@ -88,8 +88,8 @@ input#dlgSelectFieldCountText {
   <tr>
     <td class="col-md-3"><h3>Order by</h3></td>
     <td>
-      <select name="orderby1" id="selOrderby1">{%for f in adv_fields %}<option value="{{f.id}}">{{f.title}}</option>{%endfor%}</select>
-      <select name="orderby2" id="selOrderby2">{%for f in adv_fields %}<option value="{{f.id}}">{{f.title}}</option>{%endfor%}</select>
+      <select name="orderby1" id="selOrderby1">{%for f in adv_fields %}<option value="{{f.id}}"{%if forloop.counter == 1%} SELECTED{%endif%}>{{f.title}}</option>{%endfor%}</select>
+      <select name="orderby2" id="selOrderby2">{%for f in adv_fields %}<option value="{{f.id}}"{%if forloop.counter == 2%} SELECTED{%endif%}>{{f.title}}</option>{%endfor%}</select>
     </td>
   </tr>
   <tr>
