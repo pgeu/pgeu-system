@@ -2966,9 +2966,15 @@ def reports(request, confname):
     conference = get_authenticated_conference(request, confname)
 
     # Include information for the advanced reports
-    from .reports import attendee_report_fields, attendee_report_filters, build_attendee_report
+    from .reports import attendee_report_fields, attendee_report_filters, query_attendees_for_report, build_attendee_report
 
+    attendees = None
+    data = None
     if request.method == 'POST':
+        if request.POST.get('submit') == 'Generate report':
+            # Plain post to generate the report after we've already previewed the query count
+            return build_attendee_report(request, conference, request.POST)
+
         if request.POST['what'] == 'delete':
             if request.POST.get('storedreport', '') == '':
                 raise Http404()
@@ -2977,8 +2983,8 @@ def reports(request, confname):
             return HttpResponse("OK")
 
         data = json.loads(request.POST['reportdata'])
-        if request.POST['what'] == 'generate':
-            return build_attendee_report(request, conference, data)
+        if request.POST['what'] == 'query':
+            attendees = query_attendees_for_report(request, conference, data)
         elif request.POST['what'] == 'save':
             with transaction.atomic():
                 if request.POST.get('overwrite', 0) == "1":
@@ -2993,7 +2999,8 @@ def reports(request, confname):
                                           title=request.POST['name'],
                                           definition=data).save()
                 return HttpResponse("OK")
-        raise Http404()
+        else:
+            raise Http404()
     elif 'storedreport' in request.GET:
         # Load a special stored report
         if request.GET.get('storedreport', '') == '':
@@ -3008,6 +3015,8 @@ def reports(request, confname):
         'adv_fields': attendee_report_fields,
         'adv_filters': attendee_report_filters(conference),
         'stored_reports': SavedReportDefinition.objects.filter(conference=conference).order_by('title'),
+        'reportdata': json.dumps(data) if data else None,
+        'matchingattendees': attendees,
         'helplink': 'reports#attendee',
     })
 

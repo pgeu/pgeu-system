@@ -34,12 +34,24 @@ enter the string *\N* (backslash-N). And finally, this field can also take
 *>* and *<* to indicate that the value should be greater/smaller (for
 numbers) or after/before (for dates).
 
-Specify a title if you want one on the report, mainly for printing.
+Once you are done building your filter, click *Query data*. This will
+runt he query against your filter, and show you a count of attendees
+matching. Once you have done this once, a second form appears, which
+allows you to pick some more fields, but you can also update your
+filters and re-query the data as needed.
+
+You can specify a title if you want one on the report, mainly for printing.
 
 In *Additional columns* specify extra column headers with comma
 between them. This is particularly useful if for example generating an
 attendee list to tick off people on -- make an empty column for the
 tick-mark!
+
+Finally, click *Generate report*, which will then open the resulting
+report in a new tab. Note that this will *not* req-query the database
+for new attendees, so if more attendees now match the filter definitions
+you made earlier, they will not be included in the report. This is
+intentional to make sure the report is predictable.
 
 ## Badges
 

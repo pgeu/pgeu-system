@@ -16,7 +16,7 @@ import json
 
 from .jinjapdf import render_jinja_badges
 
-from postgresqleu.util.db import exec_to_dict
+from postgresqleu.util.db import exec_to_dict, exec_to_single_list
 from postgresqleu.util.db import ensure_conference_timezone
 from postgresqleu.countries.models import Country
 from .models import ConferenceRegistration, RegistrationType, ConferenceAdditionalOption, ShirtSize
@@ -417,16 +417,7 @@ class ReportWriterPdf(ReportWriterBase):
         return resp
 
 
-def build_attendee_report(request, conference, data):
-    title = data['title']
-    format = data['format']
-    orientation = data['orientation']
-    pagesize = data.get('pagesize', 'A4')
-    borders = data['borders']
-    pagebreaks = data['pagebreaks']
-    fields = data['fields']
-    extracols = [_f for _f in [x.strip() for x in data['additionalcols'].split(',')] if _f]
-
+def _get_query_filters(conference, data):
     # Build the filters. Each filter within a filter group is ANDed together, and then the
     # filter groups are ORed together. And finally, all of this is ANDed with the conference
     # (so we don't get attendees from other conferences)
@@ -467,8 +458,37 @@ def build_attendee_report(request, conference, data):
     params.update({
         'conference_id': conference.id,
     })
+    return (where, params)
 
+
+def query_attendees_for_report(request, conference, data):
+    fields = data['fields']
+
+    where, params = _get_query_filters(conference, data)
+    query = "SELECT r.id\nFROM confreg_conferenceregistration r INNER JOIN confreg_conference conference ON conference.id=r.conference_id\nWHERE r.conference_id=%(conference_id)s {}".format(where)
+    with ensure_conference_timezone(conference):
+        return exec_to_single_list(query, params)
+
+
+def build_attendee_report(request, conference, data):
+    reportdata = json.loads(data['reportdata'])
+    fields = reportdata['fields']
+
+    title = data['title']
+    format = data['format']
+    orientation = data['orientation']
+    pagesize = data.get('pagesize', 'A4')
+    borders = data.get('border', None) == "on"
+    pagebreaks = data['pagebreaks']
+    extracols = [_f for _f in [x.strip() for x in data['additionalcols'].split(',')] if _f]
     ofields = [_attendee_report_field_map[f] for f in (data['orderby1'], data['orderby2'])]
+
+    where = " AND r.id=ANY(%(rids)s) "
+    params = {
+        'rids': list(map(int, data['rids'].split(','))),
+        'conference_id': conference.id,
+    }
+
     if format not in ('json', 'badge'):
         # Regular reports, so we control all fields
         rfields = [_attendee_report_field_map[f] for f in fields]

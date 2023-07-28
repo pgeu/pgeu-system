@@ -77,6 +77,23 @@ input#dlgSelectFieldCountText {
       </p>
     </td>
   </tr>
+</table>
+
+<form method="post" action=".">{% csrf_token %}
+<input type="hidden" name="reportdata" id="reportdata">
+<input type="hidden" name="what" id="txtWhat">
+<input type="submit" id="btnSubmit" value="Query data" class="btn btn-primary"/>
+<input type="submit" id="btnSave" value="Save report definition" class="btn btn-default"/>
+<a href="." class="btn btn-default">Reset form</a>
+</form>
+
+{%if matchingattendees is not None %}
+<h2>Output</h2>
+<p>
+  Query matched {{matchingattendees|length}} attendees.
+</p>
+<form method="post" action="." target="_blank">{% csrf_token%}
+<table class="table">
   <tr>
     <td class="col-md-3"><h3>Title</h3></td>
     <td><input type="text" name="title" id="txtTitle"></td>
@@ -123,14 +140,12 @@ input#dlgSelectFieldCountText {
     </td>
   </tr>
 </table>
-
-<form method="post" action=".">{% csrf_token %}
-<input type="hidden" name="reportdata" id="reportdata">
-<input type="hidden" name="what" id="txtWhat">
-<input type="submit" id="btnSubmit" value="Generate report" class="btn btn-primary"/>
-<input type="submit" id="btnSave" value="Save report definition" class="btn btn-default"/>
+<input type="hidden" name="rids" value="{{matchingattendees|join:","}}">
+<input type="hidden" name="reportdata" value="{{reportdata}}">
+<input type="submit" name="submit" value="Generate report" class="btn btn-primary"/>
 <a href="." class="btn btn-default">Reset form</a>
 </form>
+{%endif%}
 
 <div id="dlgStringField">
   <input type="text" id="dlgStringFieldString" class="dlgInput">
@@ -211,16 +226,17 @@ function getReportDefinition() {
   return {
     fields: $('#fieldlist input:checkbox:checked').map(function() { return $(this).val(); }).get(),
     filters: selectedFilters,
-    title: $('#txtTitle').val(),
-    additionalcols: $('#txtAdditionalCols').val(),
-    orderby1: $('#selOrderby1').val(),
-    orderby2: $('#selOrderby2').val(),
-    format: $('#selFormat').val(),
-    orientation: $('#selOrientation').val(),
-    pagesize: $('#selPagesize').val(),
-    borders: $('#cbBorders').is(":checked"),
-    pagebreaks: $('#cbPagebreaks').is(":checked"),
   };
+}
+
+function load_report_definition(data) {
+    $('#fieldlist input:checkbox').prop('checked', false);
+    $.each(data.fields, function(i, e) {
+        $('#fieldlist input:checkbox[value="' + e + '"]').prop('checked', true);
+    });
+
+    selectedFilters = data.filters;
+    refreshFilterView();
 }
 
 $(function() {
@@ -314,7 +330,7 @@ $(function() {
 
     $('#btnSubmit').click(function() {
        $('#reportdata').val(JSON.stringify(getReportDefinition()));
-       $('#txtWhat').val('generate');
+       $('#txtWhat').val('query');
        return true;
     });
 
@@ -374,23 +390,7 @@ $(function() {
        $.get('.', {
           'storedreport': $('#selStoredReports').val(),
        }).success(function(data) {
-          $('#txtTitle').val(data.title);
-          $('#txtAdditionalCols').val(data.additionalcols);
-          $('#selOrderby1').val(data.orderby1);
-          $('#selOrderby2').val(data.orderby2);
-          $('#selFormat').val(data.format);
-          $('#selOrientation').val(data.orientation);
-          $('#selPagesize').val(data.pagesize);
-          $('#cbBorders').prop('checked', data.borders);
-          $('#cbPagebreaks').prop('checked', data.pagebreaks);
-
-          $('#fieldlist input:checkbox').prop('checked', false);
-          $.each(data.fields, function(i, e) {
-             $('#fieldlist input:checkbox[value="' + e + '"]').prop('checked', true);
-          });
-
-          selectedFilters = data.filters;
-          refreshFilterView();
+	  load_report_definition(data);
        }).fail(function() {
           alert('Failed to load report');
        });
@@ -431,6 +431,10 @@ $(function() {
        selectedFilters.splice(block, 1);
        refreshFilterView();
     });
+{%if reportdata %}
+    /* Load the current report again */
+    load_report_definition({{reportdata|safe}});
+{%endif%}
   });
 </script>
 
