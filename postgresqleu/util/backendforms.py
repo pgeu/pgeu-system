@@ -21,6 +21,7 @@ class BackendForm(ConcurrentProtectedModelForm):
     queryset_select_related = []
     queryset_extra_fields = {}
     selectize_multiple_fields = None
+    selectize_taglist_fields = None
     json_fields = None
     json_form_fields = None
     markdown_fields = []

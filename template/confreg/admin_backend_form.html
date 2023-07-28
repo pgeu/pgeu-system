@@ -151,6 +151,18 @@ $(function() {
 {%for f, lookup in form.selectize_single_fields.items %}
    $('#id_{{f}}').selectize();
 {%endfor%}
+{%for f in form.selectize_taglist_fields %}
+   $('#id_{{f}}').selectize({
+       delimiter: ',',
+       persist: false,
+       create: function(i) {
+	   return {
+	       value: i,
+	       text: i
+	   }
+       }
+   });
+{%endfor%}
 
 {%for f in form.markdown_fields%}
    backend_markdown_preview('id_{{f}}');
