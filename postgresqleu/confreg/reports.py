@@ -126,34 +126,6 @@ class AdditionalOptionsReportField(object):
         return None
 
 
-# Fields that are available in an advanced attendee report
-attendee_report_fields = [
-    ReportField('lastname', 'Last name', True),
-    ReportField('firstname', 'First name', True),
-    ReportField('email', 'E-mail', True),
-    DerivedReportField('queuepartition', 'Queue partition', "regexp_replace(upper(substring(CASE WHEN conference.queuepartitioning=1 THEN lastname WHEN conference.queuepartitioning=2 THEN firstname END, 1, 1)), '[^A-Z]', 'Other')"),
-    ReportField('company', 'Company'),
-    ReportField('address', 'Address'),
-    ForeignReportField('country', 'Country', remotecol='printable_name'),
-    ReportField('phone', 'Phone'),
-    ReportField('twittername', 'Twitter'),
-    ReportField('nick', 'Nickname'),
-    ReportField('dietary', 'Dietary needs'),
-    ForeignReportField('shirtsize', 'T-Shirt size', remotecol='shirtsize', sort='shirtsize'),
-    ReportField('photoconsent', 'Photo consent'),
-    ForeignReportField('regtype', 'Registration type', remotecol='regtype', sort='sortkey'),
-    AdditionalOptionsReportField(),
-    ReportField('created', 'Registration created'),
-    ReportField('payconfirmedat', 'Payment confirmed at'),
-    ReportField('canceledat', 'Canceled at'),
-    DerivedReportField('publictoken', 'Public token', "'{}/t/at/' || publictoken || '/'".format(settings.SITEBASE)),
-    DerivedReportField('idtoken', 'ID token', "'{}/t/id/' || idtoken || '/'".format(settings.SITEBASE)),
-]
-
-
-_attendee_report_field_map = {f.id: f for f in attendee_report_fields}
-
-
 class ReportFilter(object):
     booleanoptions = ((1, 'Yes'), (0, 'No'))
 
@@ -313,33 +285,6 @@ class ReportSpeakerFilter(object):
         return STATUS_CHOICES
 
 
-def attendee_report_filters(conference):
-    return [
-        ReportFilter('regtype', 'Registration type', RegistrationType.objects.filter(conference=conference), 'regtype'),
-        ReportFilter('lastname', 'Last name'),
-        ReportFilter('firstname', 'First name'),
-        ReportQueuePartitionFilter(conference),
-        ReportFilter('country', 'Country', Country.objects.all()),
-        ReportFilter('company', 'Company'),
-        ReportFilter('phone', 'Phone'),
-        ReportFilter('twittername', 'Twitter'),
-        ReportFilter('nick', 'Nickname'),
-        ReportFilter('dietary', 'Dietary needs'),
-        ReportFilter('badgescan', 'Allow badge scanning', ReportFilter.booleanoptions),
-        ReportFilter('shareemail', 'Share email with sponsors', ReportFilter.booleanoptions),
-        ReportFilter('photoconsent', 'Photo consent', ReportFilter.booleanoptions),
-        ReportFilter('payconfirmedat', 'Payment confirmed at', emptyasnull=False),
-        ReportFilter('canceledat', 'Canceled at', emptyasnull=False),
-        ReportFilter('additionaloptions', 'Additional options', ConferenceAdditionalOption.objects.filter(conference=conference), 'name', False, True),
-        ReportFilter('shirtsize', 'T-Shirt size', ShirtSize.objects.all()),
-        ReportSpeakerFilter(conference),
-    ]
-
-
-def attendee_report_filters_map(conference):
-    return {r.id: r for r in attendee_report_filters(conference)}
-
-
 class ReportWriterBase(object):
     def __init__(self, request, conference, title, borders):
         self.request = request
@@ -417,122 +362,185 @@ class ReportWriterPdf(ReportWriterBase):
         return resp
 
 
-def _get_query_filters(conference, data):
-    # Build the filters. Each filter within a filter group is ANDed together, and then the
-    # filter groups are ORed together. And finally, all of this is ANDed with the conference
-    # (so we don't get attendees from other conferences)
-    def _reduce_Q(x, y):
-        return (
-            x[0] + [y[0]],
-            dict(x[1], **y[1])
-        )
+class AttendeeReportManager:
+    def __init__(self, conference):
+        self.conference = conference
+        self._fields = None
+        self._fieldmap = None
+        self._filters = None
+        self._filtermap = None
 
-    filtermap = attendee_report_filters_map(conference)
-    allBlockQs = []
-    for blockno, fltblock in enumerate(data['filters']):
-        if fltblock:
-            try:
-                blockQs = reduce(_reduce_Q,
-                                 [filtermap[flt['filter']].build_SQL(flt, blockno) for flt in fltblock],
-                                 ([], {})
-                )
-                allBlockQs.append((
-                    "(" + "\n      AND ".join(blockQs[0]) + ")",
-                    blockQs[1],
-                ), )
-            except Exception as e:
-                if format == 'html':
+    @property
+    def fields(self):
+        if self._fields is None:
+            self._fields = [
+                ReportField('lastname', 'Last name', True),
+                ReportField('firstname', 'First name', True),
+                ReportField('email', 'E-mail', True),
+                DerivedReportField('queuepartition', 'Queue partition', "regexp_replace(upper(substring(CASE WHEN conference.queuepartitioning=1 THEN lastname WHEN conference.queuepartitioning=2 THEN firstname END, 1, 1)), '[^A-Z]', 'Other')"),
+                ReportField('company', 'Company'),
+                ReportField('address', 'Address'),
+                ForeignReportField('country', 'Country', remotecol='printable_name'),
+                ReportField('phone', 'Phone'),
+                ReportField('twittername', 'Twitter'),
+                ReportField('nick', 'Nickname'),
+                ReportField('dietary', 'Dietary needs'),
+                ForeignReportField('shirtsize', 'T-Shirt size', remotecol='shirtsize', sort='shirtsize'),
+                ReportField('photoconsent', 'Photo consent'),
+                ForeignReportField('regtype', 'Registration type', remotecol='regtype', sort='sortkey'),
+                AdditionalOptionsReportField(),
+                ReportField('created', 'Registration created'),
+                ReportField('payconfirmedat', 'Payment confirmed at'),
+                ReportField('canceledat', 'Canceled at'),
+                DerivedReportField('publictoken', 'Public token', "'{}/t/at/' || publictoken || '/'".format(settings.SITEBASE)),
+                DerivedReportField('idtoken', 'ID token', "'{}/t/id/' || idtoken || '/'".format(settings.SITEBASE)),
+            ]
+        return self._fields
+
+    @property
+    def fieldmap(self):
+        if self._fieldmap is None:
+            self._fieldmap = {f.id: f for f in self.fields}
+        return self._fieldmap
+
+    @property
+    def filters(self):
+        if self._filters is None:
+            self._filters = [
+                ReportFilter('regtype', 'Registration type', RegistrationType.objects.filter(conference=self.conference), 'regtype'),
+                ReportFilter('lastname', 'Last name'),
+                ReportFilter('firstname', 'First name'),
+                ReportQueuePartitionFilter(self.conference),
+                ReportFilter('country', 'Country', Country.objects.all()),
+                ReportFilter('company', 'Company'),
+                ReportFilter('phone', 'Phone'),
+                ReportFilter('twittername', 'Twitter'),
+                ReportFilter('nick', 'Nickname'),
+                ReportFilter('dietary', 'Dietary needs'),
+                ReportFilter('badgescan', 'Allow badge scanning', ReportFilter.booleanoptions),
+                ReportFilter('shareemail', 'Share email with sponsors', ReportFilter.booleanoptions),
+                ReportFilter('photoconsent', 'Photo consent', ReportFilter.booleanoptions),
+                ReportFilter('payconfirmedat', 'Payment confirmed at', emptyasnull=False),
+                ReportFilter('canceledat', 'Canceled at', emptyasnull=False),
+                ReportFilter('additionaloptions', 'Additional options', ConferenceAdditionalOption.objects.filter(conference=self.conference), 'name', False, True),
+                ReportFilter('shirtsize', 'T-Shirt size', ShirtSize.objects.all()),
+                ReportSpeakerFilter(self.conference),
+            ]
+        return self._filters
+
+    @property
+    def filtermap(self):
+        if self._filtermap is None:
+            self._filtermap = {r.id: r for r in self.filters}
+        return self._filtermap
+
+    def query_attendees_for_report(self, request, data):
+        fields = data['fields']
+
+        # Build the filters. Each filter within a filter group is ANDed together, and then the
+        # filter groups are ORed together. And finally, all of this is ANDed with the conference
+        # (so we don't get attendees from other conferences)
+        def _reduce_Q(x, y):
+            return (
+                x[0] + [y[0]],
+                dict(x[1], **y[1])
+            )
+
+        allBlockQs = []
+        for blockno, fltblock in enumerate(data['filters']):
+            if fltblock:
+                try:
+                    blockQs = reduce(_reduce_Q,
+                                     [self.filtermap[flt['filter']].build_SQL(flt, blockno) for flt in fltblock],
+                                     ([], {})
+                    )
+                    allBlockQs.append((
+                        "(" + "\n      AND ".join(blockQs[0]) + ")",
+                        blockQs[1],
+                    ), )
+                except Exception as e:
                     messages.warning(request, "Could not process filter: {}".format(e))
-                else:
-                    return HttpResponse("Could not process filter: {}".format(e))
 
-    if allBlockQs:
-        (allblocks, params) = reduce(_reduce_Q, allBlockQs, ([], {}))
-        where = "AND (\n    {}\n)".format(
-            "\n OR ".join(allblocks),
-        )
-    else:
-        where = ""
-        params = {}
+        if allBlockQs:
+            (allblocks, params) = reduce(_reduce_Q, allBlockQs, ([], {}))
+            where = "AND (\n    {}\n)".format(
+                "\n OR ".join(allblocks),
+            )
+        else:
+            where = ""
+            params = {}
 
-    params.update({
-        'conference_id': conference.id,
-    })
-    return (where, params)
+        params.update({
+            'conference_id': self.conference.id,
+        })
 
+        query = "SELECT r.id\nFROM confreg_conferenceregistration r INNER JOIN confreg_conference conference ON conference.id=r.conference_id\nWHERE r.conference_id=%(conference_id)s {}".format(where)
+        with ensure_conference_timezone(self.conference):
+            return exec_to_single_list(query, params)
 
-def query_attendees_for_report(request, conference, data):
-    fields = data['fields']
+    def build_attendee_report(self, request, data):
+        reportdata = json.loads(data['reportdata'])
+        fields = reportdata['fields']
 
-    where, params = _get_query_filters(conference, data)
-    query = "SELECT r.id\nFROM confreg_conferenceregistration r INNER JOIN confreg_conference conference ON conference.id=r.conference_id\nWHERE r.conference_id=%(conference_id)s {}".format(where)
-    with ensure_conference_timezone(conference):
-        return exec_to_single_list(query, params)
+        title = data['title']
+        format = data['format']
+        orientation = data['orientation']
+        pagesize = data.get('pagesize', 'A4')
+        borders = data.get('border', None) == "on"
+        pagebreaks = data['pagebreaks']
+        extracols = [_f for _f in [x.strip() for x in data['additionalcols'].split(',')] if _f]
+        ofields = [self.fieldmap[f] for f in (data['orderby1'], data['orderby2'])]
 
+        where = " AND r.id=ANY(%(rids)s) "
+        params = {
+            'rids': list(map(int, data['rids'].split(','))),
+            'conference_id': self.conference.id,
+        }
 
-def build_attendee_report(request, conference, data):
-    reportdata = json.loads(data['reportdata'])
-    fields = reportdata['fields']
+        if format not in ('json', 'badge'):
+            # Regular reports, so we control all fields
+            rfields = [self.fieldmap[f] for f in fields]
 
-    title = data['title']
-    format = data['format']
-    orientation = data['orientation']
-    pagesize = data.get('pagesize', 'A4')
-    borders = data.get('border', None) == "on"
-    pagebreaks = data['pagebreaks']
-    extracols = [_f for _f in [x.strip() for x in data['additionalcols'].split(',')] if _f]
-    ofields = [_attendee_report_field_map[f] for f in (data['orderby1'], data['orderby2'])]
+            # Columns to actually select (including expressions)
+            cols = [f.get_select_name() for f in rfields]
 
-    where = " AND r.id=ANY(%(rids)s) "
-    params = {
-        'rids': list(map(int, data['rids'].split(','))),
-        'conference_id': conference.id,
-    }
+            # Table to join in to get the required columns
+            joins = [j.get_join() for j in rfields if j.get_join()]
 
-    if format not in ('json', 'badge'):
-        # Regular reports, so we control all fields
-        rfields = [_attendee_report_field_map[f] for f in fields]
+            # There could be more joins needed for the order by
+            joins.extend([j.get_join() for j in ofields if j.get_join() and j.get_join() not in joins])
+            joinstr = "\n".join(joins)
+            if joinstr:
+                joinstr = "\n" + joinstr
 
-        # Columns to actually select (including expressions)
-        cols = [f.get_select_name() for f in rfields]
+            query = "SELECT r.id,{}\nFROM confreg_conferenceregistration r INNER JOIN confreg_conference conference ON conference.id=r.conference_id{}\nWHERE r.conference_id=%(conference_id)s {}\nORDER BY {}".format(
+                ", ".join(cols),
+                joinstr,
+                where,
+                ", ".join([o.get_orderby_field() for o in ofields]),
+            )
+        else:
+            # For json and badge, we have a mostly hardcoded query, but we still get the filter from
+            # above.
+            # We do this hardcoded because the django ORM can't even begin to understand what we're
+            # doing here, and generates a horrible loop of queries.
+            def _get_table_aliased_field(fieldname):
+                # If we have aliased a table, we have to map it in the orderby field as well. So the list of
+                # table aliases here has to match that in the below query
+                if '.' not in fieldname:
+                    return fieldname
+                (table, _f) = fieldname.split('.')
+                return '{}.{}'.format({
+                    'confreg_conferenceregistration': 'r',
+                    'confreg_conference': 'conference',
+                    'confreg_registrationtype': 'rt',
+                    'confreg_registrationclass': 'rc',
+                    'confreg_conferenceregistration_additionaloptions': 'crao',
+                    'confreg_conferenceadditionaloption': 'ao',
+                    'confreg_shirtsize': 's',
+                }.get(table, table), _f)
 
-        # Table to join in to get the required columns
-        joins = [j.get_join() for j in rfields if j.get_join()]
-
-        # There could be more joins needed for the order by
-        joins.extend([j.get_join() for j in ofields if j.get_join() and j.get_join() not in joins])
-        joinstr = "\n".join(joins)
-        if joinstr:
-            joinstr = "\n" + joinstr
-
-        query = "SELECT r.id,{}\nFROM confreg_conferenceregistration r INNER JOIN confreg_conference conference ON conference.id=r.conference_id{}\nWHERE r.conference_id=%(conference_id)s {}\nORDER BY {}".format(
-            ", ".join(cols),
-            joinstr,
-            where,
-            ", ".join([o.get_orderby_field() for o in ofields]),
-        )
-    else:
-        # For json and badge, we have a mostly hardcoded query, but we still get the filter from
-        # above.
-        # We do this hardcoded because the django ORM can't even begin to understand what we're
-        # doing here, and generates a horrible loop of queries.
-        def _get_table_aliased_field(fieldname):
-            # If we have aliased a table, we have to map it in the orderby field as well. So the list of
-            # table aliases here has to match that in the below query
-            if '.' not in fieldname:
-                return fieldname
-            (table, _f) = fieldname.split('.')
-            return '{}.{}'.format({
-                'confreg_conferenceregistration': 'r',
-                'confreg_conference': 'conference',
-                'confreg_registrationtype': 'rt',
-                'confreg_registrationclass': 'rc',
-                'confreg_conferenceregistration_additionaloptions': 'crao',
-                'confreg_conferenceadditionaloption': 'ao',
-                'confreg_shirtsize': 's',
-            }.get(table, table), _f)
-
-        query = """SELECT r.id, firstname, lastname, email, company, address, phone, dietary, twittername, nick, badgescan, shareemail, vouchercode,
+            query = """SELECT r.id, firstname, lastname, email, company, address, phone, dietary, twittername, nick, badgescan, shareemail, vouchercode,
   country.name AS countryname, country.printable_name AS country,
   s.shirtsize,
   '{}/t/id/' || idtoken || '/' AS fullidtoken,
@@ -558,41 +566,41 @@ WHERE r.conference_id=%(conference_id)s {}
 GROUP BY r.id, conference.id, rt.id, rc.id, country.iso, s.id
 ORDER BY {}""".format(settings.SITEBASE, settings.SITEBASE, where, ", ".join([_get_table_aliased_field(o.get_orderby_field()) for o in ofields]))
 
-    with ensure_conference_timezone(conference):
-        result = exec_to_dict(query, params)
+        with ensure_conference_timezone(self.conference):
+            result = exec_to_dict(query, params)
 
-    if format == 'html':
-        writer = ReportWriterHtml(request, conference, title, borders)
-    elif format == 'pdf':
-        writer = ReportWriterPdf(request, conference, title, borders)
-        writer.set_orientation_and_size(orientation, pagesize)
-    elif format == 'csv':
-        writer = ReportWriterCsv(request, conference, title, borders)
-    elif format == 'json':
-        resp = HttpResponse(content_type='application/json')
-        json.dump(result, resp, indent=2)
-        return resp
-    elif format == 'badge':
-        try:
-            resp = HttpResponse(content_type='application/pdf')
-            render_jinja_badges(conference, settings.REGISTER_FONTS, result, resp, borders, pagebreaks, orientation, pagesize)
+        if format == 'html':
+            writer = ReportWriterHtml(request, self.conference, title, borders)
+        elif format == 'pdf':
+            writer = ReportWriterPdf(request, self.conference, title, borders)
+            writer.set_orientation_and_size(orientation, pagesize)
+        elif format == 'csv':
+            writer = ReportWriterCsv(request, self.conference, title, borders)
+        elif format == 'json':
+            resp = HttpResponse(content_type='application/json')
+            json.dump(result, resp, indent=2)
             return resp
-        except Exception as e:
-            return HttpResponse("Exception occured: %s" % e, content_type='text/plain')
-    else:
-        raise Exception("Unknown format")
+        elif format == 'badge':
+            try:
+                resp = HttpResponse(content_type='application/pdf')
+                render_jinja_badges(self.conference, settings.REGISTER_FONTS, result, resp, borders, pagebreaks, orientation, pagesize)
+                return resp
+            except Exception as e:
+                return HttpResponse("Exception occured: %s" % e, content_type='text/plain')
+        else:
+            raise Exception("Unknown format")
 
-    allheaders = [_attendee_report_field_map[f].title for f in fields]
-    if len(extracols):
-        allheaders.extend(extracols)
-    writer.set_headers(allheaders)
+        allheaders = [self.fieldmap[f].title for f in fields]
+        if len(extracols):
+            allheaders.extend(extracols)
+        writer.set_headers(allheaders)
 
-    for r in result:
-        row = [_attendee_report_field_map[f].get_value(r[f]) for f in fields]
-        row.extend([[]] * len(extracols))
-        writer.add_row(row)
+        for r in result:
+            row = [self.fieldmap[f].get_value(r[f]) for f in fields]
+            row.extend([[]] * len(extracols))
+            writer.add_row(row)
 
-    return writer.render()
+        return writer.render()
 
 
 #
