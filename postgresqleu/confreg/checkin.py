@@ -133,6 +133,8 @@ def _get_reg_json(r):
     }
     if r.conference.askphotoconsent:
         d['photoconsent'] = r.photoconsent and "Photos OK" or "Photos NOT OK"
+    if r.conference.confirmpolicy:
+        d['policyconfirmed'] = r.policyconfirmedat and "Policy confirmed" or "Policy NOT confirmed"
     if r.checkedinat:
         d['checkedin'] = {
             'at': r.checkedinat,

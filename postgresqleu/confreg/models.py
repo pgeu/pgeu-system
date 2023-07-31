@@ -213,6 +213,7 @@ class Conference(models.Model):
 
     sendwelcomemail = models.BooleanField(blank=False, null=False, default=False, verbose_name="Send welcome email", help_text="Send an email to attendees once their registration is completed.")
     tickets = models.BooleanField(blank=False, null=False, default=False, verbose_name="Use tickets", help_text="Generate and send tickets to all attendees once their registration is completed.")
+    confirmpolicy = models.BooleanField(blank=False, null=False, default=False, verbose_name="Require policy confirmation", help_text="Require each attendee to confirm a conference policy (as a separate step in the registration) before tickets are issued")
     queuepartitioning = models.IntegerField(blank=True, null=True, choices=((1, 'By last name'), (2, 'By first name'), ), verbose_name="Queue partitioning", help_text="If queue partitioning is used, partition by what?")
 
     lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
@@ -241,9 +242,9 @@ class Conference(models.Model):
                         'callforpapersopen', 'callforpaperstimerange', 'IsCallForPapersOpen',
                         'callforpaperstags', 'callforpapersrecording', 'allowedit',
                         'conferencefeedbackopen', 'confurl', 'contactaddr', 'tickets',
-                        'conferencedatestr', 'location',
+                        'confirmpolicy', 'conferencedatestr', 'location',
                         'feedbackopen', 'skill_levels', 'urlname', 'conferencename',
-                        'series',
+                        'series', 'sendwelcomemail',
     )
 
     def safe_export(self):
@@ -591,6 +592,7 @@ class ConferenceRegistration(models.Model):
     localoptout = models.BooleanField(null=False, blank=False, default=False, verbose_name="Opt out of emails (when not connected to an account)")
 
     # Admin fields!
+    policyconfirmedat = models.DateTimeField(null=True, blank=True, verbose_name="Policy confirmed at")
     payconfirmedat = models.DateTimeField(null=True, blank=True, verbose_name="Payment confirmed at")
     payconfirmedby = models.CharField(max_length=16, null=True, blank=True, verbose_name="Payment confirmed by")
     created = models.DateTimeField(null=False, blank=False, verbose_name="Registration created")

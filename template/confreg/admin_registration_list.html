@@ -51,6 +51,9 @@ $(document).ready(function() {
   <th>Company</th>
   <th>Registration type</th>
   <th class="coltype-nosearch">Confirmed</th>
+{%if conference.confirmpolicy%}
+  <th class="coltype-nosearch">Policy</th>
+{%endif%}
   <th title="Canceled" class="coltype-nosearch">Canc.</th>
   {%if waitlist_active%}<th class="coltype-nosort">Waitlist status</th>{%endif%}
   <th class="coltype-nosort coltype-nosearch">
@@ -67,6 +70,9 @@ $(document).ready(function() {
   <td>{{r.company}}</td>
   <td data-order="{{r.regtype.sortkey}}">{{r.regtype.regtype}}</td>
   <td class="nobr" {%if not r.payconfirmedat%} title="Registration created {{r.created}}"{%endif%} data-order="{%if r.payconfirmedat%}1:{{r.payconfirmedat}}{%elif r.invoice%}2:{{r.invoice.issuedat}}{%elif r.bulkpay%}3:{{r.bulkpay.invoice.issuedat}}{%else%}9:{{r.created}}{%endif%}">{%if r.payconfirmedat%}{{r.payconfirmedat}} <i class="small glyphicon glyphicon-{{r.paymenticon}}" title="{{r.payment_method_description|striplinebreaks}}"></i>{%elif r.invoice%}Invoice generated{%elif r.bulkpayment%}Bulk payment generated{%endif%}</td>
+{%if conference.confirmpolicy%}
+  <td class="nobr">{{r.policyconfirmedat|default:"Not confirmed"}}</td>
+{%endif%}
   <td class="nobr">{%if r.canceledat%}{{r.canceledat}}{%endif%}</td>
 {%if waitlist_active %}
   <td>{%if r.registrationwaitlistentry %}

@@ -1,0 +1,21 @@
+Hello!
+
+A registration has been made for your email address
+{{reg.email}} to the conference {{conference}}.
+
+Before we can issue your ticket and finalize the registration, we need
+you to read and confirm the conference policy. It will only take
+a minute, and we suggest you do this as soon as possible to make sure
+your ticket is issued properly.
+
+To view the policy and register your confirmation, please visit the
+following site:
+
+{{sitebase}}/events/register/policy/{{reg.regtoken}}/
+
+{%if not reg.attendee %}
+You have also received a separate email about the option to connect
+your registration to an account. Please note that that is a different
+process which is optional, whereas confirming the conference policy
+is mandatory.
+{%endif%}

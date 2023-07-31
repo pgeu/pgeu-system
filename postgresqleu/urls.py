@@ -105,6 +105,7 @@ urlpatterns.extend([
     url(r'^events/(?P<confname>[^/]+)/register/change/$', postgresqleu.confreg.views.changereg),
     url(r'^events/(?P<confname>[^/]+)/register/msgconfig/$', postgresqleu.confreg.views.reg_config_messaging),
     url(r'^events/register/attach/([a-z0-9]{64})/$', postgresqleu.confreg.views.multireg_attach),
+    url(r'^events/register/policy/([a-z0-9]{64})/$', postgresqleu.confreg.views.regconfirmpolicy_token),
     url(r'^events/([^/]+)/prepaid/(\d+)/$', postgresqleu.confreg.views.viewvouchers_user),
 
     url(r'^events/([^/]+)/feedback/$', postgresqleu.confreg.views.feedback),
@@ -142,6 +143,7 @@ urlpatterns.extend([
     url(r'^events/([^/]+)/callforpapers/lookups/tags/$', postgresqleu.confreg.views.public_tags_lookup),
     url(r'^events/callforpapers/$', postgresqleu.confreg.views.callforpaperslist),
     url(r'^events/([^/]+)/register/confirm/$', postgresqleu.confreg.views.confirmreg),
+    url(r'^events/([^/]+)/register/policy/$', postgresqleu.confreg.views.regconfirmpolicy),
     url(r'^events/([^/]+)/register/waitlist_signup/$', postgresqleu.confreg.views.waitlist_signup),
     url(r'^events/([^/]+)/register/waitlist_cancel/$', postgresqleu.confreg.views.waitlist_cancel),
     url(r'^events/([^/]+)/register/canceled/$', postgresqleu.confreg.views.cancelreg),

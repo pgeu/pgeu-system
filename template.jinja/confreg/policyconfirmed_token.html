@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Conference policy{% endblock %}
+{% block content %}
+<h3>Policy confirmed</h3>
+<p>
+  Your policy confirmation has now been recorded.
+{%if reg.conference.sendwelcomemail%}An email with further information has been sent to you and should arrive shortly.{%endif%}
+</p>
+<p>
+  Welcome to {{reg.conference}}.
+</p>
+{% endblock %}

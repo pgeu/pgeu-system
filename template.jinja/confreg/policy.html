@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Conference policy{% endblock %}
+{% block content %}
+{% block policy %}This must be overridden in the conference template.{% endblock %}
+{% block policyformingress %}
+<h3>Confirm policy</h3>
+<p>
+  Please indicate below that you confirm this policy{%if not multiregcreate%} and will follow it{%endif%}.
+</p>
+{%if multiregcreate%}
+<p>
+  Note that each individual attendee on your registration will also be
+  required to confirm this policy before they will be issued a
+  ticket. An email with instructions for how to do that will be sent
+  to each individual automatically.
+</p>
+{% endif %}
+{% endblock %}
+
+<form method="post" action="." class="pgeuregformpolicy">{{ csrf_input }}
+  <div>
+    <input type="checkbox" value="1" name="policyconfirm" required> {% block policyconfirm %}I hereby confirm that I understand{%if not multiregcreate%} and will follow{%endif%} this policy{% endblock %}
+  </div>
+  <div>
+    <input type="submit" name="submit" value="Confirm policy">
+  </div>
+</form>
+{% endblock %}

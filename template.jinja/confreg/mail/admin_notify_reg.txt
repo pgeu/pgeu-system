@@ -4,6 +4,7 @@ Name: {{reg.fullname}}
 Company: {{reg.company}}
 Type: {{reg.regtype.regtype}}
 {%if reg.vouchercode %}Voucher/Discount code used: {{reg.vouchercode}}{%endif%}
-
+{%if not reg.attendee %}Registration has no matching account, and has been offered the option of attaching one.{%endif%}
+{%if reg.conference.confirmpolicy%}{%if reg.policyconfirmedat%}Conference policy has been confirmed at {{reg.policyconfirmedat}}{%else%}Conference policy has NOT yet been confirmed, and attendee has been instructed to do so{%endif%}.{%endif%}
 
 View: {{sitebase}}/events/admin/{{reg.conference.urlname}}/regdashboard/list/{{reg.id}}/

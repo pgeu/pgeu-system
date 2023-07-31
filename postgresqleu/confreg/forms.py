@@ -404,6 +404,7 @@ class NewMultiRegForm(forms.Form):
 class MultiRegInvoiceForm(forms.Form):
     recipient = forms.CharField(max_length=100, required=True)
     address = forms.CharField(widget=forms.widgets.Textarea, required=True)
+    policyconfirm = forms.CharField(widget=forms.widgets.HiddenInput, required=True, initial='1')
 
 
 class ConferenceSessionFeedbackForm(forms.ModelForm):

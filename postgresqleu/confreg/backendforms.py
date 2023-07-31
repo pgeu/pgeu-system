@@ -78,7 +78,7 @@ class BackendConferenceForm(BackendForm):
                   'testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors',
                   'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent',
                   'skill_levels', 'showvotes', 'callforpaperstags', 'callforpapersrecording', 'sendwelcomemail',
-                  'tickets', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist',
+                  'tickets', 'confirmpolicy', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist',
                   'initial_common_countries', 'jinjaenabled']
 
     def fix_fields(self):
@@ -90,7 +90,7 @@ class BackendConferenceForm(BackendForm):
 
     fieldsets = [
         {'id': 'base_info', 'legend': 'Basic information', 'fields': ['attendees_before_waitlist', 'invoice_autocancel_hours', 'notifyregs', 'notifysessionstatus', 'notifyvolunteerstatus', ]},
-        {'id': 'welcomeandreg', 'legend': 'Welcome and registration', 'fields': ['sendwelcomemail', 'tickets', 'queuepartitioning', 'initial_common_countries']},
+        {'id': 'welcomeandreg', 'legend': 'Welcome and registration', 'fields': ['sendwelcomemail', 'tickets', 'confirmpolicy', 'queuepartitioning', 'initial_common_countries']},
         {'id': 'promo', 'legend': 'Website promotion', 'fields': ['promoactive', 'promotext', 'promopicurl']},
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', 'twitter_postpolicy', ]},
         {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent', ]},
@@ -112,6 +112,10 @@ class BackendConferenceForm(BackendForm):
 
         if cleaned_data.get('tickets') and not cleaned_data.get('sendwelcomemail'):
             self.add_error('tickets', 'If tickets should be generated and sent, welcome emails must be sent!')
+
+        if cleaned_data.get('confirmpolicy'):
+            if not os.path.isfile(os.path.join(self.instance.jinjadir, 'templates/confreg/policy.html')):
+                self.add_error('confirmpolicy', 'A policy has to be defined in the template confreg/policy.html in the jinja template directory')
 
         if cleaned_data.get('checkinactive') and not cleaned_data.get('tickets'):
             self.add_error('checkinactive', 'Check-in cannot be activated if tickets are not used!')

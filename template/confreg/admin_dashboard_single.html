@@ -73,6 +73,9 @@
 <h2>Reports</h2>
 <div class="row">
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/reports/">Attendee reports</a></div>
+{%if conference.confirmpolicy%}
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn {%if pendingpolicy_attendees%}btn-warning{%else%}btn-default{%endif%} btn-block" href="/events/admin/{{c.urlname}}/reports/simple/?report=attendeespendingpolicy">Attendees without confirmed policy</a></div>
+{%endif%}
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn {%if uncheckedin_attendees%}btn-warning{%else%}btn-default{%endif%} btn-block" href="/events/admin/{{c.urlname}}/reports/simple/?report=attendeesnotcheckedin">Attendees not checked in</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn {%if uncheckedin_speakers%}btn-warning{%else%}btn-default{%endif%} btn-block" href="/events/admin/{{c.urlname}}/reports/simple/?report=speakersnotcheckedin">Speakers not checked in</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn {%if unregistered_speakers%}btn-warning{%else%}btn-default{%endif%} btn-block" href="/events/admin/{{c.urlname}}/reports/simple/?report=unregspeaker">Unregistered speakers</a></div>

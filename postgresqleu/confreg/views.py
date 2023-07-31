@@ -127,6 +127,9 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
             'has_other_multiregs': has_other_multiregs,
         })
 
+    if conference.confirmpolicy and not reg.policyconfirmedat:
+        return HttpResponseRedirect('{}policy/'.format(redir_root))
+
     mails = _attendeemail_queryset(conference, reg)
 
     wikipagesQ = Q(publicview=True) | Q(viewer_attendee__attendee=request.user) | Q(viewer_regtype__conferenceregistration__attendee=request.user)
@@ -413,7 +416,16 @@ def register(request, confname, whatfor=None):
             # Figure out if the user clicked a "magic save button"
             if request.POST['submit'] == 'Confirm and finish' or request.POST['submit'] == 'Save and finish':
                 reglog(reg, "Saved and clicked finish", request.user, data=changes)
-                # Complete registration!
+
+                # If this conference requires a policy to be confirmed, send the user over there first
+                # unless it's already confirmed.
+                if conference.confirmpolicy and not reg.policyconfirmedat:
+                    return HttpResponseRedirect("{}policy/".format(redir_root))
+
+                # If there is no conference policy or if it has
+                # already been confirmed, redirect the user to the
+                # final step which is to confirm the *registration
+                # details*.
                 return HttpResponseRedirect("{0}confirm/".format(redir_root))
 
             reglog(reg, "Saved regform", request.user, data=changes)
@@ -681,6 +693,14 @@ def multireg_newinvoice(request, confname):
 
     if request.method == 'POST' and request.POST['submit'] == 'Cancel':
         return HttpResponseRedirect('../')
+
+    if request.method == 'POST' and conference.confirmpolicy and request.POST.get('policyconfirm', None) != '1':
+        # For multiregs we show the policy, but we will then require
+        # each individual attendee to confirm it as well. There will
+        # be an introductory paragraph for that.
+        return render_conference_response(request, conference, 'reg', 'confreg/policy.html', {
+            'multiregcreate': True,
+        })
 
     # Collect all pending regs
     pendingregs = ConferenceRegistration.objects.filter(conference=conference,
@@ -1975,6 +1995,11 @@ def confirmreg(request, confname):
     if reg.bulkpayment:
         return render_conference_response(request, conference, 'reg', 'confreg/bulkpayexists.html')
 
+    # If conference policy is enabled and not confirmed, send over to the confirmation page
+    # (would normally have arrived there already, but just in case)
+    if conference.confirmpolicy and not reg.policyconfirmedat:
+        return HttpResponseRedirect("../policy/")
+
     # If the registration is *already* confirmed (e.g. somebody went directly to the confirmed page),
     # redirect instead of canceling off waitlist.
     # Same if ethe registration is canceled -- send them back to the dashboard
@@ -2148,6 +2173,74 @@ def confirmreg(request, confname):
         'phone': reg.phone,
         'phone_error': phone_error,
         })
+
+
+@login_required
+@transaction.atomic
+def regconfirmpolicy(request, confname):
+    conference = get_conference_or_404(confname)
+    reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
+
+    if reg.policyconfirmedat or not conference.confirmpolicy:
+        # Already confirmed the conference *policy*, or there is no
+        # policy on the conference.  We shouldn't have arrived here,
+        # but if we did just redirect to the next step, which is either
+        # "we're done", or the "confirm *registration*" step.
+        if reg.payconfirmedat:
+            return HttpResponseRedirect("../")
+        else:
+            return HttpResponseRedirect("../confirm/")
+
+    if request.method == 'POST':
+        if request.POST.get('policyconfirm', None) == '1':
+            reglog(reg, "Conference policy confirmed", request.user)
+            reg.policyconfirmedat = timezone.now()
+            reg.save(update_fields=['policyconfirmedat'])
+            if reg.payconfirmedat:
+                return HttpResponseRedirect("../")
+            else:
+                # If the payment isn't confirmed yet, redirect to the
+                # *confirm registration details* step (which is
+                # separate from the policy confirm step).
+                return HttpResponseRedirect("../confirm/")
+
+    return render_conference_response(request, conference, 'reg', 'confreg/policy.html', {
+        'reg': reg,
+    })
+
+
+@transaction.atomic
+def regconfirmpolicy_token(request, token):
+    reg = get_object_or_404(ConferenceRegistration, regtoken=token)
+    conference = reg.conference
+
+    if not conference.confirmpolicy:
+        return HttpResponse("This conference does not need a policy confirmation. This link shouldn't exist.")
+
+    if reg.policyconfirmedat:
+        return HttpResponse("The policy has already been confirmed on {}.".format(reg.policyconfirmedat))
+
+    if request.method == 'POST':
+        if request.POST.get('policyconfirm', None) == '1':
+            reglog(reg, "Conference policy confirmed from token")
+            reg.policyconfirmedat = timezone.now()
+            reg.save(update_fields=['policyconfirmedat'])
+
+            # This is when we send the ticket, if needed
+            send_welcome_email(reg)
+
+            if request.user.is_authenticated and reg.attendee == request.user:
+                # If the user has now attached their account, we can be nice and send them
+                # to the actual registration page.
+                if reg.payconfirmedat:
+                    return HttpResponseRedirect("/events/{}/register/".format(conference.urlname))
+            return render_conference_response(request, conference, 'reg', 'confreg/policyconfirmed_token.html', {
+                'reg': reg,
+            })
+
+    return render_conference_response(request, conference, 'reg', 'confreg/policy.html', {
+        'reg': reg,
+    })
 
 
 @login_required
@@ -3154,6 +3247,7 @@ def admin_dashboard_single(request, urlname):
             'sessions_notrack': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=1 AND s.track_id IS NULL)", {'confid': conference.id}),
             'sessions_roomoverlap': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s INNER JOIN confreg_room r ON r.id=s.room_id WHERE s.conference_id=%(confid)s AND r.conference_id=%(confid)s AND status=1 AND EXISTS (SELECT 1 FROM confreg_conferencesession s2 WHERE s2.conference_id=%(confid)s AND s2.status=1 AND s2.room_id=s.room_id AND s.id != s2.id AND tstzrange(s.starttime, s.endtime) && tstzrange(s2.starttime, s2.endtime)))", {'confid': conference.id}),
             'pending_sessions': conditional_exec_to_scalar(conference.scheduleactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.status=0)", {'confid': conference.id}),
+            'pendingpolicy_attendees': conditional_exec_to_scalar(conference.confirmpolicy, "SELECT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND canceledat IS NULL AND policyconfirmedat IS NULL)", {'confid': conference.id}),
             'uncheckedin_attendees': conditional_exec_to_scalar(conference.checkinactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s AND payconfirmedat IS NOT NULL AND canceledat IS NULL AND checkedinat IS NULL)", {'confid': conference.id}),
             'uncheckedin_speakers': conditional_exec_to_scalar(conference.checkinactive, "SELECT EXISTS (SELECT 1 FROM confreg_conferenceregistration r INNER JOIN confreg_speaker spk ON spk.user_id=r.attendee_id INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id INNER JOIN confreg_conferencesession s ON s.id=css.conferencesession_id WHERE r.conference_id=%(confid)s AND r.payconfirmedat IS NOT NULL AND r.canceledat IS NULL AND r.checkedinat IS NULL AND s.conference_id=%(confid)s AND s.status=1)", {'confid': conference.id}),
             'pending_sponsors': conditional_exec_to_scalar(conference.IsCallForSponsorsOpen, "SELECT EXISTS (SELECT 1 FROM confsponsor_sponsor WHERE conference_id=%(confid)s AND invoice_id IS NULL AND NOT confirmed)", {'confid': conference.id}),
@@ -3170,6 +3264,13 @@ def admin_registration_dashboard(request, urlname):
 
     tables = []
 
+    if conference.confirmpolicy:
+        policyquery = "count(r.id) FILTER (WHERE payconfirmedat IS NOT NULL AND canceledat IS NULL AND policyconfirmedat IS NULL) AS nopolicy,"
+        policycolumns = ['Pend. policy', ]
+    else:
+        policyquery = ""
+        policycolumns = []
+
     # Registrations by reg type
     curs.execute("""SELECT regtype,
  count(payconfirmedat) - count(canceledat) AS confirmed,
@@ -3177,14 +3278,15 @@ def admin_registration_dashboard(request, urlname):
  count(r.id) FILTER (WHERE payconfirmedat IS NULL AND (r.invoice_id IS NULL AND bp.invoice_id IS NULL)) AS unconfirmed,
  count(r.id) - count(canceledat) AS total,
  count(canceledat) AS canceled,
+ {}
  invoice_autocancel_hours
 FROM confreg_conferenceregistration r
 RIGHT JOIN confreg_registrationtype rt ON rt.id=r.regtype_id
 LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id
-WHERE rt.conference_id={0}
-GROUP BY rt.id ORDER BY rt.sortkey""".format(conference.id))
+WHERE rt.conference_id={}
+GROUP BY rt.id ORDER BY rt.sortkey""".format(policyquery, conference.id))
     tables.append({'title': 'Registration types',
-                   'columns': ['Type', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total', 'Canceled', 'Inv. autoc'],
+                   'columns': ['Type', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total', 'Canceled', ] + policycolumns + ['Inv. autoc'],
                    'fixedcols': 1,
                    'fixedcolsend': 1,
                    'hidecols': 0,

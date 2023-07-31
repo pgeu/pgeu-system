@@ -119,6 +119,12 @@
   <td>{{reg.canceledat}}</td>
 </tr>
 {%endif%}
+{%if conference.confirmpolicy %}
+ <tr{%if not reg.policyconfirmedat%} class="danger"{%endif%}>
+  <td>Conference policy</td>
+  <td>{%if reg.policyconfirmedat%}Conference policy confirmed at {{reg.policyconfirmedat}}.{%else%}Conference policy NOT confirmed.{%endif%}</td>
+ </tr>
+{%endif%}
  <tr>
   <td>Registration account</td>
   <td>{%if reg.attendee%}{{reg.attendee}} ({{reg.attendee.first_name}} {{reg.attendee.last_name}} &lt;{{reg.attendee.email}}&gt;){%else%}Not connected to account{%endif%}</td>

@@ -392,6 +392,7 @@ class AttendeeReportManager:
                 ReportField('created', 'Registration created'),
                 ReportField('payconfirmedat', 'Payment confirmed at'),
                 ReportField('canceledat', 'Canceled at'),
+                ReportField('policyconfirmedat', 'Policy confirmed at'),
                 DerivedReportField('publictoken', 'Public token', "'{}/t/at/' || publictoken || '/'".format(settings.SITEBASE)),
                 DerivedReportField('idtoken', 'ID token', "'{}/t/id/' || idtoken || '/'".format(settings.SITEBASE)),
             ]
@@ -422,6 +423,7 @@ class AttendeeReportManager:
                 ReportFilter('photoconsent', 'Photo consent', ReportFilter.booleanoptions),
                 ReportFilter('payconfirmedat', 'Payment confirmed at', emptyasnull=False),
                 ReportFilter('canceledat', 'Canceled at', emptyasnull=False),
+                ReportFilter('policyconfirmedat', 'Policy confirmed at', emptyasnull=False),
                 ReportFilter('additionaloptions', 'Additional options', ConferenceAdditionalOption.objects.filter(conference=self.conference), 'name', False, True),
                 ReportFilter('shirtsize', 'T-Shirt size', ShirtSize.objects.all()),
                 ReportSpeakerFilter(self.conference),
@@ -764,6 +766,20 @@ WHERE s.conference_id=%(confid)s AND
 ORDER BY 1,3""",
 
     'queuepartitions': QueuePartitionForm,
+
+    'attendeespendingpolicy': """SELECT
+   lastname AS "Last name",
+   firstname AS "First name",
+   regtype AS "Registration type",
+   COALESCE(c.printable_name, $$Unspecified$$) AS "Country"
+FROM confreg_conferenceregistration r
+INNER JOIN confreg_registrationtype rt ON rt.id=r.regtype_id
+LEFT JOIN country c ON c.iso=r.country_id
+WHERE r.conference_id=%(confid)s AND
+      payconfirmedat IS NOT NULL AND
+      canceledat IS NULL AND
+      policyconfirmedat IS NULL
+ORDER BY lastname, firstname""",
 
     'attendeesnotcheckedin': """SELECT
    lastname AS "Last name",

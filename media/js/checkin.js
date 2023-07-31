@@ -61,6 +61,7 @@ function add_dynamic_fields(reg, cl, regcompleted) {
     fields = [
         [reg.name, 'Name'],
         [reg.type, 'Registration type'],
+        [reg.policyconfirmed, 'Policy confirmed'],
         [reg.photoconsent, 'Photo consent'],
         [reg.tshirt, 'T-Shirt size']
     ];

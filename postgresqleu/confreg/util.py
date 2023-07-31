@@ -188,6 +188,12 @@ def send_welcome_email(reg):
     if not reg.conference.sendwelcomemail:
         return
 
+    # If policy is required but policy hasn't been confirmed, something has gone
+    # wrong as this should not be possible. But verify it to be sure and then
+    # just throw an exception in case.
+    if reg.conference.confirmpolicy and not reg.policyconfirmedat:
+        raise Exception("Policy is required but not confirmed before attempting to send welcome email")
+
     if reg.conference.tickets:
         buf = BytesIO()
         render_jinja_ticket(reg, buf, JINJA_TEMPLATE_ROOT, settings.REGISTER_FONTS)
@@ -208,6 +214,19 @@ def send_welcome_email(reg):
                          },
                          receivername=reg.fullname,
                          attachments=attachments,
+    )
+
+
+def send_policy_email(reg):
+    send_conference_mail(
+        reg.conference,
+        reg.email,
+        "Conference policy",
+        'confreg/mail/policymail.txt',
+        {
+            'reg': reg,
+        },
+        receivername=reg.fullname,
     )
 
 
@@ -278,7 +297,13 @@ def notify_reg_confirmed(reg, updatewaitlist=True):
             },
         )
 
-    send_welcome_email(reg)
+    # If this conference has a policy that has to be confirmed, and this isn't
+    # already done in the workflow (it will be for a reg-myself account, but it
+    # will not be in a bulk payment reg)
+    if reg.conference.confirmpolicy and not reg.policyconfirmedat:
+        send_policy_email(reg)
+    else:
+        send_welcome_email(reg)
 
 
 def cancel_registration(reg, is_unconfirmed=False, reason=None, user=None):
