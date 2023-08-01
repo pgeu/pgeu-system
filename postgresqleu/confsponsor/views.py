@@ -497,16 +497,16 @@ def sponsor_signup(request, confurlname, levelurlname):
                     else:
                         mailstr += "No invoice has been generated as for this level\na signed contract is required first. The sponsor\nhas been sent a contract for digital signing."
 
-                    if error:
-                        form.add_error("Failed to send digital contract.")
-                    else:
-                        sponsor.contract = DigisignDocument(
-                            provider=conference.contractprovider,
-                            documentid=contractid,
-                            handler='confsponsor',
-                        )
-                        sponsor.contract.save()
-                        sponsor.save(update_fields=['contract', ])
+                        if error:
+                            form.add_error("Failed to send digital contract.")
+                        else:
+                            sponsor.contract = DigisignDocument(
+                                provider=conference.contractprovider,
+                                documentid=contractid,
+                                handler='confsponsor',
+                            )
+                            sponsor.contract.save()
+                            sponsor.save(update_fields=['contract', ])
 
                 if not error:
                     send_conference_sponsor_notification(
