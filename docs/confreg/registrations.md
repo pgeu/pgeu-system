@@ -237,7 +237,7 @@ registration type. If multiple options are chosen, *any one* of those
 will be enough to allow the registration type.
 
 Upsell target
-: If it should be possible t upgrade to this registration type in
+: If it should be possible to upgrade to this registration type in
 order to add additional options. If this type is more expensive than
 the previous one the attendee has, the difference will be invoiced.
 
