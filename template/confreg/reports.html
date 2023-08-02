@@ -92,15 +92,15 @@ input#dlgSelectFieldCountText {
 <p>
   Query matched {{matchingattendees|length}} attendees.
 </p>
-<form method="post" action="." target="_blank">{% csrf_token%}
+<form method="post" action="." target="_blank" class="form-horizontal">{% csrf_token%}
 <table class="table">
   <tr>
     <td class="col-md-3"><h3>Title</h3></td>
-    <td><input type="text" name="title" id="txtTitle"></td>
+    <td><input type="text" name="title" id="txtTitle" class="form-control"></td>
   </tr>
   <tr>
     <td class="col-md-3"><h3>Additional columns</h3>(These columns will be added empty, for manual entry. Separate with comma.)</td>
-    <td><input type="text" name="additionalcols" id="txtAdditionalCols"></td>
+    <td><input type="text" name="additionalcols" id="txtAdditionalCols" class="form-control"></td>
   </tr>
   <tr>
     <td class="col-md-3"><h3>Order by</h3></td>
