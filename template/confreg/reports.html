@@ -29,12 +29,20 @@ input#dlgSelectFieldCountText {
 {%block layoutblock%}
 <h1>Reports</h1>
 <select id="selStoredReports">
+  <option value="-1">* Confirmed and not cancelled attendees</option>
+  <option value="-2">* Canceled (but once confirmed) attendees</option>
+{%if conference.confirmpolicy%}
+  <option value="-3">* Confirmed attendees that have not confirmed the conference policy</option>
+{%endif%}
 {%for r in stored_reports %}
  <option value="{{r.id}}">{{r.title}}</option>
 {%endfor%}
 </select>
 <button id="btnLoadReport" class="btn btn-default">Load report</button>
 <button id="btnDeleteReport" class="btn btn-default">Delete stored report</button>
+<p>
+  Reports with * indicates pre-defined reports that cannot be edited or deleted.
+</p>
 
 <h2>Report</h2>
 <table class="table">
@@ -259,6 +267,37 @@ function load_report_definition(data) {
     refreshFilterView();
 }
 
+const predefined_reports = {
+    "-1": { /* Confirmed  but not canceled attendees */
+	'fields': ['lastname', 'firstname', 'email'],
+	'filters': [
+	    [
+		{ 'filter': 'payconfirmedat', 'value': '', 'display': ''},
+		{ 'filter': 'canceledat', 'value': '\\N', 'display': '\\N'}
+	    ]
+	]
+    },
+    "-2": { /* Canceled (but once confirmed) attendees */
+	'fields': ['lastname', 'firstname', 'email'],
+	'filters': [
+	    [
+		{ 'filter': 'payconfirmedat', 'value': '', 'display': ''},
+		{ 'filter': 'canceledat', 'value': '', 'display': ''}
+	    ]
+	]
+    },
+    "-3": { /* Confirmed attendees that have not confirmed the policy */
+	'fields': ['lastname', 'firstname', 'email', 'payconfirmedat', 'policyconfirmedat'],
+	'filters': [
+	    [
+		{ 'filter': 'payconfirmedat', 'value': '', 'display': ''},
+		{ 'filter': 'canceledat', 'value': '\\N', 'display': '\\N'},
+		{ 'filter': 'policyconfirmedat', 'value': '\\N', 'display': '\\N'},
+	    ]
+	]
+    }
+}
+
 $(function() {
     $( '#dlgStringField').dialog({ autoOpen: false, modal: true, resizable: false, minWidth: 500});
     $( '#dlgSelectField').dialog({ autoOpen: false, modal: true, resizable: false, minWidth: 500});
@@ -407,6 +446,12 @@ $(function() {
            return;
        }
 
+       if (parseInt($('#selStoredReports').val()) < 0) {
+           /* Predefined report */
+           load_report_definition(predefined_reports[parseInt($('#selStoredReports').val())]);
+           return;
+       }
+
        $.get('.', {
           'storedreport': $('#selStoredReports').val(),
        }).success(function(data) {
@@ -419,6 +464,10 @@ $(function() {
     $('#btnDeleteReport').click(function() {
        if ($('#selStoredReports').val() == null) {
            alert('No report selected.');
+           return;
+       }
+       if (parseInt($('#selStoredReports').val()) < 0) {
+           alert('Cannot delete a predefined report.');
            return;
        }
 
