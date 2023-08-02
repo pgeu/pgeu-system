@@ -145,6 +145,7 @@ def new_conference(request):
 
 
 def edit_registration(request, urlname, regid):
+    reg = get_object_or_404(ConferenceRegistration.objects.only('firstname', 'lastname').filter(conference__urlname=urlname, pk=regid))
     return backend_process_form(request,
                                 urlname,
                                 BackendRegistrationForm,
@@ -153,7 +154,7 @@ def edit_registration(request, urlname, regid):
                                 breadcrumbs=(
                                     ('/events/admin/{}/regdashboard/'.format(urlname), 'Registration dashboard'),
                                     ('/events/admin/{}/regdashboard/list/'.format(urlname), 'Registration list'),
-                                    ('/events/admin/{}/regdashboard/list/{}/'.format(urlname, regid), 'Registration'),
+                                    ('/events/admin/{}/regdashboard/list/{}/'.format(urlname, regid), reg.fullname),
                                 ),
                                 allow_delete=False)
 
