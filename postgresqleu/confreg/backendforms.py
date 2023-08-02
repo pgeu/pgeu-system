@@ -258,11 +258,33 @@ class BackendRegistrationForm(BackendForm):
         fields = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone',
                   'shirtsize', 'dietary', 'twittername', 'nick', 'badgescan', 'shareemail',
                   'regtype', 'additionaloptions']
-        fieldsets = [
+
+    _all_dynamic_fields = set(['badgescan', 'shareemail', 'dietary', 'shirtsize'])
+
+    def _get_reginfo_fields(self):
+        if self.conference.askbadgescan:
+            yield 'badgescan'
+        if self.conference.askshareemail:
+            yield 'shareemail'
+
+    def _get_attendeespec_fields(self):
+        if self.conference.askfood:
+            yield 'dietary'
+        if self.conference.asktshirt:
+            yield 'shirtsize'
+
+    @property
+    def fieldsets(self):
+        fs = [
             {'id': 'personal_info', 'legend': 'Personal information', 'fields': ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'twittername', 'nick']},
-            {'id': 'reg_info', 'legend': 'Registration information', 'fields': ['regtype', 'additionaloptions', 'badgescan', 'shareemail']},
-            {'id': 'attendee_specifics', 'legend': 'Attendee specifics', 'fields': ['shirtsize', 'dietary', ]},
+            {'id': 'reg_info', 'legend': 'Registration information', 'fields': ['regtype', 'additionaloptions'] + list(self._get_reginfo_fields())},
         ]
+        aspec = list(self._get_attendeespec_fields())
+        if aspec:
+            fs.append(
+                {'id': 'attendee_specifics', 'legend': 'Attendee specifics', 'fields': aspec},
+            )
+        return fs
 
     def fix_fields(self):
         if self.instance.canceledat:
@@ -272,14 +294,9 @@ class BackendRegistrationForm(BackendForm):
 
         self.fields['additionaloptions'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference)
         self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=self.conference)
-        if not self.conference.askfood:
-            self.remove_field('dietary')
-        if not self.conference.asktshirt:
-            self.remove_field('shirtsize')
-        if not self.conference.askbadgescan:
-            self.remove_field('badgescan')
-        if not self.conference.askshareemail:
-            self.remove_field('shareemail')
+
+        for f in self._all_dynamic_fields.difference(list(self._get_reginfo_fields()) + list(self._get_attendeespec_fields())):
+            self.remove_field(f)
         self.update_protected_fields()
 
 
