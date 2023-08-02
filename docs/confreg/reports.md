@@ -53,20 +53,51 @@ for new attendees, so if more attendees now match the filter definitions
 you made earlier, they will not be included in the report. This is
 intentional to make sure the report is predictable.
 
+### Dynamic report fields <a name="dynamic"></a>
+
+For reporting purposes, dynamic fields cna be added to all
+registrations for a conference, and then be set as part of report
+generatoin. These fields can be used to store persistant data about
+the results of reports, and can then be used later on when filtering
+new reports.
+
+To use this feature, first declare which fields should be available
+for the conference on the [conference](configuring) page. Once this is
+done, the fields become available for filtering and for including in
+reports. Note that all fields are always stored and treated as text,
+and there is no way to store an empty string (storing an empty string
+will remove the field, thus it will only match the NULL value using
+the `\N` filter).
+
 ## Badges
 
-To print badges for all registered attendees you need a filter:
+For badge printing, it's often very useful to use the dynamic
+properties system, as this will allow "batching" of badges being
+generated. This can be built off a generic filter for "all confirmed
+but not canceled attendees", with an additional dynamic property for
+`badgesprinted` (or pick any name you prefer).
 
-* "Payment confirmed at" (leave the field empty)
-* "Canceled at" \N (to explicitly filter for non-canceled registrations)
+To print this, set the following entries for your filter:
 
-This will filter all badges where attendees have completed the
-registration process.
+* `Payment confirmed at` (leave the field empty)
+* `Canceled at` set to `\N` (to explicitly filter for non-canceled
+  registrations)
+* `badgesprinted` set to `\N`(to filter for attendees that have not
+  yet had the badge printed)
 
-Select "Format: Badge", and generate the report.
+Set `Format` to `Badge`, and press *Generate report*.
+
+Once you have verified that the badges look OK, chose the
+`badgesprinted` field and pick a value for it under *Set field*, and
+press *Set dynamic field on matching attendees*. It is important that
+this is done before a query is re-run, to ensure it has exactly the
+same set of attendees as were in the report. You can pick any value
+you want to set it to, as the filter is only on "any value exists",
+but a good suggestion can be something identifying the batch such as
+the date of printing.
 
 You can also generate badges for individual registrations by clicking
-the Preview Badge button on the registration page, or for multiple
+the *Preview Badge* button on the registration page, or for multiple
 manually selected badges by marking them on the registration list and
 generating from there. These are useful for smaller sets of badges,
 whereas the report method is more usable for large sets.

@@ -195,6 +195,11 @@ Field photo consent
 : Should the field asking the attendee to give (or not) consent to
 have their photograph taken at the event.
 
+Dynamic properties
+:  List of [dynamic properties](reports#dynamic) that can be added
+   to each registration. These fields are used for custom reporting
+   and similar functions, and are not visible to the end user.
+
 Registration open
 : If regular registration is open.
 

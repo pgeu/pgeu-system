@@ -242,6 +242,18 @@
 </tr>
 {%endif%}
 
+{%if conference.dynafields%}
+<tr>
+  <th colspan="2" class="col-md-12">Dynamic report fields</th>
+</tr>
+{%for k, v in reg.dynaprops.items|dictsort:0 %}
+<tr>
+  <td>{{k}}</td>
+  <td>{{v}}</td>
+</td>
+{%endfor%}
+{%endif%}
+
 <tr>
   <th colspan="2" class="col-md-12">Log</th>
 </tr>

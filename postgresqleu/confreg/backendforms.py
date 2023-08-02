@@ -13,6 +13,7 @@ from django.conf import settings
 import datetime
 from collections import OrderedDict
 import os
+import re
 from urllib.parse import urlparse
 from psycopg2.extras import DateTimeTZRange
 import pytz
@@ -66,6 +67,7 @@ class BackendConferenceForm(BackendForm):
         'checkinprocessors': RegisteredUsersLookup(None),
         'initial_common_countries': CountryLookup(),
     }
+    selectize_taglist_fields = ('dynafields', )
 
     class Meta:
         model = Conference
@@ -79,7 +81,7 @@ class BackendConferenceForm(BackendForm):
                   'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent',
                   'skill_levels', 'showvotes', 'callforpaperstags', 'callforpapersrecording', 'sendwelcomemail',
                   'tickets', 'confirmpolicy', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist',
-                  'initial_common_countries', 'jinjaenabled']
+                  'initial_common_countries', 'jinjaenabled', 'dynafields']
 
     def fix_fields(self):
         self.selectize_multiple_fields['volunteers'] = RegisteredUsersLookup(self.conference)
@@ -93,7 +95,7 @@ class BackendConferenceForm(BackendForm):
         {'id': 'welcomeandreg', 'legend': 'Welcome and registration', 'fields': ['sendwelcomemail', 'tickets', 'confirmpolicy', 'queuepartitioning', 'initial_common_countries']},
         {'id': 'promo', 'legend': 'Website promotion', 'fields': ['promoactive', 'promotext', 'promopicurl']},
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', 'twitter_postpolicy', ]},
-        {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent', ]},
+        {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent', 'dynafields', ]},
         {'id': 'steps', 'legend': 'Steps', 'fields': ['registrationopen', 'registrationtimerange', 'allowedit', 'callforpapersopen', 'callforpaperstimerange', 'callforsponsorsopen', 'callforsponsorstimerange', 'scheduleactive', 'sessionsactive', 'cardsactive', 'checkinactive', 'conferencefeedbackopen', 'feedbackopen']},
         {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpaperstags', 'callforpapersrecording', 'showvotes']},
         {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', ]},
@@ -128,6 +130,29 @@ class BackendConferenceForm(BackendForm):
             if not self.instance.jinjadir:
                 raise ValidationError("Jinja templates cannot be enabled since there is no Jinja directory configured in superuser settings")
         return je
+
+    def clean_dynafields(self):
+        val = self.cleaned_data['dynafields']
+
+        vals = [v.strip() for v in val.split(',')]
+        # JS should've protected us against duplicate values, but we can't trust that, so validate
+        if len(vals) != len(set(vals)):
+            raise ValidationError("Duplicate dynamic property name found")
+
+        for v in vals:
+            if not re.match('^[a-z]+$', v, re.I):
+                raise ValidationError("Property names can only contain letters a-z")
+
+        # See if we tried to *remove* a property that's still in use
+        used = exec_to_single_list("SELECT DISTINCT k FROM (SELECT jsonb_object_keys(dynaprops) k FROM confreg_conferenceregistration r WHERE r.conference_id=%(confid)s) d WHERE NOT d.k=ANY(%(vals)s)", {
+            'confid': self.instance.id,
+            'vals': vals,
+        })
+        if used:
+            raise ValidationError("The key(s) {} are still in use and cannot be removed.".format(sorted(used)))
+
+        # Re-sort and save the stripped version
+        return ",".join(sorted(vals))
 
 
 def _timezone_choices():
@@ -274,6 +299,14 @@ class BackendRegistrationForm(BackendForm):
             yield 'shirtsize'
 
     @property
+    def json_form_fields(self):
+        if self.conference.dynafields:
+            return {
+                'dynaprops': self.conference.dynafields.split(','),
+            }
+        return None
+
+    @property
     def fieldsets(self):
         fs = [
             {'id': 'personal_info', 'legend': 'Personal information', 'fields': ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'twittername', 'nick']},
@@ -283,6 +316,10 @@ class BackendRegistrationForm(BackendForm):
         if aspec:
             fs.append(
                 {'id': 'attendee_specifics', 'legend': 'Attendee specifics', 'fields': aspec},
+            )
+        if self.conference.dynafields:
+            fs.append(
+                {'id': 'dynamic', 'legend': 'Dynamic reporting fields', 'fields': self.conference.dynafields.split(',')}
             )
         return fs
 
@@ -297,6 +334,12 @@ class BackendRegistrationForm(BackendForm):
 
         for f in self._all_dynamic_fields.difference(list(self._get_reginfo_fields()) + list(self._get_attendeespec_fields())):
             self.remove_field(f)
+
+        if self.conference.dynafields:
+            for f in self.conference.dynafields.split(','):
+                self.fields[f] = django.forms.CharField(label=f, required=False)
+                self.fields[f].delete_on_empty = True
+
         self.update_protected_fields()
 
 

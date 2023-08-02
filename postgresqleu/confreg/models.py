@@ -204,6 +204,7 @@ class Conference(models.Model):
     askbadgescan = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: badge scanning", help_text="Include field for allowing sponsors to scan badge")
     askshareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: share email", help_text="Include field for sharing email with sponsors")
     askphotoconsent = models.BooleanField(null=False, blank=False, default=True, verbose_name="Field: photo consent", help_text="Include field for getting photo consent")
+    dynafields = models.CharField(max_length=500, blank=True, null=False, verbose_name="Dynamic properties", help_text="Dynamic properties that can be assigned to registrations")
     skill_levels = models.BooleanField(blank=False, null=False, default=True)
     jinjaenabled = models.BooleanField(null=False, blank=False, default=False, verbose_name="Jinja templates enabled")
     jinjadir = models.CharField(max_length=200, blank=True, null=True, default=None, help_text="Full path to new style jinja repository root", verbose_name="Jinja directory")
@@ -627,6 +628,9 @@ class ConferenceRegistration(models.Model):
     messaging = models.ForeignKey('ConferenceMessaging', null=True, blank=True, on_delete=models.SET_NULL)
     messaging_copiedfrom = models.ForeignKey(Conference, null=True, blank=True, on_delete=models.SET_NULL, related_name='reg_messaging_copiedfrom')
     messaging_config = models.JSONField(null=False, blank=False, default=dict)
+
+    # Extra dynamic properties configured at a conference level
+    dynaprops = models.JSONField(null=False, blank=False, default=dict)
 
     class Meta:
         unique_together = (

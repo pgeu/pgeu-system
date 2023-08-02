@@ -3069,33 +3069,54 @@ def reports(request, confname):
         if request.POST.get('submit') == 'Generate report':
             # Plain post to generate the report after we've already previewed the query count
             return reports.build_attendee_report(request, request.POST)
+        elif request.POST.get('submit') == 'Set dynamic field on matching attendees':
+            data = json.loads(request.POST['reportdata'])
+            f = request.POST['dynasetfield']
+            if f not in conference.dynafields.split(','):
+                raise Http404("Unknown field specified")
 
-        if request.POST['what'] == 'delete':
+            rids = list(map(int, request.POST['rids'].split(',')))
+            if request.POST['dynasetvalue'] != '':
+                exec_no_result("UPDATE confreg_conferenceregistration SET dynaprops = dynaprops || jsonb_build_object(%(fieldname)s, %(fieldval)s) WHERE conference_id=%(confid)s AND id=ANY(%(rids)s)", {
+                    'rids': rids,
+                    'confid': conference.id,
+                    'fieldname': f,
+                    'fieldval': request.POST['dynasetvalue'],
+                })
+            else:
+                exec_no_result("UPDATE confreg_conferenceregistration SET dynaprops = dynaprops - %(fieldname)s WHERE conference_id=%(confid)s AND id=ANY(%(rids)s)", {
+                    'rids': rids,
+                    'confid': conference.id,
+                    'fieldname': f,
+                })
+            messages.info(request, "Set field {} to {} for {} attendees.".format(f, request.POST['dynasetvalue'], len(rids)))
+        elif request.POST['what'] == 'delete':
             if request.POST.get('storedreport', '') == '':
                 raise Http404()
 
             get_object_or_404(SavedReportDefinition, conference=conference, pk=get_int_or_error(request.POST, 'storedreport')).delete()
             return HttpResponse("OK")
-
-        data = json.loads(request.POST['reportdata'])
-        if request.POST['what'] == 'query':
-            attendees = reports.query_attendees_for_report(request, data)
-        elif request.POST['what'] == 'save':
-            with transaction.atomic():
-                if request.POST.get('overwrite', 0) == "1":
-                    obj = get_object_or_404(SavedReportDefinition, conference=conference, title=request.POST['name'])
-                    obj.definition = data
-                    obj.save()
-                else:
-                    if SavedReportDefinition.objects.filter(conference=conference, title=request.POST['name']).exists():
-                        return HttpResponse("Already exists", status=409)
-
-                    SavedReportDefinition(conference=conference,
-                                          title=request.POST['name'],
-                                          definition=data).save()
-                return HttpResponse("OK")
         else:
-            raise Http404()
+            # Post that has data set from the JS
+            data = json.loads(request.POST['reportdata'])
+            if request.POST['what'] == 'query':
+                attendees = reports.query_attendees_for_report(request, data)
+            elif request.POST['what'] == 'save':
+                with transaction.atomic():
+                    if request.POST.get('overwrite', 0) == "1":
+                        obj = get_object_or_404(SavedReportDefinition, conference=conference, title=request.POST['name'])
+                        obj.definition = data
+                        obj.save()
+                    else:
+                        if SavedReportDefinition.objects.filter(conference=conference, title=request.POST['name']).exists():
+                            return HttpResponse("Already exists", status=409)
+
+                        SavedReportDefinition(conference=conference,
+                                              title=request.POST['name'],
+                                              definition=data).save()
+                    return HttpResponse("OK")
+            else:
+                raise Http404()
     elif 'storedreport' in request.GET:
         # Load a special stored report
         if request.GET.get('storedreport', '') == '':
@@ -3112,6 +3133,7 @@ def reports(request, confname):
         'stored_reports': SavedReportDefinition.objects.filter(conference=conference).order_by('title'),
         'reportdata': json.dumps(data) if data else None,
         'matchingattendees': attendees,
+        'dynafields': conference.dynafields.split(','),
         'helplink': 'reports#attendee',
     })
 

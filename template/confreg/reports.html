@@ -145,7 +145,27 @@ input#dlgSelectFieldCountText {
 <input type="submit" name="submit" value="Generate report" class="btn btn-primary"/>
 <a href="." class="btn btn-default">Reset form</a>
 </form>
-{%endif%}
+
+{%if dynafields%}
+<h2>Set fields</h2>
+<form method="post" action="." class="form-horizontal">{%csrf_token%}
+<table class="table">
+  <tr>
+    <td class="col-md-3"><h4>Field</h4></td>
+    <td><select name="dynasetfield" class="form-control">
+	{%for f in dynafields%}<option value="{{f}}">{{f}}</option>{%endfor%}
+    </select></td>
+  </tr>
+  <tr>
+    <td class="col-md-3"><h4>Value</h4></td>
+    <td><input type="text" class="form-control" name="dynasetvalue" placeholder="Value to write to dynamic field. Leave empty to delete."></td>
+  </tr>
+</table>
+<input type="hidden" name="rids" value="{{matchingattendees|join:","}}">
+<input type="hidden" name="reportdata" value="{{reportdata}}">
+<input type="submit" name="submit" value="Set dynamic field on matching attendees" class="btn btn-primary confirm-btn" data-confirm="Are you sure you want to set tihs value on all matching entries?"/>
+{%endif%}{# dynafields #}
+{%endif%}{# has data #}
 
 <div id="dlgStringField">
   <input type="text" id="dlgStringFieldString" class="dlgInput">

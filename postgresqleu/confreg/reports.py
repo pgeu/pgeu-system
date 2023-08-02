@@ -105,6 +105,17 @@ class ForeignReportField(ReportField):
         )
 
 
+class DynamicReportField(ReportField):
+    virtualfield = True
+
+    def __init__(self, name):
+        self.name = name
+        super().__init__("dyn_{}".format(name), name)
+
+    def get_select_name(self):
+        return "r.dynaprops->>'{}' AS {}".format(self.name, self.id)
+
+
 class AdditionalOptionsReportField(object):
     def __init__(self):
         self.id = 'additionaloptions'
@@ -232,6 +243,22 @@ class ReportFilter(object):
                 else:
                     return str(obj)
             return [(o.pk, _get_value(o)) for o in self.queryset.all()]
+
+
+class DynamicReportFilter(ReportFilter):
+    type = 'string'
+    emptyasnull = False
+    queryset = None
+
+    def __init__(self, name):
+        self.name = name
+        self.id = "dyn_{}".format(name)
+        self.db_colname = "dynaprops->>'{}'".format(name)
+
+        class _fakefield:
+            def get_prep_value(self, v):
+                return v
+        self.field = _fakefield()
 
 
 class ReportQueuePartitionFilter(object):
@@ -370,6 +397,12 @@ class AttendeeReportManager:
         self._filters = None
         self._filtermap = None
 
+    def _dynafields(self):
+        return [DynamicReportField(f) for f in self.conference.dynafields.split(',')]
+
+    def _dynafilters(self):
+        return [DynamicReportFilter(f) for f in self.conference.dynafields.split(',')]
+
     @property
     def fields(self):
         if self._fields is None:
@@ -395,7 +428,7 @@ class AttendeeReportManager:
                 ReportField('policyconfirmedat', 'Policy confirmed at'),
                 DerivedReportField('publictoken', 'Public token', "'{}/t/at/' || publictoken || '/'".format(settings.SITEBASE)),
                 DerivedReportField('idtoken', 'ID token', "'{}/t/id/' || idtoken || '/'".format(settings.SITEBASE)),
-            ]
+            ] + self._dynafields()
         return self._fields
 
     @property
@@ -427,7 +460,8 @@ class AttendeeReportManager:
                 ReportFilter('additionaloptions', 'Additional options', ConferenceAdditionalOption.objects.filter(conference=self.conference), 'name', False, True),
                 ReportFilter('shirtsize', 'T-Shirt size', ShirtSize.objects.all()),
                 ReportSpeakerFilter(self.conference),
-            ]
+            ] + self._dynafilters()
+
         return self._filters
 
     @property
