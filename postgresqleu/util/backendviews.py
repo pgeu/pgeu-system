@@ -181,7 +181,13 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                 if form.json_form_fields:
                     for fn, ffields in form.json_form_fields.items():
                         d = getattr(form.instance, fn, {})
-                        d.update({fld: form.cleaned_data[fld] for fld in ffields})
+                        for fld in ffields:
+                            if form.cleaned_data[fld] or not getattr(form.fields[fld], 'delete_on_empty', False):
+                                # If we have a value, or if we're asked to store empty strings,
+                                # then do so.
+                                d[fld] = form.cleaned_data[fld]
+                            elif form.cleaned_data[fld] == '' and getattr(form.fields[fld], 'delete_on_empty', False):
+                                del d[fld]
                         setattr(form.instance, fn, d)
                     form.instance.save(update_fields=form.json_form_fields.keys())
 
