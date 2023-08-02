@@ -1898,6 +1898,7 @@ def _send_session_notification(session):
                     'conference': session.conference,
                     'session': session,
                     'speaker': spk,
+                    'has_track_selection': session.conference.track_set.filter(incfp=True).count() > 0,
                 },
                 receivername=spk.fullname,
             )
