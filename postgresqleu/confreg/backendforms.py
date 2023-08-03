@@ -705,7 +705,6 @@ class ConferenceSessionSlideForm(BackendForm):
             self.override_name = url
         else:
             self.override_name = self.override_filename
-        print("Set override to %s" % self.override_name)
 
         return d
 
