@@ -134,7 +134,7 @@ class BackendConferenceForm(BackendForm):
     def clean_dynafields(self):
         val = self.cleaned_data['dynafields']
 
-        vals = [v.strip() for v in val.split(',')]
+        vals = [v.strip() for v in val.split(',') if v != '']
         # JS should've protected us against duplicate values, but we can't trust that, so validate
         if len(vals) != len(set(vals)):
             raise ValidationError("Duplicate dynamic property name found")
