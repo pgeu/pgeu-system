@@ -161,7 +161,7 @@ class ConfSandbox(jinja2.sandbox.SandboxedEnvironment):
         if modname.startswith('postgresqleu.') and modname.endswith('models'):
             # This is a pgeu model. So we only allow access to the
             # ones in confreg directly.
-            if not (modname.endswith('.confreg.models') or modname.endswith('confwiki.models')):
+            if not (modname.endswith('.confreg.models') or modname.endswith('.confwiki.models')):
                 # If the object lists a number of safe attributes,
                 # then allow them and nothing else.
                 if hasattr(obj, '_safe_attributes'):
