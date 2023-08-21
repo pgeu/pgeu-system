@@ -447,7 +447,7 @@ class RegistrationType(models.Model):
 
     @property
     def total_cost(self):
-        if self.conference.vat_registrations:
+        if self.conference.vat_registrations_id:
             return "%.2f incl VAT" % (self.cost * (1 + self.conference.vat_registrations.vatpercent / Decimal(100.0)))
         else:
             return self.cost
@@ -512,7 +512,7 @@ class ConferenceAdditionalOption(models.Model):
         # This is what renders in the multichoice checkboxes, so make
         # it nice for the end user.
         if self.cost > 0:
-            if self.conference.vat_registrations:
+            if self.conference.vat_registrations_id:
                 coststr = " (%s)" % (format_currency(self.cost * (1 + self.conference.vat_registrations.vatpercent / Decimal(100.0))))
             else:
                 coststr = " (%s)" % (format_currency(self.cost))

@@ -38,14 +38,14 @@ class ConferenceRegistrationForm(forms.ModelForm):
         self.regforother = kwargs.pop('regforother', None)
         super(ConferenceRegistrationForm, self).__init__(*args, **kwargs)
         self.user = user
-        self.fields['regtype'].queryset = RegistrationType.objects.select_related('conference').filter(conference=self.instance.conference).order_by('sortkey')
+        self.fields['regtype'].queryset = RegistrationType.objects.select_related('conference', 'conference__vat_registrations').filter(conference=self.instance.conference).order_by('sortkey')
         self.fields['photoconsent'].required = True
         for f in self.instance.conference.remove_fields:
             del self.fields[f]
 
         if self.regforother:
             self.fields['email'].widget.attrs['readonly'] = True
-        self.fields['additionaloptions'].queryset = ConferenceAdditionalOption.objects.select_related('conference').filter(
+        self.fields['additionaloptions'].queryset = ConferenceAdditionalOption.objects.select_related('conference', 'conference__vat_registrations').filter(
             conference=self.instance.conference, public=True)
         self.fields['country'].choices = self._get_country_choices()
 
