@@ -302,11 +302,7 @@ registration is completed!
 {%include "invoices/userinvoice_spec.html"%}
 {%else%}
 <p>
-There are additional options that you can add to your registration. Note
-that many of these have limited availability, so if you want to register
-for one of them, we suggest you do so as soon as possible. Note that some
-options may not be available due to being sold out or due to an existing
-registration being mutually exclusive.
+{{system.reg.additionaloptionsintro}}
 </p>
 <form method="post" action="addopt/">{{ csrf_input }}
 {%for o in availableoptions %}
