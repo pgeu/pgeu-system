@@ -1,7 +1,7 @@
 from django.http import Http404, HttpResponse, HttpResponseNotModified
 from django.template.backends.utils import csrf_input_lazy, csrf_token_lazy
 from django.template import defaultfilters
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, FieldDoesNotExist
 from django.contrib.messages.api import get_messages
 from django.utils.text import slugify
 from django.utils.timesince import timesince
@@ -175,7 +175,15 @@ class ConfSandbox(jinja2.sandbox.SandboxedEnvironment):
             # they might leak data between conferences. In general,
             # these are objects that don't have a link to a
             # conference.
-            if not hasattr(obj, 'conference'):
+            try:
+                obj._meta.get_field('conference')
+                # Has a conference, but we can still specify unsafe ones
+                if hasattr(obj, '_unsafe_attributes'):
+                    if attr in getattr(obj, '_unsafe_attributes'):
+                        return False
+            except FieldDoesNotExist:
+                # No conference field on this model. If it has a list of safe attributes, allow the field
+                # if it's in there, otherwise reject all.
                 if hasattr(obj, '_safe_attributes'):
                     # If the object lists a number of safe attributes,
                     # then allow them and nothing else.
@@ -183,11 +191,6 @@ class ConfSandbox(jinja2.sandbox.SandboxedEnvironment):
                         return False
                 else:
                     return False
-            else:
-                # Has a conference, but we can still specify unsafe ones
-                if hasattr(obj, '_unsafe_attributes'):
-                    if attr in getattr(obj, '_unsafe_attributes'):
-                        return False
         elif modname == 'postgresqleu.invoices.util' and obj.__class__.__name__ == 'InvoicePresentationWrapper':
             # This is ugly, but we special-case the invoice information
             if attr in obj._unsafe_attributes:
