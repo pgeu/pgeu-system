@@ -16,7 +16,6 @@ import dateutil.parser
 import textwrap
 from Cryptodome.Hash import SHA
 
-from postgresqleu.util.context_processors import settings_context
 from postgresqleu.confreg.templatetags.currency import format_currency
 from postgresqleu.confreg.templatetags.leadingnbsp import leadingnbsp
 from postgresqleu.confreg.templatetags.formutil import field_class
@@ -27,37 +26,11 @@ import jinja2.sandbox
 import markdown
 
 
-from .contextutil import load_base_context, update_with_override_context
+from .contextutil import load_all_context
 
 # We use a separate root directory for jinja2 templates, so find that
 # directory by searching relative to ourselves.
 JINJA_TEMPLATE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../template.jinja'))
-
-
-# Locate the git revision for a repository in the given path, including
-# walking up the tree to find it if the specified path is not the root.
-def find_git_revision(path):
-    while path != '/':
-        if os.path.exists(os.path.join(path, ".git/HEAD")):
-            # Found it!
-            with open(os.path.join(path, '.git/HEAD')) as f:
-                ref = f.readline().strip()
-            if not ref.startswith('ref: refs/heads/'):
-                return None
-            refname = os.path.join(path, ".git/", ref[5:])
-            if not os.path.isfile(refname):
-                return None
-            with open(refname) as f:
-                fullref = f.readline()
-                return fullref[:7]
-        elif os.path.exists(os.path.join(path, ".deploystatic_githash")):
-            with open(os.path.join(path, ".deploystatic_githash")) as f:
-                return f.readline().strip()
-
-        # Else step up one level
-        path = os.path.dirname(path)
-    # If no direct git hash found, search for a deploystatic file
-    return None
 
 
 #
@@ -312,31 +285,14 @@ def render_jinja_conference_template(conference, templatename, dictionary):
 
     t = env.get_template(templatename)
 
-    # Optionally load the JSON context with template-specific data
-    if conference and conference.jinjaenabled and conference.jinjadir:
-        try:
-            c = load_base_context(conference.jinjadir)
-        except ValueError as e:
-            return HttpResponse("JSON parse failed: {0}".format(e), content_type="text/plain")
-    else:
-        c = {}
-
-    c.update({
-        'pgeu_hosted': True,
-        'now': timezone.now(),
-        'conference': conference,
-        'asset': _resolve_asset,
-    })
-    if conference and conference.jinjaenabled and conference.jinjadir:
-        c['githash'] = find_git_revision(conference.jinjadir)
-
-    if dictionary:
-        c.update(dictionary)
-
-    if conference and conference.jinjaenabled and conference.jinjadir:
-        update_with_override_context(c, conference.jinjadir)
-
-    c.update(settings_context())
+    c = load_all_context(conference,
+                         {
+                             'pgeu_hosted': True,
+                             'now': timezone.now(),
+                             'conference': conference,
+                             'asset': _resolve_asset,
+                         },
+                         dictionary)
 
     return t.render(**c)
 

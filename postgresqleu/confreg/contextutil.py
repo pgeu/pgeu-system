@@ -3,6 +3,8 @@ import json
 import logging
 import copy
 
+from postgresqleu.util.context_processors import settings_context
+
 
 # XXX: keep in sync with deploystatic.py!
 def deep_update_context(target, source):
@@ -57,3 +59,54 @@ def load_override_context(rootdir):
 
 def update_with_override_context(context, rootdir):
     deep_update_context(context, load_override_context(rootdir))
+
+
+# Locate the git revision for a repository in the given path, including
+# walking up the tree to find it if the specified path is not the root.
+def find_git_revision(path):
+    while path != '/':
+        if os.path.exists(os.path.join(path, ".git/HEAD")):
+            # Found it!
+            with open(os.path.join(path, '.git/HEAD')) as f:
+                ref = f.readline().strip()
+            if not ref.startswith('ref: refs/heads/'):
+                return None
+            refname = os.path.join(path, ".git/", ref[5:])
+            if not os.path.isfile(refname):
+                return None
+            with open(refname) as f:
+                fullref = f.readline()
+                return fullref[:7]
+        elif os.path.exists(os.path.join(path, ".deploystatic_githash")):
+            with open(os.path.join(path, ".deploystatic_githash")) as f:
+                return f.readline().strip()
+
+        # Else step up one level
+        path = os.path.dirname(path)
+    # If no direct git hash found, search for a deploystatic file
+    return None
+
+
+def load_all_context(conference, inject, dictionary=None):
+    if conference and conference.jinjaenabled and conference.jinjadir:
+        try:
+            c = load_base_context(conference.jinjadir)
+        except ValueError as e:
+            return HttpResponse("JSON parse failed: {0}".format(e), content_type="text/plain")
+    else:
+        c = {}
+
+    c.update(inject)
+
+    if conference and conference.jinjaenabled and conference.jinjadir:
+        c['githash'] = find_git_revision(conference.jinjadir)
+
+    if dictionary:
+        c.update(dictionary)
+
+    if conference and conference.jinjaenabled and conference.jinjadir:
+        update_with_override_context(c, conference.jinjadir)
+
+    c.update(settings_context())
+
+    return c
