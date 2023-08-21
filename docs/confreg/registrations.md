@@ -267,6 +267,9 @@ Maximum number of uses
 : Maximum number of instances of this additional option that can be
 purchased in total.
 
+Sort key
+: Sorting key for ordering of options (sort will be on this key and name)
+
 Public
 : If this option is available on the public registration form. If this
 box is not checked, the option can only be added by administrators.

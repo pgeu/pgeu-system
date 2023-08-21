@@ -503,9 +503,10 @@ class ConferenceAdditionalOption(models.Model):
     requires_regtype = models.ManyToManyField(RegistrationType, blank=True, verbose_name="Requires registration type", help_text='Can only be picked with selected registration types')
     mutually_exclusive = models.ManyToManyField('self', blank=True, help_text='Mutually exlusive with these additional options', symmetrical=True)
     additionaldays = models.ManyToManyField(RegistrationDay, blank=True, verbose_name="Adds access to days", help_text='Adds access to additional conference day(s), even if the registration type does not')
+    sortkey = models.IntegerField(default=100, null=False, blank=False, verbose_name="Sort key")
 
     class Meta:
-        ordering = ['name', ]
+        ordering = ['conference', 'sortkey', 'name', ]
 
     def __str__(self):
         # This is what renders in the multichoice checkboxes, so make

@@ -145,7 +145,7 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
     # Also exclude any option that has a maxcount, and already has too
     # many registrations.
     optionsQ = Q(conference=conference, upsellable=True, public=True) & (Q(maxcount=0) | Q(num_regs__lt=F('maxcount'))) & ~Q(conferenceregistration=reg) & ~Q(mutually_exclusive__conferenceregistration=reg)
-    availableoptions = list(ConferenceAdditionalOption.objects.select_related('conference').annotate(num_regs=Count('conferenceregistration')).filter(optionsQ))
+    availableoptions = list(ConferenceAdditionalOption.objects.select_related('conference').annotate(num_regs=Count('conferenceregistration')).filter(optionsQ).order_by('sortkey', 'name'))
     try:
         pendingadditional = PendingAdditionalOrder.objects.get(reg=reg, payconfirmedat__isnull=True)
         pendingadditionalinvoice = InvoicePresentationWrapper(pendingadditional.invoice, '.')

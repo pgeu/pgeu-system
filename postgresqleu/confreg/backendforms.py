@@ -515,7 +515,7 @@ class AdditionalOptionPendingManager(object):
 
 class BackendAdditionalOptionForm(BackendForm):
     helplink = 'registrations#additionaloptions'
-    list_fields = ['name', 'cost', 'maxcount', 'invoice_autocancel_hours']
+    list_fields = ['name', 'cost', 'maxcount', 'invoice_autocancel_hours', 'sortkey']
     linked_objects = OrderedDict({
         '../../regdashboard/list': AdditionalOptionUserManager(),
         '../../addoptorders/': AdditionalOptionPendingManager(),
@@ -529,7 +529,7 @@ class BackendAdditionalOptionForm(BackendForm):
 
     class Meta:
         model = ConferenceAdditionalOption
-        fields = ['name', 'cost', 'maxcount', 'public', 'upsellable', 'invoice_autocancel_hours',
+        fields = ['name', 'cost', 'maxcount', 'sortkey', 'public', 'upsellable', 'invoice_autocancel_hours',
                   'requires_regtype', 'mutually_exclusive', 'additionaldays']
 
     def fix_fields(self):
