@@ -130,7 +130,7 @@ will be used by the central system if defined in a skin:
 system.cfp.intro
 : Text shown as a paragraph at the top of the call for papers pages.
 
-system.reg.additionalintro
+system.reg.additionaloptionsintro
 : Text shown as an introductory paragraph for the fieldset about additional
 options on a registration form. Typically introduces what the additional
 options are.
