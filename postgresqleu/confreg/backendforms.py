@@ -515,7 +515,7 @@ class AdditionalOptionPendingManager(object):
 
 class BackendAdditionalOptionForm(BackendForm):
     helplink = 'registrations#additionaloptions'
-    list_fields = ['name', 'cost', 'maxcount', 'invoice_autocancel_hours', 'sortkey']
+    list_fields = ['name', 'cost', 'maxcount', 'invoice_autocancel_hours', 'public', 'sortkey']
     linked_objects = OrderedDict({
         '../../regdashboard/list': AdditionalOptionUserManager(),
         '../../addoptorders/': AdditionalOptionPendingManager(),
