@@ -868,13 +868,6 @@ def multireg_attach(request, token):
         })
 
 
-def feedback_available(request):
-    conferences = Conference.objects.filter(feedbackopen=True).order_by('startdate')
-    return render(request, 'confreg/feedback_available.html', {
-        'conferences': conferences,
-    })
-
-
 @login_required
 @transaction.atomic
 def reg_add_options(request, confname, whatfor=None):

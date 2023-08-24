@@ -111,7 +111,6 @@ urlpatterns.extend([
     url(r'^events/([^/]+)/feedback/$', postgresqleu.confreg.views.feedback),
     url(r'^events/([^/]+)/feedback/(\d+)/$', postgresqleu.confreg.views.feedback_session),
     url(r'^events/([^/]+)/feedback/conference/$', postgresqleu.confreg.views.feedback_conference),
-    url(r'^events/feedback/$', postgresqleu.confreg.views.feedback_available),
     url(r'^events/([^/]+)/schedule/$', postgresqleu.confreg.views.schedule),
     url(r'^events/([^/]+)/schedule/ical/$', postgresqleu.confreg.views.schedule_ical),
     url(r'^events/([^/]+)/schedule.xcs$', postgresqleu.confreg.views.schedule_xcal),
