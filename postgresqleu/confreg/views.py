@@ -654,9 +654,9 @@ def _create_and_assign_bulk_payment(user, conference, regs, invoicerows, recipie
     processor = InvoiceProcessor.objects.get(processorname="confreg bulk processor")
 
     if bp.numregs > 1:
-        invoicetitle = '%s multiple registrations' % conference.conferencename
+        invoicetitle = '%s multiple registrations' % conference.name_and_date
     else:
-        invoicetitle = "%s registration" % conference.conferencename
+        invoicetitle = "%s registration" % conference.name_and_date
     bp.invoice = manager.create_invoice(
         user,
         user.email,
@@ -1007,7 +1007,7 @@ def reg_add_options(request, confname, whatfor=None):
             request.user.email,
             reg.firstname + ' ' + reg.lastname,
             reg.company + "\n" + reg.address + "\n" + reg.countryname,
-            "%s additional options" % conference.conferencename,
+            "%s additional options" % conference.name_and_date,
             timezone.now(),
             timezone.now(),
             invoicerows,
@@ -2124,7 +2124,7 @@ def confirmreg(request, confname):
                 request.user.email,
                 reg.firstname + ' ' + reg.lastname,
                 reg.company + "\n" + reg.address + "\n" + reg.countryname,
-                "%s registration for %s" % (conference.conferencename, reg.email),
+                "%s registration" % (conference.name_and_date, reg.email),
                 timezone.now(),
                 timezone.now(),
                 invoicerows,

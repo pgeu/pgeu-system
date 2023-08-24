@@ -276,6 +276,10 @@ class Conference(models.Model):
             return self.startdate.strftime("%Y-%m-%d")
 
     @property
+    def name_and_date(self):
+        return "{} ({})".format(self.conferencename, self.conferencedatestr)
+
+    @property
     def IsRegistrationOpen(self):
         # Check if the registration is open, including verifying against time range
         if not self.registrationopen:
