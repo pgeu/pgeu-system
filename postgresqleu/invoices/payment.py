@@ -2,6 +2,8 @@
 # create a circular dependency between models and util.
 from django.utils.safestring import mark_safe
 
+from postgresqleu.util.currency import format_currency
+
 
 class PaymentMethodWrapper(object):
     def __init__(self, method, invoice, returnurl=None):
@@ -54,7 +56,11 @@ class PaymentMethodWrapper(object):
     @property
     def payment_fees(self):
         if hasattr(self, 'implementation') and hasattr(self.implementation, 'payment_fees'):
-            return self.implementation.payment_fees(self.invoice)
+            fees = self.implementation.payment_fees(self.invoice)
+            if isinstance(fees, str):
+                return fees
+            else:
+                return format_currency(fees)
         else:
             return "unknown"
 
