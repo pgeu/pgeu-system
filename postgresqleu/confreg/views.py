@@ -2117,7 +2117,7 @@ def confirmreg(request, confname):
                 request.user.email,
                 reg.firstname + ' ' + reg.lastname,
                 reg.company + "\n" + reg.address + "\n" + reg.countryname,
-                "%s registration" % (conference.name_and_date, reg.email),
+                "%s registration" % conference.name_and_date,
                 timezone.now(),
                 timezone.now(),
                 invoicerows,
