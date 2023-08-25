@@ -252,7 +252,7 @@ ul.comments span.username {
   <th>Status</th>
 
   {%for u in users%}
-  {% if conference.showvotes or isadmin or forloop.first and isvoter %}
+  {% if conference.showvotes or isadmin or u == user.username and isvoter %}
   <th>{{u}}</th>
   {% endif %}
   {%endfor%}
