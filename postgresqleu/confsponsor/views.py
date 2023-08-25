@@ -854,7 +854,18 @@ def sponsor_contract_preview(request, contractid):
 
     resp = HttpResponse(content_type='application/pdf')
     resp['Content-disposition'] = 'attachment; filename="%s.pdf"' % contract.contractname
-    resp.write(pdf_watermark_preview(bytes(contract.contractpdf)))
+    resp.write(
+        pdf_watermark_preview(
+            fill_pdf_fields(
+                contract.contractpdf,
+                get_pdf_fields_for_conference(contract.conference, overrides={
+                    'static:sponsor': 'PREVIEW ONLY - sponsor company name',
+                    'static:euvat': 'PREVIEW ONLY - do not sign this contract',
+                }),
+                contract.fieldjson,
+            )
+        )
+    )
     return resp
 
 

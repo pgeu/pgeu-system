@@ -45,13 +45,13 @@ def get_mails_for_sponsor(sponsor):
     )
 
 
-def get_pdf_fields_for_conference(conference, sponsor=None):
+def get_pdf_fields_for_conference(conference, sponsor=None, overrides={}):
     fields = [
-        ('static:sponsor', sponsor.name if sponsor else 'Sponsor company name'),
+        ('static:sponsor', sponsor.name if sponsor else overrides.get('static:sponsor', 'Sponsor company name')),
     ]
     if settings.EU_VAT:
         fields.append(
-            ('static:euvat', sponsor.vatnumber if sponsor else 'Sponsor EU VAT number'),
+            ('static:euvat', sponsor.vatnumber if sponsor else overrides.get('static:euvat', 'Sponsor EU VAT number')),
         )
 
     return fields
