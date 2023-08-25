@@ -118,9 +118,16 @@ normally that's handled by the builtin templates.
 ## Additional variables
 
 If additional variables need to be used, they can be defined in a file
-called `context.json` in the templates directory. The contents of this
-hash will be added to all requests, both when deployed as static and
-when run under the main conference system.
+called `context.json` or `context.yaml` in the templates
+directory. The contents of this hash will be added to all requests,
+both when deployed as static and when run under the main conference
+system. If both a `json` and a `yaml` file exists, the `json` file
+will be loaded first and then the contents of the `yaml` file will
+override it.
+
+Note that `yaml` support will only exist if the `pyyaml` module is
+installed. If this module is not installed, or not reachable in the
+python path, `yaml` files will be ignored.
 
 ### Additional variables used by the system
 
@@ -143,8 +150,8 @@ usage on a registration form.
 
 For the static deployment process, any number of override context
 files can be created in the `context.override.d` directory. Any files in this
-directory named `*.json` will be loaded (in alphabetical order), overriding
-any values coming from `context.json`.
+directory named `*.json` or `*.yaml` will be loaded (in alphabetical order), overriding
+any values coming from `context.json` or `context.yaml`.
 
 These files are typically used to for example override the git hash (by
 specifying "githash":"" in the json data) to turn off cache busting on

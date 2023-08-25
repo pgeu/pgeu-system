@@ -27,6 +27,13 @@ from datetime import datetime, date, time
 import dateutil.parser
 
 
+try:
+    import yaml
+    _has_yaml = True
+except ImportError:
+    _has_yaml = False
+
+
 #
 # Some useful filters. We include them inline in this file to make it
 # standalone useful.
@@ -179,9 +186,12 @@ class JinjaTarLoader(jinja2.BaseLoader):
 
 
 # Optionally load a JSON context
-def load_context(jsondata):
-    if jsondata:
-        return json.loads(jsondata.decode('utf8'))
+def load_context(data, filetype):
+    if data:
+        if filetype == 'json':
+            return json.loads(data.decode('utf8'))
+        else:
+            return yaml.safe_load(data.decode('utf8'))
     else:
         return {}
 
@@ -373,7 +383,9 @@ if __name__ == "__main__":
     env.filters.update(global_filters)
 
     # If there is a context json, load it as well
-    context = load_context(source.readfile('templates/context.json'))
+    context = {}
+    deep_update_context(context, load_context(source.readfile('templates/context.json'), 'json'))
+    deep_update_context(context, load_context(source.readfile('templates/context.yaml'), 'yaml'))
 
     # Fetch the current git revision if this is coming out of a git repository
     context['githash'] = git_revision
@@ -381,8 +393,8 @@ if __name__ == "__main__":
     # Load contexts in override directory, if any
     if source.isdir('templates/context.override.d'):
         for f in sorted(source.listfiles('templates/context.override.d')):
-            if f.endswith('.json'):
-                deep_update_context(context, load_context(source.readfile(os.path.join('templates/context.override.d', f))))
+            if f.endswith('.json') or (_has_yaml and f.endswith('.yaml')):
+                deep_update_context(context, load_context(source.readfile(os.path.join('templates/context.override.d', f)), os.path.splitext(f)[1][1:]))
 
     knownfiles = []
     knownfiles = _deploy_static(source, args.destpath)

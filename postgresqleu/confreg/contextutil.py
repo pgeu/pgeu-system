@@ -6,6 +6,13 @@ import copy
 from postgresqleu.util.context_processors import settings_context
 
 
+try:
+    import yaml
+    _has_yaml = True
+except ImportError:
+    _has_yaml = False
+
+
 # XXX: keep in sync with deploystatic.py!
 def deep_update_context(target, source):
     for k, v in source.items():
@@ -23,22 +30,29 @@ def deep_update_context(target, source):
             target[k] = copy.copy(v)
 
 
-def _load_context_file(filename):
+def _load_context_file(filename, ignore_exceptions=True):
     try:
         with open(filename, encoding='utf8') as f:
-            return json.load(f)
+            if filename.endswith('.json'):
+                return json.load(f)
+            else:
+                return yaml.safe_load(f)
     except ValueError as e:
         # Malformatted JSON -- pass it through as an exception
         raise
     except Exception:
-        # Any other error, just ignore it (?)
+        if not ignore_exceptions:
+            raise
         return {}
 
 
 def load_base_context(rootdir):
+    c = {}
     if os.path.isfile(os.path.join(rootdir, 'templates/context.json')):
-        return _load_context_file(os.path.join(rootdir, 'templates/context.json'))
-    return {}
+        deep_update_context(c, _load_context_file(os.path.join(rootdir, 'templates/context.json')))
+    if _has_yaml and os.path.isfile(os.path.join(rootdir, 'templates/context.yaml')):
+        deep_update_context(c, _load_context_file(os.path.join(rootdir, 'templates/context.yaml')))
+    return c
 
 
 def load_override_context(rootdir):
@@ -46,10 +60,9 @@ def load_override_context(rootdir):
     c = {}
     if os.path.isdir(os.path.join(rootdir, 'templates/context.override.d')):
         for fn in sorted(os.listdir(os.path.join(rootdir, 'templates/context.override.d'))):
-            if fn.endswith('.json'):
+            if fn.endswith('.json') or (_has_yaml and fn.endswith('.yaml')):
                 try:
-                    with open(os.path.join(rootdir, 'templates/context.override.d', fn)) as f:
-                        deep_update_context(c, json.load(f))
+                    deep_update_context(c, _load_context_file(os.path.join(rootdir, 'templates/context.override.d', fn), False))
                 except Exception as e:
                     logging.getLogger(__name__).warning(
                         'Failed to load context file {}: {}'.format(os.path.join(rootdir, 'templates/context.override.d', fn), e)
