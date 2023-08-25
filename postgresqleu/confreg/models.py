@@ -702,6 +702,10 @@ class ConferenceRegistration(models.Model):
         return self.volunteers_set.exists()
 
     @property
+    def is_talkvoter(self):
+        return self.attendee_id and self.attendee.talkvoters_set.exists() or False
+
+    @property
     def is_admin(self):
         if self.attendee_id is None:
             return False
