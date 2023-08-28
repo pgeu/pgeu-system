@@ -253,6 +253,7 @@ def news_json(request, confname):
             'authorname': n.author.fullname,
             'summary': markdown.markdown(n.summary),
             'inrss': n.inrss,
+            'url': '{}/events/{}/news/{}-{}/'.format(settings.SITEBASE, conference.urlname, slugify(n.title), n.id),
         } for n in news]
 
     if 'posts' in parts:
