@@ -196,10 +196,10 @@ class Plaid(BaseManagedBankPayment):
                     ))
             for t in j['modified']:
                 notes.write("Transaction modification entry for {}, can't process.\n".format(t['transaction_id']))
-                notes.write("{}\n----\n".format(json_dumps(t)))
+                notes.write("{}\n----\n".format(json.dumps(t)))
             for t in j['removed']:
                 notes.write("Transaction {} removed, can't process.\n".format(t['transaction_id']))
-                notes.write("{}\n----\n".format(json_dumps(t)))
+                notes.write("{}\n----\n".format(json.dumps(t)))
 
             transactions.extend([t for t in j['added'] if t['iso_currency_code'] == settings.CURRENCY_ISO and t['account_id'] == self.method.config['accountid']])
 
