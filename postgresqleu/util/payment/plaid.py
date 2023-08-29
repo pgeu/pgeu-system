@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.conf import settings
 
 import io
+import json
 
 from postgresqleu.util.widgets import StaticTextWidget, MonospaceTextarea
 from postgresqleu.util.forms import SubmitButtonField
