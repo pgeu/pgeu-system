@@ -592,7 +592,7 @@ class ConferenceRegistration(models.Model):
     additionaloptions = models.ManyToManyField(ConferenceAdditionalOption, blank=True, verbose_name="Additional options")
     twittername = models.CharField(max_length=100, null=False, blank=True, verbose_name="Twitter account", validators=[TwitterValidator, ])
     nick = models.CharField(max_length=100, null=False, blank=True, verbose_name="Nickname")
-    badgescan = models.BooleanField(null=False, blank=False, default=True, verbose_name="Allow sponsors get contact information by scanning badge")
+    badgescan = models.BooleanField(null=False, blank=False, default=True, verbose_name="Allow sponsors get contact information (name, e-mail address, country and company name) by scanning badge")
     shareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Share e-mail address with sponsors")
     photoconsent = models.BooleanField(null=True, blank=False, verbose_name="Consent to having your photo taken at the event by the organisers")
     localoptout = models.BooleanField(null=False, blank=False, default=False, verbose_name="Opt out of emails (when not connected to an account)")

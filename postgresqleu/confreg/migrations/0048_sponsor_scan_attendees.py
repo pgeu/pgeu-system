@@ -20,6 +20,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conferenceregistration',
             name='badgescan',
-            field=models.BooleanField(default=True, verbose_name='Allow sponsors get contact information by scanning badge'),
+            field=models.BooleanField(default=True, verbose_name='Allow sponsors get contact information (name, e-mail address, country and company name) by scanning badge'),
         ),
     ]
