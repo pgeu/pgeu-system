@@ -1,0 +1,12 @@
+# You can use the ignore list file by running:
+#
+# $ git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# We list git commits that are just reindents or such, that we want to bypass for git blame.
+e18a3142e76faee7761b5fab863c722257ccaf40
+8d4b678db22f42090290ed3bd83c7ca3d27b62ce
+5e8a4a7ab78a9939b21d11094234231bda59567a
+91c6d813609f36b43f6008214d5fe296fb624778
+124027300734b72aceeb527f550c56aff8c847f3
+a246a6ee0992eb1b0762742081cd2ffc01d6b7ab
+ee2472bd429be09f183dc3f5345ad2f03c1c1393
