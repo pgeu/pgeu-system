@@ -26,7 +26,7 @@
 {%endif%}
 
 {%if haspending%}
-<h2>Create invoice</h2>
+<h2>Finalize registrations</h2>
 {%if activewaitlist%}
 <p>
   This conference has the waitlist activated. Any remaining seats are
@@ -38,11 +38,18 @@
 {%else%}
 <p>
   Once you have added all the registrations you want, you can proceed
-  to create a single invoice for all pending registrations to pay for
-  them all.
+  to finalize the registrations. If any of the registrations require
+  payment, this will create a single invoice for all pending
+  registrations. If no registrations require separate payment (such
+  as payments done using vouchers), the registrations will be
+  immediately completed.
+</p>
+<p>
+  Note that no registrations will be confirmed until this step has
+  been completed!
 </p>
 <form method="post" action="newinvoice/">{{ csrf_input }}
-  <input type="submit" name="submit" value="Create invoice" />
+  <input type="submit" name="submit" value="Finalize registrations" />
 </form>
 {%endif%}
 {%endif%}
