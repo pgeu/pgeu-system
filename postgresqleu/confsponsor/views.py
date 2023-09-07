@@ -1095,7 +1095,12 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
 
             # If the sponsorship has a *digital* contract, we issue a cancellation of it if possible
             if sponsor.signmethod == 0 and sponsor.contract:
-                conference.contractprovider.get_implementation().cancel_contract(sponsor.contract.documentid)
+                contract = sponsor.contract
+                sponsor.contract = None
+                sponsor.save(update_fields=['contract'])
+                contract.handler = ''
+                contract.save(update_fields=['handler'])
+                conference.contractprovider.get_implementation().cancel_contract(contract.documentid)
                 messages.info(request, "Digital contract for sponsor {} canceled.".format(sponsor.name))
 
             send_conference_sponsor_notification(
@@ -1181,7 +1186,12 @@ def sponsor_admin_sponsor_resendcontract(request, confurlname, sponsorid):
             if sponsor.signmethod == 0:
                 # If there is *already* a digital contract for this sponsor, it must be canceled.
                 if sponsor.contract:
-                    err = conference.contractprovider.get_implementation().cancel_contract(sponsor.contract.documentid)
+                    contract = sponsor.contract
+                    sponsor.contract = None
+                    sponsor.save(update_fields=['contract'])
+                    contract.handler = ''
+                    contract.save(update_fields=['handler'])
+                    err = conference.contractprovider.get_implementation().cancel_contract(contract.documentid)
                     if err:
                         messages.error(request, "Error occurred when canceling the old contract. New contract is still processed, old contract may be orphaned! Error: {}".format(err))
                     sponsor.contract = None
