@@ -302,7 +302,7 @@ registration is completed!
 {%include "invoices/userinvoice_spec.html"%}
 {%else%}
 <p>
-{{system.reg.additionaloptionsintro}}
+{{'system.reg.additionaloptionsintro'|lookup("")}}
 </p>
 <form method="post" action="addopt/">{{ csrf_input }}
 {%for o in availableoptions %}
