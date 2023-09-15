@@ -7,7 +7,7 @@ This email is sent to you because the status of your session
 submitted to {{conference}} has been updated.
 
 We are happy to let you know that we have decided to accept this
-session for the conference{%if has_track_selection%} in the {{session.track.trackname}} track{%endif%}.
+session for the conference{%if has_track_selection and session.track%} in the {{session.track.trackname}} track{%endif%}.
 
 Before your session is fully approved, we need you to confirm that you
 can still attend the event. Please go to the website (as linked below)
