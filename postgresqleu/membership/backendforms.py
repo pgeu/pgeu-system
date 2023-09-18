@@ -80,14 +80,10 @@ class BackendMeetingReminderForm(BackendForm):
 
     def clean_sendat(self):
         if self.cleaned_data.get('sendat', None):
-            print("FOO: %s" % self.cleaned_data.get('sendat', None))
-            print("FOO2: %s" % self.instance.meeting.dateandtime)
             if self.cleaned_data.get('sendat') > self.instance.meeting.dateandtime - timedelta(minutes=30):
                 raise ValidationError("Reminder must be set at least 30 minutes before the meeting starts!")
             if self.cleaned_data.get('sendat') < timezone.now():
                 raise ValidationError("This timestamp is in the past!")
-        else:
-            print("BAR")
         return self.cleaned_data.get('sendat', None)
 
     def clean(self):
