@@ -243,7 +243,7 @@ def webhook(request, methodid):
                 # Stripe payouts include a "magic number", but unfortunately this magic number
                 # is not available through the APIs so there is no way to match on it.
                 register_pending_bank_matcher(pm.config('accounting_payout'),
-                                              r'.*STRIPE\s+[^\s+].*',
+                                              r'.*STRIPE(\s+[^\s+].*|$)',
                                               payout.amount,
                                               entry)
                 msg = "A Stripe payout with description {} completed for {}.\n\nAccounting entry {} was created and will automatically be closed once the payout has arrived.".format(
