@@ -51,7 +51,7 @@ class Command(BaseCommand):
                     'amount': api.get_structured_amount(t['amount']),
                     'feeamount': api.get_structured_amount(t['totalFees']),
                     'transtype': t['details']['type'],
-                    'paymentref': t['details'].get('paymentReference', '')[:200],
+                    'paymentref': (t['details'].get('paymentReference', '') or '')[:200],
                     'fulldescription': t['details']['description'],
                 }
             )
