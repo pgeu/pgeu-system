@@ -55,3 +55,20 @@ def connect_to_plaid(request, paymentmethodid):
     return render(request, 'plaid/connectaccount.html', {
         'token': token,
     })
+
+
+def refresh_plaid_connect(request, paymentmethodid):
+    authenticate_backend_group(request, 'Invoice managers')
+
+    paymentmethod = get_object_or_404(InvoicePaymentMethod, pk=paymentmethodid, classname='postgresqleu.util.payment.plaid.Plaid')
+
+    impl = paymentmethod.get_implementation()
+
+    token = impl.get_link_token(paymentmethod.config['access_token'])
+    if not token:
+        messages.error(request, "Could not create link token")
+        return HttpResponseRedirect("../")
+
+    return render(request, 'plaid/reconnectaccount.html', {
+        'token': token,
+    })

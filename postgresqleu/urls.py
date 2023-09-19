@@ -328,6 +328,7 @@ urlpatterns.extend([
     url(r'^admin/invoices/bankfiles/transactions/$', postgresqleu.invoices.backendviews.bankfile_transaction_methodchoice),
     url(r'^admin/invoices/bankfiles/transactions/(\d+)/$', postgresqleu.invoices.backendviews.bankfile_transactions),
     url(r'^admin/invoices/paymentmethods/(\d+)/plaidconnect/$', postgresqleu.plaid.backendviews.connect_to_plaid),
+    url(r'^admin/invoices/paymentmethods/(\d+)/refreshplaidconnect/$', postgresqleu.plaid.backendviews.refresh_plaid_connect),
     url(r'^admin/invoices/paymentmethods/(.*/)?$', postgresqleu.invoices.backendviews.edit_paymentmethod),
     url(r'^invoices/trustlypay/(\d+)/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.invoicepayment_secret),
     url(r'^trustly_notification/(\d+)/$', postgresqleu.trustlypayment.views.notification),

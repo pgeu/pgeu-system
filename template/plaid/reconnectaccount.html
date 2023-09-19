@@ -1,0 +1,62 @@
+{%extends "adm/admin_base.html" %}
+{%load assets%}
+
+{%block title%}Connect plaid account{%endblock%}
+
+{%block extrahead%}
+{%asset "js" "jquery3"%}
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+{%endblock%}
+
+{%block layoutblock %}
+<h1>Refresh plaid account connection</h1>
+<p>
+  Sometimes plaid accounts need refreshing of tokens. This usually shows itself
+  as error 400 in the cronjobs and the logs showing ITEM_LOGIN_REQUIRED.
+  To refresh a plaid account, click the below button to start, and wait for
+  the javascript components to load. Once they have loaded, log in to the internet
+  banking and choose <strong>the same</strong> account as before.
+</p>
+<p>
+  Make sure you grant access <strong>only</strong> to the transaction list, and no
+  other details about the accounts.
+</p>
+
+<button class="btn btn-primary" id="link-button">Refresh account link</button>
+
+<p>
+<a href="../" class="btn btn-default btn-block">Cancel</a>
+</p>
+
+<script type="text/javascript">
+(async function($) {
+    var handler = Plaid.create({
+	token: '{{token}}',
+	onLoad: function() {
+	},
+	onSuccess: function(public_token, metadata) {
+            console.log(public_token);
+	    alert('Link has been updated, and should now work');
+	    document.location.href = '../';
+	},
+	onExit: function(err, metadata) {
+	    if (err != null) {
+		// The user encountered a Plaid API error prior to exiting.
+		alert('Error communicating with plaid.');
+		console.log(err);
+		document.location.href = '../';
+	    }
+	    console.log(metadata);
+	},
+	onEvent: function(eventName, metadata) {
+	}
+    });
+    
+    $('#link-button').on('click', function(e) {
+	$('#link-button').prop('disabled', true);
+	handler.open();
+    });
+})(jQuery);
+</script>
+
+{%endblock%}

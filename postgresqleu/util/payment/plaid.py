@@ -25,9 +25,10 @@ class BackendPlaidForm(BaseManagedBankPaymentForm):
     verify_balances = forms.BooleanField(required=False, help_text="Regularly verify that the account balance matches the accounting system")
     connect = SubmitButtonField(label="Connect to plaid", required=False)
     connection = forms.CharField(label='Connection', required=False, widget=StaticTextWidget)
+    reconnect = SubmitButtonField(label="Refresh connection to plaid", required=False)
 
-    config_readonly = ['connect', 'connection', ]
-    managed_fields = ['description', 'clientid', 'secret', 'connect', 'connection', 'notification_receiver', 'notify_each_transaction', 'verify_balances', ]
+    config_readonly = ['connect', 'connection', 'reconnect', ]
+    managed_fields = ['description', 'clientid', 'secret', 'connect', 'connection', 'reconnect', 'notification_receiver', 'notify_each_transaction', 'verify_balances', ]
     managed_fieldsets = [
         {
             'id': 'plaid',
@@ -42,7 +43,7 @@ class BackendPlaidForm(BaseManagedBankPaymentForm):
         {
             'id': 'connection',
             'legend': 'Connection',
-            'fields': ['connect', 'connection', ],
+            'fields': ['connect', 'connection', 'reconnect', ],
         },
     ]
 
@@ -62,9 +63,12 @@ class BackendPlaidForm(BaseManagedBankPaymentForm):
             self.initial['connection'] = 'Connected to plaid account <code>{}</code>.'.format(self.instance.config['accountid'])
             self.fields['connect'].widget.label = "Already connected"
             self.fields['connect'].widget.attrs['disabled'] = True
+            self.fields['reconnect'].callback = self.refresh_plaid_connect
         else:
             self.fields['connect'].callback = self.connect_to_plaid
             self.initial['connection'] = 'Not connected.'
+            self.fields['reconnect'].widget.label = 'Not connected'
+            self.fields['reconnect'].widget.attrs['disabled'] = True
 
         if not self.instance.config.get('clientid', None) or not self.instance.config.get('secret', None):
             self.fields['connect'].widget.attrs['disabled'] = True
@@ -72,6 +76,9 @@ class BackendPlaidForm(BaseManagedBankPaymentForm):
 
     def connect_to_plaid(self, request):
         return HttpResponseRedirect("plaidconnect/")
+
+    def refresh_plaid_connect(self, request):
+        return HttpResponseRedirect("refreshplaidconnect/")
 
 
 class Plaid(BaseManagedBankPayment):
@@ -96,8 +103,8 @@ class Plaid(BaseManagedBankPayment):
             'bankinfo': self.config('bankinfo'),
         })
 
-    def get_link_token(self):
-        r = self.session.post('{}link/token/create'.format(self.ROOTURL), json={
+    def get_link_token(self, previous_accesstoken=None):
+        payload = {
             'client_name': settings.ORG_NAME,
             'language': 'en',
             'country_codes': settings.PLAID_COUNTRIES,
@@ -106,7 +113,11 @@ class Plaid(BaseManagedBankPayment):
             },
             'products': ['transactions', ],
             'webhook': '{}/wh/plaid/{}/'.format(settings.SITEBASE, self.method.id),
-        }, timeout=10)
+        }
+        if previous_accesstoken:
+            payload['access_token'] = previous_accesstoken
+
+        r = self.session.post('{}link/token/create'.format(self.ROOTURL), json=payload, timeout=10)
         if r.status_code != 200:
             return None
         return r.json()['link_token']
