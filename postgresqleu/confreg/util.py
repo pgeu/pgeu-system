@@ -188,11 +188,13 @@ def send_welcome_email(reg):
     if not reg.conference.sendwelcomemail:
         return
 
-    # If policy is required but policy hasn't been confirmed, something has gone
-    # wrong as this should not be possible. But verify it to be sure and then
-    # just throw an exception in case.
+    # If policy is required but policy hasn't been confirmed. This could happen if the welcome
+    # email is re-sent manually before the policy is confirmed, for example if a registration was
+    # made with the wrong email address. In this case, re-send the policy email instead, as confirming
+    # the policy will then trigger the welcome email.
     if reg.conference.confirmpolicy and not reg.policyconfirmedat:
-        raise Exception("Policy is required but not confirmed before attempting to send welcome email")
+        send_policy_email(reg)
+        return
 
     if reg.conference.tickets:
         buf = BytesIO()
