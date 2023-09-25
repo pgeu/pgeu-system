@@ -243,7 +243,8 @@ Schedule publishing active
 Session list publishing active
 : If the session publishing is active, which just lists the sessions
 and their details, typically used before the schedule is done but
-talks are being approved.
+talks are being approved. Only tracks which have the "In session list"
+flag activated are shown. Change this in "Tracks" for each track.
 
 Cards active
 : If the card publishing is active *and* the session publishing is
