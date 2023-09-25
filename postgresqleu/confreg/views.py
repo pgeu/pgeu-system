@@ -4352,6 +4352,8 @@ def transfer_reg(request, urlname):
         reglog(toreg, "Transferred registration from {}".format(fromreg.fullname), request.user)
 
         yield "Sending notification to target registration"
+        # This notify will also send a ticket or a "confirm conference policy request"
+        # depending on the conference configuration.
         notify_reg_confirmed(toreg, False)
 
         yield "Sending notification to source registration"
