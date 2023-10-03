@@ -91,7 +91,7 @@ var sessions = {
       'track': {{s.track_id|default:"null"}},
       'ispending': {{s.ispending|yesno:"true,false"}},
       'speakers': '{{s.speaker_list|escapejs}}',
-{%if conference.callforpaperscecording%}      'recordingconsent': {{s.recordingconsent | lower}},{%endif%}
+{%if conference.callforpapersrecording%}      'recordingconsent': {{s.recordingconsent | lower}},{%endif%}
    },
 {%endfor%}
 };
