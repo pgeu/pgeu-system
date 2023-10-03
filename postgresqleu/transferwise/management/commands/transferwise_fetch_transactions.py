@@ -57,7 +57,7 @@ class Command(BaseCommand):
             )
             if created:
                 # Set optional fields
-                trans.counterpart_name = t['details'].get('senderName', '')
+                trans.counterpart_name = t['details'].get('senderName', '') or ''
                 trans.counterpart_account = t['details'].get('senderAccount', '').replace(' ', '')
 
                 # Sometimes (newer entries?) transferwise adds both the BIC and the IBAN code,
