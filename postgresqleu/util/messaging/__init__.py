@@ -5,6 +5,8 @@ from postgresqleu.confreg.models import MessagingProvider
 # Global regexps
 re_token = re.compile('[0-9a-z]{64}')
 
+# Key is implementation class.
+# Value is a tuple of base url and a boolean indicating if the base url can be changed.
 messaging_implementations = {
     'postgresqleu.util.messaging.mastodon.Mastodon': ('https://mastodon.social', False),
     'postgresqleu.util.messaging.telegram.Telegram': ('https://api.telegram.org', True),
