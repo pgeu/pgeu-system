@@ -265,6 +265,7 @@ class BackendSponsorshipContractForm(BackendForm):
     helplink = 'sponsors#contract'
     list_fields = ['contractname', ]
     exclude_fields_from_validation = ['contractpdf', ]
+    allow_copy_previous = True
 
     class Meta:
         model = SponsorshipContract
@@ -285,6 +286,19 @@ class BackendSponsorshipContractForm(BackendForm):
         # so things cannot be removed. Yes, that's kind of funky.
         if self.instance.pk:
             self.fields['contractpdf'].required = False
+
+    @classmethod
+    def copy_from_conference(self, targetconf, sourceconf, idlist):
+        for id in idlist:
+            contract = SponsorshipContract.objects.get(pk=id, conference=sourceconf)
+            if SponsorshipContract.objects.filter(conference=targetconf, contractname=contract.contractname).exists():
+                yield 'A sponsorship contract with name {} already exists.'.format(contract.contractname)
+                continue
+
+            newcontract = SponsorshipContract.objects.get(pk=id, conference=sourceconf)
+            newcontract.pk = None
+            newcontract.conference = targetconf
+            newcontract.save()
 
 
 class BackendShipmentAddressForm(BackendForm):
