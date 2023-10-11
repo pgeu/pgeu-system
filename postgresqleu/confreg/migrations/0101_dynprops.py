@@ -18,6 +18,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conferenceregistration',
             name='dynaprops',
-            field=models.JSONField(default=dict),
+            field=models.JSONField(default=dict, blank=True),
         ),
     ]

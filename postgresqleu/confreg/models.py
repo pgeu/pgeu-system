@@ -635,7 +635,7 @@ class ConferenceRegistration(models.Model):
     messaging_config = models.JSONField(null=False, blank=False, default=dict)
 
     # Extra dynamic properties configured at a conference level
-    dynaprops = models.JSONField(null=False, blank=False, default=dict)
+    dynaprops = models.JSONField(null=False, blank=True, default=dict)
 
     class Meta:
         unique_together = (
