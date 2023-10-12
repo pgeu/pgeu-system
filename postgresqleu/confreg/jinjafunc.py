@@ -220,6 +220,7 @@ def filter_svgparagraph(value, linelength, x, y, dy, parady):
     return '<text x="{}" y="{}">{}</text>'.format(x, y, "\n".join(_svgparagraph()))
 
 
+@jinja2.contextfilter
 def filter_applymacro(context, obj, macroname):
     return context.resolve(macroname)(obj)
 
@@ -241,9 +242,6 @@ def filter_lookup(context, name, default=None):
             raise KeyError("Key {} not found".format(name))
         c = c[p]
     return str(c)
-
-
-filter_applymacro.contextfilter = True
 
 
 extra_filters = {
