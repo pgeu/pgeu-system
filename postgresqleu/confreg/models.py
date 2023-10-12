@@ -973,7 +973,7 @@ class Speaker(models.Model):
         else:
             return None
 
-    def _display_user(self):
+    def _display_user(self, cache):
         if self.user:
             if self.user.email:
                 return "{0} <{1}>".format(self.user.username, self.user.email)
@@ -1239,7 +1239,7 @@ class VolunteerSlot(models.Model):
     def __str__(self):
         return self._display_timerange()
 
-    def _display_timerange(self):
+    def _display_timerange(self, cache):
         start = timezone.localtime(self.timerange.lower)
         end = timezone.localtime(self.timerange.upper)
         if start.date() == end.date():
@@ -1435,7 +1435,7 @@ class AccessToken(models.Model):
     def __str__(self):
         return self.token
 
-    def _display_permissions(self):
+    def _display_permissions(self, cache):
         return ", ".join(self.permissions)
 
 

@@ -991,7 +991,7 @@ class BackendConferenceSpeakerForm(BackendGlobalSpeakerForm):
         self.fields['user'].widget = StaticTextWidget()
 
     def fix_fields(self):
-        self.initial['user'] = escape(self.instance._display_user())
+        self.initial['user'] = escape(self.instance._display_user({}))
 
     def post_save(self):
         if self.newformdata:
