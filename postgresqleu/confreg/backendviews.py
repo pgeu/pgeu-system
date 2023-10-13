@@ -786,7 +786,7 @@ def tweetcampaign(request, urlname, typeid):
                 messages.info(request, "Campaign tweets generated")
                 return HttpResponseRedirect("../../queue/")
             except Exception as e:
-                form.add_error('content_template', 'Exception rendering template: {}'.format(e))
+                form.add_error('content_template', 'Exception generating tweets: {}'.format(e))
     else:
         form = campaign.form(conference)
 
