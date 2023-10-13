@@ -4,8 +4,6 @@ from datetime import timedelta
 import re
 
 from postgresqleu.confreg.models import NotificationQueue
-from postgresqleu.confreg.models import ConferenceIncomingTweet, ConferenceIncomingTweetMedia
-from postgresqleu.confreg.models import ConferenceTweetQueue
 from postgresqleu.util.db import exec_no_result
 from postgresqleu.util.messaging import get_messaging_class
 
