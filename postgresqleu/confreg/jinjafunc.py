@@ -355,9 +355,11 @@ def render_jinja_conference_svg(request, conference, cardformat, templatename, d
 
 
 # Small sandboxed jinja templates that can be configured in system
-def render_sandboxed_template(templatestr, context):
+def render_sandboxed_template(templatestr, context, filters=None):
     env = ConfSandbox(loader=jinja2.DictLoader({'t': templatestr}))
     env.filters.update(extra_filters)
+    if filters:
+        env.filters.update(filters)
     t = env.get_template('t')
     return t.render(context)
 
