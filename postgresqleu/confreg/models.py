@@ -1557,6 +1557,7 @@ class ConferenceTweetQueue(models.Model):
     postids = models.JSONField(null=False, blank=False, default=dict)
     replytotweetid = models.BigIntegerField(null=True, blank=True, verbose_name="Reply to tweet")
     remainingtosend = models.ManyToManyField(MessagingProvider, blank=True)
+    errorcount = models.IntegerField(null=False, blank=False, default=0)
     comment = models.CharField(max_length=200, null=False, blank=True, verbose_name="Internal comment")
     metadata = models.JSONField(null=False, blank=False, default=dict)
 
@@ -1594,6 +1595,15 @@ class ConferenceTweetQueue(models.Model):
                 for k, v in self.contents.items()
             ))
         return self.contents
+
+
+class ConferenceTweetQueueErrorLog(models.Model):
+    tweet = models.ForeignKey(ConferenceTweetQueue, null=False, on_delete=models.CASCADE)
+    ts = models.DateTimeField(blank=False, null=False, auto_now_add=True)
+    message = models.CharField(max_length=250, null=False, blank=False)
+
+    class Meta:
+        ordering = ('ts', )
 
 
 class ConferenceIncomingTweet(models.Model):

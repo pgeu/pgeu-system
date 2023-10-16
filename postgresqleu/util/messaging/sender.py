@@ -11,6 +11,7 @@ import sys
 
 from postgresqleu.confreg.models import NotificationQueue
 from postgresqleu.confreg.models import ConferenceTweetQueue, ConferenceIncomingTweet
+from postgresqleu.confreg.models import ConferenceTweetQueueErrorLog
 from postgresqleu.util.messaging.util import truncate_shortened_post
 
 
@@ -98,10 +99,16 @@ def _send_pending_posts(providers):
     numposts = 0
     while True:
         with transaction.atomic():
-            tlist = list(ConferenceTweetQueue.objects.
-                         select_for_update(of=('self', )).
-                         filter(approved=True, sent=False, datetime__lte=timezone.now()).
-                         order_by('datetime')[:1])
+            # Get all pending tweets to post. If a tweet has errors on it, it get postponed by
+            # the very unscientific formula of 2.25^(errorcount+4) up to 10 attempts, which means
+            # the first retry is after ~ 1 minute and the last one after ~24 hours.
+            tlist = list(ConferenceTweetQueue.objects.raw("""SELECT * FROM confreg_conferencetweetqueue
+WHERE approved AND NOT sent AND
+  datetime + CASE WHEN errorcount>0 THEN pow(2.25, errorcount+4) * '1 second'::interval ELSE '0' END  <= CURRENT_TIMESTAMP
+ORDER BY datetime
+LIMIT 1
+FOR UPDATE OF confreg_conferencetweetqueue"""))
+
             if len(tlist) == 0:
                 break
             t = tlist[0]
@@ -136,9 +143,11 @@ def _send_pending_posts(providers):
                         sentany = True
                     else:
                         sys.stderr.write("Failed to post to {}: {}\n".format(p, errmsg))
+                        ConferenceTweetQueueErrorLog(tweet=t, message="Failed to post to {}: {}".format(p, errmsg)).save()
                         err = True
                 else:
                     sys.stderr.write("Not making empty post to {}\n".format(p))
+                    ConferenceTweetQueueErrorLog(tweet=t, message="Not making empty post to {}".format(p))
                     t.remainingtosend.remove(p)
                     sentany = True
             if sentany:
@@ -147,13 +156,19 @@ def _send_pending_posts(providers):
                     t.sent = True
                 t.save(update_fields=['postids', 'sent'])
 
+            if err:
+                # On error, postpone the next try so we don't get stuck in a loop
+                t.errorcount += 1
+                if t.errorcount > 10:
+                    # After 10 attempts we give up - and flag it as sent
+                    t.sent = True
+                    t.save(update_fields=['errorcount', 'sent'])
+                    ConferenceTweetQueueErrorLog(tweet=t, message='Too many failures, giving up on this posting and flagging as sent.').save()
+                else:
+                    t.save(update_fields=['errorcount'])
+
         # Sleep 1 second before continuing so we don't hammer the APIs
-        if err:
-            # On error, we sleep a minute instead, so we don't completely flood things
-            sys.stderr.write("One or more errors detected, sleeping 60 seconds before trying again.\n")
-            time.sleep(60)
-        else:
-            time.sleep(1)
+        time.sleep(1)
     return err, numposts
 
 

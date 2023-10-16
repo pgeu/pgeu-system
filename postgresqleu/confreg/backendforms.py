@@ -40,6 +40,7 @@ from postgresqleu.confreg.models import DiscountCode, AccessToken, AccessTokenPe
 from postgresqleu.confreg.models import ConferenceSeries
 from postgresqleu.confreg.models import ConferenceNews
 from postgresqleu.confreg.models import ConferenceTweetQueue, ConferenceHashtag
+from postgresqleu.confreg.models import ConferenceTweetQueueErrorLog
 from postgresqleu.confreg.models import ShirtSize
 from postgresqleu.confreg.models import RefundPattern
 from postgresqleu.confreg.models import ConferenceMessaging
@@ -1457,7 +1458,18 @@ class BackendCopySelectConferenceForm(django.forms.Form):
 #
 # Form for twitter integration
 #
+class BackendTweetQueueErrorLogManager:
+    title = "Errors"
+    singular = "error"
+    can_add = False
+
+    def get_list(self, instance):
+        for e in ConferenceTweetQueueErrorLog.objects.filter(tweet=instance):
+            yield None, e.ts, e.message
+
+
 class BackendTweetQueueForm(BackendForm):
+    status = django.forms.CharField(required=False, label="Post status", widget=StaticTextWidget)
     helplink = 'integrations#broadcast'
     list_fields = ['datetime', 'contents', 'author', 'approved', 'approvedby', 'sent', 'hasimage', 'comment', ]
     verbose_field_names = {
@@ -1472,6 +1484,9 @@ class BackendTweetQueueForm(BackendForm):
         'hasimage': "image is not null and image != ''",
     }
     auto_cascade_delete_to = ['conferencetweetqueue_remainingtosend', ]
+    linked_objects = OrderedDict({
+        'errorlogs': BackendTweetQueueErrorLogManager(),
+    })
 
     class Meta:
         model = ConferenceTweetQueue
@@ -1491,12 +1506,13 @@ class BackendTweetQueueForm(BackendForm):
     def readonly_fields(self):
         if self.instance.sent:
             # If it's already sent, nothing gets to be edited
-            return ['datetime', 'approved', 'image', 'comment'] + self.nosave_fields
+            return ['datetime', 'approved', 'image', 'comment', 'status'] + self.nosave_fields
         return []
 
     def fix_fields(self):
         if self.instance and isinstance(self.instance.contents, dict):
             socials = []
+            postedstatus = []
             for mp in MessagingProvider.objects.only('internalname', 'classname').filter(active=True, conferencemessaging__conference=self.conference, conferencemessaging__broadcast=True):
                 impl = get_messaging_class(mp.classname)
                 fn = 'social_{}'.format(mp.id)
@@ -1511,7 +1527,9 @@ class BackendTweetQueueForm(BackendForm):
                 self.fields[fn].help_text = "Max length: {}".format(impl.max_post_length)
 
                 socials.append(fn)
-            self.order_fields(['datetime', 'approved', ] + socials + ['image', 'comment'])
+                postedstatus.append((mp.internalname, 'Posted' if mp.id in self.instance.postids.values() else 'Not posted'))
+            self.fields['status'].initial = '<br/>'.join("{}: {}".format(*p) for p in postedstatus)
+            self.order_fields(['datetime', 'approved', ] + socials + ['image', 'comment', 'status'])
         else:
             self.fields['textcontents'] = django.forms.CharField(label='Contents')
             self.fields['textcontents'].initial = self.instance.contents
@@ -1528,7 +1546,8 @@ class BackendTweetQueueForm(BackendForm):
                 lengthstr = 'Maximum lengths are: {}'.format(', '.join(['{}: {}'.format(provider.internalname, get_messaging(provider).max_post_length) for provider in MessagingProvider.objects.filter(series__isnull=True, active=True)]))
 
             self.fields['textcontents'].help_text = lengthstr
-            self.order_fields(['datetime', 'approved', 'textcontents', 'image', 'comment'])
+            self.fields['status'].initial = 'Posted' if self.instance.sent else 'Not posted'
+            self.order_fields(['datetime', 'approved', 'textcontents', 'image', 'comment', 'status'])
 
         self.update_protected_fields()
 
@@ -1585,7 +1604,13 @@ class BackendTweetQueueForm(BackendForm):
     @classmethod
     def get_rowclass(self, obj):
         if obj.sent:
-            return "info"
+            if obj.errorcount > 0:
+                return "warning"
+            else:
+                return "info"
+        else:
+            if obj.errorcount > 0:
+                return "danger"
         return None
 
     @classmethod
