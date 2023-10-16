@@ -244,6 +244,16 @@ def filter_lookup(context, name, default=None):
     return str(c)
 
 
+# Unpack a social media link for the specific social media being rendered for.
+# This filter is *not* enabled by default.
+@jinja2.contextfilter
+def filter_social(context, attr):
+    if 'messaging' not in context:
+        return None
+    name = context['messaging'].typename.lower()
+    return getattr(attr, 'social', {}).get(name, None)
+
+
 extra_filters = {
     'format_currency': format_currency,
     'escapejs': defaultfilters.escapejs_filter,

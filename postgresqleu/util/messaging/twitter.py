@@ -22,6 +22,7 @@ from postgresqleu.util.oauthapps import get_oauth_client, get_oauth_secret
 from postgresqleu.util.messaging import re_token, get_messaging
 from postgresqleu.util.messaging.util import send_reg_direct_message
 from postgresqleu.util.messaging.common import store_incoming_post
+from postgresqleu.util.validators import TwitterValidator
 
 from postgresqleu.confreg.models import ConferenceRegistration, MessagingProvider, IncomingDirectMessage
 from postgresqleu.confreg.models import ConferenceTweetQueue
@@ -188,14 +189,22 @@ class Twitter(object):
     can_notification = False  # Temporarily(?) disabled due to paid API tiers
     direct_message_max_length = None
     typename = 'Twitter'
+    max_post_length = 280
 
     @classmethod
     def validate_baseurl(self, baseurl):
         return None
 
-    @property
-    def max_post_length(self):
-        return 280
+    @classmethod
+    def clean_identifier_form_value(self, value):
+        # Always add the @ at the beginning. The validator forcibly strips it
+        # so for backwards compatibility as long as that validator is used elsewhere,
+        # we add it back here.
+        return '@{}'.format(TwitterValidator(value))
+
+    @classmethod
+    def get_link_from_identifier(self, value):
+        return 'https://twitter.com/{}'.format(value.lstrip('@'))
 
     def __init__(self, id, config):
         self.providerid = id

@@ -12,10 +12,11 @@ import io
 import json
 from PIL import Image, ImageFile
 
+from postgresqleu.confreg.models import MessagingProvider
 from postgresqleu.confreg.util import get_conference_or_404
 from postgresqleu.scheduler.util import trigger_immediate_job_run
 from postgresqleu.util.request import get_int_or_error
-from postgresqleu.util.messaging import ProviderCache
+from postgresqleu.util.messaging import ProviderCache, get_messaging_class
 from postgresqleu.util.messaging.util import notify_twitter_moderation
 from postgresqleu.util.time import datetime_string
 from .models import ConferenceTweetQueue, ConferenceIncomingTweet, ConferenceMessaging
@@ -46,7 +47,7 @@ def post_conference_social(conference, contents, approved=False, posttime=None, 
         )
 
     t = ConferenceTweetQueue(conference=conference,
-                             contents=contents[:1000],
+                             contents=contents,
                              approved=approved,
                              datetime=posttime,
                              author=author)
@@ -56,6 +57,13 @@ def post_conference_social(conference, contents, approved=False, posttime=None, 
     # calling the moderation system. This may change in the future.
 
     return t
+
+
+def get_all_conference_social_media():
+    for p in MessagingProvider.objects.filter(series_id__isnull=False).only('classname').order_by().distinct():
+        c = get_messaging_class(p.classname)
+        if c.can_broadcast:
+            yield (p.classname, c.typename.lower(), c)
 
 
 def _json_response(d):

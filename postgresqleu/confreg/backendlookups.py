@@ -70,6 +70,6 @@ class SpeakerLookup(LookupBase):
              'value': "%s (%s)" % (s.fullname, s.user.username if s.user else '')
             }
             for s in Speaker.objects.filter(
-                Q(fullname__icontains=query) | Q(twittername__icontains=query) | Q(user__username__icontains=query)
+                Q(fullname__icontains=query) | Q(user__username__icontains=query)
             )[:30]
         ]

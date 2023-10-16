@@ -116,21 +116,31 @@ def _send_pending_posts(providers):
 
             for p in remaining:
                 impl = providers.get(p)
-                (id, errmsg) = impl.post(
-                    truncate_shortened_post(t.contents, impl.max_post_length),
-                    t.image,
-                    t.replytotweetid,
-                )
+                contents = t.contents[str(p.id)] if isinstance(t.contents, dict) else t.contents
+                # Don't try to post it if it's empty
+                if contents:
+                    (id, errmsg) = impl.post(
+                        truncate_shortened_post(
+                            contents,
+                            impl.max_post_length
+                        ),
+                        t.image,
+                        t.replytotweetid,
+                    )
 
-                if id:
-                    t.remainingtosend.remove(p)
-                    # postids is a map of <provider status id> -> <provider id>. It's mapped
-                    # "backwards" this way because the main check we do is if a key exists.
-                    t.postids[id] = p.id
-                    sentany = True
+                    if id:
+                        t.remainingtosend.remove(p)
+                        # postids is a map of <provider status id> -> <provider id>. It's mapped
+                        # "backwards" this way because the main check we do is if a key exists.
+                        t.postids[id] = p.id
+                        sentany = True
+                    else:
+                        sys.stderr.write("Failed to post to {}: {}\n".format(p, errmsg))
+                        err = True
                 else:
-                    sys.stderr.write("Failed to post to {}: {}\n".format(p, errmsg))
-                    err = True
+                    sys.stderr.write("Not making empty post to {}\n".format(p))
+                    t.remainingtosend.remove(p)
+                    sentany = True
             if sentany:
                 numposts += 1
                 if not t.remainingtosend.exists():

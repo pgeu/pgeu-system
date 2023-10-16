@@ -9,7 +9,9 @@
 {%endif%}
 <h2>{{speaker.name}}</h2>
 {%if speaker.company%}<div><b>Company:</b> {{speaker.company}}</div>{%endif%}
-{%if speaker.twittername%}<div><b>Twitter:</b> <a href="https://twitter.com/{{speaker.twittername}}">{{speaker.twittername}}</a></div>{%endif%}
+{%for name, handle, link in speaker.socials_with_link %}
+<div><b>{{name}}:</b> <a href="{{link}}">{{handle}}</a></div>
+{%endfor%}
 <p>
 {{speaker.abstract|markdown}}
 </p>

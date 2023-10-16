@@ -53,6 +53,7 @@ from postgresqleu.util.backendlookups import GeneralAccountLookup, CountryLookup
 from postgresqleu.confreg.backendlookups import RegisteredUsersLookup, SpeakerLookup, SessionTagLookup
 
 from postgresqleu.confreg.campaigns import allcampaigns
+from postgresqleu.confreg.twitter import get_all_conference_social_media
 from postgresqleu.confreg.regtypes import validate_special_reg_type_setup
 
 
@@ -957,7 +958,7 @@ class BackendGlobalSpeakerForm(BackendForm):
 
     class Meta:
         model = Speaker
-        fields = ['fullname', 'user', 'twittername', 'company', 'abstract', 'photo512', 'attributes', ]
+        fields = ['fullname', 'user', 'company', 'abstract', 'photo512', 'attributes', ]
 
         @classmethod
         def conference_queryset(cls, conference):
@@ -1474,26 +1475,76 @@ class BackendTweetQueueForm(BackendForm):
 
     class Meta:
         model = ConferenceTweetQueue
-        fields = ['datetime', 'approved', 'contents', 'image', 'comment']
+        fields = ['datetime', 'approved', 'image', 'comment']
         widgets = {
             'contents': MonospaceTextarea,
         }
 
-    def __init__(self, *args, **kwargs):
-        super(BackendTweetQueueForm, self).__init__(*args, **kwargs)
-        self.fields['contents'].widget = TagOptionsTextWidget([h.hashtag for h in ConferenceHashtag.objects.filter(conference=self.conference)])
-        if 'class' in self.fields['contents'].widget.attrs:
-            self.fields['contents'].widget.attrs['class'] += " textarea-with-charcount"
+    @property
+    def nosave_fields(self):
+        if isinstance(self.instance.contents, dict):
+            return ['social_{}'.format(mp.id) for mp in MessagingProvider.objects.only('id').filter(active=True, conferencemessaging__conference=self.conference, conferencemessaging__broadcast=True)]
         else:
-            self.fields['contents'].widget.attrs['class'] = "textarea-with-charcount"
-        self.fields['contents'].widget.attrs['data-length-function'] = 'shortened_post_length'
+            return ['textcontents']
 
-        if self.conference:
-            lengthstr = 'Maximum lengths are: {}'.format(', '.join(['{}: {}'.format(mess.provider.internalname, get_messaging(mess.provider).max_post_length) for mess in self.conference.conferencemessaging_set.select_related('provider').filter(broadcast=True, provider__active=True)]))
+    @property
+    def readonly_fields(self):
+        if self.instance.sent:
+            # If it's already sent, nothing gets to be edited
+            return ['datetime', 'approved', 'image', 'comment'] + self.nosave_fields
+        return []
+
+    def fix_fields(self):
+        if self.instance and isinstance(self.instance.contents, dict):
+            socials = []
+            for mp in MessagingProvider.objects.only('internalname', 'classname').filter(active=True, conferencemessaging__conference=self.conference, conferencemessaging__broadcast=True):
+                impl = get_messaging_class(mp.classname)
+                fn = 'social_{}'.format(mp.id)
+                self.fields[fn] = django.forms.CharField(widget=django.forms.Textarea)
+                self.fields[fn].label = mp.internalname
+                self.fields[fn].initial = self.instance.contents.get(str(mp.id), '')
+                if 'class' in self.fields[fn].widget.attrs:
+                    self.fields[fn].widget.attrs['class'] += " textarea-with-charcount"
+                else:
+                    self.fields[fn].widget.attrs['class'] = "textarea-with-charcount"
+                self.fields[fn].widget.attrs['data-length-function'] = 'shortened_post_length'
+                self.fields[fn].help_text = "Max length: {}".format(impl.max_post_length)
+
+                socials.append(fn)
+            self.order_fields(['datetime', 'approved', ] + socials + ['image', 'comment'])
         else:
-            lengthstr = 'Maximum lengths are: {}'.format(', '.join(['{}: {}'.format(provider.internalname, get_messaging(provider).max_post_length) for provider in MessagingProvider.objects.filter(series__isnull=True, active=True)]))
+            self.fields['textcontents'] = django.forms.CharField(label='Contents')
+            self.fields['textcontents'].initial = self.instance.contents
+            self.fields['textcontents'].widget = TagOptionsTextWidget([h.hashtag for h in ConferenceHashtag.objects.filter(conference=self.conference)])
+            if 'class' in self.fields['textcontents'].widget.attrs:
+                self.fields['textcontents'].widget.attrs['class'] += " textarea-with-charcount"
+            else:
+                self.fields['textcontents'].widget.attrs['class'] = "textarea-with-charcount"
+            self.fields['textcontents'].widget.attrs['data-length-function'] = 'shortened_post_length'
 
-        self.fields['contents'].help_text = lengthstr
+            if self.conference:
+                lengthstr = 'Maximum lengths are: {}'.format(', '.join(['{}: {}'.format(mess.provider.internalname, get_messaging(mess.provider).max_post_length) for mess in self.conference.conferencemessaging_set.select_related('provider').filter(broadcast=True, provider__active=True)]))
+            else:
+                lengthstr = 'Maximum lengths are: {}'.format(', '.join(['{}: {}'.format(provider.internalname, get_messaging(provider).max_post_length) for provider in MessagingProvider.objects.filter(series__isnull=True, active=True)]))
+
+            self.fields['textcontents'].help_text = lengthstr
+            self.order_fields(['datetime', 'approved', 'textcontents', 'image', 'comment'])
+
+        self.update_protected_fields()
+
+    def post_save(self):
+        if isinstance(self.instance.contents, dict):
+            updated = False
+            for mp in MessagingProvider.objects.only('id').filter(active=True, conferencemessaging__conference=self.conference, conferencemessaging__broadcast=True):
+                if self.instance.contents[str(mp.id)] != self.cleaned_data['social_{}'.format(mp.id)]:
+                    self.instance.contents[str(mp.id)] = self.cleaned_data['social_{}'.format(mp.id)]
+                    updated = True
+            if updated:
+                self.instance.save(update_fields=['contents'])
+        else:
+            if self.instance.contents != self.cleaned_data['textcontents']:
+                self.instance.contents = self.cleaned_data['textcontents']
+                self.instance.save(update_fields=['contents'])
 
     def clean_datetime(self):
         if self.instance:

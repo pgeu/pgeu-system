@@ -120,12 +120,24 @@ speakers information.
 conference
 : The current conference object.
 
+#### Special filters
+
+The following special filters are available to use
+
+social
+: This filter will return the social media identifier for an object that
+has one (currently only speakers) for the correct social media system. If
+multiple social media systems are configured, a different value will be
+rendered for different ones, making it possible to reference a handle across
+multiple systems. If no handle is configured for a system, it returns *None*,
+and can thus also be used to check fir existance.
+
 #### Sample template
 
 Sample templates for this campaign that shows some variables used:
 
 ~~~
-{%macro speaker(s)%}{{s}}{%if s.twittername%} ({{s.twittername}}){%endif%}{%endmacro%}
+{%macro speaker(s)%}{{s}}{%if s|social%} ({{s|social}}){%endif%}{%endmacro%}
 Come see {{session.speaker.all()|map("applymacro", "speaker")|join(" and ")}} talk about "{{session.title}}"!
 
 #awesome #postgresql #conference #pgeu

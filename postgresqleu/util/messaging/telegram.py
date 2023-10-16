@@ -1,3 +1,4 @@
+from django.core.validators import ValidationError
 from django import forms
 from django.http import HttpResponse
 from django.utils import timezone
@@ -112,6 +113,7 @@ class TelegramBackendForm(BackendSeriesMessagingForm):
 
 class Telegram(object):
     provider_form_class = TelegramBackendForm
+    can_broadcast = False
     can_privatebcast = True
     can_notification = True
     can_orgnotification = True
@@ -122,6 +124,16 @@ class Telegram(object):
     @classmethod
     def validate_baseurl(self, baseurl):
         return None
+
+    @classmethod
+    def clean_identifier_form_value(self, value):
+        if not re.fullmatch('^[a-z0-9_]{5,}$', value, re.I):
+            raise ValidationError("Invalid format of Telegram username")
+        return value
+
+    @classmethod
+    def get_link_from_identifier(self, value):
+        return 'https://t.me/{}'.format(value)
 
     def __init__(self, id, config):
         self.providerid = id

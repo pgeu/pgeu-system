@@ -1,7 +1,9 @@
+from django.core.validators import ValidationError
 from django import forms
 from django.utils import timezone
 from django.utils.html import strip_tags
 
+import re
 import requests_oauthlib
 import requests
 import dateutil.parser
@@ -110,15 +112,27 @@ class Mastodon(object):
     can_notification = True
     direct_message_max_length = 450  # 500 is lenght, draw down some to handle username
     typename = 'Mastodon'
+    max_post_length = 500
+
+    handle_regexp = re.compile(r'^@([A-Z0-9._%+-]+)@([A-Z0-9.-]+\.[A-Z]{2,})$', re.I)
 
     @classmethod
     def validate_baseurl(self, baseurl):
         if not OAuthApplication.objects.filter(name='mastodon', baseurl=baseurl).exists():
             return 'Global OAuth credentials for {} missing'.format(baseurl)
 
-    @property
-    def max_post_length(self):
-        return 500
+    @classmethod
+    def clean_identifier_form_value(self, value):
+        if not self.handle_regexp.fullmatch(value):
+            raise ValidationError("Invalid format of Mastodon username. Must use format @name@site.")
+        return value
+
+    @classmethod
+    def get_link_from_identifier(self, value):
+        m = self.handle_regexp.fullmatch(value)
+        if not m:
+            return None
+        return 'https://{}/@{}'.format(m.group(2), m.group(1))
 
     def __init__(self, providerid, config):
         self.providerid = providerid

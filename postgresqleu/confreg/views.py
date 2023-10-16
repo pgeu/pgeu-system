@@ -265,19 +265,17 @@ def news_json(request, confname):
             approved=True,
             sent=True,
             datetime__lt=timezone.now(),
-        ).order_by('-datetime')[:count]
-
-        def _get_post_links(postids):
-            for postid, providerid in postids.items():
-                linkinfo = providers.get_by_id(providerid).get_link(postid)
-                if linkinfo:
-                    yield dict(zip(['type', 'url'], linkinfo))
+        ).exclude(postids={}).order_by('-datetime')[:count]
 
         ret['posts'] = [{
             'id': p.id,
-            'text': p.contents,
             'datetime': timezone.localtime(p.datetime),
-            'links': list(_get_post_links(p.postids)),
+            'posts': [{
+                'type': providers.get_by_id(providerid).typename,
+                'provider': providerid,
+                'text': p.contents[str(providerid)] if isinstance(p.contents, dict) else p.contents,
+                'link': providers.get_by_id(providerid).get_link(postid)[1],
+            } for postid, providerid in p.postids.items()]
         } for p in posts]
 
     # Special case for legacy compatibility, returns news as top level object

@@ -26,6 +26,8 @@ from postgresqleu.util.time import today_conference
 from postgresqleu.util.db import exec_no_result
 from postgresqleu.util.image import rescale_image_bytes
 from postgresqleu.util.currency import format_currency
+from postgresqleu.util.messaging import get_messaging_class_from_typename
+from postgresqleu.util.markup import LineBreakString
 
 import base64
 import pytz
@@ -949,8 +951,6 @@ def _get_upload_path(instance, filename):
 class Speaker(models.Model):
     user = models.OneToOneField(User, null=True, blank=True, unique=True, on_delete=models.CASCADE)
     fullname = models.CharField(max_length=100, null=False, blank=False, verbose_name="Full name")
-    twittername = models.CharField(max_length=32, null=False, blank=True, validators=[TwitterValidator, ],
-                                   verbose_name='Twitter name')
     company = models.CharField(max_length=100, null=False, blank=True)
     abstract = models.TextField(null=False, blank=True, verbose_name="Bio")
     photo = ImageBinaryField(blank=True, null=True, verbose_name="Photo (low res)", max_length=1000000, resolution=(128, 128))
@@ -959,8 +959,8 @@ class Speaker(models.Model):
     speakertoken = models.TextField(null=False, blank=False, unique=True)
     attributes = models.JSONField(blank=True, null=False, default=dict)
 
-    _safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract', 'photo', 'photo512', 'has_photo', 'has_photo512', 'photo_data', 'photo_data512', 'lastmodified', 'attributes')
-    json_included_attributes = ['fullname', 'twittername', 'company', 'abstract', 'lastmodified', 'attributes']
+    _safe_attributes = ('id', 'name', 'fullname', 'twittername', 'company', 'abstract', 'photo', 'photo512', 'has_photo', 'has_photo512', 'photo_data', 'photo_data512', 'lastmodified', 'attributes', 'social', 'socials_with_link', )
+    json_included_attributes = ['fullname', 'twittername', 'company', 'abstract', 'lastmodified', 'attributes', 'social', ]
 
     @property
     def name(self):
@@ -1000,10 +1000,27 @@ class Speaker(models.Model):
     def photo512_data(self):
         return base64.b64encode(self.photo512).decode('ascii')
 
+    @cached_property
+    def social(self):
+        return self.attributes.get('social', {})
+
+    @cached_property
+    def socials_with_link(self):
+        for k, v in sorted(self.social.items()):
+            c = get_messaging_class_from_typename(k)
+            if c:
+                yield (k.title(), v, c.get_link_from_identifier(v))
+
     # Legacy compatibility with some old templates
     @property
     def photofile(self):
         return self.photo
+
+    # For backwards compatibility with when we only supported twitter as the social media,
+    # since it is used in some older templates and we don't want them to start .<z
+    @property
+    def twittername(self):
+        return self.attributes.get('social', {}).get('twitter', '')
 
     def __str__(self):
         return self.name
@@ -1530,7 +1547,7 @@ class ConferenceTweetQueue(models.Model):
     conference = models.ForeignKey(Conference, null=True, on_delete=models.CASCADE)
     datetime = models.DateTimeField(blank=False, default=timezone.now, verbose_name="Date and time",
                                     help_text="Date and time to send tweet")
-    contents = models.CharField(max_length=1000, null=False, blank=False)
+    contents = models.JSONField(null=False, blank=False)
     image = ImageBinaryField(null=True, blank=True, max_length=1000000)
     imagethumb = ImageBinaryField(null=True, blank=True, max_length=100000)
     approved = models.BooleanField(null=False, default=False, blank=False)
@@ -1566,6 +1583,17 @@ class ConferenceTweetQueue(models.Model):
             else:
                 self.remainingtosend.set(MessagingProvider.objects.filter(active=True, series__isnull=True))
             exec_no_result("NOTIFY pgeu_broadcast")
+
+    def _display_contents(self, cache):
+        if isinstance(self.contents, dict):
+            if 'providers' not in cache:
+                cache['internalnames'] = {str(mp.id): mp.internalname for mp in MessagingProvider.objects.only('internalname').filter(active=True, conferencemessaging__conference=self.conference, conferencemessaging__broadcast=True)}
+
+            return LineBreakString("\n".join(
+                "{}: {}".format(cache['internalnames'][k], v)
+                for k, v in self.contents.items()
+            ))
+        return self.contents
 
 
 class ConferenceIncomingTweet(models.Model):

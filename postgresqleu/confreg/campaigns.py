@@ -3,12 +3,13 @@ from django.core.exceptions import ValidationError
 from django.http import Http404, HttpResponse
 from django.utils.dateparse import parse_datetime, parse_duration
 from django.utils import timezone
-from postgresqleu.confreg.jinjafunc import render_sandboxed_template
+from postgresqleu.confreg.jinjafunc import render_sandboxed_template, filter_social
 
 from postgresqleu.util.widgets import MonospaceTextarea
 from postgresqleu.confreg.models import ConferenceSession, Track
+from postgresqleu.confreg.models import MessagingProvider
 from postgresqleu.confreg.twitter import post_conference_social
-from postgresqleu.util.messaging import get_messaging
+from postgresqleu.util.messaging import get_messaging, get_messaging_class
 from postgresqleu.util.messaging.util import get_shortened_post_length
 
 import datetime
@@ -92,6 +93,30 @@ class BaseCampaignForm(forms.Form):
             del self.fields['confirm']
         return self.cleaned_data
 
+    @classmethod
+    def generate_tweet_from_template(cls, conference, template, context):
+        versions = {}
+        for mp in MessagingProvider.objects.only('classname').filter(active=True, conferencemessaging__conference=conference, conferencemessaging__broadcast=True):
+            impl = get_messaging_class(mp.classname)
+            context.update({
+                'messaging': impl,
+            })
+            versions[str(mp.id)] = render_sandboxed_template(
+                template,
+                context,
+                {
+                    'social': filter_social,
+                },
+            ).strip()
+        if len(versions) == 0:
+            return None
+        if len(versions) == 1:
+            return list(versions.values())[0]
+        if len(set(versions.values())) == 1:
+            return list(versions.values())[0]
+        # Else we have more than one version, so return the dict thereof
+        return versions
+
 
 class ApprovedSessionsCampaignForm(BaseCampaignForm):
     tracks = forms.ModelMultipleChoiceField(required=True, queryset=Track.objects.all())
@@ -104,10 +129,10 @@ class ApprovedSessionsCampaignForm(BaseCampaignForm):
 
     @classmethod
     def generate_tweet(cls, conference, session, s):
-        return render_sandboxed_template(s, {
+        return cls.generate_tweet_from_template(conference, s, {
             'conference': conference,
             'session': session,
-        }).strip()
+        })
 
     def get_queryset(self):
         return ConferenceSession.objects.filter(conference=self.conference, status=1, cross_schedule=False, track__in=self.data.getlist('tracks'))
@@ -122,32 +147,50 @@ class ApprovedSessionsCampaignForm(BaseCampaignForm):
                                    author=author)
 
 
-class ApprovedSessionsCampaign(object):
+class BaseCampaign(object):
+    @classmethod
+    def get_dynamic_preview(self, conference, fieldname, templatestring):
+        messagingset = [(mess.provider, get_messaging(mess.provider)) for mess in conference.conferencemessaging_set.select_related('provider').filter(broadcast=True, provider__active=True)]
+
+        maxlens = {provider.internalname: mess.max_post_length for provider, mess in messagingset}
+
+        if fieldname == 'content_template':
+            posts = self.get_posts(conference, templatestring)
+            # Calculate the longest once for each messaging provider
+            longest = {}
+            for provider, mess in messagingset:
+                if provider.internalname not in maxlens:
+                    maxlens[provider.internalname] = mess.max_post_length
+                if posts:
+                    longest[provider.internalname] = max((get_shortened_post_length(
+                        p[mess.typename.lower()] if isinstance(p, dict) else p
+                    )) for p in posts)
+                else:
+                    longest[provider.internalname] = 0
+
+            def _post_preview(p):
+                val = random.choice(list(p.values())) if isinstance(p, dict) else p
+                length = get_shortened_post_length(val)
+                return val, length
+
+            previews = "\n\n".join([
+                "{}\n------------------------------- (length {})".format(*_post_preview(p))
+                for p in posts[:5]
+            ])
+            return HttpResponse("{}\n\nLongest posts:\n{}\n".format(
+                previews,
+                "\n".join('{}: {}/{}'.format(k, longest[k], maxlens[k]) for k in sorted(maxlens.keys())),
+            ), content_type='text/plain')
+
+
+class ApprovedSessionsCampaign(BaseCampaign):
     name = "Approved sessions campaign"
     form = ApprovedSessionsCampaignForm
     note = "This campaign will create one tweet for each approved session in the system."
 
     @classmethod
-    def get_dynamic_preview(self, conference, fieldname, s):
-        maxlens = "Max lengths are: {}".format(', '.join(['{}: {}'.format(mess.provider.internalname, get_messaging(mess.provider).max_post_length) for mess in conference.conferencemessaging_set.select_related('provider').filter(broadcast=True, provider__active=True)]))
-        if fieldname == 'content_template':
-            # Generate a preview of 3 (an arbitrary number) sessions
-            posts = [self.form.generate_tweet(conference, session, s) for session in ConferenceSession.objects.filter(conference=conference, status=1, cross_schedule=False)[:3]]
-
-            sesslist = list(ConferenceSession.objects.filter(conference=conference, status=1, cross_schedule=False))
-            if sesslist:
-                longest = max((get_shortened_post_length(self.form.generate_tweet(conference, session, s)) for session in sesslist))
-            else:
-                longest = 0
-
-            previews = "\n\n".join([
-                "{}\n\n------------------------------- (length {})".format(
-                    p,
-                    get_shortened_post_length(p),
-                )
-                for p in posts
-            ])
-            return HttpResponse("{}\n\nLongest to generate: {} ({})\n".format(previews, longest, maxlens), content_type='text/plain')
+    def get_posts(cls, conference, templatestring):
+        return [cls.form.generate_tweet(conference, session, templatestring) for session in ConferenceSession.objects.filter(conference=conference, status=1, cross_schedule=False)]
 
 
 allcampaigns = (

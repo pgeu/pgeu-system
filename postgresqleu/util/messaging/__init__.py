@@ -1,7 +1,5 @@
 import re
 
-from postgresqleu.confreg.models import MessagingProvider
-
 # Global regexps
 re_token = re.compile('[0-9a-z]{64}')
 
@@ -29,6 +27,14 @@ def get_messaging_class(classname):
     return getattr(mod, classname)
 
 
+def get_messaging_class_from_typename(typename):
+    for k in messaging_implementations.keys():
+        c = get_messaging_class(k)
+        if c.typename.lower() == typename:
+            return c
+    return None
+
+
 def get_messaging(provider):
     return get_messaging_class(provider.classname)(provider.id, provider.config)
 
@@ -43,6 +49,8 @@ class ProviderCache(object):
         return self.providers[provider.id]
 
     def get_by_id(self, providerid):
+        from postgresqleu.confreg.models import MessagingProvider
+
         if providerid not in self.providers:
             provider = MessagingProvider.objects.get(pk=providerid)
             self.providers[providerid] = get_messaging_class(provider.classname)(providerid, provider.config)

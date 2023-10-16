@@ -69,7 +69,7 @@ def TwitterValidator(value):
         raise ValidationError('Valid Twitter names must contain only the characters a-z, the numbers 0-9, or underscore')
 
     # Else we skip the check and just say it's fine
-    return
+    return value
 
     try:
         r = requests.get('https://twitter.com/{0}'.format(value),
@@ -82,6 +82,7 @@ def TwitterValidator(value):
         raise ValidationError("Could not verify twitter name: {0}".format(r.status_code))
 
     # All is well! :)
+    return value
 
 
 def ListOfEmailAddressValidator(value):
