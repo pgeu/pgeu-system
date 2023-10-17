@@ -248,7 +248,7 @@ def filter_lookup(context, name, default=None):
 # This filter is *not* enabled by default.
 @jinja2.contextfilter
 def filter_social(context, attr):
-    if 'messaging' not in context:
+    if not context.get('messaging', None):
         return None
     name = context['messaging'].typename.lower()
     return getattr(attr, 'social', {}).get(name, None)
@@ -375,12 +375,13 @@ def render_sandboxed_template(templatestr, context, filters=None):
 
 
 class JinjaTemplateValidator(object):
-    def __init__(self, context={}):
+    def __init__(self, context={}, filters=None):
         self.context = context
+        self.filters = filters
 
     def __call__(self, s):
         try:
-            render_sandboxed_template(s, self.context)
+            render_sandboxed_template(s, self.context, self.filters)
         except jinja2.TemplateSyntaxError as e:
             raise ValidationError("Template syntax error: %s" % e)
         except Exception as e:

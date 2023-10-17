@@ -14,6 +14,7 @@ from PIL import Image, ImageFile
 
 from postgresqleu.confreg.models import MessagingProvider
 from postgresqleu.confreg.util import get_conference_or_404
+from postgresqleu.confreg.jinjafunc import render_sandboxed_template, filter_social
 from postgresqleu.scheduler.util import trigger_immediate_job_run
 from postgresqleu.util.request import get_int_or_error
 from postgresqleu.util.messaging import ProviderCache, get_messaging_class
@@ -57,6 +58,30 @@ def post_conference_social(conference, contents, approved=False, posttime=None, 
     # calling the moderation system. This may change in the future.
 
     return t
+
+
+def render_multiprovider_tweet(conference, template, context):
+    versions = {}
+    for mp in MessagingProvider.objects.only('classname').filter(active=True, conferencemessaging__conference=conference, conferencemessaging__broadcast=True):
+        impl = get_messaging_class(mp.classname)
+        context.update({
+            'messaging': impl,
+        })
+        versions[str(mp.id)] = render_sandboxed_template(
+            template,
+            context,
+            {
+                'social': filter_social,
+            },
+        ).strip()
+    if len(versions) == 0:
+        return None
+    if len(versions) == 1:
+        return list(versions.values())[0]
+    if len(set(versions.values())) == 1:
+        return list(versions.values())[0]
+    # Else we have more than one version, so return the dict thereof
+    return versions
 
 
 def get_all_conference_social_media():

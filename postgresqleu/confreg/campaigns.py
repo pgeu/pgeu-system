@@ -3,12 +3,11 @@ from django.core.exceptions import ValidationError
 from django.http import Http404, HttpResponse
 from django.utils.dateparse import parse_datetime, parse_duration
 from django.utils import timezone
-from postgresqleu.confreg.jinjafunc import render_sandboxed_template, filter_social
 
 from postgresqleu.util.widgets import MonospaceTextarea
 from postgresqleu.confreg.models import ConferenceSession, Track
 from postgresqleu.confreg.models import MessagingProvider
-from postgresqleu.confreg.twitter import post_conference_social
+from postgresqleu.confreg.twitter import post_conference_social, render_multiprovider_tweet
 from postgresqleu.util.messaging import get_messaging, get_messaging_class
 from postgresqleu.util.messaging.util import get_shortened_post_length
 
@@ -93,30 +92,6 @@ class BaseCampaignForm(forms.Form):
             del self.fields['confirm']
         return self.cleaned_data
 
-    @classmethod
-    def generate_tweet_from_template(cls, conference, template, context):
-        versions = {}
-        for mp in MessagingProvider.objects.only('classname').filter(active=True, conferencemessaging__conference=conference, conferencemessaging__broadcast=True):
-            impl = get_messaging_class(mp.classname)
-            context.update({
-                'messaging': impl,
-            })
-            versions[str(mp.id)] = render_sandboxed_template(
-                template,
-                context,
-                {
-                    'social': filter_social,
-                },
-            ).strip()
-        if len(versions) == 0:
-            return None
-        if len(versions) == 1:
-            return list(versions.values())[0]
-        if len(set(versions.values())) == 1:
-            return list(versions.values())[0]
-        # Else we have more than one version, so return the dict thereof
-        return versions
-
 
 class ApprovedSessionsCampaignForm(BaseCampaignForm):
     tracks = forms.ModelMultipleChoiceField(required=True, queryset=Track.objects.all())
@@ -129,7 +104,7 @@ class ApprovedSessionsCampaignForm(BaseCampaignForm):
 
     @classmethod
     def generate_tweet(cls, conference, session, s):
-        return cls.generate_tweet_from_template(conference, s, {
+        return render_multiprovider_tweet(conference, s, {
             'conference': conference,
             'session': session,
         })
@@ -163,7 +138,7 @@ class BaseCampaign(object):
                     maxlens[provider.internalname] = mess.max_post_length
                 if posts:
                     longest[provider.internalname] = max((get_shortened_post_length(
-                        p[mess.typename.lower()] if isinstance(p, dict) else p
+                        p.get(str(provider.id), '') if isinstance(p, dict) else p
                     )) for p in posts)
                 else:
                     longest[provider.internalname] = 0
