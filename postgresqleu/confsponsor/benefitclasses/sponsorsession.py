@@ -172,7 +172,6 @@ class SponsorSession(BaseBenefit):
         # When confirmed we populate a speaker and a session record
         speaker = Speaker(
             fullname=claim.claimjson['speakername'],
-            twittername='',
             company=claim.claimjson['speakercompany'],
             abstract=claim.claimjson['speakerbio'],
             speakertoken=generate_random_token(),
