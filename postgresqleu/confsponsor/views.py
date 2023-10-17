@@ -52,8 +52,8 @@ from .util import get_pdf_fields_for_conference
 @login_required
 def sponsor_dashboard(request):
     # We define "past sponsors" as those older than a month - because we have to pick something.
-    currentsponsors = Sponsor.objects.filter(managers=request.user, conference__enddate__gte=today_global() - timedelta(days=31)).order_by('conference__startdate')
-    pastsponsors = Sponsor.objects.filter(managers=request.user, conference__enddate__lt=today_global() - timedelta(days=31)).order_by('conference__startdate')
+    currentsponsors = Sponsor.objects.select_related('conference', 'level').filter(managers=request.user, conference__enddate__gte=today_global() - timedelta(days=31)).order_by('conference__startdate')
+    pastsponsors = Sponsor.objects.select_related('conference', 'level').filter(managers=request.user, conference__enddate__lt=today_global() - timedelta(days=31)).order_by('conference__startdate')
     conferences = Conference.objects.filter(Q(callforsponsorsopen=True),
                                             Q(startdate__gt=today_global()),
                                             Q(callforsponsorstimerange__contains=timezone.now()) |
@@ -318,7 +318,7 @@ def sponsor_signup_dashboard(request, confurlname):
                 'conference': conference,
             })
 
-    current_signups = Sponsor.objects.filter(managers=request.user, conference=conference)
+    current_signups = Sponsor.objects.select_related('level').filter(managers=request.user, conference=conference)
     levels = SponsorshipLevel.objects.filter(conference=conference, public=True)
 
     return render(request, 'confsponsor/signup.html', {
