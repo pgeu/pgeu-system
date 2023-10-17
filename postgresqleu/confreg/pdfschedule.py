@@ -168,6 +168,8 @@ def build_complete_pdf_schedule(conference, tracks, day, colored, pagesize, orie
     for k, v in list(groupedbyday.items()):
         v['length'] = v['last'] - v['first']
         v['rooms'] = set([s.room for s in v['sessions'] if s.room])
+        if not v['rooms']:
+            return HttpResponse("No rooms used on {}, but cross schedule sessions exist, cannot generate schedule".format(k))
 
     timestampstyle = ParagraphStyle('timestampstyle')
     timestampstyle.fontName = "DejaVu Serif"
