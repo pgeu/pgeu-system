@@ -19,6 +19,7 @@ from postgresqleu.scheduler.util import trigger_immediate_job_run
 from postgresqleu.util.request import get_int_or_error
 from postgresqleu.util.messaging import ProviderCache, get_messaging_class
 from postgresqleu.util.messaging.util import notify_twitter_moderation
+from postgresqleu.util.db import exec_to_list
 from postgresqleu.util.time import datetime_string
 from .models import ConferenceTweetQueue, ConferenceIncomingTweet, ConferenceMessaging
 from .models import ConferenceRegistration
@@ -85,10 +86,13 @@ def render_multiprovider_tweet(conference, template, context):
 
 
 def get_all_conference_social_media():
-    for p in MessagingProvider.objects.filter(series_id__isnull=False).only('classname').order_by().distinct():
-        c = get_messaging_class(p.classname)
+    # When using .distinct() in djago it randomly adds either "id" or "internalname" to the SQL
+    # query and thus doesn't actually return distinct values. Rather than trying to debug
+    # the horror that's an ORM, just run the query because queries are easy.
+    for classname, in exec_to_list("SELECT DISTINCT classname FROM confreg_messagingprovider WHERE series_id IS NOT NULL"):
+        c = get_messaging_class(classname)
         if c.can_broadcast:
-            yield (p.classname, c.typename.lower(), c)
+            yield (classname, c.typename.lower(), c)
 
 
 def _json_response(d):
