@@ -120,9 +120,15 @@ speakers information.
 conference
 : The current conference object.
 
-#### Sponsors
+#### Sponsors campaign
 
-For creating sponsors tweets, the following variables are available:
+This creates a campaign with one post for each confirmed sponsor
+in the system, filtered by level. The template is called
+with the variables below
+
+When a tweet is posted as a result of a benfefit being confirmed,
+the same variables are available to the template, plus the additional
+variable *benefit* that indicates which benefit it was that got confired.
 
 conference
 : The current conference object.
@@ -130,9 +136,6 @@ conference
 sponsor
 : The current sponsor. Available fields are *displayname*, *social*,
 *url* and *level*.
-
-level
-: The sponsors current level.
 
 benefit
 :  The benefit being confirmed, when a benefit is confirmed.
@@ -171,6 +174,11 @@ Sign up for training with {{session.speaker.first().company}} & learn all about 
 
 https://www.postgresql.eu/events/{{conference.urlname}}/sessions/session/{{session.id}}-{{session.title|slugify}}/
 ~~~
+
+~~~
+Thank you {{sponsor.displayname}}{%if sponsor|social%} ({{sponsor|social}}){%endif%} for being a {{sponsor.level}} sponsor!
+~~~
+
 
 ### Mobile site <a name="mobilesite"></a>
 

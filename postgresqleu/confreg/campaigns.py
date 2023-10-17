@@ -8,6 +8,7 @@ from postgresqleu.util.widgets import MonospaceTextarea
 from postgresqleu.confreg.models import ConferenceSession, Track
 from postgresqleu.confreg.models import MessagingProvider
 from postgresqleu.confreg.twitter import post_conference_social, render_multiprovider_tweet
+from postgresqleu.confsponsor.models import Sponsor, SponsorshipLevel
 from postgresqleu.util.messaging import get_messaging, get_messaging_class
 from postgresqleu.util.messaging.util import get_shortened_post_length
 
@@ -92,6 +93,15 @@ class BaseCampaignForm(forms.Form):
             del self.fields['confirm']
         return self.cleaned_data
 
+    def generate_tweets(self, author):
+        objects = list(self.get_queryset().order_by('?'))
+        for ts, obj in zip(_timestamps_for_tweets(self.conference, self.cleaned_data['starttime'], self.cleaned_data['timebetween'], self.cleaned_data['timerandom'], len(objects)), objects):
+            post_conference_social(self.conference,
+                                   self.generate_tweet(self.conference, obj, self.cleaned_data['content_template']),
+                                   approved=False,
+                                   posttime=ts,
+                                   author=author)
+
 
 class ApprovedSessionsCampaignForm(BaseCampaignForm):
     tracks = forms.ModelMultipleChoiceField(required=True, queryset=Track.objects.all())
@@ -112,14 +122,25 @@ class ApprovedSessionsCampaignForm(BaseCampaignForm):
     def get_queryset(self):
         return ConferenceSession.objects.filter(conference=self.conference, status=1, cross_schedule=False, track__in=self.data.getlist('tracks'))
 
-    def generate_tweets(self, author):
-        sessions = list(self.get_queryset().order_by('?'))
-        for ts, session in zip(_timestamps_for_tweets(self.conference, self.cleaned_data['starttime'], self.cleaned_data['timebetween'], self.cleaned_data['timerandom'], len(sessions)), sessions):
-            post_conference_social(self.conference,
-                                   self.generate_tweet(self.conference, session, self.cleaned_data['content_template']),
-                                   approved=False,
-                                   posttime=ts,
-                                   author=author)
+
+class SponsorsCampaignForm(BaseCampaignForm):
+    levels = forms.ModelMultipleChoiceField(required=True, queryset=SponsorshipLevel.objects.all())
+
+    custom_fields = ['levels', ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['levels'].queryset = SponsorshipLevel.objects.filter(conference=self.conference)
+
+    @classmethod
+    def generate_tweet(cls, conference, sponsor, s):
+        return render_multiprovider_tweet(conference, s, {
+            'conference': conference,
+            'sponsor': sponsor,
+        })
+
+    def get_queryset(self):
+        return Sponsor.objects.filter(conference=self.conference, confirmed=True, level__in=self.data.getlist('levels'))
 
 
 class BaseCampaign(object):
@@ -168,8 +189,19 @@ class ApprovedSessionsCampaign(BaseCampaign):
         return [cls.form.generate_tweet(conference, session, templatestring) for session in ConferenceSession.objects.filter(conference=conference, status=1, cross_schedule=False)]
 
 
+class SponsorCampaign(BaseCampaign):
+    name = "Sponsors campaign"
+    form = SponsorsCampaignForm
+    note = "This campaign will create one tweet for each sponsor."
+
+    @classmethod
+    def get_posts(cls, conference, templatestring):
+        return [cls.form.generate_tweet(conference, sponsor, templatestring) for sponsor in Sponsor.objects.filter(conference=conference, confirmed=True)]
+
+
 allcampaigns = (
     (1, ApprovedSessionsCampaign),
+    (2, SponsorCampaign),
 )
 
 
