@@ -364,9 +364,9 @@ Autoconfirm
 
 Tweet template
 :  A template, in jinja2 format, used to generate tweets when this
-benefit is confirmed. If left empty, no tweet is posted. Can reference
-*sponsor*, *level*, *conference* and *benefit* variables that will be
-filled with information about the current conference.
+benefit is confirmed. If left empty, no tweet is posted. The format
+and capabilities of the template is explained under
+[campaigns](integrations#campaigns).
 
 Parameters
 :  [Benefit class](#classes) specific parameters for this benefit.

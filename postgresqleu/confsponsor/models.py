@@ -11,6 +11,7 @@ from postgresqleu.digisign.models import DigisignDocument
 from postgresqleu.util.fields import PdfBinaryField
 from postgresqleu.util.validators import validate_lowercase, validate_urlname
 from postgresqleu.util.random import generate_random_token
+from postgresqleu.util.messaging import get_messaging_class_from_typename
 
 from .benefits import benefit_choices
 
@@ -110,7 +111,7 @@ class Sponsor(models.Model):
     vatnumber = models.CharField(max_length=100, null=True, blank=True, verbose_name='VAT number')
     managers = models.ManyToManyField(User, blank=False)
     url = models.URLField(max_length=200, null=False, blank=True)
-    twittername = models.CharField(max_length=100, null=False, blank=True)
+    social = models.JSONField(blank=True, null=False, default=dict)
     level = models.ForeignKey(SponsorshipLevel, null=False, blank=False, on_delete=models.CASCADE)
     invoice = models.OneToOneField(Invoice, null=True, blank=True, on_delete=models.CASCADE)
     confirmed = models.BooleanField(null=False, blank=False, default=False)
@@ -125,7 +126,18 @@ class Sponsor(models.Model):
     def __str__(self):
         return self.name
 
-    _safe_attributes = ('id', 'displayname', 'twittername', 'url', 'level', )
+    _safe_attributes = ('id', 'displayname', 'twittername', 'social', 'url', 'level', )
+
+    @cached_property
+    def socials_with_link(self):
+        for k, v in sorted(self.social.items()):
+            c = get_messaging_class_from_typename(k)
+            if c:
+                yield (k.title(), v, c.get_link_from_identifier(v))
+
+    @cached_property
+    def twittername(self):
+        return self.social.get('twitter', '')
 
 
 class SponsorClaimedBenefit(models.Model):

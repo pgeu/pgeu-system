@@ -19,9 +19,9 @@ from postgresqleu.auth import user_search, user_import
 
 from postgresqleu.confreg.models import Conference, PrepaidVoucher, PrepaidBatch, DiscountCode
 from postgresqleu.confreg.util import get_authenticated_conference, get_conference_or_404
-from postgresqleu.confreg.jinjafunc import render_sandboxed_template
 from postgresqleu.confreg.util import send_conference_mail
-from postgresqleu.confreg.twitter import post_conference_social
+from postgresqleu.confreg.twitter import post_conference_social, render_multiprovider_tweet
+from postgresqleu.confreg.twitter import get_all_conference_social_media
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.request import get_int_or_error
@@ -461,16 +461,15 @@ def sponsor_signup(request, confurlname, levelurlname):
                 if request.POST.get('contractchoice', '') not in ('0', '1') and not level.instantbuy:
                     return _render_contract_choices()
 
-                twname = form.cleaned_data.get('twittername', '')
-                if twname and twname[0] != '@':
-                    twname = '@{0}'.format(twname)
+                social = {social: form.cleaned_data['social_{}'.format(social)] for classname, social, impl in get_all_conference_social_media() if form.cleaned_data['social_{}'.format(social)]}
+
                 sponsor = Sponsor(conference=conference,
                                   signupat=timezone.now(),
                                   name=form.cleaned_data['name'],
                                   displayname=form.cleaned_data['displayname'],
                                   url=form.cleaned_data['url'],
                                   level=level,
-                                  twittername=twname,
+                                  social=social,
                                   invoiceaddr=form.cleaned_data['address'],
                                   signmethod=1 if request.POST.get('contractchoice', '') == '1' or not conference.contractprovider or level.instantbuy else 0,
                                   autoapprovesigned=conference.autocontracts,
@@ -981,7 +980,7 @@ def _confirm_benefit(request, claimed_benefit):
         # Potentially send tweet
         if claimed_benefit.benefit.tweet_template:
             post_conference_social(conference,
-                                   render_sandboxed_template(claimed_benefit.benefit.tweet_template, {
+                                   render_multiprovider_tweet(conference, claimed_benefit.benefit.tweet_template, {
                                        'benefit': claimed_benefit.benefit,
                                        'level': claimed_benefit.benefit.level,
                                        'conference': conference,

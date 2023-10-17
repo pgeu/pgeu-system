@@ -12,7 +12,8 @@ from postgresqleu.confreg.models import RegistrationType, DiscountCode
 from postgresqleu.countries.models import EuropeCountry
 
 from postgresqleu.confreg.models import ConferenceAdditionalOption
-from postgresqleu.util.validators import BeforeValidator, AfterValidator, TwitterValidator
+from postgresqleu.confreg.twitter import get_all_conference_social_media
+from postgresqleu.util.validators import BeforeValidator, AfterValidator
 from postgresqleu.util.validators import Http200Validator
 from postgresqleu.util.widgets import Bootstrap4CheckboxSelectMultiple, EmailTextWidget
 from postgresqleu.util.widgets import Bootstrap4HtmlDateTimeInput
@@ -38,12 +39,15 @@ class SponsorSignupForm(forms.Form):
     vatstatus = forms.ChoiceField(label="Company VAT status", choices=vat_status_choices)
     vatnumber = forms.CharField(label="EU VAT Number", min_length=5, max_length=50, help_text="Enter EU VAT Number to be included on invoices if assigned one. Leave empty if outside the EU or without assigned VAT number.", required=False)
     url = forms.URLField(label="Company URL *", validators=[Http200Validator, ])
-    twittername = forms.CharField(label="Company twitter", min_length=0, max_length=100, required=False, validators=[TwitterValidator, ])
 
     def __init__(self, conference, *args, **kwargs):
         self.conference = conference
 
         super(SponsorSignupForm, self).__init__(*args, **kwargs)
+
+        for classname, social, impl in sorted(get_all_conference_social_media(), key=lambda x: x[1]):
+            fn = "social_{}".format(social)
+            self.fields[fn] = forms.CharField(label="Company {}".format(social.title()), max_length=250, required=False)
 
         if not settings.EU_VAT:
             del self.fields['vatstatus']
@@ -80,6 +84,15 @@ class SponsorSignupForm(forms.Form):
 
     def clean(self):
         cleaned_data = super(SponsorSignupForm, self).clean()
+
+        for classname, social, impl in get_all_conference_social_media():
+            fn = 'social_{}'.format(social)
+            if cleaned_data.get(fn, None):
+                try:
+                    cleaned_data[fn] = impl.clean_identifier_form_value(cleaned_data[fn])
+                except ValidationError as v:
+                    self.add_error(fn, v)
+
         if settings.EU_VAT:
             if int(cleaned_data['vatstatus']) == 0:
                 # Company inside EU and has VAT number

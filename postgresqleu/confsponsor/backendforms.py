@@ -6,9 +6,12 @@ from collections import OrderedDict
 import json
 
 from postgresqleu.util.widgets import StaticTextWidget
+from postgresqleu.util.widgets import MonospaceTextarea
 from postgresqleu.util.backendforms import BackendForm, BackendBeforeNewForm
 from postgresqleu.util.backendlookups import GeneralAccountLookup
-from postgresqleu.confreg.jinjafunc import JinjaTemplateValidator, render_sandboxed_template
+from postgresqleu.confreg.jinjafunc import JinjaTemplateValidator, filter_social
+from postgresqleu.confreg.twitter import get_all_conference_social_media
+from postgresqleu.confreg.twitter import render_multiprovider_tweet
 
 from .models import Sponsor
 from .models import SponsorshipLevel, SponsorshipContract, SponsorshipBenefit
@@ -20,12 +23,6 @@ from .benefitclasses import all_benefits
 
 class BackendSponsorForm(BackendForm):
     helplink = 'sponsors#sponsor'
-    fieldsets = [
-        {'id': 'base_info', 'legend': 'Basic information', 'fields': ['name', 'displayname', 'url', 'twittername']},
-        {'id': 'financial', 'legend': 'Financial information', 'fields': ['invoiceaddr', 'vatstatus', 'vatnumber']},
-        {'id': 'management', 'legend': 'Management', 'fields': ['extra_cc', 'managers']},
-        {'id': 'contract', 'legend': 'Contract', 'fields': ['autoapprovesigned', ]},
-    ]
     selectize_multiple_fields = {
         'managers': GeneralAccountLookup(),
     }
@@ -34,16 +31,58 @@ class BackendSponsorForm(BackendForm):
 
     class Meta:
         model = Sponsor
-        fields = ['name', 'displayname', 'url', 'twittername',
+        fields = ['name', 'displayname', 'url',
                   'invoiceaddr', 'vatstatus', 'vatnumber',
                   'extra_cc', 'managers', 'autoapprovesigned', ]
 
+    @property
+    def fieldsets(self):
+        return [
+            {'id': 'base_info', 'legend': 'Basic information', 'fields': ['name', 'displayname', 'url', ]},
+            {'id': 'social', 'legend': 'Social media', 'fields': self.nosave_fields},
+            {'id': 'financial', 'legend': 'Financial information', 'fields': ['invoiceaddr', 'vatstatus', 'vatnumber']},
+            {'id': 'management', 'legend': 'Management', 'fields': ['extra_cc', 'managers']},
+            {'id': 'contract', 'legend': 'Contract', 'fields': ['autoapprovesigned', ]},
+        ]
+
+    @property
+    def nosave_fields(self):
+        return ['social_{}'.format(social) for classname, social, impl in get_all_conference_social_media()]
+
     def fix_fields(self):
+        for classname, social, impl in sorted(get_all_conference_social_media(), key=lambda x: x[1]):
+            fn = "social_{}".format(social)
+            self.fields[fn] = django.forms.CharField(label="{} name".format(social.title()), max_length=250, required=False)
+            self.fields[fn].initial = self.instance.social.get(social, '')
+
         if not self.instance.conference.contractprovider or not self.instance.conference.autocontracts:
             del self.fields['autoapprovesigned']
             # For now remove the whole fieldset as there is only one field in it
             self.fieldsets = [fs for fs in self.fieldsets if fs['id'] != 'contract']
-            self.update_protected_fields()
+
+        self.update_protected_fields()
+
+    def post_save(self):
+        for classname, social, impl in get_all_conference_social_media():
+            v = self.cleaned_data['social_{}'.format(social)]
+            if v:
+                self.instance.social[social] = v
+            elif social in self.instance.social:
+                del self.instance.social[social]
+        self.instance.save(update_fields=['social'])
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        for classname, social, impl in get_all_conference_social_media():
+            fn = 'social_{}'.format(social)
+            if cleaned_data.get(fn, None):
+                try:
+                    cleaned_data[fn] = impl.clean_identifier_form_value(cleaned_data[fn])
+                except ValidationError as v:
+                    self.add_error(fn, v)
+
+        return cleaned_data
 
 
 class BackendSponsorshipNewBenefitForm(BackendBeforeNewForm):
@@ -52,6 +91,10 @@ class BackendSponsorshipNewBenefitForm(BackendBeforeNewForm):
 
     def get_newform_data(self):
         return self.cleaned_data['benefitclass']
+
+
+def _get_sample_sponsor():
+    return Sponsor(name='TestName', displayname="TestDisplayName", social={"twitter": "@testuser", "mastodon": "@testuser@exaample.com"})
 
 
 class BackendSponsorshipLevelBenefitForm(BackendForm):
@@ -110,9 +153,12 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
                 'conference': self.conference,
                 'benefit': self.instance,
                 'level': self.instance.level,
-                'sponsor': Sponsor(name='TestName', displayname="TestDisplayName", twittername="@twittertest"),
+                'sponsor': _get_sample_sponsor(),
+            }, {
+                'social': filter_social,
             }),
         ]
+        self.fields['tweet_template'].widget = MonospaceTextarea()
 
         if not self.can_autoconfirm:
             del self.fields['autoconfirm']
@@ -123,12 +169,13 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
         if fieldname == 'tweet_template':
             if objid:
                 o = self.Meta.model.objects.get(pk=objid)
-                return render_sandboxed_template(s, {
+                p = render_multiprovider_tweet(o.level.conference, s, {
                     'benefit': o,
                     'level': o.level,
                     'conference': o.level.conference,
-                    'sponsor': Sponsor(name='TestName', displayname="TestDisplayName", twittername="@twittertest"),
+                    'sponsor': _get_sample_sponsor(),
                 })
+                return list(p.values())[0] if isinstance(p, dict) else p
             return ''
 
 

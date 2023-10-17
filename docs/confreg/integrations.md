@@ -120,13 +120,30 @@ speakers information.
 conference
 : The current conference object.
 
+#### Sponsors
+
+For creating sponsors tweets, the following variables are available:
+
+conference
+: The current conference object.
+
+sponsor
+: The current sponsor. Available fields are *displayname*, *social*,
+*url* and *level*.
+
+level
+: The sponsors current level.
+
+benefit
+:  The benefit being confirmed, when a benefit is confirmed.
+
 #### Special filters
 
 The following special filters are available to use
 
 social
 : This filter will return the social media identifier for an object that
-has one (currently only speakers) for the correct social media system. If
+has one (currently speakers and sponsors) for the correct social media system. If
 multiple social media systems are configured, a different value will be
 rendered for different ones, making it possible to reference a handle across
 multiple systems. If no handle is configured for a system, it returns *None*,

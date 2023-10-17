@@ -25,12 +25,12 @@
     <th>Level:</th>
     <td>{{sponsor.level}}</td>
   </tr>
-{%if sponsor.twittername%}
+{%for name, handle in sponsor.social.items %}
   <tr>
-    <th>Twittername:</th>
-    <td>{{sponsor.twittername}}</td>
+    <th>{{name|title}}:</th>
+    <td>{{handle}}</td>
   </tr>
-{%endif%}
+{%endfor%}
   <tr>
     <th>Status:</th>
     <td>{%if sponsor.confirmed%}Confirmed ({{sponsor.confirmedat}}){%else%}<i>Awaiting confirmation (signed up {{sponsor.signupat}})</i>{%endif%}</td>
