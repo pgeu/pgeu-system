@@ -1278,7 +1278,8 @@ INNER JOIN confreg_room r ON r.id=t.room_id GROUP BY day
        'id', spk.id,
        'name', spk.fullname,
        'company', spk.company,
-       'twittername', spk.twittername,
+       'twittername', spk.attributes->'social'->>'twitter',
+       'social', spk.attributes->'social',
        'hasphoto', spk.photo IS NOT NULL AND spk.photo != ''::bytea,
        'hasphoto512', spk.photo512 IS NOT NULL AND spk.photo512 != ''::bytea,
        'attributes', attributes
