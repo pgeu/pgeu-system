@@ -191,6 +191,8 @@ def load_context(data, filetype):
         if filetype == 'json':
             return json.loads(data.decode('utf8'))
         else:
+            if not _has_yaml:
+                raise Exception("YAML support not detected, but needed")
             return yaml.safe_load(data.decode('utf8'))
     else:
         return {}
