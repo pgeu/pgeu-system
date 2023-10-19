@@ -355,7 +355,7 @@ class SponsorDigisignHandler(DigisignHandlerBase):
             send_conference_sponsor_notification(
                 self.sponsor.conference,
                 "Contract counter-signed for sponsor {}".format(self.sponsor.name),
-                "The digital contract for sponsor\n{}\n has been counter-signed by\n{}\n. The sponsorship contract is now complete, but since automatic processing is disabled, the sponsor confirmation has to be done manually.\n".format(self.sponsor.name, signedby),
+                "The digital contract for sponsor\n{}\n has been counter-signed.\n. The sponsorship contract is now complete, but since automatic processing is disabled, the sponsor confirmation has to be done manually.\n".format(self.sponsor.name),
             )
 
     def expired(self):
