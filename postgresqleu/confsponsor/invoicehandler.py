@@ -420,7 +420,7 @@ class SponsorDigisignHandler(DigisignHandlerBase):
                 )
             send_sponsor_manager_email(
                 self.sponsor,
-                "Sponsorship contract cancled",
+                "Sponsorship contract canceled",
                 'confsponsor/mail/sponsor_digisign_canceled.txt',
                 {
                     'sponsor': self.sponsor,
