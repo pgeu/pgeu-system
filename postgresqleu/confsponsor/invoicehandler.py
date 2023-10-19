@@ -437,7 +437,7 @@ class SponsorDigisignHandler(DigisignHandlerBase):
             self.sponsor.delete()
 
     def signed(self, signedby):
-        if signedby != conference.contractsendername:
+        if signedby != self.sponsor.conference.contractsendername:
             # If it's the other party that signed, send an email to notify the administrators,
             # for the record. When the organizers sign, the "completed" notification is fired,
             # and the email is sent from there.
