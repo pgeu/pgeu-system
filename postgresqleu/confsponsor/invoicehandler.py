@@ -354,7 +354,7 @@ class SponsorDigisignHandler(DigisignHandlerBase):
             # If we're not auto approving it, send a notification email instead
             send_conference_sponsor_notification(
                 self.sponsor.conference,
-                "Contract counter-signed for sponsor {}".format(self.sponsor_name),
+                "Contract counter-signed for sponsor {}".format(self.sponsor.name),
                 "The digital contract for sponsor\n{}\n has been counter-signed by\n{}\n. The sponsorship contract is now complete, but since automatic processing is disabled, the sponsor confirmation has to be done manually.\n".format(self.sponsor.name, signedby),
             )
 
@@ -443,6 +443,6 @@ class SponsorDigisignHandler(DigisignHandlerBase):
             # and the email is sent from there.
             send_conference_sponsor_notification(
                 self.sponsor.conference,
-                "Contract signed for sponsor {}".format(self.sponsor_name),
+                "Contract signed for sponsor {}".format(self.sponsor.name),
                 "The digital contract for sponsor\n{}\n has been signed by\n{}\n. It is now pending signature from the organizers.\n".format(self.sponsor.name, signedby),
             )
