@@ -350,6 +350,13 @@ class SponsorDigisignHandler(DigisignHandlerBase):
                 self.sponsor.save(update_fields=['invoice'])
                 wrapper = InvoiceWrapper(self.sponsor.invoice)
                 wrapper.email_invoice()
+        else:
+            # If we're not auto approving it, send a notification email instead
+            send_conference_sponsor_notification(
+                self.sponsor.conference,
+                "Contract counter-signed for sponsor {}".format(self.sponsor_name),
+                "The digital contract for sponsor\n{}\n has been counter-signed by\n{}\n. The sponsorship contract is now complete, but since automatic processing is disabled, the sponsor confirmation has to be done manually.\n".format(self.sponsor.name, signedby),
+            )
 
     def expired(self):
         if self.sponsor.autoapprovesigned and self.sponsor.conference.autocontracts:
@@ -428,3 +435,14 @@ class SponsorDigisignHandler(DigisignHandlerBase):
                 },
             )
             self.sponsor.delete()
+
+    def signed(self, signedby):
+        if signedby != conference.contractsendername:
+            # If it's the other party that signed, send an email to notify the administrators,
+            # for the record. When the organizers sign, the "completed" notification is fired,
+            # and the email is sent from there.
+            send_conference_sponsor_notification(
+                self.sponsor.conference,
+                "Contract signed for sponsor {}".format(self.sponsor_name),
+                "The digital contract for sponsor\n{}\n has been signed by\n{}\n. It is now pending signature from the organizers.\n".format(self.sponsor.name, signedby),
+            )

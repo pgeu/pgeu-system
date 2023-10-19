@@ -355,6 +355,8 @@ class Signwell(BaseProvider):
                     dhandler.canceled()
                 elif event == 'document_declined':
                     dhandler.declined()
+                elif event == 'document_signed':
+                    dhandler.signed(j['event']['related_signer']['name'])
             except Exception as e:
                 DigisignLog(
                     provider=self.provider,
