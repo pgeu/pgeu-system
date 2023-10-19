@@ -37,13 +37,18 @@ class BackendSponsorForm(BackendForm):
 
     @property
     def fieldsets(self):
-        return [
+        fs = [
             {'id': 'base_info', 'legend': 'Basic information', 'fields': ['name', 'displayname', 'url', ]},
             {'id': 'social', 'legend': 'Social media', 'fields': self.nosave_fields},
             {'id': 'financial', 'legend': 'Financial information', 'fields': ['invoiceaddr', 'vatstatus', 'vatnumber']},
             {'id': 'management', 'legend': 'Management', 'fields': ['extra_cc', 'managers']},
-            {'id': 'contract', 'legend': 'Contract', 'fields': ['autoapprovesigned', ]},
         ]
+        if self.instance.conference.contractprovider and self.instance.conference.autocontracts:
+            fs.append(
+                {'id': 'contract', 'legend': 'Contract', 'fields': ['autoapprovesigned', ]}
+            )
+
+        return fs
 
     @property
     def nosave_fields(self):
@@ -57,8 +62,6 @@ class BackendSponsorForm(BackendForm):
 
         if not self.instance.conference.contractprovider or not self.instance.conference.autocontracts:
             del self.fields['autoapprovesigned']
-            # For now remove the whole fieldset as there is only one field in it
-            self.fieldsets = [fs for fs in self.fieldsets if fs['id'] != 'contract']
 
         self.update_protected_fields()
 
