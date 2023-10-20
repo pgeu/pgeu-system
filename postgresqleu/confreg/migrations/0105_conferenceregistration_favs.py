@@ -14,7 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conferenceregistration',
             name='favs',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.IntegerField(), blank=True, default=[], size=None),
-            preserve_default=False,
+            field=django.contrib.postgres.fields.ArrayField(base_field=models.IntegerField(), blank=True, default=list, size=None),
         ),
     ]

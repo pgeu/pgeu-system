@@ -640,7 +640,7 @@ class ConferenceRegistration(models.Model):
     dynaprops = models.JSONField(null=False, blank=True, default=dict)
 
     # Favorite-marked sessions
-    favs = ArrayField(models.IntegerField(), null=False, blank=True)
+    favs = ArrayField(models.IntegerField(), null=False, blank=True, default=list)
 
     class Meta:
         unique_together = (
