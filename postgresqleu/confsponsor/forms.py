@@ -136,6 +136,8 @@ class SponsorSendEmailForm(forms.ModelForm):
             self.fields['sponsors'].label_from_instance = lambda s: "{0} ({1}, {2})".format(s, s.level.levelname, s.confirmed and "confirmed {:%Y-%m-%d %H:%M}".format(s.confirmedat) or "NOT confirmed")
             del self.fields['levels']
 
+        self.fields['subject'].help_text = 'Subject will be prefixed with <strong>[{}]</strong>'.format(conference)
+
         if not ((self.data.get('levels') or self.data.get('sponsors')) and self.data.get('subject') and self.data.get('message')):
             del self.fields['confirm']
 
