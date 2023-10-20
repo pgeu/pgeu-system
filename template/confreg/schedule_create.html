@@ -91,6 +91,7 @@ var sessions = {
       'track': {{s.track_id|default:"null"}},
       'ispending': {{s.ispending|yesno:"true,false"}},
       'speakers': '{{s.speaker_list|escapejs}}',
+      'numvotes': '{{s.numvotes}}',
 {%if conference.callforpapersrecording%}      'recordingconsent': {{s.recordingconsent | lower}},{%endif%}
    },
 {%endfor%}
@@ -117,6 +118,7 @@ function assignSessionToSlot(session, slot) {
 {%if conference.callforpapersrecording%}
    wrap.children('div.sessrecording').text('Recording: ' + (sessdata['recordingconsent'] ? 'Yes':'No'));
 {%endif%}
+   wrap.children('div.sessvotes').text('Votes: ' + sessdata['numvotes']);
 
    wrap.attr('title', sessdata['title'] + ' -- ' + sessdata['speakers']);
 
@@ -275,7 +277,10 @@ the talk slot, if your schedule supports multiple different lengths.
   <h3>Available sessions</h3> 
   <div id="availablesesswrap">
   {%for s in sessions %}
-   <div id="sess{{s.id}}" data-sessionid="{{s.id}}" class="sessblock actualsession track{{s.track_id}}{%if s.ispending%} sesspending{%endif%}">{{s.title}}<br/><i>{{s.speaker_list}}</i>{%if conference.callforpapersrecording%}<br/>Recording: {{s.recordingconsent | yesno:"Yes,No"}}{%endif%}</div>
+   <div id="sess{{s.id}}" data-sessionid="{{s.id}}" class="sessblock actualsession track{{s.track_id}}{%if s.ispending%} sesspending{%endif%}">{{s.title}}<br/><i>{{s.speaker_list}}</i>
+{%if conference.callforpapersrecording%}<br/>Recording: {{s.recordingconsent | yesno:"Yes,No"}}{%endif%}
+{%if not s.ispending %}<br/>Votes: {{s.numvotes|default:"0"}}{%endif%}
+</div>
   {%endfor%}
   </div>
 </div>
@@ -291,7 +296,7 @@ the talk slot, if your schedule supports multiple different lengths.
 {%for session in day.sessions%}
   <div id="slot{{session.id}}" data-slotid="{{session.id}}" class="sessblock sessionslot" style="top: {{session.toppos}}px; left: {{session.leftpos}}px; width: {{session.widthpos}}px; height: {{session.heightpos}}px;">
   {{session.timeslot}}
-  <div class="sesscontentwrap"><div class="sesstitle"></div><div class="sessspeaker"></div>{%if conference.callforpapersrecording%}<div class="sessrecording"></div>{%endif%}</div>
+  <div class="sesscontentwrap"><div class="sesstitle"></div><div class="sessspeaker"></div>{%if conference.callforpapersrecording%}<div class="sessrecording"></div>{%endif%}<div class="sessvotes"></div></div>
 </div>
 {%endfor%}
 </div>

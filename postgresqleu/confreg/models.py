@@ -12,7 +12,7 @@ from django.utils.dateformat import DateFormat
 from django.utils.functional import cached_property
 from django.utils import timezone
 from django.template.defaultfilters import slugify
-from django.contrib.postgres.fields import DateTimeRangeField
+from django.contrib.postgres.fields import DateTimeRangeField, ArrayField
 from django.contrib.postgres.indexes import GinIndex
 from django.core.serializers.json import DjangoJSONEncoder
 from django.dispatch import receiver
@@ -638,6 +638,9 @@ class ConferenceRegistration(models.Model):
 
     # Extra dynamic properties configured at a conference level
     dynaprops = models.JSONField(null=False, blank=True, default=dict)
+
+    # Favorite-marked sessions
+    favs = ArrayField(models.IntegerField(), null=False, blank=True)
 
     class Meta:
         unique_together = (

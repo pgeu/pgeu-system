@@ -798,7 +798,19 @@ WHERE s.conference_id=%(confid)s AND
                     tstzrange(s.starttime, s.endtime) && tstzrange(s2.starttime, s2.endtime)
       )
 ORDER BY 1,3""",
-
+    'popularsess': """SELECT
+s.title AS \"Session title\",
+COALESCE(num, 0) AS \"Votes\"
+FROM confreg_conferencesession s
+LEFT JOIN (
+  SELECT unnest(favs) AS sid, count(*) AS num
+  FROM confreg_conferenceregistration r
+  WHERE r.conference_id=%(confid)s
+  GROUP BY sid
+) t ON t.sid=s.id
+WHERE s.conference_id=%(confid)s AND s.status=1
+ORDER BY num DESC NULLS LAST, title
+""",
     'queuepartitions': QueuePartitionForm,
 
     'attendeespendingpolicy': """SELECT

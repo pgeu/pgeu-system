@@ -15,6 +15,7 @@ from django.db.models.expressions import F
 from django.forms import ValidationError
 from django.utils import timezone
 from django.template.defaultfilters import slugify
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import Conference, ConferenceRegistration, ConferenceSession, ConferenceSeries
 from .models import ConferenceRegistrationLog
@@ -1338,6 +1339,93 @@ def schedule(request, confname):
             return render_conference_response(request, conference, 'schedule', 'confreg/scheduleclosed.html')
 
     return render_conference_response(request, conference, 'schedule', 'confreg/schedule.html', _scheduledata(request, conference))
+
+
+@csrf_exempt
+def schedule_favorite(request, confname):
+    conference = get_conference_or_404(confname)
+    if not request.user.is_authenticated:
+        return HttpResponse("Authentication required", status=401)
+
+    if not conference.scheduleactive:
+        if not conference.testers.filter(pk=request.user.id):
+            return HttpResponse("Schedule publishing not active", status=403)
+
+    reg = get_object_or_404(ConferenceRegistration.objects.only('id', 'favs'), conference=conference, attendee=request.user)
+
+    def _validate_added_sessions(conference, idlist):
+        if ConferenceSession.objects.filter(id__in=idlist).count() != len(idlist):
+            return "Attempting to favorite a non-existing session"
+        # Validate that we're not trying to add a session that's not approved, or not from this conf, etc.
+        if ConferenceSession.objects.filter(id__in=idlist).filter(~Q(conference=conference) | ~Q(status=1)).exists():
+            return "Attempting to favorite a session that's not approved for this conference"
+        return None
+
+    if request.method == 'GET':
+        return HttpResponse(
+            json.dumps({
+                'favs': reg.favs,
+            }),
+            content_type='application/json',
+        )
+    elif request.method == 'POST':
+        if request.content_type != 'application/json':
+            return HttpResponse("Posted content must be json", status=400)
+        try:
+            j = json.loads(request.body.decode('utf8', 'ignore'))
+        except Exception:
+            return HttpResponse("Invalid JSON format posted", status=400)
+
+        if 'favs' in j:
+            # Full list of favorites to replace
+            if not isinstance(j['favs'], list):
+                return HttpResponse("Favs is not an array", status=400)
+            for v in j['favs']:
+                if not isinstance(v, int):
+                    return HttpResponse("Invalid entry in favs", status=400)
+
+            # Validate all sessions exist
+            if err := _validate_added_sessions(conference, j['favs']):
+                return HttpResponse(err, status=400)
+
+            if reg.favs != sorted(j['favs']):
+                reg.favs = sorted(j['favs'])
+                reg.save(update_fields=['favs'])
+        elif 'changes' in j:
+            if not isinstance(j['changes'], dict):
+                return HttpResponse("Changes is not an object", status=400)
+
+            modified = False
+            added = []
+            for k, v in j['changes'].items():
+                if not k.isnumeric():
+                    return HttpResopnse("Invalid key in favs item", status=400)
+                if not isinstance(v, bool):
+                    return HttpResponse("Invalid value type for favs item", status=400)
+                if v and int(k) not in reg.favs:
+                    reg.favs.append(int(k))
+                    added.append(int(k))
+                    modified = True
+                elif int(k) in reg.favs and not v:
+                    reg.favs.remove(int(k))
+                    modified = True
+            if modified:
+                if err := _validate_added_sessions(conference, added):
+                    return HttpResponse(err, status=400)
+
+                reg.favs = sorted(reg.favs)
+                reg.save(update_fields=['favs'])
+        else:
+            return HttpResponse("Keys missing", status=400)
+
+        return HttpResponse(
+            json.dumps({
+                'favs': reg.favs,
+            }),
+            content_type='application/json',
+        )
+    else:
+        return HttpResponse("Method Not Allowed", status=405)
 
 
 def schedulejson(request, confname):
@@ -2922,7 +3010,26 @@ def createschedule(request, confname):
 
     with ensure_conference_timezone(conference):
         # Complete list of all available sessions
-        sessions = exec_to_dict("SELECT s.id, track_id, (status = 3) AS ispending, (row_number() over() +1)*75 AS top, title, string_agg(spk.fullname, ', ') AS speaker_list, recordingconsent FROM confreg_conferencesession s LEFT JOIN confreg_conferencesession_speaker csp ON csp.conferencesession_id=s.id LEFT JOIN confreg_speaker spk ON spk.id=csp.speaker_id WHERE conference_id=%(confid)s AND status IN (1,3) AND NOT cross_schedule GROUP BY s.id ORDER BY starttime, id", {
+        sessions = exec_to_dict("""SELECT
+  s.id,
+  track_id,
+  (status = 3) AS ispending,
+  (row_number() over() +1)*75 AS top,
+  title, string_agg(spk.fullname, ', ') AS speaker_list,
+  recordingconsent,
+  max(t.num) AS numvotes
+FROM confreg_conferencesession s
+LEFT JOIN confreg_conferencesession_speaker csp ON csp.conferencesession_id=s.id
+LEFT JOIN confreg_speaker spk ON spk.id=csp.speaker_id
+LEFT JOIN (
+  SELECT unnest(favs) AS sid, count(*) AS num
+  FROM confreg_conferenceregistration r
+  WHERE r.conference_id=%(confid)s
+  GROUP BY sid
+) t ON t.sid=s.id
+WHERE conference_id=%(confid)s AND status IN (1,3) AND NOT cross_schedule
+GROUP BY s.id
+ORDER BY starttime, id""", {
             'confid': conference.id,
         })
 
