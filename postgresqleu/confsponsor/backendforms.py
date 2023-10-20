@@ -138,7 +138,7 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
 
     @property
     def can_autoconfirm(self):
-        if self._can_autoconfirm is None:
+        if self._can_autoconfirm is None and self.instance.benefit_class is not None:
             self._can_autoconfirm = get_benefit_class(self.instance.benefit_class).can_autoconfirm
         return self._can_autoconfirm
 
