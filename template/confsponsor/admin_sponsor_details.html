@@ -38,8 +38,22 @@
   <tr>
     <th>Contract:</th>
     <td>
-      {%if sponsor.signmethod == 0%}Digital contract. <a href="/events/sponsor/admin/{{conference.urlname}}/{{sponsor.id}}/contractlog/" class="btn btn-sm btn-default">View contract log</a>{%else%}Manual contract{%endif%}
-      {%if sponsor.signmethod != 0 or conference.contractprovider.implementation.can_resend%}{%if not sponsor.confirmed %}<form class="inline-block-form" method="post" action="resendcontract/">{% csrf_token %}<input type="submit" class="btn btn-sm btn-default confirm-btn" value="Re-send contract" data-confirm="Are you sure you want to re-send a new contract to this sponsor?{%if sponsor.signmethod == 0%} {{conference.contractprovider.implementation.resendprompt}}{%endif%}"></form>{%endif%}{%endif%}
+      {%if sponsor.signmethod == 0%}
+       Digital contract.<br/>
+       {%if sponsor.contract.completed%}Signed ({{sponsor.contract.firstsigned}}) and countersigned ({{sponsor.contract.completed}}).
+       {%elif sponsor.contract.firstsigned%}Signed by sponsor ({{sponsor.contract.firstsigned}}) but not by {{conference.contractsendername}}.
+       {%else%}Contract not signed yet.
+       {%endif%}<br/>
+       <a href="/events/sponsor/admin/{{conference.urlname}}/{{sponsor.id}}/contractlog/" class="btn btn-sm btn-default">View contract log</a>
+      {%else%}
+       Manual contract
+      {%endif%}
+
+      {%if sponsor.signmethod != 0 or conference.contractprovider.implementation.can_resend%}
+       {%if not sponsor.confirmed %}
+       <form class="inline-block-form" method="post" action="resendcontract/">{% csrf_token %}<input type="submit" class="btn btn-sm btn-default confirm-btn" value="Re-send contract" data-confirm="Are you sure you want to re-send a new contract to this sponsor?{%if sponsor.signmethod == 0%} {{conference.contractprovider.implementation.resendprompt}}{%endif%}"></form>
+       {%endif%}
+       {%endif%}
     </td>
   </tr>
 {%if details%}

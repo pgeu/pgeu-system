@@ -346,8 +346,6 @@ class Signwell(BaseProvider):
 
             try:
                 if event == 'document_completed':
-                    doc.completed = True
-                    doc.save(update_fields=['completed'])
                     dhandler.completed()
                 elif event == 'document_expired':
                     dhandler.expired()

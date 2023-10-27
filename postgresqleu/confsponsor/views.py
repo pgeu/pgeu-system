@@ -873,7 +873,7 @@ def sponsor_admin_dashboard(request, confurlname):
     conference = get_authenticated_conference(request, confurlname)
 
     confirmed_sponsors = Sponsor.objects.select_related('invoice', 'level').filter(conference=conference, confirmed=True).order_by('-level__levelcost', 'confirmedat')
-    unconfirmed_sponsors = Sponsor.objects.select_related('invoice', 'level').filter(conference=conference, confirmed=False).order_by('-level__levelcost', 'name')
+    unconfirmed_sponsors = Sponsor.objects.select_related('invoice', 'level', 'contract').filter(conference=conference, confirmed=False).order_by('-level__levelcost', 'name')
 
     unconfirmed_benefits = SponsorClaimedBenefit.objects.filter(sponsor__conference=conference, confirmed=False).order_by('-sponsor__level__levelcost', 'sponsor', 'benefit__sortkey')
 

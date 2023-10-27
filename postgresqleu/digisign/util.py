@@ -1,3 +1,6 @@
+from django.utils import timezone
+
+
 digisign_providers = {
     'postgresqleu.digisign.implementations.signwell.Signwell': (),
 }
@@ -19,7 +22,8 @@ class DigisignHandlerBase:
         self.doc = doc
 
     def completed(self):
-        pass
+        self.doc.completed = timezone.now()
+        self.doc.save(update_fields=['completed', ])
 
     def expired(self):
         pass
@@ -31,4 +35,7 @@ class DigisignHandlerBase:
         pass
 
     def signed(self, signedby):
-        pass
+        if not self.doc.firstsigned:
+            # This is the first signature (for most docs, it means the counterpart)
+            self.doc.firstsigned = timezone.now()
+            self.doc.save(update_fields=['firstsigned', ])

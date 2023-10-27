@@ -32,7 +32,8 @@ class DigisignDocument(models.Model):
     provider = models.ForeignKey(DigisignProvider, null=False, blank=False, on_delete=models.CASCADE)
     documentid = models.CharField(max_length=100, null=False, blank=True)
     handler = models.CharField(max_length=32, null=False, blank=True)
-    completed = models.BooleanField(null=False, blank=False, default=False)
+    firstsigned = models.DateTimeField(null=True, blank=True)
+    completed = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         unique_together = (

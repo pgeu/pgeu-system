@@ -87,9 +87,15 @@ sponsor manually, you may want to confirm them manually as well...
         {%endif%}
       {%else%}
         {%if s.signmethod == 0 and s.contract %}
-      <span class="label label-info">Pending with contract</span>
+          {%if s.contract.completed %}{# this state can only be reached when automatic contract processing is disabled, but in this case it indicates it's time to confirm #}
+      <span class="label label-danger" title="Digital contract signed by sponsor at {{s.contract.firstsigned}} and {{conference.contractsendername}} ({{s.contract.completed}}), but sponsorship is not confirmed.">Contract signed and countersigned</span>
+          {%elif s.contract.firstsigned %}
+      <span class="label label-warning" title="Digital contract signed by sponsor at {{s.contract.firstsigned}}, but not by {{conference.contractsendername}}.">Pending with signed digital contract</span>
+          {%else%}
+      <span class="label label-info" title="Digital contract sent but not signed.">Pending with digital contract</span>
+        {%endif%}
         {%else%}
-      <span class="label label-info">Pending</span>
+      <span class="label label-info" title="Waiting for contract to be sent in.">Pending with manual contract</span>
         {%endif%}
       {%endif%}
     </td>
