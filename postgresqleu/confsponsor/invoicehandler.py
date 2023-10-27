@@ -332,6 +332,8 @@ class SponsorDigisignHandler(DigisignHandlerBase):
         self.sponsor = self.doc.sponsor
 
     def completed(self):
+        super().completed()
+
         if self.sponsor.autoapprovesigned and self.sponsor.conference.autocontracts:
             if self.sponsor.confirmed:
                 send_conference_sponsor_notification(
@@ -359,6 +361,8 @@ class SponsorDigisignHandler(DigisignHandlerBase):
             )
 
     def expired(self):
+        super().expired()
+
         if self.sponsor.autoapprovesigned and self.sponsor.conference.autocontracts:
             if self.sponsor.confirmed:
                 send_conference_sponsor_notification(
@@ -385,6 +389,8 @@ class SponsorDigisignHandler(DigisignHandlerBase):
             self.sponsor.delete()
 
     def declined(self):
+        super().declined()
+
         if self.sponsor.autoapprovesigned and self.sponsor.conference.autocontracts:
             if self.sponsor.confirmed:
                 send_conference_sponsor_notification(
@@ -411,6 +417,8 @@ class SponsorDigisignHandler(DigisignHandlerBase):
             self.sponsor.delete()
 
     def canceled(self):
+        super().canceled()
+
         if self.sponsor.autoapprovesigned and self.sponsor.conference.autocontracts:
             if self.sponsor.confirmed:
                 send_conference_sponsor_notification(
@@ -437,6 +445,8 @@ class SponsorDigisignHandler(DigisignHandlerBase):
             self.sponsor.delete()
 
     def signed(self, signedby):
+        super().signed(signedby)
+
         if signedby != self.sponsor.conference.contractsendername:
             # If it's the other party that signed, send an email to notify the administrators,
             # for the record. When the organizers sign, the "completed" notification is fired,
