@@ -456,3 +456,65 @@ class SponsorDigisignHandler(DigisignHandlerBase):
                 "Contract signed for sponsor {}".format(self.sponsor.name),
                 "The digital contract for sponsor\n{}\n has been signed by\n{}.\n It is now pending signature from {}.\n".format(self.sponsor.name, signedby, self.sponsor.conference.contractsendername),
             )
+
+
+class SponsorAdditionalDigisignHandler(DigisignHandlerBase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not hasattr(self.doc, 'sponsoradditionalcontract'):
+            raise Exception("No sponsor additional contract found for this document, something got unlinked?")
+        self.acontract = self.doc.sponsoradditionalcontract
+        self.sponsor = self.acontract.sponsor
+
+    def completed(self):
+        super().completed()
+
+        self.acontract.completed = timezone.now()
+        self.acontract.save(update_fields=['completed'])
+        send_conference_sponsor_notification(
+            self.sponsor.conference,
+            "Digital contract signed for {}".format(self.sponsor.conference.conferencename),
+            "A digital contract with the subject '{}' sent to {} has been signed by both the sponsor and {}.".format(self.acontract.subject, self.sponsor.name, self.sponsor.conference.contractsendername),
+        )
+
+    def expired(self):
+        super().expired()
+
+        send_conference_sponsor_notification(
+            self.sponsor.conference,
+            "Digital contract expired for {}".format(self.sponsor.conference.conferencename),
+            "A digital contract with the subject '{}' sent to {} has expired.".format(self.acontract.subject, self.sponsor.name),
+        )
+
+    def declined(self):
+        super().declined()
+
+        send_conference_sponsor_notification(
+            self.sponsor.conference,
+            "Digital contract declined for {}".format(self.sponsor.conference.conferencename),
+            "A digital contract with the subject '{}' sent to {} has been declined.".format(self.acontract.subject, self.sponsor.name),
+        )
+
+    def canceled(self):
+        super().canceled()
+
+        send_conference_sponsor_notification(
+            self.sponsor.conference,
+            "Digital contract canceled for {}".format(self.sponsor.conference.conferencename),
+            "A digital contract with the subject '{}' sent to {} has been canceled.".format(self.acontract.subject, self.sponsor.name),
+        )
+
+    def signed(self, signedby):
+        super().signed(signedby)
+
+        if signedby != self.sponsor.conference.contractsendername:
+            # If it's the other party that signed, send an email to notify the administrators,
+            # for the record. When the organizers sign, the "completed" notification is fired,
+            # and the email is sent from there.
+            send_conference_sponsor_notification(
+                self.sponsor.conference,
+                "Digital contract signed by sponsor {}".format(self.sponsor.name),
+                "A digital contract with the subject '{}' has been signed by {}.\nIt is now pending signature from {}.\n".format(self.acontract.subject, signedby, self.sponsor.conference.contractsendername),
+            )
+            self.acontract.sponsorsigned = timezone.now()
+            self.acontract.save(update_fields=['sponsorsigned'])

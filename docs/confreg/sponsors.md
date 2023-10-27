@@ -270,6 +270,34 @@ Number of parcels arrived is changed
 :  An email is generated to the *sponsor*, as well as to the
    conference sponsorship address.
 
+## Additional contracts
+
+Other than the contract for the sponsorship itself, it is also
+possible to send "additional contracts" to the sponsors. This can for
+example be used for training contracts, or any other special activity
+that requires a contract.
+
+In particular this is useful when the sponsor uses digital contracts
+as this process is then also handled by digital contracts using the
+same address and provider. There is no automatic processing for the
+additional contracts, other than updating the status of the contract
+indicating who has signed and when.
+
+Additional contracts can be used for manual contracts as well, in
+which case just like with the digital contracts, the only real benefit
+is that some fields like the sponsor name can be pre-filled in the
+contract using the same template system as for the main sponsor
+contracts.
+
+Each contract is given a subject (used as e-mail subject and the title
+of the contract in the digital signature provider) and message (used
+as the body of the email sent, whether manual or digital).
+
+The status of the contracts can be tracked on the page of each
+individual sponsor (where manual contracts should also be marked when
+they are signed by the different actors) as well as in a global
+overview on the sponsorship dashboard.
+
 ## Reference
 
 ### Sponsorship <a name="sponsor"></a>

@@ -3,9 +3,10 @@ from django.forms import ValidationError
 from django.forms.utils import ErrorList
 from django.db.models import Q
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.contrib.auth.models import User
 from django.conf import settings
 
-from .models import Sponsor, SponsorMail, SponsorshipLevel
+from .models import Sponsor, SponsorMail, SponsorshipLevel, SponsorshipContract
 from .models import vat_status_choices
 from .models import Shipment
 from postgresqleu.confreg.models import RegistrationType, DiscountCode
@@ -13,6 +14,7 @@ from postgresqleu.countries.models import EuropeCountry
 
 from postgresqleu.confreg.models import ConferenceAdditionalOption
 from postgresqleu.confreg.twitter import get_all_conference_social_media
+from postgresqleu.util.fields import UserModelChoiceField
 from postgresqleu.util.validators import BeforeValidator, AfterValidator
 from postgresqleu.util.validators import Http200Validator
 from postgresqleu.util.widgets import Bootstrap4CheckboxSelectMultiple, EmailTextWidget
@@ -314,3 +316,18 @@ class ShipmentReceiverForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ShipmentReceiverForm, self).__init__(*args, **kwargs)
         self.fields['arrived_parcels'].choices = [(str(x), str(x)) for x in range(1, 20)]
+
+
+class SponsorAddContractForm(forms.Form):
+    subject = forms.CharField(max_length=100, required=True)
+    contract = forms.ModelChoiceField(SponsorshipContract.objects.all())
+    manager = UserModelChoiceField(User.objects.all(), label="Manager to send to")
+    message = forms.CharField(label="Message to send in signing email", widget=forms.Textarea)
+
+    def __init__(self, sponsor, *args, **kwargs):
+        self.sponsor = sponsor
+        super().__init__(*args, **kwargs)
+
+        self.fields['subject'].help_text = "Subject of contract, for example 'Training contract'. Will be prefixed with '[{}]' in all emails.".format(self.sponsor.conference.conferencename)
+        self.fields['contract'].queryset = SponsorshipContract.objects.filter(conference=self.sponsor.conference, sponsorshiplevel=None)
+        self.fields['manager'].queryset = self.sponsor.managers

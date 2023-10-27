@@ -6,6 +6,7 @@ class ConfsponsorAppConfig(AppConfig):
 
     def ready(self):
         from postgresqleu.digisign.util import register_digisign_handler
-        from postgresqleu.confsponsor.invoicehandler import SponsorDigisignHandler
+        from postgresqleu.confsponsor.invoicehandler import SponsorDigisignHandler, SponsorAdditionalDigisignHandler
 
         register_digisign_handler('confsponsor', SponsorDigisignHandler)
+        register_digisign_handler('confsponsoradditional', SponsorAdditionalDigisignHandler)

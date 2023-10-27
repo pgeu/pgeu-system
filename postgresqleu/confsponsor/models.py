@@ -289,3 +289,13 @@ class Shipment(models.Model):
         if self.sponsor:
             return self.sponsor.name
         return "{0} organizers".format(self.conference)
+
+
+class SponsorAdditionalContract(models.Model):
+    sponsor = models.ForeignKey(Sponsor, null=False, blank=False, on_delete=models.CASCADE)
+    subject = models.CharField(max_length=100, null=False, blank=False)
+    contract = models.ForeignKey(SponsorshipContract, null=False, blank=False, on_delete=models.CASCADE)
+    sent_to_manager = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    digitalcontract = models.OneToOneField(DigisignDocument, null=True, blank=True, help_text="Contract, when using digital signatures", on_delete=models.SET_NULL)
+    sponsorsigned = models.DateTimeField(null=True, blank=True)
+    completed = models.DateTimeField(null=True, blank=True)

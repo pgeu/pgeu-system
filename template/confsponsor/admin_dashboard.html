@@ -230,6 +230,38 @@ This matrix gives a quick overview of the status of the different benefits for e
 <a class="btn btn-primary" href="shipments/new/">Register new shipment</a>
 {%endif%}
 
+{%if additionalcontracts%}
+<h2>Additional contracts</h2>
+<p>
+  Additional contracts are <i>sent</i> (and in the case of manual contracts, marked as signed) on the individual sponsor page.
+</p>
+<table class="table table-striped table-hover">
+  <thead>
+    <tr>
+      <th>Sponsor</th>
+      <th>Subject</th>
+      <th>Contract name</th>
+      <th>Type</th>
+      <th>Sponsor signed</th>
+      <th>{{conference.contractsendername}} signed</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for ac in additionalcontracts%}
+   <tr>
+     <td><a href="{{ac.sponsor.id}}/">{{ac.sponsor.name}}</a></td>
+     <td>{{ac.subject}}</td>
+     <td>{{ac.contract.contractname}}</td>
+     <td>{%if ac.digitalcontract%}Digital{%else%}Manual{%endif%}</td>
+     <td>{{ac.sponsorsigned|default:""}}</td>
+     <td>{{ac.completed|default:""}}</td>
+     </td>
+   </tr>
+{%endfor%}
+  </tbody>
+</table>
+{%endif%}
+
 {%if eu_vat and  user.is_superuser %}
 <h2>VAT testing</h2>
 <p>

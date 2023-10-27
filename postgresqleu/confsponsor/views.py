@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.template.defaultfilters import slugify
 
 from datetime import timedelta
 import io
@@ -31,20 +32,21 @@ from postgresqleu.digisign.pdfutil import fill_pdf_fields, pdf_watermark_preview
 from postgresqleu.digisign.models import DigisignDocument, DigisignLog
 
 from .models import Sponsor, SponsorshipLevel, SponsorshipBenefit
-from .models import SponsorClaimedBenefit, SponsorMail, SponsorshipContract
+from .models import SponsorClaimedBenefit, SponsorMail, SponsorshipContract, SponsorAdditionalContract
 from .models import PurchasedVoucher
 from .models import ShipmentAddress, Shipment
 from .forms import SponsorSignupForm, SponsorSendEmailForm, SponsorDetailsForm
 from .forms import PurchaseVouchersForm, PurchaseDiscountForm
 from .forms import SponsorShipmentForm, ShipmentReceiverForm
 from .forms import SponsorRefundForm, SponsorReissueForm
+from .forms import SponsorAddContractForm
 
 from .benefits import get_benefit_class
 from .invoicehandler import create_sponsor_invoice, confirm_sponsor
 from .invoicehandler import get_sponsor_invoice_address, get_sponsor_invoice_rows
 from .invoicehandler import create_voucher_invoice
 from .vatutil import validate_eu_vat_number
-from .util import send_conference_sponsor_notification, send_sponsor_manager_email
+from .util import send_conference_sponsor_notification, send_sponsor_manager_email, send_sponsor_manager_simple_email
 from .util import get_mails_for_sponsor
 from .util import get_pdf_fields_for_conference
 
@@ -944,6 +946,7 @@ ORDER BY l.levelcost DESC, l.levelname, s.name, b.sortkey, b.benefitname""", {'c
         'benefitmatrix': benefitmatrix,
         'has_shipment_tracking': has_shipment_tracking,
         'shipments': shipments,
+        'additionalcontracts': SponsorAdditionalContract.objects.select_related('sponsor').filter(sponsor__conference=conference).order_by('id'),
         'helplink': 'sponsors',
         })
 
@@ -1144,6 +1147,9 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
         'claimedbenefits': claimedbenefits,
         'unclaimedbenefits': unclaimedbenefits,
         'noclaimbenefits': noclaimbenefits,
+        'conference_has_contracts': SponsorshipContract.objects.filter(conference=conference, sponsorshiplevel=None).exists(),
+        'additionalcontracts': SponsorAdditionalContract.objects.filter(sponsor=sponsor).order_by('id'),
+        'addcontractform': SponsorAddContractForm(sponsor),
         'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
         'euvat': settings.EU_VAT,
         'helplink': 'sponsors',
@@ -1733,3 +1739,146 @@ def sponsor_admin_reissue(request, confurlname, sponsorid):
         'breadcrumbs': [('../../', 'Sponsors'), ('../', sponsor.name), ],
         'helplink': 'sponsors',
     })
+
+
+@login_required
+@transaction.atomic
+def sponsor_admin_addcontract(request, confurlname, sponsorid):
+    if request.method != "POST":
+        return HttpResponse("Invalid method.", status=400)
+
+    conference = get_authenticated_conference(request, confurlname)
+    sponsor = get_object_or_404(Sponsor, id=sponsorid, conference=conference)
+
+    if not sponsor.confirmed:  # Cannot-happen
+        raise Http404("Page not valid for unconfirmed sponsors")
+
+    form = SponsorAddContractForm(sponsor, data=request.POST)
+    if not form.is_valid():
+        # Should not be possible unless the browser is broken, so we accept a bad error message
+        messages.error(request, "Form does not validate.")
+        return HttpResponseRedirect("../")
+
+    contract = form.cleaned_data['contract']
+    subject = form.cleaned_data['subject']
+
+    # Send the actual contract
+    pdf = fill_pdf_fields(
+        contract.contractpdf,
+        get_pdf_fields_for_conference(conference, sponsor),
+        contract.fieldjson,
+    )
+    if sponsor.signmethod == 1:
+        send_sponsor_manager_simple_email(
+            sponsor,
+            subject,
+            form.cleaned_data['message'],
+            attachments=[
+                ('{}_{}.pdf'.format(conference.urlname, slugify(subject)), 'application/pdf', pdf),
+            ],
+        )
+        SponsorAdditionalContract(
+            sponsor=sponsor,
+            subject=subject,
+            contract=contract,
+            sent_to_manager=None,
+            digitalcontract=None,
+        ).save()
+        messages.info(request, "Manual contract sent.")
+        send_conference_sponsor_notification(
+            conference,
+            "Manual contract sent to {} for {}".format(sponsor.name, conference.conferencename),
+            'A manual contract with the subject "{}" was sent to {}'.format(subject, sponsor.name),
+        )
+    else:
+        manager = form.cleaned_data['manager']
+
+        acontract = SponsorAdditionalContract(
+            sponsor=sponsor,
+            subject=subject,
+            contract=contract,
+            sent_to_manager=manager,
+            digitalcontract=None,
+        )
+        acontract.save()
+
+        signer = conference.contractprovider.get_implementation()
+        contractid, error = signer.send_contract(
+            conference.contractsendername,
+            conference.contractsenderemail,
+            "{} {}".format(manager.first_name, manager.last_name),
+            manager.email,
+            pdf,
+            '{}_{}.pdf'.format(conference.urlname, slugify(subject)),
+            subject,
+            form.cleaned_data['message'],
+            {
+                'type': 'sponsoradditional',
+                'additionalid': str(acontract.id),
+            },
+            contract.fieldjson,
+            conference.contractexpires,
+            test=False,
+        )
+        if error:
+            messages.error(request, "Failed to send digital contract.")
+            return HttpResponseRedirect("../")
+
+        acontract.digitalcontract = DigisignDocument(
+            provider=conference.contractprovider,
+            documentid=contractid,
+            handler='confsponsoradditional',
+        )
+        acontract.digitalcontract.save()
+        acontract.save(update_fields=['digitalcontract', ])
+        messages.info(request, "Digital contract sent.")
+
+    return HttpResponseRedirect("../")
+
+
+@login_required
+@transaction.atomic
+def sponsor_admin_markaddcontract(request, confurlname, sponsorid):
+    if request.method != "POST":
+        return HttpResponse("Invalid method.", status=400)
+
+    conference = get_authenticated_conference(request, confurlname)
+    sponsor = get_object_or_404(Sponsor, id=sponsorid, conference=conference)
+
+    if not sponsor.confirmed:  # Cannot-happen
+        raise Http404("Page not valid for unconfirmed sponsors")
+
+    acontract = get_object_or_404(SponsorAdditionalContract, pk=get_int_or_error(request.POST, "id"))
+    if acontract.digitalcontract:
+        raise Http404("Page not valid for digital contracts")
+
+    which = request.POST.get('which', '')
+
+    if which == 'sponsor':
+        if acontract.sponsorsigned:
+            messages.error(request, "Contract already marked as signed by sponsor.")
+        else:
+            acontract.sponsorsigned = timezone.now()
+            acontract.save(update_fields=['sponsorsigned'])
+            send_conference_sponsor_notification(
+                conference,
+                "Manual contract for {} marked as signed by sponsor".format(conference.conferencename),
+                'A manual contract with the subject "{}" sent to {} has been marked as signed by sponsor.'.format(acontract.subject, sponsor.name),
+            )
+            messages.info(request, "Contract marked as signed by sponsor.")
+    elif which == 'org':
+        if acontract.completed:
+            messages.error(request, "Contract already marked as signed by {}.".format(conference.contractsendername))
+        else:
+            acontract.completed = timezone.now()
+            acontract.save(update_fields=['completed'])
+            send_conference_sponsor_notification(
+                conference,
+                "Manual contract for {} marked as signed by {}".format(conference.conferencename, conference.contractsendername),
+                'A manual contract with the subject "{}" sent to {} has been marked as signed by {}.'.format(acontract.subject, sponsor.name, conference.contractsendername),
+            )
+            messages.info(request, "Contract marked as signed by {}.".format(conference.contractsendername))
+    else:
+        raise Http404("Invalid value for which")
+
+    return HttpResponseRedirect("../")

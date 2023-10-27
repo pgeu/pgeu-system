@@ -110,6 +110,55 @@ div.panelwrap {
 </div>
 {%endif%}
 
+{%if conference_has_contracts %}
+<h2>Additional contracts</h2>
+<p>
+  You can send additional contracts to this sponsor if one is needed, such as training contracts.
+{%if sponsor.signmethod ==  0%}
+  This sponsor uses digital contracts, so the additional contracts will also be sent digitally. No
+  automatic processing happens for these contracts, just the tracking of the status.
+{%else%}
+  This sponsor uses manual contracts, so the additional contracts will be emailed to all sponsor
+  representatives as a PDF, asking them to return it signed.
+{%endif%}
+</p>
+{%if additionalcontracts%}
+<table class="table table-striped table-hover">
+  <thead>
+    <tr>
+      <th>Subject</th>
+      <th>Contract name</th>
+      <th>Type</th>
+      <th>Sponsor signed</th>
+      <th>{{conference.contractsendername}} signed</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for ac in additionalcontracts%}
+   <tr>
+     <td>{{ac.subject}}</td>
+     <td><a href="../contracts/{{ac.contract.id}}/">{{ac.contract.contractname}}</a></td>
+     <td>{%if ac.digitalcontract%}Digital{%else%}Manual{%endif%}</td>
+     <td>{%if ac.sponsorsigned%}{{ac.sponsorsigned}}{%else%}
+      {%if not ac.digitalcontract%}<form method="post" action="markaddcontract/">{%csrf_token%}<input type="hidden" name="id" value="{{ac.id}}"><input type="hidden" name="which" value="sponsor"><input type="submit" class="btn btn-sm confirm-btn" value="Mark as signed" data-confirm="Are you sure you want to mark this (manual) contract as signed by the sponsor?"></form>{%endif%}
+{%endif%}
+     </td>
+     <td>{%if ac.completed%}{{ac.completed}}{%else%}
+      {%if not ac.digitalcontract%}<form method="post" action="markaddcontract/">{%csrf_token%}<input type="hidden" name="id" value="{{ac.id}}"><input type="hidden" name="which" value="org"><input type="submit" class="btn btn-sm confirm-btn" value="Mark as signed" data-confirm="Are you sure you want to mark this (manual) contract as signed by {{conference.contractsendername}}?"></form>{%endif%}
+      {%endif%}
+     </td>
+   </tr>
+{%endfor%}
+  </tbody>
+</table>
+{%endif%}
+
+<h4>Send new contract</h4>
+<form method="post" action="addcontract/" class="form-horizontal">{%csrf_token%}
+{%include "confreg/admin_backend_form_content.html" with form=addcontractform savebutton="Send contract"%}
+</form>
+{%endif%}
+
 {%else%}{%comment%}Sponsor confirmed{%endcomment%}
 {%if sponsor.invoice%}
 <p>
