@@ -454,5 +454,5 @@ class SponsorDigisignHandler(DigisignHandlerBase):
             send_conference_sponsor_notification(
                 self.sponsor.conference,
                 "Contract signed for sponsor {}".format(self.sponsor.name),
-                "The digital contract for sponsor\n{}\n has been signed by\n{}\n. It is now pending signature from {}.\n".format(self.sponsor.name, signedby, self.sponsor.conference.contractsendername),
+                "The digital contract for sponsor\n{}\n has been signed by\n{}.\n It is now pending signature from {}.\n".format(self.sponsor.name, signedby, self.sponsor.conference.contractsendername),
             )
