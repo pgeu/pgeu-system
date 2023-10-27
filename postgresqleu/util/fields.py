@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from .forms import ImageBinaryFormField, PdfBinaryFormField
+from django.forms import ModelChoiceField
 
 import io
 
@@ -111,3 +112,8 @@ class PdfBinaryField(ImageBinaryField):
             raise ValidationError("File must be PDF, not %s" % mtype)
 
         return value
+
+
+class UserModelChoiceField(ModelChoiceField):
+    def label_from_instance(self, obj):
+        return "{0} - {1} {2} <{3}>".format(obj.username, obj.first_name, obj.last_name, obj.email)
