@@ -51,6 +51,17 @@ def send_conference_mail(conference, receiver, subject, templatename, templateat
                      receivername)
 
 
+def send_conference_simple_mail(conference, receiver, subject, message, attachments=None, bcc=None, receivername=None, sender=None, sendername=None):
+    send_simple_mail(sender or conference.contactaddr,
+                     receiver,
+                     "[{0}] {1}".format(conference.conferencename, subject),
+                     message,
+                     attachments,
+                     bcc,
+                     sendername or conference.conferencename,
+                     receivername)
+
+
 class InvoicerowsException(Exception):
     pass
 

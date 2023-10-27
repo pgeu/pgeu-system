@@ -3,7 +3,7 @@ from django.conf import settings
 
 from postgresqleu.util.db import exec_to_list
 from postgresqleu.mailqueue.util import send_simple_mail
-from postgresqleu.confreg.util import send_conference_mail
+from postgresqleu.confreg.util import send_conference_mail, send_conference_simple_mail
 from postgresqleu.confsponsor.models import SponsorMail
 
 
@@ -31,6 +31,20 @@ def send_sponsor_manager_email(sponsor, subject, template, context, attachments=
             subject,
             template,
             context,
+            attachments=attachments,
+            sender=sponsor.conference.sponsoraddr,
+            sendername=sponsor.conference.conferencename,
+            receivername='{0} {1}'.format(manager.first_name, manager.last_name)
+        )
+
+
+def send_sponsor_manager_simple_email(sponsor, subject, message, attachments=None):
+    for manager in sponsor.managers.all():
+        send_conference_simple_mail(
+            sponsor.conference,
+            manager.email,
+            subject,
+            message,
             attachments=attachments,
             sender=sponsor.conference.sponsoraddr,
             sendername=sponsor.conference.conferencename,
