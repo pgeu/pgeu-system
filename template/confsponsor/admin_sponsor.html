@@ -170,6 +170,12 @@ This sponsorship is awaiting an <a href="/invoiceadmin/{{sponsor.invoice.pk}}/">
 <b>Iff</b> there is a signed <i>and</i> countersigned contract available
 for this sponsor, it can be confirmed before the invoice is paid.
 </p>
+{%if sponsor.signmethod == 0%}
+<p>
+  <b>Note!</b> This sponsor is using digital contracts, which means you should normally not
+  be confirming sponsorships manually, this should be handled automatically by the system.
+</p>
+{%endif%}
 <p>
 <form method="post" action=".">{%csrf_token%}
   <input type="submit" name="submit" value="Confirm sponsorship" class="btn btn-default confirm-btn" data-confirm="Once confirmed, there is no going back!">
@@ -226,7 +232,7 @@ has been received, go ahead and generate the invoice.
 {%endif%}
 <form method="post" action=".">{%csrf_token%}
 {%if sponsor.level.levelcost %}
-<input type="submit" name="submit" value="Generate sponsorship invoice" class="btn btn-default">
+<input type="submit" name="submit" value="Generate sponsorship invoice" class="btn btn-default{%if sponsor.signmethod == 0%} confirm-btn{%endif%}"{%if sponsor.signmethod == 0%} data-confirm="This sponsor is using a digital contract! Normally invoicing/confirmation is automatic through that system and you should *not* do it manually. are you sure you want to proceed?"{%endif%}>
 {%else%}
 <input type="submit" name="submit" value="Confirm sponsorship without invoice" class="btn btn-default confirm-btn" data-confirm="Once confirmed, there is no going back!">
 {%endif%}
