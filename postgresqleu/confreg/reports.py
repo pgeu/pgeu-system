@@ -529,7 +529,7 @@ class AttendeeReportManager:
 
         where = " AND r.id=ANY(%(rids)s) "
         params = {
-            'rids': list(map(int, data['rids'].split(','))),
+            'rids': list(map(int, data['rids'].split(','))) if data['rids'] else [],
             'conference_id': self.conference.id,
         }
 
