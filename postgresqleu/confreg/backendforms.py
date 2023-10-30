@@ -1498,15 +1498,15 @@ class BackendTweetQueueForm(BackendForm):
     @property
     def nosave_fields(self):
         if isinstance(self.instance.contents, dict):
-            return ['social_{}'.format(mp.id) for mp in MessagingProvider.objects.only('id').filter(active=True, conferencemessaging__conference=self.conference, conferencemessaging__broadcast=True)]
+            return ['social_{}'.format(mp.id) for mp in MessagingProvider.objects.only('id').filter(active=True, conferencemessaging__conference=self.conference, conferencemessaging__broadcast=True)] + ['status', ]
         else:
-            return ['textcontents']
+            return ['textcontents', 'status', ]
 
     @property
     def readonly_fields(self):
         if self.instance.sent:
             # If it's already sent, nothing gets to be edited
-            return ['datetime', 'approved', 'image', 'comment', 'status'] + self.nosave_fields
+            return ['datetime', 'approved', 'image', 'comment', ] + self.nosave_fields
         return []
 
     def fix_fields(self):
