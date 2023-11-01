@@ -35,6 +35,9 @@ class BaseBenefit(object):
     def validate_parameters(self):
         pass
 
+    def transform_parameters(self, oldconference, newconference):
+        pass
+
     def inject_summary_section(self, claimedbenefit):
         return None
 

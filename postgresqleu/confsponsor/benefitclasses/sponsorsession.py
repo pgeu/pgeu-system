@@ -165,8 +165,21 @@ class SponsorSession(BaseBenefit):
 
     def validate_parameters(self):
         # Verify that the track being copied in actually exists
-        if not Track.objects.filter(conference=self.level.conference, trackname=self.params['track']).exists():
-            raise ValidationError("Track '{}' does not exist".format(self.params['track']))
+        if not Track.objects.filter(conference=self.level.conference, pk=self.params['track']).exists():
+            raise ValidationError("Track id {} does not exist".format(self.params['track']))
+
+    def transform_parameters(self, oldconference, newconference):
+        # Match the track on name instead of id!
+        if 'track' in self.params:
+            # Should always exist, but it's up to validation to make sure it does
+            try:
+                oldtrack = Track.objects.get(conference=oldconference, pk=self.params['track'])
+            except Track.DoesNotExist:
+                raise ValidationError("Could not find track name in old conference")
+            try:
+                self.params['track'] = Track.objects.get(conference=newconference, trackname=oldtrack.trackname).pk
+            except Track.DoesNotExist:
+                raise ValidationError("Track '{}' does not exist".format(oldtrack.trackname))
 
     def process_confirm(self, claim):
         # When confirmed we populate a speaker and a session record
