@@ -3,9 +3,11 @@ from django.conf import settings
 
 from .models import ConferenceRegistration, BulkPayment, PendingAdditionalOrder
 from .models import RegistrationWaitlistHistory, PrepaidVoucher
+from .models import RegistrationTransferPending
 from .util import notify_reg_confirmed
 from .util import send_conference_mail, send_conference_notification
 from .util import reglog
+from .util import make_registration_transfer
 
 
 class InvoiceProcessor(object):
@@ -298,3 +300,47 @@ class AddonInvoiceProcessor(object):
         except PendingAdditionalOrder.DoesNotExist:
             return None
         return "/events/admin/{0}/regdashboard/list/{1}/".format(order.reg.conference.urlname, order.reg.pk)
+
+
+class TransferInvoiceProcessor(object):
+    can_refund = False
+    # Process invoices for registration transfers.
+    #
+    # All modifications are already wrapped in a django transaction
+
+    def process_invoice_payment(self, invoice):
+        try:
+            pending = RegistrationTransferPending.objects.get(pk=invoice.processorid)
+        except RegistrationTransferPending.DoesNotExist:
+            raise Exception("Could not find pending transfer: %s!" % invoice.processorid)
+
+        reglog(pending.fromreg, 'Paid invoice for pending transfer')
+        dummy = list(make_registration_transfer(pending.fromreg, pending.toreg, None, True))
+
+        pending.delete()
+
+    def process_invoice_cancellation(self, invoice):
+        try:
+            pending = RegistrationTransferPending.objects.get(pk=invoice.processorid)
+        except RegistrationTransferPending.DoesNotExist:
+            raise Exception("Could not find pending transfer: %s!" % invoice.processorid)
+
+        reglog(pending.fromreg, 'Canceled invoice for pending transfer')
+        pending.delete()
+
+    # Return the user to their dashboard
+    def get_return_url(self, invoice):
+        try:
+            pending = RegistrationTransferPending.objects.get(pk=invoice.processorid)
+        except RegistrationTransferPending.DoesNotExist:
+            raise Exception("Could not find pending transfer: %s!" % invoice.processorid)
+
+        return "{}/events/{}/".format(settings.SITEBASE, pending.conference.urlname)
+
+    def get_admin_url(self, invoice):
+        try:
+            pending = RegistrationTransferPending.objects.get(pk=invoice.processorid)
+        except RegistrationTransferPending.DoesNotExist:
+            return None
+
+        return "/events/admin/{0}/transfer/".format(pending.conference.urlname)

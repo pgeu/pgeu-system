@@ -70,6 +70,7 @@ class BackendConferenceForm(BackendForm):
         'initial_common_countries': CountryLookup(),
     }
     selectize_taglist_fields = ('dynafields', )
+    vat_fields = {'transfer_cost': 'reg'}
 
     class Meta:
         model = Conference
@@ -83,7 +84,7 @@ class BackendConferenceForm(BackendForm):
                   'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent',
                   'skill_levels', 'showvotes', 'callforpaperstags', 'callforpapersrecording', 'sendwelcomemail',
                   'tickets', 'confirmpolicy', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist',
-                  'initial_common_countries', 'jinjaenabled', 'dynafields']
+                  'transfer_cost', 'initial_common_countries', 'jinjaenabled', 'dynafields']
 
     def fix_fields(self):
         self.selectize_multiple_fields['volunteers'] = RegisteredUsersLookup(self.conference)
@@ -93,7 +94,7 @@ class BackendConferenceForm(BackendForm):
         self.fields['notifyvolunteerstatus'].help_text = 'Notifications will be sent to {} whenever a volunteer makes changes to a slot.'.format(self.conference.notifyaddr)
 
     fieldsets = [
-        {'id': 'base_info', 'legend': 'Basic information', 'fields': ['attendees_before_waitlist', 'invoice_autocancel_hours', 'notifyregs', 'notifysessionstatus', 'notifyvolunteerstatus', ]},
+        {'id': 'base_info', 'legend': 'Basic information', 'fields': ['attendees_before_waitlist', 'invoice_autocancel_hours', 'transfer_cost', 'notifyregs', 'notifysessionstatus', 'notifyvolunteerstatus', ]},
         {'id': 'welcomeandreg', 'legend': 'Welcome and registration', 'fields': ['sendwelcomemail', 'tickets', 'confirmpolicy', 'queuepartitioning', 'initial_common_countries']},
         {'id': 'promo', 'legend': 'Website promotion', 'fields': ['promoactive', 'promotext', 'promopicurl']},
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', 'twitter_postpolicy', ]},
@@ -330,6 +331,9 @@ class BackendRegistrationForm(BackendForm):
             self.warning_text = "WARNING! This registration has already been CANCELED! Edit with caution!"
         elif self.instance.payconfirmedat:
             self.warning_text = "WARNING! This registration has already been completed! Edit with caution!"
+
+        if self.instance.partoftransfer:
+            self.warning_text = "WARNING! This registration is part of a pending transfer. Should NOT be edited!"
 
         self.fields['additionaloptions'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference)
         self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=self.conference)

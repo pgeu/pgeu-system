@@ -28,6 +28,7 @@ from .models import BulkPayment, Room, Track, ConferenceSessionScheduleSlot
 from .models import AttendeeMail, ConferenceAdditionalOption
 from .models import PendingAdditionalOrder
 from .models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
+from .models import RegistrationTransferPending
 from .models import STATUS_CHOICES
 from .models import ConferenceNews, ConferenceTweetQueue
 from .models import SavedReportDefinition
@@ -47,6 +48,7 @@ from .util import get_invoice_autocancel, cancel_registration, send_welcome_emai
 from .util import attendee_cost_from_bulk_payment
 from .util import send_conference_mail, send_conference_notification, send_conference_notification_template
 from .util import reglog
+from .util import make_registration_transfer
 
 from .models import get_status_string, valid_status_transitions
 from .regtypes import confirm_special_reg_type, validate_special_reg_type
@@ -66,9 +68,9 @@ from postgresqleu.util.pagination import simple_pagination
 from postgresqleu.invoices.util import InvoiceWrapper
 from postgresqleu.confwiki.models import Wikipage
 from postgresqleu.confsponsor.models import Sponsor, ScannedAttendee, PurchasedVoucher
-from postgresqleu.confsponsor.invoicehandler import create_voucher_invoice
+from postgresqleu.confsponsor.invoicehandler import create_voucher_invoice, get_sponsor_invoice_address
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
-from postgresqleu.invoices.models import InvoiceProcessor, InvoiceHistory
+from postgresqleu.invoices.models import InvoiceProcessor
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.jsonutil import JsonSerializer
 from postgresqleu.util.db import exec_to_dict, exec_to_grouped_dict, exec_to_keyed_dict
@@ -163,6 +165,8 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
 
     # Form for changeable fields (only available unless canceled, so make doubly sure)
     if request.method == 'POST' and not reg.canceledat:
+        if reg.partoftransfer:
+            return HttpResponse("This registration is pending transfer and cannot be edited.")
         changeform = RegistrationChangeForm(conference.allowedit, instance=reg, data=request.POST)
         if changeform.is_valid():
             if changeform.changed_data:
@@ -352,6 +356,13 @@ def register(request, confname, whatfor=None):
 
     is_active = conference.IsRegistrationOpen or conference.testers.filter(pk=request.user.id).exists()
 
+    if reg.partoftransfer:
+        return render_conference_response(request, conference, 'reg', 'confreg/registration_part_of_transfer.html', {
+            'redir_root': redir_root,
+            'reg': reg,
+            'has_other_multiregs': has_other_multiregs,
+        })
+
     if not is_active:
         # Registration not open.
         if reg.payconfirmedat:
@@ -476,6 +487,10 @@ def changereg(request, confname):
     conference = get_conference_or_404(confname)
     reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
 
+    if reg.partoftransfer:
+        # This is a cannot-happen situation, so we don't care about the error message being brief
+        return HttpResponse("Can't save edits when part of a transfer")
+
     return _registration_dashboard(request, conference, reg, False, '../')
 
 
@@ -533,6 +548,13 @@ def multireg(request, confname, regid=None):
         if reg.attendee:
             raise Http404("Registration is connected to an account, can't be edited as multireg!")
         redir_root = '../'
+
+        if reg.partoftransfer:
+            return render_conference_response(request, conference, 'reg', 'confreg/registration_part_of_transfer.html', {
+                'redir_root': '../../',
+                'reg': reg,
+                'has_other_multiregs': True,
+            })
     else:
         reg = ConferenceRegistration(conference=conference,
                                      registrator=request.user,
@@ -884,6 +906,10 @@ def reg_add_options(request, confname, whatfor=None):
 
     if request.POST.get('submit', '') == 'Back':
         return HttpResponseRedirect('../')
+
+    if reg.partoftransfer:
+        messages.warning(request, "Registration is part of a transfer, cannot be edited")
+        return HttpResponseRedirect("../")
 
     options = []
     for k, v in list(request.POST.items()):
@@ -4359,138 +4385,22 @@ def session_notify_queue(request, urlname):
 def transfer_reg(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
-    def _make_transfer(fromreg, toreg):
-        yield "Initiating transfer from %s to %s" % (fromreg.fullname, toreg.fullname)
-        if fromreg.canceledat:
-            raise ValidationError("Source registration is canceled!")
-        if toreg.payconfirmedat:
-            raise ValidationError("Destination registration is already confirmed!")
-        if toreg.canceledat:
-            raise ValidationError("Destination registration is canceled!")
-        if toreg.bulkpayment:
-            raise ValidationError("Destination registration is part of a bulk payment")
-        if toreg.invoice:
-            raise ValidationError("Destination registration has an invoice")
-
-        if toreg.additionaloptions.exists():
-            raise ValidationError("Destination registration has additional options")
-
-        if hasattr(toreg, 'registrationwaitlistentry'):
-            yield "Destination registration is on waitlist, canceling"
-            toreg.registrationwaitlistentry.delete()
-
-        # Transfer registration type
-        if toreg.regtype != fromreg.regtype:
-            yield "Change registration type from %s to %s" % (toreg.regtype, fromreg.regtype)
-            if fromreg.regtype.specialtype:
-                try:
-                    validate_special_reg_type(fromreg.regtype.specialtype, toreg)
-                except ValidationError as e:
-                    raise ValidationError("Registration type cannot be transferred: %s" % e.message)
-            toreg.regtype = fromreg.regtype
-
-        # Transfer any vouchers
-        if fromreg.vouchercode != toreg.vouchercode:
-            yield "Change discount code to %s" % fromreg.vouchercode
-            if toreg.vouchercode:
-                # There's already a code set. Remove it.
-                toreg.vouchercode = None
-
-                # Actively attached to a discount code. Can't deal with that
-                # right now.
-                if toreg.discountcode_set.exists():
-                    raise ValidationError("Receiving registration is connected to discount code. Cannot handle.")
-            if fromreg.vouchercode:
-                # It actually has one. So we have to transfer it
-                toreg.vouchercode = fromreg.vouchercode
-                dcs = fromreg.discountcode_set.all()
-                if dcs:
-                    # It's a discount code. There can only ever be one.
-                    d = dcs[0]
-                    d.registrations.remove(fromreg)
-                    d.registrations.add(toreg)
-                    d.save()
-                    yield "Transferred discount code %s" % d
-                vcs = fromreg.prepaidvoucher_set.all()
-                if vcs:
-                    # It's a voucher code. Same here, only one.
-                    v = vcs[0]
-                    v.user = toreg
-                    v.save()
-
-        # Bulk payment?
-        if fromreg.bulkpayment:
-            yield "Transfer bulk payment %s" % fromreg.bulkpayment.id
-            toreg.bulkpayment = fromreg.bulkpayment
-            fromreg.bulkpayment = None
-
-        # Invoice?
-        if fromreg.invoice:
-            yield "Transferring invoice %s" % fromreg.invoice.id
-            toreg.invoice = fromreg.invoice
-            fromreg.invoice = None
-            InvoiceHistory(invoice=toreg.invoice,
-                           txt="Transferred from {0} to {1}".format(fromreg.email, toreg.email)
-                           ).save()
-
-        # Additional options
-        if fromreg.additionaloptions.exists():
-            for o in fromreg.additionaloptions.all():
-                yield "Transferring additional option {0}".format(o)
-                o.conferenceregistration_set.remove(fromreg)
-                o.conferenceregistration_set.add(toreg)
-                o.save()
-
-        # Waitlist entries
-        if hasattr(fromreg, 'registrationwaitlistentry'):
-            wle = fromreg.registrationwaitlistentry
-            yield "Transferring registration waitlist entry"
-            wle.registration = toreg
-            wle.save()
-
-        yield "Resetting registration date"
-        toreg.created = timezone.now()
-
-        yield "Copying payment confirmation"
-        toreg.payconfirmedat = fromreg.payconfirmedat
-        toreg.payconfirmedby = "{0}(x)".format(fromreg.payconfirmedby)[:16]
-        toreg.save()
-        reglog(toreg, "Transferred registration from {}".format(fromreg.fullname), request.user)
-
-        yield "Sending notification to target registration"
-        # This notify will also send a ticket or a "confirm conference policy request"
-        # depending on the conference configuration.
-        notify_reg_confirmed(toreg, False)
-
-        yield "Sending notification to source registration"
-        send_conference_mail(fromreg.conference,
-                             fromreg.email,
-                             "Registration transferred",
-                             'confreg/mail/reg_transferred.txt', {
-                                 'conference': conference,
-                                 'toreg': toreg,
-                             },
-                             receivername=fromreg.fullname)
-
-        send_conference_notification(
-            fromreg.conference,
-            "Transferred registration",
-            "Registration for {0} transferred to {1}.\n".format(fromreg.email, toreg.email),
-        )
-
-        yield "Deleting old registration"
-        fromreg.delete()
-
     steps = None
     stephash = None
     if request.method == 'POST':
         form = TransferRegForm(conference, data=request.POST)
         if form.is_valid():
             savepoint = transaction.savepoint()
+
+            id_from = form.cleaned_data['transfer_from'].pk
+            id_to = form.cleaned_data['transfer_to'].pk
+
             try:
-                steps = list(_make_transfer(form.cleaned_data['transfer_from'],
-                                            form.cleaned_data['transfer_to'],
-                                            ))
+                steps = list(make_registration_transfer(
+                    form.cleaned_data['transfer_from'],
+                    form.cleaned_data['transfer_to'],
+                    request.user,
+                ))
             except ValidationError as e:
                 form.add_error(None, e)
                 form.remove_confirm()
@@ -4506,6 +4416,63 @@ def transfer_reg(request, urlname):
                     messages.error(request, 'Something changed while running. Start over!')
                     transaction.set_rollback(True)
                     return HttpResponseRedirect('.')
+
+                if form.cleaned_data.get('create_invoice', False):
+                    # When we're creating an invoice, roll back the changes we did and create
+                    # the transfer object instead.
+                    transaction.savepoint_rollback(savepoint)
+                    rtp = RegistrationTransferPending(
+                        conference=conference,
+                        fromreg_id=id_from,
+                        toreg_id=id_to,
+                    )
+                    rtp.save()  # We need the key
+
+                    manager = InvoiceManager()
+                    processor = InvoiceProcessor.objects.get(processorname="confreg transfer processor")
+
+                    invoicerows = [
+                        [
+                            "Transfer from {} to {}".format(
+                                form.cleaned_data['transfer_from'].email,
+                                form.cleaned_data['transfer_to'].email,
+                            ),
+                            1,
+                            conference.transfer_cost,
+                            conference.vat_registrations,
+                        ],
+                    ]
+
+                    rtp.invoice = manager.create_invoice(
+                        form.cleaned_data['invoice_recipient'],
+                        form.cleaned_data['invoice_email'],
+                        form.cleaned_data['invoice_name'],
+                        form.cleaned_data['invoice_address'],
+                        "{} registration transfer".format(conference.conferencename),
+                        timezone.now(),
+                        timezone.now(),
+                        invoicerows,
+                        processor=processor,
+                        processorid=rtp.pk,
+                        accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
+                        accounting_object=conference.accounting_object,
+                        paymentmethods=conference.paymentmethods.all(),
+                    )
+                    rtp.invoice.save()
+                    rtp.save(update_fields=['invoice'])
+
+                    reglog(
+                        id_from,
+                        "Created pending registration transfer",
+                        request.user,
+                        data={"to": form.cleaned_data['transfer_to'].email},
+                    )
+
+                    wrapper = InvoiceWrapper(rtp.invoice)
+                    wrapper.email_invoice()
+                    messages.info(request, "Registration transfer invoice created.")
+                    return HttpResponseRedirect(".")
+
                 transaction.savepoint_commit(savepoint)
                 messages.info(request, "Registration transfer completed.")
                 return HttpResponseRedirect('../')
@@ -4521,8 +4488,32 @@ def transfer_reg(request, urlname):
         'form': form,
         'steps': steps,
         'stephash': stephash,
+        'sponsors': Sponsor.objects.select_related('level').filter(conference=conference, confirmed=True).order_by('-level__levelcost', 'level__levelname', 'name'),
+        'pending': RegistrationTransferPending.objects.select_related('fromreg', 'toreg', 'invoice').filter(conference=conference),
         'helplink': 'registrations#transfer',
     })
+
+
+@transaction.atomic
+def transfer_get_address(request, urlname):
+    conference = get_authenticated_conference(request, urlname)
+
+    id = get_int_or_error(request.GET, 'id')
+
+    if request.GET.get('type', None) == 'reg':
+        reg = get_object_or_404(ConferenceRegistration, conference=conference, pk=id)
+        return HttpResponse(
+            reg.company + "\n" + reg.address + "\n" + reg.countryname,
+            content_type='text/plain',
+        )
+    elif request.GET.get('type', None) == 'sponsor':
+        s = get_object_or_404(Sponsor, conference=conference, confirmed=True, pk=id)
+        return HttpResponse(
+            get_sponsor_invoice_address(s.name, s.invoiceaddr, s.vatnumber),
+            content_type='text/plain',
+        )
+    else:
+        raise Http404("Type not found")
 
 
 # Send email to attendees of mixed conferences

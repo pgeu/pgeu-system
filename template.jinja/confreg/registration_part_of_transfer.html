@@ -1,0 +1,34 @@
+{%extends "base.html" %}
+{%block title%}Your Registration - {{conference}}{%endblock%}
+{%block content%}
+{% if messages %}
+<ul style="background-color: yellow;" class="regdashboardmessage">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<h1>Your Registration<span class="confheader"> - {{conference}}</span></h1>
+
+<p>
+  <strong>Your registration (for {{reg.firstname}} {{reg.lastname}})
+    is currently part of a registration and can't be viewed or edited.
+  </strong>
+</p>
+
+{%if not has_other_multiregs%}
+<p>
+If you wish to make another registration for somebody else, please
+<a href="{{redir_root}}other/">click here</a>.
+</p>
+{%else%}
+<h2>Other registrations</h2>
+<p>
+  You are also managing registrations for other attendees.
+  <a href="{{redir_root}}other/">click here</a> to view details about them
+  or register more attendees.
+</p>
+{%endif%}
+
+{%endblock%}

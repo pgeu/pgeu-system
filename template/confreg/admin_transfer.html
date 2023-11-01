@@ -10,23 +10,94 @@
 tr.error {
    background-color: #ffb6b6;
 }
+ul.errorlist {
+    color: red;
+}
 table.transferform tr {
    vertical-align: top;
 }
-table.transferform input[type=text],textarea,select {
+table.transferform tr td {
+   padding-bottom: 1rem;
+}
+table.transferform input[type=text],input[type=email],textarea,select {
    width: 500px !important;
+}
+div#copyoptions {
+    margin-top: 0.5rem;
 }
 </style>
 
 <script type="text/javascript">
+async function copyAddressFrom(type, field) {
+    let id = document.getElementById(field).value;
+    if (!id) {
+	return;
+    }
+
+    let r = await fetch('getaddress/?' + new URLSearchParams({
+	'type': type,
+	'id': id
+    }));
+    if (r.status != 200) {
+	return;
+    }
+
+    let text = await r.text();
+    document.getElementById('id_invoice_address').value = text;
+}
+
 $(function() {
-   $('#id_transfer_from, #id_transfer_to').selectize({plugins: ['remove_button']});
+   $('#id_transfer_from, #id_transfer_to, #id_invoice_recipient').selectize({plugins: ['remove_button']});
+
+   if (document.getElementById('id_invoice_address')) {
+       document.getElementById('id_invoice_address').after(document.getElementById('copyoptions'));
+
+       document.getElementById('copy_from_from').addEventListener("click", function() {
+	   copyAddressFrom('reg', 'id_transfer_from');
+	   event.preventDefault();
+       });
+       document.getElementById('copy_from_to').addEventListener("click", function() {
+	   copyAddressFrom('reg', 'id_transfer_to');
+	   event.preventDefault();
+       });
+       document.getElementById('copy_from_sponsor').addEventListener("change", function() {
+	   copyAddressFrom('sponsor', 'copy_from_sponsor')
+	   this.value = 0;
+	   event.preventDefault();
+       });
+   }
 });
 </script>
 {% endblock %}
 
 {%block layoutblock%}
-<h1>Transfer registration</h1>
+<h1>Registration transfer</h1>
+<h2>Pending transfers</h2>
+<p>
+  The following transfers are currently pending invoice payment:
+</p>
+<table class="table table-striped table-hover">
+  <thead>
+    <tr>
+      <th>From</th>
+      <th>To</th>
+      <th>Created</th>
+      <th>Invoice</th>
+    </tr>
+  </thead>
+  <tbody>
+{%for p in pending %}
+    <tr>
+      <td>{{p.fromreg.fullname}} &lt;{{p.fromreg.email}}&gt;</td>
+      <td>{{p.toreg.fullname}} &lt;{{p.toreg.email}}&gt;</td>
+      <td>{{p.created}}</td>
+      <td><a href="/invoiceadmin/{{p.invoice.id}}/">{{p.invoice}}</a></td>
+    </tr>
+{%endfor%}
+  </tbody>
+</table>
+
+<h2>Transfer registration</h2>
 
 <p>
 Have the new user sign up for the conference, possibly go on the waitlist if the same is already activated.
@@ -53,5 +124,17 @@ Then use this tool to swap the old and the new registration.<br/>
 <br/>
 
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/">Back to dashboard</a>
+
+{%if form.fields.invoice_address%}
+<div id="copyoptions">
+  Copy from
+  <button id="copy_from_from" class="btn btn-sm">From attendes</button>,
+  <button id="copy_from_to" class="btn btn-sm">To attendee</button>,
+  <select id="copy_from_sponsor"><option value="0">--- From sponsor</option>
+{%for s in sponsors%}
+<option value="{{s.id}}">{{s.level}}: {{s.name}}</option>{%endfor%}
+  </select>.
+</div>
+{%endif%}
 
 {%endblock%}

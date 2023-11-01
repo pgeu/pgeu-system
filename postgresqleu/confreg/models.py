@@ -224,6 +224,7 @@ class Conference(models.Model):
     vat_registrations = models.ForeignKey(VatRate, null=True, blank=True, verbose_name='VAT rate for registrations', related_name='vat_registrations', on_delete=models.CASCADE)
     vat_sponsorship = models.ForeignKey(VatRate, null=True, blank=True, verbose_name='VAT rate for sponsorships', related_name='vat_sponsorship', on_delete=models.CASCADE)
     invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), ], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
+    transfer_cost = models.DecimalField(decimal_places=2, max_digits=10, null=False, default=0, help_text="Cost of transferring a registration, excluding VAT.")
     paymentmethods = models.ManyToManyField(InvoicePaymentMethod, blank=True, verbose_name='Invoice payment options')
     attendees_before_waitlist = models.IntegerField(blank=False, null=False, default=0, validators=[MinValueValidator(0), ], verbose_name="Attendees before waitlist", help_text="Maximum number of attendees before enabling waitlist management. 0 for no waitlist management")
     series = models.ForeignKey(ConferenceSeries, null=False, blank=False, on_delete=models.CASCADE)
@@ -673,6 +674,8 @@ class ConferenceRegistration(models.Model):
     def invoice_status(self):
         if self.canceledat:
             return "registration canceled"
+        elif self.partoftransfer:
+            return "part of pending transfer"
         elif self.payconfirmedat:
             return "paid and confirmed"
         elif self.invoice:
@@ -686,7 +689,7 @@ class ConferenceRegistration(models.Model):
     def can_edit(self):
         # Can this registration be edited by the end user (which also implies
         # it can be deleted)
-        return not (self.payconfirmedat or self.invoice or self.bulkpayment)
+        return not (self.payconfirmedat or self.invoice or self.bulkpayment or self.partoftransfer)
 
     def short_regtype(self):
         if self.regtype:
@@ -827,6 +830,10 @@ class ConferenceRegistration(models.Model):
 
         return ", ".join([d.isoday() for d in days])
 
+    @property
+    def partoftransfer(self):
+        return self.transfer_from_reg.exists() or self.transfer_to_reg.exists()
+
     def get_field_string(self, field):
         r = getattr(self, field)
         if isinstance(r, bool):
@@ -896,6 +903,17 @@ class RegistrationWaitlistHistory(models.Model):
 
     class Meta:
         ordering = ('-time',)
+
+
+class RegistrationTransferPending(models.Model):
+    conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE, db_index=True)
+    fromreg = models.ForeignKey(ConferenceRegistration, null=False, blank=False, on_delete=models.CASCADE, related_name="transfer_from_reg")
+    toreg = models.ForeignKey(ConferenceRegistration, null=False, blank=False, on_delete=models.CASCADE, related_name="transfer_to_reg")
+    invoice = models.OneToOneField(Invoice, null=True, blank=True, on_delete=models.CASCADE)
+    created = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+
+    class Meta:
+        ordering = ('conference', 'created', )
 
 
 class Track(models.Model):

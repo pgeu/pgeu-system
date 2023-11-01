@@ -17,6 +17,7 @@ from .models import PRIMARY_SPEAKER_PHOTO_RESOLUTION
 
 from .regtypes import validate_special_reg_type
 from .twitter import get_all_conference_social_media
+from postgresqleu.util.fields import UserModelChoiceField
 from postgresqleu.util.widgets import EmailTextWidget, MonospaceTextarea
 from postgresqleu.util.db import exec_to_list
 from postgresqleu.util.magic import magicdb
@@ -781,18 +782,43 @@ class WaitlistSendmailForm(forms.Form):
 class TransferRegForm(forms.Form):
     transfer_from = forms.ModelChoiceField(ConferenceRegistration.objects.filter(id=-1))
     transfer_to = forms.ModelChoiceField(ConferenceRegistration.objects.filter(id=-1))
+    create_invoice = forms.BooleanField(required=False, help_text="Create an invoice for this transfer, and perform the transfer only once the invoice is paid?")
+    invoice_recipient = UserModelChoiceField(User.objects.all(), required=False, label="Invoice recipient user", help_text="Not required but if specified it will attach the invoice to this account so it can be viewed in the users inovice list")
+    invoice_name = forms.CharField(required=False, label="Invoice recipient name", help_text="Name of the recipient of the invoice")
+    invoice_email = forms.EmailField(required=False, label="Invoice recipient email", help_text="E-mail to send the invoice to")
+    invoice_address = forms.CharField(widget=MonospaceTextarea, required=False)
     confirm = forms.BooleanField(help_text="Confirm that you want to transfer the registration with the given steps!", required=False)
 
     def __init__(self, conference, *args, **kwargs):
         self.conference = conference
         super(TransferRegForm, self).__init__(*args, **kwargs)
-        self.fields['transfer_from'].queryset = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True)
+        self.fields['transfer_from'].queryset = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, transfer_from_reg__isnull=True)
         self.fields['transfer_to'].queryset = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True, canceledat__isnull=True, bulkpayment__isnull=True)
         if not ('transfer_from' in self.data and 'transfer_to' in self.data):
             del self.fields['confirm']
+        if not conference.transfer_cost:
+            del self.fields['create_invoice']
+            del self.fields['invoice_recipient']
+            del self.fields['invoice_name']
+            del self.fields['invoice_email']
+            del self.fields['invoice_address']
 
     def remove_confirm(self):
         del self.fields['confirm']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        invoice_fields = ['invoice_name', 'invoice_email', 'invoice_address']
+        if cleaned_data.get('create_invoice', False):
+            for f in invoice_fields:
+                if not cleaned_data.get(f, None):
+                    self.add_error(f, 'This field is required when creating an invoice')
+        else:
+            for f in invoice_fields:
+                if self.cleaned_data.get(f, None):
+                    self.add_error(f, 'This field cannot be specified unless creating an invoice')
+
+        return cleaned_data
 
 
 class CrossConferenceMailForm(forms.Form):

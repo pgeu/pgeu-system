@@ -112,6 +112,11 @@ impossible to know if they will use their seat or not. Typically
 starts out as a high value that is decreased as either the conference
 draws closer or it starts approaching sold out.
 
+Transfer cost
+:  If set to a value it will become possible to create invoices for
+transferring registrations. The cost will be per-registration and
+independent of registration type.
+
 Notify about registrations
 : Send an email to the notification address every time somebody
 registers or has their registration canceled.

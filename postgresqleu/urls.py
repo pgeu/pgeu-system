@@ -234,6 +234,7 @@ urlpatterns.extend([
     url(r'^events/admin/(\w+)/signups/(\d+)/sendmail/$', postgresqleu.confwiki.views.signup_admin_sendmail),
     url(r'^events/admin/(\w+)/signups/(\d+)/edit/(new|\d+)/$', postgresqleu.confwiki.views.signup_admin_editsignup),
     url(r'^events/admin/(\w+)/transfer/$', postgresqleu.confreg.views.transfer_reg),
+    url(r'^events/admin/(\w+)/transfer/getaddress/$', postgresqleu.confreg.views.transfer_get_address),
     url(r'^events/admin/(?P<urlname>[^/]+)/volunteer/$', postgresqleu.confreg.volsched.volunteerschedule, {'adm': True}),
     url(r'^events/admin/(?P<urlname>[^/]+)/volunteer/api/$', postgresqleu.confreg.volsched.volunteerschedule_api, {'adm': True}),
     url(r'^events/admin/(?P<urlname>[^/]+)/volunteer/ical/(?P<token>[a-z0-9]{64})/$', postgresqleu.confreg.volsched.ical, {'adm': True}),

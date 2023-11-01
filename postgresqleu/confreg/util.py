@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from django.utils import timezone
+from django.forms import ValidationError
 
 import json
 import os
@@ -19,6 +20,7 @@ from postgresqleu.util.time import today_conference
 from postgresqleu.util.messaging.util import send_org_notification
 from postgresqleu.confreg.jinjafunc import JINJA_TEMPLATE_ROOT, render_jinja_conference_template, render_jinja_conference_response
 from postgresqleu.confreg.jinjapdf import render_jinja_ticket
+from postgresqleu.invoices.models import InvoiceHistory
 
 from .models import PrepaidVoucher, DiscountCode, RegistrationWaitlistHistory
 from .models import ConferenceRegistration, Conference, ConferenceSeries
@@ -31,7 +33,11 @@ def reglog(reg, txt, user=None, data=None):
         jdata = json.dumps({k: str(v) for k, v in data.items()}, indent=1)
     else:
         jdata = ''
-    ConferenceRegistrationLog(reg=reg, txt=txt, user=user, changedata=jdata).save()
+
+    if isinstance(reg, ConferenceRegistration):
+        ConferenceRegistrationLog(reg=reg, txt=txt, user=user, changedata=jdata).save()
+    else:
+        ConferenceRegistrationLog(reg_id=reg, txt=txt, user=user, changedata=jdata).save()
 
 
 #
@@ -527,3 +533,141 @@ def render_conference_response(request, conference, pagemagic, templatename, dic
         return render_jinja_conference_response(request, conference, pagemagic, templatename, dictionary)
 
     raise Http404("Template not found")
+
+
+#
+# Transfer a registration - the plumbing parts
+#
+def make_registration_transfer(fromreg, toreg, user, complete_transfer=False):
+    yield "Initiating transfer from %s to %s" % (fromreg.fullname, toreg.fullname)
+    if fromreg.canceledat:
+        raise ValidationError("Source registration is canceled!")
+    if fromreg.wikipage_set.exists():
+        raise ValidationError("Source registration is the author of wiki pages")
+    if fromreg.signup_set.exists():
+        raise ValidationError("Source registration is the author of signups")
+    if toreg.payconfirmedat:
+        raise ValidationError("Destination registration is already confirmed!")
+    if toreg.canceledat:
+        raise ValidationError("Destination registration is canceled!")
+    if toreg.bulkpayment:
+        raise ValidationError("Destination registration is part of a bulk payment")
+    if toreg.invoice:
+        raise ValidationError("Destination registration has an invoice")
+    if not complete_transfer:
+        if fromreg.transfer_from_reg.exists() or fromreg.transfer_to_reg.exists():
+            raise ValidationError("Source registration is already part of a transfer")
+        if toreg.transfer_from_reg.exists() or toreg.transfer_to_reg.exists():
+            raise ValidationError("Destination registration is already part of a transfer")
+
+    if toreg.additionaloptions.exists():
+        raise ValidationError("Destination registration has additional options")
+
+    if hasattr(toreg, 'registrationwaitlistentry'):
+        yield "Destination registration is on waitlist, canceling"
+        toreg.registrationwaitlistentry.delete()
+
+    # Transfer registration type
+    if toreg.regtype != fromreg.regtype:
+        yield "Change registration type from %s to %s" % (toreg.regtype, fromreg.regtype)
+        if fromreg.regtype.specialtype:
+            try:
+                validate_special_reg_type(fromreg.regtype.specialtype, toreg)
+            except ValidationError as e:
+                raise ValidationError("Registration type cannot be transferred: %s" % e.message)
+        toreg.regtype = fromreg.regtype
+
+    # Transfer any vouchers
+    if fromreg.vouchercode != toreg.vouchercode:
+        yield "Change discount code to %s" % fromreg.vouchercode
+        if toreg.vouchercode:
+            # There's already a code set. Remove it.
+            toreg.vouchercode = None
+
+            # Actively attached to a discount code. Can't deal with that
+            # right now.
+            if toreg.discountcode_set.exists():
+                raise ValidationError("Receiving registration is connected to discount code. Cannot handle.")
+        if fromreg.vouchercode:
+            # It actually has one. So we have to transfer it
+            toreg.vouchercode = fromreg.vouchercode
+            dcs = fromreg.discountcode_set.all()
+            if dcs:
+                # It's a discount code. There can only ever be one.
+                d = dcs[0]
+                d.registrations.remove(fromreg)
+                d.registrations.add(toreg)
+                d.save()
+                yield "Transferred discount code %s" % d
+            vcs = fromreg.prepaidvoucher_set.all()
+            if vcs:
+                # It's a voucher code. Same here, only one.
+                v = vcs[0]
+                v.user = toreg
+                v.save()
+
+    # Bulk payment?
+    if fromreg.bulkpayment:
+        yield "Transfer bulk payment %s" % fromreg.bulkpayment.id
+        toreg.bulkpayment = fromreg.bulkpayment
+        fromreg.bulkpayment = None
+        fromreg.save(update_fields=['bulkpayment'])
+
+    # Invoice?
+    if fromreg.invoice:
+        yield "Transferring invoice %s" % fromreg.invoice.id
+        invoice = fromreg.invoice
+        fromreg.invoice = None
+        toreg.invoice = invoice
+        InvoiceHistory(invoice=toreg.invoice,
+                       txt="Transferred from {0} to {1}".format(fromreg.email, toreg.email)
+                       ).save()
+        fromreg.save(update_fields=['invoice'])
+
+    # Additional options
+    if fromreg.additionaloptions.exists():
+        for o in fromreg.additionaloptions.all():
+            yield "Transferring additional option {0}".format(o)
+            o.conferenceregistration_set.remove(fromreg)
+            o.conferenceregistration_set.add(toreg)
+            o.save()
+
+    # Waitlist entries
+    if hasattr(fromreg, 'registrationwaitlistentry'):
+        wle = fromreg.registrationwaitlistentry
+        yield "Transferring registration waitlist entry"
+        wle.registration = toreg
+        wle.save()
+
+    yield "Resetting registration date"
+    toreg.created = timezone.now()
+
+    yield "Copying payment confirmation"
+    toreg.payconfirmedat = fromreg.payconfirmedat
+    toreg.payconfirmedby = "{0}(x)".format(fromreg.payconfirmedby)[:16]
+    toreg.save()
+    reglog(toreg, "Transferred registration from {}".format(fromreg.fullname), user)
+
+    yield "Sending notification to target registration"
+    # This notify will also send a ticket or a "confirm conference policy request"
+    # depending on the conference configuration.
+    notify_reg_confirmed(toreg, False)
+
+    yield "Sending notification to source registration"
+    send_conference_mail(fromreg.conference,
+                         fromreg.email,
+                         "Registration transferred",
+                         'confreg/mail/reg_transferred.txt', {
+                             'conference': fromreg.conference,
+                             'toreg': toreg,
+                         },
+                         receivername=fromreg.fullname)
+
+    send_conference_notification(
+        fromreg.conference,
+        "Transferred registration",
+        "Registration for {0} transferred to {1}.\n".format(fromreg.email, toreg.email),
+    )
+
+    yield "Deleting old registration"
+    fromreg.delete()

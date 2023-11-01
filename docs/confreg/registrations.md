@@ -160,9 +160,7 @@ will generate an invoice before the transaction is completed.
 ## Transferring a registration <a name="transfer"></a>
 
 A registration can be transferred to a different person, typically
-only allowed within the same company. If this transfer should be
-associated with a cost, the payment for it has to be processed
-manually.
+only allowed within the same company.
 
 To perform a registration transfer:
 
@@ -174,6 +172,11 @@ To perform a registration transfer:
 2. Go to the transfer page, and pick the registrations to transfer to
    and from.
 3. Validate the steps shown, and confirm the transfer.
+4. If an invoice is wanted, fill in all the invoice details. In this
+   case the registration is "locked" (soft-lock, bad things can still
+   be done by the administrator and are expected not to be done) and
+   an invoice is created. Once this invoice is paid, the transfer
+   is automatically completed.
 
 When transferring a registration, both the "source" and "destination"
 attendees will receive an email telling them about the transfer once
