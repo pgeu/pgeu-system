@@ -792,8 +792,8 @@ class TransferRegForm(forms.Form):
     def __init__(self, conference, *args, **kwargs):
         self.conference = conference
         super(TransferRegForm, self).__init__(*args, **kwargs)
-        self.fields['transfer_from'].queryset = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, transfer_from_reg__isnull=True)
-        self.fields['transfer_to'].queryset = ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=True, canceledat__isnull=True, bulkpayment__isnull=True)
+        self.fields['transfer_from'].queryset = ConferenceRegistration.objects.select_related('conference').filter(conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, transfer_from_reg__isnull=True)
+        self.fields['transfer_to'].queryset = ConferenceRegistration.objects.select_related('conference').filter(conference=conference, payconfirmedat__isnull=True, canceledat__isnull=True, bulkpayment__isnull=True)
         if not ('transfer_from' in self.data and 'transfer_to' in self.data):
             del self.fields['confirm']
         if not conference.transfer_cost:
