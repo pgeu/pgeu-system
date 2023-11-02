@@ -20,6 +20,7 @@ from postgresqleu.confreg.templatetags.currency import format_currency
 from postgresqleu.confreg.templatetags.leadingnbsp import leadingnbsp
 from postgresqleu.confreg.templatetags.formutil import field_class
 from postgresqleu.util.templatetags.assets import do_render_asset
+from postgresqleu.util.messaging import get_messaging_class_from_typename
 
 import jinja2
 import jinja2.sandbox
@@ -254,6 +255,18 @@ def filter_social(context, attr):
     return getattr(attr, 'social', {}).get(name, None)
 
 
+# Get social media profiles including links from a structure.
+# Returns a list of (provider, handle, link) for each configured
+# social media identity.
+@jinja2.contextfilter
+def filter_social_links(context, attr):
+    if attr:
+        for k, v in attr.items():
+            m = get_messaging_class_from_typename(k)
+            if m:
+                yield (k, v, m.get_link_from_identifier(v))
+
+
 extra_filters = {
     'format_currency': format_currency,
     'escapejs': defaultfilters.escapejs_filter,
@@ -271,6 +284,7 @@ extra_filters = {
     'svgparagraph': filter_svgparagraph,
     'applymacro': filter_applymacro,
     'lookup': filter_lookup,
+    'social_links': filter_social_links,
 }
 
 
