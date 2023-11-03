@@ -26,7 +26,7 @@ from postgresqleu.util.time import today_conference
 from postgresqleu.util.db import exec_no_result
 from postgresqleu.util.image import rescale_image_bytes
 from postgresqleu.util.currency import format_currency
-from postgresqleu.util.messaging import get_messaging_class_from_typename
+from postgresqleu.util.messaging import get_messaging_class, get_messaging_class_from_typename
 from postgresqleu.util.markup import LineBreakString
 
 import base64
@@ -1606,16 +1606,39 @@ class ConferenceTweetQueue(models.Model):
                 self.remainingtosend.set(MessagingProvider.objects.filter(active=True, series__isnull=True))
             exec_no_result("NOTIFY pgeu_broadcast")
 
+    def _ensure_provider_cache(self, cache):
+        if 'providers' not in cache:
+            cache['providers'] = {str(mp.id): mp for mp in MessagingProvider.objects.only('internalname').filter(active=True, conferencemessaging__conference=self.conference, conferencemessaging__broadcast=True)}
+            cache['providerclasses'] = {str(mp.id): get_messaging_class(mp.classname) for mp in cache['providers'].values()}
+
     def _display_contents(self, cache):
         if isinstance(self.contents, dict):
-            if 'providers' not in cache:
-                cache['internalnames'] = {str(mp.id): mp.internalname for mp in MessagingProvider.objects.only('internalname').filter(active=True, conferencemessaging__conference=self.conference, conferencemessaging__broadcast=True)}
+            self._ensure_provider_cache(cache)
 
             return LineBreakString("\n".join(
-                "{}: {}".format(cache['internalnames'][k], v)
+                "{}: {}".format(cache['providers'][k].internalname, v)
                 for k, v in self.contents.items()
             ))
         return self.contents
+
+    def is_overlength(self, cache):
+        self._ensure_provider_cache(cache)
+
+        toolong = []
+        if isinstance(self.contents, dict):
+
+            for k, v in self.contents.items():
+                if cache['providerclasses'][k].max_post_length < len(v):
+                    toolong.append(cache['providers'][k].internalname)
+        else:
+            for k, v in cache['providerclasses'].items():
+                if v.max_post_length < len(self.contents):
+                    toolong.append(cache['providers'][k].internalname)
+
+        if toolong:
+            return " ".join(["Text too long for {}.".format(p) for p in toolong])
+        else:
+            return None
 
 
 class ConferenceTweetQueueErrorLog(models.Model):

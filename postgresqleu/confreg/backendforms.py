@@ -1616,6 +1616,11 @@ class BackendTweetQueueForm(BackendForm):
         else:
             if obj.errorcount > 0:
                 return "danger", "Errors present"
+
+        ol = obj.is_overlength(cache)
+        if ol:
+            return "warning", ol
+
         return None, None
 
     @classmethod
