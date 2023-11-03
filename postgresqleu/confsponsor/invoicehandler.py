@@ -352,6 +352,18 @@ class SponsorDigisignHandler(DigisignHandlerBase):
                 self.sponsor.save(update_fields=['invoice'])
                 wrapper = InvoiceWrapper(self.sponsor.invoice)
                 wrapper.email_invoice()
+
+                send_conference_sponsor_notification(
+                    self.sponsor.conference,
+                    "Contract counter-signed for sponsor {}".format(self.sponsor.name),
+                    "The digital contract for sponsor\n{}\n has been counter-signed.\nAn invoice has been generated and sent to the sponsor.\nThe sponsorship is now fully confirmed.".format(self.sponsor.name),
+                )
+            else:
+                send_conference_sponsor_notification(
+                    self.sponsor.conference,
+                    "Contract counter-signed for sponsor {}".format(self.sponsor.name),
+                    "The digital contract for sponsor\n{}\n has been counter-signed.\nThe sponsorship is now fully confirmed.".format(self.sponsor.name),
+                )
         else:
             # If we're not auto approving it, send a notification email instead
             send_conference_sponsor_notification(
