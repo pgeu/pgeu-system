@@ -1556,6 +1556,11 @@ class BackendTweetQueueForm(BackendForm):
 
         self.update_protected_fields()
 
+    def pre_create_item(self):
+        # When creating a new item, we need to set contents to something not-null. For now,
+        # new items are always single-provider, so set it to a string.
+        self.instance.contents = ""
+
     def post_save(self):
         if isinstance(self.instance.contents, dict):
             updated = False
