@@ -10,7 +10,7 @@ from postgresqleu.confreg.models import MessagingProvider
 from postgresqleu.confreg.twitter import post_conference_social, render_multiprovider_tweet
 from postgresqleu.confsponsor.models import Sponsor, SponsorshipLevel
 from postgresqleu.util.messaging import get_messaging, get_messaging_class
-from postgresqleu.util.messaging.util import get_shortened_post_length
+from postgresqleu.util.messaging.short import get_shortened_post_length
 
 import datetime
 import random

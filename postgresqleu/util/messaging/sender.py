@@ -12,7 +12,7 @@ import sys
 from postgresqleu.confreg.models import NotificationQueue
 from postgresqleu.confreg.models import ConferenceTweetQueue, ConferenceIncomingTweet
 from postgresqleu.confreg.models import ConferenceTweetQueueErrorLog
-from postgresqleu.util.messaging.util import truncate_shortened_post
+from postgresqleu.util.messaging.short import truncate_shortened_post
 
 
 def send_pending_messages(providers):
