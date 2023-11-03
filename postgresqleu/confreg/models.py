@@ -27,6 +27,7 @@ from postgresqleu.util.db import exec_no_result
 from postgresqleu.util.image import rescale_image_bytes
 from postgresqleu.util.currency import format_currency
 from postgresqleu.util.messaging import get_messaging_class, get_messaging_class_from_typename
+from postgresqleu.util.messaging.short import get_shortened_post_length
 from postgresqleu.util.markup import LineBreakString
 
 import base64
@@ -1628,11 +1629,11 @@ class ConferenceTweetQueue(models.Model):
         if isinstance(self.contents, dict):
 
             for k, v in self.contents.items():
-                if cache['providerclasses'][k].max_post_length < len(v):
+                if cache['providerclasses'][k].max_post_length < get_shortened_post_length(v):
                     toolong.append(cache['providers'][k].internalname)
         else:
             for k, v in cache['providerclasses'].items():
-                if v.max_post_length < len(self.contents):
+                if v.max_post_length < get_shortened_post_length(self.contents):
                     toolong.append(cache['providers'][k].internalname)
 
         if toolong:
