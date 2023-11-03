@@ -341,5 +341,9 @@ const _re_urlmatcher = new RegExp('\\bhttps?://\\S+', 'ig');
 const _url_shortened_len = 23;
 
 function shortened_post_length(p) {
-    return p.replace(_re_urlmatcher, 'x'.repeat(_url_shortened_len)).length;
+    /*
+     * Replace the URL shorterner pattern. Also replace \n (javascript newlines) with
+     * \r\n (the newlines used in the backend), for consistent counting.
+     */
+    return p.replace(_re_urlmatcher, 'x'.repeat(_url_shortened_len)).replaceAll('\n', '\r\n').length;
 }
