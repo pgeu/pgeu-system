@@ -1607,16 +1607,16 @@ class BackendTweetQueueForm(BackendForm):
         ]
 
     @classmethod
-    def get_rowclass(self, obj):
+    def get_rowclass_and_title(self, obj, cache):
         if obj.sent:
             if obj.errorcount > 0:
-                return "warning"
+                return "warning", "Sent, but had errors"
             else:
-                return "info"
+                return "info", "Sent"
         else:
             if obj.errorcount > 0:
-                return "danger"
-        return None
+                return "danger", "Errors present"
+        return None, None
 
     @classmethod
     def get_column_filters(cls, conference):

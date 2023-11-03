@@ -184,8 +184,8 @@ class BackendForm(ConcurrentProtectedModelForm):
         return {}
 
     @classmethod
-    def get_rowclass(self, obj):
-        return None
+    def get_rowclass_and_title(self, obj, cache):
+        return None, None
 
     @classmethod
     def get_field_verbose_name(self, f):

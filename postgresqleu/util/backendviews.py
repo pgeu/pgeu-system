@@ -289,8 +289,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
         values = [{
             'id': o.pk,
             'vals': [getattr(o, '_display_{0}'.format(f))(cache) if hasattr(o, '_display_{0}'.format(f)) else getattr(o, f) for f in formclass.list_fields],
-            'rowclass': formclass.get_rowclass(o),
-        } for o in objects]
+        } | dict(zip(["rowclass", "rowtitle"], formclass.get_rowclass_and_title(o, cache))) for o in objects]
 
         return render(request, 'confreg/admin_backend_list.html', {
             'conference': conference,
