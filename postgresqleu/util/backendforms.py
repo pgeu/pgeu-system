@@ -19,7 +19,8 @@ class BackendForm(ConcurrentProtectedModelForm):
     list_fields = None
     list_order_by = None
     queryset_select_related = []
-    queryset_extra_fields = {}
+    queryset_extra_fields = {}   # Goes into queryset.extra()
+    queryset_extra_columns = []  # Just columns included in .only()
     selectize_multiple_fields = None
     selectize_taglist_fields = None
     json_fields = None

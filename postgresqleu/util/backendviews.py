@@ -254,7 +254,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
             objects = objects.select_related(*formclass.queryset_select_related)
         if formclass.queryset_extra_fields:
             objects = objects.extra(select=formclass.queryset_extra_fields)
-        objects = objects.only(*(formclass.list_fields - formclass.queryset_extra_fields.keys()))
+        objects = objects.only(*(formclass.list_fields - formclass.queryset_extra_fields.keys()) | set(formclass.queryset_extra_columns))
 
         if request.method == "POST":
             if request.POST.get('operation') == 'assign':

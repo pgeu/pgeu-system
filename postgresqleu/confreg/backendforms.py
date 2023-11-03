@@ -1487,6 +1487,7 @@ class BackendTweetQueueForm(BackendForm):
     queryset_extra_fields = {
         'hasimage': "image is not null and image != ''",
     }
+    queryset_extra_columns = ['errorcount', ]
     auto_cascade_delete_to = ['conferencetweetqueue_remainingtosend', ]
     linked_objects = OrderedDict({
         'errorlogs': BackendTweetQueueErrorLogManager(),
