@@ -2,30 +2,44 @@
 {%load currency%}
 {%block title%}Invoice payment{%endblock%}
 {%block extrahead%}
-<script type="text/javascript" src="https://js.braintreegateway.com/v2/braintree.js"></script>
-<script type="text/javascript">
-braintree.setup('{{token}}', "dropin", {
-  container: "payment-form",
-  onReady: function() {
-    document.getElementById('pre-payment-info').remove();
-  }
-});
-</script>
+<script type="text/javascript" src="https://js.braintreegateway.com/web/dropin/1.40.2/js/dropin.min.js"></script>
 {%endblock%}
 {%block content%}
 <h1>Invoice payment</h1>
 <p>You are about to make a payment of <strong>{{invoice.total_amount|format_currency}}</strong> for invoice #{{invoice.id}}.</p>
 
-<form id="checkout" method="post" action="/p/braintree/">{%csrf_token%}
+<form id="payment-form" method="post" action="/p/braintree/">{%csrf_token%}
   <input type="hidden" name="invoice" value="{{invoice.id}}">
   <input type="hidden" name="method" value="{{paymentmethodid}}">
-  <div id="pre-payment-info">
-    Please wait as the payment processor loads.<br/>
-    If it takes a long time, make sure you have javascript enabled!
-  </div>
-  <div id="payment-form"></div>
+  <div id="dropin-container"></div>
   <br/>
   <input type="submit" value="Submit payment">
+  <input type="hidden" id="nonce" name="payment_method_nonce" />
 </form>
 
+{%endblock%}
+
+{%block pagescript%}
+<script type="text/javascript">
+braintree.dropin.create({
+    container: document.getElementById('dropin-container'),
+    authorization: '{{token}}',
+}, (error, dropinInstance) => {
+    const form = document.getElementById('payment-form');
+
+    if (error) console.error(error);
+
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+
+        dropinInstance.requestPaymentMethod((error, payload) => {
+            if (error) console.error(error);
+
+
+            document.getElementById('nonce').value = payload.nonce;
+            form.submit();
+        });
+    });
+});
+</script>
 {%endblock%}

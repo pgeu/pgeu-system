@@ -246,6 +246,12 @@ system, this is a semi-hosted system, where the payment interface is
 loaded though javascript from the Braintree systems, but the page
 itself hosted as part of the system.
 
+*Note*! Due to the bad state of Braintree's documentation (out of
+date, incomplete and contradictive in many places) and either
+undocumented or unmaintainable version management of their
+integrations, the Braintree module is not recommended for use. If you
+have a choice, pick one of the other payment methods.
+
 This module requires the Python module `braintree` to be installed.
 
 #### Stripe Creditcard
