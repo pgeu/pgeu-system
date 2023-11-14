@@ -73,12 +73,28 @@ def filter_slugify(value):
     return re.sub(r'[-\s]+', '-', value)
 
 
+# Create social links. In the main site this is dynamic, this limited
+# implementation supports just twitter and mastodon.
+@jinja2.contextfilter
+def filter_social_links(context, attr):
+    if attr:
+        for k, v in attr.items():
+            if k == 'twitter':
+                yield (k, v, 'https://twitter.com/{}'.format(v.lstrip('@')))
+            elif k == 'mastodon':
+                handle_regexp = re.compile(r'^@([A-Z0-9._%+-]+)@([A-Z0-9.-]+\.[A-Z]{2,})$', re.I)
+                m = handle_regexp.fullmatch(v)
+                if m:
+                    yield (k, v, 'https://{}/@{}'.format(m.group(2), m.group(1)))
+
+
 global_filters = {
     'groupby_sort': filter_groupby_sort,
     'shuffle': filter_shuffle,
     'slugify': filter_slugify,
     'datetimeformat': filter_datetimeformat,
     'markdown': lambda t: jinja2.Markup(markdown.markdown(t)),
+    'social_links': filter_social_links,
 }
 
 
