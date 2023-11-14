@@ -1,5 +1,9 @@
 from django.utils import timezone
 
+from datetime import timedelta
+
+from postgresqleu.scheduler.util import trigger_immediate_job_run
+
 
 digisign_providers = {
     'postgresqleu.digisign.implementations.signwell.Signwell': (),
@@ -24,6 +28,7 @@ class DigisignHandlerBase:
     def completed(self):
         self.doc.completed = timezone.now()
         self.doc.save(update_fields=['completed', ])
+        trigger_immediate_job_run('digisign_fetch_completed', timedelta(minutes=1))
 
     def expired(self):
         pass

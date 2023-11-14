@@ -131,6 +131,7 @@ div.panelwrap {
       <th>Type</th>
       <th>Sponsor signed</th>
       <th>{{conference.contractsendername}} signed</th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
@@ -146,6 +147,8 @@ div.panelwrap {
      <td>{%if ac.completed%}{{ac.completed}}{%else%}
       {%if not ac.digitalcontract%}<form method="post" action="markaddcontract/">{%csrf_token%}<input type="hidden" name="id" value="{{ac.id}}"><input type="hidden" name="which" value="org"><input type="submit" class="btn btn-sm confirm-btn" value="Mark as signed" data-confirm="Are you sure you want to mark this (manual) contract as signed by {{conference.contractsendername}}?"></form>{%endif%}
       {%endif%}
+     </td>
+     <td>{%if ac.completed and ac.digitalcontract and ac.digitalcontract.has_completed_pdf %}<a class="btn btn-sm btn-default" href="viewaddcontract/{{ac.id}}/">View signed</a>{%endif%}
      </td>
    </tr>
 {%endfor%}

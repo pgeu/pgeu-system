@@ -35,6 +35,7 @@
     <th>Status:</th>
     <td>{%if sponsor.confirmed%}Confirmed ({{sponsor.confirmedat}}){%else%}<i>Awaiting confirmation (signed up {{sponsor.signupat}})</i>{%endif%}</td>
   </tr>
+{%if details%}
   <tr>
     <th>Contract:</th>
     <td>
@@ -44,6 +45,7 @@
        {%elif sponsor.contract.firstsigned%}Signed by sponsor ({{sponsor.contract.firstsigned}}) but not by {{conference.contractsendername}}.
        {%else%}Contract not signed yet.
        {%endif%}<br/>
+       {%if sponsor.contract.completed and sponsor.contract.has_completed_pdf %}<a href="contractview/" class="btn btn-sm btn-default">View signed contract</a>{%endif%}
        <a href="/events/sponsor/admin/{{conference.urlname}}/{{sponsor.id}}/contractlog/" class="btn btn-sm btn-default">View contract log</a>
       {%else%}
        Manual contract
@@ -56,7 +58,6 @@
        {%endif%}
     </td>
   </tr>
-{%if details%}
 {%if sponsor.invoice%}
   <tr>
     <th>Payment status:</th>

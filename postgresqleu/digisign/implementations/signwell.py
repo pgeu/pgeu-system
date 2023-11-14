@@ -7,7 +7,7 @@ from django.conf import settings
 
 from postgresqleu.util.widgets import StaticTextWidget
 from postgresqleu.digisign.backendforms import BackendProviderForm
-from postgresqleu.digisign.models import DigisignDocument, DigisignLog
+from postgresqleu.digisign.models import DigisignDocument, DigisignCompletedDocument, DigisignLog
 from postgresqleu.digisign.util import digisign_handlers
 
 import base64
@@ -280,6 +280,14 @@ class Signwell(BaseProvider):
                         'X-Api-Key': self.provider.config.get('apikey'),
                     }, timeout=10)
                     time.sleep(10)
+
+    def fetch_completed(self, doc):
+        print("Fetching completed document {}".format(doc.documentid))
+        r = requests.get('https://www.signwell.com/api/v1/documents/{}/completed_pdf/'.format(doc.documentid), headers={
+            'X-Api-Key': self.provider.config.get('apikey'),
+        }, timeout=60)
+        r.raise_for_status()
+        DigisignCompletedDocument(document=doc, completedpdf=r.content).save()
 
     def process_webhook(self, request):
         if 'application/json' not in request.META['CONTENT_TYPE']:

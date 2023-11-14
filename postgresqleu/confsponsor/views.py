@@ -1038,7 +1038,7 @@ def _unclaim_benefit(request, claimed_benefit):
 def sponsor_admin_sponsor(request, confurlname, sponsorid):
     conference = get_authenticated_conference(request, confurlname)
 
-    sponsor = get_object_or_404(Sponsor, id=sponsorid, conference=conference)
+    sponsor = get_object_or_404(Sponsor.objects.select_related('contract', 'contract__digisigncompleteddocument', 'invoice').defer('contract__digisigncompleteddocument__completedpdf'), id=sponsorid, conference=conference)
 
     if request.method == 'POST' and request.POST.get('confirm', '0') == '1':
         # Confirm one of the benefits, so do this before we load the list
@@ -1148,7 +1148,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
         'unclaimedbenefits': unclaimedbenefits,
         'noclaimbenefits': noclaimbenefits,
         'conference_has_contracts': SponsorshipContract.objects.filter(conference=conference, sponsorshiplevel=None).exists(),
-        'additionalcontracts': SponsorAdditionalContract.objects.filter(sponsor=sponsor).order_by('id'),
+        'additionalcontracts': SponsorAdditionalContract.objects.select_related('contract', 'digitalcontract', 'digitalcontract__digisigncompleteddocument').defer('digitalcontract__digisigncompleteddocument__completedpdf', 'contract__contractpdf').filter(sponsor=sponsor).order_by('id'),
         'addcontractform': SponsorAddContractForm(sponsor),
         'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
         'euvat': settings.EU_VAT,
@@ -1172,6 +1172,25 @@ def sponsor_admin_sponsor_contractlog(request, confurlname, sponsorid):
             ('/events/sponsor/admin/{0}/{1}/'.format(conference.urlname, sponsor.id), sponsor.name),
         ),
     })
+
+
+@login_required
+@transaction.atomic
+def sponsor_admin_sponsor_contractview(request, confurlname, sponsorid):
+    conference = get_authenticated_conference(request, confurlname)
+
+    sponsor = get_object_or_404(Sponsor.objects.select_related('contract', 'contract__digisigncompleteddocument'), id=sponsorid, conference=conference)
+
+    if not sponsor.confirmed:  # Cannot-happen
+        raise Http404("Page not valid for unconfirmed sponsors")
+
+    if not sponsor.contract.completed:
+        raise Http404("Contract not completed")
+
+    resp = HttpResponse(content_type='application/pdf')
+    resp['Content-disposition'] = 'filename="%s.pdf"' % sponsor.name
+    resp.write(sponsor.contract.digisigncompleteddocument.completedpdf)
+    return resp
 
 
 @login_required
@@ -1882,3 +1901,20 @@ def sponsor_admin_markaddcontract(request, confurlname, sponsorid):
         raise Http404("Invalid value for which")
 
     return HttpResponseRedirect("../")
+
+
+@login_required
+@transaction.atomic
+def sponsor_admin_viewaddcontract(request, confurlname, sponsorid, contractid):
+    conference = get_authenticated_conference(request, confurlname)
+    sponsor = get_object_or_404(Sponsor, id=sponsorid, conference=conference)
+
+    if not sponsor.confirmed:  # Cannot-happen
+        raise Http404("Page not valid for unconfirmed sponsors")
+
+    acontract = get_object_or_404(SponsorAdditionalContract.objects.select_related('contract', 'digitalcontract', 'digitalcontract__digisigncompleteddocument'), sponsor=sponsor, completed__isnull=False, digitalcontract__completed__isnull=False)
+
+    resp = HttpResponse(content_type='application/pdf')
+    resp['Content-disposition'] = 'filename="%s.pdf"' % acontract.contract.contractname
+    resp.write(acontract.digitalcontract.digisigncompleteddocument.completedpdf)
+    return resp

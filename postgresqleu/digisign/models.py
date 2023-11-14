@@ -2,6 +2,8 @@ from django.db import models
 
 import json
 
+from postgresqleu.util.fields import PdfBinaryField
+
 
 class DigisignProvider(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False, unique=True)
@@ -39,6 +41,15 @@ class DigisignDocument(models.Model):
         unique_together = (
             ('documentid', 'provider'),
         )
+
+    @property
+    def has_completed_pdf(self):
+        return self.digisigncompleteddocument is not None
+
+
+class DigisignCompletedDocument(models.Model):
+    document = models.OneToOneField(DigisignDocument, null=False, blank=False, on_delete=models.CASCADE)
+    completedpdf = PdfBinaryField(null=False, blank=True, max_length=1000000, verbose_name='Document PDF')
 
 
 class DigisignLog(models.Model):
