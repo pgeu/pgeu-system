@@ -150,11 +150,9 @@ class Meeting(models.Model):
         except MemberMeetingKey.DoesNotExist:
             return None
 
-    @property
     def _display_meetingtype(self, cache):
         return MeetingType.CHOICES.get(self.meetingtype, 'Unknown')
 
-    @property
     def _display_state(self, cache):
         if self.meetingtype == MeetingType.WEB:
             return STATE_CHOICES.get(self.state, 'Unknown')
