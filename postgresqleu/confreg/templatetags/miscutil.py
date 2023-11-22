@@ -1,4 +1,7 @@
 from django import template
+from django.utils.safestring import mark_safe
+
+import json
 
 register = template.Library()
 
@@ -16,3 +19,8 @@ def vartypename(value):
 @register.filter(name='striplinebreaks')
 def stripnewline(value):
     return value.replace("\n", " ")
+
+
+@register.filter(name='jsonstruct')
+def jsonstruct(value):
+    return mark_safe(json.dumps(value))
