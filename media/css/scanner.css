@@ -3,25 +3,39 @@ body {
     padding-bottom: 60px;
 }
 
-dl.badge_list dt {
+dl.found_list dt {
     background-color: lightgray;
     padding: 3px;
     padding-left: 5px;
     border-radius: 3px;
 }
 
-dl.badge_list dd {
+dl.found_list dd {
     margin-bottom: 3px;
     padding: 3px;
 }
 
-dl.badge_list dd textarea {
+dl.found_list dd.found_dyn_warn {
+    background-color: darkred;
+    color: white;
+}
+
+dl.found_list dd ul {
+    padding-left: 15px;
+    margin-bottom: 0;
+}
+
+dl.found_list dd textarea {
     width: 100%;
     height: 7em;
 }
 
 #completed_div {
     display: none;
+}
+
+table#statsTable tbody tr th {
+    background-color: lightgray;
 }
 
 video#qrpreview {

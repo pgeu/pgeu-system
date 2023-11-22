@@ -49,31 +49,23 @@
 <p>
   You can open the application by going to this link. If you are using the
   native app, make sure you install it first, and then click the link to
-  register the conference in the app.
+  register the conference in the app. The same link is also available as
+  a QR code.
+{%if conference.scannerfields_list%}
+  This conference also does post-checkin scanning for some things, and you
+  have access to those as well. For each one of these, there is a separate
+  URL to the app.
+{%endif%}
+</p>
+{%for title, link, qr in links %}
+{%if title%}<h4>{{title}}</h4>{%endif%}
+<p>
+  <a href="{{link}}">{{link|truncate(50)}}</a>
 </p>
 <p>
-  <a href="{{checkinlink}}">{{checkinlink}}</a>
+  <img class="qrlink" src="data:image/png;base64,{{qr}}" />
 </p>
-<p>
-  If you go to this address and have the Android app installed, it will
-  auto-activate. If it does not, copy this URL and paste it into the
-  configuration of the app.
-</p>
-<p>
-  The same links is available via this QR code:
-</p>
-<p>
-  <img src="data:image/png;base64,{{qrlink}}" />
-</p>
-
-<h3>Email link</h3>
-<p>
-  If you prefer, we can also email you the link.
-</p>
-<form method="post" action=".">{{ csrf_input }}
-  <input type="hidden" name="op" value="sendmail">
-  <input type="submit" value="Send link in email">
-</form>
+{%endfor%}
 
 <h2>Native scanning on device</h2>
 <p>
@@ -94,7 +86,7 @@
   scan the below QR code.
 </p>
 <p>
-  <img src="data:image/png;base64,{{qrtest}}" />
+  <img class="qrlink" src="data:image/png;base64,{{qrtest}}" />
 </p>
 
 {%endblock%}

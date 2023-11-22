@@ -205,6 +205,13 @@ Dynamic properties
    to each registration. These fields are used for custom reporting
    and similar functions, and are not visible to the end user.
 
+Scanning properties
+:  List of dynamic properties that can be used as part of the scanning
+   system. For [check-in processors](tickets#scanningfields) this allows
+   them to perform secondary scanning of badges to mark other items.
+   The list here must be a subset of the *Dynamic properties* above, or
+   empty.
+
 Registration open
 : If regular registration is open.
 

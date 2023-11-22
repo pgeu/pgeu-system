@@ -90,14 +90,30 @@ check-in can be performed. Once the check-in is performed, it's stored
 when and by who, so it the same attendee tries to check in again (or a
 different one with the same ticket...), it will be clearly shown.
 
+### Scanning fields
+
+Scanning fields allows the check-in process to be split into multiple
+steps, where different things are scanned at different times. A
+typical use for this is to have conference t-shirts handed out
+separately from the main check-in. The permissions are integrated with
+the check-in system, so the same people will have permissions on
+it. However, instead of scanning the ticket, they will be scanning
+attendee badges, to bring up approximately the same information.
+
+The scanning fields are configured as a subset of the
+[dynamic properties](reports#dynamic) used in reporting, and for each
+scanning field the timestamp when it was stored will be registered in
+the dynamic property (and an entry will be written to the registration
+log).
+
 ### Check-in processors
 
 The people processing the check-ins will get a link on their
 registration page that goes to the check-in information page.
 
 This page will contain a link (both directly and as a QR code) to the
-check-in app, and the ability to have the link sent to them by email
-(because it's a convenient way to get the link onto a device).
+check-in app. If multiple scanning fields are used, indepdendent links
+will be provided for each of them.
 
 The check-in app itself does *not* require the user to be logged in,
 so this link can easily be copy/pasted.

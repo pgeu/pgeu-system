@@ -5,7 +5,7 @@ function updateStatus() {
         success: function(data, status, xhr) {
             $('#userName').text(data.name);
             if (!data.active) {
-                showstatus('Check-in is not open!', 'warning');
+                showstatus(data.activestatus, 'warning');
             }
             else {
                 $('#statusdiv').hide();
@@ -58,80 +58,73 @@ function show_ajax_error(type, xhr) {
 }
 
 function add_dynamic_fields(reg, cl, regcompleted) {
-    fields = [
-        [reg.name, 'Name'],
-        [reg.type, 'Registration type'],
-        [reg.policyconfirmed, 'Policy confirmed'],
-        [reg.photoconsent, 'Photo consent'],
-        [reg.tshirt, 'T-Shirt size']
-    ];
-
-    if (!regcompleted) {
-        fields.push([reg.company, 'Company']);
-        fields.push([reg.partition, 'Queue Partition']);
+    $('.found_dyn').remove();
+    if (reg.note) {
+        $('#scan_note').val(reg.note);
+    }
+    else {
+        $('#scan_note').val('');
     }
 
-    if (reg.additional.length > 0) {
-        fields.push([
-            $('<ul/>').append(
-                $.map(reg.additional, function (x) { return $('<li/>').text(x); })
-            ),
-            'Additional options',
-        ]);
-    }
+    let elements = [];
+    scanfields.forEach(function(a) {
+        let val = reg[a[0]];
+        if (val && val.length > 0) {
+            elements.push($('<dt/>').text(a[1]).addClass('found_dyn'));
 
-    fields.forEach(function(a) {
-        if (a[0]) {
-            cl.append($('<dt/>').text(a[1]).addClass('checkin_dyn'));
-
-            if (typeof(a[0]) == 'string') {
-                let e = $('<dd/>').text(a[0]).addClass('checkin_dyn');
-                if (a[0].includes(' NOT ')) {
-                    e = $(e).addClass('checkin_dyn_warn');
+            if (typeof(val) == 'string') {
+                let e = $('<dd/>').text(val).addClass('found_dyn');
+                if (val.includes(' NOT ')) {
+                    e = $(e).addClass('found_dyn_warn');
                 }
-                cl.append(e);
+                elements.push(e);
             }
             else {
-                cl.append($('<dd/>').html(a[0]).addClass('checkin_dyn'));
+                elements.push($('<dd/>').html($('<ul/>').append(
+                    $.map(val, function (x) { return $('<li/>').text(x); })
+                )).addClass('found_dyn'));
             }
         }
     });
+    if ($('body').data('hasnote')) {
+        cl.children('dt').before(elements);
+    }
+    else {
+        cl.append(elements);
+    }
 }
 
-function show_checkin_dialog(reg) {
-    $('#checkinModal').data('regid', reg.id);
-    $('#checkinModal').data('name', reg.name);
-    $('#checkin_name').text(reg.name);
-    $('#checkin_type').text(reg.type);
-    $('.checkin_dyn').remove();
+function show_found_dialog(reg) {
+    $('#foundModal').data('token', reg.token);
+    $('#foundModal').data('name', reg.name);
 
-    cl = $('#checkin_list');
+    cl = $('#found_list');
 
     add_dynamic_fields(reg, cl);
 
-    if (reg.checkedin) {
-        cl.append($('<dt/>').text('Already checked in').addClass('checkin_dyn'));
-        cl.append($('<dd/>').text('Attendee was checked in by ' + reg.checkedin.by + ' at ' + format_datetime(reg.checkedin.at) + '.').addClass('checkin_dyn'));
+    if (reg.already) {
+        cl.append($('<dt/>').text(reg.already.title).addClass('found_dyn'));
+        cl.append($('<dd/>').text(reg.already.body).addClass('found_dyn'));
     }
 
-    $('#checkinbutton').attr('disabled', reg.checkedin ? 'disabled' : null);
+    $('#storebutton').attr('disabled', reg.already ? 'disabled' : null);
 
-    $('#checkinModal').modal({});
+    $('#foundModal').modal({});
 }
 
-function lookup_and_checkin_dialog(token) {
+function lookup_and_complete_dialog(token) {
     $('.cancelButton').attr('disabled', 'disabled');
     $.ajax({
         dataType: "json",
         url: "api/lookup/",
         data: {"lookup": token},
         success: function(data, status, xhr) {
-            show_checkin_dialog(data['reg'])
+            show_found_dialog(data['reg'])
             reset_state();
         },
         error: function(xhr, status, thrown) {
             if (xhr.status == 404) {
-                showstatus('Could not find matching attendee', 'warning');
+                showstatus('Could not find matching entry', 'warning');
             }
             else {
                 show_ajax_error('looking for reg', xhr);
@@ -140,6 +133,11 @@ function lookup_and_checkin_dialog(token) {
         }
     });
 }
+
+const _tokentypes = {
+    'id': 'ticket',
+    'at': 'badge'
+};
 
 function setup_instascan() {
     let scanner = new Instascan.Scanner({
@@ -155,42 +153,41 @@ function setup_instascan() {
         scanner.stop();
         const tokenbase = $('body').data('tokenbase');
         if (content.startsWith(tokenbase) && content.endsWith('/')) {
-            /* New style token */
-            if (content.startsWith(tokenbase + 'id/')) {
-                /* Correct token, check for test token */
-                if (content == tokenbase + 'id/TESTTESTTESTTEST/') {
-                    showstatus('You successfully scanned the test code!', 'info');
-                    reset_state();
-                    return;
-                }
-                /* Else it's a valid token */
+            const fulltoken = content.substring(tokenbase.length);
+            const tokenparts = fulltoken.split('/');
+            if (tokenparts.length != 3) {
+                showstatus('Invalid token scanned.', 'danger');
+                reset_state();
+                return;
             }
-            else {
-                if (content.startsWith(tokenbase + 'at/')) {
-                    showstatus('You appear to have scanned a badge instead of a ticket!', 'info');
-                }
-                else {
-                    showstatus('Scanned QR code is not from a correct ticket', 'danger');
-                }
+
+            if (!(tokenparts[0] in _tokentypes)) {
+                showstatus('Invalid token type scanned', 'danger');
+                reset_state();
+                return;
+            }
+
+            if (tokenparts[0] != expectedtype) {
+                showstatus('You appear to have scanned a ' + _tokentypes[tokenparts[0]] + ' instead of a ' + _tokentypes[expectedtype] + '!', 'info');
+                reset_state();
+                return;
+            }
+
+            if (tokenparts[1] == 'TESTTESTTESTTEST') {
+                showstatus('You successfully scanned the test code!', 'info');
                 reset_state();
                 return;
             }
         }
-        else if (!content.startsWith('ID$') || !content.endsWith('$ID')) {
-            if (content.startsWith('AT$'))
-                showstatus('You appear to have scanned a badge instead of a ticket!', 'info');
-            else
-                showstatus('Scanned QR code is not from a correct ticket', 'danger');
+        /* Support for old style tokens has been dropped dropped */
+        else {
+            showstatus('Invalid code scanned.', 'danger');
             reset_state();
             return;
         }
-        if (content == 'ID$TESTTESTTESTTEST$ID') {
-            showstatus('You successfully scanned the test code!', 'info');
-            reset_state();
-            return;
-        }
+
         /* Else we have a code, so look it up */
-        lookup_and_checkin_dialog(content);
+        lookup_and_complete_dialog(content);
     });
 
     Instascan.Camera.getCameras().then(function(allcameras) {
@@ -361,7 +358,7 @@ $(function() {
             data: {"search": searchterm},
             success: function(data, status, xhr) {
                 if (data['regs'].length == 1) {
-                    show_checkin_dialog(data['regs'][0]);
+                    show_found_dialog(data['regs'][0]);
                     reset_state();
                     return;
                 }
@@ -370,10 +367,10 @@ $(function() {
                     $.each(data['regs'], function(i, o) {
                         $('#selectUserBody').append($('<button class="btn btn-block" />')
                                                     .text(o.name)
-                                                    .addClass(o.checkedin ? 'btn-default' : 'btn-primary')
+                                                    .addClass(o.already ? 'btn-default' : 'btn-primary')
                                                     .click(function() {
                                                         $('#selectUserModal').modal('hide');
-                                                        show_checkin_dialog(o);
+                                                        show_found_dialog(o);
                                                     })
                                                    );
                     });
@@ -394,35 +391,43 @@ $(function() {
     });
 
 
-    $('#checkinbutton').click(function() {
+    $('#storebutton').click(function() {
+        let d = {
+            "token": $('#foundModal').data('token'),
+        }
+        if ($('body').data('hasnote')) {
+            d['note'] = $('#scan_note').val();
+        }
+
         $.ajax({
             method: "POST",
             dataType: "json",
-            url: "api/checkin/",
-            data: {"reg": $('#checkinModal').data('regid')},
+            url: "api/store/",
+            data: d,
             success: function(data, status, xhr) {
-                if (xhr.status == 200) {
+                if (xhr.status == 200 || xhr.status == 201 || xhr.status == 208) {
                     /* Success! */
-                    showstatus('Attendee ' + $('#checkinModal').data('name') + ' checked in successfully', 'success');
-                    $('.checkin_dyn').remove();
-                    add_dynamic_fields(data['reg'], $('#completed_list'), true);
-                    $('#completed_div').show();
+                    showstatus(data.message, 'success');
+                    if (data.showfields) {
+                        add_dynamic_fields(data['reg'], $('#completed_list'), true);
+                        $('#completed_div').show();
+                    }
                 }
                 else {
-                    show_ajax_error('checking in', xhr);
+                    show_ajax_error('storing value', xhr);
                 }
-                $('#checkinModal').modal('hide');
+                $('#foundModal').modal('hide');
                 reset_state(true);
             },
             error: function(xhr, status, thrown) {
-                show_ajax_error('checking in', xhr);
-                $('#checkinModal').modal('hide');
+                show_ajax_error('storing value', xhr);
+                $('#foundModal').modal('hide');
             }
         });
     });
 
     if (single) {
-        lookup_and_checkin_dialog($('body').data('tokenbase') + 'id/' + $('body').data('single-token') + '/');
+        lookup_and_complete_dialog($('body').data('tokenbase') + $('body').data('tokentype') + '/' + $('body').data('single-token') + '/');
     }
     else {
         updateStatus();

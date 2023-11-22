@@ -1,30 +1,35 @@
 {%load assets%}
+{%load miscutil%}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" dir="ltr">
  <head>
-  <title>{{conference.conferencename}} - attendee checkin</title>
+  <title>{{conference.conferencename}} - {{title}}</title>
   <meta http-equiv="Content-Type" content="text/xhtml; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 {%if basehref%}<base href="{{basehref}}" />{%endif%}
   <link rel="shortcut icon" href="/favicon.ico" />
   {%asset "css" "bootstrap3" %}
-  <link rel="stylesheet" media="screen" href="/media/css/checkin.css" />
+  <link rel="stylesheet" media="screen" href="/media/css/scanner.css" />
   {%asset "js" "jquery1" %}
   {%asset "js" "bootstrap3" %}
 {%if not singletoken%}
   <script type="text/javascript" src="/media/js/instascan/instascan.min.js"></script>
 {%endif%}
-  <script type="text/javascript" src="/media/js/checkin.js"></script>
+  <script type="text/javascript" src="/media/js/scanner.js"></script>
+  <script type="text/javascript">
+const scanfields = {{scanfields|jsonstruct}};
+const expectedtype = '{{expectedtype}}';
+  </script>
  </head>
- <body data-tokenbase="{{sitebase}}/t/" data-single="{%if singletoken%}1{%else%}0{%endif%}"{%if singletoken %} data-single-token="{{singletoken}}"{%endif%}>
+ <body data-tokenbase="{{sitebase}}/t/" data-tokentype="{{tokentype}}" data-has-status="{{has_status|yesno:"1,0"}}" {%if hasnote%}data-hasnote="1" {%endif%}data-single="{%if singletoken%}1{%else%}0{%endif%}"{%if singletoken %} data-single-token="{{singletoken}}"{%endif%}>
    <nav class="navbar navbar-default navbar-fixed-top" id="topnavbar">
      <div id="loading">
        <div class="spinner-ring"><div></div><div></div><div></div><div></div></div>
      </div>
      <div class="container-fluid">
        <div class="navbar-header">
-         <a class="navbar-brand" href="#">{{conference.conferencename}} - attendee checkin</a>
+         <a class="navbar-brand" href="#">{{conference.conferencename}} - {{title}}</a>
        </div>
      </div>
    </nav>
@@ -37,7 +42,7 @@
      <div class="row">
        <div class="col-md-12">
 	 <div id="completed_div">
-           <dl id="completed_list" class="checkin_list">
+           <dl id="completed_list" class="found_list">
 	   </dl>
 	 </div>
        </div>
@@ -45,12 +50,14 @@
 {%if not singletoken %}
      <div id="buttonrow" class="row approw">
        <div class="col-md-12 buttonrow">
-         <button id="scanButton" class="btn btn-default btn-block btn-lg">Scan registration</button>
+         <button id="scanButton" class="btn btn-default btn-block btn-lg">Scan {{scanwhat}}</button>
        </div>
+{%if searchwhat%}
        <div class="col-md-12 buttonrow">
-         <button id="searchButton" class="btn btn-default btn-block btn-lg">Search registration</button>
+         <button id="searchButton" class="btn btn-default btn-block btn-lg">Search {{searchwhat}}</button>
        </div>
-{%if is_admin%}
+{%endif%}
+{%if is_admin and has_stats%}
        <div class="col-md-12 buttonrow">
          <button id="statsButton" class="btn btn-default btn-block btn-lg">View statistics</button>
        </div>
@@ -72,21 +79,24 @@
        </div>
      </div>
 
+{%if searchwhat%}
      <div id="searchrow" class="row approw">
        <div class="col-md-12">
          <form id="searchForm">
            <div class="form-group">
-             <label for="searchinput">Search for attendee</label>
+             <label for="searchinput">Search for {{searchwhat}}</label>
              <input type="text" class="form-control" id="searchinput" placeholder="Part of name"  />
            </div>
-           <input type="submit" class="btn btn-primary btn-block btn-lg" value="Search attendee">
+           <input type="submit" class="btn btn-primary btn-block btn-lg" value="Search {{searchwhat}}">
          </form>
        </div>
        <div class="col-md-12 buttonrow">
          <button class="btn btn-default btn-block btn-lg cancelButton">Cancel</button>
        </div>
      </div>
+{%endif%}
 
+{%if is_admin and has_stats %}
      <div id="statsrow" class="row approw">
        <table class="table table-condensed table-striped" id="statsTable">
        </table>
@@ -94,6 +104,7 @@
          <button class="btn btn-default btn-block btn-lg cancelButton">Close</button>
        </div>
      </div>
+{%endif%}
 
    </div>
 
@@ -102,12 +113,12 @@
        <div class="navbar-header">
          <div class="navbar-brand">
            <ul class="nav small">
-             <li>User: <span id="userName">not logged in</span></li>
+             <li>{{scannertype}}: <span id="userName">unknown</span></li>
            </ul>
          </div>
          <div class="navbar-brand pull-right">
            <ul class="nav small">
-             <li>Last API: <span id="lastajax">none</span></li>
+             <li>Last API call: <span id="lastajax">none</span></li>
            </ul>
          </div>
        </div>
@@ -115,12 +126,13 @@
    </nav>
 
 
+{%if searchwhat%}
    <div class="modal fade" tabindex="-1" role="dialog" id="selectUserModal">
      <div class="modal-dialog" role="document">
        <div class="modal-content">
          <div class="modal-header">
            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-           <h4 class="modal-title">Select attendee</h4>
+           <h4 class="modal-title">Select {{searchwhat}}</h4>
          </div>
          <div class="modal-body" id="selectUserBody">
          </div>
@@ -130,27 +142,32 @@
        </div>
      </div>
    </div><!-- selectUserModal -->
+{%endif%}
 
-{%endif%} {# Above are sections not included in single-checkin mode #}
+{%endif%} {# Above are sections not included in scan-from-browser mode #}
 
-   <div class="modal fade" tabindex="-1" role="dialog" id="checkinModal">
+   <div class="modal fade" tabindex="-1" role="dialog" id="foundModal">
      <div class="modal-dialog" role="document">
        <div class="modal-content">
          <div class="modal-header">
            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-           <h4 class="modal-title">Check in attendee</h4>
+           <h4 class="modal-title">{{doing}}</h4>
          </div>
          <div class="modal-body">
-           <dl id="checkin_list" class="checkin_list">
+           <dl id="found_list" class="found_list">
+{%if hasnote %}
+	     <dt>Notes</dt>
+	     <dd><textarea id="scan_note"></textarea></dd>
+{%endif%}
            </dl>
          </div>
          <div class="modal-footer">
-           <button type="button" class="btn btn-default btn-primary" id="checkinbutton">Check in</button>
+           <button type="button" class="btn btn-default btn-primary" id="storebutton">{{storebutton}}</button>
            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
          </div>
        </div>
      </div>
-   </div><!-- selectUserModal -->
+   </div><!-- foundModal -->
 
 {%if not singletoken %}
    <div class="modal fade" tabindex="-1" role="dialog" id="selectCameraModal">

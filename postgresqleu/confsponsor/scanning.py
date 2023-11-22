@@ -29,6 +29,7 @@ def testcode(request):
     })
 
 
+# Sponsor dashboard for badge scanning
 @transaction.atomic
 def sponsor_scanning(request, sponsorid):
     sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request, False)
@@ -158,19 +159,43 @@ def sponsor_scanning_download(request, sponsorid):
     return response
 
 
+# Render the scanning app from the scanner token
+def _sponsor_scanning_page(request, scanner, extra=None):
+    c = {
+        'scanner': scanner,
+        'sponsor': scanner.sponsor,
+        'conference': scanner.sponsor.conference,
+        'title': 'badge scan',
+        'doing': 'Scan badge',
+        'scanwhat': 'badge',
+        'scannertype': 'Sponsor',
+        'storebutton': 'Scan',
+        'expectedtype': 'at',
+        'hasnote': True,
+        'scanfields': [
+            ["name", "Name"],
+            ["company", "Company"],
+            ["country", "Country"],
+            ["email", "E-mail"],
+        ],
+        'tokentype': 'at',
+    }
+    if extra:
+        c.update(extra)
+
+    return render(request, 'confreg/scanner_app.html', c)
+
+
 def scanning_page(request, scannertoken):
     try:
         scanner = SponsorScanner.objects.select_related('sponsor', 'sponsor__conference').get(token=scannertoken)
     except SponsorScanner.DoesNotExist:
         raise Http404("Not found")
 
-    return render(request, 'confsponsor/scanner_app.html', {
-        'scanner': scanner,
-        'sponsor': scanner.sponsor,
-        'conference': scanner.sponsor.conference,
-    })
+    return _sponsor_scanning_page(request, scanner)
 
 
+# Landing page with instructions for how to start the scanning app
 @login_required
 def landing(request, urlname):
     conference = get_conference_or_404(urlname)
@@ -208,47 +233,58 @@ def landing(request, urlname):
     })
 
 
-@login_required
-def scanned_token(request, scanned_token):
-    if scanned_token == 'TESTTESTTESTTEST':
-        return HttpResponse("You have successfully scanned the test token.")
+# Called from confreg/checkin.py when directly scanning a token without using the app
+class SponsorScannerHandler:
+    def __init__(self, sponsorscanner):
+        self.scanner = sponsorscanner
 
-    foundreg = get_object_or_404(ConferenceRegistration, publictoken=scanned_token)
-    conference = foundreg.conference
-    reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
+    def launch(self, request, scanned_token):
+        return _sponsor_scanning_page(request, self.scanner, {
+            'singletoken': scanned_token,
+            'basehref': '{}/events/sponsor/scanning/{}/'.format(settings.SITEBASE, self.scanner.token),
+        })
 
-    scanners = list(SponsorScanner.objects.filter(sponsor__conference=conference, scanner=reg))
-    if len(scanners) == 0:
-        raise Http404("Not a scanner")
-    elif len(scanners) > 1:
-        return HttpResponse("You are registered as a scanner for more than one sponsor. Unfortunately, that means you have to use the special scanning app and not the direct scan function of your device.")
-    scanner = scanners[0]
-
-    return render(request, 'confsponsor/scanner_app.html', {
-        'scanner': scanner,
-        'sponsor': scanner.sponsor,
-        'conference': scanner.sponsor.conference,
-        'singletoken': scanned_token,
-        'basehref': '{}/events/sponsor/scanning/{}/'.format(settings.SITEBASE, scanner.token),
-    })
+    @property
+    def title(self):
+        return 'Sponsor: {}'.format(self.scanner.sponsor.displayname)
 
 
-def _json_response(reg, status, existingnote=''):
+def _json_response(reg, status, existingnote='', message=''):
     return HttpResponse(json.dumps({
-        'name': reg.fullname,
-        'company': reg.company,
-        'country': reg.country and reg.country.printable_name or '',
-        'email': reg.email,
-        'note': existingnote,
+        'reg': {
+            'name': reg.fullname,
+            'company': reg.company,
+            'country': reg.country and reg.country.printable_name or '',
+            'email': reg.email,
+            'note': existingnote,
+            'token': reg.publictoken,
+        },
+        'message': message,
+        'showfields': False,
     }), content_type='application/json', status=status)
 
 
 _tokenmatcher = re.compile('^{}/t/at/([^/]+)/$'.format(settings.SITEBASE))
 
 
+def _get_scanned_attendee(sponsor, token):
+    try:
+        attendee = ConferenceRegistration.objects.get(conference=sponsor.conference, publictoken=token)
+    except ConferenceRegistration.DoesNotExist:
+        return HttpResponse("Attendee not found", status=404)
+
+    if not attendee.badgescan:
+        return HttpResponse("Attendee has not authorized badge scanning", status=403)
+
+    if attendee.canceledat:
+        return HttpResponse("Attendee registration is canceled", status=403)
+
+    return attendee
+
+
 @csrf_exempt
 @global_login_exempt
-def scanning_api(request, scannertoken):
+def scanning_api(request, scannertoken, what):
     try:
         scanner = SponsorScanner.objects.select_related('sponsor', 'sponsor__conference', 'scanner', 'scanner__attendee').get(token=scannertoken)
     except SponsorScanner.DoesNotExist:
@@ -257,44 +293,31 @@ def scanning_api(request, scannertoken):
     sponsor = scanner.sponsor
 
     if request.method in ('GET', 'POST'):
-        if request.GET.get('status', ''):
+        if what == 'status':
             # Request for status is handled separately, everything else is a scan
             return HttpResponse(json.dumps({
                 'scanner': scanner.scanner.attendee.username,
-                'name': scanner.scanner.fullname,
+                'name': '{} for {}'.format(scanner.scanner.fullname, scanner.sponsor.displayname),
                 'confname': scanner.sponsor.conference.conferencename,
-
+                'active': True,
+                'activestatus': '',
             }), content_type='application/json')
-
-        with transaction.atomic():
-            token = request.GET.get('token', '') or request.POST.get('token', '')
-            if not token:
-                return HttpResponse("No search specified", status=404, content_type='text/plain')
+        elif what == 'lookup':
+            token = request.GET.get('lookup')
             m = _tokenmatcher.match(token)
             if m:
-                # New style token
                 token = m.group(1)
-            elif token.startswith('AT$') and token.endswith('$AT'):
-                # Old style token
-                token = token[3:-3]
             else:
-                return HttpResponse("Invalid type of token specified", status=404, content_type='text/plain')
+                raise Http404()
 
-            try:
-                attendee = ConferenceRegistration.objects.get(conference=sponsor.conference, publictoken=token)
-            except ConferenceRegistration.DoesNotExist:
-                return HttpResponse("Attendee not found", status=404)
+            with transaction.atomic():
+                r = _get_scanned_attendee(sponsor, token)
+                if isinstance(r, HttpResponse):
+                    return r
 
-            if not attendee.badgescan:
-                return HttpResponse("Attendee has not authorized badge scanning", status=403)
-
-            if attendee.canceledat:
-                return HttpResponse("Attendee registration is canceled", status=403)
-
-            if request.method == 'GET':
                 # Mark the badge as scanned already on search. The POST later can change the note,
                 # but we record it regardless
-                scan, created = ScannedAttendee.objects.get_or_create(sponsor=sponsor, scannedby=scanner.scanner, attendee=attendee)
+                scan, created = ScannedAttendee.objects.get_or_create(sponsor=sponsor, scannedby=scanner.scanner, attendee=r)
 
                 if not created and scan.firstscan:
                     # An already existing entry which was flagged as first. That likely means that someone forgot the "save" button on the previous
@@ -302,9 +325,14 @@ def scanning_api(request, scannertoken):
                     scan.firstscan = False
                     scan.save(update_fields=['firstscan'])
 
-                return _json_response(attendee, 200, scan.note)
-            elif request.method == 'POST':
-                scan, created = ScannedAttendee.objects.get_or_create(sponsor=sponsor, scannedby=scanner.scanner, attendee=attendee, defaults={'note': request.POST.get('note')})
+                return _json_response(r, 200, scan.note, 'Attendee {} scan stored successfully.'.format(r.fullname))
+        elif request.method == 'POST' and what == 'store':
+            with transaction.atomic():
+                r = _get_scanned_attendee(sponsor, request.POST['token'])
+                if isinstance(r, HttpResponse):
+                    return r
+
+                scan, created = ScannedAttendee.objects.get_or_create(sponsor=sponsor, scannedby=scanner.scanner, attendee=r, defaults={'note': request.POST.get('note')})
                 if created:
                     # This would normally never happen anymore as we create the record on search. Only if someone deletes it in between.
                     return _json_response(attendee, 201)
@@ -321,7 +349,17 @@ def scanning_api(request, scannertoken):
                         update.append('firstscan')
                     if update:
                         scan.save(update_fields=update)
-                    return _json_response(attendee, 201 if isfirst else 208, scan.note)
+                    return _json_response(
+                        r,
+                        201 if isfirst else 208,
+                        scan.note,
+                        'Attendee {} scan stored successfully.'.format(r.fullname) if isfirst else 'Attendee {} has already been stored.{}'.format(
+                            r.fullname,
+                            'The note has been updated.' if 'note' in update else '',
+                        ),
+                    )
+        else:
+            raise Http404()
     else:
         return HttpResponse("Invalid method", status=400)
 

@@ -19,7 +19,7 @@ urlpatterns = [
     url(r'^(\d+)/scanning/$', scanning.sponsor_scanning),
     url(r'^(\d+)/scanning/download.csv/$', scanning.sponsor_scanning_download),
     url(r'^scanning/([a-z0-9]{64})/$', scanning.scanning_page),
-    url(r'^scanning/([a-z0-9]{64})/api/$', scanning.scanning_api),
+    url(r'^scanning/([a-z0-9]{64})/api/(\w+)/$', scanning.scanning_api),
     url(r'^scanning-test/$', scanning.testcode),
     url(r'^signup/(\w+)/$', views.sponsor_signup_dashboard),
     url(r'^signup/(\w+)/(\w+)/$', views.sponsor_signup),

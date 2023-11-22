@@ -69,7 +69,7 @@ class BackendConferenceForm(BackendForm):
         'checkinprocessors': RegisteredUsersLookup(None),
         'initial_common_countries': CountryLookup(),
     }
-    selectize_taglist_fields = ('dynafields', )
+    selectize_taglist_fields = ('dynafields', 'scannerfields', )
     vat_fields = {'transfer_cost': 'reg'}
 
     class Meta:
@@ -84,7 +84,7 @@ class BackendConferenceForm(BackendForm):
                   'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent',
                   'skill_levels', 'showvotes', 'callforpaperstags', 'callforpapersrecording', 'sendwelcomemail',
                   'tickets', 'confirmpolicy', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist',
-                  'transfer_cost', 'initial_common_countries', 'jinjaenabled', 'dynafields']
+                  'transfer_cost', 'initial_common_countries', 'jinjaenabled', 'dynafields', 'scannerfields']
 
     def fix_fields(self):
         self.selectize_multiple_fields['volunteers'] = RegisteredUsersLookup(self.conference)
@@ -98,7 +98,7 @@ class BackendConferenceForm(BackendForm):
         {'id': 'welcomeandreg', 'legend': 'Welcome and registration', 'fields': ['sendwelcomemail', 'tickets', 'confirmpolicy', 'queuepartitioning', 'initial_common_countries']},
         {'id': 'promo', 'legend': 'Website promotion', 'fields': ['promoactive', 'promotext', 'promopicurl']},
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', 'twitter_postpolicy', ]},
-        {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent', 'dynafields', ]},
+        {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent', 'dynafields', 'scannerfields', ]},
         {'id': 'steps', 'legend': 'Steps', 'fields': ['registrationopen', 'registrationtimerange', 'allowedit', 'callforpapersopen', 'callforpaperstimerange', 'callforsponsorsopen', 'callforsponsorstimerange', 'scheduleactive', 'sessionsactive', 'cardsactive', 'checkinactive', 'conferencefeedbackopen', 'feedbackopen']},
         {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpaperstags', 'callforpapersrecording', 'showvotes']},
         {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', ]},
@@ -124,6 +124,11 @@ class BackendConferenceForm(BackendForm):
 
         if cleaned_data.get('checkinactive') and not cleaned_data.get('tickets'):
             self.add_error('checkinactive', 'Check-in cannot be activated if tickets are not used!')
+
+        dynafields = set([x for x in cleaned_data.get('dynafields').split(',') if x])
+        scannerfields = set([x for x in cleaned_data.get('scannerfields').split(',') if x])
+        if scannerfields - dynafields:
+            self.add_error('scannerfields', 'Only fields from the list of dynamic properties can be used. Incorrect fields: {}'.format(", ".join(scannerfields - dynafields)))
 
         return cleaned_data
 
@@ -155,6 +160,16 @@ class BackendConferenceForm(BackendForm):
             raise ValidationError("The key(s) {} are still in use and cannot be removed.".format(sorted(used)))
 
         # Re-sort and save the stripped version
+        return ",".join(sorted(vals))
+
+    def clean_scannerfields(self):
+        val = self.cleaned_data['scannerfields']
+
+        vals = [v.strip() for v in val.split(',') if v != '']
+        # JS should've protected us against duplicate values, but we can't trust that, so validate
+        if len(vals) != len(set(vals)):
+            raise ValidationError("Duplicate scanner field name found")
+
         return ",".join(sorted(vals))
 
 

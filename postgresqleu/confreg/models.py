@@ -208,6 +208,7 @@ class Conference(models.Model):
     askshareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: share email", help_text="Include field for sharing email with sponsors")
     askphotoconsent = models.BooleanField(null=False, blank=False, default=True, verbose_name="Field: photo consent", help_text="Include field for getting photo consent")
     dynafields = models.CharField(max_length=500, blank=True, null=False, verbose_name="Dynamic properties", help_text="Dynamic properties that can be assigned to registrations")
+    scannerfields = models.CharField(max_length=500, blank=True, null=False, verbose_name="Scanning properties", help_text="Dynamic properties usd in the badge scanner interface")
     skill_levels = models.BooleanField(blank=False, null=False, default=True)
     jinjaenabled = models.BooleanField(null=False, blank=False, default=False, verbose_name="Jinja templates enabled")
     jinjadir = models.CharField(max_length=200, blank=True, null=True, default=None, help_text="Full path to new style jinja repository root", verbose_name="Jinja directory")
@@ -249,7 +250,7 @@ class Conference(models.Model):
                         'conferencefeedbackopen', 'confurl', 'contactaddr', 'tickets',
                         'confirmpolicy', 'conferencedatestr', 'location',
                         'feedbackopen', 'skill_levels', 'urlname', 'conferencename',
-                        'series', 'sendwelcomemail',
+                        'series', 'sendwelcomemail', 'scannerfields_list',
     )
 
     def safe_export(self):
@@ -361,6 +362,10 @@ class Conference(models.Model):
     @property
     def needs_data_purge(self):
         return self.enddate < today_conference() and not self.personal_data_purged
+
+    @property
+    def scannerfields_list(self):
+        return [f for f in self.scannerfields.split(',') if f != '']
 
 
 class RegistrationClass(models.Model):

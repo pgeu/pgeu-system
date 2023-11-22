@@ -130,6 +130,8 @@ urlpatterns.extend([
     url(r'^events/([^/]+)/checkin/$', postgresqleu.confreg.checkin.landing),
     url(r'^events/([^/]+)/checkin/([a-z0-9]{64})/$', postgresqleu.confreg.checkin.checkin),
     url(r'^events/([^/]+)/checkin/([a-z0-9]{64})/api/(\w+)/$', postgresqleu.confreg.checkin.api),
+    url(r'^events/([^/]+)/checkin/([a-z0-9]{64})/f(\w+)/$', postgresqleu.confreg.checkin.checkin_field),
+    url(r'^events/([^/]+)/checkin/([a-z0-9]{64})/f(\w+)/api/(\w+)/$', postgresqleu.confreg.checkin.checkin_field_api),
     url(r'^events/([^/]+)/sessions/$', postgresqleu.confreg.views.sessionlist),
     url(r'^events/speaker/(\d+)/photo/(\d+/)?$', postgresqleu.confreg.views.speakerphoto),
     url(r'^events/speakerprofile/$', postgresqleu.confreg.views.speakerprofile),
@@ -373,7 +375,7 @@ urlpatterns.extend([
 
     # Tokens (QR codes scanned)
     url(r'^t/id/([a-z0-9]+|TESTTESTTESTTEST)/$', postgresqleu.confreg.checkin.checkin_token),
-    url(r'^t/at/([a-z0-9]+|TESTTESTTESTTEST)/$', postgresqleu.confsponsor.scanning.scanned_token),
+    url(r'^t/at/(?P<scanned_token>[a-z0-9]+|TESTTESTTESTTEST)/(?P<what>\w+/)?$', postgresqleu.confreg.checkin.badge_token),
 
     # Webhooks for messaging
     url(r'^wh/(\d+)/([a-z0-9]+)/$', postgresqleu.util.views.messaging_webhook),
