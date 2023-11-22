@@ -125,8 +125,8 @@ class BackendConferenceForm(BackendForm):
         if cleaned_data.get('checkinactive') and not cleaned_data.get('tickets'):
             self.add_error('checkinactive', 'Check-in cannot be activated if tickets are not used!')
 
-        dynafields = set([x for x in cleaned_data.get('dynafields').split(',') if x])
-        scannerfields = set([x for x in cleaned_data.get('scannerfields').split(',') if x])
+        dynafields = set([x for x in cleaned_data.get('dynafields', '').split(',') if x])
+        scannerfields = set([x for x in cleaned_data.get('scannerfields', '').split(',') if x])
         if scannerfields - dynafields:
             self.add_error('scannerfields', 'Only fields from the list of dynamic properties can be used. Incorrect fields: {}'.format(", ".join(scannerfields - dynafields)))
 
