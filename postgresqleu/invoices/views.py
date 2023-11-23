@@ -411,6 +411,7 @@ def viewinvoicepdf(request, invoiceid):
         authenticate_backend_group(request, 'Invoice managers')
 
     r = HttpResponse(content_type='application/pdf')
+    r['Content-disposition'] = 'filename={}_invoice_{}.pdf'.format(settings.INVOICE_FILENAME_PREFIX, invoice.id)
     r.write(base64.b64decode(invoice.pdf_invoice))
     return r
 
@@ -418,6 +419,7 @@ def viewinvoicepdf(request, invoiceid):
 def viewinvoicepdf_secret(request, invoiceid, invoicesecret):
     invoice = get_object_or_404(Invoice, pk=invoiceid, recipient_secret=invoicesecret)
     r = HttpResponse(content_type='application/pdf')
+    r['Content-disposition'] = 'filename={}_invoice_{}.pdf'.format(settings.INVOICE_FILENAME_PREFIX, invoice.id)
     r.write(base64.b64decode(invoice.pdf_invoice))
     return r
 
@@ -430,6 +432,7 @@ def viewreceipt(request, invoiceid):
         authenticate_backend_group(request, 'Invoice managers')
 
     r = HttpResponse(content_type='application/pdf')
+    r['Content-disposition'] = 'filename={}_receipt_{}.pdf'.format(settings.INVOICE_FILENAME_PREFIX, invoice.id)
     r.write(base64.b64decode(invoice.pdf_receipt))
     return r
 
@@ -437,6 +440,7 @@ def viewreceipt(request, invoiceid):
 def viewreceipt_secret(request, invoiceid, invoicesecret):
     invoice = get_object_or_404(Invoice, pk=invoiceid, recipient_secret=invoicesecret)
     r = HttpResponse(content_type='application/pdf')
+    r['Content-disposition'] = 'filename={}_receipt_{}.pdf'.format(settings.INVOICE_FILENAME_PREFIX, invoice.id)
     r.write(base64.b64decode(invoice.pdf_receipt))
     return r
 
@@ -451,6 +455,7 @@ def viewrefundnote(request, invoiceid, refundid):
     refund = get_object_or_404(InvoiceRefund, invoice=invoiceid, pk=refundid)
 
     r = HttpResponse(content_type='application/pdf')
+    r['Content-disposition'] = 'filename={}_refund_{}.pdf'.format(settings.INVOICE_FILENAME_PREFIX, invoice.id)
     r.write(base64.b64decode(refund.refund_pdf))
     return r
 
@@ -459,6 +464,7 @@ def viewrefundnote_secret(request, invoiceid, invoicesecret, refundid):
     invoice = get_object_or_404(Invoice, pk=invoiceid, recipient_secret=invoicesecret)
     refund = get_object_or_404(InvoiceRefund, invoice=invoice, pk=refundid)
     r = HttpResponse(content_type='application/pdf')
+    r['Content-disposition'] = 'filename={}_refund_{}.pdf'.format(settings.INVOICE_FILENAME_PREFIX, invoice.id)
     r.write(base64.b64decode(refund.refund_pdf))
     return r
 
