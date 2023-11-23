@@ -328,7 +328,13 @@ def scanning_api(request, scannertoken, what):
                 return _json_response(r, 200, scan.note, 'Attendee {} scan stored successfully.'.format(r.fullname))
         elif request.method == 'POST' and what == 'store':
             with transaction.atomic():
-                r = _get_scanned_attendee(sponsor, request.POST['token'])
+                # Accept both full URL version of token and just the key part
+                m = _tokenmatcher.match(request.POST['token'])
+                if m:
+                    token = m.group(1)
+                else:
+                    token = request.POST['token']
+                r = _get_scanned_attendee(sponsor, token)
                 if isinstance(r, HttpResponse):
                     return r
 

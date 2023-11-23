@@ -320,7 +320,13 @@ def api(request, urlname, regtoken, what):
         if not conference.checkinactive:
             return HttpResponse("Check-in not open", status=412)
 
-        reg = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, idtoken=request.POST['token'])
+        # Accept both full URL version of token and just the key part
+        m = _tokenmatcher.match(request.POST['token'])
+        if m:
+            token = m.group(1)
+        else:
+            token = request.POST['token']
+        reg = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, idtoken=token)
         if reg.checkedinat:
             return HttpResponse("Already checked in.", status=412)
         reg.checkedinat = timezone.now()
@@ -366,8 +372,14 @@ def checkin_field_api(request, urlname, regtoken, fieldname, what):
         if not conference.checkinactive:
             return HttpResponse("Check-in not open", status=412)
 
+        m = _publictokenmatcher.match(request.POST['token'])
+        if m:
+            token = m.group(1)
+        else:
+            token = request.POST['token']
+
         with transaction.atomic():
-            reg = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, idtoken=request.POST['token'])
+            reg = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, publictoken=token)
             reglog(reg, "Marked scanner field {}".format(fieldname), request.user)
             reg.dynaprops[fieldname] = datetime_string(timezone.now())
             reg.save(update_fields=['dynaprops'])
