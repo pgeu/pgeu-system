@@ -298,6 +298,7 @@ def scanning_api(request, scannertoken, what):
             return HttpResponse(json.dumps({
                 'scanner': scanner.scanner.attendee.username,
                 'name': '{} for {}'.format(scanner.scanner.fullname, scanner.sponsor.displayname),
+                'sponsorname': scanner.sponsor.displayname,
                 'confname': scanner.sponsor.conference.conferencename,
                 'active': True,
                 'activestatus': '',
