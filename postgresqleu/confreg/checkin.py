@@ -355,6 +355,7 @@ def checkin_field_api(request, urlname, regtoken, fieldname, what):
             'active': conference.checkinactive,
             'activestatus': 'Check-in active' if conference.checkinactive else 'Check-in is not open',
             'confname': conference.conferencename,
+            'fieldname': fieldname,
             'admin': is_admin,
         })
 
