@@ -300,7 +300,8 @@ def scanning_api(request, scannertoken, what):
                 'name': '{} for {}'.format(scanner.scanner.fullname, scanner.sponsor.displayname),
                 'sponsorname': scanner.sponsor.displayname,
                 'confname': scanner.sponsor.conference.conferencename,
-                'active': True,
+                'active': True,  # As soon as badges are available they can be scanned.
+                'admin': False,  # There are no "admins" in badge scanning
                 'activestatus': '',
             }), content_type='application/json')
         elif what == 'lookup':
