@@ -381,7 +381,7 @@ def checkin_field_api(request, urlname, regtoken, fieldname, what):
 
         with transaction.atomic():
             reg = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, publictoken=token)
-            reglog(reg, "Marked scanner field {}".format(fieldname), request.user)
+            reglog(reg, "Marked scanner field {}".format(fieldname), user)
             reg.dynaprops[fieldname] = datetime_string(timezone.now())
             reg.save(update_fields=['dynaprops'])
         return _json_response({
