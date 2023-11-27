@@ -1281,7 +1281,7 @@ class VolunteerSlot(models.Model):
         ordering = ['timerange', ]
 
     def __str__(self):
-        return self._display_timerange()
+        return self._display_timerange(None)
 
     def _display_timerange(self, cache):
         start = timezone.localtime(self.timerange.lower)
