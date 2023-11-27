@@ -6,6 +6,8 @@ from django.template import Template, Context
 from django.shortcuts import render
 from django.utils.functional import cached_property
 from django.utils import timezone
+from django.conf import settings
+
 from urllib.parse import urlencode
 
 from postgresqleu.util.db import exec_to_scalar
@@ -67,8 +69,8 @@ class Banktransfer(BasePayment):
     description = """
 Using this payment method, you can pay via a regular bank transfer
 using IBAN. Note that this requires that you are able to make a
-payment in Euros, and requires you to cover all transfer charges.
-"""
+payment in {}, and requires you to cover all transfer charges.
+""".format(settings.CURRENCY_ABBREV)
 
     def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl=None):
         param = {
