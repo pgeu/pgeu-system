@@ -406,6 +406,9 @@ urlpatterns.extend([
     # Monitoring endpoints
     url(r'^monitor/git/$', postgresqleu.util.monitor.gitinfo),
     url(r'^monitor/nagios/$', postgresqleu.util.monitor.nagios),
+
+    # Digital assets needed to do deep-linking in the android app.
+    url(r'^.well-known/assetlinks.json$', postgresqleu.util.views.assetlinks),
 ])
 
 if settings.ENABLE_NEWS:

@@ -8,6 +8,8 @@ from postgresqleu.util.messaging import get_messaging
 from postgresqleu.util.messaging.twitter import process_twitter_webhook
 from postgresqleu.util.markup import pgmarkdown
 
+import json
+
 
 # Anybody logged in can do a markdown preview, since it's a safe operation
 # and this way we don't need any db access.
@@ -34,3 +36,23 @@ def messaging_webhook(request, providerid, token):
 @csrf_exempt
 def twitter_webhook(request):
     return process_twitter_webhook(request)
+
+
+# Assetlinks to confirm to Google Play that we are the authors of our Android app
+# (contents of file are suggestions from google play console)
+def assetlinks(request):
+    return HttpResponse(
+        json.dumps([
+            {
+                "relation": [
+                    "delegate_permission/common.handle_all_urls"
+                ],
+                "target": {
+                    "namespace": "android_app",
+                    "package_name": "eu.postgresql.android.conferencescanner",
+                    "sha256_cert_fingerprints": [
+                        "F3:F7:29:8B:4D:B4:2E:9E:B8:3B:C6:E3:8B:C0:69:FE:19:9E:2C:24:D4:6B:AE:C7:1E:83:D7:07:47:7E:CA:EB"
+                    ]
+                }
+            }
+        ]), content_type='application/json')
