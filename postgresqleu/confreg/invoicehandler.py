@@ -333,7 +333,10 @@ class TransferInvoiceProcessor(object):
         try:
             pending = RegistrationTransferPending.objects.get(pk=invoice.processorid)
         except RegistrationTransferPending.DoesNotExist:
-            raise Exception("Could not find pending transfer: %s!" % invoice.processorid)
+            # We can't find the transfer - that could be because it's successfully completed,
+            # at which point the reservation may be canceled. So in this case, we just redirect
+            # the user back to their invoice, because we have to send them somewhere.
+            return "{}/invoices/{}/".format(settings.SITEBASE, invoice.recipient_secret)
 
         return "{}/events/{}/".format(settings.SITEBASE, pending.conference.urlname)
 
