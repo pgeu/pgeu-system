@@ -212,6 +212,9 @@ CURRENCY_ISO = 'EUR'
 
 CURRENCY_FORMAT = '{ABBREV} {AMOUNT}'
 
+# Method used for bank payments (used only in descriptive texts)
+BANK_TRANSFER_METHOD_NAME = 'IBAN'
+
 # Process EU-specific VAT rules
 EU_VAT = False
 # Home country prefix for EU VAT

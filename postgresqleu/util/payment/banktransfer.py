@@ -68,9 +68,9 @@ class Banktransfer(BasePayment):
     backend_form_class = BackendBanktransferForm
     description = """
 Using this payment method, you can pay via a regular bank transfer
-using IBAN. Note that this requires that you are able to make a
+using {}. Note that this requires that you are able to make a
 payment in {}, and requires you to cover all transfer charges.
-""".format(settings.CURRENCY_ABBREV)
+""".format(settings.BANK_TRANSFER_METHOD_NAME, settings.CURRENCY_ABBREV)
 
     def build_payment_url(self, invoicestr, invoiceamount, invoiceid, returnurl=None):
         param = {
