@@ -251,7 +251,7 @@ def _get_reg_json(r, fieldscan=False):
         'company': r.company,
         'tshirt': r.shirtsize and r.shirtsize.shirtsize,
         'additional': [a.name for a in r.additionaloptions.all()],
-        'token': r.idtoken,
+        'token': r.publictoken if fieldscan else r.idtoken,
     }
     if r.conference.askphotoconsent:
         d['photoconsent'] = r.photoconsent and "Photos OK" or "Photos NOT OK"
