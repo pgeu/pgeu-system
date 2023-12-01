@@ -251,6 +251,7 @@ def webmeeting_by_key(request, meetingid, token):
     return _webmeeting(request, key)
 
 
+@login_required
 def meeting_ical(request, meetingid):
     # Get the ical info about a meeting
     meeting = get_object_or_404(Meeting, pk=meetingid)
