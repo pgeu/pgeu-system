@@ -29,9 +29,9 @@
 {%endif%}
 <h3>Add user</h3>
 <p>
-  Enter the email user of an attendee who should be able to scan badges
+  Enter the email of an attendee who should be able to scan badges
   on behalf of your sponsorship. Note that this attendee must have a confirmed
-  registration to the conerence using the specified email address.
+  registration to the conference using the specified email address.
 </p>
 <form method="post" action=".">{% csrf_token%}
   <input type="hidden" name="what" value="add">
