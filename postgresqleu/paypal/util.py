@@ -138,7 +138,10 @@ class PaypalAPI(object):
                 r['EMAIL'] = t['payer_info'].get('email_address', self.pm.config('email'))
 
             if not r['EMAIL']:
-                r['EMAIL'] = t['payer_info']['email_address']
+                # Seems with some type of transfers things can show up with non-existent
+                # email addresses which shouldn't happen. We'll just have to fall back to our
+                # own which we know is wrong, but we also know it exists-
+                r['EMAIL'] = t['payer_info'].get('email_address', self.pm.config('email'))
 
             # Figure out the name, since it can be in completely different places
             # depending on the transaction (even for the same type of transactions)
