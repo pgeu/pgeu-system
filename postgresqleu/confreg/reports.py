@@ -523,7 +523,7 @@ class AttendeeReportManager:
         orientation = data['orientation']
         pagesize = data.get('pagesize', 'A4')
         borders = data.get('border', None) == "on"
-        pagebreaks = data['pagebreaks']
+        pagebreaks = data.get('pagebreaks', None) == 'on'
         extracols = [_f for _f in [x.strip() for x in data['additionalcols'].split(',')] if _f]
         ofields = [self.fieldmap[f] for f in (data['orderby1'], data['orderby2'])]
 
