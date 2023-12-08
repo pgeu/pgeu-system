@@ -72,9 +72,9 @@ the `\N` filter).
 ## Badges
 
 For badge printing, it's often very useful to use the dynamic
-properties system, as this will allow "batching" of badges being
+fields system, as this will allow "batching" of badges being
 generated. This can be built off a generic filter for "all confirmed
-but not canceled attendees", with an additional dynamic property for
+but not canceled attendees", with an additional dynamic field for
 `badgesprinted` (or pick any name you prefer).
 
 To print this, set the following entries for your filter:
