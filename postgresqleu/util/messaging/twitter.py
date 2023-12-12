@@ -249,7 +249,7 @@ class Twitter(object):
             if r.status_code != 200:
                 return (None, 'Media upload: {}'.format(r.text))
             d['media'] = {
-                'media_ids': r.json()['media_id'],
+                'media_ids': [r.json()['media_id'], ]
             }
 
         while d['text']:
