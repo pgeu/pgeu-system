@@ -143,7 +143,7 @@ FOR UPDATE OF confreg_conferencetweetqueue"""))
                         sentany = True
                     else:
                         sys.stderr.write("Failed to post to {}: {}\n".format(p, errmsg))
-                        ConferenceTweetQueueErrorLog(tweet=t, message="Failed to post to {}: {}".format(p, errmsg)).save()
+                        ConferenceTweetQueueErrorLog(tweet=t, message="Failed to post to {}: {}".format(p, errmsg)[:250]).save()
                         err = True
                 else:
                     sys.stderr.write("Not making empty post to {}\n".format(p))
