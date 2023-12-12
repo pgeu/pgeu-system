@@ -172,12 +172,14 @@ def volunteer_twitter(request, urlname, token):
             if 'image' in request.FILES:
                 t.image = request.FILES['image'].read()
                 # Actually validate that it loads as PNG or JPG
+                # XXX: Pillow issue https://github.com/python-pillow/Pillow/issues/1138 misidentifies JPG
+                # as MPO. So we should apparenty accept MPO as well..
                 try:
                     p = ImageFile.Parser()
                     p.feed(t.image)
                     p.close()
                     image = p.image
-                    if image.format not in ('PNG', 'JPEG'):
+                    if image.format not in ('PNG', 'JPEG', 'MPO'):
                         return _json_response({'error': 'Image must be PNG or JPEG, not {}'.format(image.format)})
                 except Exception as e:
                     return _json_response({'error': 'Failed to parse image'})
