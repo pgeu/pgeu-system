@@ -173,7 +173,7 @@ def volunteer_twitter(request, urlname, token):
                 t.image = request.FILES['image'].read()
                 # Actually validate that it loads as PNG or JPG
                 # XXX: Pillow issue https://github.com/python-pillow/Pillow/issues/1138 misidentifies JPG
-                # as MPO. So we should apparenty accept MPO as well..
+                # as MPO. So we should apparently accept MPO as well..
                 try:
                     p = ImageFile.Parser()
                     p.feed(t.image)
