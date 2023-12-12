@@ -248,7 +248,9 @@ class Twitter(object):
             }, timeout=30)
             if r.status_code != 200:
                 return (None, 'Media upload: {}'.format(r.text))
-            d['media_ids'] = r.json()['media_id']
+            d['media'] = {
+                'media_ids': r.json()['media_id'],
+            }
 
         while d['text']:
             r = self.tw.post('https://api.twitter.com/2/tweets', json=d, timeout=30)
