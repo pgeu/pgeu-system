@@ -113,7 +113,7 @@ class DynamicReportField(ReportField):
         super().__init__("dyn_{}".format(name), name)
 
     def get_select_name(self):
-        return "r.dynaprops->>'{}' AS {}".format(self.name, self.id)
+        return "r.dynaprops->>'{}' AS \"{}\"".format(self.name, self.id)
 
 
 class AdditionalOptionsReportField(object):
