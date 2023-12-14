@@ -50,7 +50,7 @@ class ReportField(object):
         return val
 
     def get_orderby_field(self):
-        return self.id
+        return '"{}"'.format(self.id)
 
     def get_join(self):
         return None
