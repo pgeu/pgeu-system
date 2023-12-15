@@ -151,7 +151,7 @@ def sponsor_scanning_download(request, sponsorid):
 
     response = HttpResponse(content_type='text/csv; charset=utf8')
     response['Content-Disposition'] = 'attachment;filename=scanned_users.csv'
-    c = csv.writer(response, delimiter=';')
+    c = csv.writer(response)
     c.writerow(['Attendee name', 'Attendee country', 'Attendee company', 'Attendee email', 'Scanned at', 'Scanned by', 'Scan note'])
     for s in scanned:
         c.writerow([s.attendee.fullname, s.attendee.country, s.attendee.company, s.attendee.email, s.scannedat, s.scannedby.fullname, s.note])
