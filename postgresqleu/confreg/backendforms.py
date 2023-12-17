@@ -27,6 +27,7 @@ from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.backendforms import BackendForm, BackendBeforeNewForm
 from postgresqleu.util.messaging import messaging_implementation_choices, get_messaging, get_messaging_class
 from postgresqleu.util.messaging.short import get_shortened_post_length
+from postgresqleu.util.time import datetime_string
 
 import postgresqleu.accounting.models
 
@@ -510,7 +511,11 @@ class AdditionalOptionUserManager(object):
 
     def get_list(self, instance):
         if instance.id:
-            return [(r.id, r.fullname, "{} ({})".format(r.regtype.regtype if r.regtype else '', r.invoice_status)) for r in instance.conferenceregistration_set.all()]
+            return [(r.id, r.fullname, "{} ({}{})".format(
+                r.regtype.regtype if r.regtype else '',
+                r.invoice_status,
+                ', checked in at {}'.format(datetime_string(r.checkedinat)) if r.checkedinat else '',
+            )) for r in instance.conferenceregistration_set.all()]
 
     def get_form(self):
         return None
