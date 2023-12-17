@@ -36,7 +36,7 @@ class ReportField(object):
             self.field = ConferenceRegistration._meta.get_field(id)
 
     def get_select_name(self):
-        return self.id
+        return "r.{}".format(self.id)
 
     def get_value(self, val):
         if val is None:
