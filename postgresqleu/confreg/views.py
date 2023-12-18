@@ -1096,6 +1096,7 @@ def feedback(request, confname):
 
 
 @login_required
+@transaction.atomic
 def feedback_session(request, confname, sessionid):
     # Room for optimization: don't get these as separate steps
     conference = get_conference_or_404(confname)

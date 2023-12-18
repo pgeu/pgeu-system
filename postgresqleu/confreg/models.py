@@ -1238,6 +1238,11 @@ class ConferenceSessionFeedback(models.Model):
     def __str__(self):
         return str("%s - %s (%s)") % (self.conference, self.session, self.attendee)
 
+    class Meta:
+        unique_together = (
+            ('attendee', 'session', 'conference')
+        )
+
 
 class ConferenceFeedbackQuestion(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
