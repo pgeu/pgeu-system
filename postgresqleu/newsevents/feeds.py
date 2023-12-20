@@ -36,7 +36,7 @@ class LatestNews(Feed):
             extrafilter = ""
             params = {}
         else:
-            extrafilter = " AND author_id=%(authorid)s"
+            extrafilter = " AND p.author_id=%(authorid)s"
             params = {
                 'authorid': obj.pk,
             }
