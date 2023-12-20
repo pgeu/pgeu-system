@@ -43,19 +43,21 @@ class LatestNews(Feed):
 
         with ensure_conference_timezone(None):
             return exec_to_dict("""WITH main AS (
-  SELECT id, NULL::text as urlname, datetime, title, summary
+  SELECT id, NULL::text as urlname, datetime, title, summary, p.fullname
   FROM newsevents_news
+  LEFT JOIN newsevents_newsposterprofile p ON p.author_id=newsevents_news.author_id
   WHERE datetime<CURRENT_TIMESTAMP AND inrss {0}
   ORDER BY datetime DESC LIMIT 10),
 conf AS (
-  SELECT n.id, c.urlname, datetime, c.conferencename || ' - ' || title AS title, summary
+  SELECT n.id, c.urlname, datetime, c.conferencename || ' - ' || title AS title, summary, p.fullname
   FROM confreg_conferencenews n
   INNER JOIN confreg_conference c ON c.id=conference_id
+  LEFT JOIN newsevents_newsposterprofile p ON p.author_id=n.author_id
   WHERE datetime<CURRENT_TIMESTAMP AND inrss {0}
   ORDER BY datetime DESC LIMIT 10)
-SELECT id, urlname, datetime, title, summary, true AS readmore FROM main
+SELECT id, urlname, datetime, title, summary, fullname, true AS readmore FROM main
 UNION ALL
-SELECT id, urlname, datetime, title, summary, false FROM conf
+SELECT id, urlname, datetime, title, summary, fullname, false FROM conf
 ORDER BY datetime DESC LIMIT 10""".format(extrafilter), params)
 
     def item_title(self, news):
@@ -78,3 +80,6 @@ ORDER BY datetime DESC LIMIT 10""".format(extrafilter), params)
 
     def item_pubdate(self, news):
         return news['datetime']
+
+    def item_author_name(self, news):
+        return news['fullname']
