@@ -55,9 +55,9 @@ intentional to make sure the report is predictable.
 
 ### Dynamic report fields <a name="dynamic"></a>
 
-For reporting purposes, dynamic fields cna be added to all
+For reporting purposes, dynamic fields can be added to all
 registrations for a conference, and then be set as part of report
-generatoin. These fields can be used to store persistant data about
+generation. These fields can be used to store persistant data about
 the results of reports, and can then be used later on when filtering
 new reports.
 
