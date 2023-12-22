@@ -64,7 +64,7 @@
 <div class="row">
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/news/">News</a></div>
 {%if c.has_social_broadcast %}
-  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block {%if pending_tweet_approvals%}btn-danger{%elif pending_tweets%}btn-warning{%endif%}" href="/events/admin/{{c.urlname}}/tweet/queue/">Social Media post queue</a></div>
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block {%if pending_tweet_approvals%}btn-danger{%elif pending_tweets%}btn-warning{%endif%}" href="/events/admin/{{c.urlname}}/tweet/queue/">Twitter post queue</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/tweet/campaign/">Create campaign</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/tweet/hashtag/">Hashtags</a></div>
 {%endif%}
