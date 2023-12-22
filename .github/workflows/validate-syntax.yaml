@@ -19,10 +19,13 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pycodestyle==2.6.0 "Django>=3.2,<3.3"
+        pip install pycodestyle==2.6.0
     - name: Validate with pycodestyle
       run: |
         pycodestyle
     - name: Make sure there are no missing migrations
       run: |
+        echo "SECRET_KEY='foobar'" > postgresqleu/local_settings.py
+        pip install Pillow  # Install the "wrong" version of pillow so it uses a wheel - since we won't actually call it anyway
+        pip install -r <(grep -v Pillow tools/devsetup/dev_requirements.txt)
         python manage.py makemigrations --check --dry-run
