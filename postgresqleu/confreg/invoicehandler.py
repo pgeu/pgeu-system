@@ -33,7 +33,7 @@ class InvoiceProcessor(object):
         reg.payconfirmedat = timezone.now()
         reg.payconfirmedby = "Invoice paid"
         reg.save(update_fields=['payconfirmedat', 'payconfirmedby'])
-        reglog(reg, "Confirmed registraiton by invoice")
+        reglog(reg, "Confirmed registration by invoice")
         notify_reg_confirmed(reg)
 
     # Process an invoice being canceled. This means we need to unlink
@@ -147,7 +147,7 @@ class BulkInvoiceProcessor(object):
             r.payconfirmedat = timezone.now()
             r.payconfirmedby = "Bulk paid"
             r.save(update_fields=['payconfirmedat', 'payconfirmedby'])
-            reglog(r, "Confirmed registraiton by bulk paid")
+            reglog(r, "Confirmed registration by bulk paid")
             notify_reg_confirmed(r)
 
         bp.save(update_fields=['paidat'])
