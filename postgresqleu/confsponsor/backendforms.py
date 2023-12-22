@@ -97,7 +97,7 @@ class BackendSponsorshipNewBenefitForm(BackendBeforeNewForm):
 
 
 def _get_sample_sponsor():
-    return Sponsor(name='TestName', displayname="TestDisplayName", social={"twitter": "@testuser", "mastodon": "@testuser@exaample.com"})
+    return Sponsor(name='TestName', displayname="TestDisplayName", social={"twitter": "@testuser", "mastodon": "@testuser@example.com"})
 
 
 class BackendSponsorshipLevelBenefitForm(BackendForm):
