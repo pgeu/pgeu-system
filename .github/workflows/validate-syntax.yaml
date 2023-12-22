@@ -19,7 +19,10 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pycodestyle==2.6.0
+        pip install pycodestyle==2.6.0 "Django>=3.2,<3.3"
     - name: Validate with pycodestyle
       run: |
         pycodestyle
+    - name: Make sure there are no missing migrations
+      run: |
+        python manage.py makemigrations --check --dry-run
