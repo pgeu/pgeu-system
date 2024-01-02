@@ -367,7 +367,7 @@ def _generate_and_send_sponsor_contract(sponsor):
             manager.email,
             pdf,
             "{}_sponsorship_contract.pdf".format(conference.urlname),
-            "{} {} sponsorship contract".format(conference.conferencename, level.levelname),
+            "{} {} sponsorship contract for {}".format(conference.conferencename, level.levelname, sponsor.name),
             "Hello!\n\nYou have signed up as a {} sponsor of {}. Please use the link below to view and sign the sponsorship contract for the event. When you have signed the contract, the organisers will also sign it, and at that point your sponsorship will proceed to the next step.".format(level.levelname, conference.conferencename),
             {
                 'type': 'sponsor',
