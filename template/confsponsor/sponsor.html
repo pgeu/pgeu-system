@@ -90,21 +90,17 @@ Some of your sponsorship benefits require a specific claiming to be used - eithe
 we need to know if you want to use it, or because it requires further information from you.
 Click on the benefit in the list below to claim them or turn them down:
 </p>
-<div id="unclaimedlist">
+<div class="sponsorbenefitlist">
 {%for b in unclaimedbenefits%}
- <div class="card">
-   <div class="card-header p-0" id="unclaimed_h_{{b.id}}">
-     <h5 class="m-0">
-       <button class="btn btn-link" data-toggle="collapse" data-target="#unclaimed_b_{{b.id}}" aria-expanded="false" aria-controls="unclaimed_b_{{b.id}}">{{b}}</a>
-     </h5>
-   </div>
-   <div id="unclaimed_b_{{b.id}}" class="collapse" aria-labelledby="unclaimed_h_{{b.id}}">
-     <div class="card-body">
-       {{b.benefitdescription|markdown}}
+ <details>
+   <summary>{{b}}</summary>
+   <div class="sponsorbenefitdescription">
+     {{b.benefitdescription|default:"No description"|markdown}}
+     <p>
        <a class="btn btn-primary" href="claim/{{b.id}}/">Claim / Turn down benefit</a>
-     </div>
+     </p>
    </div>
- </div>
+ </details>
 {%endfor%}
 </div>
 {%endif%}
@@ -114,39 +110,28 @@ Click on the benefit in the list below to claim them or turn them down:
 <p>
 The following benefits have already been claimed:
 </p>
-<div id="claimedbenefits">
+
+<div class="sponsorbenefitlist">
 {%for b in claimedbenefits%}
- <div class="card">
-   <div class="card-header p-0" id="claimed_h_{{b.id}}">
-     <h5 class="m-0">
-       <button class="btn btn-link" data-toggle="collapse" data-target="#claimed_b_{{b.id}}" aria-expanded="false" aria-controls="claimed_b_{{b.id}}">{{b.benefit}}{%if not b.confirmed%} <i>(Not yet confirmed by the organizers)</i>{%endif%}{%if b.declined%} <b>(This benefit has been declined)</b>{%endif%}</a>
-     </h5>
-   </div>
-   <div id="claimed_b_{{b.id}}" class="collapse" aria-labelledby="claimed_h_{{b.id}}">
-     <div class="card-body">
-  {{b.declined|yesno:"Declined,Claimed"}} by <i>{{b.claimedby}}</i> on <i>{{b.claimedat}}</i><br/>
-  <p>{{b.benefit.benefitdescription|markdown}}</p>
+ <details>
+   <summary>{{b.benefit}}{%if not b.confirmed%} <i>(Not yet confirmed by the organizers)</i>{%endif%}{%if b.declined%} <b>(This benefit has been declined)</b>{%endif%}</summary>
+   <div class="sponsorbenefitdescription">
+     {{b.declined|yesno:"Declined,Claimed"}} by <i>{{b.claimedby}}</i> on <i>{{b.claimedat}}</i><br/>
+     <p>{{b.benefit.benefitdescription|markdown}}</p>
 {%if b.claimhtml%}
-  <div style="border: 1px solid black">{{b.claimhtml|safe}}</div>
+     <div class="sponsorclaimhtml">{{b.claimhtml|safe}}</div>
 {%endif%}
-     </div>
    </div>
- </div>
+ </details>
 {%endfor%}
 
 {%for b in noclaimbenefits%}
- <div class="card">
-   <div class="card-header p-0" id="unclaimed_h_{{b.id}}">
-     <h5 class="m-0">
-       <button class="btn btn-link" data-toggle="collapse" data-target="#unclaimed_b_{{b.id}}" aria-expanded="false" aria-controls="unclaimed_b_{{b.id}}">{{b}}</button>
-     </h5>
+ <details>
+   <summary>{{b}}</summary>
+   <div class="sponsorbenefitdescription">
+     {{b.benefitdescription|markdown}}
    </div>
-   <div id="unclaimed_b_{{b.id}}" class="collapse" aria-labelledby="unclaimed_h_{{b.id}}">
-     <div class="card-body">
-       {{b.benefitdescription|markdown}}
-     </div>
-   </div>
- </div>
+ </details>
 {%endfor%}
 </div>
 {%endif%}

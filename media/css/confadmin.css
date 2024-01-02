@@ -261,3 +261,38 @@ div.pdf_fields_field {
 
     cursor: move;
 }
+
+/*
+ * Sponsor admin
+ */
+div.sponsorbenefitlist details {
+    border: 1px solid darkgray;
+    margin-bottom: 0.7rem;
+}
+
+div.sponsorbenefitlist details summary {
+    display: list-item; /* Sometimes set by bootstrap, but we override to always have it */
+    cursor: pointer;
+    background-color: lightgray;
+    padding: 0.5rem;
+}
+
+div.sponsorbenefitlist details div.sponsorbenefitdescription {
+    padding: 0.5rem;
+    padding-bottom: 0px;
+}
+
+div.sponsorclaimbuttons {
+    padding-bottom: 0.5rem;
+}
+
+div.sponsorclaimbuttons form {
+    display: inline;
+    margin-right: 3rem;
+}
+
+div.sponsorclaimhtml {
+    border: 1px solid black;
+    padding: 0.2rem;
+    margin-bottom: 0.4rem;
+}

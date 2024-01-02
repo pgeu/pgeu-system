@@ -1,13 +1,6 @@
 {%extends "confreg/confadmin_base.html" %}
 {%load pgmarkdown%}
 {%block title%}Conference Sponsorship - {{sponsor}}{%endblock%}
-{%block extrahead%}
-<style>
-div.panelwrap {
-   padding: 10px;
-}
-</style>
-{%endblock%}
 {%block layoutblock%}
 <h1>Conference Sponsorship - {{sponsor}}</h1>
 
@@ -17,72 +10,55 @@ div.panelwrap {
 
 <h2>Claimed benefits</h2>
 {%if claimedbenefits%}
-<div class="panel-group" id="claimedbenefits" role="tablist" role="tablist" aria-multiselectable="true">
+<div class="sponsorbenefitlist">
 {%for b in claimedbenefits%}
-  <div class="panel panel-default">
-    <div class="panel-heading" role="tab" id="claimed_h_{{b.id}}">
-      <h4 class="panel-title">
-	<a class="collapsed" role="button" data-toggle="collapse" href="#claimed_{{b.id}}" aria-expanded="false" aria-controls="claimed_{{b.id}}">{{b.benefit}}{%if not b.confirmed%} <i>NOT CONFIRMED</i>{%endif%}{%if b.declined%} <b>DECLINED!</b>{%endif%}</a>
-      </h4>
-    </div>
-    <div id="claimed_{{b.id}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="claimed_h_{{b.id}}">
-      <div class="panelwrap">
+ <details>
+   <summary>{{b.benefit}}{%if not b.confirmed%} <i>NOT CONFIRMED</i>{%endif%}{%if b.declined%} <b>DECLINED!</b>{%endif%}</summary>
+   <div class="sponsorbenefitdescription">
       {{b.declined|yesno:"Declined,Claimed"}} by <i>{{b.claimedby}}</i> on <i>{{b.claimedat}}</i><br/>
       {{b.benefit.benefitdescription|markdown}}
 {%if b.claimhtml%}
-      <div style="border: 1px solid black">{{b.claimhtml|safe}}</div>
+      <div class="sponsorclaimhtml">{{b.claimhtml|safe}}</div>
 {%endif%}
-      <br/>
-       <div class="row">
+      <div class="sponsorclaimbuttons">
 {%if not b.confirmed%}
-        <div class="col-md-2">
-	  <form method="post" action=".">{% csrf_token %}
+	  <form method="post" action="." class="form-inline">{% csrf_token %}
 	    <input type="hidden" name="confirm" value="1">
 	    <input type="hidden" name="claimid" value="{{b.id}}">
 	    <input type="submit" class="btn btn-primary btn-sm" value="Confirm this benefit">
 	  </form>
-	</div>
 {%else%}
-	<div class="col-md-1">
-	  <span class="btn btn-success btn-sm disabled">Confirmed</span>
-	</div>
+	  <form>
+	    <span class="btn btn-success btn-sm disabled">Confirmed</span>
+	  </form>
 {%endif%}
 {%if b.can_unclaim %}
-	<div class="col-md-4">
 	  <form method="post" action="." class="form-inline">{% csrf_token %}
 	    <input type="hidden" name="unclaim" value="1">
 	    <input type="hidden" name="claimid" value="{{b.id}}">
 	    <input type="text" name="unclaimreason" class="form-control" placeholder="Optional reason for unclaiming">
 	    <input type="submit" class="btn btn-warning btn-sm confirm-btn" value="Unclaim this benefit" data-confirm="You are about to unclaim this benefit, including sending an email to the sponsor about this?">
 	  </form>
-	</div>
 {%endif%}
        </div>{# row of buttons #}
-      </div>{# panelwrap #}
-    </div>{# panel-collapse #}
-  </div>{# panel #}
+   </div>
+ </details>
 {%endfor%}
-</div>{# panel-group #}
+</div>{# sponsorbenefitlist #}
 {%else%}
 <p>There are no claimed benefits for this sponsor.</p>
 {%endif%}
 
 <h2>Pending benefits</h2>
 {%if unclaimedbenefits%}
-<div class="panel-group" id="unclaimedbenefits" role="tablist" role="tablist" aria-multiselectable="true">
+<div class="sponsorbenefitlist">
 {%for b in unclaimedbenefits%}
-  <div class="panel panel-default">
-    <div class="panel-heading" role="tab" id="unclaimed_h_{{b.id}}">
-      <h4 class="panel-title">
-	<a class="collapsed" role="button" data-toggle="collapse" href="#unclaimed_{{b.id}}" aria-expanded="false" aria-controls="unclaimed_{{b.id}}">{{b}}</a>
-      </h4>
-    </div>
-    <div id="unclaimed_{{b.id}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="unclaimed_h_{{b.id}}">
-      <div class="panelwrap">
+  <details>
+    <summary>{{b}}</summary>
+    <div class="sponsorbenefitdescription">
 	{{b.benefitdescription|markdown|default:"No description"}}
-      </div>
     </div>
-  </div>
+  </details>
 {%endfor%}
 </div>
 {%else%}
@@ -92,20 +68,15 @@ div.panelwrap {
 {%if noclaimbenefits%}
 <h2>Automatic benefits</h2>
 <p>The following benefits have been auto-claimed for this sponsor:</p>
-<div class="panel-group" id="noclaimbenefits" role="tablist" role="tablist" aria-multiselectable="true">
+
+<div class="sponsorbenefitlist">
 {%for b in noclaimbenefits%}
-  <div class="panel panel-default">
-    <div class="panel-heading" role="tab" id="noclaim_h_{{b.id}}">
-      <h4 class="panel-title">
-	<a class="collapsed" role="button" data-toggle="collapse" href="#noclaim_{{b.id}}" aria-expanded="false" aria-controls="noclaim_{{b.id}}">{{b}}</a>
-      </h4>
-    </div>
-    <div id="noclaim_{{b.id}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="noclaim_h_{{b.id}}">
-      <div class="panelwrap">
+  <details>
+    <summary>{{b}}</summary>
+    <div class="sponsorbenefitdescription">
 	{{b.benefitdescription|markdown|default:"No description"}}
-      </div>
     </div>
-  </div>
+  </details>
 {%endfor%}
 </div>
 {%endif%}

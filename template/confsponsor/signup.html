@@ -49,21 +49,14 @@ The following sponsorship levels are available for this conference:
 <p>
 The following benefits are available at this level (click for details):
 </p>
-<div id="levelset_{{level.id}}">
+<div class="sponsorbenefitlist">
 {%for b in level.sponsorshipbenefit_set.all %}
- <div class="card">
-   <div class="card-header p-0" id="levelset_h_{{b.id}}">
-     <h5 class="m-0">
-       <button class="btn btn-link" data-toggle="collapse" data-target="#levelset_b_{{b.id}}" aria-expanded="false" aria-controls="levelset_b_{{b.id}}">{{b}}</a>
-       <i class="fa fa-caret-square-o-down fa-square-caret-down"></i>
-     </h5>
+ <details>
+   <summary>{{b}}</summary>
+   <div class="sponsorbenefitdescription">
+     {{b.benefitdescription|default:"No description"|markdown}}
    </div>
-   <div id="levelset_b_{{b.id}}" class="collapse" aria-labelledby="levelset_h_{{b.id}}">
-     <div class="card-body">
-       {{b.benefitdescription|markdown}}
-     </div>
-   </div>
- </div>
+ </details>
 {%endfor%}
 </div>
 <p>
