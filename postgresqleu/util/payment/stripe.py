@@ -25,10 +25,11 @@ class BackendStripeForm(BackendInvoicePaymentMethodForm):
                                        label="Fees account")
     accounting_payout = forms.ChoiceField(required=True, choices=get_account_choices,
                                           label="Payout account")
+    verify_balances = forms.BooleanField(required=False, help_text="Regularly verify that the account balance matches the accounting system")
     webhook = forms.CharField(label='Webhook', widget=StaticTextWidget)
 
     config_fields = ['notification_receiver', 'published_key', 'secret_key', 'webhook_secret',
-                     'accounting_income', 'accounting_fee', 'accounting_payout']
+                     'accounting_income', 'accounting_fee', 'accounting_payout', 'verify_balances']
     config_readonly = ['webhook', ]
 
     config_fieldsets = [
@@ -40,7 +41,7 @@ class BackendStripeForm(BackendInvoicePaymentMethodForm):
         {
             'id': 'accounting',
             'legend': 'Accounting',
-            'fields': ['accounting_income', 'accounting_fee', 'accounting_payout'],
+            'fields': ['accounting_income', 'accounting_fee', 'accounting_payout', 'verify_balances'],
         },
         {
             'id': 'stripeconf',
