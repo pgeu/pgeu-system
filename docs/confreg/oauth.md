@@ -54,6 +54,7 @@ registration as `Client` and `Secret`.
 The Mastodon integration supports multiple different Mastodon
 instances, but will default to https://mastodon.social/.
 
-As Mastodon allows dynamic OAuth application, this is simply
-done by adding an OAuth Application of type Mastodon with the
-specified base URL, and everything else is automatic.
+As Mastodon allows dynamic OAuth application, this is simply done by
+adding an OAuth Application of type Mastodon with the specified base
+URL, and everything else is automatic (just don't forget to hit the
+`Save` button)
