@@ -553,6 +553,8 @@ class BackendOAuthappForm(BackendForm):
                     self.instance.secret = secret
                     self.initial['secret'] = secret
                     messages.info(self.request, "OAuth client and secret automaticaly created, just hit save!")
+        else:
+            self.warning_text = 'WARNING! OAuth keys are cached, so if you change them on an existing application you must restart the social media poster and the jobs runner, and most likely also re-register all accounts using them!'
 
 
 def edit_oauthapps(request, rest):
