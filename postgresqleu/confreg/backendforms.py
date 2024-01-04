@@ -826,7 +826,8 @@ class BackendConferenceSessionForm(BackendForm):
             {
                 'id': 'info',
                 'legend': 'Session info',
-                'fields': ['title', 'speaker', 'abstract', 'skill_level'] +
+                'fields': ['title', 'speaker', 'abstract'] +
+                (['skill_level'] if self.conference.skill_levels else []) +
                 (['tags'] if self.conference.callforpaperstags else []) +
                 (['recordingconsent'] if self.conference.callforpapersrecording else [])
             },
