@@ -159,8 +159,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('title', models.CharField(max_length=200)),
-                ('starttime', models.DateTimeField(null=True, blank=True)),
-                ('endtime', models.DateTimeField(null=True, blank=True)),
+                ('starttime', models.DateTimeField(null=True, blank=True, verbose_name='Start time')),
+                ('endtime', models.DateTimeField(null=True, blank=True, verbose_name='End time')),
                 ('cross_schedule', models.BooleanField(default=False)),
                 ('can_feedback', models.BooleanField(default=True)),
                 ('abstract', models.TextField(blank=True)),
