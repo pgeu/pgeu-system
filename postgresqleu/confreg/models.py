@@ -238,6 +238,7 @@ class Conference(models.Model):
     contractexpires = models.IntegerField(null=False, blank=False, default=7, verbose_name="Contract expiry time", help_text="Digital contracts will expire after this many days")
     manualcontracts = models.BooleanField(null=False, blank=False, default=True, verbose_name="Manual contracts", help_text="Allow manually signed sponsorship contracts")
     autocontracts = models.BooleanField(null=False, blank=False, default=True, verbose_name="Automated contract workflow", help_text="Default to automatically approving sponsorships when digital signature process completes")
+    videoproviders = models.CharField(max_length=200, null=False, blank=True, verbose_name="Video link providers")
     key_public = models.TextField(null=False, blank=True, verbose_name="Public RSA key for signatures")
     key_private = models.TextField(null=False, blank=True, verbose_name="Private RSA key for signatures")
     web_origins = models.CharField(null=False, blank=True, max_length=1000, verbose_name="Allowed web origins for API calls (comma separated list)")
@@ -1138,6 +1139,7 @@ class ConferenceSession(models.Model):
     lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
     reminder_sent = models.BooleanField(null=False, default=False, verbose_name='Speaker reminder(s) sent')
     tags = models.ManyToManyField(ConferenceSessionTag, blank=True)
+    videolinks = models.JSONField(null=False, blank=False, default=dict, verbose_name='Video links')
 
     # NOTE! Any added fields need to be considered for inclusion in
     # forms.CallForPapersForm and in views.callforpapers_copy()!

@@ -70,7 +70,7 @@ class BackendConferenceForm(BackendForm):
         'checkinprocessors': RegisteredUsersLookup(None),
         'initial_common_countries': CountryLookup(),
     }
-    selectize_taglist_fields = ('dynafields', 'scannerfields', )
+    selectize_taglist_fields = ('dynafields', 'scannerfields', 'videoproviders', )
     vat_fields = {'transfer_cost': 'reg'}
 
     class Meta:
@@ -85,7 +85,8 @@ class BackendConferenceForm(BackendForm):
                   'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent',
                   'skill_levels', 'showvotes', 'callforpaperstags', 'callforpapersrecording', 'sendwelcomemail',
                   'tickets', 'confirmpolicy', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist',
-                  'transfer_cost', 'initial_common_countries', 'jinjaenabled', 'dynafields', 'scannerfields']
+                  'transfer_cost', 'initial_common_countries', 'jinjaenabled', 'dynafields', 'scannerfields',
+                  'videoproviders', ]
 
     def fix_fields(self):
         self.selectize_multiple_fields['volunteers'] = RegisteredUsersLookup(self.conference)
@@ -103,7 +104,7 @@ class BackendConferenceForm(BackendForm):
         {'id': 'steps', 'legend': 'Steps', 'fields': ['registrationopen', 'registrationtimerange', 'allowedit', 'callforpapersopen', 'callforpaperstimerange', 'callforsponsorsopen', 'callforsponsorstimerange', 'scheduleactive', 'sessionsactive', 'cardsactive', 'checkinactive', 'conferencefeedbackopen', 'feedbackopen']},
         {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpaperstags', 'callforpapersrecording', 'showvotes']},
         {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', ]},
-        {'id': 'display', 'legend': 'Display', 'fields': ['jinjaenabled', ]},
+        {'id': 'display', 'legend': 'Display', 'fields': ['jinjaenabled', 'videoproviders', ]},
         {'id': 'legacy', 'legend': 'Legacy', 'fields': ['schedulewidth', 'pixelsperminute']},
     ]
 
@@ -139,6 +140,29 @@ class BackendConferenceForm(BackendForm):
             if not self.instance.jinjadir:
                 raise ValidationError("Jinja templates cannot be enabled since there is no Jinja directory configured in superuser settings")
         return je
+
+    def clean_videoproviders(self):
+        val = self.cleaned_data['videoproviders']
+
+        vals = [v.strip() for v in val.split(',') if v != '']
+        # JS should've protected us against duplicate values, but we can't trust that, so validate
+        if len(vals) != len(set(vals)):
+            raise ValidationError("Duplicate video provider name found")
+
+        for v in vals:
+            if not re.match('^[a-z]+$', v, re.I):
+                raise ValidationError("Video provider names can only contain letters a-z")
+
+        # See if we tried to *remove* a property that's still in use
+        used = exec_to_single_list("SELECT DISTINCT k FROM (SELECT jsonb_object_keys(videolinks) k FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s) d WHERE NOT d.k=ANY(%(vals)s)", {
+            'confid': self.instance.id,
+            'vals': vals,
+        })
+        if used:
+            raise ValidationError("The provider name(s) {} are still in use and cannot be removed.".format(sorted(used)))
+
+        # Re-sort and save the stripped and lowercased version
+        return ",".join(sorted(vals)).lower()
 
     def clean_dynafields(self):
         val = self.cleaned_data['dynafields']
@@ -744,6 +768,10 @@ class ConferenceSessionSlideManager(object):
     title = 'Slides'
     singular = 'slide'
     can_add = True
+    fieldset = {
+        'id': 'slides',
+        'legend': 'Slides',
+    }
 
     def get_list(self, instance):
         return [(s.id, s.name, '') for s in instance.conferencesessionslides_set.all()]
@@ -790,7 +818,34 @@ class BackendConferenceSessionForm(BackendForm):
         model = ConferenceSession
         fields = ['title', 'htmlicon', 'speaker', 'status', 'starttime', 'endtime', 'cross_schedule',
                   'track', 'room', 'can_feedback', 'skill_level', 'tags', 'recordingconsent', 'abstract', 'submissionnote',
-                  'internalnote', ]
+                  'internalnote']
+
+    @property
+    def fieldsets(self):
+        fs = [
+            {
+                'id': 'info',
+                'legend': 'Session info',
+                'fields': ['title', 'speaker', 'abstract', 'skill_level'] +
+                (['tags'] if self.conference.callforpaperstags else []) +
+                (['recordingconsent'] if self.conference.callforpapersrecording else [])
+            },
+            {'id': 'schedule', 'legend': 'Scheduling', 'fields': ['status', 'track', 'room', 'htmlicon', 'starttime', 'endtime', 'cross_schedule', 'can_feedback']},
+            {'id': 'notes', 'legend': 'Notes', 'fields': ['submissionnote', 'internalnote']},
+        ]
+        if self.instance.conference.videoproviders:
+            fs.append(
+                {'id': 'videolinks', 'legend': 'Video links', 'fields': self.instance.conference.videoproviders.split(',')},
+            )
+        return fs
+
+    @property
+    def json_form_fields(self):
+        if self.conference.videoproviders:
+            return {
+                'videolinks': self.instance.conference.videoproviders.split(','),
+            }
+        return None
 
     def fix_fields(self):
         self.fields['track'].queryset = Track.objects.filter(conference=self.conference)
@@ -816,6 +871,11 @@ class BackendConferenceSessionForm(BackendForm):
             self.update_protected_fields()
         else:
             self.fields['recordingconsent'].help_text = 'Whether this speaker has consented to being recorded or not for this session. This should NOT be updated manually in the normal cases, as it requires explicit consent from the speaker.'
+
+        if self.conference.videoproviders:
+            for f in self.conference.videoproviders.split(','):
+                self.fields[f] = django.forms.CharField(label=f.title(), required=False)
+                self.fields[f].delete_on_empty = True
 
     @classmethod
     def get_column_filters(cls, conference):

@@ -168,13 +168,33 @@ Speakers
 profile before it can be used here, but the same speaker
 profile can be used across multiple conferences.
 
+Abstract
+:   This is the abstract that is listed on the schedule and session
+description pages. Any text here is public.
+
+Skill level
+:   Skill level of this session (if enabled at the conference level).
+
+Tags
+:   [Tags](#tags) for this session
+
+Consent to recording
+:  If the speaker has consented to recording of this session.
+
+Status
+:	The [state](callforpapers#states) state of this session.
+
+Track
+:	The track selected for this schedule. If no track is specified,
+the session will not be included in session lists and on the schedule.
+
+Room
+:	The room selected for this schedule, if any.
+
 HTML Icon
 :   HTML code to be inserted into schedule (and possibly other places)
 representing this session. Can be used to include icons like coffee
 mugs for coffee breaks etc. Should be pure HTML.
-
-Status
-:	The [state](callforpapers#states) state of this session.
 
 Start time
 :	If the session is scheduled, the starting date and time.
@@ -188,25 +208,8 @@ of in one room. Typically used for things like breaks and lunch. When
 set to cross session, the details for the session cannot be viewed, so
 it should not be used for regular sessions.
 
-Track
-:	The track selected for this schedule. If no track is specified,
-the session will not be included in session lists and on the schedule.
-
-Room
-:	The room selected for this schedule, if any.
-
 Can feedback
 :   Indicates if feedback can be given on this session.
-
-Skill level
-:   Skill level of this session (if enabled at the conference level).
-
-Tags
-:   [Tags](#tags) for this session
-
-Abstract
-:   This is the abstract that is listed on the schedule and session
-description pages. Any text here is public.
 
 Submission notes
 :   These are notes given by the submitter in the call for papers

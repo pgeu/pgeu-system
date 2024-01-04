@@ -318,6 +318,12 @@ Jinja templates enabled
   [superuser settings](super_conference), but can then be independently
   turned on and off by a non-superuser.
 
+Video link providers
+: List of providers that can be used to link to videos (e..g "youtube"
+  and "vimeo"). Must be lowercase. Each entry here will create a field
+  on the conference sessions (backend only) where information about
+  video links can be stored, and later used within the templates.
+
 Width of HTML schedule
 : Width in pixels of the built-in HTML schedule. This only controls
 the "old style" HTML schedule, which is normally overridden by the
