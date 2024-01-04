@@ -1512,6 +1512,7 @@ class BackendTweetQueueForm(BackendForm):
     linked_objects = OrderedDict({
         'errorlogs': BackendTweetQueueErrorLogManager(),
     })
+    auto_cascade_delete_to = ['conferencetweetqueueerrorlog', 'conferencetweetqueue_remainingtosend']
 
     class Meta:
         model = ConferenceTweetQueue
