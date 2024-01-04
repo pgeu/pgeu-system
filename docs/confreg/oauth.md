@@ -35,19 +35,29 @@ in as a Twitter account with a verified phone number -- this does
 used to manage the actual Twitter application, and not for any
 posting). The name of the application does not matter, but it is what
 is shown on the posted tweets. The application registration is shared
-for the whole instance, across all conference series.
+for the whole instance, across all conference series, and there can
+only be one Twitter oauth app per instance.
 
-If you wish to use Webhooks for Twitter (recommended for all public
-installations when tracking incoming tweets as well as when using it
-as a way to deliver notifications, as this gives much better response
-times), you must also create a "Dev environment". The free sandbox dev
-environment should be enough for most deployments (at the time of this
-writing, it supports up to 15 accounts). Again, the name of the
-environment does not matter, just attach it to the just created app.
+When creating the application on the twitter developer console, make
+sure you:
 
-Once all is set up, create the application by copying the
-`API key` and `API Secret Key` values from the application
-registration as `Client` and `Secret`.
+1. Set up authentication (even if we are not using it). For authentication,
+   you *must* pick permissions `Read and write`. Specifically, you
+   must *not* include direct messages, or things will break at a later
+   stage. You should also not request email from uers. The type of app
+   should be set to `Web App, Automated App or Bot` (confidential
+   client). The return URL per the top of this page.
+
+1. *After* you have set this up, you must *regenerate* the `Consumer
+   Keys`. It's this regenerated key data that should be added to the
+   system as `Client` and `Secret`.
+
+1. (in some cases you also have to create generate authentication
+   tokens between step 1 and 2 - and if you do create them, you also
+   have to regenerate the Consumer Keys)
+
+Due to Twitters limitations on free APIs, webhooks are currently not
+supported, as all incoming processing is disabled.
 
 ### Mastodon
 
