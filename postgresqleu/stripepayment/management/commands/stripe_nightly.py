@@ -43,7 +43,7 @@ class Command(BaseCommand):
         pm = method.get_implementation()
 
         self.expire_sessions(method, pm)
-        if pm.config['verify_balances']:
+        if pm.config('verify_balances'):
             self.verify_balance(method, pm)
         self.check_refunds(method, pm)
         self.send_logs(method, pm)
