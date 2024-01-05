@@ -114,6 +114,8 @@ class BackendConferenceForm(BackendForm):
         if cleaned_data.get('sendwelcomemail'):
             if not self.instance.jinjadir:
                 self.add_error("sendwelcomemail", "Welcome emails cannot be enabled since there is no Jinja directory configured in superuser settings")
+            elif not self.instance.jinjaenabled:
+                self.add_error("sendwelcomemail", "Welcome emails cannot be enabled since Jinja templates are not enabled")
             elif not os.path.isfile(os.path.join(self.instance.jinjadir, 'templates/confreg/mail/welcomemail.txt')):
                 self.add_error("sendwelcomemail", "Welcome emails cannot be enabled since the file confreg/mail/welcomemail.txt does not exist in the jinja template directory")
 
@@ -123,6 +125,8 @@ class BackendConferenceForm(BackendForm):
         if cleaned_data.get('confirmpolicy'):
             if not os.path.isfile(os.path.join(self.instance.jinjadir, 'templates/confreg/policy.html')):
                 self.add_error('confirmpolicy', 'A policy has to be defined in the template confreg/policy.html in the jinja template directory')
+            elif not self.instance.jinjaenabled:
+                self.add_error('confirmpolicy', 'Jinja templates have to be enabled to use conference policy')
 
         if cleaned_data.get('checkinactive') and not cleaned_data.get('tickets'):
             self.add_error('checkinactive', 'Check-in cannot be activated if tickets are not used!')
