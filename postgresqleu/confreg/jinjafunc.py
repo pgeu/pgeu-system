@@ -48,11 +48,13 @@ class ConfTemplateLoader(jinja2.FileSystemLoader):
     # Templates that are whitelisted for inclusion.
     WHITELISTED_TEMPLATES = ('invoices/userinvoice_spec.html',)
 
-    def __init__(self, conference, roottemplate):
+    def __init__(self, conference, roottemplate, disableconferencetemplates=False):
         self.conference = conference
         self.roottemplate = roottemplate
+        self.disableconferencetemplates = disableconferencetemplates
+
         pathlist = []
-        if conference and conference.jinjaenabled and conference.jinjadir:
+        if conference and conference.jinjaenabled and conference.jinjadir and not disableconferencetemplates:
             pathlist.append(os.path.join(conference.jinjadir, 'templates'))
         if getattr(settings, 'SYSTEM_SKIN_DIRECTORY', False):
             pathlist.append(os.path.join(settings.SYSTEM_SKIN_DIRECTORY, 'template.jinja'))
@@ -295,14 +297,16 @@ def _resolve_asset(assettype, assetname):
     return do_render_asset(assettype, assetname)
 
 
-def render_jinja_conference_template(conference, templatename, dictionary):
+def render_jinja_conference_template(conference, templatename, dictionary, disableconferencetemplates=False):
     # It all starts from the base template for this conference. If it
     # does not exist, just throw a 404 early.
     if conference and conference.jinjaenabled and conference.jinjadir and not os.path.exists(os.path.join(conference.jinjadir, 'templates/base.html')):
         raise Http404()
 
-    env = ConfSandbox(loader=ConfTemplateLoader(conference, templatename),
-                      extensions=['jinja2.ext.with_'])
+    env = ConfSandbox(
+        loader=ConfTemplateLoader(conference, templatename, disableconferencetemplates=disableconferencetemplates),
+        extensions=['jinja2.ext.with_'],
+    )
     env.filters.update(extra_filters)
 
     t = env.get_template(templatename)
@@ -349,10 +353,15 @@ def render_jinja_conference_response(request, conference, pagemagic, templatenam
     if dictionary:
         d.update(dictionary)
 
-    return HttpResponse(
-        render_jinja_conference_template(conference, templatename, d),
-        content_type='text/html',
-    )
+    try:
+        r = HttpResponse(render_jinja_conference_template(conference, templatename, d))
+    except jinja2.exceptions.TemplateError as e:
+        # If we have a template syntax error in a conference template, retry without it.
+        r = HttpResponse(render_jinja_conference_template(conference, templatename, d, disableconferencetemplates=True))
+        r['X-Conference-Template-Error'] = str(e)
+
+    r.content_type = 'text/html'
+    return r
 
 
 def render_jinja_conference_svg(request, conference, cardformat, templatename, dictionary):

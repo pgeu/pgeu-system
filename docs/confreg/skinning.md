@@ -179,6 +179,15 @@ template to the production server and test it there. To do that, add a
 `.test` to the end of the filename (e.g. `schedule.html.test`) and then
 access the URL with `?test=1`.
 
+## Template errors
+
+If a template related error occurs when rending a conference page,
+because of an issue with the page or with the base template (but not
+with static pages), the template wll be disabled and the page rendered
+without skinning. If this happens, a http header named
+`X-Conference-Template-Error` will be added to the response, and
+contain the error message from `jinja2`.
+
 # Static building
 
 If static pages are used, the script `deploystatic.py` can be used to
