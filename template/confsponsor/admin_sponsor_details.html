@@ -39,7 +39,9 @@
   <tr>
     <th>Contract:</th>
     <td>
-      {%if sponsor.signmethod == 0%}
+      {%if sponsor.level.instantbuy %}
+       No contract, level is "instant buy".
+      {%elif sponsor.signmethod == 0%}
        Digital contract.<br/>
        {%if sponsor.contract.completed%}Signed ({{sponsor.contract.firstsigned}}) and countersigned ({{sponsor.contract.completed}}).
        {%elif sponsor.contract.firstsigned%}Signed by sponsor ({{sponsor.contract.firstsigned}}) but not by {{conference.contractsendername}}.
