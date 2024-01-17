@@ -1184,11 +1184,17 @@ class ConferenceSession(models.Model):
         return self.conferencesessionfeedback_set.exists()
 
     def __str__(self):
-        return "%s: %s (%s)" % (
-            self.speaker_list,
-            self.title,
-            self.starttime,
-        )
+        if self.starttime:
+            return "%s: %s (%s)" % (
+                self.speaker_list,
+                self.title,
+                self.starttime,
+            )
+        else:
+            return "%s: %s" % (
+                self.speaker_list,
+                self.title,
+            )
 
     @property
     def shorttitle(self):
