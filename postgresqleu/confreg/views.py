@@ -1290,7 +1290,8 @@ INNER JOIN confreg_room r ON r.id=t.room_id GROUP BY day
 
         raw = exec_to_grouped_dict("""SELECT
     s.starttime::date AS day,
-    s.id, s.starttime,
+    s.id,
+    s.starttime,
     s.endtime,
     s.can_feedback,
     to_json(t.*) AS track,
@@ -1301,7 +1302,8 @@ INNER JOIN confreg_room r ON r.id=t.room_id GROUP BY day
     s.htmlicon,
     to_char(starttime, 'HH24:MI') || ' - ' || to_char(endtime, 'HH24:MI') AS timeslot,
     extract(epoch FROM endtime-starttime)/60 AS length, min(starttime) OVER days AS firsttime,
-    max(endtime) OVER days AS lasttime, cross_schedule,
+    max(endtime) OVER days AS lasttime,
+    cross_schedule,
     s.recordingconsent,
     EXISTS (SELECT 1 FROM confreg_conferencesessionslides sl WHERE sl.session_id=s.id) AS has_slides,
     CASE WHEN s.status=1 THEN
