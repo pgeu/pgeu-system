@@ -280,19 +280,22 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
 
                 with transaction.atomic():
                     for obj in objects.filter(id__in=request.POST.get('idlist').split(',')):
-                        if isinstance(getattr(obj, what), bool):
-                            # Special-case booleans, they can only be set to true or false, and clearfing
-                            # means the same as set to false.
-                            if setval:
-                                setattr(obj, what, True)
+                        try:
+                            if isinstance(getattr(obj, what), bool):
+                                # Special-case booleans, they can only be set to true or false, and clearfing
+                                # means the same as set to false.
+                                if setval:
+                                    formclass.assign_assignable_column(obj, what, True)
+                                else:
+                                    formclass.assign_assignable_column(obj, what, False)
                             else:
-                                setattr(obj, what, False)
-                        else:
-                            if setval is not None:
-                                setattr(obj, what, setval)
-                            else:
-                                setattr(obj, what, None)
-                        obj.save()
+                                if setval is not None:
+                                    formclass.assign_assignable_column(obj, what, setval)
+                                else:
+                                    formclass.assign_assignable_column(obj, what, None)
+                            obj.save()
+                        except ValidationError as e:
+                            messages.warning(request, 'Could not update "{}": {}'.format(obj, e.message))
                 return HttpResponseRedirect('.')
             else:
                 raise Http404()

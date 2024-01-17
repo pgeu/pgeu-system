@@ -172,6 +172,10 @@ class BackendForm(ConcurrentProtectedModelForm):
     def get_assignable_columns(cls, conference):
         return {}
 
+    @classmethod
+    def assign_assignable_column(cls, obj, what, setval):
+        setattr(obj, what, setval)
+
     def pre_create_item(self):
         pass
 
