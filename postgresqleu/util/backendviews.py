@@ -271,6 +271,12 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
                 setval = request.POST.get('assignid')
                 if setval:
                     setval = int(setval)
+                    if related is not None:
+                        # This is a linked field, so get the actual value to set
+                        setval = related.objects.get(pk=setval)
+                else:
+                    # Empty -> None
+                    setval = None
 
                 with transaction.atomic():
                     for obj in objects.filter(id__in=request.POST.get('idlist').split(',')):
@@ -282,8 +288,8 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
                             else:
                                 setattr(obj, what, False)
                         else:
-                            if setval:
-                                setattr(obj, what, related.objects.get(pk=setval))
+                            if setval is not None:
+                                setattr(obj, what, setval)
                             else:
                                 setattr(obj, what, None)
                         obj.save()
