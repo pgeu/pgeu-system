@@ -49,7 +49,7 @@ from postgresqleu.confreg.models import MessagingProvider
 from postgresqleu.newsevents.models import NewsPosterProfile
 
 from postgresqleu.confreg.models import valid_status_transitions, get_status_string
-from postgresqleu.confreg.models import STATUS_CHOICES
+from postgresqleu.confreg.models import STATUS_CHOICES, STATUS_CHOICES_LONG
 
 from postgresqleu.util.backendlookups import GeneralAccountLookup, CountryLookup
 from postgresqleu.confreg.backendlookups import RegisteredUsersLookup, SpeakerLookup, SessionTagLookup
@@ -909,7 +909,22 @@ class BackendConferenceSessionForm(BackendForm):
                 'title': 'Cross schedule',
                 'options': [(1, 'Yes'), (0, 'No'), ]
             },
+            {
+                'name': 'status',
+                'title': 'Status',
+                'options': STATUS_CHOICES_LONG,
+            },
         ]
+
+    @classmethod
+    def assign_assignable_column(cls, obj, what, setval):
+        if what == 'status':
+            if setval not in valid_status_transitions[obj.status]:
+                raise ValidationError("Status change from {} to {} is not valid.".format(
+                    get_status_string(obj.status),
+                    get_status_string(setval),
+                ))
+        super().assign_assignable_column(obj, what, setval)
 
     def clean(self):
         cleaned_data = super(BackendConferenceSessionForm, self).clean()
