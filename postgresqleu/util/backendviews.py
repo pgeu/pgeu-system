@@ -259,13 +259,19 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
         if request.method == "POST":
             if request.POST.get('operation') == 'assign':
                 what = request.POST.get('what')
+
+                # Validate this is a field we're allowed to edit
+                if what not in formclass.Meta.fields:
+                    # Trying to update invalid field!
+                    raise Http404('Invalid field')
+                if what not in (f['name'] for f in formclass.get_assignable_columns(conference)):
+                    raise PermissionDenied()
+
                 related = formclass.Meta.model._meta.get_field(what).related_model
                 setval = request.POST.get('assignid')
                 if setval:
                     setval = int(setval)
-                if what not in formclass.Meta.fields:
-                    # Trying to update invalid field!
-                    raise PermissionDenied()
+
                 with transaction.atomic():
                     for obj in objects.filter(id__in=request.POST.get('idlist').split(',')):
                         if isinstance(getattr(obj, what), bool):
