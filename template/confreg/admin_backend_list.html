@@ -131,7 +131,9 @@ $(document).ready(function() {
 {%for k,v in col.options%}
 	  <li><a class="multiassign" data-assignid="{{k}}" href="#">{{v}}</a></li>
 {%endfor%}
+{%if col.canclear %}
           <li><a class="multiassign" data-assignid="null" href="#">* Clear</a></li>
+{%endif%}
 	</ul>
       </li>
 {%endfor%}

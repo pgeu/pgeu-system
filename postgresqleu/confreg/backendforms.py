@@ -447,6 +447,7 @@ class BackendRegistrationTypeForm(BackendForm):
                 'name': 'regclass',
                 'title': 'Registration class',
                 'options': [(c.id, c.regclass) for c in RegistrationClass.objects.filter(conference=conference)],
+                'canclear': False,
             },
         ]
 
@@ -898,21 +899,25 @@ class BackendConferenceSessionForm(BackendForm):
                 'name': 'track',
                 'title': 'Track',
                 'options': [(t.id, t.trackname) for t in Track.objects.filter(conference=conference)],
+                'canclear': True,
             },
             {
                 'name': 'room',
                 'title': 'Room',
                 'options': [(r.id, r.roomname) for r in Room.objects.filter(conference=conference)],
+                'canclear': True,
             },
             {
                 'name': 'cross_schedule',
                 'title': 'Cross schedule',
-                'options': [(1, 'Yes'), (0, 'No'), ]
+                'options': [(1, 'Yes'), (0, 'No'), ],
+                'canclear': False,
             },
             {
                 'name': 'status',
                 'title': 'Status',
                 'options': STATUS_CHOICES_LONG,
+                'canclear': False,
             },
         ]
 
@@ -1708,7 +1713,8 @@ class BackendTweetQueueForm(BackendForm):
             {
                 'name': 'approved',
                 'title': 'Approval',
-                'options': [(1, 'Yes'), (0, 'No'), ]
+                'options': [(1, 'Yes'), (0, 'No'), ],
+                'canclear': False,
             },
         ]
 
