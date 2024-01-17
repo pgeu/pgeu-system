@@ -252,6 +252,11 @@ need ot be satisfied for the call for sponsors to be open.
 Schedule publishing active
 : If the schedule is published, including times, and rooms.
 
+TBD sessions in schedule
+: If sessions in [state](callforpapers) *Pending* should be included
+  on the schedule. If they are, their title is replaced with *TBD*,
+  and the speaker information is not included.
+
 Session list publishing active
 : If the session publishing is active, which just lists the sessions
 and their details, typically used before the schedule is done but

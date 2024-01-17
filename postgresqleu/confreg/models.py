@@ -188,6 +188,7 @@ class Conference(models.Model):
     checkinactive = models.BooleanField(blank=False, null=False, default=False, verbose_name="Check-in active")
     schedulewidth = models.IntegerField(blank=False, default=600, null=False, verbose_name="Width of HTML schedule")
     pixelsperminute = models.FloatField(blank=False, default=1.5, null=False, verbose_name="Vertical pixels per minute")
+    tbdinschedule = models.BooleanField(null=False, blank=False, default=False, verbose_name="TBD sessions in schedule", help_text="Include pending sessions as TBD on schedule")
     confurl = models.CharField(max_length=128, blank=False, null=False, validators=[validate_lowercase, ], verbose_name="Conference URL")
     twitter_timewindow_start = models.TimeField(null=False, blank=False, default='00:00', verbose_name="Don't post tweets before")
     twitter_timewindow_end = models.TimeField(null=False, blank=False, default='23:59:59', verbose_name="Don't post tweets after")

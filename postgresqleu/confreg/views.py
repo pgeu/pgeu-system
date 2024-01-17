@@ -1265,7 +1265,7 @@ class SessionSet(object):
 
 def _scheduledata(request, conference):
     with ensure_conference_timezone(conference):
-        tracks = exec_to_dict("SELECT id, color, fgcolor, incfp, trackname, sortkey, showcompany FROM confreg_track t WHERE conference_id=%(confid)s AND EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.track_id=t.id AND s.status=1 AND s.track_id IS NOT NULL) ORDER BY sortkey", {
+        tracks = exec_to_dict("SELECT id, color, fgcolor, incfp, trackname, sortkey, showcompany FROM confreg_track t WHERE conference_id=%(confid)s AND EXISTS (SELECT 1 FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND s.track_id=t.id AND (s.status=1{}) AND s.track_id IS NOT NULL) ORDER BY sortkey".format(" or s.status=3" if conference.tbdinschedule else ''), {
             'confid': conference.id,
         })
 
@@ -1275,14 +1275,16 @@ def _scheduledata(request, conference):
 
         day_rooms = exec_to_keyed_dict("""WITH t AS (
   SELECT s.starttime::date AS day, room_id
-   FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND status=1 AND s.room_id IS NOT NULL AND s.starttime IS NOT NULL AND s.track_id IS NOT NULL
+   FROM confreg_conferencesession s WHERE s.conference_id=%(confid)s AND (status=1{}) AND s.room_id IS NOT NULL AND s.starttime IS NOT NULL AND s.track_id IS NOT NULL
  UNION
   SELECT d.day, ad.room_id
    FROM confreg_room_availabledays ad INNER JOIN confreg_registrationday d ON d.id=ad.registrationday_id
 )
 SELECT day, array_agg(room_id ORDER BY r.sortkey, r.roomname) AS rooms FROM t
 INNER JOIN confreg_room r ON r.id=t.room_id GROUP BY day
-""", {
+""".format(
+            " or s.status=3" if conference.tbdinschedule else '',
+        ), {
             'confid': conference.id,
         })
 
@@ -1295,14 +1297,15 @@ INNER JOIN confreg_room r ON r.id=t.room_id GROUP BY day
     s.track_id,
     to_json(r.*) AS room,
     s.room_id,
-    s.title,
+    CASE WHEN s.status=1 THEN s.title ELSE 'TBD' END AS title,
     s.htmlicon,
     to_char(starttime, 'HH24:MI') || ' - ' || to_char(endtime, 'HH24:MI') AS timeslot,
     extract(epoch FROM endtime-starttime)/60 AS length, min(starttime) OVER days AS firsttime,
     max(endtime) OVER days AS lasttime, cross_schedule,
     s.recordingconsent,
     EXISTS (SELECT 1 FROM confreg_conferencesessionslides sl WHERE sl.session_id=s.id) AS has_slides,
-    COALESCE(json_agg(json_build_object(
+    CASE WHEN s.status=1 THEN
+     COALESCE(json_agg(json_build_object(
        'id', spk.id,
        'name', spk.fullname,
        'company', spk.company,
@@ -1311,7 +1314,8 @@ INNER JOIN confreg_room r ON r.id=t.room_id GROUP BY day
        'hasphoto', spk.photo IS NOT NULL AND spk.photo != ''::bytea,
        'hasphoto512', spk.photo512 IS NOT NULL AND spk.photo512 != ''::bytea,
        'attributes', attributes
-    ) ORDER BY spk.fullname) FILTER (WHERE spk.id IS NOT NULL), '[]') AS speakers,
+    ) ORDER BY spk.fullname) FILTER (WHERE spk.id IS NOT NULL), '[]')
+    ELSE '{{}}'::json END AS speakers,
     s.videolinks
 FROM confreg_conferencesession s
 LEFT JOIN confreg_track t ON t.id=s.track_id
@@ -1320,12 +1324,14 @@ LEFT JOIN confreg_conferencesession_speaker css ON css.conferencesession_id=s.id
 LEFT JOIN confreg_speaker spk ON spk.id=css.speaker_id
 WHERE
     s.conference_id=%(confid)s AND
-    s.status=1 AND
+    (s.status=1{}) AND
     s.track_id IS NOT NULL
     AND (cross_schedule OR room_id IS NOT NULL)
 GROUP BY s.id, t.id, r.id
 WINDOW days AS (PARTITION BY s.starttime::date)
-ORDER BY day, s.starttime, r.sortkey""", {
+ORDER BY day, s.starttime, r.sortkey""".format(
+            " or s.status=3" if conference.tbdinschedule else '',
+        ), {
             'confid': conference.id,
         })
 
