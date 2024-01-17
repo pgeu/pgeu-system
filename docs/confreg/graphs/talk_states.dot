@@ -20,6 +20,7 @@ digraph talkstates {
 	submitted -> pending [label = "Talk approved", color=blue]
 	submitted -> notaccepted [label = "Talk not accepted", color=blue]
 	submitted -> pendingreserve [label = "Talk to\nreserve list", color=blue]
+	submitted -> withdrawn[label = "Speaker withdraws", color=blue]
 	approved -> withdrawn [label = "Speaker withdraws", color=blue]
 	notaccepted -> submitted [label = "Processing reset", color=blue]
 	pending -> approved [label = "Speaker confirms", color=green]
