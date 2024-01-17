@@ -93,6 +93,7 @@ $(document).ready(function() {
 {%if is_copy_previous%}<th>Copy <input type="checkbox" id="copyallcheckbox" title="Select all entries for copy"></th>{%endif%}
 {%if allow_email or assignable_columns%}<th class="nobr">
 {%if allow_email%}<i id="mailcheckboxtoggler" class="glyphicon glyphicon-envelope" title="Select all entries for sending an email"></i>{%endif%}
+{%if assignable_columns%}<i id="assigncheckboxtoggler" class="glyphicon glyphicon-tasks" title="Select all entries for assigning fields"></i>{%endif%}
 </th>{%endif%}
  </tr>
 {%endif%}
