@@ -85,6 +85,8 @@ sponsor manually, you may want to confirm them manually as well...
         {%else%}
       <span class="label label-success">Invoiced</span>
         {%endif%}
+      {%elif s.level.instantbuy%}
+      <span class="label label-warning" title="Sponsor details for instant buy levels have to be verified before invoice is issued">Pending organizer verification</span>
       {%else%}
         {%if s.signmethod == 0 and s.contract %}
           {%if s.contract.completed %}{# this state can only be reached when automatic contract processing is disabled, but in this case it indicates it's time to confirm #}
