@@ -31,8 +31,8 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
 
         try:
             return HttpResponse(formclass.get_dynamic_preview(f, request.GET.get('previewval', ''), id), content_type='text/plain')
-        except Exception:
-            return HttpResponse('', content_type='text/plain')
+        except Exception as e:
+            return HttpResponse('Error getting preview: {}'.format(e), content_type='text/plain')
 
     nopostprocess = False
     newformdata = None
