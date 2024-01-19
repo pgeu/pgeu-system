@@ -246,6 +246,7 @@ class Conference(models.Model):
 
     # Attributes that are safe to access in jinja templates
     _safe_attributes = ('registrationopen', 'registrationtimerange', 'IsRegistrationOpen',
+                        'startdate', 'enddate',
                         'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
                         'callforpapersopen', 'callforpaperstimerange', 'IsCallForPapersOpen',
                         'callforpaperstags', 'callforpapersrecording', 'allowedit',
