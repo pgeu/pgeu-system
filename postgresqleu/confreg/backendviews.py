@@ -295,7 +295,7 @@ def edit_tweetqueue(request, urlname, rest):
                                BackendTweetQueueForm,
                                rest,
                                return_url='../../',
-                               instancemaker=lambda: ConferenceTweetQueue(conference=conference, author=request.user)
+                               instancemaker=lambda: ConferenceTweetQueue(conference=conference, author=request.user, add_initial_hashtags=True)
     )
 
 

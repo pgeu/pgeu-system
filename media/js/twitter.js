@@ -181,15 +181,25 @@ $(function() {
 
     $('#newTweetButton').click(function() {
         let t = DateString(new Date());
-        $('#newTweetText').val('');
+
+        /* Must set this before we call tweet length calculation */
+        $('#newTweetModal').data('maxlength', global_maxlength);
+
+        if ($('body').data('initialhashtags')) {
+            $('#newTweetText').val("\n\n" + $('body').data('initialhashtags'));
+            $('#newTweetText').prop('selectionStart', 0);
+            $('#newTweetText').prop('selectionEnd', 0);
+            $('#newTweetText').trigger('input');
+        } else {
+            $('#newTweetText').val('');
+            $('#tweetLength').text('0');
+        }
         $('#newTweetSchedule').val(t);
         $('#newTweetSchedule').attr('min', t);
-	$('#newTweetUpload').val('');
-	$('#tweetBypassApproval').prop('checked', false);
-	$('#tweetLength').text('0');
-	$('#newTweetModal').data('replyid', '');
-	$('#newTweetModal').data('maxlength', global_maxlength);
-	$('#newTweetModal').modal({});
+        $('#newTweetUpload').val('');
+        $('#tweetBypassApproval').prop('checked', false);
+        $('#newTweetModal').data('replyid', '');
+        $('#newTweetModal').modal({});
     });
 
     $('#newTweetText').on('input', function() {

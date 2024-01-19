@@ -15,7 +15,7 @@ from django.conf import settings
 
 from datetime import timedelta
 
-from postgresqleu.confreg.models import ConferenceNews
+from postgresqleu.confreg.models import ConferenceNews, ConferenceHashtag
 from postgresqleu.confreg.twitter import post_conference_social
 
 
@@ -42,6 +42,12 @@ class Command(BaseCommand):
                 slugify(n.title),
                 n.id,
             )
+
+            # If there are any auto-add hashtags defined for this conference, publish them
+            hashtags = " ".join([h.hashtag for h in ConferenceHashtag.objects.filter(conference=n.conference, autoadd=True)])
+            if hashtags:
+                statusstr = '{}\n\n{}'.format(statusstr, hashtags)
+
             post_conference_social(n.conference, statusstr, approved=True)
             n.tweeted = True
             n.save()

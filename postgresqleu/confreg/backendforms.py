@@ -1754,12 +1754,12 @@ class BackendTweetQueueForm(BackendForm):
 
 
 class BackendHashtagForm(BackendForm):
-    helplink = 'integrations#broadcast'
-    list_fields = ['hashtag', ]
+    helplink = 'integrations#hashtags'
+    list_fields = ['hashtag', 'sortkey', 'autoadd']
 
     class Meta:
         model = ConferenceHashtag
-        fields = ['hashtag', ]
+        fields = ['hashtag', 'sortkey', 'autoadd']
 
 
 class TweetCampaignSelectForm(django.forms.Form):

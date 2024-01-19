@@ -22,7 +22,7 @@ from postgresqleu.util.messaging.util import notify_twitter_moderation
 from postgresqleu.util.db import exec_to_list
 from postgresqleu.util.time import datetime_string
 from .models import ConferenceTweetQueue, ConferenceIncomingTweet, ConferenceMessaging
-from .models import ConferenceRegistration
+from .models import ConferenceRegistration, ConferenceHashtag
 
 
 def post_conference_social(conference, contents, approved=False, posttime=None, author=None):
@@ -366,4 +366,5 @@ def volunteer_twitter(request, urlname, token):
         'providerlengths': ", ".join(["{}: {}".format(k, v) for k, v in providermaxlength.items()]),
         'maxlength': max((v for k, v in providermaxlength.items())),
         'tzoffset': int(timezone.localtime().utcoffset().total_seconds() / 60),
+        'initialhashtags': " ".join([h.hashtag for h in ConferenceHashtag.objects.filter(conference=conference, autoadd=True)]),
     })

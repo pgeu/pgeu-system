@@ -64,6 +64,10 @@ posts are queued until they are approved.
 The system also comes with a [mobile website](#mobilesite) specifically
 to handle moderated postings.
 
+If any hashtags are defined as *Auto add*, they will be included
+instead of an empty post when the editor opens. They can still be
+manually removed, and other hashtags can still be added.
+
 ### Posting conference news
 
 Conference news is posted when generated. It will contain just the
@@ -71,6 +75,9 @@ title of the news and a link back to the conference website, same as
 the RSS system.
 
 Note that this is *separate* from reposting [global news](news#global).
+
+If any hashtags are defined as *Auto add*, they will be added at the
+end of the post being made (with a blank line before).
 
 ### Posting confirmed sponsorship benefits
 
@@ -218,6 +225,23 @@ apply, including moderation.
 While the page is open, a scheduled job will periodically check if a
 new post has shown up in the queue, and post a notification if it has
 (provided the user allowed notifications in the browser).
+
+### Working with hashtags <a name="hashtags"></a>
+
+A number of per-conference hashtags be registered. If these are
+registered without any further data set, they will become available to
+"easy click" to add to manual posts. It is also possible to flag them
+as *Auto add*. If this is done, the hashtag(s) in question will be
+automatically added to:
+
+* All news posts made (always)
+* Post text for new posts in the backend (can still be edited)
+* Post text for new posts in the mobile app (can still be edited)
+
+Specifically, they will **not** be added to campaigns and sponsor
+confirmation posts, as these already have their own templates.
+
+The postsd will be added in the order specified by *sortkey*.
 
 ## Attendee only broadcasts <a name="attendeebroadcast"></a>
 

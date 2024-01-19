@@ -1521,6 +1521,9 @@ class ConferenceHashtag(models.Model):
     conference = models.ForeignKey(Conference, null=False, on_delete=models.CASCADE)
     hashtag = models.CharField(max_length=32, null=False, blank=False,
                                validators=[RegexValidator('^[#@]', 'Enter a hashtag (starting with #) or username (starting with @)'), ])
+    autoadd = models.BooleanField(null=False, blank=False, default=False, verbose_name='Auto add',
+                                  help_text='Automatically add hashtag to news posts and as initial content of manual posts')
+    sortkey = models.IntegerField(null=False, default=100)
 
     def __str__(self):
         return self.hashtag
@@ -1529,7 +1532,7 @@ class ConferenceHashtag(models.Model):
         unique_together = (
             ('conference', 'hashtag', )
         )
-        ordering = ['hashtag', ]
+        ordering = ['sortkey', 'hashtag', ]
 
 
 class MessagingProvider(models.Model):
@@ -1612,6 +1615,14 @@ class ConferenceTweetQueue(models.Model):
             GinIndex(name='tweetqueue_metadata_idx', fields=['metadata'], opclasses=['jsonb_path_ops']),
             models.Index(fields=['conference', '-datetime']),
         ]
+
+    def __init__(self, *args, **kwargs):
+        dohashtags = kwargs.pop('add_initial_hashtags', False)
+        super().__init__(*args, **kwargs)
+        if dohashtags:
+            hashtags = " ".join([h.hashtag for h in ConferenceHashtag.objects.filter(conference=self.conference, autoadd=True)])
+            if hashtags:
+                self.contents = "\n\n{}".format(hashtags)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
