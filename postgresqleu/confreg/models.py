@@ -453,6 +453,9 @@ class RegistrationType(models.Model):
 
     class Meta:
         ordering = ['conference', 'sortkey', ]
+        unique_together = (
+            ('conference', 'regtype'),
+        )
 
     def __str__(self):
         if self.cost == 0:
