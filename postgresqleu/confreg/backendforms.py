@@ -31,6 +31,9 @@ from postgresqleu.util.time import datetime_string
 
 import postgresqleu.accounting.models
 
+from postgresqleu.confsponsor.models import SponsorshipBenefit
+from postgresqleu.confsponsor.benefitclasses import get_benefit_id
+
 from postgresqleu.confreg.models import Conference, ConferenceRegistration, ConferenceAdditionalOption
 from postgresqleu.confreg.models import RegistrationClass, RegistrationType, RegistrationDay
 from postgresqleu.confreg.models import ConferenceFeedbackQuestion, Speaker
@@ -479,6 +482,19 @@ class BackendRegistrationTypeForm(BackendForm):
         if self.cleaned_data['specialtype']:
             validate_special_reg_type_setup(self.cleaned_data['specialtype'], self.cleaned_data)
         return self.cleaned_data['specialtype']
+
+    def clean_regtype(self):
+        newtype = self.cleaned_data['regtype']
+        if self.instance and self.instance.regtype and self.instance.regtype != newtype:
+            # Disallow changing the regtype if there is a sponsorship benefit that uses it,
+            # since this link is done on name in a json object, and not a foreign key.
+            if SponsorshipBenefit.objects.filter(
+                    level__conference=self.instance.conference,
+                    benefit_class=get_benefit_id('entryvouchers.EntryVouchers'),
+                    class_parameters__type=self.instance.regtype,
+            ).exists():
+                raise ValidationError("A sponsorship benefit is using the registration type '{}', cannot rename.".format(self.instance.regtype))
+        return newtype
 
     @classmethod
     def copy_from_conference(self, targetconf, sourceconf, idlist):
