@@ -1,5 +1,5 @@
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import transaction
+from django.db import transaction, DatabaseError
 from django import forms
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse, NoReverseMatch
@@ -165,34 +165,37 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
             # fields on the model, including those we don't care about.
             # The savem2m model, however, *does* care about the listed fields.
             # Consistency is overrated!
-            with transaction.atomic():
-                if allow_new and ((not instance.pk) or form.force_insert):
-                    form.pre_create_item()
-                    form.save()
-                form._save_m2m()
-                all_excludes = ['_validator', '_newformdata'] + list(form.readonly_fields) + form.nosave_fields
-                if form.json_form_fields:
-                    for fn, ffields in form.json_form_fields.items():
-                        all_excludes.extend(ffields)
+            try:
+                with transaction.atomic():
+                    if allow_new and ((not instance.pk) or form.force_insert):
+                        form.pre_create_item()
+                        form.save()
+                    form._save_m2m()
+                    all_excludes = ['_validator', '_newformdata'] + list(form.readonly_fields) + form.nosave_fields
+                    if form.json_form_fields:
+                        for fn, ffields in form.json_form_fields.items():
+                            all_excludes.extend(ffields)
 
-                form.instance.save(update_fields=[f for f in form.fields.keys() if f not in all_excludes and not isinstance(form[f].field, forms.ModelMultipleChoiceField)] + form.extra_update_fields)
+                    form.instance.save(update_fields=[f for f in form.fields.keys() if f not in all_excludes and not isinstance(form[f].field, forms.ModelMultipleChoiceField)] + form.extra_update_fields)
 
-                # Merge fields stored in json
-                if form.json_form_fields:
-                    for fn, ffields in form.json_form_fields.items():
-                        d = getattr(form.instance, fn, {})
-                        for fld in ffields:
-                            if form.cleaned_data[fld] or not getattr(form.fields[fld], 'delete_on_empty', False):
-                                # If we have a value, or if we're asked to store empty strings,
-                                # then do so.
-                                d[fld] = form.cleaned_data[fld]
-                            elif form.cleaned_data[fld] == '' and getattr(form.fields[fld], 'delete_on_empty', False) and fld in d:
-                                del d[fld]
-                        setattr(form.instance, fn, d)
-                    form.instance.save(update_fields=form.json_form_fields.keys())
+                    # Merge fields stored in json
+                    if form.json_form_fields:
+                        for fn, ffields in form.json_form_fields.items():
+                            d = getattr(form.instance, fn, {})
+                            for fld in ffields:
+                                if form.cleaned_data[fld] or not getattr(form.fields[fld], 'delete_on_empty', False):
+                                    # If we have a value, or if we're asked to store empty strings,
+                                    # then do so.
+                                    d[fld] = form.cleaned_data[fld]
+                                elif form.cleaned_data[fld] == '' and getattr(form.fields[fld], 'delete_on_empty', False) and fld in d:
+                                    del d[fld]
+                            setattr(form.instance, fn, d)
+                        form.instance.save(update_fields=form.json_form_fields.keys())
 
-                form.post_save()
-                return HttpResponseRedirect(saved_url)
+                    form.post_save()
+                    return HttpResponseRedirect(saved_url)
+            except DatabaseError as e:
+                form.add_error(None, "Failed to save entry: {}".format(e))
     else:
         form = formclass(request, conference, instance=instance, newformdata=newformdata)
 
