@@ -80,7 +80,7 @@ class ConfTemplateLoader(jinja2.FileSystemLoader):
                 # whitelisted as something we want to load.
                 if template not in self.WHITELISTED_TEMPLATES:
                     raise jinja2.TemplateNotFound(template, "Rejecting attempt to load from incorrect location")
-        if self.conference and self.conference.jinjaenabled and self.conference.jinjadir and self.cutlevel:
+        if self.cutlevel:
             # Override the searchpath to drop one or more levels, to
             # handle inheritance of "the same template"
             self.searchpath = self.pathlist[self.cutlevel:]
