@@ -1,11 +1,11 @@
 {%extends "base.html" %}
 {%block title%}Conference Registration - {{conference}}{%endblock%}
+
+{%block pagescript%}
+<script src="/media/js/pgeuconf.js"></script>
+{%endblock%}
+
 {%block extrahead%}
-<script type="text/javascript">
-function confirmCancel() {
-   return confirm('Are you sure you want to cancel and remove your registration?');
-}
-</script>
 <style>
 div.regwrap {
    width: 100%;
@@ -124,7 +124,7 @@ correction.</p>
  <input type="submit" name="submit" value="Save and finish"><br/>
 </form>
 <form action="." method="post" class="pgeuregform">{{ csrf_input }}
- <input type="submit" name="submit" onclick="return confirmCancel()" value="Cancel registration"><br/>
+ <input type="submit" name="submit" class="pgeu-confirm-cancel-registration-button" value="Cancel registration"><br/>
 </form>
 {%endblock%}
 
