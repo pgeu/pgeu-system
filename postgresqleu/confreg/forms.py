@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
 from django.utils import timezone
+import django.db.models
 
 from postgresqleu.confsponsor.models import ScannedAttendee
 from .models import Conference
@@ -19,6 +20,7 @@ from .regtypes import validate_special_reg_type
 from .twitter import get_all_conference_social_media
 from postgresqleu.util.fields import UserModelChoiceField
 from postgresqleu.util.widgets import EmailTextWidget, MonospaceTextarea
+from postgresqleu.util.widgets import CallForPapersSpeakersWidget
 from postgresqleu.util.db import exec_to_list
 from postgresqleu.util.magic import magicdb
 from postgresqleu.util.backendlookups import GeneralAccountLookup
@@ -534,15 +536,17 @@ class CallForPapersForm(forms.ModelForm):
         if 'data' in kwargs and 'speaker' in kwargs['data']:
             vals.extend([int(x) for x in kwargs['data'].getlist('speaker')])
 
-        self.fields['speaker'].queryset = Speaker.objects.defer('photo', 'photo512').filter(pk__in=vals)
-        self.fields['speaker'].label_from_instance = lambda x: "{0} <{1}>".format(x.fullname, x.email)
+        self.fields['speaker'].widget = CallForPapersSpeakersWidget()
+        self.fields['speaker'].queryset = Speaker.objects.defer('photo', 'photo512').filter(pk__in=vals).annotate(
+            iscurrent=django.db.models.Case(django.db.models.When(pk=currentspeaker.pk, then=True), output_field=django.db.models.BooleanField())
+        ).order_by('iscurrent', 'fullname')
         self.fields['speaker'].required = True
-        self.fields['speaker'].help_text = "Type the beginning of a speakers email address to add more speakers"
 
         if not self.instance.conference.skill_levels:
             del self.fields['skill_level']
 
         if self.instance.conference.callforpaperstags:
+            self.fields['tags'].widget = forms.CheckboxSelectMultiple()
             self.fields['tags'].queryset = ConferenceSessionTag.objects.filter(conference=self.instance.conference)
             self.fields['tags'].label_from_instance = lambda x: x.tag
             self.fields['tags'].required = False

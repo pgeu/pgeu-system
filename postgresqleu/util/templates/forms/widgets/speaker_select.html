@@ -1,0 +1,9 @@
+<select name="{{ widget.name }}" style="display: none" multiple>{% for option in widget.options %}
+  <option value="{{option.value}}" selected>
+{%endfor%}
+</select>
+<ul class="pgeu-speaker-list">
+{% for option in widget.options %}<li data-id="{{option.value}}">{{option.label}}{% if not forloop.first %} (<a class="pgeu-speaker-remove" href="#">remove</a>){%endif%}</li>
+{%endfor%}
+</ul>
+<button id="{{ widget.name}}-add" class="pgeu-speaker-add">Add speaker</button>

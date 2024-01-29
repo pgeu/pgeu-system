@@ -168,3 +168,12 @@ class SelectSetValueWidget(forms.Select):
         context = super().get_context(name, value, attrs)
         context['setmap'] = self.setvalues
         return context
+
+
+class CallForPapersSpeakersWidget(forms.SelectMultiple):
+    template_name = 'forms/widgets/speaker_select.html'
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        context['widget']['options'] = list(self.options(name, context['widget']['value'], attrs))
+        return context

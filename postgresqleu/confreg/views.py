@@ -1742,7 +1742,7 @@ def callforpapers(request, confname):
 
     try:
         speaker = Speaker.objects.get(user=request.user)
-        sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker).order_by('title')
+        sessions = ConferenceSession.objects.filter(conference=conference, speaker=speaker).order_by('status', 'title')
         other_submissions = ConferenceSession.objects.filter(speaker=speaker).exclude(conference=conference).exists()
     except Speaker.DoesNotExist:
         other_submissions = False
@@ -1916,39 +1916,13 @@ def public_speaker_lookup(request, confname):
         raise Http404("No query")
 
     conference = get_conference_or_404(confname)
-    speaker = get_object_or_404(Speaker, user=request.user)
-
-    # This is a lookup for speakers that's public. To avoid harvesting, we allow
-    # only *prefix* matching of email addresses, and you have to type at least 6 characters
-    # before you get anything.
-    prefix = request.GET['query'].lower()
-    if len(prefix) > 5:
-        vals = [{
-            'id': s.id,
-            'value': "{0} <{1}>".format(s.fullname, s.email),
-        } for s in Speaker.objects.filter(user__email__startswith=prefix).exclude(fullname='')]
-    else:
-        vals = []
-    return HttpResponse(json.dumps({
-        'values': vals,
-    }), content_type='application/json')
-
-
-@login_required
-def public_tags_lookup(request, confname):
     if 'query' not in request.GET:
-        raise Http404("No query")
+        raise Http404("Query missing")
+    speaker = get_object_or_404(Speaker, user__email=request.GET.get('query', '').lower())
 
-    conference = get_conference_or_404(confname)
-    speaker = get_object_or_404(Speaker, user=request.user)
-
-    prefix = request.GET['query']
-    vals = [{
-        'id': t.id,
-        'value': t.tag,
-    } for t in ConferenceSessionTag.objects.filter(conference=conference)]
     return HttpResponse(json.dumps({
-        'values': vals,
+        'id': speaker.id,
+        'name': speaker.fullname,
     }), content_type='application/json')
 
 

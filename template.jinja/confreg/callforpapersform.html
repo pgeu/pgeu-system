@@ -1,44 +1,67 @@
 {%extends "base.html" %}
 {%block title%}Call for Papers - {{conference}}{%endblock%}
 {%block pagescript%}
-{{asset("css", "selectize")}}
-{{asset("js", "selectize")}}
+<script language="javascript" defer>
+  async function addSpeakerClick(event) {
+      event.preventDefault();
 
-<script language="javascript">
-$(function() {
-  /* Re-enable the speaker field, and turn it into selectize */
-  $('tr#tr_speaker').css({'display': 'table-row'});
-  $('#id_speaker').selectize({
-    plugins: ['remove_button'],
-    valueField: 'id',
-    labelField: 'value',
-    searchField: 'value',
-    load: async function(query, callback) {
-       if (!query.length) return callback();
-       let url = new URL('/events/{{conference.urlname}}/callforpapers/lookups/speakers/', document.location.href);
-       url.searchParams.append('query', query);
-       let response = await fetch(url);
-       let data = await response.json();
-       callback(data.values);
-    },
-  });
+      let email = prompt('Enter the email address of the speaker to add.');
+      if (email) {
+	  let res = await fetch('/events/{{conference.urlname}}/callforpapers/lookups/speakers/?' + new URLSearchParams({'query': email}));
+	  if (res.status != 200) {
+	      alert('Speaker not found.\n\nNote that thee speaker must have an existing profile on this site with the given email address before they can be adde to a session.\n');
+	      return;
+	  }
+	  let speaker = await res.json();
 
-  /* Selectize the tags field, if it exists */
-  $('#id_tags').selectize({
-    plugins: ['remove_button'],
-    valueField: 'id',
-    labelField: 'value',
-    searchField: 'value',
-    load: async function(query, callback) {
-       if (!query.length) return callback();
-       let url = new URL('/events/{{conference.urlname}}/callforpapers/lookups/tags/', document.location.href);
-       url.searchParams.append('query', query);
-       let response = await fetch(url);
-       let data = await response.json();
-       callback(data.values);
-    },
+	  let ul = event.target.previousElementSibling;
+	  let select = ul.previousElementSibling;
+
+	  if (select.querySelector('option[value="' + speaker.id + '"]')) {
+	      alert('This speaker has already been added.');
+	      return;
+	  }
+
+	  let newli = document.createElement('li');
+	  newli.dataset.id = speaker.id;
+	  newli.innerHTML = speaker.name + ' (<a class="pgeu-speaker-remove" href=#"#>remove</a>)';
+	  ul.appendChild(newli);
+
+	  let newoption = document.createElement('option');
+	  newoption.value = speaker.id;
+	  newoption.selected = true;
+	  select.appendChild(newoption);
+      }
+
+      return false;
+  }
+
+  function removeSpeakerClick(event) {
+      if (event.target.tagName == 'A' && event.target.classList.contains('pgeu-speaker-remove')) {
+	  event.preventDefault();
+
+	  let idtoremove = event.target.parentNode.dataset.id;
+
+	  if (!confirm('Are you sure you want to remove this speaker?')) {
+	      return;
+	  }
+
+	  /* <a>.<li>.<ul>.<select> */
+	  event.target.parentNode.parentNode.previousElementSibling.querySelector('option[value="' + idtoremove + '"]').remove();
+
+	  event.target.parentNode.remove();
+
+	  alert('Speaker removed. You have to also save the form to make it permanent.');
+      }
+  }
+
+
+  document.querySelectorAll("button.pgeu-speaker-add").forEach((button) => {
+      button.addEventListener('click', addSpeakerClick);
   });
-});
+  document.querySelectorAll("ul.pgeu-speaker-list").forEach((ul) => {
+      ul.addEventListener('click', removeSpeakerClick);
+  });
 </script>
 {%endblock%}
 
@@ -46,11 +69,6 @@ $(function() {
 <style>
 tr.err {
    background-color: #ffb6b6;
-}
-
-/* Hide the speaker field for non-javascript sessions */
-tr#tr_speaker {
-   display:none;
 }
 </style>
 {%endblock%}

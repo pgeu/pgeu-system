@@ -17,4 +17,4 @@ def arrayelement(value, key):
 def join_dictkeys(list_to_join, attrname, separator=', '):
     if not list_to_join:
         return ''
-    return separator.join(item[attrname] for item in list_to_join)
+    return separator.join(str(item[attrname]) for item in list_to_join)
