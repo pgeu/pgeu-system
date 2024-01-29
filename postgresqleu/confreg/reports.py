@@ -398,10 +398,10 @@ class AttendeeReportManager:
         self._filtermap = None
 
     def _dynafields(self):
-        return [DynamicReportField(f) for f in self.conference.dynafields.split(',')]
+        return [DynamicReportField(f) for f in self.conference.dynafields.split(',') if f != '']
 
     def _dynafilters(self):
-        return [DynamicReportFilter(f) for f in self.conference.dynafields.split(',')]
+        return [DynamicReportFilter(f) for f in self.conference.dynafields.split(',') if f != '']
 
     @property
     def fields(self):
