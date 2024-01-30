@@ -1,4 +1,4 @@
-<select name="{{ widget.name }}" style="display: none" multiple>{% for option in widget.options %}
+<select name="{{ widget.name }}" data-urlname="{{confurlname}}" style="display: none" multiple>{% for option in widget.options %}
   <option value="{{option.value}}" selected>
 {%endfor%}
 </select>

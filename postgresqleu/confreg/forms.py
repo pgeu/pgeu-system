@@ -536,7 +536,7 @@ class CallForPapersForm(forms.ModelForm):
         if 'data' in kwargs and 'speaker' in kwargs['data']:
             vals.extend([int(x) for x in kwargs['data'].getlist('speaker')])
 
-        self.fields['speaker'].widget = CallForPapersSpeakersWidget()
+        self.fields['speaker'].widget = CallForPapersSpeakersWidget(self.instance.conference)
         self.fields['speaker'].queryset = Speaker.objects.defer('photo', 'photo512').filter(pk__in=vals).annotate(
             iscurrent=django.db.models.Case(django.db.models.When(pk=currentspeaker.pk, then=True), output_field=django.db.models.BooleanField())
         ).order_by('iscurrent', 'fullname')

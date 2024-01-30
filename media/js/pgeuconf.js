@@ -7,15 +7,15 @@ async function addSpeakerClick(event) {
 
   let email = prompt('Enter the email address of the speaker to add.');
   if (email) {
-    let res = await fetch('/events/{{conference.urlname}}/callforpapers/lookups/speakers/?' + new URLSearchParams({'query': email}));
+    let ul = event.target.previousElementSibling;
+    let select = ul.previousElementSibling;
+
+    let res = await fetch('/events/' + select.dataset.urlname + '/callforpapers/lookups/speakers/?' + new URLSearchParams({'query': email}));
     if (res.status != 200) {
       alert('Speaker not found.\n\nNote that thee speaker must have an existing profile on this site with the given email address before they can be adde to a session.\n');
       return;
     }
     let speaker = await res.json();
-
-    let ul = event.target.previousElementSibling;
-    let select = ul.previousElementSibling;
 
     if (select.querySelector('option[value="' + speaker.id + '"]')) {
       alert('This speaker has already been added.');

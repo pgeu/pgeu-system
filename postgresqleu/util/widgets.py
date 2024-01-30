@@ -173,7 +173,12 @@ class SelectSetValueWidget(forms.Select):
 class CallForPapersSpeakersWidget(forms.SelectMultiple):
     template_name = 'forms/widgets/speaker_select.html'
 
+    def __init__(self, conference, *args, **kwargs):
+        self.conference = conference
+        super().__init__(*args, **kwargs)
+
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
         context['widget']['options'] = list(self.options(name, context['widget']['value'], attrs))
+        context['confurlname'] = self.conference.urlname
         return context
