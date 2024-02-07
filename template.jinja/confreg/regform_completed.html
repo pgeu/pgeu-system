@@ -1,21 +1,10 @@
 {%extends "base.html" %}
 {%block title%}Conference Registration - {{conference}}{%endblock%}
 {%block extrahead%}
-<style>
-table.reginfotbl {
-   width:100%;
-}
-table.reginfotbl td {
-   vertical-align: top;
-   padding-top: 3px;
-   padding-bottom: 3px;
-}
-table.reginfotbl td.firstcol {
-   width: 150px;
-   white-space: nowrap;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="/media/css/pgeuconf.css">
+{{ super() }}
 {%endblock%}
+
 {%block content%}
 <h1>Conference Registration<span class="confheader"> - {{conference}}</span></h1>
 

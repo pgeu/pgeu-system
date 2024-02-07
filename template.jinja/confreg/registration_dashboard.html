@@ -1,47 +1,10 @@
 {%extends "base.html" %}
 {%block title%}Your Registration - {{conference}}{%endblock%}
 {%block extrahead%}
-<style>
-div#dash_pagelinks_wrap {
-   text-align: center;
-}
-ul.dash_pagelinks {
-  padding: 0;
-}
-ul.dash_pagelinks li {
-   display: inline;
-}
-
-div.regwrap {
-   width: 100%;
-   overflow: hidden;
-}
-div.regleft {
-   width: 450px;
-   float: left;
-}
-div.regright {
-   width: 200px;
-   float: right;
-}
-div.regright ul {
-   padding: 0px;
-}
-div.regright ul li {
-   margin-top: 0px;
-}
-div.regwrap.errfld {
-   background-color: rgb(255,255,204);
-   border: 1px solid red;
-}
-div.regwrap.errfld ul.errorlist li {
-   font-weight: normal !important;
-}
-form input[type=submit] {
-   width: 220px;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="/media/css/pgeuconf.css">
+{{ super() }}
 {%endblock%}
+
 {%block content%}
 {% if messages %}
 <ul style="background-color: yellow;" class="regdashboardmessage">

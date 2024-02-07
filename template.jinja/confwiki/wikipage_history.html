@@ -1,13 +1,10 @@
 {%extends "base.html" %}
 {%block title%}{{page.title}} - {{conference}}{%endblock%}
 {%block extrahead%}
-<style>
-table.versiontable tr td,th {
-   padding: 5px;
-   text-align: center;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="/media/css/pgeuconf.css">
+{{ super() }}
 {%endblock%}
+
 {%block content%}
 <h2>{{page.title}}</h2>
 

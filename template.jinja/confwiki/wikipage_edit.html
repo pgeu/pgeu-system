@@ -1,25 +1,8 @@
 {%extends "base.html" %}
 {%block title%}{{page.title}} - {{conference}}{%endblock%}
 {%block extrahead%}
-<style>
-tr.error {
-   background-color: #ffb6b6;
-}
-table.pageform {
-   width: 100%;
-}
-table.pageform tr {
-   vertical-align: top;
-}
-table.pageform input[type=text],textarea,select {
-   width: 500px;
-}
-{%if not baseform%}
-table.pageform textarea {
-   display: none;
-}
-{%endif%}
-</style>
+<link rel="stylesheet" type="text/css" href="/media/css/pgeuconf.css">
+{{ super() }}
 {%endblock%}
 
 {%block content%}

@@ -6,35 +6,10 @@
 {%endblock%}
 
 {%block extrahead%}
-<style>
-table.invoiceconfirmtbl {
-   width: 700px;
-}
-table.invoiceconfirmtbl td.desc {
-}
-table.invoiceconfirmtbl tr td.cost {
-   text-align: right;
-   white-space: nowrap;
-   width: 85px;
-}
-table.invoiceconfirmtbl tr.totalrow td.cost {
-   border-top: 1px solid black;
-}
-form input[type=submit] {
-   width: 200px !important;
-}
-div.warnfld {
-   background-color: rgb(255,255,204);
-   border: 1px solid red;
-}
-div.warnfld ul li {
-   font-weight: normal !important;
-}
-div.pgeu-pagealert {
-    display: none;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="/media/css/pgeuconf.css">
+{{ super() }}
 {%endblock%}
+
 {%block content%}
 <h1>Conference Registration<span class="confheader"> - {{conference}}</span></h1>
 

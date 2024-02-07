@@ -1,0 +1,112 @@
+/* CSS for pgeu-system conferences, including skinned ones */
+
+/* Registration dashboard */
+div#dash_pagelinks_wrap {
+   text-align: center;
+}
+ul.dash_pagelinks {
+  padding: 0;
+}
+ul.dash_pagelinks li {
+   display: inline;
+}
+
+div.regwrap {
+   width: 100%;
+   overflow: hidden;
+}
+div.regleft {
+   width: 450px;
+   float: left;
+}
+div.regright {
+   width: 200px;
+   float: right;
+}
+div.regright ul {
+   padding: 0px;
+}
+div.regright ul li {
+   margin-top: 0px;
+}
+div.regwrap.errfld {
+   background-color: rgb(255,255,204);
+   border: 1px solid red;
+}
+div.regwrap.errfld ul.errorlist li {
+   font-weight: normal !important;
+}
+form input[type=submit] {
+   width: 220px;
+}
+
+/* Regisration confirm */
+table.invoiceconfirmtbl {
+   width: 700px;
+}
+table.invoiceconfirmtbl td.desc {
+}
+table.invoiceconfirmtbl tr td.cost {
+   text-align: right;
+   white-space: nowrap;
+   width: 85px;
+}
+table.invoiceconfirmtbl tr.totalrow td.cost {
+   border-top: 1px solid black;
+}
+div.warnfld {
+   background-color: rgb(255,255,204);
+   border: 1px solid red;
+}
+div.warnfld ul li {
+   font-weight: normal !important;
+}
+div.pgeu-pagealert {
+    display: none;
+}
+
+/* Registration completed */
+table.reginfotbl {
+   width:100%;
+}
+table.reginfotbl td {
+   vertical-align: top;
+   padding-top: 3px;
+   padding-bottom: 3px;
+}
+table.reginfotbl td.firstcol {
+   width: 150px;
+   white-space: nowrap;
+}
+
+
+/* Call for papers form */
+tr.err {
+   background-color: #ffb6b6;
+}
+
+
+/* Wiki */
+tr.error {
+   background-color: #ffb6b6;
+}
+
+table.pageform {
+   width: 100%;
+}
+table.pageform tr {
+   vertical-align: top;
+}
+table.pageform input[type=text],textarea,select {
+   width: 500px;
+}
+table.versiontable {
+   border-spacing: 0;
+}
+table.versiontable tr td,th {
+   padding: 5px;
+   text-align: center;
+}
+textarea.hiddenfield {
+    display: none;
+}

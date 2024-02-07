@@ -207,6 +207,7 @@ def wikipage_edit(request, confurl, wikiurl):
                 # Else we clicked save
                 baseform = False
                 preview = form.cleaned_data['contents']
+                form.fields['contents'].widget.attrs['class'] = 'hiddenfield'
     else:
         form = WikipageEditForm(instance=page)
 

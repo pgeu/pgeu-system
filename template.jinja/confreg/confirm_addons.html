@@ -1,23 +1,8 @@
 {%extends "base.html" %}
 {%block title%}Conference Registration - {{conference}}{%endblock%}
 {%block extrahead%}
-<style>
-table.invoiceconfirmtbl {
-   width: 550px;
-}
-table.invoiceconfirmtbl td.desc {
-}
-table.invoiceconfirmtbl tr td.cost {
-   text-align: right;
-   white-space: nowrap;
-}
-table.invoiceconfirmtbl tr.totalrow td.cost {
-   border-top: 1px solid black;
-}
-form input[type=submit] {
-   width: 200px !important;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="/media/css/pgeuconf.css">
+{{ super() }}
 {%endblock%}
 
 {%block pagescript%}

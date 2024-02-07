@@ -1,22 +1,10 @@
 {%extends "base.html" %}
 {%block title%}Create Invoice - {{conference}}{%endblock%}
 {%block extrahead%}
-<style>
-table.invoiceconfirmtbl {
-   width: 700px;
-}
-table.invoiceconfirmtbl td.desc {
-}
-table.invoiceconfirmtbl tr td.cost,th.cost {
-   text-align: right;
-   white-space: nowrap;
-   width: 85px;
-}
-table.invoiceconfirmtbl tr.totalrow td.cost {
-   border-top: 1px solid black;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="/media/css/pgeuconf.css">
+{{ super() }}
 {%endblock%}
+
 {%block content%}
 <h1>Create Invoice<span class="confheader"> - {{conference}}</span></h1>
 {%if errors%}
