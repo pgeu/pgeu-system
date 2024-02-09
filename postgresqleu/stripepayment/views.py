@@ -15,6 +15,7 @@ from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.util import is_managed_bank_account
 from postgresqleu.invoices.util import register_pending_bank_matcher
 from postgresqleu.util.decorators import global_login_exempt
+from postgresqleu.util.currency import format_currency
 from postgresqleu.accounting.util import create_accounting_entry
 from postgresqleu.mailqueue.util import send_simple_mail
 
@@ -246,13 +247,18 @@ def webhook(request, methodid):
                                               r'.*STRIPE(\s+[^\s+].*|$)',
                                               payout.amount,
                                               entry)
-                msg = "A Stripe payout with description {} completed for {}.\n\nAccounting entry {} was created and will automatically be closed once the payout has arrived.".format(
+                msg = "A Stripe payout of {} with description {} completed for {}.\n\nAccounting entry {} was created and will automatically be closed once the payout has arrived.".format(
+                    format_currency(payout.amount),
                     payout.description,
                     method.internaldescription,
                     entry,
                 )
             else:
-                msg = "A Stripe payout with description {} completed for {}.\n".format(payout.description, method.internaldescription)
+                msg = "A Stripe payout of {} with description {} completed for {}.\n".format(
+                    format_currency(payout.amount),
+                    payout.description,
+                    method.internaldescription,
+                )
 
             StripeLog(message=msg, paymentmethod=method).save()
             send_simple_mail(settings.INVOICE_SENDER_EMAIL,
