@@ -110,3 +110,37 @@ table.versiontable tr td,th {
 textarea.hiddenfield {
     display: none;
 }
+
+
+/* Session feedback */
+div.feedbackchart {
+   width: 47%;
+   display: inline-block;
+   margin-bottom: 20px;
+   padding-right: 10px;
+}
+div.feedbackchart h5 {
+   font-weight: bold;
+   margin-left: 5em;
+   margin-bottom: 1em;
+}
+div.feedbackbarchart  h5 {
+    text-align: center;
+}
+div.feedbackchart svg path.pieslice:hover {
+    stroke-width: 10;
+    stroke-opacity: 0.5;
+}
+div.feedbackchart svg rect.chartbar:hover {
+    stroke-width: 1.5;
+    stroke-opacity: 0.5;
+}
+div.feedbackchart svg text {
+    cursor: default;
+}
+div.feedbackchart svg .svgpielegend {
+    font: 13px sans-serif;
+}
+div.feedbackchart svg .svgpiepercent {
+    font: 11px sans-serif;
+}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1"
+     viewBox="0 -10 {{width}} {{height}}">
+  <line x1="0" x2="{{width}}" y1="{{bottom}}" y2="{{bottom}}" stroke="black" />
+{%for label, pos in gridlines.items %}
+  <line x1="8" x2="{{width}}" y1="{{pos}}" y2="{{pos}}" stroke="gray" stroke-width="0.5" />
+  <text x="7" y="{{pos}}" style="font-size: 4pt" dominant-baseline="central" text-anchor="end">{{label}}</text>
+{%endfor%}
+{%for d in svgdata%}
+  <rect class="chartbar" x="{{d.leftpos}}" y="{{height|add:d.negheight|add:neglegendheight}}" width="{{itemwidth}}" height="{{d.height}}" fill="{{d.color}}" stroke="{{d.color}}" stroke-width="0">
+    <title>{{d.tooltip}}</title>
+  </rect>
+{%if legendheight and forloop.counter|divisibleby:2%}
+  <text x="{{d.leftpos|add:2}}" y="{{bottom|add:2}}" writing-mode="tb" glyph-orientation-vertical="90" style="font-size: 3.7pt">{{d.label}}</text>
+{%endif%}
+{%endfor%}
+</svg>

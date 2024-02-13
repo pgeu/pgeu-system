@@ -80,7 +80,8 @@ from postgresqleu.util.qr import generate_base64_qr
 
 from decimal import Decimal
 from operator import itemgetter
-from datetime import timedelta
+from datetime import datetime, timedelta, date
+from collections import OrderedDict
 import base64
 import re
 import os
@@ -1812,7 +1813,7 @@ def callforpapers_edit(request, confname, sessionid):
         # on the same page. If feedback is  still open, we show nothing
         feedback_fields = ('topic_importance', 'content_quality', 'speaker_knowledge', 'speaker_quality')
         if is_tester or not conference.feedbackopen:
-            feedbackdata = [{'key': k, 'title': k.replace('_', ' ').title(), 'num': [0] * 5} for k in feedback_fields]
+            feedbackdata = [{'key': k, 'title': k.replace('_', ' ').title(), 'score': OrderedDict(zip(range(1, 6), [0] * 5))} for k in feedback_fields]
             feedbacktext = []
             fb = list(ConferenceSessionFeedback.objects.filter(conference=conference, session=session))
             feedbackcount = len(fb)
@@ -1820,7 +1821,7 @@ def callforpapers_edit(request, confname, sessionid):
                 # Summarize the values
                 for d in feedbackdata:
                     if getattr(f, d['key']) > 0:
-                        d['num'][getattr(f, d['key']) - 1] += 1
+                        d['score'][getattr(f, d['key'])] += 1
                 # Add the text if necessary
                 if f.speaker_feedback:
                     feedbacktext.append({
@@ -1838,7 +1839,17 @@ def callforpapers_edit(request, confname, sessionid):
                 feedbackcomparisons.append({
                     'key': measurement,
                     'title': measurement.replace('_', ' ').title(),
-                    'vals': curs.fetchall(),
+                    'data': [{
+                        'label': '{}-{}'.format(r[0], r[1]),
+                        'value': r[2],
+                        'color': r[3] and 'red' or 'blue',
+                        'tooltip': '{} - {}{}\n\nCount: {}'.format(
+                            r[0],
+                            r[1],
+                            ' (your score)' if r[3] else '',
+                            r[2],
+                        ),
+                    } for r in curs.fetchall()],
                 })
         else:
             feedbackcount = 0

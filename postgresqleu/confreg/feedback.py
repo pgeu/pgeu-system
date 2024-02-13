@@ -14,7 +14,7 @@ def build_graphdata(answers, options):
     if answers:
         for a in answers:
             optionhash[a] += 1
-    return iter(optionhash.items())
+    return optionhash
 
 
 def feedback_report(request, confname):

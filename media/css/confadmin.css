@@ -262,6 +262,32 @@ div.pdf_fields_field {
     cursor: move;
 }
 
+/* Feedback graphs */
+div.feedbackchart svg .svgpielegend {
+    font: 13px sans-serif;
+}
+div.feedbackchart svg .svgpiepercent {
+    font: 11px sans-serif;
+}
+div.chartdiv {
+    margin-bottom: 50px;
+}
+div.chartdiv h5 {
+    font-weight: bold;
+}
+div.chartdiv svg {
+    margin-top: 10px;
+    height: 200px;
+}
+div.chartdiv svg path.pieslice:hover {
+    stroke-width: 10;
+    stroke-opacity: 0.5;
+}
+div.chartdiv svg text {
+    cursor: default;
+}
+
+
 /*
  * Sponsor admin
  */

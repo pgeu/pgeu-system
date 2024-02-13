@@ -19,6 +19,7 @@ from Cryptodome.Hash import SHA
 from postgresqleu.confreg.templatetags.currency import format_currency
 from postgresqleu.confreg.templatetags.leadingnbsp import leadingnbsp
 from postgresqleu.confreg.templatetags.formutil import field_class
+from postgresqleu.util.templatetags import svgcharts
 from postgresqleu.util.templatetags.assets import do_render_asset
 from postgresqleu.util.messaging import get_messaging_class_from_typename
 
@@ -289,6 +290,10 @@ extra_filters = {
     'social_links': filter_social_links,
 }
 
+extra_globals = {
+    'svgcharts': svgcharts,
+}
+
 
 # We can resolve assets only when the template is in our main site. Anything running with
 # deploystatic is going to have to solve this outside anyway. That means we can safely
@@ -308,6 +313,7 @@ def render_jinja_conference_template(conference, templatename, dictionary, disab
         extensions=['jinja2.ext.with_'],
     )
     env.filters.update(extra_filters)
+    env.globals.update(extra_globals)
 
     t = env.get_template(templatename)
 

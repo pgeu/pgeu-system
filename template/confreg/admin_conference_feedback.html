@@ -1,44 +1,6 @@
 {%extends "confreg/confadmin_base.html" %}
+{%load svgcharts%}
 {%block title%}Conference Feedback - {{conference}}{%endblock%}
-{%block extrahead%}
-<script type="text/javascript" src="https://www.google.com/jsapi"></script>
-<script type="text/javascript">
-google.load("visualization", "1", {packages:["corechart"]});
-google.setOnLoadCallback(drawCharts);
-function prep_datatable() {
-   var d = new google.visualization.DataTable();
-   d.addColumn('string', 'Rating');
-   d.addColumn('number', 'Count');
-   return d;
-}
-function drawCharts() {
-{%for section in feedback %}
-{%for question in section.questions%}
-{%if question.graphdata%}
-   var data = prep_datatable();
-   data.addRows([{%for k,v in question.graphdata%}['{{k|escapejs}}',{{v}}],{%endfor%}]);
-   var options = {
-      'title': '{{question.question|escapejs}}',
-      'sliceVisibilityThreshold': 0,
-      'width': 550,
-      'height': 400,
-   };
-   var chart = new google.visualization.PieChart(document.getElementById('chart_{{question.id}}'));
-   chart.draw(data, options);
-
-
-{%endif%}
-{%endfor%}
-{%endfor%}
-}
-</script>
-
-<style>
-div.chartdiv {
-   width: 100%;
-}
-</style>
-{%endblock%}
 
 {%block layoutblock%}
 <h1>Conference Feedback - {{conference}}</h1>
@@ -57,7 +19,10 @@ A total of {{numresponses}} responses have been recorded.
 <div class="sectiondiv">
  {%for question in section.questions%}
 {%if question.graphdata%}
-  <div id="chart_{{question.id}}" class="chartdiv"></div>
+ <div id="chart_{{question.id}}" class="chartdiv">
+   <h5>{{question.question}}</h5>
+{% svgpiechart question.graphdata legendwidth=300 %}
+ </div>
 {%else%}
  <h3>{{question.question}}</h3>
   <ul>

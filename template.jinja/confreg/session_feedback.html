@@ -1,66 +1,8 @@
 {%extends "base.html" %}
 {%block title%}Conference Session - {{conference}}{%endblock%}
 {%block extrahead%}
-<script type="text/javascript" src="https://www.google.com/jsapi"></script>
-<script type="text/javascript">
-google.load("visualization", "1", {packages:["corechart"]});
-google.setOnLoadCallback(drawCharts);
-function prep_datatable() {
-   var d = new google.visualization.DataTable();
-   d.addColumn('string', 'Rating');
-   d.addColumn('number', 'Count');
-   return d;
-}
-function prep_comparisontable() {
-   var d = new google.visualization.DataTable();
-   d.addColumn('string', 'Avg');
-   d.addColumn('number', 'Count');
-   d.addColumn({ 'type': 'string', role: 'style' });
-   return d;
-}
-
-function drawCharts() {
-{%if feedbackcount%}
-{%for f in feedbackdata%}
-// {{f.key}}
-   var data = prep_datatable();
-   data.addRows([{%for v in f.num%}['{{loop.index}}',{{v}}],{%endfor%}]);
-   var options = {
-      'title': '{{f.title|escapejs}}',
-   };
-   var chart = new google.visualization.PieChart(document.getElementById('chart_{{f.key}}'));
-   chart.draw(data, options);
-
-{%endfor%}
-{%endif%}
-{%if feedbackcomparisons%}
-{%for f in feedbackcomparisons%}
-// {{f.key}}
-   var data = prep_comparisontable();
-   data.addRows([{%for gl,gu,n,t in f.vals%}["{{gl}}-{{gu}}", {{n}},'{%if t%}color:red{%endif%}'],{%endfor%}]);
-   var options = {
-      'title': '{{f.title|escapejs}}',
-      'legend': {
-         'position': 'none',
-      },
-   };
-   var chart = new google.visualization.ColumnChart(document.getElementById('comp_{{f.key}}'));
-   chart.draw(data, options);
-{%endfor%}
-{%endif%}
-}
-</script>
-
-<style>
-div.feedbackchart {
-   width: 47%;
-   display: inline-block;
-}
-div.feedbackcomparison {
-   width: 47%;
-   display: inline-block;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="/media/css/pgeuconf.css">
+{{ super() }}
 {%endblock%}
 
 {%block content%}
@@ -123,6 +65,8 @@ The following feedback has been given on this presentation by
 </p>
 {%for f in feedbackdata%}
 <div id="chart_{{f.key}}" class="feedbackchart">
+  <h5>{{f.title}}</h5>
+{{svgcharts.svgpiechart(f.score, legendwidth=100)}}
 </div>
 {%endfor%}
 
@@ -153,7 +97,9 @@ The following feedback has been given on this presentation by
   These charts show your average scores compared to the other sessions at this event.
 </p>
 {%for f in feedbackcomparisons%}
-<div id="comp_{{f.key}}" class="feedbackcomparison">
+<div id="comp_{{f.key}}" class="feedbackchart feedbackbarchart">
+  <h5>{{f.title}}</h5>
+{{svgcharts.svgbarchart(f.data, wratio=2, legend=False)}}
 </div>
 {%endfor%}
 {%endif%}

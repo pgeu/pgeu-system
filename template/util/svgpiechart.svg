@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1"
+     viewBox="-100 -100 {{legendwidth|add:200}} 200">
+{%for s in slices%}{%if s.drawslice%}
+  <path d="M {{s.startx}} {{s.starty}} A {{radius}} {{radius}} 0 {{s.largearc}} 1 {{s.endx}} {{s.endy}} L 0 0 L {{s.startx}} {{s.starty}}"
+	fill="{{s.color}}" stroke="white" class="pieslice">
+{%if s.popup%}<title>{{s.popup}}</title>{%endif%}
+  </path>
+{%endif%}{%if s.legend and legendwidth %}
+  <circle cx="130" cy="{{s.legend.y}}" r="7" fill="{{s.color}}" stroke-width="0" />
+  <text x="150" y="{{s.legend.y|add:5}}" class="svgpielegend">{{s.legend.text}}</text>{%endif%}{%endfor%}
+{%for s in slices%}
+  {%if s.percent%}<text x="{{s.centerx}}" y="{{s.centery}}" class="svgpiepercent" stroke="none" fill="white">{{s.percent}}%{%if s.popup%}<title>{{s.popup}}</title>{%endif%}</text>{%endif%}
+{%endfor%}
+</svg>
