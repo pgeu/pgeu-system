@@ -158,6 +158,28 @@ $(document).ready(function() {
    update_sendmail_count();
    update_assign_count();
 
+  $('input[data-filter-select]').each(function() {
+    /* Text field that filtes the content of a select */
+    let target = $('#' + $(this).data('filter-select'));
+    $(this).on('keyup', function(e) {
+      let val = $(this).val().toLowerCase();
+      $(target).find('option').each(function(i, e) {
+        let ee = $(e);
+        if (ee.text().toLowerCase().indexOf(val) >= 0) {
+          ee.css('display', 'block');
+        } else {
+          ee.css('display', 'none');
+        }
+      });
+      $(target).find('optgroup').each(function(i, e) {
+        /* Hide any groups with no matching entries */
+        $(e).css('display', $(e).find('option[style*="display: block"]').length ? 'block' : 'none');
+      });
+    });
+    /* Trigger initial filter */
+    $(this).trigger('keyup');
+  });
+
 
     /*
      * PDF field editor
