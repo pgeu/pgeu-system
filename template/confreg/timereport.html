@@ -1,61 +1,8 @@
 {%extends "confreg/confadmin_base.html" %}
 {%load assets%}
+{%load svgcharts%}
 {%block title%}Time based Reports{%endblock%}
 {%block extrahead%}
-{%asset "css" "jqueryui1" %}
-{%asset "js" "jqueryui1" %}
-{%if graphdata%}
-    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-    <script type="text/javascript">
-  google.load("visualization", "1", {packages:["corechart"]});
-  google.setOnLoadCallback(drawChart);
-  function drawChart() {
-    var dataTable = new google.visualization.DataTable();
-{%for h in headers%}
-    dataTable.addColumn('{%if forloop.isfirst%}string{%else%}number{%endif%}', '{{h}}');
- {%if h.hastoday%}
-    dataTable.addColumn({type:'boolean', role:'certainty'});
- {%endif%}
-{%endfor%}
-    dataTable.addRows([
-{%for r in graphdata%}[{{r|join:","}}],{%endfor%}
-  ]);
-
-    var options = {
-      'title': '{{title}}',
-      'hAxis': {
-        'direction': -1,
-        'title': 'Days before conference',
-        'minValue': 0,
-      },
-      'vAxis': {
-        'title': '{{ylabel}}',
-{%if trendlines%}
-        'maxValue': {{maxpred}},
-{%endif%}
-      },
-{%if trendlines%}
-      'trendlines': {
-         0: {
-            'type': '{{trendlines}}',
-            'visibleInLegend': true,
-            'opacity': 0.2,
-         },
-      }
-{%endif%}
-    };
-    var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
-    chart.draw(dataTable, options);
-
-    // Make chart resizable
-    $('#chart_div').resizable({
-      stop: function(event, ui) {
-        chart.draw(dataTable, options);
-      },
-    });
-  }
-</script>
-    {%endif%}
     <style>
 ul.errorlist {
   color:red;
@@ -79,11 +26,7 @@ select#id_conferences {
 {%include "confreg/admin_backend_form_content.html" with savebutton="Generate report"%}
       </form>
     </div>
-    <div class="row">
-      <div id="chart_div" style="width: 100%; height: 500px;"></div>
-    </div>
-    <div class="row">
-      Drag lower right corner to resize graph.
-    </div>
-
+{%if series%}
+{% svglinechart dayvals series ylabel=ylabel xlabel=xlabel alwayszeroline=True trendlines=trendlines %}
+{%endif%}
 {%endblock%}

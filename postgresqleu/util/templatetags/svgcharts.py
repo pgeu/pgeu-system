@@ -1,8 +1,10 @@
 from django import template
 from django.utils.safestring import mark_safe
 
+import heapq
 import itertools
 import math
+import textwrap
 
 register = template.Library()
 
@@ -114,4 +116,103 @@ def svgbarchart(svgdata, legend=True, wratio=2):
             str(roundedmax // 2): int(graphratio * height / 2),
             str(roundedmax): 0,
         },
+    })
+
+
+def _linreg(x, y):
+    # Simple linear regression
+    N = len(x)
+    Sx = Sy = Sxx = Syy = Sxy = 0.0
+    for x, y in zip(x, y):
+        Sx = Sx + x
+        Sy = Sy + y
+        Sxx = Sxx + x * x
+        Syy = Syy + y * y
+        Sxy = Sxy + x * y
+    det = Sxx * N - Sx * Sx
+    return (Sxy * N - Sy * Sx) / det, (Sxx * Sy - Sx * Sxy) / det
+
+
+@register.simple_tag
+def svglinechart(xlabels, series, wratio=3, ylabel='', xlabel='', alwayszeroline=False, trendlines=False):
+    colors = itertools.cycle(defaultcolors)
+
+    t = template.loader.get_template('util/svglinechart.svg')
+
+    width = 250
+    height = width // wratio
+
+    serieslen = len(xlabels)
+
+    maxval = 0
+    for s in series:
+        s['maxval'] = max(s['values'])
+    maxval = max(s['maxval'] for s in series)
+
+    # XXX: Make this 20 configurable!
+    roundingvalue = 20
+    numgridlines = 6
+
+    maxval = math.ceil(maxval / roundingvalue) * roundingvalue
+    gridvals = [(x + 1) * maxval // numgridlines for x in range(numgridlines)]
+    gridlines = [(v, height - int(height * v / maxval)) for v in gridvals]
+
+    xvals = [20 + x * 200 / (serieslen - 1) for x in range(serieslen)]
+    xgridvals = xlabels[::int(math.ceil(serieslen / 7))]
+    xgridlines = xvals[::int(math.ceil(serieslen / 7))]
+    xgridvals.append(xlabels[-1])
+    xgridlines.append(xvals[-1])
+    xgrid = zip(xgridvals, xgridlines)
+    zerolineat = None
+    if alwayszeroline and 0 not in xgridvals:
+        try:
+            ofs = xlabels.index(0)
+            xgridvals.append(xlabels[ofs])
+            xgridlines.append(xvals[ofs])
+            zerolineat = xvals[ofs]
+        except ValueError:
+            pass
+
+    for s in series:
+        s['values'] = list(zip(
+            xvals,
+            [height - int(height * v / maxval) for v in s['values']],
+            xlabels,
+            s['values'],
+        ))
+        s['color'] = next(colors)
+
+    legend = [{
+        'label': textwrap.wrap(s['label'], 11)[:2],
+        'color': s['color'],
+        'ypos': i * 8 + 5,
+    } for i, s in enumerate(heapq.nlargest(8, series, key=lambda s: s['maxval']))]
+
+    # Trendlines will only be plotted against the first series
+    if trendlines:
+        a, b = _linreg([float(x[0]) for x in series[0]['values']], [float(y[1]) for y in series[0]['values']])
+        trendline = ((xvals[0], b), (xvals[-1], a * xvals[-1] + b))
+    else:
+        trendline = None
+
+    # X-wise:
+    # 10 pixels label
+    # 10 pixels scale
+    # ---- axis
+    # 200 pixels graph
+    # --- exis
+    # 30 pixels legend
+    # --> total width: 250
+
+    return t.render({
+        'height': height,
+        'halfheight': height / 2,
+        'series': series,
+        'ylabel': ylabel,
+        'xlabel': xlabel,
+        'gridlines': gridlines,
+        'xgrid': xgrid,
+        'zerolineat': zerolineat,
+        'legend': legend,
+        'trendline': trendline,
     })

@@ -287,6 +287,14 @@ div.chartdiv svg text {
     cursor: default;
 }
 
+/* Time graphs */
+svg circle.point {
+    stroke-width: 0;
+    fill: transparent;
+}
+svg circle.point:hover {
+    stroke-width: 0.5;
+}
 
 /*
  * Sponsor admin
