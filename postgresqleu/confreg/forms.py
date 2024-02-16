@@ -19,6 +19,7 @@ from .models import PRIMARY_SPEAKER_PHOTO_RESOLUTION
 from .regtypes import validate_special_reg_type
 from .twitter import get_all_conference_social_media
 from postgresqleu.util.fields import UserModelChoiceField
+from postgresqleu.util.widgets import StaticTextWidget
 from postgresqleu.util.widgets import EmailTextWidget, MonospaceTextarea
 from postgresqleu.util.widgets import CallForPapersSpeakersWidget
 from postgresqleu.util.db import exec_to_list
@@ -467,12 +468,23 @@ class ConferenceFeedbackForm(forms.Form):
 
 
 class SpeakerProfileForm(forms.ModelForm):
+    email = forms.CharField(
+        max_length=100, required=False,
+        help_text='The email address is retrieved from the account you are logged in with.',
+        widget=StaticTextWidget(),
+    )
+
     class Meta:
         model = Speaker
         fields = ('fullname', 'company', 'abstract', 'photo512')
 
+    field_order = ['fullname', 'email', 'company', 'abstract', 'photo512']
+
     def __init__(self, *args, **kwargs):
         super(SpeakerProfileForm, self).__init__(*args, **kwargs)
+
+        self.initial['email'] = self.instance.user.email
+
         self.fields['photo512'].help_text = 'Photo will be rescaled to {}x{} pixels. We reserve the right to make minor edits to speaker photos if necessary'.format(*PRIMARY_SPEAKER_PHOTO_RESOLUTION)
 
         for classname, social, impl in sorted(get_all_conference_social_media(), key=lambda x: x[1]):
