@@ -376,6 +376,7 @@ def _generate_and_send_sponsor_contract(sponsor):
             level.contract.fieldjson,
             conference.contractexpires,
             test=False,
+            message_to_sender="The contract for {} sponsorship of {} has been signed by {}. It is now time for the organizers to countersign.".format(level.levelname, conference.conferencename, sponsor.name),
         )
         return contractid, error
 
@@ -1838,6 +1839,7 @@ def sponsor_admin_addcontract(request, confurlname, sponsorid):
             contract.fieldjson,
             conference.contractexpires,
             test=False,
+            message_to_sender="The contract for {} has been signed by sponsor {}. It is now time for the organizers to countersign.".format(subject, sponsor.name),
         )
         if error:
             messages.error(request, "Failed to send digital contract.")
