@@ -480,10 +480,12 @@ class SpeakerProfileForm(forms.ModelForm):
 
     field_order = ['fullname', 'email', 'company', 'abstract', 'photo512']
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+
         super(SpeakerProfileForm, self).__init__(*args, **kwargs)
 
-        self.initial['email'] = self.instance.user.email
+        self.initial['email'] = self.instance.user.email if self.instance.user else self.user.email
 
         self.fields['photo512'].help_text = 'Photo will be rescaled to {}x{} pixels. We reserve the right to make minor edits to speaker photos if necessary'.format(*PRIMARY_SPEAKER_PHOTO_RESOLUTION)
 

@@ -1717,12 +1717,12 @@ def speakerprofile(request, confurlname=None):
             speaker.speakertoken = generate_random_token()
             speaker.save()
 
-        form = SpeakerProfileForm(data=request.POST, files=request.FILES, instance=speaker)
+        form = SpeakerProfileForm(request.user, data=request.POST, files=request.FILES, instance=speaker)
         if form.is_valid():
             form.save()
             return HttpResponseRedirect('.')
     else:
-        form = SpeakerProfileForm(instance=speaker)
+        form = SpeakerProfileForm(request.user, instance=speaker)
 
     return render_conference_response(request, conf, 'cfp', 'confreg/speakerprofile.html', {
         'speaker': speaker,
