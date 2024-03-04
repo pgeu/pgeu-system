@@ -19,7 +19,6 @@ class LatestNews(Feed):
             return None
         elif what.startswith('user/'):
             a = get_object_or_404(NewsPosterProfile, urlname=what.split('/')[1])
-            self.item_author_name = a.fullname
             return a
         raise Http404("Feed not found")
 
