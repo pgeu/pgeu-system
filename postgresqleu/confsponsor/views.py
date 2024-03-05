@@ -220,7 +220,7 @@ def sponsor_purchase_voucher(request, sponsorid):
             # Create an invoice (backwards order?)
             rt = form.cleaned_data['regtype']
             invoice = create_voucher_invoice(sponsor.conference,
-                                             sponsor.invoiceaddr,
+                                             get_sponsor_invoice_address(sponsor.name, sponsor.invoiceaddr, sponsor.vatnumber),
                                              request.user,
                                              rt,
                                              int(form.cleaned_data['num']))
