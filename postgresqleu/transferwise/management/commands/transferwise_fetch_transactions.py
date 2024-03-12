@@ -16,7 +16,7 @@ from postgresqleu.invoices.models import InvoicePaymentMethod
 from postgresqleu.transferwise.models import TransferwiseTransaction, TransferwiseRefund
 from postgresqleu.transferwise.models import TransferwisePayout
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 import re
 
 
@@ -43,6 +43,16 @@ class Command(BaseCommand):
         for t in api.get_transactions():
             # We will re-fetch most transactions, so only create them if they are not
             # already there.
+
+            # Seems transactions come in as UNKNOWN and with no text first, and then we get
+            # more details later. So if we see one of those, postpone it for up to 2 hours
+            # (random magic value).
+            if t['details']['type'] == 'UNKNOWN' and \
+               t['details']['description'] == '' and \
+               datetime.now() - api.parse_datetime(t['date']) < timedelta(hours=2):
+                print("Skipping UNKNOWN transaction {}, no data and less than 2 hours old".format(t['referenceNumber']))
+                continue
+
             trans, created = TransferwiseTransaction.objects.get_or_create(
                 paymentmethod=method,
                 twreference=t['referenceNumber'],
