@@ -50,7 +50,7 @@ def webhook(request, methodid, hooktype):
     if hooktype == 'balance':
         # Balance updated -- we just schedule the poll job, since we don't have all the details
         # in the hook.
-        trigger_immediate_job_run('transferwise_fetch_transactions', timedelta(seconds=30))
+        trigger_immediate_job_run('transferwise_fetch_transactions', timedelta(minutes=5))
         print("SCHEDULING HOOK!")
     else:
         raise Exception("Cannot happen")
