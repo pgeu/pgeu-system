@@ -48,7 +48,7 @@ class Command(BaseCommand):
             # more details later. So if we see one of those, postpone it for up to 2 hours
             # (random magic value).
             if t['details']['type'] == 'UNKNOWN' and \
-               t['details']['description'] == '' and \
+               t['details']['description'] in ('', 'No information') and \
                datetime.now() - api.parse_datetime(t['date']) < timedelta(hours=2):
                 print("Skipping UNKNOWN transaction {}, no data and less than 2 hours old".format(t['referenceNumber']))
                 continue
