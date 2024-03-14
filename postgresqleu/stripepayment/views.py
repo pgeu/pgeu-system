@@ -166,47 +166,55 @@ def webhook(request, methodid):
         return HttpResponse("OK")
     elif payload['type'] == 'charge.refunded':
         chargeid = payload['data']['object']['id']
+        amount = Decimal(payload['data']['object']['amount_refunded']) / 100
 
-        # There can be multiple refunds on each charge, so we have to look through all the
-        # possible ones, and compare. Unfortunately, there is no notification available which
-        # tells us *which one* was completed. Luckily there will never be *many* refunds on a
-        # single charge.
-        with transaction.atomic():
-            for r in payload['data']['object']['refunds']['data']:
-                try:
-                    refund = StripeRefund.objects.get(paymentmethod=method,
-                                                      chargeid=chargeid,
-                                                      refundid=r['id'])
-                except StripeRefund.DoesNotExist:
-                    StripeLog(message="Received completed refund event for non-existant refund {}".format(r['id']),
-                              error=True,
-                              paymentmethod=method).save()
-                    return HttpResponse("OK")
-                if refund.completedat:
-                    # It wasn't this one, as it's already been completed.
-                    continue
+        # Stripe stopped including the refund id in the refund
+        # notification, and requires an extra API call to get
+        # it. Instead of doing that, since we have the charge id we
+        # can match it on that specific charge and the amount of the
+        # refund. This could potentially return multiple entries in
+        # case there is more than one refund made on the same charge
+        # before the webhook fires, but we'll just say that's unlikely
+        # enough we don't have to care about it.
+        try:
+            refund = StripeRefund.objects.get(
+                paymentmethod=method,
+                chargeid=chargeid,
+                amount=amount,
+            )
+        except StripeRefund.DoesNotExist:
+            StripeLog(
+                message="Received completed refund event for charge {} with amount {} which could not be found in the database. Event has been acknowledged, but refund not marked as completed!",
+                error=True,
+                paymentmethod=method,
+            ).save()
+            return HttpResponse("OK")
+        except StripeRefund.MultipleObjectsReturned:
+            StripeLog(
+                message="Received completed refund event for charge {} with amount {} which matched multiple entries. Event has been acknowledged, but refund not marked as completed!",
+                error=True,
+                paymentmethod=method,
+            ).save()
 
-                if r['amount'] != refund.amount * 100:
-                    StripeLog(message="Received completed refund with amount {0} instead of expected {1} for refund {2}".format(r['amount'] / 100, refund.amount, refund.id),
-                              error=True,
-                              paymentmethod=method).save()
-                    return HttpResponse("OK")
+        if refund.completedat:
+            StripeLog(message="Received duplicate Stripe webhook for refund {}, ignoring.".format(refund.id), paymentmethod=method).save()
+        else:
+            # If it's not already processed, flag it as done and trigger the process.
 
-                # OK, refund looks fine
-                StripeLog(message="Received Stripe webhook for refund {}. Processing.".format(refund.id), paymentmethod=method).save()
+            StripeLog(message="Received Stripe webhook for refund {}. Processing.".format(refund.id), paymentmethod=method).save()
 
-                refund.completedat = timezone.now()
-                refund.save()
+            refund.completedat = timezone.now()
+            refund.save(update_fields=['completedat'])
 
-                manager = InvoiceManager()
-                manager.complete_refund(
-                    refund.invoicerefundid_id,
-                    refund.amount,
-                    0,  # Unknown fee
-                    pm.config('accounting_income'),
-                    pm.config('accounting_fee'),
-                    [],
-                    method)
+            manager = InvoiceManager()
+            manager.complete_refund(
+                refund.invoicerefundid_id,
+                refund.amount,
+                0,  # Unknown fee
+                pm.config('accounting_income'),
+                pm.config('accounting_fee'),
+                [],
+                method)
         return HttpResponse("OK")
     elif payload['type'] == 'payout.paid':
         # Payout has left Stripe. Should include both automatic and manual ones
