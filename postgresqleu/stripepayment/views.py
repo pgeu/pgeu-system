@@ -137,6 +137,8 @@ def webhook(request, methodid):
     method = InvoicePaymentMethod.objects.get(pk=methodid, classname="postgresqleu.util.payment.stripe.Stripe")
     pm = method.get_implementation()
 
+    api = StripeApi(pm)
+
     sigdata = dict([v.strip().split('=') for v in sig.split(',')])
 
     sigstr = sigdata['t'] + '.' + request.body.decode('utf8', errors='ignore')
@@ -165,13 +167,14 @@ def webhook(request, methodid):
         return HttpResponse("OK")
     elif payload['type'] == 'charge.refunded':
         chargeid = payload['data']['object']['id']
-
         # There can be multiple refunds on each charge, so we have to look through all the
         # possible ones, and compare. Unfortunately, there is no notification available which
         # tells us *which one* was completed. Luckily there will never be *many* refunds on a
         # single charge.
+        resp = api.secret('charges/' + chargeid , { 'expand[]': 'refunds'})
+        charge = resp.json()
         with transaction.atomic():
-            for r in payload['data']['object']['refunds']['data']:
+            for r in charge['refunds']['data']:
                 try:
                     refund = StripeRefund.objects.get(paymentmethod=method,
                                                       chargeid=chargeid,
