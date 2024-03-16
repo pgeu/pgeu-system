@@ -266,7 +266,7 @@ def news_json(request, confname):
         providers = ProviderCache()
 
         # Only include posts that are sent to all associated accounts, otherwise we can end up generating invalid links.
-        posts = ConferenceTweetQueue.objects.filter(
+        posts = ConferenceTweetQueue.objects.defer('image', 'imagethumb').filter(
             conference=conference,
             approved=True,
             sent=True,
