@@ -421,6 +421,7 @@ if settings.ENABLE_NEWS:
         url(r'^feeds/(?P<what>(news|user/[^/]+))/$', LatestNews()),
         url(r'^feeds/conf/(?P<what>[^/]+)/$', ConferenceNewsFeed()),
         url(r'^feeds/conf/(?P<confname>[^/]+)/json/$', postgresqleu.confreg.views.news_json),
+        url(r'^feeds/conf/(?P<confname>[^/]+)/image/(?P<postid>\d+)/$', postgresqleu.confreg.views.news_post_image),
     ])
 
 if settings.ENABLE_MEMBERSHIP:

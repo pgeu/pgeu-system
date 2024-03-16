@@ -99,6 +99,19 @@ def _json_response(d):
     return HttpResponse(json.dumps(d, cls=DjangoJSONEncoder), content_type='application/json')
 
 
+def create_twitterpost_thumbnail(t):
+    # Need to generate a thumbnail here. Thumbnails are always made in PNG!
+    p = ImageFile.Parser()
+    p.feed(bytes(t.image))
+    p.close()
+    im = p.image
+    im.thumbnail((256, 256))
+    b = io.BytesIO()
+    im.save(b, "png")
+    t.imagethumb = b.getvalue()
+    t.save(update_fields=['imagethumb'])
+
+
 @csrf_exempt
 @transaction.atomic
 def volunteer_twitter(request, urlname, token):
@@ -333,16 +346,7 @@ def volunteer_twitter(request, urlname, token):
         # Get a thumbnail -- or make one if it's not there
         t = get_object_or_404(ConferenceTweetQueue, conference=conference, pk=get_int_or_error(request.GET, 'id'))
         if not t.imagethumb:
-            # Need to generate a thumbnail here. Thumbnails are always made in PNG!
-            p = ImageFile.Parser()
-            p.feed(bytes(t.image))
-            p.close()
-            im = p.image
-            im.thumbnail((256, 256))
-            b = io.BytesIO()
-            im.save(b, "png")
-            t.imagethumb = b.getvalue()
-            t.save()
+            create_twitterpost_thumbnail(t)
 
         resp = HttpResponse(content_type='image/png')
         resp.write(bytes(t.imagethumb))

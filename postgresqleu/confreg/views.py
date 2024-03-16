@@ -59,6 +59,7 @@ from .jinjapdf import render_jinja_ticket
 from .util import get_authenticated_conference, get_conference_or_404
 from .backendforms import CancelRegistrationForm, ConfirmRegistrationForm
 from .backendforms import ResendWelcomeMailForm, ResendAttachMailForm
+from .twitter import create_twitterpost_thumbnail
 
 from postgresqleu.util.request import get_int_or_error
 from postgresqleu.util.random import generate_random_token
@@ -271,11 +272,14 @@ def news_json(request, confname):
             approved=True,
             sent=True,
             datetime__lt=timezone.now(),
-        ).exclude(postids={}).order_by('-datetime')[:count]
+        ).exclude(postids={}).extra(
+            select={'hasimage': "image is not null and image != ''"}
+        ).order_by('-datetime')[:count]
 
         ret['posts'] = [{
             'id': p.id,
             'datetime': timezone.localtime(p.datetime),
+            'hasimage': p.hasimage,
             'posts': [{
                 'type': providers.get_by_id(providerid).typename,
                 'provider': providerid,
@@ -296,6 +300,32 @@ def news_json(request, confname):
 
     r['Access-Control-Allow-Origin'] = '*'
     return r
+
+
+def news_post_image(request, confname, postid):
+    posts = list(ConferenceTweetQueue.objects.defer('image').filter(
+        id=postid,
+        conference__urlname=confname,
+        approved=True,
+        sent=True,
+        datetime__lt=timezone.now(),
+    ).exclude(postids={}).extra(
+        select={'hasimage': "image is not null and image != ''"}
+    ))
+    if len(posts) != 1:
+        raise Http404()
+
+    post = posts[0]
+
+    if post.hasimage and not post.imagethumb:
+        create_twitterpost_thumbnail(post)
+
+    if not post.imagethumb:
+        raise Http404()
+
+    resp = HttpResponse(content_type='image/png')
+    resp.write(bytes(post.imagethumb))
+    return resp
 
 
 def news_index(request, confname):
