@@ -104,8 +104,8 @@ urlpatterns.extend([
     url(r'^events/(?P<confname>[^/]+)/register/other/z/$', postgresqleu.confreg.views.multireg_zeropay),
     url(r'^events/(?P<confname>[^/]+)/register/change/$', postgresqleu.confreg.views.changereg),
     url(r'^events/(?P<confname>[^/]+)/register/msgconfig/$', postgresqleu.confreg.views.reg_config_messaging),
-    url(r'^events/register/attach/([a-z0-9]{64})/$', postgresqleu.confreg.views.multireg_attach),
-    url(r'^events/register/policy/([a-z0-9]{64})/$', postgresqleu.confreg.views.regconfirmpolicy_token),
+    url(r'^events/register/attach/([a-z0-9]{64})/?$', postgresqleu.confreg.views.multireg_attach),
+    url(r'^events/register/policy/([a-z0-9]{64})/?$', postgresqleu.confreg.views.regconfirmpolicy_token),
     url(r'^events/([^/]+)/prepaid/(\d+)/$', postgresqleu.confreg.views.viewvouchers_user),
 
     url(r'^events/([^/]+)/feedback/$', postgresqleu.confreg.views.feedback),
