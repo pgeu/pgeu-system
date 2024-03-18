@@ -19,7 +19,7 @@ from postgresqleu.confreg.util import get_authenticated_conference, get_conferen
 from postgresqleu.confreg.util import reglog
 from postgresqleu.confreg.util import send_conference_notification_template
 
-from postgresqleu.util.db import exec_to_scalar, exec_to_list
+from postgresqleu.util.db import exec_to_scalar, exec_to_single_list
 from postgresqleu.util.request import get_int_or_error
 
 from .models import Wikipage, WikipageHistory, WikipageSubscriber
@@ -531,68 +531,59 @@ def signup_admin_sendmail(request, urlname, signupid):
 
     signup = get_object_or_404(Signup, conference=conference, pk=signupid)
 
+    if 'idlist' in request.GET or 'idlist' in request.POST:
+        from postgresqleu.confreg.mail import attendee_email_form
+
+        return attendee_email_form(
+            request,
+            conference,
+            breadcrumbs=[
+                ('../../', 'Signups'),
+                ('../', signup.title),
+            ],
+            template='confwiki/mail/signup_mail.txt',
+            extracontext={'signup': signup},
+        )
+
     optionstrings = signup.options.split(',')
     additional_choices = [('r_{0}'.format(r), 'Recipients who responded {0}'.format(optionstrings[r])) for r in range(len(optionstrings))]
 
     if request.method == 'POST':
-        params = {'confid': conference.id, 'signup': signup.id}
-        rr = request.POST['recipients']
-        if signup.public:
-            qq = "FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND canceledat IS NULL AND conference_id=%(confid)s"
-        else:
-            qq = "FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND canceledat IS NULL AND conference_id=%(confid)s AND (regtype_id IN (SELECT registrationtype_id FROM confwiki_signup_regtypes srt WHERE srt.signup_id=%(signup)s) OR id IN (SELECT conferenceregistration_id FROM confwiki_signup_attendees WHERE signup_id=%(signup)s))"
-
-        if rr == 'responded':
-            qq += " AND EXISTS (SELECT 1 FROM confwiki_attendeesignup was WHERE was.signup_id=%(signup)s AND was.attendee_id=r.id)"
-        elif rr == 'noresp':
-            qq += " AND NOT EXISTS (SELECT 1 FROM confwiki_attendeesignup was WHERE was.signup_id=%(signup)s AND was.attendee_id=r.id)"
-
-        elif rr.startswith('r_'):
-            optnum = int(rr[2:])
-            qq += " AND EXISTS (SELECT 1 FROM confwiki_attendeesignup was WHERE was.signup_id=%(signup)s AND was.attendee_id=r.id AND choice=%(choice)s)"
-            params['choice'] = optionstrings[optnum]
-
-        numtosend = exec_to_scalar("SELECT count(*) {0}".format(qq), params)
-
-        form = SignupSendmailForm(conference, additional_choices, data=request.POST, num=numtosend)
+        form = SignupSendmailForm(conference, additional_choices, data=request.POST)
         if form.is_valid():
-            towhat = next(v for k, v in form.recipient_choices if k == rr)
-            recipients = exec_to_list("SELECT firstname || ' ' || lastname, email {0}".format(qq), params)
-            for n, e in recipients:
-                send_simple_mail(conference.contactaddr,
-                                 e,
-                                 "[{0}] {1}".format(conference.conferencename, form.cleaned_data['subject']),
-                                 "{0}\n\nTo view the signup, please see {1}/events/{2}/register/signup/{3}-{4}/".format(
-                                     form.cleaned_data['body'],
-                                     settings.SITEBASE, conference.urlname, slugify(signup.title), signup.id),
-                                 sendername=conference.conferencename,
-                                 receivername=n)
-            send_simple_mail(conference.notifyaddr,
-                             conference.notifyaddr,
-                             'Email sent to signup {0}'.format(signup.title),
-                             """An email was sent to recipients of the signup "{0}"\nIt was sent to {1}, leading to {2} recipients.\n\nSubject:{3}\nBody:\n{4}\n""".format(
-                                 signup.title,
-                                 towhat,
-                                 numtosend,
-                                 form.cleaned_data['subject'],
-                                 form.cleaned_data['body'],
-                             ),
-                             sendername=conference.conferencename,
-            )
-            messages.info(request, "E-mail delivered to {0} recipients.".format(numtosend))
-            return HttpResponseRedirect('../')
-        else:
+            # Calculate recipients and feed forward
+            params = {'confid': conference.id, 'signup': signup.id}
+
+            rr = form.cleaned_data['recipients']
+            if signup.public:
+                qq = "FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND canceledat IS NULL AND conference_id=%(confid)s"
+            else:
+                qq = "FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND canceledat IS NULL AND conference_id=%(confid)s AND (regtype_id IN (SELECT registrationtype_id FROM confwiki_signup_regtypes srt WHERE srt.signup_id=%(signup)s) OR id IN (SELECT conferenceregistration_id FROM confwiki_signup_attendees WHERE signup_id=%(signup)s))"
+
+            if rr == 'responded':
+                qq += " AND EXISTS (SELECT 1 FROM confwiki_attendeesignup was WHERE was.signup_id=%(signup)s AND was.attendee_id=r.id)"
+            elif rr == 'noresp':
+                qq += " AND NOT EXISTS (SELECT 1 FROM confwiki_attendeesignup was WHERE was.signup_id=%(signup)s AND was.attendee_id=r.id)"
+
+            elif rr.startswith('r_'):
+                optnum = int(rr[2:])
+                qq += " AND EXISTS (SELECT 1 FROM confwiki_attendeesignup was WHERE was.signup_id=%(signup)s AND was.attendee_id=r.id AND choice=%(choice)s)"
+                params['choice'] = optionstrings[optnum]
+
+            recipients = exec_to_single_list("SELECT id {0}".format(qq), params)
             if signup.public and rr == 'all':
                 messages.warning(request, "Since this is a public signup and you are sending to all attendees, you should probably consider using regular mail send instead of signup mail send, so it gets delivered to future attendees as well!")
+            if len(recipients) == 0:
+                form.add_error('recipients', 'No recipients match this criteria')
+            else:
+                return HttpResponseRedirect('?idlist={}'.format(",".join(str(id) for id in recipients)))
     else:
         form = SignupSendmailForm(conference, additional_choices)
-        numtosend = None
 
     return render(request, 'confwiki/signup_sendmail_form.html', {
         'conference': conference,
         'form': form,
         'signup': signup,
-        'numtosend': numtosend,
         'breadcrumbs': (
             ('/events/admin/{0}/signups/'.format(conference.urlname), 'Signups'),
             ('/events/admin/{0}/signups/{1}/'.format(conference.urlname, signup.id), signup.title),

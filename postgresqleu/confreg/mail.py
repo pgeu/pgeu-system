@@ -10,7 +10,7 @@ from .util import send_conference_mail
 from .backendforms import BackendSendEmailForm
 
 
-def attendee_email_form(request, conference, query=None, breadcrumbs=[]):
+def attendee_email_form(request, conference, query=None, breadcrumbs=[], template='confreg/mail/attendee_mail.txt', extracontext={}):
     if request.method == 'POST':
         idlist = list(map(int, request.POST['idlist'].split(',')))
     else:
@@ -47,11 +47,11 @@ def attendee_email_form(request, conference, query=None, breadcrumbs=[]):
                     send_conference_mail(conference,
                                          r['email'],
                                          form.cleaned_data['subject'],
-                                         'confreg/mail/attendee_mail.txt',
+                                         template,
                                          {
                                              'body': form.cleaned_data['message'],
                                              'linkback': form.cleaned_data['storeonregpage'],
-                                         },
+                                         } | extracontext,
                                          receivername=r['fullname'],
                     )
 

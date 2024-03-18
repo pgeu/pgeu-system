@@ -1,0 +1,12 @@
+{{body}}
+
+-- 
+This message was sent to attendees of {{conference.conferencename}}.
+about the signup {{signup.title}}.
+
+To view the signup, please see
+{{sitebase}}/events/{{conference.urlname}}/register/signup/{{signup.title|slugify}}-{{signup.id}}/
+{%if linkback%}
+You can view all communications for this conference at:
+{{sitebase}}/events/{{conference.urlname}}/register/
+{%endif%}

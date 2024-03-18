@@ -60,9 +60,8 @@ those of the permitted registration types) can sign up
 ## Sending email
 
 Using the send email functionality, it is possible to send an email to
-attendees for a signup. This is a one-time email that goes to their
-mailbox but is *not* visible on the registration page after the fact
-(unlike regular [attendee emails](emails)).
+attendees for a signup. This is a one-time email that goes to the attendees
+email and is optionally stored on their registration page.
 
 For each email a subject and a body can be specified (no formatting is
 done, so make sure to put reasonable linebreaks in place, and don't
