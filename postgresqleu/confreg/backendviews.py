@@ -1,5 +1,4 @@
 from django.shortcuts import render, get_object_or_404
-from django.utils.html import escape
 from django.db import transaction, connection
 from django.db.models import Count
 from django.core.exceptions import PermissionDenied
@@ -13,7 +12,7 @@ import csv
 import json
 from collections import OrderedDict
 
-from postgresqleu.util.db import exec_to_list, exec_to_dict, exec_no_result, exec_to_scalar
+from postgresqleu.util.db import exec_to_list, exec_to_dict, exec_no_result
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.messaging import messaging_implementations, get_messaging_class
 from postgresqleu.util.messaging.util import send_reg_direct_message
@@ -55,7 +54,6 @@ from .backendforms import BackendTshirtSizeForm
 from .backendforms import BackendNewsForm
 from .backendforms import BackendTweetQueueForm, BackendHashtagForm
 from .backendforms import TweetCampaignSelectForm
-from .backendforms import BackendSendEmailForm
 from .backendforms import BackendRefundPatternForm
 from .backendforms import ConferenceInvoiceCancelForm
 from .backendforms import PurchasedVoucherRefundForm
@@ -64,6 +62,7 @@ from .backendforms import BackendMessagingForm
 from .backendforms import BackendSeriesMessagingForm
 from .backendforms import BackendRegistrationDmForm
 from .backendforms import BackendMergeSpeakerForm
+from .mail import attendee_email_form
 
 from .views import _scheduledata
 
@@ -944,98 +943,21 @@ ORDER BY name""", {'confid': conference.id})
     return writer.response
 
 
-def _attendee_email_form(request, conference, query, breadcrumbs):
-    if request.method == 'POST':
-        idlist = list(map(int, request.POST['idlist'].split(',')))
-    else:
-        if 'idlist' not in request.GET:
-            raise Http404("Mandatory parameter idlist is missing")
-        idlist = list(map(int, request.GET['idlist'].split(',')))
-
-    queryparams = {'conference': conference.id, 'idlist': idlist}
-    recipients = exec_to_dict(query, queryparams)
-
-    initial = {
-        '_from': '{0} <{1}>'.format(conference.conferencename, conference.contactaddr),
-        'recipients': escape(", ".join(['{0} <{1}>'.format(x['fullname'], x['email']) for x in recipients])),
-        'idlist': ",".join(map(str, idlist)),
-        'storeonregpage': True,
-    }
-
-    if request.method == 'POST':
-        p = request.POST.copy()
-        p['recipients'] = initial['recipients']
-        form = BackendSendEmailForm(conference, data=p, initial=initial)
-        if form.is_valid():
-            with transaction.atomic():
-                if form.cleaned_data['storeonregpage']:
-                    mailid = exec_to_scalar("INSERT INTO confreg_attendeemail (conference_id, sentat, subject, message, tocheckin, tovolunteers) VALUES (%(confid)s, CURRENT_TIMESTAMP, %(subject)s, %(message)s, false, false) RETURNING id", {
-                        'confid': conference.id,
-                        'subject': form.cleaned_data['subject'],
-                        'message': form.cleaned_data['message'],
-                    })
-                for r in recipients:
-                    send_conference_mail(conference,
-                                         r['email'],
-                                         form.cleaned_data['subject'],
-                                         'confreg/mail/attendee_mail.txt',
-                                         {
-                                             'body': form.cleaned_data['message'],
-                                             'linkback': form.cleaned_data['storeonregpage'],
-                                         },
-                                         receivername=r['fullname'],
-                    )
-
-                    if form.cleaned_data['storeonregpage']:
-                        if r['regid']:
-                            # Existing registration, so attach directly to attendee
-                            exec_no_result("INSERT INTO confreg_attendeemail_registrations (attendeemail_id, conferenceregistration_id) VALUES (%(mailid)s, %(reg)s)", {
-                                'mailid': mailid,
-                                'reg': r['regid'],
-                            })
-                        else:
-                            # No existing registration, so queue it up in case the attendee
-                            # might register later. We have the userid...
-                            exec_no_result("INSERT INTO confreg_attendeemail_pending_regs (attendeemail_id, user_id) VALUES (%(mailid)s, %(userid)s)", {
-                                'mailid': mailid,
-                                'userid': r['user_id'],
-                            })
-                if form.cleaned_data['storeonregpage']:
-                    messages.info(request, "Email sent to %s attendees, and added to their registration pages when possible" % len(recipients))
-                else:
-                    messages.info(request, "Email sent to %s attendees" % len(recipients))
-
-            return HttpResponseRedirect('../')
-    else:
-        form = BackendSendEmailForm(conference, initial=initial)
-
-    return render(request, 'confreg/admin_backend_form.html', {
-        'conference': conference,
-        'basetemplate': 'confreg/confadmin_base.html',
-        'form': form,
-        'what': 'new email',
-        'savebutton': 'Send email',
-        'cancelurl': '../',
-        'breadcrumbs': breadcrumbs,
-    })
-
-
 def registration_dashboard_send_email(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
-    return _attendee_email_form(request,
-                                conference,
-                                "SELECT id AS regid, attendee_id AS user_id, firstname || ' ' || lastname AS fullname, email FROM confreg_conferenceregistration WHERE conference_id=%(conference)s AND id=ANY(%(idlist)s)",
-                                [('../', 'Registration list'), ],
-                                )
+    return attendee_email_form(request,
+                               conference,
+                               breadcrumbs=[('../', 'Registration list'), ],
+                               )
 
 
 def conference_session_send_email(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
-    return _attendee_email_form(request,
-                                conference,
-                                """
+    return attendee_email_form(request,
+                               conference,
+                               """
 SELECT r.id AS regid, s.user_id, s.fullname, COALESCE(r.email, u.email) AS email
 FROM confreg_speaker s
 INNER JOIN auth_user u ON u.id=s.user_id
@@ -1045,8 +967,8 @@ WHERE EXISTS (
  INNER JOIN confreg_conferencesession_speaker ccs ON sess.id=ccs.conferencesession_id
  WHERE conferencesession_id=ANY(%(idlist)s) AND sess.conference_id=%(conference)s
  AND speaker_id=s.id)""",
-                                [('../', 'Conference sessions'), ],
-                                )
+                               [('../', 'Conference sessions'), ],
+                               )
 
 
 @transaction.atomic
