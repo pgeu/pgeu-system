@@ -196,6 +196,11 @@ class Plaid(BaseManagedBankPayment):
                 param['cursor'] = self.method.config['sync_cursor']
 
             r = self.session.post('{}transactions/sync'.format(self.ROOTURL), json=param)
+            if r.status_code == 400:
+                j = r.json()
+                if j['error_code'] == 'ITEM_LOGIN_REQUIRED':
+                    raise Exception("Login refresh needed for plaid account: {}".format(j['error_message']))
+
             r.raise_for_status()
 
             j = r.json()
