@@ -129,13 +129,12 @@ class SignupAdminEditSignupForm(ConcurrentProtectedModelForm):
 
 class SignupSendmailForm(forms.Form):
     _recipient_choices = [
-        ('*', '** Pick recipients of mail'),
         ('all', 'All recipieints'),
-        ('responded', 'Recipients who have responded'),
+        ('responded', 'Recipients who have responded (regardless of response)'),
         ('noresp', 'Recipients who have not responded'),
     ]
 
-    recipients = forms.ChoiceField(required=True)
+    recipients = forms.MultipleChoiceField(required=True, widget=forms.CheckboxSelectMultiple)
 
     def __init__(self, conference, additional_choices, *args, **kwargs):
         r = super(SignupSendmailForm, self).__init__(*args, **kwargs)
@@ -144,6 +143,10 @@ class SignupSendmailForm(forms.Form):
         self.fields['recipients'].choices = self.recipient_choices
 
     def clean_recipients(self):
-        if self.cleaned_data['recipients'] == '*':
-            raise ValidationError("Pick a set of recipients for this mail!")
-        return self.cleaned_data['recipients']
+        r = self.cleaned_data['recipients']
+        if 'all' in r and len(r) != 1:
+            raise ValidationError("Can't specify both all and other criteria")
+        if 'responded' in r and len(r) != 1:
+            raise ValidationError("Can't specify both responded and other criteria")
+
+        return r

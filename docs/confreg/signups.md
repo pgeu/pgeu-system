@@ -67,11 +67,14 @@ For each email a subject and a body can be specified (no formatting is
 done, so make sure to put reasonable linebreaks in place, and don't
 use markdown).
 
-The recipients can be picked to be all, all who have responded
-(regardless of which response), all who have not responded (to send
-reminders), and individually for each response. If emails should be
-sent to attendees with more than one response, the form has to be
-executed multiple time, once for each response.
+The recipients can be picked to be a combination of the different
+answers given, or whether a response has been given at all.
+
+It is also possible to speficy *all*. This only makes sense when the
+signup isn't public, as it will send the message to all current users
+on the signup but not future ones, but the permissions will apply to
+future ones. In this case, it' sbetter to send a regular attendee
+email.
 
 The emails will be sent from the main conference
 [contact address](super_conference).

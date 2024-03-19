@@ -560,18 +560,23 @@ def signup_admin_sendmail(request, urlname, signupid):
             else:
                 qq = "FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND canceledat IS NULL AND conference_id=%(confid)s AND (regtype_id IN (SELECT registrationtype_id FROM confwiki_signup_regtypes srt WHERE srt.signup_id=%(signup)s) OR id IN (SELECT conferenceregistration_id FROM confwiki_signup_attendees WHERE signup_id=%(signup)s))"
 
-            if rr == 'responded':
-                qq += " AND EXISTS (SELECT 1 FROM confwiki_attendeesignup was WHERE was.signup_id=%(signup)s AND was.attendee_id=r.id)"
-            elif rr == 'noresp':
-                qq += " AND NOT EXISTS (SELECT 1 FROM confwiki_attendeesignup was WHERE was.signup_id=%(signup)s AND was.attendee_id=r.id)"
+            quals = []
+            for r in rr:
+                if r == 'responded':
+                    quals.append("EXISTS (SELECT 1 FROM confwiki_attendeesignup was WHERE was.signup_id=%(signup)s AND was.attendee_id=r.id)")
+                elif r == 'noresp':
+                    quals.append("NOT EXISTS (SELECT 1 FROM confwiki_attendeesignup was WHERE was.signup_id=%(signup)s AND was.attendee_id=r.id)")
 
-            elif rr.startswith('r_'):
-                optnum = int(rr[2:])
-                qq += " AND EXISTS (SELECT 1 FROM confwiki_attendeesignup was WHERE was.signup_id=%(signup)s AND was.attendee_id=r.id AND choice=%(choice)s)"
-                params['choice'] = optionstrings[optnum]
+                elif r.startswith('r_'):
+                    optnum = int(r[2:])
+                    quals.append("EXISTS (SELECT 1 FROM confwiki_attendeesignup was WHERE was.signup_id=%(signup)s AND was.attendee_id=r.id AND choice=%(choice_{})s)".format(optnum))
+                    params['choice_{}'.format(optnum)] = optionstrings[optnum]
+
+            if quals:
+                qq += " AND ({})".format(" OR ".join(quals))
 
             recipients = exec_to_single_list("SELECT id {0}".format(qq), params)
-            if signup.public and rr == 'all':
+            if signup.public and 'all' in rr:
                 messages.warning(request, "Since this is a public signup and you are sending to all attendees, you should probably consider using regular mail send instead of signup mail send, so it gets delivered to future attendees as well!")
             if len(recipients) == 0:
                 form.add_error('recipients', 'No recipients match this criteria')
