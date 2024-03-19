@@ -10,18 +10,27 @@ from .util import send_conference_mail
 from .backendforms import BackendSendEmailForm
 
 
-def attendee_email_form(request, conference, query=None, breadcrumbs=[], template='confreg/mail/attendee_mail.txt', extracontext={}):
+def attendee_email_form(request, conference, query=None, breadcrumbs=[], template='confreg/mail/attendee_mail.txt', extracontext={}, strings=False):
     if request.method == 'POST':
-        idlist = list(map(int, request.POST['idlist'].split(',')))
+        if strings:
+            idlist = request.POST['idlist'].split(',')
+        else:
+            idlist = list(map(int, request.POST['idlist'].split(',')))
     else:
         if 'idlist' not in request.GET:
             raise Http404("Mandatory parameter idlist is missing")
-        idlist = list(map(int, request.GET['idlist'].split(',')))
 
-    if query is None:
-        query = "SELECT id AS regid, attendee_id AS user_id, firstname || ' ' || lastname AS fullname, email FROM confreg_conferenceregistration WHERE conference_id=%(conference)s AND id=ANY(%(idlist)s)"
+        if strings:
+            idlist = request.GET['idlist'].split(',')
+        else:
+            idlist = list(map(int, request.GET['idlist'].split(',')))
 
     queryparams = {'conference': conference.id, 'idlist': idlist}
+    if query is None:
+        query = "SELECT id AS regid, attendee_id AS user_id, firstname || ' ' || lastname AS fullname, email FROM confreg_conferenceregistration WHERE conference_id=%(conference)s AND id=ANY(%(idlist)s)"
+    elif callable(query):
+        query, queryparams = query(idlist)
+
     recipients = exec_to_dict(query, queryparams)
 
     initial = {
