@@ -77,3 +77,16 @@ do *not* trigger emails.
 New wiki pages and edits *in the backend system* will generate an
 email to the conference contact address (but not to regular attendees,
 subscribed or not).
+
+## Sending email
+
+Using the send email functionality, it is possible to send an email to
+attendees that have explicit permissions on a wiki page. This is a
+one-time email that goes to the attendees email and is optionally
+stored on their registration page.
+
+It is not possible to send an email to a public wiki page - for those,
+using a regular attendee email is better. The same applies to wiki
+pages where the permissions are set by registration type. If a page
+has both registration type and direct attendee permissions, email will
+be sent only to the direct attendees.

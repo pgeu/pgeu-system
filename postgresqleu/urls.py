@@ -230,6 +230,7 @@ urlpatterns.extend([
     url(r'^events/admin/(\w+)/waitlist/sendmail/$', postgresqleu.confreg.views.admin_waitlist_sendmail),
     url(r'^events/admin/(\w+)/wiki/$', postgresqleu.confwiki.views.admin),
     url(r'^events/admin/(\w+)/wiki/(new|\d+)/$', postgresqleu.confwiki.views.admin_edit_page),
+    url(r'^events/admin/(\w+)/wiki/(\d+)/sendmail/$', postgresqleu.confwiki.views.admin_sendmail),
     url(r'^events/admin/(\w+)/signups/$', postgresqleu.confwiki.views.signup_admin),
     url(r'^events/admin/(\w+)/signups/(new|\d+)/$', postgresqleu.confwiki.views.signup_admin_edit),
     url(r'^events/admin/(\w+)/signups/(\d+)/sendmail/$', postgresqleu.confwiki.views.signup_admin_sendmail),

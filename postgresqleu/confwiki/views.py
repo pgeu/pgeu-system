@@ -18,6 +18,7 @@ from postgresqleu.confreg.util import render_conference_response
 from postgresqleu.confreg.util import get_authenticated_conference, get_conference_or_404
 from postgresqleu.confreg.util import reglog
 from postgresqleu.confreg.util import send_conference_notification_template
+from postgresqleu.confreg.mail import attendee_email_form
 
 from postgresqleu.util.db import exec_to_scalar, exec_to_list
 from postgresqleu.util.request import get_int_or_error
@@ -297,6 +298,36 @@ def admin_edit_page(request, urlname, pageid):
     })
 
 
+@transaction.atomic
+def admin_sendmail(request, urlname, pageid):
+    conference = get_authenticated_conference(request, urlname)
+
+    page = get_object_or_404(Wikipage, conference=conference, pk=pageid)
+
+    if 'idlist' in request.GET or 'idlist' in request.POST:
+        return attendee_email_form(
+            request,
+            conference,
+            breadcrumbs=[
+                ('../../', 'Wiki pages'),
+                ('../', page.title),
+            ],
+        )
+
+    if page.publicview:
+        messages.error(request, "Cannot send wiki page email to public pages. Use regular attendee emails instead.")
+        return HttpResponseRedirect("../")
+
+    if page.viewer_regtype.exists():
+        if page.viewer_attendee.exists():
+            messages.warning(request, "Will not send wiki page emails based on regtype, only direct attendees. Use regular attendee emails to send to regtypes!")
+        else:
+            messages.error(request, "Cannot send wiki page email to pages with regtype permissions. Use regular attendee emails instead.")
+            return HttpResponseRedirect("../")
+
+    return HttpResponseRedirect("?idlist={}".format(",".join([str(r.id) for r in page.viewer_attendee.all()])))
+
+
 @login_required
 @transaction.atomic
 def signup(request, urlname, signupid):
@@ -563,8 +594,6 @@ def signup_admin_sendmail(request, urlname, signupid):
     optionstrings = signup.options.split(',')
 
     if 'idlist' in request.GET or 'idlist' in request.POST:
-        from postgresqleu.confreg.mail import attendee_email_form
-
         def _get_query(idlist):
             return _get_signup_email_query(signup, idlist, optionstrings)
 
