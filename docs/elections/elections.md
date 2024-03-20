@@ -18,6 +18,10 @@ End date
 Slots
 : Number of people who can be voted in in the election
 
+Introduction text
+: An introduction text to show under the headline *Information* on the
+election form page. Markdown can be used in this field.
+
 Election active
 : If this election is active. If this is not enabled, there will be
 no voting (regardless of dates), the results will never be published,

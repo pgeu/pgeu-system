@@ -1,4 +1,5 @@
 {%extends "nav_account.html"%}
+{%load pgmarkdown%}
 {%block title%}Elections{%endblock%}
 {%block content%}
 <h1>Elections</h1>
@@ -13,6 +14,12 @@ prefer <i>the least</i>.
 You can click a candidates name for more information about this candidate.
 </p>
 
+{%if election.intro%}
+<h2>Information</h2>
+{{ election.intro | markdown }}
+{%endif%}
+
+<h2>Your votes</h2>
 {%if form.errors%}
 <p>
 <b>NOTE!</b> Your submitted form contained errors and has <b>not</b> been saved!
@@ -25,7 +32,6 @@ You can click a candidates name for more information about this candidate.
 </p>
 {%endif%}
 
-<h2>Your votes</h2>
 <p>
 {%if form.votes %}
 Your votes have been cast, and the values below indicate what you voted. You can

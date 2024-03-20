@@ -42,7 +42,8 @@ class BackendElectionForm(BackendForm):
     linked_objects = OrderedDict({
         'candidates': ElectionCandidateManager(),
     })
+    markdown_fields = ['intro', ]
 
     class Meta:
         model = Election
-        fields = ['name', 'startdate', 'enddate', 'slots', 'isactive', 'resultspublic', ]
+        fields = ['name', 'startdate', 'enddate', 'slots', 'intro', 'isactive', 'resultspublic', ]

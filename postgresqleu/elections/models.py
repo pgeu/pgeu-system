@@ -10,6 +10,7 @@ class Election(models.Model):
     slots = models.IntegerField(null=False, default=1)
     isactive = models.BooleanField(null=False, default=False, verbose_name='Election active')
     resultspublic = models.BooleanField(null=False, default=False, verbose_name='Results public')
+    intro = models.TextField(null=False, blank=True, verbose_name="Introduction text")
 
     def __str__(self):
         return self.name
