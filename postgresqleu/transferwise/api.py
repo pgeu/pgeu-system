@@ -103,10 +103,20 @@ class TransferwiseApi(object):
 
     def get_account(self):
         if not self.account:
-            try:
-                self.account = next((a for a in self.get('borderless-accounts', {'profileId': self.get_profile()}) if a['balances'][0]['currency'] == settings.CURRENCY_ABBREV))
-            except Exception as e:
-                raise Exception("Failed to get account: {}".format(e))
+            for a in self.get('borderless-accounts', {'profileId': self.get_profile()}):
+                # Each account has multiple currencies, so we look for the first one that
+                # has our currency somewhere.
+                for b in a['balances']:
+                    if b['currency'] == settings.CURRENCY_ABBREV:
+                        self.account = a
+                        break
+
+                if self.account:
+                    # If we found our currency on this account, use it
+                    break
+
+            if not self.account:
+                raise Exception("Failed to identify account based on currency")
         return self.account
 
     def get_balance(self):
