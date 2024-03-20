@@ -20,7 +20,7 @@ Slots
 
 Introduction text
 : An introduction text to show under the headline *Information* on the
-election form page. Markdown can be used in this field.
+election form page and on the election results page.
 
 Election active
 : If this election is active. If this is not enabled, there will be
