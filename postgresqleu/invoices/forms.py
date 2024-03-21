@@ -3,6 +3,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.forms import ValidationError
 from django.forms import widgets
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.conf import settings
 
 from postgresqleu.util.widgets import HtmlDateInput
@@ -44,7 +45,7 @@ class InvoiceForm(forms.ModelForm):
         self.fields['allowedmethods'].queryset = InvoicePaymentMethod.objects.filter()
         self.fields['allowedmethods'].label_from_instance = lambda x: "{0}{1}".format(x.internaldescription, x.active and " " or " (INACTIVE)")
 
-        self.fields['accounting_account'].choices = [(0, '----'), ] + [(a.num, "%s: %s" % (a.num, a.name)) for a in Account.objects.filter(availableforinvoicing=True)]
+        self.fields['accounting_account'].choices = [(0, '----'), ] + [(a.num, "%s: %s" % (a.num, a.name)) for a in Account.objects.filter(Q(availableforinvoicing=True) | Q(num=self.instance.accounting_account))]
         self.fields['accounting_object'].choices = [('', '----'), ] + [(o.name, o.name) for o in Object.objects.filter(active=True)]
 
         if self.instance.finalized:
