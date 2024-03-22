@@ -765,7 +765,7 @@ class SendExternalEmailForm(forms.Form):
             self.data = self.data.copy()
             self.data['sendername'] = self.conference.conferencename
 
-        addresses = set(a for a in [conference.contactaddr, conference.sponsoraddr, conference.notifyaddr, conference.contractsenderemail] if a)
+        addresses = set(a for a in [conference.contactaddr, conference.sponsoraddr, conference.notifyaddr] if a)
         self.fields['sender'].choices = [(a, a) for a in sorted(addresses)]
 
         if not (self.data.get('subject') and self.data.get('message')):
