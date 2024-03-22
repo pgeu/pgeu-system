@@ -196,6 +196,7 @@ urlpatterns.extend([
     url(r'^events/admin/(\w+)/lookups/tags/$', postgresqleu.confreg.backendlookups.SessionTagLookup.lookup),
     url(r'^events/admin/(\w+)/mail/$', postgresqleu.confreg.views.admin_attendeemail),
     url(r'^events/admin/(\w+)/mail/(\d+)/$', postgresqleu.confreg.views.admin_attendeemail_view),
+    url(r'^events/admin/(\w+)/externalmail/$', postgresqleu.confreg.views.admin_send_external_email),
     url(r'^events/admin/(\w+)/regdashboard/$', postgresqleu.confreg.views.admin_registration_dashboard),
     url(r'^events/admin/(\w+)/regdashboard/list/$', postgresqleu.confreg.views.admin_registration_list),
     url(r'^events/admin/(\w+)/regdashboard/list/(\d+)/$', postgresqleu.confreg.views.admin_registration_single),

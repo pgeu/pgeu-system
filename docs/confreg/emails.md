@@ -98,6 +98,17 @@ Emails can (obviously) not be edited after they've been sent.
 Emails sent using this functionality is *not* subject to opt-out
 settings, so be careful to only use for active or recent events!
 
+## External email <a name="external"></a>
+
+External emails are emails sent from the conference address(es) to
+recipients who are (not yet?) registered for the conference. This
+allows sending to arbitrary email addresses, from a selectino of all
+the pre-configured addresses on the conference. The sender name will
+always be set to the name of the conference.
+
+Since these emails are sent to non-existing attendees, they are not
+stored in the system.
+
 ## Cross conference email <a name="crossconference"></a>
 
 Cross conference emails are different from attendee emails in that

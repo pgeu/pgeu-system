@@ -745,6 +745,37 @@ class AttendeeMailForm(forms.ModelForm):
             raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")
 
 
+class SendExternalEmailForm(forms.Form):
+    sendername = forms.CharField(required=False, widget=StaticTextWidget(), label="Sender name")
+    sender = forms.ChoiceField()
+    recipient = forms.EmailField()
+    recipientname = forms.CharField(label="Recipient name")
+    subject = forms.CharField(max_length=100)
+    message = forms.CharField(widget=EmailTextWidget)
+    confirm = forms.BooleanField(label="Confirm", required=False)
+
+    def __init__(self, conference, *args, **kwargs):
+        self.conference = conference
+        super().__init__(*args, **kwargs)
+
+        # We want to show a sendername field to make it clear to the user what it will be,
+        # even if it cannot be changed.
+        self.fields['sendername'].initial = self.conference.conferencename
+        if self.data:
+            self.data = self.data.copy()
+            self.data['sendername'] = self.conference.conferencename
+
+        addresses = set(a for a in [conference.contactaddr, conference.sponsoraddr, conference.notifyaddr, conference.contractsenderemail] if a)
+        self.fields['sender'].choices = [(a, a) for a in sorted(addresses)]
+
+        if not (self.data.get('subject') and self.data.get('message')):
+            del self.fields['confirm']
+
+    def clean_confirm(self):
+        if not self.cleaned_data['confirm']:
+            raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")
+
+
 class WaitlistOfferForm(forms.Form):
     hours = forms.IntegerField(min_value=1, max_value=240, label='Offer valid for (hours)', initial=48)
     until = forms.DateTimeField(label='Offer valid until', initial=(timezone.now() + timedelta(hours=48)).strftime('%Y-%m-%d %H:%M'))

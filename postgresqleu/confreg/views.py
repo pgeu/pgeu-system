@@ -40,6 +40,7 @@ from .forms import CallForPapersForm
 from .forms import CallForPapersCopyForm, PrepaidCreateForm
 from .forms import CrossConferenceMailForm
 from .forms import AttendeeMailForm, WaitlistOfferForm, WaitlistConfirmForm, WaitlistSendmailForm, TransferRegForm
+from .forms import SendExternalEmailForm
 from .forms import NewMultiRegForm, MultiRegInvoiceForm
 from .forms import SessionSlidesUrlForm, SessionSlidesFileForm
 from .util import render_conference_response
@@ -4384,6 +4385,54 @@ def admin_attendeemail_view(request, urlname, mailid):
         'breadcrumbs': (('/events/admin/{0}/mail/'.format(conference.urlname), 'Attendee emails'), ),
         'helplink': 'emails',
         })
+
+
+@transaction.atomic
+def admin_send_external_email(request, urlname):
+    conference = get_authenticated_conference(request, urlname)
+
+    if request.method == 'POST':
+        form = SendExternalEmailForm(conference, data=request.POST)
+        if form.is_valid():
+            send_conference_mail(
+                conference,
+                form.cleaned_data['recipient'],
+                form.cleaned_data['subject'],
+                'confreg/mail/external_mail.txt',
+                {
+                    'body': form.cleaned_data['message'],
+                },
+                sender=form.cleaned_data['sender'],
+                receivername=form.cleaned_data['recipientname'],
+            )
+
+            send_conference_notification(
+                conference,
+                'External email sent',
+                "User {} sent an external email with subject \"{}\" to {} with the content:\n\n{}\n".format(
+                    request.user.username,
+                    form.cleaned_data['subject'],
+                    form.cleaned_data['recipient'],
+                    form.cleaned_data['message'],
+                ),
+            )
+
+            messages.info(request, "Email sent to {}.".format(form.cleaned_data['recipient']))
+
+            return HttpResponseRedirect('../')
+    else:
+        form = SendExternalEmailForm(conference)
+
+    return render(request, 'confreg/admin_backend_form.html', {
+        'basetemplate': 'confreg/confadmin_base.html',
+        'conference': conference,
+        'form': form,
+        'helplink': 'emails#external',
+        'whatverb': 'Send',
+        'what': 'external email',
+        'savebutton': 'Send email',
+        'cancelurl': '../',
+    })
 
 
 @transaction.atomic
