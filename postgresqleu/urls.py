@@ -119,7 +119,7 @@ urlpatterns.extend([
     url(r'^events/(?P<confname>[^/]+)/(?P<section>schedule|sessions)/session/(?P<sessionid>\d+)(?P<slug>-[^/]*)?/$', postgresqleu.confreg.views.session),
     url(r'^events/([^/]+)/sessions/session/(\d+)(?:-[^/]*)?/slides/(\d+)/.*$', postgresqleu.confreg.views.session_slides),
     url(r'^events/([^/]+)/sessions/session/(\d+)(?:-[^/]*)?/card\.(svg|png)$', postgresqleu.confreg.views.session_card),
-    url(r'^events/([^/]+)/schedule/speaker/(\d+)(?:-[^/].*)?/$', postgresqleu.confreg.views.speaker),
+    url(r'^events/([^/]+)/schedule/speaker/(\d+)(?:-[^/]*)?/$', postgresqleu.confreg.views.speaker),
     url(r'^events/([^/]+)/sessions/speaker/(\d+)(?:-[^/]*)?/$', postgresqleu.confreg.views.speaker),
     url(r'^events/([^/]+)/sessions/speaker/(\d+)(?:-[^/]*)?/card\.(svg|png)$', postgresqleu.confreg.views.speaker_card),
     url(r'^events/(?P<urlname>[^/]+)/volunteer/$', postgresqleu.confreg.volsched.volunteerschedule),
