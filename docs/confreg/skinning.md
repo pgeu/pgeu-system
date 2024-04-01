@@ -52,8 +52,8 @@ extrahead
   can insert e.g. css. By default it should be empty.
 
 pagescript
-: This block must be declared either inside the &lt;head&gt; or the &lt;body&gt;,
-  but must be *after* jquery is loaded. This is where the pages will
+: This block must be declared either inside the &lt;head&gt; or the &lt;body&gt;.
+  This is where the pages will
   insert local javascript. By default it should be empty.
 
 content
