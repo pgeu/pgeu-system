@@ -385,6 +385,14 @@ Claim prompt
 :  A n optional popup prompt that will be shown to the user when
    claiming the benefit.
 
+Claim deadline
+:  An optional deadline for the benefit. This will be listed on the
+   dashboard of the sponsor, and past this time it will no longer
+   be possible for the sponsor to claim this benefit (a conference
+   admin can still override). Full timestamp including both date
+   and time is specified, and the timezone will be assumed to always
+   be the conference timezone.
+
 Autoconfirm
 :  Indicates if this benefit should automatically confirm as soon as
    the sponsor has claimed it (checked box) or if it shuld require the

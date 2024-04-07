@@ -113,7 +113,7 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
 
     @property
     def fieldsets(self):
-        basefields = ['benefitname', 'benefit_class_name', 'benefitdescription', 'sortkey', 'claimprompt']
+        basefields = ['benefitname', 'benefit_class_name', 'benefitdescription', 'sortkey', 'claimprompt', 'deadline']
         if self.can_autoconfirm:
             basefields.append('autoconfirm')
 
@@ -132,7 +132,7 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
     class Meta:
         model = SponsorshipBenefit
         fields = ['benefitname', 'benefitdescription', 'sortkey',
-                  'claimprompt', 'tweet_template', 'benefit_class_name', 'autoconfirm']
+                  'claimprompt', 'deadline', 'tweet_template', 'benefit_class_name', 'autoconfirm']
 
     _can_autoconfirm = None
 

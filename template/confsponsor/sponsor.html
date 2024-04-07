@@ -93,12 +93,22 @@ Click on the benefit in the list below to claim them or turn them down:
 <div class="sponsorbenefitlist">
 {%for b in unclaimedbenefits%}
  <details>
-   <summary>{{b}}</summary>
+   <summary>{{b}}{%if b.deadline%} - <em>{% if b.expired %}expired at{% else %}must be claimed before{% endif %} {{ b.deadline }}</em>{% endif %}</summary>
    <div class="sponsorbenefitdescription">
      {{b.benefitdescription|default:"No description"|markdown}}
      <p>
-{% if is_past and not is_admin %}The conference is in the past, so benefits can no longer be claimed.
-{% else %}
+{% if is_past and not is_admin %}
+       The conference is in the past, so benefits can no longer be claimed.
+{ %elif b.expired and not is_admin %}
+       This benefit expired on at {{ b.deadline }} ({{conference.tzname}}) and can no longer be claimed.
+{% else %} {# not expired, not in the past, or admin #}
+ {% if is_admin %}
+  {% if is_past %}This conference is in the past, but as an admin you can override and claim benefits anyway.
+  {% elif b.expired %}This benefit has expired, but as an admin you can override and claim benefits anyway.
+  {% endif %}
+     </p>
+     <p>
+  {% endif %}{# admin #}
        <a class="btn btn-primary" href="claim/{{b.id}}/">Claim / Turn down benefit</a>
 {% endif %}
      </p>

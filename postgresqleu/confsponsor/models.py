@@ -88,6 +88,7 @@ class SponsorshipBenefit(models.Model):
     sortkey = models.PositiveIntegerField(null=False, blank=False, default=100, verbose_name="Sort key")
     benefitdescription = models.TextField(null=False, blank=True, verbose_name="Benefit description")
     claimprompt = models.TextField(null=False, blank=True, verbose_name="Claim prompt")
+    deadline = models.DateTimeField(null=True, blank=True, verbose_name="Claim deadline")
     autoconfirm = models.BooleanField(null=False, blank=False, default=False,
                                       verbose_name="Automatically confirm",
                                       help_text="Automatically confirm this benefit when it's claimed")
@@ -97,6 +98,12 @@ class SponsorshipBenefit(models.Model):
 
     def __str__(self):
         return self.benefitname
+
+    @property
+    def expired(self):
+        if self.deadline:
+            return self.deadline < timezone.now()
+        return False
 
     class Meta:
         ordering = ('sortkey', 'benefitname', )

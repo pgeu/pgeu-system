@@ -559,6 +559,10 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
         messages.error(request, "The conference is in the past, benefits can no longer be claimed.")
         return HttpResponseRedirect("/events/sponsor/%s/" % sponsor.id)
 
+    if benefit.expired and not is_admin:
+        messages.error(request, "This benefit has expired and can no longer be claimed.")
+        return HttpResponseRedirect("/events/sponsor/%s/" % sponsor.id)
+
     # Find the actual type of benefit this is, so we know what to do about it
     benefitclass = get_benefit_class(benefit.benefit_class)(benefit.level, benefit.class_parameters)
 
