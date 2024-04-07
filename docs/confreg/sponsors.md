@@ -382,7 +382,7 @@ Sort key
    numbers sorting first in the list.
 
 Claim prompt
-:  A n optional popup prompt that will be shown to the user when
+:  An optional popup prompt that will be shown to the user when
    claiming the benefit.
 
 Claim deadline
