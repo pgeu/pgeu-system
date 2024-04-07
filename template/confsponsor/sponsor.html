@@ -97,7 +97,10 @@ Click on the benefit in the list below to claim them or turn them down:
    <div class="sponsorbenefitdescription">
      {{b.benefitdescription|default:"No description"|markdown}}
      <p>
+{% if is_past and not is_admin %}The conference is in the past, so benefits can no longer be claimed.
+{% else %}
        <a class="btn btn-primary" href="claim/{{b.id}}/">Claim / Turn down benefit</a>
+{% endif %}
      </p>
    </div>
  </details>

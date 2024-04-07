@@ -90,6 +90,8 @@ def _get_sponsor_and_admin(sponsorid, request, onlyconfirmed=True):
 def sponsor_conference(request, sponsorid):
     sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request, False)
 
+    is_past = sponsor.conference.enddate < today_global()
+
     unclaimedbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=False).exclude(sponsorclaimedbenefit__sponsor=sponsor)
     claimedbenefits = SponsorClaimedBenefit.objects.select_related('sponsor', 'claimedby').prefetch_related('benefit').filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey')
     noclaimbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=True)
@@ -121,6 +123,7 @@ def sponsor_conference(request, sponsorid):
     return render(request, 'confsponsor/sponsor.html', {
         'conference': sponsor.conference,
         'sponsor': sponsor,
+        'is_past': is_past,
         'unclaimedbenefits': unclaimedbenefits,
         'claimedbenefits': claimedbenefits,
         'noclaimbenefits': noclaimbenefits,
@@ -550,6 +553,12 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
         messages.warning(request, "Benefit has already been claimed")
         return HttpResponseRedirect("/events/sponsor/%s/" % sponsor.id)
 
+    is_past = sponsor.conference.enddate < today_global()
+    if is_past and not is_admin:
+        # We are past the end of the conference, don't allow sponsors to claim anymore (but admins can override)
+        messages.error(request, "The conference is in the past, benefits can no longer be claimed.")
+        return HttpResponseRedirect("/events/sponsor/%s/" % sponsor.id)
+
     # Find the actual type of benefit this is, so we know what to do about it
     benefitclass = get_benefit_class(benefit.benefit_class)(benefit.level, benefit.class_parameters)
 
@@ -602,6 +611,7 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
         'benefit': benefit,
         'form': form,
         'savebutton': 'Claim!',
+        'is_past': is_past,
         })
 
 

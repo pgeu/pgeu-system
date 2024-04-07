@@ -31,6 +31,10 @@ Please fill out this form to claim the benefit.
 </div>
 {%endif%}
 
+{%if is_past %}
+<div class="alert alert-danger">This conference is in the past! As an admin you can override, but should you really be claiming a benefit?</div>
+{%endif%}
+
 <form method="post" action="." enctype="multipart/form-data" class="pgeuform">{% csrf_token %}
 {%include "forms/form_content.html" %}
 </form>
