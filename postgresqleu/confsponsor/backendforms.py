@@ -123,6 +123,7 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
 
         return [
             {'id': 'base', 'legend': 'Base', 'fields': basefields},
+            {'id': 'overview', 'legend': 'Overview', 'fields': ['overview_name', 'overview_value']},
             {'id': 'marketing', 'legend': 'Marketing', 'fields': ['tweet_template', ]},
             {'id': 'params', 'legend': 'Parameters', 'fields': self.class_param_fields},
         ]
@@ -136,7 +137,8 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
     class Meta:
         model = SponsorshipBenefit
         fields = ['benefitname', 'benefitdescription', 'sortkey', 'maxclaims',
-                  'claimprompt', 'deadline', 'tweet_template', 'benefit_class_name', 'autoconfirm']
+                  'claimprompt', 'deadline', 'tweet_template', 'benefit_class_name', 'autoconfirm',
+                  'overview_name', 'overview_value']
 
     _can_multiclaim = None
     _can_autoconfirm = None

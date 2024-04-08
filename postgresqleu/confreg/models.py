@@ -1480,6 +1480,7 @@ AccessTokenPermissions = (
     ('sponsors', 'Sponsors and counts'),
     ('addopts', 'Additional options and counts'),
     ('schedule', 'Schedule JSON'),
+    ('sponsorlevels', 'Sponsor level metadata'),
 )
 
 

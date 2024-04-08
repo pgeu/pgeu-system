@@ -39,6 +39,7 @@ from .models import MessagingProvider
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.confsponsor.util import get_sponsor_dashboard_data
+from postgresqleu.confsponsor.util import sponsorleveldata
 from postgresqleu.confsponsor.models import PurchasedVoucher, Sponsor
 
 from .backendforms import BackendConferenceForm, BackendSuperConferenceForm, BackendRegistrationForm
@@ -63,6 +64,7 @@ from .backendforms import BackendSeriesMessagingForm
 from .backendforms import BackendRegistrationDmForm
 from .backendforms import BackendMergeSpeakerForm
 from .mail import attendee_email_form
+from .contextutil import has_yaml
 
 from .views import _scheduledata
 
@@ -866,6 +868,31 @@ class JsonWriter(object):
         return r
 
 
+class YamlWriter(JsonWriter):
+    def __init__(self):
+        super().__init__()
+
+    @property
+    def response(self):
+        import yaml
+        r = HttpResponse(yaml.dump(self.d), content_type='application/yaml')
+        r['Access-Control-Allow-Origin'] = '*'
+        return r
+
+
+def _structured_tokendata(tokendata, dataformat):
+    if dataformat == 'json':
+        return HttpResponse(json.dumps(tokendata,
+                                       cls=JsonSerializer,
+                                       indent=2),
+                            content_type='application/json')
+    elif dataformat == 'yaml':
+        import yaml
+        return HttpResponse(yaml.dump(tokendata),
+                            content_type='application/yaml')
+    raise Http404()
+
+
 def tokendata(request, urlname, token, datatype, dataformat):
     conference = get_conference_or_404(urlname)
     if not AccessToken.objects.filter(conference=conference, token=token, permissions__contains=[datatype, ]).exists():
@@ -877,6 +904,10 @@ def tokendata(request, urlname, token, datatype, dataformat):
         writer = DelimitedWriter(delimiter="\t")
     elif dataformat.lower() == 'json':
         writer = JsonWriter()
+    elif dataformat.lower() == 'yaml':
+        if not has_yaml:
+            raise Http404("YAML not supported on this server")
+        writer = YamlWriter()
     else:
         raise Http404()
 
@@ -931,12 +962,9 @@ FROM direct
 LEFT JOIN pending ON direct.id=pending.id
 ORDER BY name""", {'confid': conference.id})
     elif datatype == 'schedule':
-        if dataformat != 'json':
-            raise Http404()
-        return HttpResponse(json.dumps(_scheduledata(request, conference),
-                                       cls=JsonSerializer,
-                                       indent=2),
-                            content_type='application/json')
+        return _structured_tokendata(_scheduledata(request, conference), dataformat)
+    elif datatype == 'sponsorlevels':
+        return _structured_tokendata(sponsorleveldata(conference), dataformat)
     else:
         raise Http404()
 

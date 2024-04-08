@@ -406,6 +406,20 @@ Automatically confirm
    the sponsor has claimed it (checked box) or if it shuld require the
    organisers to explicitly confirm the benefit (unchecked box).
 
+Name in overview
+:  The name used in the *overview* data. This is not currently used on
+   the site anywhere, but is available as a tokenized download to be
+   used in frontend skins. The overview data is grouped by this name,
+   and it's used to create a connection between similar benefits at
+   different levels.
+
+Value in overview
+:  By default, the value from *Max number of claims* (or 1 if changing
+   it is not supported on the benefit) is used as value in the
+   overview data. If a value is specified in this field, it will be
+   used instead. A typical example can be `Large` vs `Small` on a logo
+   benefit.
+
 Tweet template
 :  A template, in jinja2 format, used to generate tweets when this
 benefit is confirmed. If left empty, no tweet is posted. The format

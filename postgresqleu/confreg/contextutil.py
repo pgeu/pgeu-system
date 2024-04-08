@@ -8,9 +8,9 @@ from postgresqleu.util.context_processors import settings_context
 
 try:
     import yaml
-    _has_yaml = True
+    has_yaml = True
 except ImportError:
-    _has_yaml = False
+    has_yaml = False
 
 
 # XXX: keep in sync with deploystatic.py!
@@ -50,7 +50,7 @@ def load_base_context(rootdir):
     c = {}
     if os.path.isfile(os.path.join(rootdir, 'templates/context.json')):
         deep_update_context(c, _load_context_file(os.path.join(rootdir, 'templates/context.json')))
-    if _has_yaml and os.path.isfile(os.path.join(rootdir, 'templates/context.yaml')):
+    if has_yaml and os.path.isfile(os.path.join(rootdir, 'templates/context.yaml')):
         deep_update_context(c, _load_context_file(os.path.join(rootdir, 'templates/context.yaml')))
     return c
 
@@ -60,7 +60,7 @@ def load_override_context(rootdir):
     c = {}
     if os.path.isdir(os.path.join(rootdir, 'templates/context.override.d')):
         for fn in sorted(os.listdir(os.path.join(rootdir, 'templates/context.override.d'))):
-            if fn.endswith('.json') or (_has_yaml and fn.endswith('.yaml')):
+            if fn.endswith('.json') or (has_yaml and fn.endswith('.yaml')):
                 try:
                     deep_update_context(c, _load_context_file(os.path.join(rootdir, 'templates/context.override.d', fn), False))
                 except Exception as e:

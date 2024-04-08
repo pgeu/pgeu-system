@@ -60,6 +60,7 @@ from postgresqleu.confreg.backendlookups import RegisteredUsersLookup, SpeakerLo
 from postgresqleu.confreg.campaigns import allcampaigns
 from postgresqleu.confreg.twitter import get_all_conference_social_media
 from postgresqleu.confreg.regtypes import validate_special_reg_type_setup
+from postgresqleu.confreg.contextutil import has_yaml
 
 
 class BackendConferenceForm(BackendForm):
@@ -1368,12 +1369,15 @@ class BackendAccessTokenForm(BackendForm):
         fields = ['token', 'description', 'permissions', ]
 
     def _transformed_accesstoken_permissions(self):
+        yamllist = ['yaml'] if has_yaml else []
         for k, v in AccessTokenPermissions:
             baseurl = '/events/admin/{0}/tokendata/{1}/{2}'.format(self.conference.urlname, self.instance.token, k)
-            if k != 'schedule':
-                formats = ['csv', 'tsv', 'json', ]
+            if k == 'schedule':
+                formats = ['json', ] + yamllist
+            elif k == 'sponsorlevels':
+                formats = ['json'] + yamllist
             else:
-                formats = ['json', ]
+                formats = ['csv', 'tsv', 'json', ] + yamllist
             yield k, mark_safe('{0} ({1})'.format(v, ", ".join(['<a href="{0}.{1}">{1}</a>'.format(baseurl, f) for f in formats])))
 
     def fix_fields(self):
