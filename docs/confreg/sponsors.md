@@ -393,7 +393,8 @@ Claim deadline
    and time is specified, and the timezone will be assumed to always
    be the conference timezone.
 
-Autoconfirm
+
+Automatically confirm
 :  Indicates if this benefit should automatically confirm as soon as
    the sponsor has claimed it (checked box) or if it shuld require the
    organisers to explicitly confirm the benefit (unchecked box).
