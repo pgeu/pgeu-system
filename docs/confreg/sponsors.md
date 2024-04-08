@@ -393,6 +393,13 @@ Claim deadline
    and time is specified, and the timezone will be assumed to always
    be the conference timezone.
 
+Max number of claims
+:  The number of times this benefit can be claimed, per sponsor. The
+   normal value is 1, but if set higher the benefit can be claimed
+   multiple times with different data. Typical examples can be "two
+   sessions in a sponsor track" or "two pages to print". Not all
+   benefit classes support multiple claims - this field is only
+   available if the selected class does.
 
 Automatically confirm
 :  Indicates if this benefit should automatically confirm as soon as

@@ -1,6 +1,7 @@
 {%extends "nav_events.html" %}
 {%load pgmarkdown%}
 {%load formutil%}
+{%load miscutil%}
 {%block title%}Conference Sponsorship - {{sponsor.conference}}{%endblock%}
 {%block content%}
 <h1>Conference Sponsorship - {{sponsor.conference}}</h1>
@@ -93,7 +94,7 @@ Click on the benefit in the list below to claim them or turn them down:
 <div class="sponsorbenefitlist">
 {%for b in unclaimedbenefits%}
  <details>
-   <summary>{{b}}{%if b.deadline%} - <em>{% if b.expired %}expired at{% else %}must be claimed before{% endif %} {{ b.deadline }}</em>{% endif %}</summary>
+   <summary>{{b}}{%if b.maxclaims > 1 and b.count_claims > 0 %} ({{b.maxclaims|subtract:b.count_claims}}/{{b.maxclaims}} remaining){%endif%}{%if b.deadline%} - <em>{% if b.expired %}expired at{% else %}must be claimed before{% endif %} {{ b.deadline }}</em>{% endif %}</summary>
    <div class="sponsorbenefitdescription">
      {{b.benefitdescription|default:"No description"|markdown}}
      <p>

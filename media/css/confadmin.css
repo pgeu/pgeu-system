@@ -330,3 +330,7 @@ div.sponsorclaimhtml {
     padding: 0.2rem;
     margin-bottom: 0.4rem;
 }
+
+span.sponsormatrixlabel {
+    line-height: 1.9;
+}

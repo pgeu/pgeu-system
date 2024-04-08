@@ -18,6 +18,8 @@ class BadgeScanningForm(BaseBenefitForm):
 
 
 class BadgeScanning(BaseBenefit):
+    can_multiclaim = False
+
     @classmethod
     def get_backend_form(self):
         return BackendSponsorshipLevelBenefitForm

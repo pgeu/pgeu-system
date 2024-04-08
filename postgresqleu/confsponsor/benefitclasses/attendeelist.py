@@ -22,6 +22,8 @@ class AttendeeListForm(BaseBenefitForm):
 
 
 class AttendeeList(BaseBenefit):
+    can_multiclaim = False
+
     @classmethod
     def get_backend_form(self):
         return BackendSponsorshipLevelBenefitForm

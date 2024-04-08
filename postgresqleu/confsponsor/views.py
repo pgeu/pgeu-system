@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidde
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
 from django.db import transaction, connection
-from django.db.models import Q
+from django.db.models import Q, F, Count
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -23,6 +23,7 @@ from postgresqleu.confreg.util import get_authenticated_conference, get_conferen
 from postgresqleu.confreg.util import send_conference_mail
 from postgresqleu.confreg.twitter import post_conference_social, render_multiprovider_tweet
 from postgresqleu.confreg.twitter import get_all_conference_social_media
+from postgresqleu.util.db import exec_no_result
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.request import get_int_or_error
@@ -96,8 +97,8 @@ def sponsor_conference(request, sponsorid):
 
     is_past = sponsor.conference.enddate < today_global()
 
-    unclaimedbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=False).exclude(sponsorclaimedbenefit__sponsor=sponsor)
-    claimedbenefits = SponsorClaimedBenefit.objects.select_related('sponsor', 'claimedby').prefetch_related('benefit').filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey')
+    unclaimedbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=False).annotate(count_claims=Count('sponsorclaimedbenefit', filter=Q(sponsorclaimedbenefit__sponsor=sponsor))).filter(count_claims__lt=F('maxclaims'))
+    claimedbenefits = SponsorClaimedBenefit.objects.select_related('sponsor', 'claimedby').prefetch_related('benefit').filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey', 'benefit__name', 'claimnum')
     noclaimbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=True)
     mails = get_mails_for_sponsor(sponsor).defer('message')
     vouchers = PrepaidVoucher.objects.filter(batch__sponsor=sponsor)
@@ -542,7 +543,7 @@ def sponsor_signup(request, confurlname, levelurlname):
 @transaction.atomic
 def sponsor_claim_benefit(request, sponsorid, benefitid):
     sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
-    benefit = get_object_or_404(SponsorshipBenefit, id=benefitid, level=sponsor.level)
+    benefit = get_object_or_404(SponsorshipBenefit.objects.annotate(count_claims=Count('sponsorclaimedbenefit', filter=Q(sponsorclaimedbenefit__sponsor=sponsor))), id=benefitid, level=sponsor.level)
 
     if not sponsor.confirmed:
         # Should not happen
@@ -552,8 +553,9 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
         messages.warning(request, "Benefit does not require claiming")
         return HttpResponseRedirect("/events/sponsor/%s/" % sponsor.id)
 
-    # Let's see if it's already claimed
-    if SponsorClaimedBenefit.objects.filter(sponsor=sponsor, benefit=benefit).exists():
+    # Check if all instances have already been claimed
+    already_count = SponsorClaimedBenefit.objects.filter(sponsor=sponsor, benefit=benefit).count()
+    if already_count >= benefit.maxclaims:
         messages.warning(request, "Benefit has already been claimed")
         return HttpResponseRedirect("/events/sponsor/%s/" % sponsor.id)
 
@@ -576,15 +578,26 @@ def sponsor_claim_benefit(request, sponsorid, benefitid):
     if request.method == 'POST':
         form = formclass(benefit, sponsor, request.POST, request.FILES)
         if form.is_valid():
-            # Always create a new claim here - we might support editing an existing one
-            # sometime in the future, but not yet...
-            claim = SponsorClaimedBenefit(sponsor=sponsor, benefit=benefit, claimedat=timezone.now(), claimedby=request.user, claimjson={})
+            # At this point we need to re-count the number of claims in case this executed in parallel. And we do so with
+            # a SELECT FOR UPDATE lock on the benefit itself.
+            benefit = SponsorshipBenefit.objects.select_for_update().get(id=benefitid, level=sponsor.level)
+            # And then we re-count with the lock
+            already_count = SponsorClaimedBenefit.objects.filter(sponsor=sponsor, benefit=benefit).count()
+            if already_count >= benefit.maxclaims:
+                messages.error(request, "Concurrent update, please try again")
+                return HttpResponseRedirect("/events/sponsor/%s/" % sponsor.id)
+
+            claim = SponsorClaimedBenefit(sponsor=sponsor, benefit=benefit, claimedat=timezone.now(), claimedby=request.user, claimnum=already_count + 1, claimjson={})
             claim.save()  # generate an id
 
             if not benefitclass.save_form(form, claim, request):
                 # False from save_form means the benefit was declined
                 claim.declined = True
                 claim.confirmed = True
+                # If this is a multiclaim benefit, we may need to create a few extra declines
+                for i in range(benefit.maxclaims - already_count - 1):
+                    SponsorClaimedBenefit(sponsor=sponsor, benefit=benefit, claimedat=timezone.now(), claimedby=request.user, claimjson={},
+                                          confirmed=True, declined=True, claimnum=already_count + 1 + i + 1).save()
             elif benefit.autoconfirm and benefitclass.can_autoconfirm:
                 benefitclass.process_confirm(claim)
                 claim.confirmed = True
@@ -896,20 +909,22 @@ def sponsor_admin_dashboard(request, confurlname):
     confirmed_sponsors = Sponsor.objects.select_related('invoice', 'level').filter(conference=conference, confirmed=True).order_by('-level__levelcost', 'confirmedat')
     unconfirmed_sponsors = Sponsor.objects.select_related('invoice', 'level', 'contract').filter(conference=conference, confirmed=False).order_by('-level__levelcost', 'name')
 
-    unconfirmed_benefits = SponsorClaimedBenefit.objects.filter(sponsor__conference=conference, confirmed=False).order_by('-sponsor__level__levelcost', 'sponsor', 'benefit__sortkey')
+    unconfirmed_benefits = SponsorClaimedBenefit.objects.filter(sponsor__conference=conference, confirmed=False).order_by('-sponsor__level__levelcost', 'sponsor', 'benefit__sortkey', 'benefit__name', 'claimnum')
 
     mails = SponsorMail.objects.prefetch_related('levels', 'sponsors').defer('message').filter(conference=conference)
 
     # Maybe we could do this with the ORM based on data we already have, but SQL is easier
     curs = connection.cursor()
     curs.execute("""
-SELECT l.levelname, s.name, b.benefitname,
-       CASE WHEN scb.declined='t' THEN 1 WHEN scb.confirmed='f' THEN 2 WHEN scb.confirmed='t' THEN 3 ELSE 0 END AS status
+SELECT l.levelname, s.name, b.benefitname, array_agg(
+    CASE WHEN scb.declined='t' THEN 1 WHEN scb.confirmed='f' THEN 2 WHEN scb.confirmed='t' THEN 3 ELSE 0 END
+    ) AS status
 FROM confsponsor_sponsor s
 INNER JOIN confsponsor_sponsorshiplevel l ON s.level_id=l.id
 INNER JOIN confsponsor_sponsorshipbenefit b ON b.level_id=l.id
 LEFT JOIN confsponsor_sponsorclaimedbenefit scb ON scb.sponsor_id=s.id AND scb.benefit_id=b.id
 WHERE b.benefit_class IS NOT NULL AND s.confirmed AND s.conference_id=%(confid)s
+GROUP BY l.id, s.id, b.id
 ORDER BY l.levelcost DESC, l.levelname, s.name, b.sortkey, b.benefitname""", {'confid': conference.id})
     benefitmatrix = OrderedDict()
     currentlevel = None
@@ -1015,7 +1030,8 @@ def _unclaim_benefit(request, claimed_benefit):
     reason = request.POST.get('unclaimreason', '')
 
     with transaction.atomic():
-        benefit = claimed_benefit.benefit
+        # Get a SELECT FOR UPDATE lock on the benefit to not count things wrong if there is a concurrent claim
+        benefit = SponsorshipBenefit.objects.select_for_update().get(pk=claimed_benefit.benefit.pk)
         sponsor = claimed_benefit.sponsor
         conference = sponsor.conference
         benefitclass = get_benefit_class(benefit.benefit_class)(benefit.level, benefit.class_parameters)
@@ -1029,6 +1045,11 @@ def _unclaim_benefit(request, claimed_benefit):
         if claimed_benefit.confirmed:
             benefitclass.process_unclaim(claimed_benefit)
         claimed_benefit.delete()
+        # If this was a multiclaim we will need to renumber the existing ones
+        exec_no_result("WITH  t AS (SELECT id, row_number() OVER (ORDER BY claimnum) AS r FROM confsponsor_sponsorclaimedbenefit WHERE benefit_id=%(bid)s) UPDATE confsponsor_sponsorclaimedbenefit SET claimnum=r FROM t WHERE confsponsor_sponsorclaimedbenefit.id=t.id", {
+            'bid': benefit.pk,
+        })
+
         messages.info(request, "Benefit {0} for {1} unclaimed.".format(benefit, sponsor))
 
         send_sponsor_manager_email(
@@ -1147,8 +1168,8 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
         # Any other POST we don't know what it is
         return HttpResponseRedirect(".")
 
-    unclaimedbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=False).exclude(sponsorclaimedbenefit__sponsor=sponsor)
-    claimedbenefits = SponsorClaimedBenefit.objects.filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey')
+    unclaimedbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=False).annotate(count_claims=Count('sponsorclaimedbenefit', filter=Q(sponsorclaimedbenefit__sponsor=sponsor))).filter(count_claims__lt=F('maxclaims'))
+    claimedbenefits = SponsorClaimedBenefit.objects.filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey', 'benefit__name', 'claimnum')
     noclaimbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=True)
 
     for b in claimedbenefits:

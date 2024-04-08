@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.functional import cached_property
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.validators import MinValueValidator
 from django.contrib.auth.models import User
 from django.utils import timezone
 
@@ -88,6 +89,9 @@ class SponsorshipBenefit(models.Model):
     sortkey = models.PositiveIntegerField(null=False, blank=False, default=100, verbose_name="Sort key")
     benefitdescription = models.TextField(null=False, blank=True, verbose_name="Benefit description")
     claimprompt = models.TextField(null=False, blank=True, verbose_name="Claim prompt")
+    maxclaims = models.IntegerField(null=False, blank=False, default=1, verbose_name="Max number of claims",
+                                    help_text="Maximum number of times this benefit can be claimed",
+                                    validators=[MinValueValidator(1)])
     deadline = models.DateTimeField(null=True, blank=True, verbose_name="Claim deadline")
     autoconfirm = models.BooleanField(null=False, blank=False, default=False,
                                       verbose_name="Automatically confirm",
@@ -152,12 +156,19 @@ class SponsorClaimedBenefit(models.Model):
     benefit = models.ForeignKey(SponsorshipBenefit, null=False, blank=False, on_delete=models.CASCADE)
     claimedat = models.DateTimeField(null=False, blank=False)
     claimedby = models.ForeignKey(User, null=False, blank=False, on_delete=models.CASCADE)
+    claimnum = models.IntegerField(null=False, blank=False, default=1)
     declined = models.BooleanField(null=False, blank=False, default=False)
     claimjson = models.JSONField(blank=True, null=False)
     confirmed = models.BooleanField(null=False, blank=False, default=False)
 
     class Meta:
-        unique_together = (('sponsor', 'benefit'),)
+        constraints = [
+            models.UniqueConstraint(
+                name='uniq_sponsor_benefit_num',
+                fields=('sponsor', 'benefit', 'claimnum'),
+                deferrable=models.Deferrable.DEFERRED,  # This constraint must be deferred so we can renumber the claimnum entry
+            )
+        ]
 
 
 class SponsorMail(models.Model):

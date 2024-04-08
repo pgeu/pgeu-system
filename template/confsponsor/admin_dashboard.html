@@ -168,12 +168,17 @@ This matrix gives a quick overview of the status of the different benefits for e
  </tr>
 {%for r in level.matrix%}
  <tr>
- {%for b in r%}<td>
+ {%for bb in r%}<td>
+{%if forloop.first%}{{b}}{%else%}{# First in loop holds sponsor name, for the rest we have potentially several labels to show #}
+{%for b in bb%}
 {%if b == 0%}
-{%elif b == 1%}<span class="label label-danger">Declined</span>
-{%elif b == 2%}<span class="label label-info">Claimed</span>
-{%elif b == 3%}<span class="label label-success">Confirmed</span>
-{%else%}{{b}}{%endif%}
+{%elif b == 1%}<span class="label label-danger sponsormatrixlabel">Declined</span>
+{%elif b == 2%}<span class="label label-info sponsormatrixlabel">Claimed</span>
+{%elif b == 3%}<span class="label label-success sponsormatrixlabel">Confirmed</span>
+{%elif b == 4%}<span class="label label-warning sponsormatrixlabel" title="Some instances are not claiemd or a mix of claim and decline">Partial</span>
+{%else%}{{b}}{%endif%}<br/>
+{%endfor%}
+{%endif%}
 </td>{%endfor%}
  </tr>
 {%endfor%}

@@ -37,6 +37,8 @@ class EntryVouchersBackendForm(BackendSponsorshipLevelBenefitForm):
 
 
 class EntryVouchers(BaseBenefit):
+    can_multiclaim = False
+
     @classmethod
     def get_backend_form(self):
         return EntryVouchersBackendForm

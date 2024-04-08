@@ -3,6 +3,7 @@ from django import forms
 
 class BaseBenefit(object):
     can_autoconfirm = True
+    can_multiclaim = True
 
     def __init__(self, level, params):
         self.level = level

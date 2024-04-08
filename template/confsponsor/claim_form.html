@@ -1,5 +1,6 @@
 {%extends "nav_events.html" %}
 {%load pgmarkdown%}
+{%load miscutil%}
 {%block title%}Conference Benefit Claim - {{conference}}{%endblock%}
 {%block extrahead%}
 <style>
@@ -23,6 +24,10 @@ div.benefitClaimPrompt {
 <h2>Claim benefit</h2>
 <p>
 Please fill out this form to claim the benefit.
+{%if benefit.maxclaims > 1 %}
+This benefit can be claimed {{benefit.maxclaims}} times.
+{%if benefit.count_claims > 0 %}You have already claimed it {{benefit.count_claims}} time{{benefit.count_claims|pluralize}}, leaving {{benefit.maxclaims|subtract:benefit.count_claims}} claim{{benefit.maxclaims|subtract:benefit.count_claims|pluralize}} left.{%endif%}
+{%endif%}
 </p>
 
 {%if benefit.claimprompt%}

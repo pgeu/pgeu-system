@@ -24,3 +24,8 @@ def stripnewline(value):
 @register.filter(name='jsonstruct')
 def jsonstruct(value):
     return mark_safe(json.dumps(value))
+
+
+@register.filter(name='subtract')
+def subtract(value, arg):
+    return value - arg

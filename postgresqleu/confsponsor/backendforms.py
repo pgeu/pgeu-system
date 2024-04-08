@@ -5,6 +5,7 @@ from django.conf import settings
 from collections import OrderedDict
 import json
 
+from postgresqleu.util.db import exec_to_scalar
 from postgresqleu.util.widgets import StaticTextWidget
 from postgresqleu.util.widgets import MonospaceTextarea
 from postgresqleu.util.backendforms import BackendForm, BackendBeforeNewForm
@@ -115,6 +116,8 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
     @property
     def fieldsets(self):
         basefields = ['benefitname', 'benefit_class_name', 'benefitdescription', 'sortkey', 'claimprompt', 'deadline']
+        if self.can_multiclaim:
+            basefields.append('maxclaims')
         if self.can_autoconfirm:
             basefields.append('autoconfirm')
 
@@ -132,9 +135,10 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
 
     class Meta:
         model = SponsorshipBenefit
-        fields = ['benefitname', 'benefitdescription', 'sortkey',
+        fields = ['benefitname', 'benefitdescription', 'sortkey', 'maxclaims',
                   'claimprompt', 'deadline', 'tweet_template', 'benefit_class_name', 'autoconfirm']
 
+    _can_multiclaim = None
     _can_autoconfirm = None
 
     @property
@@ -142,6 +146,28 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
         if self._can_autoconfirm is None and self.instance.benefit_class is not None:
             self._can_autoconfirm = get_benefit_class(self.instance.benefit_class).can_autoconfirm
         return self._can_autoconfirm
+
+    @property
+    def can_multiclaim(self):
+        if self._can_multiclaim is None and self.instance.benefit_class is not None:
+            self._can_multiclaim = get_benefit_class(self.instance.benefit_class).can_multiclaim
+        return self._can_multiclaim
+
+    def clean_maxclaims(self):
+        if not self.can_multiclaim:
+            return
+
+        if not self.instance.pk:
+            return self.cleaned_data['maxclaims']
+
+        # Count the max number of claims a single sponsor has made
+        already_claimed = exec_to_scalar("SELECT count(*) FROM confsponsor_sponsorclaimedbenefit WHERE benefit_id=%(bid)s GROUP BY sponsor_id ORDER BY 1 DESC LIMIT 1", {
+            'bid': self.instance.pk,
+        })
+        if self.cleaned_data['maxclaims'] < (already_claimed or 0):
+            raise ValidationError("There is already a sponsor that has claimed this benefit {} times, cannot adjust to a value below that.".format(already_claimed))
+
+        return self.cleaned_data['maxclaims']
 
     def fix_fields(self):
         if self.newformdata:
@@ -163,6 +189,10 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
             }),
         ]
         self.fields['tweet_template'].widget = MonospaceTextarea()
+
+        if not self.can_multiclaim:
+            del self.fields['maxclaims']
+            self.update_protected_fields()
 
         if not self.can_autoconfirm:
             del self.fields['autoconfirm']

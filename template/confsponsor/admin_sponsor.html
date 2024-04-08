@@ -1,5 +1,6 @@
 {%extends "confreg/confadmin_base.html" %}
 {%load pgmarkdown%}
+{%load miscutil%}
 {%block title%}Conference Sponsorship - {{sponsor}}{%endblock%}
 {%block layoutblock%}
 <h1>Conference Sponsorship - {{sponsor}}</h1>
@@ -54,7 +55,7 @@
 <div class="sponsorbenefitlist">
 {%for b in unclaimedbenefits%}
   <details>
-    <summary>{{b}}</summary>
+    <summary>{{b}}{%if b.maxclaims > 1 and b.count_claims > 0 %} ({{b.maxclaims|subtract:b.count_claims}}/{{b.maxclaims}} remaining){%endif%}</summary>
     <div class="sponsorbenefitdescription">
 	{{b.benefitdescription|markdown|default:"No description"}}
     </div>
