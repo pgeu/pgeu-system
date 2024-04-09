@@ -106,6 +106,7 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
     dynamic_preview_fields = ['tweet_template']
     form_before_new = BackendSponsorshipNewBenefitForm
     readonly_fields = ['benefit_class_name', ]
+    exclude_date_validators = ['deadline', ]
 
     class_param_fields = []  # Overridden in subclass!
 
