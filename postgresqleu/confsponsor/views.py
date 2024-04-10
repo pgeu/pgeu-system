@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden, Http404
+from django.http import HttpResponseNotModified
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
 from django.db import transaction, connection
@@ -1437,9 +1438,23 @@ def sponsor_admin_imageview(request, benefitid):
     # the image itself.
     storage = InlineEncodedStorage('benefit_image')
 
+    # If there is an if-none-match header, it's almost certain this will be a 304 since
+    # these files never change. So if it is, query just for the hash - and in the unlikely
+    # case, we re-query for the data.
+    if 'If-None-Match' in request.headers:
+        hashval = storage.get_tag(benefit.id)
+        if hashval is None:
+            return Http404()
+        if request.headers['If-None-Match'] == '"{}"'.format(hashval):
+            return HttpResponseNotModified()
+
     # XXX: do we need to support non-png at some point? store info in claimdata!
+    hashval, data = storage.read(benefit.id)
+    if hashval is None and data is None:
+        raise Http404()
     resp = HttpResponse(content_type='image/png')
-    resp.write(storage.read(benefit.id))
+    resp['ETag'] = '"{}"'.format(hashval)
+    resp.write(data)
     return resp
 
 
