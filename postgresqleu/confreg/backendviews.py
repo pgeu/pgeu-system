@@ -39,7 +39,7 @@ from .models import MessagingProvider
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.confsponsor.util import get_sponsor_dashboard_data
-from postgresqleu.confsponsor.util import sponsorleveldata
+from postgresqleu.confsponsor.util import sponsorleveldata, sponsorclaimsdata, sponsorclaimsfile
 from postgresqleu.confsponsor.models import PurchasedVoucher, Sponsor
 
 from .backendforms import BackendConferenceForm, BackendSuperConferenceForm, BackendRegistrationForm
@@ -893,10 +893,13 @@ def _structured_tokendata(tokendata, dataformat):
     raise Http404()
 
 
-def tokendata(request, urlname, token, datatype, dataformat):
+def tokendata(request, urlname, token, datatype, dataformat, subrequest=None):
     conference = get_conference_or_404(urlname)
     if not AccessToken.objects.filter(conference=conference, token=token, permissions__contains=[datatype, ]).exists():
         raise Http404()
+
+    if subrequest is not None and datatype not in ('sponsorclaims'):
+        raise Http404()  # Only sponsorclaims have subrequests for now:
 
     if dataformat.lower() == 'csv':
         writer = DelimitedWriter(delimiter=",")
@@ -965,6 +968,11 @@ ORDER BY name""", {'confid': conference.id})
         return _structured_tokendata(_scheduledata(request, conference), dataformat)
     elif datatype == 'sponsorlevels':
         return _structured_tokendata(sponsorleveldata(conference), dataformat)
+    elif datatype == 'sponsorclaims':
+        if subrequest is not None:
+            return sponsorclaimsfile(conference, subrequest.lstrip('/'))
+        else:
+            return _structured_tokendata(sponsorclaimsdata(conference), dataformat)
     else:
         raise Http404()
 

@@ -276,7 +276,7 @@ urlpatterns.extend([
     url(r'^events/admin/([^/]+)/talkvote/vote/$', postgresqleu.confreg.views.talkvote_vote),
     url(r'^events/admin/([^/]+)/talkvote/comment/$', postgresqleu.confreg.views.talkvote_comment),
 
-    url(r'^events/admin/(\w+)/tokendata/([a-z0-9]{64})/(\w+)\.(tsv|csv|json|yaml)$', postgresqleu.confreg.backendviews.tokendata),
+    url(r'^events/admin/(\w+)/tokendata/([a-z0-9]{64})/(\w+)\.(tsv|csv|json|yaml)(/[^/]+)?$', postgresqleu.confreg.backendviews.tokendata),
 
     url(r'^events/sponsor/', include('postgresqleu.confsponsor.urls')),
 

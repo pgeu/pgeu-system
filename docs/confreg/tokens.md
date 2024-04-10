@@ -29,3 +29,10 @@ Permissions
 this token. For each access type it will also have a csv (comma
 separated), tsv (tab separated) and json values link that includes the
 token. (More formats may be added in the future).
+
+### Attached files
+
+Some token URLs, in particular the sponsor claimed benefits one, also
+supports attached files. In this case, append the return suburl from
+the system (that is in the file behind the normal token link) to the
+end of the URL and make a separate request for that.

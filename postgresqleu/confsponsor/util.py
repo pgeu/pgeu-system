@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from django.conf import settings
 
 from postgresqleu.util.db import exec_to_list
@@ -6,7 +7,11 @@ from postgresqleu.util.currency import format_currency
 from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.confreg.util import send_conference_mail, send_conference_simple_mail
 from postgresqleu.confsponsor.models import SponsorMail
+from postgresqleu.confsponsor.models import Sponsor
 from postgresqleu.confsponsor.models import SponsorshipLevel
+from postgresqleu.confsponsor.models import SponsorClaimedBenefit
+from postgresqleu.confsponsor.benefits import get_benefit_class
+from postgresqleu.confsponsor.benefitclasses import all_benefits
 
 
 def get_sponsor_dashboard_data(conference):
@@ -62,6 +67,53 @@ ORDER BY 1""", {
             for b in overviewdata
         ]
     }
+
+
+def sponsorclaimsdata(conference):
+    return {
+        'sponsors': {
+            'bylevel': [
+                {
+                    'name': lvl.levelname,
+                    # We return sponsors including signup and confirmation time here so they can easily
+                    # be (re)sorted if needed.
+                    'sponsors': [
+                        {
+                            'name': s.displayname,
+                            'confirmedat': s.confirmedat,
+                            'signedupat': s.signupat
+                        } for s in lvl.sponsor_set.filter(confirmed=True)
+                    ],
+                } for lvl in SponsorshipLevel.objects.filter(conference=conference)],
+            'sponsors': {
+                s.displayname: {
+                    'name': s.displayname,
+                    'url': s.url,
+                    'social': s.social,
+                    'level': s.level.levelname,
+                    'signedupat': s.signupat,
+                    'confirmedat': s.confirmedat,
+                    'benefits': [
+                        {
+                            'name': b.benefit.benefitname,
+                            'confirmed': b.confirmed,
+                            'class': all_benefits[b.benefit.benefit_class]['class'],
+                            'claim': get_benefit_class(b.benefit.benefit_class)(s.level, b.benefit.class_parameters).get_claimdata(b),
+                        } for b in s.sponsorclaimedbenefit_set.select_related('benefit').filter(declined=False)
+                    ]
+                } for s in Sponsor.objects.select_related('level').filter(conference=conference, confirmed=True)}
+        }
+    }
+
+
+def sponsorclaimsfile(conference, claimid):
+    b = get_object_or_404(
+        SponsorClaimedBenefit.objects.select_related('benefit', 'sponsor').
+        only('id', 'benefit__benefit_class', 'benefit__class_parameters', 'sponsor__id'),
+        sponsor__conference=conference, sponsor__confirmed=True, pk=claimid, declined=False,
+    )
+
+    return get_benefit_class(b.benefit.benefit_class)(b.sponsor.level, b.benefit.class_parameters).get_claimfile(b)
 
 
 def send_conference_sponsor_notification(conference, subject, message):

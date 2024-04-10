@@ -78,5 +78,8 @@ class ProvideText(BaseBenefit):
     def render_claimdata(self, claimedbenefit, isadmin):
         return claimedbenefit.claimjson.get('text', '')
 
+    def get_claimdata(self, claimedbenefit):
+        return claimedbenefit.claimjson.get('text', '')
+
     def render_reportinfo(self, claimedbenefit):
         return claimedbenefit.claimjson.get('text', '')

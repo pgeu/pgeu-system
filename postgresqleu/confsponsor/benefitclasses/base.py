@@ -1,4 +1,5 @@
 from django import forms
+from django.http import Http404
 
 
 class BaseBenefit(object):
@@ -11,6 +12,12 @@ class BaseBenefit(object):
 
     def render_claimdata(self, claimedbenefit, isadmin):
         return ''
+
+    def get_claimdata(self, claimedbenefit):
+        return {}
+
+    def get_claimfile(self, claimedbenefit):
+        raise Http404()
 
     def render_reportinfo(self, claimedbenefit):
         return ''

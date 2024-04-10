@@ -145,6 +145,21 @@ class SponsorSession(BaseBenefit):
             ) + s
         return s
 
+    def get_claimdata(self, claimedbenefit):
+        d = {
+            'title': claimedbenefit.claimjson['title'],
+            'abstract': claimedbenefit.claimjson['abstract'],
+            'speaker': {
+                'name': claimedbenefit.claimjson['speakername'],
+                'company': claimedbenefit.claimjson['speakercompany'],
+                'bio': claimedbenefit.claimjson['speakerbio'],
+            },
+        }
+        if 'session' in claimedbenefit.claimjson:
+            d['sessionid'] = claimedbenefit.claimjson['session']
+            d['speaker']['speakerid'] = claimedbenefit.claimjson['speaker']
+        return d
+
     def render_reportinfo(self, claimedbenefit):
         if 'session' in claimedbenefit.claimjson:
             session = speaker = ""

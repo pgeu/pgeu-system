@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.http import HttpResponse
 
 from PIL import ImageFile
 
@@ -94,3 +95,20 @@ class ImageUpload(BaseBenefit):
     def render_claimdata(self, claimedbenefit, isadmin):
         # We don't use the datafield, just the id
         return 'Uploaded image: <img src="/events/sponsor/admin/imageview/%s/" />' % claimedbenefit.id
+
+    def get_claimdata(self, claimedbenefit):
+        return {
+            'image': {
+                'suburl': '/{}'.format(claimedbenefit.id),
+                'tag': InlineEncodedStorage('benefit_image').get_tag(claimedbenefit.id),
+            },
+        }
+
+    def get_claimfile(self, claimedbenefit):
+        hashval, data = InlineEncodedStorage('benefit_image').read(claimedbenefit.id)
+        if hashval is None and data is None:
+            raise Http404()
+        resp = HttpResponse(content_type='image/png')
+        resp['ETag'] = '"{}"'.format(hashval)
+        resp.write(data)
+        return resp

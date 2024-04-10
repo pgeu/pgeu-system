@@ -128,6 +128,12 @@ class EntryVouchers(BaseBenefit):
         s.write("</table>")
         return s.getvalue()
 
+    def get_claimdata(self, claimedbenefit):
+        return {
+            'total': claimedbenefit.claimjson.get('numvouchers', 0),
+            'used': PrepaidVoucher.objects.filter(batch=claimedbenefit.claimjson['batchid'], user__isnull=False).count(),
+        }
+
     def render_reportinfo(self, claimedbenefit):
         if claimedbenefit.claimjson['batchid'] == 0:
             return ''
