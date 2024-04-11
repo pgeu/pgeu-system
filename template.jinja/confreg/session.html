@@ -26,6 +26,16 @@
 {{session.abstract|markdown}}
 </p>
 
+{% if show_video_link and session.videolinks %}
+  <h2>Video</h2>
+  <p>This session has been made available on:</p>
+  <ul>
+  {% if session.videolinks['youtube'] %}
+    <li><span class="fa-li"><i class="fab fa-youtube"></i></span><a href="https://www.youtube.com/watch?v={{ session.videolinks['youtube'] }}">YouTube</a>
+  {% endif %}
+  </ul>
+{% endif %}
+
 {%if slides%}
 <h2>Slides</h2>
 <p>
