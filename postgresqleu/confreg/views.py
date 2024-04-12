@@ -3228,7 +3228,7 @@ def reports(request, confname):
             if f not in conference.dynafields.split(','):
                 raise Http404("Unknown field specified")
 
-            rids = list(map(int, request.POST['rids'].split(',')))
+            rids = list(map(int, request.POST['rids'].split(','))) if request.POST['rids'] else []
             if request.POST['dynasetvalue'] != '':
                 exec_no_result("UPDATE confreg_conferenceregistration SET dynaprops = dynaprops || jsonb_build_object(%(fieldname)s, %(fieldval)s) WHERE conference_id=%(confid)s AND id=ANY(%(rids)s)", {
                     'rids': rids,
