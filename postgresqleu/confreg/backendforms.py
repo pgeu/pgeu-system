@@ -748,6 +748,7 @@ class ConferenceSessionSlideForm(BackendForm):
     helplink = 'callforpapers#slides'
     exclude_fields_from_validation = ['content', ]
     formnote = 'Either enter an URL or upload a PDF file (not both)'
+    maxnamelen = ConferenceSessionSlides._meta.get_field('name').max_length
 
     class Meta:
         model = ConferenceSessionSlides
@@ -774,8 +775,10 @@ class ConferenceSessionSlideForm(BackendForm):
             self.add_error('content', 'Must either specify URL or upload PDF')
 
         if url:
-            self.override_name = url[:100]
+            self.override_name = url[:self.maxnamelen]
         else:
+            if len(self.override_filename) > self.maxnamelen:
+                self.add_error('content', 'Filename cannot be longer than {} characters'.format(self.maxnamelen))
             self.override_name = self.override_filename
 
         return d

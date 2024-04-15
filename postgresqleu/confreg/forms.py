@@ -13,6 +13,7 @@ from .models import Conference
 from .models import ConferenceRegistration, RegistrationType, Speaker
 from .models import ConferenceAdditionalOption, Track, RegistrationClass
 from .models import ConferenceSession, ConferenceSessionFeedback, ConferenceSessionTag
+from .models import ConferenceSessionSlides
 from .models import PrepaidVoucher, DiscountCode, AttendeeMail
 from .models import PRIMARY_SPEAKER_PHOTO_RESOLUTION
 
@@ -646,12 +647,17 @@ class SessionSlidesFileForm(forms.Form):
         if not self.cleaned_data.get('f', None):
             return
         f = self.cleaned_data['f']
+
+        maxnamelen = ConferenceSessionSlides._meta.get_field('name').max_length
+        if len(f.name) > maxnamelen:
+            raise ValidationError("Filenames can't be longer than {} characters.".format(maxnamelen))
+        if not f.name.endswith('.pdf'):
+            raise ValidationError("Uploaded files must have a filename ending in PDF")
+
         mtype = magicdb.buffer(f.read())
         if not mtype.startswith('application/pdf'):
             raise ValidationError("Uploaded files must be mime type PDF only, not %s" % mtype)
         f.seek(0)
-        if not f.name.endswith('.pdf'):
-            raise ValidationError("Uploaded files must have a filename ending in PDF")
         return f
 
     def clean(self):
