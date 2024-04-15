@@ -74,6 +74,10 @@ def _get_sponsor_and_admin(sponsorid, request, onlyconfirmed=True):
         sponsor = get_object_or_404(Sponsor.objects.select_related('level'), id=sponsorid)
     else:
         sponsor = get_object_or_404(Sponsor.objects.select_related('level'), id=sponsorid, confirmed=True)
+
+    # Must activate the timezone for this sponsor since we're not using get_conference_or_404()
+    timezone.activate(sponsor.conference.tzname)
+
     if not sponsor.managers.filter(pk=request.user.id).exists():
         if request.user.is_superuser:
             return sponsor, True
