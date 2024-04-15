@@ -774,7 +774,7 @@ class ConferenceSessionSlideForm(BackendForm):
             self.add_error('content', 'Must either specify URL or upload PDF')
 
         if url:
-            self.override_name = url
+            self.override_name = url[:100]
         else:
             self.override_name = self.override_filename
 
