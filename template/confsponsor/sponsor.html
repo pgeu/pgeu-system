@@ -100,7 +100,7 @@ Click on the benefit in the list below to claim them or turn them down:
      <p>
 {% if is_past and not is_admin %}
        The conference is in the past, so benefits can no longer be claimed.
-{ %elif b.expired and not is_admin %}
+{% elif b.expired and not is_admin %}
        This benefit expired on at {{ b.deadline }} ({{conference.tzname}}) and can no longer be claimed.
 {% else %} {# not expired, not in the past, or admin #}
  {% if is_admin %}
