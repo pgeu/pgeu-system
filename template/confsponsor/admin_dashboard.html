@@ -169,7 +169,7 @@ This matrix gives a quick overview of the status of the different benefits for e
 {%for r in level.matrix%}
  <tr>
  {%for bb in r%}<td>
-{%if forloop.first%}{{b}}{%else%}{# First in loop holds sponsor name, for the rest we have potentially several labels to show #}
+{%if forloop.first%}{{bb}}{%else%}{# First in loop holds sponsor name, for the rest we have potentially several labels to show #}
 {%for b in bb%}
 {%if b == 0%}
 {%elif b == 1%}<span class="label label-danger sponsormatrixlabel">Declined</span>
