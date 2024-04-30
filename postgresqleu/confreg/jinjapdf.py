@@ -40,7 +40,7 @@ def get_color(col):
     elif isinstance(col, list):
         return colors.Color(*[x / 255.0 for x in col])
     else:
-        raise Exception("Unknown color defintion type")
+        raise Exception("Unknown color definition type")
 
 
 def getmm(struct, key):
