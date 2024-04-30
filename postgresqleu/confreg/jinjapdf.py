@@ -79,10 +79,10 @@ class JinjaFlowable(Flowable):
         if 'fill' in o:
             self.canv.setFillColor(get_color(o['fill']))
             fill = 1
-        if 'stroke' in o and o['stroke'] != False:
+        if 'stroke' in o and o['stroke'] is not False:
             stroke = 1
-            if o['stroke'] == True or o['stroke'] == '1':
-                self.canv.setStrokeColorRGB(0,0,0)
+            if o['stroke'] is True or o['stroke'] == '1':
+                self.canv.setStrokeColorRGB(0, 0, 0)
             else:
                 self.canv.setStrokeColor(get_color(o['stroke']))
         self.canv.circle(getmm(o, 'x'),
@@ -97,10 +97,10 @@ class JinjaFlowable(Flowable):
         if 'fill' in o:
             self.canv.setFillColor(get_color(o['fill']))
             fill = 1
-        if 'stroke' in o and o['stroke'] != False:
+        if 'stroke' in o and o['stroke'] is not False:
             stroke = 1
-            if o['stroke'] == True or o['stroke'] == '1':
-                self.canv.setStrokeColorRGB(0,0,0)
+            if o['stroke'] is True or o['stroke'] == '1':
+                self.canv.setStrokeColorRGB(0, 0, 0)
             else:
                 self.canv.setStrokeColor(get_color(o['stroke']))
         self.canv.rect(getmm(o, 'x'),
