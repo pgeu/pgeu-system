@@ -79,9 +79,12 @@ class JinjaFlowable(Flowable):
         if 'fill' in o:
             self.canv.setFillColor(get_color(o['fill']))
             fill = 1
-        if 'stroke' in o:
-            self.canv.setStrokeColor(get_color(o['stroke']))
+        if 'stroke' in o and o['stroke'] != False:
             stroke = 1
+            if o['stroke'] == True or o['stroke'] == '1':
+                self.canv.setStrokeColorRGB(0,0,0)
+            else:
+                self.canv.setStrokeColor(get_color(o['stroke']))
         self.canv.circle(getmm(o, 'x'),
                          self.height - getmm(o, 'y') - (getmm(o, 'radius') / 2),
                          getmm(o, 'radius'),
@@ -89,16 +92,22 @@ class JinjaFlowable(Flowable):
                          fill=fill)
 
     def draw_box(self, o):
+        stroke = 0
+        fill = 0
         if 'fill' in o:
             self.canv.setFillColor(get_color(o['fill']))
             fill = 1
-        else:
-            fill = 0
+        if 'stroke' in o and o['stroke'] != False:
+            stroke = 1
+            if o['stroke'] == True or o['stroke'] == '1':
+                self.canv.setStrokeColorRGB(0,0,0)
+            else:
+                self.canv.setStrokeColor(get_color(o['stroke']))
         self.canv.rect(getmm(o, 'x'),
                        self.calc_y(o),
                        getmm(o, 'width'),
                        getmm(o, 'height'),
-                       stroke=o['stroke'] and 1 or 0,
+                       stroke=stroke,
                        fill=fill)
 
     def draw_line(self, o):
