@@ -330,11 +330,20 @@ paragraph
 
 All elements require that the parameters `x`, `y`, `width` and
 `height` are specified, except for `line` where `width` and
-`height` can be optional. Further attributes depend on the element:
+`height` can be optional, and `circle` which requires `x`, `y` and `radius`.
+Further attributes depend on the element:
 
 box
 :    fill
      : Color to fill with. Leave empty for no fill.
+
+	 stroke
+	 : Set to true to draw a black line around the box (and not just fill),
+       or the desired color to draw a line using another color than black.
+
+circle
+:    fill
+     : Color to fill with
 
 	 stroke
 	 : Set to true to draw a black line around the box (and not just fill),
