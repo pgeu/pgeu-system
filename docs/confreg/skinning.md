@@ -337,7 +337,8 @@ box
      : Color to fill with. Leave empty for no fill.
 
 	 stroke
-	 : Set to true to draw a line around the box (and not just fill)
+	 : Set to true to draw a black line around the box (and not just fill),
+       or the desired color to draw a line using another color than black.
 
 line
 :    x2, y2
