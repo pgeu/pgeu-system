@@ -199,7 +199,7 @@ CURRENCY_ISO = 'EUR'
 # two decimal places (cents/pennies/whatever).
 # Other text (spaces etc.) may be included as required.
 #
-# Euro format is "EUR nnnn" ('{ABBREV} {AMOUNT}') in English, Malteses,
+# Euro format is "EUR nnnn" ('{ABBREV} {AMOUNT}') in English, Maltese,
 # and Irish text (should usually be the case until pgeu-system is localised).
 #
 # Other European languages should use  "nnnn EUR" ('{AMOUNT} {ABBREV}').
