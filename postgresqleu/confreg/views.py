@@ -1323,6 +1323,7 @@ INNER JOIN confreg_room r ON r.id=t.room_id GROUP BY day
         raw = exec_to_grouped_dict("""SELECT
     s.starttime::date AS day,
     s.id,
+    s.id as sessionid,
     s.starttime,
     s.endtime,
     s.can_feedback,
