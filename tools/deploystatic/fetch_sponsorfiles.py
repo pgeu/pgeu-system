@@ -29,6 +29,7 @@ if __name__ == "__main__":
     parser.add_argument('tokenurl', type=str, help='Base URL including the token value, but not including the type of dta')
     parser.add_argument('directory', type=str, help='Destination directory')
     parser.add_argument('benefitname', type=str, help='Benefit name to match')
+    parser.add_argument('--overwrite', action='store_true')
     parser.add_argument('--verbose', action='store_true')
 
     args = parser.parse_args()
@@ -52,6 +53,9 @@ if __name__ == "__main__":
                         if currhash == benefit['claim']['image']['tag']:
                             if args.verbose:
                                 print("{} unmodified.".format(filename))
+                            break
+                        if not args.overwrite:
+                            print("File {} has changed, NOT overwriting".format(filename))
                             break
                         if args.verbose:
                             print("File {} has changed, re-downloading".format(filename))
