@@ -796,7 +796,7 @@ WHERE s.conference_id=%(confid)s AND
       EXISTS (SELECT 1 FROM confreg_conferencesession s2
               WHERE s2.conference_id=%(confid)s AND
                     s2.status=1 AND
-                    s2.room_id=s.room_id AND
+                    (s2.room_id=s.room_id OR s2.cross_schedule) AND
                     s.id != s2.id AND
                     tstzrange(s.starttime, s.endtime) && tstzrange(s2.starttime, s2.endtime)
       )
