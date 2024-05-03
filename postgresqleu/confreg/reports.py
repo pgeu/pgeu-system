@@ -786,20 +786,22 @@ LEFT JOIN confreg_room r ON r.id=s.room_id
 WHERE s.conference_id=%(confid)s AND status=1 AND track_id IS NULL""",
     'sessoverlaproom': """SELECT
    roomname AS \"Room\",
-   title AS \"Title\",
-   to_char(starttime, 'YYYY-MM-DD HH24:MI') || ' - ' || to_char(endtime, 'YYYY-MM-DD HH24:MI') AS \"Timeslot\"
+   s.title AS \"Title\",
+   to_char(s.starttime, 'YYYY-MM-DD HH24:MI') || ' - ' || to_char(s.endtime, 'YYYY-MM-DD HH24:MI') AS \"Timeslot\",
+   conflicter.title AS \"Conflicts with\"
 FROM confreg_conferencesession s
 INNER JOIN confreg_room r ON r.id=s.room_id
+INNER JOIN (SELECT s2.id, s2.title, s2.room_id, s2.cross_schedule, s2.starttime, s2.endtime FROM confreg_conferencesession s2
+              WHERE s2.conference_id=%(confid)s AND
+                    s2.status=1
+      ) AS conflicter ON (
+                    (conflicter.room_id=s.room_id OR conflicter.cross_schedule) AND
+                    s.id != conflicter.id AND
+                    tstzrange(s.starttime, s.endtime) && tstzrange(conflicter.starttime, conflicter.endtime)
+      )
 WHERE s.conference_id=%(confid)s AND
       r.conference_id=%(confid)s AND
-      status=1 AND
-      EXISTS (SELECT 1 FROM confreg_conferencesession s2
-              WHERE s2.conference_id=%(confid)s AND
-                    s2.status=1 AND
-                    (s2.room_id=s.room_id OR s2.cross_schedule) AND
-                    s.id != s2.id AND
-                    tstzrange(s.starttime, s.endtime) && tstzrange(s2.starttime, s2.endtime)
-      )
+      status=1
 ORDER BY 1,3""",
     'popularsess': """SELECT
 s.title AS \"Session title\",
