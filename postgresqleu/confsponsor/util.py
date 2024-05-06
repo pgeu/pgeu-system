@@ -40,7 +40,7 @@ SELECT a.overview_name,
 FROM all_benefits a
 LEFT JOIN confsponsor_sponsorshipbenefit b ON b.overview_name=a.overview_name AND b.level_id=a.level_id
 GROUP BY a.overview_name
-ORDER BY 1""", {
+ORDER BY max(b.sortkey), a.overview_name1""", {
         'confid': conference.id,
     })
 
