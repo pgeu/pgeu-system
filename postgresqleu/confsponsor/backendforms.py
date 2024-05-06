@@ -1,5 +1,6 @@
 from django.forms import ValidationError
 import django.forms
+from django.shortcuts import get_object_or_404
 from django.conf import settings
 
 from collections import OrderedDict
@@ -219,6 +220,7 @@ class BackendSponsorshipLevelBenefitManager(object):
     title = 'Benefits'
     singular = 'benefit'
     can_add = True
+    can_copy = True
     fieldset = {
         'id': 'benefits',
         'legend': 'Benefits',
@@ -240,6 +242,9 @@ class BackendSponsorshipLevelBenefitManager(object):
                 return bc.get_backend_form()
         return BackendSponsorshipLevelBenefitForm
 
+    def get_copy_form(self):
+        return BackendSponsorshipLevelBenefitCopyForm
+
     def get_object(self, masterobj, subjid):
         try:
             return SponsorshipBenefit.objects.get(level=masterobj, pk=subjid)
@@ -248,6 +253,31 @@ class BackendSponsorshipLevelBenefitManager(object):
 
     def get_instancemaker(self, masterobj):
         return lambda: SponsorshipBenefit(level=masterobj, class_parameters={})
+
+    def copy_instance(self, masterobj, cleaned_form):
+        b = get_object_or_404(SponsorshipBenefit, pk=cleaned_form['copyfrom'].value())
+
+        # Create a copy of the existing benefit
+        b.pk = None
+        b._state.adding = True
+
+        # Override the level and save
+        b.level = masterobj
+        b.save()
+
+        return b.pk
+
+
+class BackendSponsorshipLevelBenefitCopyForm(django.forms.Form):
+    helplink = 'sponsors#benefit'
+    copyfrom = django.forms.ModelChoiceField(label="Copy beneift", queryset=SponsorshipBenefit.objects.all())
+
+    def __init__(self, conference, *args, **kwargs):
+        self.conference = conference
+        super().__init__(*args, **kwargs)
+
+        self.fields['copyfrom'].queryset = SponsorshipBenefit.objects.select_related('level').filter(level__conference=conference).order_by('level__levelcost', 'level__levelname', 'sortkey', 'benefitname')
+        self.fields['copyfrom'].label_from_instance = lambda x: '{}: {}'.format(x.level.levelname, x.benefitname)
 
 
 class BackendSponsorshipLevelForm(BackendForm):

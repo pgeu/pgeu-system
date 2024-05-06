@@ -45,6 +45,9 @@
 {%if form.instance.id and handler.can_add%}
     <a href="{{url}}/new/" class="btn btn-default">Add {{handler.singular}}</a>
 {%endif%}
+{%if form.instance.id and handler.can_copy%}
+    <a href="{{url}}/copy/" class="btn btn-default">Copy {{handler.singular}}</a>
+{%endif%}
   </div>
 </div>
 {%if handler.fieldset%}

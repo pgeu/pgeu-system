@@ -373,6 +373,28 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
         if restpieces[2] == 'new':
             subid = None
             subobj = None
+        elif restpieces[2] == 'copy':
+            if request.method == 'POST':
+                form = handler.get_copy_form()(conference, request.POST)
+                if form.is_valid():
+                    id = handler.copy_instance(masterobj, form)
+                    return HttpResponseRedirect("../{}/".format(id))
+            else:
+                form = handler.get_copy_form()(conference)
+            return render(request, 'confreg/admin_backend_form.html', {
+                'conference': conference,
+                'basetemplate': basetemplate,
+                'topadmin': topadmin,
+                'form': form,
+                'whatverb': 'Copy',
+                'what': formclass._verbose_name(),
+                'savebutton': 'Copy',
+                'cancelurl': '../../',
+                'breadcrumbs': breadcrumbs + [
+                    ('../../../', formclass._verbose_name_plural().capitalize()),
+                    ('../../', masterobj),
+                ],
+            })
         else:
             try:
                 subid = int(restpieces[2])
