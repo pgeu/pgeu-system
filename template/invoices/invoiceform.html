@@ -335,7 +335,7 @@ also be tagged with your userid <i>{{user.username}}</i>.
 </div>{# buttonrow #}
 {%endif%}{# finalized #}
 
-{%if invoice.invoicehistory_set.all%}
+{%if invoice.pk and invoice.invoicehistory_set.all%}
 <h2>Invoice history</h2>
 <p>
 The following events have occured throughout the life of this invoice:
