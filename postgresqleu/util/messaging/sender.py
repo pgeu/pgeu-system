@@ -30,7 +30,7 @@ def send_pending_messages(providers):
                            select_for_update(of=('self',)).
                            select_related('reg', 'messaging', 'messaging__provider').
                            only('msg', 'channel', 'reg__messaging_config',
-                                'messaging__config', 'reg__messaging__provider',
+                                'messaging__config', 'messaging__provider',
                            ).filter(time__lte=timezone.now()).
                            order_by('time', 'id')[:1])
             if len(msglist) == 0:
