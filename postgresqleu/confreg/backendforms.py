@@ -16,7 +16,7 @@ import os
 import re
 from urllib.parse import urlparse
 from psycopg2.extras import DateTimeTZRange
-import pytz
+import zoneinfo
 
 from postgresqleu.util.db import exec_to_single_list, exec_to_scalar
 from postgresqleu.util.crypto import generate_rsa_keypair
@@ -207,7 +207,7 @@ class BackendConferenceForm(BackendForm):
 
 
 def _timezone_choices():
-    return [(z, z) for z in pytz.all_timezones]
+    return [(z, z) for z in zoneinfo.available_timezones() if z not in ('localtime', 'Factory')]
 
 
 class BackendSuperConferenceForm(BackendForm):
@@ -263,7 +263,7 @@ class BackendSuperConferenceForm(BackendForm):
             self.instance.save(update_fields=['key_private', 'key_public'])
 
     def clean_tzname(self):
-        # The entry for timezone is already validated against the pytz setup which should
+        # The entry for timezone is already validated against the zoneinfo database which should
         # normally be the same as the one in PostgreSQL, but we verify it against the
         # database side as well to be safe.
         if not exec_to_scalar("SELECT name FROM pg_timezone_names WHERE name=%(name)s", {

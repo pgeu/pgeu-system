@@ -6,7 +6,7 @@ from django.db import migrations, models
 from django.conf import settings
 
 import io
-import pytz
+import zoneinfo
 
 from postgresqleu.mailqueue.util import send_simple_mail
 
@@ -17,7 +17,7 @@ def get_matching_timezone(location):
     else:
         locname = location.strip()
 
-    citymatch = [x for x in pytz.all_timezones if locname.lower() in x.lower()]
+    citymatch = [x for x in zoneinfo.available_timezones() if locname.lower() in x.lower()]
     if len(citymatch) == 1:
         return (citymatch[0], 'city')
 
@@ -25,11 +25,9 @@ def get_matching_timezone(location):
     if ',' not in location:
         return (None, None)
 
-    countryname = location.split(',')[1].strip()
-    ccodes = [k for k, v in pytz.country_names.items() if countryname.lower() in v.lower()]
-    if len(ccodes) == 1 and ccodes[0] in pytz.country_timezones:
-        if len(pytz.country_timezones[ccodes[0]]) == 1:
-            return (pytz.country_timezones[ccodes[0]][0], 'country')
+    # We used to match on country name here, but zoneinfo doesn't have that data, and we don't
+    # want to pull in pytz just for that. And the expectation by now is that nobody will be
+    # migrating data so old they haven't already passed this step, so we just drop it.
 
     return (None, None)
 

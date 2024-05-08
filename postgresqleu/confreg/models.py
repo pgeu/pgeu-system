@@ -31,8 +31,8 @@ from postgresqleu.util.messaging.short import get_shortened_post_length
 from postgresqleu.util.markup import LineBreakString
 
 import base64
-import pytz
 from decimal import Decimal
+import zoneinfo
 
 from postgresqleu.countries.models import Country
 from postgresqleu.invoices.models import Invoice, VatRate, InvoicePaymentMethod
@@ -268,10 +268,10 @@ class Conference(models.Model):
 
     @cached_property
     def tzobj(self):
-        return pytz.timezone(self.tzname)
+        return zoneinfo.ZoneInfo(self.tzname)
 
     def localize_datetime(self, dt):
-        return self.tzobj.localize(dt)
+        return dt.replace(tzinfo=self.tzobj)
 
     @property
     def conferencedatestr(self):
