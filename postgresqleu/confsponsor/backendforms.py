@@ -212,7 +212,13 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
                     'conference': o.level.conference,
                     'sponsor': _get_sample_sponsor(),
                 })
-                return list(p.values())[0] if isinstance(p, dict) else p
+                if p is None:
+                    return 'No messaging providers configured, cannot render preview'
+                elif isinstance(p, dict):
+                    # If we had multiple valid providers, just use the first one for preview
+                    return list(p.values())[0]
+                else:
+                    return p
             return ''
 
 
