@@ -99,7 +99,7 @@ def sponsor_conference(request, sponsorid):
     is_past = sponsor.conference.enddate < today_global()
 
     unclaimedbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=False).annotate(count_claims=Count('sponsorclaimedbenefit', filter=Q(sponsorclaimedbenefit__sponsor=sponsor))).filter(count_claims__lt=F('maxclaims'))
-    claimedbenefits = SponsorClaimedBenefit.objects.select_related('sponsor', 'claimedby').prefetch_related('benefit').filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey', 'benefit__name', 'claimnum')
+    claimedbenefits = SponsorClaimedBenefit.objects.select_related('sponsor', 'claimedby').prefetch_related('benefit').filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey', 'benefit__benefitname', 'claimnum')
     noclaimbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=True)
     mails = get_mails_for_sponsor(sponsor).defer('message')
     vouchers = PrepaidVoucher.objects.filter(batch__sponsor=sponsor)
@@ -1170,7 +1170,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
         return HttpResponseRedirect(".")
 
     unclaimedbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=False).annotate(count_claims=Count('sponsorclaimedbenefit', filter=Q(sponsorclaimedbenefit__sponsor=sponsor))).filter(count_claims__lt=F('maxclaims'))
-    claimedbenefits = SponsorClaimedBenefit.objects.filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey', 'benefit__name', 'claimnum')
+    claimedbenefits = SponsorClaimedBenefit.objects.filter(sponsor=sponsor).order_by('confirmed', 'benefit__sortkey', 'benefit__benefitname', 'claimnum')
     noclaimbenefits = SponsorshipBenefit.objects.filter(level=sponsor.level, benefit_class__isnull=True)
 
     for b in claimedbenefits:
