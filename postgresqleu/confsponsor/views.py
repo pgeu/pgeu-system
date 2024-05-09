@@ -910,7 +910,7 @@ def sponsor_admin_dashboard(request, confurlname):
     confirmed_sponsors = Sponsor.objects.select_related('invoice', 'level').filter(conference=conference, confirmed=True).order_by('-level__levelcost', 'confirmedat')
     unconfirmed_sponsors = Sponsor.objects.select_related('invoice', 'level', 'contract').filter(conference=conference, confirmed=False).order_by('-level__levelcost', 'name')
 
-    unconfirmed_benefits = SponsorClaimedBenefit.objects.filter(sponsor__conference=conference, confirmed=False).order_by('-sponsor__level__levelcost', 'sponsor', 'benefit__sortkey', 'benefit__name', 'claimnum')
+    unconfirmed_benefits = SponsorClaimedBenefit.objects.filter(sponsor__conference=conference, confirmed=False).order_by('-sponsor__level__levelcost', 'sponsor', 'benefit__sortkey', 'benefit__benefitname', 'claimnum')
 
     mails = SponsorMail.objects.prefetch_related('levels', 'sponsors').defer('message').filter(conference=conference)
 
