@@ -844,7 +844,7 @@ class ConferenceRegistration(models.Model):
 
     @property
     def partoftransfer(self):
-        return self.transfer_from_reg.exists() or self.transfer_to_reg.exists()
+        return self.pk and (self.transfer_from_reg.exists() or self.transfer_to_reg.exists())
 
     def get_field_string(self, field):
         r = getattr(self, field)
