@@ -799,7 +799,8 @@ class ConferenceSessionSlideManager(object):
     }
 
     def get_list(self, instance):
-        return [(s.id, s.name, '') for s in instance.conferencesessionslides_set.all()]
+        if instance.id:
+            return [(s.id, s.name, '') for s in instance.conferencesessionslides_set.all()]
 
     def get_form(self, obj, POST):
         return ConferenceSessionSlideForm

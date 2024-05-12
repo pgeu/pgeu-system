@@ -36,7 +36,8 @@ class MemberLogManager(object):
     can_add = False
 
     def get_list(self, instance):
-        return [(None, line.timestamp, line.message) for line in MemberLog.objects.filter(member=instance).order_by('-timestamp')]
+        if instance.id:
+            return [(None, line.timestamp, line.message) for line in MemberLog.objects.filter(member=instance).order_by('-timestamp')]
 
 
 class BackendMemberForm(BackendForm):
@@ -99,11 +100,12 @@ class MeetingReminderManager(object):
     can_add = True
 
     def get_list(self, instance):
-        return [
-            (r.id, "{} ({})".format(datetime_string(r.sendat),
-                                    time_sinceoruntil(r.sendat)),
-             r.sentat is not None
-            ) for r in MeetingReminder.objects.filter(meeting=instance)]
+        if instance.id:
+            return [
+                (r.id, "{} ({})".format(datetime_string(r.sendat),
+                                        time_sinceoruntil(r.sendat)),
+                 r.sentat is not None
+                 ) for r in MeetingReminder.objects.filter(meeting=instance)]
 
     def get_form(self, obj, POST):
         return BackendMeetingReminderForm

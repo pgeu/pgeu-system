@@ -233,7 +233,8 @@ class BackendSponsorshipLevelBenefitManager(object):
     }
 
     def get_list(self, instance):
-        return [(b.id, b.benefitname, b.benefitdescription) for b in instance.sponsorshipbenefit_set.all()]
+        if instance.id:
+            return [(b.id, b.benefitname, b.benefitdescription) for b in instance.sponsorshipbenefit_set.all()]
 
     def get_form(self, obj, POST):
         if obj and obj.benefit_class:
