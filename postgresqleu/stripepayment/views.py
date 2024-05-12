@@ -41,7 +41,7 @@ def invoicepayment_secret(request, paymentmethod, invoiceid, secret):
             # the results.
             # This is a case that normally shouldn't happen, but can for example if a
             # user has multiple tabs open.
-            return HttpResponseRedirect("/invoices/{0}/{1}/".format(invoice.invoiceid, invoice.recipient_secret))
+            return HttpResponseRedirect("/invoices/{0}/{1}/".format(invoice.id, invoice.recipient_secret))
 
         # Else session exists but is not completed, so send it through back to Stripe
         # again.
