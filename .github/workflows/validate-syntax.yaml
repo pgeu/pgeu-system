@@ -26,6 +26,7 @@ jobs:
     - name: Make sure there are no missing migrations
       run: |
         echo "SECRET_KEY='foobar'" > postgresqleu/local_settings.py
+        echo "DATABASES={'default': {}}" >> postgresqleu/local_settings.py
         pip install Pillow pycryptodomex # Install the "wrong" version of pillow and pycryptodomex so it uses a wheel - since we won't actually call it anyway
         pip install -r <(grep -Ev "Pillow|pycryptodomex" tools/devsetup/dev_requirements.txt)
         python manage.py makemigrations --check --dry-run
