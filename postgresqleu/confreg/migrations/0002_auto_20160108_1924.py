@@ -199,7 +199,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='conferenceadditionaloption',
             name='mutually_exclusive',
-            field=models.ManyToManyField(help_text='Mutually exlusive with these additional options', related_name='_conferenceadditionaloption_mutually_exclusive_+', to='confreg.ConferenceAdditionalOption', blank=True),
+            field=models.ManyToManyField(help_text='Mutually exlusive with these additional options', to='confreg.ConferenceAdditionalOption', blank=True),
         ),
         migrations.AddField(
             model_name='conferenceadditionaloption',

@@ -146,12 +146,12 @@ ORDER BY s.name, c.twittersync_active desc, c.startdate desc
         migrations.AddField(
             model_name='conferenceregistration',
             name='messaging',
-            field=models.ForeignKey('ConferenceMessaging', null=True, blank=True, on_delete=models.SET_NULL),
+            field=models.ForeignKey('confreg.ConferenceMessaging', null=True, blank=True, on_delete=models.SET_NULL),
         ),
         migrations.AddField(
             model_name='conferenceregistration',
             name='messaging_copiedfrom',
-            field=models.ForeignKey('Conference', null=True, blank=True, on_delete=models.SET_NULL, related_name='reg_messaging_copiedfrom'),
+            field=models.ForeignKey('confreg.Conference', null=True, blank=True, on_delete=models.SET_NULL, related_name='reg_messaging_copiedfrom'),
         ),
         migrations.AddField(
             model_name='conferenceregistration',
