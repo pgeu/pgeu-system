@@ -1414,7 +1414,8 @@ class AttendeeMail(models.Model):
     tovolunteers = models.BooleanField(null=False, blank=False, default=False, verbose_name="To volunteers")
     tocheckin = models.BooleanField(null=False, blank=False, default=False, verbose_name="To check-in processors")
     addopts = models.ManyToManyField(ConferenceAdditionalOption, blank=True, verbose_name="Attendees with options")
-    sentat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+    sentat = models.DateTimeField(null=False, blank=False, default=timezone.now, verbose_name="Send at")
+    sent = models.BooleanField(null=False, blank=False, default=False)
     subject = models.CharField(max_length=100, null=False, blank=False)
     message = models.TextField(max_length=8000, null=False, blank=False)
 
@@ -1423,6 +1424,13 @@ class AttendeeMail(models.Model):
 
     class Meta:
         ordering = ('-sentat', )
+        indexes = [
+            models.Index(name="confreg_attendeemail_unsent", fields=['sentat'], condition=Q(sent=False)),
+        ]
+
+    @property
+    def future(self):
+        return self.sentat > timezone.now()
 
 
 class PendingAdditionalOrder(models.Model):

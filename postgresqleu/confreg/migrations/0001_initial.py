@@ -8,6 +8,7 @@ from postgresqleu.util.fields import LowercaseEmailField
 import postgresqleu.confreg.dbimage
 from django.conf import settings
 import django.core.validators
+from django.utils import timezone
 
 
 class Migration(migrations.Migration):
@@ -21,7 +22,7 @@ class Migration(migrations.Migration):
             name='AttendeeMail',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('sentat', models.DateTimeField(auto_now_add=True)),
+                ('sentat', models.DateTimeField(default=timezone.now, verbose_name="Send at")),
                 ('subject', models.CharField(max_length=100)),
                 ('message', models.TextField(max_length=8000)),
             ],

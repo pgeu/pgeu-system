@@ -705,7 +705,7 @@ class AttendeeMailForm(forms.ModelForm):
 
     class Meta:
         model = AttendeeMail
-        fields = ('regclasses', 'addopts', 'tovolunteers', 'tocheckin', 'subject', 'message')
+        fields = ('regclasses', 'addopts', 'tovolunteers', 'tocheckin', 'sentat', 'subject', 'message')
         widgets = {
             'message': EmailTextWidget,
         }

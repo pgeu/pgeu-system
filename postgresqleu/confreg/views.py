@@ -79,6 +79,7 @@ from postgresqleu.util.db import exec_to_dict, exec_to_grouped_dict, exec_to_key
 from postgresqleu.util.db import exec_no_result, exec_to_list, exec_to_scalar, conditional_exec_to_scalar
 from postgresqleu.util.db import ensure_conference_timezone
 from postgresqleu.util.qr import generate_base64_qr
+from postgresqleu.scheduler.util import trigger_immediate_job_run
 
 from decimal import Decimal
 from operator import itemgetter
@@ -110,7 +111,7 @@ def _get_registration_signups(conference, reg):
 # Should then be extended with whatever other requirements there are to limit
 # what's actually returned.
 def _attendeemail_queryset(conference, reg):
-    return AttendeeMail.objects.select_related('conference').filter(conference=conference).extra(where=["""
+    return AttendeeMail.objects.select_related('conference').filter(conference=conference, sent=True).extra(where=["""
  EXISTS (SELECT 1 FROM confreg_attendeemail_regclasses rc WHERE rc.attendeemail_id=confreg_attendeemail.id AND registrationclass_id=%s)
 OR
  EXISTS (SELECT 1 FROM confreg_attendeemail_addopts ao INNER JOIN confreg_conferenceregistration_additionaloptions rao ON rao.conferenceadditionaloption_id=ao.conferenceadditionaloption_id WHERE ao.attendeemail_id=confreg_attendeemail.id AND rao.conferenceregistration_id=%s)
@@ -4334,6 +4335,7 @@ def admin_attendeemail(request, urlname):
                                message=form.data['message'],
                                tovolunteers='tovolunteers' in form.data,
                                tocheckin='tocheckin' in form.data,
+                               sentat=form.cleaned_data['sentat'],
             )
             msg.save()
             for rc in form.data.getlist('regclasses'):
@@ -4342,27 +4344,12 @@ def admin_attendeemail(request, urlname):
                 msg.addopts.add(ao)
             msg.save()
 
-            # Now also send the email out to the currently registered attendees
-            attendees = set(ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, regtype__regclass__in=form.data.getlist('regclasses')))
-            if form.data.getlist('addopts'):
-                attendees.update(ConferenceRegistration.objects.filter(conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, additionaloptions__in=form.data.getlist('addopts')))
-            if msg.tovolunteers:
-                attendees.update(conference.volunteers.all())
-            if msg.tocheckin:
-                attendees.update(conference.checkinprocessors.all())
+            if msg.sentat > timezone.now():
+                messages.info(request, "Email scheduled for later sending to attendees")
+            else:
+                trigger_immediate_job_run('confreg_send_emails')
+                messages.info(request, "Email sent to attendees, and added to their registration pages")
 
-            for a in attendees:
-                send_conference_mail(conference,
-                                     a.email,
-                                     msg.subject,
-                                     'confreg/mail/attendee_mail.txt',
-                                     {
-                                         'body': msg.message,
-                                         'linkback': True,
-                                     },
-                                     receivername=a.fullname,
-                )
-            messages.info(request, "Email sent to %s attendees, and added to their registration pages" % len(attendees))
             return HttpResponseRedirect(".")
     else:
         form = AttendeeMailForm(conference)

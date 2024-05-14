@@ -3,8 +3,11 @@ from django.utils.html import escape
 from django.db import transaction
 from django.http import Http404, HttpResponseRedirect
 from django.contrib import messages
+from django.utils import timezone
+
 
 from postgresqleu.util.db import exec_to_dict, exec_to_scalar, exec_no_result
+from postgresqleu.scheduler.util import trigger_immediate_job_run
 
 from .util import send_conference_mail
 from .backendforms import BackendSendEmailForm
@@ -37,7 +40,6 @@ def attendee_email_form(request, conference, query=None, breadcrumbs=[], templat
         '_from': '{0} <{1}>'.format(conference.conferencename, conference.contactaddr),
         'recipients': escape(", ".join(['{0} <{1}>'.format(x['fullname'], x['email']) for x in recipients])),
         'idlist': ",".join(map(str, idlist)),
-        'storeonregpage': True,
     }
 
     if request.method == 'POST':
@@ -46,42 +48,31 @@ def attendee_email_form(request, conference, query=None, breadcrumbs=[], templat
         form = BackendSendEmailForm(conference, data=p, initial=initial)
         if form.is_valid():
             with transaction.atomic():
-                if form.cleaned_data['storeonregpage']:
-                    mailid = exec_to_scalar("INSERT INTO confreg_attendeemail (conference_id, sentat, subject, message, tocheckin, tovolunteers) VALUES (%(confid)s, CURRENT_TIMESTAMP, %(subject)s, %(message)s, false, false) RETURNING id", {
-                        'confid': conference.id,
-                        'subject': form.cleaned_data['subject'],
-                        'message': form.cleaned_data['message'],
-                    })
+                mailid = exec_to_scalar("INSERT INTO confreg_attendeemail (conference_id, sent, sentat, subject, message, tocheckin, tovolunteers) VALUES (%(confid)s, false, %(sentat)s, %(subject)s, %(message)s, false, false) RETURNING id", {
+                    'confid': conference.id,
+                    'sentat': form.cleaned_data['sendat'],
+                    'subject': form.cleaned_data['subject'],
+                    'message': form.cleaned_data['message'],
+                })
                 for r in recipients:
-                    send_conference_mail(conference,
-                                         r['email'],
-                                         form.cleaned_data['subject'],
-                                         template,
-                                         {
-                                             'body': form.cleaned_data['message'],
-                                             'linkback': form.cleaned_data['storeonregpage'],
-                                         } | extracontext,
-                                         receivername=r['fullname'],
-                    )
-
-                    if form.cleaned_data['storeonregpage']:
-                        if r['regid']:
-                            # Existing registration, so attach directly to attendee
-                            exec_no_result("INSERT INTO confreg_attendeemail_registrations (attendeemail_id, conferenceregistration_id) VALUES (%(mailid)s, %(reg)s)", {
-                                'mailid': mailid,
-                                'reg': r['regid'],
-                            })
-                        else:
-                            # No existing registration, so queue it up in case the attendee
-                            # might register later. We have the userid...
-                            exec_no_result("INSERT INTO confreg_attendeemail_pending_regs (attendeemail_id, user_id) VALUES (%(mailid)s, %(userid)s)", {
-                                'mailid': mailid,
-                                'userid': r['user_id'],
-                            })
-                if form.cleaned_data['storeonregpage']:
-                    messages.info(request, "Email sent to %s attendees, and added to their registration pages when possible" % len(recipients))
+                    if r['regid']:
+                        # Existing registration, so attach directly to attendee
+                        exec_no_result("INSERT INTO confreg_attendeemail_registrations (attendeemail_id, conferenceregistration_id) VALUES (%(mailid)s, %(reg)s)", {
+                            'mailid': mailid,
+                            'reg': r['regid'],
+                        })
+                    else:
+                        # No existing registration, so queue it up in case the attendee
+                        # might register later. We have the userid...
+                        exec_no_result("INSERT INTO confreg_attendeemail_pending_regs (attendeemail_id, user_id) VALUES (%(mailid)s, %(userid)s)", {
+                            'mailid': mailid,
+                            'userid': r['user_id'],
+                        })
+                if form.cleaned_data['sendat'] > timezone.now():
+                    messages.info(request, "Email scheduled for later sending to attendees")
                 else:
-                    messages.info(request, "Email sent to %s attendees" % len(recipients))
+                    trigger_immediate_job_run('confreg_send_emails')
+                    messages.info(request, "Email sent to attendees, and added to their registration pages")
 
             return HttpResponseRedirect('../')
     else:

@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 import django.forms
 import django.forms.widgets
+from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
 from django.conf import settings
@@ -1893,10 +1894,9 @@ class BulkPaymentRefundForm(django.forms.Form):
 #
 class BackendSendEmailForm(django.forms.Form):
     _from = django.forms.CharField(max_length=100, disabled=True, label="From")
+    sendat = django.forms.DateTimeField(required=True, initial=timezone.now)
     subject = django.forms.CharField(max_length=128, required=True)
     recipients = django.forms.Field(widget=StaticTextWidget, required=False)
-    storeonregpage = django.forms.BooleanField(label="Store on registration page", required=False,
-                                               help_text="If checked, store in db and show to attendees later. If not checked, one-off email is sent.")
     message = django.forms.CharField(widget=EmailTextWidget, required=True)
     idlist = django.forms.CharField(widget=django.forms.HiddenInput, required=True)
     confirm = django.forms.BooleanField(label="Confirm", required=False)

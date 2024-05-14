@@ -45,6 +45,10 @@ To volunteers
 To check-in processors
 :  Check this box to send to everybody listed as a check-in processor at th conference.
 
+Send at
+:  The email will get sent no earlier than this time (defaults to the current time
+   which means send right away).
+
 Subject
 :  The subject of the email
 
@@ -76,13 +80,12 @@ to all recipients that are marked with green.
 Once recipients have been selected, click the *Send email to <n>
 attendees* button. This brings up a form with the details:
 
+Send at
+:  The email will get sent no earlier than this time (defaults to the current time
+   which means send right away).
+
 Subject
 :  The subject of the email
-
-Store on registration page
-:  If enabled, the email will be stored in the system and visible on
-the registration dashboard for all attendees. If disabled, the
-email will be sent one off, and will not be stored locally.
 
 Message
 :  The message body. No formatting is done, so make sure you put
