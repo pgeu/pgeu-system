@@ -1,6 +1,7 @@
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.conf import settings
+from django.utils import timezone
 
 from postgresqleu.util.db import exec_to_list
 from postgresqleu.util.currency import format_currency
@@ -151,14 +152,16 @@ def send_sponsor_manager_simple_email(sponsor, subject, message, attachments=Non
             attachments=attachments,
             sender=sponsor.conference.sponsoraddr,
             sendername=sponsor.conference.conferencename,
-            receivername='{0} {1}'.format(manager.first_name, manager.last_name)
+            receivername='{0} {1}'.format(manager.first_name, manager.last_name),
+            sendat=None,
         )
 
 
-def get_mails_for_sponsor(sponsor):
+def get_mails_for_sponsor(sponsor, future=False):
     return SponsorMail.objects.filter(
         Q(conference=sponsor.conference),
-        Q(levels=sponsor.level) | Q(sponsors=sponsor)
+        Q(levels=sponsor.level) | Q(sponsors=sponsor),
+        sent=not future,
     )
 
 

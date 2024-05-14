@@ -117,7 +117,7 @@ class SponsorSendEmailForm(forms.ModelForm):
 
     class Meta:
         model = SponsorMail
-        exclude = ('conference', )
+        exclude = ('conference', 'sent', )
         widgets = {
             'message': EmailTextWidget(),
         }

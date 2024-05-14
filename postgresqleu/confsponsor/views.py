@@ -32,6 +32,7 @@ from postgresqleu.util.time import today_global
 from postgresqleu.invoices.util import InvoiceWrapper, InvoiceManager
 from postgresqleu.digisign.pdfutil import fill_pdf_fields, pdf_watermark_preview
 from postgresqleu.digisign.models import DigisignDocument, DigisignLog
+from postgresqleu.scheduler.util import trigger_immediate_job_run
 
 from .models import Sponsor, SponsorshipLevel, SponsorshipBenefit
 from .models import SponsorClaimedBenefit, SponsorMail, SponsorshipContract, SponsorAdditionalContract
@@ -1324,69 +1325,26 @@ def sponsor_admin_send_mail(request, confurlname):
             # Create a message record
             msg = SponsorMail(conference=conference,
                               subject=form.data['subject'],
-                              message=form.data['message'])
+                              message=form.data['message'],
+                              sentat=max(form.cleaned_data['sentat'], timezone.now()),  # If time is set in the past, adjust to now
+                              )
             msg.save()
             if sendto == 'level':
                 for level in form.data.getlist('levels'):
                     msg.levels.add(level)
-                sponsors = Sponsor.objects.filter(conference=conference, level__in=form.data.getlist('levels'), confirmed=True)
                 deststr = "sponsorship levels {0}".format(", ".join([level.levelname for level in msg.levels.all()]))
             else:
                 for s in form.data.getlist('sponsors'):
                     msg.sponsors.add(s)
-                sponsors = Sponsor.objects.filter(conference=conference, pk__in=form.data.getlist('sponsors'))
                 deststr = "sponsors {0}".format(", ".join([s.name for s in msg.sponsors.all()]))
             msg.save()
 
-            # Now also send the email out to the *current* subscribers
-            for sponsor in sponsors:
-                send_sponsor_manager_email(
-                    sponsor,
-                    msg.subject,
-                    'confsponsor/mail/sponsor_mail.txt',
-                    {
-                        'body': msg.message,
-                        'sponsor': sponsor,
-                    },
-                )
+            if msg.sentat > timezone.now():
+                messages.info(request, "Email scheduled for later sending to sponsors")
+            else:
+                trigger_immediate_job_run('sponsor_send_emails')
+                messages.info(request, "Email sent to sponsors, and added to their sponsor pages")
 
-                # And possibly send it out to the extra address for the sponsor
-                if sponsor.extra_cc:
-                    send_conference_mail(conference,
-                                         sponsor.extra_cc,
-                                         msg.subject,
-                                         'confsponsor/mail/sponsor_mail.txt',
-                                         {
-                                             'body': msg.message,
-                                             'sponsor': sponsor,
-                                         },
-                                         sender=conference.sponsoraddr,
-                    )
-
-            send_conference_sponsor_notification(
-                conference,
-                "Email sent to sponsors",
-                """An email was sent to sponsors of {0}
-with subject '{1}'.
-
-It was sent to {2}.
-
-------
-{3}
-------
-
-To view it on the site, go to {4}/events/sponsor/admin/{5}/viewmail/{6}/""".format(
-                    conference,
-                    msg.subject,
-                    deststr,
-                    msg.message,
-                    settings.SITEBASE,
-                    conference.urlname,
-                    msg.id,
-                ),
-            )
-
-            messages.info(request, "Email sent to %s sponsors, and added to their sponsor pages" % len(sponsors))
             return HttpResponseRedirect("../")
     else:
         if sendto == 'sponsor' and request.GET.get('preselectsponsors', ''):

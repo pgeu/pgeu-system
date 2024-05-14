@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.utils.functional import cached_property
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import MinValueValidator
@@ -178,7 +179,8 @@ class SponsorMail(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     levels = models.ManyToManyField(SponsorshipLevel, blank=True)
     sponsors = models.ManyToManyField(Sponsor, blank=True)
-    sentat = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+    sentat = models.DateTimeField(null=False, blank=False, default=timezone.now, verbose_name="Send at")
+    sent = models.BooleanField(null=False, blank=False, default=False)
     subject = models.CharField(max_length=100, null=False, blank=False)
     message = models.TextField(max_length=8000, null=False, blank=False)
 
@@ -189,6 +191,13 @@ class SponsorMail(models.Model):
 
     class Meta:
         ordering = ('-sentat',)
+        indexes = [
+            models.Index(name="confsponsor_sponsormail_unsent", fields=['sentat'], condition=Q(sent=False)),
+        ]
+
+    @property
+    def future(self):
+        return self.sentat > timezone.now()
 
 
 class SponsorScanner(models.Model):

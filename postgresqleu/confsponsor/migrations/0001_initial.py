@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from django.db import migrations, models
 import postgresqleu.util.validators
 from django.conf import settings
+from django.utils import timezone
 import postgresqleu.util.storage
 
 
@@ -54,7 +55,7 @@ class Migration(migrations.Migration):
             name='SponsorMail',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('sentat', models.DateTimeField(auto_now_add=True)),
+                ('sentat', models.DateTimeField(default=timezone.now, verbose_name="Send at")),
                 ('subject', models.CharField(max_length=100)),
                 ('message', models.TextField(max_length=8000)),
                 ('conference', models.ForeignKey(to='confreg.Conference', on_delete=models.CASCADE)),
