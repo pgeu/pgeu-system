@@ -1,4 +1,5 @@
 from django import forms
+from django.utils import timezone
 
 from collections import OrderedDict
 
@@ -40,3 +41,10 @@ class BackendMailqueueForm(BackendForm):
             self.instance.parsed_msg, self.instance.parsed_txt = parse_mail_content(self.instance.fullmsg)
 
         return self.instance.parsed_txt
+
+    @classmethod
+    def get_rowclass_and_title(self, obj, cache):
+        if obj.sendtime < timezone.now():
+            return "warning", None
+        else:
+            return "", None
