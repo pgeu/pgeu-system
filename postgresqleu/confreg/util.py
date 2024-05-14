@@ -43,7 +43,7 @@ def reglog(reg, txt, user=None, data=None):
 #
 # Send an email using a conference template
 #
-def send_conference_mail(conference, receiver, subject, templatename, templateattr={}, attachments=None, bcc=None, receivername=None, sender=None, sendername=None):
+def send_conference_mail(conference, receiver, subject, templatename, templateattr={}, attachments=None, bcc=None, receivername=None, sender=None, sendername=None, sendat=None):
     if not ((conference and conference.jinjaenabled and conference.jinjadir) or os.path.exists(os.path.join(JINJA_TEMPLATE_ROOT, templatename))):
         raise Exception("Mail template not found")
 
@@ -54,10 +54,12 @@ def send_conference_mail(conference, receiver, subject, templatename, templateat
                      attachments,
                      bcc,
                      sendername or conference.conferencename,
-                     receivername)
+                     receivername,
+                     sendat=sendat,
+                     )
 
 
-def send_conference_simple_mail(conference, receiver, subject, message, attachments=None, bcc=None, receivername=None, sender=None, sendername=None):
+def send_conference_simple_mail(conference, receiver, subject, message, attachments=None, bcc=None, receivername=None, sender=None, sendername=None, sendat=None):
     send_simple_mail(sender or conference.contactaddr,
                      receiver,
                      "[{0}] {1}".format(conference.conferencename, subject),
@@ -65,7 +67,9 @@ def send_conference_simple_mail(conference, receiver, subject, message, attachme
                      attachments,
                      bcc,
                      sendername or conference.conferencename,
-                     receivername)
+                     receivername,
+                     sendat=sendat,
+                     )
 
 
 class InvoicerowsException(Exception):

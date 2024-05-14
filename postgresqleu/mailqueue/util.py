@@ -1,7 +1,7 @@
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.nonmultipart import MIMENonMultipart
-from email.utils import formatdate, formataddr
+from email.utils import formatdate, formataddr, format_datetime
 from email.header import Header
 from email import encoders
 from email.parser import Parser
@@ -9,6 +9,7 @@ from email.parser import Parser
 from postgresqleu.util.context_processors import settings_context
 
 from django.template.loader import get_template
+from django.utils import timezone
 
 from .models import QueuedMail
 
@@ -20,11 +21,11 @@ def template_to_string(templatename, attrs={}):
     return get_template(templatename).render(context)
 
 
-def send_template_mail(sender, receiver, subject, templatename, templateattr={}, attachments=None, bcc=None, sendername=None, receivername=None, suppress_auto_replies=True, is_auto_reply=False):
+def send_template_mail(sender, receiver, subject, templatename, templateattr={}, attachments=None, bcc=None, sendername=None, receivername=None, suppress_auto_replies=True, is_auto_reply=False, sendat=None):
     send_simple_mail(sender, receiver, subject,
                      template_to_string(templatename, templateattr),
                      attachments, bcc, sendername, receivername,
-                     suppress_auto_replies, is_auto_reply)
+                     suppress_auto_replies, is_auto_reply, sendat)
 
 
 def _encoded_email_header(name, email):
@@ -33,7 +34,7 @@ def _encoded_email_header(name, email):
     return email
 
 
-def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=None, sendername=None, receivername=None, suppress_auto_replies=True, is_auto_reply=False):
+def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=None, sendername=None, receivername=None, suppress_auto_replies=True, is_auto_reply=False, sendat=None):
     # attachment format, each is a tuple of (name, mimetype,contents)
     # content should be *binary* and not base64 encoded, since we need to
     # use the base64 routines from the email library to get a properly
@@ -42,7 +43,10 @@ def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=No
     msg['Subject'] = subject
     msg['To'] = _encoded_email_header(receivername, receiver)
     msg['From'] = _encoded_email_header(sendername, sender)
-    msg['Date'] = formatdate(localtime=True)
+    if sendat is None:
+        msg['Date'] = formatdate(localtime=True)
+    else:
+        msg['Date'] = format_datetime(sendat)
     if suppress_auto_replies:
         # Do our best to set some headers to indicate that auto-replies like out of office
         # messages should not be sent to this email.
@@ -64,7 +68,14 @@ def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=No
             msg.attach(part)
 
     # Just write it to the queue, so it will be transactionally rolled back
-    QueuedMail(sender=sender, receiver=receiver, subject=subject, fullmsg=msg.as_string()).save()
+    QueuedMail(
+        sender=sender,
+        receiver=receiver,
+        subject=subject,
+        fullmsg=msg.as_string(),
+        sendtime=sendat or timezone.now(),
+    ).save()
+
     # Any bcc is just entered as a separate email
     if bcc:
         if type(bcc) is list or type(bcc) is tuple:
@@ -73,7 +84,13 @@ def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=No
             bcc = set((bcc, ))
 
         for b in bcc:
-            QueuedMail(sender=sender, receiver=b, subject=subject, fullmsg=msg.as_string()).save()
+            QueuedMail(
+                sender=sender,
+                receiver=b,
+                subject=subject,
+                fullmsg=msg.as_string(),
+                sendtime=sendat or timezone.now(),
+            ).save()
 
 
 def send_mail(sender, receiver, subject, fullmsg):
