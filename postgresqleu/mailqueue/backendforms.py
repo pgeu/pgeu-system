@@ -22,16 +22,16 @@ class BackendMailqueueAttachmentManager:
 class BackendMailqueueForm(BackendForm):
     decoded = forms.CharField(label="Decoded message", widget=StaticTextWidget(monospace=True))
 
-    list_fields = ['sendtime', 'sender', 'receiver', 'subject', ]
+    list_fields = ['sendtime', 'regtime', 'sendtime', 'sender', 'receiver', 'subject', ]
     helplink = 'mail'
-    readonly_fields = ['sender', 'receiver', 'subject', 'fullmsg', ]
+    readonly_fields = ['sender', 'receiver', 'sendtime', 'subject', 'fullmsg', ]
     linked_objects = OrderedDict({
         'attachments': BackendMailqueueAttachmentManager(),
     })
 
     class Meta:
         model = QueuedMail
-        fields = ['sender', 'receiver', 'subject', 'fullmsg', ]
+        fields = ['sender', 'receiver', 'sendtime', 'subject', 'fullmsg', ]
 
     def fix_fields(self):
         self.initial['decoded'] = self.parsed_content().decode('utf8', errors='ignore').replace("\n", "<br/>")
