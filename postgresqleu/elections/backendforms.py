@@ -21,7 +21,7 @@ class ElectionCandidateManager(object):
     can_add = True
 
     def get_list(self, instance):
-        if instnace.pk:
+        if instance.pk:
             return [(c.id, c.name, Truncator(c.presentation).words(30)) for c in instance.candidate_set.all()]
 
     def get_form(self, obj, POST):
