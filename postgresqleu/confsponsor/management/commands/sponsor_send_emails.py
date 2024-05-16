@@ -68,15 +68,15 @@ class Command(BaseCommand):
                     conference,
                     "Email sent to sponsors",
                     """An email was sent to sponsors of {0}
-    with subject '{1}'.
+with subject '{1}'.
 
-    It was sent to {2}.
+It was sent to {2}.
 
-    ------
-    {3}
-    ------
+------
+{3}
+------
 
-    To view it on the site, go to {4}/events/sponsor/admin/{5}/viewmail/{6}/""".format(
+To view it on the site, go to {4}/events/sponsor/admin/{5}/viewmail/{6}/""".format(
                         conference,
                         msg.subject,
                         deststr,
