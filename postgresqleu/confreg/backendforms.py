@@ -59,7 +59,6 @@ from postgresqleu.util.backendlookups import GeneralAccountLookup, CountryLookup
 from postgresqleu.confreg.backendlookups import RegisteredUsersLookup, SpeakerLookup, SessionTagLookup
 
 from postgresqleu.confreg.campaigns import allcampaigns
-from postgresqleu.confreg.twitter import get_all_conference_social_media
 from postgresqleu.confreg.regtypes import validate_special_reg_type_setup
 from postgresqleu.confreg.contextutil import has_yaml
 
