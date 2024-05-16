@@ -474,7 +474,12 @@ def sponsor_signup(request, confurlname, levelurlname):
                 if request.POST.get('contractchoice', '') not in ('0', '1') and not level.instantbuy:
                     return _render_contract_choices()
 
-                social = {social: form.cleaned_data['social_{}'.format(social)] for classname, social, impl in get_all_conference_social_media() if form.cleaned_data['social_{}'.format(social)]}
+                social = {
+                    social: form.cleaned_data['social_{}'.format(social)]
+                    for classname, social, impl
+                    in get_all_conference_social_media('sponsor')
+                    if form.cleaned_data['social_{}'.format(social)]
+                }
 
                 sponsor = Sponsor(conference=conference,
                                   signupat=timezone.now(),

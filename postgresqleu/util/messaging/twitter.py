@@ -192,11 +192,15 @@ class Twitter(object):
     max_post_length = 280
 
     @classmethod
+    def can_track_users_for(self, whatfor):
+        return True
+
+    @classmethod
     def validate_baseurl(self, baseurl):
         return None
 
     @classmethod
-    def clean_identifier_form_value(self, value):
+    def clean_identifier_form_value(self, whatfor, value):
         # Always add the @ at the beginning. The validator forcibly strips it
         # so for backwards compatibility as long as that validator is used elsewhere,
         # we add it back here.

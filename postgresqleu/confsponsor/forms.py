@@ -47,7 +47,7 @@ class SponsorSignupForm(forms.Form):
 
         super(SponsorSignupForm, self).__init__(*args, **kwargs)
 
-        for classname, social, impl in sorted(get_all_conference_social_media(), key=lambda x: x[1]):
+        for classname, social, impl in sorted(get_all_conference_social_media('sponsor'), key=lambda x: x[1]):
             fn = "social_{}".format(social)
             self.fields[fn] = forms.CharField(label="Company {}".format(social.title()), max_length=250, required=False)
 
@@ -87,11 +87,11 @@ class SponsorSignupForm(forms.Form):
     def clean(self):
         cleaned_data = super(SponsorSignupForm, self).clean()
 
-        for classname, social, impl in get_all_conference_social_media():
+        for classname, social, impl in get_all_conference_social_media('sponsor'):
             fn = 'social_{}'.format(social)
             if cleaned_data.get(fn, None):
                 try:
-                    cleaned_data[fn] = impl.clean_identifier_form_value(cleaned_data[fn])
+                    cleaned_data[fn] = impl.clean_identifier_form_value('sponsor', cleaned_data[fn])
                 except ValidationError as v:
                     self.add_error(fn, v)
 

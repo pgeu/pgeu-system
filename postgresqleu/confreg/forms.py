@@ -490,18 +490,18 @@ class SpeakerProfileForm(forms.ModelForm):
 
         self.fields['photo512'].help_text = 'Photo will be rescaled to {}x{} pixels. We reserve the right to make minor edits to speaker photos if necessary'.format(*PRIMARY_SPEAKER_PHOTO_RESOLUTION)
 
-        for classname, social, impl in sorted(get_all_conference_social_media(), key=lambda x: x[1]):
+        for classname, social, impl in sorted(get_all_conference_social_media('speaker'), key=lambda x: x[1]):
             self.fields['social_{}'.format(social)] = forms.CharField(label="{} name".format(social.title()), max_length=250, required=False)
             self.fields['social_{}'.format(social)].initial = self.instance.attributes.get('social', {}).get(social, '')
 
     def clean(self):
         cleaned_data = super().clean()
 
-        for classname, social, impl in sorted(get_all_conference_social_media(), key=lambda x: x[1]):
+        for classname, social, impl in sorted(get_all_conference_social_media('speaker'), key=lambda x: x[1]):
             fn = 'social_{}'.format(social)
             if cleaned_data.get(fn, None):
                 try:
-                    cleaned_data[fn] = impl.clean_identifier_form_value(cleaned_data[fn])
+                    cleaned_data[fn] = impl.clean_identifier_form_value('speaker', cleaned_data[fn])
                 except ValidationError as v:
                     self.add_error(fn, v)
 
@@ -517,7 +517,7 @@ class SpeakerProfileForm(forms.ModelForm):
         if 'social' not in obj.attributes:
             obj.attributes['social'] = {}
 
-        for classname, social, impl in sorted(get_all_conference_social_media(), key=lambda x: x[1]):
+        for classname, social, impl in sorted(get_all_conference_social_media('speaker'), key=lambda x: x[1]):
             v = self.cleaned_data['social_{}'.format(social)]
             if v:
                 obj.attributes['social'][social] = v

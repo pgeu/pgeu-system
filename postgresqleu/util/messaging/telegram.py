@@ -122,11 +122,15 @@ class Telegram(object):
     typename = 'Telegram'
 
     @classmethod
+    def can_track_users_for(self, whatfor):
+        return True
+
+    @classmethod
     def validate_baseurl(self, baseurl):
         return None
 
     @classmethod
-    def clean_identifier_form_value(self, value):
+    def clean_identifier_form_value(self, whatfor, value):
         if not re.fullmatch('^[a-z0-9_]{5,}$', value, re.I):
             raise ValidationError("Invalid format of Telegram username")
         return value

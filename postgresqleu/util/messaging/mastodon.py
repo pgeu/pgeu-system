@@ -117,12 +117,16 @@ class Mastodon(object):
     handle_regexp = re.compile(r'^@([A-Z0-9._%+-]+)@([A-Z0-9.-]+\.[A-Z]{2,})$', re.I)
 
     @classmethod
+    def can_track_users_for(self, whatfor):
+        return True
+
+    @classmethod
     def validate_baseurl(self, baseurl):
         if not OAuthApplication.objects.filter(name='mastodon', baseurl=baseurl).exists():
             return 'Global OAuth credentials for {} missing'.format(baseurl)
 
     @classmethod
-    def clean_identifier_form_value(self, value):
+    def clean_identifier_form_value(self, whatfor, value):
         if not self.handle_regexp.fullmatch(value):
             raise ValidationError("Invalid format of Mastodon username. Must use format @name@site.")
         return value

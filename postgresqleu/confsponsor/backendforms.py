@@ -54,10 +54,10 @@ class BackendSponsorForm(BackendForm):
 
     @property
     def nosave_fields(self):
-        return ['social_{}'.format(social) for classname, social, impl in get_all_conference_social_media()]
+        return ['social_{}'.format(social) for classname, social, impl in get_all_conference_social_media('sponsor')]
 
     def fix_fields(self):
-        for classname, social, impl in sorted(get_all_conference_social_media(), key=lambda x: x[1]):
+        for classname, social, impl in sorted(get_all_conference_social_media('sponsor'), key=lambda x: x[1]):
             fn = "social_{}".format(social)
             self.fields[fn] = django.forms.CharField(label="{} name".format(social.title()), max_length=250, required=False)
             self.fields[fn].initial = self.instance.social.get(social, '')
@@ -68,7 +68,7 @@ class BackendSponsorForm(BackendForm):
         self.update_protected_fields()
 
     def post_save(self):
-        for classname, social, impl in get_all_conference_social_media():
+        for classname, social, impl in get_all_conference_social_media('sponsor'):
             v = self.cleaned_data['social_{}'.format(social)]
             if v:
                 self.instance.social[social] = v
@@ -79,11 +79,11 @@ class BackendSponsorForm(BackendForm):
     def clean(self):
         cleaned_data = super().clean()
 
-        for classname, social, impl in get_all_conference_social_media():
+        for classname, social, impl in get_all_conference_social_media('sponsor'):
             fn = 'social_{}'.format(social)
             if cleaned_data.get(fn, None):
                 try:
-                    cleaned_data[fn] = impl.clean_identifier_form_value(cleaned_data[fn])
+                    cleaned_data[fn] = impl.clean_identifier_form_value('sponsor', cleaned_data[fn])
                 except ValidationError as v:
                     self.add_error(fn, v)
 
