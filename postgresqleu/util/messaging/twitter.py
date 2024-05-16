@@ -196,6 +196,10 @@ class Twitter(object):
         return True
 
     @classmethod
+    def get_field_help(self, whatfor):
+        return 'Enter Twitter/X username in the format @username.'
+
+    @classmethod
     def validate_baseurl(self, baseurl):
         return None
 

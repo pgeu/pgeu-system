@@ -50,6 +50,8 @@ class SponsorSignupForm(forms.Form):
         for classname, social, impl in sorted(get_all_conference_social_media('sponsor'), key=lambda x: x[1]):
             fn = "social_{}".format(social)
             self.fields[fn] = forms.CharField(label="Company {}".format(social.title()), max_length=250, required=False)
+            if hasattr(impl, 'get_field_help'):
+                self.fields[fn].help_text = impl.get_field_help('sponsor')
 
         if not settings.EU_VAT:
             del self.fields['vatstatus']

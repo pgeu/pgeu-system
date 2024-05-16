@@ -121,6 +121,10 @@ class Mastodon(object):
         return True
 
     @classmethod
+    def get_field_help(self, whatfor):
+        return 'Enter Mastodon username in the format @user@site (e.g. @someone@mastodon.social).'
+
+    @classmethod
     def validate_baseurl(self, baseurl):
         if not OAuthApplication.objects.filter(name='mastodon', baseurl=baseurl).exists():
             return 'Global OAuth credentials for {} missing'.format(baseurl)
