@@ -86,7 +86,7 @@ def render_multiprovider_tweet(conference, template, context):
 
 
 def get_all_conference_social_media():
-    # When using .distinct() in djago it randomly adds either "id" or "internalname" to the SQL
+    # When using .distinct() in django it randomly adds either "id" or "internalname" to the SQL
     # query and thus doesn't actually return distinct values. Rather than trying to debug
     # the horror that's an ORM, just run the query because queries are easy.
     for classname, in exec_to_list("SELECT DISTINCT classname FROM confreg_messagingprovider WHERE series_id IS NOT NULL"):
