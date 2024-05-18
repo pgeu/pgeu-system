@@ -87,7 +87,7 @@ class BackendConferenceForm(BackendForm):
                   'schedulewidth', 'pixelsperminute', 'notifyregs', 'notifysessionstatus', 'notifyvolunteerstatus',
                   'testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors',
                   'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent',
-                  'skill_levels', 'showvotes', 'callforpaperstags', 'callforpapersrecording', 'sendwelcomemail',
+                  'callforpapersmaxsubmissions', 'skill_levels', 'showvotes', 'callforpaperstags', 'callforpapersrecording', 'sendwelcomemail',
                   'tickets', 'confirmpolicy', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist',
                   'transfer_cost', 'initial_common_countries', 'jinjaenabled', 'dynafields', 'scannerfields',
                   'videoproviders', ]
@@ -106,7 +106,7 @@ class BackendConferenceForm(BackendForm):
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', 'twitter_postpolicy', ]},
         {'id': 'fields', 'legend': 'Registration fields', 'fields': ['asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent', 'dynafields', 'scannerfields', ]},
         {'id': 'steps', 'legend': 'Steps', 'fields': ['registrationopen', 'registrationtimerange', 'allowedit', 'callforpapersopen', 'callforpaperstimerange', 'callforsponsorsopen', 'callforsponsorstimerange', 'scheduleactive', 'tbdinschedule', 'sessionsactive', 'cardsactive', 'checkinactive', 'conferencefeedbackopen', 'feedbackopen']},
-        {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['skill_levels', 'callforpaperstags', 'callforpapersrecording', 'showvotes']},
+        {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['callforpapersmaxsubmissions', 'skill_levels', 'callforpaperstags', 'callforpapersrecording', 'showvotes']},
         {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', ]},
         {'id': 'display', 'legend': 'Display', 'fields': ['jinjaenabled', 'videoproviders', ]},
         {'id': 'legacy', 'legend': 'Legacy', 'fields': ['schedulewidth', 'pixelsperminute']},

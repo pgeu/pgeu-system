@@ -280,6 +280,13 @@ Session feedback open
 : If registered attendees of the conference can leave
 [feedback](feedback) on individual sessions.
 
+Max submissions
+: Maximum number of submissions allowed per speaker, or 0 if
+unlimited. Note that this controls how many submissions can be made
+into the system, not how many can be accepted! It also only affects
+the call for papers form - an administrator can still add more speakers
+and sessions in the backend.
+
 Skill levels
 : Should the [call for papers](callforpapers) ask for skill levels on
 all sessions, and should they be displayed on the schedule and session

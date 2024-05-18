@@ -599,7 +599,34 @@ class CallForPapersForm(forms.ModelForm):
     def clean_speaker(self):
         if self.currentspeaker not in self.cleaned_data.get('speaker'):
             raise ValidationError("You cannot remove yourself as a speaker!")
+        if self.instance.conference.callforpapersmaxsubmissions > 0:
+            # Inefficient to loop over them, but there will never be many, so we're lazy.
+            for s in self.cleaned_data.get('speaker'):
+                if s == self.currentspeaker:
+                    continue
+                if self.instance.conference.conferencesession_set.filter(speaker=s).count() >= self.instance.conference.callforpapersmaxsubmissions:
+                    raise ValidationError(
+                        "Speaker {} already has too many submissions for this conference.".format(s)
+                    )
+
         return self.cleaned_data.get('speaker')
+
+    def clean(self):
+        d = super().clean()
+        if self.instance.conference.callforpapersmaxsubmissions > 0:
+            if not self.instance.id:
+                # If this is a new submission, check the count
+                speaker = self.initial['speaker'][0]
+                count = self.instance.conference.conferencesession_set.filter(speaker=speaker).count()
+                if count >= self.instance.conference.callforpapersmaxsubmissions:
+                    self.add_error(
+                        'title',
+                        'This conference allows a maximum {}  submissions per speaker, and you have already submitted {}.'.format(
+                            self.instance.conference.callforpapersmaxsubmissions,
+                            count,
+                        )
+                    )
+        return d
 
 
 class SessionCopyField(forms.ModelMultipleChoiceField):
@@ -618,6 +645,20 @@ class CallForPapersCopyForm(forms.Form):
         self.speaker = speaker
         super(CallForPapersCopyForm, self).__init__(*args, **kwargs)
         self.fields['sessions'].queryset = ConferenceSession.objects.select_related('conference').filter(speaker=speaker).exclude(conference=conference).order_by('-conference__startdate', 'title')
+
+    def clean_sessions(self):
+        s = self.cleaned_data['sessions']
+        if self.conference.callforpapersmaxsubmissions > 0:
+            already = self.conference.conferencesession_set.filter(speaker=self.speaker).count()
+            added = s.count()
+            if already + added > self.conference.callforpapersmaxsubmissions:
+                raise ValidationError('This conference allows a maximum {}  submissions per speaker, and you have already submitted {}. You cannot add {} more.'.format(
+                    self.conference.callforpapersmaxsubmissions,
+                    already,
+                    added,
+                ))
+
+        return s
 
 
 class SessionSlidesUrlForm(forms.Form):
