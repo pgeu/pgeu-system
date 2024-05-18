@@ -315,6 +315,11 @@ class Mastodon(object):
             }
 
     def check_messaging_config(self, state):
+        # Check that we can get our own account info
+        try:
+            self.get_account_info()
+        except Exception as e:
+            return False, 'Could not get own account information: {}'.format(e)
         return True, ''
 
     def get_link(self, id):
