@@ -26,6 +26,34 @@ def markdown_preview(request):
 
 
 @csrf_exempt
+def oauth_return(request, providerid):
+    if 'code' not in request.GET:
+        raise Http404('Code missing')
+
+    provider = get_object_or_404(MessagingProvider, id=providerid)
+    impl = get_messaging(provider)
+    if hasattr(impl, 'oauth_return'):
+        err = impl.oauth_return(request)
+        if err:
+            return HttpResponse(err)
+        else:
+            if povider.series__id:
+                return HttpResponseRedirect('{}/events/admin/_series/{}/messaging/{}/'.format(
+                    settings.SITEBASE,
+                    provider.series_id,
+                    provider.id,
+                ))
+            else:
+                return HttpResponseRedirect('{}/events/admin/news/messagingproviders/{}/'.format(
+                    settings.SITEBASE,
+                    provider.id,
+                ))
+
+    else:
+        return HttpResponse('Unconfigured')
+
+
+@csrf_exempt
 def messaging_webhook(request, providerid, token):
     provider = get_object_or_404(MessagingProvider, id=providerid, config__webhook__token=token)
     impl = get_messaging(provider)

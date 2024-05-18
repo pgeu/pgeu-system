@@ -68,3 +68,17 @@ As Mastodon allows dynamic OAuth application, this is simply done by
 adding an OAuth Application of type Mastodon with the specified base
 URL, and everything else is automatic (just don't forget to hit the
 `Save` button)
+
+### Linkedin
+
+For linkedin an application has to be regsitered at Linkedin. The
+application is created at https://www.linkedin.com/developers/.  Note
+that on Linkedin, each app must be "owned" by a page, so a page first
+has to be created.
+
+The app must apply for `Community Management API ` (which is required
+to post to pages). This API requires extra validation by Linkedin, so
+it can take some time to get approved.
+
+The integration only uses the scopes `r_organization_social` and
+`w_organization_social`.

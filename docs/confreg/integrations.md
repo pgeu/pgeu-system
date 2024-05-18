@@ -420,3 +420,22 @@ provider configuration.
 On the Messaging Configuration for Mastodon providers there is no
 configuration to be done other than checkboxes for which services to
 enable.
+
+### Linkedin
+
+The Linkedin integration has one Messaging Provider mapping to one
+Linkedin page, thereby giving a conference series it's own Linkedin
+page, but having conferences in it share (by default).
+
+To use the Linkedin integration, one must first set up linkedin OAuth
+credentials. This is done by adding an [OAuth](oauth) application, after
+first registering a Linkedin application in the Linkedin systems.
+
+Once this is done, you can create the Messaging Provider record for
+each conference series. Other than the normal fields, there will be a
+field for the `Page id` to connec tto. This is the numeric id found in
+the URL of the page when vieing the page in admin mode.
+
+Linkedin access tokens expire after 2 months, but will be
+automatically refreshed. However, refresh tokens also expire after 12
+months, and at that point a manual re-authentication must be done.

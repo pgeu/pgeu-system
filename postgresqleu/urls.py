@@ -403,6 +403,7 @@ urlpatterns.extend([
 
     # OAuth application registry
     re_path(r'^admin/oauthapps/(.*/)?$', postgresqleu.util.backendviews.edit_oauthapps),
+    re_path(r'^oauth_return/messaging/(\d+)/$', postgresqleu.util.views.oauth_return),
 
     # Monitoring endpoints
     re_path(r'^monitor/git/$', postgresqleu.util.monitor.gitinfo),

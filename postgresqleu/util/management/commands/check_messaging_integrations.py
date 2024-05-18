@@ -19,7 +19,7 @@ from postgresqleu.confreg.models import MessagingProvider
 
 
 class Command(BaseCommand):
-    help = 'Validate messaging integrations'
+    help = 'Validate messaging integrations and refresh tokens'
 
     class ScheduledJob:
         scheduled_time = [datetime.time(4, 19)]

@@ -52,6 +52,7 @@ def _mastodon_oauth_maker(baseurl):
 _oauth_application_choices = {
     'mastodon': ('https://mastodon.social', 0, _mastodon_oauth_maker),
     'twitter': ('https://api.twitter.com', 1, None),
+    'linkedin': ('https://api.linkedin.com', 2, None),
 }
 
 
