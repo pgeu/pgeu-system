@@ -7,6 +7,7 @@ from django.utils.safestring import mark_safe
 from django.utils.html import escape
 from django.utils import timezone
 import django.db.models
+from django.db import transaction
 
 from postgresqleu.confsponsor.models import ScannedAttendee
 from .models import Conference
@@ -16,6 +17,7 @@ from .models import ConferenceSession, ConferenceSessionFeedback, ConferenceSess
 from .models import ConferenceSessionSlides
 from .models import PrepaidVoucher, DiscountCode, AttendeeMail
 from .models import PRIMARY_SPEAKER_PHOTO_RESOLUTION
+from .util import send_conference_mail
 
 from .regtypes import validate_special_reg_type
 from .twitter import get_all_conference_social_media
@@ -627,6 +629,32 @@ class CallForPapersForm(forms.ModelForm):
                         )
                     )
         return d
+
+    def save(self):
+        with transaction.atomic():
+            if self.instance.pk:
+                oldobj = ConferenceSession.objects.get(pk=self.instance.pk)
+                oldspeakerids = [s.id for s in oldobj.speaker.all()]
+            else:
+                oldspeakerids = [self.currentspeaker.id]
+
+            super().save()
+
+            addedspeakers = self.instance.speaker.exclude(id__in=oldspeakerids)
+            for spk in addedspeakers:
+                send_conference_mail(
+                    self.instance.conference,
+                    spk.user.email,
+                    "Submitted session '{}'".format(self.instance.title),
+                    'confreg/mail/secondary_speaker_added.txt',
+                    {
+                        'conference': self.instance.conference,
+                        'session': self.instance,
+                        'speaker': spk,
+                        'addingspeaker': self.currentspeaker,
+                    },
+                    receivername=spk.fullname,
+                )
 
 
 class SessionCopyField(forms.ModelMultipleChoiceField):

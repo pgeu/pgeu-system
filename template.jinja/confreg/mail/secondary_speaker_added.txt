@@ -1,0 +1,12 @@
+Hello!
+
+You are receving this email as a notification that
+{{addingspeaker}}
+
+has added you as a co-speaker on the session with title
+{{session.title}}
+
+If this is correct, you don't need to do anything. If you
+were not aware of this, please contact the submitting speaker
+if you know them, or contact the conference organizers if
+you do not.
