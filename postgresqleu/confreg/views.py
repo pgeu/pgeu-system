@@ -3227,7 +3227,11 @@ def reports(request, confname):
         elif request.POST.get('submit') == 'Set dynamic field on matching attendees':
             data = json.loads(request.POST['reportdata'])
             f = request.POST['dynasetfield']
+            if not conference.dynafields:
+                messages.error(request, "No field selected, no values saved.")
+                return HttpResponseRedirect(".")
             if f not in conference.dynafields.split(','):
+                # This is a "can't happen", so just 404
                 raise Http404("Unknown field specified")
 
             rids = list(map(int, request.POST['rids'].split(','))) if request.POST['rids'] else []
