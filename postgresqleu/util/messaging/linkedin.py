@@ -302,5 +302,5 @@ class Linkedin(object):
     def get_link(self, id):
         return [
             'linkedin',
-            'https://www.linkedin.com/feed/update/{}/'.format(post.statusid),
+            'https://www.linkedin.com/feed/update/{}/'.format(id),
         ]
