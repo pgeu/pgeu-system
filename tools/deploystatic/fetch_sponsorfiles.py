@@ -10,6 +10,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 import unicodedata
 import urllib.request
@@ -31,6 +32,7 @@ if __name__ == "__main__":
     parser.add_argument('benefitname', type=str, help='Benefit name to match')
     parser.add_argument('--overwrite', action='store_true')
     parser.add_argument('--verbose', action='store_true')
+    parser.add_argument('--gitadd', action='store_true', help='Run `git add` for any downloaded file')
 
     args = parser.parse_args()
 
@@ -67,3 +69,7 @@ if __name__ == "__main__":
                         with open(filename, 'wb') as f:
                             shutil.copyfileobj(fresp, f)
                     print("Downloaded {}".format(filename))
+                    if args.gitadd:
+                        subprocess.run(args=['git', 'add', filename], check=True)
+                        if args.verbose:
+                            print("File {} added to git".format(filename))
