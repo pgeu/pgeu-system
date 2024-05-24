@@ -27,10 +27,16 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         for msg in AttendeeMail.objects.filter(sentat__lte=timezone.now(), sent=False):
+            # By registration type
             attendees = set(ConferenceRegistration.objects.filter(conference=msg.conference, payconfirmedat__isnull=False, canceledat__isnull=True, regtype__regclass__attendeemail=msg))
+            # By additional options
             attendees.update(ConferenceRegistration.objects.filter(conference=msg.conference, payconfirmedat__isnull=False, canceledat__isnull=True, additionaloptions__attendeemail=msg))
+            # To direct attendees
+            attendees.update(msg.registrations.all())
+            # To volunteers
             if msg.tovolunteers:
                 attendees.update(msg.conference.volunteers.all())
+            # To checkin processors
             if msg.tocheckin:
                 attendees.update(msg.conference.checkinprocessors.all())
 
