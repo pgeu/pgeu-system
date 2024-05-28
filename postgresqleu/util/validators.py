@@ -48,6 +48,8 @@ def Http200Validator(value):
         if r.status_code != 200:
             raise ValidationError("URL must return 200 OK, not {0}".format(r.status_code))
 
+    except requests.exceptions.InvalidURL as e:
+        raise ValidationError("{}".format(e))
     except requests.ConnectionError:
         raise ValidationError("Connection to server failed")
     except requests.exceptions.ReadTimeout:
