@@ -83,7 +83,7 @@ def sponsorclaimsdata(conference):
                             'name': s.displayname,
                             'confirmedat': s.confirmedat,
                             'signedupat': s.signupat
-                        } for s in lvl.sponsor_set.filter(confirmed=True)
+                        } for s in lvl.sponsor_set.filter(confirmed=True).order_by('signupat')
                     ],
                 } for lvl in SponsorshipLevel.objects.filter(conference=conference)],
             'sponsors': {
