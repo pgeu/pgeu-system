@@ -77,7 +77,13 @@ class SponsorSignupForm(forms.Form):
             # europe.
             return v
 
-        if not EuropeCountry.objects.filter(iso=v[:2]).exists():
+        countrycode = v[:2]
+        if countrycode == 'EL':
+            # Greece for some reason uses EL instead of their ISO code GR
+            # (ref: https://en.wikipedia.org/wiki/VAT_identification_number#Structure)
+            countrycode = 'GR'
+
+        if not EuropeCountry.objects.filter(iso=countrycode).exists():
             raise ValidationError("VAT numbers must begin with the two letter country code")
         if settings.EU_VAT_VALIDATE:
             from . import vatutil
