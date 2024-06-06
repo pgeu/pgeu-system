@@ -408,6 +408,10 @@ if __name__ == "__main__":
     # Fetch the current git revision if this is coming out of a git repository
     context['githash'] = git_revision
 
+    # Tell the templates what "now" is
+    context['current_date'] = date.today()
+    context['current_timestamp'] = datetime.now()
+
     # Load contexts in override directory, if any
     if source.isdir('templates/context.override.d'):
         for f in sorted(source.listfiles('templates/context.override.d')):
