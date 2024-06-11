@@ -212,7 +212,7 @@ class Conference(models.Model):
     scannerfields = models.CharField(max_length=500, blank=True, null=False, verbose_name="Scanning properties", help_text="Dynamic properties usd in the badge scanner interface")
     skill_levels = models.BooleanField(blank=False, null=False, default=True)
     jinjaenabled = models.BooleanField(null=False, blank=False, default=False, verbose_name="Jinja templates enabled")
-    jinjadir = models.CharField(max_length=200, blank=True, null=True, default=None, help_text="Full path to new style jinja repository root", verbose_name="Jinja directory")
+    jinjadir = models.CharField(max_length=200, blank=True, null=True, default=None, help_text="Full path to jinja repository root", verbose_name="Jinja directory")
     callforpapersmaxsubmissions = models.IntegerField(blank=False, null=False, default=0, verbose_name='Max submissions',
                                                       help_text='Maximum number of submissions per speaker, 0 for unlimited',
                                                       validators=[MinValueValidator(0), ],
