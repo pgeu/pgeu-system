@@ -100,7 +100,7 @@ def sponsorclaimsdata(conference):
                             'confirmed': b.confirmed,
                             'class': all_benefits[b.benefit.benefit_class]['class'],
                             'claim': get_benefit_class(b.benefit.benefit_class)(s.level, b.benefit.class_parameters).get_claimdata(b),
-                        } for b in s.sponsorclaimedbenefit_set.select_related('benefit').filter(declined=False)
+                        } for b in s.sponsorclaimedbenefit_set.select_related('benefit').filter(declined=False).order_by('id')
                     ]
                 } for s in Sponsor.objects.select_related('level').filter(conference=conference, confirmed=True)}
         }
