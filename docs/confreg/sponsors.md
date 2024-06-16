@@ -420,6 +420,11 @@ Value in overview
    used instead. A typical example can be `Large` vs `Small` on a logo
    benefit.
 
+Include in data
+:  Include information about this benefit in the data pack that can be
+   downloaded using a token.
+
+
 Tweet template
 :  A template, in jinja2 format, used to generate tweets when this
 benefit is confirmed. If left empty, no tweet is posted. The format

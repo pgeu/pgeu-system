@@ -103,6 +103,8 @@ class SponsorshipBenefit(models.Model):
     overview_name = models.CharField(max_length=100, null=False, blank=True, verbose_name='Name in overview')
     overview_value = models.CharField(max_length=50, null=False, blank=True, verbose_name='Value in overview',
                                       help_text='Specify this to use a direct value instead of the max claims number as the value')
+    include_in_data = models.BooleanField(null=False, default=True, verbose_name="Include in data",
+                                          help_text='Include information about this benefit in sponsorship data from tokens')
 
     def __str__(self):
         return self.benefitname
