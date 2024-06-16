@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django import forms
 from django.core.validators import MinValueValidator
+from django.template.defaultfilters import linebreaksbr
 
 from postgresqleu.confsponsor.backendforms import BackendSponsorshipLevelBenefitForm
 
@@ -76,10 +77,10 @@ class ProvideText(BaseBenefit):
         return True
 
     def render_claimdata(self, claimedbenefit, isadmin):
-        return claimedbenefit.claimjson.get('text', '')
+        return linebreaksbr(claimedbenefit.claimjson.get('text', ''))
 
     def get_claimdata(self, claimedbenefit):
         return claimedbenefit.claimjson.get('text', '')
 
     def render_reportinfo(self, claimedbenefit):
-        return claimedbenefit.claimjson.get('text', '')
+        return linebreaksbr(claimedbenefit.claimjson.get('text', ''))
