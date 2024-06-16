@@ -1,6 +1,7 @@
 from django.utils import timezone
 
 from datetime import timedelta
+import time
 
 from postgresqleu.confreg.models import NotificationQueue
 from postgresqleu.util.db import exec_no_result
@@ -82,3 +83,23 @@ def send_channel_message(messaging, channel, msg, expiry=timedelta(hours=1)):
 def notify_twitter_moderation(tweet, completed, approved):
     for messaging in tweet.conference.conferencemessaging_set.filter(socialmediamanagement=True, provider__active=True):
         get_messaging_class(messaging.provider.classname)(messaging.provider.id, messaging.provider.config).notify_twitter_moderation(messaging, tweet, completed, approved)
+
+
+# Some Mastodon servers have started doing rate limiting at the TCP level, it seems. So
+# we create a generic rate limiting class. Note that it will only rate limit within the
+# same process, but this problem only shows up in batch jobs so it should be fine.
+class _RateLimiter:
+    def __init__(self):
+        self.lastcalls = {}
+
+    def limit(self, baseurl):
+        if baseurl in self.lastcalls:
+            # Space calls out by 15 seconds per baseurl
+            s = 15 + self.lastcalls[baseurl] - time.time()
+            if s > 0:
+                time.sleep(s)
+
+        self.lastcalls[baseurl] = time.time()
+
+
+ratelimiter = _RateLimiter()

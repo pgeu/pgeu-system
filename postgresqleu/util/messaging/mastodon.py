@@ -17,7 +17,7 @@ from postgresqleu.util.messaging import re_token
 from postgresqleu.confreg.backendforms import BackendSeriesMessagingForm
 from postgresqleu.confreg.models import ConferenceRegistration, IncomingDirectMessage
 
-from .util import send_reg_direct_message
+from .util import send_reg_direct_message, ratelimiter
 from .common import register_messaging_config
 
 
@@ -155,9 +155,11 @@ class Mastodon(object):
         return '{}{}'.format(self.providerconfig['baseurl'], url)
 
     def _get(self, url, *args, **kwargs):
+        ratelimiter.limit(self.providerconfig['baseurl'])
         return self.sess.get(self._api_url(url), timeout=30, *args, **kwargs)
 
     def _post(self, url, *args, **kwargs):
+        ratelimiter.limit(self.providerconfig['baseurl'])
         return self.sess.post(self._api_url(url), timeout=30, *args, **kwargs)
 
     def get_account_info(self):
