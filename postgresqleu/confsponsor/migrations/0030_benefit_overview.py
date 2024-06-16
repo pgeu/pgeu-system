@@ -18,6 +18,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='sponsorshipbenefit',
             name='overview_value',
-            field=models.CharField(blank=True, help_text='Specify this to use a direct value instead of the max claims number as the velue', max_length=50, verbose_name='Value in overview'),
+            field=models.CharField(blank=True, help_text='Specify this to use a direct value instead of the max claims number as the value', max_length=50, verbose_name='Value in overview'),
         ),
     ]

@@ -102,7 +102,7 @@ class SponsorshipBenefit(models.Model):
     tweet_template = models.TextField(null=False, blank=True)
     overview_name = models.CharField(max_length=100, null=False, blank=True, verbose_name='Name in overview')
     overview_value = models.CharField(max_length=50, null=False, blank=True, verbose_name='Value in overview',
-                                      help_text='Specify this to use a direct value instead of the max claims number as the velue')
+                                      help_text='Specify this to use a direct value instead of the max claims number as the value')
 
     def __str__(self):
         return self.benefitname
