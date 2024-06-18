@@ -40,7 +40,7 @@
     <th>Contract:</th>
     <td>
       {%if sponsor.level.instantbuy %}
-       No contract, level is "instant buy".
+       No contract needed, level is "instant buy". <form class="inline-block-form" method="post" action="resendcontract/">{% csrf_token %}<input type="submit" class="btn btn-sm btn-default confirm-btn" value="Re-send contract anyway" data-confirm="Are you sure you want to re-send a new contract to this sponsor?{%if sponsor.signmethod == 0%} {{conference.contractprovider.implementation.resendprompt}}{%endif%} Note that the level is instand buy, instructions may be confusing!"></form>
       {%else%}
        {%if sponsor.signmethod == 0%}
        Digital contract.<br/>
