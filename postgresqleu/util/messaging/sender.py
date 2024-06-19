@@ -126,14 +126,18 @@ FOR UPDATE OF confreg_conferencetweetqueue"""))
                 contents = t.contents[str(p.id)] if isinstance(t.contents, dict) else t.contents
                 # Don't try to post it if it's empty
                 if contents:
-                    (id, errmsg) = impl.post(
-                        truncate_shortened_post(
-                            contents,
-                            impl.max_post_length
-                        ),
-                        t.image,
-                        t.replytotweetid,
-                    )
+                    try:
+                        (id, errmsg) = impl.post(
+                            truncate_shortened_post(
+                                contents,
+                                impl.max_post_length
+                            ),
+                            t.image,
+                            t.replytotweetid,
+                        )
+                    except Exception as e:
+                        errmsg = "Exception: {}".format(e)
+                        id = None
 
                     if id:
                         t.remainingtosend.remove(p)
