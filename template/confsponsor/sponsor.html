@@ -94,8 +94,9 @@ Click on the benefit in the list below to claim them or turn them down:
 <div class="sponsorbenefitlist">
 {%for b in unclaimedbenefits%}
  <details>
-   <summary>{{b}}{%if b.maxclaims > 1 and b.count_claims > 0 %} ({{b.maxclaims|subtract:b.count_claims}}/{{b.maxclaims}} remaining){%endif%}{%if b.deadline%} - <em>{% if b.expired %}expired at{% else %}must be claimed before{% endif %} {{ b.deadline }}</em>{% endif %}</summary>
+   <summary>{{b}}{%if b.maxclaims > 1 and b.count_claims > 0 %} ({{b.maxclaims|subtract:b.count_claims}}/{{b.maxclaims}} remaining){%endif%}{%if b.deadline%} - <strong>{% if b.expired %}expired at{% else %}deadline{% endif %} {{ b.deadline }}</strong> ({{ conference.tzname }}){% endif %}</summary>
    <div class="sponsorbenefitdescription">
+{%if b.deadline and not b.expired %}<p><strong>Deadline: {{ b.deadline }}</strong> ({{ conference.tzname }})</p>{%endif%}
      {{b.benefitdescription|default:"No description"|markdown}}
      <p>
 {% if is_past and not is_admin %}
