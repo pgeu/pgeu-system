@@ -57,7 +57,7 @@ class BackendPlaidForm(BaseManagedBankPaymentForm):
 
     def fix_fields(self):
         super().fix_fields()
-        self.fields['feeaccount'].help_text = 'Currently no fees are fetched4, so this account is a no-op'
+        self.fields['feeaccount'].help_text = 'Currently no fees are fetched, so this account is a no-op'
 
         if 'accountid' in self.instance.config:
             self.initial['connection'] = 'Connected to plaid account <code>{}</code>.'.format(self.instance.config['accountid'])
