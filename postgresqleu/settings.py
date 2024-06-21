@@ -287,8 +287,8 @@ RELOAD_WATCH_DIRECTORIES = []
 # If using plaid, control which countries are enable when adding accounts
 # (must match account cofig)
 PLAID_COUNTRIES = ['US', 'CA']
-# Plaid production level (sandbox, development or production)
-PLAID_LEVEL = 'development'
+# Plaid production level (sandbox or production)
+PLAID_LEVEL = 'production'
 
 # If using the web based meetings, base URL for the web sockets server that
 # handles the messages.
