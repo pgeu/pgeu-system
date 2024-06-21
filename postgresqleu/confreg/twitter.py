@@ -26,6 +26,11 @@ from .models import ConferenceRegistration, ConferenceHashtag
 
 
 def post_conference_social(conference, contents, approved=False, posttime=None, author=None):
+    if not contents:
+        # None for contents means this was a multiprovider rendered template that had no providers at all.
+        # Contents is empty shouldn't happen, but if it does we don't want to post something empty anyway.
+        return
+
     if not posttime:
         posttime = timezone.now()
 
