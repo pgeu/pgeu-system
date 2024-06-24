@@ -146,21 +146,32 @@ class Mastodon(object):
         self.providerid = providerid
         self.providerconfig = config
 
-        self.sess = requests.Session()
-        self.sess.headers.update({
+        self.authheaders = {
             'Authorization': 'Bearer {}'.format(self.providerconfig['token']),
-        })
+        }
 
     def _api_url(self, url):
         return '{}{}'.format(self.providerconfig['baseurl'], url)
 
     def _get(self, url, *args, **kwargs):
         ratelimiter.limit(self.providerconfig['baseurl'])
-        return self.sess.get(self._api_url(url), timeout=30, *args, **kwargs)
+        return requests.get(
+            self._api_url(url),
+            timeout=30,
+            headers=self.authheaders,
+            *args,
+            **kwargs
+        )
 
     def _post(self, url, *args, **kwargs):
         ratelimiter.limit(self.providerconfig['baseurl'])
-        return self.sess.post(self._api_url(url), timeout=30, *args, **kwargs)
+        return requests.post(
+            self._api_url(url),
+            timeout=30,
+            headers=self.authheaders,
+            *args,
+            **kwargs,
+        )
 
     def get_account_info(self):
         r = self._get('/api/v1/accounts/verify_credentials')
