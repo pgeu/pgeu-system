@@ -291,6 +291,9 @@ PLAID_COUNTRIES = ['US', 'CA']
 # Plaid production level (sandbox or production)
 PLAID_LEVEL = 'production'
 
+# If using Gocardless, which country to enumerate banks in
+GOCARDLESS_COUNTRY = 'FR'
+
 # If using the web based meetings, base URL for the web sockets server that
 # handles the messages.
 # Typically something like wss://some.domain.org/ws/meeting
