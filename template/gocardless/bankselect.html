@@ -1,0 +1,21 @@
+{%extends "adm/admin_base.html" %}
+{%block title%}Connect gocardless account{%endblock%}
+
+{%block layoutblock %}
+<h1>Connect gocardless account</h1>
+<p>
+  Select the bank you want to connect to from the list below. Banks are
+  filtered for country code {{country}}.
+</p>
+<form method="post" action=".">{% csrf_token %}
+  <select name="bank">{% for b in banks %}
+    <option value="{{ b.id }}">{{ b.name }}</option>{% endfor %}
+  </select>
+  <input class="btn btn-default" type="submit" value="Connect bank">
+</form>
+
+<p>
+<a href="../" class="btn btn-default btn-block">Cancel</a>
+</p>
+
+{% endblock %}

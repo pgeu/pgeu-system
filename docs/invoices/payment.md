@@ -327,6 +327,21 @@ they are within the same bank, you have to add multiple payment
 providers using the Plaid implementation class. Each of them should
 then be tied to one *item* in plaid.
 
+
+#### Gocardless
+
+Gocardless is another aggregation service that can automatically
+download transaction lists from different banks. At the time of this
+writing, they had much better options than Plaid for small
+organisations or pay as you go, at least for organisations based in
+Europe.
+
+Unlike Plaid, however, it does not support webhooks for reacting
+quicker. However, given how seldom most banks update their data
+towards their partners anyway, the difference is unlikely to amount to
+much in practice.
+
+
 ## Currencies
 
 The system can only support one currency, globally, at any given

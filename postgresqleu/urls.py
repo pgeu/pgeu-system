@@ -33,6 +33,7 @@ import postgresqleu.stripepayment.views
 import postgresqleu.transferwise.views
 import postgresqleu.plaid.backendviews
 import postgresqleu.plaid.views
+import postgresqleu.gocardless.backendviews
 import postgresqleu.accountinfo.views
 import postgresqleu.util.docsviews
 import postgresqleu.mailqueue.backendviews
@@ -334,6 +335,7 @@ urlpatterns.extend([
     re_path(r'^admin/invoices/bankfiles/transactions/(\d+)/$', postgresqleu.invoices.backendviews.bankfile_transactions),
     re_path(r'^admin/invoices/paymentmethods/(\d+)/plaidconnect/$', postgresqleu.plaid.backendviews.connect_to_plaid),
     re_path(r'^admin/invoices/paymentmethods/(\d+)/refreshplaidconnect/$', postgresqleu.plaid.backendviews.refresh_plaid_connect),
+    re_path(r'^admin/invoices/paymentmethods/(\d+)/gocardlessconnect/$', postgresqleu.gocardless.backendviews.connect_to_gocardless),
     re_path(r'^admin/invoices/paymentmethods/(.*/)?$', postgresqleu.invoices.backendviews.edit_paymentmethod),
     re_path(r'^invoices/trustlypay/(\d+)/(\d+)/(\w+)/$', postgresqleu.trustlypayment.views.invoicepayment_secret),
     re_path(r'^trustly_notification/(\d+)/$', postgresqleu.trustlypayment.views.notification),
