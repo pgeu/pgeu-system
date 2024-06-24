@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import connection, transaction
 from django.db.models import Q
 
-from datetime import timedelta
+from datetime import timedelta, datetime
 import sys
 
 from postgresqleu.util.messaging import get_messaging
@@ -45,7 +45,7 @@ class Command(BaseCommand):
                     provider.private_checkpoint = checkpoint
                     provider.save(update_fields=['private_lastpoll', 'private_checkpoint'])
             except Exception as e:
-                print("Failed to poll {} for direct messages: {}".format(provider, e))
+                print("{}: Failed to poll {} for direct messages: {}".format(str(datetime.now()), provider, e))
                 err = True
 
         if err:
