@@ -2,10 +2,13 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 
+import base64
+import io
 from PIL import ImageFile
 
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.forms import IntegerBooleanField
+from postgresqleu.util.widgets import StaticTextWidget
 from postgresqleu.util.validators import color_validator
 from postgresqleu.confsponsor.backendforms import BackendSponsorshipLevelBenefitForm
 
@@ -15,6 +18,9 @@ from .base import BaseBenefit, BaseBenefitForm
 class ImageUploadForm(BaseBenefitForm):
     decline = forms.BooleanField(label='Decline this benefit', required=False)
     image = forms.FileField(label='Image file', required=False)
+    uploadedimage = forms.CharField(label='Uploaed', widget=forms.HiddenInput, required=False)
+    preview = forms.CharField(label='Preview', required=False, widget=StaticTextWidget)
+    confirm = forms.BooleanField(label='Confirm preview', required=False)
 
     def __init__(self, *args, **kwargs):
         super(ImageUploadForm, self).__init__(*args, **kwargs)
@@ -22,13 +28,55 @@ class ImageUploadForm(BaseBenefitForm):
         self.fields['image'].help_text = "Upload a file in %s format, fitting in a box of %sx%s pixels." % (self.params['format'].upper(), self.params['xres'], self.params['yres'])
         self.fields['image'].widget.attrs['accept'] = 'image/png'
 
+        if not self.is_bound:
+            self._delete_stage2_fields()
+
+    def _delete_stage2_fields(self):
+        del self.fields['uploadedimage']
+        del self.fields['preview']
+        del self.fields['confirm']
+
     def clean(self):
         declined = self.cleaned_data.get('decline', False)
-        if not declined:
-            if not self.cleaned_data.get('image', None):
+        if declined and self.cleaned_data.get('image', None):
+            self._delete_stage2_fields()
+            raise ValidationError('You cannot both decline and upload an image at the same time.')
+
+        if declined:
+            self._delete_stage2_fields()
+        else:
+            if self.cleaned_data.get('image', None) or self.cleaned_data.get('uploadedimage', None):
+                # We have an image. Prepare a preview field if it's not already confirmed
+                self.data = self.data.copy()
+                if self.cleaned_data.get('image', None):
+                    self.cleaned_data['image'].seek(0)
+                    imgdata = base64.b64encode(self.cleaned_data['image'].read()).decode('ascii')
+                    imgtag = "data:image/png;base64,{}".format(imgdata)
+                    self.data['uploadedimage'] = imgdata
+                else:
+                    imgtag = "data:image/png;base64,{}".format(self.cleaned_data['uploadedimage'])
+
+                if self.params.get('previewbackground', None):
+                    self.data['preview'] = '<div class="sponsor-imagepreview"><span>Uploaded image: </span><img src="{}" /></div><div class="sponsor-imagepreview"><span>Preview on background: </span><img src="{}" style="background-color: {}" /></div>'.format(imgtag, imgtag, self.params.get('previewbackground'))
+                else:
+                    self.data['preview'] = '<div class="sponsor-imagepreview"><span>Uploaded image: </span><img src="{}" /></div><div class="sponsor-imagepreview"></div>'.format(imgtag)
+
+                # Remove the image field now that we have transferred things to imagedata. Also remove the ability to decline.
+                del self.fields['image']
+                del self.fields['decline']
+
+                # And finally, check if we've already confirmed
+                if not self.cleaned_data.get('confirm', None):
+                    self.add_error('confirm', "You must confirm the image looks OK in the preview before you can proceed.{}".format(
+                        ' In particular, verify the effect of transparency on the given background color.' if self.params.get('previewbackground') else '',
+                    ))
+            else:
+                # If we don't have an image it either wasn't specified, or the image validator removed it
                 if 'image' not in self._errors:
                     # Unless there is an error already flagged in the clean_image method
                     self._errors['image'] = self.error_class(['This field is required'])
+                    self._delete_stage2_fields()
+
         return self.cleaned_data
 
     def clean_image(self):
@@ -91,7 +139,7 @@ class ImageUpload(BaseBenefit):
         if form.cleaned_data['decline']:
             return False
         storage = InlineEncodedStorage('benefit_image')
-        storage.save(str(claim.id), form.cleaned_data['image'])
+        storage.save(str(claim.id), io.BytesIO(base64.b64decode(form.cleaned_data['uploadedimage'])))
         return True
 
     def render_claimdata(self, claimedbenefit, isadmin):
