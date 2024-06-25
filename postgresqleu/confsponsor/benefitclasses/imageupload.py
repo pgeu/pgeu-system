@@ -6,6 +6,7 @@ from PIL import ImageFile
 
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.forms import IntegerBooleanField
+from postgresqleu.util.validators import color_validator
 from postgresqleu.confsponsor.backendforms import BackendSponsorshipLevelBenefitForm
 
 from .base import BaseBenefit, BaseBenefitForm
@@ -73,8 +74,9 @@ class ImageUploadBackendForm(BackendSponsorshipLevelBenefitForm):
     xres = forms.IntegerField(label="X resolution")
     yres = forms.IntegerField(label="Y resolution")
     transparent = IntegerBooleanField(label="Require transparent", required=False)
+    previewbackground = forms.CharField(max_length=20, required=False, validators=[color_validator, ], help_text="Background color used in preview")
 
-    class_param_fields = ['format', 'xres', 'yres', 'transparent']
+    class_param_fields = ['format', 'xres', 'yres', 'transparent', 'previewbackground']
 
 
 class ImageUpload(BaseBenefit):
@@ -93,7 +95,8 @@ class ImageUpload(BaseBenefit):
         return True
 
     def render_claimdata(self, claimedbenefit, isadmin):
-        # We don't use the datafield, just the id
+        if self.params.get('previewbackground', None):
+            return '<div class="sponsor-imagepreview"><span>Uploaded image: </span><img src="/events/sponsor/admin/imageview/{}/" /></div><div class="sponsor-imagepreview"><span>Preview on background: </span><img src="/events/sponsor/admin/imageview/{}/" style="background-color: {}" /></div>'.format(claimedbenefit.id, claimedbenefit.id, self.params.get('previewbackground'))
         return 'Uploaded image: <img src="/events/sponsor/admin/imageview/%s/" />' % claimedbenefit.id
 
     def get_claimdata(self, claimedbenefit):

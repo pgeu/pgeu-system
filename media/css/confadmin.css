@@ -334,3 +334,15 @@ div.sponsorclaimhtml {
 span.sponsormatrixlabel {
     line-height: 1.9;
 }
+
+/* Sponsor benefit admin */
+div.sponsor-imagepreview span {
+    display: inline-block;
+    width: 200px;
+}
+
+div.sponsor-imagepreview img {
+    border: 1px solid black;
+    padding: 10px;
+    margin: 5px;
+}

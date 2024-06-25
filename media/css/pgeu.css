@@ -230,6 +230,21 @@ div.sponsorbenefitlist details div.sponsorbenefitdescription {
 }
 
 /*
+ * Sponsor benefit details
+ */
+div.sponsor-imagepreview span {
+    display: inline-block;
+    width: 200px;
+}
+
+div.sponsor-imagepreview img {
+    border: 1px solid black;
+    padding: 10px;
+    margin: 5px;
+}
+
+
+/*
  * Sponsor signup
  */
 form.sponsorsignup tr.error {
