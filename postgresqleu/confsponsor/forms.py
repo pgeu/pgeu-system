@@ -341,4 +341,8 @@ class SponsorAddContractForm(forms.Form):
 
         self.fields['subject'].help_text = "Subject of contract, for example 'Training contract'. Will be prefixed with '[{}]' in all emails.".format(self.sponsor.conference.conferencename)
         self.fields['contract'].queryset = SponsorshipContract.objects.filter(conference=self.sponsor.conference, sponsorshiplevel=None)
-        self.fields['manager'].queryset = self.sponsor.managers
+        if sponsor.signmethod == 1:
+            # Manual contracts are always sent to all managers
+            del self.fields['manager']
+        else:
+            self.fields['manager'].queryset = self.sponsor.managers
