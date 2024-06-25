@@ -26,6 +26,7 @@
 	  <form method="post" action="." class="form-inline">{% csrf_token %}
 	    <input type="hidden" name="confirm" value="1">
 	    <input type="hidden" name="claimid" value="{{b.id}}">
+{%if b.benefit.tweet_template %}<input type="checkbox" name="autopost" value="1" CHECKED> Auto-post to social media{% endif %}
 	    <input type="submit" class="btn btn-primary btn-sm" value="Confirm this benefit">
 	  </form>
 {%else%}

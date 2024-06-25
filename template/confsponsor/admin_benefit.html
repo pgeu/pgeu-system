@@ -17,6 +17,7 @@ please do so!
 </p>
 <form method="post" action=".">{% csrf_token %}
 <input type="hidden" name="confirm" value="1">
+{%if benefit.benefit.tweet_template %}<input type="checkbox" name="autopost" value="1" CHECKED> Auto-post to social media{% endif %}
 <input type="submit" class="btn btn-default" value="Confirm this benefit">
 </form>
 <p>

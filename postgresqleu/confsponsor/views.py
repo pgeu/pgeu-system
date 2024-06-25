@@ -992,7 +992,7 @@ ORDER BY l.levelcost DESC, l.levelname, s.name, b.sortkey, b.benefitname""", {'c
         })
 
 
-def _confirm_benefit(request, claimed_benefit):
+def _confirm_benefit(request, claimed_benefit, autopost):
     with transaction.atomic():
         benefit = claimed_benefit.benefit
         benefitclass = get_benefit_class(benefit.benefit_class)(benefit.level, benefit.class_parameters)
@@ -1022,7 +1022,7 @@ def _confirm_benefit(request, claimed_benefit):
         )
 
         # Potentially send tweet
-        if claimed_benefit.benefit.tweet_template:
+        if claimed_benefit.benefit.tweet_template and autopost:
             post_conference_social(conference,
                                    render_multiprovider_tweet(conference, claimed_benefit.benefit.tweet_template, {
                                        'benefit': claimed_benefit.benefit,
@@ -1090,7 +1090,7 @@ def sponsor_admin_sponsor(request, confurlname, sponsorid):
     if request.method == 'POST' and request.POST.get('confirm', '0') == '1':
         # Confirm one of the benefits, so do this before we load the list
         benefit = get_object_or_404(SponsorClaimedBenefit, sponsor=sponsor, id=get_int_or_error(request.POST, 'claimid'))
-        _confirm_benefit(request, benefit)
+        _confirm_benefit(request, benefit, request.POST.get('autopost', '') == '1')
         return HttpResponseRedirect('.')
 
     if request.method == 'POST' and request.POST.get('unclaim', '0') == '1':
@@ -1298,7 +1298,7 @@ def sponsor_admin_benefit(request, confurlname, benefitid):
 
     if request.method == 'POST' and request.POST.get('confirm', '') == '1':
         # Confirm this benefit!
-        _confirm_benefit(request, benefit)
+        _confirm_benefit(request, benefit, request.POST.get('autopost', '') == '1')
         return HttpResponseRedirect('.')
 
     if request.method == 'POST' and request.POST.get('unclaim', '') == '1':
