@@ -102,7 +102,7 @@ class Signwell(BaseProvider):
             ],
             "name": subject,
             "subject": subject,
-            "message": message,
+            "message": message.replace("\n", "<br/>"),
             "recipients": [
                 {
                     "id": "1",
@@ -113,7 +113,7 @@ class Signwell(BaseProvider):
                     "id": "2",
                     "name": sender_name,
                     "email": sender_email,
-                    "message": message_to_sender or message,
+                    "message": message_to_sender.replace("\n", "<br/>") or message.replace("\n", "<br/>"),
                 },
             ],
             "apply_signing_order": True,
