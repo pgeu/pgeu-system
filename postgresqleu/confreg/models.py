@@ -20,6 +20,7 @@ from django.dispatch import receiver
 from postgresqleu.util.validators import validate_lowercase, validate_urlname
 from postgresqleu.util.validators import TwitterValidator
 from postgresqleu.util.validators import PictureUrlValidator
+from postgresqleu.util.validators import color_validator
 from postgresqleu.util.forms import ChoiceArrayField
 from postgresqleu.util.fields import LowercaseEmailField, ImageBinaryField, PdfBinaryField
 from postgresqleu.util.time import today_conference
@@ -110,18 +111,6 @@ valid_status_transitions = {
     5: {4: 'Talk confirmed to reservelist', 6: 'Speaker withdraws'},
     6: {0: 'Talk processing reset', },
 }
-
-
-def color_validator(value):
-    if not value.startswith('#'):
-        raise ValidationError('Color values must start with #')
-    if len(value) != 7:
-        raise ValidationError('Color values must be # + 7 characters')
-    for n in range(0, 3):
-        try:
-            int(value[n * 2 + 1:n * 2 + 2 + 1], 16)
-        except ValueError:
-            raise ValidationError('Invalid value in color specification')
 
 
 class ConferenceSeries(models.Model):

@@ -177,3 +177,15 @@ class ImageValidator(object):
         if self.maxsize:
             if img.size[0] > self.maxsize[0] or img.size[1] > self.maxsize[1]:
                 raise ValidationError("Maximum image size is {}x{}".format(*self.maxsize))
+
+
+def color_validator(value):
+    if not value.startswith('#'):
+        raise ValidationError('Color values must start with #')
+    if len(value) != 7:
+        raise ValidationError('Color values must be # + 7 characters')
+    for n in range(0, 3):
+        try:
+            int(value[n * 2 + 1:n * 2 + 2 + 1], 16)
+        except ValueError:
+            raise ValidationError('Invalid value in color specification')
