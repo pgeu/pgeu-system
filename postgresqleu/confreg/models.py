@@ -1646,7 +1646,7 @@ class ConferenceTweetQueue(models.Model):
 
     def _ensure_provider_cache(self, cache):
         if 'providers' not in cache:
-            cache['providers'] = {str(mp.id): mp for mp in MessagingProvider.objects.only('internalname').filter(active=True, conferencemessaging__conference=self.conference, conferencemessaging__broadcast=True)}
+            cache['providers'] = {str(mp.id): mp for mp in MessagingProvider.objects.only('internalname').filter(conferencemessaging__conference=self.conference, conferencemessaging__broadcast=True)}
             cache['providerclasses'] = {str(mp.id): get_messaging_class(mp.classname) for mp in cache['providers'].values()}
 
     def _display_contents(self, cache):
