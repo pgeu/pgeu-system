@@ -143,6 +143,9 @@ class ImageUpload(BaseBenefit):
         return True
 
     def render_claimdata(self, claimedbenefit, isadmin):
+        if claimedbenefit.declined:
+            return 'Benefit declined.'
+
         if self.params.get('previewbackground', None):
             return '<div class="sponsor-imagepreview"><span>Uploaded image: </span><img src="/events/sponsor/admin/imageview/{}/" /></div><div class="sponsor-imagepreview"><span>Preview on background: </span><img src="/events/sponsor/admin/imageview/{}/" style="background-color: {}" /></div>'.format(claimedbenefit.id, claimedbenefit.id, self.params.get('previewbackground'))
         return 'Uploaded image: <img src="/events/sponsor/admin/imageview/%s/" />' % claimedbenefit.id
