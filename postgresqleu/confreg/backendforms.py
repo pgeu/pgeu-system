@@ -1681,7 +1681,10 @@ class BackendTweetQueueForm(BackendForm):
                 lengthstr = 'Maximum lengths are: {}'.format(', '.join(['{}: {}'.format(provider.internalname, get_messaging(provider).max_post_length) for provider in MessagingProvider.objects.filter(series__isnull=True, active=True)]))
 
             self.fields['textcontents'].help_text = lengthstr
-            self.fields['status'].initial = 'Posted' if self.instance.sent else 'Not posted'
+            postedstatus = []
+            for mp in MessagingProvider.objects.only('internalname', 'classname').filter(active=True, conferencemessaging__conference=self.conference, conferencemessaging__broadcast=True):
+                postedstatus.append((mp.internalname, 'Posted' if mp.id in self.instance.postids.values() else 'Not posted'))
+            self.fields['status'].initial = '<br/>'.join("{}: {}".format(*p) for p in postedstatus)
             self.order_fields(['datetime', 'approved', 'textcontents', 'image', 'comment', 'status'])
 
         self.update_protected_fields()
