@@ -234,7 +234,7 @@ class Command(BaseCommand):
                 # currently using. We only match the most important keywords, just
                 # but it should still be safe against most other possibilities.
                 register_pending_bank_matcher(pm.config('accounting_payout'),
-                                              '.*ADYEN.*BATCH {0} .*'.format(batchnum),
+                                              '.*ADYEN.*BATCH {0}[ ,].*'.format(batchnum),
                                               payout_amount,
                                               entry)
                 msg = "A settlement batch with Adyen has completed for merchant account %s. A summary of the entries are:\n\n%s\n\nAccounting entry %s was created and will automatically be closed once the payout has arrived." % (acct, msg, entry)
