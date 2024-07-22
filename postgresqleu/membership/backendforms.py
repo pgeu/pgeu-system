@@ -36,7 +36,7 @@ class MemberLogManager(object):
     can_add = False
 
     def get_list(self, instance):
-        if instance.id:
+        if instance.pk:
             return [(None, line.timestamp, line.message) for line in MemberLog.objects.filter(member=instance).order_by('-timestamp')]
 
 
