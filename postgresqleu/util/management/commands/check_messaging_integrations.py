@@ -22,7 +22,7 @@ class Command(BaseCommand):
     help = 'Validate messaging integrations and refresh tokens'
 
     class ScheduledJob:
-        scheduled_time = [datetime.time(4, 19)]
+        scheduled_times = [datetime.time(4, 19)]
         default_notify_on_success = True
 
         @classmethod
