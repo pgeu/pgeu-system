@@ -76,7 +76,7 @@ def nagios(request):
         errors.append('Unsent notifications are present in the outbound queue')
 
     # Check that there are no outbound social media broadcasts in the queue
-    if exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencetweetqueue tq WHERE datetime < now() - '10 minutes'::interval AND approved AND EXISTS (SELECT 1 FROM confreg_conferencetweetqueue_remainingtosend rts WHERE rts.conferencetweetqueue_id=tq.id))"):
+    if exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confreg_conferencetweetqueue tq WHERE datetime < now() - '10 minutes'::interval AND approved AND NOT sent)"):
         errors.append('Unsent social media broadcasts are present in the outbound queue')
 
     # Check for email addresses not configured
