@@ -42,7 +42,7 @@ class Command(BaseCommand):
             startdate = None
 
         for method in InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.transferwise.Transferwise'):
-            self.handle_method(method, **options)
+            self.handle_method(method, startdate=startdate)
 
     def handle_method(self, method, startdate):
         pm = method.get_implementation()
