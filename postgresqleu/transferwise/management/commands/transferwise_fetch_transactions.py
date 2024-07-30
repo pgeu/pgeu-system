@@ -8,6 +8,7 @@ from django.db import transaction
 from django.conf import settings
 from django.utils import timezone
 
+from postgresqleu.util.time import today_global
 from postgresqleu.accounting.util import create_accounting_entry
 from postgresqleu.invoices.util import is_managed_bank_account
 from postgresqleu.invoices.util import register_pending_bank_matcher, register_bank_transaction
@@ -30,17 +31,25 @@ class Command(BaseCommand):
         def should_run(self):
             return InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.transferwise.Transferwise').exists()
 
+    def add_arguments(self, parser):
+        parser.add_argument("--days", type=int, help="Number of days back to get transactions for")
+
     @transaction.atomic
     def handle(self, *args, **options):
-        for method in InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.transferwise.Transferwise'):
-            self.handle_method(method)
+        if options['days']:
+            startdate = today_global() - timedelta(days=options['days'])
+        else:
+            startdate = None
 
-    def handle_method(self, method):
+        for method in InvoicePaymentMethod.objects.filter(active=True, classname='postgresqleu.util.payment.transferwise.Transferwise'):
+            self.handle_method(method, **options)
+
+    def handle_method(self, method, startdate):
         pm = method.get_implementation()
 
         api = pm.get_api()
 
-        for t in api.get_transactions():
+        for t in api.get_transactions(startdate=startdate):
             # We will re-fetch most transactions, so only create them if they are not
             # already there.
 
