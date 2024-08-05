@@ -4,7 +4,7 @@ from django.shortcuts import render, get_object_or_404
 from django.core.exceptions import PermissionDenied
 from django.core import paginator
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect, HttpResponse, Http404
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseNotModified
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -1704,19 +1704,34 @@ def speaker_card(request, confname, speakerid, cardformat):
 
 
 def speakerphoto(request, speakerid, phototype='1/'):
-    speaker = get_object_or_404(Speaker, pk=speakerid)
+    # Fetch just the hashes so we can return 304 cheaply on not modified
+    speaker = get_object_or_404(Speaker.objects.only('id', 'photo_hashval', 'photo512_hashval'), pk=speakerid)
     if phototype is None or phototype == '1/':
-        if not speaker.photo:
+        if not speaker.photo_hashval:
             raise Http404()
-        photo = bytes(speaker.photo)
+        etag = speaker.photo_hashval
     elif phototype == '5/':
-        if not speaker.photo512:
+        if not speaker.photo512_hashval:
             raise Http404()
-        photo = bytes(speaker.photo512)
+        etag = speaker.photo512_hashval
     else:
         raise Http404()
+    etag = '"' + etag.hex() + '"'
+
+    if 'If-None-Match' in request.headers:
+        if request.headers['If-None-Match'] == etag:
+            return HttpResponseNotModified()
+
+    # Only fetch the actual photo when needed
+    if phototype is None or phototype == '1/':
+        photo = bytes(speaker.photo)
+    else:
+        photo = bytes(speaker.photo512)
+
     content_type = 'image/png' if photo[:8] == b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A' else 'image/jpg'
-    return HttpResponse(photo, content_type=content_type)
+    r = HttpResponse(photo, content_type=content_type)
+    r['ETag'] = etag
+    return r
 
 
 @login_required
