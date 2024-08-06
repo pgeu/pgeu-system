@@ -11,13 +11,11 @@ from django.utils import timezone
 from io import StringIO
 import difflib
 
-from postgresqleu.mailqueue.util import send_simple_mail
-
 from postgresqleu.confreg.models import ConferenceRegistration
 from postgresqleu.confreg.util import render_conference_response
 from postgresqleu.confreg.util import get_authenticated_conference, get_conference_or_404
 from postgresqleu.confreg.util import reglog
-from postgresqleu.confreg.util import send_conference_notification_template
+from postgresqleu.confreg.util import send_conference_notification, send_conference_notification_template
 from postgresqleu.confreg.mail import attendee_email_form
 
 from postgresqleu.util.db import exec_to_scalar, exec_to_list
@@ -186,11 +184,12 @@ def wikipage_edit(request, confurl, wikiurl):
                     conference.urlname,
                     page.url,
                 )
-                send_simple_mail(conference.notifyaddr,
-                                 conference.notifyaddr,
-                                 subject,
-                                 body,
-                                 sendername=conference.conferencename)
+                send_conference_notification(
+                    conference,
+                    subject,
+                    body
+                )
+
                 body += "\n\nYou are receiving this message because you are subscribed to changes to\nthis page. To stop receiving notifications, please click\n{0}/events/{1}/register/wiki/{2}/sub/\n\n".format(settings.SITEBASE, conference.urlname, page.url)
                 for sub in WikipageSubscriber.objects.filter(page=page):
                     send_simple_mail(conference.contactaddr,
@@ -248,20 +247,20 @@ def admin_edit_page(request, urlname, pageid):
         if form.is_valid():
             if pageid == 'new':
                 form.save()
-                send_simple_mail(conference.notifyaddr,
-                                 conference.notifyaddr,
-                                 "Wiki page '{0}' created by {1}".format(form.cleaned_data['url'], request.user),
-                                 "Title: {0}\nAuthor: {1}\nPublic view: {2}\nPublic edit: {3}\nViewer types: {4}\nEditor types: {5}\nViewer attendees: {6}\nEditor attendees: {7}\n\n".format(
-                                     form.cleaned_data['title'],
-                                     form.cleaned_data['author'].fullname,
-                                     form.cleaned_data['publicview'],
-                                     form.cleaned_data['publicedit'],
-                                     ", ".join([r.regtype for r in form.cleaned_data['viewer_regtype']]),
-                                     ", ".join([r.regtype for r in form.cleaned_data['editor_regtype']]),
-                                     ", ".join([r.fullname for r in form.cleaned_data['viewer_attendee']]),
-                                     ", ".join([r.fullname for r in form.cleaned_data['editor_attendee']]),
-                                     ),
-                                 sendername=conference.conferencename)
+                send_conference_notification(
+                    conference,
+                    "Wiki page '{0}' created by {1}".format(form.cleaned_data['url'], request.user),
+                    "Title: {0}\nAuthor: {1}\nPublic view: {2}\nPublic edit: {3}\nViewer types: {4}\nEditor types: {5}\nViewer attendees: {6}\nEditor attendees: {7}\n\n".format(
+                        form.cleaned_data['title'],
+                        form.cleaned_data['author'].fullname,
+                        form.cleaned_data['publicview'],
+                        form.cleaned_data['publicedit'],
+                        ", ".join([r.regtype for r in form.cleaned_data['viewer_regtype']]),
+                        ", ".join([r.regtype for r in form.cleaned_data['editor_regtype']]),
+                        ", ".join([r.fullname for r in form.cleaned_data['viewer_attendee']]),
+                        ", ".join([r.fullname for r in form.cleaned_data['editor_attendee']]),
+                    ),
+                )
             else:
                 f = form.save(commit=False)
                 form.save_m2m()
@@ -279,11 +278,11 @@ def admin_edit_page(request, urlname, pageid):
                 if s.tell() > 0:
                     s.write("\n\nPage admin: {}/events/admin/{}/wiki/{}/".format(settings.SITEBASE, conference.urlname, page.id))
                     # Something changed, so generate audit email
-                    send_simple_mail(conference.notifyaddr,
-                                     conference.notifyaddr,
-                                     "Wiki page '{0}' edited by {1}".format(form.cleaned_data['url'], request.user),
-                                     s.getvalue(),
-                                     sendername=conference.conferencename)
+                    send_conference_notification(
+                        conference,
+                        "Wiki page '{0}' edited by {1}".format(form.cleaned_data['url'], request.user),
+                        s.getvalue(),
+                    )
                 f.save()
             return HttpResponseRedirect('../')
     else:
