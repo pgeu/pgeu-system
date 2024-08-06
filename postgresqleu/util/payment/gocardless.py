@@ -13,7 +13,6 @@ from postgresqleu.util.widgets import StaticTextWidget, MonospaceTextarea
 from postgresqleu.util.forms import SubmitButtonField
 from postgresqleu.util.payment.banktransfer import BaseManagedBankPayment
 from postgresqleu.util.payment.banktransfer import BaseManagedBankPaymentForm
-from postgresqleu.mailqueue.util import send_simple_mail
 
 import requests
 
