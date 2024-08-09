@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.urls import re_path
 from django.views.generic import RedirectView
 
 from django.conf import settings
@@ -10,12 +10,12 @@ postgresqleu.oauthlogin.oauthclient.configure()
 
 
 oauthurlpatterns = [
-    url(r'^accounts/login/?$', postgresqleu.oauthlogin.views.login),
-    url(r'^accounts/logout/?$', postgresqleu.oauthlogin.views.logout),
-    url(r'^login/$', RedirectView.as_view(url='/accounts/login/')),
-    url(r'^logout/$', RedirectView.as_view(url='/accounts/logout/')),
+    re_path(r'^accounts/login/?$', postgresqleu.oauthlogin.views.login),
+    re_path(r'^accounts/logout/?$', postgresqleu.oauthlogin.views.logout),
+    re_path(r'^login/$', RedirectView.as_view(url='/accounts/login/')),
+    re_path(r'^logout/$', RedirectView.as_view(url='/accounts/logout/')),
 ]
 
 
 for provider in list(settings.OAUTH.keys()):
-    oauthurlpatterns.append(url(r'^accounts/login/({0})/$'.format(provider), postgresqleu.oauthlogin.oauthclient.login_oauth))
+    oauthurlpatterns.append(re_path(r'^accounts/login/({0})/$'.format(provider), postgresqleu.oauthlogin.oauthclient.login_oauth))
