@@ -1,7 +1,7 @@
 {{body}}
 
 -- 
-This message was sent to sponsor of {{conference.conferencename}}.
+This message was sent to sponsors of {{conference.conferencename}}.
 {%if extra_cc%}This address was added as an extra CC address by one of the managers.\n
 {%else%}You can view all communications for this conference at:
 {{sitebase}}/events/sponsor/{{sponsor.id}}/
