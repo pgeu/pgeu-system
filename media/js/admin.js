@@ -1,3 +1,7 @@
+function base64ToBytes(base64) {
+  return Uint8Array.from(atob(base64), (m) => m.codePointAt(0));
+}
+
 $(document).ready(function() {
    $('.confirm-btn').on("click", function(e) {
       p = $(this).data('confirm');
@@ -178,6 +182,13 @@ $(document).ready(function() {
     });
     /* Trigger initial filter */
     $(this).trigger('keyup');
+  });
+
+  $('iframe.htmlpreview').each(function() {
+    $(this).load(function() {
+      $(this).height($(this).contents().find("body").height());
+    });
+    $(this).attr('srcdoc', new TextDecoder().decode(base64ToBytes($(this).data('content'))));
   });
 
 

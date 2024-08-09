@@ -79,6 +79,12 @@ a.preview-pdf-link {
     cursor: pointer;
 }
 
+/* Preview html in an iframe */
+iframe.htmlpreview {
+    width: 100%;
+    height: auto;
+}
+
 /* Form that displays inline-block */
 form.inline-block-form {
     display: inline-block;

@@ -126,6 +126,15 @@ class StaticTextWidget(TextInput):
             return mark_safe(value)
 
 
+class StaticHtmlPreviewWidget(TextInput):
+    template_name = 'forms/widgets/static_html_preview_widget.html'
+
+    def get_context(self, name, value, attrs):
+        d = super().get_context(name, value, attrs)
+        d['base64content'] = base64.b64encode(d['widget']['value'].encode()).decode('ascii')
+        return d
+
+
 class TestButtonWidget(TextInput):
     template_name = 'forms/widgets/test_button_widget.html'
 
