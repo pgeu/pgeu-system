@@ -20,9 +20,6 @@ echo "                 User: $PGU"
 echo "Verifying postgres connection..."
 psql -w "host=$PGH port=$PGP dbname=$PGD user=$PGU" -c "SELECT 1" >/dev/null
 
-echo "Verifying that pgcrypto is installed in the pgcrypto schema..."
-psql -w "host=$PGH port=$PGP dbname=$PGD user=$PGU" -c "CREATE SCHEMA IF NOT EXISTS pgcrypto; CREATE EXTENSION IF NOT EXISTS pgcrypto SCHEMA pgcrypto; SELECT pgcrypto.gen_random_uuid()"
-
 # Start from script directory to be safe!
 cd "${0%/*}"
 

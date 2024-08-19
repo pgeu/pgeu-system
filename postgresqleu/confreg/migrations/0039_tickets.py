@@ -55,10 +55,20 @@ class Migration(migrations.Migration):
             field=models.TextField(blank=True, null=True, unique=True),
         ),
         migrations.RunSQL(
-            "UPDATE confreg_conferenceregistration SET idtoken=encode(pgcrypto.digest(pgcrypto.gen_random_bytes(250), 'sha256'), 'hex') WHERE idtoken IS NULL"
+            """WITH t AS (
+  SELECT r.id, string_agg(lpad(to_hex((random() * 255)::int)::text, 2, '0'),'') AS rnd
+  FROM confreg_conferenceregistration r CROSS JOIN generate_series(1,32) g(g)
+  WHERE r.idtoken IS NULL GROUP BY r.id
+)
+UPDATE confreg_conferenceregistration rr SET idtoken=rnd FROM t WHERE t.id=rr.id""",
         ),
         migrations.RunSQL(
-            "UPDATE confreg_conferenceregistration SET publictoken=encode(pgcrypto.digest(pgcrypto.gen_random_bytes(250), 'sha256'), 'hex') WHERE publictoken IS NULL"
+            """WITH t AS (
+  SELECT r.id, string_agg(lpad(to_hex((random() * 255)::int)::text, 2, '0'),'') AS rnd
+  FROM confreg_conferenceregistration r CROSS JOIN generate_series(1,32) g(g)
+  WHERE r.publictoken IS NULL GROUP BY r.id
+)
+UPDATE confreg_conferenceregistration rr SET publictoken=rnd FROM t WHERE t.id=rr.id""",
         ),
         migrations.AlterField(
             model_name='conferenceregistration',
