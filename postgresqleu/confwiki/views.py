@@ -602,7 +602,6 @@ def signup_admin_sendmail(request, urlname, signupid):
                 ('../../', 'Signups'),
                 ('../', signup.title),
             ],
-            template='confwiki/mail/signup_mail.txt',
             extracontext={'signup': signup},
             query=_get_query,
             strings=True,

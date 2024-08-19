@@ -13,7 +13,7 @@ from .util import send_conference_mail
 from .backendforms import BackendSendEmailForm
 
 
-def attendee_email_form(request, conference, query=None, breadcrumbs=[], template='confreg/mail/attendee_mail.txt', extracontext={}, strings=False):
+def attendee_email_form(request, conference, query=None, breadcrumbs=[], extracontext={}, strings=False):
     if request.method == 'POST':
         if strings:
             idlist = request.POST['idlist'].split(',')
