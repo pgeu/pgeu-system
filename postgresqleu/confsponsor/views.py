@@ -923,7 +923,7 @@ def sponsor_admin_dashboard(request, confurlname):
     # Maybe we could do this with the ORM based on data we already have, but SQL is easier
     curs = connection.cursor()
     curs.execute("""
-SELECT l.levelname, s.name, b.benefitname, array_agg(
+SELECT l.levelname, s.name, b.benefitname, b.deadline, array_agg(
     CASE WHEN scb.declined='t' THEN 1 WHEN scb.confirmed='f' THEN 2 WHEN scb.confirmed='t' THEN 3 ELSE 0 END
     ) AS status
 FROM confsponsor_sponsor s
@@ -936,12 +936,12 @@ ORDER BY l.levelcost DESC, l.levelname, s.name, b.sortkey, b.benefitname""", {'c
     benefitmatrix = OrderedDict()
     currentlevel = None
 
-    benefitcols = []
+    benefits = []
     currentmatrix = []
     lastsponsor = None
     currentsponsor = []
     firstsponsor = True
-    for levelname, sponsor, benefitname, status in curs.fetchall():
+    for levelname, sponsor, benefitname, deadline, status in curs.fetchall():
         if lastsponsor != sponsor:
             # New sponsor...
             if currentsponsor:
@@ -954,22 +954,28 @@ ORDER BY l.levelcost DESC, l.levelname, s.name, b.sortkey, b.benefitname""", {'c
             if currentlevel:
                 benefitmatrix[currentlevel] = {
                     'matrix': currentmatrix,
-                    'cols': benefitcols,
+                    'benefits': benefits,
                 }
-                benefitcols = []
+                benefits = []
                 currentmatrix = []
                 lastsponsor = sponsor
                 currentsponsor = [sponsor, ]
                 firstsponsor = True
             currentlevel = levelname
         if firstsponsor:
-            benefitcols.append(benefitname)
+            benefits.append({
+                'name': benefitname,
+                'deadline': deadline,
+                'expired': deadline and deadline < timezone.now(),
+            })
         currentsponsor.append(status)
     currentmatrix.append(currentsponsor)
     benefitmatrix[currentlevel] = {
         'matrix': currentmatrix,
-        'cols': benefitcols,
+        'benefits': benefits,
     }
+    from pprint import pprint
+    pprint(benefitmatrix)
 
     has_shipment_tracking = ShipmentAddress.objects.filter(conference=conference, active=True).exists()
     if has_shipment_tracking:
@@ -983,7 +989,6 @@ ORDER BY l.levelcost DESC, l.levelname, s.name, b.sortkey, b.benefitname""", {'c
         'unconfirmed_sponsors': unconfirmed_sponsors,
         'unconfirmed_benefits': unconfirmed_benefits,
         'mails': mails,
-        'benefitcols': benefitcols,
         'benefitmatrix': benefitmatrix,
         'has_shipment_tracking': has_shipment_tracking,
         'shipments': shipments,
