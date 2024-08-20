@@ -29,3 +29,12 @@ def jsonstruct(value):
 @register.filter(name='subtract')
 def subtract(value, arg):
     return value - arg
+
+
+@register.simple_tag(name='arrayindex')
+def arayindex(value, arg, mod=None):
+    if mod:
+        arg = arg + mod
+    if arg < len(value):
+        return value[arg]
+    return ''
