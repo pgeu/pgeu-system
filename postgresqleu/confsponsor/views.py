@@ -974,8 +974,6 @@ ORDER BY l.levelcost DESC, l.levelname, s.name, b.sortkey, b.benefitname""", {'c
         'matrix': currentmatrix,
         'benefits': benefits,
     }
-    from pprint import pprint
-    pprint(benefitmatrix)
 
     has_shipment_tracking = ShipmentAddress.objects.filter(conference=conference, active=True).exists()
     if has_shipment_tracking:
