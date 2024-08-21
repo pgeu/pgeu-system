@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
-from postgresqleu.util.widgets import EmailTextWidget, MonospaceTextarea
+from postgresqleu.util.widgets import MonospaceTextarea
 
 from postgresqleu.confreg.models import RegistrationType, ConferenceRegistration
 from .models import Wikipage, Signup, AttendeeSignup
