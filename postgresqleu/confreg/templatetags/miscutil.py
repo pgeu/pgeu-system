@@ -11,6 +11,21 @@ def isboolean(value):
     return isinstance(value, bool)
 
 
+@register.filter(name='isdict')
+def isdict(value):
+    return isinstance(value, dict)
+
+
+@register.filter(name='islist')
+def islist(value):
+    return isinstance(value, list)
+
+
+@register.filter(name='islistordict')
+def islistordict(value):
+    return isinstance(value, list) or isinstance(value, dict)
+
+
 @register.filter(name='vartypename')
 def vartypename(value):
     return type(value).__name__
