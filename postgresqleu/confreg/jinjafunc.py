@@ -7,6 +7,7 @@ from django.utils.text import slugify
 from django.utils.timesince import timesince
 from django.utils import timezone
 from django.conf import settings
+import django.db.models
 
 import os.path
 import random
@@ -174,6 +175,40 @@ class ConfSandbox(jinja2.sandbox.SandboxedEnvironment):
                 return False
 
         return super(ConfSandbox, self).is_safe_attribute(obj, attr, value)
+
+
+# Enumerate all available attributes (in the postgresqleu scope), showing their
+# availability.
+def get_all_available_attributes(objclass, depth=0):
+    modname = objclass.__module__
+    if not (modname.startswith('postgresqleu.') and modname.endswith('models')):
+        # Outside of models, we also specifically allow the InvoicePresentationWrapper
+        if modname != 'postgresqleu.invoices.util' or obj.__class__.__name__ != 'InvoicePresentationWrapper':
+            return
+
+    for attname, attref in objclass.__dict__.items():
+        def _is_visible():
+            # Implement the same rules as above, because reusing the sandbox is painful as it
+            # works with objects and not models.
+            if attname in getattr(objclass, '_unsafe_attributes', []):
+                return False
+            if hasattr(objclass, '_safe_attributes'):
+                return attname in getattr(objclass, '_safe_attributes')
+            # If neither safe nor unsafe is specified, we only allow access if the model has
+            # a conference field specified.
+            return hasattr(objclass, 'conference')
+        if issubclass(type(attref), django.db.models.query_utils.DeferredAttribute):
+            if _is_visible():
+                yield attname, attref.field.verbose_name
+        elif issubclass(type(attref), django.db.models.fields.related_descriptors.ForwardManyToOneDescriptor):
+            # Special case, don't recurse into conference model if we're not at the top object (to keep smaller)
+            if attname == 'conference' and depth > 0:
+                continue
+            if _is_visible():
+                yield attname, dict(get_all_available_attributes(type(attref.field.related_model()), depth + 1))
+        elif issubclass(type(attref), django.db.models.fields.related_descriptors.ManyToManyDescriptor) and not attref.reverse:
+            if _is_visible():
+                yield attname, [dict(get_all_available_attributes(type(attref.field.related_model()), depth + 1))]
 
 
 # A couple of useful filters that we publish everywhere:
