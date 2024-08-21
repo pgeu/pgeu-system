@@ -30,6 +30,8 @@ class SponsorshipContract(models.Model):
     contractpdf = PdfBinaryField(null=False, blank=False, max_length=1000000, verbose_name='Contract PDF')
     fieldjson = models.JSONField(blank=False, null=False, default=dict, encoder=DjangoJSONEncoder)
 
+    _safe_attributes = ['conference', 'contractname']
+
     def __str__(self):
         return self.contractname
 

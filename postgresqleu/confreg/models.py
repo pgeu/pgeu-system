@@ -960,6 +960,8 @@ class Room(models.Model):
 
     json_included_attributes = ['roomname', 'capacity', 'sortkey']
 
+    _unsafe_attributes = ['comment', ]
+
     def __str__(self):
         return self.roomname
 
@@ -1147,6 +1149,11 @@ class ConferenceSession(models.Model):
     # Not a db field, but set from the view to track if the current user
     # has given any feedback on this session.
     has_given_feedback = False
+
+    _unsafe_attributes = [
+        'submissionnote', 'internalnote',
+        'tentativescheduleslot_id', 'tentativescheduleslot', 'tentativeroom', 'tentativeroom_id',
+    ]
 
     @property
     def speaker_list(self):
