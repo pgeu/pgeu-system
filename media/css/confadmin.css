@@ -178,6 +178,24 @@ a.partial-collapse:not(.collapsed):after {
 }
 
 /*
+ * Trivial treeview widget
+ */
+details.treeview {
+    margin-left: 1rem;
+}
+
+details.treeview summary:has(+ div) {
+    display: list-item; /* Sometimes set by bootstrap, but we override to always have it */
+    list-style-position: outside;
+    cursor: pointer;
+}
+
+
+details.treeview details.treeview {
+    margin-left: 2rem;
+}
+
+/*
  * Nested dropdown
  */
 .dropdown-submenu {

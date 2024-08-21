@@ -1,0 +1,9 @@
+{%load miscutil%}
+{%if treedata|isdict%}{%for k, v in treedata.items|dictsort:0 %}
+<details class="treeview"><summary>{{k}}{%if v and not v|islistordict%} ({{v}}){%endif%}</summary>{%if v|islistordict %}<div>{%include "forms/widgets/treeview_widget.html" with treedata=v%}</div>{%endif%}</details>
+{%endfor%}
+{%elif treedata|islist%}<div class="treeview">Array of:</div><div>{%for k in treedata.0 %}
+<details class="treeview withparent"><summary>{{k}}</summary></details>
+{%endfor%}
+</div>
+{%endif%}

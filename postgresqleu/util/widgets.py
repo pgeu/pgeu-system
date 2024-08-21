@@ -126,6 +126,20 @@ class StaticTextWidget(TextInput):
             return mark_safe(value)
 
 
+class SimpleTreeviewWidget(TextInput):
+    template_name = 'forms/widgets/treeview_widget.html'
+
+    def __init__(self, *args, **kwargs):
+        self.treedata = dict(kwargs.pop('treedata'))
+
+        super().__init__(*args, **kwargs)
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        context['treedata'] = self.treedata
+        return context
+
+
 class StaticHtmlPreviewWidget(TextInput):
     template_name = 'forms/widgets/static_html_preview_widget.html'
 
