@@ -108,6 +108,11 @@ class SponsorshipBenefit(models.Model):
     include_in_data = models.BooleanField(null=False, default=True, verbose_name="Include in data",
                                           help_text='Include information about this benefit in sponsorship data from tokens')
 
+    _safe_attributes = [
+        'benefitname', 'sortkey', 'benefitdescription', 'claimprompt', 'maxclaims', 'deadline',
+        'autoconfirm', 'benefit_class', 'class_parameters',
+    ]
+
     def __str__(self):
         return self.benefitname
 

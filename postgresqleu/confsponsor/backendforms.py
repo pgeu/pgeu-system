@@ -7,14 +7,16 @@ from collections import OrderedDict
 import json
 
 from postgresqleu.util.db import exec_to_scalar
-from postgresqleu.util.widgets import StaticTextWidget
+from postgresqleu.util.widgets import StaticTextWidget, SimpleTreeviewWidget
 from postgresqleu.util.widgets import MonospaceTextarea
 from postgresqleu.util.backendforms import BackendForm, BackendBeforeNewForm
 from postgresqleu.util.backendlookups import GeneralAccountLookup
 from postgresqleu.confreg.jinjafunc import JinjaTemplateValidator, filter_social
+from postgresqleu.confreg.jinjafunc import get_all_available_attributes
 from postgresqleu.confreg.twitter import get_all_conference_social_media
 from postgresqleu.confreg.twitter import render_multiprovider_tweet
 
+from postgresqleu.confreg.models import Conference
 from .models import Sponsor
 from .models import SponsorshipLevel, SponsorshipContract, SponsorshipBenefit
 from .models import ShipmentAddress
@@ -107,12 +109,13 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
     markdown_fields = ['benefitdescription', 'claimprompt', ]
     dynamic_preview_fields = ['tweet_template']
     form_before_new = BackendSponsorshipNewBenefitForm
-    readonly_fields = ['benefit_class_name', ]
+    readonly_fields = ['benefit_class_name', 'available_fields', ]
     exclude_date_validators = ['deadline', ]
 
     class_param_fields = []  # Overridden in subclass!
 
     benefit_class_name = django.forms.CharField(required=False)
+    available_fields = django.forms.CharField(required=False)
 
     @property
     def fieldsets(self):
@@ -125,7 +128,7 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
         return [
             {'id': 'base', 'legend': 'Base', 'fields': basefields},
             {'id': 'download', 'legend': 'Token download data', 'fields': ['overview_name', 'overview_value', 'include_in_data']},
-            {'id': 'marketing', 'legend': 'Marketing', 'fields': ['tweet_template', ]},
+            {'id': 'marketing', 'legend': 'Marketing', 'fields': ['tweet_template', 'available_fields', ]},
             {'id': 'params', 'legend': 'Parameters', 'fields': self.class_param_fields},
         ]
 
@@ -138,7 +141,7 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
     class Meta:
         model = SponsorshipBenefit
         fields = ['benefitname', 'benefitdescription', 'sortkey', 'maxclaims',
-                  'claimprompt', 'deadline', 'tweet_template', 'benefit_class_name', 'autoconfirm',
+                  'claimprompt', 'deadline', 'tweet_template', 'available_fields', 'benefit_class_name', 'autoconfirm',
                   'overview_name', 'overview_value', 'include_in_data', ]
 
     _can_multiclaim = None
@@ -193,6 +196,8 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
         ]
         self.fields['tweet_template'].widget = MonospaceTextarea()
 
+        self.fields['available_fields'].widget = SimpleTreeviewWidget(treedata=self.get_contextrefs())
+
         if not self.can_multiclaim:
             del self.fields['maxclaims']
             self.update_protected_fields()
@@ -220,6 +225,15 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
                 else:
                     return p
             return ''
+
+    @classmethod
+    def get_contextrefs(self):
+        return {
+            'benefit': dict(get_all_available_attributes(SponsorshipBenefit)),
+            'level': dict(get_all_available_attributes(SponsorshipLevel)),
+            'conference': dict(get_all_available_attributes(Conference)),
+            'sponsor': dict(get_all_available_attributes(Sponsor)),
+        }
 
 
 class BackendSponsorshipLevelBenefitManager(object):

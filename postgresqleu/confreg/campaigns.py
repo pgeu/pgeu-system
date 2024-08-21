@@ -4,10 +4,11 @@ from django.http import Http404, HttpResponse
 from django.utils.dateparse import parse_datetime, parse_duration
 from django.utils import timezone
 
-from postgresqleu.util.widgets import MonospaceTextarea
-from postgresqleu.confreg.models import ConferenceSession, Track
+from postgresqleu.util.widgets import MonospaceTextarea, SimpleTreeviewWidget
+from postgresqleu.confreg.models import Conference, ConferenceSession, Track
 from postgresqleu.confreg.models import MessagingProvider
 from postgresqleu.confreg.twitter import post_conference_social, render_multiprovider_tweet
+from postgresqleu.confreg.jinjafunc import get_all_available_attributes
 from postgresqleu.confsponsor.models import Sponsor, SponsorshipLevel
 from postgresqleu.util.messaging import get_messaging, get_messaging_class
 from postgresqleu.util.messaging.short import get_shortened_post_length
@@ -54,15 +55,18 @@ class BaseCampaignForm(forms.Form):
     content_template = forms.CharField(max_length=2000,
                                        widget=MonospaceTextarea,
                                        required=True)
+    available_fields = forms.CharField(required=False, help_text="These fields are available as {{field}} in the template")
     dynamic_preview_fields = ['content_template', ]
 
     confirm = forms.BooleanField(help_text="Confirm that you want to generate all the tweets for this campaign at this time", required=False)
 
     def __init__(self, conference, *args, **kwargs):
         self.conference = conference
-        self.field_order = ['starttime', 'timebetween', 'timerandom', 'content_template'] + self.custom_fields + ['confirm', ]
+        self.field_order = ['starttime', 'timebetween', 'timerandom', 'content_template', 'available_fields', ] + self.custom_fields + ['confirm', ]
 
         super(BaseCampaignForm, self).__init__(*args, *kwargs)
+
+        self.fields['available_fields'].widget = SimpleTreeviewWidget(treedata=self.get_contextrefs())
 
         if not all([self.data.get(f) for f in ['starttime', 'timebetween', 'timerandom', 'content_template'] + self.custom_fields]):
             del self.fields['confirm']
@@ -79,6 +83,9 @@ class BaseCampaignForm(forms.Form):
                 self.fields['confirm'].help_text = "Confirm that you want to generate all the tweets for this campaign at this time. Campaign will go on until approximately {}, with {} posts.".format(approxend, num)
             else:
                 self.fields['confirm'].help_text = "Campaign matches no entries. Try again."
+
+    def get_contextrefs(self):
+        return {}
 
     def clean_confirm(self):
         if not self.cleaned_data['confirm']:
@@ -119,6 +126,13 @@ class ApprovedSessionsCampaignForm(BaseCampaignForm):
             'session': session,
         })
 
+    @classmethod
+    def get_contextrefs(cls):
+        return {
+            'conference': dict(get_all_available_attributes(Conference)),
+            'session': dict(get_all_available_attributes(ConferenceSession)),
+        }
+
     def get_queryset(self):
         return ConferenceSession.objects.filter(conference=self.conference, status=1, cross_schedule=False, track__in=self.data.getlist('tracks'))
 
@@ -138,6 +152,13 @@ class SponsorsCampaignForm(BaseCampaignForm):
             'conference': conference,
             'sponsor': sponsor,
         })
+
+    @classmethod
+    def get_contextrefs(cls):
+        return {
+            'conference': dict(get_all_available_attributes(Conference)),
+            'sponsor': dict(get_all_available_attributes(Sponsor)),
+        }
 
     def get_queryset(self):
         return Sponsor.objects.filter(conference=self.conference, confirmed=True, level__in=self.data.getlist('levels'))
