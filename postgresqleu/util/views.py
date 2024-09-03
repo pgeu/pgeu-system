@@ -37,7 +37,7 @@ def oauth_return(request, providerid):
         if err:
             return HttpResponse(err)
         else:
-            if provider.series__id:
+            if provider.series_id:
                 return HttpResponseRedirect('{}/events/admin/_series/{}/messaging/{}/'.format(
                     settings.SITEBASE,
                     provider.series_id,
