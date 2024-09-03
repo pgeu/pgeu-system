@@ -550,14 +550,14 @@ class InvoiceManager(object):
                     accrows.append(
                         (r.vatrate.vataccount.num, accountingtxt, vatamount, None)
                     )
-                if 'bankaccount' in invoice.paidusing.config:
+                if invoice.paidusing and 'bankaccount' in invoice.paidusing.config:
                     accrows.append(
                         (invoice.paidusing.config['bankaccount'], accountingtxt, -(amount + vatamount), None)
                     )
 
                 urls = ['%s/invoices/%s/' % (settings.SITEBASE, invoice.pk), ]
                 entry = create_accounting_entry(accrows, True, urls)
-                if 'bankaccount' in invoice.paidusing.config:
+                if invoice.paidusing and 'bankaccount' in invoice.paidusing.config:
                     # See is_managed_bank_account(), if 'bankaccount' is present then this is
                     # a managed bank account, and we can create a pending matcher.
                     register_pending_bank_matcher(invoice.paidusing.config['bankaccount'],
