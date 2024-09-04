@@ -1,7 +1,7 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseRedirect
 
 from postgresqleu.confreg.models import MessagingProvider
 from postgresqleu.util.messaging import get_messaging
