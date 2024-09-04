@@ -192,7 +192,13 @@ class JinjaFlowable(Flowable):
     def draw_paragraph(self, o):
         # Attempt to draw a paragraph that can dynamically change the font size
         # as necessary.
-        fontname = '{0}{1}'.format(self.fontname, o.get('bold', False) and ' Bold' or '')
+        fontname = o.get('fontname', self.fontname)
+        if o.get('bold', False):
+            fontname += ' Bold'
+        if o.get('italic', False):
+            fontname += ' Italic'
+        if o.get('extralight', False):
+            fontname += ' ExtraLight'
         lines = o['text'].splitlines()
 
         if len(lines) == 0:
@@ -393,6 +399,28 @@ if __name__ == "__main__":
         ('DejaVu Serif', '{}/DejaVuSerif.ttf'.format(args.fontroot)),
         ('DejaVu Serif Italic', '{}/DejaVuSerif-Italic.ttf'.format(args.fontroot)),
         ('DejaVu Serif Bold', '{}/DejaVuSerif-Bold.ttf'.format(args.fontroot)),
+        ('DejaVu Serif Bold Italic', '{}/DejaVuSerif-BoldItalic.ttf'.format(args.fontroot)),
+
+        ('DejaVu Serif Condensed', '{}/DejaVuSerifCondensed.ttf'.format(args.fontroot)),
+        ('DejaVu Serif Condensed Italic', '{}/DejaVuSerifCondensed-Italic.ttf'.format(args.fontroot)),
+        ('DejaVu Serif Condensed Bold', '{}/DejaVuSerifCondensed-Bold.ttf'.format(args.fontroot)),
+        ('DejaVu Serif Condensed Bold Italic', '{}/DejaVuSerifCondensed-BoldItalic.ttf'.format(args.fontroot)),
+
+        ('DejaVu Sans', '{}/DejaVuSans.ttf'.format(args.fontroot)),
+        ('DejaVu Sans Italic', '{}/DejaVuSans-Oblique.ttf'.format(args.fontroot)),
+        ('DejaVu Sans Bold', '{}/DejaVuSans-Bold.ttf'.format(args.fontroot)),
+        ('DejaVu Sans Bold Italic', '{}/DejaVuSans-BoldOblique.ttf'.format(args.fontroot)),
+        ('DejaVu Sans ExtraLight', '{}/DejaVuSans-ExtraLight.ttf'.format(args.fontroot)),
+
+        ('DejaVu Sans Condensed', '{}/DejaVuSansCondensed.ttf'.format(args.fontroot)),
+        ('DejaVu Sans Condensed Italic', '{}/DejaVuSansCondensed-Oblique.ttf'.format(args.fontroot)),
+        ('DejaVu Sans Condensed Bold', '{}/DejaVuSansCondensed-Bold.ttf'.format(args.fontroot)),
+        ('DejaVu Sans Condensed Bold Italic', '{}/DejaVuSansCondensed-BoldOblique.ttf'.format(args.fontroot)),
+
+        ('DejaVu Sans Mono', '{}/DejaVuSansMono.ttf'.format(args.fontroot)),
+        ('DejaVu Sans Mono Italic', '{}/DejaVuSansMono-Oblique.ttf'.format(args.fontroot)),
+        ('DejaVu Sans Mono Bold', '{}/DejaVuSansMono-Bold.ttf'.format(args.fontroot)),
+        ('DejaVu Sans Mono Bold Italic', '{}/DejaVuSansMono-BoldOblique.ttf'.format(args.fontroot)),
     ]
 
     if args.font:

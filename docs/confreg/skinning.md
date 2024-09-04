@@ -371,20 +371,28 @@ paragraph
 :    text
      : The actual text to write
 
-     font
+     fontname
      : The font to use. This font must be registered in local_settings.py!
 
      color
-	 : The color to use (defaults to *black*)
+     : The color to use (defaults to *black*)
 
      bold
-	 : Use a bold font (defaults to *false*)
+     : Use a bold font (defaults to *false*). If using both bold and italics, bold must
+       come first.
+
+     italic
+     : Use an italic or oblique font (defaults to *false*). If using both bold and
+       italics, bold must come first.
+
+     extralight
+     : DejaVu Sans has an ExtraLight weight. This cannot be combined  with bold or italic.
 
      maxsize
-	 : Maximum size to use for dynamically sized font
+     : Maximum size to use for dynamically sized font
 
      align
-	 : Alignment (*left* (default), *right*, *center*)
+     : Alignment (*left* (default), *right*, *center*)
 
 Color are specified either by name (*white*, *black*) or by RGB value
 in the form of an array containing [r,g,b] color values (0-255).
