@@ -307,7 +307,7 @@ class Signwell(BaseProvider):
         data = j['event']['type'] + '@' + str(j['event']['time'])
         calculated_signature = hmac.new(self.provider.config['webhookid'].encode(), data.encode(), hashlib.sha256).hexdigest()
         if not hmac.compare_digest(j['event']['hash'], calculated_signature):
-            return HttpResponse("Invalid signature", sstatus=400)
+            return HttpResponse("Invalid signature", status=400)
 
         docid = j.get('data', {}).get('object', {}).get('id', None)
         if docid:

@@ -294,7 +294,7 @@ class Linkedin(object):
             },
         )
         if r.status_code != 200:
-            return False, "Failed to get post (sstatus {}): {}".format(r.status_code, r.text)
+            return False, "Failed to get post (status {}): {}".format(r.status_code, r.text)
         # We can't really check that there is at least one post returned, because there might
         # be no posts available. But at least this way we have verified that the token is OK.
         return True, ''
