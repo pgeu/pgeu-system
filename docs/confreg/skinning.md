@@ -372,7 +372,8 @@ paragraph
      : The actual text to write
 
      fontname
-     : The font to use. This font must be registered in local_settings.py!
+     : The font to use. This font must be registered in local_settings.py! When using the
+       command line, these may be passed via one or multiple `--font` arguments.
 
      color
      : The color to use (defaults to *black*)

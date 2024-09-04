@@ -382,7 +382,7 @@ if __name__ == "__main__":
     parser.add_argument('--borders', action='store_true', help='Enable borders on written file')
     parser.add_argument('--pagebreaks', action='store_true', help='Enable pagebreaks on written file')
     parser.add_argument('--fontroot', type=str, help='fontroot for dejavu fonts')
-    parser.add_argument('--font', type=str, nargs='+', help='<font name>:<font path>')
+    parser.add_argument('--font', type=str, nargs=1, action='append', help='<font name>:<font path>')
 
     args = parser.parse_args()
 
@@ -424,7 +424,8 @@ if __name__ == "__main__":
     ]
 
     if args.font:
-        fonts.extend([f.split(':') for f in args.font])
+        for font in args.font:
+            fonts.extend([f.split(':') for f in font])
 
     if args.what == 'badge':
         renderer = JinjaBadgeRenderer(args.repopath, fonts, debug=True, border=args.borders, pagebreaks=args.pagebreaks)
