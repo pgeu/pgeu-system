@@ -350,6 +350,28 @@ _dejavu_fonts = [
     ('DejaVu Serif', '{}/DejaVuSerif.ttf'.format(FONTROOT)),
     ('DejaVu Serif Italic', '{}/DejaVuSerif-Italic.ttf'.format(FONTROOT)),
     ('DejaVu Serif Bold', '{}/DejaVuSerif-Bold.ttf'.format(FONTROOT)),
+    ('DejaVu Serif Bold Italic', '{}/DejaVuSerif-BoldItalic.ttf'.format(FONTROOT)),
+
+    ('DejaVu Serif Condensed', '{}/DejaVuSerifCondensed.ttf'.format(FONTROOT)),
+    ('DejaVu Serif Condensed Italic', '{}/DejaVuSerifCondensed-Italic.ttf'.format(FONTROOT)),
+    ('DejaVu Serif Condensed Bold', '{}/DejaVuSerifCondensed-Bold.ttf'.format(FONTROOT)),
+    ('DejaVu Serif Condensed Bold Italic', '{}/DejaVuSerifCondensed-BoldItalic.ttf'.format(FONTROOT)),
+
+    ('DejaVu Sans', '{}/DejaVuSans.ttf'.format(FONTROOT)),
+    ('DejaVu Sans Italic', '{}/DejaVuSans-Oblique.ttf'.format(FONTROOT)),
+    ('DejaVu Sans Bold', '{}/DejaVuSans-Bold.ttf'.format(FONTROOT)),
+    ('DejaVu Sans Bold Italic', '{}/DejaVuSans-BoldOblique.ttf'.format(FONTROOT)),
+    ('DejaVu Sans ExtraLight', '{}/DejaVuSans-ExtraLight.ttf'.format(FONTROOT)),
+
+    ('DejaVu Sans Condensed', '{}/DejaVuSansCondensed.ttf'.format(FONTROOT)),
+    ('DejaVu Sans Condensed Italic', '{}/DejaVuSansCondensed-Oblique.ttf'.format(FONTROOT)),
+    ('DejaVu Sans Condensed Bold', '{}/DejaVuSansCondensed-Bold.ttf'.format(FONTROOT)),
+    ('DejaVu Sans Condensed Bold Italic', '{}/DejaVuSansCondensed-BoldOblique.ttf'.format(FONTROOT)),
+
+    ('DejaVu Sans Mono', '{}/DejaVuSansMono.ttf'.format(FONTROOT)),
+    ('DejaVu Sans Mono Italic', '{}/DejaVuSansMono-Oblique.ttf'.format(FONTROOT)),
+    ('DejaVu Sans Mono Bold', '{}/DejaVuSansMono-Bold.ttf'.format(FONTROOT)),
+    ('DejaVu Sans Mono Bold Italic', '{}/DejaVuSansMono-BoldOblique.ttf'.format(FONTROOT)),
 ]
 if 'REGISTER_FONTS' not in locals():
     REGISTER_FONTS = _dejavu_fonts
