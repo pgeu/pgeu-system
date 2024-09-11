@@ -1,6 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.db import transaction
 
 import base64
 
@@ -173,10 +174,19 @@ class SponsorSession(BaseBenefit):
             return ''
 
     def can_unclaim(self, claimedbenefit):
-        if 'session' in claimedbenefit.claimjson:
-            # If we've already assigned a session to it, we can't unclaim it
-            return False
+        # We allow unclaiming even of approved sessions, and we'll just go delete them.
         return True
+
+    def process_unclaim(self, claimedbenefit):
+        if 'session' in claimedbenefit.claimjson:
+            with transaction.atomic():
+                speaker = Speaker.objects.get(pk=claimedbenefit.claimjson['speaker'])
+                if not speaker.conferencesession_set.exclude(pk=claimedbenefit.claimjson['session']).exists():
+                    # This speaker has no other sessions, so delete it
+                    speaker.delete()
+
+                # Session exists, so we must delete it.
+                ConferenceSession.objects.get(pk=claimedbenefit.claimjson['session']).delete()
 
     def validate_parameters(self):
         # Verify that the track being copied in actually exists
