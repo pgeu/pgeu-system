@@ -1687,6 +1687,12 @@ class BackendTweetQueueForm(BackendForm):
             self.fields['status'].initial = '<br/>'.join("{}: {}".format(*p) for p in postedstatus)
             self.order_fields(['datetime', 'approved', 'textcontents', 'image', 'comment', 'status'])
 
+        if self.instance and self.instance.approved and not self.instance.sent and self.instance.errorcount > 0:
+            self.fields['status'].initial += '<br/><br/>Next retry to post at {}'.format(
+                # NOTE! The pow() formula should be kept in sync with util/messaging/sender.py
+                self.instance.datetime + datetime.timedelta(seconds=pow(2.25, self.instance.errorcount + 4)),
+            )
+
         self.update_protected_fields()
 
     def pre_create_item(self):

@@ -102,6 +102,7 @@ def _send_pending_posts(providers):
             # Get all pending tweets to post. If a tweet has errors on it, it get postponed by
             # the very unscientific formula of 2.25^(errorcount+4) up to 10 attempts, which means
             # the first retry is after ~ 1 minute and the last one after ~24 hours.
+            # NOTE! The pow() formula should be kept in sync with confreg/backendforms.py, BackendTweetQueueForm
             tlist = list(ConferenceTweetQueue.objects.raw("""SELECT * FROM confreg_conferencetweetqueue
 WHERE approved AND NOT sent AND
   datetime + CASE WHEN errorcount>0 THEN pow(2.25, errorcount+4) * '1 second'::interval ELSE '0' END  <= CURRENT_TIMESTAMP
