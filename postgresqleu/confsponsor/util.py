@@ -96,6 +96,7 @@ def sponsorclaimsdata(conference):
                     'confirmedat': s.confirmedat,
                     'benefits': [
                         {
+                            'claimid': b.id,
                             'name': b.benefit.benefitname,
                             'confirmed': b.confirmed,
                             'class': all_benefits[b.benefit.benefit_class]['class'],
