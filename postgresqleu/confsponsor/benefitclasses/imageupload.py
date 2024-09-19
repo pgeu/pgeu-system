@@ -122,7 +122,11 @@ class ImageUploadBackendForm(BackendSponsorshipLevelBenefitForm):
     xres = forms.IntegerField(label="X resolution")
     yres = forms.IntegerField(label="Y resolution")
     transparent = IntegerBooleanField(label="Require transparent", required=False)
-    previewbackground = forms.CharField(max_length=20, required=False, validators=[color_validator, ], help_text="Background color used in preview")
+    previewbackground = forms.CharField(max_length=20, required=False,
+                                        label='Preview background',
+                                        validators=[color_validator, ],
+                                        help_text="Background color used in preview",
+                                        )
 
     class_param_fields = ['format', 'xres', 'yres', 'transparent', 'previewbackground']
 
