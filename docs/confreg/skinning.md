@@ -37,8 +37,7 @@ subdirectory.
 ## Base template <a name="basetemplate"></a>
 
 In the base template, the entire HTML structure should be defined. The
-skin can do anything it wants with HTML, css and javascript. Note that
-some pages rely on JQuery being present, so it should always be included.
+skin can do anything it wants with HTML, css and javascript.
 
 The following blocks should be defined in the base template:
 
