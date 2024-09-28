@@ -235,13 +235,22 @@ class Invoice(models.Model):
         ordering = ('-id', )
 
 
+class VatPercentage(models.DecimalField):
+    def __str__(self):
+        return str(self.normalize())
+
+    def from_db_value(self, value, expression, connection):
+        return value.normalize()
+
+    def to_python(self, value):
+        return super().to_python(value).normalize()
+
+
 class VatRate(models.Model):
     name = models.CharField(max_length=100, blank=False, null=False)
     shortname = models.CharField(max_length=16, blank=False, null=False, verbose_name="Short name")
-    vatpercent = models.IntegerField(null=False, default=0, verbose_name="VAT percentage",
-                                     validators=[MaxValueValidator(100), MinValueValidator(0)])
+    vatpercent = VatPercentage(null=False, default=0, verbose_name="VAT percentage", max_digits=9, decimal_places=6, validators=[MaxValueValidator(100), MinValueValidator(0)])
     vataccount = models.ForeignKey(Account, null=False, blank=False, on_delete=models.CASCADE, verbose_name="VAT account")
-
     _safe_attributes = ('vatpercent', 'shortstr', 'shortname', 'name')
 
     def __str__(self):
