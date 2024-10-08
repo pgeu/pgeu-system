@@ -775,9 +775,9 @@
         <field type="PositiveSmallIntegerField" name="numcode">446</field>
     </object>
     <object pk="MK" model="countries.country">
-        <field type="CharField" name="name">MACEDONIA, THE FORMER YUGOSLAV REPUBLIC OF</field>
-        <field type="CharField" name="printable_name">The former Yugoslav Republic of Macedonia</field>
-        <field type="CharField" name="iso3">MKD</field>
+        <field type="CharField" name="name">NORTH MACEDONIA</field>
+		<field type="CharField" name="printable_name">North Macedonia</field>
+		<field type="CharField" name="iso3">MKD</field>
         <field type="PositiveSmallIntegerField" name="numcode">807</field>
     </object>
     <object pk="MG" model="countries.country">
