@@ -1902,7 +1902,7 @@ class BulkPaymentRefundForm(django.forms.Form):
 #
 class BackendSendEmailForm(django.forms.Form):
     _from = django.forms.CharField(max_length=100, disabled=True, label="From")
-    sendat = django.forms.DateTimeField(required=True, initial=timezone.now)
+    sendat = django.forms.DateTimeField(required=True, initial=timezone.now, label='Send at')
     subject = django.forms.CharField(max_length=128, required=True)
     recipients = django.forms.Field(widget=StaticTextWidget, required=False)
     message = django.forms.CharField(widget=EmailTextWidget, required=True)
