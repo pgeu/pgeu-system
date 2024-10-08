@@ -1,6 +1,7 @@
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django.http import Http404, HttpResponse
+from django.contrib.auth.decorators import login_required
 
 from postgresqleu.util.backendviews import backend_list_editor
 from postgresqleu.mailqueue.backendforms import BackendMailqueueForm
@@ -8,6 +9,7 @@ from postgresqleu.mailqueue.models import QueuedMail
 from postgresqleu.mailqueue.util import parse_mail_content, recursive_parse_attachments_from_message
 
 
+@login_required
 def edit_mailqueue(request, rest):
     if not request.user.is_superuser:
         raise PermissionDenied("Access denied")
@@ -24,6 +26,7 @@ def edit_mailqueue(request, rest):
     )
 
 
+@login_required
 def view_attachment(request, queueid, attname):
     if not request.user.is_superuser:
         raise PermissionDenied("Access denied")
