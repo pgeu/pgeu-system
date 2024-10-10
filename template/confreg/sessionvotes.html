@@ -245,6 +245,9 @@ ul.comments span.username {
 {%if not hasvoters%}
 <div class="alert alert-warning">There are no talkvoters configured on this conference! List of talks will be empty!</div>
 {%endif%}
+
+<p><b>Scoring method:</b> {{ scoring_method }}</p>
+
 <table id="votetable" class="table table-bordered table-condensed" style="display:none">
  <tr>
   <th style="width: 1%">Seq</th>

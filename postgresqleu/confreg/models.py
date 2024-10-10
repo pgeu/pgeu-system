@@ -56,6 +56,11 @@ TWITTER_POST_CHOICES = (
     (4, "Volunteers and admins can post without approval"),
 )
 
+SCORING_METHOD_CHOICES = (
+    (0, "Average"),
+    (1, "Olympic Average"),
+)
+
 # NOTE! The contents of these arrays must also be matched with the
 # database table confreg_status_strings. This one is managed by
 # manually creating a separate migration in case the contents change.
@@ -209,6 +214,7 @@ class Conference(models.Model):
     callforpaperstags = models.BooleanField(blank=False, null=False, default=False, verbose_name='Use tags')
     callforpapersrecording = models.BooleanField(blank=False, null=False, default=False, verbose_name='Ask for recording consent')
     showvotes = models.BooleanField(blank=False, null=False, default=False, verbose_name="Show votes", help_text="Show other people's votes on the talkvote page")
+    scoring_method = models.IntegerField(blank=False, null=False, default=0, choices=SCORING_METHOD_CHOICES, verbose_name="Scoring method")
 
     sendwelcomemail = models.BooleanField(blank=False, null=False, default=False, verbose_name="Send welcome email", help_text="Send an email to attendees once their registration is completed.")
     tickets = models.BooleanField(blank=False, null=False, default=False, verbose_name="Use tickets", help_text="Generate and send tickets to all attendees once their registration is completed.")

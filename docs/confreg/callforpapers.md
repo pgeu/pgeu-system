@@ -48,6 +48,19 @@ Click the status to bring up a dialog allowing the change of status.
 Sessions can be sorted by session name (default), speakers or average
 score by clicking the appropriate headlines.
 
+#### 2.1 Scoring method
+
+There are two methods for calculating the average score of a
+proposal:
+
+- Average &mdash; This is the standard average of all the scores.
+- Olympic average &mdash; This method removes one instance each of the
+  maximum and minimum of the scores before averaging. This helps
+  prevent both favoritism and also sabotage.
+
+The method used by the conference is set by the administrator and
+shown at the top of the voting page.
+
 ### 3. Deciding and notifying speakers
 
 Once the voting is done, the decisions can be made and the speakers be

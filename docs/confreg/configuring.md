@@ -60,6 +60,14 @@ You can also decide if you want talkvoters to be able to see how others
 voted and the overall average vote.  Usually this would be off until
 everyone has finished voting.
 
+There are two methods for calculating the average score of a
+proposal:
+
+- Average &mdash; This is the standard average of all the scores.
+- Olympic average &mdash; This method removes one instance each of the
+  maximum and minimum of the scores before averaging. This helps
+  prevent both favoritism and also sabotage.
+
 ### Roles
 
 There are four types of roles that can be configured at the level of

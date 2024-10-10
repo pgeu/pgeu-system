@@ -29,7 +29,7 @@ from .models import AttendeeMail, ConferenceAdditionalOption
 from .models import PendingAdditionalOrder
 from .models import RegistrationWaitlistEntry, RegistrationWaitlistHistory
 from .models import RegistrationTransferPending
-from .models import STATUS_CHOICES
+from .models import STATUS_CHOICES, SCORING_METHOD_CHOICES
 from .models import ConferenceNews, ConferenceTweetQueue
 from .models import SavedReportDefinition
 from .models import ConferenceMessaging
@@ -2877,12 +2877,34 @@ LEFT JOIN LATERAL (
     WHERE cs.conferencesession_id=s.id
 ) speakers ON true
 LEFT JOIN LATERAL (
-    SELECT avg(vote) FILTER (WHERE vote > 0)::numeric(3,2) AS avg,
-           jsonb_object_agg(username, vote) AS votes,
-           jsonb_object_agg(username, comment) FILTER (WHERE comment IS NOT NULL AND comment != '') AS comments
-    FROM confreg_conferencesessionvote
-    INNER JOIN auth_user ON auth_user.id=voter_id
-    WHERE session_id=s.id
+    WITH
+    aggs (votes, comments, avg, sum, count, min, max) AS (
+        SELECT
+            jsonb_object_agg(username, vote),
+            jsonb_object_agg(username, comment) FILTER (WHERE comment > ''),
+            AVG(vote) FILTER (WHERE vote > 0),
+            SUM(vote) FILTER (WHERE vote > 0),
+            COUNT(*) FILTER (WHERE vote > 0),
+            MIN(vote) FILTER (WHERE vote > 0),
+            MAX(vote) FILTER (WHERE vote > 0)
+        FROM confreg_conferencesessionvote
+        INNER JOIN auth_user ON auth_user.id=voter_id
+        WHERE session_id=s.id
+    )
+    SELECT
+        CASE (SELECT scoring_method FROM confreg_conference WHERE id = %(confid)s)
+            WHEN 0 /* Average */
+            THEN avg
+
+            WHEN 1 /* Olympic average */
+            THEN CASE WHEN count > 2
+                      THEN (sum - max - min) / (count - 2)
+                      ELSE avg
+                 END
+        END::numeric(3,2) AS avg,
+        votes,
+        comments
+    FROM aggs
 ) votes ON true
 WHERE s.conference_id=%(confid)s AND
       (COALESCE(s.track_id,0)=ANY(%(tracks)s)) AND
@@ -2925,6 +2947,7 @@ ORDER BY {}s.title,s.id""".format(nonvotedquery, order), {
         'urlfilter': urltrackfilter + urlstatusfilter,
         'helplink': 'callforpapers',
         'options': options,
+        'scoring_method': SCORING_METHOD_CHOICES[conference.scoring_method][1],
     })
 
 
