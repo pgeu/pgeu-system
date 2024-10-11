@@ -402,6 +402,7 @@ def view_registration_badge(request, urlname, regid):
     try:
         render_jinja_badges(conference, settings.REGISTER_FONTS, [reg.safe_export(), ], resp, False, False)
     except Exception as e:
+        print("Exception rendering badge: {}".format(e))
         return HttpResponse("Exception rendering badge: {}".format(e.__repr__()), content_type='text/plain')
     return resp
 
