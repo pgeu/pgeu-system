@@ -914,11 +914,14 @@ class TransferRegForm(forms.Form):
     invoice_name = forms.CharField(required=False, label="Invoice recipient name", help_text="Name of the recipient of the invoice")
     invoice_email = forms.EmailField(required=False, label="Invoice recipient email", help_text="E-mail to send the invoice to")
     invoice_address = forms.CharField(widget=MonospaceTextarea, required=False)
+    invoice_autocancel = forms.IntegerField(required=False, label="Invoice autocancel hours", help_text="Automatically cancel invoice after this many hours",
+                                            validators=[django.core.validators.MinValueValidator(0)])
     confirm = forms.BooleanField(help_text="Confirm that you want to transfer the registration with the given steps!", required=False)
 
     def __init__(self, conference, *args, **kwargs):
         self.conference = conference
         super(TransferRegForm, self).__init__(*args, **kwargs)
+        self.initial['invoice_autocancel'] = conference.invoice_autocancel_hours
         self.fields['transfer_from'].queryset = ConferenceRegistration.objects.select_related('conference').filter(conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, transfer_from_reg__isnull=True)
         self.fields['transfer_to'].queryset = ConferenceRegistration.objects.select_related('conference').filter(conference=conference, payconfirmedat__isnull=True, canceledat__isnull=True, bulkpayment__isnull=True)
         if not ('transfer_from' in self.data and 'transfer_to' in self.data):

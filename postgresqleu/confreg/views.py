@@ -4560,6 +4560,7 @@ def transfer_reg(request, urlname):
                         processorid=rtp.pk,
                         accounting_account=settings.ACCOUNTING_CONFREG_ACCOUNT,
                         accounting_object=conference.accounting_object,
+                        canceltime=get_invoice_autocancel(form.cleaned_data['invoice_autocancel']),
                         paymentmethods=conference.paymentmethods.all(),
                     )
                     rtp.invoice.save()
