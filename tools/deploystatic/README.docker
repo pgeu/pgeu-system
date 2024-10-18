@@ -1,0 +1,13 @@
+If you have trouble with the dependencies, the Dockerfile in this
+directory will build a simple container that you can use. For
+example:
+
+docker build -t deploystatic .
+
+
+And then to use it:
+
+docker run -it --rm -v `pwd`:/source -v /tmp/statictest:/target deploystatic
+
+(In this case taking the templates in the current directory and deploying the
+result to /tmp/statictest - adjust for your own directories)
