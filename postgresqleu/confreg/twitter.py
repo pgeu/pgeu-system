@@ -165,7 +165,7 @@ def volunteer_twitter(request, urlname, token):
             when = request.POST.get('at', '')
             if when:
                 try:
-                    when = datetime.datetime.strptime(when, '%Y-%m-%dT%H:%M')
+                    when = timezone.make_aware(datetime.datetime.strptime(when, '%Y-%m-%dT%H:%M'))
                 except ValueError:
                     return _json_response({'error': 'Could not parse posting date'})
             else:
