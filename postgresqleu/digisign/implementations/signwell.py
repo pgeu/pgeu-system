@@ -87,7 +87,8 @@ class Signwell(BaseProvider):
     def description_text(self, signeremail):
         return 'Signing instructions will be delivered to {}. If necessary, you will be able to re-route the signing from the provider interface to somebody else in your organisation once the process is started.'.format(signeremail)
 
-    def send_contract(self, sender_name, sender_email, recipient_name, recipient_email, pdf, pdfname, subject, message, metadata, fielddata, expires_in, test, message_to_sender=None):
+    def send_contract(self, sender_name, sender_email, recipient_name, recipient_email, pdf, pdfname, subject, message, metadata, fielddata, expires_in, test,
+                      message_to_sender="The contract for sponsorship has been signed by the sponsor. It is now time for the organizers to countersign."):
         if self.provider.config.get('forcetest', False):
             # Override test to be true if configured for enforcement.
             test = True
