@@ -158,6 +158,10 @@ def send_test_sponsorship_contract(request, urlname, contractid):
                 contract.fieldjson,
                 2,  # expires_in
                 test=True,
+                message_to_sender="TEST The contract sponsorship of {} has been signed by {}. It is now time for the organizers to countersign, but remember this is a test only".format
+                (
+                    conference.conferencename, form.cleaned_data['recipientname']
+                )
             )
             if error:
                 form.add_error(None, 'Failed to send test contract: {}'.format(error))
