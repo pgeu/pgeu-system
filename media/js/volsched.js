@@ -1,14 +1,8 @@
 function update_stats(stats) {
-    var tbody = $('table#statsTable tbody');
-    tbody.empty();
-
-    $.each(stats, function(index, s) {
-        var row = $('<tr/>');
-        row.append($('<td/>').text(s.name));
-        row.append($('<td/>').text(s.count));
-        row.append($('<td/>').text(s.time));
-        tbody.append(row);
-    });
+    const dt = $('#statsTable').DataTable();
+    dt.clear();
+    dt.rows.add(stats);
+    dt.draw();
 }
 
 function makebutton(op, txt) {
@@ -112,12 +106,30 @@ function update_slot_info(slot, regid, is_admin, is_volunteer) {
     masterrow.toggleClass('success', assigned_to_slot);
 }
 
+function setup_datatable() {
+    const dtable = $('#statsTable').DataTable({
+      'paging': false,
+      'info': false,
+      'orderCellsTop': true,
+      'columnDefs': [
+      ],
+      'order': [],
+      'columns': [
+        { data: 'name' },
+        { data: 'count' },
+        { data: 'time' }
+      ]
+   });
+}
+
 /* Global list of values we will be reusing */
 var allVolunteers;
 var is_admin;
 var regid;
 
 $(function() {
+    setup_datatable();
+
     $($(document)).on('click', '.btn-op', function(event) {
         var op = $(this).data('op');
         var slotid = $(this).parents('tr').data('slotid');

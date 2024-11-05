@@ -1,6 +1,8 @@
 {%extends basetemplate %}
 {%block title%}Volunteer Schedule - {{conference}}{%endblock%}
 {%block extrahead%}
+<link rel="stylesheet" type="text/css" href="/media/datatables/datatables.min.css"/>
+<script type="text/javascript" src="/media/datatables/datatables.min.js"></script>
 <script type="text/javascript" src="/media/js/volsched.js"></script>
 <style>
 .assignment-status {
@@ -55,7 +57,7 @@
 <p>
  The following volunteers are currently assigned slots:
 </p>
-<table class="table table-condensed" id="statsTable">
+<table class="table table-condensed datatable-tbl" id="statsTable">
  <thead>
   <tr class="info">
     <th>Volunteer</th>
