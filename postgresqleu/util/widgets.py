@@ -102,7 +102,7 @@ class InlinePdfUploadWidget(forms.ClearableFileInput):
 
     def render(self, name, value, attrs=None, renderer=None):
         context = self.get_context(name, value, attrs)
-        if value and not isinstance(value, UploadedFile):
+        if value and not isinstance(value, UploadedFile) and type(value) != object:
             context['widget']['value'] = base64.b64encode(value).decode('ascii')
         return mark_safe(loader.render_to_string('confreg/widgets/inline_pdf_upload_widget.html', context))
 
