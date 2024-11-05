@@ -113,7 +113,7 @@ function setup_datatable() {
       'orderCellsTop': true,
       'columnDefs': [
       ],
-      'order': [],
+      'order': [[0, 'asc']],
       'columns': [
         { data: 'name' },
         { data: 'count' },
