@@ -15,7 +15,7 @@ function makebutton(op, txt) {
     return $('<button/>').addClass('btn btn-primary btn-xs assignment-status btn-op').data('op', op).text(txt ? txt : op);
 }
 
-function update_slot_info(slot, regid, is_admin) {
+function update_slot_info(slot, regid, is_admin, is_volunteer) {
     var masterrow = $('tr.slot-row[data-slotid="' + slot.id + '"]');
     var slotcounttd = masterrow.find('td.slot-count');
     var slotcountspan = masterrow.find('span.slot-count-val');
@@ -99,7 +99,7 @@ function update_slot_info(slot, regid, is_admin) {
             col.append(sel);
         }
         else {
-            if (!assigned_to_slot) {
+            if (!assigned_to_slot && is_volunteer) {
                 /* Can only add if not already added */
                 col.append(makebutton('signup', 'Sign up'));
             }
@@ -128,7 +128,7 @@ $(function() {
             'slotid': slotid,
             'volid': volid,
         }).success(function(data, status, xhr) {
-            update_slot_info(data.slot, regid, is_admin);
+            update_slot_info(data.slot, regid, is_admin, is_volunteer);
             update_stats(data.stats);
         }).fail(function(xhr) {
             try {
@@ -151,7 +151,7 @@ $(function() {
             'volid': event.target.value,
             'dataType': 'json',
         }).success(function(data, status, xhr) {
-            update_slot_info(data.slot, regid, is_admin);
+            update_slot_info(data.slot, regid, is_admin, is_volunteer);
             update_stats(data.stats);
         }).fail(function(xhr) {
             try {
@@ -169,6 +169,7 @@ $(function() {
         $.each(data.slots, function(idx, slot) {
             allVolunteers = data.volunteers;
             is_admin = data.meta.isadmin;
+            is_volunteer = data.meta.isvolunteer;
             regid = data.meta.regid;
             update_slot_info(slot, regid, is_admin);
             update_stats(data.stats);

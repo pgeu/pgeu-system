@@ -110,6 +110,7 @@ def volunteerschedule_api(request, urlname, adm=False):
             } for vol in conference.volunteers.all().order_by('firstname', 'lastname')],
             'meta': {
                 'isadmin': is_admin,
+                'isvolunteer': conference.volunteers.filter(pk=reg.pk).exists(),
                 'regid': reg.id,
             },
             'stats': _get_volunteer_stats(conference),
@@ -188,6 +189,8 @@ def _signup(request, conference, reg, adm, slot):
         return 409, "Volunteer slot is already full"
     elif VolunteerAssignment.objects.filter(reg=reg, slot__timerange__overlap=slot.timerange).exists():
         return 400, "Cannot sign up for an overlapping slot"
+    elif not conference.volunteers.filter(pk=reg.pk).exists():
+        return 400, "You are not a registered volunteer for this conference"
     else:
         a = VolunteerAssignment(slot=slot, reg=reg, vol_confirmed=True, org_confirmed=False)
         a.save()
