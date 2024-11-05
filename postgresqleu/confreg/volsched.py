@@ -72,6 +72,7 @@ def _get_volunteer_stats(conference):
         'name': r.fullname,
         'count': r.num_assignments,
         'time': str(r.total_time or '0:00:00'),
+        'seconds': int(r.total_time.total_seconds()),
     } for r in stats]
 
 

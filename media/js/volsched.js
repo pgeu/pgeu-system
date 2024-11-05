@@ -111,13 +111,12 @@ function setup_datatable() {
       'paging': false,
       'info': false,
       'orderCellsTop': true,
-      'columnDefs': [
-      ],
       'order': [[0, 'asc']],
       'columns': [
         { data: 'name' },
-        { data: 'count' },
-        { data: 'time' }
+        { data: 'count', searchable: false },
+        { data: 'time', searchable: false, orderData: [3] },
+        { data: 'seconds', visible: false }
       ]
    });
 }
