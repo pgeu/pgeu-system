@@ -2138,7 +2138,11 @@ def confirmreg(request, confname):
     # cost of the registration, minus any discounts found (including
     # complete-registration vouchers).
     conference = get_conference_or_404(confname)
-    reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
+    if request.method != 'POST':
+        reg = get_object_or_404(ConferenceRegistration, attendee=request.user, conference=conference)
+    else:
+        reg = get_object_or_404(ConferenceRegistration.objects.select_for_update(), attendee=request.user, conference=conference)
+
     # This should never happen since we should error out in the form,
     # but make sure we don't accidentally proceed.
     if not reg.regtype:
