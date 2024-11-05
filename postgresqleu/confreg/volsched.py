@@ -60,6 +60,7 @@ def send_volunteer_notification(conference, assignment, subject, template):
 def _get_volunteer_stats(conference):
     stats = ConferenceRegistration.objects.filter(conference=conference) \
                                           .filter(volunteers_set=conference) \
+                                          .only('firstname', 'lastname') \
                                           .annotate(num_assignments=Count('volunteerassignment')) \
                                           .annotate(total_time=Sum(Func(
                                               Func(F('volunteerassignment__slot__timerange'), function='upper'),
