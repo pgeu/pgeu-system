@@ -36,7 +36,8 @@ div.regwrap.errfld {
 div.regwrap.errfld ul.errorlist li {
    font-weight: normal !important;
 }
-form input[type=submit] {
+form input[type=submit],
+form button[type=submit] {
    width: 220px;
 }
 

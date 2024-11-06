@@ -41,7 +41,7 @@ this offer will expire!
 </p>
 <form method="post" action="waitlist_cancel/">{{ csrf_input }}
 <input type="hidden" name="confirm" value="1">
-<input type="submit" name="submit" value="Cancel waitlist">
+<button type="submit" name="submit" value="Cancel waitlist">Cancel waitlist</button>
 </form>
 <p></p>
 {%else%}
@@ -93,11 +93,11 @@ correction.</p>
    to proceed to the payment options.
  </p>
  <a name="buttons"></a>
- <input type="submit" name="submit" value="Save and continue editing"><br/>
- <input type="submit" name="submit" value="Save and finish"><br/>
+ <button type="submit" name="submit" value="Save and continue editing">Save and continue editing</button><br/>
+ <button type="submit" name="submit" value="Save and finish">Save and finish</button><br/>
 </form>
 <form action="." method="post" class="pgeuregform">{{ csrf_input }}
- <input type="submit" name="submit" class="pgeu-confirm-cancel-registration-button" value="Cancel registration"><br/>
+ <button type="submit" name="submit" class="pgeu-confirm-cancel-registration-button" value="Cancel registration">Cancel registration</button><br/>
 </form>
 {%endblock%}
 

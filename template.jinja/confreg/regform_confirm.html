@@ -91,8 +91,8 @@ until this invoice is paid!{%endif%}
   </ul>
 </div>
 {%endif%}
-<input type="submit" name="submit" value="Confirm and finish"{%if totalcost%} class="pgeu-confirm-invoice-button" data-confirmwhat="registration"{%endif%}><br/>
-<input type="submit" name="submit" value="Back">
+<button type="submit" name="submit" value="Confirm and finish"{%if totalcost%} class="pgeu-confirm-invoice-button" data-confirmwhat="registration"{%endif%}>Confirm and finish</button><br/>
+<button type="submit" name="submit" value="Back">Back</button>
 </form>
 
 {%if regalert%}
