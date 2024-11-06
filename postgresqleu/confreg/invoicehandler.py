@@ -54,7 +54,7 @@ class InvoiceProcessor(object):
         # Unlink this invoice from the registration. This will automatically
         # "unlock" the registration
         reg.invoice = None
-        reglog(reg, "Invoice canceled, unlinking from reg")
+        reglog(reg, "Invoice #{} canceled, unlinking from reg".format(invoice.id))
 
         # If this registration holds any additional options that are about to expire, release
         # them for others to use at this point.

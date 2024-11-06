@@ -2292,7 +2292,7 @@ def confirmreg(request, confname):
 
             reg.invoice.save()
             reg.save()
-            reglog(reg, "Confirmed reg details, invoice created", request.user)
+            reglog(reg, "Confirmed reg details, invoice #{} created".format(reg.invoice.id), request.user)
             return HttpResponseRedirect("../invoice/%s/" % reg.pk)
 
         # Else this is some random button we haven't heard of, so just
