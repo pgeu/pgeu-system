@@ -16,6 +16,7 @@ from postgresqleu.confreg.util import render_conference_response
 from postgresqleu.confreg.util import get_authenticated_conference, get_conference_or_404
 from postgresqleu.confreg.util import reglog
 from postgresqleu.confreg.util import send_conference_notification, send_conference_notification_template
+from postgresqleu.confreg.util import send_conference_simple_mail
 from postgresqleu.confreg.mail import attendee_email_form
 
 from postgresqleu.util.db import exec_to_scalar, exec_to_list
