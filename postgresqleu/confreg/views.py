@@ -4371,7 +4371,12 @@ def admin_waitlist_sendmail(request, urlname):
 def admin_attendeemail(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
-    mails = AttendeeMail.objects.prefetch_related('regclasses', 'registrations', 'pending_regs', 'addopts').filter(conference=conference)
+    mails = AttendeeMail.objects.prefetch_related('regclasses', 'registrations', 'pending_regs', 'addopts').filter(conference=conference).extra(where=[
+        """tovolunteers OR tocheckin
+OR EXISTS (SELECT 1 FROM confreg_attendeemail_addopts WHERE attendeemail_id=confreg_attendeemail.id)
+OR EXISTS (SELECT 1 FROM confreg_attendeemail_registrations WHERE attendeemail_id=confreg_attendeemail.id OFFSET 1)
+OR EXISTS (SELECT 1 FROM confreg_attendeemail_pending_regs WHERE attendeemail_id=confreg_attendeemail.id OFFSET 1)""",
+    ])
 
     if request.method == 'POST':
         form = AttendeeMailForm(conference, data=request.POST)
