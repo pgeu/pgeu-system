@@ -57,9 +57,12 @@ class UtilAppConfig(AppConfig):
             logging.getLogger(__name__).warning("Could not load cairosvg library, PNG cards will not be available")
 
         try:
-            import qrencode
+            import qrcode
         except ImportError:
-            logging.getLogger(__name__).warning("Could not load qrencode library. QR code based functionality will not be available")
+            try:
+                import qrencode
+            except ImportError:
+                logging.getLogger(__name__).warning("Could not load qrcode or qrencode library. QR code based functionality will not be available")
 
         try:
             import fitz

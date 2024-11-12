@@ -14,7 +14,6 @@ this script.
 * openssl development libraries (typically libssl-dev) -- for crypto related modules
 * libjpeg-dev and libpng-dev (*before* installing pillow in python)
 * pg_config for postgresql, in path, for the correct version. Typically postgresql-dev package.
-* libqrencode-dev
 * uwsgi, uwsgi-plugin-python3
 
 

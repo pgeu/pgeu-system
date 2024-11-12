@@ -1,4 +1,4 @@
 # Install these requirements as well for full functionality, but they
 # are not required for the base.
-qrencode
+qrcode
 cairosvg

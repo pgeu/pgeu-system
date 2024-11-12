@@ -166,18 +166,27 @@ class JinjaFlowable(Flowable):
             raise Exception("String too long for QR encode")
 
         try:
-            import qrencode
-        except ImportError:
-            o2 = o.copy()
-            o2['stroke'] = True
-            o2['text'] = "qrencode library\nnot found"
-            self.draw_box(o2)
-            self.draw_paragraph(o2)
-            return
+            import qrcode
 
-        (ver, size, qrimage) = qrencode.encode(s, version=ver, level=qrencode.QR_ECLEVEL_M)
-        if size < 500:
-            size = (500 // size) * size
+            qrimage = qrcode.make(s, version=ver, border=0)
+        except ImportError:
+            raise
+            try:
+                import qrencode
+                (ver, size, qrimage) = qrencode.encode(s, version=ver, level=qrencode.QR_ECLEVEL_M)
+            except ImportError:
+                o2 = o.copy()
+                o2['stroke'] = True
+                o2['text'] = "qrencode library\nnot found"
+                self.draw_box(o2)
+                self.draw_paragraph(o2)
+                return
+
+        if qrimage.size[0] != 500:
+            if qrimage.size[0] < 500:
+                size = (500 // qrimage.size[0]) * qrimage.size[0]
+            else:
+                size = qrimage.size[0] // (qrimage.size[0] // 500 + 1)
             qrimage = qrimage.resize((size, size), Image.NEAREST)
 
         self.canv.drawImage(ImageReader(qrimage),

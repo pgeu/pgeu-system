@@ -323,17 +323,26 @@ class BaseInvoice(PDFBase):
             p.wrapOn(self.canvas, cm(12), cm(2))
             p.drawOn(self.canvas, cm(2), cm(3.5))
 
-            try:
-                import qrencode
-                (ver, size, qrimage) = qrencode.encode(self.paymentlink)
-                qrimage = qrimage.resize((size * 4, size * 4))
+            def _draw_qr():
+                try:
+                    import qrcode
+
+                    qrimage = qrcode.make(self.paymentlink, border=0)
+                except ImportError:
+                    try:
+                        import qrencode
+                        (ver, size, qrimage) = qrencode.encode(self.paymentlink)
+                    except ImportError:
+                        # If we don't have the qrcode module, we just don't bother drawing the
+                        # QR code for the link
+                        return
+
+                qrimage = qrimage.resize((150, 150))
                 self.canvas.drawImage(ImageReader(qrimage),
                                       cm(2), cm(1.8),
                                       cm(1.5), cm(1.5))
-            except ImportError:
-                # If we don't have the qrcode module, we just don't bother drawing the
-                # QR code for the link
-                pass
+
+            _draw_qr()
 
             if self.reverse_vat:
                 t = self.canvas.beginText()
