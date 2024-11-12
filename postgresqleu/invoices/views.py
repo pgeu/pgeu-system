@@ -340,6 +340,9 @@ def previewinvoice(request, invoicenum):
 
     invoice = get_object_or_404(Invoice, pk=invoicenum)
 
+    # Fake a secret so we get the QR code
+    invoice.recipient_secret = 'x' * 64
+
     # We assume there is no PDF yet
     wrapper = InvoiceWrapper(invoice)
     r = HttpResponse(content_type='application/pdf')
