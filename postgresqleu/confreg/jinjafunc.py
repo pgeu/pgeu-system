@@ -26,6 +26,11 @@ from postgresqleu.util.messaging import get_messaging_class_from_typename
 
 import jinja2
 import jinja2.sandbox
+try:
+    from jinja2 import pass_context
+except ImportError:
+    # Try Jinja2 2.x version
+    from jinja2 import contextfilter as pass_context
 import markdown
 
 
@@ -259,12 +264,12 @@ def filter_svgparagraph(value, linelength, x, y, dy, parady):
     return '<text x="{}" y="{}">{}</text>'.format(x, y, "\n".join(_svgparagraph()))
 
 
-@jinja2.contextfilter
+@pass_context
 def filter_applymacro(context, obj, macroname):
     return context.resolve(macroname)(obj)
 
 
-@jinja2.contextfilter
+@pass_context
 def filter_lookup(context, name, default=None):
     if not name:
         if default is not None:
@@ -285,7 +290,7 @@ def filter_lookup(context, name, default=None):
 
 # Unpack a social media link for the specific social media being rendered for.
 # This filter is *not* enabled by default.
-@jinja2.contextfilter
+@pass_context
 def filter_social(context, attr):
     if not context.get('messaging', None):
         return None
@@ -296,7 +301,7 @@ def filter_social(context, attr):
 # Get social media profiles including links from a structure.
 # Returns a list of (provider, handle, link) for each configured
 # social media identity.
-@jinja2.contextfilter
+@pass_context
 def filter_social_links(context, attr):
     if attr:
         for k, v in attr.items():

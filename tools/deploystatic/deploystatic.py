@@ -20,6 +20,11 @@ import copy
 
 import jinja2
 import jinja2.sandbox
+try:
+    from jinja2 import pass_context
+except ImportError:
+    # Try Jinja2 2.x version
+    from jinja2 import contextfilter as pass_context
 
 import markdown
 
@@ -75,7 +80,7 @@ def filter_slugify(value):
 
 # Create social links. In the main site this is dynamic, this limited
 # implementation supports just twitter and mastodon.
-@jinja2.contextfilter
+@pass_context
 def filter_social_links(context, attr):
     if attr:
         for k, v in attr.items():
