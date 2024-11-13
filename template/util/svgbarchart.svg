@@ -1,5 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1"
      viewBox="0 -10 {{width}} {{height}}">
+{% if svgdata %}
   <line x1="0" x2="{{width}}" y1="{{bottom}}" y2="{{bottom}}" stroke="black" />
 {%for label, pos in gridlines.items %}
   <line x1="8" x2="{{width}}" y1="{{pos}}" y2="{{pos}}" stroke="gray" stroke-width="0.5" />
@@ -13,4 +14,7 @@
   <text x="{{d.leftpos|add:2}}" y="{{bottom|add:2}}" writing-mode="tb" glyph-orientation-vertical="90" style="font-size: 3.7pt">{{d.label}}</text>
 {%endif%}
 {%endfor%}
+{% else %}
+ <text x="50%" y="50%" style="font-size: 8pt">NO DATA</text>
+{% endif %}
 </svg>

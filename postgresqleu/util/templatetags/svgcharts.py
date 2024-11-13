@@ -98,6 +98,13 @@ def svgbarchart(svgdata, legend=True, wratio=2):
     maxval = max([d['value'] for d in svgdata])
     roundedmax = math.ceil(maxval / 2) * 2
 
+    if not roundedmax:
+        # Graph is empty
+        return t.render({
+            'height': height,
+            'width': width,
+        })
+
     for i, s in enumerate(svgdata):
         s['leftpos'] = itemwidth * i
         s['height'] = int((s['value'] / roundedmax) * graphratio * height)
