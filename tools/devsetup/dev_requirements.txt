@@ -10,7 +10,7 @@ flup
 httplib2
 psycopg2-binary
 pycryptodomex==3.6.1
-reportlab==3.5.59
+reportlab>=3.5.59,<3.7
 python-dateutil
 requests
 requests-oauthlib==1.0.0
