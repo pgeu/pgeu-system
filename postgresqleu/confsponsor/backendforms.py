@@ -309,12 +309,12 @@ class BackendSponsorshipLevelForm(BackendForm):
     })
     allow_copy_previous = True
     auto_cascade_delete_to = ['sponsorshiplevel_paymentmethods', 'sponsorshipbenefit']
-    exclude_date_validators = ['paymentdeadline', ]
+    exclude_date_validators = ['paymentdueby', ]
 
     class Meta:
         model = SponsorshipLevel
         fields = ['levelname', 'urlname', 'levelcost', 'available', 'public', 'maxnumber', 'instantbuy',
-                  'paymentterms', 'paymentdeadline', 'paymentmethods', 'invoiceextradescription', 'contract', 'canbuyvoucher', 'canbuydiscountcode']
+                  'paymentterms', 'paymentdueby', 'paymentmethods', 'invoiceextradescription', 'contract', 'canbuyvoucher', 'canbuydiscountcode']
         widgets = {
             'paymentmethods': django.forms.CheckboxSelectMultiple,
         }
@@ -328,7 +328,7 @@ class BackendSponsorshipLevelForm(BackendForm):
         {
             'id': 'contract',
             'legend': 'Contract information',
-            'fields': ['instantbuy', 'contract', 'paymentterms', 'paymentdeadline'],
+            'fields': ['instantbuy', 'contract', 'paymentterms', 'paymentdueby'],
         },
         {
             'id': 'payment',
