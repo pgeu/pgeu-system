@@ -117,3 +117,14 @@ class PdfBinaryField(ImageBinaryField):
 class UserModelChoiceField(ModelChoiceField):
     def label_from_instance(self, obj):
         return "{0} - {1} {2} <{3}>".format(obj.username, obj.first_name, obj.last_name, obj.email)
+
+
+class NormalizedDecimalField(models.DecimalField):
+    def __str__(self):
+        return str(self.normalize())
+
+    def from_db_value(self, value, expression, connection):
+        return value.normalize()
+
+    def to_python(self, value):
+        return super().to_python(value).normalize()

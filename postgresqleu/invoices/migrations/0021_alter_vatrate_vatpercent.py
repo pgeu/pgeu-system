@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='vatrate',
             name='vatpercent',
-            field=postgresqleu.invoices.models.VatPercentage(decimal_places=6, default=0, max_digits=9, validators=[django.core.validators.MaxValueValidator(100), django.core.validators.MinValueValidator(0)], verbose_name='VAT percentage'),
+            field=postgresqleu.util.fields.NormalizedDecimalField(decimal_places=6, default=0, max_digits=9, validators=[django.core.validators.MaxValueValidator(100), django.core.validators.MinValueValidator(0)], verbose_name='VAT percentage'),
         ),
     ]
