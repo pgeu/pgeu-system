@@ -4374,7 +4374,7 @@ def admin_attendeemail(request, urlname):
     mails = AttendeeMail.objects.prefetch_related('regclasses', 'registrations', 'pending_regs', 'addopts').filter(conference=conference).extra(where=[
         """tovolunteers OR tocheckin
 OR EXISTS (SELECT 1 FROM confreg_attendeemail_addopts WHERE attendeemail_id=confreg_attendeemail.id)
-OR EXISTS (SELECT 1 FROM confreg_attendeemail_registrations WHERE attendeemail_id=confreg_attendeemail.id OFFSET 1)
+OR EXISTS (SELECT 1 FROM confreg_attendeemail_regclasses WHERE attendeemail_id=confreg_attendeemail.id OFFSET 1)
 OR EXISTS (SELECT 1 FROM confreg_attendeemail_pending_regs WHERE attendeemail_id=confreg_attendeemail.id OFFSET 1)""",
     ])
 
