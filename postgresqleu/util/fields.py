@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from django.core.exceptions import ValidationError
 from .forms import ImageBinaryFormField, PdfBinaryFormField
@@ -120,11 +121,8 @@ class UserModelChoiceField(ModelChoiceField):
 
 
 class NormalizedDecimalField(models.DecimalField):
-    def __str__(self):
-        return str(self.normalize())
-
     def from_db_value(self, value, expression, connection):
-        return value.normalize()
+        return value.quantize(Decimal(1)) if value == value.to_integral() else value.normalize()
 
     def to_python(self, value):
-        return super().to_python(value).normalize()
+        return super().to_python(value).quantize(Decimal(1)) if value == value.to_integral() else value.normalize()
