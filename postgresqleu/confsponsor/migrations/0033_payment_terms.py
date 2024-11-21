@@ -15,6 +15,17 @@ class Migration(migrations.Migration):
             name='paymentdueby',
             field=models.DateField(blank=True, help_text='The last acceptable due date for payments. If payment terms go behond this date then the invoice is due at this date', null=True, verbose_name='The date the payment is due by'),
         ),
+        migrations.RunSQL(
+            """
+            update confsponsor_sponsorshiplevel set paymentdueby=conf.startdate-'5 days'::interval from confreg_conference conf
+            where conf.id = conference_id
+            """
+        ),
+        migrations.AlterField(
+            model_name='sponsorshiplevel',
+            name='paymentdueby',
+            field=models.DateField(blank=True, help_text='The last acceptable due date for payments. If payment terms go behond this date then the invoice is due at this date', null=False, verbose_name='The date the payment is due by'),
+        ),
         migrations.AddField(
             model_name='sponsorshiplevel',
             name='paymentterms',

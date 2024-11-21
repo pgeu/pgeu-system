@@ -175,23 +175,13 @@ def create_sponsor_invoice(user, sponsor, override_duedate=None):
 
     if override_duedate:
         duedate = override_duedate
-    elif level.paymentdueby is not None and level.paymentdueby < today_conference():
+    elif level.paymentdueby < today_conference():
         # The payment deadline has passed. Invoices are due immediately
         duedate = timezone.now()
-    elif level.paymentdueby is not None and level.paymentdueby < today_conference() + daystopay:
+    elif level.paymentdueby < today_conference() + daystopay:
         # The payment terms go beyond the payment deadline. The payment is due
         # at the deadline
         duedate = datetime.combine(level.paymentdueby, time(0, 0, 0, 0), conference.tzobj)
-    elif level.paymentdueby is None and conference.startdate < today_conference() + timedelta(days=5):
-        # If conference happens in the next 5 days, invoice is due immediately
-        duedate = timezone.now()
-    elif level.paymentdueby is None and conference.startdate < today_conference() + daystopay:
-        # Less than 30 days before the conference, set the due date to
-        # 5 days before the conference
-        duedate = timezone.make_aware(datetime.combine(
-            conference.startdate - timedelta(days=5),
-            timezone.now().time()
-        ))
     else:
         duedate = timezone.now() + daystopay
 
