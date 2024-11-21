@@ -1,7 +1,6 @@
 from django.utils import timezone
 from django.conf import settings
-
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 import base64
 import os
 
@@ -173,15 +172,16 @@ def create_sponsor_invoice(user, sponsor, override_duedate=None):
 
     invoicerows, reverse_vat = _invoicerows_for_sponsor(sponsor)
     daystopay = timedelta(days=level.paymentterms)
+
     if override_duedate:
         duedate = override_duedate
-    elif level.paymentdueby is not None and level.paymentdueby < timezone.now():
+    elif level.paymentdueby is not None and level.paymentdueby < today_conference():
         # The payment deadline has passed. Invoices are due immediately
         duedate = timezone.now()
-    elif level.paymentdueby is not None and level.paymentdueby < timezone.now() + daystopay:
+    elif level.paymentdueby is not None and level.paymentdueby < today_conference() + daystopay:
         # The payment terms go beyond the payment deadline. The payment is due
         # at the deadline
-        duedate = level.paymentdueby
+        duedate = datetime.combine(level.paymentdueby, time(0, 0, 0, 0), conference.tzobj)
     elif level.paymentdueby is None and conference.startdate < today_conference() + timedelta(days=5):
         # If conference happens in the next 5 days, invoice is due immediately
         duedate = timezone.now()
