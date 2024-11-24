@@ -19,7 +19,8 @@ class Migration(migrations.Migration):
             """
             update confsponsor_sponsorshiplevel set paymentdueby=conf.startdate-'5 days'::interval from confreg_conference conf
             where conf.id = conference_id
-            """
+            """,
+            ""
         ),
         migrations.AlterField(
             model_name='sponsorshiplevel',
