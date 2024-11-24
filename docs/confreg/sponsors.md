@@ -342,7 +342,7 @@ Instant buy available
    process once a signed contract is received.
 
 Number of days until payment is due
-:  The number of days until a sponsorship invoice is due. This is defaults to 30
+:  The number of days until a sponsorship invoice is due. This defaults to 30
    to give net 30 terms. The actual due date for an invoice might be restricted
    by either *The Date the payment is due by* field.
 
