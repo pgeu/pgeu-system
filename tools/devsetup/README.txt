@@ -1,3 +1,24 @@
+Configuration
+-------------
+
+The traditional approach is to create a local_settings.py file under
+the postgresqleu directory, a template is provided.
+
+To allow out-of-module configuration, it is possible to instead
+provide a python module pgeu_system_global_settings and extend
+PYTHONPATH for it to be detected. Settings in there are loaded first,
+in case the above mentioned local_settings.py is available, too, it
+will override global settings.
+
+The skin usually provides skin_settings.py and allows customization
+through a similar skin_local_settings.py. These again take precedence
+over global settings.
+
+Last, a global python module pgeu_system_override_settings is
+attempted to be loaded. It allows overriding any settings of the
+pgeu-system or the skin.
+
+
 Dependencies needed before running
 ----------------------------------
 
