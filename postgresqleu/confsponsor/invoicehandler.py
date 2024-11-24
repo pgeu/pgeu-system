@@ -171,7 +171,7 @@ def create_sponsor_invoice(user, sponsor, override_duedate=None):
     level = sponsor.level
 
     invoicerows, reverse_vat = _invoicerows_for_sponsor(sponsor)
-    daystopay = timedelta(days=level.paymentterms)
+    daystopay = timedelta(days=level.paymentdays)
 
     if override_duedate:
         duedate = override_duedate

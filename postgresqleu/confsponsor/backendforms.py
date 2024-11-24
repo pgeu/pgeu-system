@@ -314,7 +314,7 @@ class BackendSponsorshipLevelForm(BackendForm):
     class Meta:
         model = SponsorshipLevel
         fields = ['levelname', 'urlname', 'levelcost', 'available', 'public', 'maxnumber', 'instantbuy',
-                  'paymentterms', 'paymentdueby', 'paymentmethods', 'invoiceextradescription', 'contract', 'canbuyvoucher', 'canbuydiscountcode']
+                  'paymentdays', 'paymentdueby', 'paymentmethods', 'invoiceextradescription', 'contract', 'canbuyvoucher', 'canbuydiscountcode']
         widgets = {
             'paymentmethods': django.forms.CheckboxSelectMultiple,
         }
@@ -328,7 +328,7 @@ class BackendSponsorshipLevelForm(BackendForm):
         {
             'id': 'contract',
             'legend': 'Contract information',
-            'fields': ['instantbuy', 'contract', 'paymentterms', 'paymentdueby'],
+            'fields': ['instantbuy', 'contract', 'paymentdays', 'paymentdueby'],
         },
         {
             'id': 'payment',

@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='sponsorshiplevel',
-            name='paymentterms',
+            name='paymentdays',
             field=models.IntegerField(default=30, null=True, verbose_name='Number of days until payment is due'),
         ),
     ]
