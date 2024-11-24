@@ -25,11 +25,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='sponsorshiplevel',
             name='paymentdueby',
-            field=models.DateField(blank=True, help_text='The last acceptable due date for payments. If payment terms go beyond this date then the invoice is due at this date', null=False, verbose_name='The latest date the payment is due by'),
+            field=models.DateField(blank=False, help_text='The last acceptable due date for payments. If payment terms go beyond this date then the invoice is due at this date', null=False, verbose_name='The latest date the payment is due by'),
         ),
         migrations.AddField(
             model_name='sponsorshiplevel',
             name='paymentdays',
-            field=models.IntegerField(default=30, null=True, verbose_name='Number of days until payment is due'),
+            field=models.IntegerField(default=30, null=False, verbose_name='Number of days until payment is due'),
         ),
     ]
