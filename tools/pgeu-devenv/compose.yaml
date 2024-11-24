@@ -1,0 +1,62 @@
+volumes:
+  pgdata: {}
+  static-content: {}
+
+services:
+  httpd:
+    build:
+      context: .
+      dockerfile:  Dockerfile.httpd
+    volumes:
+      - "static-content:/srv/static:ro"
+      - "./httpd.conf:/etc/httpd.conf:ro"
+    ports:
+      - "8080:8080"
+
+  uwsgi:
+    build:
+      context: .
+      dockerfile: Dockerfile.uwsgi
+    volumes:
+      - "./uwsgi.ini:/etc/uwsgi.ini:ro"
+
+      # Mount the checkout of the pgeu-system itself.
+      - "../..:/srv/pgeu-system:ro"
+
+      # Mount the directory where the skin lives.
+      - "${SYSTEM_SKIN_DIRECTORY}:/srv/skin:ro"
+
+      # Mount configuration files.
+      - ./${GLOBAL_SETTINGS_FILE:-pgeu_system_global_settings.py}:/srv/settings/pgeu_system_global_settings.py
+      - ./${OVERRIDE_SETTINGS_FILE:-pgeu_system_override_settings.py}:/srv/settings/pgeu_system_override_settings.py
+    ports:
+      - "8081:8081"
+
+  maintenance:
+    build:
+      context: .
+      dockerfile: Dockerfile.maintenance
+    volumes:
+      # Mount the checkout of the pgeu-system itself.
+      - "../..:/srv/pgeu-system:ro"
+
+      # Mount the directory where the skin lives.
+      - "${SYSTEM_SKIN_DIRECTORY}:/srv/skin:ro"
+
+      # Mount configuration files.
+      - ./${GLOBAL_SETTINGS_FILE:-pgeu_system_global_settings.py}:/srv/settings/pgeu_system_global_settings.py
+      - ./${OVERRIDE_SETTINGS_FILE:-pgeu_system_override_settings.py}:/srv/settings/pgeu_system_override_settings.py
+
+      # collectstatic writes static files to this volume to be consumed by
+      # httpd.
+      - "static-content:/srv/static:rw"
+
+  db:
+    image: postgres:${POSTGRES_VERSION:-17}
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - "pgdata:/var/lib/postgresql/data"
+    ports:
+      - "5433:5432"
