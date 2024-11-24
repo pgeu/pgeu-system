@@ -1678,6 +1678,7 @@ class ConferenceTweetQueue(models.Model):
             return LineBreakString("\n".join(
                 "{}: {}".format(cache['providers'][k].internalname, v)
                 for k, v in self.contents.items()
+                if k in cache['providers']
             ))
         return self.contents
 
