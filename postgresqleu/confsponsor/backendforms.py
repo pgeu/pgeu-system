@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 
 from collections import OrderedDict
+import datetime
 import json
 
 from postgresqleu.util.db import exec_to_scalar
@@ -345,6 +346,8 @@ class BackendSponsorshipLevelForm(BackendForm):
     def fix_fields(self):
         self.fields['contract'].queryset = SponsorshipContract.objects.filter(conference=self.conference)
         self.fields['paymentmethods'].label_from_instance = lambda x: "{0}{1}".format(x.internaldescription, x.active and " " or " (INACTIVE)")
+        if not self.initial.get('paymentdueby', None):
+            self.initial['paymentdueby'] = self.conference.startdate - datetime.timedelta(days=5)
 
     def clean(self):
         cleaned_data = super(BackendSponsorshipLevelForm, self).clean()
