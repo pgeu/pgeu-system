@@ -303,11 +303,24 @@ MEETINGS_WS_BASE_URL = None
 # be used instead of TCP.
 MEETINGS_STATUS_BASE_URL = None
 
-# If there is a local_settings.py, let it override our settings
+# First, attempt to load settings from a pgeu_system_settings module
+# available somewhere in the PYTHONPATH.
+try:
+    from pgeu_system_global_settings import *
+except ImportError as e:
+    pass
+# Next, give the local_settings.py from the postgresqleu tree a chance
+# to provide configuration.
 try:
     from .local_settings import *
 except ImportError as e:
-    pass
+    # If there's no local_settings.py within the postgresqleu tree, check
+    # for a globally available pgeu_system_settings module in any configured
+    # PYTHONPATH.
+    try:
+        from pgeu_system_settings import *
+    except ImportError as e:
+        pass
 
 PRELOAD_URLS = []
 if 'SYSTEM_SKIN_DIRECTORY' in globals():
@@ -334,6 +347,12 @@ if 'SYSTEM_SKIN_DIRECTORY' in globals():
 else:
     HAS_SKIN = False
 
+# Try to load overrides from PYTHONPATH. This allows overriding skin
+# settings for testing purposes.
+try:
+    from pgeu_system_override_settings import *
+except ImportError as e:
+    pass
 
 if not SECRET_KEY:
     raise Exception("SECRET_KEY must be configured!")

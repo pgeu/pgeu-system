@@ -33,6 +33,10 @@ EOF
 chmod +x ../../python
 ../../python -m pip install -r dev_requirements.txt
 
+# Configure the test instance. This is done through the traditional
+# approach with local_settings.py here. An alternative would be to
+# write the very same content to
+# venv_dev/lib/python3.11/site-packages/pgeu_system_global_settings.py
 cd ../..
 cat > postgresqleu/local_settings.py <<EOF
 DEBUG=True
