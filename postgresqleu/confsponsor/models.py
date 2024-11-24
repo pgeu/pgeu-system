@@ -56,6 +56,11 @@ class SponsorshipLevel(models.Model):
     contract = models.ForeignKey(SponsorshipContract, blank=True, null=True, on_delete=models.CASCADE)
     canbuyvoucher = models.BooleanField(null=False, blank=False, default=True, verbose_name="Can buy vouchers")
     canbuydiscountcode = models.BooleanField(null=False, blank=False, default=True, verbose_name="Can buy discount codes")
+    paymentdays = models.IntegerField(null=False, blank=False, default=30, verbose_name="Number of days until payment is due")
+    paymentdueby = models.DateField(
+        null=False, blank=False, verbose_name="The latest date the payment is due by",
+        help_text="The last acceptable due date for payments. If payment terms go beyond this date then the invoice is due at this date",
+    )
 
     def __str__(self):
         return self.levelname

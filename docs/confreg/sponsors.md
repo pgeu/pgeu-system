@@ -341,6 +341,17 @@ Instant buy available
    administrator must manually move the sponsorship forward in the
    process once a signed contract is received.
 
+Number of days until payment is due
+:  The number of days until a sponsorship invoice is due. This defaults to 30
+   to give net 30 terms. The actual due date for an invoice might be restricted
+   by either *The Date the payment is due by* field.
+
+The Date the payment is due by
+:  The latest date that *Number of days until payment is due* applies until.
+   Invoices that would be due after this date are instead due at this time or
+   now(if this time is in the past).  This defaults to 5 days before the conference
+   starts.
+
 Payment methods for generated invoices
 :  Which payment methods will be listed on the generated
    invoices. Typically the instant buy levels support payment by
