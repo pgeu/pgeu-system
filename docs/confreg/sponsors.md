@@ -349,10 +349,9 @@ Number of days until payment is due
 The Date the payment is due by
 :  The latest date that *Number of days until payment is due* applies until.
    Invoices that would be due after this date are instead due at this time or
-   now(if this time is in the past).  If this field is unset then invoices created
-   within 5 days of the conference start are due now and invoices created within
-   30 days of the conference start date are due in 5 days.
-    
+   now(if this time is in the past).  This defaults to 5 days before the conference
+   starts.
+
 Payment methods for generated invoices
 :  Which payment methods will be listed on the generated
    invoices. Typically the instant buy levels support payment by
