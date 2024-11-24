@@ -1598,12 +1598,19 @@ class ConferenceMessaging(models.Model):
         return self.provider.publicname
 
     @property
+    def configured_privatebcast(self):
+        if self.privatebcast:
+            # Also verify there is a channel configured
+            return 'privatebcast' in self.config.get('channels', {})
+        return False
+
+    @property
     def full_info(self):
-        if self.notification and self.privatebcast:
+        if self.notification and self.configured_privatebcast:
             return "{} - personal notifications and announcements".format(self)
         elif self.notification:
             return "{} - personal notifications only".format(self)
-        elif self.privatebcast:
+        elif self.configured_privatebcast:
             return "{} - announcements only".format(self)
         else:
             return str(self)
