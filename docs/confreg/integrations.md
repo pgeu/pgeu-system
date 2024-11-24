@@ -439,3 +439,17 @@ the URL of the page when vieing the page in admin mode.
 Linkedin access tokens expire after 2 months, but will be
 automatically refreshed. However, refresh tokens also expire after 12
 months, and at that point a manual re-authentication must be done.
+
+### Bluesky
+
+The Bluesky integration has one Messaging Provider mapping to one
+Bluesky account, thereby giving a conference series it's own Bluesky
+account, but having conferences in it share (by default).
+
+To use the Bluesky integration, create an *App password* (found under
+*Privacy and security*. The username is the email address of the
+Bluesky account.
+
+On the Messaging Configuration for Bluesky providers there is no
+configuration to be done other than checkboxes for which services to
+enable.

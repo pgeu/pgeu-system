@@ -39,3 +39,11 @@ def rescale_image(img, resolution, centered=False):
         newimg.save(saver, format=img.format)
 
     return saver.getvalue()
+
+
+def get_image_contenttype_from_bytes(image):
+    if bytearray(image[:3]) == b'\xFF\xD8\xFF':
+        return 'image/jpeg'
+    elif bytearray(image[:8]) == b'\x89\x50\x4e\x47\x0d\x0a\x1a\x0a':
+        return 'image/png'
+    raise Exception("Could not determine image format")
