@@ -307,7 +307,13 @@ MEETINGS_STATUS_BASE_URL = None
 try:
     from .local_settings import *
 except ImportError as e:
-    pass
+    # If there's no local_settings.py within the postgresqleu tree, check
+    # for a globally available pgeu_system_settings module in any configured
+    # PYTHONPATH.
+    try:
+        from pgeu_system_settings import *
+    except ImportError as e:
+        pass
 
 PRELOAD_URLS = []
 if 'SYSTEM_SKIN_DIRECTORY' in globals():
@@ -334,6 +340,12 @@ if 'SYSTEM_SKIN_DIRECTORY' in globals():
 else:
     HAS_SKIN = False
 
+# Try to load overrides from PYTHONPATH. This allows overriding skin
+# settings for testing purposes.
+try:
+    from pgeu_system_override_settings import *
+except ImportError as e:
+    pass
 
 if not SECRET_KEY:
     raise Exception("SECRET_KEY must be configured!")
