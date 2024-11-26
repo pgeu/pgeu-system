@@ -473,7 +473,7 @@ class BackendRegistrationTypeForm(BackendForm):
         if self.cleaned_data['cost'] > 0 and not self.conference.paymentmethods.exists():
             raise ValidationError("Cannot assign a cost, this conference has no payment methods")
 
-        if self.instance and self.instance.cost != self.cleaned_data['cost']:
+        if self.instance and self.instance.pk and self.instance.cost != self.cleaned_data['cost']:
             if self.instance.conferenceregistration_set.filter(Q(payconfirmedat__isnull=False) | Q(invoice__isnull=False) | Q(bulkpayment__isnull=False)).exists():
                 raise ValidationError("This registration type has been used, so the cost can no longer be changed")
 
