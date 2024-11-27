@@ -36,7 +36,7 @@ class BlueskyBackendForm(BackendSeriesMessagingForm):
 
         # If the identifier or password has changed, we need to check them, otherwise avoid
         # doing that as it causes an API call.
-        if (d['identifier'] != self.instance.config['identifier'] or d['password'] != self.instance.config['password']) or 'accessjwt' not in self.instance.config:
+        if (d['identifier'] != self.instance.config.get('identifier', None) or d['password'] != self.instance.config.get('password', None)) or 'accessjwt' not in self.instance.config:
             try:
                 r = requests.post('https://bsky.social/xrpc/com.atproto.server.createSession', json={
                     'identifier': d['identifier'],
