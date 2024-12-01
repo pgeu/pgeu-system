@@ -606,7 +606,7 @@ class CallForPapersForm(forms.ModelForm):
             for s in self.cleaned_data.get('speaker'):
                 if s == self.currentspeaker:
                     continue
-                if self.instance.conference.conferencesession_set.filter(speaker=s).count() >= self.instance.conference.callforpapersmaxsubmissions:
+                if self.instance.conference.conferencesession_set.filter(speaker=s).exclude(status=6).count() >= self.instance.conference.callforpapersmaxsubmissions:
                     raise ValidationError(
                         "Speaker {} already has too many submissions for this conference.".format(s)
                     )
@@ -619,7 +619,7 @@ class CallForPapersForm(forms.ModelForm):
             if not self.instance.id:
                 # If this is a new submission, check the count
                 speaker = self.initial['speaker'][0]
-                count = self.instance.conference.conferencesession_set.filter(speaker=speaker).count()
+                count = self.instance.conference.conferencesession_set.filter(speaker=speaker).exclude(status=6).count()
                 if count >= self.instance.conference.callforpapersmaxsubmissions:
                     self.add_error(
                         'title',
@@ -677,7 +677,7 @@ class CallForPapersCopyForm(forms.Form):
     def clean_sessions(self):
         s = self.cleaned_data['sessions']
         if self.conference.callforpapersmaxsubmissions > 0:
-            already = self.conference.conferencesession_set.filter(speaker=self.speaker).count()
+            already = self.conference.conferencesession_set.filter(speaker=self.speaker).exclude(status=6).count()
             added = s.count()
             if already + added > self.conference.callforpapersmaxsubmissions:
                 raise ValidationError('This conference allows a maximum {}  submissions per speaker, and you have already submitted {}. You cannot add {} more.'.format(
