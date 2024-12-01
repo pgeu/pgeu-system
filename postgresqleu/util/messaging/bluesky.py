@@ -206,6 +206,7 @@ class Bluesky(object):
             _token = self.bsjwt
         except Exception as e:
             return False, 'Could not get bluesky access token: {}'.format(e)
+        return True, ''
 
     def get_link(self, id):
         if id.startswith('at://'):
