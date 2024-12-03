@@ -1653,17 +1653,23 @@ class ConferenceTweetQueue(models.Model):
                 self.contents = "\n\n{}".format(hashtags)
 
     def save(self, *args, **kwargs):
+        create_on_providers = kwargs.pop('create_on_providers', None)
         super().save(*args, **kwargs)
 
         # When we are saving, *if* we have not yet been sent, materialize a list of
         # which providers to send to. However, we *only* do this if there isn't something
         # already in the list to be remaining -- if there is, then we just keep adding things
         # back that have already been taken care of.
-        if self.approved and not self.sent and not self.remainingtosend.exists():
+        if not self.sent and not self.remainingtosend.exists():
             if self.conference:
-                self.remainingtosend.set(MessagingProvider.objects.filter(active=True, conferencemessaging__conference=self.conference, conferencemessaging__broadcast=True))
+                providers = MessagingProvider.objects.filter(active=True, conferencemessaging__conference=self.conference, conferencemessaging__broadcast=True)
             else:
-                self.remainingtosend.set(MessagingProvider.objects.filter(active=True, series__isnull=True))
+                providers = MessagingProvider.objects.filter(active=True, series__isnull=True)
+
+            if create_on_providers:
+                providers = providers.filter(id__in=create_on_providers)
+
+            self.remainingtosend.set(providers)
             exec_no_result("NOTIFY pgeu_broadcast")
 
     def _ensure_provider_cache(self, cache):

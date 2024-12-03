@@ -25,7 +25,7 @@ from .models import ConferenceTweetQueue, ConferenceIncomingTweet, ConferenceMes
 from .models import ConferenceRegistration, ConferenceHashtag
 
 
-def post_conference_social(conference, contents, approved=False, posttime=None, author=None):
+def post_conference_social(conference, contents, approved=False, posttime=None, author=None, providers=None):
     if not contents:
         # None for contents means this was a multiprovider rendered template that had no providers at all.
         # Contents is empty shouldn't happen, but if it does we don't want to post something empty anyway.
@@ -58,7 +58,7 @@ def post_conference_social(conference, contents, approved=False, posttime=None, 
                              approved=approved,
                              datetime=posttime,
                              author=author)
-    t.save()
+    t.save(create_on_providers=providers)
 
     # There are no cases here where we want to moderate the post, so don't bother
     # calling the moderation system. This may change in the future.

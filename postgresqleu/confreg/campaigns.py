@@ -56,6 +56,8 @@ class BaseCampaignForm(forms.Form):
                                        widget=MonospaceTextarea,
                                        required=True)
     available_fields = forms.CharField(required=False, help_text="These fields are available as {{field}} in the template")
+    providers = forms.ModelMultipleChoiceField(required=True, queryset=None,
+                                               help_text="Which social media providers to post to")
     dynamic_preview_fields = ['content_template', ]
 
     confirm = forms.BooleanField(help_text="Confirm that you want to generate all the tweets for this campaign at this time", required=False)
@@ -65,6 +67,9 @@ class BaseCampaignForm(forms.Form):
         self.field_order = ['starttime', 'timebetween', 'timerandom', 'content_template', 'available_fields', ] + self.custom_fields + ['confirm', ]
 
         super(BaseCampaignForm, self).__init__(*args, *kwargs)
+
+        self.fields['providers'].queryset = MessagingProvider.objects.filter(conferencemessaging__conference=conference, active=True, conferencemessaging__broadcast=True)
+        self.fields['providers'].initial = [p.id for p in self.fields['providers'].queryset.all()]
 
         self.fields['available_fields'].widget = SimpleTreeviewWidget(treedata=self.get_contextrefs())
 
@@ -107,7 +112,8 @@ class BaseCampaignForm(forms.Form):
                                    self.generate_tweet(self.conference, obj, self.cleaned_data['content_template']),
                                    approved=False,
                                    posttime=ts,
-                                   author=author)
+                                   author=author,
+                                   providers=self.cleaned_data['providers'])
 
 
 class ApprovedSessionsCampaignForm(BaseCampaignForm):
