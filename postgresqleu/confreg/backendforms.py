@@ -1023,14 +1023,14 @@ class BackendConferenceSessionForm(BackendForm):
     @classmethod
     def get_transform_example(self, targetconf, sourceconf, idlist, transformform):
         xform = transformform.cleaned_data['timeshift']
-        slotlist = ConferenceSession.objects.filter(conference=sourceconf, id__in=idlist, starttime__isnull=False)[:2]
+        slotlist = ConferenceSession.objects.filter(conference=sourceconf, id__in=idlist, starttime__isnull=False)[:4]
         if slotlist:
-            return " and ".join(["time {0} becomes {1}".format(s.starttime, s.starttime + xform) for s in slotlist])
+            return ["{} becomes {}".format(timezone.localtime(s.starttime, sourceconf.tzobj), timezone.localtime(s.starttime + xform, targetconf.tzobj)) for s in slotlist]
 
         # Do we have sessions without time?
         slotlist = ConferenceSession.objects.filter(conference=sourceconf, id__in=idlist)
         if slotlist:
-            return "no scheduled sessions picked, so no transformation will happen"
+            return "No scheduled sessions picked, so no transformation will happen"
         return None
 
 
@@ -1157,9 +1157,8 @@ class BackendConferenceSessionSlotForm(BackendForm):
     @classmethod
     def get_transform_example(self, targetconf, sourceconf, idlist, transformform):
         xform = transformform.cleaned_data['timeshift']
-        slotlist = [ConferenceSessionScheduleSlot.objects.get(conference=sourceconf, id=i) for i in idlist[:2]]
-        xstr = " and ".join(["time {0} becomes {1}".format(s.starttime, s.starttime + xform) for s in slotlist])
-        return xstr
+        slotlist = ConferenceSessionScheduleSlot.objects.filter(conference=sourceconf, id__in=idlist)[:4]
+        return ["{} becomes {}".format(timezone.localtime(s.starttime, sourceconf.tzobj), timezone.localtime(s.starttime + xform, targetconf.tzobj)) for s in slotlist]
 
 
 class BackendMergeSpeakerForm(django.forms.Form):
@@ -1226,13 +1225,14 @@ class BackendVolunteerSlotForm(BackendForm):
     @classmethod
     def get_transform_example(self, targetconf, sourceconf, idlist, transformform):
         xform = transformform.cleaned_data['timeshift']
-        if not idlist:
-            return None
-        s = VolunteerSlot.objects.get(conference=sourceconf, id=idlist[0])
-        return "range {0}-{1} becomes {2}-{3}".format(
-            s.timerange.lower, s.timerange.upper,
-            s.timerange.lower + xform, s.timerange.upper + xform,
-        )
+        slotlist = VolunteerSlot.objects.filter(conference=sourceconf, id__in=idlist)[:4]
+
+        return ["{} - {} becomes {} - {}".format(
+            timezone.localtime(s.timerange.lower, sourceconf.tzobj),
+            timezone.localtime(s.timerange.upper, sourceconf.tzobj),
+            timezone.localtime(s.timerange.lower + xform, targetconf.tzobj),
+            timezone.localtime(s.timerange.upper + xform, targetconf.tzobj),
+        ) for s in slotlist]
 
 
 class BackendFeedbackQuestionForm(BackendForm):

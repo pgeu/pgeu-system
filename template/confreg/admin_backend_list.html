@@ -63,7 +63,7 @@ $(document).ready(function() {
 {%if confirmed_transform_value%}
  <div class="form-group">
    <label class="control-label col-lg-3" for="id_confirmed_transform">Confirm:</label>
-   <div class="col-lg-9 controls"><input type="checkbox" id="id_confirmed_transform" name="confirmed_transform" value="{{confirmed_transform_value}}"> Please confirm the transform. For example, this means {{transform_example}}.</div>
+   <div class="col-lg-9 controls"><input type="checkbox" id="id_confirmed_transform" name="confirmed_transform" value="{{confirmed_transform_value}}"> Please confirm the transform.{%if transform_example|islist%} For example:<br/><ul>{%for e in transform_example%}<li>{{e}}</li>{%endfor%}</ul>{%else%} ({{transform_example}}{%endif%}).</div>
  </div>
 {%endif%}
 {%endif%}
