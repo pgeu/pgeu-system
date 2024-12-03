@@ -700,13 +700,26 @@ class BackendTransformConferenceDateTimeForm(django.forms.Form):
         return str(self.cleaned_data['timeshift'])
 
 
+class BackendTransformConferenceDateForm(django.forms.Form):
+    dayshift = django.forms.IntegerField(required=True, help_text="Shift all dates by this many days")
+
+    def __init__(self, source, target, *args, **kwargs):
+        self.source = source
+        self.target = target
+        super(BackendTransformConferenceDateForm, self).__init__(*args, **kwargs)
+        self.fields['dayshift'].initial = (self.source.startdate - self.target.startdate).days
+
+    def confirm_value(self):
+        return str(self.cleaned_data['dayshift'])
+
+
 class BackendRefundPatternForm(BackendForm):
     helplink = 'registrations'
     list_fields = ['fromdate', 'todate', 'percent', 'fees', ]
     list_order_by = (F('fromdate').asc(nulls_first=True), 'todate', 'percent')
     exclude_date_validators = ['fromdate', 'todate', ]
     allow_copy_previous = True
-    copy_transform_form = BackendTransformConferenceDateTimeForm
+    copy_transform_form = BackendTransformConferenceDateForm
     vat_fields = {'fees': 'reg'}
 
     class Meta:
@@ -722,7 +735,7 @@ class BackendRefundPatternForm(BackendForm):
 
     @classmethod
     def copy_from_conference(self, targetconf, sourceconf, idlist, transformform):
-        xform = transformform.cleaned_data['timeshift']
+        xform = datetime.timedelta(days=transformform.cleaned_data['dayshift'])
         for id in idlist:
             source = RefundPattern.objects.get(conference=sourceconf, pk=id)
             RefundPattern(conference=targetconf,
@@ -736,12 +749,14 @@ class BackendRefundPatternForm(BackendForm):
 
     @classmethod
     def get_transform_example(self, targetconf, sourceconf, idlist, transformform):
-        xform = transformform.cleaned_data['timeshift']
-        if not idlist:
-            return None
-        s = RefundPattern.objects.filter(conference=sourceconf, todate__isnull=False)[0]
-        return "date {0} becomes {1}".format(
-            s.todate, s.todate + xform)
+        xform = datetime.timedelta(days=transformform.cleaned_data['dayshift'])
+        patterns = RefundPattern.objects.filter(conference=sourceconf, id__in=idlist)[:4]
+        return ["{} - {} becomes {} - {}".format(
+            p.fromdate or '<empty>',
+            p.todate or '<empty>',
+            p.fromdate + xform if p.fromdate else '<empty>',
+            p.todate + xform if p.todate else '<empty>',
+        ) for p in patterns]
 
 
 class ConferenceSessionSlideForm(BackendForm):
