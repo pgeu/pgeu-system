@@ -120,7 +120,6 @@ class Bluesky(object):
         if 'accessjwt' in self.providerconfig:
             # If the access token expires within 30 minutes, refresh it!
             if datetime.fromtimestamp(self.providerconfig['accesstokenexpires']) < datetime.utcnow() + timedelta(minutes=30):
-                print("Bluesky access token expired, refreshing")
                 r = requests.post(
                     'https://bsky.social/xrpc/com.atproto.server.refreshSession',
                     headers={'Authorization': 'Bearer {}'.format(self.providerconfig['refreshjwt'])},
