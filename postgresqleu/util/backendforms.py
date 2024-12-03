@@ -1,6 +1,7 @@
 import django.forms
 import django.forms.widgets
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.conf import settings
 
 from postgresqleu.util.forms import ConcurrentProtectedModelForm
 from postgresqleu.util.widgets import HtmlDateInput
@@ -122,6 +123,13 @@ class BackendForm(ConcurrentProtectedModelForm):
                         MinValueValidator(self.conference.startdate),
                         MaxValueValidator(self.conference.enddate),
                     ])
+            if isinstance(v, (django.forms.fields.DateTimeField, django.forms.fields.DateField, django.forms.fields.TimeField, django.contrib.postgres.forms.ranges.DateTimeRangeField)):
+                t = getattr(v, 'help_text', '')
+                if t:
+                    if not t.endswith('.'):
+                        t = t + '.'
+                    t = t + ' '
+                v.help_text = t + 'Time specified in timezone {}.'.format(self.conference.tzname if self.conference else settings.TIME_ZONE)
 
         for field, vattype in list(self.vat_fields.items()):
             self.fields[field].widget.attrs['class'] = 'backend-vat-field backend-vat-{0}-field'.format(vattype)
