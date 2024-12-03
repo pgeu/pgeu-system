@@ -429,7 +429,7 @@ def sponsor_signup(request, confurlname, levelurlname):
             if conference.contractprovider:
                 providerimpl = conference.contractprovider.get_implementation()
                 contractchoices.append(
-                    (0, 'Digital signatures', "Digitally sign the contract using {}. {}<br/><strong>NOTE!</strong> The signing process has to complete within {} days or the signup will be automatically canceled.".format(conference.contractprovider.displayname, providerimpl.description_text(request.user.email), conference.contractexpires)),
+                    (0, 'Digital signatures', "Digitally sign the contract using {}. {}<br/><strong>NOTE!</strong> The signing process has to complete within {} days or the signup will be automatically canceled.<br/><strong>NOTE!</strong> The digital signing must be done with the process integrated with our system. It can <em>not</em> be used with a different digital signature provider!".format(conference.contractprovider.displayname, providerimpl.description_text(request.user.email), conference.contractexpires)),
                 )
             if conference.manualcontracts:
                 contractchoices.append(
