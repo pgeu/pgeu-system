@@ -517,7 +517,7 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
             'plural_name': formclass._verbose_name_plural(),
             'headers': [formclass.get_field_verbose_name(f) for f in formclass.list_fields],
             'coltypes': formclass.coltypes,
-            'filtercolumns': formclass.get_column_filters(conference),
+            'filtercolumns': formclass.get_column_filters(sourceconf),
             'defaultsort': formclass.numeric_defaultsort(),
             'return_url': '../',
             'allow_new': False,
