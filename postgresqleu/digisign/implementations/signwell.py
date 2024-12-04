@@ -121,7 +121,7 @@ class Signwell(BaseProvider):
             "allow_decline": True,
             "allow_reassign": True,
             "metadata": metadata,
-            "fields": [fielddata['signwellfields']],
+            "fields": [fielddata.get('signwellfields', [])],
             "draft": False,
             "api_application_id": self.provider.config.get('applicationid'),
             "expires_in": expires_in,
