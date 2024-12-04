@@ -42,7 +42,7 @@ class SponsorshipLevel(models.Model):
     urlname = models.CharField(max_length=100, null=False, blank=False,
                                validators=[validate_lowercase, validate_urlname],
                                verbose_name="URL name")
-    levelcost = models.IntegerField(null=False, blank=False, verbose_name="Cost")
+    levelcost = models.IntegerField(null=False, blank=False, verbose_name="Cost", help_text="Cost excluding VAT.")
     available = models.BooleanField(null=False, blank=False, default=True, verbose_name="Available for signup")
     public = models.BooleanField(null=False, blank=False, default=True, verbose_name="Publicly visible",
                                  help_text="If unchecked the sponsorship level will be treated as internal, for example for testing")

@@ -308,6 +308,7 @@ class BackendSponsorshipLevelForm(BackendForm):
     linked_objects = OrderedDict({
         'benefit': BackendSponsorshipLevelBenefitManager(),
     })
+    vat_fields = {'levelcost': 'sponsor'}
     allow_copy_previous = True
     auto_cascade_delete_to = ['sponsorshiplevel_paymentmethods', 'sponsorshipbenefit']
     exclude_date_validators = ['paymentdueby', ]
