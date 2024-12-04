@@ -21,6 +21,10 @@ agree with the contents in it.
 </p>
 {%endif%}
 
+{%if form.non_field_errors%}
+ <div class="alert alert-danger">{{form.non_field_errors}}</div>
+{%endif%}
+
 <form method="post" action="." class="sponsorsignup">{% csrf_token %}
 <div id="fullform" {%if noform%}style="display:none;"{%endif%}>
 <table>
