@@ -348,9 +348,13 @@ def render_jinja_conference_template(conference, templatename, dictionary, disab
     if conference and conference.jinjaenabled and conference.jinjadir and not os.path.exists(os.path.join(conference.jinjadir, 'templates/base.html')):
         raise Http404()
 
+    if jinja2.__version__ > '3.1':
+        extensions = []
+    else:
+        extensions = ['jinja2.ext.with_']
     env = ConfSandbox(
         loader=ConfTemplateLoader(conference, templatename, disableconferencetemplates=disableconferencetemplates),
-        extensions=['jinja2.ext.with_'],
+        extensions=extensions,
     )
     env.filters.update(extra_filters)
     env.globals.update(extra_globals)
