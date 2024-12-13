@@ -38,7 +38,10 @@ def fill_pdf_fields(pdf, available_fields, fielddata):
                     txt = ""
 
                 if txt:
-                    page.insertText(p, txt, fontname='Courier-Bold', fontsize=fielddata['fontsize'])
+                    if fitz.version[0] > "1.19":
+                        page.insert_text(p, txt, fontname='Courier-Bold', fontsize=fielddata['fontsize'])
+                    else:
+                        page.insertText(p, txt, fontname='Courier-Bold', fontsize=fielddata['fontsize'])
 
     return pdf.write()
 
@@ -69,6 +72,9 @@ def pdf_watermark_preview(pdfdata):
 
     pdf = fitz.open('pdf', pdfdata)
     for pagenum, page in enumerate(pdf.pages()):
-        page.insertImage(page.bound(), pixmap=wmpixmap, overlay=False)
+        if fitz.version[0] > "1.19":
+            page.insert_image(page.bound(), pixmap=wmpixmap, overlay=False)
+        else:
+            page.insertImage(page.bound(), pixmap=wmpixmap, overlay=False)
 
     return pdf.write()
