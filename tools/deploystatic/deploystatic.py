@@ -18,6 +18,7 @@ import subprocess
 import tarfile
 import copy
 
+import markupsafe
 import jinja2
 import jinja2.sandbox
 try:
@@ -98,7 +99,7 @@ global_filters = {
     'shuffle': filter_shuffle,
     'slugify': filter_slugify,
     'datetimeformat': filter_datetimeformat,
-    'markdown': lambda t: jinja2.Markup(markdown.markdown(t)),
+    'markdown': lambda t: markupsafe.Markup(markdown.markdown(t)),
     'social_links': filter_social_links,
 }
 

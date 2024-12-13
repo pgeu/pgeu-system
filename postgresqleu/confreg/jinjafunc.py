@@ -24,6 +24,7 @@ from postgresqleu.util.templatetags import svgcharts
 from postgresqleu.util.templatetags.assets import do_render_asset
 from postgresqleu.util.messaging import get_messaging_class_from_typename
 
+import markupsafe
 import jinja2
 import jinja2.sandbox
 try:
@@ -319,7 +320,7 @@ extra_filters = {
     'timesince': timesince,
     'groupby_sort': filter_groupby_sort,
     'leadingnbsp': leadingnbsp,
-    'markdown': lambda t: jinja2.Markup(markdown.markdown(t, extensions=['tables', ])),
+    'markdown': lambda t: markupsafe.Markup(markdown.markdown(t, extensions=['tables', ])),
     'shuffle': filter_shuffle,
     'slugify': slugify,
     'yesno': lambda b, v: v.split(',')[not b],
