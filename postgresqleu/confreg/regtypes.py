@@ -85,6 +85,19 @@ _specialregtypes['man'] = {
     }
 
 
+def validate_voucher_registration_form(reg, cleaned_data):
+    from .models import PrepaidVoucher
+
+    if cleaned_data.get('vouchercode', '') == '' or not PrepaidVoucher.objects.filter(conference=reg.conference, vouchervalue=cleaned_data['vouchercode']).exists():
+        yield ('regtype', 'This registration type is only available if you have a specific voucher for it.')
+
+
+_specialregtypes['vch'] = {
+    'name': 'Requires specific voucher',
+    'formfunc': validate_voucher_registration_form,
+}
+
+
 special_reg_types = [(k, v['name']) for k, v in sorted(list(_specialregtypes.items()))]
 
 
@@ -92,7 +105,17 @@ def validate_special_reg_type(regtypename, reg):
     if regtypename not in _specialregtypes:
         raise ValidationError('Invalid registration type record. Internal error.')
 
-    _specialregtypes[regtypename]['func'](reg)
+    if 'func' in _specialregtypes[regtypename]:
+        _specialregtypes[regtypename]['func'](reg)
+
+
+def validate_special_reg_type_form(regtypename, reg, cleaned_data):
+    if regtypename not in _specialregtypes:
+        raise ValidationError('Invalid registration type record. Internal error.')
+
+    if 'formfunc' in _specialregtypes[regtypename]:
+        return _specialregtypes[regtypename]['formfunc'](reg, cleaned_data) or ()
+    return ()
 
 
 def confirm_special_reg_type(regtypename, reg):

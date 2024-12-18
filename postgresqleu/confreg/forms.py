@@ -19,7 +19,7 @@ from .models import PrepaidVoucher, DiscountCode, AttendeeMail
 from .models import PRIMARY_SPEAKER_PHOTO_RESOLUTION
 from .util import send_conference_mail
 
-from .regtypes import validate_special_reg_type
+from .regtypes import validate_special_reg_type, validate_special_reg_type_form
 from .twitter import get_all_conference_social_media
 from postgresqleu.util.fields import UserModelChoiceField
 from postgresqleu.util.widgets import StaticTextWidget
@@ -266,6 +266,10 @@ class ConferenceRegistrationForm(forms.ModelForm):
                             break
                 if not found:
                     self._errors['regtype'] = 'Registration type "%s" requires at least one of the following additional options to be picked: %s' % (regtype, ", ".join([x.name for x in regtype.requires_option.all()]))
+
+            if cleaned_data['regtype'].specialtype:
+                for errfld, errmsg in validate_special_reg_type_form(cleaned_data['regtype'].specialtype, self.instance, cleaned_data):
+                    self.add_error(errfld, errmsg)
 
         if cleaned_data.get('additionaloptions', None) and 'regtype' in cleaned_data:
             regtype = cleaned_data['regtype']
