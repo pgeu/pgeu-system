@@ -52,7 +52,7 @@ from .util import reglog
 from .util import make_registration_transfer
 
 from .models import get_status_string, valid_status_transitions
-from .regtypes import confirm_special_reg_type, validate_special_reg_type
+from .regtypes import confirm_special_reg_type
 from .jinjafunc import JINJA_TEMPLATE_ROOT
 from .jinjafunc import render_jinja_conference_template
 from .jinjafunc import render_jinja_conference_svg
