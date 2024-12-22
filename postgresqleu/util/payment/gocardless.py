@@ -177,7 +177,7 @@ class Gocardless(BaseManagedBankPayment):
             'agreement': r.json()['id'],
             'user_language': 'EN',
         }, timeout=20)
-        self._check_api_status(r)
+        self._check_api_status(rr)
 
         # Before we return the link, we have to store the requisition id, as that's what we'll use to
         # access accounts!
