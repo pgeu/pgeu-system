@@ -15,7 +15,10 @@ def connect_to_gocardless(request, paymentmethodid):
     impl = paymentmethod.get_implementation()
 
     if request.method == 'GET' and 'ref' in request.GET:
-        if request.GET['ref'] != str(paymentmethodid):
+        # Reference is <paymentmethod>-<uuid>, so split it
+        if '-' not in request.GET['ref']:
+            return HttpResponse("Invalid reference format")
+        if request.GET['ref'].split('-', 1)[0] != str(paymentmethodid):
             return HttpResponse("Invalid reference")
 
         # Return from authorization, so we should be good to go!
