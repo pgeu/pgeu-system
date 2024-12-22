@@ -8,6 +8,7 @@ from decimal import Decimal
 import io
 import json
 import time
+import uuid
 
 from postgresqleu.util.widgets import StaticTextWidget, MonospaceTextarea
 from postgresqleu.util.forms import SubmitButtonField
@@ -173,7 +174,7 @@ class Gocardless(BaseManagedBankPayment):
                 self.method.id,
             ),
             'institution_id': bank,
-            'reference': str(self.method.id),
+            'reference': "{}-{}".format(self.method.id, uuid.uuid1()),
             'agreement': r.json()['id'],
             'user_language': 'EN',
         }, timeout=20)
