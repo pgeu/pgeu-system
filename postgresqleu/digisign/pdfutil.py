@@ -68,7 +68,10 @@ def pdf_watermark_preview(pdfdata):
 
     wmio.seek(0)
     wmpdf = fitz.open('pdf', wmio)
-    wmpixmap = next(wmpdf.pages()).getPixmap()
+    if fitz.version[0] > "1.19":
+        wmpixmap = next(wmpdf.pages()).get_pixmap()
+    else:
+        wmpixmap = next(wmpdf.pages()).getPixmap()
 
     pdf = fitz.open('pdf', pdfdata)
     for pagenum, page in enumerate(pdf.pages()):
