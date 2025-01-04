@@ -27,10 +27,12 @@ class BackendGocardlessForm(BaseManagedBankPaymentForm):
     notify_each_transaction = forms.BooleanField(required=False, help_text="Send an email notification for each transaction received")
     verify_balances = forms.BooleanField(required=False, help_text="Regularly verify that the account balance matches the accounting system")
     connect = SubmitButtonField(label="Connect to gocardless", required=False)
+    reconnect = SubmitButtonField(label="Reconnect gocardless connection", required=False,
+                                  help_text="This can be needed if the connection has expired")
     connection = forms.CharField(label='Connection', required=False, widget=StaticTextWidget)
 
     config_readonly = ['connect', 'connection', ]
-    managed_fields = ['description', 'secretid', 'secretkey', 'connect', 'connection', 'notification_receiver', 'notify_each_transaction', 'verify_balances', ]
+    managed_fields = ['description', 'secretid', 'secretkey', 'connect', 'connection', 'reconnect', 'notification_receiver', 'notify_each_transaction', 'verify_balances', ]
     managed_fieldsets = [
         {
             'id': 'gocardless',
@@ -45,7 +47,7 @@ class BackendGocardlessForm(BaseManagedBankPaymentForm):
         {
             'id': 'connection',
             'legend': 'Connection',
-            'fields': ['connect', 'connection', ],
+            'fields': ['connect', 'connection', 'reconnect', ],
         },
     ]
 
@@ -65,8 +67,10 @@ class BackendGocardlessForm(BaseManagedBankPaymentForm):
             self.initial['connection'] = 'Connected to gocardless account id {}.'.format(self.instance.config['accountid'])
             self.fields['connect'].widget.label = "Already connected"
             self.fields['connect'].widget.attrs['disabled'] = True
+            self.fields['reconnect'].callback = self.reconnect_to_provider
         else:
             self.fields['connect'].callback = self.connect_to_provider
+            self.fields['reconnect'].widget.attrs['disabled'] = True
             self.initial['connection'] = 'Not connected.'
 
         if not self.instance.config.get('secretid', None) or not self.instance.config.get('secretkey', None):
@@ -74,6 +78,16 @@ class BackendGocardlessForm(BaseManagedBankPaymentForm):
             self.fields['connect'].help_text = "Save the secret id and key before you can connect to gocardless"
 
     def connect_to_provider(self, request):
+        return HttpResponseRedirect("gocardlessconnect/")
+
+    def reconnect_to_provider(self, request):
+        self.instance.config.pop('accountid', None)
+        self.instance.config.pop('requisition', None)
+        self.instance.config.pop('access_token', None)
+        self.instance.config.pop('refresh_token', None)
+        self.instance.config.pop('access_token_expires_at', None)
+        self.instance.config.pop('refresh_token_expires_at', None)
+        self.instance.save(update_fields=['config'])
         return HttpResponseRedirect("gocardlessconnect/")
 
 
