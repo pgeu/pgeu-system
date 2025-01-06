@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.conf import settings
 from django.db import transaction, connection
-from django.db.models import Q, Count, Avg, Prefetch
+from django.db.models import Q, Count, Avg, Sum, Min, Max, Prefetch
 from django.db.models.expressions import F
 from django.forms import ValidationError
 from django.utils import timezone
@@ -3020,7 +3020,19 @@ def talkvote_vote(request, confname):
         ConferenceSessionVote.objects.filter(session=session, voter=request.user).delete()
 
     # Re-calculate the average
-    avg = session.conferencesessionvote_set.filter(vote__gt=0).aggregate(Avg('vote'))['vote__avg']
+    if conference.scoring_method == 0:
+        # Normal average
+        avg = session.conferencesessionvote_set.filter(vote__gt=0).aggregate(Avg('vote'))['vote__avg']
+    elif conference.scoring_method == 1:
+        # Olympic average
+        vals = session.conferencesessionvote_set.filter(vote__gt=0).aggregate(Avg('vote'), Min('vote'), Max('vote'), Sum('vote'), Count('vote'))
+        if vals['vote__count'] > 2:
+            avg = (vals['vote__sum'] - vals['vote__min'] - vals['vote__max']) / (vals['vote__count'] - 2)
+        else:
+            avg = vals['vote__avg']
+    else:
+        return HttpResponse("Invalid scoring method", status=500)
+
     if avg is None:
         return HttpResponse("", content_type='text/plain')
     return HttpResponse("{0:.2f}".format(avg), content_type='text/plain')
