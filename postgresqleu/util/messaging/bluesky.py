@@ -2,11 +2,11 @@ from django.core.validators import ValidationError
 from django import forms
 
 from datetime import datetime, timezone, timedelta
-import jwt
 import re
 import requests
 
 from postgresqleu.util.image import get_image_contenttype_from_bytes
+from postgresqleu.util.versionutil import decode_unverified_jwt
 
 from postgresqleu.confreg.models import MessagingProvider
 from postgresqleu.confreg.backendforms import BackendSeriesMessagingForm
@@ -107,8 +107,8 @@ class Bluesky(object):
         provider.config.update({
             'accessjwt': response['accessJwt'],
             'refreshjwt': response['refreshJwt'],
-            'accesstokenexpires': jwt.decode(response['accessJwt'], verify=False)['exp'],
-            'refreshtokenexpires': jwt.decode(response['refreshJwt'], verify=False)['exp'],
+            'accesstokenexpires': decode_unverified_jwt(response['accessJwt'])['exp'],
+            'refreshtokenexpires': decode_unverified_jwt(response['refreshJwt'])['exp'],
             'handle': response['handle'],
             'did': response['did'],
         })
