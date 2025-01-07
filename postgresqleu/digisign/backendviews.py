@@ -7,6 +7,7 @@ import io
 import json
 
 from postgresqleu.util.backendviews import backend_list_editor
+from postgresqleu.util.versionutil import fitz_get_page_png
 from postgresqleu.digisign.models import DigisignProvider, DigisignLog
 from postgresqleu.digisign.backendforms import BackendProviderForm
 from postgresqleu.digisign.util import digisign_providers
@@ -128,10 +129,7 @@ def pdf_field_editor(request, conference, pdf, available_fields, fielddata, save
     # one PNG for each page.
     pdf = fitz.open('pdf', bytes(pdf))
     pages = []
-    if fitz.version[0] > "1.19":
-        pages = [(pagenum, base64.b64encode(page.get_pixmap().tobytes(output='png')).decode()) for pagenum, page in enumerate(pdf.pages())]
-    else:
-        pages = [(pagenum, base64.b64encode(page.getPixmap().getPNGData()).decode()) for pagenum, page in enumerate(pdf.pages())]
+    pages = [(pagenum, base64.b64encode(fitz_get_page_png(page)).decode()) for pagenum, page in enumerate(pdf.pages())]
 
     return render(request, 'digisign/pdf_field_editor.html', {
         'conference': conference,

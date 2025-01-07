@@ -4,6 +4,7 @@ import itertools
 from reportlab.pdfgen.canvas import Canvas
 
 from postgresqleu.util.reporttools import cm
+from postgresqleu.util.versionutil import fitz_get_page_pixmap, fitz_insert_text, fitz_insert_image
 
 
 def fill_pdf_fields(pdf, available_fields, fielddata):
@@ -38,10 +39,7 @@ def fill_pdf_fields(pdf, available_fields, fielddata):
                     txt = ""
 
                 if txt:
-                    if fitz.version[0] > "1.19":
-                        page.insert_text(p, txt, fontname='Courier-Bold', fontsize=fielddata['fontsize'])
-                    else:
-                        page.insertText(p, txt, fontname='Courier-Bold', fontsize=fielddata['fontsize'])
+                    fitz_insert_text(page, p, txt, 'Courier-Bold', fielddata['fontsize'])
 
     return pdf.write()
 
@@ -68,16 +66,10 @@ def pdf_watermark_preview(pdfdata):
 
     wmio.seek(0)
     wmpdf = fitz.open('pdf', wmio)
-    if fitz.version[0] > "1.19":
-        wmpixmap = next(wmpdf.pages()).get_pixmap()
-    else:
-        wmpixmap = next(wmpdf.pages()).getPixmap()
+    wmpixmap = fitz_get_page_pixmap(next(wmpdf.pages()))
 
     pdf = fitz.open('pdf', pdfdata)
     for pagenum, page in enumerate(pdf.pages()):
-        if fitz.version[0] > "1.19":
-            page.insert_image(page.bound(), pixmap=wmpixmap, overlay=False)
-        else:
-            page.insertImage(page.bound(), pixmap=wmpixmap, overlay=False)
+        fitz_insert_image(page, page.bound(), wmpixmap, False)
 
     return pdf.write()
