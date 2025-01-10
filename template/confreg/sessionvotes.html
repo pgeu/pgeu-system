@@ -277,7 +277,7 @@ ul.comments span.username {
 	 <a class="btn btn-default" style="float:right" href="/events/admin/{{conference.urlname}}/sessions/{{s.id}}/" target="_blank">Edit submission</a>
 {%endif%}
 	 <div><strong>Speakers:</strong> {%for sp in s.speakerdata%}{{sp.fullname}}{%if sp.company%} ({{sp.company}}){%endif%}{%if not forloop.last%}, {%endif%}{%endfor%}</div>
-	 <div><strong>Track:</strong> {{s.track|default:""}}</div>
+	 <div><strong>Track:</strong> {{s.trackname|default:""}}</div>
 {%if conference.callforpapersrecording%}
 	 <div><strong>Recording consent:</strong> {{s.recordingconsent | yesno:"Yes,No" }}
 {%endif%}	 <br/>
