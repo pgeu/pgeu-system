@@ -122,7 +122,12 @@ class UserModelChoiceField(ModelChoiceField):
 
 class NormalizedDecimalField(models.DecimalField):
     def from_db_value(self, value, expression, connection):
+        if value is None:
+            return value
         return value.quantize(Decimal(1)) if value == value.to_integral() else value.normalize()
 
     def to_python(self, value):
-        return super().to_python(value).quantize(Decimal(1)) if value == value.to_integral() else value.normalize()
+        val = super().to_python(value)
+        if val is None:
+            return val
+        return val.quantize(Decimal(1)) if val == val.to_integral() else val.normalize()
