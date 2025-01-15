@@ -88,6 +88,8 @@ class Bluesky(object):
             if r.status_code == 400:
                 raise ValidationError('Could not validate handle: {}'.format(r.json()['message']))
             r.raise_for_status()
+        except ValidationError as ve:
+            raise
         except Exception as e:
             raise ValidationError('Could not validate handle: {}'.format(e))
         return value
