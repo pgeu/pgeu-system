@@ -181,7 +181,7 @@ Posting policy
   posting interface.
 
 Field t-shirt
-: Should the field asking for t-shirt size be displayed on
+: Should the field asking for t-shirt size be displayed on the
 registration form. Only used if t-shirts are given out.
 
 Field dietary
