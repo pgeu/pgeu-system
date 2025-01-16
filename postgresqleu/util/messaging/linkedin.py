@@ -164,6 +164,7 @@ class Linkedin(object):
             ).fetch_token(
                 'https://www.linkedin.com/oauth/v2/accessToken',
                 code=request.GET['code'],
+                include_client_id=True,
                 client_secret=get_oauth_secret('https://api.linkedin.com'),
                 scopes=LINKEDIN_SCOPE,
             )
