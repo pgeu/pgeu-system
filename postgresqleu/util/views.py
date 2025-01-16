@@ -27,9 +27,18 @@ def markdown_preview(request):
 
 
 @csrf_exempt
-def oauth_return(request, providerid):
+def oauth_return(request, providerid=None):
     if 'code' not in request.GET:
         raise Http404('Code missing')
+
+    if providerid is None:
+        # If it's none, we expect it in the state, followed by an underscore
+        if '_' not in request.GET.get('state', ''):
+            raise Http404('State is missing or invalid')
+        statepid, rest = request.GET['state'].split('_', 1)
+        providerid = int(statepid)
+    else:
+        providerid = providerid.rstrip('/')
 
     provider = get_object_or_404(MessagingProvider, id=providerid)
     impl = get_messaging(provider)
@@ -45,7 +54,7 @@ def oauth_return(request, providerid):
                     provider.id,
                 ))
             else:
-                return HttpResponseRedirect('{}/events/admin/news/messagingproviders/{}/'.format(
+                return HttpResponseRedirect('{}/admin/news/messagingproviders/{}/'.format(
                     settings.SITEBASE,
                     provider.id,
                 ))

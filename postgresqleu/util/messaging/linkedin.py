@@ -13,6 +13,7 @@ import time
 
 from postgresqleu.util.forms import SubmitButtonField
 from postgresqleu.util.oauthapps import get_oauth_client, get_oauth_secret
+from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.time import datetime_string
 from postgresqleu.util.widgets import StaticTextWidget
 
@@ -52,7 +53,8 @@ class LinkedinBackendForm(BackendSeriesMessagingForm):
 
         auth_url, state = requests_oauthlib.OAuth2Session(
             get_oauth_client('https://api.linkedin.com'),
-            redirect_uri='{}/oauth_return/messaging/{}/'.format(settings.SITEBASE, self.instance.id),
+            redirect_uri='{}/oauth_return/messaging/'.format(settings.SITEBASE),
+            state='{}_{}'.format(self.instance.id, generate_random_token()),
             scope=LINKEDIN_SCOPE,
         ).authorization_url('https://www.linkedin.com/oauth/v2/authorization')
 
@@ -156,7 +158,8 @@ class Linkedin(object):
         try:
             tokens = requests_oauthlib.OAuth2Session(
                 get_oauth_client('https://api.linkedin.com'),
-                redirect_uri='{}/oauth_return/messaging/{}/'.format(settings.SITEBASE, self.providerid),
+                redirect_uri='{}/oauth_return/messaging/'.format(settings.SITEBASE),
+                state='{}_{}'.format(self.providerid, generate_random_token()),
                 scope=LINKEDIN_SCOPE,
             ).fetch_token(
                 'https://www.linkedin.com/oauth/v2/accessToken',
