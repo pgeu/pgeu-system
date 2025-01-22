@@ -1529,7 +1529,7 @@ def sponsor_admin_refund(request, confurlname, sponsorid):
             return HttpResponseRedirect("../")
 
     if request.method == 'POST':
-        form = SponsorRefundForm(data=request.POST)
+        form = SponsorRefundForm(invoice, data=request.POST)
         if form.is_valid():
             class _AbortValidation(Exception):
                 pass
@@ -1555,7 +1555,7 @@ def sponsor_admin_refund(request, confurlname, sponsorid):
                     # Custom amount
                     if form.cleaned_data['customrefundamount'] > total_refunds['remaining']['amount']:
                         form.add_error('customrefundamount', "Only {} {} non-vat remains to be refunded on this invoice".format(settings.CURRENCY_SYMBOL, total_refunds['remaining']['amount']))
-                    if settings.EU_VAT and form.cleaned_data['customrefundamountvat'] > total_refunds['remaining']['vatamount']:
+                    if invoice.total_vat and form.cleaned_data['customrefundamountvat'] > total_refunds['remaining']['vatamount']:
                         form.add_error('customrefundamountvat', "Only {} {} VAT remains to be refunded on this invoice".format(settings.CURRENCY_SYMBOL, total_refunds['remaining']['vatamount']))
                 elif form.cleaned_data['refundamount'] == "2":
                     # No refund, just cancel
@@ -1644,7 +1644,7 @@ def sponsor_admin_refund(request, confurlname, sponsorid):
                     elif form.cleaned_data['refundamount'] == "1":
                         # Refund the specific amount
                         to_refund = form.cleaned_data['customrefundamount']
-                        if settings.EU_VAT:
+                        if invoice.total_vat:
                             to_refund_vat = form.cleaned_data['customrefundamountvat']
                         else:
                             to_refund_vat = 0
@@ -1683,7 +1683,7 @@ def sponsor_admin_refund(request, confurlname, sponsorid):
                 # Fall through and re-render form
                 pass
     else:
-        form = SponsorRefundForm()
+        form = SponsorRefundForm(invoice)
 
     return render(request, 'confsponsor/admin_sponsor_refund.html', {
         'conference': conference,

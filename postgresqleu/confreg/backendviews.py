@@ -697,7 +697,7 @@ def prepaidorder_refund(request, urlname, orderid):
     else:
         form = PurchasedVoucherRefundForm()
 
-    if settings.EU_VAT:
+    if invoice.total_vat > 0:
         note = 'You are about to refund {}{} ({}{} + {}{} VAT) for invoice {}. Please confirm that this is what you want!'.format(settings.CURRENCY_SYMBOL, invoice.total_amount, settings.CURRENCY_SYMBOL, invoice.total_amount - invoice.total_vat, settings.CURRENCY_SYMBOL, invoice.total_vat, invoice.id)
     else:
         note = 'You are about to refund {}{} for invoice {}. Please confirm that this is what you want!'.format(settings.CURRENCY_SYMBOL, invoice.total_amount, invoice.id)

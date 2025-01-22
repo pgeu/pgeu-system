@@ -251,9 +251,10 @@ class SponsorRefundForm(forms.Form):
     ), label="Cancel method")
     confirm = forms.BooleanField(help_text="Confirm that you want to cancel or refund this sponsorship!")
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, invoice, *args, **kwargs):
+        self.invoice = invoice
         super().__init__(*args, **kwargs)
-        if not settings.EU_VAT:
+        if not invoice.total_vat:
             self.fields['customrefundamount'].label = 'Custom refund amount'
             del self.fields['customrefundamountvat']
 
@@ -268,12 +269,12 @@ class SponsorRefundForm(forms.Form):
                 self.add_error('customrefundamount', 'This field is required when doing custom amount refund')
             elif Decimal(d['customrefundamount'] <= 0):
                 self.add_error('customrefundamount', 'Must be >0 when performing custom refund')
-            if settings.EU_VAT and d['customrefundamountvat'] is None:
+            if self.invoice.total_vat and d['customrefundamountvat'] is None:
                 self.add_error('customrefundamountvat', 'This field is required when doing custom amount refund')
         else:
             if d['customrefundamount'] is not None:
                 self.add_error('customrefundamount', 'This field must be left empty when doing non-custom refund')
-            if settings.EU_VAT and d['customrefundamountvat'] is not None:
+            if self.invoice.total_vat and d['customrefundamountvat'] is not None:
                 self.add_error('customrefundamountvat', 'This field must be left empty when doing non-custom refund')
 
         return d

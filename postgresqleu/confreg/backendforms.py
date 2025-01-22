@@ -1902,7 +1902,7 @@ class BulkPaymentRefundForm(django.forms.Form):
         else:
             self.fields['amount'].help_text = 'Invoice total value is {}{}'.format(settings.CURRENCY_SYMBOL, invoice.total_amount - invoice.total_vat)
 
-        if not settings.EU_VAT:
+        if not invoice.total_vat:
             del self.fields['vatamount']
         else:
             self.fields['vatamount'].validators = [MinValueValidator(0), MaxValueValidator(total['remaining']['vatamount'])]
