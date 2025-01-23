@@ -180,6 +180,11 @@ Posting policy
 : Set the policy fo rusing the [mobile](integrations#mobilesite)
   posting interface.
 
+Field pronouns
+:  Should the field asking for preferred pronouns be displayed
+on the registration form. Typically used to be printed on the
+badges if given.
+
 Field t-shirt
 : Should the field asking for t-shirt size be displayed on the
 registration form. Only used if t-shirts are given out.

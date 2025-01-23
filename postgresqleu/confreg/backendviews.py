@@ -727,7 +727,8 @@ def purge_personal_data(request, urlname):
     if request.method == 'POST':
         exec_no_result("INSERT INTO confreg_aggregatedtshirtsizes (conference_id, size_id, num) SELECT conference_id, shirtsize_id, count(*) FROM confreg_conferenceregistration WHERE conference_id=%(confid)s AND shirtsize_id IS NOT NULL GROUP BY conference_id, shirtsize_id", {'confid': conference.id, })
         exec_no_result("INSERT INTO confreg_aggregateddietary (conference_id, dietary, num) SELECT conference_id, lower(dietary), count(*) FROM confreg_conferenceregistration WHERE conference_id=%(confid)s AND dietary IS NOT NULL AND dietary != '' GROUP BY conference_id, lower(dietary)", {'confid': conference.id, })
-        exec_no_result("UPDATE confreg_conferenceregistration SET shirtsize_id=NULL, dietary='', phone='', address='' WHERE conference_id=%(confid)s", {'confid': conference.id, })
+        exec_no_result("INSERT INTO confreg_aggregatepronouns (conference_id, pronouns, num) SELECT conference_id, pronouns, count(*) FROM confreg_conferenceregistration WHERE conference_id=%(confid)s GROUP BY conference_id, pronouns", {'confid': conference.id, })
+        exec_no_result("UPDATE confreg_conferenceregistration SET shirtsize_id=NULL, dietary='', phone='', address='', pronouns=0 WHERE conference_id=%(confid)s", {'confid': conference.id, })
         conference.personal_data_purged = timezone.now()
         conference.save()
         messages.info(request, "Personal data purged from conference")
@@ -740,7 +741,8 @@ def purge_personal_data(request, urlname):
   count(1) FILTER (WHERE shirtsize_id IS NOT NULL) AS "T-shirt size registrations",
   count(1) FILTER (WHERE dietary IS NOT NULL AND dietary != '') AS "Dietary needs",
   count(1) FILTER (WHERE phone IS NOT NULL AND phone != '') AS "Phone numbers",
-  count(1) FILTER (WHERE address IS NOT NULL AND address != '') AS "Addresses"
+  count(1) FILTER (WHERE address IS NOT NULL AND address != '') AS "Addresses",
+  count(1) FILTER (WHERE pronouns != 0) AS "Pronouns"
 FROM confreg_conferenceregistration WHERE conference_id=%(confid)s""", {
             'confid': conference.id,
         })[0],

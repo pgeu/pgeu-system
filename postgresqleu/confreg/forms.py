@@ -49,7 +49,8 @@ class ConferenceRegistrationForm(forms.ModelForm):
         self.fields['regtype'].queryset = RegistrationType.objects.select_related('conference', 'conference__vat_registrations').filter(conference=self.instance.conference).order_by('sortkey')
         self.fields['photoconsent'].required = True
         for f in self.instance.conference.remove_fields:
-            del self.fields[f]
+            if f in self.fields:
+                del self.fields[f]
 
         if self.regforother:
             self.fields['email'].widget.attrs['readonly'] = True
@@ -287,7 +288,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
         model = ConferenceRegistration
         fields = ('regtype', 'firstname', 'lastname', 'email', 'company', 'address',
                   'country', 'phone', 'shirtsize', 'dietary', 'additionaloptions',
-                  'twittername', 'nick', 'badgescan', 'shareemail', 'photoconsent', 'vouchercode',
+                  'twittername', 'nick', 'pronouns', 'badgescan', 'shareemail', 'photoconsent', 'vouchercode',
         )
         widgets = {
             'photoconsent': forms.Select(choices=((None, ''), (True, 'I consent to having my photo taken'), (False, "I don't want my photo taken"))),
@@ -300,6 +301,8 @@ class ConferenceRegistrationForm(forms.ModelForm):
         conf = self.instance.conference
 
         fields = ['regtype', 'firstname', 'lastname', 'company', 'address', 'country', 'email']
+        if conf.askpronouns:
+            fields.append('pronouns')
         if conf.asktwitter:
             fields.append('twittername')
         if conf.asknick:
@@ -354,7 +357,8 @@ class RegistrationChangeForm(forms.ModelForm):
         self.allowedit = allowedit
         self.fields['photoconsent'].required = True
         for f in self.instance.conference.remove_fields:
-            del self.fields[f]
+            if f in self.fields:
+                del self.fields[f]
         if not self.allowedit:
             for f in self.fields:
                 if f not in self.Meta.unlocked_fields:

@@ -183,7 +183,7 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
     else:
         changeform = RegistrationChangeForm(conference.allowedit, instance=reg)
 
-    fields = ['shirtsize', 'dietary', 'nick', 'twittername', 'badgescan', 'shareemail', 'photoconsent']
+    fields = ['pronouns', 'shirtsize', 'dietary', 'nick', 'twittername', 'badgescan', 'shareemail', 'photoconsent']
     for f in conference.remove_fields:
         fields.remove(f)
     displayfields = [(reg._meta.get_field(k).verbose_name.capitalize(), reg.get_field_string(k)) for k in fields]

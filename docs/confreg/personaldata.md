@@ -27,6 +27,9 @@ Dietary needs
 with future events (for example, to provide venues with examples and
 common responses).
 
+Pronouns
+:  This data is aggregated so that it can be used for statistics.
+
 This data is never purged automatically. Instead there is a button at
 the top of the conference administration dashboard that gets enabled
 when the conference has finished, and remains enabled until the data

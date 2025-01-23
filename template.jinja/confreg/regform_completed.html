@@ -64,6 +64,9 @@ at {{conference.contactaddr}}.
 {%if conference.asknick%}
   <tr><td class="firstcol">Nickname</td><td>{{reg.nick}}</td></tr>
 {%endif%}
+{%if conference.askpronouns and reg.pronouns%}
+  <tr><td class="firstcol">Nickname</td><td>{{reg.pronouns}}</td></tr>
+{%endif%}
  </table>
 </fieldset>
 {%if conference.asktshirt or conference.askfood or conference.askbadgescan or conference.askshareemail%}

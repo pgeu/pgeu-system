@@ -92,6 +92,16 @@ STATUS_CHOICES_SHORT = (
     (6, "withdrawn"),
 )
 
+PRONOUNS_CHOICES = (
+    (0, ''),
+    (1, 'she/her'),
+    (2, 'he/him'),
+    (3, 'they/them'),
+    (4, 'other'),
+)
+
+PRONOUNS_TEXT = dict(PRONOUNS_CHOICES)
+
 PRIMARY_SPEAKER_PHOTO_RESOLUTION = (512, 512)
 
 
@@ -199,6 +209,7 @@ class Conference(models.Model):
     askfood = models.BooleanField(blank=False, null=False, default=True, verbose_name="Field: dietary", help_text="Include field for dietary needs")
     asktwitter = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: twitter name", help_text="Include field for twitter name")
     asknick = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: nick", help_text="Include field for nick")
+    askpronouns = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: pronouns", help_text="Include fields for pronouns")
     askbadgescan = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: badge scanning", help_text="Include field for allowing sponsors to scan badge")
     askshareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: share email", help_text="Include field for sharing email with sponsors")
     askphotoconsent = models.BooleanField(null=False, blank=False, default=True, verbose_name="Field: photo consent", help_text="Include field for getting photo consent")
@@ -246,7 +257,7 @@ class Conference(models.Model):
     # Attributes that are safe to access in jinja templates
     _safe_attributes = ('registrationopen', 'registrationtimerange', 'IsRegistrationOpen',
                         'startdate', 'enddate',
-                        'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick',
+                        'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick', 'askpronouns',
                         'callforpapersopen', 'callforpaperstimerange', 'IsCallForPapersOpen',
                         'callforpaperstags', 'callforpapersrecording', 'allowedit',
                         'conferencefeedbackopen', 'confurl', 'contactaddr', 'tickets',
@@ -316,6 +327,8 @@ class Conference(models.Model):
 
     @property
     def remove_fields(self):
+        if not self.askpronouns:
+            yield 'pronouns'
         if not self.asktshirt:
             yield 'shirtsize'
         if not self.asknick:
@@ -606,6 +619,7 @@ class ConferenceRegistration(models.Model):
     additionaloptions = models.ManyToManyField(ConferenceAdditionalOption, blank=True, verbose_name="Additional options")
     twittername = models.CharField(max_length=100, null=False, blank=True, verbose_name="Twitter account", validators=[TwitterValidator, ])
     nick = models.CharField(max_length=100, null=False, blank=True, verbose_name="Nickname")
+    pronouns = models.IntegerField(null=False, blank=False, default=0, choices=PRONOUNS_CHOICES)
     badgescan = models.BooleanField(null=False, blank=False, default=True, verbose_name="Allow sponsors get contact information (name, e-mail address, country and company name) by scanning badge")
     shareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Share e-mail address with sponsors")
     photoconsent = models.BooleanField(null=True, blank=False, verbose_name="Consent to having your photo taken at the event by the organisers")
@@ -846,6 +860,8 @@ class ConferenceRegistration(models.Model):
         return self.pk and (self.transfer_from_reg.exists() or self.transfer_to_reg.exists())
 
     def get_field_string(self, field):
+        if field == 'pronouns':
+            return self.pronounsfulltext
         r = getattr(self, field)
         if isinstance(r, bool):
             return r and 'Yes' or 'No'
@@ -865,13 +881,27 @@ class ConferenceRegistration(models.Model):
             return "{}/t/at/{}/".format(settings.SITEBASE, self.publictoken)
         return ''
 
+    # Chosen pronouns, for printing
+    @property
+    def pronounstext(self):
+        # pronouns = 4 means "other", and we don't want to print that.
+        if self.conference.askpronouns and self.pronouns != 4:
+            return PRONOUNS_TEXT[self.pronouns]
+        return ''
+
+    @property
+    def pronounsfulltext(self):
+        if self.conference.askpronouns:
+            return PRONOUNS_TEXT[self.pronouns]
+        return ''
+
     # For the admin interface (mainly)
     def __str__(self):
         return "%s: %s %s <%s>" % (self.conference, self.firstname, self.lastname, self.email)
 
     # For exporting "safe attributes" to external systems
     def safe_export(self):
-        attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'countryname', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'badgescan', 'shareemail', 'fullidtoken', 'fullpublictoken', 'queuepartition', 'alldays', 'regdatestr', 'vouchercode', 'is_talkvoter', 'is_volunteer', 'is_admin']
+        attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'countryname', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'pronouns', 'pronounstext', 'badgescan', 'shareemail', 'fullidtoken', 'fullpublictoken', 'queuepartition', 'alldays', 'regdatestr', 'vouchercode', 'is_talkvoter', 'is_volunteer', 'is_admin']
         d = dict((a, getattr(self, a) and str(getattr(self, a))) for a in attribs)
         if self.regtype:
             d['regtype'] = self.regtype.safe_export()
@@ -1486,6 +1516,15 @@ class AggregatedDietary(models.Model):
 
     class Meta:
         unique_together = (('conference', 'dietary'), )
+
+
+class AggregatePronouns(models.Model):
+    conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
+    pronouns = models.IntegerField(null=False, blank=False, default=0, choices=PRONOUNS_CHOICES)
+    num = models.IntegerField(null=False, blank=False)
+
+    class Meta:
+        unique_together = (('conference', 'pronouns'), )
 
 
 AccessTokenPermissions = (

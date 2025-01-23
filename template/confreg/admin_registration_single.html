@@ -55,6 +55,12 @@
   <td>{{reg.nick}}</td>
  </tr>
 {%endif%}
+{%if conference.askpronouns%}
+ <tr>
+  <td>Pronouns</td>
+  <td>{{reg.pronounsfulltext}}</td>
+ </tr>
+{%endif%}
 
  <tr>
   <th colspan="2" class="col-md-12">Attendee specifics</th>
