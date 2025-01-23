@@ -121,6 +121,10 @@ Confirmed staff
 : The attendee registering must use one of the accounts that
 are listed as staff in the [conference configuration](configuring).
 
+CFP team member
+: The attendee registering must use one of the accounts that
+are listed as talkvoter in the [conference configuration](configuring).
+
 Must have voucher
 : The registration must be done using a voucher. Vouchers in turn are tied to
   a specific registration type, so using this makes it possible to say only

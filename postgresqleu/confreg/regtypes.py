@@ -60,6 +60,19 @@ _specialregtypes['staff'] = {
     }
 
 
+def validate_cfpmember_registration(reg):
+    if reg.attendee is None:
+        raise ValidationError('CFP team member registrations have to be done by the attendee directly')
+    if not reg.conference.talkvoters.filter(pk=reg.attendee.pk).exists():
+        raise ValidationError('This registration type is only available if you are confirmed CFP team member at this conference')
+
+
+_specialregtypes['cfp'] = {
+    'name': 'CFP team member',
+    'func': validate_cfpmember_registration,
+    }
+
+
 def validate_manual_registration(reg):
     # Always validates so we can save the record, and then we just block
     # it at confirmation. This doesn't work well with multiregs, so just
