@@ -182,7 +182,7 @@ $(function() {
             is_admin = data.meta.isadmin;
             is_volunteer = data.meta.isvolunteer;
             regid = data.meta.regid;
-            update_slot_info(slot, regid, is_admin);
+            update_slot_info(slot, regid, is_admin, is_volunteer);
             update_stats(data.stats);
         });
     }).fail(function(data, status, xhr) {
