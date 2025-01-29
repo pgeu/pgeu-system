@@ -335,7 +335,7 @@ class BackendRegistrationForm(BackendForm):
                   'shirtsize', 'dietary', 'pronouns', 'twittername', 'nick', 'badgescan', 'shareemail',
                   'regtype', 'additionaloptions']
 
-    _all_dynamic_fields = set(['badgescan', 'shareemail', 'dietary', 'shirtsize'])
+    _all_dynamic_fields = set(['badgescan', 'shareemail', 'dietary', 'pronouns', 'shirtsize'])
 
     def _get_reginfo_fields(self):
         if self.conference.askbadgescan:
