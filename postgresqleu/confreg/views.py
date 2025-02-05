@@ -1849,7 +1849,8 @@ def callforpapers_edit(request, confname, sessionid):
         speaker = get_object_or_404(Speaker, user=request.user)
 
         # Find the session record (should always exist when we get this far)
-        session = get_object_or_404(ConferenceSession, conference=conference,
+        session = get_object_or_404(ConferenceSession.objects.select_related('track'),
+                                    conference=conference,
                                     speaker=speaker, pk=sessionid)
 
     # If the user is a tester, it overrides the callforpapersopen check

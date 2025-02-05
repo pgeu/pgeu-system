@@ -12,6 +12,7 @@
 <h2>{{session.title}}</h2>
 <p>
 <b>Status: </b>{{session.status_string_long}}<br/>
+{%if session.track %}<b>Track: </b>{{ session.track.trackname }}<br/>{% endif %}
 </p>
 
 <p>
