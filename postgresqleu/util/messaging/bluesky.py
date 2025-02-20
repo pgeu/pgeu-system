@@ -252,7 +252,7 @@ class Bluesky(object):
                 self.spans.append({
                     'start': match.start(2) - self.shortenedby,
                     'end': end - self.shortenedby,
-                    'url': match.group(2),
+                    'url': match.group(2).decode('UTF-8'),
                 })
                 self.shortenedby += len(match.group(2)) - len(url)
                 return match.group(1) + url
