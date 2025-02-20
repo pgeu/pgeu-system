@@ -7,6 +7,7 @@ import requests
 
 from postgresqleu.util.image import get_image_contenttype_from_bytes
 from postgresqleu.util.versionutil import decode_unverified_jwt
+from postgresqleu.util.messaging.short import url_shortened_len
 
 from postgresqleu.confreg.models import MessagingProvider
 from postgresqleu.confreg.backendforms import BackendSeriesMessagingForm
@@ -147,8 +148,9 @@ class Bluesky(object):
             "createdAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         }
 
-        facets = self._parse_facets(post["text"])
+        newtext, facets = self._parse_facets(post["text"])
         if facets:
+            post["text"] = newtext
             post["facets"] = facets
 
         if image:
@@ -231,20 +233,34 @@ class Bluesky(object):
 
     # From Bluesky examples
     def _parse_urls(self, text: str):
-        spans = []
         # partial/naive URL regex based on: https://stackoverflow.com/a/3809435
         # tweaked to disallow some training punctuation
-        url_regex = rb"[$|\W](https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*[-a-zA-Z0-9@%_\+~#//=])?)"
+        url_regex = re.compile(rb"([$|\W])(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*[-a-zA-Z0-9@%_\+~#//=])?)")
         text_bytes = text.encode("UTF-8")
-        for m in re.finditer(url_regex, text_bytes):
-            spans.append(
-                {
-                    "start": m.start(1),
-                    "end": m.end(1),
-                    "url": m.group(1).decode("UTF-8"),
-                }
-            )
-        return spans
+
+        class _url_replacer:
+            def __init__(self):
+                self.spans = []
+                self.shortenedby = 0
+
+            def replace(self, match: bytes):
+                if len(match.group(2)) <= url_shortened_len:
+                    url = match.group(2)
+                else:
+                    url = match.group(2)[:url_shortened_len - 3] + b'...'
+                end = match.start(2) + len(url)
+                self.spans.append({
+                    'start': match.start(2) - self.shortenedby,
+                    'end': end - self.shortenedby,
+                    'url': match.group(2),
+                })
+                self.shortenedby += len(match.group(2)) - len(url)
+                return match.group(1) + url
+
+        replacer = _url_replacer()
+        r, n = url_regex.subn(replacer.replace, text_bytes)
+
+        return r.decode('UTF-8'), replacer.spans
 
     def _parse_mentions(self, text: str):
         spans = []
@@ -287,7 +303,9 @@ class Bluesky(object):
                     "features": [{"$type": "app.bsky.richtext.facet#mention", "did": did}],
                 }
             )
-        for u in self._parse_urls(text):
+        newtext, urls = self._parse_urls(text)
+
+        for u in urls:
             facets.append(
                 {
                     "index": {
@@ -303,4 +321,4 @@ class Bluesky(object):
                     ],
                 }
             )
-        return facets
+        return newtext, facets

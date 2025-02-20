@@ -10,8 +10,8 @@ _re_urlmatcher = re.compile(r'\bhttps?://\S+', re.I)
 
 # This is currently the value for Twitter and the default for Mastodon, so just
 # use that globally for now.
-_url_shortened_len = 23
-_url_counts_as_characters = "https://short.url/{}".format((_url_shortened_len - len("https://short.url/")) * 'x')
+url_shortened_len = 23
+_url_counts_as_characters = "https://short.url/{}".format((url_shortened_len - len("https://short.url/")) * 'x')
 
 
 def get_shortened_post_length(txt):
@@ -28,12 +28,12 @@ def truncate_shortened_post(txt, maxlen):
         return txt[:maxlen]
 
     firststart, firstend = matches[0].span()
-    if firststart + _url_shortened_len > maxlen:
+    if firststart + url_shortened_len > maxlen:
         # We hit the size limit before the url or in the middle of it, so skip the whole url
         return txt[:firststart]
 
     inlen = firstend
-    outlen = firststart + _url_shortened_len
+    outlen = firststart + url_shortened_len
     for i, curr in enumerate(matches[1:]):
         prevstart, prevend = matches[i].span()
         currstart, currend = curr.span()
@@ -43,13 +43,13 @@ def truncate_shortened_post(txt, maxlen):
             # The limit was hit in the text between urls
             left = maxlen - outlen
             return txt[:inlen + (maxlen - outlen)]
-        if outlen + betweenlen + _url_shortened_len > maxlen:
+        if outlen + betweenlen + url_shortened_len > maxlen:
             # The limit was hit in the middle of this URL, so include all the text
             # up to it, but skip the url.
             return txt[:inlen + betweenlen]
 
         # The whole URL fit
         inlen += betweenlen + currend - currstart
-        outlen += betweenlen + _url_shortened_len
+        outlen += betweenlen + url_shortened_len
 
     return txt[:inlen + (maxlen - outlen)]
