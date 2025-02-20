@@ -11,3 +11,5 @@ docker run -it --rm -v `pwd`:/source -v /tmp/statictest:/target deploystatic
 
 (In this case taking the templates in the current directory and deploying the
 result to /tmp/statictest - adjust for your own directories)
+
+You can also just specify the default parameters as docker arguments.
