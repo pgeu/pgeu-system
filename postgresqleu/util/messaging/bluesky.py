@@ -277,6 +277,18 @@ class Bluesky(object):
             )
         return spans
 
+    def _parse_hashtags(self, text: str):
+        hashtags_regex = re.compile(rb'[$|\W](#\w+)')
+        text_bytes = text.encode("UTF-8")
+        for m in hashtags_regex.finditer(text_bytes):
+            yield {
+                "index": {
+                    "byteStart": m.start(1),
+                    "byteEnd": m.end(1),
+                },
+                "features": [{"$type": "app.bsky.richtext.facet#tag", "tag": m.group(1).decode("UTF-8")}],
+            }
+
     def _parse_facets(self, text: str):
         """
         parses post text and returns a list of app.bsky.richtext.facet objects for any mentions (@handle.example.com) or URLs (https://example.com)
@@ -303,6 +315,9 @@ class Bluesky(object):
                     "features": [{"$type": "app.bsky.richtext.facet#mention", "did": did}],
                 }
             )
+
+        facets.extend(self._parse_hashtags(text))
+
         newtext, urls = self._parse_urls(text)
 
         for u in urls:
