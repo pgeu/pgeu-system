@@ -178,6 +178,11 @@ class Bluesky(object):
             },
             timeout=10,
         )
+        if r.status_code == 400 and r.headers.get('content-type').startswith('application/json'):
+            return (None, 'Post error: {}, message {}'.format(
+                r.json()['error'],
+                r.json()['message'],
+            ))
         r.raise_for_status()
         return (r.json()['uri'], None)
 
