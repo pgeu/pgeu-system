@@ -1,0 +1,46 @@
+name: Publish deploystatic container
+on:
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - tools/deploystatic/**
+  # Allow manual run
+  workflow_dispatch:
+  # Schedule a run once a month to get updated base packages
+  schedule:
+    - cron: "0 0 1 * *"
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push-deploystatic-image:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push docker image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: tools/deploystatic
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/deploystatic:latest , ghcr.io/${{ github.repository_owner }}/deploystatic:${{ github.sha }}
