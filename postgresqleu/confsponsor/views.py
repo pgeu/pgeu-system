@@ -215,6 +215,19 @@ def sponsor_view_mail(request, sponsorid, mailid):
 
 
 @login_required
+def sponsor_contractview(request, sponsorid):
+    sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
+
+    if not sponsor.contract.completed:
+        raise Http404("Contract not completed")
+
+    resp = HttpResponse(content_type='application/pdf')
+    resp['Content-disposition'] = 'filename="%s.pdf"' % sponsor.name
+    resp.write(sponsor.contract.digisigncompleteddocument.completedpdf)
+    return resp
+
+
+@login_required
 @transaction.atomic
 def sponsor_purchase_voucher(request, sponsorid):
     sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)

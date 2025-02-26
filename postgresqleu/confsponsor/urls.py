@@ -18,6 +18,7 @@ urlpatterns = [
     re_path(r'^(\d+)/shipments/(\d+)/$', views.sponsor_shipment),
     re_path(r'^(\d+)/scanning/$', scanning.sponsor_scanning),
     re_path(r'^(\d+)/scanning/download.csv/$', scanning.sponsor_scanning_download),
+    re_path(r'^(\d+)/contractview/$', views.sponsor_contractview),
     re_path(r'^scanning/([a-z0-9]{64})/$', scanning.scanning_page),
     re_path(r'^scanning/([a-z0-9]{64})/api/(\w+)/$', scanning.scanning_api),
     re_path(r'^scanning-test/$', scanning.testcode),
