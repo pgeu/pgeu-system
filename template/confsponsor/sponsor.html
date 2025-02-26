@@ -34,14 +34,20 @@
     <th>Status:</th>
     <td>{%if sponsor.confirmed%}Confirmed ({{sponsor.confirmedat}}){%else%}<i>Awaiting confirmation</i>{%endif%}</td>
   </tr>
-{% if sponsor.confirmed %}
+{% if sponsor.confirmed and sponsor.level.contract %}
   <tr>
     <th>Contract:</th>
-    <td>{%if sponsor.signmethod == 0%}
+    <td>
+{% if sponsor.level.instantbuy %}
+      Click-through contract agreed to. <a href="contractview/" class="btn btn-outline-dark btn-sm">View copy of contract</a>
+{% else %}
+{%if sponsor.signmethod == 0%}
       Digital contract completed {{sponsor.contract.completed}}.
 {%if sponsor.contract.completed and sponsor.contract.has_completed_pdf %}<a href="contractview/" class="btn btn-outline-dark btn-sm">View signed contract</a>{%endif%}
 {% else %}
-Manual contract.{% endif %}
+Manual contract.
+{% endif %}
+{% endif %}
 </td>
   </tr>
 {% endif %}

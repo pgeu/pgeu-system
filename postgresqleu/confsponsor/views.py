@@ -218,7 +218,25 @@ def sponsor_view_mail(request, sponsorid, mailid):
 def sponsor_contractview(request, sponsorid):
     sponsor, is_admin = _get_sponsor_and_admin(sponsorid, request)
 
-    if not sponsor.contract.completed:
+    if not sponsor.level.contract:
+        # Should not happen
+        raise Http404("No contract at this level")
+
+    if sponsor.level.instantbuy:
+        # Click-through contract
+
+        resp = HttpResponse(content_type='application/pdf')
+        resp['Content-disposition'] = 'filename="%s.pdf"' % sponsor.name
+        resp.write(fill_pdf_fields(
+            sponsor.level.contract.contractpdf,
+            get_pdf_fields_for_conference(sponsor.conference, sponsor),
+            sponsor.level.contract.fieldjson,
+        ))
+        return resp
+
+    # Regular contract
+
+    if not (sponsor.contract and sponsor.contract.completed):
         raise Http404("Contract not completed")
 
     resp = HttpResponse(content_type='application/pdf')
@@ -368,7 +386,7 @@ def _generate_and_send_sponsor_contract(sponsor):
         send_sponsor_manager_email(
             sponsor,
             'Your contract for {}'.format(conference.conferencename),
-            'confsponsor/mail/sponsor_contract_manual.txt',
+            'confsponsor/mail/{}.txt'.format('sponsor_contract_instant' if level.instantbuy else 'sponsor_contract_manual'),
             {
                 'conference': conference,
                 'sponsor': sponsor,
@@ -517,6 +535,11 @@ def sponsor_signup(request, confurlname, levelurlname):
                 error = None
 
                 if level.instantbuy:
+                    if sponsor.level.contract:
+                        # Instantbuy levels that has a contract should get an implicit contract
+                        # attached to an email.
+                        _generate_and_send_sponsor_contract(sponsor)
+
                     mailstr += "Level does not require a signed contract. Verify the details and approve\nthe sponsorship using:\n\n{0}/events/sponsor/admin/{1}/{2}/".format(
                         settings.SITEBASE, conference.urlname, sponsor.id)
                 else:
@@ -922,6 +945,8 @@ def sponsor_contract_preview(request, contractid):
                 get_pdf_fields_for_conference(contract.conference, overrides={
                     'static:sponsor': 'PREVIEW ONLY - sponsor company name',
                     'static:euvat': 'PREVIEW ONLY - do not sign this contract',
+                    'static:clickthrough': 'PREVIEW ONLY - no signature',
+                    'static:clickthrougdate': 'PREVIEW ONLY',
                 }),
                 contract.fieldjson,
             )

@@ -174,5 +174,9 @@ def get_pdf_fields_for_conference(conference, sponsor=None, overrides={}):
         fields.append(
             ('static:euvat', sponsor.vatnumber if sponsor else overrides.get('static:euvat', 'Sponsor EU VAT number')),
         )
+    fields.extend([
+        ('static:clickthrough', overrides.get('static:clickthrough', 'Click-through agreement')),
+        ('static:clickthroughdate', str(sponsor.signupat.date()) if sponsor else overrides.get('static:clickthroughdate', 'Click-through date')),
+    ])
 
     return fields

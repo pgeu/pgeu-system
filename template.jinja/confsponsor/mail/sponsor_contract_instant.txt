@@ -1,0 +1,10 @@
+Hello!
+
+You have signed up to be a sponsor of
+{{conference.conferencename}}
+for sponsorship level {{sponsor.level}}.
+
+This level uses a click-through contract model. Attached is a
+copy of the contract you agreed to by signing up.
+
+Thank you for your support of {{conference.conferencename}}!
