@@ -97,7 +97,7 @@ class Bluesky(object):
 
     @classmethod
     def get_link_from_identifier(self, value):
-        return value.lstrip('@')
+        return 'https://bsky.app/profile/{}'.format(value.lstrip('@'))
 
     def __init__(self, id, config):
         self.providerid = id
