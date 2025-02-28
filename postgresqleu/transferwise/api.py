@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 import json
 import re
+import sys
 import uuid
 from base64 import b64encode
 
@@ -56,6 +57,8 @@ class TransferwiseApi(object):
                 },
             )
         if r.status_code != 200:
+            # Print the content of the error as well, so this can be picked up in a log
+            sys.stderr.write("API returned status {}. Body:\n{}".format(r.status_code, r.text[:2000]))
             r.raise_for_status()
         return r
 
