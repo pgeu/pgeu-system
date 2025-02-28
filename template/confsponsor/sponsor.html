@@ -34,20 +34,22 @@
     <th>Status:</th>
     <td>{%if sponsor.confirmed%}Confirmed ({{sponsor.confirmedat}}){%else%}<i>Awaiting confirmation</i>{%endif%}</td>
   </tr>
-{% if sponsor.confirmed and sponsor.level.contract %}
+{% if sponsor.confirmed  %}
   <tr>
     <th>Contract:</th>
     <td>
-{% if sponsor.level.instantbuy %}
+{% if sponsor.level.contractlevel == 0 %}
+This level requires no contract.
+{% elif sponsor.level.contractlevel == 1 %}
       Click-through contract agreed to. <a href="contractview/" class="btn btn-outline-dark btn-sm">View copy of contract</a>
 {% else %}
 {%if sponsor.signmethod == 0%}
       Digital contract completed {{sponsor.contract.completed}}.
 {%if sponsor.contract.completed and sponsor.contract.has_completed_pdf %}<a href="contractview/" class="btn btn-outline-dark btn-sm">View signed contract</a>{%endif%}
 {% else %}
-Manual contract.
-{% endif %}
-{% endif %}
+Manual contract signed.
+{% endif %}{%comment%}digital contract/manual contract{%endcomment%}
+{% endif %}{%comment%}contractlevel{%endcomment%}
 </td>
   </tr>
 {% endif %}
@@ -73,8 +75,8 @@ Manual contract.
 {%endwith%}
 {%else%}
 {%comment%}No invoice generated{%endcomment%}
-{%if sponsor.level.instantbuy%}
-{%comment%}No invoice generated but instantbuy active, so awaiting admin approval{%endcomment%}
+{%if sponsor.level.contractlevel < 2 %}
+{%comment%}No invoice generated but clickthrough contract or no contract, so awaiting admin approval{%endcomment%}
 <p>
   Your sponsorship request has been submitted, and is currently awaiting confirmation
   from the conference organizers. As soon as it has been, an invoice will be automatically

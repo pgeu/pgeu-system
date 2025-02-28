@@ -23,6 +23,13 @@ vat_status_choices = (
     (2, 'Company is from outside EU'),
 )
 
+CONTRACT_LEVEL_CHOICES = (
+    (0, 'No contract'),
+    (1, 'Click-through contract'),
+    (2, 'Full contract'),
+)
+CONTRACT_LEVEL_MAP = dict(CONTRACT_LEVEL_CHOICES)
+
 
 class SponsorshipContract(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
@@ -47,7 +54,8 @@ class SponsorshipLevel(models.Model):
     public = models.BooleanField(null=False, blank=False, default=True, verbose_name="Publicly visible",
                                  help_text="If unchecked the sponsorship level will be treated as internal, for example for testing")
     maxnumber = models.IntegerField(null=False, blank=False, default=0, verbose_name="Maximum number of sponsors")
-    instantbuy = models.BooleanField(null=False, blank=False, default=False, verbose_name="Instant buy available")
+    contractlevel = models.IntegerField(null=False, blank=False, default=0, verbose_name="Contract level",
+                                        choices=CONTRACT_LEVEL_CHOICES)
     paymentmethods = models.ManyToManyField(InvoicePaymentMethod, blank=False, verbose_name="Payment methods for generated invoices")
     invoiceextradescription = models.TextField(
         blank=True, null=False, verbose_name="Invoice extra description",
@@ -89,6 +97,13 @@ class SponsorshipLevel(models.Model):
             else:
                 return True
         return False
+
+    @cached_property
+    def contractlevel_name(self):
+        return CONTRACT_LEVEL_MAP[self.contractlevel]
+
+    def _display_contractlevel(self, cache):
+        return self.contractlevel_name
 
 
 class SponsorshipBenefit(models.Model):

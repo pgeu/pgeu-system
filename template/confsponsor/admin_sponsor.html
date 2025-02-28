@@ -140,8 +140,8 @@
 <p>
 This sponsorship is awaiting an <a href="/invoiceadmin/{{sponsor.invoice.pk}}/">invoice</a> to be paid.
 </p>
-{%if not sponsor.level.instantbuy%}
-{%comment%}Instant buy sponsorships should never be manually confirmed{%endcomment%}
+{%if sponsor.level.contractlevel == 2 %}
+{%comment%}Only full contract sponsorships should be manually confirmed{%endcomment%}
 <p>
 <b>Iff</b> there is a signed <i>and</i> countersigned contract available
 for this sponsor, it can be confirmed before the invoice is paid.
@@ -161,7 +161,7 @@ for this sponsor, it can be confirmed before the invoice is paid.
 {%else%}
 {%comment%}Sponsor has no invoice{%endcomment%}
 {%if sponsor.level.levelcost %}
-{%if sponsor.level.instantbuy%}
+{%if sponsor.level.contractlevel < 2%}
 <p>
   This sponsorship has not yet been issued an invoice. This is an
   "instant buy" level sponsorship, so as soon as the sponsorship
@@ -191,7 +191,7 @@ This sponsorship has not yet been issued an invoice. Once the contract
 has been received, go ahead and generate the invoice.
 </p>
 {%endif%}{%comment%}Digital contracts{%endcomment%}
-{%endif%}{%comment%}Instant buy{%endcomment%}
+{%endif%}{%comment%}contractlevel < 2{%endcomment%}
 {%else%}{%comment%}levelcost != 0 {%endcomment%}
 <p>
   This sponsorship has zero cost, which means payment is handled manually.

@@ -7,14 +7,6 @@ Thank you for your interest in sponsoring {{conference}}! Please fill out the
 form below to initiate your sponsorship!
 </p>
 
-{%if level.contract%}
-<p>
-Before you complete the signup form, please <em>make sure</em> you have read the
-<a href="/events/sponsor/previewcontract/{{level.contract.id}}/">contract</a>, and
-agree with the contents in it.
-</p>
-{%endif%}
-
 {%if form.errors%}
 <p>
 <b>NOTE!</b> Your submitted form contained errors and has <b>not</b> been saved!
@@ -46,16 +38,31 @@ the invoice cannot be changed.
 </div>
 
 {%if previewaddr%}
-{%if needscontract%}
+{%if level.contractlevel > 0%}
 <h4>Contract details</h4>
+{% if level.contractlevel == 1 %}
+<p>
+  This sponsorship level uses a <strong>click-through contract</strong>. This
+  means that by signing up, you agree to the
+  <a href="/events/sponsor/previewcontract/{{level.contract.id}}/">contract</a>, and
+  accept that no changes can be made to it.
+</p>
+{% else %}
+<p>
+  This sponsorship level requires a signed contract. Please review the
+  <a href="/events/sponsor/previewcontract/{{level.contract.id}}/">contract</a> before
+  completing the sign-up, and <em>only continue if you agree with it</em>.
+  Once signed up, you will receive a contract or signing.
+</p>
+{% endif %}
 <p>
   The contract for the sponsorship will be issued to the company name
   <strong><em>{{sponsorname}}</em></strong>{%if vatnumber%} with VAT
   number <strong><em>{{vatnumber}}</em></strong>{%endif%}.
-</p>
-<p>
-  It will <strong>not</strong> be possible to change this after this
-  step, so if anything about it is incorrect please click <i>Continue
+
+  It will <strong>not</strong> be possible to change this, or any other
+  details in the contract, after this
+  step. If anything about it is incorrect please click <i>Continue
   editing</i> and correct it <i>before</i> proceeding.
 </p>
 {%endif%}
@@ -92,7 +99,7 @@ the invoice cannot be changed.
 <input type="hidden" name="stage" value="2">
 {%endif%}{# contractchoices #}
 
-{%if not level.instantbuy and not noform %}
+{%if level.contractlevle == 2 and not noform %}
 <p>
 Please note that due to the level of this sponsorship contract, we
 will require a signed contract, apart from the confirmation

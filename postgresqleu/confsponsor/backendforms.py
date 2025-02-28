@@ -304,7 +304,7 @@ class BackendSponsorshipLevelBenefitCopyForm(django.forms.Form):
 
 class BackendSponsorshipLevelForm(BackendForm):
     helplink = 'sponsors#level'
-    list_fields = ['levelname', 'levelcost', 'available', 'public', ]
+    list_fields = ['levelname', 'levelcost', 'available', 'public', 'contractlevel']
     linked_objects = OrderedDict({
         'benefit': BackendSponsorshipLevelBenefitManager(),
     })
@@ -315,7 +315,7 @@ class BackendSponsorshipLevelForm(BackendForm):
 
     class Meta:
         model = SponsorshipLevel
-        fields = ['levelname', 'urlname', 'levelcost', 'available', 'public', 'maxnumber', 'instantbuy',
+        fields = ['levelname', 'urlname', 'levelcost', 'available', 'public', 'maxnumber', 'contractlevel',
                   'paymentdays', 'paymentdueby', 'paymentmethods', 'invoiceextradescription', 'contract', 'canbuyvoucher', 'canbuydiscountcode']
         widgets = {
             'paymentmethods': django.forms.CheckboxSelectMultiple,
@@ -330,7 +330,7 @@ class BackendSponsorshipLevelForm(BackendForm):
         {
             'id': 'contract',
             'legend': 'Contract information',
-            'fields': ['instantbuy', 'contract', 'paymentdays', 'paymentdueby'],
+            'fields': ['contractlevel', 'contract', 'paymentdays', 'paymentdueby'],
         },
         {
             'id': 'payment',
@@ -353,13 +353,19 @@ class BackendSponsorshipLevelForm(BackendForm):
     def clean(self):
         cleaned_data = super(BackendSponsorshipLevelForm, self).clean()
 
-        if not (cleaned_data.get('instantbuy', False) or cleaned_data['contract']):
-            self.add_error('instantbuy', 'Sponsorship level must either be instant signup or have a contract')
-            self.add_error('contract', 'Sponsorship level must either be instant signup or have a contract')
-
-        if int(cleaned_data['levelcost'] == 0) and cleaned_data.get('instantbuy', False):
-            self.add_error('levelcost', 'Sponsorships with zero cost can not be instant signup')
-            self.add_error('instantbuy', 'Sponsorships with zero cost can not be instant signup')
+        if cleaned_data['contractlevel'] == 0:
+            if cleaned_data['contract']:
+                self.add_error('contract', 'Contracts cannot be specified when contract level is No contract')
+            if cleaned_data['levelcost'] == 0:
+                self.add_error('levelcost', 'Cost cannot be zero when contract level is No contract')
+        elif cleaned_data['contractlevel'] == 1:
+            if not cleaned_data['contract']:
+                self.add_error('contract', 'Contract is required when contract level is Click-through')
+            if cleaned_data['levelcost'] == 0:
+                self.add_error('levelcost', 'Cost cannot be zero when contract level is Click-through')
+        else:
+            if not cleaned_data['contract']:
+                self.add_error('contract', 'Contract is required when contract level is Full')
 
         return cleaned_data
 

@@ -222,7 +222,7 @@ def sponsor_contractview(request, sponsorid):
         # Should not happen
         raise Http404("No contract at this level")
 
-    if sponsor.level.instantbuy:
+    if sponsor.level.contractlevel == 1:
         # Click-through contract
 
         resp = HttpResponse(content_type='application/pdf')
@@ -375,6 +375,9 @@ def _generate_and_send_sponsor_contract(sponsor):
     conference = sponsor.conference
     level = sponsor.level
 
+    if level.contractlevel == 0:
+        return
+
     pdf = fill_pdf_fields(
         level.contract.contractpdf,
         get_pdf_fields_for_conference(conference, sponsor),
@@ -386,7 +389,7 @@ def _generate_and_send_sponsor_contract(sponsor):
         send_sponsor_manager_email(
             sponsor,
             'Your contract for {}'.format(conference.conferencename),
-            'confsponsor/mail/{}.txt'.format('sponsor_contract_instant' if level.instantbuy else 'sponsor_contract_manual'),
+            'confsponsor/mail/{}.txt'.format('sponsor_contract_instant' if level.contractlevel == 1 else 'sponsor_contract_manual'),
             {
                 'conference': conference,
                 'sponsor': sponsor,
@@ -452,7 +455,7 @@ def sponsor_signup(request, confurlname, levelurlname):
         # Stage 2 = contract choice. When submitted, sign up.
         # If there is no contract needed on this level, or there is no choice
         # of contract because only one available, we bypass stage 1.
-        if stage == '1' and (level.instantbuy or not conference.contractprovider or not conference.manualcontracts):
+        if stage == '1' and (level.contractlevel != 2 or not conference.contractprovider or not conference.manualcontracts):
             stage = '2'
 
         def _render_contract_choices():
@@ -485,7 +488,6 @@ def sponsor_signup(request, confurlname, levelurlname):
                     'level': level,
                     'form': form,
                     'noform': 1,
-                    'needscontract': not (level.instantbuy or not conference.contractprovider),
                     'sponsorname': form.cleaned_data['name'],
                     'vatnumber': form.cleaned_data['vatnumber'] if settings.EU_VAT else None,
                     'previewaddr': get_sponsor_invoice_address(form.cleaned_data['name'],
@@ -502,7 +504,7 @@ def sponsor_signup(request, confurlname, levelurlname):
             # If the Continue editing button is selected we should go back
             # to just rendering the normal form. Otherwise, go ahead and create the record.
             if request.POST.get('submit', '') != 'Continue editing':
-                if request.POST.get('contractchoice', '') not in ('0', '1') and not level.instantbuy:
+                if request.POST.get('contractchoice', '') not in ('0', '1') and level.contractlevel == 2:
                     return _render_contract_choices()
 
                 social = {
@@ -520,7 +522,7 @@ def sponsor_signup(request, confurlname, levelurlname):
                                   level=level,
                                   social=social,
                                   invoiceaddr=form.cleaned_data['address'],
-                                  signmethod=1 if request.POST.get('contractchoice', '') == '1' or not conference.contractprovider or level.instantbuy else 0,
+                                  signmethod=1 if request.POST.get('contractchoice', '') == '1' or not conference.contractprovider or level.contractlevel < 2 else 0,
                                   autoapprovesigned=conference.autocontracts,
                                   )
                 if settings.EU_VAT:
@@ -534,10 +536,10 @@ def sponsor_signup(request, confurlname, levelurlname):
 
                 error = None
 
-                if level.instantbuy:
-                    if sponsor.level.contract:
-                        # Instantbuy levels that has a contract should get an implicit contract
-                        # attached to an email.
+                if level.contractlevel < 2:
+                    # No contract or click-through contract
+                    if level.contractlevel == 1:
+                        # Click-through contract
                         _generate_and_send_sponsor_contract(sponsor)
 
                     mailstr += "Level does not require a signed contract. Verify the details and approve\nthe sponsorship using:\n\n{0}/events/sponsor/admin/{1}/{2}/".format(

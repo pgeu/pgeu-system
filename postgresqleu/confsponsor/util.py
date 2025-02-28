@@ -53,7 +53,8 @@ ORDER BY max(b.sortkey), a.overview_name""", {
                 'cost': format_currency(lvl.levelcost),
                 'available': lvl.available,
                 'maxnumber': lvl.maxnumber,
-                'instantbuy': lvl.instantbuy,
+                'instantbuy': lvl.contractlevel == 1 or (lvl.contractlevel == 0 and cost > 0),  # legacy
+                'contractlevel': lvl.contractlevel_name,
                 'benefits': [dict(_get_benefit_data(b)) for b in lvl.sponsorshipbenefit_set.all()
                 ],
             }
