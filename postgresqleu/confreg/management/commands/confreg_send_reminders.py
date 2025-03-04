@@ -15,7 +15,7 @@ from datetime import timedelta, time
 
 from postgresqleu.confreg.models import Conference, Speaker, ConferenceSession
 from postgresqleu.confreg.models import ConferenceRegistration
-from postgresqleu.confreg.util import send_conference_mail, send_conference_notification
+from postgresqleu.confreg.util import send_conference_mail, send_conference_notification, reglog
 
 
 class Command(BaseCommand):
@@ -170,6 +170,7 @@ class Command(BaseCommand):
                 )
                 reg.lastmodified = timezone.now()
                 reg.save()
+                reglog(reg, "Sent reminder about unconfirmed registration.")
 
                 whatstr.write("Reminded attendee {0} that their registration is not confirmed\n".format(reg.fullname))
 
@@ -212,10 +213,11 @@ class Command(BaseCommand):
 
             whatstr.write("\n\n")
 
-            # Separately mark each part of the multireg as touched
+            # Separately mark each part of the multireg as touched, and log to each reg.
             for reg in regs:
                 reg.lastmodified = timezone.now()
                 reg.save()
+                reglog(reg, "Sent reminder about unconfirmed multi-registration.")
 
     def remind_empty_submissions(self, whatstr, conference):
         # Get all sessions with empty abstract (they forgot to hit save), if they have not been touched in
