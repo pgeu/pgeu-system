@@ -1598,7 +1598,12 @@ def schedule_xml(request, confname):
             lastday = timezone.localdate(sess.starttime)
             lastroom = None
             xday = ET.SubElement(x, 'day', date=lastday.strftime("%Y-%m-%d"))  # START/END!
-        thisroom = sess.cross_schedule and 'Other' or sess.room.roomname
+        if sess.cross_schedule:
+            thisroom = 'Other'
+        elif sess.room:
+            thisroom = sess.room.roomname
+        else:
+            thisroom = ''
         if lastroom != thisroom:
             lastroom = thisroom
             xroom = ET.SubElement(xday, 'room', name=lastroom)
