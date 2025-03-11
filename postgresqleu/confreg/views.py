@@ -4157,6 +4157,7 @@ def _waitlist_stats(request, conference):
     }
     r['num_total'] = r['num_confirmedregs'] + r['num_invoicedregs'] + r['num_invoicedbulkpayregs'] + r['num_waitlist_offered']
     (r['waitlist'], r['num_waitlist']) = _waitlist_paginate(request, RegistrationWaitlistEntry.objects.filter(registration__conference=conference, registration__payconfirmedat__isnull=True).order_by('enteredon'), 'w')
+    r['num_potential'] = r['num_confirmedregs'] + r['num_invoicedregs'] + r['num_invoicedbulkpayregs'] + r['num_waitlist']
     (r['waitlist_cleared'], r['num_waitlist_cleared']) = _waitlist_paginate(request, RegistrationWaitlistEntry.objects.filter(registration__conference=conference, registration__payconfirmedat__isnull=False).order_by('-registration__payconfirmedat', 'enteredon'), 'cl')
     return r
 
