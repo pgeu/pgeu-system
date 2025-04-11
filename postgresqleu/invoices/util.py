@@ -104,7 +104,7 @@ class InvoiceWrapper(object):
         # Include bank info on the invoice if any payment method chosen
         # provides it. If more than one supports it then the one with
         # the highest priority (=lowest sortkey) will be used.
-        for pm in self.invoice.allowedmethods.all():
+        for pm in self.invoice.allowedmethods.filter(active=True):
             if pm.config and 'bankinfo' in pm.config and len(pm.config['bankinfo']) > 1:
                 m = pm.get_implementation()
                 if not (hasattr(m, 'available') and not m.available(self.invoice)):
