@@ -3,8 +3,10 @@ from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 
 import base64
+from datetime import timedelta
 from decimal import Decimal
 import requests
 
@@ -94,6 +96,8 @@ def _invoice_payment(request, methodid, invoice, trailer):
         'allowedPaymentMethods': methods,
         'returnUrl': '{}/invoices/adyenpayment/{}/{}/{}/return/'.format(settings.SITEBASE, methodid, invoice.id, invoice.recipient_secret),
     }
+    if invoice.canceltime and invoice.canceltime < timezone.now() + timedelta(hours=24):
+        p['expiresAt']: invoice.canceltime.isoformat(timespec='seconds')
 
     try:
         r = requests.post(
