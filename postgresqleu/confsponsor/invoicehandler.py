@@ -296,7 +296,7 @@ class VoucherInvoiceProcessor(object):
 # Generate an invoice for prepaid vouchers
 def create_voucher_invoice(conference, invoiceaddr, user, rt, num):
     invoicerows = [
-        ['Voucher for "%s"' % rt.regtype, 1, rt.cost, rt.conference.vat_registrations]
+        ['Prepaid voucher for "%s"' % rt.regtype, 1, rt.cost, rt.conference.vat_registrations]
     ] * num
 
     manager = InvoiceManager()
@@ -306,7 +306,7 @@ def create_voucher_invoice(conference, invoiceaddr, user, rt, num):
         user.email,
         user.first_name + ' ' + user.last_name,
         invoiceaddr,
-        'Prepaid vouchers for %s' % conference.conferencename,
+        'Vouchers for %s' % conference.name_and_date,
         timezone.now(),
         timezone.now(),
         invoicerows,
