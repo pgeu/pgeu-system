@@ -86,7 +86,7 @@ class JinjaFlowable(Flowable):
             else:
                 self.canv.setStrokeColor(get_color(o['stroke']))
         self.canv.circle(getmm(o, 'x'),
-                         self.height - getmm(o, 'y') - (getmm(o, 'radius') / 2),
+                         self.height - getmm(o, 'y') - getmm(o, 'radius'),
                          getmm(o, 'radius'),
                          stroke=stroke,
                          fill=fill)
