@@ -14,6 +14,7 @@ ul.dash_pagelinks li {
 div.regwrap {
    width: 100%;
    overflow: hidden;
+   padding: 1px;
 }
 div.regleft {
    width: 450px;
@@ -38,7 +39,7 @@ div.regwrap.errfld ul.errorlist li {
 }
 form input[type=submit],
 form button[type=submit] {
-   width: 220px;
+   min-width: 220px;
 }
 
 /* Regisration confirm */
