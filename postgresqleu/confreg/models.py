@@ -23,7 +23,7 @@ from postgresqleu.util.validators import PictureUrlValidator
 from postgresqleu.util.validators import color_validator
 from postgresqleu.util.forms import ChoiceArrayField
 from postgresqleu.util.fields import LowercaseEmailField, ImageBinaryField, PdfBinaryField
-from postgresqleu.util.time import today_conference
+from postgresqleu.util.time import today_conference, datetime_string
 from postgresqleu.util.db import exec_no_result
 from postgresqleu.util.image import rescale_image_bytes
 from postgresqleu.util.currency import format_currency
@@ -1130,7 +1130,7 @@ class ConferenceSessionScheduleSlot(models.Model):
     endtime = models.DateTimeField(null=False, blank=False, verbose_name="End time")
 
     def __str__(self):
-        return "%s - %s" % (self.starttime, self.endtime)
+        return "%s - %s" % (datetime_string(self.starttime), datetime_string(self.endtime))
 
 
 class ConferenceSessionTag(models.Model):

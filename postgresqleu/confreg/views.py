@@ -79,6 +79,7 @@ from postgresqleu.util.db import exec_to_dict, exec_to_grouped_dict, exec_to_key
 from postgresqleu.util.db import exec_no_result, exec_to_list, exec_to_scalar, conditional_exec_to_scalar
 from postgresqleu.util.db import ensure_conference_timezone
 from postgresqleu.util.qr import generate_base64_qr
+from postgresqleu.util.time import datetime_string
 from postgresqleu.scheduler.util import trigger_immediate_job_run
 
 from decimal import Decimal
@@ -3232,7 +3233,7 @@ def publishschedule(request, confname):
             if s.starttime:
                 # Has an existing time, did it change?
                 if s.starttime != s.tentativescheduleslot.starttime or s.endtime != s.tentativescheduleslot.endtime:
-                    changes.append("Session '%s': moved from '%s' to '%s'" % (s.title, s.starttime, s.tentativescheduleslot.starttime))
+                    changes.append("Session '%s': moved from '%s' to '%s'" % (s.title, datetime_string(s.starttime), datetime_string(s.tentativescheduleslot.starttime)))
                     s.starttime = s.tentativescheduleslot.starttime
                     s.endtime = s.tentativescheduleslot.endtime
                     dirty = True
