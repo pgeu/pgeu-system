@@ -948,7 +948,7 @@ def sponsor_contract_preview(request, contractid):
                     'static:sponsor': 'PREVIEW ONLY - sponsor company name',
                     'static:euvat': 'PREVIEW ONLY - do not sign this contract',
                     'static:clickthrough': 'PREVIEW ONLY - no signature',
-                    'static:clickthrougdate': 'PREVIEW ONLY',
+                    'static:clickthroughdate': 'PREVIEW ONLY',
                 }),
                 contract.fieldjson,
             )
