@@ -53,17 +53,29 @@ sponsorship level picked requires a signed contract or not.
 
 ![Signup process](graphs/sponsorsignup.svg)
 
-In particular, the workflow is 100% automated for sponsors that have
-instant signup, and there is nothing that should be done by
-administrators other than to click through the approval of the
-sponsorship details.
+Different types of contract handling results in a different pocess:
 
-In manual sponsors, the order of processing for the administrators
-once the signup is complete becomes:
+### No contract
 
-1. Wait for the signed contract. Countersign and send back.
+When no contract is needed, all the administrator has to do is approve
+the sponsorship details and click through.
+
+### Click-through contract
+
+For the administrator this works the same as a no-contract setup, the
+only difference is that a filled out contract will be sent to the
+sponsor automatically.
+
+### Full contract
+
+The full contract process has a few more steps:
+
+1. Wait for the signed contract. Countersign and send back. When using
+   digital contracts the sending is automatic, but the order of
+   operations is still the same.
 1. Generate an invoice by going to the sponsorship and click the
-   button for it.
+   button for it. When using digital contracts with full automation
+   enabled, this step is automatic.
 1. Optionally, also confirm the sponsorship, unless this is from a
    sponsor known to not pay on time etc. For trusted sponsors, it's
    normal to trust the signed contract and let them proceed, but
@@ -314,8 +326,7 @@ URL name
 Cost
 :  Price for this level (excluding VAT if VAT is used). If a cost of 0
 is entered, no invoice will be generated for this level, and all
-confirmation will be handled manually (this is not supported for
-levels that are instant buy).
+confirmation will be handled manually.
 
 Available for signup
 :  Whether this level is currently enabled for signup.
@@ -333,13 +344,11 @@ Maximum number of sponsors
    sponsors are offered a waitlist. If set to zero then an unlimited
    number of sponsors are allowed at this level.
 
-Instant buy available
-:  If this level requires a signed contract. If this box is checked,
-   then the sponsor can do a "click-through" accepting of the contract
-   and proceed directly to confirmation and invoice, with no explicit
-   contract signing required. If it is not checked, then the
-   administrator must manually move the sponsorship forward in the
-   process once a signed contract is received.
+Contract level
+   Which level of contract is required. There is support for No contract,
+   Click-through contract (a copy of the contract is sent automatically
+   to th sponsor, but no signing is needed), and full contract which requirea
+   a completed signature.
 
 Number of days until payment is due
 :  The number of days until a sponsorship invoice is due. This defaults to 30
@@ -354,9 +363,7 @@ The Date the payment is due by
 
 Payment methods for generated invoices
 :  Which payment methods will be listed on the generated
-   invoices. Typically the instant buy levels support payment by
-   creditcard, but higher levels may only support manual bank
-   transfers.
+   invoices..
 
 Invoice extra description
 :  Text that's included as the invoice extra description, which is
