@@ -467,7 +467,10 @@ def sponsor_signup(request, confurlname, levelurlname):
                 )
             if conference.manualcontracts:
                 contractchoices.append(
-                    (1, 'Manual signing', 'Receive the contract as a PDF sent to {}, print it, sign it, scan it and send it back in to the conference organisers.'.format(request.user.email)),
+                    (1, 'Manual signing', 'Receive the contract as a PDF sent to {}, print it, sign it, scan it and send it back in to the conference organisers.{}'.format(
+                        request.user.email,
+                        ' This option should also be used if you will use a different digital signature provider than the ones listed above. Please contact the organizers <strong>before</strong> doing this to confirm that this provider is accepted.' if conference.contractprovider else '',
+                    )),
                 )
 
             return render(request, 'confsponsor/signupform.html', {
