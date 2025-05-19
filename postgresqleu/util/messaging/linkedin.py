@@ -141,7 +141,7 @@ class Linkedin(object):
             self._sess = requests.Session()
             self._sess.headers.update({
                 'Authorization': 'Bearer {}'.format(self.providerconfig['token']),
-                'LinkedIn-Version': '202405',
+                'LinkedIn-Version': '202505',
             })
         return self._sess
 
