@@ -1134,7 +1134,7 @@ def feedback(request, confname):
 def feedback_session(request, confname, sessionid):
     # Room for optimization: don't get these as separate steps
     conference = get_conference_or_404(confname)
-    session = get_object_or_404(ConferenceSession, pk=sessionid, conference=conference, status=1)
+    session = get_object_or_404(ConferenceSession, pk=sessionid, conference=conference, status=1, can_feedback=True, starttime__isnull=False)
 
     if not conference.feedbackopen:
         # Allow conference testers to override
