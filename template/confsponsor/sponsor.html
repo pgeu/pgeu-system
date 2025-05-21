@@ -258,7 +258,7 @@ this page.
 </p>
 <ul>
 {%for v in pendingvouchers%}
- <li>Invoice #<a href="/invoices/{{v.invoice.id}}/">{{v.invoice.id}}</a></li>
+ <li>Invoice #<a href="/invoices/{{v.invoice.id}}/{{v.invoice.recipient_secret}}/">{{v.invoice.id}}</a></li>
 {%endfor%}
 </ul>
 {%endif%}
