@@ -302,6 +302,11 @@ class Conference(models.Model):
         # Check if the registration is open, including verifying against time range
         if not self.registrationopen:
             return False
+        # If the whole conference is in the past, registration should also not be open
+        # But we check against the *end* date of the conference, to make sure walk-up
+        # registrations *during* the conference still works.
+        if self.enddate < today_conference():
+            return False
         # It's open, but what does the time range say?
         if self.registrationtimerange is None:
             return True
@@ -320,6 +325,8 @@ class Conference(models.Model):
     @property
     def IsCallForSponsorsOpen(self):
         if not self.callforsponsorsopen:
+            return False
+        if self.startdate < today_conference():
             return False
         if self.callforsponsorstimerange is None:
             return True
