@@ -2431,7 +2431,12 @@ def waitlist_signup(request, confname):
     send_conference_notification(
         conference,
         'Waitlist signup',
-        'User {0} {1} <{2}> signed up for the waitlist.'.format(reg.firstname, reg.lastname, reg.email),
+        "User {0} {1} <{2}> signed up for the waitlist.\n\nWaitlist admin: {}".format(
+            reg.firstname,
+            reg.lastname,
+            reg.email,
+            '/events/admin/{}/waitlist/'.format(confname),
+        ),
     )
 
     # Once on the waitlist, redirect back to the registration form page
