@@ -75,7 +75,8 @@ class ImageUploadForm(BaseBenefitForm):
                 if 'image' not in self._errors:
                     # Unless there is an error already flagged in the clean_image method
                     self._errors['image'] = self.error_class(['This field is required'])
-                    self._delete_stage2_fields()
+
+                self._delete_stage2_fields()
 
         return self.cleaned_data
 
