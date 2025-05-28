@@ -68,17 +68,19 @@ sponsor manually, you may want to confirm them manually as well...
 <table class="table table-condensed">
 {%for level in regrouped_unconfirmed%}
   <tr>
-    <th colspan="3" class="text-center active">{{level.grouper}}</th>
+    <th colspan="4" class="text-center active">{{level.grouper}}</th>
   </tr>
   <tr>
     <th class="col-md-5">Sponsor</th>
     <th>Signed up</th>
+    <th>Contract signed</th>
     <th>Status</th>
   </tr>
 {%for s in level.list%}
   <tr>
     <td><a href="{{s.id}}/">{{s}}</a></td>
     <td>{{s.signupat}}</td>
+    <td title="Time the contract was signed by the sponsor">{%if s.contract and s.contract.firstsigned%}{{s.contract.firstsigned}}{%endif%}</td>
     <td>
       {%if s.invoice%}
         {%if s.invoice.isexpired%}
@@ -90,7 +92,7 @@ sponsor manually, you may want to confirm them manually as well...
       <span class="label label-warning" title="Sponsor details for {%if s.level.contractlevel == 1 %}click-through{%else%}no{%endif%} contract levels have to be verified before invoice is issued">Pending organizer verification</span>
       {%else%}
         {%if s.signmethod == 0 and s.contract %}
-          {%if s.contract.completed %}{# this state can only be reached when automatic contract processing is disabled, but in this case it indicates it's time to confirm #}
+          {%if s.contract.completed %}{# this state can only be reached when automatic contract processing is disabled, but in this case it indicates it is time to confirm #}
       <span class="label label-danger" title="Digital contract signed by sponsor at {{s.contract.firstsigned}} and {{conference.contractsendername}} ({{s.contract.completed}}), but sponsorship is not confirmed.">Contract signed and countersigned</span>
           {%elif s.contract.firstsigned %}
       <span class="label label-warning" title="Digital contract signed by sponsor at {{s.contract.firstsigned}}, but not by {{conference.contractsendername}}.">Pending with signed digital contract</span>
