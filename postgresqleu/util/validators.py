@@ -54,6 +54,8 @@ def Http200Validator(value):
         raise ValidationError("Connection to server failed")
     except requests.exceptions.ReadTimeout:
         raise ValidationError("URL timed out")
+    except requests.exceptions.InvalidSchema:
+        raise ValidationError("Invalid schema in URL, please use http or https")
 
 
 def TwitterValidator(value):
