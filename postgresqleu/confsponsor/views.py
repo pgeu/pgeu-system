@@ -389,7 +389,7 @@ def _generate_and_send_sponsor_contract(sponsor):
         send_sponsor_manager_email(
             sponsor,
             'Your contract for {}'.format(conference.conferencename),
-            'confsponsor/mail/{}.txt'.format('sponsor_contract_instant' if level.contractlevel == 1 else 'sponsor_contract_manual'),
+            'confsponsor/mail/{}.txt'.format('sponsor_contract_instant' if (level.contractlevel == 1 and not sponsor.explicitcontract) else 'sponsor_contract_manual'),
             {
                 'conference': conference,
                 'sponsor': sponsor,
@@ -455,7 +455,7 @@ def sponsor_signup(request, confurlname, levelurlname):
         # Stage 2 = contract choice. When submitted, sign up.
         # If there is no contract needed on this level, or there is no choice
         # of contract because only one available, we bypass stage 1.
-        if stage == '1' and (level.contractlevel != 2 or not conference.contractprovider or not conference.manualcontracts):
+        if stage == '1' and ((level.contractlevel != 2 and request.POST.get('explicitcontract', '') != '1') or not conference.contractprovider or not conference.manualcontracts):
             stage = '2'
 
         def _render_contract_choices():
@@ -480,6 +480,7 @@ def sponsor_signup(request, confurlname, levelurlname):
                 'form': form,
                 'noform': 1,
                 'contractchoices': contractchoices,
+                'explicitcontract': request.POST.get('explicitcontract', '') == '1',
             })
 
         if stage == '0':
@@ -507,7 +508,7 @@ def sponsor_signup(request, confurlname, levelurlname):
             # If the Continue editing button is selected we should go back
             # to just rendering the normal form. Otherwise, go ahead and create the record.
             if request.POST.get('submit', '') != 'Continue editing':
-                if request.POST.get('contractchoice', '') not in ('0', '1') and level.contractlevel == 2:
+                if request.POST.get('contractchoice', '') not in ('0', '1') and (level.contractlevel == 2 or request.POST.get('explicitcontract', '') == '1'):
                     return _render_contract_choices()
 
                 social = {
@@ -525,8 +526,9 @@ def sponsor_signup(request, confurlname, levelurlname):
                                   level=level,
                                   social=social,
                                   invoiceaddr=form.cleaned_data['address'],
-                                  signmethod=1 if request.POST.get('contractchoice', '') == '1' or not conference.contractprovider or level.contractlevel < 2 else 0,
+                                  signmethod=1 if request.POST.get('contractchoice', '') == '1' or not conference.contractprovider or level.contractlevel < 2 or request.POST.get('explicitcontract', '') == '1' else 0,
                                   autoapprovesigned=conference.autocontracts,
+                                  explicitcontract=request.POST.get('explicitcontract', '') == '1',
                                   )
                 if settings.EU_VAT:
                     sponsor.vatstatus = int(form.cleaned_data['vatstatus'])
@@ -539,7 +541,7 @@ def sponsor_signup(request, confurlname, levelurlname):
 
                 error = None
 
-                if level.contractlevel < 2:
+                if level.contractlevel < 2 and request.POST.get('explicitcontract', '') != '1':
                     # No contract or click-through contract
                     if level.contractlevel == 1:
                         # Click-through contract
@@ -548,6 +550,7 @@ def sponsor_signup(request, confurlname, levelurlname):
                     mailstr += "Level does not require a signed contract. Verify the details and approve\nthe sponsorship using:\n\n{0}/events/sponsor/admin/{1}/{2}/".format(
                         settings.SITEBASE, conference.urlname, sponsor.id)
                 else:
+                    # Contract required!
                     contractid, error = _generate_and_send_sponsor_contract(sponsor)
 
                     if sponsor.signmethod == 1:

@@ -88,7 +88,7 @@ sponsor manually, you may want to confirm them manually as well...
         {%else%}
       <span class="label label-success">Invoiced</span>
         {%endif%}
-      {%elif s.level.contractlevel < 2 %}
+      {%elif s.level.contractlevel < 2 and not s.explicitcontract %}
       <span class="label label-warning" title="Sponsor details for {%if s.level.contractlevel == 1 %}click-through{%else%}no{%endif%} contract levels have to be verified before invoice is issued">Pending organizer verification</span>
       {%else%}
         {%if s.signmethod == 0 and s.contract %}

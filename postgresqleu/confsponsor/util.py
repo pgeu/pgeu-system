@@ -175,7 +175,7 @@ def get_pdf_fields_for_conference(conference, sponsor=None, overrides={}):
         fields.append(
             ('static:euvat', sponsor.vatnumber if sponsor else overrides.get('static:euvat', 'Sponsor EU VAT number')),
         )
-    if sponsor and sponsor.level.contractlevel == 1:
+    if sponsor and sponsor.level.contractlevel == 1 and not sponsor.explicitcontract:
         # Only add clickthrough contract fields if it's a clickthrough level (or a preview, with no sponsor yet)
         fields.extend([
             ('static:clickthrough', overrides.get('static:clickthrough', 'Click-through agreement')),

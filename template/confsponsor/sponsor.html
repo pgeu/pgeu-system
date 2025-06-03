@@ -40,7 +40,7 @@
     <td>
 {% if sponsor.level.contractlevel == 0 %}
 This level requires no contract.
-{% elif sponsor.level.contractlevel == 1 %}
+{% elif sponsor.level.contractlevel == 1 and not sponsor.explicitcontract %}
       Click-through contract agreed to. <a href="contractview/" class="btn btn-outline-dark btn-sm">View copy of contract</a>
 {% else %}
 {%if sponsor.signmethod == 0%}
@@ -75,7 +75,7 @@ Manual contract signed.
 {%endwith%}
 {%else%}
 {%comment%}No invoice generated{%endcomment%}
-{%if sponsor.level.contractlevel < 2 %}
+{%if sponsor.level.contractlevel < 2 and not sponsor.explicitcontract %}
 {%comment%}No invoice generated but clickthrough contract or no contract, so awaiting admin approval{%endcomment%}
 <p>
   Your sponsorship request has been submitted, and is currently awaiting confirmation

@@ -65,6 +65,19 @@ the invoice cannot be changed.
   step. If anything about it is incorrect please click <i>Continue
   editing</i> and correct it <i>before</i> proceeding.
 </p>
+
+{% if level.contractlevel == 1 %}
+<h4>Contract options</h4>
+<p>
+  As this level uses a click-thruogh contract, no specific contract signature is
+  required. However, if your organization requires a signed contract, you can
+  explicitly request one here.
+</p>
+<p>
+  <input type="checkbox" name="explicitcontract" value="1"> Request explicit contract
+</p>
+{% endif %}
+
 {%endif%}
 
 <h4>Invoice address preview</h4>
@@ -97,6 +110,7 @@ the invoice cannot be changed.
 </dl>
 
 <input type="hidden" name="stage" value="2">
+{%if explicitcontract %}<input type="hidden" name="explicitcontract" value="1">{%endif%}
 {%endif%}{# contractchoices #}
 
 {%if level.contractlevle == 2 and not noform %}

@@ -166,6 +166,7 @@ class Sponsor(models.Model):
     signmethod = models.IntegerField(null=False, blank=False, default=1, choices=((0, 'Digital signatures'), (1, 'Manual signatures')), verbose_name='Signing method')
     autoapprovesigned = models.BooleanField(null=False, blank=False, default=True, verbose_name="Approve on signing", help_text="Automatically approve once digital signatures are completed")
     contract = models.OneToOneField(DigisignDocument, null=True, blank=True, help_text="Contract, when using digital signatures", on_delete=models.SET_NULL)
+    explicitcontract = models.BooleanField(null=False, blank=False, default=False, verbose_name='Requested explicit contract')
 
     def __str__(self):
         return self.name
