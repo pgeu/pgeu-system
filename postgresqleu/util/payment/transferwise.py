@@ -122,29 +122,13 @@ receive <i>Balance deposit events</i>, and specify the URL
         pm = instance.get_implementation()
         api = pm.get_api()
         try:
-            account = api.get_account()
+            address = api.get_account_details()
             return """Successfully retreived information:
 
 <pre>{0}</pre>
-""".format(self.prettyprint_address(account['balances'][0]['bankDetails']))
+""".format(address)
         except Exception as e:
             return "Verification failed: {}".format(e)
-
-    @classmethod
-    def prettyprint_address(self, a, indent=''):
-        s = StringIO()
-        for k, v in a.items():
-            if k == 'id':
-                continue
-
-            s.write(indent)
-            if isinstance(v, dict):
-                s.write(k)
-                s.write(":\n")
-                s.write(self.prettyprint_address(v, indent + '  '))
-            else:
-                s.write("{0:20s}{1}\n".format(k + ':', v))
-        return s.getvalue()
 
 
 class Transferwise(BaseManagedBankPayment):
@@ -219,6 +203,9 @@ as amounts must be exact and all fees covered by sender.
             paymentmethod=trans.method,
             id=trans.methodidentifier,
         )
+
+        if not twtrans.counterpart_valid_iban:
+            raise Exception("Cannot return payment without a valid IBAN")
 
         payout = TransferwisePayout(
             paymentmethod=trans.method,

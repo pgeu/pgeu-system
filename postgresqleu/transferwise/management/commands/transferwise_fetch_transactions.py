@@ -53,49 +53,27 @@ class Command(BaseCommand):
             # We will re-fetch most transactions, so only create them if they are not
             # already there.
 
-            # Seems transactions come in as UNKNOWN and with no text first, and then we get
-            # more details later. So if we see one of those, postpone it for up to 2 hours
-            # (random magic value).
-            if t['details']['type'] == 'UNKNOWN' and \
-               t['details']['description'] in ('', 'No information') and \
-               datetime.now() - api.parse_datetime(t['date']) < timedelta(hours=2):
-                print("Skipping UNKNOWN transaction {}, no data and less than 2 hours old".format(t['referenceNumber']))
-                continue
-
             trans, created = TransferwiseTransaction.objects.get_or_create(
                 paymentmethod=method,
-                twreference=t['referenceNumber'],
+                twreference=t['id'],
                 defaults={
-                    'datetime': api.parse_datetime(t['date']),
-                    'amount': api.get_structured_amount(t['amount']),
-                    'feeamount': api.get_structured_amount(t['totalFees']),
+                    'datetime': api.parse_datetime(t['datetime']),
+                    'amount': t['amount'],
+                    'feeamount': t['feeamount'],
                     'transtype': t['details']['type'],
-                    'paymentref': (t['details'].get('paymentReference', '') or '')[:200],
-                    'fulldescription': t['details']['description'],
+                    'paymentref': t['paymentref'][:200],
+                    'fulldescription': t['fulldescription'],
                 }
             )
             if created:
-                # Set optional fields
-                trans.counterpart_name = t['details'].get('senderName', '') or ''
-                trans.counterpart_account = t['details'].get('senderAccount', '').replace(' ', '')
+                # Unfortunately the new Wise APIs don't let us access sender name and account,
+                # but let's leave the fields around in case we might find them later.
 
-                # Sometimes (newer entries?) transferwise adds both the BIC and the IBAN code,
-                # and do so in the same field. This is undocumented and not even incuded in
-                # their examples, but seems to be persistent enough to process.
-                m = re.match(r'^\([A-Z0-9]{8,11}\)([A-Z0-9]+)$', trans.counterpart_account)
-                if m:
-                    trans.counterpart_account = m.group(1)
-
-                # Weird stuff that sometimes shows up
-                if trans.counterpart_account == 'Unknownbankaccount':
-                    trans.counterpart_account = ''
-
-                if trans.counterpart_account:
-                    # If account is IBAN, then try to validate it!
-                    trans.counterpart_valid_iban = api.validate_iban(trans.counterpart_account)
                 trans.save()
 
                 # If this is a refund transaction, process it as such
+                # XXX: This is currently not supported, and thus can't happen, but if we figure it out it's good to have
+                # it here still.
                 if trans.transtype == 'TRANSFER' and trans.paymentref.startswith('{0} refund'.format(settings.ORG_SHORTNAME)):
                     # Yes, this is one of our refunds. Can we find the corresponding transaction?
                     m = re.match(r'^TRANSFER-(\d+)$', t['referenceNumber'])

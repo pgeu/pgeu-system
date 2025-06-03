@@ -24,18 +24,17 @@ class TransferwiseApi(object):
         })
         self.privatekey = self.pm.config('private_key')
 
-        self.profile = self.account = None
+        self.profile = self.balances = None
 
     def format_date(self, dt):
         return dt.strftime('%Y-%m-%dT00:00:00.000Z')
 
     def parse_datetime(self, s):
-        return datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%fZ')
-
-    def _sign_2fa_token(self, token):
-        if not self.privatekey:
-            raise Exception("Two factor authentication required but no private key configured")
-        return b64encode(rsa_sign_string_sha256(self.privatekey, token))
+        try:
+            return datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%fZ')
+        except ValueError:
+            # Why would tw consistently have just one way to write timestamps? That would be silly!
+            return datetime.strptime(s, '%Y-%m-%d %H:%M:%S')
 
     def _get(self, suburl, params=None, stream=False, version='v1'):
         fullurl = 'https://api.transferwise.com/{}/{}'.format(version, suburl)
@@ -44,21 +43,9 @@ class TransferwiseApi(object):
             params=params,
             stream=stream,
         )
-        if r.status_code == 403 and 'X-2FA-Approval' in r.headers:
-            # This was a request for 2FA authenticated access
-            token = r.headers['X-2FA-Approval']
-            r = self.session.get(
-                fullurl,
-                params=params,
-                stream=stream,
-                headers={
-                    'x-2fa-approval': token,
-                    'x-signature': self._sign_2fa_token(token),
-                },
-            )
         if r.status_code != 200:
             # Print the content of the error as well, so this can be picked up in a log
-            sys.stderr.write("API returned status {}. Body:\n{}".format(r.status_code, r.text[:2000]))
+            sys.stderr.write("API returned status {}. Body:\n{}\n".format(r.status_code, r.text[:2000]))
             r.raise_for_status()
         return r
 
@@ -80,18 +67,6 @@ class TransferwiseApi(object):
                 'Content-Type': 'application/json',
             },
         )
-        if r.status_code == 403 and 'X-2FA-Approval' in r.headers:
-            # This was a request for 2FA authenticated access
-            token = r.headers['X-2FA-Approval']
-            r = self.session.post(
-                fullurl,
-                data=j,
-                headers={
-                    'Content-Type': 'application/json',
-                    'x-2fa-approval': token,
-                    'x-signature': self._sign_2fa_token(token),
-                },
-            )
         r.raise_for_status()
         return r.json()
 
@@ -104,26 +79,27 @@ class TransferwiseApi(object):
             pass
         return self.profile
 
+    def _get_balances(self):
+        if not self.balances:
+            self.balances = self.get('profiles/{}/balances'.format(self.get_profile()), params={'types': 'STANDARD'}, version='v4')
+        return self.balances
+
     def get_account(self):
-        if not self.account:
-            for a in self.get('borderless-accounts', {'profileId': self.get_profile()}):
-                # Each account has multiple currencies, so we look for the first one that
-                # has our currency somewhere.
-                for b in a['balances']:
-                    if b['currency'] == settings.CURRENCY_ABBREV:
-                        self.account = a
-                        break
+        for a in self._get_balances():
+            if a['currency'] == settings.CURRENCY_ABBREV:
+                return a['id']
+        raise Exception("Failed to identify account based on currency")
 
-                if self.account:
-                    # If we found our currency on this account, use it
-                    break
-
-            if not self.account:
-                raise Exception("Failed to identify account based on currency")
-        return self.account
+    def get_account_details(self):
+        for d in self.get('profiles/{}/account-details'.format(self.get_profile())):
+            if d['id'] and d['status'] == 'ACTIVE' and d['currency']['code'] == settings.CURRENCY_ABBREV:
+                for o in d['receiveOptions']:
+                    if o['type'] == 'INTERNATIONAL':
+                        return o['shareText']
+        raise Exception("Could not find account in returned structure")
 
     def get_balance(self):
-        for b in self.get_account()['balances']:
+        for b in self._get_balances():
             if b['currency'] == settings.CURRENCY_ABBREV:
                 return Decimal(b['amount']['value']).quantize(Decimal('0.01'))
         return None
@@ -135,15 +111,135 @@ class TransferwiseApi(object):
         if not startdate:
             startdate = enddate - timedelta(days=60)
 
-        return self.get(
-            'profiles/{}/borderless-accounts/{}/statement.json'.format(self.get_profile(), self.get_account()['id']),
-            {
-                'currency': settings.CURRENCY_ABBREV,
-                'intervalStart': self.format_date(startdate),
-                'intervalEnd': self.format_date(enddate),
-            },
-            version='v3',
-        )['transactions']
+        cursor = None
+        while True:
+            params = {'since': self.format_date(startdate), 'until': self.format_date(enddate), 'status': 'COMPLETED', 'size': 100}
+            if cursor:
+                params['nextCursor'] = cursor
+            r = self.get('profiles/{}/activities'.format(self.get_profile()), params)
+            if not r['activities']:
+                # No more activities!
+                return
+
+            for activity in r['activities']:
+                if activity['type'] == 'TRANSFER' or \
+                   (activity['type'] == 'BALANCE_DEPOSIT' and activity['resource']['type'] == 'TRANSFER'):
+                    try:
+                        details = self.get('transfers/{}'.format(activity['resource']['id']))
+                    except requests.exceptions.HTTPError as e:
+                        if e.response.status_code == 403:
+                            print("No permissions to access transaction {} from {}, ignoring".format(
+                                activity['resource']['id'],
+                                activity['updatedOn'],
+                            ))
+                            continue
+                        raise
+
+                    if details['sourceCurrency'] != settings.CURRENCY_ABBREV:
+                        continue
+
+                    amount = Decimal(details['targetValue']).quantize(Decimal('0.01'))
+
+                    # Yes, the transfer will actually have a positive amount even if it's a withdrawal.
+                    # No, this is not indicated anywhere, since the "target account id" that would
+                    # indicate it, points to the wrong account for incoming payments.
+                    # Let's do a wild gamble and assume the description is always this...
+                    if activity.get('description', '').startswith('Sent by '):
+                        amount = -amount
+
+                    # We also need to look at the amount in the activity, as it might be different
+                    # if there are fees.
+                    primaryAmount, primaryCurrency = self.parse_transferwise_amount(activity['primaryAmount'])
+                    if activity.get('secondaryAmount', None):
+                        secondaryAmount, secondaryCurrency = self.parse_transferwise_amount(activity['secondaryAmount'])
+                    else:
+                        secondaryAmount = 0
+                        secondaryCurrency = primaryCurrency
+
+                    if primaryCurrency != secondaryCurrency:
+                        # This is (preasumably) an outgoing payment in a non-primary currency. In this case, the EUR numbers are in
+                        # the secondaryCurrency fields.
+                        amount = secondaryAmount
+                    elif primaryCurrency != settings.CURRENCY_ABBREV:
+                        print(activity)
+                        raise Exception("Primary currency is not our primarycurrency!")
+
+                    yield {
+                        'id': 'TRANSFER-{}'.format(activity['resource']['id']),
+                        'datetime': details['created'],
+                        'amount': amount,
+                        'feeamount': 0,  # XXX!
+                        'transtype': 'TRANSFER',
+                        'paymentref': details['reference'],
+                        'fulldescription': details['details']['reference'],
+                    }
+                elif activity['type'] == 'BALANCE_CASHBACK':
+                    # No API endpoint to get this so we have to parse it out of
+                    # a ridiculously formatted field.
+
+                    parsed_amount, currency = self.parse_transferwise_amount(activity['primaryAmount'])
+                    if currency != settings.CURRENCY_ABBREV:
+                        # This is cashback in a different currency, so ignore it
+                        continue
+
+                    yield {
+                        'id': 'BALANCE_CASHBACK-{}'.format(activity['resource']['id']),
+                        'datetime': activity['updatedOn'],
+                        'amount': parsed_amount,
+                        'feeamount': 0,
+                        'transtype': 'BALANCE_CASHBACK',
+                        'paymentref': '',
+                        'fulldescription': '',
+                    }
+                elif activity['type'] == 'CARD_PAYMENT':
+                    # For card payments, normal tokens appear not to have permissions
+                    # to view the details, so try to parse it out of the activity.
+                    parsed_amount, currency = self.parse_transferwise_amount(activity['primaryAmount'])
+                    if currency != settings.CURRENCY_ABBREV:
+                        # This is cashback in a different currency, so ignore it
+                        continue
+
+                    yield {
+                        'id': 'CARD-{}'.format(activity['resource']['id']),
+                        'datetime': activity['updatedOn'],
+                        'amount': -parsed_amount,
+                        'feeamount': 0,
+                        'transtype': 'CARD',
+                        'paymentref': '',
+                        'fulldescription': 'Card payment: {}'.format(self.strip_tw_tags(activity['title']),),
+                    }
+                elif activity['type'] == 'INTERBALANCE':
+                    yield {
+                        'id': None,
+                        'message': "Received INTERBALANCE transaction, details are not fully parsable so please handle manually. Contents: {}".format(activity),
+                    }
+                elif activity['type'] == 'CARD_CHECK':
+                    # This is just a check that the card is OK, no money in the transaction
+                    continue
+                else:
+                    print(activity)
+                    raise Exception("Unhandled activity type {}".format(activity['type']))
+
+            cursor = r.get('cursor', None)
+            if not cursor:
+                return
+
+    def parse_transferwise_amount(self, amount):
+        # Try to parse the really weird strings that they use as amount
+        # Example: 'primaryAmount': '<positive>+ 5.10 EUR</positive>',
+        m = re.match(r'^<positive>\+\s+([\d\.]+)\s+(\w+)</positive>$', amount.replace(',', ''))
+        if m:
+            return Decimal(m.group(1)).quantize(Decimal('0.01')), m.group(2)
+
+        # Sometimes <positive> isn't there... Because.. Well it's not.
+        m = re.match(r'^([\d\.]+)\s+(\w+)$', amount.replace(',', ''))
+        if m:
+            return Decimal(m.group(1)).quantize(Decimal('0.01')), m.group(2)
+
+        raise Exception("Failed to parse transferwise amount from '{}'".format(amount))
+
+    def strip_tw_tags(self, s):
+        return re.subn('</?(strong|positive|negative|strikethrough)>', '', s)
 
     def validate_iban(self, iban):
         try:
@@ -156,11 +252,6 @@ class TransferwiseApi(object):
 
             # Bubble any other exceptions
             raise
-
-    def get_structured_amount(self, amount):
-        if amount['currency'] != settings.CURRENCY_ABBREV:
-            raise Exception("Invalid currency {} found, exepcted {}".format(amount['currency'], settings.CURRENCY_ABBREV))
-        return Decimal(amount['value']).quantize(Decimal('0.01'))
 
     def refund_transaction(self, origtrans, refundid, refundamount, refundstr):
         if not origtrans.counterpart_valid_iban:
