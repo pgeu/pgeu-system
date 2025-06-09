@@ -168,11 +168,6 @@ for this sponsor, it can be confirmed before the invoice is paid.
   contract level sponsorship, so as soon as the sponsorship
   details above have been verified, an invoice should be generated.
 </p>
-<p>
-  Once generated, the invoice will automatically
-  be emailed to the sponsor, as well as show up on their dashboard. Once
-  the invoice is paid, the sponsorship will automatically become confirmed.
-</p>
 {%else%}{%comment%}no invoice, not instant, so awaiting contract{%endcomment%}
 {%if sponsor.signmethod == 0%}
 <p>
@@ -209,7 +204,12 @@ has been received, go ahead and generate the invoice.
 {%endif%}
 <form method="post" action=".">{%csrf_token%}
 {%if sponsor.level.levelcost %}
-<input type="submit" name="submit" value="Generate sponsorship invoice" class="btn btn-default{%if sponsor.signmethod == 0%} confirm-btn{%endif%}"{%if sponsor.signmethod == 0%} data-confirm="This sponsor is using a digital contract! Normally invoicing/confirmation is automatic through that system and you should *not* do it manually. are you sure you want to proceed?"{%endif%}>
+<p>
+  Once generated, the invoice will automatically
+  be emailed to the sponsor, as well as show up on their dashboard. Once
+  the invoice is paid, the sponsorship will automatically become confirmed.
+</p>
+<input type="submit" name="submit" value="Generate sponsorship invoice" class="btn btn-default{%if sponsor.signmethod == 0 or sponsor.explicitcontract == 1 or sponsor.level.contractlevel == 2%} confirm-btn{%endif%}"{%if sponsor.signmethod == 0%} data-confirm="This sponsor is using a digital contract! Normally invoicing/confirmation is automatic through that system and you should *not* do it manually. are you sure you want to proceed?"{%elif sponsor.level.contractlevel == 2 or sponsor.explicitcontract == 1%} data-confirm="This sponsorship expects a signed and coutersigned contract before generating the invoice. Proceed?"{%endif%}>
 {%else%}
 <input type="submit" name="submit" value="Confirm sponsorship without invoice" class="btn btn-default confirm-btn" data-confirm="Once confirmed, there is no going back!">
 {%endif%}
