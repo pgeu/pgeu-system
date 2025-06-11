@@ -127,9 +127,9 @@ excluding. Include criteria are applied first, and then exclude
 criteria, so exclude ones take precedence.
 
 First pick the conference, and then either the
-[registration class](registrations#typesandclasses) or
-[speaker state](callforpapers#states). This can be done for both
-include and exclude.
+[registration class](registrations#typesandclasses),
+[speaker state](callforpapers#states) or volunteer status.
+This can be done for both include and exclude.
 
 To add multiple either include or exclude filters, click the *+*
 button. To remove an existing filter, click the *-* button.

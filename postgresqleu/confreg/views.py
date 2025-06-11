@@ -4738,6 +4738,17 @@ def crossmail_send(request):
                 q = "SELECT user_id, email, fullname, speakertoken FROM confreg_speaker INNER JOIN auth_user ON auth_user.id=confreg_speaker.user_id WHERE EXISTS (SELECT 1 FROM confreg_conferencesession_speaker INNER JOIN confreg_conferencesession ON confreg_conferencesession.id=conferencesession_id WHERE speaker_id=confreg_speaker.id AND conference_id={0}{1})".format(conf, sf)
                 if optout_filter:
                     q += " AND NOT EXISTS (SELECT 1 FROM confreg_conferenceseriesoptout INNER JOIN confreg_conference ON confreg_conference.series_id=confreg_conferenceseriesoptout.series_id WHERE confreg_conferenceseriesoptout.user_id=confreg_speaker.user_id AND confreg_conference.id={0})".format(int(conf))
+            elif t == 'vol':
+                # Volunteers
+                q = "SELECT attendee_id, email, firstname || ' ' || lastname, regtoken FROM confreg_conferenceregistration r WHERE r.conference_id={0} AND r.payconfirmedat IS NOT NULL ".format(conf)
+                if v == "0":
+                    # General volunteer
+                    q += "AND EXISTS (SELECT 1 FROM confreg_conference_volunteers cv WHERE cv.conference_id={} AND cv.conferenceregistration_id=r.id)".format(conf)
+                elif v == "1":
+                    # Check-in processor
+                    q += "AND EXISTS (SELECT 1 FROM confreg_conference_checkinprocessors cc WHERE cc.conference_id={} AND cc.conferenceregistration_id=r.id)".format(conf)
+                else:
+                    raise Exception("Invalid filter value")
             else:
                 raise Exception("Invalid filter type")
             return q
@@ -4882,6 +4893,10 @@ def crossmailoptions(request):
     r.extend([
         {'id': 'sp:{0}'.format(k), 'title': 'Speaker: {0}'.format(v)}
         for k, v in STATUS_CHOICES
+    ])
+    r.extend([
+        {'id': 'vol:0', 'title': 'Volunteers'},
+        {'id': 'vol:1', 'title': 'Check-in processors'},
     ])
     return HttpResponse(json.dumps(r), content_type="application/json")
 
