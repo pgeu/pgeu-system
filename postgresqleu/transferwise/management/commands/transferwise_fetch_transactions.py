@@ -60,7 +60,7 @@ class Command(BaseCommand):
                     'datetime': api.parse_datetime(t['datetime']),
                     'amount': t['amount'],
                     'feeamount': t['feeamount'],
-                    'transtype': t['details']['type'],
+                    'transtype': t['transtype'],
                     'paymentref': t['paymentref'][:200],
                     'fulldescription': t['fulldescription'],
                 }
