@@ -143,9 +143,13 @@ class TransferwiseApi(object):
                     # Yes, the transfer will actually have a positive amount even if it's a withdrawal.
                     # No, this is not indicated anywhere, since the "target account id" that would
                     # indicate it, points to the wrong account for incoming payments.
+                    # Oh, and the status is *always* set to `outgoing_payment_sent`, even for incoming
+                    # payments. I guess all payments are outgoing from *something*.
                     # Let's do a wild gamble and assume the description is always this...
                     if activity.get('description', '').startswith('Sent by '):
-                        amount = -amount
+                        negatizer = -1
+                    else:
+                        negatizer = 1
 
                     # We also need to look at the amount in the activity, as it might be different
                     # if there are fees.
@@ -167,7 +171,7 @@ class TransferwiseApi(object):
                     yield {
                         'id': 'TRANSFER-{}'.format(activity['resource']['id']),
                         'datetime': details['created'],
-                        'amount': amount,
+                        'amount': amount * negatizer,
                         'feeamount': 0,  # XXX!
                         'transtype': 'TRANSFER',
                         'paymentref': details['reference'],
