@@ -30,7 +30,7 @@
     <tr>
       <td>{{trans.created}}</td>
       <td class="nobr">{{trans.amount|format_currency}}</td>
-      <td>{%if trans.transtext%}{{trans.transtext}}{%elif trans.sender%}trans.sender{%endif%}</td>
+      <td>{%if trans.transtext%}{{trans.transtext}}{%elif trans.sender%}{{trans.sender}}{%endif%}</td>
       <td>{{trans.method.internaldescription}}</td>
       <td>{{trans.comments}}</td>
       <td>
