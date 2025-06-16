@@ -189,7 +189,7 @@ class TransferwiseApi(object):
                         'feeamount': 0,
                         'transtype': 'BALANCE_CASHBACK',
                         'paymentref': '',
-                        'fulldescription': '',
+                        'fulldescription': 'Balance Cashback',
                     }
                 elif activity['type'] == 'CARD_PAYMENT':
                     # For card payments, normal tokens appear not to have permissions
