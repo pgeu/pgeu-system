@@ -12,6 +12,7 @@ from postgresqleu.digisign.util import digisign_handlers
 
 import base64
 import dateutil.parser
+from decimal import Decimal
 import hashlib
 import hmac
 import json
@@ -177,6 +178,11 @@ class Signwell(BaseProvider):
                 elif f['type'] == 'datefield':
                     f['type'] = 'date'
 
+                # (possibly temporary) workaround for that signwell returns fields that are bigger than they then allow us to set
+                if Decimal(f.get('height', '0')) > 34:
+                    messages.warning(request, "Reduced size of field {} to 34 pixels due to signwell API limitation".format(f.get('api_id', '*unknown name*')))
+                    f['height'] = "34"
+
             savecallback(fieldjson)
 
             # Delete the temporary document
@@ -247,6 +253,11 @@ class Signwell(BaseProvider):
             for f in payload['fields'][0]:
                 # Workaround: seems it gets returned mixed case but has to be specified lowercase!
                 f['type'] = f['type'].lower()
+
+                # (possibly temporary) workaround for that signwell returns fields that are bigger than they then allow us to set
+                if Decimal(f.get('height', '0')) > 34:
+                    messages.warning(request, "Reduced size of field {} when loading contract to 34 pixels due to signwell API limitation".format(f.get('api_id', '*unknown name*')))
+                    f['height'] = "34"
 
         r = requests.post('https://www.signwell.com/api/v1/documents/', json=payload, headers={
             'X-Api-Key': self.provider.config.get('apikey'),
