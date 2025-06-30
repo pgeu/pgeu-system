@@ -225,6 +225,7 @@ urlpatterns.extend([
     re_path(r'^events/admin/([^/]+)/schedule/create/$', postgresqleu.confreg.views.createschedule),
     re_path(r'^events/admin/([^/]+)/schedule/create/publish/$', postgresqleu.confreg.views.publishschedule),
     re_path(r'^events/admin/([^/]+)/schedule/jsonschedule/$', postgresqleu.confreg.views.schedulejson),
+    re_path(r'^events/admin/([^/]+)/csvsessions/$', postgresqleu.confreg.views.sessioncsv),
     re_path(r'^events/admin/([^/]+)/sessionnotifyqueue/$', postgresqleu.confreg.views.session_notify_queue),
     re_path(r'^events/admin/(\w+)/waitlist/$', postgresqleu.confreg.views.admin_waitlist),
     re_path(r'^events/admin/(\w+)/waitlist/offer/$', postgresqleu.confreg.views.admin_waitlist_offer),

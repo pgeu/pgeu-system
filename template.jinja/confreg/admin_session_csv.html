@@ -1,0 +1,39 @@
+{%extends "base.html" %}
+{%block title%}Sessions CSV Export - {{confname}}{%endblock%}
+
+{%block content%}
+
+<h1>
+  Sessions CSV Export
+</h1>
+
+<form method="post" action="." target="_blank" class="form-horizontal">
+
+
+   {{ csrf_input }}
+
+  <div class="row">
+      <table class="table table-bordered table-striped table-hover table-condensed datatable-tbl" id="datatable">
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Include</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for s in statuses %}
+       <tr>
+        <td>{{ s[1] }}</td>
+        <td>
+          <input type="checkbox" name="status_{{ s[0] }}" />
+        </td>
+       </tr>
+       {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+        
+<input type="submit" name="submit" value="Generate Export" class="btn btn-primary"/>
+</form>
+{% endblock %}
