@@ -12,6 +12,8 @@ from base64 import b64encode
 
 from postgresqleu.util.time import today_global
 from postgresqleu.util.crypto import rsa_sign_string_sha256
+from postgresqleu.mailqueue.util import send_simple_mail
+
 from .models import TransferwiseRefund
 
 
@@ -326,13 +328,27 @@ class TransferwiseApi(object):
         )
         transferid = transfer['id']
 
+        # We can no longer fund the transfer, because Wise decided it's not allowed to access our own money.
+        # So we have to tell the user to do it.
+
         # Fund the transfer from our account
-        fund = self.post(
-            'profiles/{}/transfers/{}/payments'.format(self.get_profile(), transferid),
-            {
-                'type': 'BALANCE',
-            },
-            version='v3',
-        )
+#        fund = self.post(
+#            'profiles/{}/transfers/{}/payments'.format(self.get_profile(), transferid),
+#            {
+#                'type': 'BALANCE',
+#            },
+#            version='v3',
+#        )
+
+        send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+                         self.pm.config('notification_receiver'),
+                         'TransferWise payout initiated!',
+                         """A TransferWise payout of {0} with reference {1}
+has been initiated. Unfortunately, it can not be completed
+through the API due to restrictions at TransferWise, so you need to
+log into the account and confirm it manually.
+
+OPlease do so as soon as possible.
+""".format(amount, reference))
 
         return (accid, quoteid, transferid)
