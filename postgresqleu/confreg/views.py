@@ -1949,7 +1949,7 @@ def callforpapers_edit(request, confname, sessionid):
             'slidesurlform': slidesurlform,
             'slidesfileform': slidesfileform,
             'slides': ConferenceSessionSlides.objects.filter(session=session),
-            'feedbackqrcode': generate_base64_qr('{0}/events/{1}/feedback/{2}'.format(settings.SITEBASE, confname, session.id), None, 300),
+            'feedbackqrcode': generate_base64_qr('{0}/events/{1}/feedback/{2}/'.format(settings.SITEBASE, confname, session.id), None, 300),
             })
 
     if session.id:

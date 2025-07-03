@@ -50,13 +50,17 @@
 <input type="submit" name="submit" value="Upload slides">
 </form>
 
+{% if feedbackcount or session.status_string == 'Approved' or session.status_string == 'Reserve' %}
 <h2>Feedback</h2>
+
+{% if session.status_string == 'Approved' or session.status_string == 'Reserve' %}
 <h3>Feedback link</h3>
 <p>
 Attendees will be able to leave <a href="/events/{{conference.urlname}}/feedback/{{session.id}}">feedback</a> on your talk.
 This link will work once your talk has started.  You can include the below QR code in your slides to increase the response rate.
 </p>
-<p class="feedbak-qrcode"><img src="data:image/png;base64,{{ feedbackqrcode }}"></p>
+<p class="feedback-qrcode"><img src="data:image/png;base64,{{ feedbackqrcode }}"></p>
+{%endif%}
 
 {%if feedbackcount%}
 {%if conference.feedbackopen%}
@@ -112,6 +116,7 @@ The following feedback has been given on this presentation by
 {%endfor%}
 {%endif%}
 
+{%endif%}
 {%endif%}
 {%endblock%}
 
