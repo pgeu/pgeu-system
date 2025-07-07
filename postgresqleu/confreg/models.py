@@ -590,7 +590,10 @@ class BulkPayment(models.Model):
     @property
     def payment_method_description(self):
         if not self.paidat:
-            return "not paid."
+            if self.invoice:
+                return "not paid (invoice #{}).".format(self.invoice.id)
+            else:
+                return "not paid."
         if self.invoice:
             if self.invoice.paidat:
                 return "paid with invoice #{0}.\nInvoice {1}".format(self.invoice.id, self.invoice.payment_method_description)
@@ -794,7 +797,15 @@ class ConferenceRegistration(models.Model):
     @property
     def payment_method_description(self):
         if not self.payconfirmedat:
-            return "Not paid."
+            if self.invoice:
+                return "not paid (invoice #{}).".format(self.invoice.id)
+            elif self.bulkpayment:
+                if self.bulkpayment.invoice:
+                    return "not paid (bulk payment invoice #{}).".format(self.bulkpayment.invoice.id)
+                else:
+                    return "not paid (bulk payment {}, no invoice yet).".format(self.bulkpayment.id)
+            else:
+                return "Not paid."
         if self.payconfirmedby == "no payment reqd":
             return "Registration does not require payment."
         if self.payconfirmedby == "Multireg/nopay":

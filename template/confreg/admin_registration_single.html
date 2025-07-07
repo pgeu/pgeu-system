@@ -150,6 +150,8 @@
   <td>{{reg.payment_method_description|linebreaksbr}}
 {%if reg.invoice %}
     <a class="pull-right btn btn-default btn-sm" href="/invoiceadmin/{{reg.invoice.id}}/">View invoice</a>
+{%elif reg.bulkpayment and reg.bulkpayment.invoice %}
+    <a class="pull-right btn btn-default btn-sm" href="/invoiceadmin/{{reg.bulkpayment.invoice.id}}/">View bulk payment invoice</a>
 {%endif%}
   </td>
  </tr>
