@@ -170,6 +170,12 @@ class Command(BaseCommand):
                                                       entry)
                     else:
                         create_accounting_entry(accrows)
+                elif trans.transtype == 'BALANCE_CASHBACK' and pm.config('accounting_cashback'):
+                    accrows = [
+                        (pm.config('bankaccount'), trans.paymentref, trans.amount, None),
+                        (pm.config('accounting_cashback'), trans.paymentref, -trans.amount, None),
+                    ]
+                    create_accounting_entry(accrows)
                 else:
                     # Else register a pending bank transaction. This may immediately match an invoice
                     # if it was an invoice payment, in which case the entire process will complete.

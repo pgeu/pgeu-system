@@ -44,12 +44,15 @@ class BackendTransferwiseForm(BaseManagedBankPaymentForm):
                                          help_text="Send monthly PDF statements by email")
     accounting_payout = forms.ChoiceField(required=False, choices=[(None, '---')] + get_account_choices(),
                                           label="Payout account")
+    accounting_cashback = forms.ChoiceField(required=False, choices=[(None, '---')] + get_account_choices(),
+                                            label="Cashback account",
+                                            help_text="Accounting account that any cashback payments are booked against")
     webhookurl = forms.CharField(label="Webhook URL", widget=StaticTextWidget)
 
     exclude_fields_from_validation = ('generatekey', )
     config_readonly = ['webhookurl', ]
     managed_fields = ['apikey', 'canrefund', 'notification_receiver', 'autopayout', 'autopayouttrigger',
-                      'autopayoutlimit', 'autopayoutname', 'autopayoutiban', 'accounting_payout',
+                      'autopayoutlimit', 'autopayoutname', 'autopayoutiban', 'accounting_payout', 'accounting_cashback',
                       'send_statements', 'public_key', 'private_key', 'generatekey', ]
     managed_fieldsets = [
         {
@@ -69,6 +72,14 @@ class BackendTransferwiseForm(BaseManagedBankPaymentForm):
             'fields': ['webhookurl', ],
         },
     ]
+
+    @property
+    def config_fieldsets(self):
+        fss = super().config_fieldsets
+        for fs in fss:
+            if fs['id'] == 'accounting':
+                fs['fields'].append('accounting_cashback')
+        return fss
 
     def fix_fields(self):
         super().fix_fields()
