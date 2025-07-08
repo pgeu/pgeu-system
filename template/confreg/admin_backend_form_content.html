@@ -68,6 +68,9 @@
 {%if not disallow_save%}
      <input type="submit" name="submit" class="btn btn-default" value="{{savebutton|default:"Save"}}">
 {%endif%}
+{%if extrasubmitbutton%}
+     &nbsp;&nbsp;<input type="submit" name="submit" class="btn btn-default" value="{{extrasubmitbutton}}">
+{%endif%}
 {%if allow_delete%}
      &nbsp;&nbsp;<input type="submit" name="submit" class="btn btn-default confirm-btn" value="Delete" data-confirm="You are about to delete this {{what}}. There is no undo!">
 {%endif%}
