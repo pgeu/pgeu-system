@@ -14,8 +14,6 @@ out the form at
 
 {{sitebase}}/events/{{conference.urlname}}/register/
 
-And pick the registration type for speakers (free).
-
 As always, if you have any questions or need any further
 clarifications, please let us know!
 
