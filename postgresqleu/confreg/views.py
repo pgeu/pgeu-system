@@ -2877,7 +2877,8 @@ def talkvote(request, confname):
   avg,
   COALESCE(votes, '{{}}'::jsonb) AS votes,
   jsonb_build_object(%(username)s, '') || COALESCE(comments, '{{}}'::jsonb) AS comments,
-  trackname, recordingconsent
+  trackname, recordingconsent,
+  (SELECT array_agg(tag) FROM confreg_conferencesessiontag t INNER JOIN confreg_conferencesession_tags cst ON cst.conferencesessiontag_id=t.id WHERE cst.conferencesession_id=s.id) AS tags
 FROM confreg_conferencesession s
 INNER JOIN confreg_status_strings status ON status.id=s.status
 LEFT JOIN confreg_track track ON track.id=s.track_id
