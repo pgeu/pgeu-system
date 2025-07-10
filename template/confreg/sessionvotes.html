@@ -307,9 +307,7 @@ ul.comments span.username {
 {%if conference.callforpapersrecording%}
 	 <div><strong>Recording consent:</strong> {{s.recordingconsent | yesno:"Yes,No" }}
 {%endif%}	 <br/>
-	 <p>
 {{s.abstract|markdown}}
-	 </p>
 {%if s.submissionnote%}
 	 <hr/>
 	 <h3>Submission notes</h3>
@@ -329,9 +327,7 @@ ul.comments span.username {
 	 <h3>Speaker profile</h3>
 {%for sp in s.speakerdata %}
 	 <h4>{{sp.fullname}}{%if sp.company%} ({{sp.company}}){%endif%} [speaker id: {{sp.id}}]</h4>
-	 <p>
 	   {{sp.abstract|markdown}}
-	 </p>
 {%endfor%}
 {%endif%}
        </div>
