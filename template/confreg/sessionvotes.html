@@ -305,7 +305,7 @@ ul.comments span.username {
 {%if s.speakerdata %}
 	 <h3>Speaker profile</h3>
 {%for sp in s.speakerdata %}
-	 <h4>{{sp.fullname}} [speaker id: {{sp.id}}]</h4>
+	 <h4>{{sp.fullname}}{%if sp.company%} ({{sp.company}}){%endif%} [speaker id: {{sp.id}}]</h4>
 	 <p>
 	   {{sp.abstract|markdown}}
 	 </p>
