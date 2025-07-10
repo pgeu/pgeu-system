@@ -41,6 +41,11 @@ $(function() {
   $('#selectTracks').selectize({
       plugins: ['remove_button'],
   });
+{%if conference.callforpaperstags%}
+  $('#selectTags').selectize({
+      plugins: ['remove_button'],
+  });
+{%endif%}
   $('#selectStatuses').selectize({
       plugins: ['remove_button'],
   });
@@ -221,6 +226,15 @@ ul.comments span.username {
 {%endfor%}
     </select>
   </div>
+{%if conference.callforpaperstags %}
+  <div>
+    <select id="selectTags" name="tags" multiple="multiple" style="inline-block; width=80%;">
+{%for t in tags %}
+      <option value="{{t.id}}"{%if t.id in selectedtags%} SELECTED{%endif%}>{{t.tag}}</option>
+{%endfor%}
+    </select>
+  </div>
+{%endif%}
   <div>
     <select id="selectStatuses" name="statuses" multiple="multiple" style="inline-block; width=80%;">
 {%for sid,s in status_choices %}

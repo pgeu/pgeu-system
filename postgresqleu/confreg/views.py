@@ -2830,6 +2830,10 @@ def talkvote(request, confname):
     alltracks.insert(0, {'id': 0, 'trackname': 'No track'})
     alltrackids = [t['id'] for t in alltracks]
     selectedtracks = [int(id) for id in request.GET.getlist('tracks') if int(id) in alltrackids]
+    alltags = [{'id': t.id, 'tag': t.tag} for t in ConferenceSessionTag.objects.filter(conference=conference)]
+    alltags.insert(0, {'id': 0, 'tag': 'No tag'})
+    alltagids = [t['id'] for t in alltags]
+    selectedtags = [int(id) for id in request.GET.getlist('tags') if int(id) in alltagids]
     allstatusids = [id for id, status in STATUS_CHOICES]
     selectedstatuses = [int(id) for id in request.GET.getlist('statuses') if int(id) in allstatusids]
     if selectedtracks:
@@ -2837,6 +2841,12 @@ def talkvote(request, confname):
     else:
         selectedtracks = alltrackids
         urltrackfilter = ''
+
+    if selectedtags:
+        urltagfilter = "{0}&".format("&".join(["tags={0}".format(t) for t in selectedtags]))
+    else:
+        selectedtags = alltagids
+        urltagfilter = ''
 
     if selectedstatuses:
         urlstatusfilter = "{0}&".format("&".join(["statuses={0}".format(t) for t in selectedstatuses]))
@@ -2849,6 +2859,13 @@ def talkvote(request, confname):
         nonvotedquery = "AND NOT EXISTS (SELECT 1 FROM confreg_conferencesessionvote nv WHERE nv.session_id=s.id AND nv.voter_id=%(userid)s AND nv.vote <> 0)"
     else:
         nonvotedquery = ""
+
+    if conference.callforpaperstags:
+        tagsquery = "AND (EXISTS (SELECT 1 FROM confreg_conferencesession_tags cst WHERE cst.conferencesession_id=s.id AND (cst.conferencesessiontag_id=ANY(%(tags)s))) {})".format(
+            'OR NOT EXISTS (SELECT 1 FROM confreg_conferencesession_tags cstt WHERE cstt.conferencesession_id=s.id)' if 0 in selectedtags else '',
+        )
+    else:
+        tagsquery = ""
 
     curs = connection.cursor()
     curs.execute("SELECT username FROM confreg_conference_talkvoters INNER JOIN auth_user ON user_id=auth_user.id WHERE conference_id=%(confid)s ORDER BY 1", {
@@ -2927,13 +2944,14 @@ LEFT JOIN LATERAL (
 WHERE s.conference_id=%(confid)s AND
       (COALESCE(s.track_id,0)=ANY(%(tracks)s)) AND
       status=ANY(%(statuses)s)
-      {}
-ORDER BY {}s.title,s.id""".format(nonvotedquery, order), {
+      {} {}
+ORDER BY {}s.title,s.id""".format(nonvotedquery, tagsquery, order), {
         'confid': conference.id,
         'userid': request.user.id,
         'username': request.user.username,
         'tracks': selectedtracks,
         'statuses': selectedstatuses,
+        'tags': selectedtags,
     })
 
     # If the user is only talkvoter at the conference, and not an administrator,
@@ -2958,11 +2976,13 @@ ORDER BY {}s.title,s.id""".format(nonvotedquery, order), {
         'hasvoters': hasvoters,
         'status_choices': STATUS_CHOICES,
         'tracks': alltracks,
+        'tags': alltags,
         'selectedtracks': selectedtracks,
+        'selectedtags': selectedtags,
         'selectedstatuses': selectedstatuses,
         'nonvoted': nonvoted,
         'valid_status_transitions': valid_status_transitions,
-        'urlfilter': urltrackfilter + urlstatusfilter,
+        'urlfilter': urltrackfilter + urlstatusfilter + urltagfilter,
         'helplink': 'callforpapers',
         'options': options,
         'scoring_method': SCORING_METHOD_CHOICES[conference.scoring_method][1],
