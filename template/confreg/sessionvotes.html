@@ -219,39 +219,48 @@ ul.comments span.username {
 <h1>Vote for sessions - {{conference}}</h1>
 
 <form method="get" style="margin-bottom: 10px">
-  <div>
-    <select id="selectTracks" name="tracks" multiple="multiple" style="inline-block; width=80%;">
+ <table role="presentation" border="0" width="100%" style="border-spacing: 2rem 0.3rem; border-collapse: separate;">
+  <tr>
+    <td style="width: 1px;">Track:</td>
+    <td><select id="selectTracks" name="tracks" multiple="multiple" style="inline-block; width=80%;">
 {%for t in tracks%}
       <option value="{{t.id}}"{%if t.id in selectedtracks%} SELECTED{%endif%}>{{t.trackname}}</option>
 {%endfor%}
-    </select>
-  </div>
+    </select></td>
+  </tr>
 {%if conference.callforpaperstags %}
-  <div>
-    <select id="selectTags" name="tags" multiple="multiple" style="inline-block; width=80%;">
+  <tr>
+    <td>Tags:</td>
+    <td><select id="selectTags" name="tags" multiple="multiple" style="inline-block; width=80%;">
 {%for t in tags %}
       <option value="{{t.id}}"{%if t.id in selectedtags%} SELECTED{%endif%}>{{t.tag}}</option>
 {%endfor%}
-    </select>
-  </div>
+    </select></td>
+  </tr>
 {%endif%}
-  <div>
-    <select id="selectStatuses" name="statuses" multiple="multiple" style="inline-block; width=80%;">
+  <tr>
+    <td>Statuses:</td>
+    <td><select id="selectStatuses" name="statuses" multiple="multiple" style="inline-block; width=80%;">
 {%for sid,s in status_choices %}
       <option value="{{sid}}"{%if sid in selectedstatuses%} SELECTED{%endif%}>{{s}}</option>
 {%endfor%}
-    </select>
-  </div>
-  <div>
-    <input type="checkbox" name="nonvoted" value="1"{%if nonvoted %} CHECKED{%endif%}> Show only sessions you have not voted for
-  </div>
-  <div class="filterButtonRow">
+    </select></td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <input type="checkbox" name="nonvoted" value="1"{%if nonvoted %} CHECKED{%endif%}> Show only sessions you have not voted for
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
   <input type="submit" class="btn btn-default" value="Update">
   <a href="." class="btn btn-default">Reset</a>
 {%if isadmin%}
   <a href="../sessionnotifyqueue/" id="pendingNotificationsButton" class="btn btn-warning"{%if not conference.pending_session_notifications%} style="display:none;"{%endif%}>View and send pending notifications</a>
 {%endif%}
-  </div>
+    </td>
+  </tr>
+ </table>
 </form>
 
 <div id="ajaxStatus" class="alert alert-success" style="position: fixed; width: 100%;opacity: .8; text-align: center; font-weight: bold; font-size: 1.2em;">Loading submissions</div>
