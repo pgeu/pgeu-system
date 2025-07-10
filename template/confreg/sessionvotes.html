@@ -305,7 +305,7 @@ ul.comments span.username {
    <div><strong>Tags:</strong> {%for t in s.tags%}<span class="label label-primary">{{t}}</span> {%endfor%}</div>
 {%endif%}
 {%if conference.callforpapersrecording%}
-	 <div><strong>Recording consent:</strong> {{s.recordingconsent | yesno:"Yes,No" }}
+	 <div><strong>Recording consent:</strong> {{s.recordingconsent | yesno:"Yes,No" }}</div>
 {%endif%}	 <br/>
 {{s.abstract|markdown}}
 {%if s.submissionnote%}
