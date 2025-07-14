@@ -27,7 +27,10 @@ Thank you, and we look forward to seeing you at {{conference}}.
 {% if has_multiple_sessions %}
 Since you have made more than one submission to the conference,
 please note that this status only affects this specific session.
-To view the status of all your sessions, please view the website
+To confirm this session and to view the status of all your sessions,
+please visit the website at
+{% else %}
+To confirm this session, please visit the website at
+{% endif %}
 
 {{sitebase}}/events/{{conference.urlname}}/callforpapers/
-{% endif %}
