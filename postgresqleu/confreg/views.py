@@ -16,7 +16,6 @@ from django.forms import ValidationError
 from django.utils import timezone
 from django.template.defaultfilters import slugify
 from django.views.decorators.csrf import csrf_exempt
-from postgresqleu.confreg.reports import ReportWriterCsv
 
 from .models import Conference, ConferenceRegistration, ConferenceSession, ConferenceSeries
 from .models import ConferenceRegistrationLog
@@ -1498,38 +1497,6 @@ def schedule_favorite(request, confname):
         )
     else:
         return HttpResponse("Method Not Allowed", status=405)
-
-
-def sessioncsv(request, confname):
-    conference = get_authenticated_conference(request, confname)
-
-    if request.POST.get('submit'):
-        writer = ReportWriterCsv(request, conference, 'talk report', True)
-        headers = ['id', 'title', 'shorttitle', 'abstract', 'status', 'speaker', 'company',
-                   'email', 'track', 'starttime', 'endtime', 'recordingconsent', 'room', 'submissionnote']
-        writer.set_headers(headers)
-        writer.add_row(headers)
-        status_filter = []
-        for st in STATUS_CHOICES:
-            if request.POST.get('status_' + str(st[0])) == "on":
-                status_filter.append(st[0])
-        sessions = ConferenceSession.objects.filter(conference=conference)
-        for f in status_filter:
-            sessions = sessions.filter(status__in=status_filter)
-        for s in sessions:
-            speaker_names = ",".join(filter(lambda v: v != "", map((lambda spk: spk.name), s.speaker.all())))
-            speaker_emails = ",".join(filter(lambda v: v != "", map((lambda spk: spk.email), s.speaker.all())))
-            speaker_companies = ",".join(filter(lambda v: v != "", map((lambda spk: spk.company), s.speaker.all())))
-            writer.add_row([s.id, s.title, s.shorttitle, s.abstract, s.status_string,
-                            speaker_names, speaker_companies, speaker_emails, s.track,
-                            s.starttime, s.endtime, s.recordingconsent, s.room, s.submissionnote])
-        return writer.render()
-    else:
-        return render_conference_response(request, conference, 'sessions', 'confreg/admin_session_csv.html',
-                                          {
-                                              'confname': confname,
-                                              'statuses': STATUS_CHOICES
-                                          })
 
 
 def schedulejson(request, confname):
