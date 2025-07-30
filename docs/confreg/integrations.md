@@ -5,7 +5,7 @@ system. The following terms are used when setting this system up:
 
 [Messaging Implementation](#implementation)
 : This is the "driver" for different types of messaging systems that
-  can be configured, for example "Twitter" or "Telegram".
+  can be configured, for example "BlueSky", "LinkedIn", or "Telegram".
 
 [Messaging Provider](#provider)
 : This is a configured instance of an implementation, for example
@@ -54,7 +54,7 @@ The social broadcasting integration supports:
 ### Manually posting to social broadcasting
 
 As an administrator, the easiest way to post to social broadcasting using the
-integration is to just add an entry to the table for *Twitter post
+integration is to just add an entry to the table for *Social media post
 queue*. This button becomes available from the main dashboard of a
 conference once the integration has been configured.
 

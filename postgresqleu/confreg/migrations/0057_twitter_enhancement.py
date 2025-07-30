@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='conferencetweetqueue',
-            options={'ordering': ['sent', 'datetime'], 'verbose_name': 'Conference Tweet', 'verbose_name_plural': 'Conference Tweets'},
+            options={'ordering': ['sent', 'datetime'], 'verbose_name': 'Conference Social Media Post', 'verbose_name_plural': 'Conference Social Media Posts'},
         ),
         migrations.AddField(
             model_name='conferencetweetqueue',
