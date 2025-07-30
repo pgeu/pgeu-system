@@ -1693,8 +1693,8 @@ class ConferenceTweetQueue(models.Model):
 
     class Meta:
         ordering = ['sent', 'datetime', ]
-        verbose_name_plural = 'Conference Tweets'
-        verbose_name = 'Conference Tweet'
+        verbose_name_plural = 'Conference Social Media Posts'
+        verbose_name = 'Conference Social Media Post'
         indexes = [
             GinIndex(name='tweetqueue_postids_idx', fields=['postids'], opclasses=['jsonb_path_ops']),
             GinIndex(name='tweetqueue_metadata_idx', fields=['metadata'], opclasses=['jsonb_path_ops']),
