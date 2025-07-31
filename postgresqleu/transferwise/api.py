@@ -125,6 +125,7 @@ class TransferwiseApi(object):
 
             for activity in r['activities']:
                 if activity['type'] == 'TRANSFER' or \
+                   activity['type'] == 'DIRECT_DEBIT_TRANSACTION' or \
                    (activity['type'] == 'BALANCE_DEPOSIT' and activity['resource']['type'] == 'TRANSFER'):
                     try:
                         details = self.get('transfers/{}'.format(activity['resource']['id']))
