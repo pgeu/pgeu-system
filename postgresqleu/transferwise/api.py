@@ -259,7 +259,7 @@ class TransferwiseApi(object):
         raise Exception("Failed to parse transferwise amount from '{}'".format(amount))
 
     def strip_tw_tags(self, s):
-        return re.subn('</?(strong|positive|negative|strikethrough)>', '', s)
+        return re.subn('</?(strong|positive|negative|strikethrough)>', '', s)[0]
 
     def validate_iban(self, iban):
         try:
