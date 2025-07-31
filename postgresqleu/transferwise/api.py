@@ -129,19 +129,32 @@ class TransferwiseApi(object):
                    (activity['type'] == 'BALANCE_DEPOSIT' and activity['resource']['type'] == 'TRANSFER'):
                     try:
                         details = self.get('transfers/{}'.format(activity['resource']['id']))
+
+                        if details['sourceCurrency'] != settings.CURRENCY_ABBREV:
+                            continue
+
+                        amount = Decimal(details['targetValue']).quantize(Decimal('0.01'))
+                        created = details['created']
+                        reference = details['reference']
+                        fulldescription = details['details']['reference']
                     except requests.exceptions.HTTPError as e:
                         if e.response.status_code == 403:
-                            print("No permissions to access transaction {} from {}, ignoring".format(
+                            # No permissions can mean (1) it's a wise-to-wise transaction, for which we are not allowed to
+                            # see details, or (2) a direct debit transaction.
+                            print("No permissions to access transaction {} from {}, adding placeholder without details".format(
                                 activity['resource']['id'],
                                 activity['updatedOn'],
                             ))
-                            continue
-                        raise
 
-                    if details['sourceCurrency'] != settings.CURRENCY_ABBREV:
-                        continue
-
-                    amount = Decimal(details['targetValue']).quantize(Decimal('0.01'))
+                            amount, currency = self.parse_transferwise_amount(activity['primaryAmount'])
+                            if currency != settings.CURRENCY_ABBREV:
+                                # This is transaction is in a different currency, so ignore it
+                                continue
+                            created = activity['createdOn']
+                            reference = ''
+                            fulldescription = 'Transaction with no permissions on details: {}'.format(self.strip_tw_tags(activity['title']))
+                        else:
+                            raise
 
                     # Yes, the transfer will actually have a positive amount even if it's a withdrawal.
                     # No, this is not indicated anywhere, since the "target account id" that would
@@ -173,12 +186,12 @@ class TransferwiseApi(object):
 
                     yield {
                         'id': 'TRANSFER-{}'.format(activity['resource']['id']),
-                        'datetime': details['created'],
+                        'datetime': created,
                         'amount': amount * negatizer,
                         'feeamount': 0,  # XXX!
                         'transtype': 'TRANSFER',
-                        'paymentref': details['reference'],
-                        'fulldescription': details['details']['reference'],
+                        'paymentref': reference,
+                        'fulldescription': fulldescription,
                     }
                 elif activity['type'] == 'BALANCE_CASHBACK':
                     # No API endpoint to get this so we have to parse it out of
