@@ -1939,6 +1939,12 @@ def callforpapers_edit(request, confname, sessionid):
             slidesurlform = SessionSlidesUrlForm()
             slidesfileform = SessionSlidesFileForm()
 
+        feedbackqrcode = None
+        if session.status in (1, 4):
+            # 1 = confirmed, so render
+            # 4 = reserve, so render
+            feedbackqrcode = generate_base64_qr('{0}/events/{1}/feedback/{2}/'.format(settings.SITEBASE, confname, session.id), None, 300)
+
         return render_conference_response(request, conference, 'cfp', 'confreg/session_feedback.html', {
             'session': session,
             'feedbackcount': feedbackcount,
@@ -1949,6 +1955,7 @@ def callforpapers_edit(request, confname, sessionid):
             'slidesurlform': slidesurlform,
             'slidesfileform': slidesfileform,
             'slides': ConferenceSessionSlides.objects.filter(session=session),
+            'feedbackqrcode': feedbackqrcode,
             })
 
     if session.id:
