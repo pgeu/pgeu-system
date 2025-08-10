@@ -74,7 +74,7 @@ function add_dynamic_fields(reg, cl, regcompleted) {
 
             if (typeof(val) == 'string') {
                 let e = $('<dd/>').text(val).addClass('found_dyn');
-                if (val.includes(' NOT ')) {
+                if (reg['highlight'].includes(a[0])) {
                     e = $(e).addClass('found_dyn_warn');
                 }
                 elements.push(e);

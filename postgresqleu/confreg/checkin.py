@@ -87,6 +87,7 @@ def _do_checkin_scan(request, conference, is_admin, extra=None):
         'scanfields': [
             ["name", "Name"],
             ["type", "Registration type"],
+            ["checkinmessage", "Check-in message"],
             ["policyconfirmed", "Policy confirmed"],
             ["photoconsent", "Photo consent"],
             ["tshirt", "T-Shirt size"],
@@ -252,11 +253,17 @@ def _get_reg_json(r, fieldscan=False):
         'tshirt': r.shirtsize and r.shirtsize.shirtsize,
         'additional': [a.name for a in r.additionaloptions.all()],
         'token': r.publictoken if fieldscan else r.idtoken,
+        'highlight': [],
     }
     if r.conference.askphotoconsent:
         d['photoconsent'] = r.photoconsent and "Photos OK" or "Photos NOT OK"
     if r.conference.confirmpolicy:
         d['policyconfirmed'] = r.policyconfirmedat and "Policy confirmed" or "Policy NOT confirmed"
+        if not r.policyconfirmedat:
+            d['highlight'].append('policyconfirmed')
+    if r.regtype.checkinmessage:
+        d['checkinmessage'] = r.regtype.checkinmessage
+        d['highlight'].append('checkinmessage')
     if r.checkedinat and not fieldscan:
         d['already'] = {
             'title': 'Attendee already checked in',

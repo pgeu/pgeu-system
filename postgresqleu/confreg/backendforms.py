@@ -437,7 +437,7 @@ class BackendRegistrationTypeForm(BackendForm):
 
     class Meta:
         model = RegistrationType
-        fields = ['regtype', 'regclass', 'cost', 'active', 'activeuntil', 'days', 'sortkey', 'specialtype', 'require_phone', 'alertmessage', 'invoice_autocancel_hours', 'requires_option', 'upsell_target']
+        fields = ['regtype', 'regclass', 'cost', 'active', 'activeuntil', 'days', 'sortkey', 'specialtype', 'require_phone', 'alertmessage', 'checkinmessage', 'invoice_autocancel_hours', 'requires_option', 'upsell_target']
 
     @classmethod
     def get_column_filters(cls, conference):
@@ -525,6 +525,7 @@ class BackendRegistrationTypeForm(BackendForm):
                                      specialtype=source.specialtype,
                                      # Not copying days
                                      alertmessage=source.alertmessage,
+                                     checkinmessage=source.checkinmessage,
                                      upsell_target=source.upsell_target,
                                      # Not copying invoice_autocancel_hours
                                      # Not copying requires_option

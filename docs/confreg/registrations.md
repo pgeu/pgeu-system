@@ -238,6 +238,14 @@ Alert message
 registration. This is typically used for things like informing people of special
 requirements such as a student ID to access student discounts.
 
+Check-in message
+: This message is shown when the attendee is [checked in](tickets#checkin),
+either using the web app or the native app. It
+is shown only to the person making the check-in. This cam typically be
+used to alert the check-in operator that they should verify the
+attendees eligibility for the registration type, for example by
+checking a student or corporate id.
+
 Autocancel invoices
 : If registrations with this registration type should override the value for
 autocancel from the [conference](configuring). The lowest value of

@@ -45,7 +45,7 @@ the desired number of queue partitions, and the system will calculate
 (based on current confirmed attendees) which letters to send to which
 queue.
 
-## Check-in
+## Check-in <a name="checkin"></a>
 
 The check-in system is designed for those working the registration
 desk at the event. It's a small web app designed specifically to be

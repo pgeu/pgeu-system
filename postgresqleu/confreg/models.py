@@ -466,6 +466,7 @@ class RegistrationType(models.Model):
     require_phone = models.BooleanField(null=False, blank=False, default=False, help_text="Require phone number to be entered")
     days = models.ManyToManyField(RegistrationDay, blank=True)
     alertmessage = models.TextField(null=False, blank=True, verbose_name="Alert message", help_text="Message shown in popup to user when completing the registration")
+    checkinmessage = models.TextField(null=False, blank=True, verbose_name='Check-in message', help_text='Message shown when the attendee is checked in')
     upsell_target = models.BooleanField(null=False, blank=False, default=False, help_text='Is target registration type for upselling in order to add additional options')
     invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), ], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
     requires_option = models.ManyToManyField('ConferenceAdditionalOption', blank=True, help_text='Requires at least one of the selected additional options to be picked')
