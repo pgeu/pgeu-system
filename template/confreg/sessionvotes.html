@@ -4,33 +4,11 @@
 {%load dictutil%}
 {%block title%}Vote for sessions{%endblock%}
 {%block extrahead%}
-{%asset "css" "jqueryui1" %}
-{%asset "js" "jqueryui1" %}
-{%asset "js" "selectize" %}
-{%asset "css" "selectize" %}
 {%asset "css" "fontawesome4" %}
 
 <script type="text/javascript">
-$(function() {
-  $('#dlgStatus').dialog({
-     autoOpen: false,
-     modal: true,
-     resizable: false,
-  });
-
-  $('#dlgComment').dialog({
-     autoOpen: false,
-     modal: true,
-     resizable: false,
-     minWidth: 350,
-  });
-  $(document).on('keyup', '#dlgComment', function(e){
-     if (e.keyCode == 13) {
-        $(':button:contains("Save")').click();
-     }
-  });
-
-  $('#ajaxStatus').hide();
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('ajaxStatus').style.display = 'none';
 
   document.querySelectorAll('h3:has(label.dropdown-checkbox').forEach((h) => {
       h.addEventListener('click', (e) => {
@@ -116,8 +94,62 @@ $(function() {
       });
   });
 
+  document.querySelectorAll('td.flt-votes select').forEach((sel) => {
+      sel.addEventListener('change', (e) => {
+          castVote(e.target.closest('tr.sessionrow').dataset.sid);
+      });
+  });
+  document.querySelectorAll('td.fld-status').forEach((td) => {
+      td.addEventListener('click', (e) => {
+          changeStatus(e.target.closest('tr.sessionrow').dataset.sid);
+      });
+  });
+
+  const dlgStatus = document.getElementById('dlgStatus');
+  dlgStatus.querySelectorAll('button').forEach((b) => {
+      b.addEventListener("click", (e) => {
+          dlgStatus.close(e.target.dataset.statusid);
+      });
+  });
+  dlgStatus.addEventListener("close", () => {
+      if (dlgStatus.returnValue) {
+          doUpdateStatus(dlgStatus.dataset.sid, dlgStatus.returnValue);
+      }
+  });
+
+  const dlgComment = document.getElementById('dlgComment');
+  dlgComment.querySelector('button').addEventListener('click', (e) => {
+      dlgComment.close('save');
+  });
+  dlgComment.addEventListener("close", () => {
+      if (dlgComment.returnValue == 'save') {
+          doSaveComment(dlgComment.dataset.sid);
+      }
+  });
+  document.getElementById('dlgCommentText').addEventListener('keyup', (e) => {
+      if (e.keyCode == 13) {
+          document.querySelector('dialog#dlgComment button').click();
+      }
+  });
+  document.querySelectorAll('td.flt-cmt a.btn').forEach((a) => {
+      a.addEventListener('click', (e) => {
+          editComment(e.target.closest('tr.sessionrow').dataset.sid);
+      });
+  });
+
   filter_sessions();
 });
+
+function setAjaxStatus(str, iserror) {
+    const el = document.getElementById('ajaxStatus');
+    el.classList.add(iserror ? 'alert-danger' : 'alert-success');
+    el.classList.remove(iserror ? 'alert-success' : 'alert-danger');
+    el.innerText = str;
+    el.style.display = 'block';
+    setInterval(() => {
+        el.style.display = 'none';
+    }, 2000);
+}
 
 function filter_sessions() {
     /* Get all our statuses */
@@ -175,141 +207,133 @@ function filter_sessions() {
     });
 }
 
-function showDialog(id, title) {
-   if ($('#popup_' + id).dialog('isOpen')) {
-      $('#popup_' + id).dialog('close');
-   } else {
-      $('#popup_' + id).dialog('option', {
-         'title': title,
-      }).dialog('open');
-   }
-}
-
-var valid_status_transitions = {{%for s, v in valid_status_transitions.items %}
+const valid_status_transitions = {{%for s, v in valid_status_transitions.items %}
    {{s}}: {
 {%for k,t in v.items %}
       {{k}}: '{{t}}',{%endfor%}
    },{%endfor%}
 };
 
-function doUpdateStatus(id, statusval) {
-   $.post('changestatus/',
-      {
-         'csrfmiddlewaretoken': '{{csrf_token}}',
-         'sessionid': id,
-         'newstatus': statusval,
-      },
-      function(data, status, xhr) {
-         if (xhr.status == 200) {
-            $('#ajaxStatus').text('Changed status to ' + data.newstatus).addClass('alert-success').removeClass('alert-danger').fadeIn(500).delay(1000).fadeOut(500);
-            $('#statusstr' + id).css('background-color', data.statechanged?'yellow':'white').data('currstatus', statusval);
-            $('#statusstr' + id + ' a').text(data.newstatus);
-	    $('#pendingNotificationsButton').toggle(data.pendingnotifications);
-         } else {
-         }
-      }
-   ).fail(function(xhr, status, err) {
-      if (xhr.status >= 400 && xhr.status < 500) {
-         $('#ajaxStatus').text('Error: ' + xhr.responseText).removeClass('alert-success').addClass('alert-danger').fadeIn(500).delay(1000).fadeOut(500);
-      } else {
-         $('#ajaxStatus').text('Error: ' + xhr.err).removeClass('alert-success').addClass('alert-danger').fadeIn(500).delay(1000).fadeOut(500);
-      }
-   });
+function getFormData(obj) {
+    let fd = new FormData();
+    Object.entries(obj).forEach(([k, v]) => {
+        fd.append(k, v);
+    });
+    return fd;
+}
+
+async function doUpdateStatus(id, statusval) {
+    const targetRow = document.querySelector('tr.sessionrow[data-sid="' + id + '"]');
+    const targetFld = targetRow.querySelector('td.fld-status');
+
+    const response = await fetch('changestatus/', {
+        'method': 'POST',
+        'body': getFormData({
+            'csrfmiddlewaretoken': '{{csrf_token}}',
+            'sessionid': id,
+            'newstatus': statusval,
+        }),
+        'credentials': 'same-origin',
+    });
+    if (response.ok) {
+        const j = await response.json();
+        targetRow.dataset.status = statusval;
+        targetFld.getElementsByTagName('a')[0].text = j.newstatus;
+        targetFld.style.backgroundColor = j.statechanged ? 'yellow' : 'white';
+        document.getElementById('pendingNotificationsButton').style.display = j.pending ? 'inline-block': 'none';
+        setAjaxStatus('Changed status to ' + j.newstatus, false);
+    }
+    else {
+        if (response.status >= 400 && response.status < 500) {
+            response.text().then(function (t) {
+                setAjaxStatus('Error: ' + t);
+            });
+        } else {
+            setAjaxStatus('Error: ' + response.statusText);
+        }
+    }
+    return;
 }
 
 function changeStatus(id) {
-   var buttons = {};
-   var currentstatus = $('#statusstr' + id).data('currstatus');
-   var offset = $('#statusstr' + id).offset();
-   var height = $('#statusstr' + id).height();
-   var scrolldiff = document.body.scrollTop + document.documentElement.scrollTop;
-
-   $.each(valid_status_transitions[currentstatus], function(k,v) {
-      buttons[v] = function(event) {
-         doUpdateStatus(id, k);
-         $(this).dialog("close");
-      }
+   const currentstatus = document.querySelector('tr.sessionrow[data-sid="' + id + '"]').dataset.status;
+   const dialog = document.getElementById('dlgStatus');
+   dialog.dataset.sid = id;
+   dialog.getElementsByTagName('h3')[0].innerText = "Change status [id: " + id + "]";
+   const buttonDiv = dialog.getElementsByTagName('div')[0];
+   buttonDiv.querySelectorAll('button').forEach((btn) => {
+       btn.style.display = (btn.dataset.statusid in valid_status_transitions[currentstatus]) ? "inline-block": "none";
    });
-   buttons['Cancel'] = function() {
-           $( this ).dialog( "close" );
-   };
 
-   $('#dlgStatus').dialog('option', {
-      'title': 'Change status [id: ' + id + ']',
-      'modal': true,
-   }).dialog('option', {
-     buttons: buttons,
-   }).dialog('option', {
-     position: [
-       offset.left,
-       offset.top - scrolldiff + height
-     ],
-   }).dialog('open');
+   dialog.showModal();
 }
 
-function castVote(sessionid) {
-   var s = $('#sv_' + sessionid);
-   var p = s.parent('td');
-   var val = s.val();
-   var avgbox = p.siblings('td.avgbox');
+async function castVote(sessionid) {
+    const row = document.querySelector('tr.sessionrow[data-sid="' + sessionid + '"]');
+    const td = row.querySelector('td.flt-votes');
+    const s = td.getElementsByTagName('select')[0];
+    const avgbox = row.querySelector('td.avgbox');
 
-   p.css('background-color', 'gray');
-   $.post('vote/',
-      {
-         'csrfmiddlewaretoken': '{{csrf_token}}',
-         'sessionid': sessionid,
-         'vote': val,
-      },
-      function(data) {
-           p.attr('data-voted', (val==0)?"no":"yes");
-           p.css('background-color', '');
-           avgbox.html(data);
-      }
-   ).fail(function() {
-      alert('AJAX call failed');
-   });
+    const response = await fetch('vote/', {
+        'method': 'POST',
+        'body': getFormData({
+            'csrfmiddlewaretoken': '{{csrf_token}}',
+            'sessionid': sessionid,
+            'vote': s.value,
+        }),
+        'credentials': 'same-origin',
+    });
+    if (response.ok) {
+        td.dataset.voted = (s.value == 0)?"no":"yes";
+        response.text().then(function (t) {
+            avgbox.innerText = t;
+        });
+    } else {
+        alert('AJAX call failed');
+    }
+}
+
+async function doSaveComment(sessionid) {
+    const dialog = document.getElementById('dlgComment');
+    const row = document.querySelector('tr.sessionrow[data-sid="' + sessionid + '"]');
+    const cspan = row.querySelector('li.owncomment span.comment');
+    const txt = document.getElementById('dlgCommentText').value;
+
+    if (txt != cspan.innerText) {
+        const response = await fetch('comment/', {
+            'method': 'POST',
+            'body': getFormData({
+                'csrfmiddlewaretoken': '{{csrf_token}}',
+                'sessionid': sessionid,
+                'comment': txt,
+            }),
+            'credentials': 'same-origin',
+        });
+        if (response.ok) {
+            response.text().then(function (t) {
+                cspan.innerText = t;
+                row.querySelector('li.owncomment').style.display = (t == '') ? 'none' : 'block';
+            });
+        }
+        else {
+            alert('AJAX call failed');
+        }
+    }
 }
 
 function editComment(sessionid) {
-   var old = $('#owncomment_' + sessionid + ' span.comment').text();
-   $('#dlgCommentText').val(old);
+    const dialog = document.getElementById('dlgComment');
+    const row = document.querySelector('tr.sessionrow[data-sid="' + sessionid + '"]');
+    const old = row.querySelector('li.owncomment span.comment').innerText;
 
-   $('#dlgComment').dialog('option', {
-      'title': 'Edit comment',
-      'modal': true,
-   }).dialog('option', {
-     buttons: [{
-        id: 'dlgCommentSaveButton',
-        text: 'Save',
-        click: function() {
-           var dlg = $(this);
-           var txt = $('#dlgCommentText').val();
-           $('#dlgCommentSaveButton').button("disable");
-           if (txt != old) {
-              $.post('comment/', {
-                 'csrfmiddlewaretoken': '{{csrf_token}}',
-                 'sessionid': sessionid,
-                 'comment': txt,
-              },
-              function (data) {
-                 dlg.dialog("close");
-                 $('#owncomment_' + sessionid + ' span.comment').text(data);
-                 $('#owncomment_' + sessionid).css('display', (data=='')?'none':'block');
-              }
-              ).fail(function() {
-                 alert('AJAX call failed');
-              });
-           }
-           else {
-              dlg.dialog("close");
-           }
-        },
-     }],
-   }).dialog('open');
+    document.getElementById('dlgCommentText').value = old;
+    dialog.dataset.sid = sessionid;
+
+    dialog.showModal();
 }
 </script>
 <style>
-td.dlgClickable {
+td.fld-status {
   cursor: pointer;
 }
 div.dlg {
@@ -404,6 +428,10 @@ a.sortheader[data-sorted="1"]::after {
 a.sortheader[data-sorted="-1"]::after {
     content: " \f161";
 }
+
+dialog::backdrop {
+    backdrop-filter: blur(4px);
+}
 </style>
 {%endblock%}
 {%block layoutblock%}
@@ -479,7 +507,7 @@ a.sortheader[data-sorted="-1"]::after {
 
   {%for u in users%}
   {% if conference.showvotes or isadmin or u == user.username and isvoter %}
-  <th class="flt-votes">{%if u == user.username%}{{u}}{%else%}<a class="sortheader sortnumber">{{u}}{%endif%}</a></th>
+  <th class="flt-votes">{%if u == user.username%}{{u}}{%else%}<a class="sortheader sortnumber">{{u}}</a>{%endif%}</th>
   {% endif %}
   {%endfor%}
 
@@ -491,7 +519,7 @@ a.sortheader[data-sorted="-1"]::after {
  </tr>
  </tbody>
 {%for s in sessionvotes%}
- <tbody data-sid="{{s.id}}">
+ <tbody>
  <tr class="headerrow sessionrow" data-sid="{{s.id}}" data-status="{{s.statusid}}" data-track="{{s.trackid|default:"0"}}"{% if conference.callforpaperstags %} data-tags="{{s.tags|join_dictkeys:"id,,"}}"{% endif %}>
    <td class="flt-seq text-center">{{forloop.counter}}</td>
    <td class="flt-id">{{s.id}}</td>
@@ -503,7 +531,7 @@ a.sortheader[data-sorted="-1"]::after {
    <td class="flt-trk">{{s.trackname|default:""}}</td>
    <td class="flt-tag">{{s.tags|join_dictkeys:"tag"}}</td>
    {%if isadmin%}
-   <td{%if s.speakerdata and not s.statusid == s.laststatusid %} bgcolor="yellow"{%endif%} onClick="changeStatus({{s.id}})" class="dlgClickable" id="statusstr{{s.id}}" data-currstatus="{{s.statusid}}"><a href="#" onclick="return false;">{{s.status}}</a></td>
+   <td{%if s.speakerdata and not s.statusid == s.laststatusid %} bgcolor="yellow"{%endif%} class="fld-status"><a href="#" onclick="return false;">{{s.status}}</a></td>
 {%else%}
    <td>{{s.status}}</td>
 {%endif%}
@@ -511,7 +539,7 @@ a.sortheader[data-sorted="-1"]::after {
   {%for u in users%}
    {%if u == user.username%}
       <td class="flt-votes" data-voted="{%if s.votes|dictlookup:u is None %}no{%else%}yes{%endif%}">
-        <select id="sv_{{s.id}}" onChange="castVote({{s.id}})">
+        <select>
           {%for val, opt in options%}
             <option value="{{val}}"{%if val == s.votes|dictlookup:u|default_if_none:0%} SELECTED{%endif%}>{{opt}}</option>
           {%endfor%}
@@ -531,13 +559,13 @@ a.sortheader[data-sorted="-1"]::after {
    <td class="flt-cmt">
 {%if isvoter%}
      <div style="margin-right: 0.5em; float:left;">
-       <a class="btn btn-default btn-xs" href="javascript:editComment({{s.id}})"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a>
+       <a class="btn btn-default btn-xs"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a>
      </div>
 {%endif%}
      <div style="display:inline-block;">
 {%for u, c in s.comments.items%}
 <ul class="comments">
-  <li{%if u == user.username%} id="owncomment_{{s.id}}" {%if c == ""%} style="display:none"{%endif%}{%endif%}><span class="username">{{u}}:</span> <span class="comment">{{c}}</span></li>
+  <li{%if u == user.username%} class="owncomment" {%if c == ""%} style="display:none"{%endif%}{%endif%}><span class="username">{{u}}:</span> <span class="comment">{{c}}</span></li>
 </ul>
 {%endfor%}
      </div>
@@ -589,11 +617,21 @@ a.sortheader[data-sorted="-1"]::after {
 
 </fieldset>
 
-<div id="dlgStatus">
-</div>
+<dialog id="dlgStatus">
+  <h3>Change status</h3>
+  <p>Change status to:</p>
+  <div>
+{%for statusid, status in status_choices %}
+   <button class="btn" data-statusid="{{statusid}}">{{status}}</button>
+{%endfor%}
+  </div>
+  <button class="btn">Cancel</button>
+</dialog>
 
-<div id="dlgComment">
+<dialog id="dlgComment">
+  <h3>Edit comment</h3>
   <input type="text" id="dlgCommentText" style="width: 300px;">
-</div>
+  <button class="btn">Save</button>
+</dialog>
 
 {%endblock%}
