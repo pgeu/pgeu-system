@@ -96,6 +96,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  document.querySelectorAll('a.selup').forEach((a) => {
+    a.title = 'Click to mark all entries from this row and up, based on the current view';
+    a.addEventListener('click', (e) => {
+      const tbody = e.target.closest('tbody');
+      for (let current = tbody ; current != null ; current = current.previousElementSibling) {
+        const cb = current.querySelector('tr td.flt-seq input[type="checkbox"]');
+        if (cb && current.querySelector('tr.sessionrow').style.display != 'none') {
+          cb.checked = true;
+        }
+      };
+    });
+  });
+  document.querySelectorAll('a.seldown').forEach((a) => {
+    a.title = 'Click to mark all entries from this row and down, based on the current view';
+    a.addEventListener('click', (e) => {
+      const tbody = e.target.closest('tbody');
+      for (let current = tbody ; current != null ; current = current.nextElementSibling) {
+        const cb = current.querySelector('tr td.flt-seq input[type="checkbox"]');
+        if (cb && current.querySelector('tr.sessionrow').style.display != 'none') {
+          cb.checked = true;
+        }
+      };
+    });
+  });
+
   const dlgStatus = document.getElementById('dlgStatus');
   dlgStatus.querySelectorAll('button').forEach((b) => {
     b.addEventListener("click", (e) => {
@@ -127,6 +152,41 @@ document.addEventListener('DOMContentLoaded', () => {
       editComment(e.target.closest('tr.sessionrow').dataset.sid);
     });
   });
+
+  if (document.getElementById('btnClearCheckboxes')) {
+    document.getElementById('btnClearCheckboxes').addEventListener('click', (e) => {
+      document.querySelectorAll('td.flt-seq input[type="checkbox"]').forEach((c) => {
+        c.checked = false;
+      });
+    });
+  }
+
+  if (document.getElementById('btnBulkStatus')) {
+    document.getElementById('btnBulkStatus').addEventListener('click', (e) => {
+      const idlist = [...document.querySelectorAll('tr.sessionrow:has(td.flt-seq input[type="checkbox"]:checked)')].map((e) => e.dataset.sid);
+      const statuslist = new Set([...document.querySelectorAll('tr.sessionrow:has(td.flt-seq input[type="checkbox"]:checked)')].map((e) => e.dataset.status));
+      const transitions = [...statuslist].map((s) => new Set(Object.keys(valid_status_transitions[s])));
+
+      const valid = transitions.reduce((acc, currval) => {
+        return acc.intersection(currval);
+      });
+
+      if (!valid.size) {
+        alert('There are no valid status transitions for all the selected sessions.');
+        return;
+      }
+
+      const dialog = document.getElementById('dlgStatus');
+      dialog.dataset.sid = idlist;
+      dialog.getElementsByTagName('h3')[0].innerText = "Bulk change status for ids " + idlist;;
+      const buttonDiv = dialog.getElementsByTagName('div')[0];
+      buttonDiv.querySelectorAll('button').forEach((btn) => {
+        btn.style.display = (valid.has(btn.dataset.statusid)) ? "inline-block": "none";
+      });
+
+      dialog.showModal();
+    });
+  }
 
   filter_sessions();
 });
@@ -190,10 +250,10 @@ function filter_sessions() {
     document.getElementById('detailsrow_' + row.dataset.sid).style.display = visible ? "" : "none";
 
     if (visible) {
-      row.querySelector('td').innerText = seq;
+      row.querySelector('td div.seq').innerText = seq;
       seq += 1;
     } else {
-      row.querySelector('td').innerText = '';
+      row.querySelector('td div.seq').innerText = '';
     }
   });
 }
@@ -207,8 +267,7 @@ function getFormData(obj) {
 }
 
 async function doUpdateStatus(id, statusval) {
-  const targetRow = document.querySelector('tr.sessionrow[data-sid="' + id + '"]');
-  const targetFld = targetRow.querySelector('td.fld-status');
+  if (!statusval) return;
 
   const response = await fetch('changestatus/', {
     'method': 'POST',
@@ -221,9 +280,15 @@ async function doUpdateStatus(id, statusval) {
   });
   if (response.ok) {
     const j = await response.json();
-    targetRow.dataset.status = statusval;
-    targetFld.getElementsByTagName('a')[0].text = j.newstatus;
-    targetFld.style.backgroundColor = j.statechanged ? 'yellow' : 'white';
+
+    id.split(',').forEach((i) => {
+      const targetRow = document.querySelector('tr.sessionrow[data-sid="' + i + '"]');
+      const targetFld = targetRow.querySelector('td.fld-status');
+      targetRow.dataset.status = statusval;
+      targetFld.getElementsByTagName('a')[0].text = j.newstatus;
+      targetFld.style.backgroundColor = j.statechanged[i] ? 'yellow' : 'white';
+    });
+
     document.getElementById('pendingNotificationsButton').style.display = j.pending ? 'inline-block': 'none';
     setAjaxStatus('Changed status to ' + j.newstatus, false);
   }

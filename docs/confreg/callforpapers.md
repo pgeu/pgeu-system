@@ -72,7 +72,8 @@ emails are always just flagged and not sent until explicitly
 requested. That way it's possible to perform extra review.
 
 A state of a session can be changed either from the voting page (by
-clicking the current state and picking a new one) or from the Edit
+clicking the current state, or by selecting a number of sessions using the checkboxes on the left,
+and picking a new status) or from the Edit
 Session page (by picking a new state in the drop down and then clicking
 save).  In either case the new state is limited by valid state
 transitions. By repeating this process it is possible to "break the

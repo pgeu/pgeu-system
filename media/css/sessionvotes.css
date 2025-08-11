@@ -88,6 +88,22 @@ a.sortheader[data-sorted="-1"]::after {
     content: " \f161";
 }
 
+td.flt-seq > div {
+    display: flex;
+    align-items: center;
+}
+td.flt-seq > div div:first-child {
+    margin-right: 2rem;
+}
+td.flt-seq input {
+    display: inline;
+}
+td.flt-seq a {
+    font-family: FontAwesome;
+    cursor: pointer;
+}
+
+
 dialog::backdrop {
     backdrop-filter: blur(4px);
 }

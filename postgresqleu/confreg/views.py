@@ -2991,26 +2991,29 @@ def talkvote_status(request, confname):
         raise Http404("No sessionid")
 
     newstatus = get_int_or_error(request.POST, 'newstatus')
-    session = get_object_or_404(ConferenceSession, conference=conference, id=get_int_or_error(request.POST, 'sessionid'))
-    if newstatus not in valid_status_transitions[session.status]:
-        return HttpResponse("Cannot change from {} to {}".format(get_status_string(session.status), get_status_string(newstatus)), status=400)
+    try:
+        idlist = [int(i) for i in request.POST.get('sessionid').split(',')]
+    except ValueError:
+        raise Http404("Parameter idlist contains non-integers")
 
-    session.status = newstatus
-    session.save()
-    statechange = session.speaker.exists() and (session.status != session.lastnotifiedstatus)
+    sessions = list(ConferenceSession.objects.only('id', 'status').filter(conference=conference, id__in=idlist))
+    if len(idlist) != len(sessions):
+        return HttpResponse("Invalid number of sessions matched", status=400)
 
-    if statechange:
-        # If *this* session has a state changed, then we can shortcut the lookup for
-        # others and just indicate we know there is one.
-        pendingnotifications = True
-    else:
-        # Otherwise we have to see if there are any others
-        pendingnotifications = conference.pending_session_notifications
+    statechange = {}
+    for session in sessions:
+        if newstatus not in valid_status_transitions[session.status]:
+            return HttpResponse("Cannot change from {} to {}".format(get_status_string(session.status), get_status_string(newstatus)), status=400)
+
+        session.status = newstatus
+        session.save(update_fields=['status'])
+
+        statechange[session.id] = session.speaker.exists() and (session.status != session.lastnotifiedstatus)
 
     return HttpResponse(json.dumps({
         'newstatus': get_status_string(session.status),
         'statechanged': statechange,
-        'pending': bool(pendingnotifications),
+        'pending': bool(conference.pending_session_notifications),
     }), content_type='application/json')
 
 

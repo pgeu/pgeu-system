@@ -114,7 +114,10 @@ body:has(input#col_{{fc.class}}:checked) tr.headerrow th.flt-{{fc.class}} {
 {%for s in sessionvotes%}
  <tbody>
  <tr class="headerrow sessionrow" data-sid="{{s.id}}" data-status="{{s.statusid}}" data-track="{{s.trackid|default:"0"}}"{% if conference.callforpaperstags %} data-tags="{{s.tags|join_dictkeys:"id,,"}}"{% endif %}>
-   <td class="flt-seq text-center">{{forloop.counter}}</td>
+   <td class="flt-seq text-center"><div>
+     <div class="seq">{{forloop.counter}}</div>
+{%if isadmin%}<div><a class="selup">&#xf0d8;</a><input type="checkbox"><a class="seldown">&#xf0d7;</a></div>{%endif%}
+   </div></td>
    <td class="flt-id">{{s.id}}</td>
    <td>
      <h3><label class="dropdown-checkbox"><input type="checkbox" data-sid="{{s.id}}"><span></span></label> {{s.title}}</h3>
@@ -206,6 +209,17 @@ body:has(input#col_{{fc.class}}:checked) tr.headerrow th.flt-{{fc.class}} {
  </tr>
 </tbody>
 {%endfor%}
+{%if isadmin %}
+ <tbody class="header">
+ <tr class="headerrow tableheader">
+  <th colspan="2" class="flt-seq">
+    <button id="btnClearCheckboxes" class="btn">Clear checkboxes</button>
+    <button id="btnBulkStatus" class="btn">Bulk set status</button>
+  </th>
+ </tr>
+ </tbody>
+{%endif%}
+
 </table>
 
 </fieldset>
