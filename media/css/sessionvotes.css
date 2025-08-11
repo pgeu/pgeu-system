@@ -91,3 +91,12 @@ a.sortheader[data-sorted="-1"]::after {
 dialog::backdrop {
     backdrop-filter: blur(4px);
 }
+
+#dlgStatus div.buttons {
+    display: flex;
+    justify-content: space-around;
+}
+
+#dlgStatus div.buttons button {
+    margin: 0.7rem;
+}

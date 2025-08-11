@@ -212,13 +212,14 @@ body:has(input#col_{{fc.class}}:checked) tr.headerrow th.flt-{{fc.class}} {
 
 <dialog id="dlgStatus">
   <h3>Change status</h3>
-  <p>Change status to:</p>
-  <div>
+  <div class="buttons">
 {%for statusid, status in status_choices %}
    <button class="btn" data-statusid="{{statusid}}">{{status}}</button>
 {%endfor%}
   </div>
-  <button class="btn">Cancel</button>
+  <div class="buttons">
+    <button class="btn">Cancel</button>
+  </div>
 </dialog>
 
 <dialog id="dlgComment">

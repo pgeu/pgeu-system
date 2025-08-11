@@ -243,7 +243,7 @@ function changeStatus(id) {
   const currentstatus = document.querySelector('tr.sessionrow[data-sid="' + id + '"]').dataset.status;
   const dialog = document.getElementById('dlgStatus');
   dialog.dataset.sid = id;
-  dialog.getElementsByTagName('h3')[0].innerText = "Change status [id: " + id + "]";
+  dialog.getElementsByTagName('h3')[0].innerText = "Change status for id " + id;
   const buttonDiv = dialog.getElementsByTagName('div')[0];
   buttonDiv.querySelectorAll('button').forEach((btn) => {
     btn.style.display = (btn.dataset.statusid in valid_status_transitions[currentstatus]) ? "inline-block": "none";
