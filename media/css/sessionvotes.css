@@ -95,12 +95,17 @@ td.flt-seq > div {
 td.flt-seq > div div:first-child {
     margin-right: 2rem;
 }
+td.flt-seq > div > div:nth-child(2) {
+    display: flex;
+    flex-direction: column;
+}
 td.flt-seq input {
     display: inline;
 }
 td.flt-seq a {
     font-family: FontAwesome;
     cursor: pointer;
+    color: inherit;
 }
 
 
