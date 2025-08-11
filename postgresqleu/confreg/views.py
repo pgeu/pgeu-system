@@ -1969,10 +1969,14 @@ def callforpapers_edit(request, confname, sessionid):
         # Save it!
         form = CallForPapersForm(speaker, data=request.POST, instance=session, initial=initial)
         if form.is_valid():
-            form.save()
+            with transaction.atomic():
+                if ConferenceSession.objects.filter(conference=conference, speaker=speaker, title=form.cleaned_data['title']).exists():
+                    form.add_error('title', "You have already submitted a session with title '{}' to this conference.".format(session.title))
+                else:
+                    form.save()
+                    messages.info(request, "Your session '%s' has been saved!" % session.title)
 
-            messages.info(request, "Your session '%s' has been saved!" % session.title)
-            return HttpResponseRedirect("../")
+                    return HttpResponseRedirect("../")
     else:
         # GET --> render empty form
         form = CallForPapersForm(speaker, instance=session, initial=initial)
