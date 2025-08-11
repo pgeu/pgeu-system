@@ -17,7 +17,7 @@
   <script type="text/javascript" src="/media/js/admin.js"></script>
 {%block extrahead%}{%endblock%}
  </head>
- <body>
+ <body{%block bodyattr%}{%endblock%}>
 {%if debug %}
   <div class="alert alert-danger text-center noprint">This site has DEBUG enabled!</div>
 {%endif%}

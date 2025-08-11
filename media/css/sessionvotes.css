@@ -1,0 +1,93 @@
+td.fld-status {
+    cursor: pointer;
+}
+div.dlg {
+    display: none;
+}
+
+/* Override bootstrap to make full screen */
+.container {
+    width: 100%;
+}
+
+ul.comments {
+    list-style-type: none;
+    padding-left: 5px;
+}
+ul.comments span.username {
+    font-weight: bold;
+}
+
+label.dropdown-checkbox input[type=checkbox] {
+    display: none;
+}
+label.dropdown-checkbox input[type=checkbox] + span {
+    display: inline-block;
+    text-align: center;
+}
+label.dropdown-checkbox input[type=checkbox]:checked + span::after {
+    content: "\f0d7";
+    font-family: FontAwesome;
+}
+label.dropdown-checkbox input[type=checkbox]:not(:checked) + span::after {
+    content: "\f0da";
+    font-family: FontAwesome;
+}
+h3:has(label.dropdown-checkbox),
+label.dropdown-checkbox {
+    cursor: pointer;
+}
+
+td[data-voted="no"] {
+    background-color: red;
+}
+
+
+tr.detailsrow td {
+    text-align: center;
+}
+tr.detailsrow td div.detailscontent {
+    max-width: 800px;
+    text-align: left;
+    display: inline-block;
+}
+
+tr.detailsrow  {
+    display: none;
+}
+tr.headerrow:has(td label.dropdown-checkbox input[type=checkbox]:checked) + tr {
+    display: table-row;
+}
+
+tr.headerrow td[class^="flt-"],
+tr.headerrow th[class^="flt-"] {
+    display: none;
+}
+
+tr.headerrow {
+    display: none;
+}
+tr.headerrow.tableheader {
+    display: table-row;
+}
+
+a.filteronly {
+    cursor: pointer;
+}
+
+a.sortheader {
+    cursor: pointer;
+}
+a.sortheader::after {
+    font-family: FontAwesome;
+}
+a.sortheader[data-sorted="1"]::after {
+    content: " \f160";
+}
+a.sortheader[data-sorted="-1"]::after {
+    content: " \f161";
+}
+
+dialog::backdrop {
+    backdrop-filter: blur(4px);
+}
