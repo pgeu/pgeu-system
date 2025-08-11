@@ -45,8 +45,10 @@ Click the talk title to view full details about the talk.
 
 Click the status to bring up a dialog allowing the change of status.
 
-Sessions can be sorted by session name (default), speakers or average
-score by clicking the appropriate headlines.
+Sessions can be sorted by most session fields (default is to sort
+by session name) by clicking the column header.
+
+Columns can be turned on and off in the dislpay using the checkboxes.
 
 #### 2.1 Scoring method
 

@@ -2835,61 +2835,15 @@ def talkvote(request, confname):
     hasvoters = conference.talkvoters.exists()
     alltracks = [{'id': t.id, 'trackname': t.trackname} for t in Track.objects.filter(conference=conference)]
     alltracks.insert(0, {'id': 0, 'trackname': 'No track'})
-    alltrackids = [t['id'] for t in alltracks]
-    selectedtracks = [int(id) for id in request.GET.getlist('tracks') if int(id) in alltrackids]
     alltags = [{'id': t.id, 'tag': t.tag} for t in ConferenceSessionTag.objects.filter(conference=conference)]
     alltags.insert(0, {'id': 0, 'tag': 'No tag'})
-    alltagids = [t['id'] for t in alltags]
-    selectedtags = [int(id) for id in request.GET.getlist('tags') if int(id) in alltagids]
     allstatusids = [id for id, status in STATUS_CHOICES]
-    selectedstatuses = [int(id) for id in request.GET.getlist('statuses') if int(id) in allstatusids]
-    if selectedtracks:
-        urltrackfilter = "{0}&".format("&".join(["tracks={0}".format(t) for t in selectedtracks]))
-    else:
-        selectedtracks = alltrackids
-        urltrackfilter = ''
-
-    if selectedtags:
-        urltagfilter = "{0}&".format("&".join(["tags={0}".format(t) for t in selectedtags]))
-    else:
-        selectedtags = alltagids
-        urltagfilter = ''
-
-    if selectedstatuses:
-        urlstatusfilter = "{0}&".format("&".join(["statuses={0}".format(t) for t in selectedstatuses]))
-    else:
-        selectedstatuses = allstatusids
-        urlstatusfilter = ''
-
-    nonvoted = request.GET.get('nonvoted', '0') == '1'
-    if nonvoted:
-        nonvotedquery = "AND NOT EXISTS (SELECT 1 FROM confreg_conferencesessionvote nv WHERE nv.session_id=s.id AND nv.voter_id=%(userid)s AND nv.vote <> 0)"
-    else:
-        nonvotedquery = ""
-
-    if conference.callforpaperstags:
-        tagsquery = "AND (EXISTS (SELECT 1 FROM confreg_conferencesession_tags cst WHERE cst.conferencesession_id=s.id AND (cst.conferencesessiontag_id=ANY(%(tags)s))) {})".format(
-            'OR NOT EXISTS (SELECT 1 FROM confreg_conferencesession_tags cstt WHERE cstt.conferencesession_id=s.id)' if 0 in selectedtags else '',
-        )
-    else:
-        tagsquery = ""
 
     curs = connection.cursor()
     curs.execute("SELECT username FROM confreg_conference_talkvoters INNER JOIN auth_user ON user_id=auth_user.id WHERE conference_id=%(confid)s ORDER BY 1", {
         'confid': conference.id,
     })
     allusers = [u for u, in curs.fetchall()]
-
-    order = ""
-    if 'sort' in request.GET:
-        if request.GET["sort"] == "avg":
-            order = "avg DESC NULLS LAST,"
-        elif request.GET["sort"] == "speakers":
-            order = "speakerdata#>>'{0,fullname}', avg DESC NULLS LAST,"
-        elif request.GET["sort"] == "session":
-            order = "s.title, avg DESC NULLS LAST,"
-    else:
-        order = "s.id,"
 
     # Render the form. Need to do this with a manual query, can't figure
     # out the right way to do it with the django ORM.
@@ -2901,11 +2855,20 @@ def talkvote(request, confname):
   avg,
   COALESCE(votes, '{{}}'::jsonb) AS votes,
   jsonb_build_object(%(username)s, '') || COALESCE(comments, '{{}}'::jsonb) AS comments,
-  trackname, recordingconsent,
-  (SELECT array_agg(tag) FROM confreg_conferencesessiontag t INNER JOIN confreg_conferencesession_tags cst ON cst.conferencesessiontag_id=t.id WHERE cst.conferencesession_id=s.id) AS tags
+  track_id AS trackid, trackname, recordingconsent,
+  tags.tags
 FROM confreg_conferencesession s
 INNER JOIN confreg_status_strings status ON status.id=s.status
 LEFT JOIN confreg_track track ON track.id=s.track_id
+LEFT JOIN LATERAL (
+    SELECT json_agg(json_build_object(
+       'id', tag.id,
+       'tag', tag.tag
+    ) ORDER BY tag) as tags
+    FROM confreg_conferencesessiontag tag
+    INNER JOIN confreg_conferencesession_tags cst ON cst.conferencesessiontag_id=tag.id
+    WHERE cst.conferencesession_id=s.id
+) tags ON true
 LEFT JOIN LATERAL (
     SELECT json_agg(json_build_object(
        'id', spk.id,
@@ -2948,17 +2911,11 @@ LEFT JOIN LATERAL (
         comments
     FROM aggs
 ) votes ON true
-WHERE s.conference_id=%(confid)s AND
-      (COALESCE(s.track_id,0)=ANY(%(tracks)s)) AND
-      status=ANY(%(statuses)s)
-      {} {}
-ORDER BY {}s.title,s.id""".format(nonvotedquery, tagsquery, order), {
+WHERE s.conference_id=%(confid)s
+ORDER BY s.id""".format(), {
         'confid': conference.id,
         'userid': request.user.id,
         'username': request.user.username,
-        'tracks': selectedtracks,
-        'statuses': selectedstatuses,
-        'tags': selectedtags,
     })
 
     # If the user is only talkvoter at the conference, and not an administrator,
@@ -2974,6 +2931,27 @@ ORDER BY {}s.title,s.id""".format(nonvotedquery, tagsquery, order), {
     }
     options = [(x, options_text.get(x, str(x))) for x in range(-1, 10)]
 
+    # This belongs in the template, but django won't let us declare complex variables there
+    colcount = 7  # seq, id, title, speakers, companies, status, comments
+    filtercolumns = [
+        {'class': 'seq', 'title': 'Sequence', 'default': True},
+        {'class': 'id', 'title': 'Id', 'default': False},
+        {'class': 'spk', 'title': 'Speakers', 'default': True},
+        {'class': 'comp', 'title': 'Companies', 'default': False},
+        {'class': 'trk', 'title': 'Track', 'default': False},
+    ]
+    if conference.callforpaperstags:
+        filtercolumns.append({'class': 'tag', 'title': 'Tags', 'default': False})
+    filtercolumns.append({'class': 'votes', 'title': 'Votes', 'default': True})
+    if isadmin or conference.showvotes:
+        filtercolumns.append({'class': 'avg', 'title': 'Average', 'default': True})
+        # Add one column for average, and one for every user
+        colcount += 1 + len(allusers)
+    elif isvoter:
+        # Just add a column for this very user
+        colcount += 1
+    filtercolumns.append({'class': 'cmt', 'title': 'Comments', 'default': True})
+
     return render(request, 'confreg/sessionvotes.html', {
         'users': allusers,
         'sessionvotes': sessiondata,
@@ -2984,14 +2962,11 @@ ORDER BY {}s.title,s.id""".format(nonvotedquery, tagsquery, order), {
         'status_choices': STATUS_CHOICES,
         'tracks': alltracks,
         'tags': alltags,
-        'selectedtracks': selectedtracks,
-        'selectedtags': selectedtags,
-        'selectedstatuses': selectedstatuses,
-        'nonvoted': nonvoted,
         'valid_status_transitions': valid_status_transitions,
-        'urlfilter': urltrackfilter + urlstatusfilter + urltagfilter,
         'helplink': 'callforpapers',
         'options': options,
+        'filtercolumns': filtercolumns,
+        'colcount': colcount,
         'scoring_method': SCORING_METHOD_CHOICES[conference.scoring_method][1],
     })
 

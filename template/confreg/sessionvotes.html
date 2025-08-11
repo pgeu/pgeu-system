@@ -8,18 +8,10 @@
 {%asset "js" "jqueryui1" %}
 {%asset "js" "selectize" %}
 {%asset "css" "selectize" %}
+{%asset "css" "fontawesome4" %}
 
 <script type="text/javascript">
 $(function() {
-  $('.talkaccd').accordion({
-     'collapsible': true,
-     'active': false,
-     'heightStyle': 'content',
-     'animate': {
-        duration: 100,
-     },
-  });
-
   $('#dlgStatus').dialog({
      autoOpen: false,
      modal: true,
@@ -38,23 +30,150 @@ $(function() {
      }
   });
 
-  $('#selectTracks').selectize({
-      plugins: ['remove_button'],
-  });
-{%if conference.callforpaperstags%}
-  $('#selectTags').selectize({
-      plugins: ['remove_button'],
-  });
-{%endif%}
-  $('#selectStatuses').selectize({
-      plugins: ['remove_button'],
-  });
-
   $('#ajaxStatus').hide();
 
-  /* Initially hidden so it can render in peace without us watching */
-  $('#votetable').show();
+  document.querySelectorAll('h3:has(label.dropdown-checkbox').forEach((h) => {
+      h.addEventListener('click', (e) => {
+          e.target.getElementsByTagName('input')[0].checked ^= 1;
+      });
+  });
+
+  document.querySelectorAll('a.filteronly').forEach((a) => {
+      a.addEventListener('click', (e) => {
+          e.target.parentElement.querySelectorAll('input.filtercheck').forEach((c) => {
+              c.checked = c.nextElementSibling == e.target;
+          });
+          e.target.parentElement.querySelector('input.filterall').checked = false;
+          filter_sessions();
+      });
+  });
+
+  document.querySelectorAll('input.filterall').forEach((cb) => {
+      cb.addEventListener('change', (e) => {
+          if (e.target.checked) {
+              e.target.parentElement.querySelectorAll('input.filtercheck').forEach((c) => {
+                  c.checked = true;
+              });
+          } else {
+              e.target.checked = true;
+          }
+          filter_sessions();
+      });
+  });
+
+  document.querySelectorAll('input.filtercheck').forEach((cb) => {
+      cb.addEventListener('change', (e) => {
+          filter_sessions();
+
+          /* Update the "all" checkbox if needed */
+          const filterall = e.target.parentElement.querySelector('input.filterall');
+          if (filterall) {
+              if (e.target.parentElement.querySelectorAll('input.filtercheck:not(:checked)').length) {
+                  filterall.checked = false;
+              } else {
+                  filterall.checked = true;
+              }
+          }
+      });
+  });
+
+  document.querySelectorAll('a.sortheader').forEach((a) => {
+      a.addEventListener('click', (e) => {
+          /* re-sort based on this column */
+          let colnum = e.target.parentElement.cellIndex;
+          const numsort = e.target.classList.contains('sortnumber');
+          const table = document.getElementById('votetable');
+          let sortdirection = 1;
+
+          if (e.target.dataset.sorted) {
+              sortdirection = e.target.dataset.sorted * -1;
+          }
+
+          Array.from(table.tBodies).sort((a, b) => {
+              if (a.classList.contains('header'))
+                  return -1;
+              if (b.classList.contains('header'))
+                  return 1;
+              if (numsort) {
+                  return (a.rows[0].cells[colnum].textContent - b.rows[0].cells[colnum].textContent) * sortdirection;
+              }
+              /* Else case-insensitive alpha sort */
+              const ta = a.rows[0].cells[colnum].textContent.toUpperCase();
+              const tb = b.rows[0].cells[colnum].textContent.toUpperCase();
+              if (ta > tb)
+                  return 1 * sortdirection;
+              if (ta < tb)
+                  return -1 * sortdirection;
+              return 0;
+          }).forEach(tb => table.appendChild(tb));
+
+          table.querySelectorAll('a.sortheader').forEach((a) => {
+              a.dataset.sorted = (a == e.target) ? sortdirection : '';
+          });
+
+          /* Need this to update the sequence number properly */
+          filter_sessions();
+      });
+  });
+
+  filter_sessions();
 });
+
+function filter_sessions() {
+    /* Get all our statuses */
+    const statuses = [...document.querySelectorAll('input[type=checkbox].filtercheck_status:checked')].map((cb) => parseInt(cb.id.replace('st_', '')));
+    const tracks = [...document.querySelectorAll('input[type=checkbox].filtercheck_track:checked')].map((cb) => parseInt(cb.id.replace('t_', '')));
+    const tags = [...document.querySelectorAll('input[type=checkbox].filtercheck_tag:checked')].map((cb) => parseInt(cb.id.replace('tg_', '')));
+    const votedlimit = document.querySelector('input[type=checkbox]#vt_1:checked');
+
+    let seq = 1;
+    /* Recalculate visibility and sequence for all sessions */
+    [...document.querySelectorAll('table#votetable tr.sessionrow')].forEach((row) => {
+        /* Default is everything is visible, and then we remove */
+        let visible = true;
+
+        if (!statuses.includes(parseInt(row.dataset.status))) {
+            visible = false;
+        }
+
+        if (!tracks.includes(parseInt(row.dataset.track))) {
+            visible = false;
+        }
+
+        if (document.querySelector('input.filtercheck_tag')) {
+            if (row.dataset.tags) {
+                /* If *any* of the specified tags exist we're ok */
+                let found = false;
+                row.dataset.tags.split(",").map(t => parseInt(t)).forEach(t => {
+                    if (tags.includes(t)) {
+                        found = true;
+                    }
+                });
+                if (!found) {
+                    visible = false;
+                }
+            } else {
+                if (!tags.includes(0)) {
+                    visible = false;
+                }
+            }
+        }
+
+        if (votedlimit && row.querySelector('td[data-voted="yes"]')) {
+            visible = false;
+        }
+
+        row.style.display = visible ? "table-row" : "none";
+        document.getElementById('detailsrow_' + row.dataset.sid).style.display = visible ? "" : "none";
+
+        if (visible) {
+            row.querySelector('td').innerText = seq;
+            seq += 1;
+        } else {
+            row.querySelector('td').innerText = '';
+        }
+    });
+}
 
 function showDialog(id, title) {
    if ($('#popup_' + id).dialog('isOpen')) {
@@ -142,7 +261,8 @@ function castVote(sessionid) {
          'vote': val,
       },
       function(data) {
-           p.css('background-color', (val==0)?'red':'white');
+           p.attr('data-voted', (val==0)?"no":"yes");
+           p.css('background-color', '');
            avgbox.html(data);
       }
    ).fail(function() {
@@ -196,11 +316,6 @@ div.dlg {
   display: none;
 }
 
-div.filterButtonRow {
-  margin-top: 1em;
-  margin-bottom: 1.5em;
-}
-
 /* Override bootstrap to make full screen */
 .container {
 width: 100%;
@@ -213,47 +328,123 @@ ul.comments {
 ul.comments span.username {
     font-weight: bold;
 }
+
+label.dropdown-checkbox input[type=checkbox] {
+    display: none;
+}
+label.dropdown-checkbox input[type=checkbox] + span {
+    display: inline-block;
+    text-align: center;
+}
+label.dropdown-checkbox input[type=checkbox]:checked + span::after {
+    content: "\f0d7";
+    font-family: FontAwesome;
+}
+label.dropdown-checkbox input[type=checkbox]:not(:checked) + span::after {
+    content: "\f0da";
+    font-family: FontAwesome;
+}
+h3:has(label.dropdown-checkbox),
+label.dropdown-checkbox {
+    cursor: pointer;
+}
+
+td[data-voted="no"] {
+    background-color: red;
+}
+
+
+tr.detailsrow td {
+    text-align: center;
+}
+tr.detailsrow td div.detailscontent {
+    max-width: 800px;
+    text-align: left;
+    display: inline-block;
+}
+
+tr.detailsrow  {
+    display: none;
+}
+tr.headerrow:has(td label.dropdown-checkbox input[type=checkbox]:checked) + tr {
+    display: table-row;
+}
+
+{% for fc in filtercolumns %}
+tr.headerrow td.flt-{{fc.class}},
+tr.headerrow th.flt-{{fc.class}} {
+    display: none;
+}
+body:has(input#col_{{fc.class}}:checked) tr.headerrow td.flt-{{fc.class}},
+body:has(input#col_{{fc.class}}:checked) tr.headerrow th.flt-{{fc.class}} {
+   display: table-cell;
+}
+{% endfor%}
+
+tr.headerrow {
+    display: none;
+}
+tr.headerrow.tableheader {
+    display: table-row;
+}
+
+a.filteronly {
+    cursor: pointer;
+}
+
+a.sortheader {
+    cursor: pointer;
+}
+a.sortheader::after {
+    font-family: FontAwesome;
+}
+a.sortheader[data-sorted="1"]::after {
+    content: " \f160";
+}
+a.sortheader[data-sorted="-1"]::after {
+    content: " \f161";
+}
 </style>
 {%endblock%}
 {%block layoutblock%}
 <h1>Vote for sessions - {{conference}}</h1>
 
-<form method="get" style="margin-bottom: 10px">
+<fieldset>
+  <legend>Filter sessions</legend>
  <table role="presentation" border="0" width="100%" style="border-spacing: 2rem 0.3rem; border-collapse: separate;">
   <tr>
     <td style="width: 1px;">Track:</td>
-    <td><select id="selectTracks" name="tracks" multiple="multiple" style="inline-block; width=80%;">
-{%for t in tracks%}
-      <option value="{{t.id}}"{%if t.id in selectedtracks%} SELECTED{%endif%}>{{t.trackname}}</option>
-{%endfor%}
-    </select></td>
+    <td>
+      {% for t in tracks %}<input type="checkbox" class="filtercheck filtercheck_track" id="t_{{t.id}}" checked> {{t.trackname}} <a class="filteronly">[only]</a> {% endfor %}
+      <input type="checkbox" class="filterall" checked> All
+    </td>
   </tr>
 {%if conference.callforpaperstags %}
   <tr>
     <td>Tags:</td>
-    <td><select id="selectTags" name="tags" multiple="multiple" style="inline-block; width=80%;">
-{%for t in tags %}
-      <option value="{{t.id}}"{%if t.id in selectedtags%} SELECTED{%endif%}>{{t.tag}}</option>
-{%endfor%}
-    </select></td>
+    <td>
+      {% for t in tags %}<input type="checkbox" class="filtercheck filtercheck_tag" id="tg_{{t.id}}" checked> {{t.tag}} <a class="filteronly">[only]</a> {% endfor %}
+      <input type="checkbox" class="filterall" checked> All
+    </td>
   </tr>
 {%endif%}
   <tr>
     <td>Statuses:</td>
-    <td><select id="selectStatuses" name="statuses" multiple="multiple" style="inline-block; width=80%;">
-{%for sid,s in status_choices %}
-      <option value="{{sid}}"{%if sid in selectedstatuses%} SELECTED{%endif%}>{{s}}</option>
-{%endfor%}
-    </select></td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <input type="checkbox" name="nonvoted" value="1"{%if nonvoted %} CHECKED{%endif%}> Show only sessions you have not voted for
+    <td>
+      {% for sid, s in status_choices %}<input type="checkbox" class="filtercheck filtercheck_status" id="st_{{sid}}" checked> {{s}} <a class="filteronly">[only]</a> {% endfor %}
+      <input type="checkbox" class="filterall" checked> All
     </td>
   </tr>
+{% if isvoter %}
+  <tr>
+    <td>Voted:</td>
+    <td>
+      <input type="checkbox" class="filtercheck filtercheck_voted" id="vt_1"> Show only sessions you have not voted for
+    </td>
+  </tr>
+{% endif %}
   <tr>
     <td colspan="2">
-  <input type="submit" class="btn btn-default" value="Update">
   <a href="." class="btn btn-default">Reset</a>
 {%if isadmin%}
   <a href="../sessionnotifyqueue/" id="pendingNotificationsButton" class="btn btn-warning"{%if not conference.pending_session_notifications%} style="display:none;"{%endif%}>View and send pending notifications</a>
@@ -261,7 +452,7 @@ ul.comments span.username {
     </td>
   </tr>
  </table>
-</form>
+</fieldset>
 
 <div id="ajaxStatus" class="alert alert-success" style="position: fixed; width: 100%;opacity: .8; text-align: center; font-weight: bold; font-size: 1.2em;">Loading submissions</div>
 
@@ -269,70 +460,48 @@ ul.comments span.username {
 <div class="alert alert-warning">There are no talkvoters configured on this conference! List of talks will be empty!</div>
 {%endif%}
 
+<fieldset>
+  <legend>Vote on sessions</legend>
 <p><b>Scoring method:</b> {{ scoring_method }}</p>
+<p><b>Columns:</b> {% for fc in filtercolumns %}<input type="checkbox" id="col_{{fc.class}}"{%if fc.default%} checked{%endif%}> {{fc.title}} {% endfor %}
 
-<table id="votetable" class="table table-bordered table-condensed" style="display:none">
- <tr>
-  <th style="width: 1%">Seq</th>
-  <th class="col-md-6"><a href="?{{urlfilter}}sort=session">Session</a> | <a href="?{{urlfilter}}sort=speakers">Speakers</a></th>
-  <th>Status</th>
+<table id="votetable" class="table table-bordered table-condensed">
+ <tbody class="header">
+ <tr class="headerrow tableheader">
+  <th class="flt-seq" style="width: 1%">Seq</th>
+  <th class="flt-id" style="width: 1%"><a class="sortheader sortnumber">Id</a></th>
+  <th class="col-md-6"><a class="sortheader">Session</a></th>
+  <th class="flt-spk"><a class="sortheader">Speakers</a></th>
+  <th class="flt-comp"><a class="sortheader">Companies</a></th>
+  <th class="flt-trk"><a class="sortheader">Track</a></th>
+  <th class="flt-tag"><a class="sortheader">Tags</a></th>
+  <th><a class="sortheader">Status</a></th>
 
   {%for u in users%}
   {% if conference.showvotes or isadmin or u == user.username and isvoter %}
-  <th>{{u}}</th>
+  <th class="flt-votes">{%if u == user.username%}{{u}}{%else%}<a class="sortheader sortnumber">{{u}}{%endif%}</a></th>
   {% endif %}
   {%endfor%}
 
   {% if conference.showvotes or isadmin %}
-  <th><a href="?{{urlfilter}}sort=avg">Average</a></th>
+  <th class="flt-avg"><a class="sortheader sortnumber">Average</a></th>
   {% endif %}
 
-  <th>Comments</th>
+  <th class="flt-cmt">Comments</th>
  </tr>
+ </tbody>
 {%for s in sessionvotes%}
- <tr>
-   <td class="text-center">{{forloop.counter}}</td>
+ <tbody data-sid="{{s.id}}">
+ <tr class="headerrow sessionrow" data-sid="{{s.id}}" data-status="{{s.statusid}}" data-track="{{s.trackid|default:"0"}}"{% if conference.callforpaperstags %} data-tags="{{s.tags|join_dictkeys:"id,,"}}"{% endif %}>
+   <td class="flt-seq text-center">{{forloop.counter}}</td>
+   <td class="flt-id">{{s.id}}</td>
    <td>
-     <div class="talkaccd">
-       <h3>{{s.title}} ({{s.speakerdata|join_dictkeys:"fullname"}}) [id: {{s.id}}]</h3>
-       <div>
-{%if isadmin%}
-	 <a class="btn btn-default" style="float:right" href="/events/admin/{{conference.urlname}}/sessions/{{s.id}}/" target="_blank">Edit submission</a>
-{%endif%}
-	 <div><strong>Speakers:</strong> {%for sp in s.speakerdata%}{{sp.fullname}}{%if sp.company%} ({{sp.company}}){%endif%}{%if not forloop.last%}, {%endif%}{%endfor%}</div>
-	 <div><strong>Track:</strong> {{s.trackname|default:""}}</div>
-{%if conference.callforpaperstags%}
-   <div><strong>Tags:</strong> {%for t in s.tags%}<span class="label label-primary">{{t}}</span> {%endfor%}</div>
-{%endif%}
-{%if conference.callforpapersrecording%}
-	 <div><strong>Recording consent:</strong> {{s.recordingconsent | yesno:"Yes,No" }}</div>
-{%endif%}	 <br/>
-{{s.abstract|markdown}}
-{%if s.submissionnote%}
-	 <hr/>
-	 <h3>Submission notes</h3>
-	 <p>
-{{s.submissionnote}}
-	 </p>
-{%endif%}
-{%if s.internalnote%}
-	 <hr/>
-	 <h3>Internal notes</h3>
-	 <p>
-{{s.internalnote}}
-	 </p>
-{%endif%}
-	 <hr/>
-{%if s.speakerdata %}
-	 <h3>Speaker profile</h3>
-{%for sp in s.speakerdata %}
-	 <h4>{{sp.fullname}}{%if sp.company%} ({{sp.company}}){%endif%} [speaker id: {{sp.id}}]</h4>
-	   {{sp.abstract|markdown}}
-{%endfor%}
-{%endif%}
-       </div>
-     </div>
+     <h3><label class="dropdown-checkbox"><input type="checkbox" data-sid="{{s.id}}"><span></span></label> {{s.title}}</h3>
    </td>
+   <td class="flt-spk">{{s.speakerdata|join_dictkeys:"fullname"}}</td>
+   <td class="flt-comp">{{s.speakerdata|join_dictkeys:"company"}}</td>
+   <td class="flt-trk">{{s.trackname|default:""}}</td>
+   <td class="flt-tag">{{s.tags|join_dictkeys:"tag"}}</td>
    {%if isadmin%}
    <td{%if s.speakerdata and not s.statusid == s.laststatusid %} bgcolor="yellow"{%endif%} onClick="changeStatus({{s.id}})" class="dlgClickable" id="statusstr{{s.id}}" data-currstatus="{{s.statusid}}"><a href="#" onclick="return false;">{{s.status}}</a></td>
 {%else%}
@@ -341,7 +510,7 @@ ul.comments span.username {
 
   {%for u in users%}
    {%if u == user.username%}
-      <td{%if s.votes|dictlookup:u is None %} style="background-color:red"{%endif%}>
+      <td class="flt-votes" data-voted="{%if s.votes|dictlookup:u is None %}no{%else%}yes{%endif%}">
         <select id="sv_{{s.id}}" onChange="castVote({{s.id}})">
           {%for val, opt in options%}
             <option value="{{val}}"{%if val == s.votes|dictlookup:u|default_if_none:0%} SELECTED{%endif%}>{{opt}}</option>
@@ -350,16 +519,16 @@ ul.comments span.username {
       </td>
     {%else%}
       {% if conference.showvotes or isadmin %}
-        <td>{%if s.votes|dictlookup:u == -1%}Abstain{%else%}{{s.votes|dictlookup:u|default_if_none:''}}{%endif%}</td>
+        <td class="flt-votes">{%if s.votes|dictlookup:u == -1%}Abstain{%else%}{{s.votes|dictlookup:u|default_if_none:''}}{%endif%}</td>
       {%endif%}
     {%endif%}
   {%endfor%}
 
   {% if conference.showvotes or isadmin %}
-  <td class="avgbox">{{s.avg|default_if_none:''}}</td>
+  <td class="avgbox flt-avg">{{s.avg|default_if_none:''}}</td>
   {% endif %}
 
-   <td>
+   <td class="flt-cmt">
 {%if isvoter%}
      <div style="margin-right: 0.5em; float:left;">
        <a class="btn btn-default btn-xs" href="javascript:editComment({{s.id}})"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a>
@@ -374,8 +543,51 @@ ul.comments span.username {
      </div>
    </td>
  </tr>
+ <tr class="detailsrow" data-sid="{{s.id}}" id="detailsrow_{{s.id}}">
+   <td colspan="{{colcount}}">
+     <div class="detailscontent">
+{%if isadmin%}
+       <a class="btn btn-default" style="float:right" href="/events/admin/{{conference.urlname}}/sessions/{{s.id}}/" target="_blank">Edit submission</a>
+{%endif%}
+       <div><strong>Speakers:</strong> {%for sp in s.speakerdata%}{{sp.fullname}}{%if sp.company%} ({{sp.company}}){%endif%}{%if not forloop.last%}, {%endif%}{%endfor%}</div>
+       <div><strong>Track:</strong> {{s.trackname|default:""}}</div>
+{%if conference.callforpaperstags%}
+       <div><strong>Tags:</strong> {%for t in s.tags%}<span class="label label-primary">{{t.tag}}</span> {%endfor%}</div>
+{%endif%}
+{%if conference.callforpapersrecording%}
+       <div><strong>Recording consent:</strong> {{s.recordingconsent | yesno:"Yes,No" }}</div>
+{%endif%}	 <br/>
+{{s.abstract|markdown}}
+{%if s.submissionnote%}
+	     <hr/>
+	     <h3>Submission notes</h3>
+       <p>
+{{s.submissionnote}}
+	     </p>
+{%endif%}
+{%if s.internalnote%}
+	     <hr/>
+	     <h3>Internal notes</h3>
+       <p>
+{{s.internalnote}}
+	     </p>
+{%endif%}
+	     <hr/>
+{%if s.speakerdata %}
+	     <h3>Speaker profile</h3>
+{%for sp in s.speakerdata %}
+	     <h4>{{sp.fullname}}{%if sp.company%} ({{sp.company}}){%endif%} [speaker id: {{sp.id}}]</h4>
+	     {{sp.abstract|markdown}}
+{%endfor%}
+{%endif%}
+    </div>
+   </td>
+ </tr>
+</tbody>
 {%endfor%}
 </table>
+
+</fieldset>
 
 <div id="dlgStatus">
 </div>
