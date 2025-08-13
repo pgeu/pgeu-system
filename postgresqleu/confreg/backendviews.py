@@ -993,9 +993,9 @@ def sessiondata(conference, writer):
     writer.columns(header)
     writer.grouping = False
     for s in sessions:
-        speaker_names = ",".join(filter(lambda v: v != "", map((lambda spk: spk.name), s.speaker.all())))
-        speaker_emails = ",".join(filter(lambda v: v != "", map((lambda spk: spk.email), s.speaker.all())))
-        speaker_companies = ",".join(filter(lambda v: v != "", map((lambda spk: spk.company), s.speaker.all())))
+        speaker_names = ",".join(filter(lambda v: v != "", map((lambda spk: "" if spk.name is None else spk.name), s.speaker.all())))
+        speaker_emails = ",".join(filter(lambda v: v != "", map((lambda spk: "" if spk.email is None else spk.email), s.speaker.all())))
+        speaker_companies = ",".join(filter(lambda v: v != "", map((lambda spk: "" if spk.company is None else spk.company), s.speaker.all())))
         row = [
             s.id,
             s.title,
