@@ -316,6 +316,9 @@
 {%if reg.regtype and reg.can_edit and not reg.payconfirmedat %}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/confirm/">Confirm registration</a>
 {%endif%}
+{%if reg.payconfirmedat and not reg.canceledat %}
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/transfer?fromid={{reg.id}}">Transfer registration</a>
+{%endif%}
 {%if conference.tickets%}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/ticket/">Preview ticket</a>
 {%endif%}

@@ -4536,8 +4536,16 @@ def transfer_reg(request, urlname):
 
     steps = None
     stephash = None
+
+    if request.method == 'GET' and 'fromid' in request.GET:
+        initial = {
+            'transfer_from': get_int_or_error(request.GET, 'fromid'),
+        }
+    else:
+        initial = {}
+
     if request.method == 'POST':
-        form = TransferRegForm(conference, data=request.POST)
+        form = TransferRegForm(conference, data=request.POST, initial=initial)
         if form.is_valid():
             savepoint = transaction.savepoint()
 
@@ -4631,7 +4639,7 @@ def transfer_reg(request, urlname):
 
             # Fall through!
     else:
-        form = TransferRegForm(conference)
+        form = TransferRegForm(conference, initial=initial)
 
     return render(request, 'confreg/admin_transfer.html', {
         'conference': conference,
