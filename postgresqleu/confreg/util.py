@@ -22,6 +22,7 @@ from postgresqleu.confreg.jinjafunc import JINJA_TEMPLATE_ROOT, render_jinja_con
 from postgresqleu.confreg.jinjapdf import render_jinja_ticket
 from postgresqleu.invoices.models import InvoiceHistory
 
+from .regtypes import validate_special_reg_type
 from .models import PrepaidVoucher, DiscountCode, RegistrationWaitlistHistory
 from .models import ConferenceRegistration, Conference, ConferenceSeries
 from .models import AttendeeMail
