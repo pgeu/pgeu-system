@@ -940,6 +940,13 @@ class TransferRegForm(forms.Form):
             del self.fields['invoice_name']
             del self.fields['invoice_email']
             del self.fields['invoice_address']
+        else:
+            # For invoice recipient, we list only the selected one if there is one (but all users are valid)
+            if 'data' in kwargs and 'invoice_recipient' in kwargs['data']:
+                val = kwargs['data'].get('invoice_recipient') or None
+            else:
+                val = None
+            self.fields['invoice_recipient'].queryset = User.objects.filter(pk=val)
 
     def remove_confirm(self):
         del self.fields['confirm']

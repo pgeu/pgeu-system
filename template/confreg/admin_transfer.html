@@ -47,7 +47,26 @@ async function copyAddressFrom(type, field) {
 }
 
 $(function() {
-   $('#id_transfer_from, #id_transfer_to, #id_invoice_recipient').selectize({plugins: ['remove_button']});
+   $('#id_transfer_from, #id_transfer_to').selectize({plugins: ['remove_button']});
+   $('#id_invoice_recipient').selectize({
+       plugins: ['remove_button'],
+       valueField: 'id',
+       labelField: 'value',
+       searchField: 'value',
+       load: function(query, callback) {
+           if (!query.length) return callback();
+           $.ajax({
+               'url': '/events/admin/lookups/accounts/',
+               'type': 'GET',
+               'dataType': 'json',
+               'data': {
+                   'query': query,
+               },
+               'error': function() { callback();},
+               'success': function(res) { callback(res.values);},
+           });
+       }
+   });
 
    if (document.getElementById('id_invoice_address')) {
        document.getElementById('id_invoice_address').after(document.getElementById('copyoptions'));
