@@ -1,3 +1,4 @@
+import io
 from django.shortcuts import render, get_object_or_404
 from django.db import transaction, connection
 from django.db.models import Count
@@ -984,6 +985,13 @@ ORDER BY name""", {'confid': conference.id})
     return writer.response
 
 
+def csvembed(iter):
+    f = io.StringIO()
+    writer = csv.writer(f, lineterminator='', delimiter=';')
+    writer.writerow(iter)
+    return f.getvalue()
+
+
 def sessiondata(conference, writer):
     result = []
     status_filter = []
@@ -993,9 +1001,9 @@ def sessiondata(conference, writer):
     writer.columns(header)
     writer.grouping = False
     for s in sessions:
-        speaker_names = ",".join(filter(lambda v: v != "", map((lambda spk: "" if spk.name is None else spk.name), s.speaker.all())))
-        speaker_emails = ",".join(filter(lambda v: v != "", map((lambda spk: "" if spk.email is None else spk.email), s.speaker.all())))
-        speaker_companies = ",".join(filter(lambda v: v != "", map((lambda spk: "" if spk.company is None else spk.company), s.speaker.all())))
+        speaker_names = csvembed(map(lambda spk: spk.name, s.speaker.all()))
+        speaker_emails = csvembed(map(lambda spk: spk.email, s.speaker.all()))
+        speaker_companies = csvembed(map(lambda spk: spk.company, s.speaker.all()))
         row = [
             s.id,
             s.title,
