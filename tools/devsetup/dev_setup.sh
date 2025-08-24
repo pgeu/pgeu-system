@@ -33,8 +33,11 @@ EOF
 chmod +x ../../python
 ../../python -m pip install -r dev_requirements.txt
 
-cd ../..
-cat > postgresqleu/local_settings.py <<EOF
+# Configure the test instance. This is done through the traditional
+# approach with local_settings.py here. An alternative would be to
+# write the very same content to
+# venv_dev/lib/python3.11/site-packages/pgeu_system_global_settings.py
+cat > ../../postgresqleu/local_settings.py <<EOF
 DEBUG=True
 DISABLE_HTTPS_REDIRECTS=True
 DATABASES={
@@ -53,6 +56,8 @@ CSRF_COOKIE_SECURE=False
 SITEBASE="http://localhost:8012/"
 EOF
 
+# Switch back to the top level directory and initialize the database.
+cd ../..
 ./python manage.py migrate
 
 cat tools/devsetup/devserver-uwsgi.ini.tmpl | sed -e "s#%DJANGO%#$(pwd)/tools/devsetup/venv_dev#g" > devserver-uwsgi.ini
