@@ -257,8 +257,7 @@ This module requires the Python module `braintree` to be installed.
 #### Stripe Creditcard
 
 This method uses the Stripe creditcard system. This uses the Stripe
-"Checkout" system, which uses a mix of server-side code and hosted
-javascript, with the actual payment form entirely hosted by Stripe.
+"Checkout" system. This uses hosted payment forms at Stripe.
 
 #### Trustly Banktransfer
 

@@ -43,8 +43,12 @@ def invoicepayment_secret(request, paymentmethod, invoiceid, secret):
             # user has multiple tabs open.
             return HttpResponseRedirect("/invoices/{0}/{1}/".format(invoice.id, invoice.recipient_secret))
 
-        # Else session exists but is not completed, so send it through back to Stripe
-        # again.
+        # Else session exists but is not completed, so fetch the session and send the user
+        # back to Stripe.
+        StripeLog(message="Re-fetching session {0} (id {1}) for another try.".format(co.id, co.sessionid),
+                  paymentmethod=method).save()
+        r = api.secret('checkout/sessions/{}'.format(co.sessionid))
+        sessionurl = r.json()['url']
     except StripeCheckout.DoesNotExist:
         # Create a new checkout session
         co = StripeCheckout(createdat=timezone.now(),
@@ -76,14 +80,12 @@ def invoicepayment_secret(request, paymentmethod, invoiceid, secret):
             return HttpResponse("Unable to create Stripe payment session: {}".format(r.status_code))
         j = r.json()
         co.sessionid = j['id']
+        sessionurl = j['url']
         co.paymentintent = j['payment_intent']
         co.save()
 
-    return render(request, 'stripepayment/payment.html', {
-        'invoice': invoice,
-        'stripekey': pm.config('published_key'),
-        'sessionid': co.sessionid,
-    })
+    # Redirect to the stripe payment URL
+    return HttpResponseRedirect(sessionurl)
 
 
 def invoicepayment_results(request, paymentmethod, invoiceid, secret):
