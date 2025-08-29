@@ -4,6 +4,7 @@ from django.core.signing import Signer, BadSignature
 from django.contrib.postgres.fields import ArrayField
 from django.forms.widgets import FILE_INPUT_CONTRADICTION
 from django.forms.fields import CallableChoiceIterator
+import django.db.models.base
 
 import pickle
 import base64
@@ -22,13 +23,24 @@ class ConcurrentProtectedModelForm(forms.ModelForm):
     _validator = _ValidatorField()
     exclude_fields_from_validation = []
 
-    def _filter_initial(self):
+    def _reduce_initial(self):
         # self.initial will include things given in the URL after ?, so filter it to
         # only include items that are actually form fields.
-        return {k: v for k, v in list(self.initial.items()) if k in list(self.fields.keys()) and k not in self.exclude_fields_from_validation}
+        # Then reduce to be the id value for referenced objects instead of the full object
+        for k, v in self.initial.items():
+            if k in self.fields and k not in self.exclude_fields_from_validation:
+                if isinstance(v, list):
+                    yield k, [self._reduce_single(vv) for vv in v]
+                else:
+                    yield k, self._reduce_single(v)
+
+    def _reduce_single(self, v):
+        if isinstance(v, django.db.models.base.Model):
+            return v.pk
+        return v
 
     def update_protected_fields(self):
-        self.fields['_validator'].initial = Signer().sign(base64.urlsafe_b64encode(pickle.dumps(self._filter_initial(), -1)).decode('ascii'))
+        self.fields['_validator'].initial = Signer().sign(base64.urlsafe_b64encode(pickle.dumps(dict(self._reduce_initial()), -1)).decode('ascii'))
 
     def __init__(self, *args, **kwargs):
         r = super(ConcurrentProtectedModelForm, self).__init__(*args, **kwargs)
@@ -45,7 +57,7 @@ class ConcurrentProtectedModelForm(forms.ModelForm):
             return data
 
         # Fetch the list of values from the currernt object in the db
-        i = self._filter_initial()
+        i = dict(self._reduce_initial())
         try:
             s = Signer().unsign(self.cleaned_data['_validator'])
             b = base64.urlsafe_b64decode(s.encode('utf8'))
