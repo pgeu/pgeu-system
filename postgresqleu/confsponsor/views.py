@@ -1108,7 +1108,8 @@ def _unclaim_benefit(request, claimed_benefit):
         # itself.
         if claimed_benefit.confirmed:
             benefitclass.process_unclaim(claimed_benefit)
-        claimed_benefit.delete()
+        benefitclass.delete_claimed_benefit(claimed_benefit)
+
         # If this was a multiclaim we will need to renumber the existing ones
         exec_no_result("WITH  t AS (SELECT id, row_number() OVER (ORDER BY claimnum) AS r FROM confsponsor_sponsorclaimedbenefit WHERE benefit_id=%(bid)s) UPDATE confsponsor_sponsorclaimedbenefit SET claimnum=r FROM t WHERE confsponsor_sponsorclaimedbenefit.id=t.id", {
             'bid': benefit.pk,

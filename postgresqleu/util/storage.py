@@ -47,6 +47,13 @@ class InlineEncodedStorage(object):
             'id': name,
         })
 
+    def delete(self, name):
+        curs = connection.cursor()
+        curs.execute("DELETE FROM util_storage WHERE key=%(key)s AND storageid=%(id)s", {
+            'key': self.key,
+            'id': name,
+        })
+
 
 def inlineencoded_upload_path(instance, filename):
     # Needs to exist for old migrations, but *NOT* in use

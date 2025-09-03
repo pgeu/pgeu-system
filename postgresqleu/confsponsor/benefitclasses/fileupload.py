@@ -151,3 +151,7 @@ class FileUpload(BaseBenefit):
         resp['ETag'] = '"{}"'.format(hashval)
         resp.write(data)
         return resp
+
+    def delete_claimed_benefit(self, claim):
+        InlineEncodedStorage('benefit_file').delete(claim.id)
+        super().delete_claimed_benefit(claim)

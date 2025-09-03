@@ -40,6 +40,9 @@ class BaseBenefit(object):
     def process_unclaim(self, claim):
         pass
 
+    def delete_claimed_benefit(self, claim):
+        claim.delete()
+
     def validate_parameters(self):
         pass
 
