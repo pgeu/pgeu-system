@@ -28,6 +28,7 @@ urlpatterns = [
     re_path(r'^shipments/([a-z0-9]+)/$', views.sponsor_shipment_receiver),
     re_path(r'^shipments/([a-z0-9]+)/(\d+)/$', views.sponsor_shipment_receiver_shipment),
     re_path(r'^admin/imageview/(\d+)/$', views.sponsor_admin_imageview),
+    re_path(r'^admin/downloadfile/(\d+)/$', views.sponsor_admin_downloadfile),
     re_path(r'^admin/(\w+)/$', views.sponsor_admin_dashboard),
     re_path(r'^admin/(\w+)/(\d+)/$', views.sponsor_admin_sponsor),
     re_path(r'^admin/(\w+)/(\d+)/edit/$', backendviews.edit_sponsor),

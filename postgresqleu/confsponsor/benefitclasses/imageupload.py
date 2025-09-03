@@ -164,7 +164,7 @@ class ImageUpload(BaseBenefit):
         }
 
     def get_claimfile(self, claimedbenefit):
-        hashval, data = InlineEncodedStorage('benefit_image').read(claimedbenefit.id)
+        hashval, data, metadata = InlineEncodedStorage('benefit_image').read(claimedbenefit.id)
         if hashval is None and data is None:
             raise Http404()
         resp = HttpResponse(content_type='image/png')

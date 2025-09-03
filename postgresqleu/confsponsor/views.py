@@ -1442,7 +1442,7 @@ def sponsor_admin_view_mail(request, confurlname, mailid):
 
 
 @login_required
-def sponsor_admin_imageview(request, benefitid):
+def _sponsor_admin_imageorfile(request, benefitid, what, finalizer):
     # Image is fetched as part of a benefit, so find the benefit
 
     benefit = get_object_or_404(SponsorClaimedBenefit, id=benefitid)
@@ -1456,7 +1456,7 @@ def sponsor_admin_imageview(request, benefitid):
 
     # If the benefit existed, we have verified the permissions, so we can now show
     # the image itself.
-    storage = InlineEncodedStorage('benefit_image')
+    storage = InlineEncodedStorage(what)
 
     # If there is an if-none-match header, it's almost certain this will be a 304 since
     # these files never change. So if it is, query just for the hash - and in the unlikely
@@ -1469,13 +1469,29 @@ def sponsor_admin_imageview(request, benefitid):
             return HttpResponseNotModified()
 
     # XXX: do we need to support non-png at some point? store info in claimdata!
-    hashval, data = storage.read(benefit.id)
+    hashval, data, metadata = storage.read(benefit.id)
     if hashval is None and data is None:
         raise Http404()
-    resp = HttpResponse(content_type='image/png')
+    resp = HttpResponse()
     resp['ETag'] = '"{}"'.format(hashval)
+    finalizer(resp, metadata)
     resp.write(data)
     return resp
+
+
+@login_required
+def sponsor_admin_imageview(request, benefitid):
+    def _finalize(response, metadata):
+        response['Content-Type'] = 'image/png'
+    return _sponsor_admin_imageorfile(request, benefitid, 'benefit_image', _finalize)
+
+
+@login_required
+def sponsor_admin_downloadfile(request, benefitid):
+    def _finalize(response, metadata):
+        response['Content-Type'] = 'application/octet-stream'
+        response['Content-Disposition'] = 'attachment; filename={}'.format(metadata['filename'])
+    return _sponsor_admin_imageorfile(request, benefitid, 'benefit_file', _finalize)
 
 
 def _claimstatus(claim):

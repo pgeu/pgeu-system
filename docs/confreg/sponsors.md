@@ -201,6 +201,12 @@ Submit session
    flagged as approved (but not put on the schedule since it has no start
    and end time yet).
 
+Upload file
+:  This benefit class allow uploading of a generic file (unlike the image one
+   which is specific to images). It can only validate the MIME type of the
+   file being uploaded and the size of the file, all further vaildation past
+   that must be done manually.
+
 ## Shipments
 
 A shipment tracking system is built into the sponsorship system. It

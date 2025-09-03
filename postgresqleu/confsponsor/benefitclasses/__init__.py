@@ -8,6 +8,7 @@ all_benefits = {
     5: {"class": "attendeelist.AttendeeList", "description": "List of attendee email addresses"},
     6: {"class": "badgescanning.BadgeScanning", "description": "Scanning of attendee badges"},
     7: {"class": "sponsorsession.SponsorSession", "description": "Submit session"},
+    8: {"class": "fileupload.FileUpload", "description": 'Upload file'},
 }
 
 

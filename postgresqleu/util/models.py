@@ -7,6 +7,7 @@ class Storage(models.Model):
     storageid = models.IntegerField(null=False, blank=False)
     data = models.BinaryField(null=False, blank=False)
     hashval = models.BinaryField(null=False, blank=False)
+    metadata = models.JSONField(null=False, blank=False, default=dict)
 
     class Meta:
         unique_together = (
