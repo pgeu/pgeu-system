@@ -193,7 +193,7 @@ class TransferwiseApi(object):
                         'paymentref': reference,
                         'fulldescription': fulldescription,
                     }
-                elif activity['type'] == 'BALANCE_CASHBACK':
+                elif activity['type'] in ('BALANCE_CASHBACK', 'CARD_CASHBACK'):
                     # No API endpoint to get this so we have to parse it out of
                     # a ridiculously formatted field.
 
@@ -203,13 +203,13 @@ class TransferwiseApi(object):
                         continue
 
                     yield {
-                        'id': 'BALANCE_CASHBACK-{}'.format(activity['resource']['id']),
+                        'id': '{}-{}'.format(activity['type'], activity['resource']['id']),
                         'datetime': activity['updatedOn'],
                         'amount': parsed_amount,
                         'feeamount': 0,
-                        'transtype': 'BALANCE_CASHBACK',
+                        'transtype': activity['type'],
                         'paymentref': '',
-                        'fulldescription': 'Balance Cashback',
+                        'fulldescription': activity['type'].title().replace('_', ' '),
                     }
                 elif activity['type'] == 'CARD_PAYMENT':
                     # For card payments, normal tokens appear not to have permissions
