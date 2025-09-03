@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.conf import settings
 
 import csv
+import io
 import json
 from collections import OrderedDict
 
@@ -25,7 +26,7 @@ from .jinjafunc import JINJA_TEMPLATE_ROOT
 from .jinjapdf import render_jinja_ticket, render_jinja_badges
 from .util import send_conference_mail, get_conference_or_404, send_conference_notification
 
-from .models import Conference, ConferenceSeries
+from .models import Conference, ConferenceSeries, ConferenceSession
 from .models import ConferenceRegistration
 from .models import Speaker
 from .models import PrepaidBatch
@@ -976,10 +977,51 @@ ORDER BY name""", {'confid': conference.id})
             return sponsorclaimsfile(conference, subrequest.lstrip('/'))
         else:
             return _structured_tokendata(sponsorclaimsdata(conference), dataformat)
+    elif datatype == 'sessions':
+        sessiondata(conference, writer)
     else:
         raise Http404()
 
     return writer.response
+
+
+def csvembed(iter):
+    f = io.StringIO()
+    writer = csv.writer(f, lineterminator='', delimiter=';')
+    writer.writerow(iter)
+    return f.getvalue()
+
+
+def sessiondata(conference, writer):
+    result = []
+    status_filter = []
+    sessions = ConferenceSession.objects.filter(conference=conference)
+    header = ['id', 'title', 'shorttitle', 'abstract', 'status', 'speaker', 'company',
+              'email', 'track', 'starttime', 'endtime', 'recordingconsent', 'room', 'submissionnote']
+    writer.columns(header)
+    writer.grouping = False
+    for s in sessions:
+        speaker_names = csvembed(map(lambda spk: spk.name, s.speaker.all()))
+        speaker_emails = csvembed(map(lambda spk: spk.email, s.speaker.all()))
+        speaker_companies = csvembed(map(lambda spk: spk.company, s.speaker.all()))
+        row = [
+            s.id,
+            s.title,
+            s.shorttitle,
+            s.abstract,
+            s.status_string,
+            speaker_names,
+            speaker_companies,
+            speaker_emails,
+            None if s.track is None else s.track.trackname,
+            s.starttime,
+            s.endtime,
+            s.recordingconsent,
+            None if s.room is None else s.room.roomname,
+            s.submissionnote,
+        ]
+        result.append(row)
+    writer.write_rows(result)
 
 
 def registration_dashboard_send_email(request, urlname):

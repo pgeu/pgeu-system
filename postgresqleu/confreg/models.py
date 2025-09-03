@@ -1556,6 +1556,7 @@ AccessTokenPermissions = (
     ('schedule', 'Schedule JSON'),
     ('sponsorlevels', 'Sponsor level metadata'),
     ('sponsorclaims', 'Sponsor claimed benefits'),
+    ('sessions', 'Sessions')
 )
 
 
