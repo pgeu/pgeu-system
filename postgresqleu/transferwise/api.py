@@ -362,7 +362,7 @@ has been initiated. Unfortunately, it can not be completed
 through the API due to restrictions at TransferWise, so you need to
 log into the account and confirm it manually.
 
-OPlease do so as soon as possible.
+Please do so as soon as possible.
 """.format(amount, reference))
 
         return (accid, quoteid, transferid)
