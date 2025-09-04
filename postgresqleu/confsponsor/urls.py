@@ -43,6 +43,7 @@ urlpatterns = [
     re_path(r'^admin/(\w+)/viewmail/(\d+)/$', views.sponsor_admin_view_mail),
     re_path(r'^admin/(\w+)/testvat/$', views.sponsor_admin_test_vat),
     re_path(r'^admin/(\w+)/benefitreports/$', views.sponsor_admin_benefit_reports),
+    re_path(r'^admin/(\w+)/benefitdownload/(image|file)/$', views.sponsor_admin_benefit_downloads),
     re_path(r'^admin/(\w+)/levels/(.*/)?$', backendviews.edit_sponsorship_levels),
     re_path(r'^admin/(\w+)/contracts/(\d+)/editfields/$', backendviews.edit_sponsorship_contract_fields),
     re_path(r'^admin/(\w+)/contracts/(\d+)/previewfields/$', backendviews.preview_sponsorship_contract_fields),

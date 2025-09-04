@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden, Http404
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden, Http404, StreamingHttpResponse
 from django.http import HttpResponseNotModified
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
@@ -24,11 +24,12 @@ from postgresqleu.confreg.util import get_authenticated_conference, get_conferen
 from postgresqleu.confreg.util import send_conference_mail
 from postgresqleu.confreg.twitter import post_conference_social, render_multiprovider_tweet
 from postgresqleu.confreg.twitter import get_all_conference_social_media
-from postgresqleu.util.db import exec_no_result
+from postgresqleu.util.db import exec_no_result, exec_to_list, exec_to_keyed_scalar, ensure_conference_timezone
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.request import get_int_or_error
 from postgresqleu.util.time import today_global
+from postgresqleu.util.tar import generate_streaming_tar
 from postgresqleu.invoices.util import InvoiceWrapper, InvoiceManager
 from postgresqleu.digisign.pdfutil import fill_pdf_fields, pdf_watermark_preview
 from postgresqleu.digisign.models import DigisignDocument, DigisignLog
@@ -1035,6 +1036,16 @@ ORDER BY l.levelcost DESC, l.levelname, s.name, b.sortkey, b.benefitname""", {'c
     else:
         shipments = None
 
+    has_downloads = exec_to_keyed_scalar("""SELECT DISTINCT
+CASE WHEN benefit_class=1 THEN 'image' ELSE 'file' END, true
+FROM confsponsor_sponsorclaimedbenefit cb
+INNER JOIN confsponsor_sponsorshipbenefit b ON b.id=cb.benefit_id
+INNER JOIN confsponsor_sponsorshiplevel l ON l.id=b.level_id
+WHERE l.conference_id=%(confid)s AND benefit_class IN (1,8) AND NOT declined""",
+                                         {
+                                             'confid': conference.id,
+                                         })
+
     return render(request, 'confsponsor/admin_dashboard.html', {
         'conference': conference,
         'confirmed_sponsors': confirmed_sponsors,
@@ -1045,6 +1056,7 @@ ORDER BY l.levelcost DESC, l.levelname, s.name, b.sortkey, b.benefitname""", {'c
         'has_shipment_tracking': has_shipment_tracking,
         'shipments': shipments,
         'additionalcontracts': SponsorAdditionalContract.objects.select_related('sponsor').filter(sponsor__conference=conference).order_by('id'),
+        'downloads': has_downloads,
         'helplink': 'sponsors',
         })
 
@@ -1557,6 +1569,55 @@ def sponsor_admin_benefit_reports(request, confurlname):
             'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
             'helplink': 'sponsors',
         })
+
+
+@login_required
+def sponsor_admin_benefit_downloads(request, confurlname, downloadtype):
+    conference = get_authenticated_conference(request, confurlname)
+
+    benefitclass = 1 if downloadtype == 'image' else 8
+
+    with ensure_conference_timezone(conference):
+        downloads = exec_to_list("""SELECT s.name, b.benefitname, cb.id, EXTRACT(epoch FROM cb.claimedat), count(*) OVER w, row_number() OVER w
+FROM confsponsor_sponsorclaimedbenefit cb
+INNER JOIN confsponsor_sponsorshipbenefit b ON b.id=cb.benefit_id
+INNER JOIN confsponsor_sponsorshiplevel l ON l.id=b.level_id
+INNER JOIN confsponsor_sponsor s ON s.id=cb.sponsor_id
+WHERE l.conference_id=%(confid)s AND benefit_class = %(class)s AND NOT declined
+WINDOW w AS (PARTITION BY b.benefitname, s.name ORDER BY b.benefitname, s.name)
+ORDER BY b.benefitname, s.name""",
+                                 {
+                                     'confid': conference.id,
+                                     'class': benefitclass,
+                                 })
+
+    def _generate_tar():
+        for benefitname, sponsorname, storageid, claimtime, benefitcount, benefitnum in downloads:
+            data, datalen, metadata = exec_to_list("SELECT data, length(data), metadata FROM util_storage WHERE key=%(key)s AND storageid=%(id)s", {
+                'key': 'benefit_{}'.format(downloadtype),
+                'id': storageid,
+            })[0]
+            if downloadtype == 'image':
+                if benefitcount == 1:
+                    filename = '{}/{}.png'.format(slugify(benefitname), slugify(sponsorname))
+                else:
+                    filename = '{}/{}_{}.png'.format(slugify(benefitname), slugify(sponsorname), benefitnum)
+            else:
+                if benefitcount == 1:
+                    filename = '{}/{}/{}'.format(slugify(benefitname), slugify(sponsorname), metadata['filename'])
+                else:
+                    filename = '{}/{}/{}/{}'.format(slugify(benefitname), slugify(sponsorname), benefitnum, metadata['filename'])
+            yield (
+                filename,
+                claimtime,
+                data,
+                datalen,
+            )
+
+    resp = StreamingHttpResponse(generate_streaming_tar(_generate_tar))
+    resp['Content-Type'] = 'application/tar+gzip'
+    resp['Content-Disposition'] = 'attachment; filename={}.tar.gz'.format(downloadtype)
+    return resp
 
 
 @superuser_required
