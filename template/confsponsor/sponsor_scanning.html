@@ -76,10 +76,14 @@
 {%endblock%}
 {%block pagescript%}
 <script language="javascript">
-$(document).ready(function() {
-   $('.confirm-btn').on("click", function(e) {
-      return confirm("Are you sure you want to delete this scan?\nThere is no way to undo!");
-   });
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.confirm-btn').forEach((b) => {
+        b.addEventListener('click', (e) => {
+            if (!confirm("Are you sure you want to delete this scan?\nThere is no way to undo!")) {
+                e.preventDefault();
+            }
+        });
+    });
 });
 </script>
 {%endblock%}
