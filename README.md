@@ -55,4 +55,7 @@ working on new features, please reach out to us first and discuss your feature
 idea.  Once a feature has been discussed and the general concept agreed to, a
 feature issue can be opened to work on the details of the implementation.
 
+For practical details and guides for developing the pgeu-system, please consult
+the file [tools/devsetup/README.txt](tools/devsetup/README.txt)
+
 The mailing list for discussing pgeu-system is <pgeu-system@lists.postgresql.eu>.
