@@ -258,6 +258,7 @@ def _json_response(reg, status, existingnote='', message=''):
             'email': reg.email,
             'note': existingnote,
             'token': reg.publictoken,
+            'highlight': [],
         },
         'message': message,
         'showfields': False,
