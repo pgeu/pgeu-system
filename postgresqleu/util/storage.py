@@ -34,7 +34,7 @@ class InlineEncodedStorage(object):
             'key': self.key,
             'id': name,
             'data': content.read(),
-            'metadata': json.dumps(metadata) if metadata else None,
+            'metadata': json.dumps(metadata if metadata else {}),
             }
         curs.execute("UPDATE util_storage SET data=%(data)s, metadata=%(metadata)s WHERE key=%(key)s AND storageid=%(id)s", params)
         if curs.rowcount == 0:
