@@ -5,7 +5,7 @@ example:
 docker build -t deploystatic .
 
 
-And then to use it:
+To use this container to deploy to a static directory, use:
 
 docker run -it --rm -v `pwd`:/source -v /tmp/statictest:/target deploystatic
 
@@ -13,3 +13,12 @@ docker run -it --rm -v `pwd`:/source -v /tmp/statictest:/target deploystatic
 result to /tmp/statictest - adjust for your own directories)
 
 You can also just specify the default parameters as docker arguments.
+
+
+You can also use the docker container to run a simple static webserver with
+the output of the static directory like this:
+
+docker run -it --rm -v `pwd`:/source -p 9099:9099 deploystatic -serve
+
+This will deploy the current directory inside the container and start a webserver
+on port 9099.
