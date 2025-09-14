@@ -1,10 +1,19 @@
+Building/Pulling
+----------------
 If you have trouble with the dependencies, the Dockerfile in this
 directory will build a simple container that you can use. For
 example:
 
 docker build -t deploystatic .
 
+The container is also available to pull with:
 
+docker pull ghcr.io/pgeu/deploystatic
+
+And in this case, in the examples below replace the containername with ghcr.io/pgeu/deploystatic.
+
+Deploying a directory
+---------------------
 To use this container to deploy to a static directory, use:
 
 docker run -it --rm -v `pwd`:/source -v /tmp/statictest:/target deploystatic
@@ -15,6 +24,8 @@ result to /tmp/statictest - adjust for your own directories)
 You can also just specify the default parameters as docker arguments.
 
 
+Previewing a directory
+----------------------
 You can also use the docker container to run a simple static webserver with
 the output of the static directory like this:
 
