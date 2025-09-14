@@ -16,7 +16,7 @@ Deploying a directory
 ---------------------
 To use this container to deploy to a static directory, use:
 
-docker run -it --rm -v `pwd`:/source -v /tmp/statictest:/target deploystatic
+docker run -it --rm -v `pwd`:/source -v /tmp/statictest:/target -u `id -u` deploystatic
 
 (In this case taking the templates in the current directory and deploying the
 result to /tmp/statictest - adjust for your own directories)
