@@ -597,7 +597,11 @@ class BackendAdditionalOptionForm(BackendForm):
     })
     vat_fields = {'cost': 'reg'}
     auto_cascade_delete_to = ['registrationtype_requires_option', 'conferenceadditionaloption_requires_regtype',
+                              'conferenceadditionaloption_requires_attendee',
                               'conferenceadditionaloption_mutually_exclusive', ]
+    selectize_multiple_fields = {
+        'requires_attendee': RegisteredUsersLookup(None),
+    }
     coltypes = {
         'Maxcount': ['nosearch', ],
     }
@@ -605,10 +609,12 @@ class BackendAdditionalOptionForm(BackendForm):
     class Meta:
         model = ConferenceAdditionalOption
         fields = ['name', 'cost', 'maxcount', 'sortkey', 'public', 'upsellable', 'invoice_autocancel_hours',
-                  'requires_regtype', 'mutually_exclusive', 'additionaldays']
+                  'requires_regtype', 'requires_attendee', 'mutually_exclusive', 'additionaldays']
 
     def fix_fields(self):
         self.fields['requires_regtype'].queryset = RegistrationType.objects.filter(conference=self.conference)
+        self.fields['requires_attendee'].queryset = ConferenceRegistration.objects.filter(conference=self.conference)
+        self.selectize_multiple_fields['requires_attendee'] = RegisteredUsersLookup(self.conference)
         self.fields['mutually_exclusive'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference).exclude(pk=self.instance.pk)
         self.fields['additionaldays'].queryset = RegistrationDay.objects.filter(conference=self.conference)
 

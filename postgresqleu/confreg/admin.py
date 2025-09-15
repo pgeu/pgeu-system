@@ -250,6 +250,7 @@ class ConferenceAdditionalOptionAdminForm(ConcurrentProtectedModelForm):
         super(ConferenceAdditionalOptionAdminForm, self).__init__(*args, **kwargs)
         try:
             self.fields['requires_regtype'].queryset = RegistrationType.objects.filter(conference=self.instance.conference)
+            self.fields['requires_attendee'].queryset = ConferenceRegistration.objects.filter(conference=self.instance.conference)
             self.fields['mutually_exclusive'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.instance.conference)
             self.fields['additionaldays'].queryset = RegistrationDay.objects.filter(conference=self.instance.conference)
         except Conference.DoesNotExist:
@@ -263,7 +264,7 @@ class ConferenceAdditionalOptionAdmin(admin.ModelAdmin):
     list_filter = ['conference', ]
     ordering = ['conference', 'name', ]
     search_fields = ['name', ]
-    filter_horizontal = ('requires_regtype', 'mutually_exclusive', )
+    filter_horizontal = ('requires_regtype', 'requires_attendee', 'mutually_exclusive', )
     form = ConferenceAdditionalOptionAdminForm
 
     def get_queryset(self, request):

@@ -1003,6 +1003,12 @@ def reg_add_options(request, confname, whatfor=None):
     else:
         upsell_cost = 0
 
+    # Check that the options is available at all, given the combinations
+    for ao in options:
+        if msg := ao.verify_available_to(new_regtype if new_regtype else reg.regtype, reg):
+            messages.warning(request, msg)
+            return HttpResponseRedirect('../')
+
     # Build our invoice rows
     invoicerows = []
     autocancel_hours = [conference.invoice_autocancel_hours, ]

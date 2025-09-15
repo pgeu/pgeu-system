@@ -308,6 +308,13 @@ Requires regtype
 registration types must be picked. If the attendee does not have one
 of these registration types, they may be offered an upsell to a
 different registration type if that is [enabled](#regtypes).
+Note that if both a required regtype and a required
+attendee is specified, both requirements must be fulfilled.
+
+Requires attendee
+: In order to add one of these options, the attendee must be one of
+the specified ones. Note that if both a required regtype and a required
+attendee is specified, both requirements must be fulfilled.
 
 Mutually exclusive
 : This option cannot be picked at the same time as the selected other

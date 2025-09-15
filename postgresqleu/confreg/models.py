@@ -540,6 +540,7 @@ class ConferenceAdditionalOption(models.Model):
     upsellable = models.BooleanField(null=False, blank=False, default=True, help_text='Can this option be purchased after the registration is completed')
     invoice_autocancel_hours = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), ], verbose_name="Autocancel invoices", help_text="Automatically cancel invoices after this many hours")
     requires_regtype = models.ManyToManyField(RegistrationType, blank=True, verbose_name="Requires registration type", help_text='Can only be picked with selected registration types')
+    requires_attendee = models.ManyToManyField('ConferenceRegistration', blank=True, verbose_name="Requires specific attendee", help_text='Can only be picked by specific attendees')
     mutually_exclusive = models.ManyToManyField('self', blank=True, help_text='Mutually exlusive with these additional options', symmetrical=True)
     additionaldays = models.ManyToManyField(RegistrationDay, blank=True, verbose_name="Adds access to days", help_text='Adds access to additional conference day(s), even if the registration type does not')
     sortkey = models.IntegerField(default=100, null=False, blank=False, verbose_name="Sort key")
@@ -565,6 +566,16 @@ class ConferenceAdditionalOption(models.Model):
                                                   self.maxcount - usedcount,
                                                   self.maxcount)
         return "%s%s" % (self.name, coststr)
+
+    def verify_available_to(self, regtype, reg):
+        if self.requires_regtype.exists() and not self.requires_regtype.filter(pk=regtype.pk).exists():
+            return 'Option "{}" requires one of the registration types {}'.format(self.name, ", ".join(x.regtype for x in self.requires_regtype.all()))
+        if self.requires_attendee.exists():
+            if reg and not self.requires_attendee.filter(pk=reg.pk).exists():
+                return 'Option "{}" is only available to specific attendees'.format(self.name)
+            elif not reg:
+                return 'Option "{}" is only available to specific attendees'.format(self.name)
+        return None
 
 
 class BulkPayment(models.Model):

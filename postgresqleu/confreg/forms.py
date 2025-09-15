@@ -276,11 +276,8 @@ class ConferenceRegistrationForm(forms.ModelForm):
             regtype = cleaned_data['regtype']
             errs = []
             for ao in cleaned_data['additionaloptions']:
-                if ao.requires_regtype.exists():
-                    if regtype not in ao.requires_regtype.all():
-                        errs.append('Additional option "%s" requires one of the following registration types: %s.' % (ao.name, ", ".join(x.regtype for x in ao.requires_regtype.all())))
-            if len(errs):
-                self._errors['additionaloptions'] = self.error_class(errs)
+                if msg := ao.verify_available_to(regtype, self.instance if self.instance.pk else None):
+                    self.add_error('additionaloptions', msg)
 
         return cleaned_data
 
