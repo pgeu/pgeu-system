@@ -71,6 +71,9 @@ the `\N` filter).
 
 ## Badges
 
+For information about creating the badge layout, see
+[skinning](skinning#badges).
+
 For badge printing, it's often very useful to use the dynamic
 fields system, as this will allow "batching" of badges being
 generated. This can be built off a generic filter for "all confirmed

@@ -400,7 +400,7 @@ in the form of an array containing [r,g,b] color values (0-255).
 
 ## Badges
 
-To build the badges, use the Attendee Report feature, and select
+To build the badges, use the [Attendee Report](reports) feature, and select
 output format as `badge`.
 
 ## Tickets
