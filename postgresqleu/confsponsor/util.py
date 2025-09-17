@@ -2,6 +2,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.utils import timezone
+from django.template.defaultfilters import slugify
 
 from postgresqleu.util.db import exec_to_list
 from postgresqleu.util.currency import format_currency
@@ -82,6 +83,7 @@ def sponsorclaimsdata(conference):
                     'sponsors': [
                         {
                             'name': s.displayname,
+                            'slugname': slugify(s.displayname),
                             'confirmedat': s.confirmedat,
                             'signedupat': s.signupat
                         } for s in lvl.sponsor_set.filter(confirmed=True).order_by('signupat')
@@ -90,6 +92,7 @@ def sponsorclaimsdata(conference):
             'sponsors': {
                 s.displayname: {
                     'name': s.displayname,
+                    'slugname': slugify(s.displayname),
                     'url': s.url,
                     'social': s.social,
                     'level': s.level.levelname,

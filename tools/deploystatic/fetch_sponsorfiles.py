@@ -16,15 +16,6 @@ import unicodedata
 import urllib.request
 
 
-# Slugify the names - needs to be compatible with django/jinja/deploystatic
-def slugify(value):
-    if not value:
-        return ''
-    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
-    value = re.sub(r'[^\w\s-]', '', value).strip().lower()
-    return re.sub(r'[-\s]+', '-', value)
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Fetch pgeu-system sponsor files from token URLs')
     parser.add_argument('tokenurl', type=str, help='Base URL including the token value, but not including the type of dta')
@@ -46,7 +37,7 @@ if __name__ == "__main__":
         for name, sponsorinfo in data['sponsors']['sponsors'].items():
             for benefit in sponsorinfo['benefits']:
                 if benefit['name'] == args.benefitname:
-                    filename = os.path.join(args.directory, '{}.png'.format(slugify(name)))
+                    filename = os.path.join(args.directory, '{}.png'.format(sponsorinfo['slugname']))
                     if os.path.isfile(filename):
                         # Check if this file is unchanged
                         with open(filename, 'rb') as f:
