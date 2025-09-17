@@ -3,8 +3,13 @@ import json
 import logging
 import copy
 
-from postgresqleu.util.context_processors import settings_context
-
+try:
+    from postgresqleu.util.context_processors import settings_context
+except ImportError:
+    # When running standalone jinjapdf, we will fail to import the global settings,
+    # so in this case just set it to empty.
+    def settings_context():
+        return {}
 
 try:
     import yaml
