@@ -316,7 +316,7 @@ box
 :  draws an empty or filled rectangle
 
 line
-   draws a straight line
+:  draws a straight line
 
 image
 :  draws an image (which must be in the /static subdirectory)
