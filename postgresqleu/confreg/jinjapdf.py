@@ -280,7 +280,7 @@ def test_inlist(v, thelist):
 
 
 class JinjaRenderer(object):
-    def __init__(self, rootdir, templatefile, fonts, debug=False, systemroot=None, orientation='portrait', pagesize='A4'):
+    def __init__(self, rootdir, templatefile, fonts, debug=False, jinjadebug=False, systemroot=None, orientation='portrait', pagesize='A4'):
         if rootdir:
             self.templatedir = os.path.join(rootdir, 'templates')
         else:
@@ -291,6 +291,7 @@ class JinjaRenderer(object):
             self.pagesize = landscape(self.pagesize)
 
         self.debug = debug
+        self.jinjadebug = jinjadebug
 
         self.border = self.pagebreaks = False
 
@@ -336,6 +337,12 @@ class JinjaRenderer(object):
     def add_to_story(self, ctx):
         ctx.update(self.context)
         s = self.template.render(**ctx)
+        if self.jinjadebug:
+            print("Resulting json:")
+            print("------------------------")
+            print(s)
+            print("------------------------")
+            self.jinjadebug = False  # For badges so we don't print one for each badge!
         try:
             js = json.loads(s)
         except ValueError as e:
@@ -379,8 +386,8 @@ class JinjaRenderer(object):
 
 
 class JinjaBadgeRenderer(JinjaRenderer):
-    def __init__(self, rootdir, fonts, debug=False, border=False, pagebreaks=False, systemroot=None, orientation='portrait', pagesize='A4'):
-        super(JinjaBadgeRenderer, self).__init__(rootdir, 'badge.json', fonts, debug=debug, systemroot=systemroot, orientation=orientation, pagesize=pagesize)
+    def __init__(self, rootdir, fonts, debug=False, jinjadebug=False, border=False, pagebreaks=False, systemroot=None, orientation='portrait', pagesize='A4'):
+        super(JinjaBadgeRenderer, self).__init__(rootdir, 'badge.json', fonts, debug=debug, jinjadebug=jinjadebug, systemroot=systemroot, orientation=orientation, pagesize=pagesize)
 
         self.border = border
         self.pagebreaks = pagebreaks
@@ -393,8 +400,8 @@ class JinjaBadgeRenderer(JinjaRenderer):
 
 
 class JinjaTicketRenderer(JinjaRenderer):
-    def __init__(self, rootdir, fonts, debug=False, systemroot=None):
-        super(JinjaTicketRenderer, self).__init__(rootdir, 'ticket.json', fonts, debug=debug, systemroot=systemroot)
+    def __init__(self, rootdir, fonts, debug=False, jinjadebug=False, systemroot=None):
+        super(JinjaTicketRenderer, self).__init__(rootdir, 'ticket.json', fonts, debug=debug, jinjadebug=False, systemroot=systemroot)
 
     def add_reg(self, reg, conference):
         self.add_to_story({
@@ -431,6 +438,7 @@ if __name__ == "__main__":
     parser.add_argument('--pagebreaks', action='store_true', help='Enable pagebreaks on written file')
     parser.add_argument('--fontroot', type=str, help='fontroot for dejavu fonts')
     parser.add_argument('--font', type=str, nargs=1, action='append', help='<font name>:<font path>')
+    parser.add_argument('--debug-template', action='store_true', help='Print template output before running')
 
     args = parser.parse_args()
 
@@ -476,11 +484,11 @@ if __name__ == "__main__":
             fonts.extend([f.split(':') for f in font])
 
     if args.what == 'badge':
-        renderer = JinjaBadgeRenderer(args.repopath, fonts, debug=True, border=args.borders, pagebreaks=args.pagebreaks)
+        renderer = JinjaBadgeRenderer(args.repopath, fonts, debug=True, jinjadebug=args.debug_template, border=args.borders, pagebreaks=args.pagebreaks)
         for reg in a:
             renderer.add_badge(reg, conference)
     else:
-        renderer = JinjaTicketRenderer(args.repopath, fonts, debug=True)
+        renderer = JinjaTicketRenderer(args.repopath, fonts, debug=True, jinjadebug=args.debug_template)
         renderer.add_reg(a[0], conference)
 
     with open(args.outputfile, 'wb') as output:
