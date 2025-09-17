@@ -465,3 +465,9 @@ something like:
 		"conferencedatestr": "2018-12-26",
 		"location": "Somewhere"
 	}
+
+### Using dockerized jinjapdf
+
+If you have trouble running a local jinjapdf, there is also a docker
+container published for it under the pgeu organisation on github.
+See the [separate readme](https://github.com/pgeu/pgeu-system/blob/master/tools/deploystatic/jinjapdf-docker/README.md).
