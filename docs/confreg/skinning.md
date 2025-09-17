@@ -421,7 +421,9 @@ run independently. It does not depend on django (but does require `jinja2`
 and reportlab, of course) or the rest of the repository structure, so
 it's recommended that a new version of this file is simply downloaded
 from the main repository when testing (rather than adding it to a
-conference specific repository).
+conference specific repository). Before running, you may need to set the
+`PYTHONPATH` variable -- either to `.` or to the full path to the checked
+out repository.
 
 To get attendee data to test the badges on, use the `json` format
 attendee report and save it to a file. Then run the script:
