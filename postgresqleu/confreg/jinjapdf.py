@@ -27,6 +27,10 @@ try:
 except ImportError:
     import contextutil
 
+
+DEFAULT_CUTMARK_LENGTH = 8
+DEFAULT_CUTMARK_OFS = 3
+
 alignments = {
     'left': TA_LEFT,
     'center': TA_CENTER,
@@ -58,9 +62,6 @@ class JinjaFlowable(Flowable):
             self.hAlign = 'CENTER'
 
     def draw(self):
-        if self.js.get('border', False):
-            self.canv.rect(0, 0, self.width, self.height)
-
         for e in self.js['elements']:
             if e == {}:
                 continue
@@ -69,6 +70,29 @@ class JinjaFlowable(Flowable):
                 f(e)
             else:
                 raise Exception("Unknown type %s" % e['type'])
+        self._draw_border()
+
+    def _draw_border(self):
+        if self.js.get('border', False) in ('border', True, 1):
+            self.canv.rect(-1, -1, self.width + 2, self.height + 2)
+        elif self.js.get('border', False) == 'cutmarks':
+            cmlength = self.js.get('cutmark_length', DEFAULT_CUTMARK_LENGTH) * mm
+            cmofs = self.js.get('cutmark_offset', DEFAULT_CUTMARK_OFS) * mm
+            cmpos = cmlength + cmofs
+            bleed = self.js.get('bleed', 0) * mm
+
+            # Bottom left
+            self.canv.line(-cmpos + bleed, bleed, -cmofs + bleed, bleed)
+            self.canv.line(bleed, -cmpos + bleed, bleed, -cmofs + bleed)
+            # Bottom right
+            self.canv.line(self.width + cmofs - bleed, bleed, self.width + cmpos - bleed, bleed)
+            self.canv.line(self.width - bleed, -cmpos + bleed, self.width - bleed, -cmofs + bleed)
+            # Top left
+            self.canv.line(-cmpos + bleed, self.height - bleed, -cmofs + bleed, self.height - bleed)
+            self.canv.line(bleed, self.height + cmofs - bleed, bleed, self.height + cmpos - bleed)
+            # Top right
+            self.canv.line(self.width + cmofs - bleed, self.height - bleed, self.width + cmpos - bleed, self.height - bleed)
+            self.canv.line(self.width - bleed, self.height + cmofs - bleed, self.width - bleed, self.height + cmpos - bleed)
 
     def calc_y(self, o):
         return self.height - getmm(o, 'y') - getmm(o, 'height')
@@ -325,8 +349,14 @@ class JinjaRenderer(object):
             else:
                 raise Exception("JSON parse failed.")
 
-        if 'border' not in js:
-            js['border'] = self.border
+        # Potentially override border settings
+        if self.border == 0 or self.border == 'none':
+            js['border'] = ''
+        elif self.border == 1 or self.border == 'border':
+            js['border'] = 'border'
+        elif self.border == 2 or self.border == 'cutmarks':
+            js['border'] = 'cutmarks'
+
         self.story.append(JinjaFlowable(js, self.staticdir))
 
         if 'forcebreaks' not in js:
@@ -334,8 +364,17 @@ class JinjaRenderer(object):
         if js.get('forcebreaks', False):
             self.story.append(PageBreak())
 
+        self.js = js
+
     def render(self, output):
-        doc = SimpleDocTemplate(output, pagesize=self.pagesize, leftMargin=10 * mm, topMargin=5 * mm, rightMargin=10 * mm, bottomMargin=5 * mm)
+        leftMargin = 10 * mm
+        topMargin = 5 * mm
+        if self.js.get('border', None) == 'cutmarks':
+            cmsize = self.js.get('cutmark_length', DEFAULT_CUTMARK_LENGTH) * mm + self.js.get('cutmark_offset', DEFAULT_CUTMARK_OFS) * mm
+            topMargin += cmsize
+            leftMargin += cmsize
+
+        doc = SimpleDocTemplate(output, pagesize=self.pagesize, leftMargin=leftMargin, topMargin=topMargin, rightMargin=10 * mm, bottomMargin=5 * mm)
         doc.build(self.story)
 
 
@@ -388,7 +427,7 @@ if __name__ == "__main__":
     parser.add_argument('attendeelist', type=str, help='JSON file with attendee list')
     parser.add_argument('outputfile', type=str, help='Name of output PDF file')
     parser.add_argument('--confjson', type=str, help='JSON representing conference')
-    parser.add_argument('--borders', action='store_true', help='Enable borders on written file')
+    parser.add_argument('--borders', choices=['none', 'border', 'cutmarks'], help='Enable borders on written file')
     parser.add_argument('--pagebreaks', action='store_true', help='Enable pagebreaks on written file')
     parser.add_argument('--fontroot', type=str, help='fontroot for dejavu fonts')
     parser.add_argument('--font', type=str, nargs=1, action='append', help='<font name>:<font path>')

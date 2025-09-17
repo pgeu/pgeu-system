@@ -293,11 +293,25 @@ system) in format `json`.
 At the root of the json structure, two elements have to be defined:
 width and height. All positions and sizes are defined in mm.
 
-If the element `border` is set to *true*, a thin black border will be
-drawn around the outer edges (for cutting). If the element
-is set to *false*, no border will be printed. If the element is not set
-at all, printing will be controlled from the form field when building the
-badges, and be off when building tickets.
+The element `border` controls borders and cutmarks for the badge.
+If it is set to *border* or to *true*, a thin black border will be
+drawn around the outer edges (for manual cutting).
+
+If `border` is set to *cutmarks* then outside cutmarks will be drawn
+on the badge. These marks will by defaut be *10mm* long, and placed *3mm*
+from the edge of the badge (with the intersection being right at the
+corner of the badge, of course). The length and offset can be overridden
+by setting `cutmark_length` and `cutmark_offset` respectively.
+
+The value of the `border` element can be overridden from the form field
+when building the badges from the web.
+
+if the element `bleed` is set to a value, border and cutmarks will be
+adjusted to bleed this much on each side of the badge. In practive,
+this means adjusting the border/marks inward by this many mm. For the
+resulting badge to be the expected size, the total size of the badge
+(as specified in `width` and `height`) should be increased by *2 *
+bleed* and the badge elements adjusted for that.
 
 If the element `forcebreaks` is set to *true*, a pagebreak will be forced
 between each badge, making sure there is only one badge per

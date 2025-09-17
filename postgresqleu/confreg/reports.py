@@ -376,7 +376,7 @@ class ReportWriterPdf(ReportWriterBase):
         style = [
             ("FONTNAME", (0, 0), (-1, -1), "DejaVu Serif"),
             ]
-        if self.borders:
+        if self.borders == 1:
             style.extend([
                 ('GRID', (0, 0), (-1, -1), 1, colors.black),
                 ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
@@ -525,7 +525,14 @@ class AttendeeReportManager:
         format = data['format']
         orientation = data['orientation']
         pagesize = data.get('pagesize', 'A4')
-        borders = data.get('border', None) == "on"
+        borders = int(data.get('border', 0))
+        if borders == 2 and format != 'badge':
+            return HttpResponse("Cutmarks can only be used for badges", content_type='text/plain')
+
+        # Default borders to on for non-badges (for badges, default is read from inside the badge)
+        if borders == -1 and format != 'badge':
+            borders = 1
+
         pagebreaks = data.get('pagebreaks', None) == 'on'
         extracols = [_f for _f in [x.strip() for x in data['additionalcols'].split(',')] if _f]
         ofields = [self.fieldmap[f] for f in (data['orderby1'], data['orderby2'])]

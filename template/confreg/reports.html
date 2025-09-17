@@ -138,10 +138,18 @@ input#dlgSelectFieldCountText {
 	  <td><select name="pagesize" id="selPagesize"><option value="A4">A4</option><option value="letter">Letter</option></select></td>
 	</tr>
 	<tr>
-	  <td>Borders</td>
-	  <td><input type="checkbox" name="border" CHECKED id="cbBorders"> include table and badge borders</td>
+	  <td>PDF Borders:</td>
+    <td>
+      <select name="border">
+        <option value="-1" SELECTED>Default</option>
+        <option value="0">No borders</option>
+        <option value="1">Borders</option>
+        <option value="2">Cutmarks (only for badges)</option>
+      </select>
+    </td>
+  </tr>
 	<tr>
-	  <td>Pagebreaks</td>
+	  <td>PDF Pagebreaks:</td>
 	  <td><input type="checkbox" name="pagebreaks" CHECKED id="cbPagebreaks"> force page break (between badges only)</td>
 	</tr>
       </table>
