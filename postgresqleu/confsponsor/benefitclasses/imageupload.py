@@ -1,6 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 
 import base64
 import io

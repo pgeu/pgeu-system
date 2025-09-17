@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.conf import settings
 
 import base64
