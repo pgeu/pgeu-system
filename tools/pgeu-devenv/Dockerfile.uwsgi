@@ -1,0 +1,14 @@
+FROM pgeu-system-python-base
+
+# pull in basic system packages
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends \
+    uwsgi \
+    uwsgi-plugin-python3 \
+  && rm -rf /var/lib/apt/lists/*
+
+EXPOSE 8000
+
+USER www-data
+WORKDIR /srv/pgeu-system
+CMD ["uwsgi", "--ini", "/etc/uwsgi.ini"]
