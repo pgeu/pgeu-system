@@ -584,11 +584,12 @@ class AttendeeReportManager:
                     'confreg_conferenceregistration_additionaloptions': 'crao',
                     'confreg_conferenceadditionaloption': 'ao',
                     'confreg_shirtsize': 's',
+                    'pronouns_text': 'pt',
                 }.get(table, table), _f)
 
             query = """SELECT r.id, firstname, lastname, email, company, address, phone, dietary, twittername, nick, badgescan, shareemail, vouchercode,
   country.name AS countryname, country.printable_name AS country,
-  s.shirtsize,
+  s.shirtsize, CASE WHEN conference.askpronouns THEN pt.pronountext ELSE '' END AS pronounstext,
   '{}/t/id/' || idtoken || '/' AS fullidtoken,
   '{}/t/at/' || publictoken || '/' AS fullpublictoken,
   regexp_replace(upper(substring(CASE WHEN conference.queuepartitioning=1 THEN lastname WHEN conference.queuepartitioning=2 THEN firstname END, 1, 1)), '[^A-Z]', 'Other') AS queuepartition,
@@ -608,8 +609,9 @@ LEFT JOIN confreg_conferenceregistration_additionaloptions crao ON crao.conferen
 LEFT JOIN confreg_conferenceadditionaloption ao ON crao.conferenceadditionaloption_id=ao.id
 LEFT JOIN country ON country.iso=r.country_id
 LEFT JOIN confreg_shirtsize s ON s.id=r.shirtsize_id
+LEFT JOIN pronouns_text pt ON pt.id=r.pronouns
 WHERE r.conference_id=%(conference_id)s {}
-GROUP BY r.id, conference.id, rt.id, rc.id, country.iso, s.id
+GROUP BY r.id, conference.id, rt.id, rc.id, country.iso, s.id, pt.id
 ORDER BY {}""".format(settings.SITEBASE, settings.SITEBASE, where, ", ".join([_get_table_aliased_field(o.get_orderby_field()) for o in ofields]))
 
         with ensure_conference_timezone(self.conference):
