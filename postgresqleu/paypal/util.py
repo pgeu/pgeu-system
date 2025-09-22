@@ -71,7 +71,7 @@ class PaypalAPI(object):
         if r.status_code != 200:
             raise Exception("Failed to get transactions: %s" % r.json()['message'])
 
-        for t in r.json()['transaction_details']:
+        for t in r.json().get('transaction_details', []):
             if t['transaction_info']['transaction_status'] != 'S':
                 continue
 
