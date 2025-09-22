@@ -284,8 +284,8 @@ class Linkedin(object):
 
         if refreshtokenexpires < timezone.now() + timedelta(days=10):
             return True, "Refresh token will expire in {} (on {}), manual re-authentication needed!".format(
-                timeuntil(refresh_token_expires),
-                refresh_token_expires,
+                timeuntil(refreshtokenexpires),
+                refreshtokenexpires,
             )
 
         # Token not expired or about to, so verify that what we have works.
