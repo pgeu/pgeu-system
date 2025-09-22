@@ -1,30 +1,30 @@
 all: build
 
-.stamp.base:
+.stamp.base: check-env
 	docker build -f Dockerfile.base -t pgeu-system-python-base:latest .
 	@touch $@
 
-.stamp.build: .stamp.base
+.stamp.build: .stamp.base check-env
 	docker compose pull
 	docker compose build
 	@touch $@
 
 build: .stamp.build
 
-start: .stamp.build
+start: .stamp.build check-env
 	docker compose up -d --build
 
-stop:
+stop: check-env
 	docker compose down
 
-logwatch:
+logwatch: check-env
 	docker compose logs -f
 
-clean:
+clean: check-env
 	docker compose down -v
 	rm -rf .stamp.base .stamp.build
 
-distclean:
+distclean: check-env
 	docker compose down -v
 	rm -rf .stamp.base .stamp.build
 	docker rmi \
@@ -33,3 +33,16 @@ distclean:
 		pgeu-system-httpd \
 		pgeu-system-python-base \
 		2> /dev/null || /bin/true
+
+check-env:
+	@sh -c '. ./.env && \
+	if [ -z "$${SYSTEM_SKIN_DIRECTORY}" ]; then \
+		echo "Error: SYSTEM_SKIN_DIRECTORY is not set or empty"; \
+		exit 1; \
+	fi; \
+	if [ ! -d "$${SYSTEM_SKIN_DIRECTORY}" ]; then \
+	    echo "Error: SYSTEM_SKIN_DIRECTORY=\"$${SYSTEM_SKIN_DIRECTORY}\" does not exist"; \
+	    exit 1; \
+	fi'
+
+.PHONY: all check-env
