@@ -107,7 +107,7 @@ class BackendForm(ConcurrentProtectedModelForm):
                 if v.required:
                     h += 'Enter start and stop timestamp with both date and time.'
                 else:
-                    h += 'Enter start and stop timestamp with both date and time. Leaving either field empty menas "infinity".'
+                    h += 'Enter start and stop timestamp with both date and time. Leaving either field empty means "infinity".'
                 v.help_text = h
 
             # Any datetime or date fields that are not explicitly excluded will be forced to be within
