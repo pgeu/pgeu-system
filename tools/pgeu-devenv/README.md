@@ -23,7 +23,10 @@ https://git.postgresql.org/git/pgeu-system.git ./pgeu-system
 # Check-out the skin.
 git clone https://git.postgresql.org/git/pgeu-web.git ./pgeu-web
 
-# Configure the skin directory to use.
+# Configure the skin directory to use for this instance of pgeu-system.
+# Alternatively, this may be persisted by writing it to
+# tools/pgeu-devenv/.env so this step does not need to be repeated for
+# every session.
 SYSTEM_SKIN_DIRECTORY="$(pwd)/pgeu-web"
 
 # Trigger the download and build of the Docker images
