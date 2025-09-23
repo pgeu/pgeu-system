@@ -1,0 +1,81 @@
+FROM debian:bullseye-slim AS base
+
+# Pull in basic system packages
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends \
+    gettext \
+    fonts-dejavu \
+    python3 \
+    python3-pip \
+  && rm -rf /var/lib/apt/lists/*
+
+# Pull in required python modules available as Debian packages
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends \
+    python-is-python3 \
+    python3-asgiref \
+    python3-cairosvg \
+    python3-cryptography \
+    python3-dateutil \
+    python3-httplib2 \
+    python3-jwt \
+    python3-magic \
+    python3-markdown \
+    python3-qrcode \
+    python3-reportlab \
+    python3-requests \
+    python3-requests-oauthlib \
+    python3-sqlparse \
+  && rm -rf /var/lib/apt/lists/*
+
+# Do kinda SAVEPOINT
+FROM base AS builder
+
+# Install build dependencies for the below Python modules required,
+# but not available as Debian packages.
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends \
+    gcc \
+    libjpeg-dev \
+    libpng-dev \
+    python3-dev \
+  && rm -rf /var/lib/apt/lists/*
+
+# These dependencies are either not available at all or in incompatible
+# versions. Download, build and install via pip.
+RUN pip install \
+    "Django>=4.2,<4.3" \
+    "MarkupSafe==1.1.0" \
+    "Jinja2>=2.10,<2.11" \
+    Pillow==5.4.1 \
+    flup \
+    argparse \
+    psycopg2-binary \
+    pycryptodomex==3.6.1 \
+    file-magic \
+  && rm -rf /root/.cache/pip
+
+# Switch back to the base container without build tools and just fetch
+# the built Python modules.
+FROM base AS final
+COPY --from=builder /usr/local/lib/python3.9/ /usr/local/lib/python3.9/
+
+# Mount point for actual source code, skin, and settings.
+RUN mkdir /srv/pgeu-system /srv/skin /srv/settings
+
+# Add settings directory to PYTHONPATH to allow providing global and
+# override config files through Docker mounts.
+ENV PYTHONPATH=/srv/settings
+
+# Access permissions for default database users
+RUN mkdir /var/www \
+  && echo "db:5432:*:postgres:postgres" > /var/www/.pgpass \
+  && echo "db:5432:*:appuser:appuser" >> /var/www/.pgpass \
+  && chown www-data: /var/www/.pgpass \
+  && chmod 400 /var/www/.pgpass
+
+# Configure the default database to use for both, the uwsgi and the
+# maintenance container.
+ENV PGHOST="db"
+ENV PGDATABASE="pgeu_test"
+ENV PGUSER="appuser"

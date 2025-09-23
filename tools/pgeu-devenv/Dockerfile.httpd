@@ -1,0 +1,24 @@
+FROM debian:bookworm-slim
+
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends \
+    apache2 \
+    apache2-utils \
+    libapache2-mod-uwsgi \
+    libapache2-mod-proxy-uwsgi \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir /var/run/apache2 \
+  && chown www-data: /var/run/apache2 /var/log/apache2
+
+RUN \
+     a2enmod proxy \
+  && a2enmod proxy_http \
+  && a2enmod proxy_uwsgi
+
+EXPOSE 8080
+
+STOPSIGNAL SIGWINCH
+
+USER www-data
+CMD ["/usr/sbin/apache2ctl", "-f/etc/httpd.conf", "-DFOREGROUND"]
