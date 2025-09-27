@@ -22,13 +22,26 @@ class RegisteredUsersLookup(LookupBase):
         )
 
     @classmethod
+    def get_filter(self):
+        return Q(payconfirmedat__isnull=False, canceledat__isnull=True)
+
+    @classmethod
     def get_values(self, query, conference):
         return [{'id': r.id, 'value': RegisteredUsersLookup._label_from_instance(self)(r)}
                 for r in ConferenceRegistration.objects.filter(
-                    conference=conference,
-                    payconfirmedat__isnull=False, canceledat__isnull=True).filter(
+                    conference=conference).filter(self.get_filter()).filter(
                         Q(attendee__username=query) | Q(firstname__icontains=query) | Q(lastname__icontains=query) | Q(email__icontains=query)
                     )[:30]]
+
+
+class RegisteredOrPendingUsersLookup(RegisteredUsersLookup):
+    @property
+    def url(self):
+        return '/events/admin/{0}/lookups/regsinc/'.format(self.conference.urlname)
+
+    @classmethod
+    def get_filter(self):
+        return Q(canceledat__isnull=True)
 
 
 class SessionTagLookup(LookupBase):

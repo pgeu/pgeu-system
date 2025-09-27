@@ -194,6 +194,7 @@ urlpatterns.extend([
     re_path(r'^events/admin/(\w+)/edit/$', postgresqleu.confreg.backendviews.edit_conference),
     re_path(r'^events/admin/(\w+)/superedit/$', postgresqleu.confreg.backendviews.superedit_conference),
     re_path(r'^events/admin/(\w+)/lookups/regs/$', postgresqleu.confreg.backendlookups.RegisteredUsersLookup.lookup),
+    re_path(r'^events/admin/(\w+)/lookups/regsinc/$', postgresqleu.confreg.backendlookups.RegisteredOrPendingUsersLookup.lookup),
     re_path(r'^events/admin/(\w+)/lookups/tags/$', postgresqleu.confreg.backendlookups.SessionTagLookup.lookup),
     re_path(r'^events/admin/(\w+)/mail/$', postgresqleu.confreg.views.admin_attendeemail),
     re_path(r'^events/admin/(\w+)/mail/(\d+)/$', postgresqleu.confreg.views.admin_attendeemail_view),

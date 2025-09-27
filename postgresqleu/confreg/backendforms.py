@@ -56,7 +56,8 @@ from postgresqleu.confreg.models import valid_status_transitions, get_status_str
 from postgresqleu.confreg.models import STATUS_CHOICES, STATUS_CHOICES_LONG
 
 from postgresqleu.util.backendlookups import GeneralAccountLookup, CountryLookup
-from postgresqleu.confreg.backendlookups import RegisteredUsersLookup, SpeakerLookup, SessionTagLookup
+from postgresqleu.confreg.backendlookups import RegisteredUsersLookup, RegisteredOrPendingUsersLookup
+from postgresqleu.confreg.backendlookups import SpeakerLookup, SessionTagLookup
 
 from postgresqleu.confreg.campaigns import allcampaigns
 from postgresqleu.confreg.regtypes import validate_special_reg_type_setup
@@ -600,7 +601,7 @@ class BackendAdditionalOptionForm(BackendForm):
                               'conferenceadditionaloption_requires_attendee',
                               'conferenceadditionaloption_mutually_exclusive', ]
     selectize_multiple_fields = {
-        'requires_attendee': RegisteredUsersLookup(None),
+        'requires_attendee': RegisteredOrPendingUsersLookup(None),
     }
     coltypes = {
         'Maxcount': ['nosearch', ],
@@ -614,7 +615,7 @@ class BackendAdditionalOptionForm(BackendForm):
     def fix_fields(self):
         self.fields['requires_regtype'].queryset = RegistrationType.objects.filter(conference=self.conference)
         self.fields['requires_attendee'].queryset = ConferenceRegistration.objects.filter(conference=self.conference)
-        self.selectize_multiple_fields['requires_attendee'] = RegisteredUsersLookup(self.conference)
+        self.selectize_multiple_fields['requires_attendee'] = RegisteredOrPendingUsersLookup(self.conference)
         self.fields['mutually_exclusive'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference).exclude(pk=self.instance.pk)
         self.fields['additionaldays'].queryset = RegistrationDay.objects.filter(conference=self.conference)
 
