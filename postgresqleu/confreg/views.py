@@ -3671,9 +3671,19 @@ def admin_registration_list(request, urlname):
     return render(request, 'confreg/admin_registration_list.html', {
         'conference': conference,
         'waitlist_active': conference.waitlist_active(),
-        'regs': ConferenceRegistration.objects.select_related('regtype', 'registrationwaitlistentry', 'invoice', 'bulkpayment').extra(select={
+        'regs': ConferenceRegistration.objects.
+        select_related('regtype', 'registrationwaitlistentry', 'invoice', 'bulkpayment', 'bulkpayment__invoice').
+        only('id', 'firstname', 'lastname', 'company', 'created', 'payconfirmedat', 'payconfirmedby',
+             'canceledat', 'policyconfirmedat', 'regtype__sortkey', 'regtype__regtype',
+             'invoice__id', 'invoice__finalized', 'invoice__paidat', 'invoice__paidusing__id',
+             'bulkpayment__id', 'bulkpayment__paidat', 'bulkpayment__numregs', 'bulkpayment__invoice__id',
+             'bulkpayment__invoice__finalized', 'bulkpayment__invoice__paidat',
+             'bulkpayment__invoice__paidusing__id'
+             ).
+        extra(select={
             'waitlist_offers_made': """CASE WHEN "confreg_registrationwaitlistentry"."registration_id" IS NULL THEN 0 ELSE (SELECT count(*) FROM confreg_registrationwaitlisthistory h WHERE h.waitlist_id="confreg_registrationwaitlistentry"."registration_id" AND h.text LIKE 'Made offer%%')  END""",
-        }).filter(conference=conference),
+        }).
+        filter(conference=conference),
         'regsummary': exec_to_dict("SELECT count(1) FILTER (WHERE payconfirmedat IS NOT NULL AND canceledat IS NULL) AS confirmed, count(1) FILTER (WHERE payconfirmedat IS NULL) AS unconfirmed, count(1) FILTER (WHERE canceledat IS NOT NULL) AS canceled FROM confreg_conferenceregistration WHERE conference_id=%(confid)s", {'confid': conference.id})[0],
         'breadcrumbs': (('/events/admin/{0}/regdashboard/'.format(urlname), 'Registration dashboard'),),
         'helplink': 'registrations',
