@@ -656,6 +656,7 @@ class ConferenceRegistration(models.Model):
     lastmodified = models.DateTimeField(null=False, blank=False, auto_now=True)
     checkedinat = models.DateTimeField(null=True, blank=True, verbose_name="Checked in at")
     checkedinby = models.ForeignKey('ConferenceRegistration', null=True, blank=True, verbose_name="Checked by by", on_delete=models.CASCADE)
+    checkinmessage = models.CharField(max_length=500, null=False, blank=True, verbose_name='Check-in message', help_text='Message shown when the attendee is checked in')
 
     # If an invoice is generated, link to it here so we can find our
     # way back easily.

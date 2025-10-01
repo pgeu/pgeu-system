@@ -334,7 +334,7 @@ class BackendRegistrationForm(BackendForm):
         model = ConferenceRegistration
         fields = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone',
                   'shirtsize', 'dietary', 'pronouns', 'twittername', 'nick', 'badgescan', 'shareemail',
-                  'regtype', 'additionaloptions']
+                  'regtype', 'additionaloptions', 'checkinmessage']
 
     _all_dynamic_fields = set(['badgescan', 'shareemail', 'dietary', 'pronouns', 'shirtsize'])
 
@@ -365,6 +365,7 @@ class BackendRegistrationForm(BackendForm):
         fs = [
             {'id': 'personal_info', 'legend': 'Personal information', 'fields': ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'twittername', 'nick']},
             {'id': 'reg_info', 'legend': 'Registration information', 'fields': ['regtype', 'additionaloptions'] + list(self._get_reginfo_fields())},
+            {'id': 'checkin', 'legend': 'Check-in', 'fields': ['checkinmessage']},
         ]
         aspec = list(self._get_attendeespec_fields())
         if aspec:

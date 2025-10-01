@@ -261,8 +261,8 @@ def _get_reg_json(r, fieldscan=False):
         d['policyconfirmed'] = r.policyconfirmedat and "Policy confirmed" or "Policy NOT confirmed"
         if not r.policyconfirmedat:
             d['highlight'].append('policyconfirmed')
-    if r.regtype.checkinmessage:
-        d['checkinmessage'] = r.regtype.checkinmessage
+    if r.regtype.checkinmessage or r.checkinmessage:
+        d['checkinmessage'] = "\n\n".join(m for m in (r.checkinmessage, r.regtype.checkinmessage) if m)
         d['highlight'].append('checkinmessage')
     if r.checkedinat and not fieldscan:
         d['already'] = {

@@ -175,6 +175,12 @@
  <tr>
   <th colspan="2" class="col-md-12">Check-in process</th>
  </tr>
+{%if reg.checkinmessage %}
+ <tr>
+   <td>Check-in message</td>
+   <td>{{reg.checkinmessage}}</td>
+ </tr>
+{%endif%}
 {%if conference.queuepartitioning%}
  <tr>
    <td>Queue partition</td>
