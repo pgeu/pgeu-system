@@ -1,0 +1,27 @@
+FROM pgeu-system-python-base
+
+# Pull in basic system packages required for PGAPT
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends \
+    gnupg2 \
+    postgresql-common \
+  && rm -rf /var/lib/apt/lists/*
+
+# Install PGAPT repository to get a fresh Postgres client
+RUN echo "yes" | /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends \
+    postgresql-client \
+  && rm -rf /var/lib/apt/lists/*
+
+# Mount point for static files to generate.
+RUN mkdir -p /srv/static \
+  && chown -R www-data: /srv/static \
+  && chmod 755 /srv/static
+
+# Copy script that does the actual work.
+COPY maintenance.py /srv/maintenance.py
+
+USER www-data
+WORKDIR /srv/pgeu-system
+CMD ["python3", "/srv/maintenance.py"]
