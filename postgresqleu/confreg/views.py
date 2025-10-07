@@ -1976,7 +1976,10 @@ def callforpapers_edit(request, confname, sessionid):
         form = CallForPapersForm(speaker, data=request.POST, instance=session, initial=initial)
         if form.is_valid():
             with transaction.atomic():
-                if ConferenceSession.objects.filter(conference=conference, speaker=speaker, title=form.cleaned_data['title']).exists():
+                q = ConferenceSession.objects.filter(conference=conference, speaker=speaker, title=form.cleaned_data['title'])
+                if session.pk:
+                    q = q.exclude(pk=session.pk)
+                if q.exists():
                     form.add_error('title', "You have already submitted a session with title '{}' to this conference.".format(session.title))
                 else:
                     form.save()
