@@ -314,9 +314,15 @@ def api(request, urlname, regtoken, what):
         return _json_response({'reg': _get_reg_json(r)})
     elif what == 'search':
         s = request.GET.get('search').strip()
+        q = Q()
+        for n in s.split():
+            # For each part of the given string, search both first and last name
+            # When two or more name parts are specified, require that they all match,
+            # but don't care which one matches which part.
+            q = q & (Q(firstname__icontains=n) | Q(lastname__icontains=n))
         return _json_response({
             'regs': [_get_reg_json(r) for r in ConferenceRegistration.objects.filter(
-                Q(firstname__icontains=s) | Q(lastname__icontains=s),
+                q,
                 conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True,
             )],
         })
