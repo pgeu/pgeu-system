@@ -1,7 +1,7 @@
 from django.db import models
 
 
-from postgresqleu.invoices.models import InvoicePaymentMethod
+from postgresqleu.invoices.models import InvoicePaymentMethod, InvoiceRefund
 
 
 class TrustlyTransaction(models.Model):
@@ -11,7 +11,7 @@ class TrustlyTransaction(models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=20, null=False)
     invoiceid = models.IntegerField(null=False, blank=False)
     redirecturl = models.CharField(max_length=2000, null=False, blank=False)
-    orderid = models.BigIntegerField(null=False, blank=False)
+    orderid = models.BigIntegerField(null=False, blank=False, unique=True)
     paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -59,5 +59,7 @@ class ReturnAuthorizationStatus(models.Model):
 class TrustlyWithdrawal(models.Model):
     paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False, on_delete=models.CASCADE)
     gluepayid = models.BigIntegerField(null=False, blank=False)
+    orderid = models.BigIntegerField(null=True, blank=True)
     amount = models.DecimalField(decimal_places=2, max_digits=20, null=False, blank=False)
     message = models.CharField(max_length=200, null=False, blank=True)
+    matched_refund = models.ForeignKey(InvoiceRefund, null=True, blank=True, on_delete=models.SET_NULL)
