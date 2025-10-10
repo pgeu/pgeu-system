@@ -60,6 +60,8 @@ work from here.
 
 * Invoices and payments
     * [Payment methods](payment)
+* Bookkeeping
+    * [Bookkeeping](bookkeeping)
 * Scheduled jobs
     * [Scheduled jobs](jobs)
 * Email infrastructure
