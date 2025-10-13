@@ -568,8 +568,11 @@ class ConferenceAdditionalOption(models.Model):
         return "%s%s" % (self.name, coststr)
 
     def verify_available_to(self, regtype, reg):
-        if self.requires_regtype.exists() and not self.requires_regtype.filter(pk=regtype.pk).exists():
-            return 'Option "{}" requires one of the registration types {}'.format(self.name, ", ".join(x.regtype for x in self.requires_regtype.all()))
+        if self.requires_regtype.exists():
+            if not regtype:
+                return 'Option "{}" requires one of the registration types {}'.format(self.name, ", ".join(x.regtype for x in self.requires_regtype.all()))
+            elif not self.requires_regtype.filter(pk=regtype.pk).exists():
+                return 'Option "{}" requires one of the registration types {}'.format(self.name, ", ".join(x.regtype for x in self.requires_regtype.all()))
         if self.requires_attendee.exists():
             if reg and not self.requires_attendee.filter(pk=reg.pk).exists():
                 return 'Option "{}" is only available to specific attendees'.format(self.name)
