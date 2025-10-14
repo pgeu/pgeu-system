@@ -1609,9 +1609,9 @@ class BackendCopySelectConferenceForm(django.forms.Form):
 
     def __init__(self, request, conference, model, *args, **kwargs):
         super(BackendCopySelectConferenceForm, self).__init__(*args, **kwargs)
-        self.fields['conference'].queryset = Conference.objects.filter(Q(administrators=request.user) | Q(series__administrators=request.user)).exclude(pk=conference.pk).extra(
+        self.fields['conference'].queryset = Conference.objects.only('conferencename').filter(Q(administrators=request.user) | Q(series__administrators=request.user)).exclude(pk=conference.pk).extra(
             where=["EXISTS (SELECT 1 FROM {0} WHERE conference_id=confreg_conference.id)".format(model._meta.db_table), ]
-        ).distinct()
+        ).distinct().order_by('conferencename')
 
 
 #
