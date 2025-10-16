@@ -20,7 +20,7 @@ from postgresqleu.util.db import exec_to_dict, exec_to_single_list
 from postgresqleu.util.db import ensure_conference_timezone
 from postgresqleu.countries.models import Country
 from .models import ConferenceRegistration, RegistrationType, ConferenceAdditionalOption, ShirtSize
-from .models import STATUS_CHOICES
+from .models import STATUS_CHOICES, PRONOUNS_TEXT
 from .reportingforms import QueuePartitionForm
 from functools import reduce
 
@@ -103,6 +103,15 @@ class ForeignReportField(ReportField):
             self.field.remote_field.model._meta.db_table,
             joincols[0][1],
         )
+
+
+class DictReportField(ReportField):
+    def __init__(self, id, title, lookupdict, default=False):
+        super().__init__(id, title, default)
+        self.lookupdict = lookupdict
+
+    def get_value(self, val):
+        return self.lookupdict.get(val, None)
 
 
 class DynamicReportField(ReportField):
@@ -261,6 +270,24 @@ class DynamicReportFilter(ReportFilter):
         self.field = _fakefield()
 
 
+class ReportDictFilter(ReportFilter):
+    def __init__(self, id, name, lookupdict):
+        super().__init__(id, name)
+        self.type = 'select'
+        self.lookupdict = lookupdict
+
+    def options(self):
+        return self.lookupdict.items()
+
+    def build_SQL(self, flt, blockno):
+        val = flt['value']
+        idlist = [int(v) for v in val]
+        return (
+            '{}=ANY(%(b{}_{}_ids)s)'.format(self.db_colname, blockno, self.id),
+            {'b{}_{}_ids'.format(blockno, self.id): idlist},
+        )
+
+
 class ReportQueuePartitionFilter(object):
     id = 'queuepartition'
     name = 'Queue partition'
@@ -414,6 +441,7 @@ class AttendeeReportManager:
                 ReportField('company', 'Company'),
                 ReportField('address', 'Address'),
                 ForeignReportField('country', 'Country', remotecol='printable_name'),
+                DictReportField('pronouns', 'Pronouns', PRONOUNS_TEXT),
                 ReportField('phone', 'Phone'),
                 ReportField('twittername', 'Twitter'),
                 ReportField('nick', 'Nickname'),
@@ -449,6 +477,7 @@ class AttendeeReportManager:
                 ReportQueuePartitionFilter(self.conference),
                 ReportFilter('country', 'Country', Country.objects.all()),
                 ReportFilter('company', 'Company'),
+                ReportDictFilter('pronouns', 'Pronouns', PRONOUNS_TEXT),
                 ReportFilter('phone', 'Phone'),
                 ReportFilter('twittername', 'Twitter'),
                 ReportFilter('nick', 'Nickname'),
