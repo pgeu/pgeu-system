@@ -1104,8 +1104,7 @@ def feedback(request, confname):
         return HttpResponse('You are not registered for this conference.')
 
     if not r.payconfirmedat:
-        if r.regtype.cost != 0:
-            return HttpResponse('You are not a confirmed attendee of this conference.')
+        return HttpResponse('You are not a confirmed attendee of this conference.')
 
     if r.canceledat:
         return HttpResponse("Your registration has been canceled.")
