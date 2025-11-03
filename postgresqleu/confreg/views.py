@@ -1339,6 +1339,7 @@ INNER JOIN confreg_room r ON r.id=t.room_id GROUP BY day
     to_json(r.*) AS room,
     s.room_id,
     CASE WHEN s.status=1 THEN s.title ELSE 'TBD' END AS title,
+    s.abstract,
     s.htmlicon,
     to_char(starttime, 'HH24:MI') || ' - ' || to_char(endtime, 'HH24:MI') AS timeslot,
     extract(epoch FROM endtime-starttime)/60 AS length, min(starttime) OVER days AS firsttime,
