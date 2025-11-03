@@ -688,7 +688,8 @@ simple_reports = {
    fullname AS "Name",
    u.email AS "E-mail",
    spk.attributes->'sponsor'->>'name' AS "Sponsor",
-   CASE WHEN rsoft.id IS NOT NULL THEN 'Registration with same name exists' ELSE '' END AS "Other"
+   CASE WHEN rsoft.id IS NOT NULL THEN 'Registration with same name exists' ELSE '' END AS "Other",
+   rsoft.email AS "Other email"
 FROM confreg_speaker spk
 INNER JOIN confreg_conferencesession_speaker css ON spk.id=css.speaker_id
 INNER JOIN confreg_conferencesession s ON css.conferencesession_id=s.id
