@@ -138,21 +138,31 @@ class TransferwiseApi(object):
                         reference = details['reference']
                         fulldescription = details['details']['reference']
                     except requests.exceptions.HTTPError as e:
-                        if e.response.status_code == 403:
+                        if e.response.status_code == 403 or (e.response.status_code == 404 and activity['resource']['type'] == 'BANK_DETAILS_PAYMENT_RETURN'):
                             # No permissions can mean (1) it's a wise-to-wise transaction, for which we are not allowed to
                             # see details, or (2) a direct debit transaction.
-                            print("No permissions to access transaction {} from {}, adding placeholder without details".format(
-                                activity['resource']['id'],
-                                activity['updatedOn'],
-                            ))
+                            # 404 on a returned payment means, it's a returned payment.
+                            if e.response.status_code == 403:
+                                print("No permissions to access transaction {} from {}, adding placeholder without details".format(
+                                    activity['resource']['id'],
+                                    activity['updatedOn'],
+                                ))
+                            else:
+                                print("Bank details payment returned transaction {} from {}, no details available, adding placeholder without details".format(
+                                    activity['resource']['id'],
+                                    activity['updatedOn'],
+                                ))
 
                             amount, currency = self.parse_transferwise_amount(activity['primaryAmount'])
                             if currency != settings.CURRENCY_ABBREV:
                                 # This is transaction is in a different currency, so ignore it
                                 continue
+                            if activity['resource']['type'] == 'BANK_DETAILS_PAYMENT_RETURN':
+                                # Yes, it's returned with the wrong sign
+                                amount = -amount
                             created = activity['createdOn']
                             reference = ''
-                            fulldescription = 'Transaction with no permissions on details: {}'.format(self.strip_tw_tags(activity['title']))
+                            fulldescription = 'Transaction with no details: {}'.format(self.strip_tw_tags(activity['title']))
                         else:
                             raise
 
