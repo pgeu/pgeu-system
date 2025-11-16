@@ -38,6 +38,7 @@ work from here.
 * Sponsors
     * [Sponsors](sponsors)
 * Advanced
+    * [File upload](upload)
     * [Access tokens](tokens)
     * [Badges](badges)
     * [Integrations](integrations)

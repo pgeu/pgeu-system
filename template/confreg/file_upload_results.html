@@ -1,0 +1,9 @@
+{%extends "confreg/confadmin_base.html" %}
+{%block layoutblock%}
+<h1>File upload results</h1>
+<ul>
+{%for r in results%}
+ <li>{{r}}</li>
+{%endfor%}
+</ul>
+{%endblock%}

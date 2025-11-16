@@ -18,6 +18,7 @@ import postgresqleu.confreg.volsched
 import postgresqleu.confreg.checkin
 import postgresqleu.confreg.twitter
 import postgresqleu.confreg.api
+import postgresqleu.confreg.upload
 import postgresqleu.confsponsor.scanning
 import postgresqleu.confwiki.views
 import postgresqleu.account.views
@@ -277,6 +278,7 @@ urlpatterns.extend([
     re_path(r'^events/admin/([^/]+)/talkvote/changestatus/$', postgresqleu.confreg.views.talkvote_status),
     re_path(r'^events/admin/([^/]+)/talkvote/vote/$', postgresqleu.confreg.views.talkvote_vote),
     re_path(r'^events/admin/([^/]+)/talkvote/comment/$', postgresqleu.confreg.views.talkvote_comment),
+    re_path(r'^events/admin/([^/]+)/upload/$', postgresqleu.confreg.upload.index),
 
     re_path(r'^events/admin/(\w+)/tokendata/([a-z0-9]{64})/(\w+)\.(tsv|csv|json|yaml)(/[^/]+)?$', postgresqleu.confreg.backendviews.tokendata),
 
