@@ -41,6 +41,7 @@ work from here.
     * [File upload](upload)
     * [Access tokens](tokens)
     * [Badges](badges)
+    * [Image generation](imagemaker)
     * [Integrations](integrations)
         * [Campaigns](integrations#campaigns)
     * [Copying from another conference](copyfromother)
