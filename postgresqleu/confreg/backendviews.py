@@ -835,6 +835,9 @@ class DelimitedWriter(object):
         for r in rows:
             self.writer.writerow(r)
 
+    def is_structured(self):
+        return False
+
 
 class JsonWriter(object):
     def __init__(self):
@@ -864,6 +867,9 @@ class JsonWriter(object):
             else:
                 data.append(dict(list(zip(self.columns, r))))
         self.d['data'] = data
+
+    def is_structured(self):
+        return True
 
     @property
     def response(self):
@@ -996,23 +1002,23 @@ def sessiondata(conference, writer):
     result = []
     status_filter = []
     sessions = ConferenceSession.objects.filter(conference=conference)
-    header = ['id', 'title', 'shorttitle', 'abstract', 'status', 'speaker', 'company',
-              'email', 'track', 'starttime', 'endtime', 'recordingconsent', 'room', 'submissionnote']
+    header = ['id', 'title', 'shorttitle', 'abstract', 'status',
+              'track', 'starttime', 'endtime', 'recordingconsent', 'room', 'submissionnote']
+    if writer.is_structured():
+        header.append('speakers')
+    else:
+        header.append('speaker')
+        header.append('company')
+        header.append('email')
     writer.columns(header)
     writer.grouping = False
     for s in sessions:
-        speaker_names = csvembed(map(lambda spk: spk.name, s.speaker.all()))
-        speaker_emails = csvembed(map(lambda spk: spk.email, s.speaker.all()))
-        speaker_companies = csvembed(map(lambda spk: spk.company, s.speaker.all()))
         row = [
             s.id,
             s.title,
             s.shorttitle,
             s.abstract,
             s.status_string,
-            speaker_names,
-            speaker_companies,
-            speaker_emails,
             None if s.track is None else s.track.trackname,
             s.starttime,
             s.endtime,
@@ -1020,6 +1026,22 @@ def sessiondata(conference, writer):
             None if s.room is None else s.room.roomname,
             s.submissionnote,
         ]
+        if writer.is_structured():
+            speakers = []
+            for spk in s.speaker.all():
+                speakers.append({
+                    'name': spk.name,
+                    'email': spk.email,
+                    'company': spk.company
+                })
+            row.append(speakers)
+        else:
+            speaker_names = csvembed(map(lambda spk: spk.name, s.speaker.all()))
+            speaker_emails = csvembed(map(lambda spk: spk.email, s.speaker.all()))
+            speaker_companies = csvembed(map(lambda spk: spk.company, s.speaker.all()))
+            row.append(speaker_names)
+            row.append(speaker_emails)
+            row.append(speaker_companies)
         result.append(row)
     writer.write_rows(result)
 
