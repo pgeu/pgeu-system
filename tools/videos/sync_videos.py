@@ -104,7 +104,6 @@ if __name__ == "__main__":
     parser.add_argument('--skiptracks', type=str, nargs='+', help='Tracks to skip')
     parser.add_argument('--tags', type=str, nargs='+', help='Tags to add')
     parser.add_argument('--playlist', type=str, help='Youtube playlist to sync to (will upload files as necessary)')
-    parser.add_argument('--nosort', action='store_true', help='Disable sorting')
     parser.add_argument('--thumbnails', type=str, help='Directory with thumbnail images to upload')
     parser.add_argument('--titletemplate', type=str, help='Template to apply to titles', default='{{ session.speakers|map(attribute="name")|join(", ") }}: {{ session.title }}')
     parser.add_argument('--bodytemplate', type=str, help='Template to apply to bodies', default='{{ session.abstract }}')
