@@ -333,6 +333,7 @@ urlpatterns.extend([
     re_path(r'^admin/invoices/banktransactions/(\d+)/(\d+)/$', postgresqleu.invoices.backendviews.banktransactions_match_invoice),
     re_path(r'^admin/invoices/banktransactions/(\d+)/multimatch/$', postgresqleu.invoices.backendviews.banktransactions_match_multiple),
     re_path(r'^admin/invoices/banktransactions/(\d+)/m(\d+)/$', postgresqleu.invoices.backendviews.banktransactions_match_matcher),
+    re_path(r'^admin/invoices/banktransactions/multiple/$', postgresqleu.invoices.backendviews.banktransactions_multi_to_one),
     re_path(r'^admin/invoices/bankfiles/$', postgresqleu.invoices.backendviews.bankfiles),
     re_path(r'^admin/invoices/bankfiles/transactions/$', postgresqleu.invoices.backendviews.bankfile_transaction_methodchoice),
     re_path(r'^admin/invoices/bankfiles/transactions/(\d+)/$', postgresqleu.invoices.backendviews.bankfile_transactions),

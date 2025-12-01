@@ -317,6 +317,17 @@ $(document).ready(function() {
             }
         });
     }
+
+    /* Pending bank transactions */
+    $('button#match-multiple-payments').click(function() {
+      const selected = $('input.multi-match-payments:checked');
+      if (selected.length < 2) {
+        alert('Must selected at least two payments!');
+        return;
+      }
+      $('#translist').val($.map(selected, (e) => {return e.value}).join(","));
+      $('#multipleform').submit();
+    });
 });
 
 function _pdf_fields_overlaps_page(field) {

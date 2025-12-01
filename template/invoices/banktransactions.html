@@ -43,10 +43,13 @@
 	  <input type="submit" name="submit" value="Return to sender" class="btn btn-default btn-sm btn-block confirm-btn" data-confirm="This will initiate a return of this transaction to the sender." title="Return this transaction to sender">
 {%endif%}
 	</form>
+        <input type="checkbox" class="multi-match-payments" value="{{trans.id}}"> Match multiple
       </td>
     </tr>
 {%endfor%}
   </table>
+  <button class="btn btn-default" id="match-multiple-payments">Match multiple payments to single invoice</button>
+  <form method="post" action="multiple/" id="multipleform">{% csrf_token %}<input type="hidden" name="translist" id="translist"></form>
 </div>
 
 <h2>Pending matchers</h2>

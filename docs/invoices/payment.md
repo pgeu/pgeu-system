@@ -85,7 +85,7 @@ transaction will *not* show up in the pending bank transaction system.
 
 Any bank transaction not matching the above will be listed on the page
 for managing pending bank transactions. These will have to be handled
-manually. There are three main options for handling them:
+manually.
 
 Match payment to invoice
 :  This can be done if the automatic matcher does not work, but it is
@@ -122,6 +122,11 @@ Discard
 :  The transaction can be discarded completely if it's known to be
 handled manually elsewhere (for example if a manual accounting record
 was already created).
+
+Match multiple
+:   Check this box and then use the button to match multiple payments
+to a single invoice if a payment was done in multiple separate transactions,
+such as when it was initially underpaid and then corrected.
 
 ## Payment methods
 

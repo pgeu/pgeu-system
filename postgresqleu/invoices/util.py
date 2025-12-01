@@ -343,7 +343,7 @@ class InvoiceManager(object):
 
         return self.process_incoming_payment_for_invoice(invoice, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls, logger, method)
 
-    def process_incoming_payment_for_invoice(self, invoice, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls, logger, method):
+    def process_incoming_payment_for_invoice(self, invoice, transamount, transdetails, transcost, incomeaccount, costaccount, extraurls, logger, method, override_accounting_income_rows=None):
         # Do the same as process_incoming_payment, but assume that the
         # invoice has already been matched by other means.
         invoiceid = invoice.pk
@@ -398,8 +398,11 @@ class InvoiceManager(object):
 
         leaveopen = False
         accountingtxt = 'Invoice #%s: %s' % (invoice.id, invoice.title)
-        accrows = [
-            (incomeaccount, accountingtxt, invoice.total_amount - transcost, None),
+        if override_accounting_income_rows:
+            accrows = override_accounting_income_rows
+        else:
+            accrows = [
+                (incomeaccount, accountingtxt, invoice.total_amount - transcost, None),
             ]
         if transcost > 0:
             # If there was a transaction cost known at this point (which

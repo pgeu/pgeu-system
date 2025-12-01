@@ -1,0 +1,40 @@
+{%extends "adm/admin_base.html" %}
+{%load currency%}
+{%block title%}Match pending bank transaction{%endblock%}
+{%block layoutblock %}
+<h1>Multiple payments to invoice</h1>
+
+<h2>Payments</h2>
+<table class="table">
+<thead>
+  <tr>
+    <th>Amount</th>
+    <th>Payment text</th>
+    <th>Comments</th>
+  </tr>
+</thead>
+<tbody>
+{% for trans in transactions %}
+ <tr>
+   <td>{{trans.amount | format_currency}}</td>
+   <td>{{trans.transtext}}</td>
+   <td>{{trans.comments}}</td>
+ </tr>
+{%endfor%}
+ <tr>
+   <th>{{total_amount | format_currency}}</th>
+   <th>Total</th>
+   <th></th>
+ </tr>
+</tbody>
+</table>
+
+<h2>Matching</h2>
+<p>
+  Only invoices with the total amount {{ total_amount | format_currency }} are shown.
+</p>
+
+<form method="post" action=".">{% csrf_token %}
+{%include "confreg/admin_backend_form_content.html" with savebutton="Match invoice" %}
+</form>
+{%endblock%}

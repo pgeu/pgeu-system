@@ -2,8 +2,10 @@ import django.forms
 
 from postgresqleu.util.backendforms import BackendForm, BackendBeforeNewForm
 from postgresqleu.util.widgets import TestButtonWidget
+from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.models import VatRate, VatValidationCache, InvoicePaymentMethod
 
+from postgresqleu.util.currency import format_currency
 from postgresqleu.util.payment import payment_implementation_choices
 
 
@@ -106,3 +108,23 @@ class BankfilePaymentMethodChoiceForm(django.forms.Form):
         methods = kwargs.pop('methods')
         super().__init__(*args, **kwargs)
         self.fields['paymentmethod'].queryset = methods
+
+
+class BanktransactionMultiToOneForm(django.forms.Form):
+    translist = django.forms.CharField(widget=django.forms.HiddenInput)
+    invoice = django.forms.ModelChoiceField(queryset=Invoice.objects.all())
+
+    def __init__(self, *args, **kwargs):
+        self.total_amount = kwargs.pop('total_amount')
+        super().__init__(*args, **kwargs)
+        self.fields['invoice'].queryset = Invoice.objects.filter(
+            paidat__isnull=True,
+            finalized=True,
+            deleted=False,
+            total_amount=self.total_amount,
+        )
+        self.fields['invoice'].label_from_instance = lambda i: "#{} - {}: {}".format(
+            i.id,
+            i.title,
+            format_currency(i.total_amount),
+        )

@@ -28,6 +28,7 @@ from postgresqleu.invoices.backendforms import BackendVatRateForm
 from postgresqleu.invoices.backendforms import BackendVatValidationCacheForm
 from postgresqleu.invoices.backendforms import BackendInvoicePaymentMethodForm
 from postgresqleu.invoices.backendforms import BankfilePaymentMethodChoiceForm
+from postgresqleu.invoices.backendforms import BanktransactionMultiToOneForm
 from postgresqleu.invoices.util import register_bank_transaction
 
 import re
@@ -362,7 +363,7 @@ def bankfile_transactions(request, methodid):
     })
 
 
-def _flag_invoices(request, trans, invoices, pm, fee_account):
+def _flag_invoices(request, translist, invoices, fee_account):
     manager = InvoiceManager()
     invoicelog = []
 
@@ -371,25 +372,44 @@ def _flag_invoices(request, trans, invoices, pm, fee_account):
     def invoicelogger(msg):
         invoicelog.append(msg)
 
-    if len(invoices) == 1:
-        fee = invoices[0].total_amount - trans.amount  # Calculated fee
+    totalamount = sum(t.amount for t in translist)
+    flagtrans = sorted(translist, key=lambda t: -t.amount)[0]
+
+    if len(translist) > 1:
+        txt = "Bank transfers from {}, manually matched".format(
+            ', '.join("method {} with id {} amount {}".format(
+                t.method.id, t.methodidentifier, format_currency(t.amount),
+            ) for t in translist),
+        )
+        override_accounting_income_rows = [
+            (t.method.get_implementation().config('bankaccount'), 'Invoice #{}: {} (partial payment)'.format(invoices[0].id, invoices[0].title), t.amount, invoices[0].accounting_object)
+            for t in translist
+        ]
     else:
-        # There can be no fees when using multiple invoices, so ensure that
-        if sum([i.total_amount for i in invoices]) != trans.amount:
-            raise Exception("Fees not supported for multi-invoice flagging")
+        txt = "Bank transfer from method {0} with id {1}, manually matched".format(translist[0].method.id, translist[0].methodidentifier),
+        override_accounting_income_rows = None
+
+    if len(invoices) == 1 and len(translist) == 1:
+        fee = invoices[0].total_amount - totalamount  # Calculated fee
+    else:
+        # There can be no fees when using multiple invoices or multiple bank transactions, so ensure that
+        if sum([i.total_amount for i in invoices]) != totalamount:
+            raise Exception("Fees not supported for multi-invoice or multi-transaction flagging")
         fee = 0
 
     for invoice in invoices:
         (status, _invoice, _processor) = manager.process_incoming_payment_for_invoice(
             invoice,
             invoice.total_amount,
-            "Bank transfer from method {0} with id {1}, manually matched".format(trans.method.id, trans.methodidentifier),
+            txt,
             fee,
-            pm.config('bankaccount'),
+            flagtrans.method.get_implementation().config('bankaccount'),
             fee_account and fee_account.num,
             [],
             invoicelogger,
-            trans.method)
+            flagtrans.method,
+            override_accounting_income_rows=override_accounting_income_rows,
+        )
 
         if status != manager.RESULT_OK:
             messages.error(request, "Failed to run invoice processor:")
@@ -403,15 +423,11 @@ def _flag_invoices(request, trans, invoices, pm, fee_account):
 
         BankTransferFees(invoice=invoice, fee=fee).save()
 
-        InvoiceLog(message="Manually matched invoice {0} for {1}, bank transaction {2}, fees {3}".format(
-            invoice.id,
-            format_currency(invoice.total_amount),
-            format_currency(trans.amount),
-            format_currency(fee),
-        )).save()
+        InvoiceLog(message=txt).save()
 
     # Remove the pending transaction
-    trans.delete()
+    for t in translist:
+        t.delete()
 
     transaction.commit()
 
@@ -433,9 +449,8 @@ def banktransactions_match_invoice(request, transid, invoiceid):
             fee_account = get_object_or_404(Account, num=get_int_or_error(request.POST, 'account'))
 
         r = _flag_invoices(request,
-                           trans,
+                           [trans, ],
                            [invoice, ],
-                           pm,
                            fee_account)
 
         if r:
@@ -494,7 +509,7 @@ def banktransactions_match_multiple(request, transid):
         raise Http404("No invoices")
 
     if request.method == 'POST':
-        r = _flag_invoices(request, trans, invoices, pm, None)
+        r = _flag_invoices(request, [trans, ], invoices, None)
         if r:
             return HttpResponseRedirect("/admin/invoices/banktransactions/")
         else:
@@ -562,6 +577,54 @@ def banktransactions_match_matcher(request, transid, matcherid):
         'breadcrumbs': [
             ('/admin/invoices/banktransactions/', 'Pending bank transactions'),
             ('/admin/invoices/banktransactions/{0}/'.format(trans.id), 'Transaction'),
+        ],
+        'helplink': 'payment',
+    })
+
+
+def banktransactions_multi_to_one(request):
+    if request.method != 'POST':
+        raise Http404("POST only")
+
+    try:
+        transidlist = list(map(int, request.POST['translist'].split(',')))
+    except ValueError:
+        raise Http404("Invalid format of transaction id list")
+
+    transactions = list(PendingBankTransaction.objects.filter(id__in=transidlist))
+    if len(transidlist) != len(transactions):
+        messages.warning(request, "Underlying list of bank transactions has changed, please try again")
+        return HttpResponseRedirect("../")
+    total_amount = sum(t.amount for t in transactions)
+
+    if 'invoice' in request.POST:
+        form = BanktransactionMultiToOneForm(
+            data=request.POST,
+            total_amount=total_amount,
+        )
+    else:
+        form = BanktransactionMultiToOneForm(
+            initial={'translist': request.POST['translist']},
+            total_amount=total_amount,
+        )
+
+    if form.is_valid():
+        r = _flag_invoices(
+            request,
+            transactions,
+            [form.cleaned_data['invoice'], ],
+            None,
+        )
+        if r:
+            messages.info(request, "Successfully flagged invoice as paid.")
+        return HttpResponseRedirect("../")
+
+    return render(request, 'invoices/banktransactions_multi_to_one.html', {
+        'transactions': transactions,
+        'total_amount': total_amount,
+        'form': form,
+        'breadcrumbs': [
+            ('/admin/invoices/banktransactions/', 'Pending bank transactions'),
         ],
         'helplink': 'payment',
     })
