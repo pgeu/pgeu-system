@@ -19,7 +19,7 @@ from urllib.parse import urlparse
 from psycopg2.extras import DateTimeTZRange
 import zoneinfo
 
-from postgresqleu.util.db import exec_to_single_list, exec_to_scalar
+from postgresqleu.util.db import exec_to_single_list, exec_to_scalar, exec_to_list
 from postgresqleu.util.crypto import generate_rsa_keypair
 from postgresqleu.util.forms import SelectSetValueField
 from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget, MonospaceTextarea
@@ -768,6 +768,35 @@ class BackendRefundPatternForm(BackendForm):
             p.fromdate + xform if p.fromdate else '<empty>',
             p.todate + xform if p.todate else '<empty>',
         ) for p in patterns]
+
+    @classmethod
+    def get_warning_text(cls, conference):
+        patterns = list(RefundPattern.objects.filter(conference=conference))
+        if not patterns:
+            return None
+
+        issues = []
+        if not next((r for r in patterns if r.todate and not r.fromdate), None):
+            issues.append('There is no refund pattern with an open-ended start')
+
+        for fromdate, todate, lagdate, lagdays in exec_to_list("""WITH t AS (
+  SELECT fromdate, todate, lag(todate) OVER (w) AS prevdate, fromdate - lag(todate) OVER (w) as lag
+  FROM confreg_refundpattern
+  WHERE conference_id=%(confid)s AND (fromdate IS NOT NULL OR todate IS NOT NULL)
+  WINDOW w AS (ORDER BY fromdate NULLS FIRST)
+) SELECT * FROM t WHERE lag > 1""", {'confid': conference.id}):
+            issues.append('There is a gap of {} days between {} and {}'.format(lagdays, lagdate, fromdate))
+
+        for r1, r2 in exec_to_list("""WITH t AS (
+  SELECT daterange(fromdate, todate, '[]') AS dr
+  FROM confreg_refundpattern
+  WHERE conference_id=%(confid)s AND (fromdate IS NOT NULL OR todate IS NOT NULL)
+) SELECT a.dr, b.dr FROM t a INNER JOIN t b ON a.dr && b.dr AND a.dr != b.dr ORDER BY 1""", {'confid': conference.id}):
+            issues.append('Date range {} overlaps with {}'.format(r1, r2))
+
+        if issues:
+            return "<ul>{}</ul>".format("".join("<li>{}</li>".format(i) for i in issues))
+        return None
 
 
 class ConferenceSessionSlideForm(BackendForm):
