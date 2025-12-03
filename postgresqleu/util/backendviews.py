@@ -327,6 +327,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
             'allow_copy_previous': formclass.allow_copy_previous,
             'allow_email': formclass.allow_email,
             'assignable_columns': formclass.get_assignable_columns(conference),
+            'warningtext': formclass.get_warning_text(conference),
             'breadcrumbs': breadcrumbs,
             'helplink': formclass.helplink,
         })

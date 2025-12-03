@@ -217,6 +217,10 @@ class BackendForm(ConcurrentProtectedModelForm):
     def numeric_defaultsort(cls):
         return [[cls.list_fields.index(fn), d] for fn, d in cls.defaultsort]
 
+    @classmethod
+    def get_warning_text(cls, conference):
+        return None
+
     @property
     def validator_field(self):
         return self['_validator']

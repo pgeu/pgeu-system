@@ -69,6 +69,14 @@ $(document).ready(function() {
 {%endif%}
 {%endif%}
 
+{% if warningtext %}
+<div class="row">
+  <div class="alert alert-warning">
+    {{ warningtext | safe }}
+  </div>
+</div>
+{% endif %}
+
 {%if allow_new%}
 <div class="row buttonrow">
 <a class="btn btn-default btn-block" href="new/">New {{singular_name}}</a>
