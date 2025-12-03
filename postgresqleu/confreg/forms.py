@@ -106,20 +106,9 @@ class ConferenceRegistrationForm(forms.ModelForm):
 
     def clean_email(self):
         e = self.cleaned_data.get('email').lower()
-        try:
-            r = ConferenceRegistration.objects.get(email=e, conference=self.instance.conference)
-            if r.id != self.instance.id:
-                # A registration is already made with this email address. If this is made by somebody
-                # else but for us, we can in some cases let them know who it is.
-                if r.registrator != getattr(self.instance, 'registrator', None):
-                    raise ValidationError('There is already a registration made with this email address, that is part of a multiple registration entry made by {0} {1} ({2}).'.format(
-                        r.registrator.first_name,
-                        r.registrator.last_name,
-                        r.registrator.email))
-                # Else give a generic error
-                raise ValidationError('There is already a registration made with this email address')
-        except ConferenceRegistration.DoesNotExist:
-            pass
+        # Is there another non-canceled registration made for this email?
+        if ConferenceRegistration.objects.exclude(id=self.instance.id).filter(email=e, conference=self.instance.conference, canceledat__isnull=True).exists():
+            raise ValidationError('There is already a registration made with this email address')
         return e
 
     def clean_vouchercode(self):

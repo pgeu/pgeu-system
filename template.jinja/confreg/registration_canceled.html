@@ -77,4 +77,15 @@ invoices and receipts in the <a href="/invoices/">invoice section</a>.
 
 </dl>
 
+<a name="startover"></a>
+<h2>New registration</h2>
+<p>
+  If you want to make a new registration from this account, you can do
+  so here.  Your existing, canceled, registration will still be listed
+  under "other registrations".
+</p>
+<form method="post" action="/events/{{conference.urlname}}/register/startover/">{{ csrf_input }}
+  <input type="submit" value="Start a new registration">
+</form>
+
 {%endblock%}

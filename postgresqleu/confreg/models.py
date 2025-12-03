@@ -696,8 +696,14 @@ class ConferenceRegistration(models.Model):
 
     class Meta:
         unique_together = (
-            ('attendee_id', 'conference_id'),
-            ('email', 'conference_id'),
+            ('attendee', 'conference'),
+        )
+        constraints = (
+            models.UniqueConstraint(
+                name='reg_unique_email_for_not_canceled',
+                fields=['conference', 'email'],
+                condition=Q(canceledat__isnull=True),
+            ),
         )
 
     @property

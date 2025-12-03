@@ -530,6 +530,29 @@ def changereg(request, confname):
 
 @login_required
 @transaction.atomic
+def reg_start_over(request, confname):
+    conference = get_conference_or_404(confname)
+    reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
+
+    if not reg.canceledat:
+        return HttpResponse("Can only start over from a canceled registration!")
+
+    reglog(reg, "Disconnecting registration from user so they can re-register", request.user)
+
+    if reg.registrator:
+        # This registration was already made by somebody else, so just log it
+        reglog(reg, "Registration already managed by another user, just removing connection")
+    else:
+        reg.registrator = reg.attendee
+    reg.attendee = None
+
+    reg.save(update_fields=['attendee', 'registrator'])
+
+    return HttpResponseRedirect("../self/")
+
+
+@login_required
+@transaction.atomic
 def reg_config_messaging(request, confname):
     conference = get_conference_or_404(confname)
     reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user, payconfirmedat__isnull=False)
@@ -4812,7 +4835,7 @@ def crossmail_send(request):
         q.write(" WHERE (userid IS NULL OR userid NOT IN (SELECT user_id FROM confreg_globaloptout))\n")
         if excs:
             q.write(" and email NOT IN (SELECT email FROM excs)\n")
-        q.write("ORDER BY email")
+        q.write("ORDER BY email, userid NULLS LAST")  # If there is a userid attached, pick that entry in the DISTINCT ON. Can happen for canceled regs who canceled and then re-registered.
 
         return exec_to_dict(q.getvalue())
 
