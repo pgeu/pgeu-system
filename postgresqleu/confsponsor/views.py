@@ -978,7 +978,7 @@ def sponsor_admin_dashboard(request, confurlname):
     # Maybe we could do this with the ORM based on data we already have, but SQL is easier
     curs = connection.cursor()
     curs.execute("""
-SELECT l.levelname, s.name, b.benefitname, b.deadline, array_agg(
+SELECT l.levelname, s.id, s.name, b.benefitname, b.deadline, array_agg(
     CASE WHEN scb.declined='t' THEN 1 WHEN scb.confirmed='f' THEN 2 WHEN scb.confirmed='t' THEN 3 ELSE 0 END
     ) AS status
 FROM confsponsor_sponsor s
@@ -996,15 +996,15 @@ ORDER BY l.levelcost DESC, l.levelname, s.name, b.sortkey, b.benefitname""", {'c
     lastsponsor = None
     currentsponsor = []
     firstsponsor = True
-    for levelname, sponsor, benefitname, deadline, status in curs.fetchall():
-        if lastsponsor != sponsor:
+    for levelname, sponsorid, sponsor, benefitname, deadline, status in curs.fetchall():
+        if lastsponsor != sponsorid:
             # New sponsor...
             if currentsponsor:
                 # We collected some data, so store it
                 currentmatrix.append(currentsponsor)
                 firstsponsor = False
-            currentsponsor = [sponsor, ]
-            lastsponsor = sponsor
+            currentsponsor = [(sponsorid, sponsor), ]
+            lastsponsor = sponsorid
         if levelname != currentlevel:
             if currentlevel:
                 benefitmatrix[currentlevel] = {
@@ -1013,8 +1013,8 @@ ORDER BY l.levelcost DESC, l.levelname, s.name, b.sortkey, b.benefitname""", {'c
                 }
                 benefits = []
                 currentmatrix = []
-                lastsponsor = sponsor
-                currentsponsor = [sponsor, ]
+                lastsponsor = sponsorid
+                currentsponsor = [(sponsorid, sponsor), ]
                 firstsponsor = True
             currentlevel = levelname
         if firstsponsor:

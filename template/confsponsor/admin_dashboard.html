@@ -172,7 +172,7 @@ This matrix gives a quick overview of the status of the different benefits for e
 {%for r in level.matrix%}
  <tr>
  {%for bb in r%}<td>
-{%if forloop.first%}{{bb}}{%else%}{# First in loop holds sponsor name, for the rest we have potentially several labels to show #}
+{%if forloop.first%}<a href="{{bb.0}}/">{{bb.1}}</a>{%else%}{# First in loop holds sponsor name, for the rest we have potentially several labels to show #}
 {%for b in bb%}
 {%if b == 0%}{%if r.bazinga%}x{%endif%}{% arrayindex level.benefits forloop.parentloop.counter0 -1 as benefit%}{%if benefit.expired%}<span class="label label-default sponsormatrixlabel" title="Expired {{benefit.deadline}}">Expired</span>{%endif%}
 {%elif b == 1%}<span class="label label-danger sponsormatrixlabel">Declined</span>
