@@ -1,0 +1,53 @@
+{%extends "base.html" %}
+{%block title%}Cancel registration - {{conference}}{%endblock%}
+{%block extrahead%}
+<link rel="stylesheet" type="text/css" href="/media/css/pgeuconf.css">
+{{ super() }}
+{%endblock%}
+
+{%block content %}
+<h1>Cancel registration</h1>
+<p>
+  Here you can request cancellation of your registration, and a receive a refund
+  depending on the refunding rules.
+</p>
+
+{% if reg.regtype.cost > 0 %}
+{% if reg.prepaidvoucher_set.exists %}
+<p>
+  This registration was made using a voucher, and is therefor non-refundable. If
+  you have any questions about this, please contact the conference organizers.
+</p>
+{% elif refundpatterns %}
+<h2>Refund rules</h2>
+<ul>
+{%for r in refundpatterns %}
+  <li>{%if r.matches_today %}<strong>{%endif%}If you cancel
+{% if r.fromdate and r.todate %}between {{ r.fromdate }} and {{ r.todate }}
+{% elif r.todate %}on or before {{ r.todate }}
+{% else %}after {{ r.fromdate }}
+{% endif %}
+we will refund {{ r.percent }}% of the
+    cost{%if r.fees %}, minus an administrative fee of {{ r.fees | format_currency }}{%if conference.vat_registrations %} ({{ ((1+conference.vat_registrations.vatpercent/100) * r.fees) | format_currency }} incl VAT){% endif %}{% endif %}.{%if r.matches_today %}</strong>{%endif%}</li>
+{% endfor %}
+</ul>
+{% else %}
+<p>
+  No automatic refund rules are defined for this conference. Please see
+  the conference website or contact the organizers for information before
+  canceling.
+</p>
+{% endif %}{# refundpatterns #}
+{% else %}{# cost > 0 #}
+<p>
+  Your registration was free. We still appreciate you letting us know you're not coming by canceling!
+</p>
+{% endif %}
+
+<h2>Cancel</h2>
+<form method="post" action=".">{{ csrf_input }}
+  Reason for canceling (optional): <input type="text" name="cancelreason"><br/>
+  <input type="checkbox" name="confirm" required value="1"> I confirm that I wan't to cancel my registration, understanding that there is no way to undo the cancelation.<br/>
+  <input type="submit" value="Cancel my registration">
+</form>
+{% endblock %}

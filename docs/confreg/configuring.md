@@ -242,6 +242,11 @@ needs. This is typically turned off once the final list of such
 information has to be locked in with a venue, or when badges are
 printed (in case some of this information is used on the badges).
 
+Allow canceling registrations
+: If enabled, a user can request a
+[cancellation](registrations#cancel) from their registration
+page. Cancellation by administrators is always allowed.
+
 Call for papers open
 : If the call for papers is open
 

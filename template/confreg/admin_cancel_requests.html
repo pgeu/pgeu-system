@@ -1,0 +1,47 @@
+{%extends "confreg/confadmin_base.html" %}
+{%load currency%}
+{%block title%}Cancellation requests{%endblock%}
+
+{%block layoutblock%}
+<h1>Cancellation requests</h1>
+
+<table class="table table-bordered table-striped table-hover table-condensed">
+  <tr>
+    <th>Attendee</th>
+    <th>Registration type</th>
+    <th>Cancel requested</th>
+    <th>Cancel completed</th>
+    <th>Refund rule</th>
+    <th>Reason</th>
+  </tr>
+{%for r in requested %}
+  <tr>
+    <td><a href="../regdashboard/list/{{r.id}}/">{{r.fullname}}</a></td>
+    <td>{{r.regtype.regtype}}</td>
+    <td>{{r.cancelrequestedat}}</td>
+    <td>{{r.canceledat|default:""}}</td>
+    <td>{%if not r.canceledat%}
+{% if r.matched_refund_rules %}
+{% for m in r.matched_refund_rules %}
+<form method="post" action="../regdashboard/list/{{r.id}}/cancel/">{% csrf_token %}
+<input type="hidden" name="reason" value="{{r.cancelreason|escape}}">
+<input type="hidden" name="refund" value="{{m.id}}">
+{{m.percent}}%, {{m.fees | format_currency}}
+<input type="submit" value="Cancel">
+</form>
+{% endfor %}
+{% else %}{{ r.refund_pattern_reason | default:"No match" }}. <form method="post" action="../regdashboard/list/{{r.id}}/cancel/">{% csrf_token %}
+<input type="hidden" name="reason" value="{{r.cancelreason|escape}}">
+<input type="hidden" name="refund" value="-1">
+<input type="submit" value="Manually cancel">
+{% endif %}
+{% endif %}
+</td>
+    <td>{{r.cancelreason}}</td>
+  </tr>
+{%endfor%}
+</table>
+
+<a class="btn btn-default btn-block" href="../">Back</a>
+
+{%endblock%}

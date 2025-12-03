@@ -196,6 +196,16 @@ Existing invoices are re-attached to the new registrations, so after a
 transfer there will be a mismatch between what's on the invoice and
 what's in the registration, but they are both traceable to each other.
 
+## Canceling a registration <a name="cancel"></a>
+
+If *allow canceling registrations* is enabled on a conference, a
+registered user can request a cancelation by filling out a form on
+their registration page. This will generate a "cancel request", which
+the administrator will then fulfill. The cancelation request will
+record the original time of the cancelation and automatically default
+to the refund pattern matching that date, even if the cancellation
+happens later, but the administrator can always override.
+
 ## Reference
 
 ### Registration types <a name="regtypes"></a>

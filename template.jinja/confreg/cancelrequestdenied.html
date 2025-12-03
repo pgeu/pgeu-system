@@ -1,0 +1,15 @@
+{%extends "base.html" %}
+{%block title%}Cancel registration - {{conference}}{%endblock%}
+{%block extrahead%}
+<link rel="stylesheet" type="text/css" href="/media/css/pgeuconf.css">
+{{ super() }}
+{%endblock%}
+
+{%block content %}
+<h1>Cancel registration</h1>
+<p>
+  We are unable to automatically process a cancelation of your
+  registration because {{ reason }}. Please contact the conference
+  organizers if you need to cancel.
+</p>
+{% endblock %}

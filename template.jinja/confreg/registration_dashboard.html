@@ -280,6 +280,16 @@ registration is completed!
 </form>
 {%endif%}
 
-{%endif%}
+{%endif%}{# availableoptions #}
+
+{%if can_cancel %}
+<h2>Cancel registration</h2>
+<p>
+  If you need to cancel your registration, you can request that here.
+</p>
+<form method="post" action="{{redir_root}}cancelreg/">{{ csrf_input }}
+  <input type="submit" name="submit" value="Request cancellation">
+</form>
+{% endif %}
 
 {%endblock%}

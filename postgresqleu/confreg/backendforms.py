@@ -82,7 +82,7 @@ class BackendConferenceForm(BackendForm):
         model = Conference
         fields = ['registrationopen', 'registrationtimerange', 'callforpapersopen', 'callforpaperstimerange',
                   'callforsponsorsopen', 'callforsponsorstimerange', 'feedbackopen', 'checkinactive',
-                  'conferencefeedbackopen', 'scheduleactive', 'tbdinschedule', 'sessionsactive', 'cardsactive', 'allowedit',
+                  'conferencefeedbackopen', 'scheduleactive', 'tbdinschedule', 'sessionsactive', 'cardsactive', 'allowedit', 'allowcancel',
                   'promoactive', 'promotext', 'promopicurl',
                   'twitter_timewindow_start', 'twitter_timewindow_end', 'twitter_postpolicy',
                   'schedulewidth', 'pixelsperminute', 'notifyregs', 'notifysessionstatus', 'notifyvolunteerstatus',
@@ -106,7 +106,7 @@ class BackendConferenceForm(BackendForm):
         {'id': 'promo', 'legend': 'Website promotion', 'fields': ['promoactive', 'promotext', 'promopicurl']},
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', 'twitter_postpolicy', ]},
         {'id': 'fields', 'legend': 'Registration fields', 'fields': ['askpronouns', 'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent', 'dynafields', 'scannerfields', ]},
-        {'id': 'steps', 'legend': 'Steps', 'fields': ['registrationopen', 'registrationtimerange', 'allowedit', 'callforpapersopen', 'callforpaperstimerange', 'callforsponsorsopen', 'callforsponsorstimerange', 'scheduleactive', 'tbdinschedule', 'sessionsactive', 'cardsactive', 'checkinactive', 'conferencefeedbackopen', 'feedbackopen']},
+        {'id': 'steps', 'legend': 'Steps', 'fields': ['registrationopen', 'registrationtimerange', 'allowedit', 'allowcancel', 'callforpapersopen', 'callforpaperstimerange', 'callforsponsorsopen', 'callforsponsorstimerange', 'scheduleactive', 'tbdinschedule', 'sessionsactive', 'cardsactive', 'checkinactive', 'conferencefeedbackopen', 'feedbackopen']},
         {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['callforpapersmaxsubmissions', 'skill_levels', 'callforpaperstags', 'callforpapersrecording', 'showvotes', 'scoring_method']},
         {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', ]},
         {'id': 'display', 'legend': 'Display', 'fields': ['jinjaenabled', 'videoproviders', ]},

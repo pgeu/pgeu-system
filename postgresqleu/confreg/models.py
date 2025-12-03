@@ -186,6 +186,7 @@ class Conference(models.Model):
     feedbackopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Session feedback open")
     conferencefeedbackopen = models.BooleanField(blank=False, null=False, default=False, verbose_name="Conference feedback open")
     allowedit = models.BooleanField(blank=False, null=False, default=True, verbose_name="Allow editing registrations")
+    allowcancel = models.BooleanField(blank=False, null=False, default=True, verbose_name="Allow canceling registrations")
     scheduleactive = models.BooleanField(blank=False, null=False, default=False, verbose_name="Schedule publishing active")
     sessionsactive = models.BooleanField(blank=False, null=False, default=False, verbose_name="Session list publishing active")
     cardsactive = models.BooleanField(blank=False, null=False, default=False, verbose_name="Card publishing active", help_text='Publish "cards" for sessions and speakers')
@@ -264,6 +265,7 @@ class Conference(models.Model):
                         'confirmpolicy', 'conferencedatestr', 'location',
                         'feedbackopen', 'skill_levels', 'urlname', 'conferencename',
                         'series', 'sendwelcomemail', 'scannerfields_list',
+                        'vat_registrations',
     )
 
     def safe_export(self):
@@ -660,6 +662,10 @@ class ConferenceRegistration(models.Model):
     checkedinat = models.DateTimeField(null=True, blank=True, verbose_name="Checked in at")
     checkedinby = models.ForeignKey('ConferenceRegistration', null=True, blank=True, verbose_name="Checked by by", on_delete=models.CASCADE)
     checkinmessage = models.CharField(max_length=500, null=False, blank=True, verbose_name='Check-in message', help_text='Message shown when the attendee is checked in')
+
+    # Cancel request
+    cancelrequestedat = models.DateTimeField(null=True, blank=True)
+    cancelreason = models.CharField(max_length=500, null=False, blank=True)
 
     # If an invoice is generated, link to it here so we can find our
     # way back easily.
@@ -1538,6 +1544,20 @@ class RefundPattern(models.Model):
     fees = models.DecimalField(decimal_places=2, max_digits=10, null=False, verbose_name="Fees not to refund", help_text="This amount will be deducted from the calculated refund amount. Amount should be entered *without* VAT.")
     fromdate = models.DateField(null=True, blank=True, verbose_name="From date", help_text="Suggest for refunds starting from this date")
     todate = models.DateField(null=True, blank=True, verbose_name="To date", help_text="Suggest for refunds until this date")
+
+    _safe_attributes = ('percent', 'fees', 'fromdate', 'todate')
+
+    @cached_property
+    def matches_today(self):
+        return self.matches_date(today_conference())
+
+    def matches_date(self, date):
+        if self.fromdate and self.todate:
+            return date >= self.fromdate and date <= self.todate
+        elif self.fromdate:
+            return date >= self.fromdate
+        else:
+            return date <= self.todate
 
 
 class AggregatedTshirtSizes(models.Model):

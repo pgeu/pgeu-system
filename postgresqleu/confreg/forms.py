@@ -378,6 +378,12 @@ class RegistrationChangeForm(forms.ModelForm):
         return d
 
 
+class RequestCancelForm(forms.Form):
+    cancelreason = forms.CharField(label="Reason for cancelation", required=False,
+                                   help_text="Giving the reason is optional, but helps us in our planning work")
+    confirm = forms.BooleanField(label="Confirm", required=True)
+
+
 rating_choices = (
     (1, '1 (Worst)'),
     (2, '2'),

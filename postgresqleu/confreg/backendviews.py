@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.db import transaction, connection
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.core.exceptions import PermissionDenied
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse, HttpResponseRedirect, Http404
@@ -36,6 +36,7 @@ from .models import ShirtSize
 from .models import PendingAdditionalOrder
 from .models import ConferenceTweetQueue
 from .models import MessagingProvider
+from .models import RefundPattern
 
 from postgresqleu.invoices.models import Invoice
 from postgresqleu.invoices.util import InvoiceManager
@@ -1141,4 +1142,30 @@ def merge_speakers(request, speakerid):
         'what': 'speaker profiles',
         'savebutton': 'Merge into speaker profile, deleting the source profile',
         'cancelurl': '../',
+    })
+
+
+def cancelrequests(request, urlname):
+    conference = get_authenticated_conference(request, urlname)
+
+    patterns = RefundPattern.objects.filter(conference=conference).filter(Q(fromdate__isnull=False) | Q(todate__isnull=False)).order_by('fromdate')
+    requested = list(ConferenceRegistration.objects.select_related('regtype').filter(conference=conference, cancelrequestedat__isnull=False).order_by('canceledat', 'cancelrequestedat'))
+
+    for r in requested:
+        if r.regtype.cost == 0:
+            r.refund_pattern_reason = 'Free registration'
+        elif r.prepaidvoucher_set.exists():
+            r.refund_pattern_reason = 'Made using voucher'
+        else:
+            matches = []
+            for p in patterns:
+                if p.matches_date(r.cancelrequestedat.date()):
+                    matches.append(p)
+
+            r.matched_refund_rules = matches
+
+    return render(request, 'confreg/admin_cancel_requests.html', {
+        'conference': conference,
+        'requested': requested,
+        'helplink': 'registrations#cancel',
     })

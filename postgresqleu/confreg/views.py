@@ -43,6 +43,7 @@ from .forms import AttendeeMailForm, WaitlistOfferForm, WaitlistConfirmForm, Wai
 from .forms import SendExternalEmailForm
 from .forms import NewMultiRegForm, MultiRegInvoiceForm
 from .forms import SessionSlidesUrlForm, SessionSlidesFileForm
+from .forms import RequestCancelForm
 from .util import render_conference_response
 from .util import invoicerows_for_registration, summarize_registration_invoicerows, notify_reg_confirmed, InvoicerowsException
 from .util import get_invoice_autocancel, cancel_registration, send_welcome_email, send_attachment_email
@@ -224,6 +225,7 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
         'current_messaging_info': current_messaging_info,
         'messaging': messaging,
         'sponsorships': sponsorships,
+        'can_cancel': conference.allowcancel and today_conference() < conference.startdate,
     })
 
 
@@ -549,6 +551,68 @@ def reg_start_over(request, confname):
     reg.save(update_fields=['attendee', 'registrator'])
 
     return HttpResponseRedirect("../self/")
+
+
+@login_required
+@transaction.atomic
+def reg_cancel_request(request, confname):
+    conference = get_conference_or_404(confname)
+    reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
+
+    # Sync checks with _admin_registration_cancel_precheck
+    if not reg.payconfirmedat:
+        return HttpResponse("This registration is not completed.")
+    if reg.canceledat:
+        return HttpResponseRedirect("../")
+
+    if reg.cancelrequestedat:
+        return render_conference_response(request, conference, 'reg', 'confreg/cancelrequestqueued.html', {
+            'reg': reg,
+        })
+
+    if not (conference.allowcancel and today_conference() < conference.startdate):
+        return render_conference_response(request, conference, 'reg', 'confreg/cancelrequestdenied.html', {
+            'reg': reg,
+            'reason': conference.allowcancel and 'the conference has already started' or 'the conference does not allow automated canceling',
+        })
+
+    if reg.pendingadditionalorder_set.exists():
+        return render_conference_response(request, conference, 'reg', 'confreg/cancelrequestdenied.html', {
+            'reg': reg,
+            'reason': 'separately invoiced additional options exists on the registration',
+        })
+    if request.method != 'POST':
+        return HttpResponseRedirect("../")
+
+    if request.POST.get('submit', None) == 'Request cancellation':
+        form = RequestCancelForm()
+    else:
+        form = RequestCancelForm(data=request.POST)
+        if form.is_valid():
+            reglog(reg, "Requested cancellation", user=request.user)
+            reg.cancelrequestedat = timezone.now()
+            reg.cancelreason = form.cleaned_data['cancelreason']
+            reg.save(update_fields=['cancelrequestedat', 'cancelreason'])
+
+            send_conference_notification(
+                conference,
+                'Cancel request',
+                "User {} {} <{}> requested cancellation.\n\nProcess at: {}/events/admin/{}/cancelrequests/\n".format(
+                    reg.firstname,
+                    reg.lastname,
+                    reg.email,
+                    settings.SITEBASE,
+                    confname,
+                )
+            )
+
+            return HttpResponseRedirect(".")
+
+    return render_conference_response(request, conference, 'reg', 'confreg/cancelrequest.html', {
+        'reg': reg,
+        'form': form,
+        'refundpatterns': RefundPattern.objects.filter(conference=conference).filter(Q(fromdate__isnull=False) | Q(todate__isnull=False)).order_by(F('fromdate').asc(nulls_first=True)),
+    })
 
 
 @login_required
@@ -3546,6 +3610,7 @@ def admin_dashboard_single(request, urlname):
             'pending_sponsor_benefits': exec_to_scalar("SELECT EXISTS (SELECT 1 FROM confsponsor_sponsorclaimedbenefit b INNER JOIN confsponsor_sponsor s ON s.id=b.sponsor_id WHERE s.conference_id=%(confid)s AND NOT (b.confirmed OR b.declined))", {'confid': conference.id}),
             'pending_tweets': ConferenceTweetQueue.objects.filter(conference=conference, sent=False).exists(),
             'pending_tweet_approvals': ConferenceTweetQueue.objects.filter(conference=conference, approved=False).exists(),
+            'pending_cancel_requests': ConferenceRegistration.objects.filter(conference=conference, cancelrequestedat__isnull=False, canceledat__isnull=True),
         })
 
 
@@ -3808,6 +3873,7 @@ def admin_registration_multicancel(request, urlname):
 
 
 def _admin_registration_cancel_precheck(regs):
+    # Sync with reg_cancel_request
     for reg in regs:
         if reg.canceledat:
             yield (reg, "Registration already canceled")
@@ -4003,7 +4069,7 @@ def _admin_registration_cancel(request, conference, redirurl, regs):
         'regtotalnovat': regtotalnovat,
         'regtotalwithvat': regtotalwithvat,
         'regidlist': ",".join([str(r.id) for r in regs]),
-        'helplink': 'registrations',
+        'helplink': 'registrations#cancel',
         'breadcrumbs': [
             ('/events/admin/{0}/regdashboard/'.format(conference.urlname), 'Registration dashboard'),
             ('/events/admin/{0}/regdashboard/list/'.format(conference.urlname), 'Registration list'),
