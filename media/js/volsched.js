@@ -35,8 +35,12 @@ function update_slot_info(slot, regid, is_admin, is_volunteer) {
 
         var row = $('<div/>').data('volid', assignment.id).addClass('row');
 
-        /* Name of volunteer */
-        row.append($('<div/>').addClass('col-md-6').text(assignment.volunteer));
+        /* Name of volunteer, link if it's an admin */
+        if (is_admin) {
+          row.append($('<div/>').addClass('col-md-6').append($('<a/>').attr('href', '../regdashboard/list/' + assignment.volid + '/').text(assignment.volunteer)));
+        } else {
+          row.append($('<div/>').addClass('col-md-6').text(assignment.volunteer));
+        }
 
         /* Label showing if confirmed or not */
         if (assignment.vol_confirmed && assignment.org_confirmed) {
