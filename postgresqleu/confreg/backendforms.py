@@ -1189,9 +1189,15 @@ class BackendConferenceSpeakerForm(BackendGlobalSpeakerForm):
 
 class BackendConferenceSessionSlotForm(BackendForm):
     helplink = 'schedule#slots'
-    list_fields = ['starttime', 'endtime', ]
+    list_fields = ['starttime', 'endtime', 'slotlength', ]
     allow_copy_previous = True
     copy_transform_form = BackendTransformConferenceDateTimeForm
+    verbose_field_names = {
+        'slotlength': 'Slot length',
+    }
+    queryset_extra_fields = {
+        'slotlength': 'endtime - starttime',
+    }
 
     class Meta:
         model = ConferenceSessionScheduleSlot
@@ -1243,9 +1249,15 @@ class BackendMergeSpeakerForm(django.forms.Form):
 
 class BackendVolunteerSlotForm(BackendForm):
     helplink = 'volunteers#slots'
-    list_fields = ['timerange', 'title', 'min_staff', 'max_staff', ]
+    list_fields = ['timerange', 'slotlength', 'title', 'min_staff', 'max_staff', ]
     allow_copy_previous = True
     copy_transform_form = BackendTransformConferenceDateTimeForm
+    verbose_field_names = {
+        'slotlength': 'Slot length',
+    }
+    queryset_extra_fields = {
+        'slotlength': 'upper(timerange)-lower(timerange)',
+    }
 
     class Meta:
         model = VolunteerSlot
