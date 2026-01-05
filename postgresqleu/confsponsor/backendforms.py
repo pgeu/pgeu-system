@@ -409,9 +409,13 @@ class BackendSponsorshipLevelForm(BackendForm):
 
 class BackendSponsorshipContractForm(BackendForm):
     helplink = 'sponsors#contract'
-    list_fields = ['contractname', ]
+    list_fields = ['contractname', 'digisignstatus']
     exclude_fields_from_validation = ['contractpdf', ]
     allow_copy_previous = True
+    queryset_calculated_fields = ['digisignstatus', ]
+    verbose_field_names = {
+        'digisignstatus': 'Digital signature setup status',
+    }
 
     class Meta:
         model = SponsorshipContract
@@ -432,6 +436,11 @@ class BackendSponsorshipContractForm(BackendForm):
         # so things cannot be removed. Yes, that's kind of funky.
         if self.instance.pk:
             self.fields['contractpdf'].required = False
+
+    @classmethod
+    def get_rowclass_and_title(self, obj, cache):
+        ok, why = obj.get_digisignstatus(cache)
+        return '' if ok else 'warning', None
 
     @classmethod
     def copy_from_conference(self, targetconf, sourceconf, idlist):

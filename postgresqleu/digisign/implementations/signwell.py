@@ -277,6 +277,14 @@ class Signwell(BaseProvider):
             'breadcrumbs': breadcrumbs,
         })
 
+    def get_field_status(self, fieldjson):
+        if 'signwellfields' not in fieldjson:
+            return False, 'WARNING: Digital signatures not configured'
+        num = len(fieldjson['signwellfields'])
+        if not num:
+            return False, 'WARNING: No digisign fields configured'
+        return True, "{} fields configured".format(num)
+
     def cleanup(self):
         # Get orphaned documents to remove
         r = requests.get('https://www.signwell.com/api/v1/documents', headers={

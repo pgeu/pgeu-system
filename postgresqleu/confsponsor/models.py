@@ -42,6 +42,19 @@ class SponsorshipContract(models.Model):
     def __str__(self):
         return self.contractname
 
+    def get_digisignstatus(self, cache):
+        if self.conference.contractprovider:
+            if 'impl' not in cache:
+                cache['impl'] = self.conference.contractprovider.get_implementation()
+
+            return cache['impl'].get_field_status(self.fieldjson)
+        else:
+            return True, "Digital signatures not enabled for conference"
+
+    def _display_digisignstatus(self, cache):
+        ok, why = self.get_digisignstatus(cache)
+        return why
+
 
 class SponsorshipLevel(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
