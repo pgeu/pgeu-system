@@ -409,7 +409,6 @@ class BackendSponsorshipLevelForm(BackendForm):
 
 class BackendSponsorshipContractForm(BackendForm):
     helplink = 'sponsors#contract'
-    list_fields = ['contractname', 'digisignstatus']
     exclude_fields_from_validation = ['contractpdf', ]
     allow_copy_previous = True
     queryset_calculated_fields = ['digisignstatus', ]
@@ -420,6 +419,13 @@ class BackendSponsorshipContractForm(BackendForm):
     class Meta:
         model = SponsorshipContract
         fields = ['contractname', 'contractpdf', ]
+
+    @classmethod
+    def get_list_fields(self, conference):
+        if conference.contractprovider:
+            return ['contractname', 'digisignstatus']
+        else:
+            return ['contractname', ]
 
     @property
     def extrabuttons(self):

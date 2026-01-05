@@ -174,6 +174,10 @@ class BackendForm(ConcurrentProtectedModelForm):
         pass
 
     @classmethod
+    def get_list_fields(cls, conference):
+        return cls.list_fields
+
+    @classmethod
     def get_column_filters(cls, conference):
         return {}
 
@@ -215,8 +219,8 @@ class BackendForm(ConcurrentProtectedModelForm):
         return self.verbose_name_plural or self.Meta.model._meta.verbose_name_plural
 
     @classmethod
-    def numeric_defaultsort(cls):
-        return [[cls.list_fields.index(fn), d] for fn, d in cls.defaultsort]
+    def numeric_defaultsort(cls, conference):
+        return [[cls.get_list_fields(conference).index(fn), d] for fn, d in cls.defaultsort]
 
     @classmethod
     def get_warning_text(cls, conference):

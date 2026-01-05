@@ -257,7 +257,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
             objects = objects.select_related(*formclass.queryset_select_related)
         if formclass.queryset_extra_fields:
             objects = objects.extra(select=formclass.queryset_extra_fields)
-        objects = objects.only(*(formclass.list_fields - formclass.queryset_extra_fields.keys() - set(formclass.queryset_calculated_fields)) | set(formclass.queryset_extra_columns))
+        objects = objects.only(*(formclass.get_list_fields(conference) - formclass.queryset_extra_fields.keys() - set(formclass.queryset_calculated_fields)) | set(formclass.queryset_extra_columns))
 
         if request.method == "POST":
             if request.POST.get('operation') == 'assign':
@@ -306,7 +306,7 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
         cache = {}
         values = [{
             'id': o.pk,
-            'vals': [getattr(o, '_display_{0}'.format(f))(cache) if hasattr(o, '_display_{0}'.format(f)) else getattr(o, f) for f in formclass.list_fields],
+            'vals': [getattr(o, '_display_{0}'.format(f))(cache) if hasattr(o, '_display_{0}'.format(f)) else getattr(o, f) for f in formclass.get_list_fields(conference)],
         } | dict(zip(["rowclass", "rowtitle"], formclass.get_rowclass_and_title(o, cache))) for o in objects]
 
         return render(request, 'confreg/admin_backend_list.html', {
@@ -317,10 +317,10 @@ def backend_list_editor(request, urlname, formclass, resturl, allow_new=True, al
             'title': formclass._verbose_name_plural().capitalize(),
             'singular_name': formclass._verbose_name(),
             'plural_name': formclass._verbose_name_plural(),
-            'headers': [formclass.get_field_verbose_name(f) for f in formclass.list_fields],
+            'headers': [formclass.get_field_verbose_name(f) for f in formclass.get_list_fields(conference)],
             'coltypes': formclass.coltypes,
             'filtercolumns': formclass.get_column_filters(conference),
-            'defaultsort': formclass.numeric_defaultsort(),
+            'defaultsort': formclass.numeric_defaultsort(conference),
             'return_url': return_url,
             'allow_new': allow_new,
             'allow_delete': allow_delete,
@@ -508,7 +508,7 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
         if formclass.queryset_extra_fields:
             objects = objects.extra(select=formclass.queryset_extra_fields)
         cache = {}
-        values = [{'id': o.pk, 'vals': [getattr(o, '_display_{0}'.format(f))(cache) if hasattr(o, '_display_{0}'.format(f)) else getattr(o, f) for f in formclass.list_fields]} for o in objects]
+        values = [{'id': o.pk, 'vals': [getattr(o, '_display_{0}'.format(f))(cache) if hasattr(o, '_display_{0}'.format(f)) else getattr(o, f) for f in formclass.get_list_fields(conference)]} for o in objects]
         return render(request, 'confreg/admin_backend_list.html', {
             'conference': conference,
             'basetemplate': 'confreg/confadmin_base.html',
@@ -516,10 +516,10 @@ def backend_handle_copy_previous(request, formclass, restpieces, conference):
             'title': formclass._verbose_name_plural().capitalize(),
             'singular_name': formclass._verbose_name(),
             'plural_name': formclass._verbose_name_plural(),
-            'headers': [formclass.get_field_verbose_name(f) for f in formclass.list_fields],
+            'headers': [formclass.get_field_verbose_name(f) for f in formclass.get_list_fields(conference)],
             'coltypes': formclass.coltypes,
             'filtercolumns': formclass.get_column_filters(sourceconf),
-            'defaultsort': formclass.numeric_defaultsort(),
+            'defaultsort': formclass.numeric_defaultsort(sourceconf),
             'return_url': '../',
             'allow_new': False,
             'allow_delete': False,
