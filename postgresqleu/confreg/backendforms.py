@@ -1989,6 +1989,7 @@ class BackendSendEmailForm(django.forms.Form):
 
         self.fields['available_fields'].widget = SimpleTreeviewWidget(treedata=contextrefs)
         self.fields['subject'].help_text = 'Subject will be prefixed with <strong>[{}]</strong>'.format(conference)
+        self.fields['message'].widget.attrs['data-extrafieldsforpreview'] = 'idlist'
 
     def clean_confirm(self):
         if not self.cleaned_data['confirm']:
