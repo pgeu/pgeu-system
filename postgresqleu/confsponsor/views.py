@@ -1422,6 +1422,7 @@ def sponsor_admin_send_mail_send(request, confurlname):
 
     class SponsorEmailProvider(BaseAttendeeEmailProvider):
         trigger_job = 'sponsor_send_emails'
+        mailtemplate = 'confsponsor/mail/sponsor_mail.txt'
 
         def process_idlist(self, idlist):
             return idlist
@@ -1455,6 +1456,12 @@ def sponsor_admin_send_mail_send(request, confurlname):
                 'body': text,
                 'sponsor': self.get_preview_context()['sponsor'],
                 'sponsorbase': self.get_preview_context()['sponsorbase'],
+            }
+
+        def get_html_context(self, text):
+            return {
+                'body': text,
+                'sponsor': self.get_preview_context()['sponsor'],
             }
 
         def insert_emails(self, sendat, subject, message):

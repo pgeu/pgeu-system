@@ -12,6 +12,7 @@ from postgresqleu.scheduler.util import trigger_immediate_job_run
 from .backendforms import BackendSendEmailForm
 from .models import Conference, ConferenceRegistration
 from .jinjafunc import get_all_available_attributes, render_sandboxed_template
+from .jinjafunc import render_jinja_conference_mail
 
 
 class AttendeeEmailQuerySampleMixin:
@@ -25,6 +26,7 @@ class AttendeeEmailQuerySampleMixin:
 
 class BaseAttendeeEmailProvider:
     trigger_job = 'confreg_send_emails'
+    mailtemplate = 'confreg/mail/attendee_mail.txt'
 
     def __init__(self, conference, idlist):
         self.conference = conference
@@ -90,6 +92,12 @@ class BaseAttendeeEmailProvider:
             'idlist': ",".join(map(str, self.idlist)),
         }
 
+    def get_html_context(self, text):
+        return {
+            'body': text,
+            'linkback': True,
+        }
+
     def insert_emails(self, sendat, subject, message):
         mailid = exec_to_scalar("INSERT INTO confreg_attendeemail (conference_id, sent, sentat, subject, message, tocheckin, tovolunteers) VALUES (%(confid)s, false, %(sentat)s, %(subject)s, %(message)s, false, false) RETURNING id", {
             'confid': self.conference.id,
@@ -142,28 +150,45 @@ def attendee_email_form(request, conference, providerclass=BaseAttendeeEmailProv
     contextrefs = {k: None if v is None else dict(get_all_available_attributes(v)) for k, v in contextrefs.items()}
 
     initial = provider.get_initial()
+    if request.method == 'POST' and request.POST.get('submit', None) == 'Send email':
+        is_confirm = True
+
+        context = provider.get_preview_context()
+
+        try:
+            text = render_sandboxed_template(
+                request.POST['message'], context,
+            )
+        except Exception:
+            text = 'Failed to render template'
+
+        textpreview, htmlpreview, htmlpreviewattachments = render_jinja_conference_mail(conference, provider.mailtemplate, provider.get_html_context(text), request.POST['subject'])
+    else:
+        textpreview = htmlpreview = None
+        is_confirm = False
 
     if request.method == 'POST':
         p = request.POST.copy()
         p['recipients'] = initial['recipients']
-        form = BackendSendEmailForm(conference, contextrefs, data=p, initial=initial)
+        form = BackendSendEmailForm(conference, contextrefs, is_confirm, data=p, initial=initial, textpreview=textpreview, htmlpreview=htmlpreview)
         provider.prepare_form(form)
         if form.is_valid():
-            with transaction.atomic():
-                provider.insert_emails(
-                    form.cleaned_data['sendat'],
-                    form.cleaned_data['subject'],
-                    form.cleaned_data['message'],
-                )
+            # Valid form. Do we need a confirmation, or are we ready to send?
+            if request.POST['submit'] == 'Confirm and send':
+                with transaction.atomic():
+                    provider.insert_emails(
+                        form.cleaned_data['sendat'],
+                        form.cleaned_data['subject'],
+                        form.cleaned_data['message'],
+                    )
 
-                if form.cleaned_data['sendat'] > timezone.now():
-                    messages.info(request, "Email scheduled for later sending to attendees")
-                else:
-                    if provider.trigger_job:
-                        trigger_immediate_job_run(provider.trigger_job)
-                    messages.info(request, "Email sent to attendees, and added to their registration pages")
-
-            return HttpResponseRedirect('../')
+                    if form.cleaned_data['sendat'] > timezone.now():
+                        messages.info(request, "Email scheduled for later sending to attendees")
+                    else:
+                        if provider.trigger_job:
+                            trigger_immediate_job_run(provider.trigger_job)
+                        messages.info(request, "Email sent to attendees, and added to their registration pages")
+                return HttpResponseRedirect('../')
         else:
             # Form not valid. But we have a special case where this is the initial submit
             # coming in from another page, in which case we don't want to show all the
@@ -173,15 +198,17 @@ def attendee_email_form(request, conference, providerclass=BaseAttendeeEmailProv
                 form._errors = ErrorDict()
                 form.data['sendat'] = timezone.now()
     else:
-        form = BackendSendEmailForm(conference, contextrefs, initial=initial)
+        form = BackendSendEmailForm(conference, contextrefs, is_confirm, initial=initial)
 
     return render(request, 'confreg/admin_backend_form.html', {
         'conference': conference,
         'basetemplate': basetemplate,
         'form': form,
         'what': 'new email',
-        'savebutton': 'Send email',
+        'savebutton': 'Confirm and send' if is_confirm else 'Send email',
+        'extrasubmitbutton': 'Continue editing' if is_confirm else None,
         'cancelurl': '../',
         'breadcrumbs': breadcrumbs,
         'helplink': 'emails',
+        'whatverb': 'Send',
     })

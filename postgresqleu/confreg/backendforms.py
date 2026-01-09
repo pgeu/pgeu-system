@@ -24,6 +24,7 @@ from postgresqleu.util.crypto import generate_rsa_keypair
 from postgresqleu.util.forms import SelectSetValueField
 from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget, MonospaceTextarea
 from postgresqleu.util.widgets import TagOptionsTextWidget, SimpleTreeviewWidget
+from postgresqleu.util.widgets import StaticHtmlPreviewWidget
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.backendforms import BackendForm, BackendBeforeNewForm
 from postgresqleu.util.messaging import messaging_implementation_choices, get_messaging, get_messaging_class
@@ -1976,24 +1977,39 @@ class BackendSendEmailForm(django.forms.Form):
     available_fields = django.forms.CharField(required=False,
                                               help_text="These fields are available as {{field}} in the template")
     idlist = django.forms.CharField(widget=django.forms.HiddenInput, required=True)
-    confirm = django.forms.BooleanField(label="Confirm", required=False)
+    textpreview = django.forms.CharField(label="Text message", widget=StaticTextWidget(monospace=True))
+    htmlpreview = django.forms.CharField(label="HTML message", widget=StaticHtmlPreviewWidget())
 
-    dynamic_preview_fields = ['message', ]
+    @property
+    def dynamic_preview_fields(self):
+        if self.is_confirm:
+            return []
+        else:
+            return ['message', ]
 
-    def __init__(self, conference, contextrefs, *args, **kwargs):
+    def __init__(self, conference, contextrefs, is_confirm, *args, **kwargs):
+        htmlpreview = kwargs.pop('htmlpreview', None)
+        textpreview = kwargs.pop('textpreview', None)
         super(BackendSendEmailForm, self).__init__(*args, **kwargs)
         self.conference = conference
         self.contextrefs = contextrefs
-        if not (self.data.get('subject') and self.data.get('message')):
-            del self.fields['confirm']
+        self.is_confirm = is_confirm
 
         self.fields['available_fields'].widget = SimpleTreeviewWidget(treedata=contextrefs)
         self.fields['subject'].help_text = 'Subject will be prefixed with <strong>[{}]</strong>'.format(conference)
         self.fields['message'].widget.attrs['data-extrafieldsforpreview'] = 'idlist'
 
-    def clean_confirm(self):
-        if not self.cleaned_data['confirm']:
-            raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")
+        if is_confirm:
+            for f in self.fields:
+                self.fields[f].widget.attrs['readonly'] = 'true'
+            self.warning_text_below = 'Please confirm that you really want to send this email! There is no going back!'
+            self.data['textpreview'] = textpreview.replace("\n", "<br/>")
+            self.data['htmlpreview'] = htmlpreview
+            self.fields['message'].widget = django.forms.widgets.HiddenInput()
+            del self.fields['available_fields']
+        else:
+            del self.fields['textpreview']
+            del self.fields['htmlpreview']
 
     def clean_subject(self):
         if not self.cleaned_data['subject']:
