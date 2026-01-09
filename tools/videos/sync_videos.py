@@ -97,6 +97,7 @@ if __name__ == "__main__":
 
             if os.path.isfile(os.path.join(args.videodirectory, fn)):
                 matches[fn] = s
+                s['fn'] = fn
                 if not s['recordingconsent']:
                     noconsent.append(s)
                     noconsentfiles.append(fn)
@@ -118,7 +119,8 @@ if __name__ == "__main__":
     if noconsent:
         print("The following sessions LACK recording consent:")
         for s in noconsent:
-            print("{} in track {} by {}".format(
+            print("{}: {} in track {} by {}".format(
+                s['fn'],
                 s['title'],
                 s.get('track', {}).get('trackname', 'No track'),
                 ", ".join(sp['name'] for sp in s['speakers']),
