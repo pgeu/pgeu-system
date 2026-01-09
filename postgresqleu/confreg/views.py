@@ -4454,48 +4454,8 @@ def admin_waitlist_sendmail(request, urlname):
     if request.method == 'POST':
         form = WaitlistSendmailForm(conference, data=request.POST)
         if form.is_valid():
-            with transaction.atomic():
-                q = RegistrationWaitlistEntry.objects.filter(registration__conference=conference,
-                                                             registration__payconfirmedat__isnull=True)
-                tot = q.all().count()
-                if not tot:
-                    messages.warning(request, "Waitlist was empty, no email was sent.")
-                    return HttpResponseRedirect('../')
+            return HttpResponseRedirect('send/?idlist={},{}'.format(form.cleaned_data['waitlist_target'], form.cleaned_data['include_position']))
 
-                if int(form.cleaned_data['waitlist_target']) == form.TARGET_OFFERS:
-                    q = q.filter(offeredon__isnull=False)
-                elif int(form.cleaned_data['waitlist_target']) == form.TARGET_NOOFFERS:
-                    q = q.filter(offeredon__isnull=True)
-
-                n = 0
-                for w in q.order_by('enteredon'):
-                    n += 1
-
-                    msgbody = form.cleaned_data['message']
-                    if int(form.cleaned_data['include_position']) == form.POSITION_FULL:
-                        positioninfo = "Your position on the waitlist is {0} of {1}.".format(n, tot)
-                    elif int(form.cleaned_data['include_position']) == form.POSITION_ONLY:
-                        positioninfo = "Your position on the waitlist is {0}.".format(n)
-                    elif int(form.cleaned_data['include_position']) == form.POSITION_SIZE:
-                        positioninfo = "The current size of the waitlist is {0}.".format(tot)
-                    else:
-                        positioninfo = None
-
-                    send_conference_mail(conference,
-                                         w.registration.email,
-                                         form.cleaned_data['subject'],
-                                         'confreg/mail/waitlist_manual_mail.txt',
-                                         {
-                                             'body': msgbody,
-                                             'positioninfo': positioninfo,
-                                         },
-                                         receivername=w.registration.fullname,
-                    )
-                if n:
-                    messages.info(request, "Sent {0} emails.".format(tot))
-                else:
-                    messages.warning(request, "No matching waitlist entries, no email was sent.")
-                return HttpResponseRedirect('../')
     else:
         form = WaitlistSendmailForm(conference)
 
@@ -4505,6 +4465,80 @@ def admin_waitlist_sendmail(request, urlname):
         'helplink': 'waitlist#emails',
         'breadcrumbs': (('/events/admin/{0}/waitlist/'.format(conference.urlname), 'Waitlist'),),
     })
+
+
+def admin_waitlist_sendmail_send(request, urlname):
+    conference = get_authenticated_conference(request, urlname)
+
+    def _recipient_string(idlist):
+        return WaitlistSendmailForm.TARGET_CHOICES[idlist[0]][1] + ', ' + WaitlistSendmailForm.POSITION_CHOICES[idlist[1]][1]
+
+    def _handle_insert(idlist, sentat, subject, message):
+        target = idlist[0]
+        position = idlist[1]
+
+        q = RegistrationWaitlistEntry.objects.filter(registration__conference=conference,
+                                                     registration__payconfirmedat__isnull=True)
+        tot = q.all().count()
+        if not tot:
+            messages.warning(request, "Waitlist was empty, no email was sent.")
+            return
+
+        if position == WaitlistSendmailForm.POSITION_NONE:
+            # If we don't need the position, we can just create a single AttendeeMail and
+            # send it to all recipients using a filter in the db.
+            if target == WaitlistSendmailForm.TARGET_OFFERS:
+                q = q.filter(offeredon__isnull=False)
+            elif target == WaitlistSendmailForm.TARGET_NOOFFERS:
+                q = q.filter(offeredon__isnull=True)
+
+            msg = AttendeeMail(
+                conference=conference,
+                subject=subject,
+                message=message,
+                sentat=sentat,
+            )
+            msg.save()
+            for w in q.all():
+                msg.registrations.add(w.registration)
+            msg.save()
+        else:
+            # Else we have to loop through and create an individual AttendeeMail for
+            # each registration. We need to loop through the whole list as well since
+            # we need the position.
+            for n, w in enumerate(q.order_by('enteredon')):
+                # We need to manually filter here, since we needed to count positions
+                if target == WaitlistSendmailForm.TARGET_OFFERS and not w.offeredon:
+                    continue
+                if target == WaitlistSendmailForm.TARGET_NOOFFERS and w.offeredon:
+                    continue
+
+                if position == WaitlistSendmailForm.POSITION_FULL:
+                    positioninfo = "Your position on the waitlist is {0} of {1}.".format(n + 1, tot)
+                elif position == WaitlistSendmailForm.POSITION_ONLY:
+                    positioninfo = "Your position on the waitlist is {0}.".format(n + 1)
+                elif position == WaitlistSendmailForm.POSITION_SIZE:
+                    positioninfo = "The current size of the waitlist is {0}.".format(tot)
+                else:
+                    positioninfo = ''
+
+                msg = AttendeeMail(
+                    conference=conference,
+                    subject=subject,
+                    message=message + "\n\n" + positioninfo,
+                    sentat=sentat,
+                )
+                msg.save()
+                msg.registrations.add(w.registration)
+                msg.save()
+
+    return attendee_email_form(
+        request,
+        conference,
+        breadcrumbs=[('../../', 'Waitlist'), ('../', 'Waitlist email'), ],
+        get_recipient_string=_recipient_string,
+        handle_insert=_handle_insert,
+    )
 
 
 def admin_attendeemail(request, urlname):

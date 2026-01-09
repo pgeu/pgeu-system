@@ -235,6 +235,7 @@ urlpatterns.extend([
     re_path(r'^events/admin/(\w+)/waitlist/offer/$', postgresqleu.confreg.views.admin_waitlist_offer),
     re_path(r'^events/admin/(\w+)/waitlist/cancel/(\d+)/$', postgresqleu.confreg.views.admin_waitlist_cancel),
     re_path(r'^events/admin/(\w+)/waitlist/sendmail/$', postgresqleu.confreg.views.admin_waitlist_sendmail),
+    re_path(r'^events/admin/(\w+)/waitlist/sendmail/send/$', postgresqleu.confreg.views.admin_waitlist_sendmail_send),
     re_path(r'^events/admin/(\w+)/wiki/$', postgresqleu.confwiki.views.admin),
     re_path(r'^events/admin/(\w+)/wiki/(new|\d+)/$', postgresqleu.confwiki.views.admin_edit_page),
     re_path(r'^events/admin/(\w+)/wiki/(\d+)/sendmail/$', postgresqleu.confwiki.views.admin_sendmail),

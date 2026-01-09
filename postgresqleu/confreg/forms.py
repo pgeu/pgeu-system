@@ -905,22 +905,12 @@ class WaitlistSendmailForm(forms.Form):
     )
 
     waitlist_target = forms.ChoiceField(required=True, choices=TARGET_CHOICES)
-    subject = forms.CharField(max_length=100, required=True)
-    message = forms.CharField(required=True, widget=EmailTextWidget)
     include_position = forms.ChoiceField(required=True, choices=POSITION_CHOICES,
                                          help_text="Include a footer with information about waitpost position and/or size")
-    confirm = forms.BooleanField(help_text="Confirm that you are ready to send this email!", required=False)
 
     def __init__(self, conference, *args, **kwargs):
         self.conference = conference
         super(WaitlistSendmailForm, self).__init__(*args, **kwargs)
-        if not (self.data.get('subject') and self.data.get('message')):
-            del self.fields['confirm']
-        self.fields['subject'].help_text = "Will be prefixed by [{0}]".format(conference.conferencename)
-
-    def clean_confirm(self):
-        if not self.cleaned_data['confirm']:
-            raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")
 
 
 class TransferRegForm(forms.Form):
