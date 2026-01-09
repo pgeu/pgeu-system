@@ -2,21 +2,26 @@ var maxused = {'include': 0, 'exclude': 0};
 var conferences = [];
 
 function add_conference_picker(type, default_conf, default_filt) {
+    const isreadonly = document.getElementById('id_subject').readOnly;
+
     var num = maxused[type];
     maxused[type]++;
 
     var sel = $('<select class="confselect noexpand" id="' + type + '_' + num + '">');
     var secspan = $('<span class="secspan"/>');
     var sel2 = $('<select class="conffilter noexpand" id="' + type + 't_' + num +'">');
-    var cbcancel = $('<input type="checkbox" class="noexpand" id="' + type + '_c' + num + '">');
+    var cbcancel = $('<input type="checkbox" class="noexpand" id="' + type + '_c' + num + '"' + (isreadonly ? ' disabled="disabled"':'') + '>');
     var lbcancel = $('<label for="' + type + '_c' + num + '">Incl. canceled</label>');
     secspan.append(sel2).append(cbcancel).append(lbcancel);
 
     var el = $('<div id="' + type + 'wrap_' + num + '" class="inclexclwrapper">').append(
         sel,
         secspan,
-        $('<button class="btn btn-xs pull-right" onclick="return removeFilter(\'' + type + '\',' + num + ')"><span class="glyphicon glyphicon-remove-sign"></span></button>'),
     );
+    if (!isreadonly) {
+        el.append($('<button class="btn btn-xs pull-right" onclick="return removeFilter(\'' + type + '\',' + num + ')"><span class="glyphicon glyphicon-remove-sign"></span></button>'));
+    }
+
     $('#' + type + '_btn').before(el);
 
     var current_default_filt = default_filt;
@@ -32,6 +37,11 @@ function add_conference_picker(type, default_conf, default_filt) {
     sel[0].selectize.load(function(callback) {
 	callback(conferences);
     });
+
+    if (isreadonly) {
+        sel[0].selectize.disable();
+        sel2[0].selectize.disable();
+    }
 
     sel[0].selectize.on('change', function(v) {
         filtersel.disable();
@@ -49,7 +59,9 @@ function add_conference_picker(type, default_conf, default_filt) {
                         cbcancel.prop('checked', pieces[2] == '1');
                         current_default_filt = null;
                     }
-                    filtersel.enable();
+                    if (!isreadonly) {
+                      filtersel.enable();
+                    }
                 },
                 error: function() {
                     callback();
@@ -61,11 +73,12 @@ function add_conference_picker(type, default_conf, default_filt) {
     if (default_conf) {
         sel[0].selectize.setValue(default_conf);
     }
-
 }
 
 function addNewFilter(type) {
-    add_conference_picker(type);
+    if (!document.getElementById('id_subject').readOnly) {
+        add_conference_picker(type);
+    }
     return false;
 }
 
