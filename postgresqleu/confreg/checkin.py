@@ -23,7 +23,7 @@ from postgresqleu.confsponsor.scanning import SponsorScannerHandler, SponsorScan
 
 from .models import ConferenceRegistration
 from .util import render_conference_response, reglog
-from .util import send_conference_mail, get_conference_or_404
+from .util import get_conference_or_404
 
 import json
 

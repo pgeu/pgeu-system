@@ -3,29 +3,28 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.nonmultipart import MIMENonMultipart
 from email.utils import formatdate, formataddr, format_datetime
 from email.header import Header
-from email import encoders
+from email import encoders, charset
 from email.parser import Parser
+import email.policy
 
 from postgresqleu.util.context_processors import settings_context
+from postgresqleu.util.markup import pgmarkdown
+from postgresqleu.confreg.jinjafunc import render_jinja_template, render_jinja_conference_mail
 
-from django.template.loader import get_template
 from django.utils import timezone
 
 from .models import QueuedMail
 
 
-def template_to_string(templatename, attrs={}):
-    context = {}
-    context.update(attrs)
-    context.update(settings_context())
-    return get_template(templatename).render(context)
+# Send an email with the contents from a jinja template
+def send_template_mail(sender, receiver, subject, templatename, templateattr={}, attachments=None, bcc=None, sendername=None, receivername=None, suppress_auto_replies=True, is_auto_reply=False, sendat=None, conference=None):
+    (plain, html, htmlattachments) = render_jinja_conference_mail(conference, templatename, templateattr, subject)
 
-
-def send_template_mail(sender, receiver, subject, templatename, templateattr={}, attachments=None, bcc=None, sendername=None, receivername=None, suppress_auto_replies=True, is_auto_reply=False, sendat=None):
-    send_simple_mail(sender, receiver, subject,
-                     template_to_string(templatename, templateattr),
-                     attachments, bcc, sendername, receivername,
-                     suppress_auto_replies, is_auto_reply, sendat)
+    _internal_send_mail(
+        sender, receiver, subject,
+        plain.lstrip(), attachments, htmlattachments, bcc, sendername, receivername,
+        suppress_auto_replies, is_auto_reply, sendat, html.lstrip(),
+    )
 
 
 def _encoded_email_header(name, email):
@@ -34,12 +33,56 @@ def _encoded_email_header(name, email):
     return email
 
 
+# Send an email with no templating
 def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=None, sendername=None, receivername=None, suppress_auto_replies=True, is_auto_reply=False, sendat=None):
+    _internal_send_mail(sender, receiver, subject, msgtxt, attachments, None, bcc, sendername, receivername, suppress_auto_replies, is_auto_reply, sendat)
+
+
+# Default for utf-8 in python is to encode subject with "shortest" and body with "base64". For our texts,
+# make it always quoted printable, for easier reading and testing.
+_utf8_charset = charset.Charset('utf-8')
+_utf8_charset.header_encoding = charset.QP
+_utf8_charset.body_encoding = charset.QP
+
+
+def _add_attachments(attachments, msg, isinline):
+    for filename, contenttype, content in attachments:
+        main, sub = contenttype.split('/')
+        part = MIMENonMultipart(main, sub)
+        part.set_payload(content)
+        part.add_header('Content-Disposition', '{}; filename="{}"'.format('inline' if isinline else 'attachment', filename))
+        part.add_header('Content-ID', '<{}@img>'.format(filename))
+        encoders.encode_base64(part)
+        msg.attach(part)
+
+
+def _internal_send_mail(sender, receiver, subject, msgtxt, attachments=None, htmlattachments=None, bcc=None, sendername=None, receivername=None, suppress_auto_replies=True, is_auto_reply=False, sendat=None, htmlbody=None):
     # attachment format, each is a tuple of (name, mimetype,contents)
     # content should be *binary* and not base64 encoded, since we need to
     # use the base64 routines from the email library to get a properly
     # formatted output message
-    msg = MIMEMultipart()
+
+    if htmlbody:
+        mpart = MIMEMultipart("alternative")
+        mpart.attach(MIMEText(msgtxt, _charset=_utf8_charset))
+        if htmlattachments:
+            hpart = MIMEMultipart("related")
+            hpart.attach(MIMEText(htmlbody, "html", _charset=_utf8_charset))
+            _add_attachments(htmlattachments, hpart, True)
+            mpart.attach(hpart)
+        else:
+            mpart.attach(MIMEText(htmlbody, "html", _charset=_utf8_charset))
+    else:
+        # Plaintext only
+        mpart = MIMEText(msgtxt, _charset=_utf8_charset)
+
+    if attachments:
+        msg = MIMEMultipart()
+        msg.attach(mpart)
+        _add_attachments(attachments, msg, False)
+    else:
+        msg = mpart
+
     msg['Subject'] = subject
     msg['To'] = _encoded_email_header(receivername, receiver)
     msg['From'] = _encoded_email_header(sendername, sender)
@@ -55,17 +98,6 @@ def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=No
             msg['Auto-Submitted'] = 'auto-replied'
         else:
             msg['Auto-Submitted'] = 'auto-generated'
-
-    msg.attach(MIMEText(msgtxt, _charset='utf-8'))
-
-    if attachments:
-        for filename, contenttype, content in attachments:
-            main, sub = contenttype.split('/')
-            part = MIMENonMultipart(main, sub)
-            part.set_payload(content)
-            part.add_header('Content-Disposition', 'attachment; filename="%s"' % filename)
-            encoders.encode_base64(part)
-            msg.attach(part)
 
     # Just write it to the queue, so it will be transactionally rolled back
     QueuedMail(
@@ -93,36 +125,30 @@ def send_simple_mail(sender, receiver, subject, msgtxt, attachments=None, bcc=No
             ).save()
 
 
-def send_mail(sender, receiver, subject, fullmsg):
-    # Send an email, prepared as the full MIME encoded mail already
-    QueuedMail(sender=sender, receiver=receiver, subject=subject, fullmsg=fullmsg).save()
-
-
 def parse_mail_content(fullmsg):
     # We only try to parse the *first* piece, because we assume
     # all our emails are trivial.
     try:
-        parser = Parser()
+        parser = Parser(policy=email.policy.default)
         parsed_msg = parser.parsestr(fullmsg)
-        b = parsed_msg.get_payload(decode=True)
-        if b:
-            return parsed_msg, b
-
-        pl = parsed_msg.get_payload()
-        for p in pl:
-            b = p.get_payload(decode=True)
-            if b:
-                return parsed_msg, b
-        return parsed_msg, "Could not find body"
+        htmlbody = parsed_msg.get_body(['html', ])
+        return (
+            parsed_msg,
+            parsed_msg.get_body(['plain', 'html', ]).get_payload(decode=True),
+            htmlbody and htmlbody.get_payload(decode=True) or b'No HTML body found',
+        )
     except Exception as e:
         raise Exception("Failed to get body: %s" % e)
 
 
-def recursive_parse_attachments_from_message(container):
+def recursive_parse_attachments_from_message(container, disposition='attachment'):
     if container.get_content_type() == 'multipart/mixed':
         for p in container.get_payload():
             if p.get_params() is None:
                 continue
-            yield from recursive_parse_attachments_from_message(p)
+            yield from recursive_parse_attachments_from_message(p, disposition)
     elif container.get_content_type() != 'text/plain':
-        yield (container.get_filename(), container.get_filename(), container.get_content_type(), container.get_payload(decode=True))
+        if container.get_content_disposition() == disposition or not disposition:
+            idwrap = container.get_all('content-id')
+            id = idwrap[0] if idwrap else container.get_filename()
+            yield (id, container.get_filename(), container.get_content_type(), container.get_payload(decode=True))

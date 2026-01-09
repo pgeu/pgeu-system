@@ -23,6 +23,7 @@ from postgresqleu.confreg.templatetags.formutil import field_class
 from postgresqleu.util.templatetags import svgcharts
 from postgresqleu.util.templatetags.assets import do_render_asset
 from postgresqleu.util.messaging import get_messaging_class_from_typename
+from postgresqleu.util.markup import pgmarkdown
 
 import markupsafe
 import jinja2
@@ -32,14 +33,22 @@ try:
 except ImportError:
     # Try Jinja2 2.x version
     from jinja2 import contextfilter as pass_context
-import markdown
-
 
 from .contextutil import load_all_context
 
 # We use a separate root directory for jinja2 templates, so find that
 # directory by searching relative to ourselves.
 JINJA_TEMPLATE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../template.jinja'))
+
+
+def _get_conference_pathlist(conference, disableconferencetemplates):
+    pathlist = []
+    if conference and conference.jinjaenabled and conference.jinjadir and not disableconferencetemplates:
+        pathlist.append(os.path.join(conference.jinjadir, 'templates'))
+    if getattr(settings, 'SYSTEM_SKIN_DIRECTORY', False):
+        pathlist.append(os.path.join(settings.SYSTEM_SKIN_DIRECTORY, 'template.jinja'))
+    pathlist.append(JINJA_TEMPLATE_ROOT)
+    return pathlist
 
 
 #
@@ -54,19 +63,14 @@ JINJA_TEMPLATE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '.
 # by including or inheriting templates from other parts of the system.
 class ConfTemplateLoader(jinja2.FileSystemLoader):
     # Templates that are whitelisted for inclusion.
-    WHITELISTED_TEMPLATES = ('invoices/userinvoice_spec.html',)
+    WHITELISTED_TEMPLATES = ('invoices/userinvoice_spec.html', 'mailbase.html', 'mailinline.css', 'confreg/mailbase.html', 'confreg/mailinline.css', 'confsponsor/mailbase.html')
 
     def __init__(self, conference, roottemplate, disableconferencetemplates=False):
         self.conference = conference
         self.roottemplate = roottemplate
         self.disableconferencetemplates = disableconferencetemplates
 
-        pathlist = []
-        if conference and conference.jinjaenabled and conference.jinjadir and not disableconferencetemplates:
-            pathlist.append(os.path.join(conference.jinjadir, 'templates'))
-        if getattr(settings, 'SYSTEM_SKIN_DIRECTORY', False):
-            pathlist.append(os.path.join(settings.SYSTEM_SKIN_DIRECTORY, 'template.jinja'))
-        pathlist.append(JINJA_TEMPLATE_ROOT)
+        pathlist = _get_conference_pathlist(conference, disableconferencetemplates)
 
         # Process it all with os.fspath. That's what the inherited
         # FileSystemLoader does, but we also need the ability to
@@ -87,7 +91,7 @@ class ConfTemplateLoader(jinja2.FileSystemLoader):
                 # This template may exist in pgeu, so reject it unless it's specifically
                 # whitelisted as something we want to load.
                 if template not in self.WHITELISTED_TEMPLATES:
-                    raise jinja2.TemplateNotFound(template, "Rejecting attempt to load from incorrect location")
+                    raise jinja2.TemplateNotFound(template, "Rejecting attempt to load from incorrect location: {}".format(template))
         if self.cutlevel:
             # Override the searchpath to drop one or more levels, to
             # handle inheritance of "the same template"
@@ -311,6 +315,21 @@ def filter_social_links(context, attr):
                 yield (k, v, m.get_link_from_identifier(v))
 
 
+# Inline CSS using pynliner, if available
+@pass_context
+def filter_inlinecss(context, contents, cssname):
+    try:
+        import pynliner
+    except ImportError:
+        print("CSS inlining not supported withut pynliner!")
+        return content
+
+    css = render_jinja_conference_template(context['conference'], cssname, context)
+    p = pynliner.Pynliner().from_string(contents)
+    p.with_cssString(css)
+    return p.run()
+
+
 extra_filters = {
     'format_currency': format_currency,
     'escapejs': defaultfilters.escapejs_filter,
@@ -320,7 +339,7 @@ extra_filters = {
     'timesince': timesince,
     'groupby_sort': filter_groupby_sort,
     'leadingnbsp': leadingnbsp,
-    'markdown': lambda t: markupsafe.Markup(markdown.markdown(t, extensions=['tables', ])),
+    'markdown': lambda t: markupsafe.Markup(pgmarkdown(t)),
     'shuffle': filter_shuffle,
     'slugify': slugify,
     'yesno': lambda b, v: v.split(',')[not b],
@@ -329,6 +348,7 @@ extra_filters = {
     'applymacro': filter_applymacro,
     'lookup': filter_lookup,
     'social_links': filter_social_links,
+    'inlinecss': filter_inlinecss,
 }
 
 extra_globals = {
@@ -343,7 +363,7 @@ def _resolve_asset(assettype, assetname):
     return do_render_asset(assettype, assetname)
 
 
-def render_jinja_conference_template(conference, templatename, dictionary, disableconferencetemplates=False):
+def _get_jinja_conference_template(conference, templatename, dictionary, disableconferencetemplates=False, renderglobals={}):
     # It all starts from the base template for this conference. If it
     # does not exist, just throw a 404 early.
     if conference and conference.jinjaenabled and conference.jinjadir and not os.path.exists(os.path.join(conference.jinjadir, 'templates/base.html')):
@@ -359,6 +379,7 @@ def render_jinja_conference_template(conference, templatename, dictionary, disab
     )
     env.filters.update(extra_filters)
     env.globals.update(extra_globals)
+    env.globals.update(renderglobals)
 
     t = env.get_template(templatename)
 
@@ -371,7 +392,85 @@ def render_jinja_conference_template(conference, templatename, dictionary, disab
                          },
                          dictionary)
 
+    return t, c
+
+
+def render_jinja_conference_template(conference, templatename, dictionary, disableconferencetemplates=False):
+    t, c = _get_jinja_conference_template(conference, templatename, dictionary, disableconferencetemplates=False)
     return t.render(**c)
+
+
+def render_jinja_template(templatename, dictionary):
+    return render_jinja_conference_template(None, templatename, dictionary, True)
+
+
+def _get_contenttype_from_extension(f):
+    _map = {
+        'png': 'image/png',
+        'jpg': 'image/jpeg',
+    }
+    e = os.path.splitext(f)[1][1:]
+    if e not in _map:
+        raise Exception("Unknown extension {}".format(e))
+    return _map[e]
+
+
+def render_jinja_conference_mail(conference, templatename, dictionary, subject):
+    templatename, templateext = os.path.splitext(templatename)
+    if templateext not in ('.txt', '.md', '.mail'):
+        raise Exception("Invalid mail template extension")
+
+    dictionary['subject'] = subject
+
+    class Attachments:
+        def __init__(self):
+            self.attachments = {}
+
+        def register(self, context, name, filename):
+            self.attachments[name] = filename
+            return ''
+
+    renderglobals = {
+        'attachments': Attachments(),
+    }
+
+    # Find the root template(s) to render.
+    for p in _get_conference_pathlist(conference, False):
+        if os.path.isfile(os.path.join(p, templatename + '.txt')):
+            if os.path.isfile(os.path.join(p, templatename + '.html')):
+                # Both HTML and TXT exists, so render as separate parts
+                txtpart = render_jinja_conference_template(conference, templatename + '.txt', dictionary)
+                htmltempl, htmlctx = _get_jinja_conference_template(conference, templatename + '.html', dictionary, renderglobals=renderglobals)
+            else:
+                # TXT exists, but not HTML, so render as markdown inside base template
+                txtpart = render_jinja_conference_template(conference, templatename + '.txt', dictionary)
+                htmltempl, htmlctx = _get_jinja_conference_template(
+                    conference,
+                    conference and 'confreg/mailbase.html' or 'mailbase.html',
+                    {
+                        'subject': subject,
+                        'content': markupsafe.Markup(pgmarkdown(txtpart)),
+                    },
+                    renderglobals=renderglobals,
+                )
+            # If there are any attachments here they should've been specified in a block, so we read
+            # it out of there.
+            htmlpart = htmltempl.render(**htmlctx)
+            attachments = []
+            for name, filename in renderglobals['attachments'].attachments.items():
+                # Find the filename in the template directory structure
+                for p in _get_conference_pathlist(conference, False):
+                    if os.path.isfile(os.path.join(p, filename)):
+                        with open(os.path.join(p, filename), 'rb') as f:
+                            attachments.append((name, _get_contenttype_from_extension(name), f.read()))
+                            break
+            return (txtpart, htmlpart, attachments)
+        else:
+            # TXT does not exist, so we ignore and move on to the next level
+            pass
+
+    # This should maybe not be Http404, but for consistency...
+    raise Http404("Mail template not found")
 
 
 # Render a conference response based on jinja2 templates configured for the conference.

@@ -247,7 +247,7 @@ class InvoiceWrapper(object):
             invoiceurl = None
 
         param = {
-            'invoice': self.invoice,
+            'invoice': InvoicePresentationWrapper(self.invoice, invoiceurl),
             'invoiceurl': invoiceurl,
             'currency_abbrev': settings.CURRENCY_ABBREV,
             'currency_symbol': settings.CURRENCY_SYMBOL,

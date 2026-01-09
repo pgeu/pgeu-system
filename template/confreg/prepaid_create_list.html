@@ -59,16 +59,9 @@ function sendEmail() {
 {%for v in vouchers%}{{v.vouchervalue}}
 {%endfor%}</textarea>
 
-<h2>And once more</h2>
+<h2>Send with email</h2>
 <p>
-In a format suitable to paste into an email which includes
-the details for how to actually use them.
-</p>
-<input type="text" size="60" value="Attendee vouchers for {{batch.conference}}" />
-<p>
-<textarea cols="80" rows="50">
-{{vouchermailtext}}
-</textarea>
+  The easiest is of course to send a pre-cooked email with the voucher codes.
 </p>
 <p>
   <button onclick="sendEmail()" class="btn btn-default">Send with email</button><br/>

@@ -1,0 +1,17 @@
+{% extends "confreg/mailbase.html" %}
+{%block content %}
+
+<p>The wiki page <em>{{page.title}}</em> has been modified with the follwing changes:</p>
+
+<pre>
+{{ diff }}
+</pre>
+
+{{ button("View page", confbase+'/register/wiki/'+page.url+'/') }}
+{%endblock%}
+
+{%block footer%}
+You are receiving this message because you are subscribed to changes to
+this page.
+<a href="{{confbase}}/register/wiki/{{page.url}}/sub/">Unsubscribe</a>.
+{%endblock%}

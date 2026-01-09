@@ -1,0 +1,13 @@
+{%extends "confreg/mailbase.html"%}
+{%block greeting %}{{body.splitlines()[0]}}{%endblock%}
+{%block content %}
+{{"\n".join(body.splitlines()[1:])|markdown}}
+{%endblock%}
+
+{%block footer %}
+This message was sent to attendees of {{conference.conferencename}}.
+{%if linkback%}
+You can view all communications for this conference on the
+<a href="{{confbase}}/register/">registration page</a>.
+{%endif%}
+{%endblock%}

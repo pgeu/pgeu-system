@@ -4,11 +4,11 @@ You were recently sent an invoice from {{org_name}}:
 
 Invoice #{{invoice.id}}: {{invoice.title}}
 
-This invoice was due for payment on {{invoice.duedate}}, and
+This invoice was due for payment on {{invoice.duedate|datetimeformat("%Y-%m-%d %H:%M")}}, and
 we have not yet registered a payment from you.
 {%if invoice.canceltime%}
 If payment for this invoice has not been received by
-{{invoice.canceltime|date:"Y-m-d H:i"}}, this invoice will automatically be
+{{ invoice.canceltime|datetimeformat("%Y-%m-%d %H:%M") }}, this invoice will automatically be
 canceled. Please note that this cancellation is an automatic process
 and cannot be reversed.
 {%endif%}
@@ -30,7 +30,7 @@ let us know at {{treasurer_email}} as soon as possible.
 
 Please view the attached invoice for details.
 
-{%if invoice.recipient_user%}
+{%if invoiceurl%}
 You can view your invoice online, and also access information about
 payment options at:
 {{invoiceurl}}

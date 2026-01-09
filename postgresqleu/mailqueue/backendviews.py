@@ -33,8 +33,8 @@ def view_attachment(request, queueid, attname):
 
     mail = get_object_or_404(QueuedMail, pk=queueid)
 
-    msg, body = parse_mail_content(mail.fullmsg)
-    for id, filename, contenttype, content in recursive_parse_attachments_from_message(msg):
+    msg, body, htmlbody = parse_mail_content(mail.fullmsg)
+    for id, filename, contenttype, content in recursive_parse_attachments_from_message(msg, None):
         if filename == attname:
             return HttpResponse(bytes(content), content_type=contenttype)
     raise Http404("Attachment not found")

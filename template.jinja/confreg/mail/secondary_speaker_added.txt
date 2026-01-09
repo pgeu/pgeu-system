@@ -2,7 +2,6 @@ Hello!
 
 You are receving this email as a notification that
 {{addingspeaker}}
-
 has added you as a co-speaker on the session with title
 {{session.title}}
 

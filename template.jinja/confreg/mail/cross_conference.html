@@ -1,0 +1,10 @@
+{%extends "confreg/mailbase.html" %}
+{%block content %}
+{{body|markdown}}
+{%endblock%}
+
+{%block footer %}
+This email was sent to you from <a href="{{sitebase}}">{{org_name}}</a>.
+To opt-out from further communications about our events, please fill out
+<a href="{{sitebase}}/events/optout/{{token}}/">this form</a>.
+{%endblock%}

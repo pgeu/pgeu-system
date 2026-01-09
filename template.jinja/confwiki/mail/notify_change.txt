@@ -1,0 +1,11 @@
+The wiki page '{{page.title}}' has been modified with the follwing changes:
+
+{{ diff }}
+
+Page: {{confbase}}/register/wiki/{{page.url}}/
+
+
+You are receiving this message because you are subscribed to changes to
+this page. Too stop receiving notifications, please click:
+
+{{confbase}}/register/wiki/{{page.url}}/sub/

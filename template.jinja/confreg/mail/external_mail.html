@@ -1,0 +1,9 @@
+{%extends "confreg/mailbase.html"%}
+{%block greeting %}{{body.splitlines()[0]}}{%endblock%}
+{%block content %}
+{{"\n".join(body.splitlines()[1:])|markdown}}
+{%endblock%}
+
+{%block footer %}
+This message was sent from {{conference.conferencename}}.
+{%endblock%}

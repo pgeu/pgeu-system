@@ -14,7 +14,7 @@ import urllib.parse
 from io import BytesIO
 import re
 
-from postgresqleu.mailqueue.util import send_simple_mail
+from postgresqleu.mailqueue.util import send_simple_mail, send_template_mail
 from postgresqleu.util.middleware import RedirectException
 from postgresqleu.util.time import today_conference
 from postgresqleu.util.messaging.util import send_org_notification
@@ -44,33 +44,20 @@ def reglog(reg, txt, user=None, data=None):
 #
 # Send an email using a conference template
 #
-def send_conference_mail(conference, receiver, subject, templatename, templateattr={}, attachments=None, bcc=None, receivername=None, sender=None, sendername=None, sendat=None):
-    if not ((conference and conference.jinjaenabled and conference.jinjadir) or os.path.exists(os.path.join(JINJA_TEMPLATE_ROOT, templatename))):
-        raise Exception("Mail template not found")
-
-    send_simple_mail(sender or conference.contactaddr,
-                     receiver,
-                     "[{0}] {1}".format(conference.conferencename, subject),
-                     render_jinja_conference_template(conference, templatename, templateattr),
-                     attachments,
-                     bcc,
-                     sendername or conference.conferencename,
-                     receivername,
-                     sendat=sendat,
-                     )
-
-
-def send_conference_simple_mail(conference, receiver, subject, message, attachments=None, bcc=None, receivername=None, sender=None, sendername=None, sendat=None):
-    send_simple_mail(sender or conference.contactaddr,
-                     receiver,
-                     "[{0}] {1}".format(conference.conferencename, subject),
-                     message,
-                     attachments,
-                     bcc,
-                     sendername or conference.conferencename,
-                     receivername,
-                     sendat=sendat,
-                     )
+def send_conference_mail(conference, receiver, subject, templatename, templateattr={}, attachments=[], bcc=None, receivername=None, sender=None, sendername=None, sendat=None):
+    send_template_mail(
+        sender or conference.contactaddr,
+        receiver,
+        "[{0}] {1}".format(conference.conferencename, subject),
+        templatename,
+        templateattr,
+        attachments,
+        bcc,
+        sendername or conference.conferencename,
+        receivername,
+        sendat=sendat,
+        conference=conference,
+    )
 
 
 class InvoicerowsException(Exception):

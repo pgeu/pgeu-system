@@ -74,7 +74,6 @@ from postgresqleu.confsponsor.models import Sponsor, ScannedAttendee, PurchasedV
 from postgresqleu.confsponsor.invoicehandler import create_voucher_invoice, get_sponsor_invoice_address
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
-from postgresqleu.mailqueue.util import send_simple_mail
 from postgresqleu.util.jsonutil import JsonSerializer
 from postgresqleu.util.db import exec_to_dict, exec_to_grouped_dict, exec_to_keyed_dict
 from postgresqleu.util.db import exec_no_result, exec_to_list, exec_to_scalar, conditional_exec_to_scalar
@@ -82,6 +81,7 @@ from postgresqleu.util.db import ensure_conference_timezone
 from postgresqleu.util.qr import generate_base64_qr
 from postgresqleu.util.time import datetime_string
 from postgresqleu.scheduler.util import trigger_immediate_job_run
+from postgresqleu.mailqueue.util import send_template_mail
 
 from decimal import Decimal
 from operator import itemgetter
@@ -2851,17 +2851,10 @@ def viewvouchers(request, confname, batchid):
     batch = get_object_or_404(PrepaidBatch, conference=conference, pk=batchid)
     vouchers = batch.prepaidvoucher_set.all()
 
-    vouchermailtext = render_jinja_conference_template(conference, 'confreg/mail/prepaid_vouchers.txt', {
-        'batch': batch,
-        'vouchers': vouchers,
-        'conference': conference,
-        })
-
     return render(request, 'confreg/prepaid_create_list.html', {
         'conference': conference,
         'batch': batch,
         'vouchers': vouchers,
-        'vouchermailtext': vouchermailtext,
         'breadcrumbs': (('/events/admin/{0}/prepaid/list/'.format(conference.urlname), 'Prepaid vouchers'),),
         'helplink': 'vouchers',
     })
@@ -4948,12 +4941,19 @@ def crossmail_send(request):
             for r in recipients:
                 CrossConferenceEmailRecipient(email=email, address=r['email']).save()
 
-                send_simple_mail(form.data['senderaddr'],
-                                 r['email'],
-                                 form.data['subject'],
-                                 "{0}\n\n\nThis email was sent to you from {1}.\nTo opt-out from further communications about our events, please fill out the form at:\n{2}/events/optout/{3}/".format(form.data['text'], settings.ORG_NAME, settings.SITEBASE, r['token']),
-                                 sendername=form.data['sendername'],
-                                 receivername=r['fullname'],
+                # Cross conference mails are sent using a non-conference template as they
+                # reference multiple conferences that may have different ones.
+                send_template_mail(
+                    form.data['senderaddr'],
+                    r['email'],
+                    form.data['subject'],
+                    'confreg/mail/cross_conference.txt',
+                    {
+                        'body': form.data['text'],
+                        'token': r['token'],
+                    },
+                    sendername=form.data['sendername'],
+                    receivername=r['fullname'],
                 )
 
             messages.info(request, "Sent {0} emails.".format(len(recipients)))

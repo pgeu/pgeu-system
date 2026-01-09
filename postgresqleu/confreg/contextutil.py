@@ -1,3 +1,5 @@
+from django.conf import settings
+
 import os
 import json
 import logging
@@ -126,5 +128,8 @@ def load_all_context(conference, inject, dictionary=None):
         update_with_override_context(c, conference.jinjadir)
 
     c.update(settings_context())
+
+    if conference:
+        c['confbase'] = '{}/events/{}'.format(settings.SITEBASE, conference.urlname)
 
     return c

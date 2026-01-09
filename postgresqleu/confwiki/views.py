@@ -16,7 +16,7 @@ from postgresqleu.confreg.util import render_conference_response
 from postgresqleu.confreg.util import get_authenticated_conference, get_conference_or_404
 from postgresqleu.confreg.util import reglog
 from postgresqleu.confreg.util import send_conference_notification, send_conference_notification_template
-from postgresqleu.confreg.util import send_conference_simple_mail
+from postgresqleu.confreg.util import send_conference_mail
 from postgresqleu.confreg.mail import attendee_email_form
 
 from postgresqleu.util.db import exec_to_scalar, exec_to_list
@@ -191,13 +191,15 @@ def wikipage_edit(request, confurl, wikiurl):
                     body
                 )
 
-                body += "\n\nYou are receiving this message because you are subscribed to changes to\nthis page. To stop receiving notifications, please click\n{0}/events/{1}/register/wiki/{2}/sub/\n\n".format(settings.SITEBASE, conference.urlname, page.url)
                 for sub in WikipageSubscriber.objects.filter(page=page):
-                    send_conference_simple_mail(conference,
-                                                sub.subscriber.email,
-                                                subject,
-                                                body,
-                                                receivername=sub.subscriber.fullname)
+                    send_conference_mail(conference,
+                                         sub.subscriber.email,
+                                         subject,
+                                         'confwiki/mail/notify_change.txt', {
+                                             'page': page,
+                                             'diff': diff,
+                                         },
+                                         receivername=sub.subscriber.fullname)
 
                 return HttpResponseRedirect('../')
             elif request.POST['submit'] == 'Back to editing':

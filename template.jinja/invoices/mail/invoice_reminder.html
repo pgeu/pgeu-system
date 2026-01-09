@@ -1,0 +1,56 @@
+{% extends "mailbase.html" %}
+{% block content %}
+
+<p>You were recently sent an invoice from {{org_name}}:</p>
+
+<p>Invoice #{{invoice.id}}: {{invoice.title}}</p>
+
+<p>This invoice was due for payment on {{invoice.duedate|datetimeformat("%Y-%m-%d %H:%M")}}, and
+we have not yet registered a payment from you.</p>
+{%if invoice.canceltime%}
+<p>
+If payment for this invoice has not been received by
+{{ invoice.canceltime|datetimeformat("%Y-%m-%d %H:%M") }}, this invoice will automatically be
+canceled. Please note that this cancellation is an automatic process
+and cannot be reversed.
+</p>
+{%endif%}
+<p>
+If you have recently paid this invoice with a bank transfer then
+we haven't received the payment yet due to processing delays at
+the banks which is outside of our control. Once the payment is
+received you will get a receipt via email. Please contact your
+bank and us at {{treasurer_email}} in case this is taking
+too long.
+</p>
+{%if invoice.canceltime%}
+<p>
+If the time of cancellation is approaching and you paid using IBAN and
+have not received a receipt, we strongly suggest you check your
+sending account to see if your payment have been returned
+automatically by our payment provider due to incorrect details.
+</p>
+{%endif%}
+
+<p>
+If you feel this invoice was sent in error, or if there there is
+any other reason you have not been able to pay this invoice, please
+let us know at {{treasurer_email}} as soon as possible.
+</p>
+
+<p>
+Please view the attached invoice for details.
+</p>
+
+{%if invoiceurl%}
+{{ button("View or pay invoice directly", invoiceurl) }}
+{%endif%}
+
+<p>
+Thank you!
+</p>
+
+<p>
+{{org_name}}
+</p>
+{% endblock %}

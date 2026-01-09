@@ -1,0 +1,4 @@
+{{body}}
+
+-- 
+This message was sent to members of {{org_name}}.

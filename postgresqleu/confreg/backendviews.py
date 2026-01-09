@@ -24,7 +24,7 @@ from postgresqleu.util.request import get_int_or_error
 
 from .jinjafunc import JINJA_TEMPLATE_ROOT
 from .jinjapdf import render_jinja_ticket, render_jinja_badges
-from .util import send_conference_mail, get_conference_or_404, send_conference_notification
+from .util import get_conference_or_404, send_conference_notification
 
 from .models import Conference, ConferenceSeries, ConferenceSession
 from .models import ConferenceRegistration

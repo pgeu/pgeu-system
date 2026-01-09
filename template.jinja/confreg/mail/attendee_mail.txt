@@ -4,5 +4,5 @@
 This message was sent to attendees of {{conference.conferencename}}.
 {%if linkback%}
 You can view all communications for this conference at:
-{{sitebase}}/events/{{conference.urlname}}/register/
+{{confbase}}/register/
 {%endif%}

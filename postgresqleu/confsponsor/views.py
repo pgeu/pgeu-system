@@ -50,7 +50,7 @@ from .invoicehandler import create_sponsor_invoice, confirm_sponsor
 from .invoicehandler import get_sponsor_invoice_address, get_sponsor_invoice_rows
 from .invoicehandler import create_voucher_invoice
 from .vatutil import validate_eu_vat_number
-from .util import send_conference_sponsor_notification, send_sponsor_manager_email, send_sponsor_manager_simple_email
+from .util import send_conference_sponsor_notification, send_sponsor_manager_email
 from .util import get_mails_for_sponsor
 from .util import get_pdf_fields_for_conference
 
@@ -1941,10 +1941,14 @@ def sponsor_admin_addcontract(request, confurlname, sponsorid):
         contract.fieldjson,
     )
     if sponsor.signmethod == 1:
-        send_sponsor_manager_simple_email(
+        send_sponsor_manager_email(
             sponsor,
             subject,
-            form.cleaned_data['message'],
+            'confsponsor/mail/sponsor_mail.txt',
+            {
+                'body': form.cleaned_data['message'],
+                'sponsor': sponsor,
+            },
             attachments=[
                 ('{}_{}.pdf'.format(conference.urlname, slugify(subject)), 'application/pdf', pdf),
             ],

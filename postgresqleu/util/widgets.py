@@ -83,7 +83,7 @@ class EmailTextWidget(forms.Textarea):
             "class": "{0} textarea-mail".format(attrs.get('class', '')),
         })
         t = super(EmailTextWidget, self).render(name, value, attrs, renderer)
-        return mark_safe('<div class="textarea-mail-prefix">This text area is initially sized to the correct width of an email!</div>') + t
+        return mark_safe('<div class="textarea-mail-prefix">This text area is initially sized to the correct width of a plain-text email!</div>') + t
 
 
 class InlineImageUploadWidget(forms.ClearableFileInput):

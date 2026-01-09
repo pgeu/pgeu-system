@@ -1,0 +1,7 @@
+{{body}}
+
+-- 
+This email was sent to you from {{org_name}}.
+To opt-out from further communications about our events, please fill out
+the form at:
+{{sitebase}}/events/optout/{{token}}/

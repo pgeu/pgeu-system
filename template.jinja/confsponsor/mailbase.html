@@ -1,0 +1,9 @@
+{%extends "confreg/mailbase.html"%}
+
+{%block footer%}
+This message was sent to sponsors of {{conference.conferencename}}.
+{%if extra_cc%}This address was added as an extra CC address by one of the managers.
+{%else%}You can view all communications for this conference on the
+<a href="{{sponsorbase}}">sponsorship dashboard page</a>.
+{%endif%}
+{%endblock%}

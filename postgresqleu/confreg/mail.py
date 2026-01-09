@@ -9,7 +9,6 @@ from django.utils import timezone
 from postgresqleu.util.db import exec_to_dict, exec_to_scalar, exec_no_result
 from postgresqleu.scheduler.util import trigger_immediate_job_run
 
-from .util import send_conference_mail
 from .backendforms import BackendSendEmailForm
 
 

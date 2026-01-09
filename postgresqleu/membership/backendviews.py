@@ -9,7 +9,7 @@ from django.conf import settings
 
 from postgresqleu.util.backendviews import backend_list_editor, backend_process_form
 from postgresqleu.util.auth import authenticate_backend_group
-from postgresqleu.mailqueue.util import send_simple_mail
+from postgresqleu.mailqueue.util import send_template_mail
 from postgresqleu.membership.models import MembershipConfiguration, get_config, Member
 from postgresqleu.membership.models import MemberMail
 from postgresqleu.membership.models import Meeting, MeetingMessageLog
@@ -108,23 +108,27 @@ def sendmail(request):
         form = BackendMemberSendEmailForm(data=p, initial=initial)
         if form.is_valid():
             with transaction.atomic():
-                msgtxt = "{0}\n\n-- \nThis message was sent to members of {1}\n".format(form.cleaned_data['message'], settings.ORG_NAME)
                 mail = MemberMail(
                     sentat=timezone.now(),
                     sentfrom="{} <{}>".format(cfg.sender_name, cfg.sender_email),
                     subject=form.cleaned_data['subject'],
-                    message=msgtxt,
+                    message=form.cleaned_data['message'],
                 )
                 mail.save()
                 mail.sentto.set(recipients)
 
                 for r in recipients:
-                    send_simple_mail(cfg.sender_email,
-                                     r.user.email,
-                                     form.cleaned_data['subject'],
-                                     msgtxt,
-                                     sendername=cfg.sender_name,
-                                     receivername=r.fullname,
+                    send_template_mail(
+                        cfg.sender_email,
+                        r.user.email,
+                        form.cleaned_data['subject'],
+                        'membership/mail/member_mail.txt',
+                        {
+                            'subject': form.cleaned_data['subject'],
+                            'body': form.cleaned_data['message'],
+                        },
+                        sendername=cfg.sender_name,
+                        receivername=r.fullname,
                     )
                 messages.info(request, "Email sent to %s members" % len(recipients))
 
