@@ -16,7 +16,7 @@ tr.error {
  </tr>
  <tr>
    <th>Date:</th>
-   <td>{{mail.sentat|date:"Y-m-d H:i"}}{%if mail.future%}<span title="E-mail has not been sent yet, but is in the queue to be automatically flushed at the send date"> (Not sent yet!)</span>{%endif%}</td>
+   <td>{{mail.sentat|date:"Y-m-d H:i"}}{%if not mail.sent%}<span title="E-mail has not been sent yet, but is in the queue to be automatically flushed at the send date"> (Not sent yet!)</span>{%endif%}</td>
  </tr>
  <tr>
    <th>Subject:</th>

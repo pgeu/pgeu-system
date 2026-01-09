@@ -31,7 +31,7 @@ historically for any current or future managers of the sponsor.
   </tr>
 {%for m in mails%}
   <tr>
-    <td>{{m.sentat|date:"Y-m-d H:i"}}</td>
+    <td>{{m.sentat|date:"Y-m-d H:i"}}{%if not m.sent%}<span title="E-mail has not been sent yet, but is in the queue to be automatically flushed at the send date"> (Not sent yet!)</span>{%endif%}</td>
     <td><a href="../viewmail/{{m.id}}/">{{m.subject}}</a></td>
     <td>{{m.levels.all|join:", "}}</td>
     <td>{{m.sponsors.all|join:", "}}</td>
