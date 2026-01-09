@@ -1,0 +1,23 @@
+{%extends "mailbase.html"%}
+{%block content %}
+<p>
+Your {{org_name}} membership will expire in
+{{member.paiduntil|timeuntil}}, on {{member.paiduntil}}.
+</p>
+
+{{ button("Renew membership", sitebase + "/membership/") }}
+
+<p>
+You will receive a few reminders up until your membership expires,
+and then a final notice when your membership expires. Once this
+has happened, your email will automatically be removed from our
+automated email systems and you will receive no further emails
+from us.
+</p>
+
+<p>Thank you for you continued support!</p>
+
+<p>
+{{org_name}}
+</p>
+{%endblock%}

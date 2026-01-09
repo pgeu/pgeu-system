@@ -1,0 +1,12 @@
+{% extends "confsponsor/mailbase.html" %}
+{% block content %}
+<p>
+  The recipient at <i>{{shipment.address.title}}</i> has indicated that the shipment with id <i>{{shipment.addresstoken}}</i>
+which was previously marked as arrived, was wrong.
+</p>
+<p>
+  <strong>This shipment has <i>not</i> arrived.</strong>
+</p>
+
+{{ button("View shipment details", sponsorbase + "#shipment") }}
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "confreg/mailbase.html" %}
+{% block content %}
+<p>
+We have noticed that you started a registration for multiple attendees
+of {{conference}}, but it has not been completed.
+</p>
+
+<p>
+We want to make sure you are aware that this registration is
+not confirmed, and until it is, no seats at the conference are
+reserved for you.
+</p>
+<p>
+We suggest that you complete the registration as soon as possible,
+to ensure there are still seats remaining.
+</p>
+
+{{ button("Complete your registration", confbase + "/register/other/") }}
+
+<p>
+If you do not wish to receive any further reminders of this type,
+please go to that same form and delete each of the individual
+registrations by selecting Edit followed by Delete. This will
+remove the registration completely, and you will receive no
+further communications from us.
+</p>
+
+<p>
+You will keep receiving a reminder at regular intervals until you
+have either confirmed the registrations or canceled them.
+</p>
+{% endblock %}
+

@@ -1,0 +1,40 @@
+{% extends "confreg/mailbase.html" %}
+{% block content %}
+<p>
+You are currently on the waitlist for the conference
+{{conference.conferencename}}.
+</p>
+<p>
+We have some good news for you! We've been able to open up a seat
+at the conference, and made it available for you. If you are still
+interested in attending, please complete your registration as soon as possible.
+</p>
+
+{{ button("Register now", confbase + "/register/") }}
+
+<p>
+Please note that this is a time limited offer. You must complete
+your registration, including payment before <strong>{{offerexpires|datetimeformat("%Y-%m-%d %H:%M")}}</strong>&,
+or it will expire and you will be returned to the waitlist.
+</p>
+
+<p>
+We realize that this may be short on time, but unfortunately we
+have to limit it in order to process the waitlist quickly. Should
+you miss this deadline, you will be given a new chance later assuming
+we still have open seats!
+</p>
+
+<p>
+We also ask that if you do NOT want to make a registration based on
+this offer, please  cancel your waitlist
+registration. This will make it possible for us to process other
+entries on the waitlist quicker!
+</p>
+
+{{ button("Cancel waitlist", confbase + "/register/") }}
+
+<p>
+We hope to see you at {{conference.conferencename}}!
+</p>
+{% endblock %}

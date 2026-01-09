@@ -1,0 +1,9 @@
+{% extends "confsponsor/mailbase.html" %}
+{% block content %}
+<p>
+  The recipient at <i>{{shipment.address.title}}</i> has updated the number of parcels received for shipment id <i>{{shipment.addresstoken}}</i>.
+  The updated number of parcels is <i>{{shipment.arrived_parcels}}</i>.
+</p>
+
+{{ button("View shipment details", sponsorbase + "#shipment") }}
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "confreg/mailbase.html" %}
+{% block content %}
+<p>
+This email contains your voucher code(s) for registration to
+{{batch.conference}}.
+</p>
+
+<p>
+To use these vouchers, a registration has to be made the
+same way as with a paid registration. This means that each
+attendee must make his/her own registration, and fill in all
+the details. This *must* be done individually for each attendee,
+as this registration is also used to get access to information
+during the event, as well as pre-conference emails.
+</p>
+
+<p>
+At the bottom of the registration form, there is a field named
+<i>Voucher code</i>. Enter the code from below into that field,
+and then click <i>Save and finish</i> (when all other
+details are completed). If no additional items at cost have
+been added, that will result in a total cost of zero, and once
+that is confirmed, the registration will complete automatically.
+</p>
+
+<p>
+  The vouchers are valid for registration of type <strong>{{batch.regtype.regtype}}</strong>.
+</p>
+
+<p>
+It will not be possible to use them for a different kind of
+registration. However, paid additional options (if any are
+available for this conference) can still be added, but will
+have to be paid for separately.
+</p>
+
+<p>
+  Each voucher code can only be used <strong>once</strong>.
+</p>
+
+<p>
+Your voucher code(s) are (one on each line, and no spaces in
+the codes - in case your mail program has reformatted the lines).
+</p>
+
+<pre>{%for v in vouchers%}{{v.vouchervalue}}
+{%endfor%}
+</pre>
+
+{{ button("View registration form", confbase + "/register/") }}
+
+{%if batch.sponsor%}
+<p>
+You can view the status of each vouchers usage from your
+sponsorship dashboard page.
+</p>
+{%else%}
+{{ button("View voucher usage status", confbase + "/prepaid/" + batch.pk|string + "/") }}
+{%endif%}
+{% endblock %}

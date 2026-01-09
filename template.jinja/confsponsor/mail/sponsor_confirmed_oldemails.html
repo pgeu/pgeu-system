@@ -1,0 +1,27 @@
+{% extends "confsponsor/mailbase.html" %}
+{% block content %}
+<p>
+Welcome as a sponsor of {{conference}}!
+</p>
+
+<o>
+Prior to your sponsorship being confirmed, the following emails have
+been sent to all sponsors at the {{sponsor.level}} level.
+We recommend that you read through these emails to make sure you don't
+miss any important information!
+</o>
+
+<ul>
+{%for m in mails -%}
+<li>{{m.sentat|datetimeformat("%Y-%m-%d %H:%M")}} - <a href="{{sponsorbase}}/viewmail/{{m.id}}/">{{m.subject}}</a></li>
+{%endfor%}
+</ul>
+
+<p>
+Any emails sent to {{sponsor.level}} sponsors in the future
+will be sent as an email to you and also made available on your
+sponsorship dashboard page linked from the footer of this email.
+</p>
+
+{{ button("View sponsorship dashboard", sponsorbase) }}
+{% endblock %}

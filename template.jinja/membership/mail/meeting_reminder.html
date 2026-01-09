@@ -1,0 +1,11 @@
+{%extends "mailbase.html"%}
+{%block content %}
+<p>
+We would like to remind you that the meeting
+<strong>{{meeting.name}}</strong>
+will take place at <i>{{meeting.dateandtime}}</i> (in time zone <i>{{timezonename}}</i>),
+in approximately <i>{{meeting.dateandtime|timeuntil}}</i>.
+</p>
+
+{{ button("View meeting details", sitebase + "/membership/meetings/") }}
+{%endblock%}

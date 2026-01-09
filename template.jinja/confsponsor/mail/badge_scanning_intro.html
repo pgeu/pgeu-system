@@ -1,0 +1,26 @@
+{% extends "confreg/mailbase.html" %}
+{% block content %}
+<p>
+You are receiving this email because you have been assigned as a "badge
+scanner" for <i>{{sponsor.displayname}}</i> at <i>{{conference}}</i>.
+</p>
+<p>
+This means you will be able to scan badges of attendees at the
+conference, collecting contact data. You will of course only be able
+to view the data of those attendees that have authorized the sharing
+of their data.
+</p>
+<p>
+To scan a badge you will use your regular smartphone. The system has
+been tested with the most common models of smartphones, and should
+hopefully work with the one you have.
+</p>
+
+{{ button("Begin scanning badges", confbase + "/badgescan/?token=" + scanner.token) }}
+
+<p>
+<strong>Note!</strong> that this is your <strong>personal</strong> link, so do not share it with
+others! Each person designated to perform badge scanning will have
+their own personal link!
+</p>
+{% endblock %}

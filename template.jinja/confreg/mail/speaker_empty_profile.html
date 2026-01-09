@@ -1,0 +1,19 @@
+{% extends "confreg/mailbase.html" %}
+{% block content %}
+<p>
+You have submitted a session to {{conference}},
+but your speaker profile is empty. In particular, the bio field
+does not contain a description.
+</p>
+
+<p>
+For your session to be considered, please fill out the bio.
+</p>
+
+{{ button("Update speaker profile", confbase + "/speakerprofile/") }}
+
+<p>
+Please do this as soon as possible, so that your session can
+be considered for the event.
+</p>
+{%endblock%}

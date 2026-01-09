@@ -119,6 +119,7 @@ class Command(BaseCommand):
                         'conference': code.conference,
                         'sponsor': code.sponsor,
                         'invoice': code.invoice,
+                        'invoiceurl': wrapper.invoiceurl,
                         'curr': settings.CURRENCY_ABBREV,
                         'expired_time': code.validuntil < today_global(),
                     },

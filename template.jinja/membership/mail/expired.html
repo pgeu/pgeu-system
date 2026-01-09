@@ -1,0 +1,30 @@
+{%extends "mailbase.html"%}
+{%block content %}
+<p>
+Your {{org_name}} membership has expired!
+</p>
+
+<p>
+Should you wish to rejoin {{org_name}}, you can do this
+at any time. As soon as you have paid the
+registration fee your membership will be reactivated immediately.
+</p>
+
+{{ button("Rejoin " + orgname, sitebase + "/membership/") }}
+
+<p>
+If you no longer wish to be a member of {{org_name}}, this
+will be the last notification mail you will receive. Your email
+address has been removed from all automatic email systems at
+this point.
+</p>
+
+<p>
+Thank you for your support!
+</p>
+
+<p>
+{{org_name}}
+</p>
+
+{%endblock%}

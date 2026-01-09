@@ -1,0 +1,47 @@
+{% extends "confsponsor/mailbase.html" %}
+{% block content %}
+<p>
+Your {{sponsor.level}} sponsorship for {{conference}}
+has now been fully confirmed. Thank you for your support!
+</p>
+
+<p>
+You can reach the full details about your sponsorship and it's
+benefits by going to your sponsorship dashboard page at any time.
+</p>
+
+{{ button("View sponsorship dashboard", sponsorbase) }}
+
+<p>
+For some of the benefits that come with your sponsorship we ask that
+you either provide more data, or just indicate that you wish to take
+part of the benefit. In the cases that there is a benefit that you do
+not wish to use, please indicate that as well by explicitly declining
+the benefit on the dashboard - this will make our planning of resources
+before and during the conference much easier!
+</p>
+
+<p>
+At any time when you return to the dashboard page, you will be able to
+view an archive of all informational emails sent out to sponsors. This
+includes both the emails sent after you signed up (which will also be
+delivered to your email address of course) and an archive of all previously
+sent emails. We suggest you take a moment to review any previous emails
+found in that archive, to make sure you are not missing any important
+information.
+</p>
+
+<p>
+Finally, if there are multiple people from your organization who are
+involved with the sponsorship, you may add them as co-managers on the
+dashboard page. Anybody added as a manager will both be able to claim
+and decline benefits, and all outgoing emails will be sent with one copy
+to each manager.
+</p>
+
+<p>
+Once again, thank you for your support!
+</p>
+{% endblock %}
+
+

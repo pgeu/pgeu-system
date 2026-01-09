@@ -1,0 +1,15 @@
+{% extends "confsponsor/mailbase.html" %}
+{% block content %}
+<p>
+  Your discount code <i>{{code.code}}</i> for attendees of
+  <i>{{conference}}</i> has expired without anybody using it.
+</p>
+
+<p>
+  This discount code will no longer be available for use. If you wish
+  to order another discount code, you can do so at the sponsorship
+  dashboard.
+</p>
+
+{{ button("View sponsorship dashboard", sponsorbase) }}
+{% endblock %}

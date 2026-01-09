@@ -1,0 +1,30 @@
+{%extends "confreg/mailbase.html" %}
+{%block content %}
+<p>
+A registration has been made for your email address
+{{reg.email}} to the conference {{conference}}.
+</p>
+
+<p>
+We could not locate an existing account for this email address in our
+systems, and accordingly the registration has been made without being
+connected to an account.
+</p>
+
+<p>
+It is not mandatory to have or connect an account, but we do recommend
+that you connect your account to the registration if you already have
+one, or create a new one if you don't. This allows you to access the
+full services of the system such as being able to read announcements,
+participate in feedback systems and sign up for associated events.
+</p>
+
+<p>
+To connect an account, click the link below and log in with your
+existing account (or create a new one in the process there). Once
+confirmed, the process will be fully automatic.
+</p>
+
+{{ button("Connect registration to your account", sitebase + "/events/register/attach/" + reg.regtoken + "/") }}
+
+{%endblock%}

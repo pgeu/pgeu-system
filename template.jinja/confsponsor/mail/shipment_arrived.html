@@ -1,0 +1,8 @@
+{% extends "confsponsor/mailbase.html" %}
+{% block content %}
+<o>
+  The shipment with id <i>{{shipment.addresstoken}}</i> has been marked as arrived at <i>{{shipment.address.title}}</i>.
+  The recipient has indicated that <i>{{shipment.arrived_parcels}}</i> parcels arrived.
+</o>
+{{ button("View shipment details", sponsorbase + "#shipment") }}
+{% endblock %}

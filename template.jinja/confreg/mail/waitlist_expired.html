@@ -1,0 +1,30 @@
+{% extends "confreg/mailbase.html" %}
+{% block content %}
+<p>
+You were recently sent an offer from the waitlist for
+{{conference.conferencename}}.
+</p>
+<p>
+Unfortunately this offer expired on {{offerexpires|datetimeformat("%Y-%m-%d %H:%M")}}
+without being claimed, and has therefor been canceled.
+</p>
+<p>
+Your registration has been returned to the waitlist at this
+point, and if another seat shows up you will be given another
+chance.
+</p>
+
+<p>
+If you are no longer interested in attending the conference, please
+remove yourself from the waitlist. That will make our processing
+of waitlist entries for other attendees much smoother, and you will
+no longer receive emails about it from us.
+</p>
+
+<p>
+If you wish to remain on the waitlist, you do not need to do
+anything. If another seat shows up, an new email outlining this
+offer and expiry time will be sent to you.
+</p>
+{{ button("Remove from waitlist", confbase + "/register/confirm/") }}
+{%endblock%}

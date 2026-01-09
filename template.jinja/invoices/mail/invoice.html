@@ -1,0 +1,33 @@
+{% extends "mailbase.html" %}
+{% block content %}
+<p>
+You have been sent an invoice from {{org_name}}:
+</p>
+
+<p>
+  Invoice #{{invoice.id}}: <i>{{invoice.title}}</i>
+</p>
+
+<p>
+Please view the attached invoice for details.
+</p>
+
+{%if invoiceurl %}
+{{ button("View or pay invoice directly", invoiceurl) }}
+{%endif%}
+{%if invoice.extradescription%}
+<p>{{invoice.extradescription}}</p>
+{%endif%}
+<p>
+If you have any questions, feel free to respond to this email and
+we'll try to respond as quickly as possible.
+</p>
+
+<p>
+Thank you!
+</p>
+
+<p>
+{{org_name}}
+</p>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "confreg/mailbase.html" %}
+{% block content %}
+<o>
+You were recently sent an email asking you to confirm
+your ability to present the session{%if sessions|length > 1%}s{%endif%}:
+</o>
+
+<ul>
+{%for session in sessions%}
+<li>{{session.title|safe}}</li>
+{%endfor%}
+</ul>
+<p>
+at {{conference}}.
+</p>
+
+<p>
+This is an automated reminder that we are still waiting for
+your response to this.
+</p>
+
+<p>
+We realize you may not have had time to react to the initial
+notification, but we wanted to make sure that you are aware
+that there is action required.
+</p>
+
+<p>
+As always, if you have any questions or need any further
+clarifications, please let us know!
+</p>
+
+<p>
+You will keep receiving a reminder once a week until you
+have confirmed your session, or until we have manually
+removed it if you are unable to attend.
+</p>
+
+{{ button("Confirm sessions", confbase + "/callforpapers/") }}
+{% endblock %\

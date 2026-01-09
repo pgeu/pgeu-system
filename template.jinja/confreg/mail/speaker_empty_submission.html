@@ -1,0 +1,18 @@
+{% extends "confreg/mailbase.html" %}
+{% block content %}
+<p>
+You have submitted a session to {{conference}},
+but not completed the submission. In particular, the abstract field of
+the session
+<strong>{{session}}</strong>
+is empty.
+</p>
+
+{{ button("Update your submission", confbase + "/callforpapers/" + session.id|string) }}
+
+<p>
+If this was an unintentional submission that should not have been made,
+please just respond to this email and let us know and we'll remove it
+from the system and stop reminding you.
+</p>
+{%endblock%}

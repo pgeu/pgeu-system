@@ -1,0 +1,29 @@
+{% extends "confreg/mailbase.html" %}
+{% block content %}
+<p>
+One or more of your presentations for {{conference}}
+have been approved, but we have not yet seen your registration.
+</p>
+<p>
+In order to have all your details in the system to make sure
+you get all the relevant communications, a correct badge and
+more, we ask that you please make sure you register for the
+conference as soon as convenient.
+</p>
+<p>
+This is an automated reminder that we are still waiting for
+your registration.
+</p>
+
+{{ button("Register now", confbase + "/register/") }}
+
+<p>
+As always, if you have any questions or need any further
+clarifications, please let us know!
+</p>
+<p>
+You will keep receiving a reminder once a week until you
+have completed your registration.
+</p>
+
+

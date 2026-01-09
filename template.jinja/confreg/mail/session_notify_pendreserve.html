@@ -1,0 +1,44 @@
+{% extends "confreg/mailbase.html" %}
+{% block content %}
+<p>
+This email is sent to you because the status of your session
+<strong>{{session.title|safe}}</strong>
+submitted to {{conference}} has been updated.
+</p>
+<p>
+We would like to put this session on the reserve list.
+</p>
+<p>
+Reserve list means that we'd like the ability to approve this session
+any time between now and the event, in case another session has
+to be canceled. This can include both early cancellations and late
+ones due to for example another speaker unable to make it to the event.
+</p>
+<p>
+For this reason it is important that you are planning to attend the
+event regardless of having this session selected, and also that you have
+the session prepared and ready to give on short notice.
+</p>
+<p>
+Before your session is fully moved to the reserve list, we need you to
+confirm that you are OK with this. Please confirm your acceptance as soon as you can. If you have any
+further questions about what this means, please make sure you contact
+us *before* you confirm the reserve listing. You can do so by replying
+to this email.
+</p>
+<p>
+Also, if you do not wish for your session to be used for the reserve
+list, please let us know by responding to this email.
+</p>
+
+{{ button("Confirm your session", confbase + "/callforpapers/") }}
+
+{% if has_multiple_sessions %}
+<p>
+Since you have made more than one submission to the conference,
+please note that this status only affects this specific session.
+</p>
+
+{{ button("View status of all submissions", confbase + "/callforpapers/") }}
+{% endif %}
+{%endblock%}

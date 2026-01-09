@@ -1,0 +1,22 @@
+{% extends "confreg/mailbase.html" %}
+{% block content %}
+<p>
+This email is sent to you because the status of your session
+<strong>{{session.title|safe}}</strong>
+submitted to {{conference}} has been updated.
+</p>
+
+<p>
+Unfortunately, we have not been able to accept this session. We
+do hope to see you at {{conference}} regardless!
+</p>
+
+{% if has_multiple_sessions %}
+<p>
+Since you have made more than one submission to the conference,
+please note that this status only affects this specific session.
+</p>
+
+{{ button("View status of all submissions", confbase + "/callforpapers/") }}
+{% endif %}
+{%endblock%}

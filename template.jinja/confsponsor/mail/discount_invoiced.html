@@ -1,0 +1,43 @@
+{% extends "confsponsor/mailbase.html" %}
+{% block content %}
+<p>
+  Your discount code <i>{{code.code}}</i> for attendees of
+  <i>{{conference}}</i> has been closed and invoiced.
+</p>
+<p>
+{%if expired_time%}
+The code was closed because it was set to expire on {{code.validuntil}}.
+{%else%}
+The code was closed because it reached the maximum number
+of registrations ({{code.count}}).
+{%endif%}
+</p>
+<p>
+The following people registered using the discount code:
+</p>
+<ul>
+{%for r in code.registrations.all()%}
+<li>{{r.fullname}}</li>
+{%endfor%}
+</ul>
+<p>
+An invoice for the amount <i>{{curr}}{{invoice.total_amount}}</i> has
+been generated (invoice number #{{invoice.id}}) and sent to
+<i>{{invoice.recipient_name}} <{{invoice.recipient_email}}></>.
+</i>
+
+{{ button("View invoice", invoiceurl ) }}
+
+<p>
+The invoice is due to be paid on receipt, to please go ahead and
+complete the payment as soon as possible.
+</p>
+
+<p>
+As always, you can find information about the usage of your code, and
+order more codes if you wish to, at the sponsorship dashboard page.
+</p>
+
+{{ button("View sponsorship dashboard", sponsorbase) }}
+
+{% endblock %}
