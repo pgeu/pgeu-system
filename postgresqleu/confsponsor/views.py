@@ -968,8 +968,8 @@ def sponsor_contract_preview(request, contractid):
 def sponsor_admin_dashboard(request, confurlname):
     conference = get_authenticated_conference(request, confurlname)
 
-    confirmed_sponsors = Sponsor.objects.select_related('invoice', 'level').filter(conference=conference, confirmed=True).order_by('-level__levelcost', 'confirmedat')
-    unconfirmed_sponsors = Sponsor.objects.select_related('invoice', 'level', 'contract').filter(conference=conference, confirmed=False).order_by('-level__levelcost', 'signupat')
+    confirmed_sponsors = Sponsor.objects.select_related('invoice', 'level').filter(conference=conference, confirmed=True).order_by('-level__levelcost', 'level__levelname', 'confirmedat')
+    unconfirmed_sponsors = Sponsor.objects.select_related('invoice', 'level', 'contract').filter(conference=conference, confirmed=False).order_by('-level__levelcost', 'level__levelname', 'signupat')
 
     unconfirmed_benefits = SponsorClaimedBenefit.objects.filter(sponsor__conference=conference, confirmed=False).order_by('-sponsor__level__levelcost', 'sponsor', 'benefit__sortkey', 'benefit__benefitname', 'claimnum')
 
