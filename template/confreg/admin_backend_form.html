@@ -264,8 +264,10 @@ $('#id_{{f}}').addClass('jsoneditor');
 
 {%block layoutblock%}
 <h1>{{whatverb|default:"Edit"}} {{what}}</h1>
-<form class="form-horizontal backend-form" method="POST" action="." enctype="multipart/form-data">{%csrf_token%}
+<form {%if formid%}id="{{formid}}" {%endif%}class="form-horizontal backend-form" method="POST" action="." enctype="multipart/form-data">{%csrf_token%}
+{%block admin_backend_form_pre%}{%endblock%}
 {%include "confreg/admin_backend_form_content.html" %}
+{%block admin_backend_form_post%}{%endblock%}
 </form>
 
 {%if user.is_superuser and adminurl%}

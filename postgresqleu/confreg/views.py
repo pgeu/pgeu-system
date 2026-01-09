@@ -4926,6 +4926,18 @@ def crossmail_send(request):
         conferences = list(Conference.objects.filter(series__administrators=request.user))
     conferenceids = set((c.id for c in conferences))
 
+    if request.method == 'GET' and 'fieldpreview' in request.GET:
+        if request.GET['fieldpreview'] != 'text':
+            raise Http404()
+
+        return HttpResponse(render_sandboxed_template(
+            request.GET['previewval'], {
+                'name': 'Test Name',
+                'email': 'test@example.com',
+                'token': 'abcd1234efgh4567abcd1234efgh4567abcd1234efgh4567abcd1234efgh4567',
+            },
+        ))
+
     def _get_recipients_for_crossmail(postdict):
         def _get_one_filter(conf, filt, optout_filter=False):
             conf = int(conf)
@@ -5045,7 +5057,11 @@ def crossmail_send(request):
                     form.data['subject'],
                     'confreg/mail/cross_conference.txt',
                     {
-                        'body': form.data['text'],
+                        'body': render_sandboxed_template(form.data['text'], {
+                            'name': r['fullname'],
+                            'email': r['email'],
+                            'token': r['token'],
+                        }),
                         'token': r['token'],
                     },
                     sendername=form.data['sendername'],
@@ -5064,6 +5080,8 @@ def crossmail_send(request):
 
     return render(request, 'confreg/admin_cross_conference_mail.html', {
         'form': form,
+        'formid': 'crossconfform',
+        'basetemplate': 'confreg/confadmin_base.html',
         'recipients': recipients,
         'conferences': conferences,
         'helplink': 'emails#crossconference',

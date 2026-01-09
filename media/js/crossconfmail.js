@@ -93,6 +93,10 @@ function submit_form() {
 }
 
 $(function() {
+    $('#crossconfform').submit(function(e) {
+        submit_form();
+    });
+
     function prepare_picker(type) {
         var e = $('#id_' + type);
         if (e.val()) {

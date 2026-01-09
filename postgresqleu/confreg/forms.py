@@ -22,7 +22,7 @@ from .util import send_conference_mail
 from .regtypes import validate_special_reg_type, validate_special_reg_type_form
 from .twitter import get_all_conference_social_media
 from postgresqleu.util.fields import UserModelChoiceField
-from postgresqleu.util.widgets import StaticTextWidget
+from postgresqleu.util.widgets import StaticTextWidget, SimpleTreeviewWidget
 from postgresqleu.util.widgets import EmailTextWidget, MonospaceTextarea
 from postgresqleu.util.widgets import CallForPapersSpeakersWidget
 from postgresqleu.util.db import exec_to_list
@@ -972,12 +972,18 @@ class CrossConferenceMailForm(forms.Form):
     exclude = forms.CharField(widget=forms.widgets.HiddenInput(), required=False)
     subject = forms.CharField(min_length=10, max_length=80, required=True)
     text = forms.CharField(min_length=30, required=True, widget=EmailTextWidget)
+    available_fields = django.forms.CharField(required=False,
+                                              help_text="These fields are available as {{field}} in the template")
 
     confirm = forms.BooleanField(label="Confirm", required=False)
+
+    dynamic_preview_fields = ['text', ]
 
     def __init__(self, user, *args, **kwargs):
         self.user = user
         super(CrossConferenceMailForm, self).__init__(*args, **kwargs)
+
+        self.fields['available_fields'].widget = SimpleTreeviewWidget(treedata={x: None for x in ['name', 'email', 'token']})
 
         if not self.user.is_superuser:
             conferences = list(Conference.objects.filter(series__administrators=self.user))

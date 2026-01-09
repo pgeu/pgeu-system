@@ -1,14 +1,9 @@
-{%extends "confreg/confadmin_base.html" %}
-{%load assets%}
-{%block title%}Send cross conference email{%endblock%}
+{%extends "confreg/admin_backend_form.html" %}
 {%block extrahead%}
-{%asset "js" "selectize"%}
+{{block.super}}
 <script type="text/javascript" src="/media/js/crossconfmail.js"></script>
-{%asset "css" "selectize"%}
 {%endblock%}
-{%block layoutblock%}
-<h1>Send cross conference email</h1>
-<form class="form-horizontal" method="post" action="." id="crossconfform">{%csrf_token%}
+{%block admin_backend_form_pre%}
 <div class="form-group">
   <label class="control-label col-lg-3">Include:</label>
   <div class="col-lg-9 controls" id="include_div">
@@ -22,14 +17,9 @@
     <button id="exclude_btn" class="btn btn-xs pull-left" onclick="return addNewFilter('exclude')"><span class="glyphicon glyphicon-plus-sign"></span></button>
   </div>
 </div>
+{%endblock%}
 
-{%for field in form%}
-{%include "confreg/admin_backend_form_field.html"%}
-{%endfor%}
-
-<input class="btn btn-default" type="submit" value="Send mail" onClick="return submit_form()">
-</form>
-
+{%block admin_backend_form_post%}
 {%if recipients%}
 <p>
 Mail will be sent to the following {{recipients|length}} recipients:

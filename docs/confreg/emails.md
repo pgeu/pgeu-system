@@ -160,8 +160,10 @@ Subject
 :  The subject of the email (!)
 
 Text
-:  The body of the email. No formatting is done, so take care with
-linebreaks!
+:  The body of the email. Supports markdown under the same rules as
+   attendee emails above. Only the fields for `name`, `email` and
+   `token` are available for substitution, as the email may be sent
+   to addresses where we have no information beyond that.
 
 Before the email is actually sent a list of recipients will be shown
 at the bottom of the form and a confirm box will appear to confirm
