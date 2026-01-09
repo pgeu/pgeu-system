@@ -17,7 +17,7 @@ from postgresqleu.confreg.util import get_authenticated_conference, get_conferen
 from postgresqleu.confreg.util import reglog
 from postgresqleu.confreg.util import send_conference_notification, send_conference_notification_template
 from postgresqleu.confreg.util import send_conference_mail
-from postgresqleu.confreg.mail import attendee_email_form
+from postgresqleu.confreg.mail import attendee_email_form, BaseAttendeeEmailProvider, AttendeeEmailQuerySampleMixin
 
 from postgresqleu.util.db import exec_to_scalar, exec_to_list
 from postgresqleu.util.request import get_int_or_error
@@ -558,9 +558,9 @@ def signup_admin_editsignup(request, urlname, signupid, id):
 
 
 def _get_signup_email_query(signup, filters, optionstrings):
-    params = {'confid': signup.conference.id, 'signup': signup.id}
+    params = {'conference': signup.conference.id, 'signup': signup.id}
 
-    qq = "SELECT r.id AS regid, r.attendee_id AS user_id, r.firstname || ' ' || r.lastname AS fullname, r.email FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND canceledat IS NULL AND conference_id=%(confid)s"
+    qq = "SELECT r.id AS regid, r.attendee_id AS user_id, r.firstname || ' ' || r.lastname AS fullname, r.email FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND canceledat IS NULL AND conference_id=%(conference)s"
     if not signup.public:
         qq += " AND (regtype_id IN (SELECT registrationtype_id FROM confwiki_signup_regtypes srt WHERE srt.signup_id=%(signup)s) OR id IN (SELECT conferenceregistration_id FROM confwiki_signup_attendees WHERE signup_id=%(signup)s))"
 
@@ -594,20 +594,27 @@ def signup_admin_sendmail(request, urlname, signupid):
 
     optionstrings = signup.options.split(',')
 
-    if 'idlist' in request.GET or 'idlist' in request.POST:
-        def _get_query(idlist):
-            return _get_signup_email_query(signup, idlist, optionstrings)
+    class SignupAttendeeEmailProvider(AttendeeEmailQuerySampleMixin, BaseAttendeeEmailProvider):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.queryparams['signup'] = signup.id
 
+        def process_idlist(self, idlist):
+            return idlist
+
+        @property
+        def query(self):
+            return _get_signup_email_query(signup, self.idlist, optionstrings)[0]
+
+    if 'idlist' in request.GET or 'idlist' in request.POST:
         return attendee_email_form(
             request,
             conference,
+            SignupAttendeeEmailProvider,
             breadcrumbs=[
                 ('../../', 'Signups'),
                 ('../', signup.title),
             ],
-            extracontext={'signup': signup},
-            query=_get_query,
-            strings=True,
         )
 
     additional_choices = [('r_{0}'.format(r), 'Recipients who responded {0}'.format(optionstrings[r])) for r in range(len(optionstrings))]

@@ -51,13 +51,14 @@ from .util import attendee_cost_from_bulk_payment
 from .util import send_conference_mail, send_conference_notification, send_conference_notification_template
 from .util import reglog
 from .util import make_registration_transfer
-from .mail import attendee_email_form
+from .mail import attendee_email_form, BaseAttendeeEmailProvider, AttendeeEmailQuerySampleMixin
 
 from .models import get_status_string, valid_status_transitions
 from .regtypes import confirm_special_reg_type
 from .jinjafunc import JINJA_TEMPLATE_ROOT
 from .jinjafunc import render_jinja_conference_template
 from .jinjafunc import render_jinja_conference_svg
+from .jinjafunc import render_sandboxed_template
 from .jinjapdf import render_jinja_ticket
 from .util import get_authenticated_conference, get_conference_or_404
 from .backendforms import CancelRegistrationForm, ConfirmRegistrationForm
@@ -2664,9 +2665,17 @@ def attendee_mail(request, confname, mailid):
         raise Http404()
     mail = mail[0]
 
+    contents = render_sandboxed_template(mail.message, {
+        'conference': conference,
+        'attendee': reg,
+        'firstname': reg.firstname,
+        'lastname': reg.lastname,
+    })
+
     return render_conference_response(request, conference, 'reg', 'confreg/attendee_mail_view.html', {
         'conference': conference,
         'mail': mail,
+        'contents': contents,
         })
 
 
@@ -4470,74 +4479,83 @@ def admin_waitlist_sendmail(request, urlname):
 def admin_waitlist_sendmail_send(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
-    def _recipient_string(idlist):
-        return WaitlistSendmailForm.TARGET_CHOICES[idlist[0]][1] + ', ' + WaitlistSendmailForm.POSITION_CHOICES[idlist[1]][1]
+    class WaitlistAttendeeEmailProvider(AttendeeEmailQuerySampleMixin, BaseAttendeeEmailProvider):
+        def get_recipient_string(self):
+            return WaitlistSendmailForm.TARGET_CHOICES[self.idlist[0]][1] + ', ' + WaitlistSendmailForm.POSITION_CHOICES[self.idlist[1]][1]
 
-    def _handle_insert(idlist, sentat, subject, message):
-        target = idlist[0]
-        position = idlist[1]
+        @property
+        def query(self):
+            query = "SELECT r.id AS regid, attendee_id AS user_id, firstname || ' ' || lastname AS fullname, email FROM confreg_conferenceregistration r INNER JOIN confreg_registrationwaitlistentry w ON w.registration_id=r.id WHERE conference_id=%(conference)s AND payconfirmedat IS NULL"
+            if self.idlist[0] == WaitlistSendmailForm.TARGET_OFFERS:
+                query += " AND offeredon IS NOT NULL"
+            if self.idlist[0] == WaitlistSendmailForm.TARGET_NOOFFERS:
+                query += " AND offeredon IS NULL"
+            return query
 
-        q = RegistrationWaitlistEntry.objects.filter(registration__conference=conference,
-                                                     registration__payconfirmedat__isnull=True)
-        tot = q.all().count()
-        if not tot:
-            messages.warning(request, "Waitlist was empty, no email was sent.")
-            return
+        def insert_emails(self, sentat, subject, message):
+            target = self.idlist[0]
+            position = self.idlist[1]
 
-        if position == WaitlistSendmailForm.POSITION_NONE:
-            # If we don't need the position, we can just create a single AttendeeMail and
-            # send it to all recipients using a filter in the db.
-            if target == WaitlistSendmailForm.TARGET_OFFERS:
-                q = q.filter(offeredon__isnull=False)
-            elif target == WaitlistSendmailForm.TARGET_NOOFFERS:
-                q = q.filter(offeredon__isnull=True)
+            q = RegistrationWaitlistEntry.objects.filter(registration__conference=conference,
+                                                         registration__payconfirmedat__isnull=True)
+            tot = q.all().count()
+            if not tot:
+                messages.warning(request, "Waitlist was empty, no email was sent.")
+                return
 
-            msg = AttendeeMail(
-                conference=conference,
-                subject=subject,
-                message=message,
-                sentat=sentat,
-            )
-            msg.save()
-            for w in q.all():
-                msg.registrations.add(w.registration)
-            msg.save()
-        else:
-            # Else we have to loop through and create an individual AttendeeMail for
-            # each registration. We need to loop through the whole list as well since
-            # we need the position.
-            for n, w in enumerate(q.order_by('enteredon')):
-                # We need to manually filter here, since we needed to count positions
-                if target == WaitlistSendmailForm.TARGET_OFFERS and not w.offeredon:
-                    continue
-                if target == WaitlistSendmailForm.TARGET_NOOFFERS and w.offeredon:
-                    continue
-
-                if position == WaitlistSendmailForm.POSITION_FULL:
-                    positioninfo = "Your position on the waitlist is {0} of {1}.".format(n + 1, tot)
-                elif position == WaitlistSendmailForm.POSITION_ONLY:
-                    positioninfo = "Your position on the waitlist is {0}.".format(n + 1)
-                elif position == WaitlistSendmailForm.POSITION_SIZE:
-                    positioninfo = "The current size of the waitlist is {0}.".format(tot)
-                else:
-                    positioninfo = ''
+            if position == WaitlistSendmailForm.POSITION_NONE:
+                # If we don't need the position, we can just create a single AttendeeMail and
+                # send it to all recipients using a filter in the db.
+                if target == WaitlistSendmailForm.TARGET_OFFERS:
+                    q = q.filter(offeredon__isnull=False)
+                elif target == WaitlistSendmailForm.TARGET_NOOFFERS:
+                    q = q.filter(offeredon__isnull=True)
 
                 msg = AttendeeMail(
                     conference=conference,
                     subject=subject,
-                    message=message + "\n\n" + positioninfo,
+                    message=message,
                     sentat=sentat,
                 )
                 msg.save()
-                msg.registrations.add(w.registration)
+                for w in q.all():
+                    msg.registrations.add(w.registration)
                 msg.save()
+            else:
+                # Else we have to loop through and create an individual AttendeeMail for
+                # each registration. We need to loop through the whole list as well since
+                # we need the position.
+                for n, w in enumerate(q.order_by('enteredon')):
+                    # We need to manually filter here, since we needed to count positions
+                    if target == WaitlistSendmailForm.TARGET_OFFERS and not w.offeredon:
+                        continue
+                    if target == WaitlistSendmailForm.TARGET_NOOFFERS and w.offeredon:
+                        continue
+
+                    if position == WaitlistSendmailForm.POSITION_FULL:
+                        positioninfo = "Your position on the waitlist is {0} of {1}.".format(n + 1, tot)
+                    elif position == WaitlistSendmailForm.POSITION_ONLY:
+                        positioninfo = "Your position on the waitlist is {0}.".format(n + 1)
+                    elif position == WaitlistSendmailForm.POSITION_SIZE:
+                        positioninfo = "The current size of the waitlist is {0}.".format(tot)
+                    else:
+                        positioninfo = ''
+
+                    msg = AttendeeMail(
+                        conference=conference,
+                        subject=subject,
+                        message=message + "\n\n" + positioninfo,
+                        sentat=sentat,
+                    )
+                    msg.save()
+                    msg.registrations.add(w.registration)
+                    msg.save()
 
     return attendee_email_form(
         request,
         conference,
+        WaitlistAttendeeEmailProvider,
         breadcrumbs=[('../../', 'Waitlist'), ('../', 'Waitlist email'), ],
-        get_recipient_string=_recipient_string,
-        handle_insert=_handle_insert,
     )
 
 
@@ -4570,41 +4588,63 @@ OR EXISTS (SELECT 1 FROM confreg_attendeemail_pending_regs WHERE attendeemail_id
 def admin_attendeemail_send(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
-    def _recipient_string(idlist):
-        def __recipients():
-            yield from ('regclass {}'.format(c.regclass) for c in RegistrationClass.objects.filter(conference=conference, id__in=[id.lstrip('c') for id in idlist if id.startswith('c')]))
-            yield from ('option {}'.format(a.name) for a in ConferenceAdditionalOption.objects.filter(conference=conference, id__in=[id.lstrip('a') for id in idlist if id.startswith('a')]))
-            if 'xc' in idlist:
-                yield 'Check-in processors'
-            if 'xv' in idlist:
-                yield 'Volunteers'
+    class AttendeeEmailProvider(AttendeeEmailQuerySampleMixin, BaseAttendeeEmailProvider):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
 
-        return ", ".join(__recipients()).capitalize()
+            self.queryparams.update({
+                'regclasses': [int(id.lstrip('c')) for id in self.idlist if id.startswith('c')],
+                'addopts': [int(id.lstrip('a')) for id in self.idlist if id.startswith('a')],
+            })
 
-    def _handle_insert(idlist, sentat, subject, message):
-        msg = AttendeeMail(
-            conference=conference,
-            subject=subject,
-            message=message,
-            tovolunteers='xv' in idlist,
-            tocheckin='xc' in idlist,
-            sentat=sentat,
-        )
-        msg.save()
-        for id in idlist:
-            if id.startswith('c'):
-                msg.regclasses.add(id.lstrip('c'))
-            elif id.startswith('a'):
-                msg.addopts.add(id.lstrip('a'))
-        msg.save()
+        def process_idlist(self, idlist):
+            return idlist
+
+        def get_recipient_string(self):
+            def __recipients():
+                yield from ('regclass {}'.format(c.regclass) for c in RegistrationClass.objects.filter(conference=conference, id__in=[id.lstrip('c') for id in self.idlist if id.startswith('c')]))
+                yield from ('option {}'.format(a.name) for a in ConferenceAdditionalOption.objects.filter(conference=conference, id__in=[id.lstrip('a') for id in self.idlist if id.startswith('a')]))
+                if 'xc' in self.idlist:
+                    yield 'Check-in processors'
+                if 'xv' in self.idlist:
+                    yield 'Volunteers'
+
+            return ", ".join(__recipients()).capitalize()
+
+        @property
+        def query(self):
+            query = """SELECT r.id AS regid, r.attendee_id AS user_id, r.firstname || ' ' || r.lastname AS fullname, r.email FROM confreg_conferenceregistration r WHERE payconfirmedat IS NOT NULL AND canceledat IS NULL AND conference_id=%(conference)s AND (
+EXISTS (SELECT 1 FROM confreg_registrationtype rt WHERE r.regtype_id=rt.id AND rt.regclass_id=ANY(%(regclasses)s)) OR
+EXISTS (SELECT 1 FROM confreg_conferenceregistration_additionaloptions rao WHERE rao.conferenceregistration_id=r.id AND rao.conferenceadditionaloption_id=ANY(%(addopts)s))"""
+            if 'xc' in self.idlist:
+                query += " OR\nEXISTS(SELECT 1 FROM confreg_conference_checkinprocessors cp WHERE cp.conferenceregistration_id=r.id AND cp.conference_id=%(conference)s)"
+            if 'xv' in self.idlist:
+                query += " OR\nEXISTS(SELECT 1 FROM confreg_conference_volunteers v WHERE v.conferenceregistration_id=r.id AND v.conference_id=%(conference)s)"
+            query += "\n)"
+            return query
+
+        def insert_emails(self, sendat, subject, message):
+            msg = AttendeeMail(
+                conference=conference,
+                subject=subject,
+                message=message,
+                tovolunteers='xv' in self.idlist,
+                tocheckin='xc' in self.idlist,
+                sentat=sendat,
+            )
+            msg.save()
+            for id in self.idlist:
+                if id.startswith('c'):
+                    msg.regclasses.add(id.lstrip('c'))
+                elif id.startswith('a'):
+                    msg.addopts.add(id.lstrip('a'))
+            msg.save()
 
     return attendee_email_form(
         request,
         conference,
+        AttendeeEmailProvider,
         breadcrumbs=[('../', 'Attendee emails'), ],
-        strings=True,
-        get_recipient_string=_recipient_string,
-        handle_insert=_handle_insert,
     )
 
 

@@ -7,10 +7,11 @@ to attendees matching a specific criteria (such as a
 [registration class](registrations#typesandclasses)), individual
 attendees or speakers of sessions (who may or may not later become
 attendees).. Emails sent using this function will both be sent as an
-email to the attendee *and* optionally listed on the registration
+email to the attendee *and* listed on the registration
 dashboard for those that have registered. This means that attendees
 who sign up *after* the email is sent will **also** be able to view
-the emails, assuming they are sign up in a way that matches the criteria.
+the emails, assuming they are signed up in a way that matches the criteria
+and use the same email address when doing so.
 
 If emails are sent to a recipient that has not yet registered
 (typically sent so somebody who has submitted a talk on the call for
@@ -45,25 +46,6 @@ To volunteers
 To check-in processors
 :  Check this box to send to everybody listed as a check-in processor at th conference.
 
-Send at
-:  The email will get sent no earlier than this time (defaults to the current time
-   which means send right away).
-
-Subject
-:  The subject of the email
-
-Message
-:  The message body. No formatting is done, so make sure you put
-reasonable linebreaks in, and don't use markdown.
-
-A link to the registration dashboard will be automatically included at
-the bottom of the email.
-
-Emails can (obviously) not be edited after they've been sent.
-
-Emails sent using this functionality is *not* subject to opt-out
-settings, so be careful to only use for active or recent events!
-
 ### Sending email to individual attendees
 
 Emails can also be sent to individual attendees, either based on their
@@ -78,7 +60,9 @@ by clicking the envelope icon, turning it green. Emails will be sent
 to all recipients that are marked with green.
 
 Once recipients have been selected, click the *Send email to <n>
-attendees* button. This brings up a form with the details:
+attendees* button.
+
+### Email contents and formatting
 
 Send at
 :  The email will get sent no earlier than this time (defaults to the current time
@@ -89,17 +73,28 @@ Subject
 
 Message
 :  The message body. No formatting is done, so make sure you put
-reasonable linebreaks in, and don't use markdown.
+reasonable linebreaks in. See below about markdown and templating.
 
-If the email is stored in the database, a link to the registration
-dashboard is included at the bottom of the email. If the email is not
-stored, a sentence explain that it was sent because of the conference
-is added.
+A link to the registration dashboard will be automatically included at
+the bottom of the email.
 
 Emails can (obviously) not be edited after they've been sent.
 
 Emails sent using this functionality is *not* subject to opt-out
 settings, so be careful to only use for active or recent events!
+
+#### Markdown and templating
+
+The contents of the emails can be specified in markdown. Note,
+however, that the markdown will be send as-is in the plaintext version
+of the email, so you should still be careful about the formatting. For
+the text/plain part, no formatting at all is done.
+
+You can use jinja style templating to include some defails about the
+attendee in the email. For example, specifying {{attendee.fullname}}
+will give the attendees full name, to be used for example in
+greetings. A list of (most) available attributes are included below
+the preview field.
 
 ## External email <a name="external"></a>
 

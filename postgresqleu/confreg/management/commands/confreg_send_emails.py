@@ -11,6 +11,7 @@ from datetime import timedelta
 
 from postgresqleu.confreg.models import AttendeeMail, ConferenceRegistration
 from postgresqleu.confreg.util import send_conference_mail
+from postgresqleu.confreg.jinjafunc import render_sandboxed_template
 
 
 class Command(BaseCommand):
@@ -40,20 +41,32 @@ class Command(BaseCommand):
             if msg.tocheckin:
                 attendees.update(msg.conference.checkinprocessors.all())
 
-            # Pending registrations don't have a ConferenceRegistration object, so we need to extract just the parts we need.
-            recipients = [(a.fullname, a.email) for a in attendees]
-            recipients.extend([('{} {}'.format(u.first_name, u.last_name), u.email) for u in msg.pending_regs.all()])
+            def _render_and_send(email, attendee, firstname, lastname):
+                body = render_sandboxed_template(msg.message, {
+                    'conference': msg.conference,
+                    'attendee': attendee,
+                    'firstname': firstname,
+                    'lastname': lastname,
+                })
 
-            for fullname, email in recipients:
                 send_conference_mail(msg.conference,
                                      email,
                                      msg.subject,
                                      'confreg/mail/attendee_mail.txt',
                                      {
-                                         'body': msg.message,
+                                         'body': body,
                                          'linkback': True,
                                      },
-                                     receivername=fullname,
+                                     receivername=a.fullname,
                 )
+
+            # Send to all regular recipients, where we can render a recipient specific version
+            for a in attendees:
+                _render_and_send(a.email, a, a.firstname, a.lastname)
+
+            # Pending regs have no registration, but we can still get the name
+            for p in msg.pending_regs.all():
+                _render_and_send(p.email, None, p.first_name, p.last_name)
+
             msg.sent = True
             msg.save(update_fields=['sent'])

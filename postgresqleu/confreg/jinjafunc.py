@@ -190,6 +190,10 @@ class ConfSandbox(jinja2.sandbox.SandboxedEnvironment):
 # Enumerate all available attributes (in the postgresqleu scope), showing their
 # availability.
 def get_all_available_attributes(objclass, depth=0):
+    if depth > 5:
+        # We just cap it here to avoid infinitely recursing through trees
+        return
+
     modname = objclass.__module__
     if not (modname.startswith('postgresqleu.') and modname.endswith('models')):
         # Outside of models, we also specifically allow the InvoicePresentationWrapper

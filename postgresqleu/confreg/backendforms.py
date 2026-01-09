@@ -23,7 +23,7 @@ from postgresqleu.util.db import exec_to_single_list, exec_to_scalar, exec_to_li
 from postgresqleu.util.crypto import generate_rsa_keypair
 from postgresqleu.util.forms import SelectSetValueField
 from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget, MonospaceTextarea
-from postgresqleu.util.widgets import TagOptionsTextWidget
+from postgresqleu.util.widgets import TagOptionsTextWidget, SimpleTreeviewWidget
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.backendforms import BackendForm, BackendBeforeNewForm
 from postgresqleu.util.messaging import messaging_implementation_choices, get_messaging, get_messaging_class
@@ -1973,15 +1973,21 @@ class BackendSendEmailForm(django.forms.Form):
     subject = django.forms.CharField(max_length=128, required=True)
     recipients = django.forms.Field(widget=StaticTextWidget, required=False)
     message = django.forms.CharField(widget=EmailTextWidget, required=True)
+    available_fields = django.forms.CharField(required=False,
+                                              help_text="These fields are available as {{field}} in the template")
     idlist = django.forms.CharField(widget=django.forms.HiddenInput, required=True)
     confirm = django.forms.BooleanField(label="Confirm", required=False)
 
-    def __init__(self, conference, *args, **kwargs):
+    dynamic_preview_fields = ['message', ]
+
+    def __init__(self, conference, contextrefs, *args, **kwargs):
         super(BackendSendEmailForm, self).__init__(*args, **kwargs)
         self.conference = conference
+        self.contextrefs = contextrefs
         if not (self.data.get('subject') and self.data.get('message')):
             del self.fields['confirm']
 
+        self.fields['available_fields'].widget = SimpleTreeviewWidget(treedata=contextrefs)
         self.fields['subject'].help_text = 'Subject will be prefixed with <strong>[{}]</strong>'.format(conference)
 
     def clean_confirm(self):

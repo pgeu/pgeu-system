@@ -101,7 +101,8 @@ function backend_dynamic_preview(id) {
    var p = w.find('div.admin_dynamicpreview_contents');
 
    function update() {
-      $.get('?fieldpreview=' + id + '&previewval=' + encodeURIComponent(e.val()), function(v) {
+      const uriroot = document.location.search.includes('?') ? document.location.search + '&' : '?';
+      $.get(uriroot + 'fieldpreview=' + id + '&previewval=' + encodeURIComponent(e.val()), function(v) {
          p.text(v);
       }).fail(function(xhr, status, err) {
 	 if (xhr.status == 500 || xhr.status == 400) {

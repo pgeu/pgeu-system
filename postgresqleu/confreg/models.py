@@ -700,6 +700,11 @@ class ConferenceRegistration(models.Model):
     # Favorite-marked sessions
     favs = ArrayField(models.IntegerField(), null=False, blank=True, default=list)
 
+    _unsafe_attributes = [
+        'messaging_copiedfrom', 'messaging_copiedfrom_id',
+        'messaging', 'messaging_id', 'messaging_config',
+    ]
+
     class Meta:
         unique_together = (
             ('attendee', 'conference'),
@@ -943,7 +948,10 @@ class ConferenceRegistration(models.Model):
 
     # For the admin interface (mainly)
     def __str__(self):
-        return "%s: %s %s <%s>" % (self.conference, self.firstname, self.lastname, self.email)
+        if hasattr(self, 'conference'):
+            return "%s: %s %s <%s>" % (self.conference, self.firstname, self.lastname, self.email)
+        else:
+            return super().__str__()
 
     # For exporting "safe attributes" to external systems
     def safe_export(self):

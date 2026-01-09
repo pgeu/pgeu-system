@@ -13,7 +13,7 @@ import io
 import json
 from collections import OrderedDict
 
-from postgresqleu.util.db import exec_to_list, exec_to_dict, exec_no_result
+from postgresqleu.util.db import exec_to_list, exec_to_dict, exec_no_result, exec_to_scalar
 from postgresqleu.util.decorators import superuser_required
 from postgresqleu.util.messaging import messaging_implementations, get_messaging_class
 from postgresqleu.util.messaging.util import send_reg_direct_message
@@ -65,7 +65,7 @@ from .backendforms import BackendMessagingForm
 from .backendforms import BackendSeriesMessagingForm
 from .backendforms import BackendRegistrationDmForm
 from .backendforms import BackendMergeSpeakerForm
-from .mail import attendee_email_form
+from .mail import attendee_email_form, BaseAttendeeEmailProvider, AttendeeEmailQuerySampleMixin
 from .contextutil import has_yaml
 
 from .views import _scheduledata
@@ -1052,6 +1052,7 @@ def registration_dashboard_send_email(request, urlname):
 
     return attendee_email_form(request,
                                conference,
+                               BaseAttendeeEmailProvider,
                                breadcrumbs=[('../', 'Registration list'), ],
                                )
 
@@ -1059,9 +1060,10 @@ def registration_dashboard_send_email(request, urlname):
 def conference_session_send_email(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
-    return attendee_email_form(request,
-                               conference,
-                               """
+    class ConferenceSessionAttendeeEmailProvider(AttendeeEmailQuerySampleMixin, BaseAttendeeEmailProvider):
+        @property
+        def query(self):
+            return """
 SELECT r.id AS regid, s.user_id, s.fullname, COALESCE(r.email, u.email) AS email
 FROM confreg_speaker s
 INNER JOIN auth_user u ON u.id=s.user_id
@@ -1070,7 +1072,18 @@ WHERE EXISTS (
  SELECT 1 FROM confreg_conferencesession sess
  INNER JOIN confreg_conferencesession_speaker ccs ON sess.id=ccs.conferencesession_id
  WHERE conferencesession_id=ANY(%(idlist)s) AND sess.conference_id=%(conference)s
- AND speaker_id=s.id)""",
+ AND speaker_id=s.id)"""
+
+        @property
+        def allow_attendee_ref(self):
+            if not self.get_recipients():
+                # If there are no recipients, we allow it
+                return True
+            return not exec_to_scalar("SELECT EXISTS (SELECT 1 FROM ({}) WHERE regid IS NULL)".format(self.query), self.queryparams)
+
+    return attendee_email_form(request,
+                               conference,
+                               ConferenceSessionAttendeeEmailProvider,
                                [('../', 'Conference sessions'), ],
                                )
 
