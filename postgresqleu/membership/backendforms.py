@@ -173,22 +173,3 @@ class BackendMeetingForm(BackendForm):
             raise ValidationError("Cannot change the type of a meeting that has already started")
 
         return self.cleaned_data.get('meetingtype', None)
-
-
-class BackendMemberSendEmailForm(django.forms.Form):
-    helplink = 'membership'
-    _from = django.forms.CharField(max_length=128, disabled=True, label="From")
-    subject = django.forms.CharField(max_length=128, required=True)
-    recipients = django.forms.Field(widget=StaticTextWidget, required=False)
-    message = django.forms.CharField(widget=EmailTextWidget, required=True)
-    idlist = django.forms.CharField(widget=django.forms.HiddenInput, required=True)
-    confirm = django.forms.BooleanField(label="Confirm", required=False)
-
-    def __init__(self, *args, **kwargs):
-        super(BackendMemberSendEmailForm, self).__init__(*args, **kwargs)
-        if not (self.data.get('subject') and self.data.get('message')):
-            del self.fields['confirm']
-
-    def clean_confirm(self):
-        if not self.cleaned_data['confirm']:
-            raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")

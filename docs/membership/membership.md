@@ -56,7 +56,7 @@ email to active members* found under the *Email* button, or by
 individually selecting one or more emails in the membership list and
 targeting them.
 
-Emails are sent immediately, and also stored in the database. The
+Emails can be scheduled, and also stored in the database. The
 stored emails can be viewed both by administrators, and by the
 specific members who received them. The system keeps track of which
 members received an email, but does *not* keep track of the exact

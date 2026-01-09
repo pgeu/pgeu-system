@@ -78,6 +78,8 @@ class Member(models.Model):
     # WARNING! New fields should most likely be added to the exclude list
     # in MemberForm!!!
 
+    _safe_attributes = ['fullname', 'country', 'listed', 'paiduntil', 'membersince', 'activeinvoice', 'expiry_warning_sent', 'country_exception']
+
     @property
     def expiressoon(self):
         if self.paiduntil:
@@ -104,6 +106,7 @@ class MemberLog(models.Model):
 class MemberMail(models.Model):
     sentat = models.DateTimeField(null=False, blank=False, auto_now_add=True, db_index=True)
     sentfrom = models.CharField(max_length=100, null=False, blank=False)
+    sent = models.BooleanField(null=False, default=False)
     subject = models.CharField(max_length=100, null=False, blank=False)
     message = models.TextField(max_length=8000, null=False, blank=False)
     sentto = models.ManyToManyField(Member, blank=False)

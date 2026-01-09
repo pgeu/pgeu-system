@@ -14,6 +14,7 @@ from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.time import today_global
 from postgresqleu.invoices.util import InvoiceManager, InvoicePresentationWrapper
 from postgresqleu.invoices.models import InvoiceProcessor
+from postgresqleu.confreg.jinjafunc import render_sandboxed_template
 
 from datetime import datetime, timedelta
 import json
@@ -106,7 +107,7 @@ def home(request):
         'invoice': InvoicePresentationWrapper(member.activeinvoice, "%s/membership/" % settings.SITEBASE),
         'registration_complete': registration_complete,
         'logdata': logdata,
-        'mails': member.membermail_set.all().order_by('-sentat'),
+        'mails': member.membermail_set.filter(sent=True).order_by('-sentat'),
         'amount': cfg.membership_cost,
         'cancelurl': '/account/',
     })
@@ -114,11 +115,14 @@ def home(request):
 
 def mail(request, mailid):
     member = get_object_or_404(Member, user=request.user)
-    mail = get_object_or_404(MemberMail, pk=mailid, sentto=member)
+    mail = get_object_or_404(MemberMail, pk=mailid, sentto=member, sent=True)
 
     return render(request, 'membership/mail.html', {
         'member': member,
         'mail': mail,
+        'body': render_sandboxed_template(mail.message, {
+            'member': member,
+        })
     })
 
 

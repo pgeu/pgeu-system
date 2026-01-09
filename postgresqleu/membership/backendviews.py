@@ -16,8 +16,8 @@ from postgresqleu.membership.models import Meeting, MeetingMessageLog
 from postgresqleu.membership.models import MeetingType
 from postgresqleu.membership.backendforms import BackendMemberForm, BackendMeetingForm
 from postgresqleu.membership.backendforms import BackendConfigForm
-from postgresqleu.membership.backendforms import BackendMemberSendEmailForm
 from postgresqleu.util.time import today_global
+from postgresqleu.confreg.mail import attendee_email_form, BaseAttendeeEmailProvider, AttendeeEmailQuerySampleMixin
 
 import csv
 import requests
@@ -84,66 +84,72 @@ def sendmail(request):
 
     cfg = get_config()
 
-    if request.method == 'POST':
-        idl = request.POST['idlist']
-    else:
-        idl = request.GET['idlist']
+    class MemberEmailProvider(AttendeeEmailQuerySampleMixin, BaseAttendeeEmailProvider):
+        mailtemplate = 'membership/mail/member_mail.txt'
+        trigger_job = 'membership_send_emails'
 
-    if idl == 'allactive':
-        recipients = list(Member.objects.filter(paiduntil__gte=today_global()))
-        idlist = [m.user_id for m in recipients]
-    else:
-        idlist = list(map(int, idl.split(',')))
-        recipients = Member.objects.filter(pk__in=idlist)
+        @property
+        def query(self):
+            if self.idlist == ['allactive']:
+                return "SELECT user_id AS regid, fullname FROM membership_member WHERE paiduntil >= CURRENT_TIMESTAMP"
+            else:
+                return "SELECT user_id AS regid, fullname FROM membership_member WHERE user_id=ANY(%(idlist)s)"
 
-    initial = {
-        '_from': '{0} <{1}>'.format(cfg.sender_name, cfg.sender_email),
-        'recipients': escape(", ".join(['{0} <{1}>'.format(x.fullname, x.user.email) for x in recipients])),
-        'idlist': idl,
-    }
+        def process_idlist(self, idlist):
+            if idlist == ['allactive']:
+                return idlist
+            else:
+                return super().process_idlist(idlist)
 
-    if request.method == 'POST':
-        p = request.POST.copy()
-        p['recipients'] = initial['recipients']
-        form = BackendMemberSendEmailForm(data=p, initial=initial)
-        if form.is_valid():
-            with transaction.atomic():
-                mail = MemberMail(
-                    sentat=timezone.now(),
-                    sentfrom="{} <{}>".format(cfg.sender_name, cfg.sender_email),
-                    subject=form.cleaned_data['subject'],
-                    message=form.cleaned_data['message'],
-                )
-                mail.save()
-                mail.sentto.set(recipients)
+        def get_recipient_string(self):
+            return ", ".join(m['fullname'] for m in self.recipients)
 
-                for r in recipients:
-                    send_template_mail(
-                        cfg.sender_email,
-                        r.user.email,
-                        form.cleaned_data['subject'],
-                        'membership/mail/member_mail.txt',
-                        {
-                            'subject': form.cleaned_data['subject'],
-                            'body': form.cleaned_data['message'],
-                        },
-                        sendername=cfg.sender_name,
-                        receivername=r.fullname,
-                    )
-                messages.info(request, "Email sent to %s members" % len(recipients))
+        def get_initial(self):
+            return {
+                '_from': '{} <{}>'.format(cfg.sender_name, cfg.sender_email),
+                'recipients': self.get_recipient_string(),
+                'idlist': ",".join(map(str, self.idlist))
+            }
 
-            return HttpResponseRedirect('/admin/membership/emails/')
-    else:
-        form = BackendMemberSendEmailForm(initial=initial)
+        def get_contextrefs(self):
+            return {
+                'member': Member,
+            }
 
-    return render(request, 'confreg/admin_backend_form.html', {
-        'basetemplate': 'adm/admin_base.html',
-        'form': form,
-        'what': 'new email',
-        'savebutton': 'Send email',
-        'cancelurl': '/admin/membership/emails/' if idl == 'allactive' else '../',
-        'breadcrumbs': [('../', 'Members'), ],
-    })
+        def get_preview_context(self):
+            if self.idlist == ['allactive']:
+                try:
+                    member = Member.objects.filter(paiduntil__gte=today_global())[1]
+                except IndexError:
+                    member = None
+            else:
+                member = Member.objects.get(pk=self.idlist[0])
+            return {
+                'member': member,
+            }
+
+        def prepare_form(self, form):
+            # No subject prefix here
+            form.fields['subject'].help_text = ''
+
+        def insert_emails(self, sendat, subject, message):
+            mail = MemberMail(
+                sentat=sendat,
+                sentfrom='{} <{}>'.format(cfg.sender_name, cfg.sender_email),
+                subject=subject,
+                message=message,
+            )
+            mail.save()
+            if self.idlist == ['allactive']:
+                mail.sentto.set(Member.objects.filter(paiduntil__gte=today_global()))
+            else:
+                for id in self.idlist:
+                    mail.sentto.add(id)
+            mail.save()
+
+    return attendee_email_form(request, None, MemberEmailProvider, basetemplate='adm/admin_base.html', breadcrumbs=(
+        ('../../members/', 'Membership'),
+    ))
 
 
 def edit_meeting(request, rest):
