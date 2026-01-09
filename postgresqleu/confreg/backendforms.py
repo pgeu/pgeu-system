@@ -1993,7 +1993,6 @@ class BackendSendEmailForm(django.forms.Form):
         if is_confirm:
             for f in self.fields:
                 self.fields[f].widget.attrs['readonly'] = 'true'
-            self.warning_text_below = 'Please confirm that you really want to send this email! There is no going back!'
             self.data['textpreview'] = textpreview.replace("\n", "<br/>")
             self.data['htmlpreview'] = htmlpreview
             self.fields['message'].widget = django.forms.widgets.HiddenInput()
@@ -2001,6 +2000,10 @@ class BackendSendEmailForm(django.forms.Form):
         else:
             del self.fields['textpreview']
             del self.fields['htmlpreview']
+
+    def prepare(self):
+        if self.is_confirm:
+            self.warning_text_below = 'Please confirm that you really want to send this email! There is no going back!'
 
     def clean_subject(self):
         if not self.cleaned_data['subject']:

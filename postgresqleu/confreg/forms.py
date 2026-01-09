@@ -27,6 +27,7 @@ from postgresqleu.util.fields import UserModelChoiceField
 from postgresqleu.util.widgets import StaticTextWidget, SimpleTreeviewWidget
 from postgresqleu.util.widgets import EmailTextWidget, MonospaceTextarea
 from postgresqleu.util.widgets import CallForPapersSpeakersWidget
+from postgresqleu.util.widgets import StaticHtmlPreviewWidget
 from postgresqleu.util.db import exec_to_list
 from postgresqleu.util.magic import magicdb
 from postgresqleu.util.backendlookups import GeneralAccountLookup
@@ -968,13 +969,22 @@ class CrossConferenceMailForm(forms.Form):
     text = forms.CharField(min_length=30, required=True, widget=EmailTextWidget)
     available_fields = django.forms.CharField(required=False,
                                               help_text="These fields are available as {{field}} in the template")
+    textpreview = django.forms.CharField(label="Text message", widget=StaticTextWidget(monospace=True), required=False)
+    htmlpreview = django.forms.CharField(label="HTML message", widget=StaticHtmlPreviewWidget(), required=False)
 
-    confirm = forms.BooleanField(label="Confirm", required=False)
+    @property
+    def dynamic_preview_fields(self):
+        if self.is_confirm:
+            return []
+        else:
+            return ['text', ]
 
-    dynamic_preview_fields = ['text', ]
-
-    def __init__(self, user, *args, **kwargs):
+    def __init__(self, user, is_confirm, *args, **kwargs):
         self.user = user
+        self.htmlpreview = kwargs.pop('htmlpreview', None)
+        self.textpreview = kwargs.pop('textpreview', None)
+        self.is_confirm = is_confirm
+
         super(CrossConferenceMailForm, self).__init__(*args, **kwargs)
 
         self.fields['available_fields'].widget = SimpleTreeviewWidget(treedata={x: None for x in ['name', 'email', 'token']})
@@ -985,13 +995,15 @@ class CrossConferenceMailForm(forms.Form):
                                                           [(c.contactaddr, c.contactaddr) for c in conferences] +
                                                           [(c.sponsoraddr, c.sponsoraddr) for c in conferences]))
 
-        if not (self.data.get('senderaddr') and self.data.get('sendername') and self.data.get('subject') and self.data.get('text')):
-            self.remove_confirm()
-
-    def clean_confirm(self):
-        if not self.cleaned_data['confirm']:
-            raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")
-
-    def remove_confirm(self):
-        if 'confirm' in self.fields:
-            del self.fields['confirm']
+    def prepare(self):
+        if self.is_confirm:
+            for f in self.fields:
+                self.fields[f].widget.attrs['readonly'] = 'true'
+            self.warning_text_below = 'Please confirm that you really want to send this email! There is no going back!'
+            self.data['textpreview'] = self.textpreview.replace("\n", "<br/>")
+            self.data['htmlpreview'] = self.htmlpreview
+            self.fields['text'].widget = django.forms.widgets.HiddenInput()
+            del self.fields['available_fields']
+        else:
+            del self.fields['textpreview']
+            del self.fields['htmlpreview']

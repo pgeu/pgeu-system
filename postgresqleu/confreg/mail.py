@@ -133,6 +133,22 @@ class BaseAttendeeEmailProvider:
         pass
 
 
+def render_jinja_conference_mail_inline_attachments(conference, mailtemplate, context, subject):
+    textpreview, htmlpreview, htmlpreviewattachments = render_jinja_conference_mail(conference, mailtemplate, context, subject)
+
+    # We need to turn any images into inline ones to be able to preview
+    if htmlpreviewattachments:
+        def _replace_attachment(m):
+            for filename, contenttype, content in htmlpreviewattachments:
+                return m.group(1) + "data:{};base64,{}".format(contenttype, base64.b64encode(content).decode()) + m.group(3)
+            # Not found, so just return an empty SRC tag
+            return m.group(1) + m.group(3)
+
+        htmlpreview = re_cid_image.sub(_replace_attachment, htmlpreview)
+
+    return textpreview, htmlpreview
+
+
 def attendee_email_form(request, conference, providerclass=BaseAttendeeEmailProvider, breadcrumbs=[], basetemplate='confreg/confadmin_base.html'):
     if request.method == 'POST':
         provider = providerclass(conference, request.POST['idlist'].split(','))
@@ -171,7 +187,7 @@ def attendee_email_form(request, conference, providerclass=BaseAttendeeEmailProv
         except Exception:
             text = 'Failed to render template'
 
-        textpreview, htmlpreview, htmlpreviewattachments = render_jinja_conference_mail(conference, provider.mailtemplate, provider.get_html_context(text), request.POST['subject'])
+        textpreview, htmlpreview = render_jinja_conference_mail_inline_attachments(conference, provider.mailtemplate, provider.get_html_context(text), request.POST['subject'])
     else:
         textpreview = htmlpreview = None
         is_confirm = False
@@ -202,10 +218,13 @@ def attendee_email_form(request, conference, providerclass=BaseAttendeeEmailProv
                 # Breaks some abstractions, but taken from django/forms/forms.py
                 form._errors = ErrorDict()
                 form.data['sendat'] = timezone.now()
+            else:
+                form.is_confirm = False
     else:
         form = BackendSendEmailForm(conference, contextrefs, is_confirm, initial=initial)
         provider.prepare_form(form)
 
+    form.prepare()
     return render(request, 'confreg/admin_backend_form.html', {
         'conference': conference,
         'basetemplate': basetemplate,

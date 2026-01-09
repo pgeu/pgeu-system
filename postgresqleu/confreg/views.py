@@ -53,12 +53,14 @@ from .util import send_conference_mail, send_conference_notification, send_confe
 from .util import reglog
 from .util import make_registration_transfer
 from .mail import attendee_email_form, BaseAttendeeEmailProvider, AttendeeEmailQuerySampleMixin
+from .mail import render_jinja_conference_mail_inline_attachments
 
 from .models import get_status_string, valid_status_transitions
 from .regtypes import confirm_special_reg_type
 from .jinjafunc import JINJA_TEMPLATE_ROOT
 from .jinjafunc import render_jinja_conference_template
 from .jinjafunc import render_jinja_conference_svg
+from .jinjafunc import render_jinja_conference_mail
 from .jinjafunc import render_sandboxed_template
 from .jinjapdf import render_jinja_ticket
 from .util import get_authenticated_conference, get_conference_or_404
@@ -4993,17 +4995,18 @@ def crossmail_send(request):
         conferences = list(Conference.objects.filter(series__administrators=request.user))
     conferenceids = set((c.id for c in conferences))
 
+    def _get_preview_text(t):
+        return render_sandboxed_template(t, {
+            'name': 'Test Name',
+            'email': 'test@example.com',
+            'token': 'abcd1234efgh4567abcd1234efgh4567abcd1234efgh4567abcd1234efgh4567',
+        })
+
     if request.method == 'GET' and 'fieldpreview' in request.GET:
         if request.GET['fieldpreview'] != 'text':
             raise Http404()
 
-        return HttpResponse(render_sandboxed_template(
-            request.GET['previewval'], {
-                'name': 'Test Name',
-                'email': 'test@example.com',
-                'token': 'abcd1234efgh4567abcd1234efgh4567abcd1234efgh4567abcd1234efgh4567',
-            },
-        ))
+        return HttpResponse(_get_preview_text(request.GET['previewval']))
 
     def _get_recipients_for_crossmail(postdict):
         def _get_one_filter(conf, filt, optout_filter=False):
@@ -5073,77 +5076,91 @@ def crossmail_send(request):
 
         return exec_to_dict(q.getvalue())
 
+    if request.method == 'POST' and request.POST.get('submit', None) == 'Send email':
+        is_confirm = True
+
+        textpreview, htmlpreview, htmlpreviewattachments = render_jinja_conference_mail_inline_attachments(None, 'confreg/mail/cross_conference.txt', {
+            'body': _get_preview_text(request.POST['text']),
+            'token': 'previewtokenforoptout',
+        }, request.POST['subject'])
+    else:
+        is_confirm = False
+        textpreview = htmlpreview = None
+
     if request.method == 'POST':
-        form = CrossConferenceMailForm(request.user, data=request.POST)
+        p = request.POST.copy()
+        form = CrossConferenceMailForm(request.user, is_confirm, data=p, textpreview=textpreview, htmlpreview=htmlpreview)
 
         try:
             recipients = _get_recipients_for_crossmail(request.POST)
         except ValidationError as e:
             form.add_error(None, e)
-            form.remove_confirm()
             recipients = None
 
         if form.is_valid() and recipients:
-            # Store the email itself and all the recipients
-            def _addrule(email, ruledef, isexclude):
-                (confid, parts) = ruledef.split('@')
-                (t, ref, canc) = parts.split(':')
-                CrossConferenceEmailRule(
-                    email=email,
-                    conference=Conference.objects.get(pk=confid),
-                    isexclude=isexclude,
-                    ruletype=t,
-                    ruleref=ref,
-                    canceled=canc,
-                ).save()
+            if request.POST['submit'] == 'Confirm and send':
+                # Store the email itself and all the recipients
+                def _addrule(email, ruledef, isexclude):
+                    (confid, parts) = ruledef.split('@')
+                    (t, ref, canc) = parts.split(':')
+                    CrossConferenceEmailRule(
+                        email=email,
+                        conference=Conference.objects.get(pk=confid),
+                        isexclude=isexclude,
+                        ruletype=t,
+                        ruleref=ref,
+                        canceled=canc,
+                    ).save()
 
-            email = CrossConferenceEmail(
-                sentby=request.user,
-                senderaddr=form.data['senderaddr'],
-                sendername=form.data['sendername'],
-                subject=form.data['subject'],
-                text=form.data['text'],
-            )
-            email.save()
-
-            for r in request.POST['include'].split(';'):
-                if r:
-                    _addrule(email, r, False)
-            for r in request.POST['exclude'].split(';'):
-                if r:
-                    _addrule(email, r, True)
-
-            for r in recipients:
-                CrossConferenceEmailRecipient(email=email, address=r['email']).save()
-
-                # Cross conference mails are sent using a non-conference template as they
-                # reference multiple conferences that may have different ones.
-                send_template_mail(
-                    form.data['senderaddr'],
-                    r['email'],
-                    form.data['subject'],
-                    'confreg/mail/cross_conference.txt',
-                    {
-                        'body': render_sandboxed_template(form.data['text'], {
-                            'name': r['fullname'],
-                            'email': r['email'],
-                            'token': r['token'],
-                        }),
-                        'token': r['token'],
-                    },
+                email = CrossConferenceEmail(
+                    sentby=request.user,
+                    senderaddr=form.data['senderaddr'],
                     sendername=form.data['sendername'],
-                    receivername=r['fullname'],
+                    subject=form.data['subject'],
+                    text=form.data['text'],
                 )
+                email.save()
 
-            messages.info(request, "Sent {0} emails.".format(len(recipients)))
-            return HttpResponseRedirect("../")
+                for r in request.POST['include'].split(';'):
+                    if r:
+                        _addrule(email, r, False)
+                for r in request.POST['exclude'].split(';'):
+                    if r:
+                        _addrule(email, r, True)
+
+                for r in recipients:
+                    CrossConferenceEmailRecipient(email=email, address=r['email']).save()
+
+                    # Cross conference mails are sent using a non-conference template as they
+                    # reference multiple conferences that may have different ones.
+                    send_template_mail(
+                        form.data['senderaddr'],
+                        r['email'],
+                        form.data['subject'],
+                        'confreg/mail/cross_conference.txt',
+                        {
+                            'body': render_sandboxed_template(form.data['text'], {
+                                'name': r['fullname'],
+                                'email': r['email'],
+                                'token': r['token'],
+                            }),
+                            'token': r['token'],
+                        },
+                        sendername=form.data['sendername'],
+                        receivername=r['fullname'],
+                    )
+
+                messages.info(request, "Sent {0} emails.".format(len(recipients)))
+                return HttpResponseRedirect("../")
         if not recipients:
             if recipients is not None:
                 form.add_error(None, "No recipients matched")
-            form.remove_confirm()
+            form.is_confirm = False
     else:
-        form = CrossConferenceMailForm(request.user)
+        form = CrossConferenceMailForm(request.user, is_confirm)
         recipients = None
+
+    form.prepare()
 
     return render(request, 'confreg/admin_cross_conference_mail.html', {
         'form': form,
@@ -5151,6 +5168,9 @@ def crossmail_send(request):
         'basetemplate': 'confreg/confadmin_base.html',
         'recipients': recipients,
         'conferences': conferences,
+        'savebutton': 'Confirm and send' if form.is_confirm else 'Send email',
+        'extrasubmitbutton': 'Continue editing' if form.is_confirm else None,
+        'cancelurl': '../',
         'helplink': 'emails#crossconference',
         'breadcrumbs': [
             ('/events/admin/crossmail/', 'Cross conference email'),
