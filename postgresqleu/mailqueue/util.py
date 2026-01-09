@@ -142,7 +142,7 @@ def parse_mail_content(fullmsg):
 
 
 def recursive_parse_attachments_from_message(container, disposition='attachment'):
-    if container.get_content_type() == 'multipart/mixed':
+    if container.is_multipart():
         for p in container.get_payload():
             if p.get_params() is None:
                 continue
