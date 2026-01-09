@@ -96,6 +96,20 @@ will give the attendees full name, to be used for example in
 greetings. A list of (most) available attributes are included below
 the preview field.
 
+## Sponsor emails
+
+Sponsor emails are like attendee emails, except sent to sponsors and
+linked to the sponsor dashboard pages.
+
+Sponsor emails can be sent either to a sponsorship level or to
+individual sponsors. If sent to a sponsorship level, it will be
+delivered as email to existing sponsors, but show up on the dashboard
+of both existing and any future sponsors at that level.
+
+The formatting and templating for sponsor emails is exactly the same
+as attendee emails, except the available objects for templating is the
+sponsor and their level rather than the individual attendee.
+
 ## External email <a name="external"></a>
 
 External emails are emails sent from the conference address(es) to

@@ -12,6 +12,7 @@ from datetime import timedelta
 from postgresqleu.confsponsor.models import Sponsor, SponsorMail
 from postgresqleu.confsponsor.util import send_conference_sponsor_notification, send_sponsor_manager_email
 from postgresqleu.confreg.util import send_conference_mail
+from postgresqleu.confreg.jinjafunc import render_sandboxed_template
 
 
 class Command(BaseCommand):
@@ -28,22 +29,30 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         for msg in SponsorMail.objects.filter(sentat__lte=timezone.now(), sent=False):
+            dests = []
+            sponsors = set()
             if msg.levels.exists():
-                sponsors = list(Sponsor.objects.select_related('conference').filter(level__sponsormail=msg, confirmed=True))
-                deststr = "sponsorship levels {}".format(", ".join(level.levelname for level in msg.levels.all()))
-            else:
-                sponsors = list(Sponsor.objects.select_related('conference').filter(sponsormail=msg))  # We include unconfirmed sponsors here intentionally!
-                deststr = "sponsors {}".format(", ".join(s.name for s in sponsors))
+                sponsors.update(Sponsor.objects.select_related('conference').filter(level__sponsormail=msg, confirmed=True))
+                dests.append("sponsorship levels {}".format(", ".join(level.levelname for level in msg.levels.all())))
+            if msg.sponsors.exists():
+                sponsors.update(Sponsor.objects.select_related('conference').filter(sponsormail=msg))  # We include unconfirmed sponsors here intentionally!
+                dests.append("sponsors {}".format(", ".join(s.name for s in sponsors)))
 
             conference = None
             for sponsor in sponsors:
                 conference = sponsor.conference
+                body = render_sandboxed_template(msg.message, {
+                    'conference': conference,
+                    'sponsor': sponsor,
+                    'level': sponsor.level,
+                })
+
                 send_sponsor_manager_email(
                     sponsor,
                     msg.subject,
                     'confsponsor/mail/sponsor_mail.txt',
                     {
-                        'body': msg.message,
+                        'body': body,
                         'sponsor': sponsor,
                     },
                 )
@@ -55,7 +64,7 @@ class Command(BaseCommand):
                                          msg.subject,
                                          'confsponsor/mail/sponsor_mail.txt',
                                          {
-                                             'body': msg.message,
+                                             'body': body,
                                              'sponsor': sponsor,
                                          },
                                          sender=conference.sponsoraddr,
@@ -79,7 +88,7 @@ It was sent to {2}.
 To view it on the site, go to {4}/events/sponsor/admin/{5}/viewmail/{6}/""".format(
                         conference,
                         msg.subject,
-                        deststr,
+                        " and ".join(dests),
                         msg.message,
                         settings.SITEBASE,
                         conference.urlname,

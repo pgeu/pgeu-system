@@ -46,16 +46,10 @@ historically for any current or future managers of the sponsor.
 {%endif%}
 
 <h2>New email</h2>
-{%if sendto %}
 <form method="post" action="." class="form-horizontal">{% csrf_token %}
 <input type="hidden" name="sendto" value="{{sendto}}">
 {%include "confreg/admin_backend_form_content.html" with savebutton="Send mail" cancelurl="../" %}
-{%else%}
-<p>
-  <a href="?sendto=level" class="btn btn-default">Send to sponsorship level</a>
-  <a href="?sendto=sponsor" class="btn btn-default">Send to individual sponsors</a>
-</p>
-{%endif%}
+</form>
 
 <a href="/events/sponsor/admin/{{conference.urlname}}/" class="btn btn-default btn-block">Back to sponsors</a>
 {%endblock%}

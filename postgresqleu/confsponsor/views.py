@@ -24,6 +24,8 @@ from postgresqleu.confreg.util import get_authenticated_conference, get_conferen
 from postgresqleu.confreg.util import send_conference_mail
 from postgresqleu.confreg.twitter import post_conference_social, render_multiprovider_tweet
 from postgresqleu.confreg.twitter import get_all_conference_social_media
+from postgresqleu.confreg.mail import attendee_email_form, BaseAttendeeEmailProvider
+from postgresqleu.confreg.jinjafunc import render_sandboxed_template
 from postgresqleu.util.db import exec_no_result, exec_to_list, exec_to_keyed_scalar, ensure_conference_timezone
 from postgresqleu.util.storage import InlineEncodedStorage
 from postgresqleu.util.decorators import superuser_required
@@ -211,8 +213,13 @@ def sponsor_view_mail(request, sponsorid, mailid):
 
     return render(request, 'confsponsor/sent_mail_user.html', {
         'conference': sponsor.conference,
+        'body': render_sandboxed_template(mail.message, {
+            'conference': sponsor.conference,
+            'sponsor': sponsor,
+            'level': sponsor.level,
+        }),
         'mail': mail,
-        })
+    })
 
 
 @login_required
@@ -1386,58 +1393,91 @@ def sponsor_admin_benefit(request, confurlname, benefitid):
 
 
 @login_required
-@transaction.atomic
 def sponsor_admin_send_mail(request, confurlname):
     conference = get_authenticated_conference(request, confurlname)
 
-    sendto = request.GET.get('sendto', '') or request.POST.get('sendto', '')
-    if sendto not in ('', 'level', 'sponsor'):
-        return HttpResponseRedirect(".")
-
     if request.method == 'POST':
-        form = SponsorSendEmailForm(conference, sendto, data=request.POST)
+        form = SponsorSendEmailForm(conference, data=request.POST)
         if form.is_valid():
-            # Create a message record
-            msg = SponsorMail(conference=conference,
-                              subject=form.data['subject'],
-                              message=form.data['message'],
-                              sentat=max(form.cleaned_data['sentat'], timezone.now()),  # If time is set in the past, adjust to now
-                              )
-            msg.save()
-            if sendto == 'level':
-                for level in form.data.getlist('levels'):
-                    msg.levels.add(level)
-                deststr = "sponsorship levels {0}".format(", ".join([level.levelname for level in msg.levels.all()]))
-            else:
-                for s in form.data.getlist('sponsors'):
-                    msg.sponsors.add(s)
-                deststr = "sponsors {0}".format(", ".join([s.name for s in msg.sponsors.all()]))
-            msg.save()
-
-            if msg.sentat > timezone.now():
-                messages.info(request, "Email scheduled for later sending to sponsors")
-            else:
-                trigger_immediate_job_run('sponsor_send_emails')
-                messages.info(request, "Email sent to sponsors, and added to their sponsor pages")
-
-            return HttpResponseRedirect("../")
+            return HttpResponseRedirect("send/?idlist={}".format(",".join(
+                ['l{}'.format(lvl.id) for lvl in form.cleaned_data['levels']] +
+                ['s{}'.format(s.id) for s in form.cleaned_data['sponsors']]
+            )))
     else:
-        if sendto == 'sponsor' and request.GET.get('preselectsponsors', ''):
-            initial_sponsors = Sponsor.objects.filter(conference=conference, pk__in=request.GET.getlist('preselectsponsors'))
-        else:
-            initial_sponsors = None
-        form = SponsorSendEmailForm(conference, sendto, initial={
-            'sponsors': initial_sponsors,
-        })
+        form = SponsorSendEmailForm(conference)
 
     return render(request, 'confsponsor/sendmail.html', {
         'conference': conference,
         'form': form,
-        'sendto': sendto,
         'mails': SponsorMail.objects.prefetch_related('levels', 'sponsors').defer('message').filter(conference=conference).order_by('sentat'),
         'breadcrumbs': (('/events/sponsor/admin/{0}/'.format(conference.urlname), 'Sponsors'),),
-        'helplink': 'sponsors',
+        'helplink': 'emails',
     })
+
+
+@login_required
+@transaction.atomic
+def sponsor_admin_send_mail_send(request, confurlname):
+    conference = get_authenticated_conference(request, confurlname)
+
+    class SponsorEmailProvider(BaseAttendeeEmailProvider):
+        trigger_job = 'sponsor_send_emails'
+
+        def process_idlist(self, idlist):
+            return idlist
+
+        def get_recipient_string(self):
+            def __recipients():
+                yield from ('Level {}'.format(lvl.levelname) for lvl in SponsorshipLevel.objects.filter(conference=conference, id__in=[id.lstrip('l') for id in self.idlist if id.startswith('l')]))
+                yield from ('Sponsor {}'.format(s.name) for s in Sponsor.objects.filter(conference=conference, id__in=[id.lstrip('s') for id in self.idlist if id.startswith('s')]))
+            return ", ".join(__recipients()).capitalize()
+
+        def get_contextrefs(self):
+            return {
+                'conference': Conference,
+                'sponsor': Sponsor,
+                'level': SponsorshipLevel,
+            }
+
+        def get_preview_context(self):
+            qs = Q(id__in=[id.lstrip('s') for id in self.idlist if id.startswith('s')])
+            qs = qs | Q(confirmed=True, level__id__in=[id.lstrip('l') for id in self.idlist if id.startswith('l')])
+            sponsor = Sponsor.objects.filter(conference=conference).filter(qs)[0]
+            return {
+                'conference': conference,
+                'sponsor': sponsor,
+                'level': sponsor.level,
+                'sponsorbase': '{}/events/sponsor/{}/'.format(settings.SITEBASE, sponsor.id),
+            }
+
+        def get_html_context(self, text):
+            return {
+                'body': text,
+                'sponsor': self.get_preview_context()['sponsor'],
+                'sponsorbase': self.get_preview_context()['sponsorbase'],
+            }
+
+        def insert_emails(self, sendat, subject, message):
+            msg = SponsorMail(conference=conference,
+                              subject=subject,
+                              message=message,
+                              sentat=sendat)
+            msg.save()
+            for id in self.idlist:
+                if id.startswith('l'):
+                    msg.levels.add(id.lstrip('l'))
+                elif id.startswith('s'):
+                    msg.sponsors.add(id.lstrip('s'))
+            msg.save()
+
+    return attendee_email_form(
+        request,
+        conference,
+        SponsorEmailProvider,
+        breadcrumbs=[
+            ('../../', 'Sponsors'),
+            ('../', 'Sponsor emails'),
+        ])
 
 
 @login_required

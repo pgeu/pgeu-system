@@ -120,40 +120,28 @@ class SponsorSignupForm(forms.Form):
         return cleaned_data
 
 
-class SponsorSendEmailForm(forms.ModelForm):
-    confirm = forms.BooleanField(label="Confirm", required=False)
+class SponsorSendEmailForm(forms.Form):
+    levels = forms.ModelMultipleChoiceField(required=False, queryset=None,
+                                            help_text='Send to current and future sponsors at this level',
+                                            widget=Bootstrap4CheckboxSelectMultiple,
+                                            )
+    sponsors = forms.ModelMultipleChoiceField(required=False, queryset=None,
+                                              help_text='Send to these specific sponsors',
+                                              widget=Bootstrap4CheckboxSelectMultiple,
+                                              )
 
-    class Meta:
-        model = SponsorMail
-        exclude = ('conference', 'sent', )
-        widgets = {
-            'message': EmailTextWidget(),
-        }
-
-    def __init__(self, conference, sendto, *args, **kwargs):
+    def __init__(self, conference, *args, **kwargs):
         self.conference = conference
-        self.sendto = sendto
         super(SponsorSendEmailForm, self).__init__(*args, **kwargs)
-        if self.sendto == 'level':
-            self.fields['levels'].widget = forms.CheckboxSelectMultiple()
-            self.fields['levels'].queryset = SponsorshipLevel.objects.filter(conference=self.conference)
-            self.fields['levels'].required = True
-            del self.fields['sponsors']
-        else:
-            self.fields['sponsors'].widget = forms.CheckboxSelectMultiple()
-            self.fields['sponsors'].queryset = Sponsor.objects.select_related('level').filter(conference=self.conference)
-            self.fields['sponsors'].required = True
-            self.fields['sponsors'].label_from_instance = lambda s: "{0} ({1}, {2})".format(s, s.level.levelname, s.confirmed and "confirmed {:%Y-%m-%d %H:%M}".format(s.confirmedat) or "NOT confirmed")
-            del self.fields['levels']
+        self.fields['levels'].queryset = SponsorshipLevel.objects.filter(conference=self.conference)
+        self.fields['sponsors'].queryset = Sponsor.objects.filter(conference=self.conference).order_by('-level__levelcost', 'level__levelname', 'name')
+        self.fields['sponsors'].label_from_instance = lambda s: "{} ({})".format(s.name, s.level.levelname)
 
-        self.fields['subject'].help_text = 'Subject will be prefixed with <strong>[{}]</strong>'.format(conference)
-
-        if not ((self.data.get('levels') or self.data.get('sponsors')) and self.data.get('subject') and self.data.get('message')):
-            del self.fields['confirm']
-
-    def clean_confirm(self):
-        if not self.cleaned_data['confirm']:
-            raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")
+    def clean(self):
+        d = super().clean()
+        if not (d['levels'] or d['sponsors']):
+            raise ValidationError("No recipients specified")
+        return d
 
 
 class PurchaseVouchersForm(forms.Form):

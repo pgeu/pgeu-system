@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, Exists, OuterRef
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.utils import timezone
@@ -132,6 +132,7 @@ def send_conference_sponsor_notification(conference, subject, message):
 
 
 def send_sponsor_manager_email(sponsor, subject, template, context, attachments=None, sendat=None):
+    context['sponsorbase'] = '{}/events/sponsor/{}/'.format(settings.SITEBASE, sponsor.id)
     for manager in sponsor.managers.all():
         send_conference_mail(
             sponsor.conference,
@@ -150,7 +151,7 @@ def send_sponsor_manager_email(sponsor, subject, template, context, attachments=
 def get_mails_for_sponsor(sponsor, future=False):
     return SponsorMail.objects.filter(
         Q(conference=sponsor.conference),
-        Q(levels=sponsor.level) | Q(sponsors=sponsor),
+        Exists(SponsorMail.sponsors.through.objects.filter(sponsormail=OuterRef('pk'), sponsor=sponsor.id)) | Exists(SponsorMail.levels.through.objects.filter(sponsormail=OuterRef('pk'), sponsorshiplevel=sponsor.level_id)),
         sent=not future,
     )
 
