@@ -2,12 +2,12 @@ from django import forms
 from django.utils import timezone
 
 from collections import OrderedDict
-import re
 
 from postgresqleu.util.widgets import StaticTextWidget, StaticHtmlPreviewWidget
 from postgresqleu.util.backendforms import BackendForm
 from postgresqleu.mailqueue.models import QueuedMail
 from postgresqleu.mailqueue.util import parse_mail_content, recursive_parse_attachments_from_message
+from postgresqleu.mailqueue.util import re_cid_image
 
 
 class BackendMailqueueAttachmentManager:
@@ -40,12 +40,11 @@ class BackendMailqueueForm(BackendForm):
         self.initial['htmldecoded'] = self.parsed_html()
 
     # Replacing the cid images using a regexp is kind of ugly, but it does work...
-    _re_img = re.compile(r'(<img[^>]+src=")(cid:[^"]+)("[^>]+>)', re.I)
     def _ensure_parsed(self):
         if not hasattr(self.instance, 'parsed_msg') or not hasattr(self.instance, 'parsed_txt'):
             self.instance.parsed_msg, self.instance.parsed_txt, self.instance.parsed_html = parse_mail_content(self.instance.fullmsg)
             self.instance.parsed_txt = self.instance.parsed_txt.decode('utf8', errors='ignore').replace("\n", "<br/>")
-            self.instance.parsed_html = self._re_img.sub(
+            self.instance.parsed_html = re_cid_image.sub(
                 self._replace_cid_reference,
                 self.instance.parsed_html.decode('utf8', errors='ignore'),
             )

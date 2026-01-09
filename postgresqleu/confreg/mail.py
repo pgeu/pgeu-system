@@ -8,6 +8,8 @@ from django.utils import timezone
 
 from postgresqleu.util.db import exec_to_dict, exec_to_scalar, exec_no_result
 from postgresqleu.scheduler.util import trigger_immediate_job_run
+from postgresqleu.mailqueue.util import re_cid_image
+import base64
 
 from .backendforms import BackendSendEmailForm
 from .models import Conference, ConferenceRegistration
