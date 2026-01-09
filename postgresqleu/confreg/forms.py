@@ -22,6 +22,7 @@ from .util import send_conference_mail
 
 from .regtypes import validate_special_reg_type, validate_special_reg_type_form
 from .twitter import get_all_conference_social_media
+from postgresqleu.util.forms import ConfirmFormMixin
 from postgresqleu.util.fields import UserModelChoiceField
 from postgresqleu.util.widgets import StaticTextWidget, SimpleTreeviewWidget
 from postgresqleu.util.widgets import EmailTextWidget, MonospaceTextarea
@@ -737,13 +738,15 @@ class SessionSlidesFileForm(forms.Form):
         return cleaned_data
 
 
-class PrepaidCreateForm(forms.Form):
+class PrepaidCreateForm(ConfirmFormMixin, forms.Form):
     regtype = forms.ModelChoiceField(label="Registration type", queryset=RegistrationType.objects.filter(id=-1))
     count = forms.IntegerField(label="Number of vouchers", min_value=1, max_value=100)
     buyer = forms.ModelChoiceField(queryset=User.objects.filter(pk=-1).order_by('username'), help_text="Pick the user who bought the batch. If he/she does not have an account, pick your own userid")
     invoice = forms.BooleanField(help_text="Automatically create invoice for these vouchers and send it to the person ordering them.", required=False)
     invoiceaddress = forms.CharField(label="Invoice address", help_text="Complete address to put on invoice. Note that the name of the buyer is prepended to this!", required=False, widget=MonospaceTextarea)
-    confirm = forms.BooleanField(help_text="Confirm that the chosen registration type and count are correct (there is no undo past this point, the vouchers will be created!")
+
+    confirm_what = 'create vouchers'
+    confirm_text = 'Please confirm that the chosen registration type and count are correct (there is no undo past this point, the vouchers will be created!'
 
     selectize_multiple_fields = {
         'buyer': GeneralAccountLookup(),
@@ -754,13 +757,6 @@ class PrepaidCreateForm(forms.Form):
         super(PrepaidCreateForm, self).__init__(*args, **kwargs)
         self.fields['regtype'].queryset = RegistrationType.objects.filter(conference=conference)
         self.fields['buyer'].label_from_instance = lambda x: '{0} {1} <{2}> ({3})'.format(x.first_name, x.last_name, x.email, x.username)
-        if not ('regtype' in self.data and
-                'count' in self.data and
-                'regtype' in self.data and
-                self.data.get('count')):
-            del self.fields['confirm']
-        if 'invoice' in self.data and not self.data.get('invoiceaddress', ''):
-            del self.fields['confirm']
 
         if 'data' in kwargs and 'buyer' in kwargs['data']:
             self.fields['buyer'].queryset = User.objects.filter(pk__in=kwargs['data'].getlist('buyer'))
@@ -770,6 +766,9 @@ class PrepaidCreateForm(forms.Form):
         if self.cleaned_data.get('invoice', False):
             if not self.cleaned_data.get('invoiceaddress'):
                 self.add_error('invoiceaddress', 'Invoice address must be specified if invoice creation is selected!')
+        else:
+            if self.cleaned_data.get('invoiceaddress'):
+                self.add_error('invoiceaddress', 'Invoice address should not be specified unless inovice creation is eelected!')
         return cleaned_data
 
 

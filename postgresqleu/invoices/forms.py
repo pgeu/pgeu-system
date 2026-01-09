@@ -6,7 +6,10 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.conf import settings
 
+from decimal import Decimal
+
 from postgresqleu.util.widgets import HtmlDateInput
+from postgresqleu.util.forms import ConfirmFormMixin
 
 from .models import Invoice, InvoiceRow, InvoicePaymentMethod
 from postgresqleu.accounting.models import Account, Object
@@ -105,22 +108,32 @@ class InvoiceRowForm(forms.ModelForm):
         return self.cleaned_data['rowcount']
 
 
-class RefundForm(forms.Form):
+class RefundForm(ConfirmFormMixin, forms.Form):
     amount = forms.DecimalField(required=True, label="Amount ex VAT", validators=[MinValueValidator(1), ])
     vatrate = forms.ModelChoiceField(queryset=VatRate.objects.all(), required=False)
     reason = forms.CharField(max_length=100, required=True, help_text="Note! Included in communication to invoice recipient!")
-    confirm = forms.BooleanField()
+
+    @property
+    def confirm_what(self):
+        return 'issue refund' if self.invoice.can_autorefund else 'flag as refunded'
+
+    @property
+    def confirm_text(self):
+        if self.invoice.can_autorefund:
+            return "Please confirm that you want to generate an <b>automatic</b> refund of this invoice."
+        else:
+            return "Please confirm that you have <b>already</b> manually refunded this invoice."
 
     def __init__(self, invoice, *args, **kwargs):
-        super(RefundForm, self).__init__(*args, **kwargs)
         self.invoice = invoice
+        super(RefundForm, self).__init__(*args, **kwargs)
 
         self.fields['amount'].validators.append(MaxValueValidator(invoice.total_refunds['remaining']['amount']))
 
-        if self.data and 'amount' in self.data and 'reason' in self.data:
-            if invoice.can_autorefund:
-                self.fields['confirm'].help_text = "Check this box to confirm that you want to generate an <b>automatic</b> refund of this invoice."
-            else:
-                self.fields['confirm'].help_text = "check this box to confirm that you have <b>already</b> manually refunded this invoice."
-        else:
-            del self.fields['confirm']
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data['vatrate'] and 'amount' in cleaned_data:
+            vatamount = (Decimal(cleaned_data['amount']) * cleaned_data['vatrate'].vatpercent / Decimal(100)).quantize(Decimal('0.01'))
+            if vatamount > self.invoice.total_refunds['remaining']['vatamount']:
+                self.add_error('vatrate', 'Unable to refund, VAT amount mismatch')
+        return cleaned_data

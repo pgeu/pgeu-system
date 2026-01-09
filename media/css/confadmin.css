@@ -155,6 +155,13 @@ form#singleuploadform {
 }
 
 /*
+ * Fix selectize not showing proper errors for required fields.
+ */
+select.selectized:invalid ~ div.selectize-control {
+    border: 2px solid red;
+}
+
+/*
  * Partially collapsing part of a page. Like a bootstrap
  * collapse (and uses the bootstrap collapse underneath)
  * but leaves the first 150 pixels visible even when collapsed.
@@ -206,6 +213,13 @@ details.treeview details.treeview {
     top: 0;
     left: 100%;
     margin-top: -1px;
+}
+
+/*
+ * Read-only <select> tags
+ */
+select.form-control[data-readonly] option {
+    display: none;
 }
 
 /*

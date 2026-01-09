@@ -66,10 +66,10 @@
   <div class="col-lg-12">
    <div class="control">
 {%if not disallow_save%}
-     <input type="submit" name="submit" class="btn btn-default" value="{{savebutton|default:"Save"}}">
+     <input type="submit" name="submit" class="btn btn-default" value="{%if savebutton%}{{savebutton}}{%else%}{{form.savebutton|default:"Save"}}{%endif%}">
 {%endif%}
-{%if extrasubmitbutton%}
-     &nbsp;&nbsp;<input type="submit" name="submit" class="btn btn-default" value="{{extrasubmitbutton}}">
+{%if extrasubmitbutton or form.extrasubmitbutton %}
+     &nbsp;&nbsp;<input type="submit" name="submit" class="btn btn-default" value="{%if extrasubmitbutton%}{{extrasubmitbutton}}{%else%}{{form.extrasubmitbutton}}{%endif%}">
 {%endif%}
 {%if allow_delete%}
      &nbsp;&nbsp;<input type="submit" name="submit" class="btn btn-default confirm-btn" value="Delete" data-confirm="You are about to delete this {{what}}. There is no undo!">

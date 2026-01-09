@@ -75,6 +75,41 @@ class ConcurrentProtectedModelForm(forms.ModelForm):
         return data
 
 
+class ConfirmFormMixin:
+    confirm_text = None
+
+    def __init__(self, *args, **kwargs):
+
+        self._save_button_pressed = 'data' in kwargs and kwargs['data'].get('submit', None) == self.confirm_what.capitalize()
+        self._confirm_button_pressed = 'data' in kwargs and kwargs['data'].get('submit', None) == 'Confirm and {}'.format(self.confirm_what)
+
+        super().__init__(*args, **kwargs)
+
+    def is_confirm(self):
+        return self._save_button_pressed and self.is_valid()
+
+    def is_confirmed(self):
+        return self._confirm_button_pressed and self.is_valid()
+
+    @property
+    def savebutton(self):
+        return 'Confirm and {}'.format(self.confirm_what) if self.is_confirm() else self.confirm_what.capitalize()
+
+    @property
+    def extrasubmitbutton(self):
+        if self.is_confirm():
+            return 'Continue editing'
+
+    def render(self, *args, **kwargs):
+        if self.is_confirm():
+            for f in self.fields:
+                self.fields[f].widget.attrs['readonly'] = 'true'
+                self.fields[f].widget.attrs['data-readonly'] = 1
+            self.warning_text_below = self.confirm_text if self.confirm_text else 'Please confirm that you really want to {}.'.format(self.confirm_what)
+
+        return super().render(*args, **kwargs)
+
+
 class ChoiceArrayField(ArrayField):
     def formfield(self, **kwargs):
         defaults = {

@@ -96,7 +96,7 @@
 </p>
 {%endif%}
 <form method="post" action="." class="form-horizontal">{% csrf_token %}
-{%include "confreg/admin_backend_form_content.html" with savebutton=invoice.can_autorefund|yesno:"Issue refund,Flag as refunded" cancelurl="../" %}
+{%include "confreg/admin_backend_form_content.html" with cancelurl="../" %}
 </form>
 
 {%endblock%}

@@ -173,6 +173,9 @@ $(function() {
    });
 {%endfor%}
 
+/* Lock all read-only selectize fields */
+document.querySelectorAll('.selectized[data-readonly]').forEach(e => {$(e)[0].selectize.lock()});
+
 {%for f in form.markdown_fields%}
    backend_markdown_preview('id_{{f}}');
 {%endfor%}

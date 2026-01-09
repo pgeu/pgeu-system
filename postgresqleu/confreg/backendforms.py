@@ -22,6 +22,7 @@ import zoneinfo
 from postgresqleu.util.db import exec_to_single_list, exec_to_scalar, exec_to_list
 from postgresqleu.util.crypto import generate_rsa_keypair
 from postgresqleu.util.forms import SelectSetValueField
+from postgresqleu.util.forms import ConfirmFormMixin
 from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget, MonospaceTextarea
 from postgresqleu.util.widgets import TagOptionsTextWidget, SimpleTreeviewWidget
 from postgresqleu.util.widgets import StaticHtmlPreviewWidget
@@ -1223,29 +1224,25 @@ class BackendConferenceSessionSlotForm(BackendForm):
         return ["{} becomes {}".format(timezone.localtime(s.starttime, sourceconf.tzobj), timezone.localtime(s.starttime + xform, targetconf.tzobj)) for s in slotlist]
 
 
-class BackendMergeSpeakerForm(django.forms.Form):
+class BackendMergeSpeakerForm(ConfirmFormMixin, django.forms.Form):
     sourcespeaker = django.forms.CharField(
         label='Source speaker profile',
-        widget=StaticTextWidget,
-        required=False,
     )
     targetspeaker = django.forms.ModelChoiceField(
         label='Target speaker profile',
         queryset=Speaker.objects.order_by('fullname'),
         help_text='Pick the speaker profile to merge into. That profile will be kept, and the source profile will be deleted',
     )
-    confirm = django.forms.BooleanField(label="Confirm", required=False)
+
+    confirm_what = 'merge profile'
+    confirm_text = 'Please confirm that you really want to merge the source profile into the target, deleting the source profile permanently'
 
     def __init__(self, sourcespeaker, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.fields['sourcespeaker'].widget.attrs['readonly'] = 'true'
         self.fields['sourcespeaker'].initial = "{} ({} - {})".format(sourcespeaker.fullname, sourcespeaker.user, sourcespeaker.user.email if sourcespeaker.user else '*no user/email*')
         self.fields['targetspeaker'].label_from_instance = lambda obj: "{} ({} - {})".format(obj.fullname, obj.user, obj.user.email if obj.user else '*no user/email*')
-
-    def clean_confirm(self):
-        if not self.cleaned_data['confirm']:
-            raise ValidationError("Please check this box to confirm that you really want to merge the speaker profile into this target profile, deleting the source profile.")
-        return self.cleaned_data['confirm']
 
 
 class BackendVolunteerSlotForm(BackendForm):
@@ -1894,11 +1891,12 @@ class ResendAttachMailForm(django.forms.Form):
 #
 # Form for canceling a registration
 #
-class CancelRegistrationForm(django.forms.Form):
+class CancelRegistrationForm(ConfirmFormMixin, django.forms.Form):
     refund = django.forms.ChoiceField(required=True, label="Method of refund")
     reason = django.forms.CharField(required=True, max_length=100, label="Reason for cancel",
                                     help_text="Copied directly into confirmation emails and refund notices!")
-    confirm = django.forms.BooleanField(help_text="Confirm that you want to cancel this registration!")
+
+    confirm_what = 'cancel this registratoin'
 
     class Methods:
         NO_REFUND = -1
@@ -1909,23 +1907,15 @@ class CancelRegistrationForm(django.forms.Form):
         super(CancelRegistrationForm, self).__init__(*args, **kwargs)
         self.fields['refund'].choices = [(None, '-- Select method'), ] + refundchoices
 
-        if 'refund' not in self.data:
-            del self.fields['confirm']
-
 
 #
 # Form for canceling a conference invoice
 #
-class ConferenceInvoiceCancelForm(django.forms.Form):
+class ConferenceInvoiceCancelForm(ConfirmFormMixin, django.forms.Form):
     reason = django.forms.CharField(max_length=400, min_length=10, required=True, label="Reason for cancel",
                                     help_text="Specify the reason for canceling the invoice. Note that this reason is sent by email to the invoice recipient.")
-    confirm = django.forms.BooleanField(help_text="Confirm that you really want to cancel this invoice!")
 
-    def __init__(self, *args, **kwargs):
-        super(ConferenceInvoiceCancelForm, self).__init__(*args, **kwargs)
-
-        if 'reason' not in self.data:
-            del self.fields['confirm']
+    confirm_what = 'cancel invoice'
 
 
 #
@@ -1938,10 +1928,11 @@ class PurchasedVoucherRefundForm(django.forms.Form):
 #
 # Form for refunding a multi registration
 #
-class BulkPaymentRefundForm(django.forms.Form):
+class BulkPaymentRefundForm(ConfirmFormMixin, django.forms.Form):
     amount = django.forms.DecimalField(decimal_places=2, required=False, label="Refund amount (ex VAT)")
     vatamount = django.forms.DecimalField(decimal_places=2, required=False, label="Refund VAT amount")
-    confirm = django.forms.BooleanField(label="Confirm", required=True)
+
+    confirm_what = 'refund'
 
     def __init__(self, invoice, *args, **kwargs):
         self.invoice = invoice

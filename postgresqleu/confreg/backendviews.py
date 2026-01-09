@@ -467,7 +467,7 @@ def pendinginvoices_cancel(request, urlname, invoiceid):
 
     if request.method == 'POST':
         form = ConferenceInvoiceCancelForm(data=request.POST)
-        if form.is_valid():
+        if form.is_valid() and form.is_confirmed():
             manager = InvoiceManager()
             try:
                 manager.cancel_invoice(invoice, form.cleaned_data['reason'], request.user.username)
@@ -483,7 +483,6 @@ def pendinginvoices_cancel(request, urlname, invoiceid):
         'basetemplate': 'confreg/confadmin_base.html',
         'form': form,
         'whatverb': 'Cancel invoice',
-        'savebutton': 'Cancel invoice',
         'cancelname': 'Return without canceling',
         'cancelurl': '../../',
         'note': 'Canceling invoice #{} ({}) will disconnect it from the associated objects and send a notification to the recipient of the invoice ({}).'.format(invoice.id, invoice.title, invoice.recipient_name),
@@ -520,7 +519,7 @@ def multireg_refund(request, urlname, bulkid):
 
     if request.method == 'POST':
         form = BulkPaymentRefundForm(invoice, data=request.POST)
-        if form.is_valid():
+        if form.is_valid() and form.is_confirmed():
             manager = InvoiceManager()
             manager.refund_invoice(invoice, 'Multi registration refunded', form.cleaned_data['amount'], form.cleaned_data['vatamount'], conference.vat_registrations)
 
@@ -542,7 +541,6 @@ def multireg_refund(request, urlname, bulkid):
         'form': form,
         'whatverb': 'Refund',
         'what': 'multi registration',
-        'savebutton': 'Refund',
         'cancelurl': '../../',
         'breadcrumbs': [('/events/admin/{}/multiregs/'.format(conference.urlname), 'Multi Registrations'), ],
         'helplink': 'registrations',
@@ -1126,7 +1124,7 @@ def merge_speakers(request, speakerid):
 
     if request.method == 'POST':
         form = BackendMergeSpeakerForm(oldspeaker, data=request.POST)
-        if form.is_valid():
+        if form.is_valid() and form.is_confirmed():
             newspeaker = form.cleaned_data['targetspeaker']
 
             oldprofiletxt = "{} ({} - {})".format(oldspeaker.fullname, oldspeaker.user, oldspeaker.user.email if oldspeaker.user else '* no user/email*')
@@ -1153,7 +1151,6 @@ def merge_speakers(request, speakerid):
         'form': form,
         'whatverb': 'Merge',
         'what': 'speaker profiles',
-        'savebutton': 'Merge into speaker profile, deleting the source profile',
         'cancelurl': '../',
     })
 

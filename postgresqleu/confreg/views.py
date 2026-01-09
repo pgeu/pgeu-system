@@ -2783,10 +2783,9 @@ def createvouchers(request, confname):
     # Creation of pre-paid vouchers for conference registrations
     if request.method == 'POST':
         form = PrepaidCreateForm(conference, data=request.POST)
-        if form.is_valid():
+        if form.is_valid() and form.is_confirmed():
             # All data is correct, create the vouchers
             # (by first creating a batch)
-
             regtype = RegistrationType.objects.get(pk=form.data['regtype'], conference=conference)
             regcount = int(form.data['count'])
             buyer = User.objects.get(pk=form.data['buyer'])
@@ -2840,7 +2839,7 @@ def createvouchers(request, confname):
         'form': form,
         'whatverb': 'Create',
         'what': 'prepaid vouchers',
-        'savebutton': 'Create',
+        'cancelurl': 'list/',
         'breadcrumbs': (('/events/admin/{0}/prepaid/list/'.format(conference.urlname), 'Prepaid vouchers'),),
     })
 
@@ -3968,7 +3967,7 @@ def _admin_registration_cancel(request, conference, redirurl, regs):
 
     if request.method == 'POST':
         form = CancelRegistrationForm(totalnovat, totalvat, refundchoices, data=request.POST)
-        if form.is_valid():
+        if form.is_valid() and form.is_confirmed():
             manager = InvoiceManager()
             method = int(form.cleaned_data['refund'])
             reason = form.cleaned_data['reason']

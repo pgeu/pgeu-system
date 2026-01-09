@@ -33,7 +33,7 @@
 
 <div class="row">
   <form method="post" action=".{%if regidlist%}?idlist={{regidlist}}{%endif%}" class="form-horizontal">{% csrf_token %}
-{%include "confreg/admin_backend_form_content.html" with savebutton="Cancel registration" cancelurl="../" cancelname="Return without canceling" %}
+{%include "confreg/admin_backend_form_content.html" with cancelurl="../" cancelname="Return without canceling" %}
   </form>
 </div>
 

@@ -298,13 +298,9 @@ def refundinvoice(request, invoicenum):
 
     if request.method == 'POST':
         form = RefundForm(data=request.POST, invoice=invoice)
-        if form.is_valid():
-            # Do some sanity checking
+        if form.is_valid() and form.is_confirmed():
             if form.cleaned_data['vatrate']:
                 vatamount = (Decimal(form.cleaned_data['amount']) * form.cleaned_data['vatrate'].vatpercent / Decimal(100)).quantize(Decimal('0.01'))
-                if vatamount > invoice.total_refunds['remaining']['vatamount']:
-                    messages.error(request, "Unable to refund, VAT amount mismatch!")
-                    return HttpResponseRedirect('.')
             else:
                 vatamount = 0
 
