@@ -69,9 +69,10 @@ $(document).ready(function() {
       if (!$('#datatable').data('datatable')) return;
 
       var nodes = $($('#datatable').data('datatable').rows().nodes()).find('input.mailcheckbox:checked');
-      window.location.href='sendmail/?idlist='+nodes.map(function() {
+      $('#emailform_idlist').val(nodes.map(function() {
          return this.id.substring(3); // Remove em_ at the beginning
-      }).get().join();
+      }).get().join());
+     $('#emailform').submit();
    });
 
    /* Set up assignment checkboxes */

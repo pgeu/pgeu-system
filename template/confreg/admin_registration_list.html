@@ -111,4 +111,9 @@ $(document).ready(function() {
 <a class="btn btn-default btn-block" href="/admin/django/confreg/conferenceregistration/?conference__id__exact={{conference.id}}&_directlink=1">View all registrations through admin view</a>
 {%endif%}
 
+<form method="post" id="emailform" action="sendmail/">{% csrf_token%}
+<input id="emailform_idlist" type="hidden" name="idlist">
+<input name="initial_submit" type="hidden"  value="1">
+</form>
+
 {%endblock%}

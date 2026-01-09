@@ -183,4 +183,11 @@ $(document).ready(function() {
 </form>
 {%endif%}
 
+{%if allow_email%}
+<form method="post" id="emailform" action="sendmail/">{% csrf_token%}
+<input id="emailform_idlist" type="hidden" name="idlist">
+<input name="initial_submit" type="hidden"  value="1">
+</form>
+{%endif%}
+
 {%endblock%}
