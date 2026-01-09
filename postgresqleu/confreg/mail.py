@@ -12,7 +12,7 @@ from postgresqleu.scheduler.util import trigger_immediate_job_run
 from .backendforms import BackendSendEmailForm
 
 
-def attendee_email_form(request, conference, query=None, breadcrumbs=[], extracontext={}, strings=False):
+def attendee_email_form(request, conference, query=None, breadcrumbs=[], extracontext={}, strings=False, get_recipient_string=None, handle_insert=None):
     if request.method == 'POST':
         if strings:
             idlist = request.POST['idlist'].split(',')
@@ -28,16 +28,24 @@ def attendee_email_form(request, conference, query=None, breadcrumbs=[], extraco
             idlist = list(map(int, request.GET['idlist'].split(',')))
 
     queryparams = {'conference': conference.id, 'idlist': idlist}
-    if query is None:
-        query = "SELECT id AS regid, attendee_id AS user_id, firstname || ' ' || lastname AS fullname, email FROM confreg_conferenceregistration WHERE conference_id=%(conference)s AND id=ANY(%(idlist)s)"
-    elif callable(query):
-        query, queryparams = query(idlist)
+    if get_recipient_string is None:
+        if query is None:
+            query = "SELECT id AS regid, attendee_id AS user_id, firstname || ' ' || lastname AS fullname, email FROM confreg_conferenceregistration WHERE conference_id=%(conference)s AND id=ANY(%(idlist)s)"
+        elif callable(query):
+            query, queryparams = query(idlist)
 
-    recipients = exec_to_dict(query, queryparams)
+        recipients = exec_to_dict(query, queryparams)
+        recipientstring = escape(", ".join([
+            '{0} <{1}>'.format(x['fullname'], x['email'])
+            for x in recipients
+        ]))
+    else:
+        recipients = None
+        recipientstring = get_recipient_string(idlist)
 
     initial = {
         '_from': '{0} <{1}>'.format(conference.conferencename, conference.contactaddr),
-        'recipients': escape(", ".join(['{0} <{1}>'.format(x['fullname'], x['email']) for x in recipients])),
+        'recipients': recipientstring,
         'idlist': ",".join(map(str, idlist)),
     }
 
@@ -47,26 +55,29 @@ def attendee_email_form(request, conference, query=None, breadcrumbs=[], extraco
         form = BackendSendEmailForm(conference, data=p, initial=initial)
         if form.is_valid():
             with transaction.atomic():
-                mailid = exec_to_scalar("INSERT INTO confreg_attendeemail (conference_id, sent, sentat, subject, message, tocheckin, tovolunteers) VALUES (%(confid)s, false, %(sentat)s, %(subject)s, %(message)s, false, false) RETURNING id", {
-                    'confid': conference.id,
-                    'sentat': form.cleaned_data['sendat'],
-                    'subject': form.cleaned_data['subject'],
-                    'message': form.cleaned_data['message'],
-                })
-                for r in recipients:
-                    if r['regid']:
-                        # Existing registration, so attach directly to attendee
-                        exec_no_result("INSERT INTO confreg_attendeemail_registrations (attendeemail_id, conferenceregistration_id) VALUES (%(mailid)s, %(reg)s)", {
-                            'mailid': mailid,
-                            'reg': r['regid'],
-                        })
-                    else:
-                        # No existing registration, so queue it up in case the attendee
-                        # might register later. We have the userid...
-                        exec_no_result("INSERT INTO confreg_attendeemail_pending_regs (attendeemail_id, user_id) VALUES (%(mailid)s, %(userid)s)", {
-                            'mailid': mailid,
-                            'userid': r['user_id'],
-                        })
+                if handle_insert is None:
+                    mailid = exec_to_scalar("INSERT INTO confreg_attendeemail (conference_id, sent, sentat, subject, message, tocheckin, tovolunteers) VALUES (%(confid)s, false, %(sentat)s, %(subject)s, %(message)s, false, false) RETURNING id", {
+                        'confid': conference.id,
+                        'sentat': form.cleaned_data['sendat'],
+                        'subject': form.cleaned_data['subject'],
+                        'message': form.cleaned_data['message'],
+                    })
+                    for r in recipients:
+                        if r['regid']:
+                            # Existing registration, so attach directly to attendee
+                            exec_no_result("INSERT INTO confreg_attendeemail_registrations (attendeemail_id, conferenceregistration_id) VALUES (%(mailid)s, %(reg)s)", {
+                                'mailid': mailid,
+                                'reg': r['regid'],
+                            })
+                        else:
+                            # No existing registration, so queue it up in case the attendee
+                            # might register later. We have the userid...
+                            exec_no_result("INSERT INTO confreg_attendeemail_pending_regs (attendeemail_id, user_id) VALUES (%(mailid)s, %(userid)s)", {
+                                'mailid': mailid,
+                                'userid': r['user_id'],
+                            })
+                else:
+                    handle_insert(idlist, form.cleaned_data['sendat'], form.cleaned_data['subject'], form.cleaned_data['message'])
                 if form.cleaned_data['sendat'] > timezone.now():
                     messages.info(request, "Email scheduled for later sending to attendees")
                 else:

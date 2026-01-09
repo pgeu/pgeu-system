@@ -772,15 +772,27 @@ class PrepaidCreateForm(forms.Form):
         return cleaned_data
 
 
-class AttendeeMailForm(forms.ModelForm):
-    confirm = forms.BooleanField(label="Confirm", required=False)
-
-    class Meta:
-        model = AttendeeMail
-        fields = ('regclasses', 'addopts', 'tovolunteers', 'tocheckin', 'sentat', 'subject', 'message')
-        widgets = {
-            'message': EmailTextWidget,
-        }
+class AttendeeMailForm(forms.Form):
+    regclasses = forms.ModelMultipleChoiceField(
+        queryset=RegistrationClass.objects.all(),
+        required=False,
+        label="Registration classes",
+        widget=forms.CheckboxSelectMultiple,
+    )
+    addopts = forms.ModelMultipleChoiceField(
+        queryset=ConferenceAdditionalOption.objects.all(),
+        required=False,
+        label="Additional options",
+        widget=forms.CheckboxSelectMultiple,
+    )
+    volunteers = forms.BooleanField(
+        required=False,
+        label="To volunteers",
+    )
+    checkin = forms.BooleanField(
+        required=False,
+        label="To check-in processors",
+    )
 
     def regclass_label(self, obj):
         return "{0} (contains {1}; total {2} registrations)".format(
@@ -805,22 +817,27 @@ class AttendeeMailForm(forms.ModelForm):
         self.conference = conference
         super(AttendeeMailForm, self).__init__(*args, **kwargs)
 
-        self.fields['regclasses'].widget = forms.CheckboxSelectMultiple()
         self.fields['regclasses'].queryset = RegistrationClass.objects.filter(conference=self.conference)
         self.fields['regclasses'].label_from_instance = self.regclass_label
 
-        self.fields['addopts'].widget = forms.CheckboxSelectMultiple()
         self.fields['addopts'].queryset = ConferenceAdditionalOption.objects.filter(conference=self.conference)
         self.fields['addopts'].label_from_instance = self.addopts_label
 
-        self.fields['subject'].help_text = 'Subject will be prefixed with <strong>[{}]</strong>'.format(conference)
+    def clean(self):
+        d = super().clean()
 
-        if not (self.data.get('subject') and self.data.get('message')):
-            del self.fields['confirm']
+        if not any((d['volunteers'], d['checkin'], d['regclasses'], d['addopts'])):
+            raise ValidationError("Must specify at least one type of destination")
 
-    def clean_confirm(self):
-        if not self.cleaned_data['confirm']:
-            raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")
+        return d
+
+    def get_idlist(self):
+        yield from ('c{}'.format(c.id) for c in self.cleaned_data['regclasses'])
+        yield from ('a{}'.format(a.id) for a in self.cleaned_data['addopts'])
+        if self.cleaned_data['volunteers']:
+            yield 'xv'
+        if self.cleaned_data['checkin']:
+            yield 'xc'
 
 
 class SendExternalEmailForm(forms.Form):

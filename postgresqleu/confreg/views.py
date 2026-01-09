@@ -23,7 +23,7 @@ from .models import ConferenceSessionSlides, ConferenceSessionVote, GlobalOptOut
 from .models import ConferenceSessionFeedback, Speaker
 from .models import ConferenceSessionTag
 from .models import ConferenceFeedbackQuestion, ConferenceFeedbackAnswer
-from .models import RegistrationType, PrepaidVoucher, PrepaidBatch, RefundPattern
+from .models import RegistrationClass, RegistrationType, PrepaidVoucher, PrepaidBatch, RefundPattern
 from .models import BulkPayment, Room, Track, ConferenceSessionScheduleSlot
 from .models import AttendeeMail, ConferenceAdditionalOption
 from .models import PendingAdditionalOrder
@@ -51,6 +51,7 @@ from .util import attendee_cost_from_bulk_payment
 from .util import send_conference_mail, send_conference_notification, send_conference_notification_template
 from .util import reglog
 from .util import make_registration_transfer
+from .mail import attendee_email_form
 
 from .models import get_status_string, valid_status_transitions
 from .regtypes import confirm_special_reg_type
@@ -4506,7 +4507,6 @@ def admin_waitlist_sendmail(request, urlname):
     })
 
 
-@transaction.atomic
 def admin_attendeemail(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
@@ -4520,27 +4520,7 @@ OR EXISTS (SELECT 1 FROM confreg_attendeemail_pending_regs WHERE attendeemail_id
     if request.method == 'POST':
         form = AttendeeMailForm(conference, data=request.POST)
         if form.is_valid():
-            msg = AttendeeMail(conference=conference,
-                               subject=form.data['subject'],
-                               message=form.data['message'],
-                               tovolunteers='tovolunteers' in form.data,
-                               tocheckin='tocheckin' in form.data,
-                               sentat=form.cleaned_data['sentat'],
-            )
-            msg.save()
-            for rc in form.data.getlist('regclasses'):
-                msg.regclasses.add(rc)
-            for ao in form.data.getlist('addopts'):
-                msg.addopts.add(ao)
-            msg.save()
-
-            if msg.sentat > timezone.now():
-                messages.info(request, "Email scheduled for later sending to attendees")
-            else:
-                trigger_immediate_job_run('confreg_send_emails')
-                messages.info(request, "Email sent to attendees, and added to their registration pages")
-
-            return HttpResponseRedirect(".")
+            return HttpResponseRedirect("send/?idlist={}".format(",".join(form.get_idlist())))
     else:
         form = AttendeeMailForm(conference)
 
@@ -4550,6 +4530,48 @@ OR EXISTS (SELECT 1 FROM confreg_attendeemail_pending_regs WHERE attendeemail_id
         'form': form,
         'helplink': 'emails',
     })
+
+
+@transaction.atomic
+def admin_attendeemail_send(request, urlname):
+    conference = get_authenticated_conference(request, urlname)
+
+    def _recipient_string(idlist):
+        def __recipients():
+            yield from ('regclass {}'.format(c.regclass) for c in RegistrationClass.objects.filter(conference=conference, id__in=[id.lstrip('c') for id in idlist if id.startswith('c')]))
+            yield from ('option {}'.format(a.name) for a in ConferenceAdditionalOption.objects.filter(conference=conference, id__in=[id.lstrip('a') for id in idlist if id.startswith('a')]))
+            if 'xc' in idlist:
+                yield 'Check-in processors'
+            if 'xv' in idlist:
+                yield 'Volunteers'
+
+        return ", ".join(__recipients()).capitalize()
+
+    def _handle_insert(idlist, sentat, subject, message):
+        msg = AttendeeMail(
+            conference=conference,
+            subject=subject,
+            message=message,
+            tovolunteers='xv' in idlist,
+            tocheckin='xc' in idlist,
+            sentat=sentat,
+        )
+        msg.save()
+        for id in idlist:
+            if id.startswith('c'):
+                msg.regclasses.add(id.lstrip('c'))
+            elif id.startswith('a'):
+                msg.addopts.add(id.lstrip('a'))
+        msg.save()
+
+    return attendee_email_form(
+        request,
+        conference,
+        breadcrumbs=[('../', 'Attendee emails'), ],
+        strings=True,
+        get_recipient_string=_recipient_string,
+        handle_insert=_handle_insert,
+    )
 
 
 def admin_attendeemail_view(request, urlname, mailid):
