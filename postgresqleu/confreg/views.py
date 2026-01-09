@@ -14,6 +14,7 @@ from django.db.models import Q, Count, Avg, Sum, Min, Max, Prefetch
 from django.db.models.expressions import F
 from django.forms import ValidationError
 from django.utils import timezone
+from django.utils.html import escape
 from django.template.defaultfilters import slugify
 from django.views.decorators.csrf import csrf_exempt
 
@@ -92,6 +93,7 @@ from collections import OrderedDict
 import base64
 import re
 import os
+from urllib.parse import urlencode
 from Cryptodome.Hash import SHA256
 from io import StringIO
 import xml.etree.ElementTree as ET
@@ -4661,39 +4663,19 @@ def admin_attendeemail_view(request, urlname, mailid):
         })
 
 
-@transaction.atomic
 def admin_send_external_email(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
     if request.method == 'POST':
         form = SendExternalEmailForm(conference, data=request.POST)
         if form.is_valid():
-            send_conference_mail(
-                conference,
-                form.cleaned_data['recipient'],
-                form.cleaned_data['subject'],
-                'confreg/mail/external_mail.txt',
-                {
-                    'body': form.cleaned_data['message'],
-                },
-                sender=form.cleaned_data['sender'],
-                receivername=form.cleaned_data['recipientname'],
-            )
-
-            send_conference_notification(
-                conference,
-                'External email sent',
-                "User {} sent an external email with subject \"{}\" to {} with the content:\n\n{}\n".format(
-                    request.user.username,
-                    form.cleaned_data['subject'],
+            return HttpResponseRedirect('send?{}'.format(urlencode({
+                'idlist': 'f{},n{},e{}'.format(
+                    form.cleaned_data['sender'],
+                    form.cleaned_data['recipientname'],
                     form.cleaned_data['recipient'],
-                    form.cleaned_data['message'],
-                ),
-            )
-
-            messages.info(request, "Email sent to {}.".format(form.cleaned_data['recipient']))
-
-            return HttpResponseRedirect('../')
+                )
+            })))
     else:
         form = SendExternalEmailForm(conference)
 
@@ -4707,6 +4689,92 @@ def admin_send_external_email(request, urlname):
         'savebutton': 'Send email',
         'cancelurl': '../',
     })
+
+
+@transaction.atomic
+def admin_send_external_email_send(request, urlname):
+    conference = get_authenticated_conference(request, urlname)
+
+    class ExternalEmailProvider(BaseAttendeeEmailProvider):
+        trigger_job = None
+        mailtemplate = 'confreg/mail/external_mail.txt'
+
+        def process_idlist(self, idlist):
+            return idlist
+
+        def _get_recipient_data(self):
+            return [
+                next(f[1:] for f in self.idlist if f.startswith('n')),
+                next(f[1:] for f in self.idlist if f.startswith('e')),
+            ]
+
+        def get_recipient_string(self):
+            return escape("{} <{}>".format(*self._get_recipient_data()))
+
+        def get_initial(self):
+            initial = super().get_initial()
+            fromaddrid = int(next(f[1:] for f in self.idlist if f.startswith('f')))
+            initial['_from'] = '{} <{}>'.format(
+                self.conference.conferencename,
+                self.conference.contactaddr if fromaddrid == 1 else conference.sponsoraddr,
+            )
+            return initial
+
+        def get_contextrefs(self):
+            return {
+                'conference': Conference,
+            }
+
+        def get_preview_context(self):
+            return {
+                'conference': self.conference,
+            }
+
+        def prepare_form(self, form):
+            form.fields['subject'].help_text = ''
+            del form.fields['sendat']
+
+        def insert_emails_from_form(self, form):
+            recipientname, recipient = self._get_recipient_data()
+            fromaddrid = int(next(f[1:] for f in self.idlist if f.startswith('f')))
+
+            send_conference_mail(
+                self.conference,
+                recipient,
+                form.cleaned_data['subject'],
+                'confreg/mail/external_mail.txt',
+                {
+                    'body': render_sandboxed_template(form.cleaned_data['message'], {
+                        'conference': self.conference,
+                    }),
+                },
+                sender=self.conference.contactaddr if fromaddrid == 1 else conference.sponsoraddr,
+                sendername=self.conference.conferencename,
+                receivername=recipientname,
+            )
+
+            send_conference_notification(
+                conference,
+                'External email sent',
+                "User {} sent an external email with subject \"{}\" to {} with the content:\n\n{}\n".format(
+                    request.user.username,
+                    form.cleaned_data['subject'],
+                    recipient,
+                    form.cleaned_data['message'],
+                ),
+            )
+
+            # No support for scheduling here, always direct!
+            return False
+
+    return attendee_email_form(
+        request,
+        conference,
+        ExternalEmailProvider,
+        breadcrumbs=[
+            ('../', 'External email', ),
+        ]
+    )
 
 
 @transaction.atomic

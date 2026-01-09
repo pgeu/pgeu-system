@@ -2,6 +2,7 @@ from django import forms
 from django.forms import RadioSelect
 from django.forms import ValidationError
 from django.forms.utils import ErrorList
+from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
@@ -844,10 +845,9 @@ class SendExternalEmailForm(forms.Form):
     sendername = forms.CharField(required=False, widget=StaticTextWidget(), label="Sender name")
     sender = forms.ChoiceField()
     recipient = forms.EmailField()
-    recipientname = forms.CharField(label="Recipient name")
-    subject = forms.CharField(max_length=100)
-    message = forms.CharField(widget=EmailTextWidget)
-    confirm = forms.BooleanField(label="Confirm", required=False)
+    recipientname = forms.CharField(label="Recipient name", validators=[
+        RegexValidator('[,=]', inverse_match=True, message='Invalid character in name'),
+    ])
 
     def __init__(self, conference, *args, **kwargs):
         self.conference = conference
@@ -860,15 +860,10 @@ class SendExternalEmailForm(forms.Form):
             self.data = self.data.copy()
             self.data['sendername'] = self.conference.conferencename
 
-        addresses = set(a for a in [conference.contactaddr, conference.sponsoraddr, conference.notifyaddr] if a)
-        self.fields['sender'].choices = [(a, a) for a in sorted(addresses)]
-
-        if not (self.data.get('subject') and self.data.get('message')):
-            del self.fields['confirm']
-
-    def clean_confirm(self):
-        if not self.cleaned_data['confirm']:
-            raise ValidationError("Please check this box to confirm that you are really sending this email! There is no going back!")
+        self.fields['sender'].choices = [
+            (1, 'Contact address: {}'.format(conference.contactaddr)),
+            (2, 'Sponsor address: {}'.format(conference.sponsoraddr)),
+        ]
 
 
 class WaitlistOfferForm(forms.Form):

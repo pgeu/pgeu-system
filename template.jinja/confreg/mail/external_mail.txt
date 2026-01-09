@@ -1,1 +1,4 @@
 {{body}}
+
+-- 
+This email was sent from {{conference}}.

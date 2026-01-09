@@ -203,6 +203,7 @@ urlpatterns.extend([
     re_path(r'^events/admin/(\w+)/mail/send/$', postgresqleu.confreg.views.admin_attendeemail_send),
     re_path(r'^events/admin/(\w+)/mail/(\d+)/$', postgresqleu.confreg.views.admin_attendeemail_view),
     re_path(r'^events/admin/(\w+)/externalmail/$', postgresqleu.confreg.views.admin_send_external_email),
+    re_path(r'^events/admin/(\w+)/externalmail/send/$', postgresqleu.confreg.views.admin_send_external_email_send),
     re_path(r'^events/admin/(\w+)/regdashboard/$', postgresqleu.confreg.views.admin_registration_dashboard),
     re_path(r'^events/admin/(\w+)/regdashboard/list/$', postgresqleu.confreg.views.admin_registration_list),
     re_path(r'^events/admin/(\w+)/regdashboard/list/(\d+)/$', postgresqleu.confreg.views.admin_registration_single),

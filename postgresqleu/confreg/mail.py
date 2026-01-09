@@ -120,6 +120,15 @@ class BaseAttendeeEmailProvider:
                     'userid': r['user_id'],
                 })
 
+    def insert_emails_from_form(self, form):
+        self.insert_emails(
+            form.cleaned_data['sendat'],
+            form.cleaned_data['subject'],
+            form.cleaned_data['message'],
+        )
+
+        return form.cleaned_data['sendat'] > timezone.now()
+
     def prepare_form(self, form):
         pass
 
@@ -176,18 +185,14 @@ def attendee_email_form(request, conference, providerclass=BaseAttendeeEmailProv
             # Valid form. Do we need a confirmation, or are we ready to send?
             if request.POST['submit'] == 'Confirm and send':
                 with transaction.atomic():
-                    provider.insert_emails(
-                        form.cleaned_data['sendat'],
-                        form.cleaned_data['subject'],
-                        form.cleaned_data['message'],
-                    )
+                    scheduled = provider.insert_emails_from_form(form)
 
-                    if form.cleaned_data['sendat'] > timezone.now():
-                        messages.info(request, "Email scheduled for later sending to attendees")
+                    if scheduled:
+                        messages.info(request, "Email scheduled for later sending")
                     else:
                         if provider.trigger_job:
                             trigger_immediate_job_run(provider.trigger_job)
-                        messages.info(request, "Email sent to attendees, and added to their registration pages")
+                        messages.info(request, "Email sent")
                 return HttpResponseRedirect('../')
         else:
             # Form not valid. But we have a special case where this is the initial submit
@@ -199,6 +204,7 @@ def attendee_email_form(request, conference, providerclass=BaseAttendeeEmailProv
                 form.data['sendat'] = timezone.now()
     else:
         form = BackendSendEmailForm(conference, contextrefs, is_confirm, initial=initial)
+        provider.prepare_form(form)
 
     return render(request, 'confreg/admin_backend_form.html', {
         'conference': conference,
