@@ -1,3 +1,5 @@
+Hello!
+
 Your {%if unconfirmed%}unfinished {%endif%}registration for {{conference.conferencename}} has been {%if unconfirmed%}removed{%else%}canceled{%endif%}.
 
 If you did not expect this or do not know why this happened,

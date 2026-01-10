@@ -107,7 +107,7 @@ For pgeu-system, sourced from pgweb.
               <tr>
                 <td class="wrapper">
 {%block inlinedcontent%}
-<h1>{%block greeting%}Hello!{%endblock%}</h1>
+<h1>{%block greeting%}{{greeting|default("Hello!")}}{%endblock%}</h1>
 {%block content%}{{content}}{%endblock%}
 {%endblock%}
                 </td>

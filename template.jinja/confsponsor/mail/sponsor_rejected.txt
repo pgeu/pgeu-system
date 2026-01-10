@@ -1,6 +1,5 @@
 Hello!
 
-
 Your {{sponsor.level}} sponsorship for {{conference}}
 has been removed. The reason given for this was:
 

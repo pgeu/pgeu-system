@@ -1,3 +1,5 @@
+Hello!
+
 The shipment with id {{shipment.addresstoken}} has been marked as arrived at {{shipment.address.title}}.
 The recipient has indicated that {{shipment.arrived_parcels}} parcels arrived.
 

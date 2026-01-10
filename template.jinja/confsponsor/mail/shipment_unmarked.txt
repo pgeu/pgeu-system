@@ -1,3 +1,5 @@
+Hello!
+
 The recipient at {{shipment.address.title}} has indicated that the shipment with id {{shipment.addresstoken}}
 which was previously marked as arrived, was wrong.
 This shipment has NOT arrived.

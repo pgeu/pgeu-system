@@ -1,2 +1,4 @@
+Hello!
+
 Your sponsorship benefit {{benefit}} at {{conference.conferencename}}
 has been marked as confirmed by the organizers.

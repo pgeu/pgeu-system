@@ -447,13 +447,16 @@ def render_jinja_conference_mail(conference, templatename, dictionary, subject):
                 htmltempl, htmlctx = _get_jinja_conference_template(conference, templatename + '.html', dictionary, renderglobals=renderglobals)
             else:
                 # TXT exists, but not HTML, so render as markdown inside base template
+                # Extract the first line to be the "greeting" part of the email in the HTML template.
                 txtpart = render_jinja_conference_template(conference, templatename + '.txt', dictionary)
+                contentlines = txtpart.splitlines()
                 htmltempl, htmlctx = _get_jinja_conference_template(
                     conference,
                     conference and 'confreg/mailbase.html' or 'mailbase.html',
                     {
                         'subject': subject,
-                        'content': markupsafe.Markup(pgmarkdown(txtpart)),
+                        'greeting': contentlines[0],
+                        'content': markupsafe.Markup(pgmarkdown("\n".join(contentlines[1:]))),
                     },
                     renderglobals=renderglobals,
                 )

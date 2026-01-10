@@ -1,3 +1,5 @@
+Hello!
+
 Your {{org_name}} membership will expire in
 {{member.paiduntil|timeuntil}}, on {{member.paiduntil}}.
 
