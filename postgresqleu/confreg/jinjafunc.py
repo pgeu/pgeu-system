@@ -197,7 +197,7 @@ def get_all_available_attributes(objclass, depth=0):
     modname = objclass.__module__
     if not (modname.startswith('postgresqleu.') and modname.endswith('models')):
         # Outside of models, we also specifically allow the InvoicePresentationWrapper
-        if modname != 'postgresqleu.invoices.util' or obj.__class__.__name__ != 'InvoicePresentationWrapper':
+        if modname != 'postgresqleu.invoices.util' or objclass.__name__ != 'InvoicePresentationWrapper':
             return
 
     for attname, attref in objclass.__dict__.items():
