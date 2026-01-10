@@ -1,4 +1,5 @@
 {%extends "nav_account.html"%}
+{%load pgmarkdown%}
 {%block title%}Membership{%endblock%}
 {%block content%}
 <h1>Membership email</h1>
@@ -23,7 +24,7 @@
 </table>
 
 <pre>
-{{body}}
+{{body|markdown}}
 </pre>
 
 <a href="/membership/" class="btn btn-outline-dark">Back</a>
