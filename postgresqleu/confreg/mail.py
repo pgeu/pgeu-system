@@ -4,6 +4,7 @@ from django.db import transaction
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from django.utils import timezone
+from django.forms.utils import ErrorDict
 
 
 from postgresqleu.util.db import exec_to_dict, exec_to_scalar, exec_no_result
