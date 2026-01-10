@@ -13,6 +13,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='membermail',
             name='sent',
+            field=models.BooleanField(default=True),
+        ),
+        migrations.AlterField(
+            model_name='membermail',
+            name='sent',
             field=models.BooleanField(default=False),
         ),
     ]
