@@ -326,7 +326,7 @@ def filter_inlinecss(context, contents, cssname):
         import pynliner
     except ImportError:
         print("CSS inlining not supported withut pynliner!")
-        return content
+        return contents
 
     css = render_jinja_conference_template(context['conference'], cssname, context)
     p = pynliner.Pynliner().from_string(contents)
