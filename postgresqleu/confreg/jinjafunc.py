@@ -4,7 +4,7 @@ from django.template import defaultfilters
 from django.core.exceptions import ValidationError, FieldDoesNotExist
 from django.contrib.messages.api import get_messages
 from django.utils.text import slugify
-from django.utils.timesince import timesince
+from django.utils.timesince import timesince, timeuntil
 from django.utils import timezone
 from django.conf import settings
 import django.db.models
@@ -341,6 +341,7 @@ extra_filters = {
     'floatstr': filter_float_str,
     'datetimeformat': filter_datetimeformat,
     'timesince': timesince,
+    'timeuntil': timeuntil,
     'groupby_sort': filter_groupby_sort,
     'leadingnbsp': leadingnbsp,
     'markdown': lambda t: markupsafe.Markup(pgmarkdown(t)),
