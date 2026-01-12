@@ -4475,6 +4475,7 @@ def admin_waitlist_sendmail(request, urlname):
         'conference': conference,
         'form': form,
         'helplink': 'waitlist#emails',
+        'savebutton': 'Send',
         'breadcrumbs': (('/events/admin/{0}/waitlist/'.format(conference.urlname), 'Waitlist'),),
     })
 
