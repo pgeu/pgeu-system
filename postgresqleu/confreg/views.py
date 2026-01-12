@@ -2669,12 +2669,12 @@ def attendee_mail(request, confname, mailid):
         raise Http404()
     mail = mail[0]
 
-    contents = render_sandboxed_template(mail.message, {
+    contents = render_sandboxed_template(mail.message, dict({
         'conference': conference,
         'attendee': reg,
         'firstname': reg.firstname,
         'lastname': reg.lastname,
-    })
+    }, **mail.extracontext))
 
     return render_conference_response(request, conference, 'reg', 'confreg/attendee_mail_view.html', {
         'conference': conference,

@@ -31,6 +31,12 @@
 {{mail.message|linebreaks}}
   </div>
 </div>
+{%if mail.extracontext %}
+<div class="row">
+  <div class="col-md-2"><b>Extra context</b></div>
+  <div>{{mail.extracontext}}</div>
+</div>
+{% endif %}
 
 <div class="row buttonrow">
 <a class="btn btn-default btn-block" href="../">Return to list</a>.

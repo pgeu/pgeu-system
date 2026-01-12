@@ -1510,6 +1510,7 @@ class AttendeeMail(models.Model):
     sent = models.BooleanField(null=False, blank=False, default=False)
     subject = models.CharField(max_length=100, null=False, blank=False)
     message = models.TextField(max_length=8000, null=False, blank=False)
+    extracontext = models.JSONField(null=False, blank=True, default=dict)
 
     def __str__(self):
         return "%s: %s" % (timezone.localtime(self.sentat).strftime("%Y-%m-%d %H:%M"), self.subject)

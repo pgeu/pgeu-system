@@ -42,12 +42,12 @@ class Command(BaseCommand):
                 attendees.update(msg.conference.checkinprocessors.all())
 
             def _render_and_send(email, attendee, firstname, lastname):
-                body = render_sandboxed_template(msg.message, {
+                body = render_sandboxed_template(msg.message, dict({
                     'conference': msg.conference,
                     'attendee': attendee,
                     'firstname': firstname,
                     'lastname': lastname,
-                })
+                }, **msg.extracontext))
 
                 send_conference_mail(msg.conference,
                                      email,
