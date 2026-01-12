@@ -30,6 +30,7 @@ class AttendeeEmailQuerySampleMixin:
 class BaseAttendeeEmailProvider:
     trigger_job = 'confreg_send_emails'
     mailtemplate = 'confreg/mail/attendee_mail.txt'
+    finished_redirect = "../"
 
     def __init__(self, conference, idlist):
         self.conference = conference
@@ -212,7 +213,7 @@ def attendee_email_form(request, conference, providerclass=BaseAttendeeEmailProv
                         if provider.trigger_job:
                             trigger_immediate_job_run(provider.trigger_job)
                         messages.info(request, "Email sent")
-                return HttpResponseRedirect('../')
+                return HttpResponseRedirect(provider.finished_redirect)
         else:
             # Form not valid. But we have a special case where this is the initial submit
             # coming in from another page, in which case we don't want to show all the
