@@ -888,20 +888,7 @@ class WaitlistSendmailForm(forms.Form):
         (TARGET_NOOFFERS, 'Only attendees without active offers'),
     )
 
-    POSITION_NONE = 0
-    POSITION_FULL = 1
-    POSITION_ONLY = 2
-    POSITION_SIZE = 3
-    POSITION_CHOICES = (
-        (POSITION_NONE, 'No position information'),
-        (POSITION_FULL, 'Both position and size of waitlist'),
-        (POSITION_ONLY, 'Only position on waitlist'),
-        (POSITION_SIZE, 'Only size of waitlist'),
-    )
-
     waitlist_target = forms.ChoiceField(required=True, choices=TARGET_CHOICES)
-    include_position = forms.ChoiceField(required=True, choices=POSITION_CHOICES,
-                                         help_text="Include a footer with information about waitpost position and/or size")
 
     def __init__(self, conference, *args, **kwargs):
         self.conference = conference

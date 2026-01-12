@@ -4466,7 +4466,7 @@ def admin_waitlist_sendmail(request, urlname):
     if request.method == 'POST':
         form = WaitlistSendmailForm(conference, data=request.POST)
         if form.is_valid():
-            return HttpResponseRedirect('send/?idlist={},{}'.format(form.cleaned_data['waitlist_target'], form.cleaned_data['include_position']))
+            return HttpResponseRedirect('send/?idlist={}'.format(form.cleaned_data['waitlist_target']))
 
     else:
         form = WaitlistSendmailForm(conference)
@@ -4484,8 +4484,26 @@ def admin_waitlist_sendmail_send(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 
     class WaitlistAttendeeEmailProvider(AttendeeEmailQuerySampleMixin, BaseAttendeeEmailProvider):
+        finished_redirect = "../../"
+
         def get_recipient_string(self):
-            return WaitlistSendmailForm.TARGET_CHOICES[self.idlist[0]][1] + ', ' + WaitlistSendmailForm.POSITION_CHOICES[self.idlist[1]][1]
+            return WaitlistSendmailForm.TARGET_CHOICES[self.idlist[0]][1]
+
+        def get_contextrefs(self):
+            refs = super().get_contextrefs()
+            refs.update({
+                'waitlistposition': None,
+                'waitlistsize': None,
+            })
+            return refs
+
+        def get_preview_context(self):
+            ctx = super().get_preview_context()
+            ctx.update({
+                'waitlistposition': 1,
+                'waitlistsize': 2,
+            })
+            return ctx
 
         @property
         def query(self):
@@ -4498,7 +4516,6 @@ def admin_waitlist_sendmail_send(request, urlname):
 
         def insert_emails(self, sentat, subject, message):
             target = self.idlist[0]
-            position = self.idlist[1]
 
             q = RegistrationWaitlistEntry.objects.filter(registration__conference=conference,
                                                          registration__payconfirmedat__isnull=True)
@@ -4507,7 +4524,13 @@ def admin_waitlist_sendmail_send(request, urlname):
                 messages.warning(request, "Waitlist was empty, no email was sent.")
                 return
 
-            if position == WaitlistSendmailForm.POSITION_NONE:
+            # Figure out if there are any references to position or size of the waitlist in the template.
+            # References to attendees are fine to ignore because those will be filled in by AttendeeEmail
+            # automatically when sending.
+            referenced_vars = set()
+            render_sandboxed_template(message, self.get_preview_context(), referenced_vars=referenced_vars)
+
+            if not ('waitlistposition' in referenced_vars or 'waitlistsize' in referenced_vars):
                 # If we don't need the position, we can just create a single AttendeeMail and
                 # send it to all recipients using a filter in the db.
                 if target == WaitlistSendmailForm.TARGET_OFFERS:
@@ -4536,20 +4559,15 @@ def admin_waitlist_sendmail_send(request, urlname):
                     if target == WaitlistSendmailForm.TARGET_NOOFFERS and w.offeredon:
                         continue
 
-                    if position == WaitlistSendmailForm.POSITION_FULL:
-                        positioninfo = "Your position on the waitlist is {0} of {1}.".format(n + 1, tot)
-                    elif position == WaitlistSendmailForm.POSITION_ONLY:
-                        positioninfo = "Your position on the waitlist is {0}.".format(n + 1)
-                    elif position == WaitlistSendmailForm.POSITION_SIZE:
-                        positioninfo = "The current size of the waitlist is {0}.".format(tot)
-                    else:
-                        positioninfo = ''
-
                     msg = AttendeeMail(
                         conference=conference,
                         subject=subject,
-                        message=message + "\n\n" + positioninfo,
+                        message=message,
                         sentat=sentat,
+                        extracontext={
+                            'waitlistposition': n + 1,
+                            'waitlistsize': tot,
+                        },
                     )
                     msg.save()
                     msg.registrations.add(w.registration)
