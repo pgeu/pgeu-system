@@ -34,7 +34,7 @@ class Command(BaseCommand):
         err = False
 
         state = defaultdict(dict)
-        for provider in MessagingProvider.objects.filter(active=True).order_by('classname'):
+        for provider in MessagingProvider.objects.select_related('series').filter(active=True).order_by('classname'):
             impl = get_messaging(provider)
 
             try:
@@ -44,7 +44,7 @@ class Command(BaseCommand):
                 out = "EXCEPTION: {}\n".format(e)
 
             if out:
-                s.write("{}\n".format(provider.internalname))
+                s.write("{} (for {)\n".format(provider.internalname, provider.series.name if provider.series else 'News'))
                 s.write("{}\n".format('-' * len(provider.internalname)))
                 s.write(out)
                 s.write("\n\n")
