@@ -5098,7 +5098,7 @@ def crossmail_send(request):
     if request.method == 'POST' and request.POST.get('submit', None) == 'Send email':
         is_confirm = True
 
-        textpreview, htmlpreview, htmlpreviewattachments = render_jinja_conference_mail_inline_attachments(None, 'confreg/mail/cross_conference.txt', {
+        textpreview, htmlpreview = render_jinja_conference_mail_inline_attachments(None, 'confreg/mail/cross_conference.txt', {
             'body': _get_preview_text(request.POST['text']),
             'token': 'previewtokenforoptout',
         }, request.POST['subject'])
