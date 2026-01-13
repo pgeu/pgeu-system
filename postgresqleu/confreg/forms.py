@@ -948,7 +948,7 @@ class TransferRegForm(forms.Form):
 
 
 class CrossConferenceMailForm(forms.Form):
-    senderaddr = forms.EmailField(min_length=5, required=True, label="Sender address")
+    senderaddr = forms.ChoiceField(required=True, label="Sender address")
     sendername = forms.CharField(min_length=5, required=True, label="Sender name")
     include = forms.CharField(widget=forms.widgets.HiddenInput(), required=False)
     exclude = forms.CharField(widget=forms.widgets.HiddenInput(), required=False)
@@ -976,16 +976,35 @@ class CrossConferenceMailForm(forms.Form):
 
         self.fields['available_fields'].widget = SimpleTreeviewWidget(treedata={x: None for x in ['name', 'email', 'token']})
 
+        conferences = Conference.objects.select_related('series').all()
         if not self.user.is_superuser:
-            conferences = list(Conference.objects.filter(series__administrators=self.user))
-            self.fields['senderaddr'] = forms.ChoiceField(label="Sender address", choices=set(
-                                                          [(c.contactaddr, c.contactaddr) for c in conferences] +
-                                                          [(c.sponsoraddr, c.sponsoraddr) for c in conferences]))
+            conferences = conferences.filter(series__administrators=self.user)
+        conferences = conferences.order_by('series__name', '-startdate')
+
+        choices = []
+        currentgroup = None
+        lastseries = None
+
+        def _unwrap_addresses(group):
+            return [group[0], [(a, a) for a in sorted(list(group[1]))]]
+
+        for conf in conferences:
+            if conf.series != lastseries:
+                if currentgroup:
+                    choices.append(_unwrap_addresses(currentgroup))
+                currentgroup = [conf.series.name, set()]
+                lastseries = conf.series
+            currentgroup[1].add(conf.contactaddr)
+            currentgroup[1].add(conf.sponsoraddr)
+        if currentgroup:
+            choices.append(_unwrap_addresses(currentgroup))
+        self.fields['senderaddr'].choices = choices
 
     def prepare(self):
         if self.is_confirm:
             for f in self.fields:
                 self.fields[f].widget.attrs['readonly'] = 'true'
+                self.fields[f].widget.attrs['data-readonly'] = 1
             self.warning_text_below = 'Please confirm that you really want to send this email! There is no going back!'
             self.data['textpreview'] = self.textpreview.replace("\n", "<br/>")
             self.data['htmlpreview'] = self.htmlpreview
