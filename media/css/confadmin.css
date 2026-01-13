@@ -221,6 +221,9 @@ details.treeview details.treeview {
 select.form-control[data-readonly] option {
     display: none;
 }
+select.form-control[data-readonly] optgroup {
+    display: none;
+}
 
 /*
  * Waitlist table
