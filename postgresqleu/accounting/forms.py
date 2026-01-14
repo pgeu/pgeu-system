@@ -4,6 +4,7 @@ from django.forms.models import BaseInlineFormSet
 
 
 from .models import JournalEntry, JournalItem, Object, JournalUrl, Account
+from .fyear import fy_start_date, fy_end_date
 
 
 class JournalEntryForm(forms.ModelForm):
@@ -15,6 +16,20 @@ class JournalEntryForm(forms.ModelForm):
     class Meta:
         model = JournalEntry
         exclude = ('year', 'seq', )
+
+    def clean_date(self):
+        d = self.cleaned_data['date']
+        if self.instance and self.instance.year_id:
+            year_num = self.instance.year_id
+            start = fy_start_date(year_num)
+            end = fy_end_date(year_num)
+            if d < start or d > end:
+                raise ValidationError(
+                    "Date must be within financial year {} ({} to {})".format(
+                        year_num, start, end
+                    )
+                )
+        return d
 
 
 def PositiveValidator(v):

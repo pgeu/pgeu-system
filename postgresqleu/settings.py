@@ -240,6 +240,12 @@ ACCOUNTING_MEMBERSHIP_ACCOUNT = 3001
 ACCOUNTING_DONATIONS_ACCOUNT = 3601
 ACCOUNTING_INVOICE_VAT_ACCOUNT = 2610
 
+# Financial year configuration
+# Format: 'MM-DD' representing the first day of the financial year
+# Default '01-01' for calendar year accounting
+# UK example: '04-06' for tax year starting April 6
+FIRST_DAY_OF_FINANCIAL_YEAR = '01-01'
+
 
 # Organisation configuration
 # --------------------------

@@ -13,6 +13,7 @@ from postgresqleu.util.time import today_global
 
 from .models import JournalEntry, JournalItem, JournalUrl
 from .models import Object, Account, Year
+from .fyear import date_to_fy
 
 
 class AccountingException(Exception):
@@ -49,13 +50,14 @@ def create_accounting_entry(items,
         if debitsum != creditsum and not leaveopen:
             raise AccountingException("Submitted accounting journal entry is not balanced!")
 
+        fy = date_to_fy(date)
         try:
-            year = Year.objects.get(year=date.year)
+            year = Year.objects.get(year=fy)
         except Year.DoesNotExist:
             # If the year simply doesn't exist, we create one and send an alert about it.
             # This will handle the case of automated entries showing up very early in the year when
             # nobody has had time to deal with it manually yet.
-            year = Year(year=date.year, isopen=True)
+            year = Year(year=fy, isopen=True)
             year.save()
 
             send_simple_mail(
@@ -71,7 +73,7 @@ and the year manually!
             )
         if not year.isopen:
             # If the year exists but is closed, then it's actually an error.
-            raise AccountingException("Year %s is not open for new entries!" % date.year)
+            raise AccountingException("Year %s is not open for new entries!" % year.year)
         seq = JournalEntry.objects.filter(year=year).aggregate(Max('seq'))['seq__max']
         if seq is None:
             seq = 0

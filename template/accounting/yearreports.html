@@ -61,7 +61,7 @@ $(function() {
 <h1>{{title}}</h1>
 
 {%if reporttype != 'object' %}
-<div class="dateinfo">{{year.year}}-01-01 - {{enddate}}</div>
+<div class="dateinfo">{{year_start_date}} - {{enddate}}</div>
 {%else%}
 Includes entries from {{mindate}} to {{maxdate}}.
 {%endif%}

@@ -66,10 +66,32 @@ class Year(models.Model):
     year = models.IntegerField(primary_key=True)
     isopen = models.BooleanField(null=False, blank=False)
 
+    @property
+    def start_date(self):
+        from .fyear import fy_start_date
+        return fy_start_date(self.year)
+
+    @property
+    def end_date(self):
+        from .fyear import fy_end_date
+        return fy_end_date(self.year)
+
+    @property
+    def date_range_display(self):
+        from .fyear import fy_date_range_display
+        return fy_date_range_display(self.year)
+
+    @property
+    def label(self):
+        from .fyear import format_fy_label
+        return format_fy_label(self.year)
+
     def __str__(self):
+        from .fyear import format_fy_label
+        label = format_fy_label(self.year)
         if self.isopen:
-            return "%s *" % self.year
-        return "%s" % self.year
+            return "{} *".format(label)
+        return label
 
     class Meta:
         ordering = ('-year',)

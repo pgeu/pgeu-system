@@ -16,12 +16,13 @@ from .models import JournalEntry, JournalItem, JournalUrl, Year, Object
 from .models import IncomingBalance, Account
 from .forms import JournalEntryForm, JournalItemForm, JournalItemFormset, JournalUrlForm
 from .forms import CloseYearForm
+from .fyear import date_to_fy, fy_start_date, fy_end_date
 
 
 def index(request):
     authenticate_backend_group(request, 'Accounting managers')
-    # Always redirect to the current year
-    return HttpResponseRedirect("%s/" % today_global().year)
+    # Always redirect to the current financial year
+    return HttpResponseRedirect("%s/" % date_to_fy(today_global()))
 
 
 def _setup_search(request, term):
@@ -75,13 +76,13 @@ def year(request, year):
         year = Year.objects.get(year=int(year))
     except Year.DoesNotExist:
         # Year does not exist, but what do we do about it?
-        if int(year) == today_global().year:
-            # For current year, we automatically create the year and move on
+        if int(year) == date_to_fy(today_global()):
+            # For current financial year, we automatically create the year and move on
             year = Year(year=int(year), isopen=True)
             year.save()
-            messages.info(request, "Year {} did not exist in the system, but since it's the current year it has now been created.".format(year.year))
+            messages.info(request, "Year {} did not exist in the system, but since it's the current financial year it has now been created.".format(year.label))
         else:
-            return HttpResponse("Year {} does not exist in the system, and is not current year.".format(int(year)))
+            return HttpResponse("Year {} does not exist in the system, and is not current financial year.".format(int(year)))
 
     if 'search' in request.GET:
         _setup_search(request, request.GET['search'])
@@ -112,12 +113,12 @@ def new(request, year):
     year = int(year)
 
     # Default the date to the same date as the last entry for this year,
-    # provided one exists. Otherwise, just the start of the year.
+    # provided one exists. Otherwise, just the start of the financial year.
     try:
         lastentry = JournalEntry.objects.filter(year=year).order_by('-date')[0]
         d = lastentry.date
     except IndexError:
-        d = date(year, 1, 1)
+        d = fy_start_date(year)
 
     year = get_object_or_404(Year, year=year)
     highseq = JournalEntry.objects.filter(year=year).aggregate(Max('seq'))['seq__max']
@@ -341,7 +342,7 @@ SELECT ac.name AS acname, ag.name AS agname, anum, a.name,
  FROM accounting_accountclass ac INNER JOIN accounting_accountgroup ag ON ac.id=ag.accountclass_id INNER JOIN accounting_account a ON ag.id=a.group_id INNER JOIN fullbalance ON fullbalance.anum=a.num WHERE ac.inbalance AND (incomingamount != 0 OR currentamount != 0) ORDER BY anum
         """, {
         'year': year.year,
-        'enddate': date(year.year, 12, 31),
+        'enddate': fy_end_date(year.year),
         })
     balance = [dict(list(zip([col[0] for col in curs.description], row))) for row in curs.fetchall()]
     curs.execute("SELECT sum(-amount) FROM accounting_journalitem ji INNER JOIN accounting_journalentry je ON ji.journal_id=je.id INNER JOIN accounting_account a ON ji.account_id=a.num INNER JOIN accounting_accountgroup ag ON ag.id=a.group_id INNER JOIN accounting_accountclass ac ON ac.id=ag.accountclass_id WHERE je.year_id=%(year)s AND NOT inbalance", {
@@ -413,12 +414,14 @@ def report(request, year, reporttype):
     else:
         account = None
 
+    fy_start = fy_start_date(year.year)
+    fy_end = fy_end_date(year.year)
     if request.GET.get('ed', None) and request.GET['ed'] != 'undefined':
         enddate = datetime.strptime(request.GET['ed'], '%Y-%m-%d').date()
-        if year and enddate.year != year.year:
-            enddate = date(year.year, 12, 31)
+        if year and (enddate < fy_start or enddate > fy_end):
+            enddate = fy_end
     else:
-        enddate = date(year.year, 12, 31)
+        enddate = fy_end
 
     if request.GET.get('io', 0) == '1':
         includeopen = True
@@ -615,6 +618,7 @@ ORDER BY anum""".format(objstr),
         'title': title,
         'year': year and year or -1,
         'years': years,
+        'year_start_date': fy_start,
         'reportable_objects': filtered_objects,
         'hasopenentries': hasopenentries,
         'results': results,
