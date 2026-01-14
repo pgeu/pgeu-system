@@ -44,7 +44,7 @@ class Command(BaseCommand):
                 out = "EXCEPTION: {}\n".format(e)
 
             if out:
-                s.write("{} (for {)\n".format(provider.internalname, provider.series.name if provider.series else 'News'))
+                s.write("{} (for {})\n".format(provider.internalname, provider.series.name if provider.series else 'News'))
                 s.write("{}\n".format('-' * len(provider.internalname)))
                 s.write(out)
                 s.write("\n\n")
