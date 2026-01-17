@@ -573,22 +573,19 @@ class CallForPapersForm(forms.ModelForm):
         if not self.instance.conference.callforpapersrecording:
             del self.fields['recordingconsent']
         else:
-            # Replace BooleanField with TypedChoiceField to properly handle False as a valid choice
-            # This ensures that False is treated as a valid selection, not as "empty"
-            recording_consent_field = forms.TypedChoiceField(
+            # Use TypedChoiceField with RadioSelect to force explicit choice
+            self.fields['recordingconsent'] = forms.TypedChoiceField(
                 choices=(
-                    ('', ''),
                     ('True', 'I give my consent for the conference organisers to record my presentation and give permission for them to distribute the recording under the license of their choice.'),
                     ('False', "I don't consent to recording of my presentation."),
                 ),
                 coerce=lambda x: x == 'True',
                 required=True,
-                empty_value=None,
+                widget=forms.RadioSelect,
             )
             # Set initial value if editing existing session
             if self.instance.id and self.instance.recordingconsent is not None:
-                recording_consent_field.initial = 'True' if self.instance.recordingconsent else 'False'
-            self.fields['recordingconsent'] = recording_consent_field
+                self.fields['recordingconsent'].initial = 'True' if self.instance.recordingconsent else 'False'
 
         if not self.instance.conference.track_set.filter(incfp=True).count() > 0:
             del self.fields['track']
