@@ -582,6 +582,7 @@ class CallForPapersForm(forms.ModelForm):
                 coerce=lambda x: x == 'True',
                 required=True,
                 widget=forms.RadioSelect,
+                label='Recording consent',
             )
             # Set initial value if editing existing session
             if self.instance.id and self.instance.recordingconsent is not None:
