@@ -20,7 +20,7 @@ from .jinjafunc import render_jinja_conference_mail
 
 class AttendeeEmailQuerySampleMixin:
     def get_sample_attendee(self):
-        ret = exec_to_dict("SELECT regid FROM ({}) WHERE regid IS NOT NULL".format(self.query), self.queryparams)
+        ret = exec_to_dict("SELECT regid FROM ({}) AS reglist WHERE regid IS NOT NULL".format(self.query), self.queryparams)
         if ret:
             return ConferenceRegistration.objects.get(pk=ret[0]['regid'])
         else:
