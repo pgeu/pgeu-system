@@ -103,7 +103,7 @@ class BaseAttendeeEmailProvider:
         }
 
     def insert_emails(self, sendat, subject, message):
-        mailid = exec_to_scalar("INSERT INTO confreg_attendeemail (conference_id, sent, sentat, subject, message, tocheckin, tovolunteers) VALUES (%(confid)s, false, %(sentat)s, %(subject)s, %(message)s, false, false) RETURNING id", {
+        mailid = exec_to_scalar("INSERT INTO confreg_attendeemail (conference_id, sent, sentat, subject, message, tocheckin, tovolunteers, extracontext) VALUES (%(confid)s, false, %(sentat)s, %(subject)s, %(message)s, false, false, '{}') RETURNING id", {
             'confid': self.conference.id,
             'sentat': sendat,
             'subject': subject,
