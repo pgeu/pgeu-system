@@ -13,7 +13,7 @@
 </p>
 
 {% if reg.regtype.cost > 0 %}
-{% if reg.prepaidvoucher_set.exists %}
+{% if reg.prepaidvoucher_set.exists() %}
 <p>
   This registration was made using a voucher, and is therefor non-refundable. If
   you have any questions about this, please contact the conference organizers.
