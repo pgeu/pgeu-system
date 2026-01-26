@@ -509,6 +509,11 @@ class InvoiceManager(object):
         # Initiate a refund of an invoice if there is a payment provider that supports it.
         # Otherwise, flag the invoice as refunded, and assume the user took care of it manually.
 
+        if amount < 0 or vatamount < 0:
+            raise Exception("Can't refund negative amounts!")
+        elif amount == 0:
+            raise Exception("Cant' refund zero amount!")
+
         # Validate that we're not refunding more than there should be
         already = invoice.invoicerefund_set.all().aggregate(amount=Coalesce(Sum('amount'), Decimal(0)), vatamount=Coalesce(Sum('vatamount'), Decimal(0)))
         if vatamount > invoice.total_vat - already['vatamount']:
