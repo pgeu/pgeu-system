@@ -75,8 +75,9 @@ class BaseAttendeeEmailProvider:
         }
         if self.allow_attendee_ref:
             context['attendee'] = self.get_sample_attendee()
-            context['firstname'] = context['attendee'].firstname
-            context['lastname'] = context['attendee'].lastname
+            if context['attendee']:
+                context['firstname'] = context['attendee'].firstname
+                context['lastname'] = context['attendee'].lastname
         return context
 
     def get_contextrefs(self):
