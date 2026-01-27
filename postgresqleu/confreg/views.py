@@ -3930,6 +3930,8 @@ def _admin_registration_cancel(request, conference, redirurl, regs):
             # Apply this pattern to each registration in turn, to figure out the total cost.
             this_to_refund = Decimal(0)
             this_to_refund_vat = Decimal(0)
+
+            # Loop over each registration to get the contribution to the total
             for rid in regtotalnovat.keys():
                 if regtotalnovat[rid] <= 0:
                     # If there was no cost, also don't apply the fixed fee
@@ -3938,6 +3940,10 @@ def _admin_registration_cancel(request, conference, redirurl, regs):
                 this_to_refund += (regtotalnovat[rid] * pattern.percent / Decimal(100) - pattern.fees).quantize(Decimal('0.01'))
                 if conference.vat_registrations:
                     this_to_refund_vat += (regtotalvat[rid] * pattern.percent / Decimal(100) - pattern.fees * conference.vat_registrations.vatpercent / Decimal(100)).quantize(Decimal('0.01'))
+
+                if this_to_refund < 0:
+                    this_to_refund = Decimal(0)
+                    this_to_refund_vat = Decimal(0)
 
             today = today_conference()
             if (pattern.fromdate is None or pattern.fromdate <= today) and \
@@ -3986,6 +3992,23 @@ def _admin_registration_cancel(request, conference, redirurl, regs):
                 # Loop over all registrations and cancel them one by one
                 for reg in regs:
                     if method == form.Methods.NO_REFUND:
+                        to_refund = Decimal(0)
+                        to_refund_vat = Decimal(0)
+                    elif method >= 0:
+                        # Calculate amount to refund
+                        to_refund = (regtotalnovat[reg.id] * pattern.percent / Decimal(100) - pattern.fees).quantize(Decimal('0.01'))
+                        if conference.vat_registrations:
+                            to_refund_vat = (regtotalvat[reg.id] * pattern.percent / Decimal(100) - pattern.fees * conference.vat_registrations.vatpercent / Decimal(100)).quantize(Decimal('0.01'))
+                        else:
+                            to_refund_vat = Decimal(0)
+
+                        if to_refund < 0:
+                            to_refund = Decimal(0)
+                            to_refund_vat = Decimal(0)
+                    else:
+                        raise RegCancelException(reg, "Don't know how to cancel like that")
+
+                    if to_refund == 0:
                         if reg.payconfirmedat:
                             # An invoice may exist, but in this case we don't want to provide
                             # a refund. This can only happen for registrations that are actually
@@ -4012,15 +4035,8 @@ def _admin_registration_cancel(request, conference, redirurl, regs):
                                 raise RegCancelException(reg, "Can't cancel when part of unpaid bulk payment")
                             # else there is no invoice, so we can just cancel/remove the registration.
                             cancel_registration(reg, True, reason=reason, user=request.user)
-                    elif method >= 0:
-                        # Refund using a pattern!
-                        # Calculate amount to refund
-                        to_refund = (regtotalnovat[reg.id] * pattern.percent / Decimal(100) - pattern.fees).quantize(Decimal('0.01'))
-                        if conference.vat_registrations:
-                            to_refund_vat = (regtotalvat[reg.id] * pattern.percent / Decimal(100) - pattern.fees * conference.vat_registrations.vatpercent / Decimal(100)).quantize(Decimal('0.01'))
-                        else:
-                            to_refund_vat = Decimal(0)
-
+                    else:
+                        # Refund using a pattern that actually has a calculated amount.
                         if reg.invoice:
                             invoice = reg.invoice
                         elif reg.bulkpayment:
@@ -4035,18 +4051,15 @@ def _admin_registration_cancel(request, conference, redirurl, regs):
                             # If there is an invoice, go ahead and refund it
                             if to_refund < 0 or to_refund_vat < 0:
                                 raise RegCancelException(reg, "Selected pattern would lead to negative refunding, can't refund.")
-                            elif to_refund > invoice.total_refunds['remaining']['amount']:
+                            if to_refund > invoice.total_refunds['remaining']['amount']:
                                 raise RegCancelException(reg, "Attempt to refund {0}, which is more than remaing {1}".format(to_refund, invoice.total_refunds['remaining']['amount']))
-                            elif to_refund_vat > invoice.total_refunds['remaining']['vatamount']:
+                            if to_refund_vat > invoice.total_refunds['remaining']['vatamount']:
                                 raise RegCancelException(reg, "Attempt to refund VAT {0}, which is more than remaining {1}".format(to_refund_vat, invoice.total_refunds['remaining']['vatamount']))
-                            else:
-                                # OK, looks good. Start by refunding the invoice.
-                                manager.refund_invoice(invoice, reason, to_refund, to_refund_vat, conference.vat_registrations)
+                            # OK, looks good. Start by refunding the invoice.
+                            manager.refund_invoice(invoice, reason, to_refund, to_refund_vat, conference.vat_registrations)
 
                         # Then cancel the actual registration (regardless of invoice)
                         cancel_registration(reg, reason=reason, user=request.user)
-                    else:
-                        raise RegCancelException(reg, "Don't know how to cancel like that")
 
                 messages.info(request, "{} registrations canceled".format(len(regs)))
                 transaction.savepoint_commit(spoint)
