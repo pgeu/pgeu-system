@@ -1179,3 +1179,22 @@ def cancelrequests(request, urlname):
         'requested': requested,
         'helplink': 'registrations#cancel',
     })
+
+
+@transaction.atomic
+def uncancelrequest(request, urlname):
+    conference = get_authenticated_conference(request, urlname)
+
+    reg = get_object_or_404(ConferenceRegistration, conference=conference, id=get_int_or_error(request.POST, 'regid'))
+
+    if not reg.cancelrequestedat:
+        messages.warning(request, "Cancellation not requested for this attendee")
+    elif reg.canceledat:
+        messages.warning(request, "Cancellation already processed")
+    else:
+        reg.cancelrequestedat = None
+        reg.cancelreason = ''
+        reg.save(update_fields=['cancelrequestedat', 'cancelreason'])
+        messages.info(request, "Cancellation request for {} removed.".format(reg.fullname))
+
+    return HttpResponseRedirect("../")

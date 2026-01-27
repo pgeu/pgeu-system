@@ -247,6 +247,7 @@ urlpatterns.extend([
     re_path(r'^events/admin/(\w+)/transfer/$', postgresqleu.confreg.views.transfer_reg),
     re_path(r'^events/admin/(\w+)/transfer/getaddress/$', postgresqleu.confreg.views.transfer_get_address),
     re_path(r'^events/admin/(\w+)/cancelrequests/$', postgresqleu.confreg.backendviews.cancelrequests),
+    re_path(r'^events/admin/(\w+)/cancelrequests/uncancel/$', postgresqleu.confreg.backendviews.uncancelrequest),
     re_path(r'^events/admin/(?P<urlname>[^/]+)/volunteer/$', postgresqleu.confreg.volsched.volunteerschedule, {'adm': True}),
     re_path(r'^events/admin/(?P<urlname>[^/]+)/volunteer/api/$', postgresqleu.confreg.volsched.volunteerschedule_api, {'adm': True}),
     re_path(r'^events/admin/(?P<urlname>[^/]+)/volunteer/ical/(?P<token>[a-z0-9]{64})/$', postgresqleu.confreg.volsched.ical, {'adm': True}),

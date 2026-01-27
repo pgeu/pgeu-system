@@ -36,6 +36,11 @@
 <input type="submit" value="Manually cancel">
 </form>
 {% endif %}
+<br/>
+<form method="post" action="uncancel/">{% csrf_token %}
+<input type="hidden" name="regid" value="{{r.id}}">
+<input type="submit" value="Delete cancel request" class="confirm-btn" data-confirm="Are you sure you want to delete this cancellation request? No notification will be sent to the attendee and they will remain with an active registration">
+</form>
 {% endif %}
 </td>
     <td>{{r.cancelreason}}</td>
