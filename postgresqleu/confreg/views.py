@@ -4831,6 +4831,20 @@ def session_notify_queue(request, urlname):
 
 
 @transaction.atomic
+def session_notify_queue_reset(request, urlname):
+    conference = get_authenticated_conference(request, urlname)
+
+    session = get_object_or_404(ConferenceSession, conference=conference, id=get_int_or_error(request.POST, 'session'))
+
+    session.lastnotifiedstatus = session.status
+    session.lastnotifiedtime = timezone.now()
+    session.save(update_fields=['lastnotifiedstatus', 'lastnotifiedtime'])
+
+    messages.info(request, "Removed notifications for {}".format(session.title))
+    return HttpResponseRedirect("../")
+
+
+@transaction.atomic
 def transfer_reg(request, urlname):
     conference = get_authenticated_conference(request, urlname)
 

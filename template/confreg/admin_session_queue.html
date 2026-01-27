@@ -11,11 +11,17 @@ one of them off, click the session and change the field for
   <tr>
     <th>Session</th>
     <th>Status change</th>
+    <th>Remove</th>
   </tr>
 {%for s in notifysessions%}
   <tr>
     <td><a href="/events/admin/{{conference.urlname}}/sessions/{{s.id}}/">{{s}}</a></td>
     <td>{{s.lastnotified_status_string}} -&gt; {{s.status_string}}</td>
+    <td><form method="post" action="reset/">{% csrf_token %}
+<input type="hidden" name="session" value="{{s.id}}">
+<input type="submit" value="Remove notification" class="btn btn-sm confirm-btn" data-confirm="This will reset the notified status so no notification is sent for this session. It does *NOT* change the status of the session. Proceed?">
+</form>
+    </td>
   </tr>
 {%endfor%}
 </table>
