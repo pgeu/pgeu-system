@@ -1077,7 +1077,7 @@ WHERE EXISTS (
             if not self.get_recipients():
                 # If there are no recipients, we allow it
                 return True
-            return not exec_to_scalar("SELECT EXISTS (SELECT 1 FROM ({}) WHERE regid IS NULL)".format(self.query), self.queryparams)
+            return not exec_to_scalar("SELECT EXISTS (SELECT 1 FROM ({}) AS r WHERE regid IS NULL)".format(self.query), self.queryparams)
 
     return attendee_email_form(request,
                                conference,
