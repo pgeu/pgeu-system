@@ -2547,7 +2547,7 @@ def waitlist_signup(request, confname):
     send_conference_notification(
         conference,
         'Waitlist signup',
-        "User {0} {1} <{2}> signed up for the waitlist.\n\nWaitlist admin: {}".format(
+        "User {0} {1} <{2}> signed up for the waitlist.\n\nWaitlist admin: {3}".format(
             reg.firstname,
             reg.lastname,
             reg.email,
