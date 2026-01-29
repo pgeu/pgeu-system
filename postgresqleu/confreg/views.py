@@ -1205,7 +1205,7 @@ def feedback(request, confname):
     # Generate a list of all feedback:able sessions, meaning all sessions that have already started,
     # since you can't give feedback on something that does not yet exist.
     if is_conf_tester:
-        sessions = ConferenceSession.objects.filter(conference=conference).filter(can_feedback=True).filter(status=1)
+        sessions = ConferenceSession.objects.filter(conference=conference).filter(can_feedback=True).filter(status=1).filter(starttime__isnull=False)
     else:
         sessions = ConferenceSession.objects.filter(conference=conference).filter(can_feedback=True).filter(starttime__lte=timezone.now()).filter(status=1)
 
