@@ -57,7 +57,7 @@ class Command(BaseCommand):
                                          'body': body,
                                          'linkback': True,
                                      },
-                                     receivername=attendee.fullname,
+                                     receivername=attendee.fullname if attendee else '{} {}'.format(firstname, lastname),
                 )
 
             # Send to all regular recipients, where we can render a recipient specific version
