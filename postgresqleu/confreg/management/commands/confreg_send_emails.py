@@ -57,7 +57,7 @@ class Command(BaseCommand):
                                          'body': body,
                                          'linkback': True,
                                      },
-                                     receivername=a.fullname,
+                                     receivername=attendee.fullname,
                 )
 
             # Send to all regular recipients, where we can render a recipient specific version
