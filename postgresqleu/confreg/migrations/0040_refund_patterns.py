@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             name='RefundPattern',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('percent', models.IntegerField(validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(100)], verbose_name='Percent to refund')),
+                ('percent', models.IntegerField(validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(100)], verbose_name='Percent to refund')),
                 ('fees', models.IntegerField(help_text='This amount will be deducted from the calculated refund amount. Amount should be entered *without* VAT.', verbose_name='Fees not to refund')),
                 ('fromdate', models.DateField(help_text='Suggest for refunds starting from this date', null=True, blank=True, verbose_name='From date')),
                 ('todate', models.DateField(help_text='Suggest for refunds until this date', null=True, blank=True, verbose_name='To date')),
