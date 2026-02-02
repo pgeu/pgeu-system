@@ -26,6 +26,7 @@
 </p>
 {%endif%}
 
+{%if session.lastnotifiedstatus == 1 %}{# only show slides and feedback if the session is approved #}
 <h2>Slides</h2>
 <p>
   You can upload slides or link to the slides to make them available
@@ -69,7 +70,7 @@ This link will work once your talk has started.  You can include the below QR co
 This is preliminary feedback only, since the feedback system is still
 open. It's only shown to people registered as testers.
 </p>
-{%endif%}
+{%endif%}{# conference.feedbackopen #}
 
 <p>
 The following feedback has been given on this presentation by
@@ -101,7 +102,7 @@ The following feedback has been given on this presentation by
 {%endfor%}
 </table>
 
-{%endif%}
+{%endif%}{# feedbacktext #}
 
 {%if feedbackcomparisons%}
 <h3>In comparison</h3>
@@ -114,9 +115,10 @@ The following feedback has been given on this presentation by
 {{svgcharts.svgbarchart(f.data, wratio=2, legend=False)}}
 </div>
 {%endfor%}
-{%endif%}
+{%endif%}{# feedbackcomparisons #}
 
-{%endif%}
-{%endif%}
+{%endif%}{# feedbackcount #}
+{%endif%}{# feedbackcount or feedbackqrcode #}
+{%endif%}{# session.lastnotifiedstatus == 1 #}
 {%endblock%}
 

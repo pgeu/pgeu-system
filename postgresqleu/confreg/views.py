@@ -1962,7 +1962,7 @@ def callforpapers_edit(request, confname, sessionid):
     isopen = conference.IsCallForPapersOpen or is_tester
     if (isopen and session.status != 0) or not isopen:
         # Anything that's not "open and in status submitted" renders
-        # a view of the session instead of the actual session.
+        # a view of the session instead of the actual session form.
         # If there is feedback for this session available, render that
         # on the same page. If feedback is  still open, we show nothing
         feedback_fields = ('topic_importance', 'content_quality', 'speaker_knowledge', 'speaker_quality')
