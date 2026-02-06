@@ -1007,8 +1007,8 @@ def sessiondata(conference, writer):
         header.append('speakers')
     else:
         header.append('speaker')
-        header.append('company')
         header.append('email')
+        header.append('company')
     writer.columns(header)
     writer.grouping = False
     for s in sessions:
