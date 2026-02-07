@@ -72,8 +72,15 @@ class PaypalAPI(object):
             raise Exception("Failed to get transactions: %s" % r.json()['message'])
 
         for t in r.json().get('transaction_details', []):
+            code = t['transaction_info']['transaction_event_code']
+
             if t['transaction_info']['transaction_status'] != 'S':
-                continue
+                # Specifically for withdrawal transactions (maybe just SEPA instant? Who knows),
+                # paypal can return the completely undocumented status `R`. So accept that one, but only for thsoe.
+                if t['transaction_info']['transaction_status'] == 'R' and code in ('T0400', 'T0401', 'T0403'):
+                    print("Received undocumented transaction_status 'R' for transaction {} of type {}. Allowing.".format(t['transaction_info']['transaction_id'], code))
+                else:
+                    continue
 
             if t['transaction_info']['transaction_amount']['currency_code'] != settings.CURRENCY_ISO:
                 raise Exception("Transaction {0} is wrong currency: {1}".format(
@@ -81,7 +88,6 @@ class PaypalAPI(object):
                     t['transaction_info']['transaction_amount']['currency_code'],
                 ))
 
-            code = t['transaction_info']['transaction_event_code']
             r = {
                 'TRANSACTIONID': t['transaction_info']['transaction_id'],
                 'TIMESTAMP': t['transaction_info']['transaction_updated_date'],
