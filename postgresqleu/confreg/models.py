@@ -165,7 +165,7 @@ class Conference(models.Model):
     urlname = models.CharField(max_length=32, blank=False, null=False, unique=True, validators=[validate_lowercase, validate_urlname, ], verbose_name="URL name")
     conferencename = models.CharField(max_length=64, blank=False, null=False, verbose_name="Conference name")
     startdate = models.DateField(blank=False, null=False, verbose_name="Start date", db_index=True)
-    enddate = models.DateField(blank=False, null=False, verbose_name="End date")
+    enddate = models.DateField(blank=False, null=False, verbose_name="End date", db_index=True)
     location = models.CharField(max_length=128, blank=False, null=False)
     promoactive = models.BooleanField(default=False, verbose_name="Promotion active")
     promopicurl = models.URLField(blank=True, null=False, verbose_name="URL to promo picture", validators=[PictureUrlValidator(aspect=2.3)])
