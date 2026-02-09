@@ -79,7 +79,6 @@ def _do_checkin_scan(request, conference, is_admin, extra=None):
         'doing': 'Check-in attendee',
         'scanwhat': 'ticket',
         'searchwhat': 'registration',
-        'has_status': True,
         'has_stats': True,
         'scannertype': 'User',
         'storebutton': 'Check in',
