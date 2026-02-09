@@ -491,7 +491,7 @@ def get_conference_or_404(urlname):
 
 
 def get_conference_scanner_permissions(user):
-    permissions = exec_to_keyed_dict("""SELECT conferencename AS name, startdate::text, true AS checkin,
+    permissions = exec_to_keyed_dict("""SELECT urlname, conferencename AS name, startdate::text, true AS checkin,
 CASE WHEN scannerfields != '' THEN regexp_split_to_array(scannerfields, ',') ELSE '{}' END AS scannerfields,
 regtoken AS token
 FROM confreg_conference c
@@ -501,7 +501,7 @@ AND c.enddate > CURRENT_TIMESTAMP - '2 weeks'::interval
 AND EXISTS (SELECT 1 FROM confreg_conference_checkinprocessors cp WHERE cp.conference_id=c.id AND cp.conferenceregistration_id=r.id)
 """, {'userid': user.id})
 
-    for conf, data in exec_to_keyed_dict("""SELECT conferencename AS name, startdate::text, false as checkin,
+    for conf, data in exec_to_keyed_dict("""SELECT urlname, conferencename AS name, startdate::text, false as checkin,
 jsonb_agg(jsonb_build_object('sponsor', s.name, 'token', ss.token)) AS sponsors
 FROM confreg_conference c
 INNER JOIN confreg_conferenceregistration r ON r.conference_id=c.id
@@ -509,7 +509,7 @@ INNER JOIN confsponsor_sponsorscanner ss ON ss.scanner_id=r.id
 INNER JOIN confsponsor_sponsor s ON s.id=ss.sponsor_id
 WHERE r.attendee_id=%(userid)s
 AND c.enddate > CURRENT_TIMESTAMP - '2 weeks'::interval
-GROUP BY 1, 2, 3
+GROUP BY 1, 2, 3, 4
 """, {'userid': user.id}).items():
         if conf in permissions:
             permissions[conf]['sponsors'] = data['sponsors']
