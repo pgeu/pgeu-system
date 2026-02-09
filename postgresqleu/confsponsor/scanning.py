@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404
+from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
@@ -302,11 +303,12 @@ def scanning_api(request, scannertoken, what):
                 'name': '{} for {}'.format(scanner.scanner.fullname, scanner.sponsor.displayname),
                 'sponsorname': scanner.sponsor.displayname,
                 'confname': scanner.sponsor.conference.conferencename,
+                'enddate': scanner.sponsor.conference.enddate,
                 'active': True,  # As soon as badges are available they can be scanned.
                 'admin': False,  # There are no "admins" in badge scanning
                 'activestatus': '',
                 'permissions': get_conference_scanner_permissions(scanner.scanner.attendee),
-            }), content_type='application/json')
+            }, cls=DjangoJSONEncoder), content_type='application/json')
         elif what == 'lookup':
             token = request.GET.get('lookup')
             m = _tokenmatcher.match(token)
