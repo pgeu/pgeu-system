@@ -315,7 +315,7 @@ def api(request, urlname, regtoken, what):
     elif what == 'search':
         s = request.GET.get('search').strip()
         if not s:
-            raise Http404()
+            return _json_response({'regs': []})
         q = Q()
         for n in s.split():
             # For each part of the given string, search both first and last name
