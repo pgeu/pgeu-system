@@ -312,7 +312,7 @@ def _checkin_api(request, urlname, regtoken, what, tokenfield, tokenmatcher, fie
             'active': conference.checkinactive,
             'activestatus': 'Check-in active' if conference.checkinactive else 'Check-in is not open',
             'confname': conference.conferencename,
-            'enddate': conference.enddate,
+            'startdate': conference.startdate,
             'admin': is_admin,
             'permissions': get_conference_scanner_permissions(user.attendee),
             **extrastatus

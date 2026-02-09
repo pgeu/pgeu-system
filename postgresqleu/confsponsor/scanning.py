@@ -303,7 +303,7 @@ def scanning_api(request, scannertoken, what):
                 'name': '{} for {}'.format(scanner.scanner.fullname, scanner.sponsor.displayname),
                 'sponsorname': scanner.sponsor.displayname,
                 'confname': scanner.sponsor.conference.conferencename,
-                'enddate': scanner.sponsor.conference.enddate,
+                'startdate': scanner.sponsor.conference.startdate,
                 'active': True,  # As soon as badges are available they can be scanned.
                 'admin': False,  # There are no "admins" in badge scanning
                 'activestatus': '',
