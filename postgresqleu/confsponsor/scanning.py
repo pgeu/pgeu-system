@@ -308,6 +308,7 @@ def scanning_api(request, scannertoken, what):
                 'admin': False,  # There are no "admins" in badge scanning
                 'activestatus': '',
                 'permissions': get_conference_scanner_permissions(scanner.scanner.attendee),
+                'sitebase': settings.SITEBASE,
             }, cls=DjangoJSONEncoder), content_type='application/json')
         elif what == 'lookup':
             token = request.GET.get('lookup')

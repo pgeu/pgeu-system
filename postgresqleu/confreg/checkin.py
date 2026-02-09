@@ -315,6 +315,7 @@ def _checkin_api(request, urlname, regtoken, what, tokenfield, tokenmatcher, fie
             'startdate': conference.startdate,
             'admin': is_admin,
             'permissions': get_conference_scanner_permissions(user.attendee),
+            'sitebase': settings.SITEBASE,
             **extrastatus
         })
 
