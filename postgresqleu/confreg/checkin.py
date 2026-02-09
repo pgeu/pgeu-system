@@ -252,7 +252,7 @@ def _get_field_statistics(conference):
         ),
         (
             ('Latest scans', 'Field', 'Who'),
-            exec_to_list("SELECT field, dynaprops->field FROM (SELECT id, regexp_split_to_table(scannerfields, ',') AS field FROM confreg_conference WHERE id=%(confid)s) AS x INNER JOIN confreg_conferenceregistration r ON r.conference_id=%(confid)s AND r.dynaprops ? field ORDER BY 2 desc LIMIT 20", {"confid": conference.id})
+            exec_to_list("SELECT dynaprops->field, field, r.firstname || ' ' || r.lastname FROM (SELECT id, regexp_split_to_table(scannerfields, ',') AS field FROM confreg_conference WHERE id=%(confid)s) AS x INNER JOIN confreg_conferenceregistration r ON r.conference_id=%(confid)s AND r.dynaprops ? field ORDER BY 2 desc LIMIT 20", {"confid": conference.id})
         ),
     ]
 
