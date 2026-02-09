@@ -294,14 +294,15 @@ def _get_reg_json(r, fieldscan=False):
     return d
 
 
-_tokenmatcher = re.compile('^{}/t/id/([^/]+)/$'.format(settings.SITEBASE))
+_idtokenmatcher = re.compile('^{}/t/id/([^/]+)/$'.format(settings.SITEBASE))
 _publictokenmatcher = re.compile('^{}/t/at/([^/]+)/$'.format(settings.SITEBASE))
 
 
-@csrf_exempt
-@global_login_exempt
-def api(request, urlname, regtoken, what):
+def _checkin_api(request, urlname, regtoken, what, tokenfield, tokenmatcher, fieldname, cansearch, getstats, store, validate, showfields, extrastatus, message):
     (conference, user, is_admin) = _get_checkin(request, urlname, regtoken)
+
+    if validate:
+        validate(conference)
 
     if what == 'status':
         return _json_response({
@@ -311,6 +312,7 @@ def api(request, urlname, regtoken, what):
             'activestatus': 'Check-in active' if conference.checkinactive else 'Check-in is not open',
             'confname': conference.conferencename,
             'admin': is_admin,
+            **extrastatus
         })
 
     # Only the stats API call is allowed when check-in is not open
@@ -319,15 +321,15 @@ def api(request, urlname, regtoken, what):
 
     if what == 'lookup':
         token = request.GET.get('lookup')
-        m = _tokenmatcher.match(token)
+        m = tokenmatcher.match(token)
         if m:
             # New style token
             token = m.group(1)
         else:
             raise Http404()
-        r = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, idtoken=token)
-        return _json_response({'reg': _get_reg_json(r)})
-    elif what == 'search':
+        r = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, **{tokenfield: token})
+        return _json_response({'reg': _get_reg_json(r, fieldname)})
+    elif cansearch and what == 'search':
         s = request.GET.get('search').strip()
         if not s:
             return _json_response({'regs': []})
@@ -345,27 +347,28 @@ def api(request, urlname, regtoken, what):
         })
     elif is_admin and what == 'stats':
         with ensure_conference_timezone(conference):
-            return _json_response(_get_statistics(conference))
+            return _json_response(getstats(conference))
     elif request.method == 'POST' and what == 'store':
         if not conference.checkinactive:
             return HttpResponse("Check-in not open", status=412)
 
         # Accept both full URL version of token and just the key part
-        m = _tokenmatcher.match(request.POST['token'])
+        m = tokenmatcher.match(request.POST['token'])
         if m:
             token = m.group(1)
         else:
             token = request.POST['token']
-        reg = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, idtoken=token)
+        reg = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, **{tokenfield: token})
         if reg.checkedinat:
             return HttpResponse("Already checked in.", status=412)
-        reg.checkedinat = timezone.now()
-        reg.checkedinby = user
-        reg.save()
+
+        with transaction.atomic():
+            store(reg, user)
+
         return _json_response({
             'reg': _get_reg_json(reg),
-            'message': 'Attendee {} checked in successfully.'.format(reg.fullname),
-            'showfields': True,
+            'message': message(reg),
+            'showfields': showfields,
         })
     else:
         raise Http404()
@@ -373,53 +376,47 @@ def api(request, urlname, regtoken, what):
 
 @csrf_exempt
 @global_login_exempt
+def api(request, urlname, regtoken, what):
+    def _store(reg, user):
+        reg.checkedinat = timezone.now()
+        reg.checkedinby = user
+        reg.save()
+
+    return _checkin_api(
+        request, urlname, regtoken, what,
+        "idtoken", _idtokenmatcher,
+        None, True,
+        _get_statistics,
+        _store,
+        None,
+        True,
+        {},
+        lambda reg: 'Attendee {} checked in successfully.'.format(reg.fullname),
+    )
+
+
+@csrf_exempt
+@global_login_exempt
 def checkin_field_api(request, urlname, regtoken, fieldname, what):
-    (conference, user, is_admin) = _get_checkin(request, urlname, regtoken)
-    if fieldname not in conference.scannerfields_list:
-        raise Http404()
+    def _store(reg, user):
+        reglog(reg, "Marked scanner field {}".format(fieldname), user.attendee)
+        reg.dynaprops[fieldname] = datetime_string(timezone.now())
+        reg.save(update_fields=['dynaprops'])
 
-    if what == 'status':
-        return _json_response({
-            'user': user.attendee.username,
-            'name': user.fullname,
-            'active': conference.checkinactive,
-            'activestatus': 'Check-in active' if conference.checkinactive else 'Check-in is not open',
-            'confname': conference.conferencename,
-            'fieldname': fieldname,
-            'admin': is_admin,
-        })
-
-    if what == 'lookup':
-        token = request.GET.get('lookup')
-        m = _publictokenmatcher.match(token)
-        if m:
-            # New style token
-            token = m.group(1)
-        else:
+    def _validate(conference):
+        if fieldname not in conference.scannerfields_list:
             raise Http404()
-        r = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, publictoken=token)
-        return _json_response({'reg': _get_reg_json(r, fieldname)})
-    elif is_admin and what == 'stats':
-        with ensure_conference_timezone(conference):
-            return _json_response(_get_field_statistics(conference))
-    elif request.method == 'POST' and what == 'store':
-        if not conference.checkinactive:
-            return HttpResponse("Check-in not open", status=412)
 
-        m = _publictokenmatcher.match(request.POST['token'])
-        if m:
-            token = m.group(1)
-        else:
-            token = request.POST['token']
-
-        with transaction.atomic():
-            reg = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, publictoken=token)
-            reglog(reg, "Marked scanner field {}".format(fieldname), user.attendee)
-            reg.dynaprops[fieldname] = datetime_string(timezone.now())
-            reg.save(update_fields=['dynaprops'])
-        return _json_response({
-            'reg': _get_reg_json(reg, fieldname),
-            'message': 'Field {} marked for attendee {}.'.format(fieldname, reg.fullname),
-        })
-    else:
-        raise Http404()
+    return _checkin_api(
+        request, urlname, regtoken, what,
+        "publictoken", _publictokenmatcher,
+        fieldname, False,
+        _get_field_statistics,
+        _store,
+        _validate,
+        False,
+        {
+            'fieldname': fieldname,
+        },
+        lambda reg: 'Field {} marked for attendee {}.'.format(fieldname, reg.fullname),
+    )
