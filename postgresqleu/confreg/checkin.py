@@ -115,7 +115,7 @@ def checkin_field(request, urlname, regtoken, fieldname):
     if fieldname not in conference.scannerfields_list:
         raise Http404()
 
-    return CheckinFieldScannerHandler(reg, None, fieldname).launch(request)
+    return CheckinFieldScannerHandler(reg, None, fieldname, is_admin).launch(request)
 
 
 @login_required
@@ -139,10 +139,11 @@ def checkin_token(request, scanned_token):
 
 
 class CheckinFieldScannerHandler:
-    def __init__(self, reg, foundreg, fieldname):
+    def __init__(self, reg, foundreg, fieldname, is_admin):
         self.reg = reg
         self.foundreg = foundreg
         self.fieldname = fieldname
+        self.is_admin = is_admin
 
     def launch(self, request, scanned_token=None):
         return render(request, 'confreg/scanner_app.html', {
@@ -153,6 +154,8 @@ class CheckinFieldScannerHandler:
             'scannertype': self.fieldname.title(),
             'storebutton': 'Store date for {}'.format(self.fieldname),
             'expectedtype': 'at',
+            'is_admin': self.is_admin,
+            'has_stats': True,
             'scanfields': [
                 ["name", "Name"],
                 ["type", "Registration type"],
@@ -197,7 +200,7 @@ def badge_token(request, scanned_token, what=None):
     if conference.scannerfields and reg.checkinprocessors_set.filter(pk=conference.pk).exists():
         for f in conference.scannerfields.split(','):
             if f != '':
-                options['f{}'.format(f)] = CheckinFieldScannerHandler(reg, foundreg, f)
+                options['f{}'.format(f)] = CheckinFieldScannerHandler(reg, foundreg, f, False)
 
     for s in sponsorscanners:
         options['s{}'.format(s.id)] = SponsorScannerHandler(s)
