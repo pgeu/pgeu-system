@@ -24,6 +24,7 @@ from postgresqleu.confsponsor.scanning import SponsorScannerHandler, SponsorScan
 from .models import ConferenceRegistration
 from .util import render_conference_response, reglog
 from .util import get_conference_or_404
+from .util import get_conference_scanner_permissions
 
 import json
 
@@ -312,6 +313,7 @@ def _checkin_api(request, urlname, regtoken, what, tokenfield, tokenmatcher, fie
             'activestatus': 'Check-in active' if conference.checkinactive else 'Check-in is not open',
             'confname': conference.conferencename,
             'admin': is_admin,
+            'permissions': get_conference_scanner_permissions(user.attendee),
             **extrastatus
         })
 

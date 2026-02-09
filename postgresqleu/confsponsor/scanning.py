@@ -16,6 +16,7 @@ from postgresqleu.util.db import exec_to_dict, exec_to_keyed_scalar
 from postgresqleu.util.decorators import global_login_exempt
 from postgresqleu.confreg.models import ConferenceRegistration
 from postgresqleu.confreg.util import send_conference_mail, get_conference_or_404, render_conference_response
+from postgresqleu.confreg.util import get_conference_scanner_permissions
 
 from .views import _get_sponsor_and_admin, get_authenticated_conference
 from .models import SponsorScanner, ScannedAttendee
@@ -304,6 +305,7 @@ def scanning_api(request, scannertoken, what):
                 'active': True,  # As soon as badges are available they can be scanned.
                 'admin': False,  # There are no "admins" in badge scanning
                 'activestatus': '',
+                'permissions': get_conference_scanner_permissions(scanner.scanner.attendee),
             }), content_type='application/json')
         elif what == 'lookup':
             token = request.GET.get('lookup')
