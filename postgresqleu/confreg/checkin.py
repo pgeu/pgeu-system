@@ -244,6 +244,19 @@ def _get_statistics(conference):
     ]
 
 
+def _get_field_statistics(conference):
+    return [
+        (
+            ('Field', 'Done', 'Left'),
+            exec_to_list("SELECT field, count(1) FILTER (WHERE r.dynaprops ? field), count(1) FILTER (WHERE NOT r.dynaprops ? field) FROM (SELECT id, regexp_split_to_table(scannerfields, ',') AS field FROM confreg_conference WHERE id=%(confid)s) AS x LEFT JOIN confreg_conferenceregistration r ON r.conference_id=%(confid)s GROUP BY 1 ORDER BY 1", {'confid': conference.id})
+        ),
+        (
+            ('Latest scans', 'Field', 'Who'),
+            exec_to_list("SELECT field, dynaprops->field FROM (SELECT id, regexp_split_to_table(scannerfields, ',') AS field FROM confreg_conference WHERE id=%(confid)s) AS x INNER JOIN confreg_conferenceregistration r ON r.conference_id=%(confid)s AND r.dynaprops ? field ORDER BY 2 desc LIMIT 20", {"confid": conference.id})
+        ),
+    ]
+
+
 def _get_reg_json(r, fieldscan=False):
     d = {
         'id': r.id,
@@ -384,6 +397,9 @@ def checkin_field_api(request, urlname, regtoken, fieldname, what):
             raise Http404()
         r = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, publictoken=token)
         return _json_response({'reg': _get_reg_json(r, fieldname)})
+    elif is_admin and what == 'stats':
+        with ensure_conference_timezone(conference):
+            return _json_response(_get_field_statistics(conference))
     elif request.method == 'POST' and what == 'store':
         if not conference.checkinactive:
             return HttpResponse("Check-in not open", status=412)
