@@ -82,7 +82,7 @@ def _invoice_payment(request, methodid, invoice, trailer):
     if trailer == 'iban/':
         methods = ['bankTransfer_IBAN']
     else:
-        methods = ['card']
+        methods = ['card', 'googlepay', 'applepay']
 
     # Not the return handler, so use the Adyen checkout API to build a payment link.
     p = {
