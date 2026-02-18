@@ -1586,7 +1586,6 @@ def sponsor_admin_benefit_reports(request, confurlname):
                     'rows': currentrows,
                 })
         for cb in claimedbenefits:
-            print(cb)
             if lastbenefit != cb.benefit:
                 _appendrows()
                 lastbenefit = cb.benefit
@@ -1915,7 +1914,6 @@ def sponsor_admin_reissue(request, confurlname, sponsorid):
 
     old['invoiceinfo'] = _get_rowinfo(old['invoicerows'][0])
     new['invoiceinfo'] = _get_rowinfo(new['invoicerows'][0])
-    print(new['invoiceinfo'])
 
     if request.method == 'POST':
         form = SponsorReissueForm(data=request.POST)

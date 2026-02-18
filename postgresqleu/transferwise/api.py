@@ -191,7 +191,6 @@ class TransferwiseApi(object):
                         # the secondaryCurrency fields.
                         amount = secondaryAmount
                     elif primaryCurrency != settings.CURRENCY_ABBREV:
-                        print(activity)
                         raise Exception("Primary currency is not our primarycurrency!")
 
                     yield {
@@ -247,7 +246,6 @@ class TransferwiseApi(object):
                     # This is just a check that the card is OK, no money in the transaction
                     continue
                 else:
-                    print(activity)
                     raise Exception("Unhandled activity type {}".format(activity['type']))
 
             cursor = r.get('cursor', None)
