@@ -16,6 +16,7 @@ from collections import defaultdict
 from postgresqleu.util.messaging import get_messaging
 
 from postgresqleu.confreg.models import MessagingProvider
+from postgresqleu.confreg.util import send_conference_notification
 
 
 class Command(BaseCommand):
@@ -34,11 +35,14 @@ class Command(BaseCommand):
         err = False
 
         state = defaultdict(dict)
+        out_by_series = defaultdict(str)
+
         for provider in MessagingProvider.objects.select_related('series').filter(active=True).order_by('classname'):
             impl = get_messaging(provider)
-
             try:
                 result, out = impl.check_messaging_config(state[provider.classname])
+                if not result and provider.series:
+                    out_by_series[provider.series] += "{}: {}\n".format(provider, out)
             except Exception as e:
                 result = False
                 out = "EXCEPTION: {}\n".format(e)
@@ -53,6 +57,17 @@ class Command(BaseCommand):
 
         if s.tell() != 0:
             print(s.getvalue())
+
+        for k, v in out_by_series.items():
+            # Send a notification to the conference that's the latest in the series
+            send_conference_notification(
+                k.conference_set.order_by('-startdate')[0],
+                'Messaging provider issues',
+                "The following messaging provider issues have been recorded for the series {}\n\n{}\n".format(
+                    k.name,
+                    v,
+                ),
+            )
 
         if err:
             sys.exit(1)
