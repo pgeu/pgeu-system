@@ -1896,7 +1896,7 @@ class CancelRegistrationForm(ConfirmFormMixin, django.forms.Form):
     reason = django.forms.CharField(required=True, max_length=100, label="Reason for cancel",
                                     help_text="Copied directly into confirmation emails and refund notices!")
 
-    confirm_what = 'cancel this registratoin'
+    confirm_what = 'cancel this registration'
 
     class Methods:
         NO_REFUND = -1
