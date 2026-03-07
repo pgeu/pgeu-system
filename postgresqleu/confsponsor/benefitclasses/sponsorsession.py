@@ -53,7 +53,7 @@ class SponsorSessionForm(BaseBenefitForm):
                 self.add_error('speakerbio', 'Speaker bio must be specified unless benefit is declined.')
         return self.cleaned_data
 
-    def clean_image(self):
+    def clean_speakerphoto(self):
         if not self.cleaned_data.get('speakerphoto', None):
             # This check is done in the global clean as well, so we accept it here since
             # we might have decliend it.
@@ -102,6 +102,7 @@ class SponsorSession(BaseBenefit):
 
         if form.cleaned_data.get('speakerphoto', None):
             # There is an image, so rescale and add it
+            form.cleaned_data['speakerphoto'].seek(0)
             p = ImageFile.Parser()
             imgdata = form.cleaned_data['speakerphoto'].read()
             p.feed(imgdata)
