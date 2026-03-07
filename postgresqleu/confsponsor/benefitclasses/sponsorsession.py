@@ -27,6 +27,7 @@ class SponsorSessionForm(BaseBenefitForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['speakercompany'].initial = self.sponsor.displayname
+        self.fields['speakerphoto'].widget.attrs['accept'] = 'image/png'
 
     def clean(self):
         declined = self.cleaned_data.get('decline', False)
