@@ -82,12 +82,6 @@ class PaypalAPI(object):
                 else:
                     continue
 
-            if t['transaction_info']['transaction_amount']['currency_code'] != settings.CURRENCY_ISO:
-                raise Exception("Transaction {0} is wrong currency: {1}".format(
-                    t['transaction_info']['transaction_id'],
-                    t['transaction_info']['transaction_amount']['currency_code'],
-                ))
-
             r = {
                 'TRANSACTIONID': t['transaction_info']['transaction_id'],
                 'TIMESTAMP': t['transaction_info']['transaction_updated_date'],
@@ -96,6 +90,27 @@ class PaypalAPI(object):
                 'NAME': None,
                 'SUBJECT': None,
             }
+
+            if t['transaction_info']['transaction_amount']['currency_code'] != settings.CURRENCY_ISO:
+                # If this is a currency conversion entry, we just ignore it since we keep our
+                # balance only on the primary currency.
+                if code == 'T0200':
+                    print("Transaction {} is a currency conversion, ignoring.".format(t['transaction_info']['transaction_id']))
+                    continue
+
+                # Else this is an actual transaction in the wrong amount. This needs to be fixed manually
+                # (we could figure it out by looking across multiple transactions to find it, but it's
+                # uncommon enough we will just punt it to the user).
+                # But we overwrite the description
+                r['SUBJECT'] = 'Transaction {} was paid in currency {}, you must manually check Paypal and adjust the amount!'
+                r['EMAIL'] = self.pm.config('email')
+                r['NAME'] = self.pm.config('email')
+                yield r
+                continue
+
+            if code == 'T0200':
+                # Currency conversion, but on our primary currency
+                continue
 
             if code in ('T1105', ):
                 # Some things are better left ignored
