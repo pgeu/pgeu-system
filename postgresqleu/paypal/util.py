@@ -102,7 +102,7 @@ class PaypalAPI(object):
                 # (we could figure it out by looking across multiple transactions to find it, but it's
                 # uncommon enough we will just punt it to the user).
                 # But we overwrite the description
-                r['SUBJECT'] = 'Transaction {} was paid in currency {}, you must manually check Paypal and adjust the amount!'
+                r['SUBJECT'] = 'Transaction {} was made in currency {}, you must manually check Paypal and adjust the amount!'.format(t['transaction_info']['transaction_id'], t['transaction_info']['transaction_amount']['currency_code'])
                 r['EMAIL'] = self.pm.config('email')
                 r['NAME'] = self.pm.config('email')
                 yield r
