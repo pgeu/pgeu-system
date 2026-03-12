@@ -90,7 +90,7 @@ however, that the markdown will be send as-is in the plaintext version
 of the email, so you should still be careful about the formatting. For
 the text/plain part, no formatting at all is done.
 
-You can use jinja style templating to include some defails about the
+You can use jinja style templating to include some details about the
 attendee in the email. For example, specifying {{attendee.fullname}}
 will give the attendees full name, to be used for example in
 greetings. A list of (most) available attributes are included below
@@ -114,7 +114,7 @@ sponsor and their level rather than the individual attendee.
 
 External emails are emails sent from the conference address(es) to
 recipients who are (not yet?) registered for the conference. This
-allows sending to arbitrary email addresses, from a selectino of all
+allows sending to arbitrary email addresses, from a selection of all
 the pre-configured addresses on the conference. The sender name will
 always be set to the name of the conference.
 
