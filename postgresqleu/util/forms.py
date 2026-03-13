@@ -3,7 +3,7 @@ from django.forms import ValidationError
 from django.core.signing import Signer, BadSignature
 from django.contrib.postgres.fields import ArrayField
 from django.forms.widgets import FILE_INPUT_CONTRADICTION
-from django.forms.fields import CallableChoiceIterator
+from django.utils.choices import CallableChoiceIterator
 import django.db.models.base
 
 import pickle
