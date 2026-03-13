@@ -367,6 +367,6 @@ class BankStatementRow(models.Model):
         unique_together = (
             ('uniqueid', 'method'),
         )
-        index_together = (
-            ('method', 'date'),
-        )
+        indexes = [
+            models.Index(fields=('method', 'date')),
+        ]

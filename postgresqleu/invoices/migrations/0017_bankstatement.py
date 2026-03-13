@@ -33,9 +33,9 @@ class Migration(migrations.Migration):
             name='bankstatementrow',
             unique_together=set([('uniqueid', 'method')]),
         ),
-        migrations.AlterIndexTogether(
-            name='bankstatementrow',
-            index_together=set([('method', 'date')]),
+        migrations.AddIndex(
+            model_name='bankstatementrow',
+            index=models.Index(fields=('method', 'date'), name='invoices_ba_method__f63ac4_idx')
         ),
         migrations.AddField(
             model_name='bankfileupload',
