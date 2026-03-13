@@ -41,11 +41,11 @@ class ReportField(object):
     def get_value(self, val):
         if val is None:
             return ''
-        elif type(val) == bool:
+        elif isinstance(val, bool):
             return val and 'Yes' or 'No'
-        elif type(val) == datetime:
+        elif isinstance(val, datetime):
             return val.strftime("%Y-%m-%d %H:%M")
-        elif type(val) != str:
+        elif not isinstance(val, str):
             return str(val)
         return val
 

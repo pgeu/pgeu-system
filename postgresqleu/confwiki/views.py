@@ -268,11 +268,11 @@ def admin_edit_page(request, urlname, pageid):
                 form.save_m2m()
                 s = StringIO()
                 for k, v in list(f.diff.items()):
-                    if type(v[0]) == list:
+                    if isinstance(v[0], list):
                         fr = ", ".join([str(o) for o in v[0]])
                     else:
                         fr = v[0]
-                    if type(v[1]) == list:
+                    if isinstance(v[1], list):
                         to = ", ".join([str(o) for o in v[1]])
                     else:
                         to = v[1]

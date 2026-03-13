@@ -173,7 +173,7 @@ class Invoice(models.Model):
     @property
     def amount_without_fees(self):
         f = self.payment_fees
-        if type(f) == str:
+        if isinstance(f, str):
             return "Unknown"
         else:
             return self.total_amount - f

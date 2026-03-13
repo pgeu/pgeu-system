@@ -160,7 +160,7 @@ class TrustlyWrapper(object):
         return json.dumps(struct)
 
     def _serializestruct(self, struct):
-        if (type(struct) == dict):
+        if isinstance(struct, dict):
             serialized = ''
             for k in sorted(struct.keys()):
                 if struct[k]:

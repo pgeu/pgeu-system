@@ -107,14 +107,14 @@ def validate_json_structure(config, structure):
         for k, v in list(config.items()):
             fullkey = "->".join(path + [k])
             # Dicts don't have __name__
-            if type(structure[k]) == dict:
+            if isinstance(structure[k], dict):
                 structtype = dict
             else:
                 structtype = structure[k]
             structname = structtype.__name__
             valname = type(v).__name__
 
-            if type(v) != structtype:
+            if not isinstance(v, structtype):
                 raise ValidationError("Value for {0} should be of type {1}, not {2}".format(fullkey, structname, valname))
             if isinstance(v, dict):
                 # Recursively check substructure

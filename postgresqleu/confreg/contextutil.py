@@ -23,12 +23,12 @@ except ImportError:
 # XXX: keep in sync with deploystatic.py!
 def deep_update_context(target, source):
     for k, v in source.items():
-        if type(v) == dict:
+        if isinstance(v, dict):
             # If this is a dict stored in the dict
             if k not in target:
                 # Target didn't have it, so copy it over
                 target[k] = copy.deepcopy(v)
-            elif type(target[k]) != dict:
+            elif not isinstance(target[k], dict):
                 # Target had something but it's not a dict, so overwrite it
                 target[k] = copy.deepcopy(v)
             else:
