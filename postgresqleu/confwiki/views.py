@@ -599,13 +599,6 @@ def signup_admin_sendmail(request, urlname, signupid):
             super().__init__(*args, **kwargs)
             self.queryparams['signup'] = signup.id
 
-        def process_idlist(self, idlist):
-            return idlist
-
-        @property
-        def query(self):
-            return _get_signup_email_query(signup, self.idlist, optionstrings)[0]
-
     if 'idlist' in request.GET or 'idlist' in request.POST:
         return attendee_email_form(
             request,
@@ -631,7 +624,7 @@ def signup_admin_sendmail(request, urlname, signupid):
             if len(recipients) == 0:
                 form.add_error('recipients', 'No recipients match this criteria')
             else:
-                return HttpResponseRedirect('?idlist={}'.format(",".join(rr)))
+                return HttpResponseRedirect('?idlist={}'.format(",".join(str(r[0]) for r in recipients)))
     else:
         form = SignupSendmailForm(conference, additional_choices)
 
